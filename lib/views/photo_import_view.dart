@@ -100,7 +100,8 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     if (_viewModel.hasOcrResult && !_viewModel.isProcessing) {
       if (!_announcedOcr && mounted) {
         _announcedOcr = true;
-        SemanticsService.announce(
+        SemanticsService.sendAnnouncement(
+          View.of(context),
           context.l10n.a11yOcrComplete,
           TextDirection.ltr,
         );
@@ -263,14 +264,16 @@ class _PhotoImportViewContent extends StatelessWidget {
     final bytes = viewModel.imageBytes;
     if (bytes == null) return;
     final bridge = ServiceLocator.get<HeirloomBridge>();
-    bridge.setDraft(HeirloomDraft(
-      imageBytes: bytes,
-      writerName: viewModel.heirloomWriterName.isEmpty
-          ? null
-          : viewModel.heirloomWriterName,
-      year: viewModel.heirloomYear,
-      note: viewModel.heirloomNote.isEmpty ? null : viewModel.heirloomNote,
-    ));
+    bridge.setDraft(
+      HeirloomDraft(
+        imageBytes: bytes,
+        writerName: viewModel.heirloomWriterName.isEmpty
+            ? null
+            : viewModel.heirloomWriterName,
+        year: viewModel.heirloomYear,
+        note: viewModel.heirloomNote.isEmpty ? null : viewModel.heirloomNote,
+      ),
+    );
   }
 
   /// Navigation escape route for OCR failures (Issue #029).
@@ -286,8 +289,9 @@ class _PhotoImportViewContent extends StatelessWidget {
       arguments: {
         'text': viewModel.ocrText.isEmpty ? '' : viewModel.ocrText,
         // BUT-928: only meaningful when OCR actually produced text.
-        'ocrConfidence':
-            viewModel.ocrText.isEmpty ? null : viewModel.confidence,
+        'ocrConfidence': viewModel.ocrText.isEmpty
+            ? null
+            : viewModel.confidence,
       },
     );
   }
@@ -389,14 +393,16 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: context.butleryColors.warning
-                            .withValues(alpha: AppDimensions.opacityVeryLight),
+                        color: context.butleryColors.warning.withValues(
+                          alpha: AppDimensions.opacityVeryLight,
+                        ),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
                           color: context.butleryColors.warning.withValues(
-                              alpha: AppDimensions.opacityMediumLight),
+                            alpha: AppDimensions.opacityMediumLight,
+                          ),
                           width: AppDimensions.borderWidthStandard,
                         ),
                       ),
@@ -414,10 +420,12 @@ class _PhotoImportViewContent extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   context.l10n.importImageQualityLow(
-                                      (viewModel.qualityScore! * 100).toInt()),
+                                    (viewModel.qualityScore! * 100).toInt(),
+                                  ),
                                   style: AppTextStyles.titleSmall.copyWith(
                                     color: context
-                                        .butleryColors.onWarningContainer,
+                                        .butleryColors
+                                        .onWarningContainer,
                                   ),
                                 ),
                               ),
@@ -445,7 +453,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                                       '• ',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: context
-                                            .butleryColors.onWarningContainer,
+                                            .butleryColors
+                                            .onWarningContainer,
                                       ),
                                     ),
                                     Expanded(
@@ -453,7 +462,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                                         rec,
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: context
-                                              .butleryColors.onWarningContainer,
+                                              .butleryColors
+                                              .onWarningContainer,
                                         ),
                                       ),
                                     ),

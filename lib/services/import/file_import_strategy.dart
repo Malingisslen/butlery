@@ -51,8 +51,10 @@ class FileImportStrategy extends ImportStrategy {
   }
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     // This method uses file picker to select files
     try {
       final result = await _contentProvider.pickFiles(
@@ -78,7 +80,8 @@ class FileImportStrategy extends ImportStrategy {
     } catch (e) {
       AppLogger.error('File import failed', e);
       return ImportResult.failure(
-          'Could not import from file. Please try again.');
+        'Could not import from file. Please try again.',
+      );
     }
   }
 
@@ -111,7 +114,8 @@ class FileImportStrategy extends ImportStrategy {
     } catch (e) {
       AppLogger.error('Content import failed', e);
       return ImportResult.failure(
-          'Could not parse file content. Please check the file format.');
+        'Could not parse file content. Please check the file format.',
+      );
     }
   }
 
@@ -189,26 +193,18 @@ class FileImportStrategy extends ImportStrategy {
         csvString = csvString.substring(1);
       }
 
-      // Detect line ending type and parse accordingly
-      List<List<dynamic>> rows;
-      if (csvString.contains('\r\n')) {
-        // Windows line endings
-        rows = const CsvToListConverter(eol: '\r\n').convert(csvString);
-      } else if (csvString.contains('\n')) {
-        // Unix line endings
-        rows = const CsvToListConverter(eol: '\n').convert(csvString);
-      } else {
-        // Try default parsing (single line or Mac classic \r)
-        rows = const CsvToListConverter().convert(csvString);
-      }
+      // csv 8.x auto-detects line endings (\r\n, \n, \r); the old per-eol
+      // branching is no longer needed. Delimiter pinned to comma as before.
+      final rows = const CsvDecoder(fieldDelimiter: ',').convert(csvString);
 
       if (rows.isEmpty) {
         throw Exception('CSV file is empty');
       }
 
       // Assuming first row is headers
-      final headers =
-          rows.first.map((e) => e.toString().toLowerCase()).toList();
+      final headers = rows.first
+          .map((e) => e.toString().toLowerCase())
+          .toList();
 
       if (rows.length < 2) {
         throw Exception('CSV file has no data rows');
@@ -232,25 +228,17 @@ class FileImportStrategy extends ImportStrategy {
         csvString = csvString.substring(1);
       }
 
-      // Detect line ending type and parse accordingly
-      List<List<dynamic>> rows;
-      if (csvString.contains('\r\n')) {
-        // Windows line endings
-        rows = const CsvToListConverter(eol: '\r\n').convert(csvString);
-      } else if (csvString.contains('\n')) {
-        // Unix line endings
-        rows = const CsvToListConverter(eol: '\n').convert(csvString);
-      } else {
-        // Try default parsing (single line or Mac classic \r)
-        rows = const CsvToListConverter().convert(csvString);
-      }
+      // csv 8.x auto-detects line endings (\r\n, \n, \r); the old per-eol
+      // branching is no longer needed. Delimiter pinned to comma as before.
+      final rows = const CsvDecoder(fieldDelimiter: ',').convert(csvString);
 
       if (rows.isEmpty) {
         throw Exception('CSV file is empty');
       }
 
-      final headers =
-          rows.first.map((e) => e.toString().toLowerCase()).toList();
+      final headers = rows.first
+          .map((e) => e.toString().toLowerCase())
+          .toList();
       final recipes = <Recipe>[];
 
       // Skip header row and process all data rows
@@ -380,7 +368,8 @@ class FileImportStrategy extends ImportStrategy {
 
   Recipe? _createRecipeFromData(Map<String, String> data) {
     // Map common column names to recipe fields
-    final title = data['title'] ??
+    final title =
+        data['title'] ??
         data['namn'] ??
         data['recipe'] ??
         data['recept'] ??
@@ -398,10 +387,12 @@ class FileImportStrategy extends ImportStrategy {
         data['description'] ?? data['beskrivning'] ?? 'Imported from file';
 
     // Ensure we have at least empty lists, not null
-    final ingredientsList =
-        ingredients.isNotEmpty ? ingredients : ['No ingredients specified'];
-    final instructionsList =
-        instructions.isNotEmpty ? instructions : ['No instructions provided'];
+    final ingredientsList = ingredients.isNotEmpty
+        ? ingredients
+        : ['No ingredients specified'];
+    final instructionsList = instructions.isNotEmpty
+        ? instructions
+        : ['No instructions provided'];
 
     return Recipe(
       core: RecipeCore(
@@ -441,7 +432,8 @@ class FileImportStrategy extends ImportStrategy {
     // Check for numbered ingredient columns
     final ingredients = <String>[];
     for (int i = 1; i <= 50; i++) {
-      final ingredient = data['ingredient$i'] ??
+      final ingredient =
+          data['ingredient$i'] ??
           data['ingrediens$i'] ??
           data['ingredient_$i'] ??
           '';
@@ -454,7 +446,8 @@ class FileImportStrategy extends ImportStrategy {
   }
 
   List<String> _parseInstructions(Map<String, String> data) {
-    final instructionsStr = data['instructions'] ??
+    final instructionsStr =
+        data['instructions'] ??
         data['instruktioner'] ??
         data['steps'] ??
         data['steg'] ??
@@ -482,7 +475,8 @@ class FileImportStrategy extends ImportStrategy {
   }
 
   int _parseCookingTime(Map<String, String> data) {
-    final timeStr = data['cookingtime'] ??
+    final timeStr =
+        data['cookingtime'] ??
         data['cooking_time'] ??
         data['tid'] ??
         data['tillagingstid'] ??
@@ -495,7 +489,8 @@ class FileImportStrategy extends ImportStrategy {
   }
 
   int _parseServings(Map<String, String> data) {
-    final servingsStr = data['servings'] ??
+    final servingsStr =
+        data['servings'] ??
         data['portions'] ??
         data['portioner'] ??
         data['serves'] ??
@@ -597,8 +592,9 @@ class FileImportStrategy extends ImportStrategy {
     final items = decoded is List ? decoded : [decoded];
     for (final item in items) {
       if (item is! Map<String, dynamic>) continue;
-      final data =
-          item.map((k, v) => MapEntry(k.toLowerCase(), _jsonValueToString(v)));
+      final data = item.map(
+        (k, v) => MapEntry(k.toLowerCase(), _jsonValueToString(v)),
+      );
       final recipe = _createRecipeFromData(data);
       if (recipe != null) recipes.add(recipe);
     }

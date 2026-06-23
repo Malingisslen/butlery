@@ -100,14 +100,18 @@ class _CookingModeContent extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.no_meals,
-                      color: cs.onPrimary, size: AppDimensions.iconSizeDisplay),
+                  Icon(
+                    Icons.no_meals,
+                    color: cs.onPrimary,
+                    size: AppDimensions.iconSizeDisplay,
+                  ),
                   const SizedBox(height: AppDimensions.spacingL),
                   Text(
                     context.l10n.cookingModeNoInstructions,
                     textAlign: TextAlign.center,
-                    style:
-                        AppTextStyles.bodyLarge.copyWith(color: cs.onPrimary),
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: cs.onPrimary,
+                    ),
                   ),
                   const SizedBox(height: AppDimensions.spacingL),
                   TextButton(
@@ -200,7 +204,11 @@ class _CookingModeContent extends StatelessWidget {
               onTap: () => vm.cycleFontScale(),
               semanticLabel: context.l10n.a11yCookingModeFontScale,
               child: Text(
-                'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
+                'A${vm.fontScale == 1.0
+                    ? ''
+                    : vm.fontScale == 1.25
+                    ? '+'
+                    : '++'}',
                 style: AppTextStyles.titleMedium.copyWith(
                   color: cs.primary,
                   fontWeight: FontWeight.w700,
@@ -269,8 +277,8 @@ class _IngredientsPanel extends StatelessWidget {
                   icon: Icons.remove,
                   onPressed:
                       vm.currentPortions > CookingModeViewModel.minPortions
-                          ? () => vm.updatePortions(vm.currentPortions - 1)
-                          : null,
+                      ? () => vm.updatePortions(vm.currentPortions - 1)
+                      : null,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -289,8 +297,8 @@ class _IngredientsPanel extends StatelessWidget {
                   icon: Icons.add,
                   onPressed:
                       vm.currentPortions < CookingModeViewModel.maxPortions
-                          ? () => vm.updatePortions(vm.currentPortions + 1)
-                          : null,
+                      ? () => vm.updatePortions(vm.currentPortions + 1)
+                      : null,
                 ),
               ],
             ),
@@ -324,7 +332,9 @@ class _IngredientsPanel extends StatelessWidget {
                             width: 6,
                             height: 6,
                             margin: const EdgeInsetsDirectional.only(
-                                top: 8, end: 12),
+                              top: 8,
+                              end: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: cs.onPrimary,
                               shape: BoxShape.rectangle,
@@ -372,7 +382,8 @@ class _IngredientsPanel extends StatelessWidget {
     // offline almost always means "couldn't reach the data" rather than "no
     // substitutes exist". Surface that explicitly. Only consulted when the list
     // is empty — cached suggestions still render normally offline.
-    final isOffline = suggestions.isEmpty &&
+    final isOffline =
+        suggestions.isEmpty &&
         ServiceLocator.tryGet<ConnectivityMonitoringService>()
                 ?.isConnectedToInternet ==
             false;
@@ -508,7 +519,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
       }
     }
 
-    SemanticsService.announce(
+    SemanticsService.sendAnnouncement(
+      View.of(context),
       context.l10n.cookingModeStepAnnounce(
         index + 1,
         vm.instructions[index],
@@ -588,13 +600,16 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                 return KeyedSubtree(
                   key: _stepKeys[index],
                   child: Semantics(
-                    label: context.l10n
-                        .a11yCookingModeStep(stepNumber, instruction),
+                    label: context.l10n.a11yCookingModeStep(
+                      stepNumber,
+                      instruction,
+                    ),
                     child: GestureDetector(
                       onTap: () => vm.goToStep(index),
                       child: Padding(
                         padding: const EdgeInsets.only(
-                            bottom: AppDimensions.spacingLg),
+                          bottom: AppDimensions.spacingLg,
+                        ),
                         child: Opacity(
                           // 0.6 (was 0.4): inactive steps stay legible for the
                           // cook glancing at upcoming steps (WCAG contrast).
@@ -612,7 +627,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 : null,
                             padding: isActive
                                 ? const EdgeInsetsDirectional.only(
-                                    start: AppDimensions.spacingSm)
+                                    start: AppDimensions.spacingSm,
+                                  )
                                 : null,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -633,7 +649,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                       fontWeight: FontWeight.w700,
                                       fontSize:
                                           AppTextStyles.contentTitle.fontSize! *
-                                              vm.fontScale,
+                                          vm.fontScale,
                                     ),
                                   ),
                                 ),
@@ -642,7 +658,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                   child: Semantics(
                                     label: context.l10n
                                         .a11yCookingStepLongPressTimer(
-                                            stepNumber),
+                                          stepNumber,
+                                        ),
                                     button: true,
                                     child: GestureDetector(
                                       // BUT-406: long-press opens a step timer
@@ -653,23 +670,31 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                       // the step timer (feature affordance),
                                       // not multi-select.
                                       onLongPress: () => _openStepTimer(
-                                          context, index, instruction),
+                                        context,
+                                        index,
+                                        instruction,
+                                      ),
                                       // BUT-604: the duration phrase renders
                                       // as an inline tappable chip — visible
                                       // affordance for the same timer sheet.
                                       child: InlineTimerText(
                                         text: instruction,
                                         onTimerTap: (_) => _openStepTimer(
-                                            context, index, instruction),
-                                        chipColor: cs.onPrimary,
-                                        style:
-                                            AppTextStyles.titleLarge.copyWith(
-                                          color: cs.onPrimary,
-                                          height: 1.7,
-                                          fontSize: AppTextStyles
-                                                  .titleLarge.fontSize! *
-                                              vm.fontScale,
+                                          context,
+                                          index,
+                                          instruction,
                                         ),
+                                        chipColor: cs.onPrimary,
+                                        style: AppTextStyles.titleLarge
+                                            .copyWith(
+                                              color: cs.onPrimary,
+                                              height: 1.7,
+                                              fontSize:
+                                                  AppTextStyles
+                                                      .titleLarge
+                                                      .fontSize! *
+                                                  vm.fontScale,
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -716,8 +741,10 @@ class _StepNavigation extends StatelessWidget {
             onPressed: vm.hasPreviousStep ? vm.previousStep : null,
           ),
           Text(
-            context.l10n
-                .cookingModeStepOf(vm.currentStepIndex + 1, vm.totalSteps),
+            context.l10n.cookingModeStepOf(
+              vm.currentStepIndex + 1,
+              vm.totalSteps,
+            ),
             style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
           ),
           _NavButton(

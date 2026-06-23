@@ -140,5 +140,12 @@ linter:
     avoid_multiple_declarations_per_line: false
     switch_on_type: false
 
+    # BUT-435: two lints the Dart 3.10 analyzer newly enforces (266 existing
+    # sites). Suppressed to keep the Flutter-toolchain-upgrade PR focused and
+    # reviewable; adopt deliberately as a follow-up (BUT-1364) like the rest of
+    # this incremental-cleanup list.
+    unnecessary_underscores: false
+    use_null_aware_elements: false
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

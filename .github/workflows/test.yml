@@ -50,7 +50,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLUTTER_VERSION: '3.35.1'
+  FLUTTER_VERSION: '3.38.5'
 
 jobs:
   # ── Per-commit fast path ────────────────────────────────────────────────
