@@ -114,21 +114,15 @@ jobs:
       with:
         extra_args: --only-verified
 
-  # Build job - runs Android, Web, iOS and desktop (Linux/macOS/Windows) in
-  # parallel after validation passes
+  # Build job - runs Android, Web, iOS and Linux in parallel after validation.
   build:
     needs: validate
     timeout-minutes: 60
-    # Desktop macOS/Windows builds are non-gating (see allow-failure in the
-    # matrix): flutter_onnxruntime (on-device ML) requires a higher desktop
-    # deployment target than those projects set, and desktop is not a shipping
-    # target (mobile + web only). android/web/ios/linux remain required.
-    continue-on-error: ${{ matrix.allow-failure || false }}
 
     strategy:
       fail-fast: false
       matrix:
-        platform: [android, web, ios, linux, macos, windows]
+        platform: [android, web, ios, linux]
         include:
           # BUT-495 budgets: android 15m, web 10m per ticket spec; iOS 25m
           # (slow Xcode/CocoaPods even on macos-latest, not in ticket scope
@@ -146,14 +140,10 @@ jobs:
           - platform: linux
             runs-on: ubuntu-latest
             budget-min: 15
-          - platform: macos
-            runs-on: macos-latest
-            budget-min: 25
-            allow-failure: true # flutter_onnxruntime desktop deployment-target
-          - platform: windows
-            runs-on: windows-latest
-            budget-min: 20
-            allow-failure: true # desktop not a shipping target
+          # macOS/Windows desktop builds dropped from the gate (BUT-435):
+          # flutter_onnxruntime (on-device ML) needs a higher desktop deployment
+          # target than those projects set, and desktop is not a shipping target
+          # (mobile + web only). Re-add if desktop ever becomes a goal.
 
     runs-on: ${{ matrix.runs-on }}
 
