@@ -50,31 +50,46 @@ void main() {
       });
 
       test('should normalize whitespace to single spaces', () {
-        expect(TextFormatting.normalizeText('  multiple   spaces  '),
-            equals('multiple spaces'));
         expect(
-            TextFormatting.normalizeText('tabs\t\there'), equals('tabs here'));
-        expect(TextFormatting.normalizeText('newlines\n\nhere'),
-            equals('newlines here'));
+          TextFormatting.normalizeText('  multiple   spaces  '),
+          equals('multiple spaces'),
+        );
         expect(
-            TextFormatting.normalizeText('\r\nwindows\r\nline\r\nbreaks\r\n'),
-            equals('windows line breaks'));
+          TextFormatting.normalizeText('tabs\t\there'),
+          equals('tabs here'),
+        );
+        expect(
+          TextFormatting.normalizeText('newlines\n\nhere'),
+          equals('newlines here'),
+        );
+        expect(
+          TextFormatting.normalizeText('\r\nwindows\r\nline\r\nbreaks\r\n'),
+          equals('windows line breaks'),
+        );
       });
 
       test('should handle mixed Unicode and whitespace', () {
         expect(
-            TextFormatting.normalizeText('𝐀𝐁𝐂   text'), equals('ABC text'));
-        expect(TextFormatting.normalizeText('  𝐚𝐛𝐜  mixed  '),
-            equals('abc mixed'));
-        expect(TextFormatting.normalizeText('𝟏𝟐𝟑\t\nnumbers'),
-            equals('123 numbers'));
+          TextFormatting.normalizeText('𝐀𝐁𝐂   text'),
+          equals('ABC text'),
+        );
+        expect(
+          TextFormatting.normalizeText('  𝐚𝐛𝐜  mixed  '),
+          equals('abc mixed'),
+        );
+        expect(
+          TextFormatting.normalizeText('𝟏𝟐𝟑\t\nnumbers'),
+          equals('123 numbers'),
+        );
       });
 
       test('should preserve standard characters', () {
         expect(TextFormatting.normalizeText('ABC123'), equals('ABC123'));
         expect(TextFormatting.normalizeText('åäö ÅÄÖ'), equals('åäö ÅÄÖ'));
         expect(
-            TextFormatting.normalizeText('special!@#'), equals('special!@#'));
+          TextFormatting.normalizeText('special!@#'),
+          equals('special!@#'),
+        );
       });
 
       test('should handle empty and edge cases', () {
@@ -99,8 +114,10 @@ void main() {
         expect(TextFormatting.isPortionOrTimeLine('15 min'), isTrue);
         expect(TextFormatting.isPortionOrTimeLine('30 minuter'), isTrue);
         expect(TextFormatting.isPortionOrTimeLine('45 min ugnstid'), isTrue);
-        expect(TextFormatting.isPortionOrTimeLine('Tillagning: 20 minuter'),
-            isTrue);
+        expect(
+          TextFormatting.isPortionOrTimeLine('Tillagning: 20 minuter'),
+          isTrue,
+        );
       });
 
       test('should detect ranges', () {
@@ -120,18 +137,26 @@ void main() {
       test('should reject non-matching text', () {
         expect(TextFormatting.isPortionOrTimeLine('ingrediens'), isFalse);
         expect(TextFormatting.isPortionOrTimeLine('mjölk'), isFalse);
-        expect(TextFormatting.isPortionOrTimeLine('portioner utan nummer'),
-            isFalse);
         expect(
-            TextFormatting.isPortionOrTimeLine('minuter utan nummer'), isFalse);
+          TextFormatting.isPortionOrTimeLine('portioner utan nummer'),
+          isFalse,
+        );
+        expect(
+          TextFormatting.isPortionOrTimeLine('minuter utan nummer'),
+          isFalse,
+        );
         expect(TextFormatting.isPortionOrTimeLine(''), isFalse);
       });
 
       test('should handle embedded patterns', () {
-        expect(TextFormatting.isPortionOrTimeLine('Receptet ger 4 portioner'),
-            isTrue);
-        expect(TextFormatting.isPortionOrTimeLine('Baka i 25 minuter i ugn'),
-            isTrue);
+        expect(
+          TextFormatting.isPortionOrTimeLine('Receptet ger 4 portioner'),
+          isTrue,
+        );
+        expect(
+          TextFormatting.isPortionOrTimeLine('Baka i 25 minuter i ugn'),
+          isTrue,
+        );
         expect(TextFormatting.isPortionOrTimeLine('För 2-3 personer'), isTrue);
       });
     });
@@ -259,10 +284,14 @@ void main() {
       test('should display third fractions with unicode symbols', () {
         expect(TextFormatting.toSwedishHalfFraction(1.0 / 3), equals('⅓'));
         expect(
-            TextFormatting.toSwedishHalfFraction(1 + 1.0 / 3), equals('1 ⅓'));
+          TextFormatting.toSwedishHalfFraction(1 + 1.0 / 3),
+          equals('1 ⅓'),
+        );
         expect(TextFormatting.toSwedishHalfFraction(2.0 / 3), equals('⅔'));
         expect(
-            TextFormatting.toSwedishHalfFraction(2 + 2.0 / 3), equals('2 ⅔'));
+          TextFormatting.toSwedishHalfFraction(2 + 2.0 / 3),
+          equals('2 ⅔'),
+        );
       });
 
       test('should fallback to decimal format for non-fractions', () {
@@ -318,9 +347,13 @@ void main() {
       test('should handle very large numbers', () {
         expect(TextFormatting.formatFractional(999999.99), equals('999999,99'));
         expect(
-            TextFormatting.parseSwedishNumber('999999,99'), equals(999999.99));
+          TextFormatting.parseSwedishNumber('999999,99'),
+          equals(999999.99),
+        );
         expect(
-            TextFormatting.toSwedishHalfFraction(999999.5), equals('999999 ½'));
+          TextFormatting.toSwedishHalfFraction(999999.5),
+          equals('999999 ½'),
+        );
       });
 
       test('should handle very small numbers', () {
@@ -335,22 +368,32 @@ void main() {
 
         // Infinity and NaN cases
         expect(
-            TextFormatting.toSwedishHalfFraction(double.infinity), equals('∞'));
-        expect(TextFormatting.toSwedishHalfFraction(double.negativeInfinity),
-            equals('-∞'));
+          TextFormatting.toSwedishHalfFraction(double.infinity),
+          equals('∞'),
+        );
+        expect(
+          TextFormatting.toSwedishHalfFraction(double.negativeInfinity),
+          equals('-∞'),
+        );
         expect(TextFormatting.toSwedishHalfFraction(double.nan), equals('NaN'));
       });
 
       test('should handle Unicode edge cases in normalizeText', () {
         // Empty Unicode range
-        expect(TextFormatting.normalizeText('\u{1D3FF}'),
-            equals('\u{1D3FF}')); // Just before range
-        expect(TextFormatting.normalizeText('\u{1D800}'),
-            equals('\u{1D800}')); // Just after range
+        expect(
+          TextFormatting.normalizeText('\u{1D3FF}'),
+          equals('\u{1D3FF}'),
+        ); // Just before range
+        expect(
+          TextFormatting.normalizeText('\u{1D800}'),
+          equals('\u{1D800}'),
+        ); // Just after range
 
         // Mixed content
-        expect(TextFormatting.normalizeText('Normal 𝐀𝐁𝐂 text'),
-            equals('Normal ABC text'));
+        expect(
+          TextFormatting.normalizeText('Normal 𝐀𝐁𝐂 text'),
+          equals('Normal ABC text'),
+        );
       });
     });
   });

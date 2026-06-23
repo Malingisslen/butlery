@@ -29,79 +29,83 @@ void main() {
 
   group('BUT-697 chunk-6 widget Semantics labels', () {
     testWidgets(
-        'collaborative_permissions_widgets.permissionsBanner — exposes permission label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'collaborative_permissions_widgets.permissionsBanner — exposes permission label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Builder(
-            builder: (ctx) => CollaborativePermissionsWidgets.permissionsBanner(
-              context: ctx,
-              editMode: EditMode.collaborative,
-              onTap: () {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (ctx) =>
+                  CollaborativePermissionsWidgets.permissionsBanner(
+                    context: ctx,
+                    editMode: EditMode.collaborative,
+                    onTap: () {},
+                  ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Prefix matcher because the description text suffix is locale-driven.
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Behörighet: ')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        // Prefix matcher because the description text suffix is locale-driven.
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Behörighet: ')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'group_dialog_components.EmojiSelector — emoji exposes select label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'group_dialog_components.EmojiSelector — emoji exposes select label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Material(
-            child: SizedBox(
-              width: 400,
-              height: 200,
-              child: EmojiSelector(
-                selectedEmoji: GroupEmojiConstants.availableEmojis.first,
-                onEmojiSelected: (_) {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Material(
+              child: SizedBox(
+                width: 400,
+                height: 200,
+                child: EmojiSelector(
+                  selectedEmoji: GroupEmojiConstants.availableEmojis.first,
+                  onEmojiSelected: (_) {},
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      // The first emoji is the selected one and exposes the select label.
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Välj .+ som ikon')),
-        findsWidgets,
-      );
-      handle.dispose();
-    });
+        // The first emoji is the selected one and exposes the select label.
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Välj .+ som ikon')),
+          findsWidgets,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'image_picker_dialog._SourceOption — uses passed label as Semantics',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'image_picker_dialog._SourceOption — uses passed label as Semantics',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: const Material(child: ImagePickerDialog()),
-        ),
-      );
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const Material(child: ImagePickerDialog()),
+          ),
+        );
 
-      // Both source options surface their visible Swedish labels.
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Ta foto')),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Välj från galleri')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        // Both source options surface their visible Swedish labels.
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Ta foto')),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Välj från galleri')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
   });
 }

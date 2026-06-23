@@ -33,8 +33,9 @@ void main() {
     );
   }
 
-  testWidgets('renders localized title, ingredients, and recipe count',
-      (tester) async {
+  testWidgets('renders localized title, ingredients, and recipe count', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness(onTap: () {}));
     await tester.pumpAndSettle();
 
@@ -42,7 +43,9 @@ void main() {
     expect(find.textContaining('april'), findsOneWidget);
     // Ingredient line joins with ' · '
     expect(
-        find.textContaining('sparris · rabarber · purjolök'), findsOneWidget);
+      find.textContaining('sparris · rabarber · purjolök'),
+      findsOneWidget,
+    );
     // Plural-aware Swedish count
     expect(find.text('5 recept'), findsOneWidget);
   });

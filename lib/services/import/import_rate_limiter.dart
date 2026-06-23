@@ -32,8 +32,8 @@ class ImportRateLimiter extends BaseService {
   ImportRateLimiter({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
-  })  : _firestoreRepo = firestoreRepository,
-        _authRepo = authRepository;
+  }) : _firestoreRepo = firestoreRepository,
+       _authRepo = authRepository;
 
   /// Check if an import operation is allowed.
   ///
@@ -390,37 +390,42 @@ class ImportRateLimiter extends BaseService {
     // Reset windows if expired
     final minuteWindow =
         _isInWindow(current.minuteWindowStart, now, const Duration(minutes: 1))
-            ? current.minuteWindowStart
-            : now;
+        ? current.minuteWindowStart
+        : now;
     final hourWindow =
         _isInWindow(current.hourWindowStart, now, const Duration(hours: 1))
-            ? current.hourWindowStart
-            : now;
+        ? current.hourWindowStart
+        : now;
     final dayWindow =
         _isInWindow(current.dayWindowStart, now, const Duration(days: 1))
-            ? current.dayWindowStart
-            : now;
+        ? current.dayWindowStart
+        : now;
     final monthWindow =
         _isInWindow(current.monthWindowStart, now, const Duration(days: 30))
-            ? current.monthWindowStart
-            : now;
+        ? current.monthWindowStart
+        : now;
 
     // Calculate new counters (reset if window changed)
     final newMinuteCount = minuteWindow == current.minuteWindowStart
         ? current.importsThisMinute + 1
         : 1;
-    final newHourCount =
-        hourWindow == current.hourWindowStart ? current.importsThisHour + 1 : 1;
-    final newDayCount =
-        dayWindow == current.dayWindowStart ? current.importsToday + 1 : 1;
+    final newHourCount = hourWindow == current.hourWindowStart
+        ? current.importsThisHour + 1
+        : 1;
+    final newDayCount = dayWindow == current.dayWindowStart
+        ? current.importsToday + 1
+        : 1;
 
     // LLM counters
-    int newEnhancements =
-        dayWindow == current.dayWindowStart ? current.llmEnhancementsToday : 0;
-    int newExtractions =
-        dayWindow == current.dayWindowStart ? current.llmExtractionsToday : 0;
-    int newVision =
-        dayWindow == current.dayWindowStart ? current.llmVisionToday : 0;
+    int newEnhancements = dayWindow == current.dayWindowStart
+        ? current.llmEnhancementsToday
+        : 0;
+    int newExtractions = dayWindow == current.dayWindowStart
+        ? current.llmExtractionsToday
+        : 0;
+    int newVision = dayWindow == current.dayWindowStart
+        ? current.llmVisionToday
+        : 0;
 
     if (operation.requiresLlm) {
       switch (operation.llmType) {

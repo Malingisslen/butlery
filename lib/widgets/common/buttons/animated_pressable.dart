@@ -67,13 +67,16 @@ class _AnimatedPressableState extends State<AnimatedPressable>
       duration: widget.duration,
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: widget.pressedScale,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: widget.curve,
-    ));
+    _scaleAnimation =
+        Tween<double>(
+          begin: 1.0,
+          end: widget.pressedScale,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: widget.curve,
+          ),
+        );
   }
 
   @override

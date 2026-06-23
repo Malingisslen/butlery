@@ -71,7 +71,10 @@ void main() {
     }
 
     Future<void> sendRealtimeEditNotification(
-        String recipeId, String? editedBy, Map<String, dynamic> data) async {
+      String recipeId,
+      String? editedBy,
+      Map<String, dynamic> data,
+    ) async {
       lastNotificationData = {
         'recipeId': recipeId,
         'editedBy': editedBy,
@@ -456,15 +459,17 @@ void main() {
 
         // Medium priority - metadata update
         expect(
-          RealtimeEventHandler.getEventPriority(
-              {'editType': 'metadata_update'}),
+          RealtimeEventHandler.getEventPriority({
+            'editType': 'metadata_update',
+          }),
           equals(2),
         );
 
         // Low priority - presence update
         expect(
-          RealtimeEventHandler.getEventPriority(
-              {'editType': 'presence_update'}),
+          RealtimeEventHandler.getEventPriority({
+            'editType': 'presence_update',
+          }),
           equals(3),
         );
 

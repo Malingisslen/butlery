@@ -18,8 +18,9 @@ import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operati
 const _userId = 'alice';
 
 CollectionReference<Map<String, dynamic>> _userRecipes(
-        FakeFirebaseFirestore firestore, String userId) =>
-    firestore.collection('users').doc(userId).collection('recipes');
+  FakeFirebaseFirestore firestore,
+  String userId,
+) => firestore.collection('users').doc(userId).collection('recipes');
 
 class _OwnershipCall {
   final String? currentUserId;
@@ -38,18 +39,20 @@ RecipeGdprExportOperations _ops(
     firestore: firestore,
     getCollectionForUser: (uid) => _userRecipes(firestore, uid),
     requireCurrentUserId: () => currentUid ?? _userId,
-    validateOwnership: ({
-      required String? currentUserId,
-      required String resourceOwnerId,
-      required String resourceType,
-      String? resourceId,
-    }) async {
-      ownershipCalls
-          ?.add(_OwnershipCall(currentUserId, resourceOwnerId, resourceType));
-      if (ownershipThrows) {
-        throw PermissionDeniedException('denied');
-      }
-    },
+    validateOwnership:
+        ({
+          required String? currentUserId,
+          required String resourceOwnerId,
+          required String resourceType,
+          String? resourceId,
+        }) async {
+          ownershipCalls?.add(
+            _OwnershipCall(currentUserId, resourceOwnerId, resourceType),
+          );
+          if (ownershipThrows) {
+            throw PermissionDeniedException('denied');
+          }
+        },
   );
 }
 
@@ -74,7 +77,9 @@ void main() {
     test('returns empty list when user has no recipes', () async {
       final firestore = FakeFirebaseFirestore();
       expect(
-          await _ops(firestore).exportPersonalRecipesByUser(_userId), isEmpty);
+        await _ops(firestore).exportPersonalRecipesByUser(_userId),
+        isEmpty,
+      );
     });
 
     test('honours maxDocuments cap', () async {
@@ -82,16 +87,20 @@ void main() {
       for (var i = 0; i < 5; i++) {
         await _userRecipes(firestore, _userId).doc('r$i').set({'title': 'r$i'});
       }
-      final export = await _ops(firestore)
-          .exportPersonalRecipesByUser(_userId, maxDocuments: 3);
+      final export = await _ops(
+        firestore,
+      ).exportPersonalRecipesByUser(_userId, maxDocuments: 3);
       expect(export, hasLength(3));
     });
 
     test('validates ownership with current user vs target user', () async {
       final firestore = FakeFirebaseFirestore();
       final calls = <_OwnershipCall>[];
-      await _ops(firestore, currentUid: _userId, ownershipCalls: calls)
-          .exportPersonalRecipesByUser(_userId);
+      await _ops(
+        firestore,
+        currentUid: _userId,
+        ownershipCalls: calls,
+      ).exportPersonalRecipesByUser(_userId);
 
       final call = calls.single;
       expect(call.currentUserId, _userId);
@@ -104,8 +113,10 @@ void main() {
       await _userRecipes(firestore, _userId).doc('r1').set({'leak': true});
 
       await expectLater(
-        () => _ops(firestore, ownershipThrows: true)
-            .exportPersonalRecipesByUser(_userId),
+        () => _ops(
+          firestore,
+          ownershipThrows: true,
+        ).exportPersonalRecipesByUser(_userId),
         throwsA(isA<PermissionDeniedException>()),
       );
     });
@@ -114,22 +125,23 @@ void main() {
   group('exportTopLevelRecipesByOwner', () {
     test('returns only docs whose userId field matches the owner', () async {
       final firestore = FakeFirebaseFirestore();
-      await firestore
-          .collection('recipes')
-          .doc('mine-1')
-          .set({'userId': _userId, 'title': 'Pasta'});
-      await firestore
-          .collection('recipes')
-          .doc('mine-2')
-          .set({'userId': _userId, 'title': 'Soup'});
+      await firestore.collection('recipes').doc('mine-1').set({
+        'userId': _userId,
+        'title': 'Pasta',
+      });
+      await firestore.collection('recipes').doc('mine-2').set({
+        'userId': _userId,
+        'title': 'Soup',
+      });
       // not mine — must be excluded
-      await firestore
-          .collection('recipes')
-          .doc('theirs')
-          .set({'userId': 'bob', 'title': 'Bob recipe'});
+      await firestore.collection('recipes').doc('theirs').set({
+        'userId': 'bob',
+        'title': 'Bob recipe',
+      });
 
-      final export =
-          await _ops(firestore).exportTopLevelRecipesByOwner(_userId);
+      final export = await _ops(
+        firestore,
+      ).exportTopLevelRecipesByOwner(_userId);
 
       expect(export, hasLength(2));
       expect(export.map((e) => e['id']).toSet(), {'mine-1', 'mine-2'});
@@ -152,30 +164,35 @@ void main() {
           'title': 'r$i',
         });
       }
-      final export = await _ops(firestore)
-          .exportTopLevelRecipesByOwner(_userId, maxDocuments: 2);
+      final export = await _ops(
+        firestore,
+      ).exportTopLevelRecipesByOwner(_userId, maxDocuments: 2);
       expect(export, hasLength(2));
     });
 
     test('validates ownership before querying', () async {
       final firestore = FakeFirebaseFirestore();
       final calls = <_OwnershipCall>[];
-      await _ops(firestore, ownershipCalls: calls)
-          .exportTopLevelRecipesByOwner(_userId);
+      await _ops(
+        firestore,
+        ownershipCalls: calls,
+      ).exportTopLevelRecipesByOwner(_userId);
       expect(calls.single.resourceOwnerId, _userId);
       expect(calls.single.resourceType, 'recipes');
     });
 
     test('throws (no data leak) when ownership check rejects', () async {
       final firestore = FakeFirebaseFirestore();
-      await firestore
-          .collection('recipes')
-          .doc('x')
-          .set({'userId': _userId, 'leak': true});
+      await firestore.collection('recipes').doc('x').set({
+        'userId': _userId,
+        'leak': true,
+      });
 
       await expectLater(
-        () => _ops(firestore, ownershipThrows: true)
-            .exportTopLevelRecipesByOwner(_userId),
+        () => _ops(
+          firestore,
+          ownershipThrows: true,
+        ).exportTopLevelRecipesByOwner(_userId),
         throwsA(isA<PermissionDeniedException>()),
       );
     });

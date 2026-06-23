@@ -271,8 +271,10 @@ void main() {
       expect(entry.recipeJson, '{"title":"Pasta"}');
       expect(entry.parserVersion, '2.0');
       expect(entry.source, 'url');
-      expect(entry.cachedAt.isBefore(DateTime.now().add(Duration(seconds: 1))),
-          isTrue);
+      expect(
+        entry.cachedAt.isBefore(DateTime.now().add(Duration(seconds: 1))),
+        isTrue,
+      );
     });
 
     test('putParsedRecipe overwrites on same key', () async {
@@ -414,15 +416,17 @@ void main() {
       expect(await cacheDao.getParsedRecipe('old2'), isNull);
     });
 
-    test('cleanupParseCacheOlderThan returns 0 when nothing to delete',
-        () async {
-      await insertEntry(key: 'fresh');
+    test(
+      'cleanupParseCacheOlderThan returns 0 when nothing to delete',
+      () async {
+        await insertEntry(key: 'fresh');
 
-      // 365 days — entry just created is well within range
-      final deleted = await cacheDao.cleanupParseCacheOlderThan(365);
-      expect(deleted, 0);
-      expect(await cacheDao.getParsedRecipe('fresh'), isNotNull);
-    });
+        // 365 days — entry just created is well within range
+        final deleted = await cacheDao.cleanupParseCacheOlderThan(365);
+        expect(deleted, 0);
+        expect(await cacheDao.getParsedRecipe('fresh'), isNotNull);
+      },
+    );
   });
 
   group('Cross-store isolation', () {

@@ -76,7 +76,8 @@ void main() {
     tearDown(() async {
       await mockAuth.signOut();
       await TestDataIsolator.cleanupTest(
-          'shopping_repository_integration_test');
+        'shopping_repository_integration_test',
+      );
     });
 
     group('Personal Shopping Lists', () {
@@ -229,9 +230,9 @@ void main() {
 
         // Act - Add timeout to prevent hanging
         final allLists = await repository.readAll().timeout(
-              Duration(seconds: 10),
-              onTimeout: () => [],
-            );
+          Duration(seconds: 10),
+          onTimeout: () => [],
+        );
 
         // Assert
         expect(allLists, hasLength(3));
@@ -269,8 +270,10 @@ void main() {
         expect(created.id, isNotEmpty);
         expect(created.isCollaborative, isTrue);
         expect(created.memberPermissions, hasLength(3)); // Owner + 2 friends
-        expect(created.memberPermissions[testUserId],
-            equals(SharedListPermission.admin));
+        expect(
+          created.memberPermissions[testUserId],
+          equals(SharedListPermission.admin),
+        );
 
         // Verify in shared collection
         final doc = await fakeFirestore
@@ -339,29 +342,31 @@ void main() {
         expect(doc.exists, isFalse);
       });
 
-      test('should throw permission error when non-owner tries to delete',
-          () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'Protected List',
-          ownerId: 'other-user',
-          ownerDisplayName: 'Other User',
-          memberPermissions: {
-            testUserId: SharedListPermission.edit,
-          },
-        );
+      test(
+        'should throw permission error when non-owner tries to delete',
+        () async {
+          // Arrange
+          final list = UnifiedShoppingList.collaborative(
+            name: 'Protected List',
+            ownerId: 'other-user',
+            ownerDisplayName: 'Other User',
+            memberPermissions: {
+              testUserId: SharedListPermission.edit,
+            },
+          );
 
-        await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(list.id)
-            .set(list.toFirestore());
+          await fakeFirestore
+              .collection('unified_shared_shopping_lists')
+              .doc(list.id)
+              .set(list.toFirestore());
 
-        // Act & Assert
-        expect(
-          () => repository.deleteCollaborativeList(list.id),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () => repository.deleteCollaborativeList(list.id),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     group('Item Operations with FieldValue', () {
@@ -560,7 +565,9 @@ void main() {
 
         expect(doc.data()!['isPublic'], isTrue);
         expect(
-            doc.data()!['createdByDisplayName'], equals(testUserDisplayName));
+          doc.data()!['createdByDisplayName'],
+          equals(testUserDisplayName),
+        );
       });
 
       test('should update template', () async {
@@ -637,9 +644,17 @@ void main() {
             ownerDisplayName: testUserDisplayName,
             items: [
               UnifiedShoppingItem.basic(
-                  name: 'Item 1', amount: 1, unit: 'st', category: 'Cat1'),
+                name: 'Item 1',
+                amount: 1,
+                unit: 'st',
+                category: 'Cat1',
+              ),
               UnifiedShoppingItem.basic(
-                  name: 'Item 2', amount: 2, unit: 'st', category: 'Cat2'),
+                name: 'Item 2',
+                amount: 2,
+                unit: 'st',
+                category: 'Cat2',
+              ),
             ],
           ),
         );
@@ -721,12 +736,16 @@ void main() {
         );
 
         // Assert
-        expect(results.where((t) => t['isPublic'] == true).length,
-            equals(results.length));
         expect(
-            results.any(
-                (t) => t['name'].toString().toLowerCase().contains('weekly')),
-            isTrue);
+          results.where((t) => t['isPublic'] == true).length,
+          equals(results.length),
+        );
+        expect(
+          results.any(
+            (t) => t['name'].toString().toLowerCase().contains('weekly'),
+          ),
+          isTrue,
+        );
         expect(results.any((t) => t['name'] == 'Private Template'), isFalse);
       });
 
@@ -803,14 +822,14 @@ void main() {
             .collection('unified_shopping_lists')
             .doc('other-list')
             .set({
-          'name': 'Other User List',
-          'ownerId': 'other-user',
-          'ownerDisplayName': 'Other User',
-          'items': [],
-          'createdAt': TimestampTestHelper.serverTimestamp(),
-          'updatedAt': TestFieldValues.serverTimestamp(),
-          'type': 'personal',
-        });
+              'name': 'Other User List',
+              'ownerId': 'other-user',
+              'ownerDisplayName': 'Other User',
+              'items': [],
+              'createdAt': TimestampTestHelper.serverTimestamp(),
+              'updatedAt': TestFieldValues.serverTimestamp(),
+              'type': 'personal',
+            });
 
         // Act & Assert - Should not be able to update
         final list = UnifiedShoppingList(
@@ -826,36 +845,38 @@ void main() {
         );
       });
 
-      test('should validate member permissions for collaborative lists',
-          () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'Restricted List',
-          ownerId: 'other-user',
-          ownerDisplayName: 'Other User',
-          memberPermissions: {
-            testUserId: SharedListPermission.view, // View only
-          },
-        );
+      test(
+        'should validate member permissions for collaborative lists',
+        () async {
+          // Arrange
+          final list = UnifiedShoppingList.collaborative(
+            name: 'Restricted List',
+            ownerId: 'other-user',
+            ownerDisplayName: 'Other User',
+            memberPermissions: {
+              testUserId: SharedListPermission.view, // View only
+            },
+          );
 
-        await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(list.id)
-            .set(list.toFirestore());
+          await fakeFirestore
+              .collection('unified_shared_shopping_lists')
+              .doc(list.id)
+              .set(list.toFirestore());
 
-        // Act & Assert - Should not be able to add items with view-only permission
-        final item = UnifiedShoppingItem.basic(
-          name: 'New Item',
-          amount: 1,
-          unit: 'st',
-          category: 'Test',
-        );
+          // Act & Assert - Should not be able to add items with view-only permission
+          final item = UnifiedShoppingItem.basic(
+            name: 'New Item',
+            amount: 1,
+            unit: 'st',
+            category: 'Test',
+          );
 
-        expect(
-          () => repository.addItem(list.id, item),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          expect(
+            () => repository.addItem(list.id, item),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
 
       test('should allow guest editing when enabled', () async {
         // Arrange
@@ -951,9 +972,9 @@ void main() {
             .collection('unified_shopping_lists')
             .doc(oldList.id)
             .set({
-          ...oldList.toFirestore(),
-          'updatedAt': TimestampTestHelper.toTimestamp(oldDate),
-        });
+              ...oldList.toFirestore(),
+              'updatedAt': TimestampTestHelper.toTimestamp(oldDate),
+            });
 
         // Create recent list (should not be archived)
         final recentList = await repository.create(

@@ -123,7 +123,8 @@ class IngredientCorrection {
     required bool unitChanged,
     required bool nameChanged,
   }) {
-    final changeCount = (quantityChanged ? 1 : 0) +
+    final changeCount =
+        (quantityChanged ? 1 : 0) +
         (unitChanged ? 1 : 0) +
         (nameChanged ? 1 : 0);
 
@@ -164,19 +165,19 @@ class IngredientCorrection {
   }
 
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        if (originalIndex != null) 'originalIndex': originalIndex,
-        if (correctedIndex != null) 'correctedIndex': correctedIndex,
-        if (originalLine != null) 'originalLine': originalLine,
-        if (originalQuantity != null) 'originalQuantity': originalQuantity,
-        if (originalUnit != null) 'originalUnit': originalUnit,
-        if (originalName != null) 'originalName': originalName,
-        if (correctedLine != null) 'correctedLine': correctedLine,
-        if (correctedName != null) 'correctedName': correctedName,
-        if (quantityChanged) 'quantityChanged': true,
-        if (unitChanged) 'unitChanged': true,
-        if (nameChanged) 'nameChanged': true,
-      };
+    'type': type.name,
+    if (originalIndex != null) 'originalIndex': originalIndex,
+    if (correctedIndex != null) 'correctedIndex': correctedIndex,
+    if (originalLine != null) 'originalLine': originalLine,
+    if (originalQuantity != null) 'originalQuantity': originalQuantity,
+    if (originalUnit != null) 'originalUnit': originalUnit,
+    if (originalName != null) 'originalName': originalName,
+    if (correctedLine != null) 'correctedLine': correctedLine,
+    if (correctedName != null) 'correctedName': correctedName,
+    if (quantityChanged) 'quantityChanged': true,
+    if (unitChanged) 'unitChanged': true,
+    if (nameChanged) 'nameChanged': true,
+  };
 
   factory IngredientCorrection.fromJson(Map<String, dynamic> json) {
     return IngredientCorrection(
@@ -185,8 +186,10 @@ class IngredientCorrection {
         orElse: () => IngredientCorrectionType.multipleFixed,
       ),
       originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
-      correctedIndex:
-          SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      correctedIndex: SerializationUtils.safeNullableInt(
+        json,
+        'correctedIndex',
+      ),
       originalLine: json['originalLine']?.toString(),
       originalQuantity: json['originalQuantity']?.toString(),
       originalUnit: json['originalUnit']?.toString(),

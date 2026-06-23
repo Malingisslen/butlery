@@ -400,9 +400,11 @@ class _GroupDetailViewState extends State<GroupDetailView>
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(decision.requiresOwnershipTransfer
-                ? context.l10n.groupOwnershipTransferredAndLeft
-                : context.l10n.groupYouLeftGroup),
+            content: Text(
+              decision.requiresOwnershipTransfer
+                  ? context.l10n.groupOwnershipTransferredAndLeft
+                  : context.l10n.groupYouLeftGroup,
+            ),
             backgroundColor: context.butleryColors.success,
           ),
         );

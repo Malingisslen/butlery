@@ -38,14 +38,17 @@ class CookEvent {
       // instead of inflating counts with "now". safeRequiredDateTime also
       // tolerates non-Timestamp shapes (ISO strings, raw seconds maps) that
       // a hard `as Timestamp` cast would throw on.
-      cookedAt: SerializationUtils.safeRequiredDateTime(data, 'cookedAt',
-          defaultValue: DateTime.fromMillisecondsSinceEpoch(0)),
+      cookedAt: SerializationUtils.safeRequiredDateTime(
+        data,
+        'cookedAt',
+        defaultValue: DateTime.fromMillisecondsSinceEpoch(0),
+      ),
     );
   }
 
   /// Document fields only — `userId` lives in the path, `id` is the doc id.
   Map<String, dynamic> toFirestore() => {
-        'recipeId': recipeId,
-        'cookedAt': Timestamp.fromDate(cookedAt),
-      };
+    'recipeId': recipeId,
+    'cookedAt': Timestamp.fromDate(cookedAt),
+  };
 }

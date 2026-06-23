@@ -18,13 +18,15 @@ void main() {
       expect(CategoryPreferences().itemCategoryOverrides, isEmpty);
     });
 
-    test('defaultCategoryOrder defaults to ShoppingCategory.defaultStoreOrder',
-        () {
-      expect(
-        CategoryPreferences().defaultCategoryOrder,
-        ShoppingCategory.defaultStoreOrder,
-      );
-    });
+    test(
+      'defaultCategoryOrder defaults to ShoppingCategory.defaultStoreOrder',
+      () {
+        expect(
+          CategoryPreferences().defaultCategoryOrder,
+          ShoppingCategory.defaultStoreOrder,
+        );
+      },
+    );
 
     test('updatedAt defaults to clock.now()', () {
       withClock(Clock.fixed(DateTime.utc(2026, 5, 23, 12)), () {
@@ -56,18 +58,20 @@ void main() {
   });
 
   group('serialization round-trip', () {
-    test('toFirestore emits Timestamp for updatedAt + raw maps for the rest',
-        () {
-      final prefs = CategoryPreferences(
-        itemCategoryOverrides: const {'mjölk': 'dairy'},
-        defaultCategoryOrder: const ['dairy', 'fruit_veg'],
-        updatedAt: DateTime.utc(2026, 1, 1),
-      );
-      final payload = prefs.toFirestore();
-      expect(payload['itemCategoryOverrides'], {'mjölk': 'dairy'});
-      expect(payload['defaultCategoryOrder'], ['dairy', 'fruit_veg']);
-      expect(payload['updatedAt'], isA<Timestamp>());
-    });
+    test(
+      'toFirestore emits Timestamp for updatedAt + raw maps for the rest',
+      () {
+        final prefs = CategoryPreferences(
+          itemCategoryOverrides: const {'mjölk': 'dairy'},
+          defaultCategoryOrder: const ['dairy', 'fruit_veg'],
+          updatedAt: DateTime.utc(2026, 1, 1),
+        );
+        final payload = prefs.toFirestore();
+        expect(payload['itemCategoryOverrides'], {'mjölk': 'dairy'});
+        expect(payload['defaultCategoryOrder'], ['dairy', 'fruit_veg']);
+        expect(payload['updatedAt'], isA<Timestamp>());
+      },
+    );
 
     test('fromFirestore parses overrides + order + timestamp', () {
       final restored = CategoryPreferences.fromFirestore({
@@ -75,21 +79,25 @@ void main() {
         'defaultCategoryOrder': ['dairy', 'fruit_veg'],
         'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
       });
-      expect(restored.itemCategoryOverrides,
-          {'mjölk': 'dairy', 'bröd': 'bread_grain'});
+      expect(restored.itemCategoryOverrides, {
+        'mjölk': 'dairy',
+        'bröd': 'bread_grain',
+      });
       expect(restored.defaultCategoryOrder, ['dairy', 'fruit_veg']);
       expect(restored.updatedAt.toUtc(), DateTime.utc(2026, 1, 1));
     });
 
-    test('fromFirestore coerces non-string override values via .toString()',
-        () {
-      final restored = CategoryPreferences.fromFirestore({
-        'itemCategoryOverrides': {'foo': 42, 'bar': true},
-        'defaultCategoryOrder': const <String>[],
-        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
-      });
-      expect(restored.itemCategoryOverrides, {'foo': '42', 'bar': 'true'});
-    });
+    test(
+      'fromFirestore coerces non-string override values via .toString()',
+      () {
+        final restored = CategoryPreferences.fromFirestore({
+          'itemCategoryOverrides': {'foo': 42, 'bar': true},
+          'defaultCategoryOrder': const <String>[],
+          'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        });
+        expect(restored.itemCategoryOverrides, {'foo': '42', 'bar': 'true'});
+      },
+    );
   });
 
   group('normalizeItemName', () {

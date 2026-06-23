@@ -54,9 +54,11 @@ class SwedishCompoundSplitter {
     if (KnownIngredients.isKnown(lower)) return null;
 
     // Try splits from longest suffix to shortest
-    for (var suffixLen = lower.length - _minPartLength;
-        suffixLen >= _minPartLength;
-        suffixLen--) {
+    for (
+      var suffixLen = lower.length - _minPartLength;
+      suffixLen >= _minPartLength;
+      suffixLen--
+    ) {
       final suffix = lower.substring(lower.length - suffixLen);
 
       // Suffix must be a known ingredient or food suffix

@@ -19,8 +19,10 @@
 /// - `getComprehensiveFriendStatistics` (aggregates across 3 sub-repos)
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -31,12 +33,20 @@ import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+class _MockCallableResult extends Mock
+    implements HttpsCallableResult<Map<String, dynamic>> {}
+
 const _alice = 'user-alice';
 const _bob = 'user-bob';
 
 FirebaseFriendsRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
+  FirebaseFunctions? functions,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -47,6 +57,7 @@ FirebaseFriendsRepository _repo(
   return FirebaseFriendsRepository(
     firestore: firestore,
     authRepository: mockAuth,
+    functions: functions,
   );
 }
 
@@ -159,8 +170,10 @@ void main() {
       await _seedFriendRequest(firestore);
 
       expect(await repo.rejectFriendRequest('req-1'), isTrue);
-      final doc =
-          await firestore.collection('social_requests').doc('req-1').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('req-1')
+          .get();
       expect(doc.data()?['status'], 'rejected');
     });
 
@@ -179,9 +192,10 @@ void main() {
 
       expect(await repo.cancelFriendRequest('req-1'), isTrue);
       expect(
-          (await firestore.collection('social_requests').doc('req-1').get())
-              .exists,
-          isFalse);
+        (await firestore.collection('social_requests').doc('req-1').get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('fetchRequest maps to FriendRequest', () async {
@@ -203,103 +217,84 @@ void main() {
       expect(await repo.requestExists(_bob, _alice), isFalse);
     });
 
-    test('getIncomingRequests / getSentRequests return current user-scoped',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final aliceRepo = _repo(firestore);
-      final bobRepo = _repo(firestore, authedUserId: _bob);
-      await _seedFriendRequest(firestore);
+    test(
+      'getIncomingRequests / getSentRequests return current user-scoped',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final aliceRepo = _repo(firestore);
+        final bobRepo = _repo(firestore, authedUserId: _bob);
+        await _seedFriendRequest(firestore);
 
-      final incoming = await bobRepo.getIncomingRequests();
-      final sent = await aliceRepo.getSentRequests();
+        final incoming = await bobRepo.getIncomingRequests();
+        final sent = await aliceRepo.getSentRequests();
 
-      expect(incoming.length, 1);
-      expect(sent.length, 1);
-      expect(incoming.first.toUserId, _bob);
-      expect(sent.first.fromUserId, _alice);
-    });
+        expect(incoming.length, 1);
+        expect(sent.length, 1);
+        expect(incoming.first.toUserId, _bob);
+        expect(sent.first.fromUserId, _alice);
+      },
+    );
 
-    test('incomingRequestsStream / sentRequestsStream emit pending requests',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedFriendRequest(firestore);
+    test(
+      'incomingRequestsStream / sentRequestsStream emit pending requests',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedFriendRequest(firestore);
 
-      final incoming = await repo.incomingRequestsStream(_bob).first;
-      final sent = await repo.sentRequestsStream(_alice).first;
+        final incoming = await repo.incomingRequestsStream(_bob).first;
+        final sent = await repo.sentRequestsStream(_alice).first;
 
-      expect(incoming.length, 1);
-      expect(sent.length, 1);
-    });
+        expect(incoming.length, 1);
+        expect(sent.length, 1);
+      },
+    );
   });
 
-  group('acceptFriendRequest (atomic transaction)', () {
-    test('creates mutual friend docs, updates request, bumps counts', () async {
+  group('acceptFriendRequest (delegates to server callable, B1)', () {
+    // The mutual-doc writes, status flip and friendsCount bumps moved
+    // server-side into the `acceptFriendRequest` Cloud Function (pre-release
+    // audit B1) — the client can no longer write into another user's friends
+    // subcollection. The client now only invokes the callable with the
+    // requestId and maps success -> true / any thrown error -> false. These
+    // tests verify that delegation; the Firestore side-effects + the missing/
+    // not-recipient/not-pending rejection rules are the function's job and
+    // belong to the functions test suite, not a fake-firestore unit test.
+    test('invokes the acceptFriendRequest callable and returns true', () async {
       final firestore = FakeFirebaseFirestore();
-      // Recipient (bob) accepts.
-      final repo = _repo(firestore, authedUserId: _bob);
+      final functions = _MockFunctions();
+      final callable = _MockCallable();
+      when(
+        () => functions.httpsCallable('acceptFriendRequest'),
+      ).thenReturn(callable);
+      when(
+        () => callable.call<Map<String, dynamic>>(any()),
+      ).thenAnswer((_) async => _MockCallableResult());
+
+      final repo = _repo(firestore, authedUserId: _bob, functions: functions);
       await _seedFriendRequest(firestore);
-      await _seedProfile(firestore, _profile(_alice, displayName: 'Alice'));
-      await _seedProfile(firestore, _profile(_bob, displayName: 'Bob'));
 
       expect(await repo.acceptFriendRequest('req-1'), isTrue);
 
-      // Request status flipped
-      final reqDoc =
-          await firestore.collection('social_requests').doc('req-1').get();
-      expect(reqDoc.data()?['status'], 'accepted');
-
-      // Both mutual friend docs created with lowercased displayName
-      final aliceFriendOfBob = await firestore
-          .collection('users')
-          .doc(_alice)
-          .collection('friends')
-          .doc(_bob)
-          .get();
-      final bobFriendOfAlice = await firestore
-          .collection('users')
-          .doc(_bob)
-          .collection('friends')
-          .doc(_alice)
-          .get();
-      expect(aliceFriendOfBob.exists, isTrue);
-      expect(bobFriendOfAlice.exists, isTrue);
-      expect(aliceFriendOfBob.data()?['displayNameLower'], 'bob');
-      expect(bobFriendOfAlice.data()?['displayNameLower'], 'alice');
-
-      // Profiles got friendsCount bumped
-      final aliceProfile =
-          await firestore.collection('public_profiles').doc(_alice).get();
-      final bobProfile =
-          await firestore.collection('public_profiles').doc(_bob).get();
-      expect(aliceProfile.data()?['friendsCount'], 1);
-      expect(bobProfile.data()?['friendsCount'], 1);
+      final captured = verify(
+        () => callable.call<Map<String, dynamic>>(captureAny()),
+      ).captured;
+      expect(captured.single, {'requestId': 'req-1'});
     });
 
-    test('returns false when request is missing', () async {
+    test('returns false when the callable throws', () async {
       final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      expect(await repo.acceptFriendRequest('ghost'), isFalse);
-    });
+      final functions = _MockFunctions();
+      final callable = _MockCallable();
+      when(
+        () => functions.httpsCallable('acceptFriendRequest'),
+      ).thenReturn(callable);
+      when(
+        () => callable.call<Map<String, dynamic>>(any()),
+      ).thenThrow(Exception('callable rejected'));
 
-    test('returns false when caller is not recipient', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo =
-          _repo(firestore, authedUserId: _alice); // sender, not recipient
+      final repo = _repo(firestore, authedUserId: _bob, functions: functions);
       await _seedFriendRequest(firestore);
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
-
-      expect(await repo.acceptFriendRequest('req-1'), isFalse);
-    });
-
-    test('returns false when request is no longer pending', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      await _seedFriendRequest(firestore,
-          status: SocialRequestStatus.cancelled);
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
 
       expect(await repo.acceptFriendRequest('req-1'), isFalse);
     });
@@ -312,8 +307,10 @@ void main() {
 
       await repo.saveInvitation(_invitation(id: 'inv-9'));
 
-      final doc =
-          await firestore.collection('social_requests').doc('inv-9').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('inv-9')
+          .get();
       expect(doc.exists, isTrue);
       expect(doc.data()?['type'], 'groupInvitation');
     });
@@ -324,10 +321,13 @@ void main() {
       await repo.saveInvitation(_invitation(id: 'inv-2'));
 
       // Sender can cancel via updateInvitation.
-      await repo.updateInvitation(
-          'inv-2', {'status': SocialRequestStatus.cancelled.name});
-      final doc =
-          await firestore.collection('social_requests').doc('inv-2').get();
+      await repo.updateInvitation('inv-2', {
+        'status': SocialRequestStatus.cancelled.name,
+      });
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('inv-2')
+          .get();
       expect(doc.data()?['status'], 'cancelled');
     });
 
@@ -338,9 +338,10 @@ void main() {
 
       await repo.deleteInvitation('inv-3');
       expect(
-          (await firestore.collection('social_requests').doc('inv-3').get())
-              .exists,
-          isFalse);
+        (await firestore.collection('social_requests').doc('inv-3').get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('getInvitation returns GroupInvitation when doc exists', () async {
@@ -374,8 +375,10 @@ void main() {
       await aliceRepo.saveInvitation(_invitation(id: 'inv-5'));
 
       expect(await bobRepo.acceptInvitation('inv-5'), isTrue);
-      final doc =
-          await firestore.collection('social_requests').doc('inv-5').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('inv-5')
+          .get();
       expect(doc.data()?['status'], 'accepted');
     });
 
@@ -386,35 +389,41 @@ void main() {
       await aliceRepo.saveInvitation(_invitation(id: 'inv-6'));
 
       expect(await bobRepo.rejectInvitation('inv-6'), isTrue);
-      final doc =
-          await firestore.collection('social_requests').doc('inv-6').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('inv-6')
+          .get();
       expect(doc.data()?['status'], 'rejected');
     });
 
-    test('acceptInvitation / rejectInvitation return false on failure',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
+    test(
+      'acceptInvitation / rejectInvitation return false on failure',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
 
-      expect(await repo.acceptInvitation('ghost'), isFalse);
-      expect(await repo.rejectInvitation('ghost'), isFalse);
-    });
+        expect(await repo.acceptInvitation('ghost'), isFalse);
+        expect(await repo.rejectInvitation('ghost'), isFalse);
+      },
+    );
 
-    test('fetchReceivedInvitations / fetchSentInvitations return correct lists',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final aliceRepo = _repo(firestore, authedUserId: _alice);
-      final bobRepo = _repo(firestore, authedUserId: _bob);
+    test(
+      'fetchReceivedInvitations / fetchSentInvitations return correct lists',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final aliceRepo = _repo(firestore, authedUserId: _alice);
+        final bobRepo = _repo(firestore, authedUserId: _bob);
 
-      await aliceRepo.saveInvitation(_invitation(id: 'i1'));
-      await aliceRepo.saveInvitation(_invitation(id: 'i2'));
+        await aliceRepo.saveInvitation(_invitation(id: 'i1'));
+        await aliceRepo.saveInvitation(_invitation(id: 'i2'));
 
-      final received = await bobRepo.fetchReceivedInvitations(_bob);
-      final sent = await aliceRepo.fetchSentInvitations(_alice);
+        final received = await bobRepo.fetchReceivedInvitations(_bob);
+        final sent = await aliceRepo.fetchSentInvitations(_alice);
 
-      expect(received.length, 2);
-      expect(sent.length, 2);
-    });
+        expect(received.length, 2);
+        expect(sent.length, 2);
+      },
+    );
 
     test('receivedInvitationsStream / sentInvitationsStream emit', () async {
       final firestore = FakeFirebaseFirestore();
@@ -427,49 +436,55 @@ void main() {
       expect(sent.length, 1);
     });
 
-    test('expiredInvitations / oldInvitations / batch ops round-trip',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.saveInvitation(_invitation(id: 'i-old'));
-      await repo.saveInvitation(_invitation(id: 'i-new'));
+    test(
+      'expiredInvitations / oldInvitations / batch ops round-trip',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await repo.saveInvitation(_invitation(id: 'i-old'));
+        await repo.saveInvitation(_invitation(id: 'i-new'));
 
-      // expiredInvitations as of far-future
-      final expired = await repo.expiredInvitations(DateTime.utc(2030, 1, 1));
-      expect(expired.length, greaterThan(0));
+        // expiredInvitations as of far-future
+        final expired = await repo.expiredInvitations(DateTime.utc(2030, 1, 1));
+        expect(expired.length, greaterThan(0));
 
-      final old = await repo.oldInvitations(_bob, DateTime.utc(2030, 1, 1));
-      expect(old.length, greaterThan(0));
+        final old = await repo.oldInvitations(_bob, DateTime.utc(2030, 1, 1));
+        expect(old.length, greaterThan(0));
 
-      // Batch update + delete
-      await repo.updateDocuments(expired, {'status': 'expired'});
-      final afterUpdate =
-          await firestore.collection('social_requests').doc('i-old').get();
-      expect(afterUpdate.data()?['status'], 'expired');
+        // Batch update + delete
+        await repo.updateDocuments(expired, {'status': 'expired'});
+        final afterUpdate = await firestore
+            .collection('social_requests')
+            .doc('i-old')
+            .get();
+        expect(afterUpdate.data()?['status'], 'expired');
 
-      await repo.deleteDocuments(expired);
-      final afterDelete =
-          (await firestore.collection('social_requests').doc('i-old').get())
-              .exists;
-      expect(afterDelete, isFalse);
-    });
+        await repo.deleteDocuments(expired);
+        final afterDelete =
+            (await firestore.collection('social_requests').doc('i-old').get())
+                .exists;
+        expect(afterDelete, isFalse);
+      },
+    );
   });
 
   group('relationship facade passthroughs', () {
-    test('addMutualFriends + areFriends + removeMutualFriends round-trip',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
+    test(
+      'addMutualFriends + areFriends + removeMutualFriends round-trip',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedProfile(firestore, _profile(_alice));
+        await _seedProfile(firestore, _profile(_bob));
 
-      expect(await repo.areFriends(_alice, _bob), isFalse);
-      await repo.addMutualFriends(_alice, _bob);
-      expect(await repo.areFriends(_alice, _bob), isTrue);
+        expect(await repo.areFriends(_alice, _bob), isFalse);
+        await repo.addMutualFriends(_alice, _bob);
+        expect(await repo.areFriends(_alice, _bob), isTrue);
 
-      await repo.removeMutualFriends(_alice, _bob);
-      expect(await repo.areFriends(_alice, _bob), isFalse);
-    });
+        await repo.removeMutualFriends(_alice, _bob);
+        expect(await repo.areFriends(_alice, _bob), isFalse);
+      },
+    );
 
     test('fetchFriendIds + friendIdsStream return added friends', () async {
       final firestore = FakeFirebaseFirestore();
@@ -493,17 +508,19 @@ void main() {
       expect(profiles.first.displayName, 'Bob');
     });
 
-    test('removeFriend deletes for current user (lightweight delegation)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
-      await repo.addMutualFriends(_alice, _bob);
+    test(
+      'removeFriend deletes for current user (lightweight delegation)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedProfile(firestore, _profile(_alice));
+        await _seedProfile(firestore, _profile(_bob));
+        await repo.addMutualFriends(_alice, _bob);
 
-      expect(await repo.removeFriend(_bob), isTrue);
-      expect(await repo.areFriends(_alice, _bob), isFalse);
-    });
+        expect(await repo.removeFriend(_bob), isTrue);
+        expect(await repo.areFriends(_alice, _bob), isFalse);
+      },
+    );
   });
 
   group('category facade passthroughs', () {
@@ -559,20 +576,26 @@ void main() {
       expect(got!.friendUserIds, [_bob]);
     });
 
-    test('addFriendToCategory + removeFriendFromCategory mutate members',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await repo.saveCategory(_alice, cat('c1', 'Friends'));
+    test(
+      'addFriendToCategory + removeFriendFromCategory mutate members',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await repo.saveCategory(_alice, cat('c1', 'Friends'));
 
-      await repo.addFriendToCategory(_alice, 'c1', _bob);
-      expect((await repo.getCategory(_alice, 'c1'))!.friendUserIds,
-          contains(_bob));
+        await repo.addFriendToCategory(_alice, 'c1', _bob);
+        expect(
+          (await repo.getCategory(_alice, 'c1'))!.friendUserIds,
+          contains(_bob),
+        );
 
-      await repo.removeFriendFromCategory(_alice, 'c1', _bob);
-      expect((await repo.getCategory(_alice, 'c1'))!.friendUserIds,
-          isNot(contains(_bob)));
-    });
+        await repo.removeFriendFromCategory(_alice, 'c1', _bob);
+        expect(
+          (await repo.getCategory(_alice, 'c1'))!.friendUserIds,
+          isNot(contains(_bob)),
+        );
+      },
+    );
 
     test('deleteCategory removes the doc', () async {
       final firestore = FakeFirebaseFirestore();
@@ -596,8 +619,10 @@ void main() {
 
       final stats = await repo.getComprehensiveFriendStatistics(_alice);
 
-      expect(stats.keys,
-          containsAll({'friends', 'requests', 'categories', 'invitations'}));
+      expect(
+        stats.keys,
+        containsAll({'friends', 'requests', 'categories', 'invitations'}),
+      );
       expect(stats['requests'], isA<Map>());
       expect(stats['invitations'], isA<Map>());
     });

@@ -66,16 +66,20 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  testWidgets('bulk delete removes selected ids and undo restores them',
-      (tester) async {
+  testWidgets('bulk delete removes selected ids and undo restores them', (
+    tester,
+  ) async {
     await tester.pumpWidget(createLocalizedTestApp(child: const PantryView()));
     await tester.pumpAndSettle();
 
     // Enter selection by long-pressing the row, then the bulk bar appears.
     await tester.longPress(find.text('Mjölk'));
     await tester.pumpAndSettle();
-    expect(find.text('Ta bort'), findsOneWidget,
-        reason: 'the contextual bulk bar replaces the add FAB while selecting');
+    expect(
+      find.text('Ta bort'),
+      findsOneWidget,
+      reason: 'the contextual bulk bar replaces the add FAB while selecting',
+    );
 
     await tester.tap(find.text('Ta bort'));
     await tester.pumpAndSettle();
@@ -102,8 +106,12 @@ void main() {
     await tester.tap(find.text('Ta bort'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ångra'), findsNothing,
-        reason: 'a failed delete must not offer an undo that would re-add '
-            'items still present');
+    expect(
+      find.text('Ångra'),
+      findsNothing,
+      reason:
+          'a failed delete must not offer an undo that would re-add '
+          'items still present',
+    );
   });
 }

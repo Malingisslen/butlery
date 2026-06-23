@@ -34,9 +34,9 @@ class _FakeStripViewModel extends ChangeNotifier
     required int pageCount,
     this.isProcessing = false,
   }) : _pages = List<Uint8List>.generate(
-          pageCount,
-          (_) => _onePixelPng,
-        );
+         pageCount,
+         (_) => _onePixelPng,
+       );
 
   final List<Uint8List> _pages;
 
@@ -130,8 +130,9 @@ void main() {
     expect(find.byKey(const ValueKey('photo-page-3')), findsNothing);
   });
 
-  testWidgets('tapping a page remove button calls removePage with its index',
-      (tester) async {
+  testWidgets('tapping a page remove button calls removePage with its index', (
+    tester,
+  ) async {
     final vm = _FakeStripViewModel(pageCount: 2);
     await pumpStrip(tester, vm);
 
@@ -144,16 +145,20 @@ void main() {
         matching: find.byType(IconButton),
       ),
     );
-    expect(removeOnPage1.onPressed, isNotNull,
-        reason: 'an idle page tile must offer an enabled remove button');
+    expect(
+      removeOnPage1.onPressed,
+      isNotNull,
+      reason: 'an idle page tile must offer an enabled remove button',
+    );
     removeOnPage1.onPressed!();
     await tester.pump();
 
     expect(vm.removedIndex, 1);
   });
 
-  testWidgets('reorder is wired to reorderPage when multiple pages exist',
-      (tester) async {
+  testWidgets('reorder is wired to reorderPage when multiple pages exist', (
+    tester,
+  ) async {
     final vm = _FakeStripViewModel(pageCount: 3);
     await pumpStrip(tester, vm);
 
@@ -176,31 +181,41 @@ void main() {
   ReorderableListView strip(WidgetTester tester) =>
       tester.widget<ReorderableListView>(find.byType(ReorderableListView));
 
-  testWidgets('shows the add-page tile while under the maxPages cap',
-      (tester) async {
-    final vm =
-        _FakeStripViewModel(pageCount: PhotoImportViewModel.maxPages - 1);
+  testWidgets('shows the add-page tile while under the maxPages cap', (
+    tester,
+  ) async {
+    final vm = _FakeStripViewModel(
+      pageCount: PhotoImportViewModel.maxPages - 1,
+    );
     await pumpStrip(tester, vm);
 
-    expect(strip(tester).footer, isNotNull,
-        reason: 'under the cap the user can still add a page');
+    expect(
+      strip(tester).footer,
+      isNotNull,
+      reason: 'under the cap the user can still add a page',
+    );
   });
 
-  testWidgets('hides the add-page tile once the maxPages cap is reached',
-      (tester) async {
+  testWidgets('hides the add-page tile once the maxPages cap is reached', (
+    tester,
+  ) async {
     final vm = _FakeStripViewModel(pageCount: PhotoImportViewModel.maxPages);
     await pumpStrip(tester, vm);
 
     // At the cap the footer add tile is gone — the only way to add more is to
     // remove a page first.
-    expect(strip(tester).footer, isNull,
-        reason: 'at the cap the add affordance must disappear');
+    expect(
+      strip(tester).footer,
+      isNull,
+      reason: 'at the cap the add affordance must disappear',
+    );
     // All five capped pages are present as list items.
     expect(strip(tester).itemCount, PhotoImportViewModel.maxPages);
   });
 
-  testWidgets('disables the remove buttons while OCR is processing',
-      (tester) async {
+  testWidgets('disables the remove buttons while OCR is processing', (
+    tester,
+  ) async {
     final vm = _FakeStripViewModel(pageCount: 2, isProcessing: true);
     await pumpStrip(tester, vm);
 
@@ -208,8 +223,11 @@ void main() {
     // in-flight combine+parse: every remove IconButton is disabled (no callback).
     final buttons = tester.widgetList<IconButton>(find.byType(IconButton));
     expect(buttons, isNotEmpty);
-    expect(buttons.every((b) => b.onPressed == null), isTrue,
-        reason: 'remove buttons must be disabled while processing');
+    expect(
+      buttons.every((b) => b.onPressed == null),
+      isTrue,
+      reason: 'remove buttons must be disabled while processing',
+    );
   });
 
   testWidgets('remove buttons are enabled when not processing', (tester) async {
@@ -227,8 +245,9 @@ void main() {
   // cover "Sida 0" and silently misrepresent which photo is page one. The
   // original suite asserted tile COUNT and callback indices but never the
   // rendered numbering the user actually sees, so it would miss that regression.
-  testWidgets('labels the pages 1-based in capture order (cover is "Sida 1")',
-      (tester) async {
+  testWidgets('labels the pages 1-based in capture order (cover is "Sida 1")', (
+    tester,
+  ) async {
     final vm = _FakeStripViewModel(pageCount: 3);
     await pumpStrip(tester, vm);
 
@@ -248,8 +267,11 @@ void main() {
     // Two on-screen tiles are enough to pin the 1-based mapping (index 0 → page
     // one, index 1 → page two); the lazy horizontal list may not realize the
     // third tile's subtree, so we don't assert on it here.
-    expect(labelOf(0), 'Sida 1',
-        reason: 'the cover tile is page one, not zero');
+    expect(
+      labelOf(0),
+      'Sida 1',
+      reason: 'the cover tile is page one, not zero',
+    );
     expect(labelOf(1), 'Sida 2');
   });
 }

@@ -27,32 +27,42 @@ void main() {
 
       // Stub all repository methods
       when(() => mockRepository.initialize()).thenAnswer((_) async {});
-      when(() => mockRepository.logRecipeCooked(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isFirstTime: any(named: 'isFirstTime'),
-            daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepository.logRecipeDeleted(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isPersonal: any(named: 'isPersonal'),
-            createdAt: any(named: 'createdAt'),
-            daysSinceCreated: any(named: 'daysSinceCreated'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepository.logMenuGenerated(
-            recipeCount: any(named: 'recipeCount'),
-            method: any(named: 'method'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepository.setUserProperties(
-            recipeCount: any(named: 'recipeCount'),
-            hasUsedImport: any(named: 'hasUsedImport'),
-            hasSharedRecipe: any(named: 'hasSharedRecipe'),
-            hasCooked: any(named: 'hasCooked'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepository.logLogin(
-            loginMethod: any(named: 'loginMethod'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockRepository.logRecipeCooked(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isFirstTime: any(named: 'isFirstTime'),
+          daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.logRecipeDeleted(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isPersonal: any(named: 'isPersonal'),
+          createdAt: any(named: 'createdAt'),
+          daysSinceCreated: any(named: 'daysSinceCreated'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.logMenuGenerated(
+          recipeCount: any(named: 'recipeCount'),
+          method: any(named: 'method'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.setUserProperties(
+          recipeCount: any(named: 'recipeCount'),
+          hasUsedImport: any(named: 'hasUsedImport'),
+          hasSharedRecipe: any(named: 'hasSharedRecipe'),
+          hasCooked: any(named: 'hasCooked'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.logLogin(
+          loginMethod: any(named: 'loginMethod'),
+        ),
+      ).thenAnswer((_) async {});
       when(() => mockRepository.logLogout()).thenAnswer((_) async {});
     });
 
@@ -70,34 +80,40 @@ void main() {
 
       await service.setUserProperties(recipeCount: 5);
 
-      verifyNever(() => mockRepository.setUserProperties(
-            recipeCount: any(named: 'recipeCount'),
-            hasUsedImport: any(named: 'hasUsedImport'),
-            hasSharedRecipe: any(named: 'hasSharedRecipe'),
-            hasCooked: any(named: 'hasCooked'),
-          ));
+      verifyNever(
+        () => mockRepository.setUserProperties(
+          recipeCount: any(named: 'recipeCount'),
+          hasUsedImport: any(named: 'hasUsedImport'),
+          hasSharedRecipe: any(named: 'hasSharedRecipe'),
+          hasCooked: any(named: 'hasCooked'),
+        ),
+      );
     });
 
     test('logRecipeCooked should respect consent denial', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => false);
 
       final service = AnalyticsService(repository: mockRepository);
       service.setConsentService(mockConsentService);
 
       await service.logRecipeCooked(recipeId: 'r1', mealType: 'dinner');
 
-      verifyNever(() => mockRepository.logRecipeCooked(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isFirstTime: any(named: 'isFirstTime'),
-            daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
-          ));
+      verifyNever(
+        () => mockRepository.logRecipeCooked(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isFirstTime: any(named: 'isFirstTime'),
+          daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
+        ),
+      );
     });
 
     test('logRecipeDeleted should respect consent denial', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
       final service = AnalyticsService(repository: mockRepository);
@@ -110,33 +126,39 @@ void main() {
         createdAt: DateTime.now(),
       );
 
-      verifyNever(() => mockRepository.logRecipeDeleted(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isPersonal: any(named: 'isPersonal'),
-            createdAt: any(named: 'createdAt'),
-            daysSinceCreated: any(named: 'daysSinceCreated'),
-          ));
+      verifyNever(
+        () => mockRepository.logRecipeDeleted(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isPersonal: any(named: 'isPersonal'),
+          createdAt: any(named: 'createdAt'),
+          daysSinceCreated: any(named: 'daysSinceCreated'),
+        ),
+      );
     });
 
     test('logMenuGenerated should respect consent denial', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => false);
 
       final service = AnalyticsService(repository: mockRepository);
       service.setConsentService(mockConsentService);
 
       await service.logMenuGenerated(recipeCount: 5, method: 'auto');
 
-      verifyNever(() => mockRepository.logMenuGenerated(
-            recipeCount: any(named: 'recipeCount'),
-            method: any(named: 'method'),
-          ));
+      verifyNever(
+        () => mockRepository.logMenuGenerated(
+          recipeCount: any(named: 'recipeCount'),
+          method: any(named: 'method'),
+        ),
+      );
     });
 
     test('setUserProperties should respect consent denial', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
       final service = AnalyticsService(repository: mockRepository);
@@ -144,17 +166,20 @@ void main() {
 
       await service.setUserProperties(recipeCount: 10);
 
-      verifyNever(() => mockRepository.setUserProperties(
-            recipeCount: any(named: 'recipeCount'),
-            hasUsedImport: any(named: 'hasUsedImport'),
-            hasSharedRecipe: any(named: 'hasSharedRecipe'),
-            hasCooked: any(named: 'hasCooked'),
-          ));
+      verifyNever(
+        () => mockRepository.setUserProperties(
+          recipeCount: any(named: 'recipeCount'),
+          hasUsedImport: any(named: 'hasUsedImport'),
+          hasSharedRecipe: any(named: 'hasSharedRecipe'),
+          hasCooked: any(named: 'hasCooked'),
+        ),
+      );
     });
 
     test('auth events should bypass consent', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => false);
 
       SingletonServiceMixin.resetForTesting();
       final service = AnalyticsService(repository: mockRepository);
@@ -168,8 +193,9 @@ void main() {
     });
 
     test('should allow events when consent is granted', () async {
-      when(() => mockConsentService.hasConsent(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockConsentService.hasConsent(any()),
+      ).thenAnswer((_) async => true);
 
       SingletonServiceMixin.resetForTesting();
       final service = AnalyticsService(repository: mockRepository);
@@ -177,12 +203,14 @@ void main() {
 
       await service.setUserProperties(recipeCount: 5);
 
-      verify(() => mockRepository.setUserProperties(
-            recipeCount: 5,
-            hasUsedImport: null,
-            hasSharedRecipe: null,
-            hasCooked: null,
-          )).called(1);
+      verify(
+        () => mockRepository.setUserProperties(
+          recipeCount: 5,
+          hasUsedImport: null,
+          hasSharedRecipe: null,
+          hasCooked: null,
+        ),
+      ).called(1);
     });
   });
 }

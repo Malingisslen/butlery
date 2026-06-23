@@ -29,17 +29,17 @@ class FriendRequestCard {
     Function(bool) onSelectionChanged,
   ) {
     final userProfile = viewModel.getUserProfile(request.fromUserId);
-    final displayName = userProfile?.displayName ??
+    final displayName =
+        userProfile?.displayName ??
         viewModel.getDisplayNameForUser(request.fromUserId);
     final avatarUrl = userProfile?.avatarUrl;
     final isOnline = userProfile?.isOnline ?? false;
 
     return Card(
       color: isSelected
-          ? Theme.of(context)
-              .colorScheme
-              .primaryContainer
-              .withValues(alpha: AppDimensions.opacityMediumLight)
+          ? Theme.of(context).colorScheme.primaryContainer.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            )
           : null,
       child: Semantics(
         label: context.l10n.a11yFriendRequestIncoming(displayName),
@@ -103,24 +103,27 @@ class FriendRequestCard {
                           Text(
                             context.l10n.socialWantsToBeFriend,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                           if (request.message?.isNotEmpty == true) ...[
                             const SizedBox(height: AppDimensions.spacingXs),
                             Container(
-                              padding:
-                                  const EdgeInsets.all(AppDimensions.spacingS),
+                              padding: const EdgeInsets.all(
+                                AppDimensions.spacingS,
+                              ),
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .surfaceContainerHighest
                                     .withValues(
-                                        alpha: AppDimensions.opacityHalf),
+                                      alpha: AppDimensions.opacityHalf,
+                                    ),
                                 borderRadius: BorderRadius.circular(
-                                    AppDimensions.borderRadius8),
+                                  AppDimensions.borderRadius8,
+                                ),
                               ),
                               child: Text(
                                 '"${request.message!}"',
@@ -136,9 +139,9 @@ class FriendRequestCard {
                           Text(
                             request.timeAgoText,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -160,7 +163,7 @@ class FriendRequestCard {
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
-                                  _rejectRequest(context, request, viewModel),
+                                    _rejectRequest(context, request, viewModel),
                         ),
                       ),
                       const SizedBox(width: AppDimensions.spacingL),
@@ -172,7 +175,7 @@ class FriendRequestCard {
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
-                                  _acceptRequest(context, request, viewModel),
+                                    _acceptRequest(context, request, viewModel),
                           isExpanded: true,
                         ),
                       ),
@@ -195,7 +198,8 @@ class FriendRequestCard {
     Function(bool) onSelectionChanged,
   ) {
     final userProfile = viewModel.getUserProfile(request.toUserId);
-    final displayName = userProfile?.displayName ??
+    final displayName =
+        userProfile?.displayName ??
         viewModel.getDisplayNameForUser(request.toUserId);
     final avatarUrl = userProfile?.avatarUrl;
     final isOnline = userProfile?.isOnline ?? false;
@@ -234,10 +238,9 @@ class FriendRequestCard {
 
     return Card(
       color: isSelected
-          ? Theme.of(context)
-              .colorScheme
-              .primaryContainer
-              .withValues(alpha: AppDimensions.opacityMediumLight)
+          ? Theme.of(context).colorScheme.primaryContainer.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            )
           : null,
       child: Semantics(
         label: context.l10n.a11yFriendRequestSent(displayName),
@@ -257,8 +260,8 @@ class FriendRequestCard {
                   )
                 else
                   const SizedBox(
-                      width: AppDimensions
-                          .spacingXxxl), // Placeholder for alignment
+                    width: AppDimensions.spacingXxxl,
+                  ), // Placeholder for alignment
 
                 const SizedBox(width: AppDimensions.spacingS),
 
@@ -314,9 +317,11 @@ class FriendRequestCard {
                       const SizedBox(height: AppDimensions.spacingXs),
                       Row(
                         children: [
-                          Icon(statusIcon,
-                              size: AppDimensions.iconSizeS,
-                              color: statusColor),
+                          Icon(
+                            statusIcon,
+                            size: AppDimensions.iconSizeS,
+                            color: statusColor,
+                          ),
                           const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             statusText,
@@ -328,9 +333,9 @@ class FriendRequestCard {
                           Text(
                             request.timeAgoText,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -365,7 +370,9 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       SnackBarUtils.showSuccess(
-          context, context.l10n.socialFriendRequestAccepted);
+        context,
+        context.l10n.socialFriendRequestAccepted,
+      );
     }
   }
 
@@ -378,7 +385,9 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       SnackBarUtils.showWarning(
-          context, context.l10n.socialFriendRequestDeclined);
+        context,
+        context.l10n.socialFriendRequestDeclined,
+      );
     }
   }
 

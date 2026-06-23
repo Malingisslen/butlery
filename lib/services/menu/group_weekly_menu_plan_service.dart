@@ -107,13 +107,15 @@ class GroupWeeklyMenuPlanService extends BaseService {
     if (!slot.isMulti) {
       updated.removeWhere((e) => e.day == day && e.slot == slot);
     }
-    updated.add(WeeklyMenuPlanEntry.create(
-      day: day,
-      slot: slot,
-      recipeId: recipe.id,
-      recipeTitle: recipe.title,
-      recipeImageUrl: recipe.primaryImageUrl,
-    ));
+    updated.add(
+      WeeklyMenuPlanEntry.create(
+        day: day,
+        slot: slot,
+        recipeId: recipe.id,
+        recipeTitle: recipe.title,
+        recipeImageUrl: recipe.primaryImageUrl,
+      ),
+    );
     return plan.copyWith(entries: updated);
   }
 
@@ -177,13 +179,16 @@ class GroupWeeklyMenuPlanService extends BaseService {
     final existing = plan.participantFor(participantUserId);
     if (existing != null && existing.permission == permission) return plan;
 
-    final without =
-        plan.participants.where((p) => p.userId != participantUserId).toList();
-    without.add(GroupMenuParticipant(
-      userId: participantUserId,
-      permission: permission,
-      addedAt: clock.now(),
-    ));
+    final without = plan.participants
+        .where((p) => p.userId != participantUserId)
+        .toList();
+    without.add(
+      GroupMenuParticipant(
+        userId: participantUserId,
+        permission: permission,
+        addedAt: clock.now(),
+      ),
+    );
     return plan.copyWith(participants: without);
   }
 
@@ -200,8 +205,9 @@ class GroupWeeklyMenuPlanService extends BaseService {
     final target = plan.participantFor(participantUserId);
     if (target == null) return plan;
 
-    final remaining =
-        plan.participants.where((p) => p.userId != participantUserId).toList();
+    final remaining = plan.participants
+        .where((p) => p.userId != participantUserId)
+        .toList();
     final remainingAdmins = remaining
         .where((p) => p.permission == SharedListPermission.admin)
         .length;

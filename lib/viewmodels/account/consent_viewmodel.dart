@@ -174,7 +174,8 @@ class ConsentViewModel extends ChangeNotifier
 
           await loadConsent();
           app_logger.AppLogger.success(
-              '[$_logTag] All optional consents revoked');
+            '[$_logTag] All optional consents revoked',
+          );
         } else {
           setError(AppLocale.current.errorGeneric);
         }

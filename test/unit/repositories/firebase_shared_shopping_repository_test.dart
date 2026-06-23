@@ -20,8 +20,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
-  group('FirebaseSharedShoppingRepository - Shared Shopping List Management',
-      () {
+  group('FirebaseSharedShoppingRepository - Shared Shopping List Management', () {
     late FirebaseSharedShoppingRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
     late FakeAuthRepository mockAuthRepo;
@@ -134,8 +133,9 @@ void main() {
           .doc(sharedList.id)
           .set(data);
 
-      final listRef =
-          fakeFirestore.collection('shared_content').doc(sharedList.id);
+      final listRef = fakeFirestore
+          .collection('shared_content')
+          .doc(sharedList.id);
 
       if (memberUserIds != null) {
         for (final userId in memberUserIds) {
@@ -199,35 +199,38 @@ void main() {
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared shopping list with recipients',
-          () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testUserId,
-        );
-
-        await repository.createSharedShoppingList(
-          sharedList,
-          recipientIds: [testFriendId],
-        );
-      },
-          skip:
-              'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings');
-
       test(
-          'should reject user from creating shared shopping list as another user',
-          () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
+        'should allow user to create shared shopping list with recipients',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testUserId,
+          );
 
-        expect(
-          () => repository.createSharedShoppingList(
+          await repository.createSharedShoppingList(
             sharedList,
             recipientIds: [testFriendId],
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          );
+        },
+        skip:
+            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
+      );
+
+      test(
+        'should reject user from creating shared shopping list as another user',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+
+          expect(
+            () => repository.createSharedShoppingList(
+              sharedList,
+              recipientIds: [testFriendId],
+            ),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
 
       test('should reject shared shopping list with no recipients', () async {
         final sharedList = createSharedShoppingList(
@@ -243,65 +246,73 @@ void main() {
         );
       });
 
-      test('should allow user to view shared shopping list sent to them',
-          () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
-        // Seed testUserId as member so permission check passes
-        await seedSharedShoppingList(
-          sharedList,
-          memberUserIds: [testUserId],
-        );
+      test(
+        'should allow user to view shared shopping list sent to them',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+          // Seed testUserId as member so permission check passes
+          await seedSharedShoppingList(
+            sharedList,
+            memberUserIds: [testUserId],
+          );
 
-        final result = await repository.getSharedShoppingList(testListId);
+          final result = await repository.getSharedShoppingList(testListId);
 
-        expect(result, isNotNull);
-        expect(result!.id, testListId);
-      });
+          expect(result, isNotNull);
+          expect(result!.id, testListId);
+        },
+      );
 
       test(
-          'should reject user from viewing shared shopping list not sent to them',
-          () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
-        // No member seeding -- testUserId is neither owner nor member
-        await seedSharedShoppingList(sharedList);
+        'should reject user from viewing shared shopping list not sent to them',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+          // No member seeding -- testUserId is neither owner nor member
+          await seedSharedShoppingList(sharedList);
 
-        expect(
-          () => repository.getSharedShoppingList(testListId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          expect(
+            () => repository.getSharedShoppingList(testListId),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     // ===== CRUD OPERATIONS =====
 
     group('CRUD Operations', () {
-      test('should create shared shopping list successfully', () async {
-        final sharedList = createSharedShoppingList(
-          id: 'new-list',
-          listName: 'My Weekly Shopping',
-          sharedByUserId: testUserId,
-          shareMessage: 'Check out my shopping list!',
-        );
+      test(
+        'should create shared shopping list successfully',
+        () async {
+          final sharedList = createSharedShoppingList(
+            id: 'new-list',
+            listName: 'My Weekly Shopping',
+            sharedByUserId: testUserId,
+            shareMessage: 'Check out my shopping list!',
+          );
 
-        final listId = await repository.createSharedShoppingList(
-          sharedList,
-          recipientIds: [testFriendId],
-        );
+          final listId = await repository.createSharedShoppingList(
+            sharedList,
+            recipientIds: [testFriendId],
+          );
 
-        expect(listId, isNotEmpty);
+          expect(listId, isNotEmpty);
 
-        final doc =
-            await fakeFirestore.collection('shared_content').doc(listId).get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['sharedByUserId'], testUserId);
-        expect(doc.data()?['listName'], 'My Weekly Shopping');
-      },
-          skip:
-              'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings');
+          final doc = await fakeFirestore
+              .collection('shared_content')
+              .doc(listId)
+              .get();
+          expect(doc.exists, isTrue);
+          expect(doc.data()?['sharedByUserId'], testUserId);
+          expect(doc.data()?['listName'], 'My Weekly Shopping');
+        },
+        skip:
+            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
+      );
 
       test('should get all shared shopping lists for user', () async {
         // testUserId is a member of list-1 and list-2 but not list-3
@@ -325,8 +336,9 @@ void main() {
         await seedSharedShoppingList(list2, memberUserIds: [testUserId]);
         await seedSharedShoppingList(list3);
 
-        final lists =
-            await repository.getSharedShoppingListsForUser(testUserId);
+        final lists = await repository.getSharedShoppingListsForUser(
+          testUserId,
+        );
 
         expect(lists.length, 2);
         expect(lists.any((l) => l.id == 'list-1'), isTrue);
@@ -351,12 +363,14 @@ void main() {
         expect(result.listName, 'Weekly Shopping');
       });
 
-      test('should return null for non-existent shared shopping list',
-          () async {
-        final result = await repository.getSharedShoppingList('non-existent');
+      test(
+        'should return null for non-existent shared shopping list',
+        () async {
+          final result = await repository.getSharedShoppingList('non-existent');
 
-        expect(result, isNull);
-      });
+          expect(result, isNull);
+        },
+      );
 
       test('should delete shared shopping list by creator', () async {
         final sharedList = createSharedShoppingList(
@@ -377,69 +391,78 @@ void main() {
     // ===== STATUS MANAGEMENT =====
 
     group('Status Management', () {
-      test('should mark shared shopping list as viewed', () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedShoppingList(sharedList);
+      test(
+        'should mark shared shopping list as viewed',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedShoppingList(sharedList);
 
-        await repository.markAsViewed(testListId, testUserId);
+          await repository.markAsViewed(testListId, testUserId);
 
-        // Check views subcollection (Issue #014)
-        final viewDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .collection('views')
-            .doc(testUserId)
-            .get();
-        expect(viewDoc.exists, isTrue);
-        expect(viewDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings');
+          // Check views subcollection (Issue #014)
+          final viewDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .collection('views')
+              .doc(testUserId)
+              .get();
+          expect(viewDoc.exists, isTrue);
+          expect(viewDoc.data()?['userId'], testUserId);
+        },
+        skip:
+            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
+      );
 
-      test('should mark shared shopping list as joined', () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedShoppingList(sharedList);
+      test(
+        'should mark shared shopping list as joined',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedShoppingList(sharedList);
 
-        await repository.markAsJoined(testListId, testUserId);
+          await repository.markAsJoined(testListId, testUserId);
 
-        // Check engagements subcollection (Issue #014)
-        final engagementDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .collection('engagements')
-            .doc(testUserId)
-            .get();
-        expect(engagementDoc.exists, isTrue);
-        expect(engagementDoc.data()?['userId'], testUserId);
-        expect(engagementDoc.data()?['action'], 'join');
-      },
-          skip:
-              'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings');
+          // Check engagements subcollection (Issue #014)
+          final engagementDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .collection('engagements')
+              .doc(testUserId)
+              .get();
+          expect(engagementDoc.exists, isTrue);
+          expect(engagementDoc.data()?['userId'], testUserId);
+          expect(engagementDoc.data()?['action'], 'join');
+        },
+        skip:
+            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
+      );
 
-      test('should mark shared shopping list as dismissed', () async {
-        final sharedList = createSharedShoppingList(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedShoppingList(sharedList);
+      test(
+        'should mark shared shopping list as dismissed',
+        () async {
+          final sharedList = createSharedShoppingList(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedShoppingList(sharedList);
 
-        await repository.markAsDismissed(testListId, testUserId);
+          await repository.markAsDismissed(testListId, testUserId);
 
-        // Check dismissals subcollection (Issue #014)
-        final dismissalDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .collection('dismissals')
-            .doc(testUserId)
-            .get();
-        expect(dismissalDoc.exists, isTrue);
-        expect(dismissalDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings');
+          // Check dismissals subcollection (Issue #014)
+          final dismissalDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .collection('dismissals')
+              .doc(testUserId)
+              .get();
+          expect(dismissalDoc.exists, isTrue);
+          expect(dismissalDoc.data()?['userId'], testUserId);
+        },
+        skip:
+            'BaseMetadataRepository.addMetadata uses FieldValue.serverTimestamp which conflicts with TestServiceLocator platform bindings',
+      );
 
       test('should undismiss shared shopping list', () async {
         final sharedList = createSharedShoppingList(
@@ -498,8 +521,9 @@ void main() {
         await seedSharedShoppingList(list1, engagedByUserIds: [testUserId]);
         await seedSharedShoppingList(list2);
 
-        final joinedLists =
-            await repository.getJoinedShoppingListsForUser(testUserId);
+        final joinedLists = await repository.getJoinedShoppingListsForUser(
+          testUserId,
+        );
 
         expect(joinedLists.length, 1);
         expect(joinedLists.first.id, 'list-1');
@@ -519,8 +543,9 @@ void main() {
         await seedSharedShoppingList(list1);
         await seedSharedShoppingList(list2);
 
-        final lists =
-            await repository.getSharedShoppingListsForUser(testUserId);
+        final lists = await repository.getSharedShoppingListsForUser(
+          testUserId,
+        );
 
         expect(lists, isEmpty);
       });
@@ -548,25 +573,29 @@ void main() {
       });
 
       test('should handle empty shared shopping lists list', () async {
-        final lists =
-            await repository.getSharedShoppingListsForUser(testUserId);
+        final lists = await repository.getSharedShoppingListsForUser(
+          testUserId,
+        );
 
         expect(lists, isEmpty);
       });
 
-      test('should handle shopping list with empty items', () async {
-        final sharedList = createSharedShoppingList(
-          items: [],
-          sharedByUserId: testUserId,
-        );
+      test(
+        'should handle shopping list with empty items',
+        () async {
+          final sharedList = createSharedShoppingList(
+            items: [],
+            sharedByUserId: testUserId,
+          );
 
-        await repository.createSharedShoppingList(
-          sharedList,
-          recipientIds: [testFriendId],
-        );
-      },
-          skip:
-              'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings');
+          await repository.createSharedShoppingList(
+            sharedList,
+            recipientIds: [testFriendId],
+          );
+        },
+        skip:
+            'addMember uses FieldValue.arrayUnion which conflicts with TestServiceLocator platform bindings',
+      );
     });
 
     // ===== ISSUE #015: ITEMS SUBCOLLECTION CRUD TESTS =====
@@ -581,56 +610,61 @@ void main() {
         );
       });
 
-      test('addItem should add item to subcollection and increment count',
-          () async {
-        final item = createTestItem('Mjölk');
+      test(
+        'addItem should add item to subcollection and increment count',
+        () async {
+          final item = createTestItem('Mjölk');
 
-        await repository.addItem(testListId, item);
+          await repository.addItem(testListId, item);
 
-        // Verify item in subcollection
-        final itemDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .collection('items')
-            .doc(item.id)
-            .get();
-        expect(itemDoc.exists, isTrue);
-        expect(itemDoc.data()?['name'], equals('Mjölk'));
+          // Verify item in subcollection
+          final itemDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .collection('items')
+              .doc(item.id)
+              .get();
+          expect(itemDoc.exists, isTrue);
+          expect(itemDoc.data()?['name'], equals('Mjölk'));
 
-        // Verify itemCount incremented
-        final listDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .get();
-        expect(listDoc.data()?['itemCount'], equals(1));
-      },
-          skip:
-              'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Verify itemCount incremented
+          final listDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .get();
+          expect(listDoc.data()?['itemCount'], equals(1));
+        },
+        skip:
+            'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('addItemsBatch should add multiple items atomically', () async {
-        final items = [
-          createTestItem('Mjölk'),
-          createTestItem('Bröd'),
-          createTestItem('Ost'),
-        ];
+      test(
+        'addItemsBatch should add multiple items atomically',
+        () async {
+          final items = [
+            createTestItem('Mjölk'),
+            createTestItem('Bröd'),
+            createTestItem('Ost'),
+          ];
 
-        await repository.addItemsBatch(testListId, items);
+          await repository.addItemsBatch(testListId, items);
 
-        final itemsSnapshot = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .collection('items')
-            .get();
-        expect(itemsSnapshot.docs.length, equals(3));
+          final itemsSnapshot = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .collection('items')
+              .get();
+          expect(itemsSnapshot.docs.length, equals(3));
 
-        final listDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .get();
-        expect(listDoc.data()?['itemCount'], equals(3));
-      },
-          skip:
-              'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final listDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .get();
+          expect(listDoc.data()?['itemCount'], equals(3));
+        },
+        skip:
+            'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
       test('getItems should load all items from subcollection', () async {
         final testItems = createTestItems();
@@ -681,109 +715,119 @@ void main() {
         expect(item.amount, equals(2.0));
       });
 
-      test('removeItem should delete item and decrement count', () async {
-        final testItem = createTestItem('Mjölk');
-        await seedSharedShoppingList(
-          createSharedShoppingList(itemCount: 1),
-          items: [testItem],
-        );
+      test(
+        'removeItem should delete item and decrement count',
+        () async {
+          final testItem = createTestItem('Mjölk');
+          await seedSharedShoppingList(
+            createSharedShoppingList(itemCount: 1),
+            items: [testItem],
+          );
 
-        await repository.removeItem(testListId, testItem.id);
+          await repository.removeItem(testListId, testItem.id);
 
-        final item = await repository.getItem(testListId, testItem.id);
-        expect(item, isNull);
+          final item = await repository.getItem(testListId, testItem.id);
+          expect(item, isNull);
 
-        final listDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .get();
-        expect(listDoc.data()?['itemCount'], equals(0));
-      },
-          skip:
-              'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
-      test('toggleItemBought should update bought status with metadata',
-          () async {
-        final testItem = createTestItem('Mjölk');
-        await seedSharedShoppingList(
-          createSharedShoppingList(itemCount: 1),
-          items: [testItem],
-        );
-
-        // Mark as bought
-        await repository.toggleItemBought(testListId, testItem.id, true);
-
-        final itemData = (await fakeFirestore
-                .collection('shared_content')
-                .doc(testListId)
-                .collection('items')
-                .doc(testItem.id)
-                .get())
-            .data();
-
-        expect(itemData?['bought'], isTrue);
-        expect(itemData?['purchasedByUserId'], equals(testUserId));
-        expect(itemData?['purchasedAt'], isNotNull);
-
-        // Unmark
-        await repository.toggleItemBought(testListId, testItem.id, false);
-
-        final updatedData = (await fakeFirestore
-                .collection('shared_content')
-                .doc(testListId)
-                .collection('items')
-                .doc(testItem.id)
-                .get())
-            .data();
-
-        expect(updatedData?['bought'], isFalse);
-        expect(updatedData?['purchasedByUserId'], isNull);
-      });
+          final listDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .get();
+          expect(listDoc.data()?['itemCount'], equals(0));
+        },
+        skip:
+            'FieldValue.increment in direct update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
       test(
-          'clearCompletedItems should remove bought items and recalculate count',
-          () async {
-        final items = [
-          createTestItem('Mjölk').copyWith(bought: true),
-          createTestItem('Bröd').copyWith(bought: false),
-          createTestItem('Ost').copyWith(bought: true),
-        ];
-        await seedSharedShoppingList(
-          createSharedShoppingList(itemCount: items.length),
-          items: items,
-        );
+        'toggleItemBought should update bought status with metadata',
+        () async {
+          final testItem = createTestItem('Mjölk');
+          await seedSharedShoppingList(
+            createSharedShoppingList(itemCount: 1),
+            items: [testItem],
+          );
 
-        final deletedCount = await repository.clearCompletedItems(testListId);
+          // Mark as bought
+          await repository.toggleItemBought(testListId, testItem.id, true);
 
-        expect(deletedCount, equals(2));
+          final itemData =
+              (await fakeFirestore
+                      .collection('shared_content')
+                      .doc(testListId)
+                      .collection('items')
+                      .doc(testItem.id)
+                      .get())
+                  .data();
 
-        final remainingItems = await repository.getItems(testListId);
-        expect(remainingItems.length, equals(1));
-        expect(remainingItems.first.name, equals('Bröd'));
+          expect(itemData?['bought'], isTrue);
+          expect(itemData?['purchasedByUserId'], equals(testUserId));
+          expect(itemData?['purchasedAt'], isNotNull);
 
-        // itemCount recalculated via snapshot.size (not FieldValue.increment)
-        final listDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testListId)
-            .get();
-        expect(listDoc.data()?['itemCount'], equals(1));
-      });
+          // Unmark
+          await repository.toggleItemBought(testListId, testItem.id, false);
 
-      test('clearCompletedItems should return 0 if no completed items',
-          () async {
-        final items = [
-          createTestItem('Mjölk').copyWith(bought: false),
-          createTestItem('Bröd').copyWith(bought: false),
-        ];
-        await seedSharedShoppingList(
-          createSharedShoppingList(itemCount: items.length),
-          items: items,
-        );
+          final updatedData =
+              (await fakeFirestore
+                      .collection('shared_content')
+                      .doc(testListId)
+                      .collection('items')
+                      .doc(testItem.id)
+                      .get())
+                  .data();
 
-        final deletedCount = await repository.clearCompletedItems(testListId);
+          expect(updatedData?['bought'], isFalse);
+          expect(updatedData?['purchasedByUserId'], isNull);
+        },
+      );
 
-        expect(deletedCount, equals(0));
-      });
+      test(
+        'clearCompletedItems should remove bought items and recalculate count',
+        () async {
+          final items = [
+            createTestItem('Mjölk').copyWith(bought: true),
+            createTestItem('Bröd').copyWith(bought: false),
+            createTestItem('Ost').copyWith(bought: true),
+          ];
+          await seedSharedShoppingList(
+            createSharedShoppingList(itemCount: items.length),
+            items: items,
+          );
+
+          final deletedCount = await repository.clearCompletedItems(testListId);
+
+          expect(deletedCount, equals(2));
+
+          final remainingItems = await repository.getItems(testListId);
+          expect(remainingItems.length, equals(1));
+          expect(remainingItems.first.name, equals('Bröd'));
+
+          // itemCount recalculated via snapshot.size (not FieldValue.increment)
+          final listDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testListId)
+              .get();
+          expect(listDoc.data()?['itemCount'], equals(1));
+        },
+      );
+
+      test(
+        'clearCompletedItems should return 0 if no completed items',
+        () async {
+          final items = [
+            createTestItem('Mjölk').copyWith(bought: false),
+            createTestItem('Bröd').copyWith(bought: false),
+          ];
+          await seedSharedShoppingList(
+            createSharedShoppingList(itemCount: items.length),
+            items: items,
+          );
+
+          final deletedCount = await repository.clearCompletedItems(testListId);
+
+          expect(deletedCount, equals(0));
+        },
+      );
 
       test('uncheckAllItems should set all items to bought=false', () async {
         final items = [
@@ -817,9 +861,11 @@ void main() {
 
         await expectLater(
           stream,
-          emits(predicate<List<UnifiedShoppingItem>>(
-            (items) => items.length == testItems.length,
-          )),
+          emits(
+            predicate<List<UnifiedShoppingItem>>(
+              (items) => items.length == testItems.length,
+            ),
+          ),
         );
       });
 

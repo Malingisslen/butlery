@@ -102,8 +102,10 @@ class CertPinConfig {
     final isRelease = releaseModeOverrideForTest ?? kReleaseMode;
     if (!isRelease) return;
     final pins = pinsForTest ?? hostPins;
-    final empties =
-        pins.entries.where((e) => e.value.isEmpty).map((e) => e.key).toList();
+    final empties = pins.entries
+        .where((e) => e.value.isEmpty)
+        .map((e) => e.key)
+        .toList();
     if (empties.isEmpty) return;
     throw StateError(
       'Cert pin lists empty in release build for ${empties.length} host(s): '

@@ -43,8 +43,9 @@ void main() {
     });
 
     test('pinsForUrl extracts host and looks up pins', () {
-      final fromUrl =
-          CertPinConfig.pinsForUrl('https://api.ocr.space/parse/image?q=1');
+      final fromUrl = CertPinConfig.pinsForUrl(
+        'https://api.ocr.space/parse/image?q=1',
+      );
       final fromHost = CertPinConfig.pinsForHost('api.ocr.space');
       expect(fromUrl, equals(fromHost));
     });
@@ -62,7 +63,9 @@ void main() {
       // placeholder hosts and an arbitrary host.
       expect(CertPinConfig.isPinnedHost('api.ocr.space'), isFalse);
       expect(
-          CertPinConfig.isPinnedHost('butlery-app-dsn.algolia.net'), isFalse);
+        CertPinConfig.isPinnedHost('butlery-app-dsn.algolia.net'),
+        isFalse,
+      );
       expect(CertPinConfig.isPinnedHost('anything.example.com'), isFalse);
     });
 
@@ -71,8 +74,11 @@ void main() {
       // already lowercase. A typo with a mixed-case key would silently
       // become unreachable.
       for (final key in CertPinConfig.hostPins.keys) {
-        expect(key, equals(key.toLowerCase()),
-            reason: 'host map key "$key" is not lowercase');
+        expect(
+          key,
+          equals(key.toLowerCase()),
+          reason: 'host map key "$key" is not lowercase',
+        );
       }
     });
 
@@ -143,16 +149,18 @@ void main() {
       });
     });
 
-    test('hostPins is intentionally empty (BUT-814 — no third-party pinning)',
-        () {
-      // The original BUT-427 design listed 8 third-party hosts as
-      // wired-but-inactive. Pinning hosts we don't operate is an anti-pattern
-      // (rotation time-bombs), so the map is deliberately empty. If a future
-      // contributor re-adds an UN-pinned host they'll trip the release-mode
-      // guard below — which is the point. Only genuinely controlled hosts,
-      // with real pins, belong here.
-      expect(CertPinConfig.hostPins, isEmpty);
-    });
+    test(
+      'hostPins is intentionally empty (BUT-814 — no third-party pinning)',
+      () {
+        // The original BUT-427 design listed 8 third-party hosts as
+        // wired-but-inactive. Pinning hosts we don't operate is an anti-pattern
+        // (rotation time-bombs), so the map is deliberately empty. If a future
+        // contributor re-adds an UN-pinned host they'll trip the release-mode
+        // guard below — which is the point. Only genuinely controlled hosts,
+        // with real pins, belong here.
+        expect(CertPinConfig.hostPins, isEmpty);
+      },
+    );
 
     test('release mode passes against the REAL host map (no boot-blocker)', () {
       // Regression guard for BUT-814: with hostPins empty, the boot-time

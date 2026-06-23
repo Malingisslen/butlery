@@ -59,11 +59,13 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: content,
-            )).thenAnswer((_) async => expectedComment);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: content,
+          ),
+        ).thenAnswer((_) async => expectedComment);
 
         // Act
         final comment = await mockRepository.addComment(
@@ -82,11 +84,13 @@ void main() {
         expect(comment.editedAt, isNull);
 
         // Verify method was called
-        verify(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: content,
-            )).called(1);
+        verify(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: content,
+          ),
+        ).called(1);
       });
 
       test('should add reply comment to parent comment', () async {
@@ -107,12 +111,14 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: replyContent,
-              parentCommentId: parentId,
-            )).thenAnswer((_) async => expectedReply);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: replyContent,
+            parentCommentId: parentId,
+          ),
+        ).thenAnswer((_) async => expectedReply);
 
         // Act
         final reply = await mockRepository.addComment(
@@ -128,12 +134,14 @@ void main() {
         expect(reply.recipeId, equals(recipeId));
         expect(reply.text, equals(replyContent));
 
-        verify(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: replyContent,
-              parentCommentId: parentId,
-            )).called(1);
+        verify(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: replyContent,
+            parentCommentId: parentId,
+          ),
+        ).called(1);
       });
 
       test('should throw when adding empty comment', () async {
@@ -142,13 +150,16 @@ void main() {
         const userId = 'test_user_123';
         const emptyContent = '   '; // Whitespace only
 
-        when(() => mockRepository.addComment(
-                  recipeId: recipeId,
-                  userId: userId,
-                  content: emptyContent,
-                ))
-            .thenAnswer((_) async =>
-                throw SecurityViolationException('Comment cannot be empty'));
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: emptyContent,
+          ),
+        ).thenAnswer(
+          (_) async =>
+              throw SecurityViolationException('Comment cannot be empty'),
+        );
 
         // Act & Assert
         expect(
@@ -161,31 +172,37 @@ void main() {
         );
       });
 
-      test('should throw when user tries to add comment for another user',
-          () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const anotherUserId = 'another_user_456';
-        const content = 'Trying to comment as someone else';
+      test(
+        'should throw when user tries to add comment for another user',
+        () async {
+          // Arrange
+          const recipeId = 'recipe_123';
+          const anotherUserId = 'another_user_456';
+          const content = 'Trying to comment as someone else';
 
-        when(() => mockRepository.addComment(
-                  recipeId: recipeId,
-                  userId: anotherUserId,
-                  content: content,
-                ))
-            .thenAnswer((_) async => throw PermissionDeniedException(
-                'Cannot comment as another user'));
+          when(
+            () => mockRepository.addComment(
+              recipeId: recipeId,
+              userId: anotherUserId,
+              content: content,
+            ),
+          ).thenAnswer(
+            (_) async => throw PermissionDeniedException(
+              'Cannot comment as another user',
+            ),
+          );
 
-        // Act & Assert
-        expect(
-          () async => await mockRepository.addComment(
-            recipeId: recipeId,
-            userId: anotherUserId,
-            content: content,
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () async => await mockRepository.addComment(
+              recipeId: recipeId,
+              userId: anotherUserId,
+              content: content,
+            ),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     group('Get Comments', () {
@@ -195,20 +212,22 @@ void main() {
 
         final expectedComments = <RecipeComment>[
           ...List.generate(
-              5,
-              (i) => RecipeComment(
-                    id: 'comment_$i',
-                    recipeId: recipeId,
-                    authorId: 'user_$i',
-                    authorDisplayName: 'User $i',
-                    text: 'Comment $i',
-                    createdAt: DateTime.now().subtract(Duration(hours: i)),
-                    likesCount: 0,
-                  ))
+            5,
+            (i) => RecipeComment(
+              id: 'comment_$i',
+              recipeId: recipeId,
+              authorId: 'user_$i',
+              authorDisplayName: 'User $i',
+              text: 'Comment $i',
+              createdAt: DateTime.now().subtract(Duration(hours: i)),
+              likesCount: 0,
+            ),
+          ),
         ];
 
-        when(() => mockRepository.getCommentsForRecipe(recipeId))
-            .thenAnswer((_) async => expectedComments);
+        when(
+          () => mockRepository.getCommentsForRecipe(recipeId),
+        ).thenAnswer((_) async => expectedComments);
 
         // Act
         final comments = await mockRepository.getCommentsForRecipe(recipeId);
@@ -226,21 +245,23 @@ void main() {
 
         final expectedReplies = <RecipeComment>[
           ...List.generate(
-              3,
-              (i) => RecipeComment(
-                    id: 'reply_$i',
-                    recipeId: 'recipe_123',
-                    authorId: 'user_$i',
-                    authorDisplayName: 'User $i',
-                    text: 'Reply $i',
-                    parentCommentId: parentId,
-                    createdAt: DateTime.now().subtract(Duration(hours: i)),
-                    likesCount: 0,
-                  ))
+            3,
+            (i) => RecipeComment(
+              id: 'reply_$i',
+              recipeId: 'recipe_123',
+              authorId: 'user_$i',
+              authorDisplayName: 'User $i',
+              text: 'Reply $i',
+              parentCommentId: parentId,
+              createdAt: DateTime.now().subtract(Duration(hours: i)),
+              likesCount: 0,
+            ),
+          ),
         ];
 
-        when(() => mockRepository.getReplies(parentId))
-            .thenAnswer((_) async => expectedReplies);
+        when(
+          () => mockRepository.getReplies(parentId),
+        ).thenAnswer((_) async => expectedReplies);
 
         // Act
         final replies = await mockRepository.getReplies(parentId);
@@ -268,8 +289,9 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.getCommentsStream(recipeId))
-            .thenAnswer((_) => Stream.value(expectedComments));
+        when(
+          () => mockRepository.getCommentsStream(recipeId),
+        ).thenAnswer((_) => Stream.value(expectedComments));
 
         // Act
         final stream = mockRepository.getCommentsStream(recipeId);
@@ -289,15 +311,17 @@ void main() {
         const commentId = 'comment_123';
         const updatedContent = 'Updated comment with more details';
 
-        when(() => mockRepository.updateComment(commentId, updatedContent))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateComment(commentId, updatedContent),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateComment(commentId, updatedContent);
 
         // Assert
-        verify(() => mockRepository.updateComment(commentId, updatedContent))
-            .called(1);
+        verify(
+          () => mockRepository.updateComment(commentId, updatedContent),
+        ).called(1);
       });
 
       test('should throw when updating with empty content', () async {
@@ -305,9 +329,12 @@ void main() {
         const commentId = 'comment_123';
         const emptyContent = '  ';
 
-        when(() => mockRepository.updateComment(commentId, emptyContent))
-            .thenAnswer((_) async =>
-                throw SecurityViolationException('Comment cannot be empty'));
+        when(
+          () => mockRepository.updateComment(commentId, emptyContent),
+        ).thenAnswer(
+          (_) async =>
+              throw SecurityViolationException('Comment cannot be empty'),
+        );
 
         // Act & Assert
         expect(
@@ -323,8 +350,9 @@ void main() {
         // Arrange
         const commentId = 'comment_123';
 
-        when(() => mockRepository.deleteComment(commentId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteComment(commentId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteComment(commentId);
@@ -333,21 +361,25 @@ void main() {
         verify(() => mockRepository.deleteComment(commentId)).called(1);
       });
 
-      test('should throw when trying to delete another users comment',
-          () async {
-        // Arrange
-        const commentId = 'comment_123';
+      test(
+        'should throw when trying to delete another users comment',
+        () async {
+          // Arrange
+          const commentId = 'comment_123';
 
-        when(() => mockRepository.deleteComment(commentId)).thenAnswer(
+          when(() => mockRepository.deleteComment(commentId)).thenAnswer(
             (_) async => throw PermissionDeniedException(
-                'Cannot delete another users comment'));
+              'Cannot delete another users comment',
+            ),
+          );
 
-        // Act & Assert
-        expect(
-          () async => await mockRepository.deleteComment(commentId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () async => await mockRepository.deleteComment(commentId),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     group('Like System', () {
@@ -356,15 +388,17 @@ void main() {
         const commentId = 'comment_123';
         const userId = 'test_user_123';
 
-        when(() => mockRepository.toggleCommentLike(commentId, userId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.toggleCommentLike(commentId, userId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.toggleCommentLike(commentId, userId);
 
         // Assert
-        verify(() => mockRepository.toggleCommentLike(commentId, userId))
-            .called(1);
+        verify(
+          () => mockRepository.toggleCommentLike(commentId, userId),
+        ).called(1);
       });
 
       test('should check if user has liked comment', () async {
@@ -372,17 +406,21 @@ void main() {
         const commentId = 'comment_123';
         const userId = 'test_user_123';
 
-        when(() => mockRepository.hasUserLikedComment(commentId, userId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.hasUserLikedComment(commentId, userId),
+        ).thenAnswer((_) async => true);
 
         // Act
-        final hasLiked =
-            await mockRepository.hasUserLikedComment(commentId, userId);
+        final hasLiked = await mockRepository.hasUserLikedComment(
+          commentId,
+          userId,
+        );
 
         // Assert
         expect(hasLiked, isTrue);
-        verify(() => mockRepository.hasUserLikedComment(commentId, userId))
-            .called(1);
+        verify(
+          () => mockRepository.hasUserLikedComment(commentId, userId),
+        ).called(1);
       });
     });
 
@@ -397,8 +435,9 @@ void main() {
           totalLikes: 20,
         );
 
-        when(() => mockRepository.getCommentStatistics(recipeId))
-            .thenAnswer((_) async => expectedStats);
+        when(
+          () => mockRepository.getCommentStatistics(recipeId),
+        ).thenAnswer((_) async => expectedStats);
 
         // Act
         final stats = await mockRepository.getCommentStatistics(recipeId);
@@ -420,8 +459,9 @@ void main() {
           totalLikes: 0,
         );
 
-        when(() => mockRepository.getCommentStatistics(recipeId))
-            .thenAnswer((_) async => expectedStats);
+        when(
+          () => mockRepository.getCommentStatistics(recipeId),
+        ).thenAnswer((_) async => expectedStats);
 
         // Act
         final stats = await mockRepository.getCommentStatistics(recipeId);
@@ -452,12 +492,14 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: 'test_user_123',
-              content: nestedReplyContent,
-              parentCommentId: replyId,
-            )).thenAnswer((_) async => nestedReply);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: 'test_user_123',
+            content: nestedReplyContent,
+            parentCommentId: replyId,
+          ),
+        ).thenAnswer((_) async => nestedReply);
 
         // Act
         final result = await mockRepository.addComment(
@@ -514,12 +556,15 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.getReplies(rootCommentId))
-            .thenAnswer((_) async => rootReplies);
-        when(() => mockRepository.getReplies('reply_1'))
-            .thenAnswer((_) async => nestedReplies);
-        when(() => mockRepository.getReplies('reply_2'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.getReplies(rootCommentId),
+        ).thenAnswer((_) async => rootReplies);
+        when(
+          () => mockRepository.getReplies('reply_1'),
+        ).thenAnswer((_) async => nestedReplies);
+        when(
+          () => mockRepository.getReplies('reply_2'),
+        ).thenAnswer((_) async => []);
 
         // Act - Build thread by getting replies
         final level1Replies = await mockRepository.getReplies(rootCommentId);
@@ -527,8 +572,10 @@ void main() {
 
         // Assert
         expect(level1Replies.length, equals(2));
-        expect(level1Replies.every((c) => c.parentCommentId == rootCommentId),
-            isTrue);
+        expect(
+          level1Replies.every((c) => c.parentCommentId == rootCommentId),
+          isTrue,
+        );
         expect(level2Replies.length, equals(1));
         expect(level2Replies.first.parentCommentId, equals('reply_1'));
       });
@@ -556,7 +603,8 @@ void main() {
         // First call returns empty (collapsed), second returns replies (expanded)
         var isCollapsed = true;
         when(() => mockRepository.getReplies(parentCommentId)).thenAnswer(
-            (_) async => isCollapsed ? collapsedReplies : expandedReplies);
+          (_) async => isCollapsed ? collapsedReplies : expandedReplies,
+        );
 
         // Act - Get replies when collapsed
         var replies = await mockRepository.getReplies(parentCommentId);
@@ -610,12 +658,14 @@ void main() {
         // Sort comments by likes
         comments.sort((a, b) => b.likesCount.compareTo(a.likesCount));
 
-        when(() => mockRepository.getCommentsForRecipe(recipeId))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockRepository.getCommentsForRecipe(recipeId),
+        ).thenAnswer((_) async => comments);
 
         // Act
-        final sortedComments =
-            await mockRepository.getCommentsForRecipe(recipeId);
+        final sortedComments = await mockRepository.getCommentsForRecipe(
+          recipeId,
+        );
 
         // Assert
         expect(sortedComments[0].id, equals('popular_comment'));
@@ -631,8 +681,9 @@ void main() {
         const commentId = 'inappropriate_comment';
 
         // Simulate flagging by deleting the comment
-        when(() => mockRepository.deleteComment(commentId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteComment(commentId),
+        ).thenAnswer((_) async {});
 
         // Act - Delete inappropriate comment
         await mockRepository.deleteComment(commentId);
@@ -650,21 +701,29 @@ void main() {
         // Swedish bad words should also be caught
         const swedishBadContent = 'Detta recept är [Swedish bad word] dåligt';
 
-        when(() => mockRepository.addComment(
-                  recipeId: recipeId,
-                  userId: userId,
-                  content: badContent,
-                ))
-            .thenAnswer((_) async => throw SecurityViolationException(
-                'Content contains forbidden words'));
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: badContent,
+          ),
+        ).thenAnswer(
+          (_) async => throw SecurityViolationException(
+            'Content contains forbidden words',
+          ),
+        );
 
-        when(() => mockRepository.addComment(
-                  recipeId: recipeId,
-                  userId: userId,
-                  content: swedishBadContent,
-                ))
-            .thenAnswer((_) async => throw SecurityViolationException(
-                'Content contains forbidden words'));
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: swedishBadContent,
+          ),
+        ).thenAnswer(
+          (_) async => throw SecurityViolationException(
+            'Content contains forbidden words',
+          ),
+        );
 
         // Act & Assert - English
         expect(
@@ -694,11 +753,13 @@ void main() {
 
         // Simulate reaching report threshold by tracking likes as negative reports
         // (Using existing methods creatively)
-        when(() => mockRepository.getCommentLikeCount(commentId)).thenAnswer(
-            (_) async => -reportThreshold); // Negative likes = reports
+        when(
+          () => mockRepository.getCommentLikeCount(commentId),
+        ).thenAnswer((_) async => -reportThreshold); // Negative likes = reports
 
-        when(() => mockRepository.deleteComment(commentId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteComment(commentId),
+        ).thenAnswer((_) async {});
 
         // Act
         final reportCount = await mockRepository.getCommentLikeCount(commentId);
@@ -722,13 +783,14 @@ void main() {
           'violation_2',
           'violation_3',
           'violation_4',
-          'violation_5'
+          'violation_5',
         ];
 
         // Setup delete for each violation
         for (final commentId in deletedCommentIds) {
-          when(() => mockRepository.deleteComment(commentId))
-              .thenAnswer((_) async {});
+          when(
+            () => mockRepository.deleteComment(commentId),
+          ).thenAnswer((_) async {});
         }
 
         // Act - Delete all violation comments
@@ -737,13 +799,16 @@ void main() {
         }
 
         // Simulate blocking by throwing error on new comment attempts
-        when(() => mockRepository.addComment(
-                  recipeId: recipeId,
-                  userId: userId,
-                  content: any(named: 'content'),
-                ))
-            .thenAnswer((_) async => throw PermissionDeniedException(
-                'User is banned from commenting'));
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: any(named: 'content'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              throw PermissionDeniedException('User is banned from commenting'),
+        );
 
         // Assert - User cannot add new comments
         expect(
@@ -777,8 +842,9 @@ void main() {
           ],
         ).take(3);
 
-        when(() => mockRepository.getCommentsStream(recipeId))
-            .thenAnswer((_) => commentStream);
+        when(
+          () => mockRepository.getCommentsStream(recipeId),
+        ).thenAnswer((_) => commentStream);
 
         // Act
         final stream = mockRepository.getCommentsStream(recipeId);
@@ -800,8 +866,9 @@ void main() {
         const replyContent = 'Great point! I agree with you.';
 
         // Initially no replies
-        when(() => mockRepository.getReplies(parentCommentId))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.getReplies(parentCommentId),
+        ).thenAnswer((_) async => []);
 
         // Act - Check for replies initially
         var replies = await mockRepository.getReplies(parentCommentId);
@@ -819,8 +886,9 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.getReplies(parentCommentId))
-            .thenAnswer((_) async => [newReply]);
+        when(
+          () => mockRepository.getReplies(parentCommentId),
+        ).thenAnswer((_) async => [newReply]);
 
         // Act - Check for replies again
         replies = await mockRepository.getReplies(parentCommentId);
@@ -849,8 +917,9 @@ void main() {
 
         // First call returns initial count, second returns updated count
         var callCount = 0;
-        when(() => mockRepository.getCommentStatistics(recipeId))
-            .thenAnswer((_) async => callCount++ == 0 ? stats1 : stats2);
+        when(
+          () => mockRepository.getCommentStatistics(recipeId),
+        ).thenAnswer((_) async => callCount++ == 0 ? stats1 : stats2);
 
         // Act - Get initial count
         var stats = await mockRepository.getCommentStatistics(recipeId);
@@ -873,11 +942,13 @@ void main() {
         const offlineContent = 'Comment made while offline';
 
         // Simulate offline - addComment fails
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: offlineContent,
-            )).thenAnswer((_) async => throw Exception('Network unavailable'));
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: offlineContent,
+          ),
+        ).thenAnswer((_) async => throw Exception('Network unavailable'));
 
         // Act & Assert - Comment fails while offline
         expect(
@@ -900,11 +971,13 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: offlineContent,
-            )).thenAnswer((_) async => savedComment);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: offlineContent,
+          ),
+        ).thenAnswer((_) async => savedComment);
 
         // Act - Retry when online
         final comment = await mockRepository.addComment(
@@ -937,11 +1010,13 @@ void main() {
           likesCount: 0,
         );
 
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: swedishContent,
-            )).thenAnswer((_) async => expectedComment);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: swedishContent,
+          ),
+        ).thenAnswer((_) async => expectedComment);
 
         // Act
         final comment = await mockRepository.addComment(

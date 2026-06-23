@@ -13,9 +13,9 @@ class ViterbiContextProcessor {
   final double lowEmissionWeight;
 
   const ViterbiContextProcessor()
-      : highConfidenceThreshold = _defaultHighConfidenceThreshold,
-        highEmissionWeight = _defaultHighEmissionWeight,
-        lowEmissionWeight = _defaultLowEmissionWeight;
+    : highConfidenceThreshold = _defaultHighConfidenceThreshold,
+      highEmissionWeight = _defaultHighEmissionWeight,
+      lowEmissionWeight = _defaultLowEmissionWeight;
 
   /// Test-only escape hatch for calibration sweeps. See
   /// `test/unit/services/parsing/parsers/viterbi_calibration_test.dart`.
@@ -208,12 +208,14 @@ class ViterbiContextProcessor {
         // confidence reflecting both the emission and the context.
         final emissionForNew = _rawEmissionProb(original, newType, boosts[t]);
         final contextConfidence = emissionForNew.clamp(0.3, 0.95);
-        result.add(ClassifiedLine(
-          text: original.text,
-          type: newType,
-          confidence: contextConfidence,
-          secondaryType: original.type,
-        ));
+        result.add(
+          ClassifiedLine(
+            text: original.text,
+            type: newType,
+            confidence: contextConfidence,
+            secondaryType: original.type,
+          ),
+        );
       }
     }
 
@@ -236,8 +238,9 @@ class ViterbiContextProcessor {
         if (_ingredientHeaderPatterns.any((p) => p.hasMatch(headerText))) {
           activeBoostType = LineType.ingredient;
           boostRemaining = 15;
-        } else if (_instructionHeaderPatterns
-            .any((p) => p.hasMatch(headerText))) {
+        } else if (_instructionHeaderPatterns.any(
+          (p) => p.hasMatch(headerText),
+        )) {
           activeBoostType = LineType.instruction;
           boostRemaining = 20;
         }
@@ -283,8 +286,9 @@ class ViterbiContextProcessor {
       // The primary type holds `confidence` and the secondary (if any) holds
       // `confidence * 0.5`, so the leftover is divided among the rest.
       final primaryMass = line.confidence;
-      final secondaryMass =
-          line.secondaryType != null ? line.confidence * 0.5 : 0.0;
+      final secondaryMass = line.secondaryType != null
+          ? line.confidence * 0.5
+          : 0.0;
       final remainingMass = (1.0 - primaryMass - secondaryMass).clamp(0.0, 1.0);
       final otherCount = numStates - 1 - (line.secondaryType != null ? 1 : 0);
       prob = otherCount > 0 ? remainingMass / otherCount : 0.01;

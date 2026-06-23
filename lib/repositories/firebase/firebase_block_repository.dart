@@ -28,22 +28,29 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
 
   @override
   Future<bool> validateCreatePermission(
-          String userId, BlockRecord entity) async =>
-      userId == entity.blockerId;
+    String userId,
+    BlockRecord entity,
+  ) async => userId == entity.blockerId;
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, BlockRecord? entity) async =>
-      true; // Security rules enforce access
+    String userId,
+    String resourceId,
+    BlockRecord? entity,
+  ) async => true; // Security rules enforce access
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, BlockRecord entity) async =>
-      false; // Block records are immutable
+    String userId,
+    String resourceId,
+    BlockRecord entity,
+  ) async => false; // Block records are immutable
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Split on first '_' only to avoid false matches if UID contains '_'
     final separatorIndex = resourceId.indexOf('_');
     if (separatorIndex < 0) return false;
@@ -116,11 +123,17 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     final uid = currentUserId;
     if (uid == null) return Stream.value({});
 
-    return collection.where('blockerId', isEqualTo: uid).snapshots().map(
-        (snapshot) => snapshot.docs
-            .map((doc) =>
-                BlockRecord.fromFirestore(doc.data(), doc.id).blockedId)
-            .toSet());
+    return collection
+        .where('blockerId', isEqualTo: uid)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) =>
+                    BlockRecord.fromFirestore(doc.data(), doc.id).blockedId,
+              )
+              .toSet(),
+        );
   }
 
   /// Delete all block records involving a user (for account deletion / GDPR).
@@ -131,11 +144,13 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     }
 
     // Delete blocks where user is the blocker
-    final asBlocker =
-        await collection.where('blockerId', isEqualTo: userId).get();
+    final asBlocker = await collection
+        .where('blockerId', isEqualTo: userId)
+        .get();
     // Delete blocks where user is the blocked
-    final asBlocked =
-        await collection.where('blockedId', isEqualTo: userId).get();
+    final asBlocked = await collection
+        .where('blockedId', isEqualTo: userId)
+        .get();
 
     final batch = firestore.batch();
     for (final doc in [...asBlocker.docs, ...asBlocked.docs]) {
@@ -145,7 +160,8 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     if (asBlocker.docs.isNotEmpty || asBlocked.docs.isNotEmpty) {
       await batch.commit();
       AppLogger.info(
-          'Deleted ${asBlocker.docs.length + asBlocked.docs.length} block records for user ${userId.maskedUserId}');
+        'Deleted ${asBlocker.docs.length + asBlocked.docs.length} block records for user ${userId.maskedUserId}',
+      );
     }
   }
 }

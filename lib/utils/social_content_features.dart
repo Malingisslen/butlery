@@ -58,7 +58,8 @@ class ShareTargetValidationResult {
 class SocialContentFeatures {
   /// Loads friends for sharing functionality with comprehensive friend retrieval and social context.
   static Future<List<UserProfile>> loadFriends(
-      UnifiedFriendsService service) async {
+    UnifiedFriendsService service,
+  ) async {
     try {
       if (!service.isInitialized) {
         await service.initialize();
@@ -86,7 +87,10 @@ class SocialContentFeatures {
   /// Performs friend selection toggle with automatic state management
   /// and UI notification for responsive social interaction.
   static void toggleFriendSelection(
-      String friendId, List<String> selectedIds, Function notifyListeners) {
+    String friendId,
+    List<String> selectedIds,
+    Function notifyListeners,
+  ) {
     if (selectedIds.contains(friendId)) {
       selectedIds.remove(friendId);
     } else {
@@ -101,7 +105,9 @@ class SocialContentFeatures {
   /// Performs complete friend selection cleanup with immediate UI notification
   /// for clean social interaction state management.
   static void clearFriendSelection(
-      List<String> selectedIds, Function notifyListeners) {
+    List<String> selectedIds,
+    Function notifyListeners,
+  ) {
     selectedIds.clear();
     notifyListeners();
   }
@@ -125,12 +131,17 @@ class SocialContentFeatures {
     try {
       if (contentType == 'shopping_list' && service is UnifiedShoppingService) {
         // Get the shopping list
-        final shoppingList =
-            service.lists.firstWhere((list) => list.id == contentId);
+        final shoppingList = service.lists.firstWhere(
+          (list) => list.id == contentId,
+        );
 
         // PHASE 1 FIX: Create proper invitation instead of direct conversion
         final success = await _createSharedShoppingListInvitation(
-            shoppingList, friendIds, message, service);
+          shoppingList,
+          friendIds,
+          message,
+          service,
+        );
 
         if (!success) {
           return false;
@@ -205,8 +216,11 @@ class SocialContentFeatures {
   /// [notifyListeners] Notification function for UI updates
   /// Deactivates sharing mode with complete state cleanup and UI notification
   /// for clean social sharing state management.
-  static void cancelSharing(Function(bool) setter, List<String> selectedIds,
-      Function notifyListeners) {
+  static void cancelSharing(
+    Function(bool) setter,
+    List<String> selectedIds,
+    Function notifyListeners,
+  ) {
     setter(false);
     selectedIds.clear();
     notifyListeners();
@@ -232,8 +246,11 @@ class SocialContentFeatures {
       }
 
       // PHASE 3 FIX: Validate share targets to prevent duplicate invitations
-      final validationResult =
-          await _validateShareTargets(shoppingList, friendIds, service);
+      final validationResult = await _validateShareTargets(
+        shoppingList,
+        friendIds,
+        service,
+      );
       if (!validationResult.isValid) {
         return false;
       }
@@ -277,10 +294,12 @@ class SocialContentFeatures {
     try {
       // Check if there's already a collaborative version of this list
       final collaborativeVersions = service.lists
-          .where((list) =>
-              list.type == ListType.collaborative &&
-              list.name == shoppingList.name &&
-              list.ownerId == shoppingList.ownerId)
+          .where(
+            (list) =>
+                list.type == ListType.collaborative &&
+                list.name == shoppingList.name &&
+                list.ownerId == shoppingList.ownerId,
+          )
           .toList();
 
       if (collaborativeVersions.isEmpty) {
@@ -300,7 +319,8 @@ class SocialContentFeatures {
 
       if (validTargets.isEmpty) {
         return ShareTargetValidationResult.invalid(
-            'All selected users already have access to this list');
+          'All selected users already have access to this list',
+        );
       }
 
       return ShareTargetValidationResult.valid(validTargets);

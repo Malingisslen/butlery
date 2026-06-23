@@ -57,8 +57,7 @@ class _FriendsListViewState extends State<FriendsListView> {
   void _fireSocialOnboardingIfFirstEntry() {
     final userId = ServiceLocator.get<PermissionService>().currentUserId;
     if (userId == null) return;
-    ServiceLocator.get<AnalyticsService>()
-        .social
+    ServiceLocator.get<AnalyticsService>().social
         .logSocialOnboardingStartedIfFirstEntry(
           userId: userId,
           entryPoint: 'friends_tab',
@@ -103,8 +102,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   @override
   void initState() {
     super.initState();
-    _socialEnabled = ServiceLocator.get<FeatureFlagService>()
-        .isEnabled(FeatureFlags.enableSocialFeatures);
+    _socialEnabled = ServiceLocator.get<FeatureFlagService>().isEnabled(
+      FeatureFlags.enableSocialFeatures,
+    );
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
@@ -210,8 +210,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         isScrollable: false,
                         tabAlignment: TabAlignment.fill,
                         labelColor: Theme.of(context).colorScheme.primary,
-                        unselectedLabelColor:
-                            Theme.of(context).colorScheme.onSurfaceVariant,
+                        unselectedLabelColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant,
                         indicatorColor: Theme.of(context).colorScheme.primary,
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
@@ -225,10 +226,13 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           ),
                           Tab(
                             icon: Badge(
-                              isLabelVisible: friendsService.invitations
-                                  .pendingReceivedInvitations.isNotEmpty,
+                              isLabelVisible: friendsService
+                                  .invitations
+                                  .pendingReceivedInvitations
+                                  .isNotEmpty,
                               label: Text(
-                                  '${friendsService.invitations.pendingReceivedInvitations.length}'),
+                                '${friendsService.invitations.pendingReceivedInvitations.length}',
+                              ),
                               child: const Icon(Icons.groups),
                             ),
                             text: context.l10n.socialGroups,
@@ -237,8 +241,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             icon: Badge(
                               isLabelVisible:
                                   viewModel.incomingRequests.isNotEmpty,
-                              label:
-                                  Text('${viewModel.incomingRequests.length}'),
+                              label: Text(
+                                '${viewModel.incomingRequests.length}',
+                              ),
                               child: const Icon(Icons.search),
                             ),
                             text: context.l10n.socialFindFriends,
@@ -251,30 +256,32 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       const SizedBox(height: AppDimensions.spacingL),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingL),
+                          horizontal: AppDimensions.paddingL,
+                        ),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .error
+                            color: Theme.of(context).colorScheme.error
                                 .withValues(
-                                    alpha: AppDimensions.opacityVeryLight),
+                                  alpha: AppDimensions.opacityVeryLight,
+                                ),
                             borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusM),
+                              AppDimensions.borderRadiusM,
+                            ),
                             border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .error
-                                    .withValues(
-                                        alpha:
-                                            AppDimensions.opacityMediumLight)),
+                              color: Theme.of(context).colorScheme.error
+                                  .withValues(
+                                    alpha: AppDimensions.opacityMediumLight,
+                                  ),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.error_outline,
-                                  color: Theme.of(context).colorScheme.error),
+                              Icon(
+                                Icons.error_outline,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
                               const SizedBox(width: AppDimensions.spacingS),
                               Expanded(
                                 child: Text(
@@ -320,11 +327,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     Expanded(
                       child: switch (_currentTabIndex) {
                         0 => FeedTab.build(
-                            context,
-                            context.watch<ActivityFeedViewModel>(),
-                            hasFriends: viewModel.friendsCount > 0,
-                            onAddFriendsCta: () => _tabController.animateTo(1),
-                          ),
+                          context,
+                          context.watch<ActivityFeedViewModel>(),
+                          hasFriends: viewModel.friendsCount > 0,
+                          onAddFriendsCta: () => _tabController.animateTo(1),
+                        ),
                         1 => _buildFriendsTab(viewModel),
                         2 => _buildGroupsTab(friendsService, viewModel),
                         3 => _buildDiscoveryTab(viewModel),
@@ -410,8 +417,12 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     // Friend discovery hub with search and requests
     return _searchQuery.isEmpty
         ? const RequestsTab()
-        : SearchTab.build(context, viewModel, _searchQuery,
-            isGroupsSearch: false);
+        : SearchTab.build(
+            context,
+            viewModel,
+            _searchQuery,
+            isGroupsSearch: false,
+          );
   }
 
   Widget _buildGroupsTab(
@@ -447,7 +458,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     } catch (e) {
       if (mounted) {
         SnackBarUtils.showError(
-            context, context.l10n.groupCouldNotCreate('$e'));
+          context,
+          context.l10n.groupCouldNotCreate('$e'),
+        );
       }
     }
   }

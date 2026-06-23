@@ -28,8 +28,7 @@ void main() {
     // duplicate path — if they did, near-similar but distinct recipes would
     // be incorrectly flagged as duplicates.
 
-    test(
-        'returns false for a score just below 0.6 '
+    test('returns false for a score just below 0.6 '
         '(would not flag as content duplicate)', () {
       // If this fails, the threshold has been lowered below 0.6 or the
       // comparison has been flipped.
@@ -39,14 +38,16 @@ void main() {
       );
     });
 
-    test('returns true at exactly 0.6 — the lower boundary triggers the flag',
-        () {
-      // If this fails, the threshold has been changed from >= to >.
-      expect(
-        ImportResultHandler.meetsContentDuplicateThreshold(0.6),
-        isTrue,
-      );
-    });
+    test(
+      'returns true at exactly 0.6 — the lower boundary triggers the flag',
+      () {
+        // If this fails, the threshold has been changed from >= to >.
+        expect(
+          ImportResultHandler.meetsContentDuplicateThreshold(0.6),
+          isTrue,
+        );
+      },
+    );
 
     test('returns true for a score well above 0.6 (clear duplicate)', () {
       expect(
@@ -68,8 +69,7 @@ void main() {
     // definition; the sheet must never display a similarity below 80% for
     // such matches, even if the content fingerprint happens to score low.
 
-    test(
-        'clamps a score below 0.8 up to 0.8 '
+    test('clamps a score below 0.8 up to 0.8 '
         '(prevents misleadingly low display percentage)', () {
       // If this fails, the 0.8 floor has been removed or lowered.
       expect(
@@ -78,17 +78,18 @@ void main() {
       );
     });
 
-    test('clamps a score just below 0.8 to exactly 0.8 — boundary is strict',
-        () {
-      // If this fails, the boundary condition has been changed from < to <=.
-      expect(
-        ImportResultHandler.clampToExactMatchFloor(0.7999),
-        equals(0.8),
-      );
-    });
-
     test(
-        'passes through a score of exactly 0.8 unchanged '
+      'clamps a score just below 0.8 to exactly 0.8 — boundary is strict',
+      () {
+        // If this fails, the boundary condition has been changed from < to <=.
+        expect(
+          ImportResultHandler.clampToExactMatchFloor(0.7999),
+          equals(0.8),
+        );
+      },
+    );
+
+    test('passes through a score of exactly 0.8 unchanged '
         '(boundary is inclusive on the pass-through side)', () {
       // If this fails, the clamping has been made too aggressive (<=).
       expect(
@@ -111,13 +112,14 @@ void main() {
     });
 
     test(
-        'score of 0.0 is clamped to 0.8 '
-        '(even a completely dissimilar URL-confirmed match shows the floor)',
-        () {
-      expect(
-        ImportResultHandler.clampToExactMatchFloor(0.0),
-        equals(0.8),
-      );
-    });
+      'score of 0.0 is clamped to 0.8 '
+      '(even a completely dissimilar URL-confirmed match shows the floor)',
+      () {
+        expect(
+          ImportResultHandler.clampToExactMatchFloor(0.0),
+          equals(0.8),
+        );
+      },
+    );
   });
 }

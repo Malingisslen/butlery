@@ -113,7 +113,8 @@ class RecipeFactory {
       socialData: RecipeSocialData(
         ownerId: 'test_user',
         ownerDisplayName: 'Test User',
-        memberPermissions: permissions ??
+        memberPermissions:
+            permissions ??
             {
               'user1': ResourcePermission.editor,
               'user2': ResourcePermission.viewer,

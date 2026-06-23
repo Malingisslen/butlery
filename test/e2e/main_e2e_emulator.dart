@@ -76,8 +76,11 @@ Future<void> main() async {
     runApp(const ButleryApp());
   } catch (e, stackTrace) {
     // Show error app with E2E-specific message
-    runApp(_E2EEmulatorErrorApp(
-        'E2E Emulator initialization failed: $e\n\nStack trace:\n$stackTrace'));
+    runApp(
+      _E2EEmulatorErrorApp(
+        'E2E Emulator initialization failed: $e\n\nStack trace:\n$stackTrace',
+      ),
+    );
   }
 }
 
@@ -143,84 +146,89 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'E2E Emulator Error',
-      home: Builder(builder: (context) {
-        final butlery =
-            Theme.of(context).extension<ButleryColors>() ?? ButleryColors.light;
-        final cs = Theme.of(context).colorScheme;
-        return Scaffold(
-          backgroundColor: butlery.warningContainer,
-          appBar: AppBar(
-            title: const Text('E2E Emulator Error'),
-            backgroundColor: butlery.warning,
-            foregroundColor: cs.surfaceContainerHighest,
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.warning_outlined,
-                  size: AppDimensions.iconSizeXxl,
-                  color: butlery.warning,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'E2E Emulator Initialization Failed',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+      home: Builder(
+        builder: (context) {
+          final butlery =
+              Theme.of(context).extension<ButleryColors>() ??
+              ButleryColors.light;
+          final cs = Theme.of(context).colorScheme;
+          return Scaffold(
+            backgroundColor: butlery.warningContainer,
+            appBar: AppBar(
+              title: const Text('E2E Emulator Error'),
+              backgroundColor: butlery.warning,
+              foregroundColor: cs.surfaceContainerHighest,
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.warning_outlined,
+                    size: AppDimensions.iconSizeXxl,
                     color: butlery.warning,
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'The E2E Emulator application failed to start. Make sure Firebase emulators are running:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingM),
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
-                  ),
-                  child: const Text(
-                    'firebase emulators:start --only firestore,auth,storage',
+                  const SizedBox(height: 16),
+                  Text(
+                    'E2E Emulator Initialization Failed',
                     style: TextStyle(
-                      fontFamily: 'monospace',
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: butlery.warning,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppDimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: cs.surface,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusM),
-                        border: Border.all(color: cs.outlineVariant),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'The E2E Emulator application failed to start. Make sure Firebase emulators are running:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    decoration: BoxDecoration(
+                      color: cs.surface,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
                       ),
-                      child: Text(
-                        message,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
+                    ),
+                    child: const Text(
+                      'firebase emulators:start --only firestore,auth,storage',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusM,
+                          ),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: Text(
+                          message,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 }

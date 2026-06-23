@@ -14,8 +14,8 @@ ParsedIngredient parsedIngredientFromExtracted(
   // Format amount consistently: 1.0 → "1", 1.5 → "1.5"
   final quantity = extracted.amount != null
       ? (extracted.amount! % 1 == 0
-          ? extracted.amount!.toInt().toString()
-          : extracted.amount.toString())
+            ? extracted.amount!.toInt().toString()
+            : extracted.amount.toString())
       : null;
 
   return ParsedIngredient(

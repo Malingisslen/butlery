@@ -96,7 +96,9 @@ class _EmojiButtonState extends State<_EmojiButton> {
           onTap: widget.onTap,
           child: AnimatedContainer(
             duration: AnimationUtils.getDuration(
-                context, AppDimensions.animationDurationFast),
+              context,
+              AppDimensions.animationDurationFast,
+            ),
             padding: AppDimensions.paddingAll8,
             decoration: BoxDecoration(
               color: _isHovered

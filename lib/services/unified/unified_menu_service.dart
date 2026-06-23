@@ -106,8 +106,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   bool _isLoading = false;
   String? _error;
 
-  final _stateSubject =
-      BehaviorSubject<MenuServiceState>.seeded(const MenuStateLoading());
+  final _stateSubject = BehaviorSubject<MenuServiceState>.seeded(
+    const MenuStateLoading(),
+  );
 
   Stream<MenuServiceState> get stateStream => _stateSubject.stream;
   MenuServiceState get currentState => _stateSubject.value;
@@ -140,15 +141,15 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     RealtimeMenuService? realtimeMenuService,
     MenuCollaborationRepository? menuCollaborationRepository,
     PermissionService? permissionService,
-  })  : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-        _firestore =
-            (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
-                .firestore,
-        _userServiceOverride = userService,
-        _realtimeMenuServiceOverride = realtimeMenuService,
-        _menuCollaborationRepositoryOverride = menuCollaborationRepository,
-        _permissionServiceOverride = permissionService {
+  }) : _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+       _firestore =
+           (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
+               .firestore,
+       _userServiceOverride = userService,
+       _realtimeMenuServiceOverride = realtimeMenuService,
+       _menuCollaborationRepositoryOverride = menuCollaborationRepository,
+       _permissionServiceOverride = permissionService {
     // Initialize core menu service (override-aware for testability)
     _menuService = menuService ?? MenuService();
 
@@ -157,7 +158,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
 
     AppLogger.info(
-        '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
+      '✅ UnifiedMenuService created - collaborative operations will initialize on first use',
+    );
   }
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
@@ -165,7 +167,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     AppLogger.debug('Initializing collaborative menu operations');
     return CollaborativeMenuOperations(
       notifyListeners: triggerNotification,
-      repository: _menuCollaborationRepositoryOverride ??
+      repository:
+          _menuCollaborationRepositoryOverride ??
           ServiceLocator.get<MenuCollaborationRepository>(),
     );
   }
@@ -245,12 +248,14 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                 final menu = SharedMenu(
                   id: doc.id,
                   menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
-                  menuTitle: menuSnapshotData['title'] as String? ??
+                  menuTitle:
+                      menuSnapshotData['title'] as String? ??
                       AppLocale.current.labelCollaborativeMenu,
                   sharedByUserId: (data['ownerId'] as String?).orEmpty(),
                   sharedByDisplayName:
                       data['ownerDisplayName'] as String? ?? '?',
-                  sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ??
+                  sharedAt:
+                      (data['createdAt'] as Timestamp?)?.toDate() ??
                       clock.now(),
                   allowCollaboration: true,
                   realtimeMenuId: doc.id,
@@ -277,7 +282,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
   /// Parse menu snapshot from Firestore data
   Map<String, List<Recipe>> _parseMenuSnapshot(
-      Map<String, dynamic> menuSnapshot) {
+    Map<String, dynamic> menuSnapshot,
+  ) {
     final result = <String, List<Recipe>>{};
     final categories =
         menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
@@ -357,8 +363,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       );
 
       final menuData = menu.toFirestore();
-      final docRef =
-          await _firestore.collection(FirestoreCollections.menus).add(menuData);
+      final docRef = await _firestore
+          .collection(FirestoreCollections.menus)
+          .add(menuData);
       final createdMenu = SharedMenu.fromFirestore(menuData, docRef.id);
       _menus.add(createdMenu);
       notifyListeners();
@@ -437,9 +444,11 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     final result = await safeExecute<String?>(() async {
       try {
         AppLogger.info(
-            '🔍🔍🔍 DEBUG SHARE ENTRY: createMenuInvitation called with "$menuTitle" for ${inviteeUserIds.length} users');
+          '🔍🔍🔍 DEBUG SHARE ENTRY: createMenuInvitation called with "$menuTitle" for ${inviteeUserIds.length} users',
+        );
         AppLogger.info(
-            '📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
+          '📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users',
+        );
 
         // Get current user's display name
         final userService =
@@ -447,7 +456,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         final currentUserProfile = userService.currentUserProfile;
         if (currentUserProfile == null) {
           AppLogger.error(
-              'Cannot get current user profile for menu invitation');
+            'Cannot get current user profile for menu invitation',
+          );
           return null;
         }
 
@@ -455,7 +465,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         String? realtimeMenuId;
         if (allowCollaboration) {
           AppLogger.info('🔄 Creating RealtimeMenu for collaborative editing');
-          final realtimeMenuService = _realtimeMenuServiceOverride ??
+          final realtimeMenuService =
+              _realtimeMenuServiceOverride ??
               ServiceLocator.get<RealtimeMenuService>();
           final realtimeMenu = await realtimeMenuService.createRealtimeMenu(
             menuTitle: menuTitle,
@@ -464,7 +475,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
           );
           realtimeMenuId = realtimeMenu.id;
           AppLogger.success(
-              '✅ RealtimeMenu created: $realtimeMenuId with ${inviteeUserIds.length} editors');
+            '✅ RealtimeMenu created: $realtimeMenuId with ${inviteeUserIds.length} editors',
+          );
         }
 
         // Create SharedMenu invitation
@@ -487,9 +499,11 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         );
 
         AppLogger.success(
-            '✅ Menu invitation created successfully: $invitationId');
+          '✅ Menu invitation created successfully: $invitationId',
+        );
         AppLogger.info(
-            '📥 Recipients will see invitation in "Delat med mig" view');
+          '📥 Recipients will see invitation in "Delat med mig" view',
+        );
 
         return invitationId;
       } catch (e) {
@@ -525,14 +539,16 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     final userId = currentUserId;
     if (userId == null) {
       AppLogger.warning(
-          'Cannot get received menu invitations: No authenticated user');
+        'Cannot get received menu invitations: No authenticated user',
+      );
       return [];
     }
 
     final result = await safeExecute<List<SharedMenu>>(() async {
       try {
         AppLogger.info(
-            '📥 Getting received menu invitations for user ${userId.maskedUserId}');
+          '📥 Getting received menu invitations for user ${userId.maskedUserId}',
+        );
         return await _sharedMenuRepository.getSharedMenusForUser(userId);
       } catch (e) {
         AppLogger.error('Failed to get received menu invitations: $e');
@@ -562,8 +578,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         AppLogger.info('📥 Importing shared menu $sharedMenuId');
 
         // Get shared menu
-        final sharedMenu =
-            await _sharedMenuRepository.getSharedMenu(sharedMenuId);
+        final sharedMenu = await _sharedMenuRepository.getSharedMenu(
+          sharedMenuId,
+        );
         if (sharedMenu == null) {
           AppLogger.error('Shared menu not found: $sharedMenuId');
           return null;
@@ -572,11 +589,13 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         // Check if this is a collaborative menu with a realtime session
         if (sharedMenu.realtimeMenuId != null) {
           AppLogger.info(
-              '📡 Joining collaborative menu: ${sharedMenu.realtimeMenuId}');
+            '📡 Joining collaborative menu: ${sharedMenu.realtimeMenuId}',
+          );
           // Mark as accepted/imported in SharedMenu
           await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
           AppLogger.success(
-              '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
+            '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}',
+          );
           // Return the realtime menu ID - caller should navigate to collaborative view
           return MenuImportResult(
             menuId: sharedMenu.realtimeMenuId!,
@@ -586,8 +605,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
         // Regular import: create a copy with attribution
         final menuTitle = newTitle ?? '${sharedMenu.menuTitle} (Importerad)';
-        final attributedMenu =
-            Map<String, List<Recipe>>.from(sharedMenu.menuSnapshot);
+        final attributedMenu = Map<String, List<Recipe>>.from(
+          sharedMenu.menuSnapshot,
+        );
 
         // Add attribution to menu description or first recipe
         if (attributedMenu.isNotEmpty) {
@@ -595,8 +615,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
           final recipes = attributedMenu[firstCategory]!;
           if (recipes.isNotEmpty) {
             final firstRecipe = recipes[0];
-            final attributionText = AppLocale.current
-                .menuAttributionText(sharedMenu.sharedByDisplayName);
+            final attributionText = AppLocale.current.menuAttributionText(
+              sharedMenu.sharedByDisplayName,
+            );
             final attributedRecipe = firstRecipe.copyWith(
               description: firstRecipe.description.isEmpty
                   ? attributionText
@@ -604,7 +625,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
             );
             attributedMenu[firstCategory] = [
               attributedRecipe,
-              ...recipes.skip(1)
+              ...recipes.skip(1),
             ];
           }
         }

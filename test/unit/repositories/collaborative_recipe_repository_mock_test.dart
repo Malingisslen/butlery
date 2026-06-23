@@ -192,11 +192,11 @@ void main() {
               .collection('presence')
               .doc(editor['userId']!)
               .set({
-            'userId': editor['userId'],
-            'displayName': editor['displayName'],
-            'lastSeen': DateTime.now().millisecondsSinceEpoch,
-            'isActive': true,
-          });
+                'userId': editor['userId'],
+                'displayName': editor['displayName'],
+                'lastSeen': DateTime.now().millisecondsSinceEpoch,
+                'isActive': true,
+              });
         }
 
         // Assert - All editors should be active
@@ -267,7 +267,10 @@ void main() {
       test('should handle rapid heartbeat updates', () async {
         // Arrange — use auth user for self-operations
         await repository.updateUserPresence(
-            'recipe-1', testUserId, 'Test User');
+          'recipe-1',
+          testUserId,
+          'Test User',
+        );
 
         final initialDoc = await fakeFirestore
             .collection('realtime_recipes')
@@ -307,10 +310,10 @@ void main() {
             .collection('presence')
             .doc('active-user')
             .set({
-          'displayName': 'Active User',
-          'isActive': true,
-          'lastSeen': now,
-        });
+              'displayName': 'Active User',
+              'isActive': true,
+              'lastSeen': now,
+            });
 
         // Recently active (30 seconds ago)
         await fakeFirestore
@@ -319,10 +322,10 @@ void main() {
             .collection('presence')
             .doc('recent-user')
             .set({
-          'displayName': 'Recent User',
-          'isActive': true,
-          'lastSeen': now - 30000,
-        });
+              'displayName': 'Recent User',
+              'isActive': true,
+              'lastSeen': now - 30000,
+            });
 
         // Inactive (2 minutes ago)
         await fakeFirestore
@@ -331,10 +334,10 @@ void main() {
             .collection('presence')
             .doc('inactive-user')
             .set({
-          'displayName': 'Inactive User',
-          'isActive': true,
-          'lastSeen': now - 120000,
-        });
+              'displayName': 'Inactive User',
+              'isActive': true,
+              'lastSeen': now - 120000,
+            });
 
         // Act
         final editors = await repository.getActiveEditors('recipe-1');
@@ -342,16 +345,19 @@ void main() {
         // Assert
         expect(editors, hasLength(3));
 
-        final activeEditor =
-            editors.firstWhere((e) => e['userId'] == 'active-user');
+        final activeEditor = editors.firstWhere(
+          (e) => e['userId'] == 'active-user',
+        );
         expect(activeEditor['isCurrentlyActive'], isTrue);
 
-        final recentEditor =
-            editors.firstWhere((e) => e['userId'] == 'recent-user');
+        final recentEditor = editors.firstWhere(
+          (e) => e['userId'] == 'recent-user',
+        );
         expect(recentEditor['isCurrentlyActive'], isTrue); // Within 1 minute
 
-        final inactiveEditor =
-            editors.firstWhere((e) => e['userId'] == 'inactive-user');
+        final inactiveEditor = editors.firstWhere(
+          (e) => e['userId'] == 'inactive-user',
+        );
         expect(inactiveEditor['isCurrentlyActive'], isFalse); // Over 1 minute
       });
 
@@ -359,7 +365,10 @@ void main() {
         // Arrange — write the auth user's presence through the repo,
         // and write other users directly to Firestore.
         await repository.updateUserPresence(
-            'recipe-1', testUserId, 'Test User');
+          'recipe-1',
+          testUserId,
+          'Test User',
+        );
 
         await fakeFirestore
             .collection('realtime_recipes')
@@ -367,11 +376,11 @@ void main() {
             .collection('presence')
             .doc('other-user')
             .set({
-          'userId': 'other-user',
-          'displayName': 'Another User',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-        });
+              'userId': 'other-user',
+              'displayName': 'Another User',
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+              'isActive': true,
+            });
 
         // Act - Clear auth user (mark inactive)
         await repository.clearUserPresence('recipe-1', testUserId);
@@ -418,17 +427,18 @@ void main() {
             .collection('presence')
             .doc('user-1')
             .set({
-          'userId': 'user-1',
-          'displayName': 'User One',
-          'isActive': true,
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-        });
+              'userId': 'user-1',
+              'displayName': 'User One',
+              'isActive': true,
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+            });
 
         // Act - Listen to stream
-        final subscription =
-            repository.getParticipantsStream('recipe-1').listen((editors) {
-          updates.add(editors);
-        });
+        final subscription = repository
+            .getParticipantsStream('recipe-1')
+            .listen((editors) {
+              updates.add(editors);
+            });
 
         // Add another editor
         await Future.delayed(Duration(milliseconds: 50));
@@ -438,11 +448,11 @@ void main() {
             .collection('presence')
             .doc('user-2')
             .set({
-          'userId': 'user-2',
-          'displayName': 'User Two',
-          'isActive': true,
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-        });
+              'userId': 'user-2',
+              'displayName': 'User Two',
+              'isActive': true,
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+            });
 
         await Future.delayed(Duration(milliseconds: 50));
 
@@ -461,11 +471,11 @@ void main() {
             .collection('presence')
             .doc('active-1')
             .set({
-          'userId': 'active-1',
-          'displayName': 'Active One',
-          'isActive': true,
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-        });
+              'userId': 'active-1',
+              'displayName': 'Active One',
+              'isActive': true,
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+            });
 
         await fakeFirestore
             .collection('realtime_recipes')
@@ -473,11 +483,11 @@ void main() {
             .collection('presence')
             .doc('inactive-1')
             .set({
-          'userId': 'inactive-1',
-          'displayName': 'Inactive One',
-          'isActive': false,
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-        });
+              'userId': 'inactive-1',
+              'displayName': 'Inactive One',
+              'isActive': false,
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+            });
 
         // Act
         final stream = repository.getParticipantsStream('recipe-1');
@@ -522,10 +532,10 @@ void main() {
               .collection('presence')
               .doc(editor['id'] as String)
               .set({
-            'isActive': true,
-            'lastSeen': editor['lastSeen'],
-            'displayName': 'Editor ${editor['id']}',
-          });
+                'isActive': true,
+                'lastSeen': editor['lastSeen'],
+                'displayName': 'Editor ${editor['id']}',
+              });
         }
 
         // Act
@@ -554,10 +564,9 @@ void main() {
       test('should handle cleanup with no presence documents', () async {
         // Arrange
         // Create recipe without any presence documents
-        await fakeFirestore
-            .collection('realtime_recipes')
-            .doc('recipe-1')
-            .set({'id': 'recipe-1'});
+        await fakeFirestore.collection('realtime_recipes').doc('recipe-1').set({
+          'id': 'recipe-1',
+        });
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -577,13 +586,13 @@ void main() {
             .collection('presence')
             .doc('user-123')
             .set({
-          'userId': 'user-123',
-          'displayName': 'Test User',
-          'isActive': true,
-          'lastSeen': oldTime,
-          'customField': 'preserved',
-          'currentField': 'ingredients',
-        });
+              'userId': 'user-123',
+              'displayName': 'Test User',
+              'isActive': true,
+              'lastSeen': oldTime,
+              'customField': 'preserved',
+              'currentField': 'ingredients',
+            });
 
         // Act
         await repository.cleanupInactiveEditors('recipe-1');
@@ -649,10 +658,10 @@ void main() {
                 .collection('presence')
                 .doc('user-$i')
                 .set({
-              'displayName': 'User $i',
-              'lastSeen': DateTime.now().millisecondsSinceEpoch,
-              'isActive': true,
-            }),
+                  'displayName': 'User $i',
+                  'lastSeen': DateTime.now().millisecondsSinceEpoch,
+                  'isActive': true,
+                }),
           );
         }
 
@@ -714,7 +723,10 @@ void main() {
         // Act & Assert - Should not throw (use auth user)
         await expectLater(
           repository.updateUserPresence(
-              'non-existent', testUserId, 'Test User'),
+            'non-existent',
+            testUserId,
+            'Test User',
+          ),
           completes,
         );
 
@@ -774,13 +786,18 @@ void main() {
         // Act - Auth user joins multiple recipes
         for (final recipeId in recipeIds) {
           await repository.updateUserPresence(
-              recipeId, testUserId, 'Multi-Chef');
+            recipeId,
+            testUserId,
+            'Multi-Chef',
+          );
         }
 
         // Assert - User should be present in all recipes
         for (final recipeId in recipeIds) {
-          final isActive =
-              await repository.isUserActivelyEditing(recipeId, testUserId);
+          final isActive = await repository.isUserActivelyEditing(
+            recipeId,
+            testUserId,
+          );
           expect(isActive, isTrue);
         }
       });
@@ -831,22 +848,22 @@ void main() {
             .collection('presence')
             .doc('editor-1')
             .set({
-          'userId': 'editor-1',
-          'displayName': 'Editor 1',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-        });
+              'userId': 'editor-1',
+              'displayName': 'Editor 1',
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+              'isActive': true,
+            });
         await fakeFirestore
             .collection('realtime_recipes')
             .doc('recipe-1')
             .collection('presence')
             .doc('editor-2')
             .set({
-          'userId': 'editor-2',
-          'displayName': 'Editor 2',
-          'lastSeen': DateTime.now().millisecondsSinceEpoch,
-          'isActive': true,
-        });
+              'userId': 'editor-2',
+              'displayName': 'Editor 2',
+              'lastSeen': DateTime.now().millisecondsSinceEpoch,
+              'isActive': true,
+            });
 
         // Act - Delete recipe document
         await fakeFirestore

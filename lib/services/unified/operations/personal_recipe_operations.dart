@@ -41,7 +41,10 @@ abstract class PersonalRecipeDelegate {
   Future<bool> removeIngredient(String recipeId, int index);
   Future<bool> addInstruction(String recipeId, String instruction);
   Future<bool> updateInstruction(
-      String recipeId, int index, String instruction);
+    String recipeId,
+    int index,
+    String instruction,
+  );
   Future<bool> removeInstruction(String recipeId, int index);
   Future<bool> markAsCooked(String recipeId);
 }
@@ -71,38 +74,50 @@ class PersonalRecipeOperations {
       return recipeId != null
           ? RecipeOperationResult.success('Recipe added successfully')
           : RecipeOperationResult.failure(
-              AppLocale.current.errorCouldNotAddRecipe);
+              AppLocale.current.errorCouldNotAddRecipe,
+            );
     } catch (e) {
       // BUT-968: don't leak the raw FirebaseException to the UI — translate
       // known codes (permission-denied, network-request-failed, ...) into
       // localized copy. Logging keeps the raw cause for triage.
       AppLogger.error('Failed to add unified recipe', e);
-      return RecipeOperationResult.failure(mapFirebaseErrorMessage(e,
-          fallback: AppLocale.current.errorCouldNotAddRecipe));
+      return RecipeOperationResult.failure(
+        mapFirebaseErrorMessage(
+          e,
+          fallback: AppLocale.current.errorCouldNotAddRecipe,
+        ),
+      );
     }
   }
 
   /// Update unified recipe
   Future<RecipeOperationResult> updateUnifiedRecipe(
-      Recipe unifiedRecipe) async {
+    Recipe unifiedRecipe,
+  ) async {
     try {
       final success = await updateRecipe(unifiedRecipe);
 
       return success
           ? RecipeOperationResult.success('Recipe updated successfully')
           : RecipeOperationResult.failure(
-              AppLocale.current.errorCouldNotUpdateRecipe);
+              AppLocale.current.errorCouldNotUpdateRecipe,
+            );
     } catch (e) {
       // BUT-968: same translation as addUnifiedRecipe.
       AppLogger.error('Failed to update unified recipe', e);
-      return RecipeOperationResult.failure(mapFirebaseErrorMessage(e,
-          fallback: AppLocale.current.errorCouldNotUpdateRecipe));
+      return RecipeOperationResult.failure(
+        mapFirebaseErrorMessage(
+          e,
+          fallback: AppLocale.current.errorCouldNotUpdateRecipe,
+        ),
+      );
     }
   }
 
   /// Add multiple unified recipes
   Future<RecipeOperationResult> addMultipleUnifiedRecipes(
-      List<Recipe> recipes) async {
+    List<Recipe> recipes,
+  ) async {
     try {
       int successCount = 0;
       final failures = <String>[];
@@ -118,18 +133,22 @@ class PersonalRecipeOperations {
 
       if (successCount == recipes.length) {
         return RecipeOperationResult.success(
-            '${recipes.length} recipes imported');
+          '${recipes.length} recipes imported',
+        );
       } else if (successCount > 0) {
         return RecipeOperationResult.success(
-            '$successCount/${recipes.length} recipes imported. Errors: ${failures.join(', ')}');
+          '$successCount/${recipes.length} recipes imported. Errors: ${failures.join(', ')}',
+        );
       } else {
         return RecipeOperationResult.failure(
-            AppLocale.current.errorCouldNotImportRecipes);
+          AppLocale.current.errorCouldNotImportRecipes,
+        );
       }
     } catch (e) {
       AppLogger.error('Failed to add multiple unified recipes', e);
       return RecipeOperationResult.failure(
-          AppLocale.current.errorCouldNotImportRecipes);
+        AppLocale.current.errorCouldNotImportRecipes,
+      );
     }
   }
 
@@ -212,7 +231,10 @@ class PersonalRecipeOperations {
   }
 
   Future<bool> updateIngredient(
-      String recipeId, int index, String ingredient) async {
+    String recipeId,
+    int index,
+    String ingredient,
+  ) async {
     return await _delegate.updateIngredient(recipeId, index, ingredient);
   }
 
@@ -225,7 +247,10 @@ class PersonalRecipeOperations {
   }
 
   Future<bool> updateInstruction(
-      String recipeId, int index, String instruction) async {
+    String recipeId,
+    int index,
+    String instruction,
+  ) async {
     return await _delegate.updateInstruction(recipeId, index, instruction);
   }
 

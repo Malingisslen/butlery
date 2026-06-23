@@ -18,7 +18,8 @@ class LegacyRecipeOwnershipResolver {
 
       if (isLegacyRecipe(recipe)) {
         AppLogger.info(
-            '🔧 Legacy recipe detected, applying ownership inference');
+          '🔧 Legacy recipe detected, applying ownership inference',
+        );
         return inferLegacyOwnership(recipe, currentUserId);
       }
 
@@ -40,7 +41,8 @@ class LegacyRecipeOwnershipResolver {
 
     if (isLegacy) {
       AppLogger.info(
-          '🕰️ Legacy recipe indicators - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe');
+        '🕰️ Legacy recipe indicators - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe',
+      );
     }
 
     return isLegacy;
@@ -51,7 +53,8 @@ class LegacyRecipeOwnershipResolver {
 
     if (recipe.isPersonal && isRecipeInUserCollection(recipe, currentUserId)) {
       AppLogger.success(
-          '✅ Legacy ownership inferred via collection membership');
+        '✅ Legacy ownership inferred via collection membership',
+      );
       return currentUserId;
     }
 
@@ -62,7 +65,8 @@ class LegacyRecipeOwnershipResolver {
 
     if (isOrphanedLegacyRecipe(recipe)) {
       AppLogger.warning(
-          '🚨 Allowing deletion of orphaned legacy recipe as last resort');
+        '🚨 Allowing deletion of orphaned legacy recipe as last resort',
+      );
       return currentUserId;
     }
 
@@ -73,21 +77,24 @@ class LegacyRecipeOwnershipResolver {
   bool isRecipeInUserCollection(Recipe recipe, String userId) {
     if (recipe.isPersonal) {
       AppLogger.info(
-          '🔍 Personal recipe accessible by user - assuming ownership');
+        '🔍 Personal recipe accessible by user - assuming ownership',
+      );
       return true;
     }
 
     if (recipe.id.contains(userId) ||
         recipe.id.startsWith('user_${userId.maskedUserId}')) {
       AppLogger.info(
-          '🔍 Recipe ID contains user identifier - assuming ownership');
+        '🔍 Recipe ID contains user identifier - assuming ownership',
+      );
       return true;
     }
 
     if (recipe.imageUrls.isNotEmpty &&
         recipe.imageUrls.any((url) => url.contains(userId))) {
       AppLogger.info(
-          '🔍 Recipe images in user storage path - assuming ownership');
+        '🔍 Recipe images in user storage path - assuming ownership',
+      );
       return true;
     }
 
@@ -106,8 +113,8 @@ class LegacyRecipeOwnershipResolver {
   bool isOrphanedLegacyRecipe(Recipe recipe) {
     final hasNoOwnershipData =
         (recipe.createdBy == null || recipe.createdBy!.isEmpty) &&
-            (recipe.socialData?.ownerId == null ||
-                recipe.socialData!.ownerId!.isEmpty);
+        (recipe.socialData?.ownerId == null ||
+            recipe.socialData!.ownerId!.isEmpty);
 
     final isVeryOld = recipe.createdAt.isBefore(DateTime(2022, 1, 1));
     final hasMinimalData = recipe.title.isEmpty || recipe.title.length < 3;
@@ -118,7 +125,8 @@ class LegacyRecipeOwnershipResolver {
 
     if (isOrphaned) {
       AppLogger.warning(
-          '🗑️ Recipe identified as orphaned legacy data - allowing cleanup');
+        '🗑️ Recipe identified as orphaned legacy data - allowing cleanup',
+      );
     }
 
     return isOrphaned;

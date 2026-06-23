@@ -160,13 +160,17 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     );
     _pulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: _pulseScale)
-            .chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        tween: Tween(
+          begin: 1.0,
+          end: _pulseScale,
+        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: _pulseScale, end: 1.0)
-            .chain(CurveTween(curve: ThemeConstants.standardCurve)),
+        tween: Tween(
+          begin: _pulseScale,
+          end: 1.0,
+        ).chain(CurveTween(curve: ThemeConstants.standardCurve)),
         weight: 50,
       ),
     ]).animate(_pulseController);
@@ -219,10 +223,12 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           label: selectionMode
               ? context.l10n.a11yShoppingSelectItem(widget.item.displayText)
               : (widget.isCompleted
-                  ? context.l10n
-                      .a11yShoppingItemChecked(widget.item.displayText)
-                  : context.l10n
-                      .a11yShoppingItemUnchecked(widget.item.displayText)),
+                    ? context.l10n.a11yShoppingItemChecked(
+                        widget.item.displayText,
+                      )
+                    : context.l10n.a11yShoppingItemUnchecked(
+                        widget.item.displayText,
+                      )),
           button: true,
           selected: selectionMode ? selected : null,
           enabled: true,
@@ -323,8 +329,9 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               widget.item.note!,
               style: AppTextStyles.bodySmall.copyWith(
                 color: widget.isCompleted
-                    ? cs.onSurfaceVariant
-                        .withValues(alpha: AppDimensions.opacityVeryDark)
+                    ? cs.onSurfaceVariant.withValues(
+                        alpha: AppDimensions.opacityVeryDark,
+                      )
                     : cs.onSurfaceVariant,
                 decoration: widget.isCompleted
                     ? TextDecoration.lineThrough
@@ -379,8 +386,9 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           icon: Icons.delete,
           onPressed: () => widget.onDeleteItem(widget.item),
           semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
-          color:
-              cs.onSurfaceVariant.withValues(alpha: AppDimensions.opacityDark),
+          color: cs.onSurfaceVariant.withValues(
+            alpha: AppDimensions.opacityDark,
+          ),
           iconSize: AppDimensions.iconSizeS,
         ),
       ],

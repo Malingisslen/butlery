@@ -46,11 +46,11 @@ class LoadingIndicator extends StatelessWidget {
     super.key,
     this.color,
     this.semanticLabel,
-  })  : size = AppDimensions.iconSizeS,
-        strokeWidth = 2,
-        padding = const EdgeInsets.all(AppDimensions.spacingL),
-        value = null,
-        backgroundColor = null;
+  }) : size = AppDimensions.iconSizeS,
+       strokeWidth = 2,
+       padding = const EdgeInsets.all(AppDimensions.spacingL),
+       value = null,
+       backgroundColor = null;
 
   @override
   Widget build(BuildContext context) {

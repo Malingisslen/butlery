@@ -15,7 +15,7 @@ enum MetricCategory {
   parsing,
   recipes,
   feedback,
-  ops
+  ops,
 }
 
 enum MetricKey {
@@ -33,21 +33,20 @@ enum MetricKey {
   engagementActiveToday,
   engagementActive7d,
   engagementActive28d,
-  engagementDailyTable;
+  engagementDailyTable
+  ;
 
   MetricCategory get category => switch (this) {
-        recipeTotal || recipeByMethod => MetricCategory.recipes,
-        importDomains ||
-        importSuccess ||
-        importFailure ||
-        importSuccessRate ||
-        importDomainTable =>
-          MetricCategory.importHealth,
-        engagementUsers ||
-        engagementActiveToday ||
-        engagementActive7d ||
-        engagementActive28d ||
-        engagementDailyTable =>
-          MetricCategory.engagement,
-      };
+    recipeTotal || recipeByMethod => MetricCategory.recipes,
+    importDomains ||
+    importSuccess ||
+    importFailure ||
+    importSuccessRate ||
+    importDomainTable => MetricCategory.importHealth,
+    engagementUsers ||
+    engagementActiveToday ||
+    engagementActive7d ||
+    engagementActive28d ||
+    engagementDailyTable => MetricCategory.engagement,
+  };
 }

@@ -128,8 +128,7 @@ class _FakeSharedRecipeRepository extends Fake
   Future<List<SharedContentMember>> getMembersWithInfo(
     String contentId, {
     int? limit,
-  }) async =>
-      seedMembers;
+  }) async => seedMembers;
 }
 
 class _FakeSharedMenuRepository extends Fake
@@ -184,8 +183,7 @@ class _FakeSharedMenuRepository extends Fake
   Future<List<SharedContentMember>> getMembersWithInfo(
     String contentId, {
     int? limit,
-  }) async =>
-      seedMembers;
+  }) async => seedMembers;
 }
 
 /// Fake `PersonalRecipeOperations` substituted on a fake
@@ -300,7 +298,8 @@ SharedMenu _makeSharedMenu({
     sharedByUserId: sharedByUserId,
     sharedByDisplayName: 'Anna',
     menuTitle: 'Veckomeny',
-    menuSnapshot: snapshot ??
+    menuSnapshot:
+        snapshot ??
         {
           'Måndag': [_makeRecipe(id: 'rA', title: 'A')],
           'Tisdag': [_makeRecipe(id: 'rB', title: 'B')],
@@ -357,32 +356,37 @@ void main() {
     /// Proves unauthenticated initialize doesn't touch repos and doesn't
     /// crash. Without this guard, a logged-out splash could hit
     /// `currentUserId!` and throw.
-    test('unauthenticated initialize is a no-op (no repo calls, no throw)',
-        () async {
-      permission.setUserId(null);
+    test(
+      'unauthenticated initialize is a no-op (no repo calls, no throw)',
+      () async {
+        permission.setUserId(null);
 
-      await service.initialize();
+        await service.initialize();
 
-      expect(service.sharedRecipes, isEmpty);
-      expect(service.sharedMenus, isEmpty);
-      expect(service.hasError, isFalse);
-      expect(recipeRepo.markedAsViewed, isEmpty); // never reached anything
-    });
+        expect(service.sharedRecipes, isEmpty);
+        expect(service.sharedMenus, isEmpty);
+        expect(service.hasError, isFalse);
+        expect(recipeRepo.markedAsViewed, isEmpty); // never reached anything
+      },
+    );
 
     /// Proves repo failure during load is swallowed, lists fall back to
     /// empty, no exception escapes. Critical for offline / permission-denied
     /// session-start.
-    test('repo throw during load → lists cleared, no exception escapes',
-        () async {
-      recipeRepo.throwOnGetSharedRecipesForUser =
-          Exception('permission denied');
+    test(
+      'repo throw during load → lists cleared, no exception escapes',
+      () async {
+        recipeRepo.throwOnGetSharedRecipesForUser = Exception(
+          'permission denied',
+        );
 
-      await service.initialize();
+        await service.initialize();
 
-      expect(service.sharedRecipes, isEmpty);
-      expect(service.sharedMenus, isEmpty);
-      expect(service.isLoading, isFalse);
-    });
+        expect(service.sharedRecipes, isEmpty);
+        expect(service.sharedMenus, isEmpty);
+        expect(service.isLoading, isFalse);
+      },
+    );
 
     /// Proves the getters return *unmodifiable* views — a viewmodel that
     /// accidentally mutates the list shouldn't corrupt service state.
@@ -391,10 +395,14 @@ void main() {
       menuRepo.seedMenus = [_makeSharedMenu()];
       await service.initialize();
 
-      expect(() => service.sharedRecipes.add(_makeSharedRecipe(id: 'x')),
-          throwsUnsupportedError);
-      expect(() => service.sharedMenus.add(_makeSharedMenu(id: 'x')),
-          throwsUnsupportedError);
+      expect(
+        () => service.sharedRecipes.add(_makeSharedRecipe(id: 'x')),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => service.sharedMenus.add(_makeSharedMenu(id: 'x')),
+        throwsUnsupportedError,
+      );
     });
 
     /// Proves refresh re-fetches when repository contents change between
@@ -417,61 +425,68 @@ void main() {
   group('dismissSharedRecipe (the BUT-1068 contract)', () {
     /// Proves happy path returns true AND forwards the *current* user's uid
     /// to the repo — not the sharer's uid (classic bug).
-    test('authenticated success: returns true, calls repo with current uid',
-        () async {
-      final ok = await service.dismissSharedRecipe('sr-1');
+    test(
+      'authenticated success: returns true, calls repo with current uid',
+      () async {
+        final ok = await service.dismissSharedRecipe('sr-1');
 
-      expect(ok, isTrue);
-      expect(recipeRepo.markedAsDismissed, [('sr-1', 'me-uid')]);
-      expect(service.hasError, isFalse);
-    });
+        expect(ok, isTrue);
+        expect(recipeRepo.markedAsDismissed, [('sr-1', 'me-uid')]);
+        expect(service.hasError, isFalse);
+      },
+    );
 
     /// Proves unauthenticated dismiss short-circuits to false WITHOUT
     /// touching the repo (no spurious anonymous write) AND sets an error.
-    test('unauthenticated: returns false, no repo call, error is set',
-        () async {
-      permission.setUserId(null);
+    test(
+      'unauthenticated: returns false, no repo call, error is set',
+      () async {
+        permission.setUserId(null);
 
-      final ok = await service.dismissSharedRecipe('sr-1');
+        final ok = await service.dismissSharedRecipe('sr-1');
 
-      expect(ok, isFalse);
-      expect(recipeRepo.markedAsDismissed, isEmpty);
-      // Swedish localized auth error (errorAuthentication), not the old
-      // hardcoded English 'User not authenticated' — user-facing strings
-      // must be Swedish per CLAUDE.local.md.
-      expect(service.error, contains('Autentisering'));
-    });
+        expect(ok, isFalse);
+        expect(recipeRepo.markedAsDismissed, isEmpty);
+        // Swedish localized auth error (errorAuthentication), not the old
+        // hardcoded English 'User not authenticated' — user-facing strings
+        // must be Swedish per CLAUDE.local.md.
+        expect(service.error, contains('Autentisering'));
+      },
+    );
 
     /// Pinned contract: repo throwing is caught → false. The shared-recipe
     /// viewmodel removes-from-UI based on `true`; this contract is what
     /// keeps a failed dismiss from being silently swallowed by the UI.
     /// Error message is the sanitized localized string, not the raw cause.
     test(
-        'repo throws permission-denied → returns false, sets sanitized error, no rethrow',
-        () async {
-      recipeRepo.throwOnMarkAsDismissed = Exception('permission-denied');
+      'repo throws permission-denied → returns false, sets sanitized error, no rethrow',
+      () async {
+        recipeRepo.throwOnMarkAsDismissed = Exception('permission-denied');
 
-      final ok = await service.dismissSharedRecipe('sr-1');
+        final ok = await service.dismissSharedRecipe('sr-1');
 
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-      // Sanitized Swedish copy for the 'permission' branch — see
-      // error_sanitizer.dart → AppLocale.current.errorPermissionDenied.
-      expect(service.error, contains('behörighet'));
-    });
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+        // Sanitized Swedish copy for the 'permission' branch — see
+        // error_sanitizer.dart → AppLocale.current.errorPermissionDenied.
+        expect(service.error, contains('behörighet'));
+      },
+    );
 
     /// Same shape but for a network error — proves the catch is exception-
     /// type-agnostic (not only Firebase ones). Sanitizer routes "network"
     /// substrings to the localized network error string.
-    test('repo throws generic network error → returns false, no rethrow',
-        () async {
-      recipeRepo.throwOnMarkAsDismissed = StateError('network');
+    test(
+      'repo throws generic network error → returns false, no rethrow',
+      () async {
+        recipeRepo.throwOnMarkAsDismissed = StateError('network');
 
-      final ok = await service.dismissSharedRecipe('sr-1');
+        final ok = await service.dismissSharedRecipe('sr-1');
 
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-    });
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+      },
+    );
   });
 
   group('dismissSharedMenu', () {
@@ -494,17 +509,19 @@ void main() {
       expect(service.error, contains('Autentisering'));
     });
 
-    test('repo throws → returns false, no rethrow, sanitized error set',
-        () async {
-      menuRepo.throwOnMarkAsDismissed = Exception('boom');
+    test(
+      'repo throws → returns false, no rethrow, sanitized error set',
+      () async {
+        menuRepo.throwOnMarkAsDismissed = Exception('boom');
 
-      final ok = await service.dismissSharedMenu('sm-1');
+        final ok = await service.dismissSharedMenu('sm-1');
 
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-      // Generic exception → errorGeneric Swedish fallback.
-      expect(service.error, isNotNull);
-    });
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+        // Generic exception → errorGeneric Swedish fallback.
+        expect(service.error, isNotNull);
+      },
+    );
   });
 
   group('undismissSharedRecipe / undismissSharedMenu', () {
@@ -528,8 +545,11 @@ void main() {
       recipeRepo.throwOnUndismiss = Exception('boom');
       final ok = await service.undismissSharedRecipe('sr-1');
       expect(ok, isFalse);
-      expect(service.hasError, isTrue,
-          reason: 'undismiss must surface errors via service.error');
+      expect(
+        service.hasError,
+        isTrue,
+        reason: 'undismiss must surface errors via service.error',
+      );
       expect(service.error, isNotNull);
     });
 
@@ -546,46 +566,56 @@ void main() {
       expect(menuRepo.undismissed, isEmpty);
     });
 
-    test('menu: repo throws → false, sanitized error IS set (BUT-1087)',
-        () async {
-      menuRepo.throwOnUndismiss = Exception('boom');
-      final ok = await service.undismissSharedMenu('sm-1');
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-      expect(service.error, isNotNull);
-    });
+    test(
+      'menu: repo throws → false, sanitized error IS set (BUT-1087)',
+      () async {
+        menuRepo.throwOnUndismiss = Exception('boom');
+        final ok = await service.undismissSharedMenu('sm-1');
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+        expect(service.error, isNotNull);
+      },
+    );
   });
 
   group('markSharedRecipeAsViewed / markSharedMenuAsViewed', () {
-    test('recipe: happy path forwards exact (id, userId) and returns true',
-        () async {
-      final ok = await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
-      expect(ok, isTrue);
-      expect(recipeRepo.markedAsViewed, [('sr-1', 'viewer-uid')]);
-    });
+    test(
+      'recipe: happy path forwards exact (id, userId) and returns true',
+      () async {
+        final ok = await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
+        expect(ok, isTrue);
+        expect(recipeRepo.markedAsViewed, [('sr-1', 'viewer-uid')]);
+      },
+    );
 
-    test('recipe: repo throws → false, sanitized error IS set (BUT-1087)',
-        () async {
-      recipeRepo.throwOnMarkAsViewed = Exception('boom');
-      final ok = await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-    });
+    test(
+      'recipe: repo throws → false, sanitized error IS set (BUT-1087)',
+      () async {
+        recipeRepo.throwOnMarkAsViewed = Exception('boom');
+        final ok = await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+      },
+    );
 
-    test('menu: happy path forwards exact (id, userId) and returns true',
-        () async {
-      final ok = await service.markSharedMenuAsViewed('sm-1', 'viewer-uid');
-      expect(ok, isTrue);
-      expect(menuRepo.markedAsViewed, [('sm-1', 'viewer-uid')]);
-    });
+    test(
+      'menu: happy path forwards exact (id, userId) and returns true',
+      () async {
+        final ok = await service.markSharedMenuAsViewed('sm-1', 'viewer-uid');
+        expect(ok, isTrue);
+        expect(menuRepo.markedAsViewed, [('sm-1', 'viewer-uid')]);
+      },
+    );
 
-    test('menu: repo throws → false, sanitized error IS set (BUT-1087)',
-        () async {
-      menuRepo.throwOnMarkAsViewed = Exception('boom');
-      final ok = await service.markSharedMenuAsViewed('sm-1', 'viewer-uid');
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-    });
+    test(
+      'menu: repo throws → false, sanitized error IS set (BUT-1087)',
+      () async {
+        menuRepo.throwOnMarkAsViewed = Exception('boom');
+        final ok = await service.markSharedMenuAsViewed('sm-1', 'viewer-uid');
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+      },
+    );
   });
 
   group('importSharedRecipe', () {
@@ -615,28 +645,33 @@ void main() {
     /// Pinned contract: imported recipe drops the *sender's* personalTagIds.
     /// UUIDs are meaningless in the recipient's account — keeping them
     /// would point at non-existent tags and break the tag UI.
-    test('success: creates personal recipe with sender tag IDs CLEARED',
-        () async {
-      personalOps.createRecipeImpl = (_) => 'new-id';
+    test(
+      'success: creates personal recipe with sender tag IDs CLEARED',
+      () async {
+        personalOps.createRecipeImpl = (_) => 'new-id';
 
-      final ok = await service.importSharedRecipe('sr-1');
+        final ok = await service.importSharedRecipe('sr-1');
 
-      expect(ok, isTrue);
-      expect(personalOps.createCalls, hasLength(1));
-      final call = personalOps.createCalls.single;
-      expect(call['title'], 'Köttbullar');
-      expect(call['description'], 'Klassiska');
-      expect(call['ingredients'], ['nötfärs', 'lök']);
-      expect(call['instructions'], ['blanda', 'stek']);
-      expect(call['imageUrls'], ['https://x/k.jpg']);
-      expect(call['mealType'], 'Middag');
-      expect(call['portions'], 4);
-      expect(call['timeMinutes'], 30);
-      expect(call['rating'], 4.5);
-      expect(call['personalTagIds'], <String>[],
+        expect(ok, isTrue);
+        expect(personalOps.createCalls, hasLength(1));
+        final call = personalOps.createCalls.single;
+        expect(call['title'], 'Köttbullar');
+        expect(call['description'], 'Klassiska');
+        expect(call['ingredients'], ['nötfärs', 'lök']);
+        expect(call['instructions'], ['blanda', 'stek']);
+        expect(call['imageUrls'], ['https://x/k.jpg']);
+        expect(call['mealType'], 'Middag');
+        expect(call['portions'], 4);
+        expect(call['timeMinutes'], 30);
+        expect(call['rating'], 4.5);
+        expect(
+          call['personalTagIds'],
+          <String>[],
           reason:
-              "sender's personalTagIds must be stripped — UUIDs don't transfer");
-    });
+              "sender's personalTagIds must be stripped — UUIDs don't transfer",
+        );
+      },
+    );
 
     /// Pinned contract: success path marks the share as imported using the
     /// CURRENT user's uid, not the sharer's. A swap here would credit the
@@ -651,65 +686,84 @@ void main() {
     /// Critical: when personal createRecipe returns null (failure), we MUST
     /// NOT mark the share as imported — that would lie about state and
     /// hide the recipe from the inbox even though nothing was saved.
-    test('createRecipe returns null → returns false AND no mark-as-imported',
-        () async {
-      personalOps.createRecipeImpl = (_) => null;
+    test(
+      'createRecipe returns null → returns false AND no mark-as-imported',
+      () async {
+        personalOps.createRecipeImpl = (_) => null;
 
-      final ok = await service.importSharedRecipe('sr-1');
+        final ok = await service.importSharedRecipe('sr-1');
 
-      expect(ok, isFalse);
-      expect(recipeRepo.markedAsImported, isEmpty,
-          reason: 'must not mark imported when creation failed');
-    });
+        expect(ok, isFalse);
+        expect(
+          recipeRepo.markedAsImported,
+          isEmpty,
+          reason: 'must not mark imported when creation failed',
+        );
+      },
+    );
 
     /// Proves not-found returns false fast and never invokes the delegate.
-    test('unknown recipe id → returns false, never calls createRecipe',
-        () async {
-      final ok = await service.importSharedRecipe('does-not-exist');
+    test(
+      'unknown recipe id → returns false, never calls createRecipe',
+      () async {
+        final ok = await service.importSharedRecipe('does-not-exist');
 
-      expect(ok, isFalse);
-      expect(personalOps.createCalls, isEmpty);
-      expect(recipeRepo.markedAsImported, isEmpty);
-    });
+        expect(ok, isFalse);
+        expect(personalOps.createCalls, isEmpty);
+        expect(recipeRepo.markedAsImported, isEmpty);
+      },
+    );
 
     /// Proves delegate throw is caught → false. No rethrow into UI code.
     /// BUT-1087: error surfaces via service.error (previously silent).
-    test('createRecipe throws → returns false, sanitized error IS set',
-        () async {
-      personalOps.createRecipeImpl = (_) => throw Exception('disk full');
+    test(
+      'createRecipe throws → returns false, sanitized error IS set',
+      () async {
+        personalOps.createRecipeImpl = (_) => throw Exception('disk full');
 
-      final ok = await service.importSharedRecipe('sr-1');
+        final ok = await service.importSharedRecipe('sr-1');
 
-      expect(ok, isFalse);
-      expect(recipeRepo.markedAsImported, isEmpty);
-      expect(service.hasError, isTrue);
-      expect(service.error, isNotNull);
-    });
+        expect(ok, isFalse);
+        expect(recipeRepo.markedAsImported, isEmpty);
+        expect(service.hasError, isTrue);
+        expect(service.error, isNotNull);
+      },
+    );
 
     /// BUT-1087: `_error` must be cleared at the entry-point of every public
     /// mutator so a successful retry visibly clears the banner. Without
     /// this, the UI banner stays stuck after a failure even when the next
     /// call succeeds.
-    test('error from prior failure is cleared on subsequent successful call',
-        () async {
-      // 1. First call: dismiss fails → error populated.
-      recipeRepo.throwOnMarkAsDismissed = Exception('boom');
-      final firstResult = await service.dismissSharedRecipe('sr-1');
-      expect(firstResult, isFalse);
-      expect(service.hasError, isTrue,
-          reason: 'precondition: failure must populate error');
+    test(
+      'error from prior failure is cleared on subsequent successful call',
+      () async {
+        // 1. First call: dismiss fails → error populated.
+        recipeRepo.throwOnMarkAsDismissed = Exception('boom');
+        final firstResult = await service.dismissSharedRecipe('sr-1');
+        expect(firstResult, isFalse);
+        expect(
+          service.hasError,
+          isTrue,
+          reason: 'precondition: failure must populate error',
+        );
 
-      // 2. Second call: a different successful mutator should reset error.
-      recipeRepo.throwOnMarkAsDismissed = null; // clear the configured throw
-      final secondResult =
-          await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
+        // 2. Second call: a different successful mutator should reset error.
+        recipeRepo.throwOnMarkAsDismissed = null; // clear the configured throw
+        final secondResult = await service.markSharedRecipeAsViewed(
+          'sr-1',
+          'viewer-uid',
+        );
 
-      expect(secondResult, isTrue);
-      expect(service.hasError, isFalse,
+        expect(secondResult, isTrue);
+        expect(
+          service.hasError,
+          isFalse,
           reason:
-              'BUT-1087: a successful mutator must clear stale error from prior failures');
-      expect(service.error, isNull);
-    });
+              'BUT-1087: a successful mutator must clear stale error from prior failures',
+        );
+        expect(service.error, isNull);
+      },
+    );
 
     /// BUT-1086: When the user signs out mid-import we still return true
     /// (the recipe IS saved) AND we skip the markAsImportedOrJoined call
@@ -717,29 +771,39 @@ void main() {
     /// the UI can prompt the user to re-sign-in and refresh, instead of
     /// silently swallowing the half-done state.
     test(
-        'BUT-1086: sign-out mid-import → returns true, no mark call, error surfaced',
-        () async {
-      personalOps.createRecipeImpl = (_) {
-        permission.setUserId(null); // sign-out between create + mark
-        return 'new-id';
-      };
+      'BUT-1086: sign-out mid-import → returns true, no mark call, error surfaced',
+      () async {
+        personalOps.createRecipeImpl = (_) {
+          permission.setUserId(null); // sign-out between create + mark
+          return 'new-id';
+        };
 
-      final ok = await service.importSharedRecipe('sr-1');
+        final ok = await service.importSharedRecipe('sr-1');
 
-      expect(ok, isTrue,
-          reason: 'primary write succeeded — must still report true');
-      expect(recipeRepo.markedAsImported, isEmpty,
-          reason: 'cannot mark as imported without authenticated uid');
-      expect(service.hasError, isTrue,
+        expect(
+          ok,
+          isTrue,
+          reason: 'primary write succeeded — must still report true',
+        );
+        expect(
+          recipeRepo.markedAsImported,
+          isEmpty,
+          reason: 'cannot mark as imported without authenticated uid',
+        );
+        expect(
+          service.hasError,
+          isTrue,
           reason:
-              'BUT-1086: half-done state must surface so UI can prompt re-sign-in');
-      // Pin the SPECIFIC actionable re-sign-in copy, not just "some error".
-      // The whole point of BUT-1086 is that the UI shows a "log in again and
-      // refresh" prompt — a generic sanitized error would not tell the user
-      // their recipe was actually saved. Asserting only isNotNull would pass
-      // even if a refactor regressed this to a generic failure message.
-      expect(service.error, AppLocale.current.errorImportPartialReSignIn);
-    });
+              'BUT-1086: half-done state must surface so UI can prompt re-sign-in',
+        );
+        // Pin the SPECIFIC actionable re-sign-in copy, not just "some error".
+        // The whole point of BUT-1086 is that the UI shows a "log in again and
+        // refresh" prompt — a generic sanitized error would not tell the user
+        // their recipe was actually saved. Asserting only isNotNull would pass
+        // even if a refactor regressed this to a generic failure message.
+        expect(service.error, AppLocale.current.errorImportPartialReSignIn);
+      },
+    );
   });
 
   group('importSharedMenu', () {
@@ -747,32 +811,34 @@ void main() {
     /// "succeed" (true) and triggers mark-as-imported. Common-bug-shape:
     /// requiring ALL recipes to succeed which would never fire on a single
     /// transient failure.
-    test('partial success (1 of 2) → returns true, marks menu as imported',
-        () async {
-      menuRepo.seedMenus = [
-        _makeSharedMenu(
-          id: 'sm-1',
-          snapshot: {
-            'Mån': [_makeRecipe(id: 'a', title: 'A')],
-            'Tis': [_makeRecipe(id: 'b', title: 'B')],
-          },
-        ),
-      ];
-      await service.initialize();
+    test(
+      'partial success (1 of 2) → returns true, marks menu as imported',
+      () async {
+        menuRepo.seedMenus = [
+          _makeSharedMenu(
+            id: 'sm-1',
+            snapshot: {
+              'Mån': [_makeRecipe(id: 'a', title: 'A')],
+              'Tis': [_makeRecipe(id: 'b', title: 'B')],
+            },
+          ),
+        ];
+        await service.initialize();
 
-      // First call succeeds, second fails (createRecipe returns null).
-      var n = 0;
-      personalOps.createRecipeImpl = (_) {
-        n++;
-        return n == 1 ? 'created-$n' : null;
-      };
+        // First call succeeds, second fails (createRecipe returns null).
+        var n = 0;
+        personalOps.createRecipeImpl = (_) {
+          n++;
+          return n == 1 ? 'created-$n' : null;
+        };
 
-      final ok = await service.importSharedMenu('sm-1');
+        final ok = await service.importSharedMenu('sm-1');
 
-      expect(ok, isTrue);
-      expect(personalOps.createCalls, hasLength(2));
-      expect(menuRepo.markedAsImported, [('sm-1', 'me-uid')]);
-    });
+        expect(ok, isTrue);
+        expect(personalOps.createCalls, hasLength(2));
+        expect(menuRepo.markedAsImported, [('sm-1', 'me-uid')]);
+      },
+    );
 
     /// Pinned: per-recipe throws are isolated (the inner try/catch). One
     /// poison recipe must not abort the whole import.
@@ -807,24 +873,26 @@ void main() {
     /// Pinned: zero successes → false AND no mark-as-imported. A bug here
     /// would leave the menu disappeared from the inbox despite nothing
     /// being saved.
-    test('all recipes fail (null) → returns false, NO mark-as-imported call',
-        () async {
-      menuRepo.seedMenus = [
-        _makeSharedMenu(
-          id: 'sm-1',
-          snapshot: {
-            'Mån': [_makeRecipe(id: 'a', title: 'A')],
-          },
-        ),
-      ];
-      await service.initialize();
-      personalOps.createRecipeImpl = (_) => null;
+    test(
+      'all recipes fail (null) → returns false, NO mark-as-imported call',
+      () async {
+        menuRepo.seedMenus = [
+          _makeSharedMenu(
+            id: 'sm-1',
+            snapshot: {
+              'Mån': [_makeRecipe(id: 'a', title: 'A')],
+            },
+          ),
+        ];
+        await service.initialize();
+        personalOps.createRecipeImpl = (_) => null;
 
-      final ok = await service.importSharedMenu('sm-1');
+        final ok = await service.importSharedMenu('sm-1');
 
-      expect(ok, isFalse);
-      expect(menuRepo.markedAsImported, isEmpty);
-    });
+        expect(ok, isFalse);
+        expect(menuRepo.markedAsImported, isEmpty);
+      },
+    );
 
     test('unknown menu id → returns false, never calls createRecipe', () async {
       final ok = await service.importSharedMenu('nope');
@@ -852,8 +920,7 @@ void main() {
     /// deref crash), AND the half-done state is surfaced via the SAME
     /// re-sign-in copy the recipe path uses. The menu path previously had no
     /// `else` branch and stayed silent — this test pins that the gap is closed.
-    test(
-        'BUT-1086: sign-out mid-import → returns true, skips mark, surfaces '
+    test('BUT-1086: sign-out mid-import → returns true, skips mark, surfaces '
         're-sign-in error', () async {
       menuRepo.seedMenus = [
         _makeSharedMenu(
@@ -872,14 +939,23 @@ void main() {
 
       final ok = await service.importSharedMenu('sm-1');
 
-      expect(ok, isTrue,
-          reason: 'recipes were saved — primary write succeeded');
-      expect(menuRepo.markedAsImported, isEmpty,
-          reason: 'cannot mark imported without authenticated uid');
-      expect(service.hasError, isTrue,
-          reason:
-              'BUT-1086: half-done menu import must surface so UI can prompt '
-              're-sign-in — matching the recipe path, no longer silent');
+      expect(
+        ok,
+        isTrue,
+        reason: 'recipes were saved — primary write succeeded',
+      );
+      expect(
+        menuRepo.markedAsImported,
+        isEmpty,
+        reason: 'cannot mark imported without authenticated uid',
+      );
+      expect(
+        service.hasError,
+        isTrue,
+        reason:
+            'BUT-1086: half-done menu import must surface so UI can prompt '
+            're-sign-in — matching the recipe path, no longer silent',
+      );
       expect(service.error, AppLocale.current.errorImportPartialReSignIn);
     });
 
@@ -888,26 +964,28 @@ void main() {
     /// were already created; returning false here is the documented (if
     /// pessimistic) contract — what matters is that nothing rethrows into UI
     /// code and the error is visible.
-    test('mark-as-imported throws after saves → false, sanitized error set',
-        () async {
-      menuRepo.seedMenus = [
-        _makeSharedMenu(
-          id: 'sm-1',
-          snapshot: {
-            'Mån': [_makeRecipe(id: 'a', title: 'A')],
-          },
-        ),
-      ];
-      await service.initialize();
-      personalOps.createRecipeImpl = (_) => 'created';
-      menuRepo.throwOnMarkAsImported = Exception('permission-denied');
+    test(
+      'mark-as-imported throws after saves → false, sanitized error set',
+      () async {
+        menuRepo.seedMenus = [
+          _makeSharedMenu(
+            id: 'sm-1',
+            snapshot: {
+              'Mån': [_makeRecipe(id: 'a', title: 'A')],
+            },
+          ),
+        ];
+        await service.initialize();
+        personalOps.createRecipeImpl = (_) => 'created';
+        menuRepo.throwOnMarkAsImported = Exception('permission-denied');
 
-      final ok = await service.importSharedMenu('sm-1');
+        final ok = await service.importSharedMenu('sm-1');
 
-      expect(ok, isFalse);
-      expect(service.hasError, isTrue);
-      expect(service.error, isNotNull);
-    });
+        expect(ok, isFalse);
+        expect(service.hasError, isTrue);
+        expect(service.error, isNotNull);
+      },
+    );
   });
 
   group('ownership checks', () {
@@ -955,14 +1033,16 @@ void main() {
     /// no exception). The service is resolved lazily via ServiceLocator and
     /// may be unregistered in unit-test environments — this guards against
     /// crashing the whole shared-content load on that path.
-    test('isShoppingListSharedByUser: shopping service unregistered → false',
-        () async {
-      // No ServiceLocator.initialize call in this test → tryGet returns null.
-      expect(
-        await service.isShoppingListSharedByUser('list-1', 'me-uid'),
-        isFalse,
-      );
-    });
+    test(
+      'isShoppingListSharedByUser: shopping service unregistered → false',
+      () async {
+        // No ServiceLocator.initialize call in this test → tryGet returns null.
+        expect(
+          await service.isShoppingListSharedByUser('list-1', 'me-uid'),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('visible getters (pass-through)', () {
@@ -994,21 +1074,26 @@ void main() {
     /// test ensures the read-after-await pattern works correctly end-to-end
     /// and catches any future regression where the synchronous read
     /// accidentally precedes the async load (race condition).
-    test('state is immediately readable after initialize() completes',
-        () async {
-      recipeRepo.seedRecipes = [_makeSharedRecipe(id: 'sr-x')];
-      menuRepo.seedMenus = [_makeSharedMenu(id: 'sm-x')];
+    test(
+      'state is immediately readable after initialize() completes',
+      () async {
+        recipeRepo.seedRecipes = [_makeSharedRecipe(id: 'sr-x')];
+        menuRepo.seedMenus = [_makeSharedMenu(id: 'sm-x')];
 
-      // Caller awaits — then reads synchronously, no listener needed.
-      await service.initialize();
+        // Caller awaits — then reads synchronously, no listener needed.
+        await service.initialize();
 
-      expect(service.sharedRecipes.single.id, 'sr-x',
+        expect(
+          service.sharedRecipes.single.id,
+          'sr-x',
           reason:
               'read-after-await contract: state is stable immediately after '
-              'the Future completes');
-      expect(service.sharedMenus.single.id, 'sm-x');
-      expect(service.isLoading, isFalse);
-    });
+              'the Future completes',
+        );
+        expect(service.sharedMenus.single.id, 'sm-x');
+        expect(service.isLoading, isFalse);
+      },
+    );
 
     /// The read-after-await contract has teeth only if `isLoading` actually
     /// flips true WHILE the load is in flight — that is the signal a caller
@@ -1017,30 +1102,41 @@ void main() {
     /// set it, a non-awaiting caller would read stale data with no way to
     /// detect the load was still running. This pins that invariant by
     /// observing state from inside the unresolved repo call.
-    test('isLoading is true mid-load and false after initialize completes',
-        () async {
-      final gate = Completer<void>();
-      var loadingDuringFetch = false;
+    test(
+      'isLoading is true mid-load and false after initialize completes',
+      () async {
+        final gate = Completer<void>();
+        var loadingDuringFetch = false;
 
-      recipeRepo.onGetSharedRecipesForUser = () async {
-        // We are now inside the in-flight load. The contract says a caller
-        // that peeked here (without awaiting) would see isLoading == true.
-        loadingDuringFetch = service.isLoading;
-        await gate.future;
-      };
+        recipeRepo.onGetSharedRecipesForUser = () async {
+          // We are now inside the in-flight load. The contract says a caller
+          // that peeked here (without awaiting) would see isLoading == true.
+          loadingDuringFetch = service.isLoading;
+          await gate.future;
+        };
 
-      final pending = service.initialize();
-      expect(service.isLoading, isTrue,
-          reason: 'isLoading must be true synchronously after the call starts');
+        final pending = service.initialize();
+        expect(
+          service.isLoading,
+          isTrue,
+          reason: 'isLoading must be true synchronously after the call starts',
+        );
 
-      gate.complete();
-      await pending;
+        gate.complete();
+        await pending;
 
-      expect(loadingDuringFetch, isTrue,
+        expect(
+          loadingDuringFetch,
+          isTrue,
           reason:
-              'isLoading must remain true throughout the in-flight repo fetch');
-      expect(service.isLoading, isFalse,
-          reason: 'isLoading must clear once the Future resolves');
-    });
+              'isLoading must remain true throughout the in-flight repo fetch',
+        );
+        expect(
+          service.isLoading,
+          isFalse,
+          reason: 'isLoading must clear once the Future resolves',
+        );
+      },
+    );
   });
 }

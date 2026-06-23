@@ -15,35 +15,42 @@ import '../../infrastructure/mocks/production_mocks.dart';
 final _now = DateTime(2026, 4, 14);
 
 UserProfile _user(String uid, String name) => UserProfile(
-    uid: uid,
-    displayName: name,
-    email: '$uid@test.com',
-    joinedAt: _now,
-    lastActiveAt: _now);
+  uid: uid,
+  displayName: name,
+  email: '$uid@test.com',
+  joinedAt: _now,
+  lastActiveAt: _now,
+);
 
-FriendCategory _group(String id, String name, String owner,
-        {List<String> members = const []}) =>
-    FriendCategory(
-        id: id,
-        name: name,
-        ownerId: owner,
-        friendUserIds: members,
-        createdAt: _now,
-        updatedAt: _now);
+FriendCategory _group(
+  String id,
+  String name,
+  String owner, {
+  List<String> members = const [],
+}) => FriendCategory(
+  id: id,
+  name: name,
+  ownerId: owner,
+  friendUserIds: members,
+  createdAt: _now,
+  updatedAt: _now,
+);
 
-GroupInvitation _invitation(String id,
-        {GroupInvitationStatus status = GroupInvitationStatus.pending}) =>
-    GroupInvitation(
-        id: id,
-        groupId: 'group_$id',
-        groupName: 'Grupp $id',
-        groupEmoji: 'x',
-        fromUserId: 'sender_$id',
-        fromUserName: 'Sender $id',
-        toUserId: 'test-user-123',
-        status: status,
-        sentAt: _now,
-        expiresAt: _now.add(const Duration(days: 7)));
+GroupInvitation _invitation(
+  String id, {
+  GroupInvitationStatus status = GroupInvitationStatus.pending,
+}) => GroupInvitation(
+  id: id,
+  groupId: 'group_$id',
+  groupName: 'Grupp $id',
+  groupEmoji: 'x',
+  fromUserId: 'sender_$id',
+  fromUserName: 'Sender $id',
+  toUserId: 'test-user-123',
+  status: status,
+  sentAt: _now,
+  expiresAt: _now.add(const Duration(days: 7)),
+);
 
 void main() {
   group('GroupInvitationsViewModel', () {
@@ -56,18 +63,32 @@ void main() {
     final friend1 = _user('friend_1', 'Erik Svensson');
     final friend2 = _user('friend_2', 'Maria Oberg');
 
-    final availableGroup1 = _group('avail_1', 'Matlagning', 'other',
-        members: ['friend_1', 'friend_2']);
+    final availableGroup1 = _group(
+      'avail_1',
+      'Matlagning',
+      'other',
+      members: ['friend_1', 'friend_2'],
+    );
     final availableGroup2 = _group('avail_2', 'Familjen', 'admin');
-    final ownedGroup =
-        _group('owned', 'Min Grupp', 'test-user-123', members: ['friend_1']);
-    final memberGroup = _group('member', 'Redan Medlem', 'other',
-        members: ['test-user-123', 'friend_1']);
+    final ownedGroup = _group(
+      'owned',
+      'Min Grupp',
+      'test-user-123',
+      members: ['friend_1'],
+    );
+    final memberGroup = _group(
+      'member',
+      'Redan Medlem',
+      'other',
+      members: ['test-user-123', 'friend_1'],
+    );
 
     final pending1 = _invitation('inv_1');
     final pending2 = _invitation('inv_2');
-    final accepted =
-        _invitation('inv_3', status: GroupInvitationStatus.accepted);
+    final accepted = _invitation(
+      'inv_3',
+      status: GroupInvitationStatus.accepted,
+    );
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -80,7 +101,9 @@ void main() {
       final perm =
           ServiceLocator.get<PermissionService>() as FakePermissionService;
       perm.setPermissionState(
-          currentUserId: 'test-user-123', isAuthenticated: true);
+        currentUserId: 'test-user-123',
+        isAuthenticated: true,
+      );
 
       mockFriendsService = MockUnifiedFriendsService();
       mockCategoriesOps = MockFriendsCategoriesOperations();
@@ -94,18 +117,24 @@ void main() {
         invitations: mockInvitationsOps,
       );
 
-      when(() => mockCategoriesOps.getAllCategories()).thenReturn(
-          [availableGroup1, availableGroup2, ownedGroup, memberGroup]);
-      when(() => mockInvitationsOps.pendingReceivedInvitations)
-          .thenReturn([pending1, pending2, accepted]);
-      when(() => mockManagementOps.getAllFriends())
-          .thenReturn([friend1, friend2]);
-      when(() => mockCategoriesOps.assignFriendToCategory(any(), any()))
-          .thenAnswer((_) async => true);
-      when(() => mockInvitationsOps.acceptGroupInvitation(any()))
-          .thenAnswer((_) async => true);
-      when(() => mockInvitationsOps.cancelInvitation(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockCategoriesOps.getAllCategories(),
+      ).thenReturn([availableGroup1, availableGroup2, ownedGroup, memberGroup]);
+      when(
+        () => mockInvitationsOps.pendingReceivedInvitations,
+      ).thenReturn([pending1, pending2, accepted]);
+      when(
+        () => mockManagementOps.getAllFriends(),
+      ).thenReturn([friend1, friend2]);
+      when(
+        () => mockCategoriesOps.assignFriendToCategory(any(), any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockInvitationsOps.acceptGroupInvitation(any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockInvitationsOps.cancelInvitation(any()),
+      ).thenAnswer((_) async => true);
 
       viewModel = GroupInvitationsViewModel(friendsService: mockFriendsService);
       await Future.delayed(const Duration(milliseconds: 50));
@@ -124,14 +153,22 @@ void main() {
     group('Initialization', () {
       test('filters available groups excluding owned and member groups', () {
         expect(viewModel.availableGroups.length, equals(2));
-        expect(viewModel.availableGroups.any((g) => g.name == 'Matlagning'),
-            isTrue);
         expect(
-            viewModel.availableGroups.any((g) => g.name == 'Familjen'), isTrue);
-        expect(viewModel.availableGroups.any((g) => g.name == 'Min Grupp'),
-            isFalse);
-        expect(viewModel.availableGroups.any((g) => g.name == 'Redan Medlem'),
-            isFalse);
+          viewModel.availableGroups.any((g) => g.name == 'Matlagning'),
+          isTrue,
+        );
+        expect(
+          viewModel.availableGroups.any((g) => g.name == 'Familjen'),
+          isTrue,
+        );
+        expect(
+          viewModel.availableGroups.any((g) => g.name == 'Min Grupp'),
+          isFalse,
+        );
+        expect(
+          viewModel.availableGroups.any((g) => g.name == 'Redan Medlem'),
+          isFalse,
+        );
       });
 
       test('loads pending and all received invitations', () {
@@ -154,24 +191,29 @@ void main() {
     group('Available Groups', () {
       test('returns immutable list', () {
         final groups = viewModel.availableGroups;
-        expect(() => (groups as List).add(availableGroup1),
-            throwsUnsupportedError);
+        expect(
+          () => (groups as List).add(availableGroup1),
+          throwsUnsupportedError,
+        );
       });
 
       test('returns empty list for unknown group members', () {
         expect(viewModel.getMembersForGroup('non_existent'), isEmpty);
       });
 
-      test('handles empty available groups while keeping invitations',
-          () async {
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([ownedGroup, memberGroup]);
+      test(
+        'handles empty available groups while keeping invitations',
+        () async {
+          when(
+            () => mockCategoriesOps.getAllCategories(),
+          ).thenReturn([ownedGroup, memberGroup]);
 
-        await viewModel.refresh();
+          await viewModel.refresh();
 
-        expect(viewModel.availableGroups, isEmpty);
-        expect(viewModel.hasContent, isTrue);
-      });
+          expect(viewModel.availableGroups, isEmpty);
+          expect(viewModel.hasContent, isTrue);
+        },
+      );
     });
 
     group('Received Invitations', () {
@@ -180,8 +222,9 @@ void main() {
       });
 
       test('handles empty invitations after refresh', () async {
-        when(() => mockInvitationsOps.pendingReceivedInvitations)
-            .thenReturn([]);
+        when(
+          () => mockInvitationsOps.pendingReceivedInvitations,
+        ).thenReturn([]);
         await viewModel.refresh();
 
         expect(viewModel.receivedInvitations, isEmpty);
@@ -194,10 +237,16 @@ void main() {
         await viewModel.joinGroup('avail_1');
 
         expect(
-            viewModel.availableGroups.any((g) => g.id == 'avail_1'), isFalse);
+          viewModel.availableGroups.any((g) => g.id == 'avail_1'),
+          isFalse,
+        );
         expect(viewModel.error, isNull);
-        verify(() => mockCategoriesOps.assignFriendToCategory(
-            'test-user-123', 'avail_1')).called(1);
+        verify(
+          () => mockCategoriesOps.assignFriendToCategory(
+            'test-user-123',
+            'avail_1',
+          ),
+        ).called(1);
       });
 
       test('tracks joining state during operation', () async {
@@ -213,8 +262,9 @@ void main() {
       });
 
       test('handles failure keeping group available', () async {
-        when(() => mockCategoriesOps.assignFriendToCategory(any(), any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockCategoriesOps.assignFriendToCategory(any(), any()),
+        ).thenAnswer((_) async => false);
         mockFriendsService.setFriendsState(
           error: 'Network error',
           management: mockManagementOps,
@@ -233,8 +283,9 @@ void main() {
         await viewModel.joinGroup('avail_1');
         await f1;
 
-        verify(() => mockCategoriesOps.assignFriendToCategory(any(), any()))
-            .called(1);
+        verify(
+          () => mockCategoriesOps.assignFriendToCategory(any(), any()),
+        ).called(1);
       });
 
       test('handles non-existent group', () async {
@@ -245,15 +296,17 @@ void main() {
 
     group('Accept Invitation', () {
       test('accepts successfully and updates invitations', () async {
-        when(() => mockInvitationsOps.pendingReceivedInvitations)
-            .thenReturn([pending2, accepted]);
+        when(
+          () => mockInvitationsOps.pendingReceivedInvitations,
+        ).thenReturn([pending2, accepted]);
 
         await viewModel.acceptInvitation('inv_1');
 
         expect(viewModel.error, isNull);
         expect(viewModel.receivedInvitations.length, equals(1));
-        verify(() => mockInvitationsOps.acceptGroupInvitation('inv_1'))
-            .called(1);
+        verify(
+          () => mockInvitationsOps.acceptGroupInvitation('inv_1'),
+        ).called(1);
       });
 
       test('tracks responding state during operation', () async {
@@ -271,8 +324,9 @@ void main() {
       });
 
       test('handles accept failure', () async {
-        when(() => mockInvitationsOps.acceptGroupInvitation(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockInvitationsOps.acceptGroupInvitation(any()),
+        ).thenAnswer((_) async => false);
         mockFriendsService.setFriendsState(
           error: 'Permission denied',
           management: mockManagementOps,
@@ -297,8 +351,9 @@ void main() {
 
     group('Reject Invitation', () {
       test('rejects successfully', () async {
-        when(() => mockInvitationsOps.pendingReceivedInvitations)
-            .thenReturn([pending2, accepted]);
+        when(
+          () => mockInvitationsOps.pendingReceivedInvitations,
+        ).thenReturn([pending2, accepted]);
 
         await viewModel.rejectInvitation('inv_1');
 
@@ -308,8 +363,9 @@ void main() {
       });
 
       test('handles reject failure', () async {
-        when(() => mockInvitationsOps.cancelInvitation(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockInvitationsOps.cancelInvitation(any()),
+        ).thenAnswer((_) async => false);
         mockFriendsService.setFriendsState(
           error: 'Cannot reject',
           management: mockManagementOps,
@@ -334,10 +390,12 @@ void main() {
 
     group('Refresh', () {
       test('refreshes all data', () async {
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([availableGroup1]);
-        when(() => mockInvitationsOps.pendingReceivedInvitations)
-            .thenReturn([pending1]);
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenReturn([availableGroup1]);
+        when(
+          () => mockInvitationsOps.pendingReceivedInvitations,
+        ).thenReturn([pending1]);
 
         await viewModel.refresh();
 
@@ -346,8 +404,9 @@ void main() {
       });
 
       test('handles refresh errors', () async {
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenThrow(Exception('Network error'));
 
         await viewModel.refresh();
         expect(viewModel.error, isNotNull);
@@ -383,16 +442,18 @@ void main() {
       });
 
       test('handles exception during group join', () async {
-        when(() => mockCategoriesOps.assignFriendToCategory(any(), any()))
-            .thenThrow(Exception('Database error'));
+        when(
+          () => mockCategoriesOps.assignFriendToCategory(any(), any()),
+        ).thenThrow(Exception('Database error'));
 
         await viewModel.joinGroup('avail_1');
         expect(viewModel.error, isNotNull);
       });
 
       test('handles exception during invitation accept', () async {
-        when(() => mockInvitationsOps.acceptGroupInvitation(any()))
-            .thenThrow(Exception('Server error'));
+        when(
+          () => mockInvitationsOps.acceptGroupInvitation(any()),
+        ).thenThrow(Exception('Server error'));
 
         await viewModel.acceptInvitation('inv_1');
         expect(viewModel.error, isNotNull);
@@ -401,15 +462,17 @@ void main() {
 
     group('Lifecycle', () {
       test('disposes without errors', () async {
-        final vm =
-            GroupInvitationsViewModel(friendsService: mockFriendsService);
+        final vm = GroupInvitationsViewModel(
+          friendsService: mockFriendsService,
+        );
         await Future.delayed(const Duration(milliseconds: 50));
         expect(() => vm.dispose(), returnsNormally);
       });
 
       test('clearError after dispose is a no-op', () async {
-        final vm =
-            GroupInvitationsViewModel(friendsService: mockFriendsService);
+        final vm = GroupInvitationsViewModel(
+          friendsService: mockFriendsService,
+        );
         await Future.delayed(const Duration(milliseconds: 50));
         vm.dispose();
         expect(() => vm.clearError(), returnsNormally);

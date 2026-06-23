@@ -99,105 +99,118 @@ void main() {
         final timestamp = TimestampTestHelper.toDateTime(sentAt);
         expect(timestamp, isNotNull);
         expect(
-            timestamp!.difference(DateTime.now()).inMinutes.abs(), lessThan(1));
+          timestamp!.difference(DateTime.now()).inMinutes.abs(),
+          lessThan(1),
+        );
 
         expect(requestData['message'], equals(message));
         expect(requestData['status'], equals('pending'));
       });
 
-      test('should handle accepted timestamp', () async {
-        // Arrange
-        const fromUserId = 'sender_user';
-        final toUserId = testUser.uid;
+      test(
+        'should handle accepted timestamp',
+        () async {
+          // Arrange
+          const fromUserId = 'sender_user';
+          final toUserId = testUser.uid;
 
-        // Create user profiles
-        await firestore.collection('public_profiles').doc(fromUserId).set({
-          'email': 'sender@test.com',
-          'displayName': 'Sender User',
-          'friendsCount': 0,
-        });
-        await firestore.collection('public_profiles').doc(toUserId).set({
-          'email': 'test@test.com',
-          'displayName': 'Test User',
-          'friendsCount': 0,
-        });
+          // Create user profiles
+          await firestore.collection('public_profiles').doc(fromUserId).set({
+            'email': 'sender@test.com',
+            'displayName': 'Sender User',
+            'friendsCount': 0,
+          });
+          await firestore.collection('public_profiles').doc(toUserId).set({
+            'email': 'test@test.com',
+            'displayName': 'Test User',
+            'friendsCount': 0,
+          });
 
-        // Create pending request with server timestamp
-        final docRef = await firestore.collection('social_requests').add({
-          'type': 'friend',
-          'fromUserId': fromUserId,
-          'toUserId': toUserId,
-          'status': 'pending',
-          'sentAt': DateTime.now(),
-        });
+          // Create pending request with server timestamp
+          final docRef = await firestore.collection('social_requests').add({
+            'type': 'friend',
+            'fromUserId': fromUserId,
+            'toUserId': toUserId,
+            'status': 'pending',
+            'sentAt': DateTime.now(),
+          });
 
-        // Act
-        final success = await repository.acceptFriendRequest(docRef.id);
+          // Act
+          final success = await repository.acceptFriendRequest(docRef.id);
 
-        // Assert
-        expect(success, isTrue);
+          // Assert
+          expect(success, isTrue);
 
-        // Verify request has acceptedAt timestamp
-        final doc = await docRef.get();
-        final data = doc.data()!;
-        expect(data['status'], equals('accepted'));
-        expect(data['acceptedAt'], isA<DateTime>());
+          // Verify request has acceptedAt timestamp
+          final doc = await docRef.get();
+          final data = doc.data()!;
+          expect(data['status'], equals('accepted'));
+          expect(data['acceptedAt'], isA<DateTime>());
 
-        // Verify both timestamps exist and acceptedAt is after sentAt
-        final sentAt = data['sentAt'] as DateTime;
-        final acceptedAt = data['acceptedAt'] as DateTime;
-        expect(acceptedAt.isAfter(sentAt), isTrue);
-      },
-          skip:
-              'B1: acceptFriendRequest moved to the acceptFriendRequest Cloud '
-              'Function (mutual write under Admin SDK so the friends-write rule '
-              'could be locked to owner-only). The fake-lane cannot run a Cloud '
-              'Function — covered by functions accept-friend-request.integration'
-              '.test.ts + friends-accept-rules.test.ts.');
+          // Verify both timestamps exist and acceptedAt is after sentAt
+          final sentAt = data['sentAt'] as DateTime;
+          final acceptedAt = data['acceptedAt'] as DateTime;
+          expect(acceptedAt.isAfter(sentAt), isTrue);
+        },
+        skip:
+            'B1: acceptFriendRequest moved to the acceptFriendRequest Cloud '
+            'Function (mutual write under Admin SDK so the friends-write rule '
+            'could be locked to owner-only). The fake-lane cannot run a Cloud '
+            'Function — covered by functions accept-friend-request.integration'
+            '.test.ts + friends-accept-rules.test.ts.',
+      );
     });
 
     group('Friend Count tracking', () {
-      test('should increment friend count when accepting request', () async {
-        // Arrange
-        const fromUserId = 'sender_user';
-        final toUserId = testUser.uid;
+      test(
+        'should increment friend count when accepting request',
+        () async {
+          // Arrange
+          const fromUserId = 'sender_user';
+          final toUserId = testUser.uid;
 
-        // Create user profiles with initial friend counts
-        await firestore.collection('public_profiles').doc(fromUserId).set({
-          'email': 'sender@test.com',
-          'displayName': 'Sender User',
-          'friendsCount': 5,
-        });
-        await firestore.collection('public_profiles').doc(toUserId).set({
-          'email': 'test@test.com',
-          'displayName': 'Test User',
-          'friendsCount': 3,
-        });
+          // Create user profiles with initial friend counts
+          await firestore.collection('public_profiles').doc(fromUserId).set({
+            'email': 'sender@test.com',
+            'displayName': 'Sender User',
+            'friendsCount': 5,
+          });
+          await firestore.collection('public_profiles').doc(toUserId).set({
+            'email': 'test@test.com',
+            'displayName': 'Test User',
+            'friendsCount': 3,
+          });
 
-        // Create pending request
-        final docRef = await firestore.collection('social_requests').add({
-          'type': 'friend',
-          'fromUserId': fromUserId,
-          'toUserId': toUserId,
-          'status': 'pending',
-          'sentAt': DateTime.now(),
-        });
+          // Create pending request
+          final docRef = await firestore.collection('social_requests').add({
+            'type': 'friend',
+            'fromUserId': fromUserId,
+            'toUserId': toUserId,
+            'status': 'pending',
+            'sentAt': DateTime.now(),
+          });
 
-        // Act
-        await repository.acceptFriendRequest(docRef.id);
+          // Act
+          await repository.acceptFriendRequest(docRef.id);
 
-        // Assert - Check friend counts were incremented
-        final senderProfile =
-            await firestore.collection('public_profiles').doc(fromUserId).get();
-        expect(senderProfile.data()?['friendsCount'], equals(6));
+          // Assert - Check friend counts were incremented
+          final senderProfile = await firestore
+              .collection('public_profiles')
+              .doc(fromUserId)
+              .get();
+          expect(senderProfile.data()?['friendsCount'], equals(6));
 
-        final receiverProfile =
-            await firestore.collection('public_profiles').doc(toUserId).get();
-        expect(receiverProfile.data()?['friendsCount'], equals(4));
-      },
-          skip: 'B1: friend-count increment on accept moved server-side to the '
-              'acceptFriendRequest Cloud Function. Covered by functions '
-              'accept-friend-request.integration.test.ts.');
+          final receiverProfile = await firestore
+              .collection('public_profiles')
+              .doc(toUserId)
+              .get();
+          expect(receiverProfile.data()?['friendsCount'], equals(4));
+        },
+        skip:
+            'B1: friend-count increment on accept moved server-side to the '
+            'acceptFriendRequest Cloud Function. Covered by functions '
+            'accept-friend-request.integration.test.ts.',
+      );
 
       test('should decrement friend count when removing friend', () async {
         // Arrange
@@ -233,83 +246,94 @@ void main() {
         await repository.removeMutualFriends(userId1, userId2);
 
         // Assert - Check friend counts were decremented
-        final user1Profile =
-            await firestore.collection('public_profiles').doc(userId1).get();
+        final user1Profile = await firestore
+            .collection('public_profiles')
+            .doc(userId1)
+            .get();
         expect(user1Profile.data()?['friendsCount'], equals(9));
 
-        final user2Profile =
-            await firestore.collection('public_profiles').doc(userId2).get();
+        final user2Profile = await firestore
+            .collection('public_profiles')
+            .doc(userId2)
+            .get();
         expect(user2Profile.data()?['friendsCount'], equals(7));
       });
     });
 
     group('Batch Operations', () {
-      test('should use batch write for accepting friend request', () async {
-        // Arrange
-        const fromUserId = 'sender_user';
-        final toUserId = testUser.uid;
+      test(
+        'should use batch write for accepting friend request',
+        () async {
+          // Arrange
+          const fromUserId = 'sender_user';
+          final toUserId = testUser.uid;
 
-        // Create user profiles
-        await firestore.collection('public_profiles').doc(fromUserId).set({
-          'email': 'sender@test.com',
-          'friendsCount': 0,
-        });
-        await firestore.collection('public_profiles').doc(toUserId).set({
-          'email': 'test@test.com',
-          'friendsCount': 0,
-        });
+          // Create user profiles
+          await firestore.collection('public_profiles').doc(fromUserId).set({
+            'email': 'sender@test.com',
+            'friendsCount': 0,
+          });
+          await firestore.collection('public_profiles').doc(toUserId).set({
+            'email': 'test@test.com',
+            'friendsCount': 0,
+          });
 
-        // Create pending request
-        final docRef = await firestore.collection('social_requests').add({
-          'type': 'friend',
-          'fromUserId': fromUserId,
-          'toUserId': toUserId,
-          'status': 'pending',
-          'sentAt': DateTime.now(),
-        });
+          // Create pending request
+          final docRef = await firestore.collection('social_requests').add({
+            'type': 'friend',
+            'fromUserId': fromUserId,
+            'toUserId': toUserId,
+            'status': 'pending',
+            'sentAt': DateTime.now(),
+          });
 
-        // Act
-        final success = await repository.acceptFriendRequest(docRef.id);
+          // Act
+          final success = await repository.acceptFriendRequest(docRef.id);
 
-        // Assert
-        expect(success, isTrue);
+          // Assert
+          expect(success, isTrue);
 
-        // Verify all operations completed atomically
-        // 1. Request status updated
-        final request = await docRef.get();
-        expect(request.data()?['status'], equals('accepted'));
+          // Verify all operations completed atomically
+          // 1. Request status updated
+          final request = await docRef.get();
+          expect(request.data()?['status'], equals('accepted'));
 
-        // 2. Mutual friendship created
-        final friend1 = await firestore
-            .collection('users')
-            .doc(fromUserId)
-            .collection('friends')
-            .doc(toUserId)
-            .get();
-        expect(friend1.exists, isTrue);
+          // 2. Mutual friendship created
+          final friend1 = await firestore
+              .collection('users')
+              .doc(fromUserId)
+              .collection('friends')
+              .doc(toUserId)
+              .get();
+          expect(friend1.exists, isTrue);
 
-        final friend2 = await firestore
-            .collection('users')
-            .doc(toUserId)
-            .collection('friends')
-            .doc(fromUserId)
-            .get();
-        expect(friend2.exists, isTrue);
+          final friend2 = await firestore
+              .collection('users')
+              .doc(toUserId)
+              .collection('friends')
+              .doc(fromUserId)
+              .get();
+          expect(friend2.exists, isTrue);
 
-        // 3. Friend counts updated
-        final profile1 =
-            await firestore.collection('public_profiles').doc(fromUserId).get();
-        expect(profile1.data()?['friendsCount'], equals(1));
+          // 3. Friend counts updated
+          final profile1 = await firestore
+              .collection('public_profiles')
+              .doc(fromUserId)
+              .get();
+          expect(profile1.data()?['friendsCount'], equals(1));
 
-        final profile2 =
-            await firestore.collection('public_profiles').doc(toUserId).get();
-        expect(profile2.data()?['friendsCount'], equals(1));
-      },
-          skip:
-              'B1: mutual-friendship write on accept moved server-side to the '
-              'acceptFriendRequest Cloud Function. Covered by functions '
-              'accept-friend-request.integration.test.ts + friends-accept-rules'
-              '.test.ts.');
+          final profile2 = await firestore
+              .collection('public_profiles')
+              .doc(toUserId)
+              .get();
+          expect(profile2.data()?['friendsCount'], equals(1));
+        },
+        skip:
+            'B1: mutual-friendship write on accept moved server-side to the '
+            'acceptFriendRequest Cloud Function. Covered by functions '
+            'accept-friend-request.integration.test.ts + friends-accept-rules'
+            '.test.ts.',
+      );
     });
 
     group('Complex Queries', () {
@@ -358,10 +382,10 @@ void main() {
             .collection('friend_categories')
             .doc(categoryId)
             .set({
-          'name': 'Family',
-          'memberIds': ['member_1', 'member_2'],
-          'createdAt': DateTime.now(),
-        });
+              'name': 'Family',
+              'memberIds': ['member_1', 'member_2'],
+              'createdAt': DateTime.now(),
+            });
 
         // Act - Manually add members to array
         final catDoc = await firestore
@@ -371,8 +395,9 @@ void main() {
             .doc(categoryId)
             .get();
 
-        final currentMembers =
-            List<String>.from(catDoc.data()?['memberIds'] ?? []);
+        final currentMembers = List<String>.from(
+          catDoc.data()?['memberIds'] ?? [],
+        );
         final newMembers = ['member_3', 'member_4', 'member_2'];
         for (final member in newMembers) {
           if (!currentMembers.contains(member)) {
@@ -386,8 +411,8 @@ void main() {
             .collection('friend_categories')
             .doc(categoryId)
             .update({
-          'memberIds': currentMembers,
-        });
+              'memberIds': currentMembers,
+            });
 
         // Assert
         final doc = await firestore
@@ -399,8 +424,10 @@ void main() {
 
         final memberIds = List<String>.from(doc.data()?['memberIds'] ?? []);
         expect(memberIds.length, equals(4)); // No duplicates
-        expect(memberIds,
-            containsAll(['member_1', 'member_2', 'member_3', 'member_4']));
+        expect(
+          memberIds,
+          containsAll(['member_1', 'member_2', 'member_3', 'member_4']),
+        );
 
         // Act - Manually remove members from array
         final removeDoc = await firestore
@@ -410,11 +437,13 @@ void main() {
             .doc(categoryId)
             .get();
 
-        final updatedMembers =
-            List<String>.from(removeDoc.data()?['memberIds'] ?? []);
+        final updatedMembers = List<String>.from(
+          removeDoc.data()?['memberIds'] ?? [],
+        );
         final membersToRemove = ['member_1', 'member_3'];
-        updatedMembers
-            .removeWhere((member) => membersToRemove.contains(member));
+        updatedMembers.removeWhere(
+          (member) => membersToRemove.contains(member),
+        );
 
         await firestore
             .collection('users')
@@ -422,8 +451,8 @@ void main() {
             .collection('friend_categories')
             .doc(categoryId)
             .update({
-          'memberIds': updatedMembers,
-        });
+              'memberIds': updatedMembers,
+            });
 
         // Assert
         final updatedDoc = await firestore
@@ -433,8 +462,9 @@ void main() {
             .doc(categoryId)
             .get();
 
-        final updatedMemberIds =
-            List<String>.from(updatedDoc.data()?['memberIds'] ?? []);
+        final updatedMemberIds = List<String>.from(
+          updatedDoc.data()?['memberIds'] ?? [],
+        );
         expect(updatedMemberIds.length, equals(2));
         expect(updatedMemberIds, containsAll(['member_2', 'member_4']));
       });

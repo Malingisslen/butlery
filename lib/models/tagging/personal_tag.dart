@@ -133,10 +133,12 @@ class PersonalTag {
     return PersonalTag(
       id: id,
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
-      updatedAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['createdAt'],
+      ),
+      updatedAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['updatedAt'],
+      ),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder', defaultValue: 0),
       groupId: SerializationUtils.safeNullableString(json, 'groupId'),
       rules: _parseRules(json['rules']),

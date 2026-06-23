@@ -41,10 +41,10 @@ String buildMetricsCsv(
           rows.add([s.label, _num(s.value)]);
         }
       case MatrixMetric(
-          rowLabels: final rowLabels,
-          colLabels: final colLabels,
-          cells: final cells
-        ):
+        rowLabels: final rowLabels,
+        colLabels: final colLabels,
+        cells: final cells,
+      ):
         rows.add([label, ...colLabels]);
         for (var r = 0; r < rowLabels.length; r++) {
           rows.add([rowLabels[r], for (final c in cells[r]) _num(c)]);
@@ -53,7 +53,7 @@ String buildMetricsCsv(
     rows.add(const []); // blank separator between metrics
   }
 
-  const converter = ListToCsvConverter(fieldDelimiter: ';', eol: '\r\n');
+  const converter = CsvEncoder(fieldDelimiter: ';', lineDelimiter: '\r\n');
   // ﻿ = UTF-8 BOM so Excel detects UTF-8 and renders åäö correctly.
   return '﻿${converter.convert(rows)}';
 }

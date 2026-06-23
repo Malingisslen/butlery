@@ -241,35 +241,39 @@ void main() {
         expect(recording.unsubscribedTopics, equals(['social_updates']));
       });
 
-      test('subscribeToTopic catches errors (proves safeExecute swallowed)',
-          () async {
-        // BUT-1008: composable throw flags replace _ThrowingTopicMessaging.
-        final m = MockFirebaseMessaging()
-          ..setFirebaseMessagingState(
-            throwOnSubscribe: true,
-            throwOnUnsubscribe: true,
-          );
-        service = FCMService(messaging: m);
+      test(
+        'subscribeToTopic catches errors (proves safeExecute swallowed)',
+        () async {
+          // BUT-1008: composable throw flags replace _ThrowingTopicMessaging.
+          final m = MockFirebaseMessaging()
+            ..setFirebaseMessagingState(
+              throwOnSubscribe: true,
+              throwOnUnsubscribe: true,
+            );
+          service = FCMService(messaging: m);
 
-        // safeExecute swallowed the throw. Stronger than 'completes': after
-        // the error, a follow-up call must still resolve normally — proving
-        // the service didn't enter a broken state.
-        await service.subscribeToTopic('invalid_topic');
-        await service.subscribeToTopic('another_topic');
-      });
+          // safeExecute swallowed the throw. Stronger than 'completes': after
+          // the error, a follow-up call must still resolve normally — proving
+          // the service didn't enter a broken state.
+          await service.subscribeToTopic('invalid_topic');
+          await service.subscribeToTopic('another_topic');
+        },
+      );
 
-      test('unsubscribeFromTopic catches errors (parity with subscribe)',
-          () async {
-        final m = MockFirebaseMessaging()
-          ..setFirebaseMessagingState(
-            throwOnSubscribe: true,
-            throwOnUnsubscribe: true,
-          );
-        service = FCMService(messaging: m);
+      test(
+        'unsubscribeFromTopic catches errors (parity with subscribe)',
+        () async {
+          final m = MockFirebaseMessaging()
+            ..setFirebaseMessagingState(
+              throwOnSubscribe: true,
+              throwOnUnsubscribe: true,
+            );
+          service = FCMService(messaging: m);
 
-        await service.unsubscribeFromTopic('topic_a');
-        await service.unsubscribeFromTopic('topic_b');
-      });
+          await service.unsubscribeFromTopic('topic_a');
+          await service.unsubscribeFromTopic('topic_b');
+        },
+      );
 
       test('should accept various topic names without throwing', () async {
         final recording = _RecordingMessaging();
@@ -289,91 +293,114 @@ void main() {
         when(() => mockNotification.body).thenReturn('Test Body');
         when(() => mockMessage.data).thenReturn({'key': 'value'});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
 
       test('handles Swedish notification content', () {
         when(() => mockMessage.notification).thenReturn(mockNotification);
         when(() => mockNotification.title).thenReturn('Nytt recept delat');
-        when(() => mockNotification.body)
-            .thenReturn('Anna har delat Köttbullar med dig');
+        when(
+          () => mockNotification.body,
+        ).thenReturn('Anna har delat Köttbullar med dig');
         when(() => mockMessage.data).thenReturn({'type': 'recipe_share'});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
 
       test('handles notification without title or body', () {
         when(() => mockMessage.notification).thenReturn(null);
         when(() => mockMessage.data).thenReturn({'silent': 'true'});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
     });
 
     group('Navigation Handling', () {
-      test('completes for each notification type without a navigator',
-          () async {
-        final testCases = [
-          {'type': 'friend_request'},
-          {'type': 'recipe_share'},
-          {'type': 'collaboration'},
-          {'type': 'recipe_comment'},
-        ];
+      test(
+        'completes for each notification type without a navigator',
+        () async {
+          final testCases = [
+            {'type': 'friend_request'},
+            {'type': 'recipe_share'},
+            {'type': 'collaboration'},
+            {'type': 'recipe_comment'},
+          ];
 
-        for (final testCase in testCases) {
-          when(() => mockMessage.data).thenReturn(testCase);
+          for (final testCase in testCases) {
+            when(() => mockMessage.data).thenReturn(testCase);
 
-          // No navigator key registered in unit tests → routine bails early.
-          await expectLater(
-              service.handleNotificationNavigation(mockMessage), completes);
-        }
-      });
+            // No navigator key registered in unit tests → routine bails early.
+            await expectLater(
+              service.handleNotificationNavigation(mockMessage),
+              completes,
+            );
+          }
+        },
+      );
 
       test('completes for unknown notification types', () async {
         when(() => mockMessage.data).thenReturn({'type': 'unknown_type'});
 
         await expectLater(
-            service.handleNotificationNavigation(mockMessage), completes);
+          service.handleNotificationNavigation(mockMessage),
+          completes,
+        );
       });
     });
 
     group('Permission Management', () {
-      test('getNotificationSettings reflects the configured authorization',
-          () async {
-        mockMessaging.setFirebaseMessagingState(
-            authorizationStatus: AuthorizationStatus.denied);
+      test(
+        'getNotificationSettings reflects the configured authorization',
+        () async {
+          mockMessaging.setFirebaseMessagingState(
+            authorizationStatus: AuthorizationStatus.denied,
+          );
 
-        final result = await service.getNotificationSettings();
+          final result = await service.getNotificationSettings();
 
-        expect(result.authorizationStatus, AuthorizationStatus.denied);
-      });
+          expect(result.authorizationStatus, AuthorizationStatus.denied);
+        },
+      );
 
-      test('areNotificationsEnabled returns true for authorized status',
-          () async {
-        mockMessaging.setFirebaseMessagingState(
-            authorizationStatus: AuthorizationStatus.authorized);
+      test(
+        'areNotificationsEnabled returns true for authorized status',
+        () async {
+          mockMessaging.setFirebaseMessagingState(
+            authorizationStatus: AuthorizationStatus.authorized,
+          );
 
-        final enabled = await service.areNotificationsEnabled();
+          final enabled = await service.areNotificationsEnabled();
 
-        expect(enabled, isTrue);
-      });
+          expect(enabled, isTrue);
+        },
+      );
 
-      test('areNotificationsEnabled returns true for provisional status',
-          () async {
-        mockMessaging.setFirebaseMessagingState(
-            authorizationStatus: AuthorizationStatus.provisional);
+      test(
+        'areNotificationsEnabled returns true for provisional status',
+        () async {
+          mockMessaging.setFirebaseMessagingState(
+            authorizationStatus: AuthorizationStatus.provisional,
+          );
 
-        final enabled = await service.areNotificationsEnabled();
+          final enabled = await service.areNotificationsEnabled();
 
-        expect(enabled, isTrue);
-      });
+          expect(enabled, isTrue);
+        },
+      );
 
       test('areNotificationsEnabled returns false for denied status', () async {
         mockMessaging.setFirebaseMessagingState(
-            authorizationStatus: AuthorizationStatus.denied);
+          authorizationStatus: AuthorizationStatus.denied,
+        );
 
         final enabled = await service.areNotificationsEnabled();
 
@@ -418,32 +445,34 @@ void main() {
 
     // BUT-1006: re-binding user-scoped state across logout → login.
     group('bindUserContext (BUT-1006)', () {
-      test('detaches listener from prior consent and attaches to new',
-          () async {
-        final consentA = MockConsentService();
-        final consentB = MockConsentService();
-        when(() => consentA.addListener(any())).thenReturn(null);
-        when(() => consentA.removeListener(any())).thenReturn(null);
-        when(() => consentB.addListener(any())).thenReturn(null);
-        when(() => consentB.removeListener(any())).thenReturn(null);
+      test(
+        'detaches listener from prior consent and attaches to new',
+        () async {
+          final consentA = MockConsentService();
+          final consentB = MockConsentService();
+          when(() => consentA.addListener(any())).thenReturn(null);
+          when(() => consentA.removeListener(any())).thenReturn(null);
+          when(() => consentB.addListener(any())).thenReturn(null);
+          when(() => consentB.removeListener(any())).thenReturn(null);
 
-        await service.bindUserContext(
-          consentService: consentA,
-          onMessageReceived: (_) {},
-          onMessageOpenedApp: (_) {},
-        );
-        verify(() => consentA.addListener(any())).called(1);
-        verifyNever(() => consentA.removeListener(any()));
+          await service.bindUserContext(
+            consentService: consentA,
+            onMessageReceived: (_) {},
+            onMessageOpenedApp: (_) {},
+          );
+          verify(() => consentA.addListener(any())).called(1);
+          verifyNever(() => consentA.removeListener(any()));
 
-        await service.bindUserContext(
-          consentService: consentB,
-          onMessageReceived: (_) {},
-          onMessageOpenedApp: (_) {},
-        );
-        // Previous user's listener must be torn down before swap.
-        verify(() => consentA.removeListener(any())).called(1);
-        verify(() => consentB.addListener(any())).called(1);
-      });
+          await service.bindUserContext(
+            consentService: consentB,
+            onMessageReceived: (_) {},
+            onMessageOpenedApp: (_) {},
+          );
+          // Previous user's listener must be torn down before swap.
+          verify(() => consentA.removeListener(any())).called(1);
+          verify(() => consentB.addListener(any())).called(1);
+        },
+      );
 
       test('identical args are a no-op (no add/remove churn)', () async {
         final consent = MockConsentService();
@@ -540,33 +569,38 @@ void main() {
         expect(recording.getTokenCalls, greaterThan(0));
       });
 
-      test('re-entry while handler in-flight is debounced (BUT-1054)',
-          () async {
-        final recording = _RecordingMessaging()
-          ..setFirebaseMessagingState(token: 'tok');
-        service = FCMService(messaging: recording);
-        final consent = _RecordingConsent();
+      test(
+        're-entry while handler in-flight is debounced (BUT-1054)',
+        () async {
+          final recording = _RecordingMessaging()
+            ..setFirebaseMessagingState(token: 'tok');
+          service = FCMService(messaging: recording);
+          final consent = _RecordingConsent();
 
-        await service.bindUserContext(consentService: consent);
+          await service.bindUserContext(consentService: consent);
 
-        // First fire: park hasConsent() mid-await so _consentChangeInProgress
-        // is true when the second fire arrives.
-        consent.holdNextConsent(true);
-        final firstFire = consent.fire();
+          // First fire: park hasConsent() mid-await so _consentChangeInProgress
+          // is true when the second fire arrives.
+          consent.holdNextConsent(true);
+          final firstFire = consent.fire();
 
-        // Second fire while the first is parked. The mutex must
-        // short-circuit this one — no second requestPermission call.
-        await consent.fire();
-        expect(recording.requestPermissionCalls, 0,
-            reason: 'first fire still parked; second must short-circuit');
+          // Second fire while the first is parked. The mutex must
+          // short-circuit this one — no second requestPermission call.
+          await consent.fire();
+          expect(
+            recording.requestPermissionCalls,
+            0,
+            reason: 'first fire still parked; second must short-circuit',
+          );
 
-        // Release the parked Future. First fire resumes, does its work.
-        consent.completeHeldConsent();
-        await firstFire;
+          // Release the parked Future. First fire resumes, does its work.
+          consent.completeHeldConsent();
+          await firstFire;
 
-        // Only the first fire's work ran. Second fire was debounced.
-        expect(recording.requestPermissionCalls, 1);
-      });
+          // Only the first fire's work ran. Second fire was debounced.
+          expect(recording.requestPermissionCalls, 1);
+        },
+      );
 
       test('token-refresh handler bypasses cache (test seam)', () async {
         final recording = _RecordingMessaging()
@@ -583,8 +617,11 @@ void main() {
 
         // Subsequent getToken returns the rotated value without SDK call.
         expect(await service.getToken(), 'rotated-token');
-        expect(recording.getTokenCalls, initialCalls,
-            reason: 'token-refresh path must not re-query the SDK');
+        expect(
+          recording.getTokenCalls,
+          initialCalls,
+          reason: 'token-refresh path must not re-query the SDK',
+        );
       });
     });
 
@@ -593,8 +630,10 @@ void main() {
         when(() => mockMessage.notification).thenReturn(null);
         when(() => mockMessage.data).thenReturn({});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
 
       test('empty topic name does not throw', () async {
@@ -613,19 +652,24 @@ void main() {
         when(() => mockNotification.body).thenReturn(longBody);
         when(() => mockMessage.data).thenReturn({});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
 
       test('handles special characters in notification', () {
         when(() => mockMessage.notification).thenReturn(mockNotification);
         when(() => mockNotification.title).thenReturn('Test Recipe!');
-        when(() => mockNotification.body)
-            .thenReturn('Koettbullar & graeddsaas');
+        when(
+          () => mockNotification.body,
+        ).thenReturn('Koettbullar & graeddsaas');
         when(() => mockMessage.data).thenReturn({});
 
-        expect(() => service.showForegroundNotification(mockMessage),
-            returnsNormally);
+        expect(
+          () => service.showForegroundNotification(mockMessage),
+          returnsNormally,
+        );
       });
     });
   });

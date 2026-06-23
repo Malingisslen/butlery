@@ -52,20 +52,24 @@ void main() {
       await expectLater(repo.findByName('kanel'), completes);
     });
 
-    test('while .get() keeps failing, lookups degrade to empty (no crash)',
-        () async {
-      // Every load attempt fails — models a session that stays offline.
-      final alwaysOffline = _FlakyFirestore(backing, failAll: true);
-      final repo = FirebaseIngredientRepository(firestore: alwaysOffline);
-
-      await expectLater(repo.findByName('kanel'), completion(isNull),
-          reason: 'failed load degrades to empty cache');
-      expect(await repo.count(), 0);
-      expect(await repo.getAll(), isEmpty);
-    });
-
     test(
-        'self-heal: a failed load does not poison the cache; a later '
+      'while .get() keeps failing, lookups degrade to empty (no crash)',
+      () async {
+        // Every load attempt fails — models a session that stays offline.
+        final alwaysOffline = _FlakyFirestore(backing, failAll: true);
+        final repo = FirebaseIngredientRepository(firestore: alwaysOffline);
+
+        await expectLater(
+          repo.findByName('kanel'),
+          completion(isNull),
+          reason: 'failed load degrades to empty cache',
+        );
+        expect(await repo.count(), 0);
+        expect(await repo.getAll(), isEmpty);
+      },
+    );
+
+    test('self-heal: a failed load does not poison the cache; a later '
         'successful load populates it', () async {
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
@@ -79,8 +83,11 @@ void main() {
 
       expect(firestore.getCallCount, greaterThanOrEqualTo(2));
       final healed = await repo.findByName('kanel');
-      expect(healed, isNotNull,
-          reason: 'failure must not poison _cacheLoaded; retry must populate');
+      expect(
+        healed,
+        isNotNull,
+        reason: 'failure must not poison _cacheLoaded; retry must populate',
+      );
       expect(healed!.id, 'cinnamon');
       expect(await repo.count(), 1);
     });

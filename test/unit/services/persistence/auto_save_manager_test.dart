@@ -30,13 +30,12 @@ Future<void> _settle() => Future<void>.delayed(Duration.zero);
 AutoSaveManager<String> _stringManager(
   String key, {
   Duration debounce = Duration.zero,
-}) =>
-    AutoSaveManager<String>(
-      storageKey: key,
-      encode: (text) => text,
-      decode: (raw) => raw,
-      debounce: debounce,
-    );
+}) => AutoSaveManager<String>(
+  storageKey: key,
+  encode: (text) => text,
+  decode: (raw) => raw,
+  debounce: debounce,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -120,8 +119,10 @@ void main() {
 
   group('debounce', () {
     test('coalesces rapid saves to the latest value', () async {
-      final manager = _stringManager('draft_debounce',
-          debounce: const Duration(milliseconds: 40));
+      final manager = _stringManager(
+        'draft_debounce',
+        debounce: const Duration(milliseconds: 40),
+      );
       manager.save('a');
       manager.save('b');
       manager.save('c');
@@ -132,20 +133,28 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 80));
       prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('draft_debounce'), 'c',
-          reason: 'only the latest value of a debounced burst is persisted');
+      expect(
+        prefs.getString('draft_debounce'),
+        'c',
+        reason: 'only the latest value of a debounced burst is persisted',
+      );
     });
 
     test('dispose cancels a pending debounced write', () async {
-      final manager = _stringManager('draft_dispose',
-          debounce: const Duration(milliseconds: 40));
+      final manager = _stringManager(
+        'draft_dispose',
+        debounce: const Duration(milliseconds: 40),
+      );
       manager.save('pending');
       manager.dispose();
 
       await Future<void>.delayed(const Duration(milliseconds: 80));
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('draft_dispose'), isNull,
-          reason: 'a torn-down owner must not resurrect its draft');
+      expect(
+        prefs.getString('draft_dispose'),
+        isNull,
+        reason: 'a torn-down owner must not resurrect its draft',
+      );
     });
 
     test('save after dispose is a no-op', () async {
@@ -159,8 +168,10 @@ void main() {
     });
 
     test('flush writes immediately, cancelling any pending debounce', () async {
-      final manager =
-          _stringManager('draft_flush', debounce: const Duration(seconds: 10));
+      final manager = _stringManager(
+        'draft_flush',
+        debounce: const Duration(seconds: 10),
+      );
       manager.save('debounced'); // would land in 10s
       await manager.flush('now');
 

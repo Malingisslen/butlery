@@ -118,14 +118,18 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<bool> validateCreatePermission(String userId, Recipe entity) async {
     // Users can only create recipes in their own collection
     // Validate ownerId matches the authenticated user
-    final ownerId =
-        (entity.socialData?.ownerId ?? entity.createdBy).orDefault(userId);
+    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(
+      userId,
+    );
     return ownerId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, Recipe? entity) async {
+    String userId,
+    String resourceId,
+    Recipe? entity,
+  ) async {
     if (entity == null) return false;
 
     // Owner can always read their own recipes
@@ -151,7 +155,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, Recipe entity) async {
+    String userId,
+    String resourceId,
+    Recipe entity,
+  ) async {
     // Owner can always update
     final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orEmpty();
     if (ownerId == userId) return true;
@@ -170,15 +177,17 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only the owner can delete recipes
     // Note: We need to fetch the recipe to check ownership
     try {
       final recipe = await read(resourceId);
       if (recipe == null) return false;
 
-      final ownerId =
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty();
       return ownerId == userId;
     } catch (e) {
       AppLogger.error('Failed to validate delete permission: $e');
@@ -240,8 +249,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // Validate required fields - extract core data for validation
         final firestoreData = entity.toFirestore();
-        final coreData =
-            (firestoreData['core'] as Map<String, dynamic>?).orEmpty();
+        final coreData = (firestoreData['core'] as Map<String, dynamic>?)
+            .orEmpty();
 
         // Check for required fields in core data
         validateRequiredFields(
@@ -255,8 +264,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         if (IngredientProcessor.needsNormalization(entity)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(
-            entity.core.ingredients,
-          );
+                entity.core.ingredients,
+              );
 
           recipeToSave = entity.copyWith(
             ingredientsNormalized: normalizedIngredients,
@@ -268,9 +277,13 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         // Add performance metrics
         trace.setMetric('ingredient_count', entity.core.ingredients.length);
         trace.putAttribute(
-            'has_image', entity.imageUrls.isNotEmpty ? 'true' : 'false');
+          'has_image',
+          entity.imageUrls.isNotEmpty ? 'true' : 'false',
+        );
         trace.putAttribute(
-            'is_collaborative', entity.isCollaborative ? 'true' : 'false');
+          'is_collaborative',
+          entity.isCollaborative ? 'true' : 'false',
+        );
 
         return result;
       },
@@ -302,8 +315,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         await validateOwnership(
           currentUserId: currentUser,
-          resourceOwnerId:
-              (existing.socialData?.ownerId ?? existing.createdBy).orEmpty(),
+          resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy)
+              .orEmpty(),
           resourceType: 'recipe',
           resourceId: entity.id,
         );
@@ -313,8 +326,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         if (IngredientProcessor.needsNormalization(recipeToSave)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(
-            recipeToSave.core.ingredients,
-          );
+                recipeToSave.core.ingredients,
+              );
 
           recipeToSave = recipeToSave.copyWith(
             ingredientsNormalized: normalizedIngredients,
@@ -326,11 +339,17 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         // Add performance metrics
         trace.setMetric('ingredient_count', entity.core.ingredients.length);
         trace.putAttribute(
-            'has_image', entity.imageUrls.isNotEmpty ? 'true' : 'false');
+          'has_image',
+          entity.imageUrls.isNotEmpty ? 'true' : 'false',
+        );
         trace.putAttribute(
-            'is_collaborative', entity.isCollaborative ? 'true' : 'false');
-        trace.putAttribute('ingredients_normalized',
-            IngredientProcessor.needsNormalization(entity) ? 'true' : 'false');
+          'is_collaborative',
+          entity.isCollaborative ? 'true' : 'false',
+        );
+        trace.putAttribute(
+          'ingredients_normalized',
+          IngredientProcessor.needsNormalization(entity) ? 'true' : 'false',
+        );
       },
     );
   }
@@ -355,15 +374,15 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // Ownership validation with legacy recipe support
         final isLegacy = _legacyValidator.isLegacyRecipe(existing);
-        final canDelete =
-            await _legacyValidator.validateDeletionWithLegacySupport(
-          existing,
-          currentUser,
-          id,
-          isLegacy,
-          (recipe) =>
-              (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
-        );
+        final canDelete = await _legacyValidator
+            .validateDeletionWithLegacySupport(
+              existing,
+              currentUser,
+              id,
+              isLegacy,
+              (recipe) =>
+                  (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+            );
 
         if (!canDelete) {
           throw PermissionDeniedException(
@@ -384,9 +403,13 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         // Add performance metrics
         trace.putAttribute('is_legacy', isLegacy ? 'true' : 'false');
         trace.putAttribute(
-            'is_collaborative', existing.isCollaborative ? 'true' : 'false');
+          'is_collaborative',
+          existing.isCollaborative ? 'true' : 'false',
+        );
         trace.putAttribute(
-            'had_image', existing.imageUrls.isNotEmpty ? 'true' : 'false');
+          'had_image',
+          existing.imageUrls.isNotEmpty ? 'true' : 'false',
+        );
       },
     );
   }
@@ -401,7 +424,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       final snapshot = await ref
           .orderBy('core.updatedAt', descending: true)
           .limit(
-              100) // Limit to 100 most recent recipes to prevent app freezing
+            100,
+          ) // Limit to 100 most recent recipes to prevent app freezing
           .get();
       return snapshot.docs.map(fromFirestore).toList();
     } catch (e) {
@@ -411,8 +435,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Stream<List<Recipe>> watchRecipes(String userId,
-      {int pageSize = _defaultWatchPageSize}) {
+  Stream<List<Recipe>> watchRecipes(
+    String userId, {
+    int pageSize = _defaultWatchPageSize,
+  }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
         .limit(pageSize)
@@ -434,8 +460,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // alone — worst case re-emits one row already in the live page; the
     // consumer dedupes by id.
     try {
-      final boundary =
-          await getCollectionForUser(userId).doc(afterRecipeId).get();
+      final boundary = await getCollectionForUser(
+        userId,
+      ).doc(afterRecipeId).get();
       if (!boundary.exists) {
         final snap = await getCollectionForUser(userId)
             .orderBy('core.updatedAt', descending: true)
@@ -495,10 +522,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (userId == null) return 0;
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .count()
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.personalTagIds', arrayContains: tagId).count().get();
       return snap.count ?? 0;
     } catch (e) {
       AppLogger.warning('Failed to count recipes with tag "$tagId": $e');
@@ -521,21 +547,22 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<int> addRemovePersonalTagFromRecipesToBatch(
     WriteBatch batch,
     String tagId,
-  ) =>
-      _tagOperations.addRemovePersonalTagFromRecipesToBatch(
-          currentUserId, batch, tagId);
+  ) => _tagOperations.addRemovePersonalTagFromRecipesToBatch(
+    currentUserId,
+    batch,
+    tagId,
+  );
 
   Future<int> replaceTagInRecipes(
     String fromTagId,
     String toTagId,
     Map<String, dynamic> toTagRichEntry,
-  ) =>
-      _tagOperations.replaceTagInRecipes(
-        currentUserId,
-        fromTagId,
-        toTagId,
-        toTagRichEntry,
-      );
+  ) => _tagOperations.replaceTagInRecipes(
+    currentUserId,
+    fromTagId,
+    toTagId,
+    toTagRichEntry,
+  );
 
   @override
   Future<List<Recipe>> findBySourceUrl(String url) =>
@@ -584,23 +611,23 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         .limit(pageSize)
         .snapshots()
         .listen((snapshot) {
-      onSyncStatusChanged?.call(
-        snapshot.metadata.hasPendingWrites,
-        snapshot.metadata.isFromCache,
-      );
+          onSyncStatusChanged?.call(
+            snapshot.metadata.hasPendingWrites,
+            snapshot.metadata.isFromCache,
+          );
 
-      final changes = snapshot.docChanges.map((change) {
-        final recipe = fromFirestore(change.doc);
-        final type = switch (change.type) {
-          DocumentChangeType.added => RecipeChangeType.added,
-          DocumentChangeType.modified => RecipeChangeType.modified,
-          DocumentChangeType.removed => RecipeChangeType.removed,
-        };
-        return RecipeChange(type: type, recipe: recipe);
-      }).toList();
+          final changes = snapshot.docChanges.map((change) {
+            final recipe = fromFirestore(change.doc);
+            final type = switch (change.type) {
+              DocumentChangeType.added => RecipeChangeType.added,
+              DocumentChangeType.modified => RecipeChangeType.modified,
+              DocumentChangeType.removed => RecipeChangeType.removed,
+            };
+            return RecipeChange(type: type, recipe: recipe);
+          }).toList();
 
-      if (changes.isNotEmpty) onData(changes);
-    }, onError: onError);
+          if (changes.isNotEmpty) onData(changes);
+        }, onError: onError);
   }
 
   @override
@@ -626,8 +653,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
     // Archive recipes are read-only and rarely change -- use cache-first
-    final docRef =
-        firestore.collection(FirestoreCollections.butleryArchive).doc(id);
+    final docRef = firestore
+        .collection(FirestoreCollections.butleryArchive)
+        .doc(id);
     final doc = await getDocCacheFirst(docRef);
     if (!doc.exists) {
       throw Exception('Archive recipe not found');
@@ -640,10 +668,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Use the mixin method for user-specific collection
     return await FirebasePerformanceService.traceFirebaseQuery(
       (trace) async {
-        final snap = await getCollectionForUser(userId)
-            .orderBy('core.updatedAt', descending: true)
-            .limit(limit)
-            .get();
+        final snap = await getCollectionForUser(
+          userId,
+        ).orderBy('core.updatedAt', descending: true).limit(limit).get();
 
         final recipes = snap.docs.map(fromFirestore).toList();
         trace.putAttribute('user_id', userId);
@@ -656,8 +683,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<List<Recipe>> fetchPublicUserRecipes(String userId,
-      {int limit = 50}) async {
+  Future<List<Recipe>> fetchPublicUserRecipes(
+    String userId, {
+    int limit = 50,
+  }) async {
     return await FirebasePerformanceService.traceFirebaseQuery(
       (trace) async {
         final snap = await getCollectionForUser(userId)
@@ -709,9 +738,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     DocumentSnapshot? lastDoc;
 
     while (true) {
-      var query = getCollectionForUser(userId)
-          .orderBy('core.updatedAt', descending: true)
-          .limit(batchSize);
+      var query = getCollectionForUser(
+        userId,
+      ).orderBy('core.updatedAt', descending: true).limit(batchSize);
 
       if (lastDoc != null) {
         query = query.startAfterDocument(lastDoc);
@@ -760,16 +789,19 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     // Note: Firestore doesn't support array-contains with case-insensitive search
     // This is a basic implementation - for production, consider using Algolia or similar
-    final snap = await getCollectionForUser(userId)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(200)
-        .get();
+    final snap = await getCollectionForUser(
+      userId,
+    ).orderBy('core.updatedAt', descending: true).limit(200).get();
 
     final lowerIngredient = ingredient.toLowerCase();
     return snap.docs
         .map(fromFirestore)
-        .where((recipe) => recipe.ingredients.any((recipeIngredient) =>
-            recipeIngredient.toLowerCase().contains(lowerIngredient)))
+        .where(
+          (recipe) => recipe.ingredients.any(
+            (recipeIngredient) =>
+                recipeIngredient.toLowerCase().contains(lowerIngredient),
+          ),
+        )
         .toList();
   }
 
@@ -779,10 +811,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (userId == null) return [];
 
     final lowerTitle = title.toLowerCase();
-    final snap = await getCollectionForUser(userId)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(200)
-        .get();
+    final snap = await getCollectionForUser(
+      userId,
+    ).orderBy('core.updatedAt', descending: true).limit(200).get();
 
     return snap.docs
         .map(fromFirestore)
@@ -798,13 +829,13 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
       // User can read if:
       // 1. They own the recipe
-      final ownerId =
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty();
       if (ownerId == userId) return true;
 
       // 2. Recipe is shared with them (check member permissions)
-      final memberPermissions =
-          (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions = (recipe.socialData?.memberPermissions)
+          .orEmpty();
       if (memberPermissions.containsKey(userId)) return true;
 
       // 3. Recipe is public (future feature)
@@ -824,13 +855,13 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
       // User can write if:
       // 1. They own the recipe
-      final ownerId =
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty();
       if (ownerId == userId) return true;
 
       // 2. They are a member with write permissions
-      final memberPermissions =
-          (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions = (recipe.socialData?.memberPermissions)
+          .orEmpty();
       final userPermission = memberPermissions[userId];
       if (userPermission != null) {
         // Check if user has write or admin permission
@@ -851,8 +882,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       if (recipe == null) return false;
 
       // User can delete if they own the recipe
-      final ownerId =
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty();
       return ownerId == userId;
     } catch (e) {
       return false;
@@ -875,8 +906,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId:
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
@@ -886,11 +917,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (!currentMembers.containsKey(userId)) {
       final updatedMembers = {
         ...currentMembers,
-        userId: ResourcePermission.editor
+        userId: ResourcePermission.editor,
       };
 
       final updatedRecipe = recipe.copyWith(
-        socialData: recipe.socialData?.copyWith(
+        socialData:
+            recipe.socialData?.copyWith(
               memberPermissions: updatedMembers,
             ) ??
             RecipeSocialData(
@@ -918,8 +950,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId:
-          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy)
+          .orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
@@ -927,8 +959,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // Remove member from the recipe
     final currentMembers = (recipe.socialData?.memberPermissions).orEmpty();
     if (currentMembers.containsKey(userId)) {
-      final updatedMembers =
-          Map<String, ResourcePermission>.from(currentMembers);
+      final updatedMembers = Map<String, ResourcePermission>.from(
+        currentMembers,
+      );
       updatedMembers.remove(userId);
 
       final updatedRecipe = recipe.copyWith(
@@ -947,9 +980,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Map<String, dynamic>>> exportPersonalRecipesByUser(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _gdprExportOperations.exportPersonalRecipesByUser(userId,
-          maxDocuments: maxDocuments);
+  }) => _gdprExportOperations.exportPersonalRecipesByUser(
+    userId,
+    maxDocuments: maxDocuments,
+  );
 
   /// BUT-501: Export every top-level `recipes` doc owned by [userId]
   /// (legacy `userId` field). Used alongside [exportPersonalRecipesByUser]
@@ -957,7 +991,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _gdprExportOperations.exportTopLevelRecipesByOwner(userId,
-          maxDocuments: maxDocuments);
+  }) => _gdprExportOperations.exportTopLevelRecipesByOwner(
+    userId,
+    maxDocuments: maxDocuments,
+  );
 }

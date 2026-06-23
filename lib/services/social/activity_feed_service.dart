@@ -16,7 +16,7 @@ class ActivityFeedService extends BaseService {
   final ActivityEventRepository _repository;
 
   ActivityFeedService({required ActivityEventRepository repository})
-      : _repository = repository;
+    : _repository = repository;
 
   @override
   String get serviceName => 'ActivityFeedService';

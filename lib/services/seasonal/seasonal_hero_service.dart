@@ -21,7 +21,7 @@ import 'package:butlery/models/seasonal/seasonal_month.dart';
 /// without touching callers.
 class SeasonalHeroService extends BaseService {
   SeasonalHeroService({String assetPath = _defaultAssetPath})
-      : _assetPath = assetPath;
+    : _assetPath = assetPath;
 
   static const String _defaultAssetPath = 'assets/seasonal/2026.json';
 
@@ -55,7 +55,9 @@ class SeasonalHeroService extends BaseService {
   /// `RecipeQueryViewModel.applySeasonalFilter` so the two paths can't drift.
   /// [lowercaseNeedles] must already be lowercased.
   static bool recipeMatchesAnyNeedle(
-      Recipe recipe, List<String> lowercaseNeedles) {
+    Recipe recipe,
+    List<String> lowercaseNeedles,
+  ) {
     for (final ingredient in recipe.ingredients) {
       final haystack = ingredient.toLowerCase();
       for (final needle in lowercaseNeedles) {
@@ -68,8 +70,11 @@ class SeasonalHeroService extends BaseService {
   /// Convenience: returns `(month, matchingRecipes)` when at least two user
   /// recipes match, otherwise `null`. Mirrors the "hide when <2" UX rule so
   /// the view layer stays dumb.
-  Future<SeasonalHeroResult?> resolveHero(List<Recipe> userRecipes,
-      {DateTime? now, int minMatches = 2}) async {
+  Future<SeasonalHeroResult?> resolveHero(
+    List<Recipe> userRecipes, {
+    DateTime? now,
+    int minMatches = 2,
+  }) async {
     final month = await getCurrentMonth(now: now);
     if (month == null) return null;
     final matches = matchUserRecipes(month, userRecipes);
@@ -100,7 +105,8 @@ class SeasonalHeroService extends BaseService {
     } catch (e, stack) {
       // Swallow — UI degrades to "no hero". Log so we notice regressions.
       AppLogger.warning(
-          '[SeasonalHeroService] failed to load $_assetPath: $e\n$stack');
+        '[SeasonalHeroService] failed to load $_assetPath: $e\n$stack',
+      );
       _monthsCache = const {};
     }
   }

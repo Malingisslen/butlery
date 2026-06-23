@@ -18,7 +18,7 @@ enum GroupInvitationStatus {
   accepted, // Accepterad
   rejected, // Avvisad
   expired, // Expired
-  cancelled // Cancelled by sender
+  cancelled, // Cancelled by sender
 }
 
 /// Group invitation with lifecycle management and cached metadata (group name/emoji, sender name).
@@ -48,9 +48,9 @@ class GroupInvitation with JsonSerializableMixin {
     this.respondedAt,
     this.personalMessage,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? clock.now().toUtc(),
-        expiresAt =
-            expiresAt ?? clock.now().toUtc().add(const Duration(days: 7));
+  }) : sentAt = sentAt ?? clock.now().toUtc(),
+       expiresAt =
+           expiresAt ?? clock.now().toUtc().add(const Duration(days: 7));
 
   /// Factory constructor for creating new group invitations with auto-generated ID.
   /// Creates a new group invitation with automatic ID generation and default timing.
@@ -211,10 +211,17 @@ class GroupInvitation with JsonSerializableMixin {
     final l = AppLocale.current;
     if (personalMessage?.isNotEmpty == true) {
       return l.groupInvitationNotificationWithMessage(
-          fromUserName, groupEmoji, groupName, personalMessage!);
+        fromUserName,
+        groupEmoji,
+        groupName,
+        personalMessage!,
+      );
     } else {
       return l.groupInvitationNotificationSimple(
-          fromUserName, groupEmoji, groupName);
+        fromUserName,
+        groupEmoji,
+        groupName,
+      );
     }
   }
 
@@ -301,8 +308,11 @@ class GroupInvitation with JsonSerializableMixin {
       id: id,
       groupId: utils.SerializationUtils.safeString(data, 'groupId'),
       groupName: utils.SerializationUtils.safeString(data, 'groupName'),
-      groupEmoji: utils.SerializationUtils.safeString(data, 'groupEmoji',
-          defaultValue: '👥'),
+      groupEmoji: utils.SerializationUtils.safeString(
+        data,
+        'groupEmoji',
+        defaultValue: '👥',
+      ),
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
       fromUserName: utils.SerializationUtils.safeString(data, 'fromUserName'),
       toUserId: utils.SerializationUtils.safeString(data, 'toUserId'),
@@ -313,12 +323,16 @@ class GroupInvitation with JsonSerializableMixin {
         GroupInvitationStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+      sentAt:
+          utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
           clock.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
-      personalMessage:
-          utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
-      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
+      personalMessage: utils.SerializationUtils.safeNullableString(
+        data,
+        'personalMessage',
+      ),
+      expiresAt:
+          utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
           clock.now().toUtc().add(const Duration(days: 7)),
     );
   }
@@ -366,12 +380,16 @@ class GroupInvitation with JsonSerializableMixin {
         GroupInvitationStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ??
+      sentAt:
+          utils.SerializationUtils.safeDateTime(json, 'sentAt') ??
           clock.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(json, 'respondedAt'),
-      personalMessage:
-          utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
-      expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ??
+      personalMessage: utils.SerializationUtils.safeNullableString(
+        json,
+        'personalMessage',
+      ),
+      expiresAt:
+          utils.SerializationUtils.safeDateTime(json, 'expiresAt') ??
           clock.now().toUtc(),
     );
   }

@@ -45,8 +45,10 @@ void main() {
         email: 'batch@test.com',
         displayName: 'Batch Test User',
       );
-      mockAuth =
-          auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
+      mockAuth = auth_mocks.MockFirebaseAuth(
+        mockUser: mockUser,
+        signedIn: true,
+      );
     });
 
     tearDown(() async {
@@ -155,20 +157,24 @@ void main() {
 
         // 5 with current version (don't need retag)
         for (var i = 0; i < 5; i++) {
-          recipes.add(_withTagResult(
-            RecipeBuilder().withId('current-$i').build(),
-            TaggingTestHelper.createTagResult(
-              generatorVersion: kTagGeneratorVersion,
+          recipes.add(
+            _withTagResult(
+              RecipeBuilder().withId('current-$i').build(),
+              TaggingTestHelper.createTagResult(
+                generatorVersion: kTagGeneratorVersion,
+              ),
             ),
-          ));
+          );
         }
 
         // 10 with old version (need retag)
         for (var i = 0; i < 10; i++) {
-          recipes.add(_withTagResult(
-            RecipeBuilder().withId('old-$i').build(),
-            TaggingTestHelper.createOutdatedTagResult(),
-          ));
+          recipes.add(
+            _withTagResult(
+              RecipeBuilder().withId('old-$i').build(),
+              TaggingTestHelper.createOutdatedTagResult(),
+            ),
+          );
         }
 
         // 3 with no tags (need retag)

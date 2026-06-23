@@ -20,10 +20,10 @@ class ShoppingExportModule {
   String exportListAsMinimalText(String listId) =>
       'List $listId: Item 1, Item 2';
   Map<String, dynamic> exportListAsJson(String listId) => {
-        'listId': listId,
-        'items': ['Item 1', 'Item 2'],
-        'exported': clock.now().toIso8601String(),
-      };
+    'listId': listId,
+    'items': ['Item 1', 'Item 2'],
+    'exported': clock.now().toIso8601String(),
+  };
   String exportListAsCSV(String listId) =>
       'Item,Quantity,Category\nItem 1,1,Food\nItem 2,2,Household';
 }
@@ -33,14 +33,13 @@ class ShoppingExternalShareModule {
   final PermissionService _permissionService;
 
   ShoppingExternalShareModule({required PermissionService permissionService})
-      : _permissionService = permissionService;
+    : _permissionService = permissionService;
 
   Future<bool> shareList({
     required String listId,
     String? format,
     String? customMessage,
-  }) async =>
-      true;
+  }) async => true;
   Future<String?> createPublicLink(String listId) async {
     final userId = _permissionService.currentUserId;
     if (userId == null) return null;
@@ -60,13 +59,11 @@ class ShoppingTemplateModule {
     required String listId,
     required String templateName,
     String? description,
-  }) async =>
-      true;
+  }) async => true;
   Future<String?> createFromTemplate({
     required String templateId,
     String? customName,
-  }) async =>
-      'new-list-id';
+  }) async => 'new-list-id';
 }
 
 /// Consolidated shopping import module (simplified)
@@ -76,8 +73,7 @@ class ShoppingImportModule {
   Future<String?> importFromText({
     required String text,
     String? listName,
-  }) async =>
-      'imported-list-id';
+  }) async => 'imported-list-id';
   Future<String?> importFromJson(Map<String, dynamic> json) async =>
       'imported-list-id';
 }
@@ -99,9 +95,9 @@ class ShoppingShareOperations {
   ShoppingShareOperations({
     FirestoreRepository? firestoreRepository,
     required PermissionService permissionService,
-  })  : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-        _permissionService = permissionService {
+  }) : _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+       _permissionService = permissionService {
     _initializeModules();
   }
 
@@ -140,12 +136,11 @@ class ShoppingShareOperations {
     required String listId,
     String format = 'text',
     String? customMessage,
-  }) =>
-      _externalShareModule.shareList(
-        listId: listId,
-        format: format,
-        customMessage: customMessage,
-      );
+  }) => _externalShareModule.shareList(
+    listId: listId,
+    format: format,
+    customMessage: customMessage,
+  );
 
   /// Create public link for shopping list
   Future<String?> createPublicLink(String listId) =>
@@ -156,32 +151,29 @@ class ShoppingShareOperations {
     required String listId,
     required String templateName,
     String? description,
-  }) =>
-      _templateModule.saveAsTemplate(
-        listId: listId,
-        templateName: templateName,
-        description: description,
-      );
+  }) => _templateModule.saveAsTemplate(
+    listId: listId,
+    templateName: templateName,
+    description: description,
+  );
 
   /// Create shopping list from template
   Future<String?> createFromTemplate({
     required String templateId,
     String? customName,
-  }) =>
-      _templateModule.createFromTemplate(
-        templateId: templateId,
-        customName: customName,
-      );
+  }) => _templateModule.createFromTemplate(
+    templateId: templateId,
+    customName: customName,
+  );
 
   /// Import shopping list from text
   Future<String?> importFromText({
     required String text,
     String? listName,
-  }) =>
-      _importModule.importFromText(
-        text: text,
-        listName: listName,
-      );
+  }) => _importModule.importFromText(
+    text: text,
+    listName: listName,
+  );
 
   /// Import shopping list from JSON
   Future<String?> importFromJson(Map<String, dynamic> jsonData) =>
@@ -192,12 +184,11 @@ class ShoppingShareOperations {
     required String listId,
     required List<String> friendIds,
     String? message,
-  }) =>
-      _socialShareModule.shareWithFriends(
-        listId: listId,
-        friendIds: friendIds,
-        message: message,
-      );
+  }) => _socialShareModule.shareWithFriends(
+    listId: listId,
+    friendIds: friendIds,
+    message: message,
+  );
 
   /// Share shopping list with single friend
   Future<bool> shareListWithFriend(String listId, String friendId) =>
@@ -208,24 +199,22 @@ class ShoppingShareOperations {
     required String listId,
     required List<String> friendIds,
     String? message,
-  }) =>
-      _socialShareModule.shareListWithMultipleFriends(
-        listId: listId,
-        friendIds: friendIds,
-        message: message,
-      );
+  }) => _socialShareModule.shareListWithMultipleFriends(
+    listId: listId,
+    friendIds: friendIds,
+    message: message,
+  );
 
   /// Share shopping list with specific groups
   Future<bool> shareWithGroups({
     required String listId,
     required List<String> groupIds,
     String? message,
-  }) =>
-      _socialShareModule.shareWithGroups(
-        listId: listId,
-        groupIds: groupIds,
-        message: message,
-      );
+  }) => _socialShareModule.shareWithGroups(
+    listId: listId,
+    groupIds: groupIds,
+    message: message,
+  );
 
   /// Share shopping list with single group
   Future<bool> shareListWithGroup(String listId, String groupId) =>
@@ -236,24 +225,22 @@ class ShoppingShareOperations {
     required String listId,
     required List<String> groupIds,
     String? message,
-  }) =>
-      _socialShareModule.shareListWithMultipleGroups(
-        listId: listId,
-        groupIds: groupIds,
-        message: message,
-      );
+  }) => _socialShareModule.shareListWithMultipleGroups(
+    listId: listId,
+    groupIds: groupIds,
+    message: message,
+  );
 
   /// Send shopping list collaboration invitation
   Future<bool> sendCollaborationInvite({
     required String listId,
     required String recipientId,
     String? message,
-  }) =>
-      _socialShareModule.sendCollaborationInvite(
-        listId: listId,
-        recipientId: recipientId,
-        message: message,
-      );
+  }) => _socialShareModule.sendCollaborationInvite(
+    listId: listId,
+    recipientId: recipientId,
+    message: message,
+  );
 
   /// Get shopping lists shared with current user
   Future<List<Map<String, dynamic>>> getShoppingListsSharedWithMe() =>

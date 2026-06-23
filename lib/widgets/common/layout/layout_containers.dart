@@ -169,7 +169,8 @@ class CategoryHeader extends StatelessWidget {
             child: Text(
               title,
               style: AppTextStyles.titleBold.copyWith(
-                color: textColor ??
+                color:
+                    textColor ??
                     Theme.of(context).colorScheme.onSecondaryContainer,
               ),
             ),

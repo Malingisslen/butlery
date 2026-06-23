@@ -235,16 +235,18 @@ void main() {
       expect(pipeline.canHandle(url), isTrue);
     });
 
-    test(
-        'BUT-1092 fix: mixed-case host TikTok.com is accepted '
+    test('BUT-1092 fix: mixed-case host TikTok.com is accepted '
         '(case-insensitive regex)', () {
       // After BUT-1092 fix: each pattern in `_tiktokPatterns` carries
       // `caseSensitive: false`, so shared URLs with uppercase host letters
       // (iOS Safari / share-sheets normalise to mixed case) extract
       // correctly. Previously rejected silently.
       const url = 'https://www.TikTok.com/@chefanna/video/7123456789012345678';
-      expect(pipeline.canHandle(url), isTrue,
-          reason: 'BUT-1092: case-insensitive host must be accepted');
+      expect(
+        pipeline.canHandle(url),
+        isTrue,
+        reason: 'BUT-1092: case-insensitive host must be accepted',
+      );
     });
 
     test('rejects non-tiktok hosts even if URL is well-formed', () {
@@ -265,8 +267,7 @@ void main() {
       expect(pipeline.canHandle('not a url'), isFalse);
     });
 
-    test(
-        'rejects tiktok.com without a video/short-link path '
+    test('rejects tiktok.com without a video/short-link path '
         '(profile URLs, search pages)', () {
       // Bug class: profile URL passes the substring check but has no video id —
       // must fail pattern match.
@@ -304,31 +305,33 @@ void main() {
   // 2) oEmbed fetch contract
   // =========================================================================
   group('_fetchMetadata (oEmbed)', () {
-    test('calls TikTok oEmbed endpoint with percent-encoded URL + timeout',
-        () async {
-      const input =
-          'https://www.tiktok.com/@chefanna/video/7123456789012345678';
-      Uri? captured;
-      final pipeline = _pipelineWith(
-        llm: llm,
-        responder: (req) async {
-          captured = req.url;
-          return _oembedJson(title: null); // forces NeedsScreenshot path
-        },
-      );
-      addTearDown(pipeline.dispose);
+    test(
+      'calls TikTok oEmbed endpoint with percent-encoded URL + timeout',
+      () async {
+        const input =
+            'https://www.tiktok.com/@chefanna/video/7123456789012345678';
+        Uri? captured;
+        final pipeline = _pipelineWith(
+          llm: llm,
+          responder: (req) async {
+            captured = req.url;
+            return _oembedJson(title: null); // forces NeedsScreenshot path
+          },
+        );
+        addTearDown(pipeline.dispose);
 
-      await pipeline.importV2(input);
+        await pipeline.importV2(input);
 
-      expect(captured, isNotNull);
-      expect(captured!.host, 'www.tiktok.com');
-      expect(captured!.path, '/oembed');
-      expect(
-        captured!.queryParameters['url'],
-        input,
-        reason: 'URL must round-trip through percent encoding intact',
-      );
-    });
+        expect(captured, isNotNull);
+        expect(captured!.host, 'www.tiktok.com');
+        expect(captured!.path, '/oembed');
+        expect(
+          captured!.queryParameters['url'],
+          input,
+          reason: 'URL must round-trip through percent encoding intact',
+        );
+      },
+    );
 
     test('non-200 oEmbed response degrades to no-metadata path', () async {
       const input =
@@ -345,8 +348,11 @@ void main() {
       final ns = result as ImportNeedsScreenshot;
       expect(ns.platform, 'TikTok');
       expect(ns.url, input);
-      expect(ns.thumbnailUrl, isNull,
-          reason: 'non-200 means no oEmbed data at all');
+      expect(
+        ns.thumbnailUrl,
+        isNull,
+        reason: 'non-200 means no oEmbed data at all',
+      );
     });
 
     test('http exception during oEmbed is swallowed (no rethrow)', () async {
@@ -361,8 +367,11 @@ void main() {
       // Must not throw — a share-extension flow can't surface raw exceptions.
       final result = await pipeline.importV2(input);
       expect(result, isA<ImportNeedsScreenshot>());
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'no caption ⇒ LLM must NEVER be called');
+      expect(
+        llm.seenTranscripts,
+        isEmpty,
+        reason: 'no caption ⇒ LLM must NEVER be called',
+      );
     });
   });
 
@@ -370,8 +379,7 @@ void main() {
   // 3) No-caption → screenshot tier
   // =========================================================================
   group('no-caption path', () {
-    test(
-        'returns ImportNeedsScreenshot with platform / url / thumbnail '
+    test('returns ImportNeedsScreenshot with platform / url / thumbnail '
         'when title is empty', () async {
       const input =
           'https://www.tiktok.com/@chefanna/video/7123456789012345678';
@@ -390,12 +398,19 @@ void main() {
       final ns = result as ImportNeedsScreenshot;
       expect(ns.platform, 'TikTok');
       expect(ns.url, input);
-      expect(ns.thumbnailUrl, 'https://cdn.tt/thumb.jpg',
-          reason: 'thumbnail must survive even when caption is missing — '
-              'the UI uses it to show the user *which* video they shared');
+      expect(
+        ns.thumbnailUrl,
+        'https://cdn.tt/thumb.jpg',
+        reason:
+            'thumbnail must survive even when caption is missing — '
+            'the UI uses it to show the user *which* video they shared',
+      );
       expect(ns.message, isNotEmpty);
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'empty caption ⇒ LLM must NOT be called (cost contract)');
+      expect(
+        llm.seenTranscripts,
+        isEmpty,
+        reason: 'empty caption ⇒ LLM must NOT be called (cost contract)',
+      );
     });
   });
 
@@ -417,8 +432,7 @@ Pannkakor receptet jag lovat! ✨
 🧂 1 krm salt
 #recept #pannkakor''';
 
-    test(
-        'returns ImportSuccess with tier=2 / method=emoji-llm / '
+    test('returns ImportSuccess with tier=2 / method=emoji-llm / '
         'confidence=0.7 and propagates metadata', () async {
       llm.responses.add(_llmSuccess(recipe: _recipe(title: 'Pannkakor')));
       final pipeline = _pipelineWith(
@@ -440,18 +454,24 @@ Pannkakor receptet jag lovat! ✨
       expect(s.method, 'emoji-llm');
       expect(s.confidence, 0.7);
       expect(s.usedLlm, isTrue);
-      expect(s.requiresReview, isTrue,
-          reason: 'LLM extractions always need user review');
+      expect(
+        s.requiresReview,
+        isTrue,
+        reason: 'LLM extractions always need user review',
+      );
       expect(s.metadata?['videoUrl'], input);
       expect(s.metadata?['authorName'], 'chefanna');
       expect(s.metadata?['thumbnailUrl'], 'https://cdn.tt/thumb.jpg');
-      expect(s.metadata?['emojiIngredientCount'], greaterThanOrEqualTo(3),
-          reason: 'pin the tier-2 entry condition — drift breaks the '
-              'analytics that distinguish emoji-vs-prose recipes');
+      expect(
+        s.metadata?['emojiIngredientCount'],
+        greaterThanOrEqualTo(3),
+        reason:
+            'pin the tier-2 entry condition — drift breaks the '
+            'analytics that distinguish emoji-vs-prose recipes',
+      );
     });
 
-    test(
-        'passes formatted emoji block to LLM '
+    test('passes formatted emoji block to LLM '
         '(not the raw caption)', () async {
       llm.responses.add(_llmSuccess());
       final pipeline = _pipelineWith(
@@ -480,8 +500,7 @@ Pannkakor receptet jag lovat! ✨
   group('BUT-980 sourceUrl + BUT-1045 sourceArtefact wiring', () {
     const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
 
-    test(
-        'tier-2 success: LLM recipe gets sourceUrl=input and a tiktokCaption '
+    test('tier-2 success: LLM recipe gets sourceUrl=input and a tiktokCaption '
         'SourceArtefact whose payload equals the raw caption', () async {
       const caption = '''
 🥚 3 st ägg
@@ -500,20 +519,29 @@ Pannkakor receptet jag lovat! ✨
 
       final result = await pipeline.importV2(input) as ImportSuccess;
 
-      expect(result.recipe.sourceUrl, input,
-          reason: 'BUT-980: lost source-URL = lost "Open on TikTok" link');
+      expect(
+        result.recipe.sourceUrl,
+        input,
+        reason: 'BUT-980: lost source-URL = lost "Open on TikTok" link',
+      );
       final artefact = result.recipe.core.sourceArtefact;
-      expect(artefact, isNotNull,
-          reason: 'BUT-1045: lost artefact = no offline re-extract');
+      expect(
+        artefact,
+        isNotNull,
+        reason: 'BUT-1045: lost artefact = no offline re-extract',
+      );
       expect(artefact!.type, SourceArtefactType.tiktokCaption);
-      expect(artefact.payload, caption,
-          reason: 'artefact payload MUST be the raw caption, not the '
-              'formatted emoji block we sent to the LLM (we want to be able '
-              'to re-extract from the original)');
+      expect(
+        artefact.payload,
+        caption,
+        reason:
+            'artefact payload MUST be the raw caption, not the '
+            'formatted emoji block we sent to the LLM (we want to be able '
+            'to re-extract from the original)',
+      );
     });
 
-    test(
-        'tier-3 (caption-LLM): LLM recipe gets sourceUrl + SourceArtefact '
+    test('tier-3 (caption-LLM): LLM recipe gets sourceUrl + SourceArtefact '
         'wired through the second code path too', () async {
       // Prose caption (no emoji structure) → skip tier 2, hit tier 3 directly.
       const caption =
@@ -532,8 +560,10 @@ Pannkakor receptet jag lovat! ✨
       expect(result.tier, 3, reason: 'no emoji measurements ⇒ skip tier 2');
       expect(result.method, 'caption-llm');
       expect(result.recipe.sourceUrl, input);
-      expect(result.recipe.core.sourceArtefact?.type,
-          SourceArtefactType.tiktokCaption);
+      expect(
+        result.recipe.core.sourceArtefact?.type,
+        SourceArtefactType.tiktokCaption,
+      );
       expect(result.recipe.core.sourceArtefact?.payload, caption);
     });
   });
@@ -549,14 +579,15 @@ Pannkakor receptet jag lovat! ✨
 🥛 5 dl mjölk
 🧈 50 g smör''';
 
-    test(
-        'falls through to tier-3 caption-LLM with the RAW caption '
+    test('falls through to tier-3 caption-LLM with the RAW caption '
         '(not the formatted emoji block)', () async {
       // Tier-2 LLM fails, tier-3 LLM succeeds.
-      llm.responses.add(const ImportFailure(
-        message: 'no recipe',
-        errorCode: ImportErrorCode.parsingFailed,
-      ));
+      llm.responses.add(
+        const ImportFailure(
+          message: 'no recipe',
+          errorCode: ImportErrorCode.parsingFailed,
+        ),
+      );
       llm.responses.add(_llmSuccess());
 
       final pipeline = _pipelineWith(
@@ -569,12 +600,19 @@ Pannkakor receptet jag lovat! ✨
 
       expect(result, isA<ImportSuccess>());
       final s = result as ImportSuccess;
-      expect(s.tier, 3,
-          reason: 'tier-2 failure must not be the final answer; '
-              'tier-3 has to fire as the second LLM attempt');
+      expect(
+        s.tier,
+        3,
+        reason:
+            'tier-2 failure must not be the final answer; '
+            'tier-3 has to fire as the second LLM attempt',
+      );
       expect(s.method, 'caption-llm');
-      expect(llm.seenTranscripts.length, 2,
-          reason: 'two LLM attempts: emoji-formatted, then raw');
+      expect(
+        llm.seenTranscripts.length,
+        2,
+        reason: 'two LLM attempts: emoji-formatted, then raw',
+      );
       expect(llm.seenTranscripts[0], contains('Identifierade ingredienser:'));
       // Tier-3 sees the raw caption (no formatter header).
       expect(llm.seenTranscripts[1], emojiCaption);
@@ -590,14 +628,15 @@ Pannkakor receptet jag lovat! ✨
         'En lång och fin beskrivning av mitt favoritrecept på pannkakor som '
         'är längre än femtio tecken så vi hamnar i lång-caption-grenen.';
 
-    test(
-        'LLM returns rateLimited ⇒ ImportNeedsAssistance with caption + '
+    test('LLM returns rateLimited ⇒ ImportNeedsAssistance with caption + '
         'partial data (NOT ImportFailure)', () async {
-      llm.responses.add(const ImportFailure(
-        message: 'rate limited',
-        errorCode: ImportErrorCode.rateLimited,
-        retryAfter: Duration(minutes: 5),
-      ));
+      llm.responses.add(
+        const ImportFailure(
+          message: 'rate limited',
+          errorCode: ImportErrorCode.rateLimited,
+          retryAfter: Duration(minutes: 5),
+        ),
+      );
 
       final pipeline = _pipelineWith(
         llm: llm,
@@ -611,10 +650,14 @@ Pannkakor receptet jag lovat! ✨
 
       final result = await pipeline.importV2(input);
 
-      expect(result, isA<ImportNeedsAssistance>(),
-          reason: 'Quota-cost contract: rate-limit denial ≠ error toast. The '
-              'user has already paid the import attempt with a long-press; '
-              'we owe them a manual path.');
+      expect(
+        result,
+        isA<ImportNeedsAssistance>(),
+        reason:
+            'Quota-cost contract: rate-limit denial ≠ error toast. The '
+            'user has already paid the import attempt with a long-press; '
+            'we owe them a manual path.',
+      );
       final a = result as ImportNeedsAssistance;
       expect(a.extractedText, caption);
       expect(a.thumbnailUrl, 'https://cdn.tt/thumb.jpg');
@@ -630,8 +673,7 @@ Pannkakor receptet jag lovat! ✨
   group('no-recipe fallback boundary', () {
     const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
 
-    test(
-        'long caption (>50 chars) with no LLM recipe ⇒ '
+    test('long caption (>50 chars) with no LLM recipe ⇒ '
         'ImportNeedsAssistance (paste path)', () async {
       const caption =
           'En lång prosa-beskrivning utan recept-struktur men över femtio '
@@ -639,10 +681,12 @@ Pannkakor receptet jag lovat! ✨
       // Verify the test premise.
       expect(caption.length, greaterThan(50));
 
-      llm.responses.add(ImportNeedsAssistance(
-        extractedText: caption,
-        message: 'AI kunde inte extrahera',
-      ));
+      llm.responses.add(
+        ImportNeedsAssistance(
+          extractedText: caption,
+          message: 'AI kunde inte extrahera',
+        ),
+      );
 
       final pipeline = _pipelineWith(
         llm: llm,
@@ -663,16 +707,17 @@ Pannkakor receptet jag lovat! ✨
       expect(a.partialData?['videoUrl'], input);
     });
 
-    test(
-        'short caption (≤50 chars) with no LLM recipe ⇒ '
+    test('short caption (≤50 chars) with no LLM recipe ⇒ '
         'ImportNeedsScreenshot (off-by-one boundary)', () async {
       const caption = 'Mums!'; // 5 chars, well under 50
       expect(caption.length, lessThanOrEqualTo(50));
 
-      llm.responses.add(ImportNeedsAssistance(
-        extractedText: caption,
-        message: 'AI kunde inte extrahera',
-      ));
+      llm.responses.add(
+        ImportNeedsAssistance(
+          extractedText: caption,
+          message: 'AI kunde inte extrahera',
+        ),
+      );
 
       final pipeline = _pipelineWith(
         llm: llm,
@@ -682,11 +727,15 @@ Pannkakor receptet jag lovat! ✨
 
       final result = await pipeline.importV2(input);
 
-      expect(result, isA<ImportNeedsScreenshot>(),
-          reason: 'Short captions have no useful text to paste, so we ask '
-              'for a screenshot. Flipping the >/<= boundary would route '
-              'every short caption into the assist UI with nothing to '
-              'select.');
+      expect(
+        result,
+        isA<ImportNeedsScreenshot>(),
+        reason:
+            'Short captions have no useful text to paste, so we ask '
+            'for a screenshot. Flipping the >/<= boundary would route '
+            'every short caption into the assist UI with nothing to '
+            'select.',
+      );
     });
   });
 
@@ -696,8 +745,7 @@ Pannkakor receptet jag lovat! ✨
   group('legacy import() adapter (V2 → ImportResult)', () {
     const input = 'https://www.tiktok.com/@chefanna/video/7123456789012345678';
 
-    test(
-        'ImportNeedsScreenshot is converted to a failure carrying '
+    test('ImportNeedsScreenshot is converted to a failure carrying '
         'needsScreenshot=true in metadata', () async {
       final pipeline = _pipelineWith(
         llm: llm,
@@ -711,19 +759,23 @@ Pannkakor receptet jag lovat! ✨
       final legacy = await pipeline.import(input);
 
       expect(legacy.isSuccess, isFalse);
-      expect(legacy.needsAssistance, isFalse,
-          reason: 'screenshot is not assistance — it is a request for an '
-              'image, the UI handles them in different branches');
+      expect(
+        legacy.needsAssistance,
+        isFalse,
+        reason:
+            'screenshot is not assistance — it is a request for an '
+            'image, the UI handles them in different branches',
+      );
       expect(legacy.metadata?['needsScreenshot'], isTrue);
       expect(legacy.metadata?['platform'], 'TikTok');
       expect(legacy.metadata?['url'], input);
       expect(legacy.metadata?['thumbnailUrl'], 'https://cdn.tt/thumb.jpg');
     });
 
-    test(
-        'ImportSuccess (tier 3) flows through with pipeline/tier/method '
+    test('ImportSuccess (tier 3) flows through with pipeline/tier/method '
         'metadata preserved + recipe present', () async {
-      const caption = 'Pannkakor recept idag! Du behöver ägg, mjölk och mjöl. '
+      const caption =
+          'Pannkakor recept idag! Du behöver ägg, mjölk och mjöl. '
           'Vispa till en jämn smet och stek små pannkakor i smör.';
       llm.responses.add(_llmSuccess(recipe: _recipe(title: 'Pannkakor')));
 
@@ -738,24 +790,28 @@ Pannkakor receptet jag lovat! ✨
       expect(legacy.isSuccess, isTrue);
       expect(legacy.recipe, isNotNull);
       expect(legacy.recipe!.title, 'Pannkakor');
-      expect(legacy.recipe!.sourceUrl, input,
-          reason: 'BUT-980 invariant must survive the V2→legacy adapter');
+      expect(
+        legacy.recipe!.sourceUrl,
+        input,
+        reason: 'BUT-980 invariant must survive the V2→legacy adapter',
+      );
       expect(legacy.metadata?['pipeline'], 'tiktok');
       expect(legacy.metadata?['tier'], 3);
       expect(legacy.metadata?['method'], 'caption-llm');
       expect(legacy.metadata?['usedLlm'], isTrue);
     });
 
-    test(
-        'ImportNeedsAssistance flows through with extractedText preserved '
+    test('ImportNeedsAssistance flows through with extractedText preserved '
         '(needsAssistance=true)', () async {
       const caption =
           'En lång prosa-beskrivning utan recept-struktur men över femtio '
           'tecken så användaren får ändå chans att markera manuellt.';
-      llm.responses.add(ImportNeedsAssistance(
-        extractedText: caption,
-        message: 'AI kunde inte extrahera',
-      ));
+      llm.responses.add(
+        ImportNeedsAssistance(
+          extractedText: caption,
+          message: 'AI kunde inte extrahera',
+        ),
+      );
 
       final pipeline = _pipelineWith(
         llm: llm,

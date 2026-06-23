@@ -64,7 +64,8 @@ void main() {
         getIt.unregister<FirebaseSharedRecipeRepository>();
       }
       getIt.registerSingleton<FirebaseSharedRecipeRepository>(
-          mockSharedRecipeRepo);
+        mockSharedRecipeRepo,
+      );
 
       // Build test recipes
       final testRecipe = RecipeFactory.build(
@@ -177,26 +178,34 @@ void main() {
     group('Permission Checks', () {
       test('should check canViewRecipe without error', () async {
         // Permission service delegates to getRecipe which we control
-        final result =
-            await module.canViewRecipe('test-recipe-1', 'test-user-123');
+        final result = await module.canViewRecipe(
+          'test-recipe-1',
+          'test-user-123',
+        );
         expect(result, isA<bool>());
       });
 
       test('should check canEditRecipe without error', () async {
-        final result =
-            await module.canEditRecipe('test-recipe-1', 'test-user-123');
+        final result = await module.canEditRecipe(
+          'test-recipe-1',
+          'test-user-123',
+        );
         expect(result, isA<bool>());
       });
 
       test('should check canManageRecipeMembers without error', () async {
         final result = await module.canManageRecipeMembers(
-            'test-recipe-1', 'test-user-123');
+          'test-recipe-1',
+          'test-user-123',
+        );
         expect(result, isA<bool>());
       });
 
       test('should get user permission for recipe', () async {
         final permission = await module.getUserPermissionForRecipe(
-            'test-recipe-1', 'test-user-123');
+          'test-recipe-1',
+          'test-user-123',
+        );
         // May be null for personal recipes that don't have member permissions
         expect(permission, isA<ResourcePermission?>());
       });
@@ -219,8 +228,10 @@ void main() {
       });
 
       test('should send sharing notifications without error', () async {
-        await module.sendRecipeSharingNotifications(
-            'test-recipe-1', ['user-2', 'user-3']);
+        await module.sendRecipeSharingNotifications('test-recipe-1', [
+          'user-2',
+          'user-3',
+        ]);
       });
     });
   });

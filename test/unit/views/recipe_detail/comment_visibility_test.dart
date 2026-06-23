@@ -28,8 +28,11 @@ void main() {
       final audience = commentVisibilityAudience(recipe, 'user1');
 
       expect(audience, containsAll(<String>['test_user', 'user2']));
-      expect(audience, isNot(contains('user1')),
-          reason: 'the author is never listed as part of their own audience');
+      expect(
+        audience,
+        isNot(contains('user1')),
+        reason: 'the author is never listed as part of their own audience',
+      );
     });
 
     test('the owner sees the members (and is not in their own audience)', () {
@@ -50,8 +53,11 @@ void main() {
       // Viewing as a third party who is neither owner nor a member.
       final audience = commentVisibilityAudience(recipe, 'outsider');
 
-      expect(audience.where((id) => id == 'test_user').length, 1,
-          reason: 'owner must appear at most once even if also a member');
+      expect(
+        audience.where((id) => id == 'test_user').length,
+        1,
+        reason: 'owner must appear at most once even if also a member',
+      );
       expect(audience, containsAll(<String>['test_user', 'user2']));
     });
 
@@ -63,8 +69,10 @@ void main() {
         type: RecipeType.collaborative,
         createdBy: 'legacy_owner',
       );
-      expect(commentVisibilityAudience(recipe, 'someone_else'),
-          contains('legacy_owner'));
+      expect(
+        commentVisibilityAudience(recipe, 'someone_else'),
+        contains('legacy_owner'),
+      );
     });
   });
 
@@ -91,8 +99,11 @@ void main() {
 
     test('overflows beyond 3 resolved names against the true total', () {
       expect(
-        formatCommentAudience(const ['A', 'B', 'C', 'D'], 6,
-            countLabel: _count),
+        formatCommentAudience(
+          const ['A', 'B', 'C', 'D'],
+          6,
+          countLabel: _count,
+        ),
         'A, B, C +3',
       );
     });
@@ -101,7 +112,9 @@ void main() {
       // The privacy bug this guards: a recipe shared with 3 non-friends whose
       // names don't resolve must NOT render an empty/hidden label.
       expect(
-          formatCommentAudience(const [], 3, countLabel: _count), '3 personer');
+        formatCommentAudience(const [], 3, countLabel: _count),
+        '3 personer',
+      );
     });
   });
 
@@ -123,20 +136,22 @@ void main() {
       expect(r.total, 3);
     });
 
-    test('owner name resolves via the fallback when the friends map is empty',
-        () {
-      // Friends list unavailable (the try/catch path in the widget): the
-      // recipe's denormalized owner name must still resolve, or a collaborator
-      // sees an audience they cannot identify at all.
-      final r = resolveCommentAudienceNames(
-        const ['ownerId'],
-        const {},
-        ownerId: 'ownerId',
-        ownerName: 'Per',
-      );
-      expect(r.resolved, const ['Per']);
-      expect(r.total, 1);
-    });
+    test(
+      'owner name resolves via the fallback when the friends map is empty',
+      () {
+        // Friends list unavailable (the try/catch path in the widget): the
+        // recipe's denormalized owner name must still resolve, or a collaborator
+        // sees an audience they cannot identify at all.
+        final r = resolveCommentAudienceNames(
+          const ['ownerId'],
+          const {},
+          ownerId: 'ownerId',
+          ownerName: 'Per',
+        );
+        expect(r.resolved, const ['Per']);
+        expect(r.total, 1);
+      },
+    );
 
     test('an empty owner name does not register as a resolution', () {
       final r = resolveCommentAudienceNames(

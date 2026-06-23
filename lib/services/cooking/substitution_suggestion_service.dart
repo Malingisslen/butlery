@@ -28,8 +28,8 @@ class SubstitutionSuggestionService extends BaseService {
   SubstitutionSuggestionService({
     required FirestoreRepository firestoreRepository,
     required IngredientLookupService lookupService,
-  })  : _firestoreRepository = firestoreRepository,
-        _lookupService = lookupService;
+  }) : _firestoreRepository = firestoreRepository,
+       _lookupService = lookupService;
 
   @override
   String get serviceName => 'SubstitutionSuggestionService';
@@ -94,9 +94,11 @@ class SubstitutionSuggestionService extends BaseService {
           parsed.add(IngredientSubstitution.fromMap(entry));
         } else if (entry is Map) {
           // Firestore sometimes returns Map<Object?, Object?> on web builds.
-          parsed.add(IngredientSubstitution.fromMap(
-            entry.map((k, v) => MapEntry(k.toString(), v)),
-          ));
+          parsed.add(
+            IngredientSubstitution.fromMap(
+              entry.map((k, v) => MapEntry(k.toString(), v)),
+            ),
+          );
         }
         if (parsed.length >= _maxResults) break;
       }

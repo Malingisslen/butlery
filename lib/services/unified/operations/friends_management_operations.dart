@@ -61,22 +61,22 @@ class FriendsManagementOperations extends BaseService {
     required Future<void> Function(FriendRequest) syncFriendRequestToFirebase,
     required Future<void> Function(FriendRequest) updateFriendRequestStatus,
     required Future<void> Function() refresh,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _getFriends = getFriends,
-        _getIncomingRequests = getIncomingRequests,
-        _getOutgoingRequests = getOutgoingRequests,
-        _getBlockedUsers = getBlockedUsers,
-        _getFirestore = getFirestore,
-        _relationshipRepository = relationshipRepository,
-        _addOutgoingRequestInternal = addOutgoingRequestInternal,
-        _removeOutgoingRequestInternal = removeOutgoingRequestInternal,
-        _removeIncomingRequestInternal = removeIncomingRequestInternal,
-        _addFriendInternal = addFriendInternal,
-        _removeFriendInternal = removeFriendInternal,
-        _syncFriendRequestToFirebase = syncFriendRequestToFirebase,
-        _updateFriendRequestStatus = updateFriendRequestStatus,
-        _refresh = refresh {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _getFriends = getFriends,
+       _getIncomingRequests = getIncomingRequests,
+       _getOutgoingRequests = getOutgoingRequests,
+       _getBlockedUsers = getBlockedUsers,
+       _getFirestore = getFirestore,
+       _relationshipRepository = relationshipRepository,
+       _addOutgoingRequestInternal = addOutgoingRequestInternal,
+       _removeOutgoingRequestInternal = removeOutgoingRequestInternal,
+       _removeIncomingRequestInternal = removeIncomingRequestInternal,
+       _addFriendInternal = addFriendInternal,
+       _removeFriendInternal = removeFriendInternal,
+       _syncFriendRequestToFirebase = syncFriendRequestToFirebase,
+       _updateFriendRequestStatus = updateFriendRequestStatus,
+       _refresh = refresh {
     _userService = ServiceLocator.get<user_svc.UserService>();
   }
 
@@ -145,11 +145,13 @@ class FriendsManagementOperations extends BaseService {
 
       // Send notification to recipient (non-critical, don't rollback on failure)
       final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
-      unawaited(_sendFriendRequestNotification(
-        request,
-        currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
-        recipientDisplayName,
-      ));
+      unawaited(
+        _sendFriendRequestNotification(
+          request,
+          currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
+          recipientDisplayName,
+        ),
+      );
 
       return true;
     }, operationName: 'Send Friend Request');
@@ -162,8 +164,9 @@ class FriendsManagementOperations extends BaseService {
     }
 
     final result = await executeServiceOperation(() async {
-      final request =
-          _getIncomingRequests().where((r) => r.id == requestId).firstOrNull;
+      final request = _getIncomingRequests()
+          .where((r) => r.id == requestId)
+          .firstOrNull;
 
       if (request == null) {
         throw Exception('Friend request not found');
@@ -203,10 +206,12 @@ class FriendsManagementOperations extends BaseService {
       _removeIncomingRequestInternal(requestId);
 
       // Send notification to the original sender (non-critical)
-      unawaited(_sendFriendRequestAcceptedNotification(
-        request,
-        _getCurrentUserDisplayName() ?? AppLocale.current.displayUnknownUser,
-      ));
+      unawaited(
+        _sendFriendRequestAcceptedNotification(
+          request,
+          _getCurrentUserDisplayName() ?? AppLocale.current.displayUnknownUser,
+        ),
+      );
 
       // Refresh state from Firebase to ensure consistency
       try {
@@ -230,8 +235,9 @@ class FriendsManagementOperations extends BaseService {
     }
 
     final result = await executeServiceOperation(() async {
-      final request =
-          _getIncomingRequests().where((r) => r.id == requestId).firstOrNull;
+      final request = _getIncomingRequests()
+          .where((r) => r.id == requestId)
+          .firstOrNull;
 
       if (request == null) {
         throw Exception('Friend request not found');
@@ -259,8 +265,9 @@ class FriendsManagementOperations extends BaseService {
     }
 
     final result = await executeServiceOperation(() async {
-      final request =
-          _getOutgoingRequests().where((r) => r.id == requestId).firstOrNull;
+      final request = _getOutgoingRequests()
+          .where((r) => r.id == requestId)
+          .firstOrNull;
 
       if (request == null) {
         throw Exception('Friend request not found');
@@ -313,25 +320,31 @@ class FriendsManagementOperations extends BaseService {
       }
 
       // Remove pending friend requests via state manager and clean up Firebase
-      final incomingFromBlocked =
-          _getIncomingRequests().where((r) => r.fromUserId == userId).toList();
-      final outgoingToBlocked =
-          _getOutgoingRequests().where((r) => r.toUserId == userId).toList();
+      final incomingFromBlocked = _getIncomingRequests()
+          .where((r) => r.fromUserId == userId)
+          .toList();
+      final outgoingToBlocked = _getOutgoingRequests()
+          .where((r) => r.toUserId == userId)
+          .toList();
 
       for (final request in incomingFromBlocked) {
         _removeIncomingRequestInternal(request.id);
         // Delete from Firebase (cancelled requests use delete per C2 fix)
-        await _updateFriendRequestStatus(request.copyWith(
-          status: FriendRequestStatus.cancelled,
-          respondedAt: clock.now(),
-        ));
+        await _updateFriendRequestStatus(
+          request.copyWith(
+            status: FriendRequestStatus.cancelled,
+            respondedAt: clock.now(),
+          ),
+        );
       }
       for (final request in outgoingToBlocked) {
         _removeOutgoingRequestInternal(request.id);
-        await _updateFriendRequestStatus(request.copyWith(
-          status: FriendRequestStatus.cancelled,
-          respondedAt: clock.now(),
-        ));
+        await _updateFriendRequestStatus(
+          request.copyWith(
+            status: FriendRequestStatus.cancelled,
+            respondedAt: clock.now(),
+          ),
+        );
       }
 
       // Write to blocks collection (real-time stream updates in-memory cache)
@@ -540,24 +553,28 @@ class FriendsManagementOperations extends BaseService {
           .get();
 
       // Get target user's friend IDs
-      final targetUserFriendIds =
-          targetUserFriendsQuery.docs.map((doc) => doc.id).toSet();
+      final targetUserFriendIds = targetUserFriendsQuery.docs
+          .map((doc) => doc.id)
+          .toSet();
 
       // Find intersection (mutual friends)
-      final mutualFriendIds =
-          currentUserFriends.intersection(targetUserFriendIds).toList();
+      final mutualFriendIds = currentUserFriends
+          .intersection(targetUserFriendIds)
+          .toList();
 
       if (mutualFriendIds.isEmpty) {
         AppLogger.debug(
-            'No mutual friends found with user ${userId.maskedUserId}');
+          'No mutual friends found with user ${userId.maskedUserId}',
+        );
         return [];
       }
 
       // Get model.UserProfile objects for mutual friends
       final mutualFriends = <model.UserProfile>[];
       for (final friendId in mutualFriendIds) {
-        final friend =
-            _getFriends().where((f) => f.uid == friendId).firstOrNull;
+        final friend = _getFriends()
+            .where((f) => f.uid == friendId)
+            .firstOrNull;
         if (friend != null) {
           mutualFriends.add(friend);
         }

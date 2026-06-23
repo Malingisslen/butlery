@@ -134,8 +134,9 @@ void main() {
           .doc(sharedMenu.id)
           .set(data);
 
-      final menuRef =
-          fakeFirestore.collection('shared_content').doc(sharedMenu.id);
+      final menuRef = fakeFirestore
+          .collection('shared_content')
+          .doc(sharedMenu.id);
 
       if (memberUserIds != null) {
         for (final userId in memberUserIds) {
@@ -180,39 +181,44 @@ void main() {
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared menu with recipients', () async {
-        final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
+      test(
+        'should allow user to create shared menu with recipients',
+        () async {
+          final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
 
-        final menuId = await repository.createSharedMenu(
-          sharedMenu,
-          recipientIds: [testFriendId],
-        );
-
-        final memberDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(menuId)
-            .collection('members')
-            .doc(testFriendId)
-            .get();
-        expect(memberDoc.exists, isTrue);
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
-      test('should reject user from creating shared menu as another user',
-          () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-
-        expect(
-          () => repository.createSharedMenu(
+          final menuId = await repository.createSharedMenu(
             sharedMenu,
             recipientIds: [testFriendId],
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          );
+
+          final memberDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(menuId)
+              .collection('members')
+              .doc(testFriendId)
+              .get();
+          expect(memberDoc.exists, isTrue);
+        },
+        skip:
+            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
+
+      test(
+        'should reject user from creating shared menu as another user',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+
+          expect(
+            () => repository.createSharedMenu(
+              sharedMenu,
+              recipientIds: [testFriendId],
+            ),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
 
       test('should reject shared menu with no recipients', () async {
         final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
@@ -238,51 +244,58 @@ void main() {
         expect(result!.id, testMenuId);
       });
 
-      test('should reject user from viewing shared menu not sent to them',
-          () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testFriendId]);
+      test(
+        'should reject user from viewing shared menu not sent to them',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(sharedMenu, memberUserIds: [testFriendId]);
 
-        expect(
-          () => repository.getSharedMenu(testMenuId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          expect(
+            () => repository.getSharedMenu(testMenuId),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     // ===== CRUD OPERATIONS =====
 
     group('CRUD Operations', () {
-      test('should create shared menu successfully', () async {
-        final sharedMenu = createSharedMenu(
-          id: 'new-menu',
-          menuTitle: 'My Weekly Plan',
-          sharedByUserId: testUserId,
-          shareMessage: 'Check out my menu!',
-        );
+      test(
+        'should create shared menu successfully',
+        () async {
+          final sharedMenu = createSharedMenu(
+            id: 'new-menu',
+            menuTitle: 'My Weekly Plan',
+            sharedByUserId: testUserId,
+            shareMessage: 'Check out my menu!',
+          );
 
-        final menuId = await repository.createSharedMenu(
-          sharedMenu,
-          recipientIds: [testFriendId, testOtherUserId],
-        );
+          final menuId = await repository.createSharedMenu(
+            sharedMenu,
+            recipientIds: [testFriendId, testOtherUserId],
+          );
 
-        final doc =
-            await fakeFirestore.collection('shared_content').doc(menuId).get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['sharedByUserId'], testUserId);
-        expect(doc.data()?['menuTitle'], 'My Weekly Plan');
+          final doc = await fakeFirestore
+              .collection('shared_content')
+              .doc(menuId)
+              .get();
+          expect(doc.exists, isTrue);
+          expect(doc.data()?['sharedByUserId'], testUserId);
+          expect(doc.data()?['menuTitle'], 'My Weekly Plan');
 
-        final membersSnapshot = await fakeFirestore
-            .collection('shared_content')
-            .doc(menuId)
-            .collection('members')
-            .get();
-        expect(membersSnapshot.docs.length, 2);
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final membersSnapshot = await fakeFirestore
+              .collection('shared_content')
+              .doc(menuId)
+              .collection('members')
+              .get();
+          expect(membersSnapshot.docs.length, 2);
+        },
+        skip:
+            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
       test('should get all shared menus for user', () async {
         final menu1 = createSharedMenu(
@@ -350,107 +363,128 @@ void main() {
     // ===== STATUS MANAGEMENT =====
 
     group('Status Management', () {
-      test('should add view to subcollection', () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
+      test(
+        'should add view to subcollection',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
 
-        await repository.addView(testMenuId, testUserId);
+          await repository.addView(testMenuId, testUserId);
 
-        final viewDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testMenuId)
-            .collection('views')
-            .doc(testUserId)
-            .get();
-        expect(viewDoc.exists, isTrue);
-        expect(viewDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final viewDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testMenuId)
+              .collection('views')
+              .doc(testUserId)
+              .get();
+          expect(viewDoc.exists, isTrue);
+          expect(viewDoc.data()?['userId'], testUserId);
+        },
+        skip:
+            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should add engagement to subcollection', () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
+      test(
+        'should add engagement to subcollection',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
 
-        await repository.addEngagement(testMenuId, testUserId,
-            action: 'import');
+          await repository.addEngagement(
+            testMenuId,
+            testUserId,
+            action: 'import',
+          );
 
-        final engagementDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testMenuId)
-            .collection('engagements')
-            .doc(testUserId)
-            .get();
-        expect(engagementDoc.exists, isTrue);
-        expect(engagementDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final engagementDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testMenuId)
+              .collection('engagements')
+              .doc(testUserId)
+              .get();
+          expect(engagementDoc.exists, isTrue);
+          expect(engagementDoc.data()?['userId'], testUserId);
+        },
+        skip:
+            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should add dismissal to subcollection', () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
+      test(
+        'should add dismissal to subcollection',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
 
-        await repository.addDismissal(testMenuId, testUserId);
+          await repository.addDismissal(testMenuId, testUserId);
 
-        final dismissalDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testMenuId)
-            .collection('dismissals')
-            .doc(testUserId)
-            .get();
-        expect(dismissalDoc.exists, isTrue);
-        expect(dismissalDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final dismissalDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testMenuId)
+              .collection('dismissals')
+              .doc(testUserId)
+              .get();
+          expect(dismissalDoc.exists, isTrue);
+          expect(dismissalDoc.data()?['userId'], testUserId);
+        },
+        skip:
+            'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should remove dismissal from subcollection', () async {
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(sharedMenu,
-            memberUserIds: [testUserId], dismissedByUserIds: [testUserId]);
+      test(
+        'should remove dismissal from subcollection',
+        () async {
+          final sharedMenu = createSharedMenu(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(
+            sharedMenu,
+            memberUserIds: [testUserId],
+            dismissedByUserIds: [testUserId],
+          );
 
-        await repository.removeDismissal(testMenuId, testUserId);
+          await repository.removeDismissal(testMenuId, testUserId);
 
-        final dismissalDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testMenuId)
-            .collection('dismissals')
-            .doc(testUserId)
-            .get();
-        expect(dismissalDoc.exists, isFalse);
-      },
-          skip:
-              'FieldValue.serverTimestamp in removeMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          final dismissalDoc = await fakeFirestore
+              .collection('shared_content')
+              .doc(testMenuId)
+              .collection('dismissals')
+              .doc(testUserId)
+              .get();
+          expect(dismissalDoc.exists, isFalse);
+        },
+        skip:
+            'FieldValue.serverTimestamp in removeMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
     });
 
     // ===== QUERY OPERATIONS =====
 
     group('Query Operations', () {
       test(
-          'should return 0 unread count when no counter document exists (denormalized counter)',
-          () async {
-        // getUnreadCountForUser reads from denormalized counter doc,
-        // not from actual view subcollections. Without seeding counters
-        // the count is 0.
-        final menu1 = createSharedMenu(
-          id: 'menu-1',
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedMenu(menu1, memberUserIds: [testUserId]);
+        'should return 0 unread count when no counter document exists (denormalized counter)',
+        () async {
+          // getUnreadCountForUser reads from denormalized counter doc,
+          // not from actual view subcollections. Without seeding counters
+          // the count is 0.
+          final menu1 = createSharedMenu(
+            id: 'menu-1',
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedMenu(menu1, memberUserIds: [testUserId]);
 
-        final unreadCount = await repository.getUnreadCountForUser(testUserId);
+          final unreadCount = await repository.getUnreadCountForUser(
+            testUserId,
+          );
 
-        expect(unreadCount, 0);
-      });
+          expect(unreadCount, 0);
+        },
+      );
 
       test('should get imported menus for user', () async {
         final menu1 = createSharedMenu(
@@ -462,37 +496,43 @@ void main() {
           sharedByUserId: testOtherUserId,
         );
 
-        await seedSharedMenu(menu1,
-            memberUserIds: [testUserId], engagedByUserIds: [testUserId]);
+        await seedSharedMenu(
+          menu1,
+          memberUserIds: [testUserId],
+          engagedByUserIds: [testUserId],
+        );
         await seedSharedMenu(menu2, memberUserIds: [testUserId]);
 
-        final importedMenus =
-            await repository.getImportedMenusForUser(testUserId);
+        final importedMenus = await repository.getImportedMenusForUser(
+          testUserId,
+        );
 
         expect(importedMenus.length, 1);
         expect(importedMenus.first.id, 'menu-1');
       });
 
-      test('should not return non-member menus via subcollection query',
-          () async {
-        final menu1 = createSharedMenu(
-          id: 'menu-1',
-          sharedByUserId: testOtherUserId,
-        );
-        final menu2 = createSharedMenu(
-          id: 'menu-2',
-          sharedByUserId: testOtherUserId,
-        );
+      test(
+        'should not return non-member menus via subcollection query',
+        () async {
+          final menu1 = createSharedMenu(
+            id: 'menu-1',
+            sharedByUserId: testOtherUserId,
+          );
+          final menu2 = createSharedMenu(
+            id: 'menu-2',
+            sharedByUserId: testOtherUserId,
+          );
 
-        // menu-1 has testUserId as member, menu-2 does not
-        await seedSharedMenu(menu1, memberUserIds: [testUserId]);
-        await seedSharedMenu(menu2, memberUserIds: [testFriendId]);
+          // menu-1 has testUserId as member, menu-2 does not
+          await seedSharedMenu(menu1, memberUserIds: [testUserId]);
+          await seedSharedMenu(menu2, memberUserIds: [testFriendId]);
 
-        final menus = await repository.getSharedMenusForUser(testUserId);
+          final menus = await repository.getSharedMenusForUser(testUserId);
 
-        expect(menus.length, 1);
-        expect(menus.first.id, 'menu-1');
-      });
+          expect(menus.length, 1);
+          expect(menus.first.id, 'menu-1');
+        },
+      );
     });
 
     // ===== EDGE CASES =====
@@ -523,19 +563,22 @@ void main() {
         expect(menus, isEmpty);
       });
 
-      test('should handle menu with empty snapshot', () async {
-        final sharedMenu = createSharedMenu(
-          menuSnapshot: {},
-          sharedByUserId: testUserId,
-        );
+      test(
+        'should handle menu with empty snapshot',
+        () async {
+          final sharedMenu = createSharedMenu(
+            menuSnapshot: {},
+            sharedByUserId: testUserId,
+          );
 
-        await repository.createSharedMenu(
-          sharedMenu,
-          recipientIds: [testFriendId],
-        );
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          await repository.createSharedMenu(
+            sharedMenu,
+            recipientIds: [testFriendId],
+          );
+        },
+        skip:
+            'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
     });
   });
 }

@@ -75,27 +75,36 @@ void main() {
       mockAnalyticsService = _MockAnalyticsService();
 
       // Stub tracker getters so production code can access them if needed
-      when(() => mockAnalyticsService.recipe)
-          .thenReturn(_MockRecipeEventsTracker());
-      when(() => mockAnalyticsService.menu)
-          .thenReturn(_MockMenuEventsTracker());
-      when(() => mockAnalyticsService.shopping)
-          .thenReturn(_MockShoppingEventsTracker());
-      when(() => mockAnalyticsService.social)
-          .thenReturn(_MockSocialEventsTracker());
-      when(() => mockAnalyticsService.import)
-          .thenReturn(_MockImportEventsTracker());
+      when(
+        () => mockAnalyticsService.recipe,
+      ).thenReturn(_MockRecipeEventsTracker());
+      when(
+        () => mockAnalyticsService.menu,
+      ).thenReturn(_MockMenuEventsTracker());
+      when(
+        () => mockAnalyticsService.shopping,
+      ).thenReturn(_MockShoppingEventsTracker());
+      when(
+        () => mockAnalyticsService.social,
+      ).thenReturn(_MockSocialEventsTracker());
+      when(
+        () => mockAnalyticsService.import,
+      ).thenReturn(_MockImportEventsTracker());
 
-      when(() => mockUserService.completeOnboardingWithPreferences(
-            any(),
-            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-            birthYear: any(named: 'birthYear'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockUserService.completeOnboardingWithPreferences(
+          any(),
+          onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          birthYear: any(named: 'birthYear'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockAnalyticsService.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalyticsService.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       getIt.registerSingleton<UserService>(mockUserService);
       getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
@@ -113,25 +122,27 @@ void main() {
     });
 
     group('completeOnboarding', () {
-      test('calls completeOnboardingWithPreferences with combined prefs',
-          () async {
-        viewModel.toggleAllergen('gluten');
-        viewModel.toggleDietaryPref('vegansk');
+      test(
+        'calls completeOnboardingWithPreferences with combined prefs',
+        () async {
+          viewModel.toggleAllergen('gluten');
+          viewModel.toggleDietaryPref('vegansk');
 
-        final result = await viewModel.completeOnboarding();
+          final result = await viewModel.completeOnboarding();
 
-        expect(result, isTrue);
-        final captured = verify(
-          () => mockUserService.completeOnboardingWithPreferences(
-            captureAny(),
-            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-            birthYear: any(named: 'birthYear'),
-          ),
-        ).captured;
-        final prefs = captured.first as UserAllergenPreferences;
-        expect(prefs.trackedAllergens, contains('gluten'));
-        expect(prefs.trackedDietary, contains('vegansk'));
-      });
+          expect(result, isTrue);
+          final captured = verify(
+            () => mockUserService.completeOnboardingWithPreferences(
+              captureAny(),
+              onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              birthYear: any(named: 'birthYear'),
+            ),
+          ).captured;
+          final prefs = captured.first as UserAllergenPreferences;
+          expect(prefs.trackedAllergens, contains('gluten'));
+          expect(prefs.trackedDietary, contains('vegansk'));
+        },
+      );
 
       test('passes null preferences when no selections', () async {
         final result = await viewModel.completeOnboarding();
@@ -147,10 +158,12 @@ void main() {
       });
 
       test('returns false when service throws', () async {
-        when(() => mockUserService.completeOnboardingWithPreferences(
-              any(),
-              onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-            )).thenThrow(Exception('Firestore write failed'));
+        when(
+          () => mockUserService.completeOnboardingWithPreferences(
+            any(),
+            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          ),
+        ).thenThrow(Exception('Firestore write failed'));
 
         final result = await viewModel.completeOnboarding();
 
@@ -162,51 +175,63 @@ void main() {
 
         await viewModel.completeOnboarding();
 
-        verify(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_completed',
-              parameters: {
-                'allergen_count': 0,
-                'dietary_count': 0,
-              },
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_completed',
+            parameters: {
+              'allergen_count': 0,
+              'dietary_count': 0,
+            },
+          ),
+        ).called(1);
       });
 
-      test('fires onboarding_skipped analytics when not on last page',
-          () async {
-        // Stay on page 0 (not last page)
-        await viewModel.completeOnboarding();
+      test(
+        'fires onboarding_skipped analytics when not on last page',
+        () async {
+          // Stay on page 0 (not last page)
+          await viewModel.completeOnboarding();
 
-        verify(() => mockAnalyticsService.logEvent(
+          verify(
+            () => mockAnalyticsService.logEvent(
               name: 'onboarding_skipped',
               parameters: {'skipped_at_page': 0},
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test(
-          'BUT-545: fires onboarding_import_skipped when import never succeeded',
-          () async {
-        viewModel.setPage(4);
-        await viewModel.completeOnboarding();
+        'BUT-545: fires onboarding_import_skipped when import never succeeded',
+        () async {
+          viewModel.setPage(4);
+          await viewModel.completeOnboarding();
 
-        verify(() => mockAnalyticsService.logEvent(
+          verify(
+            () => mockAnalyticsService.logEvent(
               name: 'onboarding_import_skipped',
               parameters: {'completed_via_skip': false},
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test(
-          'BUT-545: does NOT fire onboarding_import_skipped after successful import',
-          () async {
-        viewModel.setPage(4);
-        viewModel.markOnboardingImportSucceeded();
+        'BUT-545: does NOT fire onboarding_import_skipped after successful import',
+        () async {
+          viewModel.setPage(4);
+          viewModel.markOnboardingImportSucceeded();
 
-        await viewModel.completeOnboarding();
+          await viewModel.completeOnboarding();
 
-        verifyNever(() => mockAnalyticsService.logEvent(
+          verifyNever(
+            () => mockAnalyticsService.logEvent(
               name: 'onboarding_import_skipped',
               parameters: any(named: 'parameters'),
-            ));
-      });
+            ),
+          );
+        },
+      );
     });
 
     group('age gate requires an explicit choice (GDPR Art 8)', () {
@@ -214,8 +239,11 @@ void main() {
         // Compliance: pre-seeding an adult default would let anyone tap Next
         // without declaring their age. The gate must stay unset until a pick.
         expect(viewModel.selectedBirthYear, isNull);
-        expect(viewModel.isAgeGatePassed, isFalse,
-            reason: 'an unanswered gate must never count as passed');
+        expect(
+          viewModel.isAgeGatePassed,
+          isFalse,
+          reason: 'an unanswered gate must never count as passed',
+        );
       });
 
       test('passes only after an adult year is explicitly selected', () {
@@ -226,9 +254,11 @@ void main() {
       test('fails when the explicitly selected year is under 15', () {
         viewModel.setBirthYear(DateTime.now().year - 10);
         expect(viewModel.selectedBirthYear, isNotNull);
-        expect(viewModel.isAgeGatePassed, isFalse,
-            reason:
-                'the GDPR age block must engage on a deliberate young pick');
+        expect(
+          viewModel.isAgeGatePassed,
+          isFalse,
+          reason: 'the GDPR age block must engage on a deliberate young pick',
+        );
       });
 
       test('clearing the selection re-locks the gate', () {
@@ -252,19 +282,20 @@ void main() {
     });
 
     group('completion timeout (bug 33)', () {
-      test(
-          'a hung completion write surfaces an error (returns false) instead '
+      test('a hung completion write surfaces an error (returns false) instead '
           'of hanging forever', () {
         // The user-prefs write never resolves — without the timeout the whole
         // onboarding spinner would hang. The bounded write throws
         // TimeoutException, caught -> returns false. fakeAsync advances the
         // virtual clock past the internal timeout without a real wall wait.
         fakeAsync((async) {
-          when(() => mockUserService.completeOnboardingWithPreferences(
-                any(),
-                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-                birthYear: any(named: 'birthYear'),
-              )).thenAnswer((_) => Completer<void>().future);
+          when(
+            () => mockUserService.completeOnboardingWithPreferences(
+              any(),
+              onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              birthYear: any(named: 'birthYear'),
+            ),
+          ).thenAnswer((_) => Completer<void>().future);
 
           bool? result;
           viewModel.completeOnboarding().then((r) => result = r);
@@ -275,8 +306,11 @@ void main() {
 
           // Past the 20s bound the timeout fires -> returns false.
           async.elapse(const Duration(seconds: 2));
-          expect(result, isFalse,
-              reason: 'a hung completion must degrade to an error, not hang');
+          expect(
+            result,
+            isFalse,
+            reason: 'a hung completion must degrade to an error, not hang',
+          );
         });
       });
     });
@@ -285,18 +319,22 @@ void main() {
       test('setPage fires onboarding_page_viewed analytics', () {
         viewModel.setPage(2);
 
-        verify(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_page_viewed',
-              parameters: {'page': 2},
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_page_viewed',
+            parameters: {'page': 2},
+          ),
+        ).called(1);
       });
 
       test('setPage fires onboarding_started on first call', () {
         viewModel.setPage(0);
 
-        verify(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_started',
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_started',
+          ),
+        ).called(1);
       });
 
       test('BUT-538: setPage dedupes onboarding_page_viewed per session', () {
@@ -305,32 +343,41 @@ void main() {
         viewModel.setPage(1); // back-nav — should NOT fire again
         viewModel.setPage(2); // forward-revisit — should NOT fire again
 
-        verify(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_page_viewed',
-              parameters: {'page': 1},
-            )).called(1);
-        verify(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_page_viewed',
-              parameters: {'page': 2},
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_page_viewed',
+            parameters: {'page': 1},
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_page_viewed',
+            parameters: {'page': 2},
+          ),
+        ).called(1);
       });
 
       test(
-          'BUT-538: setInitialPage marks page as already viewed (no re-fire on return)',
-          () {
-        viewModel.setInitialPage(3); // resume at page 3 — no analytics
-        viewModel.setPage(0); // navigate back — fires once for 0
-        viewModel.setPage(3); // forward to 3 — should NOT fire (resumed)
+        'BUT-538: setInitialPage marks page as already viewed (no re-fire on return)',
+        () {
+          viewModel.setInitialPage(3); // resume at page 3 — no analytics
+          viewModel.setPage(0); // navigate back — fires once for 0
+          viewModel.setPage(3); // forward to 3 — should NOT fire (resumed)
 
-        verifyNever(() => mockAnalyticsService.logEvent(
+          verifyNever(
+            () => mockAnalyticsService.logEvent(
               name: 'onboarding_page_viewed',
               parameters: {'page': 3},
-            ));
-        verify(() => mockAnalyticsService.logEvent(
+            ),
+          );
+          verify(
+            () => mockAnalyticsService.logEvent(
               name: 'onboarding_page_viewed',
               parameters: {'page': 0},
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('nextPage does not fire analytics directly', () {
         // First setPage to start tracking
@@ -338,17 +385,21 @@ void main() {
         clearInteractions(mockAnalyticsService);
 
         // Re-stub after clear
-        when(() => mockAnalyticsService.logEvent(
-              name: any(named: 'name'),
-              parameters: any(named: 'parameters'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAnalyticsService.logEvent(
+            name: any(named: 'name'),
+            parameters: any(named: 'parameters'),
+          ),
+        ).thenAnswer((_) async {});
 
         viewModel.nextPage();
 
-        verifyNever(() => mockAnalyticsService.logEvent(
-              name: 'onboarding_page_viewed',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => mockAnalyticsService.logEvent(
+            name: 'onboarding_page_viewed',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
     });
 
@@ -364,11 +415,13 @@ void main() {
 
       setUp(() {
         mockProgress = _MockOnboardingProgressService();
-        when(() => mockProgress.markStepComplete(
-              userId: any(named: 'userId'),
-              step: any(named: 'step'),
-              isFinalStep: any(named: 'isFinalStep'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockProgress.markStepComplete(
+            userId: any(named: 'userId'),
+            step: any(named: 'step'),
+            isFinalStep: any(named: 'isFinalStep'),
+          ),
+        ).thenAnswer((_) async {});
         vm = OnboardingViewModel(
           progressService: mockProgress,
           userId: 'u1',
@@ -377,8 +430,7 @@ void main() {
 
       tearDown(() => vm.dispose());
 
-      test(
-          'forward nav via the real view sequence (nextPage then setPage) '
+      test('forward nav via the real view sequence (nextPage then setPage) '
           'persists the step that was left', () async {
         // Mirror onboarding_view._handleNext + onPageChanged exactly: the VM
         // is bumped first, then the animation reports the new page.
@@ -388,56 +440,66 @@ void main() {
 
         // The step LEFT was page 0 (age-gate). It must be persisted exactly
         // once, not as the final step.
-        verify(() => mockProgress.markStepComplete(
-              userId: 'u1',
-              step: OnboardingStep.ageGate,
-              isFinalStep: false,
-            )).called(1);
+        verify(
+          () => mockProgress.markStepComplete(
+            userId: 'u1',
+            step: OnboardingStep.ageGate,
+            isFinalStep: false,
+          ),
+        ).called(1);
       });
 
-      test('walking the whole wizard persists each step exactly once',
-          () async {
-        vm.setPage(0);
-        // Pages 0->1->2->3->4: four forward hops, each leaving one step.
-        for (var i = 0; i < 4; i++) {
-          final from = vm.currentPage;
-          vm.nextPage();
-          vm.setPage(from + 1);
-        }
+      test(
+        'walking the whole wizard persists each step exactly once',
+        () async {
+          vm.setPage(0);
+          // Pages 0->1->2->3->4: four forward hops, each leaving one step.
+          for (var i = 0; i < 4; i++) {
+            final from = vm.currentPage;
+            vm.nextPage();
+            vm.setPage(from + 1);
+          }
 
-        // Each of the four left-behind steps persisted once; never duplicated
-        // by the trailing setPage (whose guard is false because nextPage
-        // already advanced _currentPage).
-        for (final step in [
-          OnboardingStep.ageGate,
-          OnboardingStep.welcome,
-          OnboardingStep.allergens,
-          OnboardingStep.dietary,
-        ]) {
-          verify(() => mockProgress.markStepComplete(
+          // Each of the four left-behind steps persisted once; never duplicated
+          // by the trailing setPage (whose guard is false because nextPage
+          // already advanced _currentPage).
+          for (final step in [
+            OnboardingStep.ageGate,
+            OnboardingStep.welcome,
+            OnboardingStep.allergens,
+            OnboardingStep.dietary,
+          ]) {
+            verify(
+              () => mockProgress.markStepComplete(
                 userId: 'u1',
                 step: step,
                 isFinalStep: false,
-              )).called(1);
-        }
-      });
+              ),
+            ).called(1);
+          }
+        },
+      );
 
-      test('backward nav never persists a step (no resume downgrade)',
-          () async {
-        vm.setPage(0);
-        vm.nextPage();
-        vm.setPage(1);
-        clearInteractions(mockProgress);
+      test(
+        'backward nav never persists a step (no resume downgrade)',
+        () async {
+          vm.setPage(0);
+          vm.nextPage();
+          vm.setPage(1);
+          clearInteractions(mockProgress);
 
-        vm.previousPage(); // _currentPage 1 -> 0
-        vm.setPage(0); // animation lands back on 0
+          vm.previousPage(); // _currentPage 1 -> 0
+          vm.setPage(0); // animation lands back on 0
 
-        verifyNever(() => mockProgress.markStepComplete(
+          verifyNever(
+            () => mockProgress.markStepComplete(
               userId: any(named: 'userId'),
               step: any(named: 'step'),
               isFinalStep: any(named: 'isFinalStep'),
-            ));
-      });
+            ),
+          );
+        },
+      );
     });
   });
 
@@ -454,23 +516,23 @@ void main() {
     late _MockMenuShoppingListGenerator mockShoppingGenerator;
 
     Recipe recipeWith(String id, String mealType) => Recipe(
-          core: RecipeCore(
-            id: id,
-            title: 'r-$id',
-            description: '',
-            ingredients: const ['1 dl mjölk'],
-            instructions: const ['gör'],
-            imageUrls: const [],
-            mealType: mealType,
-            portions: 2,
-            timeMinutes: 10,
-            sourceUrl: 'Butlery starter recipes',
-            createdAt: DateTime(2026, 1, 1),
-            updatedAt: DateTime(2026, 1, 1),
-            createdBy: 'system',
-          ),
-          type: RecipeType.personal,
-        );
+      core: RecipeCore(
+        id: id,
+        title: 'r-$id',
+        description: '',
+        ingredients: const ['1 dl mjölk'],
+        instructions: const ['gör'],
+        imageUrls: const [],
+        mealType: mealType,
+        portions: 2,
+        timeMinutes: 10,
+        sourceUrl: 'Butlery starter recipes',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+        createdBy: 'system',
+      ),
+      type: RecipeType.personal,
+    );
 
     WeeklyMenuPlan emptyPlan() =>
         WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026, 6, 8));
@@ -513,35 +575,44 @@ void main() {
       mockMenuService = _MockWeeklyMenuPlanService();
       mockShoppingGenerator = _MockMenuShoppingListGenerator();
 
-      when(() => mockUserService.completeOnboardingWithPreferences(
-            any(),
-            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-            birthYear: any(named: 'birthYear'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockUserService.completeOnboardingWithPreferences(
+          any(),
+          onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          birthYear: any(named: 'birthYear'),
+        ),
+      ).thenAnswer((_) async {});
       when(() => mockUserService.currentUserId).thenReturn('u1');
-      when(() => mockAnalyticsService.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalyticsService.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       // Two seed recipes persist with fresh ids r1 (middag) + r2 (frukost).
       var created = 0;
-      when(() => mockRecipeService.createPersonalRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer((_) async => 'r${++created}');
-      when(() => mockRecipeService.getRecipeById('r1'))
-          .thenReturn(recipeWith('r1', 'Middag'));
-      when(() => mockRecipeService.getRecipeById('r2'))
-          .thenReturn(recipeWith('r2', 'Frukost'));
-      when(() => mockRecipeService.getRecipeById(any()))
-          .thenReturn(recipeWith('rX', 'Middag'));
+      when(
+        () => mockRecipeService.createPersonalRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer((_) async => 'r${++created}');
+      when(
+        () => mockRecipeService.getRecipeById('r1'),
+      ).thenReturn(recipeWith('r1', 'Middag'));
+      when(
+        () => mockRecipeService.getRecipeById('r2'),
+      ).thenReturn(recipeWith('r2', 'Frukost'));
+      when(
+        () => mockRecipeService.getRecipeById(any()),
+      ).thenReturn(recipeWith('rX', 'Middag'));
 
       getIt.registerSingleton<UserService>(mockUserService);
       getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
@@ -576,28 +647,32 @@ void main() {
       }
     });
 
-    test(
-        'seeds a non-empty menu plan and generates its shopping list when the '
+    test('seeds a non-empty menu plan and generates its shopping list when the '
         'week is empty', () async {
-      when(() => mockMenuService.getWeek(any()))
-          .thenAnswer((_) async => emptyPlan());
+      when(
+        () => mockMenuService.getWeek(any()),
+      ).thenAnswer((_) async => emptyPlan());
       // Real addEntry semantics — delegate to a fresh service so the saved
       // plan is genuinely non-empty rather than a hand-rolled stub.
       final realAdder = WeeklyMenuPlanService(
         repository: _NoopMenuRepo(),
         userService: mockUserService,
       );
-      when(() => mockMenuService.addEntry(
-            plan: any(named: 'plan'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any(named: 'recipe'),
-          )).thenAnswer((inv) => realAdder.addEntry(
-            plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-            day: inv.namedArguments[#day] as DayOfWeek,
-            slot: inv.namedArguments[#slot] as MealSlot,
-            recipe: inv.namedArguments[#recipe] as Recipe,
-          ));
+      when(
+        () => mockMenuService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenAnswer(
+        (inv) => realAdder.addEntry(
+          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+          day: inv.namedArguments[#day] as DayOfWeek,
+          slot: inv.namedArguments[#slot] as MealSlot,
+          recipe: inv.namedArguments[#recipe] as Recipe,
+        ),
+      );
       when(() => mockMenuService.save(any())).thenAnswer((_) async {});
       when(() => mockShoppingGenerator.generateForWeek(any())).thenAnswer(
         (_) async => const MenuShoppingGenerationResult(
@@ -611,57 +686,72 @@ void main() {
 
       await viewModel.completeOnboarding();
 
-      final savedPlan = verify(() => mockMenuService.save(captureAny()))
-          .captured
-          .single as WeeklyMenuPlan;
-      expect(savedPlan.entries, isNotEmpty,
-          reason: 'the saved sample plan must contain the seeded recipes');
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
+      expect(
+        savedPlan.entries,
+        isNotEmpty,
+        reason: 'the saved sample plan must contain the seeded recipes',
+      );
       verify(() => mockShoppingGenerator.generateForWeek(any())).called(1);
-      verify(() => mockAnalyticsService.logEvent(
-            name: 'onboarding_menu_seeded',
-            parameters: any(named: 'parameters'),
-          )).called(1);
+      verify(
+        () => mockAnalyticsService.logEvent(
+          name: 'onboarding_menu_seeded',
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(1);
     });
 
-    test('does not overwrite an existing non-empty plan (idempotent)',
-        () async {
-      final existing = realPlanWithOneEntry();
-      when(() => mockMenuService.getWeek(any()))
-          .thenAnswer((_) async => existing);
+    test(
+      'does not overwrite an existing non-empty plan (idempotent)',
+      () async {
+        final existing = realPlanWithOneEntry();
+        when(
+          () => mockMenuService.getWeek(any()),
+        ).thenAnswer((_) async => existing);
 
-      await viewModel.completeOnboarding();
+        await viewModel.completeOnboarding();
 
-      verifyNever(() => mockMenuService.addEntry(
+        verifyNever(
+          () => mockMenuService.addEntry(
             plan: any(named: 'plan'),
             day: any(named: 'day'),
             slot: any(named: 'slot'),
             recipe: any(named: 'recipe'),
-          ));
-      verifyNever(() => mockMenuService.save(any()));
-      verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
-    });
+          ),
+        );
+        verifyNever(() => mockMenuService.save(any()));
+        verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
+      },
+    );
 
     // Wires mockMenuService.addEntry to a real WeeklyMenuPlanService so the
     // placement walk (day-skip, slot routing) runs with production semantics
     // instead of a hand-rolled stub. Shared by the placement-invariant tests.
     void wireRealAdderOnEmptyWeek() {
-      when(() => mockMenuService.getWeek(any()))
-          .thenAnswer((_) async => emptyPlan());
+      when(
+        () => mockMenuService.getWeek(any()),
+      ).thenAnswer((_) async => emptyPlan());
       final realAdder = WeeklyMenuPlanService(
         repository: _NoopMenuRepo(),
         userService: mockUserService,
       );
-      when(() => mockMenuService.addEntry(
-            plan: any(named: 'plan'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any(named: 'recipe'),
-          )).thenAnswer((inv) => realAdder.addEntry(
-            plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-            day: inv.namedArguments[#day] as DayOfWeek,
-            slot: inv.namedArguments[#slot] as MealSlot,
-            recipe: inv.namedArguments[#recipe] as Recipe,
-          ));
+      when(
+        () => mockMenuService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenAnswer(
+        (inv) => realAdder.addEntry(
+          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+          day: inv.namedArguments[#day] as DayOfWeek,
+          slot: inv.namedArguments[#slot] as MealSlot,
+          recipe: inv.namedArguments[#recipe] as Recipe,
+        ),
+      );
       when(() => mockMenuService.save(any())).thenAnswer((_) async {});
       when(() => mockShoppingGenerator.generateForWeek(any())).thenAnswer(
         (_) async => const MenuShoppingGenerationResult(
@@ -674,37 +764,41 @@ void main() {
       );
     }
 
-    test(
-        'two single-slot (middag) recipes land on different days, never '
+    test('two single-slot (middag) recipes land on different days, never '
         'colliding on the same slot', () async {
       // Every seeded recipe maps to MealSlot.middag — a single-recipe slot.
       // The placement walk MUST advance the day for each so they don't
       // overwrite each other. This is the BUT-930 invariant the happy-path
       // test (which only asserts non-empty) doesn't pin. The exact count is
       // driven by RecipeSeeds, so we assert the relationship, not a literal.
-      when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) =>
-          recipeWith(inv.positionalArguments.first as String, 'Middag'));
+      when(() => mockRecipeService.getRecipeById(any())).thenAnswer(
+        (inv) => recipeWith(inv.positionalArguments.first as String, 'Middag'),
+      );
       wireRealAdderOnEmptyWeek();
 
       await viewModel.completeOnboarding();
 
-      final savedPlan = verify(() => mockMenuService.save(captureAny()))
-          .captured
-          .single as WeeklyMenuPlan;
-      final middagEntries =
-          savedPlan.entries.where((e) => e.slot == MealSlot.middag).toList();
-      expect(middagEntries, isNotEmpty,
-          reason: 'middag recipes must be placed');
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
+      final middagEntries = savedPlan.entries
+          .where((e) => e.slot == MealSlot.middag)
+          .toList();
+      expect(
+        middagEntries,
+        isNotEmpty,
+        reason: 'middag recipes must be placed',
+      );
       expect(
         middagEntries.map((e) => e.day).toSet().length,
         middagEntries.length,
-        reason: 'each single-slot recipe must occupy a distinct day — no two '
+        reason:
+            'each single-slot recipe must occupy a distinct day — no two '
             'middag recipes may collide on the same day/slot',
       );
     });
 
-    test(
-        'every seeded recipe is placed deterministically — a Frukost recipe '
+    test('every seeded recipe is placed deterministically — a Frukost recipe '
         'routes to övrigt and nothing is silently dropped (bug 34)', () async {
       // Reproduces the seed mix: several single-slot recipes plus one Frukost
       // (which maps to MealSlot.ovrigt). The old "one recipe per day across
@@ -720,128 +814,155 @@ void main() {
         'r6': 'Frukost', // -> MealSlot.ovrigt
       };
       var created = 0;
-      when(() => mockRecipeService.createPersonalRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer(
+      when(
+        () => mockRecipeService.createPersonalRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer(
         (_) async => created < ids.length ? ids[created++] : null,
       );
       for (final id in ids) {
-        when(() => mockRecipeService.getRecipeById(id))
-            .thenReturn(recipeWith(id, mealTypes[id]!));
+        when(
+          () => mockRecipeService.getRecipeById(id),
+        ).thenReturn(recipeWith(id, mealTypes[id]!));
       }
       wireRealAdderOnEmptyWeek();
 
       await viewModel.completeOnboarding();
 
-      final savedPlan = verify(() => mockMenuService.save(captureAny()))
-          .captured
-          .single as WeeklyMenuPlan;
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
       final placedIds = savedPlan.entries.map((e) => e.recipeId).toSet();
-      expect(placedIds, containsAll(ids),
-          reason: 'no seeded recipe may be silently dropped — every recipe, '
-              'including the Frukost->övrigt one, must be placed');
+      expect(
+        placedIds,
+        containsAll(ids),
+        reason:
+            'no seeded recipe may be silently dropped — every recipe, '
+            'including the Frukost->övrigt one, must be placed',
+      );
       // The Frukost recipe must land specifically in the övrigt bucket.
       final ovrigtIds = savedPlan.entries
           .where((e) => e.slot == MealSlot.ovrigt)
           .map((e) => e.recipeId)
           .toSet();
-      expect(ovrigtIds, contains('r6'),
-          reason: 'a Frukost recipe routes to MealSlot.ovrigt');
+      expect(
+        ovrigtIds,
+        contains('r6'),
+        reason: 'a Frukost recipe routes to MealSlot.ovrigt',
+      );
     });
 
-    test(
-        'recipes whose createPersonalRecipe returns null are excluded from '
+    test('recipes whose createPersonalRecipe returns null are excluded from '
         'the seeded menu', () async {
       // The first seed persists (id "ok"), the rest mint null. Only the
       // non-null id may reach the menu — id != null is the BUT-930 filter.
       var call = 0;
-      when(() => mockRecipeService.createPersonalRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer((_) async => (call++ == 0) ? 'ok' : null);
-      when(() => mockRecipeService.getRecipeById('ok'))
-          .thenReturn(recipeWith('ok', 'Middag'));
+      when(
+        () => mockRecipeService.createPersonalRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer((_) async => (call++ == 0) ? 'ok' : null);
+      when(
+        () => mockRecipeService.getRecipeById('ok'),
+      ).thenReturn(recipeWith('ok', 'Middag'));
       wireRealAdderOnEmptyWeek();
 
       await viewModel.completeOnboarding();
 
-      final savedPlan = verify(() => mockMenuService.save(captureAny()))
-          .captured
-          .single as WeeklyMenuPlan;
-      expect(savedPlan.entries.map((e) => e.recipeId), ['ok'],
-          reason: 'null-id seeds must not be placed in the sample menu');
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
+      expect(
+        savedPlan.entries.map((e) => e.recipeId),
+        ['ok'],
+        reason: 'null-id seeds must not be placed in the sample menu',
+      );
       // getRecipeById must never be asked for a null id.
       verifyNever(() => mockRecipeService.getRecipeById('null'));
     });
 
-    test(
-        'no recipes seeded → menu seeding is skipped entirely (no getWeek, no '
+    test('no recipes seeded → menu seeding is skipped entirely (no getWeek, no '
         'menu_seeded event)', () async {
       // Every seed fails to persist, so seededRecipeIds is empty and
       // _seedSampleMenu returns before touching any menu service.
-      when(() => mockRecipeService.createPersonalRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer((_) async => null);
+      when(
+        () => mockRecipeService.createPersonalRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer((_) async => null);
 
       final result = await viewModel.completeOnboarding();
 
       expect(result, isTrue, reason: 'onboarding still completes');
       verifyNever(() => mockMenuService.getWeek(any()));
       verifyNever(() => mockMenuService.save(any()));
-      verifyNever(() => mockAnalyticsService.logEvent(
-            name: 'onboarding_menu_seeded',
-            parameters: any(named: 'parameters'),
-          ));
+      verifyNever(
+        () => mockAnalyticsService.logEvent(
+          name: 'onboarding_menu_seeded',
+          parameters: any(named: 'parameters'),
+        ),
+      );
     });
 
-    test(
-        'a save failure inside menu seeding does not fail onboarding '
+    test('a save failure inside menu seeding does not fail onboarding '
         '(best-effort)', () async {
-      when(() => mockMenuService.getWeek(any()))
-          .thenAnswer((_) async => emptyPlan());
+      when(
+        () => mockMenuService.getWeek(any()),
+      ).thenAnswer((_) async => emptyPlan());
       final realAdder = WeeklyMenuPlanService(
         repository: _NoopMenuRepo(),
         userService: mockUserService,
       );
-      when(() => mockMenuService.addEntry(
-            plan: any(named: 'plan'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any(named: 'recipe'),
-          )).thenAnswer((inv) => realAdder.addEntry(
-            plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-            day: inv.namedArguments[#day] as DayOfWeek,
-            slot: inv.namedArguments[#slot] as MealSlot,
-            recipe: inv.namedArguments[#recipe] as Recipe,
-          ));
-      when(() => mockMenuService.save(any()))
-          .thenThrow(Exception('menu write failed'));
+      when(
+        () => mockMenuService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenAnswer(
+        (inv) => realAdder.addEntry(
+          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+          day: inv.namedArguments[#day] as DayOfWeek,
+          slot: inv.namedArguments[#slot] as MealSlot,
+          recipe: inv.namedArguments[#recipe] as Recipe,
+        ),
+      );
+      when(
+        () => mockMenuService.save(any()),
+      ).thenThrow(Exception('menu write failed'));
 
       final result = await viewModel.completeOnboarding();
 
-      expect(result, isTrue,
-          reason: 'menu seeding is best-effort; its failure must not block '
-              'onboarding completion');
+      expect(
+        result,
+        isTrue,
+        reason:
+            'menu seeding is best-effort; its failure must not block '
+            'onboarding completion',
+      );
       // The shopping generator runs only after a successful save, so a save
       // failure must short-circuit before it.
       verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
@@ -856,8 +977,7 @@ class _NoopMenuRepo implements WeeklyMenuPlanRepository {
   Future<WeeklyMenuPlan?> fetchForWeek({
     required String userId,
     required DateTime weekStart,
-  }) async =>
-      null;
+  }) async => null;
 
   @override
   Future<void> save(WeeklyMenuPlan plan) async {}
@@ -869,25 +989,25 @@ class _NoopMenuRepo implements WeeklyMenuPlanRepository {
   Future<List<Map<String, dynamic>>> exportAllByUser(
     String userId, {
     int maxDocuments = 260,
-  }) async =>
-      const [];
+  }) async => const [];
 
   @override
   Future<int> removeRecipeFromAllPlans({
     required String userId,
     required String recipeId,
-  }) async =>
-      0;
+  }) async => 0;
 }
 
 WeeklyMenuPlan realPlanWithOneEntry() {
   final base = WeeklyMenuPlan.empty(userId: 'u1', date: DateTime(2026, 6, 8));
-  return base.copyWith(entries: [
-    WeeklyMenuPlanEntry.create(
-      day: DayOfWeek.mon,
-      slot: MealSlot.middag,
-      recipeId: 'existing',
-      recipeTitle: 'redan här',
-    ),
-  ]);
+  return base.copyWith(
+    entries: [
+      WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'existing',
+        recipeTitle: 'redan här',
+      ),
+    ],
+  );
 }

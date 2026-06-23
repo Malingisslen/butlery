@@ -53,9 +53,9 @@ class SocialRequest {
     this.fromUserName,
     this.recipeId,
     this.recipeTitle,
-  })  : sentAt = sentAt ?? clock.now().toUtc(),
-        expiresAt =
-            expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
+  }) : sentAt = sentAt ?? clock.now().toUtc(),
+       expiresAt =
+           expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
 
   /// Create a friend request
   factory SocialRequest.friendRequest({
@@ -145,7 +145,8 @@ class SocialRequest {
         (e) => e.name,
       ),
       sentAt: sentAt,
-      expiresAt: SerializationUtils.safeDateTime(data, 'expiresAt') ??
+      expiresAt:
+          SerializationUtils.safeDateTime(data, 'expiresAt') ??
           sentAt.add(_expiryDuration),
       respondedAt: SerializationUtils.safeDateTime(data, 'respondedAt'),
       message: SerializationUtils.safeNullableString(data, 'message'),

@@ -486,17 +486,18 @@ void main() {
       test('should consolidate across menu sections', () {
         final menu = {
           'Förrätt': [
-            _makeRecipe(['100g smör'])
+            _makeRecipe(['100g smör']),
           ],
           'Huvudrätt': [
-            _makeRecipe(['200g smör'])
+            _makeRecipe(['200g smör']),
           ],
         };
 
         final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
 
-        final butter =
-            items.where((i) => i.name.toLowerCase().contains('smör'));
+        final butter = items.where(
+          (i) => i.name.toLowerCase().contains('smör'),
+        );
         expect(butter, hasLength(1));
         expect(butter.first.amount, equals(300.0));
         expect(butter.first.unit, equals('g'));
@@ -532,7 +533,7 @@ void main() {
       test('items should have bought=false', () {
         final menu = {
           'Huvudrätter': [
-            _makeRecipe(['2 dl mjölk'])
+            _makeRecipe(['2 dl mjölk']),
           ],
         };
 
@@ -542,53 +543,62 @@ void main() {
     });
 
     group('Complex Scenarios', () {
-      test('should handle complete menu with multiple sections and recipes',
-          () {
-        final menu = {
-          'Förrätter': [
-            {
-              'ingredients': ['100g smör', '2 dl grädde', '3 vitlöksklyftor'],
-            },
-            {
-              'ingredients': ['200g räkor', '1 dl grädde', '1 citron'],
-            },
-          ],
-          'Huvudrätter': [
-            {
-              'ingredients': ['400g köttfärs', '2 lökar', '3 vitlöksklyftor'],
-            },
-            {
-              'ingredients': ['300g köttfärs', '1 lök', '2 dl grädde'],
-            },
-          ],
-          'Efterrätter': [
-            {
-              'ingredients': ['3 ägg', '2 dl grädde', '100g socker'],
-            },
-          ],
-        };
+      test(
+        'should handle complete menu with multiple sections and recipes',
+        () {
+          final menu = {
+            'Förrätter': [
+              {
+                'ingredients': ['100g smör', '2 dl grädde', '3 vitlöksklyftor'],
+              },
+              {
+                'ingredients': ['200g räkor', '1 dl grädde', '1 citron'],
+              },
+            ],
+            'Huvudrätter': [
+              {
+                'ingredients': ['400g köttfärs', '2 lökar', '3 vitlöksklyftor'],
+              },
+              {
+                'ingredients': ['300g köttfärs', '1 lök', '2 dl grädde'],
+              },
+            ],
+            'Efterrätter': [
+              {
+                'ingredients': ['3 ägg', '2 dl grädde', '100g socker'],
+              },
+            ],
+          };
 
-        final result = ShoppingListGenerator.generateShoppingList(menu);
+          final result = ShoppingListGenerator.generateShoppingList(menu);
 
-        // Check consolidation
-        expect(result.any((item) => item.contains('700 g köttfärs')), isTrue);
-        expect(result.any((item) => item.contains('3 lökar')), isTrue);
-        expect(
-            result.any((item) =>
-                item.contains('6 vitlöksklyftar') ||
-                item.contains('6 vitlöksklyftor')),
-            isTrue); // May vary based on normalization
-        expect(result.any((item) => item.contains('7 dl grädde')),
-            isTrue); // 2+1+2+2 = 7
+          // Check consolidation
+          expect(result.any((item) => item.contains('700 g köttfärs')), isTrue);
+          expect(result.any((item) => item.contains('3 lökar')), isTrue);
+          expect(
+            result.any(
+              (item) =>
+                  item.contains('6 vitlöksklyftar') ||
+                  item.contains('6 vitlöksklyftor'),
+            ),
+            isTrue,
+          ); // May vary based on normalization
+          expect(
+            result.any((item) => item.contains('7 dl grädde')),
+            isTrue,
+          ); // 2+1+2+2 = 7
 
-        // Check unique items
-        expect(result.any((item) => item.contains('100 g smör')), isTrue);
-        expect(result.any((item) => item.contains('200 g räk')),
-            isTrue); // räkor normalized to räk
-        expect(result.any((item) => item.contains('1 citron')), isTrue);
-        expect(result.any((item) => item.contains('3 ägg')), isTrue);
-        expect(result.any((item) => item.contains('100 g socker')), isTrue);
-      });
+          // Check unique items
+          expect(result.any((item) => item.contains('100 g smör')), isTrue);
+          expect(
+            result.any((item) => item.contains('200 g räk')),
+            isTrue,
+          ); // räkor normalized to räk
+          expect(result.any((item) => item.contains('1 citron')), isTrue);
+          expect(result.any((item) => item.contains('3 ägg')), isTrue);
+          expect(result.any((item) => item.contains('100 g socker')), isTrue);
+        },
+      );
 
       test('should handle recipe objects with dynamic property access', () {
         // Simulate recipe objects that might come from a Recipe class

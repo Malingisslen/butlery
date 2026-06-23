@@ -32,7 +32,7 @@ class UserBehaviorPattern {
   final Map<int, int> viewTimePreferences; // hour of day -> count
   final Set<String> favoriteRecipeIds;
   final Set<String>
-      activeFriendIds; // Friends whose content is frequently viewed
+  activeFriendIds; // Friends whose content is frequently viewed
 
   UserBehaviorPattern({
     required this.userId,
@@ -42,12 +42,12 @@ class UserBehaviorPattern {
     Map<int, int>? viewTimePreferences,
     Set<String>? favoriteRecipeIds,
     Set<String>? activeFriendIds,
-  })  : recipeViews = recipeViews.orEmpty(),
-        lastViewedTimes = lastViewedTimes.orEmpty(),
-        mealTypePreferences = mealTypePreferences.orEmpty(),
-        viewTimePreferences = viewTimePreferences.orEmpty(),
-        favoriteRecipeIds = favoriteRecipeIds ?? {},
-        activeFriendIds = activeFriendIds ?? {};
+  }) : recipeViews = recipeViews.orEmpty(),
+       lastViewedTimes = lastViewedTimes.orEmpty(),
+       mealTypePreferences = mealTypePreferences.orEmpty(),
+       viewTimePreferences = viewTimePreferences.orEmpty(),
+       favoriteRecipeIds = favoriteRecipeIds ?? {},
+       activeFriendIds = activeFriendIds ?? {};
 
   /// Get likely recipes based on current time and preferences
   List<String> getLikelyRecipeIds({int limit = 10}) {
@@ -70,33 +70,38 @@ class UserBehaviorPattern {
   }
 
   Map<String, dynamic> toJson() => {
-        'userId': userId,
-        'recipeViews': recipeViews,
-        'lastViewedTimes':
-            lastViewedTimes.map((k, v) => MapEntry(k, v.toIso8601String())),
-        'mealTypePreferences': mealTypePreferences,
-        'viewTimePreferences': viewTimePreferences,
-        'favoriteRecipeIds': favoriteRecipeIds.toList(),
-        'activeFriendIds': activeFriendIds.toList(),
-      };
+    'userId': userId,
+    'recipeViews': recipeViews,
+    'lastViewedTimes': lastViewedTimes.map(
+      (k, v) => MapEntry(k, v.toIso8601String()),
+    ),
+    'mealTypePreferences': mealTypePreferences,
+    'viewTimePreferences': viewTimePreferences,
+    'favoriteRecipeIds': favoriteRecipeIds.toList(),
+    'activeFriendIds': activeFriendIds.toList(),
+  };
 
   factory UserBehaviorPattern.fromJson(Map<String, dynamic> json) {
     return UserBehaviorPattern(
       userId: json['userId'],
-      recipeViews:
-          Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
-      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
-              ?.map((k, v) => MapEntry(k, DateTime.tryParse(v) ?? clock.now())))
-          .orEmpty(),
+      recipeViews: Map<String, int>.from(
+        (json['recipeViews'] as Map?).orEmpty(),
+      ),
+      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)?.map(
+        (k, v) => MapEntry(k, DateTime.tryParse(v) ?? clock.now()),
+      )).orEmpty(),
       mealTypePreferences: Map<String, int>.from(
-          (json['mealTypePreferences'] as Map?).orEmpty()),
+        (json['mealTypePreferences'] as Map?).orEmpty(),
+      ),
       viewTimePreferences:
           SerializationUtils.safeIntKeyIntMap(json, 'viewTimePreferences') ??
-              {},
-      favoriteRecipeIds:
-          Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
-      activeFriendIds:
-          Set<String>.from((json['activeFriendIds'] as List?).orEmpty()),
+          {},
+      favoriteRecipeIds: Set<String>.from(
+        (json['favoriteRecipeIds'] as List?).orEmpty(),
+      ),
+      activeFriendIds: Set<String>.from(
+        (json['activeFriendIds'] as List?).orEmpty(),
+      ),
     );
   }
 }
@@ -115,9 +120,9 @@ class CacheEntry<T> {
     required this.data,
     required this.size,
     DateTime? cachedAt,
-  })  : cachedAt = cachedAt.orNow(),
-        lastAccessed = clock.now(),
-        accessCount = 0;
+  }) : cachedAt = cachedAt.orNow(),
+       lastAccessed = clock.now(),
+       accessCount = 0;
 
   /// Update access statistics
   void recordAccess() {
@@ -236,8 +241,9 @@ class IntelligentCacheManager {
       AppLogger.info('🔮 Preloading content for user based on patterns...');
 
       // Preload likely recipes
-      final likelyRecipeIds =
-          patterns.getLikelyRecipeIds(limit: _prefetchLimit);
+      final likelyRecipeIds = patterns.getLikelyRecipeIds(
+        limit: _prefetchLimit,
+      );
       await _preloadRecipes(likelyRecipeIds);
 
       // Preload active friends' recent recipes
@@ -288,8 +294,9 @@ class IntelligentCacheManager {
     _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
 
     // Filter out already cached recipes
-    final toLoad =
-        recipeIds.where((id) => !_recipeCache.containsKey(id)).toList();
+    final toLoad = recipeIds
+        .where((id) => !_recipeCache.containsKey(id))
+        .toList();
 
     if (toLoad.isEmpty) return;
 
@@ -326,7 +333,8 @@ class IntelligentCacheManager {
       // For now, we'll simulate by preloading some recipes
 
       AppLogger.debug(
-          'Preloading activity for ${friendIds.length} active friends');
+        'Preloading activity for ${friendIds.length} active friends',
+      );
     } catch (e) {
       AppLogger.error('Failed to preload friends activity: $e');
     }
@@ -422,7 +430,8 @@ class IntelligentCacheManager {
       freedBytes += entry.size;
 
       AppLogger.debug(
-          'Evicted cache entry: ${entry.key} (score: ${entry.evictionScore.toStringAsFixed(2)})');
+        'Evicted cache entry: ${entry.key} (score: ${entry.evictionScore.toStringAsFixed(2)})',
+      );
     }
   }
 
@@ -452,7 +461,8 @@ class IntelligentCacheManager {
       if (data != null) {
         _currentPattern = UserBehaviorPattern.fromJson(data);
         AppLogger.debug(
-            'Loaded behavior pattern for user ${userId.maskedUserId}');
+          'Loaded behavior pattern for user ${userId.maskedUserId}',
+        );
       } else {
         _currentPattern = UserBehaviorPattern(userId: userId);
       }
@@ -467,7 +477,9 @@ class IntelligentCacheManager {
       if (_currentPattern == null) return;
 
       await _behaviorCache.saveJson(
-          'behavior_pattern', _currentPattern!.toJson());
+        'behavior_pattern',
+        _currentPattern!.toJson(),
+      );
       AppLogger.debug('Saved behavior pattern');
     } catch (e) {
       AppLogger.error('Failed to save behavior pattern: $e');
@@ -530,7 +542,8 @@ class IntelligentCacheManager {
     _behaviorSaveTimer = null;
     _saveBehaviorPattern(); // Save before pausing
     AppLogger.debug(
-        'IntelligentCacheManager paused - background operations stopped');
+      'IntelligentCacheManager paused - background operations stopped',
+    );
   }
 
   /// Resume background operations when app returns to foreground.
@@ -538,7 +551,8 @@ class IntelligentCacheManager {
     _startPrefetchTimer();
     _startBehaviorSaveTimer();
     AppLogger.debug(
-        'IntelligentCacheManager resumed - background operations started');
+      'IntelligentCacheManager resumed - background operations started',
+    );
   }
 
   /// Handle system memory pressure by aggressively clearing caches.
@@ -546,7 +560,8 @@ class IntelligentCacheManager {
   /// This method clears all caches except the current user's essential data.
   void handleMemoryPressure() {
     AppLogger.warning(
-        'Memory pressure detected - clearing caches aggressively');
+      'Memory pressure detected - clearing caches aggressively',
+    );
 
     final beforeMemory = _currentMemoryUsage;
 
@@ -572,7 +587,8 @@ class IntelligentCacheManager {
     final freedMB = (freedMemory / 1024 / 1024).toStringAsFixed(2);
 
     AppLogger.info(
-        'Memory pressure handled: freed ${freedMB}MB, keeping ${_userCache.length} user entries');
+      'Memory pressure handled: freed ${freedMB}MB, keeping ${_userCache.length} user entries',
+    );
   }
 
   /// Dispose of resources

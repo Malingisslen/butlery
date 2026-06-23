@@ -81,7 +81,8 @@ void main() {
     // Register through the prod↔test bridge so the view's
     // `ServiceLocator.get<SharedContentCoordinatorViewModel>()` returns OURS.
     TestServiceLocator.registerMock<SharedContentCoordinatorViewModel>(
-        coordinator);
+      coordinator,
+    );
   });
 
   tearDown(() async {
@@ -161,53 +162,66 @@ void main() {
 
   group('SharedWithMeView — state rendering', () {
     testWidgets(
-        'global loading shows the Swedish loading text and a progress indicator',
-        (tester) async {
-      stubGlobalState(
-          loading: true, hasError: false, error: null, hasContent: false);
+      'global loading shows the Swedish loading text and a progress indicator',
+      (tester) async {
+        stubGlobalState(
+          loading: true,
+          hasError: false,
+          error: null,
+          hasContent: false,
+        );
 
-      await pumpView(tester, settle: false);
+        await pumpView(tester, settle: false);
 
-      // The app bar renders regardless of content state.
-      expect(find.text(_appBarTitle), findsOneWidget);
+        // The app bar renders regardless of content state.
+        expect(find.text(_appBarTitle), findsOneWidget);
 
-      // Loading branch: Swedish copy + the canonical loading indicator.
-      expect(find.text(_loadingText), findsOneWidget);
-      expect(find.byType(LoadingIndicator), findsOneWidget);
+        // Loading branch: Swedish copy + the canonical loading indicator.
+        expect(find.text(_loadingText), findsOneWidget);
+        expect(find.byType(LoadingIndicator), findsOneWidget);
 
-      // Not the empty/error branches.
-      expect(find.text(_emptyTitle), findsNothing);
-    });
+        // Not the empty/error branches.
+        expect(find.text(_emptyTitle), findsNothing);
+      },
+    );
 
     testWidgets(
-        'no content (not loading, no error) shows the empty-state title, '
-        'explanation and CTA', (tester) async {
-      stubGlobalState(
-          loading: false, hasError: false, error: null, hasContent: false);
+      'no content (not loading, no error) shows the empty-state title, '
+      'explanation and CTA',
+      (tester) async {
+        stubGlobalState(
+          loading: false,
+          hasError: false,
+          error: null,
+          hasContent: false,
+        );
 
-      await pumpView(tester);
+        await pumpView(tester);
 
-      expect(find.text(_emptyTitle), findsOneWidget);
-      // The empty-state explanation subtitle renders too.
-      expect(
-        find.textContaining('När du eller dina vänner delar recept'),
-        findsOneWidget,
-      );
-      // The "share your first recipe" CTA button is offered.
-      expect(find.text(_emptyCta), findsOneWidget);
+        expect(find.text(_emptyTitle), findsOneWidget);
+        // The empty-state explanation subtitle renders too.
+        expect(
+          find.textContaining('När du eller dina vänner delar recept'),
+          findsOneWidget,
+        );
+        // The "share your first recipe" CTA button is offered.
+        expect(find.text(_emptyCta), findsOneWidget);
 
-      // The loading indicator is gone in the empty state.
-      expect(find.byType(LoadingIndicator), findsNothing);
-    });
+        // The loading indicator is gone in the empty state.
+        expect(find.byType(LoadingIndicator), findsNothing);
+      },
+    );
 
-    testWidgets('global error shows the error message and a retry action',
-        (tester) async {
+    testWidgets('global error shows the error message and a retry action', (
+      tester,
+    ) async {
       const errorMessage = 'Kunde inte ladda delat innehåll';
       stubGlobalState(
-          loading: false,
-          hasError: true,
-          error: errorMessage,
-          hasContent: false);
+        loading: false,
+        hasError: true,
+        error: errorMessage,
+        hasContent: false,
+      );
 
       await pumpView(tester);
 
@@ -223,26 +237,33 @@ void main() {
     });
 
     testWidgets(
-        'tapping retry in the error state invokes refreshAllContent on the coordinator',
-        (tester) async {
-      stubGlobalState(
+      'tapping retry in the error state invokes refreshAllContent on the coordinator',
+      (tester) async {
+        stubGlobalState(
           loading: false,
           hasError: true,
           error: 'Något gick fel',
-          hasContent: false);
+          hasContent: false,
+        );
 
-      await pumpView(tester);
+        await pumpView(tester);
 
-      await tester.tap(find.text(_retryLabel));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text(_retryLabel));
+        await tester.pumpAndSettle();
 
-      verify(() => coordinator.refreshAllContent()).called(1);
-    });
+        verify(() => coordinator.refreshAllContent()).called(1);
+      },
+    );
 
-    testWidgets('tapping the empty-state CTA navigates to the home route',
-        (tester) async {
+    testWidgets('tapping the empty-state CTA navigates to the home route', (
+      tester,
+    ) async {
       stubGlobalState(
-          loading: false, hasError: false, error: null, hasContent: false);
+        loading: false,
+        hasError: false,
+        error: null,
+        hasContent: false,
+      );
 
       // Observe the route push the CTA triggers (Navigator.pushNamed(home)).
       final pushedRoutes = <String?>[];
@@ -269,8 +290,11 @@ void main() {
       await tester.tap(find.text(_emptyCta));
       await tester.pumpAndSettle();
 
-      expect(pushedRoutes, contains('/'),
-          reason: 'Empty-state CTA should push Routes.home');
+      expect(
+        pushedRoutes,
+        contains('/'),
+        reason: 'Empty-state CTA should push Routes.home',
+      );
     });
   });
 }

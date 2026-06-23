@@ -63,8 +63,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.instagram),
-              reason: 'Failed to detect Instagram for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.instagram),
+            reason: 'Failed to detect Instagram for: $url',
+          );
         }
       });
 
@@ -80,8 +83,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.facebook),
-              reason: 'Failed to detect Facebook for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.facebook),
+            reason: 'Failed to detect Facebook for: $url',
+          );
         }
       });
 
@@ -97,8 +103,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.tiktok),
-              reason: 'Failed to detect TikTok for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.tiktok),
+            reason: 'Failed to detect TikTok for: $url',
+          );
         }
       });
 
@@ -115,8 +124,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.youtube),
-              reason: 'Failed to detect YouTube for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.youtube),
+            reason: 'Failed to detect YouTube for: $url',
+          );
         }
       });
 
@@ -131,8 +143,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.pinterest),
-              reason: 'Failed to detect Pinterest for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.pinterest),
+            reason: 'Failed to detect Pinterest for: $url',
+          );
         }
       });
 
@@ -148,8 +163,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(SourcePlatform.unknown),
-              reason: 'Should return unknown for: $url');
+          expect(
+            platform,
+            equals(SourcePlatform.unknown),
+            reason: 'Should return unknown for: $url',
+          );
         }
       });
     });
@@ -170,8 +188,11 @@ void main() {
         // Act & Assert
         testCases.forEach((appUrl, expectedWebUrl) {
           final webUrl = detector.convertToWebUrl(appUrl);
-          expect(webUrl, equals(expectedWebUrl),
-              reason: 'Failed to convert: $appUrl');
+          expect(
+            webUrl,
+            equals(expectedWebUrl),
+            reason: 'Failed to convert: $appUrl',
+          );
         });
       });
 
@@ -186,8 +207,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final result = detector.convertToWebUrl(url);
-          expect(result, equals(url),
-              reason: 'Should return original URL for: $url');
+          expect(
+            result,
+            equals(url),
+            reason: 'Should return original URL for: $url',
+          );
         }
       });
 
@@ -203,8 +227,11 @@ void main() {
         // Act & Assert
         for (final url in malformedUrls) {
           final result = detector.convertToWebUrl(url);
-          expect(result, equals(url),
-              reason: 'Should return original malformed URL: $url');
+          expect(
+            result,
+            equals(url),
+            reason: 'Should return original malformed URL: $url',
+          );
         }
       });
     });
@@ -224,8 +251,11 @@ void main() {
         for (final url in supportedUrls) {
           final platform = detector.detectPlatform(url);
           final isSupported = detector.isSupportedPlatform(platform);
-          expect(isSupported, isTrue,
-              reason: 'Should be supported: $url (platform: $platform)');
+          expect(
+            isSupported,
+            isTrue,
+            reason: 'Should be supported: $url (platform: $platform)',
+          );
         }
       });
 
@@ -241,8 +271,11 @@ void main() {
         for (final url in unsupportedUrls) {
           final platform = detector.detectPlatform(url);
           final isSupported = detector.isSupportedPlatform(platform);
-          expect(isSupported, isFalse,
-              reason: 'Should not be supported: $url (platform: $platform)');
+          expect(
+            isSupported,
+            isFalse,
+            reason: 'Should not be supported: $url (platform: $platform)',
+          );
         }
       });
     });
@@ -272,8 +305,11 @@ void main() {
         // Act & Assert
         for (final url in urls) {
           final platform = detector.detectPlatform(url);
-          expect(platform, isNot(equals(SourcePlatform.unknown)),
-              reason: 'Should detect platform for: $url');
+          expect(
+            platform,
+            isNot(equals(SourcePlatform.unknown)),
+            reason: 'Should detect platform for: $url',
+          );
         }
       });
 
@@ -290,8 +326,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for URL with params: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for URL with params: $url',
+          );
         });
       });
 
@@ -308,8 +347,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for protocol variant: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for protocol variant: $url',
+          );
         });
       });
 
@@ -326,8 +368,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for international domain: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for international domain: $url',
+          );
         });
       });
 
@@ -343,8 +388,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for mobile/desktop variant: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for mobile/desktop variant: $url',
+          );
         });
       });
     });
@@ -364,9 +412,12 @@ void main() {
           final platform = detector.detectPlatform(url);
           // Swedish cooking sites are now detected as recipe sites
           expect(
-              platform,
-              anyOf(equals(SourcePlatform.recipesite),
-                  equals(SourcePlatform.unknown)));
+            platform,
+            anyOf(
+              equals(SourcePlatform.recipesite),
+              equals(SourcePlatform.unknown),
+            ),
+          );
           // But conversion should preserve the URL
           final converted = detector.convertToWebUrl(url);
           expect(converted, equals(url));
@@ -384,8 +435,11 @@ void main() {
         // Act & Assert
         for (final url in urlsWithSwedishChars) {
           final platform = detector.detectPlatform(url);
-          expect(platform, isNot(equals(SourcePlatform.unknown)),
-              reason: 'Should detect platform despite Swedish chars: $url');
+          expect(
+            platform,
+            isNot(equals(SourcePlatform.unknown)),
+            reason: 'Should detect platform despite Swedish chars: $url',
+          );
         }
       });
     });
@@ -394,25 +448,25 @@ void main() {
       test('should handle bulk URL detection efficiently', () {
         // Arrange
         final urls = List.generate(
-            100,
-            (i) => 'https://www.${[
-                  'instagram',
-                  'facebook',
-                  'tiktok',
-                  'youtube',
-                  'pinterest'
-                ][i % 5]}.com/content/$i');
+          100,
+          (i) =>
+              'https://www.${['instagram', 'facebook', 'tiktok', 'youtube', 'pinterest'][i % 5]}.com/content/$i',
+        );
 
         // Act
         final stopwatch = Stopwatch()..start();
-        final platforms =
-            urls.map((url) => detector.detectPlatform(url)).toList();
+        final platforms = urls
+            .map((url) => detector.detectPlatform(url))
+            .toList();
         stopwatch.stop();
 
         // Assert
         expect(platforms.length, equals(100));
-        expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: 'Bulk detection should complete within 100ms');
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+          reason: 'Bulk detection should complete within 100ms',
+        );
         // Verify correct platform detection
         for (int i = 0; i < platforms.length; i++) {
           final expectedPlatform = [
@@ -439,7 +493,8 @@ void main() {
         // Act - Simulate concurrent detection
         final futures = urls.map((url) async {
           await Future.delayed(
-              Duration(milliseconds: 10)); // Simulate async work
+            Duration(milliseconds: 10),
+          ); // Simulate async work
           return detector.detectPlatform(url);
         });
 
@@ -468,8 +523,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for shortened URL: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for shortened URL: $url',
+          );
         });
       });
 
@@ -486,8 +544,11 @@ void main() {
         // Act & Assert
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Failed for subdomain: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Failed for subdomain: $url',
+          );
         });
       });
 
@@ -502,8 +563,11 @@ void main() {
 
         testCases.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Should detect platform in URL: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Should detect platform in URL: $url',
+          );
         });
 
         // Verify lowercase versions are detected
@@ -517,8 +581,11 @@ void main() {
 
         lowercaseUrls.forEach((url, expectedPlatform) {
           final platform = detector.detectPlatform(url);
-          expect(platform, equals(expectedPlatform),
-              reason: 'Should detect lowercase domain: $url');
+          expect(
+            platform,
+            equals(expectedPlatform),
+            reason: 'Should detect lowercase domain: $url',
+          );
         });
       });
     });
@@ -529,15 +596,15 @@ void main() {
         final urlPairs = [
           [
             'https://www.instagram.com/p/ABC123',
-            'https://www.instagram.com/p/ABC123/'
+            'https://www.instagram.com/p/ABC123/',
           ],
           [
             'https://www.facebook.com/video/456',
-            'https://www.facebook.com/video/456/'
+            'https://www.facebook.com/video/456/',
           ],
           [
             'https://www.youtube.com/watch?v=XYZ',
-            'https://www.youtube.com/watch?v=XYZ/'
+            'https://www.youtube.com/watch?v=XYZ/',
           ],
         ];
 
@@ -545,31 +612,38 @@ void main() {
         for (final pair in urlPairs) {
           final platform1 = detector.detectPlatform(pair[0]);
           final platform2 = detector.detectPlatform(pair[1]);
-          expect(platform1, equals(platform2),
-              reason:
-                  'Should detect same platform regardless of trailing slash');
+          expect(
+            platform1,
+            equals(platform2),
+            reason: 'Should detect same platform regardless of trailing slash',
+          );
         }
       });
 
-      test('should handle Instagram URL conversion with complex parameters',
-          () {
-        // Arrange
-        final testCases = {
-          'instagram://media?shortcode=ABC123&source=app':
-              'https://www.instagram.com/p/ABC123/',
-          'instagram://media?shortcode=XYZ_789-abc&utm_source=share':
-              'https://www.instagram.com/p/XYZ_789-abc/',
-          'instagram://media?other=param&shortcode=TEST123&more=data':
-              'https://www.instagram.com/p/TEST123/',
-        };
+      test(
+        'should handle Instagram URL conversion with complex parameters',
+        () {
+          // Arrange
+          final testCases = {
+            'instagram://media?shortcode=ABC123&source=app':
+                'https://www.instagram.com/p/ABC123/',
+            'instagram://media?shortcode=XYZ_789-abc&utm_source=share':
+                'https://www.instagram.com/p/XYZ_789-abc/',
+            'instagram://media?other=param&shortcode=TEST123&more=data':
+                'https://www.instagram.com/p/TEST123/',
+          };
 
-        // Act & Assert
-        testCases.forEach((appUrl, expectedWebUrl) {
-          final webUrl = detector.convertToWebUrl(appUrl);
-          expect(webUrl, equals(expectedWebUrl),
-              reason: 'Failed to convert complex app URL: $appUrl');
-        });
-      });
+          // Act & Assert
+          testCases.forEach((appUrl, expectedWebUrl) {
+            final webUrl = detector.convertToWebUrl(appUrl);
+            expect(
+              webUrl,
+              equals(expectedWebUrl),
+              reason: 'Failed to convert complex app URL: $appUrl',
+            );
+          });
+        },
+      );
 
       test('should handle extremely long URLs gracefully', () {
         // Arrange

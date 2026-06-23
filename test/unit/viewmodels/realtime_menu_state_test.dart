@@ -446,8 +446,10 @@ void main() {
         // Assert
         expect(menuState.status, equals(RealtimeMenuStatus.loading));
         expect(menuState.errorMessage, isNull);
-        expect(notificationCount,
-            equals(2)); // One for status, one for error clearing
+        expect(
+          notificationCount,
+          equals(2),
+        ); // One for status, one for error clearing
       });
 
       test('should transition to watching and clear error', () {
@@ -530,8 +532,10 @@ void main() {
         expect(menuState.currentMenu, equals(testMenu));
         expect(menuState.status, equals(RealtimeMenuStatus.watching));
         expect(menuState.errorMessage, isNull);
-        expect(notificationCount,
-            equals(1)); // Single notification for batch update
+        expect(
+          notificationCount,
+          equals(1),
+        ); // Single notification for batch update
       });
 
       test('should reset all state', () {
@@ -793,14 +797,18 @@ void main() {
         // Act - transition through error and recovery
         menuState.transitionToError('Network error');
         expect(menuState.hasError, isTrue);
-        expect(menuState.selectedCategory,
-            equals('Middag')); // Should preserve UI state
+        expect(
+          menuState.selectedCategory,
+          equals('Middag'),
+        ); // Should preserve UI state
 
         // Act - recover
         menuState.transitionToWatching();
         expect(menuState.hasError, isFalse);
-        expect(menuState.selectedCategory,
-            equals('Middag')); // Should still be preserved
+        expect(
+          menuState.selectedCategory,
+          equals('Middag'),
+        ); // Should still be preserved
       });
 
       test('should handle listener exceptions gracefully', () {
@@ -808,8 +816,10 @@ void main() {
         menuState.addListener(() => throw Exception('Listener error'));
 
         // Act & Assert - should not crash
-        expect(() => menuState.setStatus(RealtimeMenuStatus.loading),
-            returnsNormally);
+        expect(
+          () => menuState.setStatus(RealtimeMenuStatus.loading),
+          returnsNormally,
+        );
       });
 
       test('should handle disposal correctly', () {

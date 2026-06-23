@@ -43,11 +43,11 @@ class TagGenerator {
     TagPhase3Complex? phase3,
     TagPhase4Mood? phase4,
     TagPhase5Cuisine? phase5,
-  })  : _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
-        _phase2 = phase2 ?? TagPhase2Derived(),
-        _phase3 = phase3 ?? _createPhase3(),
-        _phase4 = phase4 ?? _createPhase4(),
-        _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
+  }) : _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
+       _phase2 = phase2 ?? TagPhase2Derived(),
+       _phase3 = phase3 ?? _createPhase3(),
+       _phase4 = phase4 ?? _createPhase4(),
+       _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
 
   // BUT-553: per-phase accessors expose individual phase calculation to
   // `TaggingPipelineRunner` so each phase can be wrapped in its own
@@ -62,16 +62,14 @@ class TagGenerator {
     Phase1Result phase1,
     Phase2Result phase2,
     Recipe recipe,
-  ) =>
-      _phase3.calculate(phase1, phase2, recipe);
+  ) => _phase3.calculate(phase1, phase2, recipe);
 
   Phase4Result runPhase4(
     Phase1Result phase1,
     Phase2Result phase2,
     Phase3Result phase3,
     Recipe recipe,
-  ) =>
-      _phase4.calculate(phase1, phase2, phase3, recipe);
+  ) => _phase4.calculate(phase1, phase2, phase3, recipe);
 
   Phase5Result runPhase5(Phase4Result phase4, Recipe recipe) =>
       _phase5.calculate(phase4, recipe);
@@ -81,8 +79,7 @@ class TagGenerator {
   Phase5ResultPartial runPhase5FromPhase1(
     Phase1Result phase1,
     Recipe recipe,
-  ) =>
-      _phase5.calculateFromPhase1(phase1, recipe);
+  ) => _phase5.calculateFromPhase1(phase1, recipe);
 
   /// Combines per-phase results into a final TagResult. Mirrors the
   /// combination logic at the bottom of [generate], extracted so the
@@ -120,8 +117,9 @@ class TagGenerator {
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
-      decisions:
-          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
+      decisions: phase1Result.decisions.isNotEmpty
+          ? phase1Result.decisions
+          : null,
     );
   }
 
@@ -131,8 +129,9 @@ class TagGenerator {
     return TagPhase3Complex(
       easyMaxIngredients: flags.getInt(FeatureFlags.tagEasyMaxIngredients),
       easyMaxMinutes: flags.getInt(FeatureFlags.tagEasyMaxMinutes),
-      advancedMinIngredients:
-          flags.getInt(FeatureFlags.tagAdvancedMinIngredients),
+      advancedMinIngredients: flags.getInt(
+        FeatureFlags.tagAdvancedMinIngredients,
+      ),
       advancedMinMinutes: flags.getInt(FeatureFlags.tagAdvancedMinMinutes),
       highProteinRatio: flags.getDouble(FeatureFlags.tagHighProteinRatio),
       spiceRichCount: flags.getInt(FeatureFlags.tagSpiceRichCount),
@@ -314,7 +313,8 @@ class TagGenerator {
     // C3: Mark as partial if timeout or if any phase was skipped
     // CRIT-7: Phase 5 partial result counts as having cuisine tags
     final hasPhase5Tags = phase5Result != null || phase5PartialResult != null;
-    final isPartial = timedOut ||
+    final isPartial =
+        timedOut ||
         phase2Result == null ||
         phase3Result == null ||
         phase4Result == null ||
@@ -334,8 +334,9 @@ class TagGenerator {
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
       // H3: Include decision logs from Phase 1
-      decisions:
-          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
+      decisions: phase1Result.decisions.isNotEmpty
+          ? phase1Result.decisions
+          : null,
     );
   }
 
@@ -411,8 +412,9 @@ class TagGenerator {
       generatorVersion: '$kTagGeneratorVersion-phase1',
       isPartial: true, // C3: Phase 1 only is always partial
       // H3: Include decision logs from Phase 1
-      decisions:
-          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
+      decisions: phase1Result.decisions.isNotEmpty
+          ? phase1Result.decisions
+          : null,
     );
   }
 }

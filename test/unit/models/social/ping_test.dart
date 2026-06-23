@@ -12,34 +12,38 @@ import 'package:butlery/models/social/ping.dart';
 void main() {
   group('Ping model', () {
     test(
-        'create() populates defaults: id, createdAt, expiresAt +10min, not acknowledged',
-        () {
-      final before = DateTime.now();
-      final ping = Ping.create(
-        groupId: 'group-1',
-        fromUserId: 'user-1',
-        type: PingType.nudge,
-      );
-      final after = DateTime.now();
+      'create() populates defaults: id, createdAt, expiresAt +10min, not acknowledged',
+      () {
+        final before = DateTime.now();
+        final ping = Ping.create(
+          groupId: 'group-1',
+          fromUserId: 'user-1',
+          type: PingType.nudge,
+        );
+        final after = DateTime.now();
 
-      expect(ping.id, isNotEmpty);
-      expect(ping.id.length, equals(36), reason: 'UUID v4 format');
-      expect(ping.acknowledged, isFalse);
-      expect(ping.toUserId, isNull);
-      expect(ping.message, isNull);
+        expect(ping.id, isNotEmpty);
+        expect(ping.id.length, equals(36), reason: 'UUID v4 format');
+        expect(ping.acknowledged, isFalse);
+        expect(ping.toUserId, isNull);
+        expect(ping.message, isNull);
 
-      // createdAt is within the test window
-      expect(
+        // createdAt is within the test window
+        expect(
           ping.createdAt.isBefore(before.subtract(const Duration(seconds: 1))),
-          isFalse);
-      expect(ping.createdAt.isAfter(after.add(const Duration(seconds: 1))),
-          isFalse);
+          isFalse,
+        );
+        expect(
+          ping.createdAt.isAfter(after.add(const Duration(seconds: 1))),
+          isFalse,
+        );
 
-      // expiresAt defaults to createdAt + 10min
-      final delta = ping.expiresAt.difference(ping.createdAt);
-      expect(delta, equals(kPingDefaultTtl));
-      expect(delta, equals(const Duration(minutes: 10)));
-    });
+        // expiresAt defaults to createdAt + 10min
+        final delta = ping.expiresAt.difference(ping.createdAt);
+        expect(delta, equals(kPingDefaultTtl));
+        expect(delta, equals(const Duration(minutes: 10)));
+      },
+    );
 
     test('round-trips through toMap/fromMap without losing fields', () {
       final original = Ping.create(
@@ -71,33 +75,37 @@ void main() {
       );
     });
 
-    test('broadcast ping (toUserId null) serializes and restores correctly',
-        () {
-      final broadcast = Ping.create(
-        groupId: 'g1',
-        fromUserId: 'sender',
-        type: PingType.timerAlert,
-      );
+    test(
+      'broadcast ping (toUserId null) serializes and restores correctly',
+      () {
+        final broadcast = Ping.create(
+          groupId: 'g1',
+          fromUserId: 'sender',
+          type: PingType.timerAlert,
+        );
 
-      expect(broadcast.isBroadcast, isTrue);
+        expect(broadcast.isBroadcast, isTrue);
 
-      final restored = Ping.fromMap(broadcast.id, broadcast.toMap());
-      expect(restored.isBroadcast, isTrue);
-      expect(restored.toUserId, isNull);
-      expect(restored.type, equals(PingType.timerAlert));
-    });
+        final restored = Ping.fromMap(broadcast.id, broadcast.toMap());
+        expect(restored.isBroadcast, isTrue);
+        expect(restored.toUserId, isNull);
+        expect(restored.type, equals(PingType.timerAlert));
+      },
+    );
 
-    test('PingType.fromString falls back to unknown for unrecognized values',
-        () {
-      expect(PingType.fromString('nudge'), equals(PingType.nudge));
-      expect(PingType.fromString('timerAlert'), equals(PingType.timerAlert));
-      expect(PingType.fromString('helpMe'), equals(PingType.helpMe));
-      // Unknown / future types → `unknown` sentinel (not silently relabeled
-      // as nudge, which would render wrong copy + wrong semantics).
-      expect(PingType.fromString('newFutureType'), equals(PingType.unknown));
-      expect(PingType.fromString(null), equals(PingType.unknown));
-      expect(PingType.fromString(''), equals(PingType.unknown));
-    });
+    test(
+      'PingType.fromString falls back to unknown for unrecognized values',
+      () {
+        expect(PingType.fromString('nudge'), equals(PingType.nudge));
+        expect(PingType.fromString('timerAlert'), equals(PingType.timerAlert));
+        expect(PingType.fromString('helpMe'), equals(PingType.helpMe));
+        // Unknown / future types → `unknown` sentinel (not silently relabeled
+        // as nudge, which would render wrong copy + wrong semantics).
+        expect(PingType.fromString('newFutureType'), equals(PingType.unknown));
+        expect(PingType.fromString(null), equals(PingType.unknown));
+        expect(PingType.fromString(''), equals(PingType.unknown));
+      },
+    );
 
     test('message longer than 100 chars is truncated by create()', () {
       final longMsg = 'a' * 150;
@@ -135,8 +143,11 @@ void main() {
       expect(restored.groupId, equals(''));
       expect(restored.fromUserId, equals(''));
       expect(restored.toUserId, isNull);
-      expect(restored.type, equals(PingType.unknown),
-          reason: 'fallback for missing type — unknown sentinel, not nudge');
+      expect(
+        restored.type,
+        equals(PingType.unknown),
+        reason: 'fallback for missing type — unknown sentinel, not nudge',
+      );
       expect(restored.acknowledged, isFalse);
       // expiresAt defaults to createdAt + 10min when absent
       final delta = restored.expiresAt.difference(restored.createdAt);

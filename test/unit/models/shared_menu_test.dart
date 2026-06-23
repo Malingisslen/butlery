@@ -45,7 +45,8 @@ SharedMenu _menu({
     sharedByDisplayName: sharedByDisplayName,
     sharedAt: DateTime.utc(2026, 1, 1),
     menuTitle: 'Veckomeny',
-    menuSnapshot: menuSnapshot ??
+    menuSnapshot:
+        menuSnapshot ??
         {
           'Måndag': [_recipe(id: 'r1')],
           'Tisdag': [_recipe(id: 'r2'), _recipe(id: 'r3')],
@@ -131,11 +132,13 @@ void main() {
 
   group('menuSummary', () {
     test('lowercases category names + drops empty buckets', () {
-      final m = _menu(menuSnapshot: {
-        'MÅNDAG': [_recipe(id: 'r1')],
-        'EMPTY': const [],
-        'TISDAG': [_recipe(id: 'r2'), _recipe(id: 'r3')],
-      });
+      final m = _menu(
+        menuSnapshot: {
+          'MÅNDAG': [_recipe(id: 'r1')],
+          'EMPTY': const [],
+          'TISDAG': [_recipe(id: 'r2'), _recipe(id: 'r3')],
+        },
+      );
       expect(m.menuSummary, '1 måndag, 2 tisdag');
     });
 
@@ -195,32 +198,39 @@ void main() {
     });
 
     test(
-        'triggerCopyOnWrite by non-owner flips the flags + sets static copy id',
-        () {
-      final m = _menu();
-      final copied = m.triggerCopyOnWrite(
-        editingUserId: 'bob',
-        staticCopyId: 'snap-1',
-      );
-      expect(copied.isOriginalReference, isFalse);
-      expect(copied.copyOnWriteTriggered, isTrue);
-      expect(copied.originalOwnerStaticCopyId, 'snap-1');
-      expect(copied.activeCollaboratorCount, 1);
-    });
+      'triggerCopyOnWrite by non-owner flips the flags + sets static copy id',
+      () {
+        final m = _menu();
+        final copied = m.triggerCopyOnWrite(
+          editingUserId: 'bob',
+          staticCopyId: 'snap-1',
+        );
+        expect(copied.isOriginalReference, isFalse);
+        expect(copied.copyOnWriteTriggered, isTrue);
+        expect(copied.originalOwnerStaticCopyId, 'snap-1');
+        expect(copied.activeCollaboratorCount, 1);
+      },
+    );
 
     test('triggerCopyOnWrite by owner is a no-op (returns same instance)', () {
       final m = _menu();
-      final same =
-          m.triggerCopyOnWrite(editingUserId: 'alice', staticCopyId: 's');
+      final same = m.triggerCopyOnWrite(
+        editingUserId: 'alice',
+        staticCopyId: 's',
+      );
       expect(identical(same, m), isTrue);
     });
 
     test('triggerCopyOnWrite twice is idempotent (second call no-ops)', () {
       final m = _menu();
-      final first =
-          m.triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 'snap-1');
+      final first = m.triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 'snap-1',
+      );
       final second = first.triggerCopyOnWrite(
-          editingUserId: 'carol', staticCopyId: 'snap-2');
+        editingUserId: 'carol',
+        staticCopyId: 'snap-2',
+      );
       expect(identical(second, first), isTrue);
     });
 
@@ -229,8 +239,10 @@ void main() {
       final preCow = m.addActiveCollaborator('bob');
       expect(identical(preCow, m), isTrue);
 
-      final triggered =
-          m.triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 'snap-1');
+      final triggered = m.triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 'snap-1',
+      );
       final added = triggered.addActiveCollaborator('carol');
       expect(added.activeCollaboratorCount, 2);
     });
@@ -244,9 +256,9 @@ void main() {
 
     test('allowCollaboration override sticks', () {
       expect(
-        _menu(allowCollaboration: false)
-            .copyWith(allowCollaboration: true)
-            .allowCollaboration,
+        _menu(
+          allowCollaboration: false,
+        ).copyWith(allowCollaboration: true).allowCollaboration,
         isTrue,
       );
     });
@@ -294,9 +306,11 @@ void main() {
         ),
         type: RecipeType.personal,
       );
-      final m = _menu(menuSnapshot: {
-        'Måndag': [cooked],
-      });
+      final m = _menu(
+        menuSnapshot: {
+          'Måndag': [cooked],
+        },
+      );
       final imported = m.createImportMenu(newOwnerId: 'bob');
       expect(imported['Måndag']!.single.lastCookedAt, isNull);
     });

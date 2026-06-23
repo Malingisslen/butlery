@@ -71,7 +71,11 @@ void main() {
 
     test('group expands members + extracts metadata', () {
       final group = _category(
-          id: 'g-fam', ownerId: 'u1', description: 'Familj', emoji: '🏠');
+        id: 'g-fam',
+        ownerId: 'u1',
+        description: 'Familj',
+        emoji: '🏠',
+      );
       final members = [
         _user(uid: 'u1', displayName: 'Anna'),
         _user(uid: 'u2', displayName: 'Bob'),
@@ -117,21 +121,25 @@ void main() {
       final solo = InvitationTarget.group(_category(), [_user()]);
       expect(solo.description, '1 medlem');
 
-      final many =
-          InvitationTarget.group(_category(), [_user(), _user(uid: 'u2')]);
+      final many = InvitationTarget.group(_category(), [
+        _user(),
+        _user(uid: 'u2'),
+      ]);
       expect(many.description, '2 medlemmar');
 
       expect(InvitationTarget.individual(_user()).description, '');
     });
 
-    test('subtitle: group uses description, individual uses ButleryUser label',
-        () {
-      final i = InvitationTarget.individual(_user());
-      final g = InvitationTarget.group(_category(), [_user()]);
+    test(
+      'subtitle: group uses description, individual uses ButleryUser label',
+      () {
+        final i = InvitationTarget.individual(_user());
+        final g = InvitationTarget.group(_category(), [_user()]);
 
-      expect(g.subtitle, '1 medlem');
-      expect(i.subtitle, isNotEmpty);
-    });
+        expect(g.subtitle, '1 medlem');
+        expect(i.subtitle, isNotEmpty);
+      },
+    );
   });
 
   group('validation', () {
@@ -170,13 +178,16 @@ void main() {
 
   group('user-id helpers', () {
     test('allUserIds returns single-item list for individual', () {
-      expect(InvitationTarget.individual(_user(uid: 'u-anna')).allUserIds,
-          ['u-anna']);
+      expect(InvitationTarget.individual(_user(uid: 'u-anna')).allUserIds, [
+        'u-anna',
+      ]);
     });
 
     test('allUserIds returns memberIds for group', () {
-      final t = InvitationTarget.group(
-          _category(), [_user(uid: 'u1'), _user(uid: 'u2')]);
+      final t = InvitationTarget.group(_category(), [
+        _user(uid: 'u1'),
+        _user(uid: 'u2'),
+      ]);
       expect(t.allUserIds, ['u1', 'u2']);
     });
 
@@ -213,8 +224,9 @@ void main() {
     });
 
     test('ownerId extracts metadata field', () {
-      final t =
-          InvitationTarget.group(_category(ownerId: 'owner-99'), [_user()]);
+      final t = InvitationTarget.group(_category(ownerId: 'owner-99'), [
+        _user(),
+      ]);
       expect(t.ownerId, 'owner-99');
     });
 
@@ -259,8 +271,10 @@ void main() {
     });
 
     test('toFirestore + fromFirestore round-trip group', () {
-      final original = InvitationTarget.group(
-          _category(id: 'g1'), [_user(uid: 'u1'), _user(uid: 'u2')]);
+      final original = InvitationTarget.group(_category(id: 'g1'), [
+        _user(uid: 'u1'),
+        _user(uid: 'u2'),
+      ]);
       final data = original.toFirestore();
       final restored = InvitationTarget.fromFirestore(data);
 
@@ -346,11 +360,15 @@ void main() {
 
     test('not equal when type differs', () {
       final a = InvitationTarget(
-          type: InvitationTargetType.individual,
-          targetId: 'x',
-          displayName: 'X');
+        type: InvitationTargetType.individual,
+        targetId: 'x',
+        displayName: 'X',
+      );
       final b = InvitationTarget(
-          type: InvitationTargetType.group, targetId: 'x', displayName: 'X');
+        type: InvitationTargetType.group,
+        targetId: 'x',
+        displayName: 'X',
+      );
       expect(a == b, isFalse);
     });
 
@@ -382,7 +400,7 @@ void main() {
       final users = [_user(uid: 'u1'), _user(uid: 'u2')];
       final groups = [_category(id: 'g1', name: 'Familj')];
       final members = {
-        'g1': [_user(uid: 'u3')]
+        'g1': [_user(uid: 'u3')],
       };
 
       final us = InvitationTarget.fromUsers(users);
@@ -397,8 +415,10 @@ void main() {
     test('extractAllUserIds deduplicates across mixed targets', () {
       final shared = _user(uid: 'shared');
       final individual = InvitationTarget.individual(shared);
-      final group =
-          InvitationTarget.group(_category(), [shared, _user(uid: 'unique')]);
+      final group = InvitationTarget.group(_category(), [
+        shared,
+        _user(uid: 'unique'),
+      ]);
 
       final ids = InvitationTarget.extractAllUserIds([individual, group]);
       expect(ids, {'shared', 'unique'});
@@ -424,26 +444,32 @@ void main() {
       expect(sorted.first.isGroup, isTrue);
     });
 
-    test('filterBySearch matches displayName + description + group metadata',
-        () {
-      final i = InvitationTarget.individual(_user(displayName: 'Anna'));
-      final g = InvitationTarget.group(
-          _category(name: 'Familj', description: 'Närmaste'), [_user()]);
+    test(
+      'filterBySearch matches displayName + description + group metadata',
+      () {
+        final i = InvitationTarget.individual(_user(displayName: 'Anna'));
+        final g = InvitationTarget.group(
+          _category(name: 'Familj', description: 'Närmaste'),
+          [_user()],
+        );
 
-      expect(InvitationTarget.filterBySearch([i, g], '').length, 2);
-      expect(InvitationTarget.filterBySearch([i, g], 'anna').length, 1);
-      expect(InvitationTarget.filterBySearch([i, g], 'fam').length, 1);
-      // Search inside group description metadata.
-      expect(InvitationTarget.filterBySearch([i, g], 'närmaste').length, 1);
-      expect(InvitationTarget.filterBySearch([i, g], 'nope'), isEmpty);
-    });
+        expect(InvitationTarget.filterBySearch([i, g], '').length, 2);
+        expect(InvitationTarget.filterBySearch([i, g], 'anna').length, 1);
+        expect(InvitationTarget.filterBySearch([i, g], 'fam').length, 1);
+        // Search inside group description metadata.
+        expect(InvitationTarget.filterBySearch([i, g], 'närmaste').length, 1);
+        expect(InvitationTarget.filterBySearch([i, g], 'nope'), isEmpty);
+      },
+    );
 
     test('filterByType / individualsOnly / groupsOnly partition correctly', () {
       final i = InvitationTarget.individual(_user());
       final g = InvitationTarget.group(_category(), [_user()]);
 
-      expect(InvitationTarget.filterByType([i, g], InvitationTargetType.group),
-          [g]);
+      expect(
+        InvitationTarget.filterByType([i, g], InvitationTargetType.group),
+        [g],
+      );
       expect(InvitationTarget.individualsOnly([i, g]), [i]);
       expect(InvitationTarget.groupsOnly([i, g]), [g]);
     });

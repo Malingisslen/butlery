@@ -84,7 +84,7 @@ class Message {
   /// Stores additional message data including content IDs (recipe, menu, shopping list),
   /// media information, reply context, and message-specific configurations for rich content support.
   final Map<String, dynamic>?
-      metadata; // For content-specific data (recipe ID, etc.)
+  metadata; // For content-specific data (recipe ID, etc.)
 
   /// Optional reference to parent message for reply threading functionality.
   /// Contains the ID of the message being replied to, enabling threaded conversation

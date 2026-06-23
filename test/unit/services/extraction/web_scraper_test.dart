@@ -163,18 +163,22 @@ void main() {
           metadata: {'platform': 'instagram'},
         );
 
-        when(() => mockWebScraper.performExtraction(instagramUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(instagramUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(instagramUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          instagramUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
         expect(result.metadata['platform'], equals('instagram'));
-        verify(() => mockWebScraper.performExtraction(instagramUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(instagramUrl, platform),
+        ).called(1);
       });
 
       test('should handle Facebook URLs', () async {
@@ -187,18 +191,22 @@ void main() {
           metadata: {'platform': 'facebook'},
         );
 
-        when(() => mockWebScraper.performExtraction(facebookUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(facebookUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(facebookUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          facebookUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
         expect(result.metadata['platform'], equals('facebook'));
-        verify(() => mockWebScraper.performExtraction(facebookUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(facebookUrl, platform),
+        ).called(1);
       });
 
       test('should handle TikTok URLs', () async {
@@ -211,18 +219,22 @@ void main() {
           metadata: {'platform': 'tiktok'},
         );
 
-        when(() => mockWebScraper.performExtraction(tiktokUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(tiktokUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(tiktokUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          tiktokUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
         expect(result.metadata['platform'], equals('tiktok'));
-        verify(() => mockWebScraper.performExtraction(tiktokUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(tiktokUrl, platform),
+        ).called(1);
       });
 
       test('should handle generic/unknown platform URLs', () async {
@@ -235,18 +247,22 @@ void main() {
           metadata: {'platform': 'unknown'},
         );
 
-        when(() => mockWebScraper.performExtraction(genericUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(genericUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(genericUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          genericUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
         expect(result.metadata['platform'], equals('unknown'));
-        verify(() => mockWebScraper.performExtraction(genericUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(genericUrl, platform),
+        ).called(1);
       });
     });
 
@@ -260,18 +276,22 @@ void main() {
           error: 'Invalid URL: empty',
         );
 
-        when(() => mockWebScraper.performExtraction(emptyUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(emptyUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(emptyUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          emptyUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isFalse);
         expect(result.error, contains('Invalid URL'));
-        verify(() => mockWebScraper.performExtraction(emptyUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(emptyUrl, platform),
+        ).called(1);
       });
 
       test('should handle invalid URLs', () async {
@@ -283,18 +303,22 @@ void main() {
           error: 'Invalid URL format',
         );
 
-        when(() => mockWebScraper.performExtraction(invalidUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(invalidUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(invalidUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          invalidUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isFalse);
         expect(result.error, contains('Invalid URL format'));
-        verify(() => mockWebScraper.performExtraction(invalidUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(invalidUrl, platform),
+        ).called(1);
       });
 
       test('should handle URLs with special characters', () async {
@@ -307,17 +331,21 @@ void main() {
           extractedText: 'Recipe with special URL',
         );
 
-        when(() => mockWebScraper.performExtraction(specialUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(specialUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(specialUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          specialUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
-        verify(() => mockWebScraper.performExtraction(specialUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(specialUrl, platform),
+        ).called(1);
       });
 
       test('should handle URLs with unicode characters', () async {
@@ -329,17 +357,21 @@ void main() {
           extractedText: 'Swedish recipe content',
         );
 
-        when(() => mockWebScraper.performExtraction(unicodeUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(unicodeUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(unicodeUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          unicodeUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isTrue);
-        verify(() => mockWebScraper.performExtraction(unicodeUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(unicodeUrl, platform),
+        ).called(1);
       });
 
       test('should handle very long URLs', () async {
@@ -351,18 +383,22 @@ void main() {
           error: 'URL too long',
         );
 
-        when(() => mockWebScraper.performExtraction(longUrl, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(longUrl, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
-        final result =
-            await mockWebScraper.performExtraction(longUrl, platform);
+        final result = await mockWebScraper.performExtraction(
+          longUrl,
+          platform,
+        );
 
         // Assert
         expect(result.success, isFalse);
         expect(result.error, contains('URL too long'));
-        verify(() => mockWebScraper.performExtraction(longUrl, platform))
-            .called(1);
+        verify(
+          () => mockWebScraper.performExtraction(longUrl, platform),
+        ).called(1);
       });
     });
 
@@ -373,8 +409,9 @@ void main() {
         const platform = SourcePlatform.unknown;
 
         // Configure mock to simulate timeout
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async {
+        when(() => mockWebScraper.performExtraction(url, platform)).thenAnswer((
+          _,
+        ) async {
           await Future.delayed(const Duration(milliseconds: 200));
           return ExtractionResult(
             success: false,
@@ -395,13 +432,17 @@ void main() {
         const url = 'https://example.com';
         const platform = SourcePlatform.unknown;
 
-        when(() => mockWebScraper.performExtraction(
-              url,
-              platform,
-            )).thenAnswer((_) async => ExtractionResult(
-              success: true,
-              extractedText: 'Content extracted within timeout',
-            ));
+        when(
+          () => mockWebScraper.performExtraction(
+            url,
+            platform,
+          ),
+        ).thenAnswer(
+          (_) async => ExtractionResult(
+            success: true,
+            extractedText: 'Content extracted within timeout',
+          ),
+        );
 
         // Act
         final result = await mockWebScraper.performExtraction(
@@ -411,10 +452,12 @@ void main() {
 
         // Assert
         expect(result.success, isTrue);
-        verify(() => mockWebScraper.performExtraction(
-              url,
-              platform,
-            )).called(1);
+        verify(
+          () => mockWebScraper.performExtraction(
+            url,
+            platform,
+          ),
+        ).called(1);
       });
     });
 
@@ -428,18 +471,25 @@ void main() {
         ];
 
         for (int i = 0; i < urls.length; i++) {
-          when(() => mockWebScraper.performExtraction(
-                  urls[i], SourcePlatform.unknown))
-              .thenAnswer((_) async => ExtractionResult(
-                    success: true,
-                    extractedText: 'Content from ${urls[i]}',
-                  ));
+          when(
+            () => mockWebScraper.performExtraction(
+              urls[i],
+              SourcePlatform.unknown,
+            ),
+          ).thenAnswer(
+            (_) async => ExtractionResult(
+              success: true,
+              extractedText: 'Content from ${urls[i]}',
+            ),
+          );
         }
 
         // Act
         final futures = urls
-            .map((url) =>
-                mockWebScraper.performExtraction(url, SourcePlatform.unknown))
+            .map(
+              (url) =>
+                  mockWebScraper.performExtraction(url, SourcePlatform.unknown),
+            )
             .toList();
 
         final results = await Future.wait(futures);
@@ -462,19 +512,25 @@ void main() {
 
         for (final testCase in testCases) {
           final (url, success, content) = testCase;
-          when(() =>
-                  mockWebScraper.performExtraction(url, SourcePlatform.unknown))
-              .thenAnswer((_) async => ExtractionResult(
-                    success: success,
-                    extractedText: content,
-                    error: success ? null : 'Extraction failed',
-                  ));
+          when(
+            () => mockWebScraper.performExtraction(url, SourcePlatform.unknown),
+          ).thenAnswer(
+            (_) async => ExtractionResult(
+              success: success,
+              extractedText: content,
+              error: success ? null : 'Extraction failed',
+            ),
+          );
         }
 
         // Act
         final futures = testCases
-            .map((tc) =>
-                mockWebScraper.performExtraction(tc.$1, SourcePlatform.unknown))
+            .map(
+              (tc) => mockWebScraper.performExtraction(
+                tc.$1,
+                SourcePlatform.unknown,
+              ),
+            )
             .toList();
 
         final results = await Future.wait(futures);
@@ -487,33 +543,36 @@ void main() {
     });
 
     group('JavaScript Selector Strategies', () {
-      test('should extract content using platform-specific selectors',
-          () async {
-        // Arrange
-        const url = 'https://instagram.com/p/123';
-        const platform = SourcePlatform.instagram;
+      test(
+        'should extract content using platform-specific selectors',
+        () async {
+          // Arrange
+          const url = 'https://instagram.com/p/123';
+          const platform = SourcePlatform.instagram;
 
-        final expectedResult = ExtractionResult(
-          success: true,
-          extractedText:
-              'Instagram post content extracted with specific selectors',
-          metadata: {
-            'selector': 'article[role="presentation"]',
-            'platform': 'instagram',
-          },
-        );
+          final expectedResult = ExtractionResult(
+            success: true,
+            extractedText:
+                'Instagram post content extracted with specific selectors',
+            metadata: {
+              'selector': 'article[role="presentation"]',
+              'platform': 'instagram',
+            },
+          );
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => expectedResult);
+          when(
+            () => mockWebScraper.performExtraction(url, platform),
+          ).thenAnswer((_) async => expectedResult);
 
-        // Act
-        final result = await mockWebScraper.performExtraction(url, platform);
+          // Act
+          final result = await mockWebScraper.performExtraction(url, platform);
 
-        // Assert
-        expect(result.success, isTrue);
-        expect(result.metadata['selector'], isNotNull);
-        expect(result.metadata['platform'], equals('instagram'));
-      });
+          // Assert
+          expect(result.success, isTrue);
+          expect(result.metadata['selector'], isNotNull);
+          expect(result.metadata['platform'], equals('instagram'));
+        },
+      );
 
       test('should use fallback selectors when primary fails', () async {
         // Arrange
@@ -529,8 +588,9 @@ void main() {
           },
         );
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(url, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
         final result = await mockWebScraper.performExtraction(url, platform);
@@ -554,8 +614,9 @@ void main() {
           metadata: {'encoding': 'UTF-8'},
         );
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => expectedResult);
+        when(
+          () => mockWebScraper.performExtraction(url, platform),
+        ).thenAnswer((_) async => expectedResult);
 
         // Act
         final result = await mockWebScraper.performExtraction(url, platform);
@@ -574,12 +635,13 @@ void main() {
         const url = 'https://example.com';
         const platform = SourcePlatform.unknown;
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => ExtractionResult(
-                  success: false,
-                  error:
-                      'WebView initialization failed - recovered with empty result',
-                ));
+        when(() => mockWebScraper.performExtraction(url, platform)).thenAnswer(
+          (_) async => ExtractionResult(
+            success: false,
+            error:
+                'WebView initialization failed - recovered with empty result',
+          ),
+        );
 
         // Act
         final result = await mockWebScraper.performExtraction(url, platform);
@@ -594,11 +656,12 @@ void main() {
         const url = 'https://unreachable-site.com';
         const platform = SourcePlatform.unknown;
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => ExtractionResult(
-                  success: false,
-                  error: 'Network error: Unable to reach site',
-                ));
+        when(() => mockWebScraper.performExtraction(url, platform)).thenAnswer(
+          (_) async => ExtractionResult(
+            success: false,
+            error: 'Network error: Unable to reach site',
+          ),
+        );
 
         // Act
         final result = await mockWebScraper.performExtraction(url, platform);
@@ -615,11 +678,12 @@ void main() {
         const url = 'https://example.com';
         const platform = SourcePlatform.unknown;
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async => ExtractionResult(
-                  success: true,
-                  extractedText: 'Content',
-                ));
+        when(() => mockWebScraper.performExtraction(url, platform)).thenAnswer(
+          (_) async => ExtractionResult(
+            success: true,
+            extractedText: 'Content',
+          ),
+        );
 
         when(() => mockWebScraper.dispose()).thenReturn(null);
 
@@ -637,8 +701,9 @@ void main() {
         const url = 'https://example.com';
         const platform = SourcePlatform.unknown;
 
-        when(() => mockWebScraper.performExtraction(url, platform))
-            .thenAnswer((_) async {
+        when(() => mockWebScraper.performExtraction(url, platform)).thenAnswer((
+          _,
+        ) async {
           await Future.delayed(const Duration(milliseconds: 100));
           return ExtractionResult(
             success: false,
@@ -649,8 +714,10 @@ void main() {
         when(() => mockWebScraper.dispose()).thenReturn(null);
 
         // Act
-        final extractionFuture =
-            mockWebScraper.performExtraction(url, platform);
+        final extractionFuture = mockWebScraper.performExtraction(
+          url,
+          platform,
+        );
         await Future.delayed(const Duration(milliseconds: 50));
         mockWebScraper.dispose();
         final result = await extractionFuture;

@@ -12,15 +12,16 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 enum CookingSkillLevel {
   beginner,
   intermediate,
-  advanced;
+  advanced
+  ;
 
   /// Parse from string, returning null for unknown values.
   static CookingSkillLevel? tryParse(String? value) {
     if (value == null) return null;
     return CookingSkillLevel.values.cast<CookingSkillLevel?>().firstWhere(
-          (e) => e!.name == value,
-          orElse: () => null,
-        );
+      (e) => e!.name == value,
+      orElse: () => null,
+    );
   }
 }
 
@@ -275,8 +276,9 @@ class UserProfile with JsonSerializableMixin {
     } else if (difference.inDays < 7) {
       return AppLocale.current.userStatusActiveDaysAgo(difference.inDays);
     } else {
-      return AppLocale.current
-          .userStatusActiveWeeksAgo((difference.inDays / 7).floor());
+      return AppLocale.current.userStatusActiveWeeksAgo(
+        (difference.inDays / 7).floor(),
+      );
     }
   }
 
@@ -429,52 +431,82 @@ class UserProfile with JsonSerializableMixin {
       displayName: utils.SerializationUtils.safeString(data, 'displayName'),
       email: utils.SerializationUtils.safeString(data, 'email'),
       avatarUrl: utils.SerializationUtils.safeNullableString(data, 'avatarUrl'),
-      isSearchable: utils.SerializationUtils.safeBool(data, 'isSearchable',
-          defaultValue: true),
-      allowEmailSearch:
-          utils.SerializationUtils.safeBool(data, 'allowEmailSearch'),
-      publicRecipeCount:
-          utils.SerializationUtils.safeInt(data, 'publicRecipeCount'),
+      isSearchable: utils.SerializationUtils.safeBool(
+        data,
+        'isSearchable',
+        defaultValue: true,
+      ),
+      allowEmailSearch: utils.SerializationUtils.safeBool(
+        data,
+        'allowEmailSearch',
+      ),
+      publicRecipeCount: utils.SerializationUtils.safeInt(
+        data,
+        'publicRecipeCount',
+      ),
       friendsCount: utils.SerializationUtils.safeInt(data, 'friendsCount'),
       joinedAt: utils.SerializationUtils.safeDateTime(data, 'joinedAt').orNow(),
-      lastActiveAt:
-          utils.SerializationUtils.safeDateTime(data, 'lastActiveAt').orNow(),
+      lastActiveAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'lastActiveAt',
+      ).orNow(),
       isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
       showOnlineStatus: utils.SerializationUtils.safeBool(
-          data, 'showOnlineStatus',
-          defaultValue: true),
+        data,
+        'showOnlineStatus',
+        defaultValue: true,
+      ),
       shareActivityToFeed: utils.SerializationUtils.safeBool(
-          data, 'shareActivityToFeed',
-          defaultValue: true),
+        data,
+        'shareActivityToFeed',
+        defaultValue: true,
+      ),
       activityFeedEventTypes: _readActivityFeedEventTypes(data),
-      hasSeenActivityFeedHint:
-          utils.SerializationUtils.safeBool(data, 'hasSeenActivityFeedHint'),
-      autoAddBoughtToPantry:
-          utils.SerializationUtils.safeBool(data, 'autoAddBoughtToPantry'),
-      pantryAutoAddPrompted:
-          utils.SerializationUtils.safeBool(data, 'pantryAutoAddPrompted'),
+      hasSeenActivityFeedHint: utils.SerializationUtils.safeBool(
+        data,
+        'hasSeenActivityFeedHint',
+      ),
+      autoAddBoughtToPantry: utils.SerializationUtils.safeBool(
+        data,
+        'autoAddBoughtToPantry',
+      ),
+      pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
+        data,
+        'pantryAutoAddPrompted',
+      ),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
-      fcmTokenUpdatedAt:
-          utils.SerializationUtils.safeDateTime(data, 'fcmTokenUpdatedAt'),
+      fcmTokenUpdatedAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'fcmTokenUpdatedAt',
+      ),
       notificationsEnabled: utils.SerializationUtils.safeBool(
-          data, 'notificationsEnabled',
-          defaultValue: true),
+        data,
+        'notificationsEnabled',
+        defaultValue: true,
+      ),
       // Locale preference
-      preferredLocale:
-          utils.SerializationUtils.safeNullableString(data, 'preferredLocale'),
+      preferredLocale: utils.SerializationUtils.safeNullableString(
+        data,
+        'preferredLocale',
+      ),
       // Allergen preferences
       allergenPreferences: data['allergenPreferences'] != null
           ? UserAllergenPreferences.fromFirestore(
-              data['allergenPreferences'] as Map<String, dynamic>)
+              data['allergenPreferences'] as Map<String, dynamic>,
+            )
           : null,
-      hasCompletedOnboarding:
-          utils.SerializationUtils.safeBool(data, 'hasCompletedOnboarding'),
-      onboardingSkippedAt:
-          utils.SerializationUtils.safeDateTime(data, 'onboardingSkippedAt'),
+      hasCompletedOnboarding: utils.SerializationUtils.safeBool(
+        data,
+        'hasCompletedOnboarding',
+      ),
+      onboardingSkippedAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'onboardingSkippedAt',
+      ),
       cookingSkillLevel: CookingSkillLevel.tryParse(
-          utils.SerializationUtils.safeNullableString(
-              data, 'cookingSkillLevel')),
+        utils.SerializationUtils.safeNullableString(data, 'cookingSkillLevel'),
+      ),
       cuisineAffinities: data.containsKey('cuisineAffinities')
           ? utils.SerializationUtils.safeStringList(data, 'cuisineAffinities')
           : null,
@@ -492,52 +524,79 @@ class UserProfile with JsonSerializableMixin {
       displayName: utils.SerializationUtils.safeString(json, 'displayName'),
       email: utils.SerializationUtils.safeString(json, 'email'),
       avatarUrl: utils.SerializationUtils.safeNullableString(json, 'avatarUrl'),
-      isSearchable: utils.SerializationUtils.safeBool(json, 'isSearchable',
-          defaultValue: true),
-      allowEmailSearch:
-          utils.SerializationUtils.safeBool(json, 'allowEmailSearch'),
-      publicRecipeCount:
-          utils.SerializationUtils.safeInt(json, 'publicRecipeCount'),
+      isSearchable: utils.SerializationUtils.safeBool(
+        json,
+        'isSearchable',
+        defaultValue: true,
+      ),
+      allowEmailSearch: utils.SerializationUtils.safeBool(
+        json,
+        'allowEmailSearch',
+      ),
+      publicRecipeCount: utils.SerializationUtils.safeInt(
+        json,
+        'publicRecipeCount',
+      ),
       friendsCount: utils.SerializationUtils.safeInt(json, 'friendsCount'),
-      joinedAt:
-          utils.SerializationUtils.parseDateTimeValue(json['joinedAt']).orNow(),
-      lastActiveAt:
-          utils.SerializationUtils.parseDateTimeValue(json['lastActiveAt'])
-              .orNow(),
+      joinedAt: utils.SerializationUtils.parseDateTimeValue(
+        json['joinedAt'],
+      ).orNow(),
+      lastActiveAt: utils.SerializationUtils.parseDateTimeValue(
+        json['lastActiveAt'],
+      ).orNow(),
       isOnline: utils.SerializationUtils.safeBool(json, 'isOnline'),
       showOnlineStatus: utils.SerializationUtils.safeBool(
-          json, 'showOnlineStatus',
-          defaultValue: true),
+        json,
+        'showOnlineStatus',
+        defaultValue: true,
+      ),
       shareActivityToFeed: utils.SerializationUtils.safeBool(
-          json, 'shareActivityToFeed',
-          defaultValue: true),
+        json,
+        'shareActivityToFeed',
+        defaultValue: true,
+      ),
       activityFeedEventTypes: _readActivityFeedEventTypes(json),
-      hasSeenActivityFeedHint:
-          utils.SerializationUtils.safeBool(json, 'hasSeenActivityFeedHint'),
-      autoAddBoughtToPantry:
-          utils.SerializationUtils.safeBool(json, 'autoAddBoughtToPantry'),
-      pantryAutoAddPrompted:
-          utils.SerializationUtils.safeBool(json, 'pantryAutoAddPrompted'),
+      hasSeenActivityFeedHint: utils.SerializationUtils.safeBool(
+        json,
+        'hasSeenActivityFeedHint',
+      ),
+      autoAddBoughtToPantry: utils.SerializationUtils.safeBool(
+        json,
+        'autoAddBoughtToPantry',
+      ),
+      pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
+        json,
+        'pantryAutoAddPrompted',
+      ),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
-          json['fcmTokenUpdatedAt']),
+        json['fcmTokenUpdatedAt'],
+      ),
       notificationsEnabled: utils.SerializationUtils.safeBool(
-          json, 'notificationsEnabled',
-          defaultValue: true),
-      preferredLocale:
-          utils.SerializationUtils.safeNullableString(json, 'preferredLocale'),
+        json,
+        'notificationsEnabled',
+        defaultValue: true,
+      ),
+      preferredLocale: utils.SerializationUtils.safeNullableString(
+        json,
+        'preferredLocale',
+      ),
       // Allergen preferences
       allergenPreferences: json['allergenPreferences'] != null
           ? UserAllergenPreferences.fromFirestore(
-              json['allergenPreferences'] as Map<String, dynamic>)
+              json['allergenPreferences'] as Map<String, dynamic>,
+            )
           : null,
-      hasCompletedOnboarding:
-          utils.SerializationUtils.safeBool(json, 'hasCompletedOnboarding'),
+      hasCompletedOnboarding: utils.SerializationUtils.safeBool(
+        json,
+        'hasCompletedOnboarding',
+      ),
       onboardingSkippedAt: utils.SerializationUtils.parseDateTimeValue(
-          json['onboardingSkippedAt']),
+        json['onboardingSkippedAt'],
+      ),
       cookingSkillLevel: CookingSkillLevel.tryParse(
-          utils.SerializationUtils.safeNullableString(
-              json, 'cookingSkillLevel')),
+        utils.SerializationUtils.safeNullableString(json, 'cookingSkillLevel'),
+      ),
       cuisineAffinities: json.containsKey('cuisineAffinities')
           ? utils.SerializationUtils.safeStringList(json, 'cuisineAffinities')
           : null,
@@ -553,7 +612,8 @@ class UserProfile with JsonSerializableMixin {
   /// value to `Map<String, bool>`, dropping any non-bool entries so corrupt or
   /// legacy data never throws. A missing/empty map means "all types enabled".
   static Map<String, bool> _readActivityFeedEventTypes(
-      Map<String, dynamic> data) {
+    Map<String, dynamic> data,
+  ) {
     final raw = data['activityFeedEventTypes'];
     if (raw is! Map) return const {};
     final result = <String, bool>{};

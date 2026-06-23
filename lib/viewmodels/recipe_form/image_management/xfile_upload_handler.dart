@@ -32,7 +32,7 @@ class XFileUploadHandler {
   XFileUploadHandler({
     ImageUploadService? uploadService,
   }) : _uploadService =
-            uploadService ?? ServiceLocator.get<ImageUploadService>();
+           uploadService ?? ServiceLocator.get<ImageUploadService>();
 
   /// Unmodifiable view of pending XFiles for state queries
   Map<String, XFile> get pendingXFiles => Map.unmodifiable(_pendingXFiles);
@@ -61,7 +61,8 @@ class XFileUploadHandler {
     // Check if this is a web blob URL (needs special handling)
     if (xFile.path.startsWith('blob:')) {
       AppLogger.info(
-          '🌐 WEB_FIX: Blob URL detected, using XFile directly for display');
+        '🌐 WEB_FIX: Blob URL detected, using XFile directly for display',
+      );
       return XFileProcessResult(
         filePath: xFile.path,
         isBlobUrl: true,
@@ -80,14 +81,17 @@ class XFileUploadHandler {
 
   /// Validate XFile size for web platform.
   /// Returns null if valid, error message if invalid.
-  Future<String?> validateXFileSize(XFile xFile,
-      {int maxSizeBytes = UploadConstants.maxRecipeImageBytes}) async {
+  Future<String?> validateXFileSize(
+    XFile xFile, {
+    int maxSizeBytes = UploadConstants.maxRecipeImageBytes,
+  }) async {
     try {
       final fileSize = await xFile.length();
       if (fileSize > maxSizeBytes) {
         final maxSizeMB = maxSizeBytes / (1024 * 1024);
-        return AppLocale.current
-            .imageUploadTooLarge(maxSizeMB.toStringAsFixed(0));
+        return AppLocale.current.imageUploadTooLarge(
+          maxSizeMB.toStringAsFixed(0),
+        );
       }
       return null;
     } catch (e) {
@@ -161,7 +165,8 @@ class XFileUploadHandler {
   Future<String?> uploadXFile(XFile xFile, String recipeId) async {
     try {
       AppLogger.info(
-          '🌐 WEB_FIX: Uploading XFile with web support: ${xFile.path}');
+        '🌐 WEB_FIX: Uploading XFile with web support: ${xFile.path}',
+      );
 
       // Get authenticated user ID
       final userId =

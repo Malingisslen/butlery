@@ -32,12 +32,12 @@ import '../../../infrastructure/mocks/service_mocks.dart';
 // ---------------------------------------------------------------------------
 
 TagResult _tagResult({Set<String> tags = const {}}) => TagResult(
-      tags: tags,
-      allergenStatus: const {},
-      dietaryStatus: const {},
-      coverage: 1.0,
-      generatedAt: DateTime(2026),
-    );
+  tags: tags,
+  allergenStatus: const {},
+  dietaryStatus: const {},
+  coverage: 1.0,
+  generatedAt: DateTime(2026),
+);
 
 /// Build a Recipe with a specific id, mealType and tag set.
 /// Uses [RecipeFactory.build] so that required core fields are populated.
@@ -108,7 +108,7 @@ void main() {
       current,
       current.mealType,
       {
-        current.mealType: [current]
+        current.mealType: [current],
       },
     );
   }
@@ -119,34 +119,45 @@ void main() {
 
   group('scoring — cuisine (+3) beats category-only (+2)', () {
     test(
-        'always picks the cuisine-matching candidate over the category-only one',
-        () {
-      withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
-        // current: italiensk middag
-        final current =
-            _recipe('current', mealType: 'Middag', tags: {'italiensk'});
-        // best: same cuisine + same category = 3+2 = 5
-        final cuisineAndCategory = _recipe('cuisine_and_category',
-            mealType: 'Middag', tags: {'italiensk'});
-        // lesser: same category only = 2
-        final categoryOnly = _recipe('category_only', mealType: 'Middag');
+      'always picks the cuisine-matching candidate over the category-only one',
+      () {
+        withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+          // current: italiensk middag
+          final current = _recipe(
+            'current',
+            mealType: 'Middag',
+            tags: {'italiensk'},
+          );
+          // best: same cuisine + same category = 3+2 = 5
+          final cuisineAndCategory = _recipe(
+            'cuisine_and_category',
+            mealType: 'Middag',
+            tags: {'italiensk'},
+          );
+          // lesser: same category only = 2
+          final categoryOnly = _recipe('category_only', mealType: 'Middag');
 
-        // Run 15 times — if scoring is wrong and both go in the same bucket
-        // the probabilistic test would still pass occasionally; but with a
-        // clear 5 vs 2 gap the winner must be deterministic.
-        final picks = <String>{};
-        for (var i = 0; i < 15; i++) {
-          picks.add(
-              doSwap(current, [cuisineAndCategory, categoryOnly]).recipe!.id);
-        }
+          // Run 15 times — if scoring is wrong and both go in the same bucket
+          // the probabilistic test would still pass occasionally; but with a
+          // clear 5 vs 2 gap the winner must be deterministic.
+          final picks = <String>{};
+          for (var i = 0; i < 15; i++) {
+            picks.add(
+              doSwap(current, [cuisineAndCategory, categoryOnly]).recipe!.id,
+            );
+          }
 
-        // Only the cuisine+category candidate should ever win.
-        expect(picks, equals({'cuisine_and_category'}),
+          // Only the cuisine+category candidate should ever win.
+          expect(
+            picks,
+            equals({'cuisine_and_category'}),
             reason:
                 'A recipe scoring 5 (cuisine+category) must always beat a recipe '
-                'scoring 2 (category only); score gap is 3 points.');
-      });
-    });
+                'scoring 2 (category only); score gap is 3 points.',
+          );
+        });
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -155,29 +166,38 @@ void main() {
 
   group('scoring — category (+2) beats seasonal-only (+1)', () {
     test(
-        'always picks the category-matching candidate over the seasonal-only one',
-        () {
-      withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
-        // current: no cuisine tag, Middag → so +3 path is inactive for all candidates
-        final current = _recipe('current', mealType: 'Middag');
-        // best: same category = 2
-        final categoryMatch = _recipe('category_match', mealType: 'Middag');
-        // lesser: empty mealType keeps it eligible (isEmpty branch) but earns
-        // no category point; only the seasonal tag scores = 1.
-        final seasonalOnly =
-            _recipe('seasonal_only', mealType: '', tags: {_kWinterTag});
+      'always picks the category-matching candidate over the seasonal-only one',
+      () {
+        withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+          // current: no cuisine tag, Middag → so +3 path is inactive for all candidates
+          final current = _recipe('current', mealType: 'Middag');
+          // best: same category = 2
+          final categoryMatch = _recipe('category_match', mealType: 'Middag');
+          // lesser: empty mealType keeps it eligible (isEmpty branch) but earns
+          // no category point; only the seasonal tag scores = 1.
+          final seasonalOnly = _recipe(
+            'seasonal_only',
+            mealType: '',
+            tags: {_kWinterTag},
+          );
 
-        final picks = <String>{};
-        for (var i = 0; i < 15; i++) {
-          picks.add(doSwap(current, [categoryMatch, seasonalOnly]).recipe!.id);
-        }
+          final picks = <String>{};
+          for (var i = 0; i < 15; i++) {
+            picks.add(
+              doSwap(current, [categoryMatch, seasonalOnly]).recipe!.id,
+            );
+          }
 
-        expect(picks, equals({'category_match'}),
+          expect(
+            picks,
+            equals({'category_match'}),
             reason:
                 'A recipe scoring 2 (same mealType/category) must always beat a '
-                'recipe scoring 1 (seasonal tag only).');
-      });
-    });
+                'recipe scoring 1 (seasonal tag only).',
+          );
+        });
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -185,8 +205,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('scoring — seasonal (+1) beats zero-score candidate', () {
-    test('prefers the seasonal candidate when no cuisine or category matches',
-        () {
+    test('prefers the seasonal candidate when no cuisine or category matches', () {
       withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
         // current: no cuisine tag, Middag. Both candidates use an empty mealType
         // so they stay eligible (isEmpty branch of the swap filter) but earn no
@@ -202,10 +221,13 @@ void main() {
           picks.add(doSwap(current, [seasonal, noMatch]).recipe!.id);
         }
 
-        expect(picks, equals({'seasonal'}),
-            reason:
-                'A seasonal-tagged recipe (score 1) must always beat a zero-score '
-                'recipe when no cuisine or category match exists.');
+        expect(
+          picks,
+          equals({'seasonal'}),
+          reason:
+              'A seasonal-tagged recipe (score 1) must always beat a zero-score '
+              'recipe when no cuisine or category match exists.',
+        );
       });
     });
   });
@@ -217,36 +239,56 @@ void main() {
   group('scoring — full-score winner (cuisine+category+seasonal = 6)', () {
     test('is always chosen when all three criteria are met', () {
       withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
-        final current =
-            _recipe('current', mealType: 'Middag', tags: {'italiensk'});
+        final current = _recipe(
+          'current',
+          mealType: 'Middag',
+          tags: {'italiensk'},
+        );
 
         // Perfect: all three = 3+2+1 = 6
-        final perfect = _recipe('perfect',
-            mealType: 'Middag', tags: {'italiensk', _kWinterTag});
+        final perfect = _recipe(
+          'perfect',
+          mealType: 'Middag',
+          tags: {'italiensk', _kWinterTag},
+        );
         // Partial: cuisine+category = 5
-        final cuisineCategory =
-            _recipe('cuisine_cat', mealType: 'Middag', tags: {'italiensk'});
+        final cuisineCategory = _recipe(
+          'cuisine_cat',
+          mealType: 'Middag',
+          tags: {'italiensk'},
+        );
         // Partial: category+seasonal = 3
-        final categorySeasonal =
-            _recipe('cat_seasonal', mealType: 'Middag', tags: {_kWinterTag});
+        final categorySeasonal = _recipe(
+          'cat_seasonal',
+          mealType: 'Middag',
+          tags: {_kWinterTag},
+        );
         // Partial: cuisine only = 3
-        final cuisineOnly =
-            _recipe('cuisine_only', mealType: 'Lunch', tags: {'italiensk'});
+        final cuisineOnly = _recipe(
+          'cuisine_only',
+          mealType: 'Lunch',
+          tags: {'italiensk'},
+        );
 
         final picks = <String>{};
         for (var i = 0; i < 15; i++) {
-          picks.add(doSwap(current, [
-            perfect,
-            cuisineCategory,
-            categorySeasonal,
-            cuisineOnly,
-          ]).recipe!.id);
+          picks.add(
+            doSwap(current, [
+              perfect,
+              cuisineCategory,
+              categorySeasonal,
+              cuisineOnly,
+            ]).recipe!.id,
+          );
         }
 
-        expect(picks, equals({'perfect'}),
-            reason:
-                'The candidate scoring 6 (cuisine+category+seasonal) must always '
-                'beat all partial scorers.');
+        expect(
+          picks,
+          equals({'perfect'}),
+          reason:
+              'The candidate scoring 6 (cuisine+category+seasonal) must always '
+              'beat all partial scorers.',
+        );
       });
     });
   });
@@ -270,10 +312,13 @@ void main() {
         }
 
         // Both must appear — the tie is resolved by shuffle, not insertion order.
-        expect(picked, containsAll(['tie_a', 'tie_b']),
-            reason:
-                'Tied-score candidates must all be reachable via random shuffle; '
-                'insertion-order bias would make one unreachable.');
+        expect(
+          picked,
+          containsAll(['tie_a', 'tie_b']),
+          reason:
+              'Tied-score candidates must all be reachable via random shuffle; '
+              'insertion-order bias would make one unreachable.',
+        );
       });
     });
   });

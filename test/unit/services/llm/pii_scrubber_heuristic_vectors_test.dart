@@ -18,8 +18,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('scrubPii - BUT-694 heuristic vectors (shared with TS port)', () {
-    final file =
-        File('test/unit/services/llm/fixtures/pii-heuristic-vectors.json');
+    final file = File(
+      'test/unit/services/llm/fixtures/pii-heuristic-vectors.json',
+    );
     final fixture = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
     final vectors = (fixture['vectors'] as List).cast<Map<String, dynamic>>();
 
@@ -31,12 +32,14 @@ void main() {
       // The copy convention is the sync mechanism between the ports; this
       // pin turns silent content drift (same count, edited vector) into a
       // loud failure. Both files live in this repo, so compare bytes.
-      final source =
-          File('functions/src/__tests__/fixtures/pii-heuristic-vectors.json');
+      final source = File(
+        'functions/src/__tests__/fixtures/pii-heuristic-vectors.json',
+      );
       expect(
         file.readAsBytesSync(),
         equals(source.readAsBytesSync()),
-        reason: 'Dart fixture copy has drifted from the TS source of truth — '
+        reason:
+            'Dart fixture copy has drifted from the TS source of truth — '
             're-copy functions/src/__tests__/fixtures/pii-heuristic-vectors.json',
       );
     });

@@ -16,8 +16,10 @@ void main() {
       // A maxSize of 0 would mean "evict on every insert" — clearly a
       // misconfig. Failing fast at construction is friendlier than silently
       // dropping every value.
-      expect(() => LruMap<String, int>(maxSize: 0),
-          throwsA(isA<AssertionError>()));
+      expect(
+        () => LruMap<String, int>(maxSize: 0),
+        throwsA(isA<AssertionError>()),
+      );
     });
 
     test('insertion and read round-trip', () {
@@ -48,27 +50,34 @@ void main() {
     });
 
     test(
-        'reads promote recency — older keys evicted first only when not touched',
-        () {
-      // Classic LRU: a key read recently must outlive a key written earlier
-      // and never read.
-      final evictions = <String>[];
-      final cache = LruMap<String, int>(
-        maxSize: 3,
-        onEvict: (key, _) => evictions.add(key),
-      );
-      cache['a'] = 1;
-      cache['b'] = 2;
-      cache['c'] = 3;
-      // Touch 'a' via read.
-      expect(cache['a'], 1);
-      cache['d'] = 4;
-      expect(cache.containsKey('a'), isTrue,
-          reason: 'recently-read entry must survive eviction');
-      expect(cache.containsKey('b'), isFalse,
-          reason: 'eldest non-touched entry must be evicted');
-      expect(evictions, equals(['b']));
-    });
+      'reads promote recency — older keys evicted first only when not touched',
+      () {
+        // Classic LRU: a key read recently must outlive a key written earlier
+        // and never read.
+        final evictions = <String>[];
+        final cache = LruMap<String, int>(
+          maxSize: 3,
+          onEvict: (key, _) => evictions.add(key),
+        );
+        cache['a'] = 1;
+        cache['b'] = 2;
+        cache['c'] = 3;
+        // Touch 'a' via read.
+        expect(cache['a'], 1);
+        cache['d'] = 4;
+        expect(
+          cache.containsKey('a'),
+          isTrue,
+          reason: 'recently-read entry must survive eviction',
+        );
+        expect(
+          cache.containsKey('b'),
+          isFalse,
+          reason: 'eldest non-touched entry must be evicted',
+        );
+        expect(evictions, equals(['b']));
+      },
+    );
 
     test('peek does NOT promote recency', () {
       // Cheap "is it cached?" lookups shouldn't keep stale entries alive.
@@ -84,8 +93,11 @@ void main() {
       cache['c'] = 3;
       expect(cache.peek('a'), 1);
       cache['d'] = 4;
-      expect(cache.containsKey('a'), isFalse,
-          reason: 'peek must not save the eldest from eviction');
+      expect(
+        cache.containsKey('a'),
+        isFalse,
+        reason: 'peek must not save the eldest from eviction',
+      );
       expect(evictions, equals(['a']));
     });
 
@@ -96,8 +108,11 @@ void main() {
       cache['c'] = 3;
       cache['a'] = 99; // Update 'a' — should now be most-recent.
       cache['d'] = 4;
-      expect(cache.containsKey('b'), isFalse,
-          reason: 'after re-assign of a, b is the eldest');
+      expect(
+        cache.containsKey('b'),
+        isFalse,
+        reason: 'after re-assign of a, b is the eldest',
+      );
       expect(cache['a'], 99);
     });
 
@@ -178,8 +193,11 @@ void main() {
       expect(removed, 2);
       expect(cache.length, 1);
       expect(cache.containsKey('b:1'), isTrue);
-      expect(evictions, isEmpty,
-          reason: 'removeWhere is invalidation, not size-driven eviction');
+      expect(
+        evictions,
+        isEmpty,
+        reason: 'removeWhere is invalidation, not size-driven eviction',
+      );
     });
 
     test('removeWhere is safe when the predicate matches nothing', () {

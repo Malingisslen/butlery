@@ -164,8 +164,7 @@ class _FranSocialaMedierViewContentState
     if (!RecipeTextHeuristic.looksLikeRecipe(viewModel.inputText)) {
       final proceed = await _confirmNonRecipeImport(context);
       if (!proceed) {
-        ServiceLocator.tryGet<AnalyticsService>()
-            ?.import
+        ServiceLocator.tryGet<AnalyticsService>()?.import
             .logWarnDialogCancelled(source: 'text_paste');
         return;
       }
@@ -198,8 +197,10 @@ class _FranSocialaMedierViewContentState
       final parsed = viewModel.parsedRecipe;
       if (parsed != null) {
         final prefs = ServiceLocator.get<UserService>().allergenPreferences;
-        if (AllergenMismatch.unconfiguredContainedAllergens(parsed, prefs)
-            .isNotEmpty) {
+        if (AllergenMismatch.unconfiguredContainedAllergens(
+          parsed,
+          prefs,
+        ).isNotEmpty) {
           AllergenSetupBanner.show(context);
         }
       }

@@ -82,8 +82,11 @@ class TagDecision {
   /// Creates from JSON.
   factory TagDecision.fromJson(Map<String, dynamic> json) {
     return TagDecision(
-      type:
-          SerializationUtils.safeString(json, 'type', defaultValue: 'unknown'),
+      type: SerializationUtils.safeString(
+        json,
+        'type',
+        defaultValue: 'unknown',
+      ),
       key: (json['key'] as String?).orEmpty(),
       result: TriStateExtension.fromFirestore(json['result']),
       reason: (json['reason'] as String?).orEmpty(),
@@ -114,14 +117,14 @@ class TagDecision {
 
   @override
   int get hashCode => Object.hash(
-        type,
-        key,
-        result,
-        reason,
-        triggeringIngredients != null
-            ? Object.hashAll(triggeringIngredients!)
-            : null,
-      );
+    type,
+    key,
+    result,
+    reason,
+    triggeringIngredients != null
+        ? Object.hashAll(triggeringIngredients!)
+        : null,
+  );
 
   static bool _listEquals<T>(List<T>? a, List<T>? b) {
     if (a == null && b == null) return true;

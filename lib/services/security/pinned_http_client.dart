@@ -30,18 +30,19 @@ import 'package:butlery/services/security/cert_pin_config.dart';
 /// Function type for the underlying pin-check call. Defaults to the real
 /// platform plugin; tests inject a stub. Returning a string containing
 /// `'CONNECTION_SECURE'` means the cert matched at least one allowed pin.
-typedef PinCheckFn = Future<String> Function({
-  required String serverURL,
-  required Map<String, String> headerHttp,
-  required SHA sha,
-  required List<String> allowedSHAFingerprints,
-  required int timeout,
-});
+typedef PinCheckFn =
+    Future<String> Function({
+      required String serverURL,
+      required Map<String, String> headerHttp,
+      required SHA sha,
+      required List<String> allowedSHAFingerprints,
+      required int timeout,
+    });
 
 /// Function type for the soft-fail telemetry callback. Receives the host
 /// and an error kind label (`'mismatch'`, `'check_failed'`).
-typedef PinMismatchTelemetry = void Function(
-    String host, String errorKind, Object? error);
+typedef PinMismatchTelemetry =
+    void Function(String host, String errorKind, Object? error);
 
 /// HTTP client that enforces SSL certificate pinning before every request
 /// to hosts with configured pins.
@@ -63,11 +64,11 @@ class PinnedHttpClient extends http.BaseClient {
     PinCheckFn? pinCheck,
     PinMismatchTelemetry? onPinMismatch,
     Map<String, List<String>>? pinOverrides,
-  })  : _inner = inner ?? http.Client(),
-        _ownsInner = inner == null,
-        _pinCheck = pinCheck ?? _defaultPinCheck,
-        _onPinMismatch = onPinMismatch,
-        _pinOverrides = pinOverrides ?? const <String, List<String>>{};
+  }) : _inner = inner ?? http.Client(),
+       _ownsInner = inner == null,
+       _pinCheck = pinCheck ?? _defaultPinCheck,
+       _onPinMismatch = onPinMismatch,
+       _pinOverrides = pinOverrides ?? const <String, List<String>>{};
 
   /// Resolves pins for a host: per-instance overrides win over the global
   /// config so tests can pin a synthetic host without touching globals.
@@ -112,15 +113,18 @@ class PinnedHttpClient extends http.BaseClient {
       // host platform, timeout). Log + fail closed — we'd rather break the
       // request than silently disable pinning.
       AppLogger.warning(
-          'PinnedHttpClient: pin check failed for $host: $e — failing closed');
+        'PinnedHttpClient: pin check failed for $host: $e — failing closed',
+      );
       _onPinMismatch?.call(host, 'check_failed', e);
       throw CertificateCouldNotBeVerifiedException(
-          e is Exception ? e : Exception(e.toString()));
+        e is Exception ? e : Exception(e.toString()),
+      );
     }
 
     if (!checkResult.contains('CONNECTION_SECURE')) {
       AppLogger.warning(
-          'PinnedHttpClient: pin mismatch for $host (result=$checkResult)');
+        'PinnedHttpClient: pin mismatch for $host (result=$checkResult)',
+      );
       _onPinMismatch?.call(host, 'mismatch', null);
       throw const CertificateNotVerifiedException();
     }

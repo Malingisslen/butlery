@@ -147,7 +147,9 @@ class VeckomenyDialogs {
   }) async {
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
       SnackBarUtils.showWarning(
-          context, context.l10n.menuCreateBeforeShoppingList);
+        context,
+        context.l10n.menuCreateBeforeShoppingList,
+      );
       return;
     }
 

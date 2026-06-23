@@ -37,8 +37,9 @@ void main() {
 
     group('YouTube detection', () {
       test('youtube.com URL detected', () {
-        final result =
-            detector.detect('https://www.youtube.com/watch?v=abc123');
+        final result = detector.detect(
+          'https://www.youtube.com/watch?v=abc123',
+        );
         expect(result.isUrl, isTrue);
         expect(result.isYouTube, isTrue);
       });
@@ -52,8 +53,9 @@ void main() {
 
     group('TikTok detection', () {
       test('tiktok.com URL detected', () {
-        final result =
-            detector.detect('https://www.tiktok.com/@user/video/123');
+        final result = detector.detect(
+          'https://www.tiktok.com/@user/video/123',
+        );
         expect(result.isUrl, isTrue);
         expect(result.isTikTok, isTrue);
       });

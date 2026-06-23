@@ -121,8 +121,9 @@ void main() {
     }
 
     group('Loading States', () {
-      testWidgets('shows loading indicator when services are loading',
-          (WidgetTester tester) async {
+      testWidgets('shows loading indicator when services are loading', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(isLoading: true);
         mockFriendsViewModel.setFriendsState(isLoading: true);
 
@@ -132,11 +133,14 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('shows loading when only categories service loading',
-          (WidgetTester tester) async {
+      testWidgets('shows loading when only categories service loading', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(isLoading: true);
         mockFriendsViewModel.setFriendsState(
-            isLoading: false, friends: testFriends);
+          isLoading: false,
+          friends: testFriends,
+        );
 
         await tester.pumpWidget(createTestWidget());
         await tester.pump();
@@ -144,10 +148,13 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('shows loading when only friends VM loading',
-          (WidgetTester tester) async {
+      testWidgets('shows loading when only friends VM loading', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
-            isLoading: false, categoriesList: testCategories);
+          isLoading: false,
+          categoriesList: testCategories,
+        );
         mockFriendsViewModel.setFriendsState(isLoading: true);
 
         await tester.pumpWidget(createTestWidget());
@@ -158,8 +165,9 @@ void main() {
     });
 
     group('Error States', () {
-      testWidgets('shows error message when categories service has error',
-          (WidgetTester tester) async {
+      testWidgets('shows error message when categories service has error', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           error: 'Test error message',
@@ -174,10 +182,13 @@ void main() {
     });
 
     group('Empty States', () {
-      testWidgets('shows empty state when no categories or friends',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('shows empty state when no categories or friends', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(isLoading: false, friends: []);
 
         await tester.pumpWidget(createTestWidget());
@@ -186,8 +197,9 @@ void main() {
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
       });
 
-      testWidgets('shows categories section only when friends are empty',
-          (WidgetTester tester) async {
+      testWidgets('shows categories section only when friends are empty', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -201,10 +213,13 @@ void main() {
         expect(find.byType(FilterChip), findsNWidgets(3));
       });
 
-      testWidgets('shows friends section only when categories are empty',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('shows friends section only when categories are empty', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -219,8 +234,9 @@ void main() {
     });
 
     group('Category Display', () {
-      testWidgets('displays category chips with emoji and member count',
-          (WidgetTester tester) async {
+      testWidgets('displays category chips with emoji and member count', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -239,8 +255,9 @@ void main() {
         expect(find.text('1'), findsOneWidget);
       });
 
-      testWidgets('shows category section header icon',
-          (WidgetTester tester) async {
+      testWidgets('shows category section header icon', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -255,10 +272,13 @@ void main() {
     });
 
     group('Individual Friends Display', () {
-      testWidgets('displays friends list with checkboxes',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('displays friends list with checkboxes', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -272,10 +292,13 @@ void main() {
         expect(find.byType(CheckboxListTile), findsNWidgets(5));
       });
 
-      testWidgets('shows friends section header icon',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('shows friends section header icon', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -289,8 +312,9 @@ void main() {
     });
 
     group('Category Selection', () {
-      testWidgets('selects category and fires callback with member IDs',
-          (WidgetTester tester) async {
+      testWidgets('selects category and fires callback with member IDs', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -299,9 +323,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
@@ -310,8 +336,9 @@ void main() {
         expect(capturedSelection, containsAll(['user1', 'user2']));
       });
 
-      testWidgets('deselects category on second tap',
-          (WidgetTester tester) async {
+      testWidgets('deselects category on second tap', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -320,9 +347,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
@@ -333,8 +362,9 @@ void main() {
         expect(capturedSelection, isEmpty);
       });
 
-      testWidgets('allows multiple category selection when enabled',
-          (WidgetTester tester) async {
+      testWidgets('allows multiple category selection when enabled', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -343,10 +373,12 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          allowMultipleCategories: true,
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            allowMultipleCategories: true,
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
@@ -354,12 +386,15 @@ void main() {
         await tester.tap(find.widgetWithText(FilterChip, 'Jobbet'));
         await tester.pump();
 
-        expect(capturedSelection,
-            containsAll(['user1', 'user2', 'user3', 'user4']));
+        expect(
+          capturedSelection,
+          containsAll(['user1', 'user2', 'user3', 'user4']),
+        );
       });
 
-      testWidgets('replaces selection when multiple categories disabled',
-          (WidgetTester tester) async {
+      testWidgets('replaces selection when multiple categories disabled', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -368,10 +403,12 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          allowMultipleCategories: false,
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            allowMultipleCategories: false,
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
@@ -386,8 +423,10 @@ void main() {
 
     group('Individual Friend Selection', () {
       testWidgets('selects friend via checkbox', (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -395,9 +434,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byType(CheckboxListTile).first);
@@ -407,10 +448,13 @@ void main() {
         expect(capturedSelection.length, equals(1));
       });
 
-      testWidgets('deselects friend on second tap',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('deselects friend on second tap', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -418,10 +462,12 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          selectedFriendIds: ['user1'],
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            selectedFriendIds: ['user1'],
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byType(CheckboxListTile).first);
@@ -430,10 +476,13 @@ void main() {
         expect(capturedSelection, isEmpty);
       });
 
-      testWidgets('allows multiple friend selection',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('allows multiple friend selection', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -441,9 +490,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byType(CheckboxListTile).first);
@@ -457,28 +508,36 @@ void main() {
     });
 
     group('Selection Summary', () {
-      testWidgets('shows summary when friends are pre-selected',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('shows summary when friends are pre-selected', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
         );
 
-        await tester.pumpWidget(createTestWidget(
-          selectedFriendIds: ['user1', 'user2'],
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            selectedFriendIds: ['user1', 'user2'],
+          ),
+        );
         await tester.pump();
 
         expect(find.byIcon(Icons.group), findsOneWidget);
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('hides summary when no friends selected',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('hides summary when no friends selected', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -490,10 +549,13 @@ void main() {
         expect(find.byIcon(Icons.group), findsNothing);
       });
 
-      testWidgets('clear button resets all selections',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('clear button resets all selections', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -501,10 +563,12 @@ void main() {
 
         List<String> capturedSelection = ['user1', 'user2'];
 
-        await tester.pumpWidget(createTestWidget(
-          selectedFriendIds: ['user1', 'user2'],
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            selectedFriendIds: ['user1', 'user2'],
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         // Tap the clear button (TextButton.icon with Icons.clear)
@@ -516,8 +580,9 @@ void main() {
     });
 
     group('Mixed Selection', () {
-      testWidgets('combines category and individual selections',
-          (WidgetTester tester) async {
+      testWidgets('combines category and individual selections', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -529,9 +594,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Select category
@@ -539,8 +606,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select individual friend not in category
-        await tester
-            .tap(find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'));
+        await tester.tap(
+          find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'),
+        );
         await tester.pump();
 
         expect(capturedSelection, containsAll(['user1', 'user2', 'user5']));
@@ -548,8 +616,9 @@ void main() {
     });
 
     group('Visual State', () {
-      testWidgets('FilterChip reflects selected state',
-          (WidgetTester tester) async {
+      testWidgets('FilterChip reflects selected state', (
+        WidgetTester tester,
+      ) async {
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
@@ -568,18 +637,23 @@ void main() {
         expect(chip.selected, isTrue);
       });
 
-      testWidgets('CheckboxListTile reflects pre-selected state',
-          (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+      testWidgets('CheckboxListTile reflects pre-selected state', (
+        WidgetTester tester,
+      ) async {
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
         );
 
-        await tester.pumpWidget(createTestWidget(
-          selectedFriendIds: ['user1'],
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            selectedFriendIds: ['user1'],
+          ),
+        );
         await tester.pumpAndSettle();
 
         final checkbox = tester.widget<CheckboxListTile>(
@@ -609,8 +683,9 @@ void main() {
         expect(find.byType(FilterChip), findsOneWidget);
       });
 
-      testWidgets('handles category with no friends',
-          (WidgetTester tester) async {
+      testWidgets('handles category with no friends', (
+        WidgetTester tester,
+      ) async {
         final emptyCategory = SocialFactory.createFriendCategory(
           id: 'empty_cat',
           name: 'Tom kategori',
@@ -625,9 +700,11 @@ void main() {
 
         List<String> capturedSelection = [];
 
-        await tester.pumpWidget(createTestWidget(
-          onSelectionChanged: (selection) => capturedSelection = selection,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            onSelectionChanged: (selection) => capturedSelection = selection,
+          ),
+        );
         await tester.pump();
 
         await tester.tap(find.text('Tom kategori'));
@@ -637,14 +714,20 @@ void main() {
       });
 
       testWidgets('renders with custom title', (WidgetTester tester) async {
-        mockFriendsService
-            .setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService.setFriendsState(
+          isLoading: false,
+          categoriesList: [],
+        );
         mockFriendsViewModel.setFriendsState(
-            isLoading: false, friends: testFriends);
+          isLoading: false,
+          friends: testFriends,
+        );
 
-        await tester.pumpWidget(createTestWidget(
-          title: 'Custom Title',
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            title: 'Custom Title',
+          ),
+        );
         await tester.pump();
 
         expect(find.text('Custom Title'), findsOneWidget);

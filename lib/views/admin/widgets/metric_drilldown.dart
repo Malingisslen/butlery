@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/parse_event.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Opens the drill-down for a tapped metric row. Dispatches by [kind]; the only
 /// kind today maps an import-domain row to its underlying parse events.
@@ -40,8 +41,9 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
   @override
   void initState() {
     super.initState();
-    _future =
-        ServiceLocator.get<ParseEventsRepository>().getByDomain(widget.domain);
+    _future = ServiceLocator.get<ParseEventsRepository>().getByDomain(
+      widget.domain,
+    );
   }
 
   @override
@@ -58,7 +60,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: LoadingIndicator());
             }
             final page = snapshot.data ?? ParseEventsPage.empty;
             return ListView(
@@ -66,7 +68,8 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.paddingS),
+                    vertical: AppDimensions.paddingS,
+                  ),
                   child: Text(
                     l10n.adminDrillImportTitle(widget.domain),
                     style: AppTextStyles.headlineBold,
@@ -75,19 +78,24 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                 if (page.events.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
-                    child: Text(l10n.adminDrillEmpty,
-                        style: AppTextStyles.bodyMedium
-                            .copyWith(color: cs.outline)),
+                    child: Text(
+                      l10n.adminDrillEmpty,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.outline,
+                      ),
+                    ),
                   )
                 else ...[
                   if (page.truncated)
                     Padding(
                       padding: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingSm),
+                        bottom: AppDimensions.spacingSm,
+                      ),
                       child: Text(
                         l10n.adminDrillTruncated(page.events.length),
-                        style: AppTextStyles.bodySmall
-                            .copyWith(color: cs.onSurfaceVariant),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   for (final event in page.events) _EventTile(event: event),
@@ -132,11 +140,14 @@ class _EventTile extends StatelessWidget {
                   style: AppTextStyles.bodyMedium,
                 ),
                 if (event.url != null)
-                  Text(event.url!,
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: cs.onSurfaceVariant),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    event.url!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
               ],
             ),
           ),

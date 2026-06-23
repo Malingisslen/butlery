@@ -75,8 +75,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
             ? '${_currentIndex + 1} / ${widget.imageUrls.length}'
             : null,
         titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: cs.surfaceContainerHighest,
-            ),
+          color: cs.surfaceContainerHighest,
+        ),
         iconTheme: IconThemeData(color: cs.surfaceContainerHighest),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),
@@ -84,66 +84,71 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
           tooltip: context.l10n.commonBack,
         ),
       ),
-      body: Builder(builder: (context) {
-        final cacheWidth = (MediaQuery.sizeOf(context).width *
-                MediaQuery.devicePixelRatioOf(context))
-            .round();
-        return PageView.builder(
-          controller: _pageController,
-          onPageChanged: (index) {
-            if (mounted) {
-              setState(() {
-                _currentIndex = index;
-              });
-            }
-          },
-          itemCount: widget.imageUrls.length,
-          itemBuilder: (context, index) {
-            return Semantics(
-              label: context.l10n.a11yToggleFullscreenChrome,
-              button: true,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showAppBar = !_showAppBar;
-                  });
-                },
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: cs.onSurface,
-                    child: Center(
-                      child: CachedNetworkImage(
-                        imageUrl: widget.imageUrls[index],
-                        cacheKey: FirebaseUrlUtils.stableCacheKey(
-                            widget.imageUrls[index]),
-                        fit: BoxFit.contain,
-                        memCacheWidth: cacheWidth,
-                        placeholder: (_, __) => Center(
-                          child: LoadingIndicator(
-                            color: cs.surfaceContainerHighest,
+      body: Builder(
+        builder: (context) {
+          final cacheWidth =
+              (MediaQuery.sizeOf(context).width *
+                      MediaQuery.devicePixelRatioOf(context))
+                  .round();
+          return PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              if (mounted) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              }
+            },
+            itemCount: widget.imageUrls.length,
+            itemBuilder: (context, index) {
+              return Semantics(
+                label: context.l10n.a11yToggleFullscreenChrome,
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showAppBar = !_showAppBar;
+                    });
+                  },
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: cs.onSurface,
+                      child: Center(
+                        child: CachedNetworkImage(
+                          imageUrl: widget.imageUrls[index],
+                          cacheKey: FirebaseUrlUtils.stableCacheKey(
+                            widget.imageUrls[index],
                           ),
-                        ),
-                        errorWidget: (_, __, ___) => Center(
-                          child: Icon(
-                            Icons.error_outline,
-                            size: AppDimensions.iconSizeXxl,
-                            color: cs.surfaceContainerHighest
-                                .withValues(alpha: 0.54),
+                          fit: BoxFit.contain,
+                          memCacheWidth: cacheWidth,
+                          placeholder: (_, __) => Center(
+                            child: LoadingIndicator(
+                              color: cs.surfaceContainerHighest,
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => Center(
+                            child: Icon(
+                              Icons.error_outline,
+                              size: AppDimensions.iconSizeXxl,
+                              color: cs.surfaceContainerHighest.withValues(
+                                alpha: 0.54,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      }),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

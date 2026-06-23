@@ -25,12 +25,12 @@ class ExtractionDeferredModule implements DeferredModule {
 
   @override
   Set<String> get handledRoutes => {
-        Routes.importViaUrl,
-        Routes.smartImport,
-        Routes.photoImport,
-        Routes.fileImport,
-        Routes.importFromArchive,
-      };
+    Routes.importViaUrl,
+    Routes.smartImport,
+    Routes.photoImport,
+    Routes.fileImport,
+    Routes.importFromArchive,
+  };
 
   @override
   Future<void> load() async {
@@ -47,7 +47,8 @@ class ExtractionDeferredModule implements DeferredModule {
       ]);
     } on Exception catch (e) {
       throw StateError(
-          'ExtractionDeferredModule: deferred library load failed: $e');
+        'ExtractionDeferredModule: deferred library load failed: $e',
+      );
     }
 
     _isLoaded = true;

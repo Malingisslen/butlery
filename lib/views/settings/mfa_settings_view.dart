@@ -166,7 +166,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error),
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: Text(context.l10n.commonRemove),
           ),
         ],
@@ -309,19 +310,26 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingSm),
-        ..._enrolledFactors.map((factor) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.phone_android),
-                title: Text(factor.displayName ?? context.l10n.mfaPhone),
-                subtitle: Text(context.l10n.mfaRegistered(
-                    _formatEnrollmentTime(factor.enrollmentTimestamp))),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.error),
-                  onPressed: () => _unenrollMfa(factor),
+        ..._enrolledFactors.map(
+          (factor) => Card(
+            child: ListTile(
+              leading: const Icon(Icons.phone_android),
+              title: Text(factor.displayName ?? context.l10n.mfaPhone),
+              subtitle: Text(
+                context.l10n.mfaRegistered(
+                  _formatEnrollmentTime(factor.enrollmentTimestamp),
                 ),
               ),
-            )),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: () => _unenrollMfa(factor),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -437,18 +445,22 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         color: Theme.of(context).colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
+          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline,
-              color: Theme.of(context).colorScheme.onErrorContainer),
+          Icon(
+            Icons.error_outline,
+            color: Theme.of(context).colorScheme.onErrorContainer,
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
               _errorMessage!,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onErrorContainer),
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
             ),
           ),
         ],

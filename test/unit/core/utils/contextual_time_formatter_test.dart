@@ -25,8 +25,10 @@ void main() {
     test('compact promotes to absolute date past the 7-day window', () {
       withClock(Clock.fixed(now), () {
         final tenDaysAgo = now.subtract(const Duration(days: 10));
-        final result =
-            ContextualTimeFormatter.compact(tenDaysAgo, localeName: 'en_US');
+        final result = ContextualTimeFormatter.compact(
+          tenDaysAgo,
+          localeName: 'en_US',
+        );
         // DateFormat.MMMd → "May 14".
         expect(result, equals('May 14'));
       });
@@ -35,8 +37,10 @@ void main() {
     test('standard promotes to yMMMd past the 7-day window', () {
       withClock(Clock.fixed(now), () {
         final tenDaysAgo = now.subtract(const Duration(days: 10));
-        final result =
-            ContextualTimeFormatter.standard(tenDaysAgo, localeName: 'en_US');
+        final result = ContextualTimeFormatter.standard(
+          tenDaysAgo,
+          localeName: 'en_US',
+        );
         // DateFormat.yMMMd → "May 14, 2026".
         expect(result, equals('May 14, 2026'));
       });
@@ -47,8 +51,10 @@ void main() {
         // Same-day = obviously inside the window, but dateTime should NOT
         // collapse to a relative form even when fresh.
         final justNow = now.subtract(const Duration(minutes: 3));
-        final result =
-            ContextualTimeFormatter.dateTime(justNow, localeName: 'en_US');
+        final result = ContextualTimeFormatter.dateTime(
+          justNow,
+          localeName: 'en_US',
+        );
         expect(result, contains('May 24, 2026'));
         expect(result, contains(':')); // hh:mm separator
       });
@@ -61,8 +67,10 @@ void main() {
       // "in -10 days").
       withClock(Clock.fixed(now), () {
         final tenDaysAhead = now.add(const Duration(days: 10));
-        final result =
-            ContextualTimeFormatter.standard(tenDaysAhead, localeName: 'en_US');
+        final result = ContextualTimeFormatter.standard(
+          tenDaysAhead,
+          localeName: 'en_US',
+        );
         expect(result, equals('Jun 3, 2026'));
       });
     });

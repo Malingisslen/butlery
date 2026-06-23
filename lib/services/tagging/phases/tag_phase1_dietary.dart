@@ -72,11 +72,13 @@ class Phase1DietaryCalculator {
   }) {
     if (requiresFullCoverage && lookup.coverage < 1.0) {
       status[key] = TriState.unknown;
-      decisions.add(TagDecision.dietary(
-        key: key,
-        result: TriState.unknown,
-        reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
-      ));
+      decisions.add(
+        TagDecision.dietary(
+          key: key,
+          result: TriState.unknown,
+          reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
+        ),
+      );
       return;
     }
 
@@ -93,41 +95,49 @@ class Phase1DietaryCalculator {
               .map((i) => i.swedish),
         );
       }
-      decisions.add(TagDecision.dietary(
-        key: key,
-        result: TriState.contains,
-        reason: 'Has excluded property (${excludedProperties.join(", ")})',
-        triggeringIngredients: triggers.isNotEmpty ? triggers : null,
-      ));
+      decisions.add(
+        TagDecision.dietary(
+          key: key,
+          result: TriState.contains,
+          reason: 'Has excluded property (${excludedProperties.join(", ")})',
+          triggeringIngredients: triggers.isNotEmpty ? triggers : null,
+        ),
+      );
     } else if (requiredProperties != null) {
       // HIGH-4: PESCETARIAN LOGIC
       // Pescetarian can eat any dish without meat - whether or not it contains fish.
       final hasRequired = lookup.hasAnyProperty(requiredProperties);
       if (hasRequired) {
         status[key] = TriState.free;
-        decisions.add(TagDecision.dietary(
-          key: key,
-          result: TriState.free,
-          reason:
-              'Has required (${requiredProperties.join(", ")}), no excluded',
-        ));
+        decisions.add(
+          TagDecision.dietary(
+            key: key,
+            result: TriState.free,
+            reason:
+                'Has required (${requiredProperties.join(", ")}), no excluded',
+          ),
+        );
       } else {
         // HIGH-4: No fish AND no meat = FREE (vegetarian dishes are pescetarian-compatible)
         status[key] = TriState.free;
-        decisions.add(TagDecision.dietary(
-          key: key,
-          result: TriState.free,
-          reason:
-              'No excluded properties (vegetarian dishes are pescetarian-compatible)',
-        ));
+        decisions.add(
+          TagDecision.dietary(
+            key: key,
+            result: TriState.free,
+            reason:
+                'No excluded properties (vegetarian dishes are pescetarian-compatible)',
+          ),
+        );
       }
     } else {
       status[key] = TriState.free;
-      decisions.add(TagDecision.dietary(
-        key: key,
-        result: TriState.free,
-        reason: 'No excluded properties at 100% coverage',
-      ));
+      decisions.add(
+        TagDecision.dietary(
+          key: key,
+          result: TriState.free,
+          reason: 'No excluded properties at 100% coverage',
+        ),
+      );
     }
   }
 }

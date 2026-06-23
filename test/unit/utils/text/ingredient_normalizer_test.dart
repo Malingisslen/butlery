@@ -65,8 +65,9 @@ void main() {
 
     group('flavor pattern preservation', () {
       test('preserves med pattern', () {
-        final result =
-            IngredientNormalizer.normalize('mayo med lime och jalapeño');
+        final result = IngredientNormalizer.normalize(
+          'mayo med lime och jalapeño',
+        );
         expect(result.normalized, 'mayo med lime och jalapeño');
       });
 
@@ -88,8 +89,9 @@ void main() {
       });
 
       test('handles sugar alternatives', () {
-        final result =
-            IngredientNormalizer.normalize('farinsocker eller strösocker');
+        final result = IngredientNormalizer.normalize(
+          'farinsocker eller strösocker',
+        );
         // "strösocker" is a known invariant — should NOT strip -er
         expect(result.normalized, 'strösocker');
       });
@@ -181,17 +183,19 @@ void main() {
           expect(KnownIngredients.getCategory('pumpakärnor'), 'nuts_seeds');
         });
 
-        test('should normalize pumpakärnor (plural stripped by normalizer)',
-            () {
-          // The normalizer runs SwedishPluralization which strips the -or
-          // suffix, so the normalized form won't match the plural.
-          // The key BUG-13 fix is that the typo 'pumppärnor' was corrected
-          // to 'pumpakärnor' in the KnownIngredients registry.
-          final result = IngredientNormalizer.normalize('pumpakärnor');
-          expect(result.original, 'pumpakärnor');
-          // The normalized form has -or stripped by pluralization
-          expect(result.normalized, isNotEmpty);
-        });
+        test(
+          'should normalize pumpakärnor (plural stripped by normalizer)',
+          () {
+            // The normalizer runs SwedishPluralization which strips the -or
+            // suffix, so the normalized form won't match the plural.
+            // The key BUG-13 fix is that the typo 'pumppärnor' was corrected
+            // to 'pumpakärnor' in the KnownIngredients registry.
+            final result = IngredientNormalizer.normalize('pumpakärnor');
+            expect(result.original, 'pumpakärnor');
+            // The normalized form has -or stripped by pluralization
+            expect(result.normalized, isNotEmpty);
+          },
+        );
       });
 
       group('BUG-7: mandel not stripped as prep word', () {
@@ -442,14 +446,16 @@ void main() {
         expect(result.isKnown, isTrue);
       });
 
-      test('without additionalKnown and no ServiceLocator falls back to static',
-          () {
-        // When ServiceLocator is not initialized (test environment),
-        // _defaultAdditionalKnown returns null, so only static ingredients
-        // are available
-        final result = IngredientNormalizer.normalize('tahini');
-        expect(result.isKnown, KnownIngredients.isKnown('tahini'));
-      });
+      test(
+        'without additionalKnown and no ServiceLocator falls back to static',
+        () {
+          // When ServiceLocator is not initialized (test environment),
+          // _defaultAdditionalKnown returns null, so only static ingredients
+          // are available
+          final result = IngredientNormalizer.normalize('tahini');
+          expect(result.isKnown, KnownIngredients.isKnown('tahini'));
+        },
+      );
 
       test('batch normalizeMany passes additionalKnown through', () {
         final firestoreSet = {'tahini', 'harissa'};
@@ -504,12 +510,14 @@ void main() {
         expect(result.confidence, 0.0);
       });
 
-      test('diet descriptor with known rest has confidence 1.0 (in Firebase)',
-          () {
-        // "glutenfri pasta" is a known ingredient in Firebase
-        final result = IngredientNormalizer.normalize('glutenfri pasta');
-        expect(result.confidence, 1.0);
-      });
+      test(
+        'diet descriptor with known rest has confidence 1.0 (in Firebase)',
+        () {
+          // "glutenfri pasta" is a known ingredient in Firebase
+          final result = IngredientNormalizer.normalize('glutenfri pasta');
+          expect(result.confidence, 1.0);
+        },
+      );
 
       test('standalone diet descriptor has confidence 0.4', () {
         final result = IngredientNormalizer.normalize('glutenfri');

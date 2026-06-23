@@ -163,86 +163,83 @@ class ContentModule implements DIModule {
   String get name => 'Content';
 
   @override
-  List<Type> get dependencies => [
-        CoreModule,
-        TaggingModule
-      ]; // Depends on Core Module + TaggingModule (IngredientRepository)
+  List<Type> get dependencies => [CoreModule, TaggingModule]; // Depends on Core Module + TaggingModule (IngredientRepository)
 
   @override
   List<Type> get provides => [
-        RecipeRepository,
-        CookEventRepository,
-        UnifiedRecipeService,
-        UnifiedMenuService,
-        ImportManager,
-        RecipeCookingService,
-        MenuService,
-        WeeklyMenuPlanRepository,
-        WeeklyMenuPlanService,
-        GroupWeeklyMenuPlanRepository,
-        GroupWeeklyMenuPlanService,
-        RealtimeGroupMenuModule,
-        SearchService,
-        ShareService,
-        StorageRepository,
-        StorageService,
-        ImagePickerService,
-        ImageUploadService,
-        OfflineService,
-        CollaborativeRecipeRepository,
-        BackupService,
-        SocialMediaExtractor,
-        ExtractionManager,
-        ContentDetectorService,
-        PermissionService, // Moved from CollaborationModule for proper module ordering
-        FirebaseRecipePresenceRepository, // Moved from CollaborationModule for UnifiedRecipeService
-        // Import cache services
-        UrlNormalizer,
-        ContentFingerprint,
-        GlobalRecipeCache,
-        // Import rate limiting
-        ImportRateLimiter,
-        // LLM services
-        LlmService,
-        LlmEnhancementService,
-        // YouTube import services
-        YouTubeTranscriptService,
-        YouTubeImportStrategy,
-        // TikTok import pipeline
-        TikTokPipeline,
-        InstagramPipeline,
-        // Recipe parser services
-        SiteConfigRepository,
-        RecipeParserService,
-        // Parser feedback loop + active learning
-        ParsedRecipeCache,
-        RecipeDiffCalculator,
-        ParsingCorrectionRepository,
-        ParseCorrectionUploader,
-        RemoteWeightLoader,
-        IngredientParsingStrategy,
-        // On-device BERT NER
-        NerModelManager,
-        OnnxNerService,
-        NeuralIngredientParser,
-        // On-device neural line classifier
-        LineClassifierModelManager,
-        OnnxLineClassifierService,
-        NeuralLineClassifier,
-        // Cooking-mode substitution suggestions (BUT-202)
-        SubstitutionSuggestionService,
-        // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
-        StepTimerService,
-        LocalTimerNotificationService,
-        // Menu lexicon overlay (BUT-370)
-        FirebaseMenuLexiconRepository,
-        // Ingredient registry (enriches static KnownIngredients from Firestore)
-        IngredientRegistryService,
-        // Firebase Storage instance for model loaders
-        FirebaseStorage,
-        // BUT-409: seasonal hero header data service
-        SeasonalHeroService,
-      ];
+    RecipeRepository,
+    CookEventRepository,
+    UnifiedRecipeService,
+    UnifiedMenuService,
+    ImportManager,
+    RecipeCookingService,
+    MenuService,
+    WeeklyMenuPlanRepository,
+    WeeklyMenuPlanService,
+    GroupWeeklyMenuPlanRepository,
+    GroupWeeklyMenuPlanService,
+    RealtimeGroupMenuModule,
+    SearchService,
+    ShareService,
+    StorageRepository,
+    StorageService,
+    ImagePickerService,
+    ImageUploadService,
+    OfflineService,
+    CollaborativeRecipeRepository,
+    BackupService,
+    SocialMediaExtractor,
+    ExtractionManager,
+    ContentDetectorService,
+    PermissionService, // Moved from CollaborationModule for proper module ordering
+    FirebaseRecipePresenceRepository, // Moved from CollaborationModule for UnifiedRecipeService
+    // Import cache services
+    UrlNormalizer,
+    ContentFingerprint,
+    GlobalRecipeCache,
+    // Import rate limiting
+    ImportRateLimiter,
+    // LLM services
+    LlmService,
+    LlmEnhancementService,
+    // YouTube import services
+    YouTubeTranscriptService,
+    YouTubeImportStrategy,
+    // TikTok import pipeline
+    TikTokPipeline,
+    InstagramPipeline,
+    // Recipe parser services
+    SiteConfigRepository,
+    RecipeParserService,
+    // Parser feedback loop + active learning
+    ParsedRecipeCache,
+    RecipeDiffCalculator,
+    ParsingCorrectionRepository,
+    ParseCorrectionUploader,
+    RemoteWeightLoader,
+    IngredientParsingStrategy,
+    // On-device BERT NER
+    NerModelManager,
+    OnnxNerService,
+    NeuralIngredientParser,
+    // On-device neural line classifier
+    LineClassifierModelManager,
+    OnnxLineClassifierService,
+    NeuralLineClassifier,
+    // Cooking-mode substitution suggestions (BUT-202)
+    SubstitutionSuggestionService,
+    // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
+    StepTimerService,
+    LocalTimerNotificationService,
+    // Menu lexicon overlay (BUT-370)
+    FirebaseMenuLexiconRepository,
+    // Ingredient registry (enriches static KnownIngredients from Firestore)
+    IngredientRegistryService,
+    // Firebase Storage instance for model loaders
+    FirebaseStorage,
+    // BUT-409: seasonal hero header data service
+    SeasonalHeroService,
+  ];
 
   @override
   int get priority => 10; // After Core Module (priority 1)
@@ -379,7 +376,8 @@ class ContentModule implements DIModule {
       // Recipe repository - depends on Auth from Core Module
       container.registerLazySingleton<RecipeRepository>(
         () => FirebaseRecipeRepository(
-            authRepository: container<auth.AuthRepository>()),
+          authRepository: container<auth.AuthRepository>(),
+        ),
       );
 
       // BUT-838: per-user cook-event log. Needs the concrete recipe

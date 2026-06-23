@@ -85,7 +85,9 @@ class SmartUnitConverter {
       case 'teaspoon':
       case 'teaspoons':
         return ConvertedMeasurement(
-            quantity, 'tsk'); // 1 tsp (4.93 ml) ≈ 1 tsk (5 ml)
+          quantity,
+          'tsk',
+        ); // 1 tsp (4.93 ml) ≈ 1 tsk (5 ml)
 
       case 'pint':
       case 'pints':

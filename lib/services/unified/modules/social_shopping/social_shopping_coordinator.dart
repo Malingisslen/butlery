@@ -23,8 +23,8 @@ class ShoppingListServiceAdapter {
   final UnifiedShoppingService _shoppingService;
 
   ShoppingListServiceAdapter({UnifiedShoppingService? shoppingService})
-      : _shoppingService =
-            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
+    : _shoppingService =
+          shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
 
   Future<UnifiedShoppingList?> getShoppingListById(String listId) async {
     try {
@@ -93,15 +93,16 @@ class SocialShoppingCoordinator
     required Future<String?> Function(UnifiedShoppingList) saveShoppingList,
     JsonCacheHelper? cacheHelper,
     ShoppingListServiceAdapter? serviceAdapter,
-  })  : _serviceAdapter = serviceAdapter ?? ShoppingListServiceAdapter(),
-        _getShoppingList = getShoppingList,
-        _saveShoppingList = saveShoppingList {
+  }) : _serviceAdapter = serviceAdapter ?? ShoppingListServiceAdapter(),
+       _getShoppingList = getShoppingList,
+       _saveShoppingList = saveShoppingList {
     // Initialize SharedShoppingList repository from DI
     _sharedShoppingRepository =
         ServiceLocator.get<FirebaseSharedShoppingRepository>();
 
     AppLogger.info(
-        '✅ SocialShoppingCoordinator initialized for shopping list sharing and collaboration using $_serviceAdapter');
+      '✅ SocialShoppingCoordinator initialized for shopping list sharing and collaboration using $_serviceAdapter',
+    );
   }
   @override
   String get contentTypeName => 'shopping_list';
@@ -165,7 +166,8 @@ class SocialShoppingCoordinator
         newOwnerId: SharedListPermission.edit,
       },
       description: sharedContent.listDescription,
-      items: [], // Note: Items in subcollection - caller should load via repository.getItems()
+      items:
+          [], // Note: Items in subcollection - caller should load via repository.getItems()
       allowGuestEditing: false,
     );
   }
@@ -177,7 +179,9 @@ class SocialShoppingCoordinator
 
   @override
   Future<String?> createStaticCopyForOwner(
-      dynamic originalContent, String ownerId) async {
+    dynamic originalContent,
+    String ownerId,
+  ) async {
     // Shopping lists don't use copy-on-write, they use direct collaboration
     // Return null to indicate no static copy needed
     return null;
@@ -198,7 +202,8 @@ class SocialShoppingCoordinator
         sharedContent.sharedByUserId: SharedListPermission.admin,
       },
       description: sharedContent.listDescription,
-      items: [], // Note: Items in subcollection - caller should load via repository.getItems()
+      items:
+          [], // Note: Items in subcollection - caller should load via repository.getItems()
       allowGuestEditing: false,
     );
   }
@@ -270,17 +275,21 @@ class SocialShoppingCoordinator
       AppLogger.info('🤝 Joining shared shopping list $sharedShoppingListId');
 
       // Get shared shopping list
-      final sharedList =
-          await _sharedShoppingRepository.read(sharedShoppingListId);
+      final sharedList = await _sharedShoppingRepository.read(
+        sharedShoppingListId,
+      );
       if (sharedList == null) {
         AppLogger.error(
-            'Shared shopping list not found: $sharedShoppingListId');
+          'Shared shopping list not found: $sharedShoppingListId',
+        );
         return null;
       }
 
       // Mark as joined in SharedShoppingList (analytics tracking)
       await _sharedShoppingRepository.markAsJoined(
-          sharedShoppingListId, currentUserId);
+        sharedShoppingListId,
+        currentUserId,
+      );
 
       // Routed through the injected adapter so the happy path is testable.
       final listId = sharedList.shoppingListId;
@@ -292,8 +301,10 @@ class SocialShoppingCoordinator
               currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
         );
       } else {
-        AppLogger.warning('SharedShoppingList missing shoppingListId — '
-            'member permissions not updated (pre-migration data)');
+        AppLogger.warning(
+          'SharedShoppingList missing shoppingListId — '
+          'member permissions not updated (pre-migration data)',
+        );
       }
 
       AppLogger.success('✅ Successfully joined shopping list collaboration');
@@ -316,16 +327,19 @@ class SocialShoppingCoordinator
   /// Phase 3 Session 1: Content loading method for ViewModel migration.
   /// Wraps repository call with error handling and logging.
   Future<List<SharedShoppingList>> getSharedShoppingListsForUser(
-      String userId) async {
+    String userId,
+  ) async {
     try {
       AppLogger.info(
-          '📥 Loading shared shopping lists for user ${userId.maskedUserId}');
+        '📥 Loading shared shopping lists for user ${userId.maskedUserId}',
+      );
       return await _sharedShoppingRepository.getSharedContentForUser(userId);
     } catch (e) {
       // BUT-1094: surface inbox-load failures via the shared error banner.
       AppLogger.error(
-          'Failed to load shared shopping lists for user ${userId.maskedUserId}',
-          e);
+        'Failed to load shared shopping lists for user ${userId.maskedUserId}',
+        e,
+      );
       setError(sanitizeErrorForUser(e));
       return [];
     }
@@ -338,7 +352,9 @@ class SocialShoppingCoordinator
   /// they're independent reads with no shared mutable state, so this is a
   /// ~3x latency reduction per call without changing the read count.
   Future<void> loadStatusForShoppingList(
-      String shoppingListId, String userId) async {
+    String shoppingListId,
+    String userId,
+  ) async {
     try {
       final results = await Future.wait([
         _sharedShoppingRepository.hasViewed(shoppingListId, userId),
@@ -354,7 +370,9 @@ class SocialShoppingCoordinator
       _dismissedStatusCache[shoppingListId] = dismissed;
     } catch (e) {
       AppLogger.error(
-          'Failed to load status for shopping list $shoppingListId', e);
+        'Failed to load status for shopping list $shoppingListId',
+        e,
+      );
     }
   }
 
@@ -365,7 +383,9 @@ class SocialShoppingCoordinator
   /// instead of awaiting each sequentially. For N=20 lists this changes
   /// 60 sequential round-trips into one parallel batch (read count unchanged).
   Future<void> loadStatusForAllShoppingLists(
-      List<SharedShoppingList> shoppingLists, String userId) async {
+    List<SharedShoppingList> shoppingLists,
+    String userId,
+  ) async {
     await Future.wait(
       shoppingLists.map((l) => loadStatusForShoppingList(l.id, userId)),
     );
@@ -421,8 +441,9 @@ class SocialShoppingCoordinator
     }
 
     try {
-      return await _sharedShoppingRepository
-          .getJoinedShoppingListsForUser(currentUserId);
+      return await _sharedShoppingRepository.getJoinedShoppingListsForUser(
+        currentUserId,
+      );
     } catch (e) {
       AppLogger.error('Failed to get joined shopping lists: $e');
       setError(sanitizeErrorForUser(e));
@@ -461,7 +482,9 @@ class SocialShoppingCoordinator
 
   /// Check if user can edit shopping list
   bool canUserEditShoppingList(
-      UnifiedShoppingList shoppingList, String userId) {
+    UnifiedShoppingList shoppingList,
+    String userId,
+  ) {
     // Owner can always edit
     if (shoppingList.ownerId == userId) return true;
 
@@ -479,13 +502,17 @@ class SocialShoppingCoordinator
 
   /// Send shopping list invitation notifications
   Future<void> sendShoppingListInvitationNotifications(
-      String listId, List<String> inviteeUserIds) async {
+    String listId,
+    List<String> inviteeUserIds,
+  ) async {
     await sendInvitationNotifications(listId, inviteeUserIds);
   }
 
   /// Send shopping list sharing notifications
   Future<void> sendShoppingListSharingNotifications(
-      String listId, List<String> sharedWithUserIds) async {
+    String listId,
+    List<String> sharedWithUserIds,
+  ) async {
     await sendSharingNotifications(listId, sharedWithUserIds);
   }
 

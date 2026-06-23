@@ -51,14 +51,16 @@ void main() {
       await BaseUnitTest.setupUnit();
 
       // Register fallback values for mocktail
-      registerFallbackValue(UserProfile(
-        uid: 'test',
-        displayName: 'Test',
-        email: 'test@example.com',
-        isOnline: false,
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        UserProfile(
+          uid: 'test',
+          displayName: 'Test',
+          email: 'test@example.com',
+          isOnline: false,
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -85,8 +87,9 @@ void main() {
 
       // Reset and create a fresh PermissionService with mock auth repository
       PermissionService.resetForTesting();
-      final permissionService =
-          PermissionService(authRepository: mockAuthRepository);
+      final permissionService = PermissionService(
+        authRepository: mockAuthRepository,
+      );
 
       // Register PermissionService with TestServiceLocator
       TestServiceLocator.registerMock<PermissionService>(permissionService);
@@ -138,7 +141,9 @@ void main() {
         expect(userService.currentUserProfile, isNotNull);
         expect(userService.currentUserProfile?.uid, equals('test_user_123'));
         expect(
-            userService.currentUserProfile?.displayName, equals('Test User'));
+          userService.currentUserProfile?.displayName,
+          equals('Test User'),
+        );
       });
 
       test('should initialize without user when not authenticated', () async {
@@ -184,8 +189,7 @@ void main() {
         expect(userService.hasError, isTrue);
       });
 
-      test(
-          'BUG-13: retryLoadProfile clears the error and recovers a transient '
+      test('BUG-13: retryLoadProfile clears the error and recovers a transient '
           'profile-load failure', () async {
         // Arrange — first load fails (e.g. permission-denied / App Check),
         // leaving the user on a retryable error state instead of a profile.
@@ -194,22 +198,28 @@ void main() {
           user: mockUser,
           userId: 'test_user_123',
         );
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => Stream.value(mockUser));
-        when(() => mockUserRepository.ensureBaseUserDocument(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.ensureBaseUserDocument(any()),
+        ).thenAnswer((_) async {});
 
         var attempt = 0;
-        when(() => mockUserRepository.fetchProfile('test_user_123'))
-            .thenAnswer((_) async {
-          attempt++;
-          if (attempt == 1) throw Exception('permission-denied');
-          return testProfile;
-        });
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async {
+            attempt++;
+            if (attempt == 1) throw Exception('permission-denied');
+            return testProfile;
+          },
+        );
 
         await userService.initialize();
-        expect(userService.hasError, isTrue,
-            reason: 'first load failed → error is observable');
+        expect(
+          userService.hasError,
+          isTrue,
+          reason: 'first load failed → error is observable',
+        );
         expect(userService.currentUserProfile, isNull);
 
         // Act — the "Försök igen" button calls retryLoadProfile().
@@ -280,10 +290,12 @@ void main() {
           user: mockUser,
           userId: 'test_user_123',
         );
-        when(() => mockUserRepository.saveProfile(any()))
-            .thenAnswer((_) async {});
-        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.saveProfile(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.markActivityFeedHintSeen(any()),
+        ).thenAnswer((_) async {});
       });
 
       // Loads a profile into the service so currentUserProfile (i.e.
@@ -293,22 +305,26 @@ void main() {
       // write (if any) made by markActivityFeedHintSeen itself.
       Future<void> loadProfile({required bool hasSeenHint}) async {
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
-            (_) async =>
-                testProfile.copyWith(hasSeenActivityFeedHint: hasSeenHint));
+          (_) async =>
+              testProfile.copyWith(hasSeenActivityFeedHint: hasSeenHint),
+        );
         await userService.createOrUpdateProfile(displayName: 'Test User');
         clearInteractions(mockUserRepository);
-        when(() => mockUserRepository.saveProfile(any()))
-            .thenAnswer((_) async {});
-        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.saveProfile(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.markActivityFeedHintSeen(any()),
+        ).thenAnswer((_) async {});
       }
 
-      test(
-          'persists via a targeted single-field write, NOT a full-profile '
+      test('persists via a targeted single-field write, NOT a full-profile '
           'saveProfile, and updates the in-memory profile', () async {
         await loadProfile(hasSeenHint: false);
         expect(
-            userService.currentUserProfile?.hasSeenActivityFeedHint, isFalse);
+          userService.currentUserProfile?.hasSeenActivityFeedHint,
+          isFalse,
+        );
 
         await userService.markActivityFeedHintSeen();
 
@@ -317,26 +333,29 @@ void main() {
         // a full-profile set built from the in-memory copy could clobber
         // friendsCount (mutated by friend-creation transactions) or moderator
         // fields. This fires automatically on the first activity broadcast.
-        verify(() =>
-                mockUserRepository.markActivityFeedHintSeen('test_user_123'))
-            .called(1);
+        verify(
+          () => mockUserRepository.markActivityFeedHintSeen('test_user_123'),
+        ).called(1);
         verifyNever(() => mockUserRepository.saveProfile(any()));
       });
 
-      test('is a no-op when the flag is already set (idempotent, no write)',
-          () async {
-        await loadProfile(hasSeenHint: true);
+      test(
+        'is a no-op when the flag is already set (idempotent, no write)',
+        () async {
+          await loadProfile(hasSeenHint: true);
 
-        await userService.markActivityFeedHintSeen();
+          await userService.markActivityFeedHintSeen();
 
-        verifyNever(() => mockUserRepository.markActivityFeedHintSeen(any()));
-        verifyNever(() => mockUserRepository.saveProfile(any()));
-      });
+          verifyNever(() => mockUserRepository.markActivityFeedHintSeen(any()));
+          verifyNever(() => mockUserRepository.saveProfile(any()));
+        },
+      );
 
       test('a failing write is swallowed and does not throw', () async {
         await loadProfile(hasSeenHint: false);
-        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
-            .thenThrow(Exception('write failed'));
+        when(
+          () => mockUserRepository.markActivityFeedHintSeen(any()),
+        ).thenThrow(Exception('write failed'));
 
         await expectLater(userService.markActivityFeedHintSeen(), completes);
       });
@@ -455,8 +474,9 @@ void main() {
           ),
         ];
 
-        when(() => mockUserRepository.fetchProfiles(['user1', 'user2']))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.fetchProfiles(['user1', 'user2']),
+        ).thenAnswer(
           (_) async => profiles,
         );
 
@@ -467,8 +487,9 @@ void main() {
         expect(results, hasLength(2));
         expect(results[0].uid, equals('user1'));
         expect(results[1].uid, equals('user2'));
-        verify(() => mockUserRepository.fetchProfiles(['user1', 'user2']))
-            .called(1);
+        verify(
+          () => mockUserRepository.fetchProfiles(['user1', 'user2']),
+        ).called(1);
       });
     });
 
@@ -489,8 +510,9 @@ void main() {
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
           (_) async => testProfile,
         );
-        when(() => mockUserRepository.updateOnlineStatus('test_user_123', true))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.updateOnlineStatus('test_user_123', true),
+        ).thenAnswer(
           (_) async {},
         );
 
@@ -501,9 +523,9 @@ void main() {
         await userService.updateOnlineStatus(true);
 
         // Assert
-        verify(() =>
-                mockUserRepository.updateOnlineStatus('test_user_123', true))
-            .called(1);
+        verify(
+          () => mockUserRepository.updateOnlineStatus('test_user_123', true),
+        ).called(1);
       });
 
       test('should not update online status when not authenticated', () async {
@@ -521,12 +543,12 @@ void main() {
         verifyNever(() => mockUserRepository.updateOnlineStatus(any(), any()));
       });
 
-      test(
-          'writes NO presence at all when the user opted out of online-status '
+      test('writes NO presence at all when the user opted out of online-status '
           'visibility (BUT-912)', () async {
         // Arrange — profile with the privacy opt-out set.
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
           (_) async => testProfile.copyWith(showOnlineStatus: false),
         );
@@ -554,8 +576,9 @@ void main() {
         when(() => mockAuthRepository.authStateChanges()).thenAnswer(
           (_) => Stream.value(mockUser),
         );
-        when(() => mockUserRepository.ensureBaseUserDocument('test_user_123'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer(
           (_) async {},
         );
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
@@ -568,11 +591,13 @@ void main() {
 
       test('should update profile statistics', () async {
         // Arrange
-        when(() => mockUserRepository.updateProfileStats(
-              'test_user_123',
-              friendsCount: any(named: 'friendsCount'),
-              publicRecipeCount: any(named: 'publicRecipeCount'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.updateProfileStats(
+            'test_user_123',
+            friendsCount: any(named: 'friendsCount'),
+            publicRecipeCount: any(named: 'publicRecipeCount'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await userService.updateProfileStats(
@@ -581,30 +606,35 @@ void main() {
         );
 
         // Assert
-        verify(() => mockUserRepository.updateProfileStats(
-              'test_user_123',
-              friendsCount: 5,
-              publicRecipeCount: 3,
-            )).called(1);
+        verify(
+          () => mockUserRepository.updateProfileStats(
+            'test_user_123',
+            friendsCount: 5,
+            publicRecipeCount: 3,
+          ),
+        ).called(1);
       });
     });
 
     group('Display Name Validation', () {
       test('should check display name availability', () async {
         // Arrange
-        when(() => mockUserRepository.isDisplayNameAvailable('UniqueName'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.isDisplayNameAvailable('UniqueName'),
+        ).thenAnswer(
           (_) async => true,
         );
 
-        when(() => mockUserRepository.isDisplayNameAvailable('TakenName'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.isDisplayNameAvailable('TakenName'),
+        ).thenAnswer(
           (_) async => false,
         );
 
         // Act
-        final isAvailable =
-            await userService.isDisplayNameAvailable('UniqueName');
+        final isAvailable = await userService.isDisplayNameAvailable(
+          'UniqueName',
+        );
         final isTaken = await userService.isDisplayNameAvailable('TakenName');
 
         // Assert
@@ -625,8 +655,9 @@ void main() {
         when(() => mockAuthRepository.authStateChanges()).thenAnswer(
           (_) => Stream.value(mockUser),
         );
-        when(() => mockUserRepository.ensureBaseUserDocument('test_user_123'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer(
           (_) async {},
         );
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
@@ -639,8 +670,12 @@ void main() {
 
       test('should update FCM token when authenticated', () async {
         // Arrange
-        when(() => mockUserRepository.updateFCMToken(
-            'test_user_123', 'fcm_token_123')).thenAnswer(
+        when(
+          () => mockUserRepository.updateFCMToken(
+            'test_user_123',
+            'fcm_token_123',
+          ),
+        ).thenAnswer(
           (_) async {},
         );
 
@@ -648,8 +683,12 @@ void main() {
         await userService.updateFCMToken('fcm_token_123');
 
         // Assert
-        verify(() => mockUserRepository.updateFCMToken(
-            'test_user_123', 'fcm_token_123')).called(1);
+        verify(
+          () => mockUserRepository.updateFCMToken(
+            'test_user_123',
+            'fcm_token_123',
+          ),
+        ).called(1);
       });
 
       test('should not update FCM token when not authenticated', () async {
@@ -669,8 +708,9 @@ void main() {
 
       test('should clear FCM token', () async {
         // Arrange
-        when(() => mockUserRepository.clearFCMToken('test_user_123'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.clearFCMToken('test_user_123'),
+        ).thenAnswer(
           (_) async {},
         );
 
@@ -678,8 +718,9 @@ void main() {
         await userService.clearFCMToken();
 
         // Assert
-        verify(() => mockUserRepository.clearFCMToken('test_user_123'))
-            .called(1);
+        verify(
+          () => mockUserRepository.clearFCMToken('test_user_123'),
+        ).called(1);
       });
     });
 
@@ -695,8 +736,9 @@ void main() {
         when(() => mockAuthRepository.authStateChanges()).thenAnswer(
           (_) => Stream.value(mockUser),
         );
-        when(() => mockUserRepository.ensureBaseUserDocument('test_user_123'))
-            .thenAnswer(
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer(
           (_) async {},
         );
         when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
@@ -709,8 +751,12 @@ void main() {
 
       test('should update notification settings', () async {
         // Arrange
-        when(() => mockUserRepository.updateNotificationSettings(
-            'test_user_123', true)).thenAnswer(
+        when(
+          () => mockUserRepository.updateNotificationSettings(
+            'test_user_123',
+            true,
+          ),
+        ).thenAnswer(
           (_) async {},
         );
 
@@ -718,8 +764,12 @@ void main() {
         await userService.updateNotificationSettings(true);
 
         // Assert
-        verify(() => mockUserRepository.updateNotificationSettings(
-            'test_user_123', true)).called(1);
+        verify(
+          () => mockUserRepository.updateNotificationSettings(
+            'test_user_123',
+            true,
+          ),
+        ).called(1);
       });
     });
 

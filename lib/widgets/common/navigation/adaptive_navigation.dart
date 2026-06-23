@@ -20,13 +20,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 Widget _navigationLandmark({
   required BuildContext context,
   required Widget child,
-}) =>
-    Semantics(
-      label: context.l10n.a11yNavigationLandmark,
-      container: true,
-      explicitChildNodes: true,
-      child: child,
-    );
+}) => Semantics(
+  label: context.l10n.a11yNavigationLandmark,
+  container: true,
+  explicitChildNodes: true,
+  child: child,
+);
 
 /// Navigation item model for adaptive navigation
 class AdaptiveNavigationItem {
@@ -119,8 +118,9 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
             appBar: _buildAppBar(context),
             body: FocusTraversalGroup(child: body),
             floatingActionButton: floatingActionButton,
-            bottomNavigationBar:
-                FocusTraversalGroup(child: _buildBottomNavigation(context)),
+            bottomNavigationBar: FocusTraversalGroup(
+              child: _buildBottomNavigation(context),
+            ),
           );
         }
 
@@ -130,7 +130,8 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           body: Row(
             children: [
               FocusTraversalGroup(
-                  child: _buildNavigationRail(context, isDesktop)),
+                child: _buildNavigationRail(context, isDesktop),
+              ),
               Expanded(child: FocusTraversalGroup(child: body)),
             ],
           ),
@@ -268,33 +269,33 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   /// Uses outline icons for both states per mockup design.
   /// UI Redesign: "recept" uses grid icon per mockup (not book)
   static List<AdaptiveNavigationItem> getNavigationItems(
-          BuildContext context) =>
-      [
-        AdaptiveNavigationItem(
-          label: context.l10n.navigationRecipes,
-          icon: AdaptiveIcons.gridOutlined,
-          activeIcon: AdaptiveIcons.gridOutlined, // Outline for both states
-          route: '/',
-        ),
-        AdaptiveNavigationItem(
-          label: context.l10n.navigationMenu,
-          icon: AdaptiveIcons.calendarOutlined,
-          activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
-          route: '/veckomeny',
-        ),
-        AdaptiveNavigationItem(
-          label: context.l10n.navigationShopping,
-          icon: AdaptiveIcons.cartOutlined,
-          activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
-          route: '/inkopslista',
-        ),
-        AdaptiveNavigationItem(
-          label: context.l10n.navigationAddNew,
-          icon: AdaptiveIcons.addOutlined,
-          activeIcon: AdaptiveIcons.addOutlined, // Outline for both states
-          route: '/laggTill',
-        ),
-      ];
+    BuildContext context,
+  ) => [
+    AdaptiveNavigationItem(
+      label: context.l10n.navigationRecipes,
+      icon: AdaptiveIcons.gridOutlined,
+      activeIcon: AdaptiveIcons.gridOutlined, // Outline for both states
+      route: '/',
+    ),
+    AdaptiveNavigationItem(
+      label: context.l10n.navigationMenu,
+      icon: AdaptiveIcons.calendarOutlined,
+      activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
+      route: '/veckomeny',
+    ),
+    AdaptiveNavigationItem(
+      label: context.l10n.navigationShopping,
+      icon: AdaptiveIcons.cartOutlined,
+      activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
+      route: '/inkopslista',
+    ),
+    AdaptiveNavigationItem(
+      label: context.l10n.navigationAddNew,
+      icon: AdaptiveIcons.addOutlined,
+      activeIcon: AdaptiveIcons.addOutlined, // Outline for both states
+      route: '/laggTill',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -420,7 +421,10 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
   }
 
   Widget _buildBadgedIcon(
-      IconData icon, int? badgeCount, BuildContext context) {
+    IconData icon,
+    int? badgeCount,
+    BuildContext context,
+  ) {
     if (badgeCount == null || badgeCount == 0) {
       return Icon(icon);
     }
@@ -470,36 +474,39 @@ class ButleryBottomNavigation extends StatelessWidget {
       context: context,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: backgroundColor ??
+          color:
+              backgroundColor ??
               Theme.of(context).colorScheme.surfaceContainerLow,
         ),
         child: SafeArea(
           top: false,
           child: AccessibilityUtils.clampTextScaling(
-              context: context,
-              child: SizedBox(
-                height: 56 +
-                    AppDimensions.spacingXs, // Standard nav height + indicator
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: items.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    final isSelected =
-                        currentIndex != null && index == currentIndex;
+            context: context,
+            child: SizedBox(
+              height:
+                  56 +
+                  AppDimensions.spacingXs, // Standard nav height + indicator
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: items.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final isSelected =
+                      currentIndex != null && index == currentIndex;
 
-                    return Expanded(
-                      child: _BottomNavItem(
-                        item: item,
-                        isSelected: isSelected,
-                        onTap: () => onTap(index),
-                        selectedColor: selectedItemColor,
-                        unselectedColor: unselectedItemColor,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              )),
+                  return Expanded(
+                    child: _BottomNavItem(
+                      item: item,
+                      isSelected: isSelected,
+                      onTap: () => onTap(index),
+                      selectedColor: selectedItemColor,
+                      unselectedColor: unselectedItemColor,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -567,7 +574,9 @@ class _BottomNavItem extends StatelessWidget {
                 // Rust indicator bar below text when selected (text width)
                 AnimatedContainer(
                   duration: AnimationUtils.getDuration(
-                      context, AppDimensions.animationDurationFast),
+                    context,
+                    AppDimensions.animationDurationFast,
+                  ),
                   height: AppDimensions.spacingXxs,
                   width: isSelected ? _getTextWidth(context) : 0,
                   color: isSelected ? cs.secondary : Colors.transparent,

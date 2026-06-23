@@ -51,13 +51,15 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Register fallback values for mocktail
-      registerFallbackValue(UserConsent(
-        userId: 'fallback',
-        purposes: ConsentPurposes.defaults(),
-        grantedAt: DateTime.now(),
-        consentVersion: '1.0.0',
-        deviceInfo: 'Test Device',
-      ));
+      registerFallbackValue(
+        UserConsent(
+          userId: 'fallback',
+          purposes: ConsentPurposes.defaults(),
+          grantedAt: DateTime.now(),
+          consentVersion: '1.0.0',
+          deviceInfo: 'Test Device',
+        ),
+      );
     });
 
     setUp(() {
@@ -89,8 +91,9 @@ void main() {
     group('Consent Retrieval', () {
       test('should get user consent successfully', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.getUserConsent();
@@ -100,14 +103,16 @@ void main() {
         expect(result!.userId, testUserId);
         expect(result.purposes.analytics, isTrue);
         expect(result.consentVersion, currentVersion);
-        verify(() => mockConsentRepository.getUserConsent(testUserId))
-            .called(1);
+        verify(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).called(1);
       });
 
       test('should return null when no consent exists', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
 
         // Act
         final result = await service.getUserConsent();
@@ -130,8 +135,9 @@ void main() {
 
       test('should handle repository errors gracefully', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenThrow(Exception('Firestore error'));
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenThrow(Exception('Firestore error'));
 
         // Act
         final result = await service.getUserConsent();
@@ -146,26 +152,31 @@ void main() {
     group('Consent Saving', () {
       test('should save new consent successfully', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null); // No existing consent
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null); // No existing consent
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.saveConsent(testConsentPurposes);
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .called(1);
+        verify(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).called(1);
       });
 
       test('should update existing consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         final updatedPurposes = testConsentPurposes.copyWith(
           marketing: true,
@@ -177,10 +188,12 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        final captured = verify(() => mockConsentRepository.saveConsent(
-              testUserId,
-              captureAny(),
-            )).captured;
+        final captured = verify(
+          () => mockConsentRepository.saveConsent(
+            testUserId,
+            captureAny(),
+          ),
+        ).captured;
         final savedConsent = captured.first as UserConsent;
         expect(savedConsent.purposes.marketing, isTrue);
         expect(savedConsent.purposes.pushNotifications, isTrue);
@@ -189,20 +202,24 @@ void main() {
 
       test('should set correct device info', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.saveConsent(testConsentPurposes);
 
         // Assert
         expect(result, isTrue);
-        final captured = verify(() => mockConsentRepository.saveConsent(
-              testUserId,
-              captureAny(),
-            )).captured;
+        final captured = verify(
+          () => mockConsentRepository.saveConsent(
+            testUserId,
+            captureAny(),
+          ),
+        ).captured;
         final savedConsent = captured.first as UserConsent;
         expect(savedConsent.deviceInfo, isNotEmpty);
       });
@@ -221,10 +238,12 @@ void main() {
 
       test('should handle save failure', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await service.saveConsent(testConsentPurposes);
@@ -235,10 +254,12 @@ void main() {
 
       test('should handle repository errors during save', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         final result = await service.saveConsent(testConsentPurposes);
@@ -253,8 +274,9 @@ void main() {
     group('Consent Checking', () {
       test('should check analytics consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.hasConsent(ConsentPurpose.analytics);
@@ -265,8 +287,9 @@ void main() {
 
       test('should check marketing consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.hasConsent(ConsentPurpose.marketing);
@@ -277,8 +300,9 @@ void main() {
 
       test('should check social features consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.hasConsent(ConsentPurpose.socialFeatures);
@@ -289,12 +313,14 @@ void main() {
 
       test('should check push notifications consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result =
-            await service.hasConsent(ConsentPurpose.pushNotifications);
+        final result = await service.hasConsent(
+          ConsentPurpose.pushNotifications,
+        );
 
         // Assert
         expect(result, isFalse);
@@ -302,12 +328,14 @@ void main() {
 
       test('should check essential services consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result =
-            await service.hasConsent(ConsentPurpose.essentialServices);
+        final result = await service.hasConsent(
+          ConsentPurpose.essentialServices,
+        );
 
         // Assert
         expect(result, isTrue);
@@ -315,8 +343,9 @@ void main() {
 
       test('should check data processing consent', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.hasConsent(ConsentPurpose.dataProcessing);
@@ -327,8 +356,9 @@ void main() {
 
       test('should return false when no consent exists', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
 
         // Act
         final result = await service.hasConsent(ConsentPurpose.analytics);
@@ -346,8 +376,9 @@ void main() {
         final outdatedConsent = testUserConsent.copyWith(
           consentVersion: '0.9.0', // Old version
         );
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => outdatedConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => outdatedConsent);
 
         // Act
         final result = await service.needsConsentRenewal();
@@ -358,8 +389,9 @@ void main() {
 
       test('should detect when consent is current', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.needsConsentRenewal();
@@ -370,8 +402,9 @@ void main() {
 
       test('should require renewal when no consent exists', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
 
         // Act
         final result = await service.needsConsentRenewal();
@@ -386,8 +419,9 @@ void main() {
     group('Required Consents', () {
       test('should validate required consents are granted', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act
         final result = await service.hasRequiredConsents();
@@ -401,8 +435,9 @@ void main() {
         final invalidConsent = testUserConsent.copyWith(
           purposes: testConsentPurposes.copyWith(essentialServices: false),
         );
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => invalidConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => invalidConsent);
 
         // Act
         final result = await service.hasRequiredConsents();
@@ -416,8 +451,9 @@ void main() {
         final invalidConsent = testUserConsent.copyWith(
           purposes: testConsentPurposes.copyWith(dataProcessing: false),
         );
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => invalidConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => invalidConsent);
 
         // Act
         final result = await service.hasRequiredConsents();
@@ -428,8 +464,9 @@ void main() {
 
       test('should return false when no consent exists', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
 
         // Act
         final result = await service.hasRequiredConsents();
@@ -444,20 +481,24 @@ void main() {
     group('Consent Revocation', () {
       test('should revoke optional consents', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.revokeOptionalConsents();
 
         // Assert
         expect(result, isTrue);
-        final captured = verify(() => mockConsentRepository.saveConsent(
-              testUserId,
-              captureAny(),
-            )).captured;
+        final captured = verify(
+          () => mockConsentRepository.saveConsent(
+            testUserId,
+            captureAny(),
+          ),
+        ).captured;
         final savedConsent = captured.first as UserConsent;
         expect(savedConsent.purposes.essentialServices, isTrue);
         expect(savedConsent.purposes.dataProcessing, isTrue);
@@ -480,10 +521,12 @@ void main() {
 
       test('should handle revocation errors', () async {
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         final result = await service.revokeOptionalConsents();
@@ -505,8 +548,9 @@ void main() {
             consentVersion: '0.9.0',
           ),
         ];
-        when(() => mockConsentRepository.getConsentHistory(testUserId))
-            .thenAnswer((_) async => history);
+        when(
+          () => mockConsentRepository.getConsentHistory(testUserId),
+        ).thenAnswer((_) async => history);
 
         // Act
         final result = await service.getConsentHistory();
@@ -519,8 +563,9 @@ void main() {
 
       test('should return empty list when no history', () async {
         // Arrange
-        when(() => mockConsentRepository.getConsentHistory(testUserId))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockConsentRepository.getConsentHistory(testUserId),
+        ).thenAnswer((_) async => []);
 
         // Act
         final result = await service.getConsentHistory();
@@ -543,8 +588,9 @@ void main() {
 
       test('should handle history retrieval errors', () async {
         // Arrange
-        when(() => mockConsentRepository.getConsentHistory(testUserId))
-            .thenThrow(Exception('Database error'));
+        when(
+          () => mockConsentRepository.getConsentHistory(testUserId),
+        ).thenThrow(Exception('Database error'));
 
         // Act
         final result = await service.getConsentHistory();
@@ -584,11 +630,11 @@ void main() {
       });
 
       test('returns true when consent is granted', () async {
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent.copyWith(
-                  purposes:
-                      testConsentPurposes.copyWith(pushNotifications: true),
-                ));
+        when(() => mockConsentRepository.getUserConsent(testUserId)).thenAnswer(
+          (_) async => testUserConsent.copyWith(
+            purposes: testConsentPurposes.copyWith(pushNotifications: true),
+          ),
+        );
         // Clear cache so fresh fetch happens
         service.clearConsentCache();
 
@@ -600,8 +646,9 @@ void main() {
       });
 
       test('returns false when consent is denied', () async {
-        when(() => mockConsentRepository.getUserConsent(testUserId)).thenAnswer(
-            (_) async => testUserConsent); // pushNotifications=false
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent); // pushNotifications=false
 
         final result = await ConsentService.checkSafely(
           service,
@@ -611,8 +658,9 @@ void main() {
       });
 
       test('returns false when hasConsent throws (fail-closed)', () async {
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenThrow(Exception('Firestore unavailable'));
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenThrow(Exception('Firestore unavailable'));
 
         final result = await ConsentService.checkSafely(
           service,
@@ -628,10 +676,12 @@ void main() {
         var callbackFired = false;
         service.addListener(() => callbackFired = true);
 
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         await service.saveConsent(testConsentPurposes);
 
@@ -642,10 +692,12 @@ void main() {
         var callbackFired = false;
         service.addListener(() => callbackFired = true);
 
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => false);
 
         await service.saveConsent(testConsentPurposes);
 
@@ -653,33 +705,39 @@ void main() {
       });
 
       test('save with no listeners is safe', () async {
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         await service.saveConsent(testConsentPurposes);
       });
 
-      test('multiple listeners all fire (FCM + SearchModule co-subscribe)',
-          () async {
-        // Real-world wiring: FCMService and SearchModule both subscribe.
-        // The prior single-callback API would have lost one of them.
-        var fcmFired = false;
-        var searchFired = false;
-        service.addListener(() => fcmFired = true);
-        service.addListener(() => searchFired = true);
+      test(
+        'multiple listeners all fire (FCM + SearchModule co-subscribe)',
+        () async {
+          // Real-world wiring: FCMService and SearchModule both subscribe.
+          // The prior single-callback API would have lost one of them.
+          var fcmFired = false;
+          var searchFired = false;
+          service.addListener(() => fcmFired = true);
+          service.addListener(() => searchFired = true);
 
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+          when(
+            () => mockConsentRepository.getUserConsent(testUserId),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockConsentRepository.saveConsent(testUserId, any()),
+          ).thenAnswer((_) async => true);
 
-        await service.saveConsent(testConsentPurposes);
+          await service.saveConsent(testConsentPurposes);
 
-        expect(fcmFired, isTrue);
-        expect(searchFired, isTrue);
-      });
+          expect(fcmFired, isTrue);
+          expect(searchFired, isTrue);
+        },
+      );
 
       test('removed listener does not fire', () async {
         var fired = 0;
@@ -687,10 +745,12 @@ void main() {
         service.addListener(listener);
         service.removeListener(listener);
 
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         await service.saveConsent(testConsentPurposes);
 
@@ -708,10 +768,12 @@ void main() {
         });
         service.addListener(() => goodFired = true);
 
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         await service.saveConsent(testConsentPurposes);
 
@@ -726,18 +788,23 @@ void main() {
         // This test verifies GDPR Article 7 requirements for specific consent
 
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => testUserConsent);
 
         // Act & Assert - Check all 6 purposes
         expect(
-            await service.hasConsent(ConsentPurpose.essentialServices), isTrue);
+          await service.hasConsent(ConsentPurpose.essentialServices),
+          isTrue,
+        );
         expect(await service.hasConsent(ConsentPurpose.dataProcessing), isTrue);
         expect(await service.hasConsent(ConsentPurpose.analytics), isTrue);
         expect(await service.hasConsent(ConsentPurpose.marketing), isFalse);
         expect(await service.hasConsent(ConsentPurpose.socialFeatures), isTrue);
-        expect(await service.hasConsent(ConsentPurpose.pushNotifications),
-            isFalse);
+        expect(
+          await service.hasConsent(ConsentPurpose.pushNotifications),
+          isFalse,
+        );
       });
 
       test('should maintain audit trail via repository', () async {
@@ -745,27 +812,32 @@ void main() {
         // Audit logging is handled by FirebaseConsentRepository
 
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await service.saveConsent(testConsentPurposes);
 
         // Assert - Verify repository was called (which handles audit logging)
-        verify(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .called(1);
+        verify(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).called(1);
       });
 
       test('should allow consent withdrawal (revocation)', () async {
         // GDPR Article 7(3): Right to withdraw consent
 
         // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => null);
-        when(() => mockConsentRepository.saveConsent(testUserId, any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentRepository.getUserConsent(testUserId),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentRepository.saveConsent(testUserId, any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.revokeOptionalConsents();
@@ -779,8 +851,9 @@ void main() {
 
         // Arrange
         final history = [testUserConsent];
-        when(() => mockConsentRepository.getConsentHistory(testUserId))
-            .thenAnswer((_) async => history);
+        when(
+          () => mockConsentRepository.getConsentHistory(testUserId),
+        ).thenAnswer((_) async => history);
 
         // Act
         final result = await service.getConsentHistory();
@@ -812,23 +885,29 @@ void main() {
     });
 
     test('denies when consent doc is missing', () async {
-      when(() => mockConsentRepository.getUserConsent(any()))
-          .thenAnswer((_) async => null);
-      container.registerSingleton<ConsentService>(ConsentService(
-        authRepository: mockAuthRepository,
-        consentRepository: mockConsentRepository,
-      ));
+      when(
+        () => mockConsentRepository.getUserConsent(any()),
+      ).thenAnswer((_) async => null);
+      container.registerSingleton<ConsentService>(
+        ConsentService(
+          authRepository: mockAuthRepository,
+          consentRepository: mockConsentRepository,
+        ),
+      );
 
       expect(await hasAnalyticsConsent(container), isFalse);
     });
 
     test('denies when ConsentService.hasConsent throws', () async {
-      when(() => mockConsentRepository.getUserConsent(any()))
-          .thenThrow(Exception('repo down'));
-      container.registerSingleton<ConsentService>(ConsentService(
-        authRepository: mockAuthRepository,
-        consentRepository: mockConsentRepository,
-      ));
+      when(
+        () => mockConsentRepository.getUserConsent(any()),
+      ).thenThrow(Exception('repo down'));
+      container.registerSingleton<ConsentService>(
+        ConsentService(
+          authRepository: mockAuthRepository,
+          consentRepository: mockConsentRepository,
+        ),
+      );
 
       // Must not propagate — deny by default per GDPR Art. 7.
       expect(await hasAnalyticsConsent(container), isFalse);
@@ -850,12 +929,15 @@ void main() {
         consentVersion: '1.1.0',
         deviceInfo: 'Test',
       );
-      when(() => mockConsentRepository.getUserConsent(any()))
-          .thenAnswer((_) async => granted);
-      container.registerSingleton<ConsentService>(ConsentService(
-        authRepository: mockAuthRepository,
-        consentRepository: mockConsentRepository,
-      ));
+      when(
+        () => mockConsentRepository.getUserConsent(any()),
+      ).thenAnswer((_) async => granted);
+      container.registerSingleton<ConsentService>(
+        ConsentService(
+          authRepository: mockAuthRepository,
+          consentRepository: mockConsentRepository,
+        ),
+      );
 
       expect(await hasAnalyticsConsent(container), isTrue);
     });
@@ -876,12 +958,15 @@ void main() {
         consentVersion: '1.1.0',
         deviceInfo: 'Test',
       );
-      when(() => mockConsentRepository.getUserConsent(any()))
-          .thenAnswer((_) async => denied);
-      container.registerSingleton<ConsentService>(ConsentService(
-        authRepository: mockAuthRepository,
-        consentRepository: mockConsentRepository,
-      ));
+      when(
+        () => mockConsentRepository.getUserConsent(any()),
+      ).thenAnswer((_) async => denied);
+      container.registerSingleton<ConsentService>(
+        ConsentService(
+          authRepository: mockAuthRepository,
+          consentRepository: mockConsentRepository,
+        ),
+      );
 
       expect(await hasAnalyticsConsent(container), isFalse);
     });

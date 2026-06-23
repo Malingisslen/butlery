@@ -166,8 +166,11 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.mark_email_unread_outlined,
-                        size: 80, color: cs.primary),
+                    Icon(
+                      Icons.mark_email_unread_outlined,
+                      size: 80,
+                      color: cs.primary,
+                    ),
                     const SizedBox(height: AppDimensions.spacingXl),
                     Text(
                       l.emailVerificationTitle,

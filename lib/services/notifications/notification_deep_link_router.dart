@@ -72,11 +72,12 @@ abstract final class NotificationRoutes {
 /// server-side. Production wiring resolves to the `recordNotificationOpened`
 /// callable; tests inject a fake to assert the call shape without hitting
 /// Firebase.
-typedef RecordNotificationOpenedFn = Future<void> Function({
-  required String notificationId,
-  required String notificationType,
-  String? route,
-});
+typedef RecordNotificationOpenedFn =
+    Future<void> Function({
+      required String notificationId,
+      required String notificationType,
+      String? route,
+    });
 
 /// Type of the test-seam callback that resolves a recipeId to a full
 /// [Recipe]. Production wiring reads through the user-scoped
@@ -98,10 +99,10 @@ class NotificationDeepLinkRouter {
     required AnalyticsService? Function() analyticsResolver,
     RecordNotificationOpenedFn? recordOpened,
     RecipeFetchFn? fetchRecipe,
-  })  : _navigatorResolver = navigatorResolver,
-        _analyticsResolver = analyticsResolver,
-        _recordOpened = recordOpened ?? _defaultRecordOpened,
-        _fetchRecipe = fetchRecipe ?? _defaultFetchRecipe;
+  }) : _navigatorResolver = navigatorResolver,
+       _analyticsResolver = analyticsResolver,
+       _recordOpened = recordOpened ?? _defaultRecordOpened,
+       _fetchRecipe = fetchRecipe ?? _defaultFetchRecipe;
 
   /// Default production wiring — resolves a recipeId through the user-scoped
   /// [RecipeRepository]. Returns null for a recipe the current user can't
@@ -123,8 +124,9 @@ class NotificationDeepLinkRouter {
     required String notificationType,
     String? route,
   }) async {
-    final callable = FirebaseFunctions.instanceFor(region: 'europe-west1')
-        .httpsCallable('recordNotificationOpened');
+    final callable = FirebaseFunctions.instanceFor(
+      region: 'europe-west1',
+    ).httpsCallable('recordNotificationOpened');
     await callable.call<Map<String, dynamic>>(<String, dynamic>{
       'notificationId': notificationId,
       'notificationType': notificationType,
@@ -194,7 +196,8 @@ class NotificationDeepLinkRouter {
 
     if (route == null || route.isEmpty) {
       AppLogger.info(
-          '🔔 Notification tap with no route — defaulting to home screen');
+        '🔔 Notification tap with no route — defaulting to home screen',
+      );
       _logEvent(
         analytics,
         name: AnalyticsEvents.notificationPayloadMissingRoute,
@@ -206,7 +209,8 @@ class NotificationDeepLinkRouter {
 
     if (!NotificationRoutes.all.contains(route)) {
       AppLogger.warning(
-          '🔔 Notification tap with unknown route "$route" — defaulting to home');
+        '🔔 Notification tap with unknown route "$route" — defaulting to home',
+      );
       _logEvent(
         analytics,
         name: AnalyticsEvents.notificationPayloadUnknownRoute,
@@ -230,7 +234,8 @@ class NotificationDeepLinkRouter {
       // so we notice if this happens repeatedly (it shouldn't — main.dart
       // wires the router after navigator is built).
       AppLogger.warning(
-          '🔔 Notification tap "$route" arrived before navigator was ready');
+        '🔔 Notification tap "$route" arrived before navigator was ready',
+      );
       return;
     }
 
@@ -294,7 +299,8 @@ class NotificationDeepLinkRouter {
     }
     if (recipe == null) {
       AppLogger.info(
-          '🔔 Notification recipe $id unavailable — falling back to home');
+        '🔔 Notification recipe $id unavailable — falling back to home',
+      );
       _goHome(navigator);
       return;
     }

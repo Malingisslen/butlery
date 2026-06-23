@@ -97,24 +97,29 @@ void main() {
     when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
 
     // Categories stubs
-    when(() => mockCategories.getCategoryById(testGroupId))
-        .thenReturn(testGroup);
+    when(
+      () => mockCategories.getCategoryById(testGroupId),
+    ).thenReturn(testGroup);
     when(() => mockCategories.getCategoryById(any())).thenReturn(null);
     // Override specific ID after generic stub
-    when(() => mockCategories.getCategoryById(testGroupId))
-        .thenReturn(testGroup);
+    when(
+      () => mockCategories.getCategoryById(testGroupId),
+    ).thenReturn(testGroup);
 
     // Management stubs
     when(() => mockManagement.getAllFriends()).thenReturn(testFriends);
 
     // Invitations stubs
-    when(() => mockInvitations.getSentInvitations())
-        .thenReturn(testInvitations);
-    when(() => mockInvitations.sendGroupInvitationToUser(
-          userId: any(named: 'userId'),
-          groupId: any(named: 'groupId'),
-          customMessage: any(named: 'customMessage'),
-        )).thenAnswer((_) async => true);
+    when(
+      () => mockInvitations.getSentInvitations(),
+    ).thenReturn(testInvitations);
+    when(
+      () => mockInvitations.sendGroupInvitationToUser(
+        userId: any(named: 'userId'),
+        groupId: any(named: 'groupId'),
+        customMessage: any(named: 'customMessage'),
+      ),
+    ).thenAnswer((_) async => true);
 
     viewModel = AddMembersToGroupViewModel(
       groupId: testGroupId,
@@ -143,19 +148,22 @@ void main() {
     test('should exclude existing members from available friends', () {
       expect(viewModel.availableFriends.length, equals(3));
       expect(
-          viewModel.availableFriends.any((f) => f.uid == 'existing-member-1'),
-          isFalse);
+        viewModel.availableFriends.any((f) => f.uid == 'existing-member-1'),
+        isFalse,
+      );
     });
 
     test('should exclude friends with pending invitations', () {
       expect(
-          viewModel.availableFriends.any((f) => f.uid == 'friend-with-pending'),
-          isFalse);
+        viewModel.availableFriends.any((f) => f.uid == 'friend-with-pending'),
+        isFalse,
+      );
     });
 
     test('should sort available friends alphabetically', () {
-      final names =
-          viewModel.availableFriends.map((f) => f.displayName).toList();
+      final names = viewModel.availableFriends
+          .map((f) => f.displayName)
+          .toList();
       expect(names, equals(List.of(names)..sort()));
     });
 
@@ -230,7 +238,9 @@ void main() {
     test('should provide immutable selected IDs', () {
       viewModel.toggleFriendSelection('friend-1');
       expect(
-          () => viewModel.selectedFriendIds.add('x'), throwsUnsupportedError);
+        () => viewModel.selectedFriendIds.add('x'),
+        throwsUnsupportedError,
+      );
     });
   });
 
@@ -238,8 +248,10 @@ void main() {
     test('should filter by name', () {
       viewModel.updateSearch('Anna');
       expect(viewModel.filteredFriends.length, equals(1));
-      expect(viewModel.filteredFriends.first.displayName,
-          equals('Anna Andersson'));
+      expect(
+        viewModel.filteredFriends.first.displayName,
+        equals('Anna Andersson'),
+      );
     });
 
     test('should be case-insensitive', () {
@@ -257,8 +269,10 @@ void main() {
       viewModel.updateSearch('Anna');
       viewModel.clearSearch();
       expect(viewModel.hasSearchQuery, isFalse);
-      expect(viewModel.filteredFriends.length,
-          equals(viewModel.availableFriends.length));
+      expect(
+        viewModel.filteredFriends.length,
+        equals(viewModel.availableFriends.length),
+      );
     });
 
     test('should show empty for no matches', () {
@@ -277,16 +291,20 @@ void main() {
       );
 
       expect(result, isTrue);
-      verify(() => mockInvitations.sendGroupInvitationToUser(
-            userId: 'friend-1',
-            groupId: testGroupId,
-            customMessage: 'Välkommen!',
-          )).called(1);
-      verify(() => mockInvitations.sendGroupInvitationToUser(
-            userId: 'friend-2',
-            groupId: testGroupId,
-            customMessage: 'Välkommen!',
-          )).called(1);
+      verify(
+        () => mockInvitations.sendGroupInvitationToUser(
+          userId: 'friend-1',
+          groupId: testGroupId,
+          customMessage: 'Välkommen!',
+        ),
+      ).called(1);
+      verify(
+        () => mockInvitations.sendGroupInvitationToUser(
+          userId: 'friend-2',
+          groupId: testGroupId,
+          customMessage: 'Välkommen!',
+        ),
+      ).called(1);
     });
 
     test('should clear selections after success', () async {
@@ -303,18 +321,22 @@ void main() {
     });
 
     test('should handle invitation failure', () async {
-      when(() => mockInvitations.sendGroupInvitationToUser(
-            userId: any(named: 'userId'),
-            groupId: any(named: 'groupId'),
-            customMessage: any(named: 'customMessage'),
-          )).thenAnswer((_) async => false);
+      when(
+        () => mockInvitations.sendGroupInvitationToUser(
+          userId: any(named: 'userId'),
+          groupId: any(named: 'groupId'),
+          customMessage: any(named: 'customMessage'),
+        ),
+      ).thenAnswer((_) async => false);
 
       viewModel.toggleFriendSelection('friend-1');
       final result = await viewModel.sendInvitations();
 
       expect(result, isFalse);
       expect(
-          viewModel.getInvitationStatusForUser('friend-1'), equals('failed'));
+        viewModel.getInvitationStatusForUser('friend-1'),
+        equals('failed'),
+      );
     });
 
     test('should set sending state during invitation', () async {
@@ -331,19 +353,23 @@ void main() {
     test('should not send if no friends selected', () async {
       final result = await viewModel.sendInvitations();
       expect(result, isFalse);
-      verifyNever(() => mockInvitations.sendGroupInvitationToUser(
-            userId: any(named: 'userId'),
-            groupId: any(named: 'groupId'),
-            customMessage: any(named: 'customMessage'),
-          ));
+      verifyNever(
+        () => mockInvitations.sendGroupInvitationToUser(
+          userId: any(named: 'userId'),
+          groupId: any(named: 'groupId'),
+          customMessage: any(named: 'customMessage'),
+        ),
+      );
     });
 
     test('should handle service exception', () async {
-      when(() => mockInvitations.sendGroupInvitationToUser(
-            userId: any(named: 'userId'),
-            groupId: any(named: 'groupId'),
-            customMessage: any(named: 'customMessage'),
-          )).thenThrow(Exception('Network error'));
+      when(
+        () => mockInvitations.sendGroupInvitationToUser(
+          userId: any(named: 'userId'),
+          groupId: any(named: 'groupId'),
+          customMessage: any(named: 'customMessage'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       viewModel.toggleFriendSelection('friend-1');
       final result = await viewModel.sendInvitations();
@@ -391,8 +417,10 @@ void main() {
     });
 
     test('should provide immutable lists', () {
-      expect(() => viewModel.availableFriends.add(testFriends[0]),
-          throwsUnsupportedError);
+      expect(
+        () => viewModel.availableFriends.add(testFriends[0]),
+        throwsUnsupportedError,
+      );
       expect(() => viewModel.filteredFriends.clear(), throwsUnsupportedError);
     });
   });
@@ -409,7 +437,9 @@ void main() {
 
     test('should provide immutable status map', () {
       expect(
-          () => viewModel.invitationStatus['x'] = 'y', throwsUnsupportedError);
+        () => viewModel.invitationStatus['x'] = 'y',
+        throwsUnsupportedError,
+      );
     });
   });
 
@@ -452,8 +482,9 @@ void main() {
         sortOrder: 0,
         isDefault: false,
       );
-      when(() => mockCategories.getCategoryById(testGroupId))
-          .thenReturn(fullGroup);
+      when(
+        () => mockCategories.getCategoryById(testGroupId),
+      ).thenReturn(fullGroup);
 
       final vm = AddMembersToGroupViewModel(
         groupId: testGroupId,

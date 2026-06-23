@@ -104,61 +104,67 @@ void main() {
 
   group('GroupDetailAppBar overflow menu — Report tile (BUT-511)', () {
     testWidgets(
-        'non-owner sees Report tile and tapping it opens the report dialog',
-        (tester) async {
-      bootstrapPermissions(_StubPermissionService(uid: 'me-uid'));
+      'non-owner sees Report tile and tapping it opens the report dialog',
+      (tester) async {
+        bootstrapPermissions(_StubPermissionService(uid: 'me-uid'));
 
-      final group = _group(); // ownerId='owner-uid', current user is 'me-uid'
+        final group = _group(); // ownerId='owner-uid', current user is 'me-uid'
 
-      await tester.pumpWidget(_wrap(
-        appBuilder: (ctx) => Scaffold(
-          appBar: GroupDetailAppBar.build(
-            ctx,
-            group: group,
-            isLoading: false,
-            onRefresh: () {},
-            onMenuAction: (_) {},
+        await tester.pumpWidget(
+          _wrap(
+            appBuilder: (ctx) => Scaffold(
+              appBar: GroupDetailAppBar.build(
+                ctx,
+                group: group,
+                isLoading: false,
+                onRefresh: () {},
+                onMenuAction: (_) {},
+              ),
+            ),
           ),
-        ),
-      ));
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // Open overflow menu.
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
+        // Open overflow menu.
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
 
-      // The Report tile uses the localized 'reportContent' label.
-      // For Swedish: 'Rapportera'. The flag icon is the only Icons.flag_outlined
-      // in the menu, so we can match by either.
-      expect(find.text('Rapportera'), findsOneWidget);
-      expect(find.byIcon(Icons.flag_outlined), findsOneWidget);
+        // The Report tile uses the localized 'reportContent' label.
+        // For Swedish: 'Rapportera'. The flag icon is the only Icons.flag_outlined
+        // in the menu, so we can match by either.
+        expect(find.text('Rapportera'), findsOneWidget);
+        expect(find.byIcon(Icons.flag_outlined), findsOneWidget);
 
-      // Tap the Report tile — should open ReportContentDialog's reason dialog.
-      await tester.tap(find.text('Rapportera'));
-      await tester.pumpAndSettle();
+        // Tap the Report tile — should open ReportContentDialog's reason dialog.
+        await tester.tap(find.text('Rapportera'));
+        await tester.pumpAndSettle();
 
-      // Reason dialog title proves the dialog opened.
-      // (Swedish 'reportDialogTitle' = 'Rapportera innehåll')
-      expect(find.text('Rapportera innehåll'), findsOneWidget);
-    });
+        // Reason dialog title proves the dialog opened.
+        // (Swedish 'reportDialogTitle' = 'Rapportera innehåll')
+        expect(find.text('Rapportera innehåll'), findsOneWidget);
+      },
+    );
 
-    testWidgets('owner does NOT see Report tile (self-report meaningless)',
-        (tester) async {
+    testWidgets('owner does NOT see Report tile (self-report meaningless)', (
+      tester,
+    ) async {
       bootstrapPermissions(_StubPermissionService(uid: 'owner-uid'));
 
       final group = _group(ownerId: 'owner-uid');
 
-      await tester.pumpWidget(_wrap(
-        appBuilder: (ctx) => Scaffold(
-          appBar: GroupDetailAppBar.build(
-            ctx,
-            group: group,
-            isLoading: false,
-            onRefresh: () {},
-            onMenuAction: (_) {},
+      await tester.pumpWidget(
+        _wrap(
+          appBuilder: (ctx) => Scaffold(
+            appBar: GroupDetailAppBar.build(
+              ctx,
+              group: group,
+              isLoading: false,
+              onRefresh: () {},
+              onMenuAction: (_) {},
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
 
       await tester.tap(find.byIcon(Icons.more_vert));
@@ -171,46 +177,52 @@ void main() {
 
   group('GroupMemberCard — Report tile on member action menu (BUT-511)', () {
     testWidgets(
-        'Report tile is reachable on another member and opens the report dialog',
-        (tester) async {
-      bootstrapPermissions(_StubPermissionService(uid: 'me-uid'));
+      'Report tile is reachable on another member and opens the report dialog',
+      (tester) async {
+        bootstrapPermissions(_StubPermissionService(uid: 'me-uid'));
 
-      final group = _group();
-      final otherMember = _profile('other-uid', name: 'Erik');
+        final group = _group();
+        final otherMember = _profile('other-uid', name: 'Erik');
 
-      await tester.pumpWidget(_wrap(
-        appBuilder: (ctx) => Scaffold(
-          body: GroupMemberCard.build(ctx, otherMember, group, () {}),
-        ),
-      ));
-      await tester.pump();
+        await tester.pumpWidget(
+          _wrap(
+            appBuilder: (ctx) => Scaffold(
+              body: GroupMemberCard.build(ctx, otherMember, group, () {}),
+            ),
+          ),
+        );
+        await tester.pump();
 
-      // Open the member action menu (the trailing PopupMenuButton).
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
+        // Open the member action menu (the trailing PopupMenuButton).
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
 
-      // Report tile present.
-      expect(find.text('Rapportera'), findsOneWidget);
+        // Report tile present.
+        expect(find.text('Rapportera'), findsOneWidget);
 
-      // Tap Report — opens the report-reason dialog.
-      await tester.tap(find.text('Rapportera'));
-      await tester.pumpAndSettle();
+        // Tap Report — opens the report-reason dialog.
+        await tester.tap(find.text('Rapportera'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Rapportera innehåll'), findsOneWidget);
-    });
+        expect(find.text('Rapportera innehåll'), findsOneWidget);
+      },
+    );
 
-    testWidgets('viewing own member tile does NOT show Report tile',
-        (tester) async {
+    testWidgets('viewing own member tile does NOT show Report tile', (
+      tester,
+    ) async {
       bootstrapPermissions(_StubPermissionService(uid: 'me-uid'));
 
       final group = _group();
       final selfMember = _profile('me-uid', name: 'Mig');
 
-      await tester.pumpWidget(_wrap(
-        appBuilder: (ctx) => Scaffold(
-          body: GroupMemberCard.build(ctx, selfMember, group, () {}),
+      await tester.pumpWidget(
+        _wrap(
+          appBuilder: (ctx) => Scaffold(
+            body: GroupMemberCard.build(ctx, selfMember, group, () {}),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // No menu at all — self isn't reportable AND can't be removed.

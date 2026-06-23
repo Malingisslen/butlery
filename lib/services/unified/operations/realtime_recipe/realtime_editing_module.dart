@@ -6,20 +6,21 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
-typedef UpdateRecipeContentFn = Future<bool> Function({
-  required String recipeId,
-  String? title,
-  String? description,
-  List<String>? ingredients,
-  List<String>? instructions,
-  List<String>? imageUrls,
-  String? mealType,
-  int? portions,
-  int? timeMinutes,
-  double? rating,
-  List<String>? personalTagIds,
-  String? sourceUrl,
-});
+typedef UpdateRecipeContentFn =
+    Future<bool> Function({
+      required String recipeId,
+      String? title,
+      String? description,
+      List<String>? ingredients,
+      List<String>? instructions,
+      List<String>? imageUrls,
+      String? mealType,
+      int? portions,
+      int? timeMinutes,
+      double? rating,
+      List<String>? personalTagIds,
+      String? sourceUrl,
+    });
 
 /// Realtime recipe editing module
 /// This module handles ONLY real-time editing operations:
@@ -41,18 +42,19 @@ class RealtimeEditingModule {
     required List<Recipe> Function() getRecipes,
     required UpdateRecipeContentFn updateRecipeContent,
     RealtimeSyncService? realtimeSyncService,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _getRecipes = getRecipes,
-        _updateRecipeContent = updateRecipeContent,
-        _realtimeSyncService = realtimeSyncService;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _getRecipes = getRecipes,
+       _updateRecipeContent = updateRecipeContent,
+       _realtimeSyncService = realtimeSyncService;
 
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
     try {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
-      final validationError =
-          RealtimeRecipeUtils.validateRecipeForRealtime(recipe);
+      final validationError = RealtimeRecipeUtils.validateRecipeForRealtime(
+        recipe,
+      );
       if (validationError != null) {
         AppLogger.error('Cannot start realtime editing: $validationError');
         return false;
@@ -113,7 +115,8 @@ class RealtimeEditingModule {
   }) async {
     if (_realtimeSyncService == null) {
       AppLogger.warning(
-          'RealtimeSyncService not available, falling back to regular edit');
+        'RealtimeSyncService not available, falling back to regular edit',
+      );
       return _makeRegularEdit(recipeId, changes);
     }
 
@@ -212,7 +215,8 @@ class RealtimeEditingModule {
     try {
       if (_realtimeSyncService == null) {
         AppLogger.warning(
-            'RealtimeSyncService not available for conflict resolution');
+          'RealtimeSyncService not available for conflict resolution',
+        );
         return false;
       }
 
@@ -246,7 +250,8 @@ class RealtimeEditingModule {
       // await _realtimeSyncService!.updateResource(realtimeRecipe);
 
       AppLogger.info(
-          'Resolved conflict for recipe: $recipeId using $resolution strategy');
+        'Resolved conflict for recipe: $recipeId using $resolution strategy',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to resolve conflict', e);
@@ -369,7 +374,9 @@ class RealtimeEditingModule {
 
   /// Make regular edit when realtime not available
   Future<bool> _makeRegularEdit(
-      String recipeId, Map<String, dynamic> changes) async {
+    String recipeId,
+    Map<String, dynamic> changes,
+  ) async {
     try {
       return await _updateRecipeContent(
         recipeId: recipeId,

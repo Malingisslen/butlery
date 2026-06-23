@@ -21,11 +21,11 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 /// MaterialApp wrapper with Swedish localization for widgets that call
 /// `context.l10n.<key>` (ButleryHeader, navigation landmark, etc).
 Widget _wrapWithL10n(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: child,
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: child,
+);
 
 /// Pump at a specific logical width so the Breakpoints helpers resolve to a
 /// known device category. Height is generous to avoid clipping.
@@ -147,20 +147,21 @@ void main() {
     });
 
     testWidgets(
-        'falls back to mobile when tablet/desktop omitted at large widths',
-        (tester) async {
-      late BuildContext captured;
-      await _pumpAtWidth(
-        tester,
-        1400,
-        _ContextCapture((ctx) => captured = ctx),
-      );
-      final value = LayoutComponents.valueFor<String>(
-        context: captured,
-        mobile: 'mobile-only',
-      );
-      expect(value, 'mobile-only');
-    });
+      'falls back to mobile when tablet/desktop omitted at large widths',
+      (tester) async {
+        late BuildContext captured;
+        await _pumpAtWidth(
+          tester,
+          1400,
+          _ContextCapture((ctx) => captured = ctx),
+        );
+        final value = LayoutComponents.valueFor<String>(
+          context: captured,
+          mobile: 'mobile-only',
+        );
+        expect(value, 'mobile-only');
+      },
+    );
   });
 
   // ---------------------------------------------------------------------
@@ -224,8 +225,9 @@ void main() {
   // responsiveGrid — facade for ResponsiveGrid.
   // ---------------------------------------------------------------------
   group('LayoutComponents.responsiveGrid', () {
-    testWidgets('builds a ResponsiveGrid containing the supplied children',
-        (tester) async {
+    testWidgets('builds a ResponsiveGrid containing the supplied children', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         400,
@@ -240,8 +242,9 @@ void main() {
       expect(find.text('grid-item-a'), findsOneWidget);
     });
 
-    testWidgets('mobileColumns override applied at mobile width',
-        (tester) async {
+    testWidgets('mobileColumns override applied at mobile width', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         400,
@@ -348,8 +351,9 @@ void main() {
       expect(find.text('item-x'), findsOneWidget);
     });
 
-    testWidgets('forwards tabletColumns override at tablet width',
-        (tester) async {
+    testWidgets('forwards tabletColumns override at tablet width', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         800,
@@ -365,8 +369,9 @@ void main() {
       expect(delegate.crossAxisCount, 4);
     });
 
-    testWidgets('itemBuilder is invoked for each item on mobile',
-        (tester) async {
+    testWidgets('itemBuilder is invoked for each item on mobile', (
+      tester,
+    ) async {
       final builtFor = <String>[];
       await _pumpAtWidth(
         tester,
@@ -447,8 +452,9 @@ void main() {
       expect(find.byType(ButleryBottomNavigation), findsNothing);
     });
 
-    testWidgets('onNavigationChanged is wired through bottom nav tap',
-        (tester) async {
+    testWidgets('onNavigationChanged is wired through bottom nav tap', (
+      tester,
+    ) async {
       int? tapped;
       await _pumpAtWidth(
         tester,
@@ -467,8 +473,9 @@ void main() {
       expect(tapped, 1);
     });
 
-    testWidgets('floatingActionButton is forwarded to the Scaffold',
-        (tester) async {
+    testWidgets('floatingActionButton is forwarded to the Scaffold', (
+      tester,
+    ) async {
       const fabKey = Key('layout-fab');
       await _pumpAtWidth(
         tester,
@@ -526,8 +533,9 @@ void main() {
       expect(find.text('should-not-render'), findsNothing);
     });
 
-    testWidgets('extendedRailOnDesktop=false keeps rail compact at desktop',
-        (tester) async {
+    testWidgets('extendedRailOnDesktop=false keeps rail compact at desktop', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         1400,
@@ -562,8 +570,9 @@ void main() {
       expect(find.text('butlery-body'), findsOneWidget);
     });
 
-    testWidgets('exposes the 4 predefined Butlery nav destinations',
-        (tester) async {
+    testWidgets('exposes the 4 predefined Butlery nav destinations', (
+      tester,
+    ) async {
       await _pumpAtWidth(
         tester,
         400,
@@ -578,7 +587,9 @@ void main() {
       expect(find.byKey(const ValueKey('test-nav-/')), findsOneWidget);
       expect(find.byKey(const ValueKey('test-nav-/veckomeny')), findsOneWidget);
       expect(
-          find.byKey(const ValueKey('test-nav-/inkopslista')), findsOneWidget);
+        find.byKey(const ValueKey('test-nav-/inkopslista')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('test-nav-/laggTill')), findsOneWidget);
     });
 
@@ -601,8 +612,10 @@ void main() {
   // recipeUploadButtonGrid — 6 main buttons + 1 archive (2-2-2-1 layout).
   // ---------------------------------------------------------------------
   group('LayoutComponents.recipeUploadButtonGrid', () {
-    List<Map<String, dynamic>> makeButtons(int n,
-        {VoidCallback? onPressedAt0}) {
+    List<Map<String, dynamic>> makeButtons(
+      int n, {
+      VoidCallback? onPressedAt0,
+    }) {
       return List.generate(n, (i) {
         return {
           'label': 'btn-$i',
@@ -628,13 +641,19 @@ void main() {
         _ContextCapture((ctx) => captured = ctx),
         withL10n: true,
       );
-      await tester.pumpWidget(_wrapWithL10n(Column(children: [
-        LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(6),
-          archiveButton: archive(),
+      await tester.pumpWidget(
+        _wrapWithL10n(
+          Column(
+            children: [
+              LayoutComponents.recipeUploadButtonGrid(
+                captured,
+                buttons: makeButtons(6),
+                archiveButton: archive(),
+              ),
+            ],
+          ),
         ),
-      ])));
+      );
 
       for (var i = 0; i < 6; i++) {
         expect(find.text('btn-$i'), findsOneWidget);
@@ -642,8 +661,9 @@ void main() {
       expect(find.text('arkiv'), findsOneWidget);
     });
 
-    testWidgets('throws ArgumentError when fewer than 6 buttons are supplied',
-        (tester) async {
+    testWidgets('throws ArgumentError when fewer than 6 buttons are supplied', (
+      tester,
+    ) async {
       late BuildContext captured;
       await _pumpAtWidth(
         tester,
@@ -661,8 +681,9 @@ void main() {
       );
     });
 
-    testWidgets('throws ArgumentError when more than 6 buttons are supplied',
-        (tester) async {
+    testWidgets('throws ArgumentError when more than 6 buttons are supplied', (
+      tester,
+    ) async {
       late BuildContext captured;
       await _pumpAtWidth(
         tester,
@@ -680,8 +701,9 @@ void main() {
       );
     });
 
-    testWidgets('tapping the first button invokes its onPressed',
-        (tester) async {
+    testWidgets('tapping the first button invokes its onPressed', (
+      tester,
+    ) async {
       late BuildContext captured;
       await _pumpAtWidth(
         tester,
@@ -690,13 +712,19 @@ void main() {
         withL10n: true,
       );
       var fired = 0;
-      await tester.pumpWidget(_wrapWithL10n(Column(children: [
-        LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(6, onPressedAt0: () => fired++),
-          archiveButton: archive(),
+      await tester.pumpWidget(
+        _wrapWithL10n(
+          Column(
+            children: [
+              LayoutComponents.recipeUploadButtonGrid(
+                captured,
+                buttons: makeButtons(6, onPressedAt0: () => fired++),
+                archiveButton: archive(),
+              ),
+            ],
+          ),
         ),
-      ])));
+      );
 
       // Tapping by visible label is more stable than reaching into the inner
       // square button structure (UtilityComponents may add Semantics/InkWell
@@ -706,8 +734,9 @@ void main() {
       expect(fired, 1);
     });
 
-    testWidgets('tapping the archive button invokes its onPressed',
-        (tester) async {
+    testWidgets('tapping the archive button invokes its onPressed', (
+      tester,
+    ) async {
       late BuildContext captured;
       await _pumpAtWidth(
         tester,
@@ -716,21 +745,28 @@ void main() {
         withL10n: true,
       );
       var fired = 0;
-      await tester.pumpWidget(_wrapWithL10n(Column(children: [
-        LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(6),
-          archiveButton: archive(onPressed: () => fired++),
+      await tester.pumpWidget(
+        _wrapWithL10n(
+          Column(
+            children: [
+              LayoutComponents.recipeUploadButtonGrid(
+                captured,
+                buttons: makeButtons(6),
+                archiveButton: archive(onPressed: () => fired++),
+              ),
+            ],
+          ),
         ),
-      ])));
+      );
 
       await tester.tap(find.text('arkiv'), warnIfMissed: false);
       await tester.pump();
       expect(fired, 1);
     });
 
-    testWidgets('wraps its contents in an Expanded for parent Column/Row use',
-        (tester) async {
+    testWidgets('wraps its contents in an Expanded for parent Column/Row use', (
+      tester,
+    ) async {
       late BuildContext captured;
       await _pumpAtWidth(
         tester,
@@ -738,13 +774,19 @@ void main() {
         _ContextCapture((ctx) => captured = ctx),
         withL10n: true,
       );
-      await tester.pumpWidget(_wrapWithL10n(Column(children: [
-        LayoutComponents.recipeUploadButtonGrid(
-          captured,
-          buttons: makeButtons(6),
-          archiveButton: archive(),
+      await tester.pumpWidget(
+        _wrapWithL10n(
+          Column(
+            children: [
+              LayoutComponents.recipeUploadButtonGrid(
+                captured,
+                buttons: makeButtons(6),
+                archiveButton: archive(),
+              ),
+            ],
+          ),
         ),
-      ])));
+      );
       // The facade returns `Expanded(child: LayoutBuilder(...))`. At least one
       // Expanded should be present at the top of the subtree.
       expect(find.byType(Expanded), findsWidgets);
@@ -785,35 +827,41 @@ void main() {
       // ButleryColors theme extension.
     }, skip: true);
 
-    testWidgets('profileMenu — covered by profile widget tests',
-        (tester) async {
+    testWidgets('profileMenu — covered by profile widget tests', (
+      tester,
+    ) async {
       // SKIP: requires FriendsViewModel/MessagingService/RecipeService/
       // MenuService in ServiceLocator.
     }, skip: true);
 
-    testWidgets('showProfileMenu — covered by profile widget tests',
-        (tester) async {
+    testWidgets('showProfileMenu — covered by profile widget tests', (
+      tester,
+    ) async {
       // SKIP: opens the modal route that hits the same dependency chain as
       // profileMenu.
     }, skip: true);
 
-    testWidgets('offlineIndicator — covered by status indicator tests',
-        (tester) async {
+    testWidgets('offlineIndicator — covered by status indicator tests', (
+      tester,
+    ) async {
       // SKIP: needs OfflineService registered in ServiceLocator.
     }, skip: true);
 
-    testWidgets('offlineStatusIcon — covered by status indicator tests',
-        (tester) async {
+    testWidgets('offlineStatusIcon — covered by status indicator tests', (
+      tester,
+    ) async {
       // SKIP: needs OfflineService registered in ServiceLocator.
     }, skip: true);
 
-    testWidgets('showSaveMenuDialog — covered by menu dialog tests',
-        (tester) async {
+    testWidgets('showSaveMenuDialog — covered by menu dialog tests', (
+      tester,
+    ) async {
       // SKIP: requires a fully wired MenuViewModel.
     }, skip: true);
 
-    testWidgets('showLoadMenuDialog — covered by menu dialog tests',
-        (tester) async {
+    testWidgets('showLoadMenuDialog — covered by menu dialog tests', (
+      tester,
+    ) async {
       // SKIP: requires a fully wired MenuViewModel.
     }, skip: true);
   });

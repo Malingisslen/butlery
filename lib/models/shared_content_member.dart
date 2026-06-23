@@ -44,8 +44,11 @@ class SharedContentMember {
   factory SharedContentMember.fromFirestore(Map<String, dynamic> data) {
     return SharedContentMember(
       userId: SerializationUtils.safeString(data, 'userId'),
-      displayName:
-          SerializationUtils.safeString(data, 'displayName', defaultValue: '?'),
+      displayName: SerializationUtils.safeString(
+        data,
+        'displayName',
+        defaultValue: '?',
+      ),
       avatarUrl: SerializationUtils.safeNullableString(data, 'avatarUrl'),
       addedAt: SerializationUtils.safeDateTime(data, 'addedAt') ?? clock.now(),
       addedBy: SerializationUtils.safeString(data, 'addedBy'),

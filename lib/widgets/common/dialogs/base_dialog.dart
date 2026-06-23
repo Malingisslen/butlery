@@ -49,11 +49,13 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       icon: widget.titleIcon != null
-          ? Icon(widget.titleIcon!,
+          ? Icon(
+              widget.titleIcon!,
               color: widget.isDangerous
                   ? cs.error
                   : widget.primaryActionColor ?? cs.primary,
-              size: AppDimensions.iconSizeXxl)
+              size: AppDimensions.iconSizeXxl,
+            )
           : null,
       title: Text(widget.title),
       content: Column(
@@ -172,8 +174,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
             child: Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.error,
-                  ),
+                color: cs.error,
+              ),
             ),
           ),
         ],
@@ -286,10 +288,10 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     super.primaryActionText,
     super.secondaryActionText,
   }) : super(
-          titleIcon: Icons.warning_amber_rounded,
-          isDangerous: true,
-          primaryActionIcon: Icons.delete,
-        );
+         titleIcon: Icons.warning_amber_rounded,
+         isDangerous: true,
+         primaryActionIcon: Icons.delete,
+       );
 
   @override
   Widget buildContent(BuildContext context) {
@@ -405,8 +407,9 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 color: cs.surfaceContainerHighest,
               )
             : widget.actionButtonIcon,
-        label:
-            Text(isLoading ? loadingText : widget.actionButtonLabel(context)),
+        label: Text(
+          isLoading ? loadingText : widget.actionButtonLabel(context),
+        ),
       );
     } else {
       return FilledButton.icon(
@@ -414,8 +417,9 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
         icon: isLoading
             ? const LoadingIndicator(size: 16, strokeWidth: 2)
             : widget.actionButtonIcon,
-        label:
-            Text(isLoading ? loadingText : widget.actionButtonLabel(context)),
+        label: Text(
+          isLoading ? loadingText : widget.actionButtonLabel(context),
+        ),
       );
     }
   }
@@ -462,8 +466,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
             child: Text(
               error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.error,
-                  ),
+                color: cs.error,
+              ),
             ),
           ),
         ],

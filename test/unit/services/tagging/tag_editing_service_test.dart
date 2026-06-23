@@ -20,13 +20,15 @@ void main() {
   }) {
     return TagResult(
       tags: tags ?? {'test-tag'},
-      allergenStatus: allergenStatus ??
+      allergenStatus:
+          allergenStatus ??
           {
             'gluten': TriState.contains,
             'dairy': TriState.free,
             'nuts': TriState.unknown,
           },
-      dietaryStatus: dietaryStatus ??
+      dietaryStatus:
+          dietaryStatus ??
           {
             'vegetarisk': TriState.free,
             'vegansk': TriState.contains,
@@ -171,9 +173,11 @@ void main() {
       test('removes tag from removedTags when adding', () {
         final recipe = RecipeBuilder()
             .withTagResult(createTagResult())
-            .withTagOverrides(const TagOverrides(
-              removedTags: {'removed-tag'},
-            ))
+            .withTagOverrides(
+              const TagOverrides(
+                removedTags: {'removed-tag'},
+              ),
+            )
             .build();
 
         final result = service.addTag(
@@ -184,8 +188,9 @@ void main() {
 
         expect(result.success, isTrue);
         expect(
-          result.updatedRecipe!.tagOverrides?.removedTags
-              .contains('removed-tag'),
+          result.updatedRecipe!.tagOverrides?.removedTags.contains(
+            'removed-tag',
+          ),
           isFalse,
         );
         expect(
@@ -219,12 +224,14 @@ void main() {
       test('clears all overrides', () {
         final recipe = RecipeBuilder()
             .withTagResult(createTagResult())
-            .withTagOverrides(const TagOverrides(
-              allergenOverrides: {'gluten': TriState.free},
-              dietaryOverrides: {'vegansk': TriState.free},
-              addedTags: {'user-tag'},
-              removedTags: {'auto-tag'},
-            ))
+            .withTagOverrides(
+              const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+                dietaryOverrides: {'vegansk': TriState.free},
+                addedTags: {'user-tag'},
+                removedTags: {'auto-tag'},
+              ),
+            )
             .build();
 
         final result = service.clearAllOverrides(
@@ -252,9 +259,11 @@ void main() {
       test('returns override status when present', () {
         final recipe = RecipeBuilder()
             .withTagResult(createTagResult())
-            .withTagOverrides(const TagOverrides(
-              allergenOverrides: {'gluten': TriState.free},
-            ))
+            .withTagOverrides(
+              const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+              ),
+            )
             .build();
 
         final status = service.getEffectiveAllergenStatus(recipe, 'gluten');
@@ -266,10 +275,12 @@ void main() {
       test('merges auto-generated and user tags', () {
         final recipe = RecipeBuilder()
             .withTagResult(createTagResult(tags: {'auto-tag-1', 'auto-tag-2'}))
-            .withTagOverrides(const TagOverrides(
-              addedTags: {'user-tag'},
-              removedTags: {'auto-tag-2'},
-            ))
+            .withTagOverrides(
+              const TagOverrides(
+                addedTags: {'user-tag'},
+                removedTags: {'auto-tag-2'},
+              ),
+            )
             .build();
 
         final tags = service.getEffectiveTags(recipe);
@@ -289,9 +300,11 @@ void main() {
       test('returns true when overrides exist', () {
         final recipe = RecipeBuilder()
             .withTagResult(createTagResult())
-            .withTagOverrides(const TagOverrides(
-              allergenOverrides: {'gluten': TriState.free},
-            ))
+            .withTagOverrides(
+              const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+              ),
+            )
             .build();
 
         expect(service.hasManualEdits(recipe), isTrue);
@@ -301,15 +314,19 @@ void main() {
     group('getEffectiveTagData', () {
       test('merges all tag data with overrides', () {
         final recipe = RecipeBuilder()
-            .withTagResult(createTagResult(
-              tags: {'auto-tag'},
-              allergenStatus: {'gluten': TriState.contains},
-              dietaryStatus: {'vegetarisk': TriState.free},
-            ))
-            .withTagOverrides(const TagOverrides(
-              allergenOverrides: {'gluten': TriState.unknown},
-              addedTags: {'user-tag'},
-            ))
+            .withTagResult(
+              createTagResult(
+                tags: {'auto-tag'},
+                allergenStatus: {'gluten': TriState.contains},
+                dietaryStatus: {'vegetarisk': TriState.free},
+              ),
+            )
+            .withTagOverrides(
+              const TagOverrides(
+                allergenOverrides: {'gluten': TriState.unknown},
+                addedTags: {'user-tag'},
+              ),
+            )
             .build();
 
         final data = service.getEffectiveTagData(recipe);

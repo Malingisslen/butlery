@@ -41,9 +41,9 @@ class GlobalRecipeCache extends BaseService {
     required FirestoreRepository firestoreRepository,
     required UrlNormalizer urlNormalizer,
     required ContentFingerprint fingerprinter,
-  })  : _firestoreRepo = firestoreRepository,
-        _urlNormalizer = urlNormalizer,
-        _fingerprinter = fingerprinter;
+  }) : _firestoreRepo = firestoreRepository,
+       _urlNormalizer = urlNormalizer,
+       _fingerprinter = fingerprinter;
 
   /// Find a cached recipe by URL.
   ///
@@ -210,7 +210,9 @@ class GlobalRecipeCache extends BaseService {
             // Use URL hash as document ID if available, otherwise generate from fingerprint
             final docId = urlHash ?? 'fp_$fingerprint';
 
-            await _collection.doc(docId).set(
+            await _collection
+                .doc(docId)
+                .set(
                   entry.toFirestore(),
                   SetOptions(merge: false), // Overwrite if exists
                 );
@@ -281,13 +283,17 @@ class GlobalRecipeCache extends BaseService {
   /// Update access statistics (fire and forget)
   void _updateAccessStats(DocumentReference<Map<String, dynamic>> ref) {
     // Don't await - this is a fire-and-forget operation
-    ref.update({
-      'accessCount': FieldValue.increment(1),
-      'lastAccessedAt': FieldValue.serverTimestamp(),
-    }).catchError((e) {
-      // Log but don't fail
-      AppLogger.debug('GlobalRecipeCache: Failed to update access stats: $e');
-    });
+    ref
+        .update({
+          'accessCount': FieldValue.increment(1),
+          'lastAccessedAt': FieldValue.serverTimestamp(),
+        })
+        .catchError((e) {
+          // Log but don't fail
+          AppLogger.debug(
+            'GlobalRecipeCache: Failed to update access stats: $e',
+          );
+        });
   }
 }
 

@@ -100,11 +100,11 @@ class _Harness {
     bool saveSucceeds = true,
     Object? throwOnSave,
     Object? throwOnGet,
-  })  : _currentUserId = currentUserId,
-        _displayName = displayName,
-        _saveSucceeds = saveSucceeds,
-        _throwOnSave = throwOnSave,
-        _throwOnGet = throwOnGet;
+  }) : _currentUserId = currentUserId,
+       _displayName = displayName,
+       _saveSucceeds = saveSucceeds,
+       _throwOnSave = throwOnSave,
+       _throwOnGet = throwOnGet;
 
   String? _currentUserId;
   String? _displayName;
@@ -217,7 +217,8 @@ Recipe _collaborative({
     socialData: RecipeSocialData(
       ownerId: ownerId,
       ownerDisplayName: 'Anna',
-      memberPermissions: members ??
+      memberPermissions:
+          members ??
           {
             ownerId: ResourcePermission.admin,
             'friend-A': ResourcePermission.editor,
@@ -234,21 +235,24 @@ void main() {
   group('shareRecipeWithUsers — auth + permission gates', () {
     /// Proves unauthenticated callers can't share — short-circuits before any
     /// repo or saveRecipe touch.
-    test('unauthenticated → false, no save, no secondary write, error set',
-        () async {
-      final h = _Harness(currentUserId: null);
-      h.seed(_personal(id: 'r1'));
-      final svc = h.build();
+    test(
+      'unauthenticated → false, no save, no secondary write, error set',
+      () async {
+        final h = _Harness(currentUserId: null);
+        h.seed(_personal(id: 'r1'));
+        final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+        final ok = await svc.shareRecipeWithUsers('r1', [
+          'friend-A',
+        ], ResourcePermission.editor);
 
-      expect(ok, isFalse);
-      expect(h.saved, isEmpty);
-      expect(h.repo.calls, isEmpty);
-      expect(h.errors, isNotEmpty);
-      expect(h.notifications, 0);
-    });
+        expect(ok, isFalse);
+        expect(h.saved, isEmpty);
+        expect(h.repo.calls, isEmpty);
+        expect(h.errors, isNotEmpty);
+        expect(h.notifications, 0);
+      },
+    );
 
     /// Proves a missing recipe id can't be shared (would otherwise crash on
     /// `recipe.copyWith` when the loader returns null).
@@ -257,8 +261,9 @@ void main() {
       // store is empty — getRecipe returns null
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'missing', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('missing', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.saved, isEmpty);
@@ -269,23 +274,33 @@ void main() {
     /// must not be able to share someone else's personal recipe. If this
     /// test fails, anyone with the recipe id can grant themselves and
     /// others edit access.
-    test('non-owner non-creator cannot share recipe → false, no save',
-        () async {
-      final h = _Harness(currentUserId: 'stranger-uid');
-      h.seed(_personal(id: 'r1', createdBy: 'real-owner-uid'));
-      final svc = h.build();
+    test(
+      'non-owner non-creator cannot share recipe → false, no save',
+      () async {
+        final h = _Harness(currentUserId: 'stranger-uid');
+        h.seed(_personal(id: 'r1', createdBy: 'real-owner-uid'));
+        final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['victim-uid'], ResourcePermission.admin);
+        final ok = await svc.shareRecipeWithUsers('r1', [
+          'victim-uid',
+        ], ResourcePermission.admin);
 
-      expect(ok, isFalse,
-          reason: 'a stranger sharing someone else\'s recipe is a privilege '
-              'escalation — must be refused');
-      expect(h.saved, isEmpty);
-      expect(h.repo.calls, isEmpty,
-          reason: 'no shared_recipes doc should be created when refused');
-      expect(h.errors, isNotEmpty);
-    });
+        expect(
+          ok,
+          isFalse,
+          reason:
+              'a stranger sharing someone else\'s recipe is a privilege '
+              'escalation — must be refused',
+        );
+        expect(h.saved, isEmpty);
+        expect(
+          h.repo.calls,
+          isEmpty,
+          reason: 'no shared_recipes doc should be created when refused',
+        );
+        expect(h.errors, isNotEmpty);
+      },
+    );
 
     /// Proves the creator can share their own personal recipe (positive
     /// path of the permission gate).
@@ -294,8 +309,9 @@ void main() {
       h.seed(_personal(id: 'r1', createdBy: 'me-uid'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(ok, isTrue);
       expect(h.saved, hasLength(1));
@@ -314,30 +330,31 @@ void main() {
       h.seed(r);
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(ok, isTrue);
     });
   });
 
-  group(
-      'shareRecipeWithUsers — first-share converts personal to '
+  group('shareRecipeWithUsers — first-share converts personal to '
       'collaborative', () {
     /// Pinned contract: the FIRST share of a personal recipe converts it
     /// to collaborative AND seeds the owner with `admin` regardless of the
     /// `permission` arg. A bug here would either (a) skip the conversion
     /// and leave the recipe stuck as personal, or (b) escalate the new
     /// users to admin instead of the requested viewer/editor role.
-    test(
-        'first share: type=collaborative, owner=admin, members get requested '
+    test('first share: type=collaborative, owner=admin, members get requested '
         'permission', () async {
       final h = _Harness(currentUserId: 'me-uid', displayName: 'Anna');
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A', 'friend-B'], ResourcePermission.viewer);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+        'friend-B',
+      ], ResourcePermission.viewer);
 
       expect(ok, isTrue);
       expect(h.saved, hasLength(1));
@@ -346,9 +363,13 @@ void main() {
       expect(saved.socialData?.ownerId, 'me-uid');
       expect(saved.socialData?.ownerDisplayName, 'Anna');
       final perms = saved.socialData!.memberPermissions!;
-      expect(perms['me-uid'], ResourcePermission.admin,
-          reason: 'owner must always be admin regardless of `permission` arg — '
-              'never escalate new members to admin in the seed step');
+      expect(
+        perms['me-uid'],
+        ResourcePermission.admin,
+        reason:
+            'owner must always be admin regardless of `permission` arg — '
+            'never escalate new members to admin in the seed step',
+      );
       expect(perms['friend-A'], ResourcePermission.viewer);
       expect(perms['friend-B'], ResourcePermission.viewer);
     });
@@ -361,8 +382,9 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(h.repo.calls, hasLength(1));
       final call = h.repo.calls.single;
@@ -390,8 +412,11 @@ void main() {
       await svc.shareRecipeWithUsers('ra', ['f'], ResourcePermission.admin);
 
       expect(h.repo.calls, hasLength(3));
-      expect(h.repo.calls[0].doc.allowCollaboration, isFalse,
-          reason: 'viewer permission → no collaboration');
+      expect(
+        h.repo.calls[0].doc.allowCollaboration,
+        isFalse,
+        reason: 'viewer permission → no collaboration',
+      );
       expect(h.repo.calls[1].doc.allowCollaboration, isTrue);
       expect(h.repo.calls[2].doc.allowCollaboration, isTrue);
     });
@@ -414,97 +439,117 @@ void main() {
       h.seed(existing);
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-B'], ResourcePermission.viewer);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-B',
+      ], ResourcePermission.viewer);
 
       expect(ok, isTrue);
       final saved = h.saved.single;
       final perms = saved.socialData!.memberPermissions!;
       expect(perms.keys, containsAll(['me-uid', 'friend-A', 'friend-B']));
-      expect(perms['friend-A'], ResourcePermission.editor,
-          reason: 'existing member must not be downgraded by an unrelated '
-              're-share');
+      expect(
+        perms['friend-A'],
+        ResourcePermission.editor,
+        reason:
+            'existing member must not be downgraded by an unrelated '
+            're-share',
+      );
       expect(perms['friend-B'], ResourcePermission.viewer);
     });
 
     /// Pinned contract: re-sharing with an EXISTING member updates their
     /// role to the new permission. (This is the documented behaviour —
     /// "add or upgrade.")
-    test('re-share with existing member upgrades that member\'s permission',
-        () async {
-      final h = _Harness(currentUserId: 'me-uid');
-      h.seed(_collaborative(
-        id: 'r1',
-        ownerId: 'me-uid',
-        members: {
-          'me-uid': ResourcePermission.admin,
-          'friend-A': ResourcePermission.viewer,
-        },
-      ));
-      final svc = h.build();
+    test(
+      're-share with existing member upgrades that member\'s permission',
+      () async {
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(
+          _collaborative(
+            id: 'r1',
+            ownerId: 'me-uid',
+            members: {
+              'me-uid': ResourcePermission.admin,
+              'friend-A': ResourcePermission.viewer,
+            },
+          ),
+        );
+        final svc = h.build();
 
-      await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+        await svc.shareRecipeWithUsers('r1', [
+          'friend-A',
+        ], ResourcePermission.editor);
 
-      final perms = h.saved.single.socialData!.memberPermissions!;
-      expect(perms['friend-A'], ResourcePermission.editor);
-    });
+        final perms = h.saved.single.socialData!.memberPermissions!;
+        expect(perms['friend-A'], ResourcePermission.editor);
+      },
+    );
   });
 
   group('shareRecipeWithUsers — share-cap (BUT-955)', () {
     /// Pinned: when union(owner, existing, new) > maxSharesPerRecipe the
     /// share is refused BEFORE any save. The cap is a multi-tenancy abuse
     /// guard; a bypass here would let a single recipe become unbounded.
-    test('union over cap → false, no save, no secondary write, error set',
-        () async {
-      final cap = Recipe.maxSharesPerRecipe;
-      // Pre-populate (cap - 1) existing members so adding 5 more pushes over.
-      final members = <String, ResourcePermission>{
-        'me-uid': ResourcePermission.admin,
-        for (int i = 0; i < cap - 1; i++)
-          'existing-$i': ResourcePermission.viewer,
-      };
-      final h = _Harness(currentUserId: 'me-uid');
-      h.seed(_collaborative(id: 'r1', ownerId: 'me-uid', members: members));
-      final svc = h.build();
+    test(
+      'union over cap → false, no save, no secondary write, error set',
+      () async {
+        final cap = Recipe.maxSharesPerRecipe;
+        // Pre-populate (cap - 1) existing members so adding 5 more pushes over.
+        final members = <String, ResourcePermission>{
+          'me-uid': ResourcePermission.admin,
+          for (int i = 0; i < cap - 1; i++)
+            'existing-$i': ResourcePermission.viewer,
+        };
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(_collaborative(id: 'r1', ownerId: 'me-uid', members: members));
+        final svc = h.build();
 
-      // 5 new ids → total would be cap + 4 (cap-1 existing + owner + 5 new)
-      final newIds = List.generate(5, (i) => 'new-$i');
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', newIds, ResourcePermission.viewer);
+        // 5 new ids → total would be cap + 4 (cap-1 existing + owner + 5 new)
+        final newIds = List.generate(5, (i) => 'new-$i');
+        final ok = await svc.shareRecipeWithUsers(
+          'r1',
+          newIds,
+          ResourcePermission.viewer,
+        );
 
-      expect(ok, isFalse);
-      expect(h.saved, isEmpty);
-      expect(h.repo.calls, isEmpty);
-      expect(h.errors.last, contains(cap.toString()));
-    });
+        expect(ok, isFalse);
+        expect(h.saved, isEmpty);
+        expect(h.repo.calls, isEmpty);
+        expect(h.errors.last, contains(cap.toString()));
+      },
+    );
 
     /// Pinned: a re-share of users who are ALREADY members must not
     /// double-count toward the cap. If this test fails, owners get stuck
     /// unable to re-confirm permissions on a near-cap recipe.
-    test('re-sharing existing members at the cap is allowed (dedup union)',
-        () async {
-      final cap = Recipe.maxSharesPerRecipe;
-      // Exactly cap members (including owner).
-      final members = <String, ResourcePermission>{
-        'me-uid': ResourcePermission.admin,
-        for (int i = 0; i < cap - 1; i++)
-          'existing-$i': ResourcePermission.viewer,
-      };
-      final h = _Harness(currentUserId: 'me-uid');
-      h.seed(_collaborative(id: 'r1', ownerId: 'me-uid', members: members));
-      final svc = h.build();
+    test(
+      're-sharing existing members at the cap is allowed (dedup union)',
+      () async {
+        final cap = Recipe.maxSharesPerRecipe;
+        // Exactly cap members (including owner).
+        final members = <String, ResourcePermission>{
+          'me-uid': ResourcePermission.admin,
+          for (int i = 0; i < cap - 1; i++)
+            'existing-$i': ResourcePermission.viewer,
+        };
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(_collaborative(id: 'r1', ownerId: 'me-uid', members: members));
+        final svc = h.build();
 
-      // Re-share the SAME existing ids — union size == cap, no new entries.
-      final ok = await svc.shareRecipeWithUsers(
-        'r1',
-        members.keys.where((k) => k != 'me-uid').toList(),
-        ResourcePermission.editor,
-      );
+        // Re-share the SAME existing ids — union size == cap, no new entries.
+        final ok = await svc.shareRecipeWithUsers(
+          'r1',
+          members.keys.where((k) => k != 'me-uid').toList(),
+          ResourcePermission.editor,
+        );
 
-      expect(ok, isTrue,
-          reason: 'at-cap re-share must succeed when no new members added');
-    });
+        expect(
+          ok,
+          isTrue,
+          reason: 'at-cap re-share must succeed when no new members added',
+        );
+      },
+    );
   });
 
   group('shareRecipeWithUsers — write-ordering / partial-failure', () {
@@ -513,19 +558,25 @@ void main() {
     /// orphan share row pointing at a recipe that never got its socialData
     /// updated — the recipient would see "shared with me" but be denied on
     /// open (rules check `memberPermissions`).
-    test('primary save returns false → no secondary write, returns false',
-        () async {
-      final h = _Harness(saveSucceeds: false);
-      h.seed(_personal(id: 'r1'));
-      final svc = h.build();
+    test(
+      'primary save returns false → no secondary write, returns false',
+      () async {
+        final h = _Harness(saveSucceeds: false);
+        h.seed(_personal(id: 'r1'));
+        final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+        final ok = await svc.shareRecipeWithUsers('r1', [
+          'friend-A',
+        ], ResourcePermission.editor);
 
-      expect(ok, isFalse);
-      expect(h.repo.calls, isEmpty,
-          reason: 'no orphan shared_recipes doc on primary-save failure');
-    });
+        expect(ok, isFalse);
+        expect(
+          h.repo.calls,
+          isEmpty,
+          reason: 'no orphan shared_recipes doc on primary-save failure',
+        );
+      },
+    );
 
     /// Pinned (documented "non-critical" contract): secondary write throw
     /// is swallowed; the operation still returns true because the primary
@@ -539,14 +590,21 @@ void main() {
       h.repo.throwOnCreate = Exception('shared_recipes write denied');
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
-      expect(ok, isTrue,
-          reason: 'documented behaviour: secondary write is best-effort');
+      expect(
+        ok,
+        isTrue,
+        reason: 'documented behaviour: secondary write is best-effort',
+      );
       expect(h.saved, hasLength(1), reason: 'primary save must have happened');
-      expect(h.notifications, greaterThanOrEqualTo(1),
-          reason: 'UI should still be notified of the successful primary save');
+      expect(
+        h.notifications,
+        greaterThanOrEqualTo(1),
+        reason: 'UI should still be notified of the successful primary save',
+      );
     });
 
     /// BUT-1131: when the secondary `shared_recipes` write throws, the
@@ -556,31 +614,46 @@ void main() {
     /// inbox. The primary write still wins (returns true) but the error
     /// channel is populated so a UI can prompt "share may not be visible,
     /// try again".
-    test('secondary write throws → setError called with sanitised message',
-        () async {
-      final h = _Harness();
-      h.seed(_personal(id: 'r1'));
-      h.repo.throwOnCreate =
-          Exception('shared_recipes write denied: permission-denied');
-      final svc = h.build();
+    test(
+      'secondary write throws → setError called with sanitised message',
+      () async {
+        final h = _Harness();
+        h.seed(_personal(id: 'r1'));
+        h.repo.throwOnCreate = Exception(
+          'shared_recipes write denied: permission-denied',
+        );
+        final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+        final ok = await svc.shareRecipeWithUsers('r1', [
+          'friend-A',
+        ], ResourcePermission.editor);
 
-      expect(ok, isTrue,
-          reason: 'BUT-1131: primary save succeeded — return true');
-      expect(h.errors, isNotEmpty,
-          reason: 'BUT-1131: secondary failure must surface via setError');
-      final lastErr = h.errors.last;
-      expect(lastErr, isNotEmpty);
-      // Must NOT leak the raw exception text — must be the localised key
-      // (sanitised, user-facing).
-      expect(lastErr, isNot(contains('permission-denied')),
-          reason:
-              'raw exception text must not leak into the user-facing error');
-      expect(lastErr, isNot(contains('Exception:')),
-          reason: 'raw exception prefix must not leak');
-    });
+        expect(
+          ok,
+          isTrue,
+          reason: 'BUT-1131: primary save succeeded — return true',
+        );
+        expect(
+          h.errors,
+          isNotEmpty,
+          reason: 'BUT-1131: secondary failure must surface via setError',
+        );
+        final lastErr = h.errors.last;
+        expect(lastErr, isNotEmpty);
+        // Must NOT leak the raw exception text — must be the localised key
+        // (sanitised, user-facing).
+        expect(
+          lastErr,
+          isNot(contains('permission-denied')),
+          reason: 'raw exception text must not leak into the user-facing error',
+        );
+        expect(
+          lastErr,
+          isNot(contains('Exception:')),
+          reason: 'raw exception prefix must not leak',
+        );
+      },
+    );
 
     /// Throwing saveRecipe is caught at the outer try → false, error set.
     test('saveRecipe throws → false, error set, no rethrow', () async {
@@ -588,8 +661,9 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.errors, isNotEmpty);
@@ -600,8 +674,9 @@ void main() {
       final h = _Harness()..setThrowOnGet(StateError('network'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithUsers(
-          'r1', ['friend-A'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.saved, isEmpty);
@@ -652,21 +727,25 @@ void main() {
     /// kick everyone off the recipe.
     test('admin member who is not socialData.ownerId cannot unshare', () async {
       final h = _Harness(currentUserId: 'admin-member-uid');
-      h.seed(_collaborative(
-        id: 'r1',
-        ownerId: 'real-owner-uid',
-        members: {
-          'real-owner-uid': ResourcePermission.admin,
-          'admin-member-uid': ResourcePermission.admin, // co-admin
-        },
-      ));
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'real-owner-uid',
+          members: {
+            'real-owner-uid': ResourcePermission.admin,
+            'admin-member-uid': ResourcePermission.admin, // co-admin
+          },
+        ),
+      );
       final svc = h.build();
 
       final ok = await svc.unshareRecipe('r1');
 
-      expect(ok, isFalse,
-          reason:
-              'only socialData.ownerId can unshare — admin perm != ownership');
+      expect(
+        ok,
+        isFalse,
+        reason: 'only socialData.ownerId can unshare — admin perm != ownership',
+      );
       expect(h.saved, isEmpty);
     });
 
@@ -674,29 +753,37 @@ void main() {
     /// to null. A bug shape here is a half-unshared recipe that keeps
     /// `memberPermissions` populated under `type=personal`, leaving stale
     /// access tokens for friend-A in the document.
-    test('owner unshare wipes socialData entirely + flips type to personal',
-        () async {
-      final h = _Harness(currentUserId: 'me-uid');
-      h.seed(_collaborative(
-        id: 'r1',
-        ownerId: 'me-uid',
-        members: {
-          'me-uid': ResourcePermission.admin,
-          'friend-A': ResourcePermission.editor,
-        },
-      ));
-      final svc = h.build();
+    test(
+      'owner unshare wipes socialData entirely + flips type to personal',
+      () async {
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(
+          _collaborative(
+            id: 'r1',
+            ownerId: 'me-uid',
+            members: {
+              'me-uid': ResourcePermission.admin,
+              'friend-A': ResourcePermission.editor,
+            },
+          ),
+        );
+        final svc = h.build();
 
-      final ok = await svc.unshareRecipe('r1');
+        final ok = await svc.unshareRecipe('r1');
 
-      expect(ok, isTrue);
-      expect(h.saved, hasLength(1));
-      final saved = h.saved.single;
-      expect(saved.type, RecipeType.personal);
-      expect(saved.socialData, isNull,
-          reason: 'half-unshared recipe with leftover memberPermissions is a '
-              'privacy bug — must be null, not just empty map');
-    });
+        expect(ok, isTrue);
+        expect(h.saved, hasLength(1));
+        final saved = h.saved.single;
+        expect(saved.type, RecipeType.personal);
+        expect(
+          saved.socialData,
+          isNull,
+          reason:
+              'half-unshared recipe with leftover memberPermissions is a '
+              'privacy bug — must be null, not just empty map',
+        );
+      },
+    );
 
     /// Throwing saveRecipe during unshare is caught → false, error set.
     test('saveRecipe throws → false, error set, no rethrow', () async {
@@ -751,19 +838,26 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['grp-fam'], ResourcePermission.viewer);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'grp-fam',
+      ], ResourcePermission.viewer);
 
       expect(ok, isTrue);
       expect(h.saved, hasLength(1));
       final saved = h.saved.single;
       final perms = saved.socialData!.memberPermissions!;
-      expect(perms.keys, containsAll(['mom-uid', 'dad-uid', 'me-uid']),
-          reason: 'mom + dad become members, me-uid is the owner-admin');
+      expect(
+        perms.keys,
+        containsAll(['mom-uid', 'dad-uid', 'me-uid']),
+        reason: 'mom + dad become members, me-uid is the owner-admin',
+      );
       // me-uid must NOT appear in the recipient list of the secondary write
       // (it's the sharer). The set must be only {mom-uid, dad-uid}.
-      expect(h.repo.calls.single.recipientIds.toSet(), {'mom-uid', 'dad-uid'},
-          reason: 'self must be excluded from the recipient list');
+      expect(
+        h.repo.calls.single.recipientIds.toSet(),
+        {'mom-uid', 'dad-uid'},
+        reason: 'self must be excluded from the recipient list',
+      );
     });
 
     /// Pinned: an empty group (or one containing only the sharer) → false
@@ -781,8 +875,9 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['grp-self'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'grp-self',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.saved, isEmpty);
@@ -797,8 +892,9 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['does-not-exist'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'does-not-exist',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.saved, isEmpty);
@@ -825,15 +921,19 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['grp-a', 'grp-b'], ResourcePermission.viewer);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'grp-a',
+        'grp-b',
+      ], ResourcePermission.viewer);
 
       expect(ok, isTrue);
       final perms = h.saved.single.socialData!.memberPermissions!;
       // 3 friends + owner = 4 keys
       expect(perms.keys.length, 4);
-      expect(perms.keys,
-          containsAll(['me-uid', 'friend-A', 'friend-B', 'friend-C']));
+      expect(
+        perms.keys,
+        containsAll(['me-uid', 'friend-A', 'friend-B', 'friend-C']),
+      );
     });
 
     /// Unauthenticated group-share is refused early.
@@ -842,8 +942,9 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['grp-x'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'grp-x',
+      ], ResourcePermission.editor);
 
       expect(ok, isFalse);
       expect(h.saved, isEmpty);
@@ -863,12 +964,17 @@ void main() {
       h.seed(_personal(id: 'r1'));
       final svc = h.build();
 
-      final ok = await svc.shareRecipeWithGroups(
-          'r1', ['grp-x'], ResourcePermission.editor);
+      final ok = await svc.shareRecipeWithGroups('r1', [
+        'grp-x',
+      ], ResourcePermission.editor);
 
-      expect(ok, isFalse,
-          reason: 'service-unavailable must not crash, must surface as a clean '
-              'no-members-found error');
+      expect(
+        ok,
+        isFalse,
+        reason:
+            'service-unavailable must not crash, must surface as a clean '
+            'no-members-found error',
+      );
     });
   });
 
@@ -912,35 +1018,41 @@ void main() {
       expect(await svc.getSharedUsers('r1'), isEmpty);
     });
 
-    test('getSharedUsers: personal recipe (no socialData) → empty list',
-        () async {
-      final h = _Harness();
-      h.seed(_personal(id: 'r1'));
-      final svc = h.build();
+    test(
+      'getSharedUsers: personal recipe (no socialData) → empty list',
+      () async {
+        final h = _Harness();
+        h.seed(_personal(id: 'r1'));
+        final svc = h.build();
 
-      expect(await svc.getSharedUsers('r1'), isEmpty);
-    });
+        expect(await svc.getSharedUsers('r1'), isEmpty);
+      },
+    );
 
     /// Pinned: getSharedUsers includes the OWNER in the returned list.
     /// The map is keyed on every member (owner + friends). A bug shape
     /// would be filtering out the current user and silently dropping
     /// the owner from "who has access".
-    test('getSharedUsers: collaborative recipe returns all member keys',
-        () async {
-      final h = _Harness();
-      h.seed(_collaborative(
-        id: 'r1',
-        ownerId: 'me-uid',
-        members: {
-          'me-uid': ResourcePermission.admin,
-          'friend-A': ResourcePermission.editor,
-          'friend-B': ResourcePermission.viewer,
-        },
-      ));
-      final svc = h.build();
+    test(
+      'getSharedUsers: collaborative recipe returns all member keys',
+      () async {
+        final h = _Harness();
+        h.seed(
+          _collaborative(
+            id: 'r1',
+            ownerId: 'me-uid',
+            members: {
+              'me-uid': ResourcePermission.admin,
+              'friend-A': ResourcePermission.editor,
+              'friend-B': ResourcePermission.viewer,
+            },
+          ),
+        );
+        final svc = h.build();
 
-      final users = await svc.getSharedUsers('r1');
-      expect(users.toSet(), {'me-uid', 'friend-A', 'friend-B'});
-    });
+        final users = await svc.getSharedUsers('r1');
+        expect(users.toSet(), {'me-uid', 'friend-A', 'friend-B'});
+      },
+    );
   });
 }

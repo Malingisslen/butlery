@@ -213,7 +213,9 @@ class _UserProfileEditViewContentState
         Navigator.pop(context);
       } else {
         SnackBarUtils.showError(
-            context, viewModel.error ?? context.l10n.profileCouldNotSave);
+          context,
+          viewModel.error ?? context.l10n.profileCouldNotSave,
+        );
       }
     }
   }

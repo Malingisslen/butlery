@@ -44,8 +44,9 @@ class _ShoppingMemberManagementDialogState
   void initState() {
     super.initState();
 
-    _localPermissions =
-        Map<String, SharedListPermission>.from(widget.list.memberPermissions);
+    _localPermissions = Map<String, SharedListPermission>.from(
+      widget.list.memberPermissions,
+    );
 
     if (!_localPermissions.containsKey(widget.list.ownerId)) {
       _localPermissions[widget.list.ownerId] = SharedListPermission.admin;
@@ -73,7 +74,9 @@ class _ShoppingMemberManagementDialogState
   }
 
   Future<void> _updateMemberPermission(
-      String userId, SharedListPermission newPermission) async {
+    String userId,
+    SharedListPermission newPermission,
+  ) async {
     if (_isLoading) return;
 
     setState(() {
@@ -83,12 +86,12 @@ class _ShoppingMemberManagementDialogState
 
     try {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final success =
-          await shoppingService.collaborative.updateMemberPermission(
-        listId: widget.list.id,
-        userId: userId,
-        permission: newPermission,
-      );
+      final success = await shoppingService.collaborative
+          .updateMemberPermission(
+            listId: widget.list.id,
+            userId: userId,
+            permission: newPermission,
+          );
 
       if (success) {
         if (!mounted) return;
@@ -100,9 +103,12 @@ class _ShoppingMemberManagementDialogState
           final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n.shoppingPermissionUpdated(
+              content: Text(
+                context.l10n.shoppingPermissionUpdated(
                   widget.userDisplayNames[userId] ??
-                      context.l10n.shoppingUnknownUser)),
+                      context.l10n.shoppingUnknownUser,
+                ),
+              ),
               backgroundColor: cs.primary,
               duration: const Duration(seconds: 2),
             ),
@@ -209,8 +215,9 @@ class _ShoppingMemberManagementDialogState
       final addedMembers = <String>[];
 
       for (final friendId in _selectedFriends) {
-        final friend =
-            widget.availableFriends.firstWhere((f) => f.uid == friendId);
+        final friend = widget.availableFriends.firstWhere(
+          (f) => f.uid == friendId,
+        );
         final success = await shoppingService.collaborative.addMember(
           listId: widget.list.id,
           userId: friendId,
@@ -239,8 +246,9 @@ class _ShoppingMemberManagementDialogState
           final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(context.l10n.shoppingMembersAdded(addedMembers.length)),
+              content: Text(
+                context.l10n.shoppingMembersAdded(addedMembers.length),
+              ),
               backgroundColor: cs.primary,
               duration: const Duration(seconds: 2),
             ),
@@ -265,8 +273,9 @@ class _ShoppingMemberManagementDialogState
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final allMembers =
-        Map<String, SharedListPermission>.from(_localPermissions);
+    final allMembers = Map<String, SharedListPermission>.from(
+      _localPermissions,
+    );
 
     return AlertDialog(
       title: Row(
@@ -291,10 +300,12 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: cs.error
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  color: cs.error.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                 ),
                 child: Text(
                   _error!,
@@ -313,8 +324,9 @@ class _ShoppingMemberManagementDialogState
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                 ),
                 child: ListView.builder(
                   itemCount: allMembers.length,
@@ -323,11 +335,16 @@ class _ShoppingMemberManagementDialogState
                     final userId = entry.key;
                     final permission = entry.value;
                     final isOwner = userId == widget.list.ownerId;
-                    final userName = widget.userDisplayNames[userId] ??
+                    final userName =
+                        widget.userDisplayNames[userId] ??
                         context.l10n.shoppingUnknownUser;
 
                     return _buildMemberListTile(
-                        userId, userName, permission, isOwner);
+                      userId,
+                      userName,
+                      permission,
+                      isOwner,
+                    );
                   },
                 ),
               ),
@@ -352,8 +369,9 @@ class _ShoppingMemberManagementDialogState
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                 ),
                 child: _filteredFriends.isEmpty
                     ? Center(
@@ -381,8 +399,9 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 child: ActionButtons.primaryButton(
                   context,
-                  label: context.l10n
-                      .shoppingAddFriendsCount(_selectedFriends.length),
+                  label: context.l10n.shoppingAddFriendsCount(
+                    _selectedFriends.length,
+                  ),
                   icon: Icons.person_add,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _addSelectedMembers,
@@ -403,15 +422,20 @@ class _ShoppingMemberManagementDialogState
     );
   }
 
-  Widget _buildMemberListTile(String userId, String userName,
-      SharedListPermission permission, bool isOwner) {
+  Widget _buildMemberListTile(
+    String userId,
+    String userName,
+    SharedListPermission permission,
+    bool isOwner,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor:
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor: cs.primary.withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
@@ -424,8 +448,10 @@ class _ShoppingMemberManagementDialogState
         style: AppTextStyles.contentTitle,
       ),
       subtitle: isOwner
-          ? Text(context.l10n.shoppingPermissionOwner,
-              style: AppTextStyles.linkSmall)
+          ? Text(
+              context.l10n.shoppingPermissionOwner,
+              style: AppTextStyles.linkSmall,
+            )
           : DropdownButton<SharedListPermission>(
               value: permission,
               onChanged: _isLoading
@@ -440,9 +466,11 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.view,
                   child: Row(
                     children: [
-                      Icon(Icons.visibility,
-                          size: AppDimensions.iconSizeS,
-                          color: cs.onSurfaceVariant),
+                      Icon(
+                        Icons.visibility,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.onSurfaceVariant,
+                      ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionView),
                     ],
@@ -452,8 +480,11 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.edit,
                   child: Row(
                     children: [
-                      Icon(Icons.edit,
-                          size: AppDimensions.iconSizeS, color: cs.secondary),
+                      Icon(
+                        Icons.edit,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.secondary,
+                      ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionEdit),
                     ],
@@ -463,8 +494,11 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.admin,
                   child: Row(
                     children: [
-                      Icon(Icons.admin_panel_settings,
-                          size: AppDimensions.iconSizeS, color: cs.primary),
+                      Icon(
+                        Icons.admin_panel_settings,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.primary,
+                      ),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionAdmin),
                     ],
@@ -474,8 +508,9 @@ class _ShoppingMemberManagementDialogState
             ),
       trailing: !isOwner
           ? IconButton(
-              onPressed:
-                  _isLoading ? null : () => _removeMember(userId, userName),
+              onPressed: _isLoading
+                  ? null
+                  : () => _removeMember(userId, userName),
               icon: Icon(Icons.person_remove, color: cs.error),
               tooltip: context.l10n.shoppingRemoveMember,
             )
@@ -490,8 +525,9 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor:
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor: cs.primary.withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()

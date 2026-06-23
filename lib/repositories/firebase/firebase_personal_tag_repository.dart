@@ -38,29 +38,29 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   // Owner-only permissions - user can only access their own subcollection
   @override
   Future<bool> validateCreatePermission(
-          String userId, PersonalTag entity) async =>
-      true;
+    String userId,
+    PersonalTag entity,
+  ) async => true;
 
   @override
   Future<bool> validateReadPermission(
     String userId,
     String resourceId,
     PersonalTag? entity,
-  ) async =>
-      true;
+  ) async => true;
 
   @override
   Future<bool> validateUpdatePermission(
     String userId,
     String resourceId,
     PersonalTag entity,
-  ) async =>
-      true;
+  ) async => true;
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      true;
+    String userId,
+    String resourceId,
+  ) async => true;
 
   // Ownership is structural (user subcollection) — skip per-document
   // validation and audit logging that the base readAll() does.
@@ -120,8 +120,9 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     final all = await readAll();
     if (all.isEmpty) return 0;
 
-    final maxOrder =
-        all.map((tag) => tag.sortOrder).reduce((a, b) => a > b ? a : b);
+    final maxOrder = all
+        .map((tag) => tag.sortOrder)
+        .reduce((a, b) => a > b ? a : b);
     return maxOrder + 1;
   }
 
@@ -136,8 +137,9 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     final results = <PersonalTag>[];
 
     for (final batch in tagIds.chunked(kFirestoreWhereInLimit)) {
-      final snapshot =
-          await ref.where(FieldPath.documentId, whereIn: batch).get();
+      final snapshot = await ref
+          .where(FieldPath.documentId, whereIn: batch)
+          .get();
       results.addAll(snapshot.docs.map(fromFirestore));
     }
 
@@ -275,8 +277,9 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
       resourceOwnerId: userId,
       resourceType: collectionName,
     );
-    final snapshot =
-        await getCollectionForUser(userId).limit(maxDocuments).get();
+    final snapshot = await getCollectionForUser(
+      userId,
+    ).limit(maxDocuments).get();
     return snapshot.docs
         .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
         .toList();

@@ -68,44 +68,50 @@ void main() {
 
     group('extractFromUrl', () {
       test('should extract from Instagram URL', () async {
-        final result =
-            await service.extractFromUrl('https://instagram.com/p/recipe123');
+        final result = await service.extractFromUrl(
+          'https://instagram.com/p/recipe123',
+        );
 
         // Result will be actual extraction result from manager
         expect(result, isA<ExtractionResult>());
       });
 
       test('should extract from Facebook URL', () async {
-        final result = await service
-            .extractFromUrl('https://facebook.com/video/cooking123');
+        final result = await service.extractFromUrl(
+          'https://facebook.com/video/cooking123',
+        );
 
         expect(result, isA<ExtractionResult>());
       });
 
       test('should extract from TikTok URL', () async {
-        final result =
-            await service.extractFromUrl('https://tiktok.com/@chef/video/123');
+        final result = await service.extractFromUrl(
+          'https://tiktok.com/@chef/video/123',
+        );
 
         expect(result, isA<ExtractionResult>());
       });
 
       test('should extract from YouTube URL', () async {
-        final result = await service
-            .extractFromUrl('https://youtube.com/watch?v=cooking123');
+        final result = await service.extractFromUrl(
+          'https://youtube.com/watch?v=cooking123',
+        );
 
         expect(result, isA<ExtractionResult>());
       });
 
       test('should extract from Pinterest URL', () async {
-        final result =
-            await service.extractFromUrl('https://pinterest.com/pin/recipe123');
+        final result = await service.extractFromUrl(
+          'https://pinterest.com/pin/recipe123',
+        );
 
         expect(result, isA<ExtractionResult>());
       });
 
       test('should extract from cooking website', () async {
-        final result =
-            await service.extractFromUrl('https://allrecipes.com/recipe/123');
+        final result = await service.extractFromUrl(
+          'https://allrecipes.com/recipe/123',
+        );
 
         expect(result, isA<ExtractionResult>());
       });
@@ -193,20 +199,23 @@ void main() {
 
     group('URL Variations', () {
       test('should handle Instagram post URL', () async {
-        final result =
-            await service.extractFromUrl('https://www.instagram.com/p/ABC123/');
+        final result = await service.extractFromUrl(
+          'https://www.instagram.com/p/ABC123/',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle Instagram reel URL', () async {
-        final result = await service
-            .extractFromUrl('https://www.instagram.com/reel/ABC123/');
+        final result = await service.extractFromUrl(
+          'https://www.instagram.com/reel/ABC123/',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle Facebook mobile URL', () async {
-        final result = await service
-            .extractFromUrl('https://m.facebook.com/video.php?v=123');
+        final result = await service.extractFromUrl(
+          'https://m.facebook.com/video.php?v=123',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
@@ -216,26 +225,30 @@ void main() {
       });
 
       test('should handle TikTok mobile URL', () async {
-        final result =
-            await service.extractFromUrl('https://m.tiktok.com/v/123.html');
+        final result = await service.extractFromUrl(
+          'https://m.tiktok.com/v/123.html',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle URL with query parameters', () async {
-        final result = await service
-            .extractFromUrl('https://example.com/recipe?id=123&lang=en');
+        final result = await service.extractFromUrl(
+          'https://example.com/recipe?id=123&lang=en',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle URL with hash fragment', () async {
-        final result = await service
-            .extractFromUrl('https://example.com/recipe#ingredients');
+        final result = await service.extractFromUrl(
+          'https://example.com/recipe#ingredients',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle URL with special characters', () async {
-        final result =
-            await service.extractFromUrl('https://example.com/recipe/äöü');
+        final result = await service.extractFromUrl(
+          'https://example.com/recipe/äöü',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
@@ -249,8 +262,9 @@ void main() {
 
     group('Error Scenarios', () {
       test('should handle network timeout', () async {
-        final result =
-            await service.extractFromUrl('https://timeout.example.com');
+        final result = await service.extractFromUrl(
+          'https://timeout.example.com',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
@@ -260,8 +274,9 @@ void main() {
       });
 
       test('should handle unsupported platform', () async {
-        final result =
-            await service.extractFromUrl('https://unsupported-platform.com');
+        final result = await service.extractFromUrl(
+          'https://unsupported-platform.com',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
@@ -323,26 +338,30 @@ void main() {
 
     group('Edge Cases', () {
       test('should handle whitespace in URL', () async {
-        final result =
-            await service.extractFromUrl('  https://example.com/recipe  ');
+        final result = await service.extractFromUrl(
+          '  https://example.com/recipe  ',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle URL with newlines', () async {
-        final result =
-            await service.extractFromUrl('https://example.com\n/recipe');
+        final result = await service.extractFromUrl(
+          'https://example.com\n/recipe',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle localhost URL', () async {
-        final result =
-            await service.extractFromUrl('http://localhost:3000/recipe');
+        final result = await service.extractFromUrl(
+          'http://localhost:3000/recipe',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
       test('should handle IP address URL', () async {
-        final result =
-            await service.extractFromUrl('http://192.168.1.1/recipe');
+        final result = await service.extractFromUrl(
+          'http://192.168.1.1/recipe',
+        );
         expect(result, isA<ExtractionResult>());
       });
 
@@ -360,53 +379,69 @@ void main() {
       // when the ExtractionManager itself reports failure. Would fail if the facade
       // forwarded success:true from the manager or dropped the error field.
       test(
-          'forwards success==false and non-null error from a failing ExtractionManager',
-          () async {
-        const errorMessage =
-            'Unknown platform for URL: https://unsupported.example.com';
-        final extractor = SocialMediaExtractor(
-          manager: _FakeExtractionManager(
-            (_) => ExtractionResult(
-              success: false,
-              error: errorMessage,
+        'forwards success==false and non-null error from a failing ExtractionManager',
+        () async {
+          const errorMessage =
+              'Unknown platform for URL: https://unsupported.example.com';
+          final extractor = SocialMediaExtractor(
+            manager: _FakeExtractionManager(
+              (_) => ExtractionResult(
+                success: false,
+                error: errorMessage,
+              ),
             ),
-          ),
-        );
-        addTearDown(extractor.dispose);
+          );
+          addTearDown(extractor.dispose);
 
-        final result =
-            await extractor.extractFromUrl('https://unsupported.example.com');
+          final result = await extractor.extractFromUrl(
+            'https://unsupported.example.com',
+          );
 
-        expect(result.success, isFalse,
+          expect(
+            result.success,
+            isFalse,
             reason:
-                'A manager-reported failure must propagate as success==false');
-        expect(result.error, isNotNull,
+                'A manager-reported failure must propagate as success==false',
+          );
+          expect(
+            result.error,
+            isNotNull,
             reason:
-                'The error string must not be dropped — receive_share_view reads result.error');
-      });
+                'The error string must not be dropped — receive_share_view reads result.error',
+          );
+        },
+      );
 
       // Intent: when the ExtractionManager throws (e.g. network timeout), extractFromUrl
       // still returns a structured failure — success==false, non-null error — rather than
       // propagating the exception. Would fail if the null-coalescing fallback were removed
       // or the fallback were changed to success:true.
       test(
-          'returns success==false with non-null error when ExtractionManager throws',
-          () async {
-        final extractor = SocialMediaExtractor(
-          manager: _ThrowingExtractionManager(),
-        );
-        addTearDown(extractor.dispose);
+        'returns success==false with non-null error when ExtractionManager throws',
+        () async {
+          final extractor = SocialMediaExtractor(
+            manager: _ThrowingExtractionManager(),
+          );
+          addTearDown(extractor.dispose);
 
-        final result =
-            await extractor.extractFromUrl('https://instagram.com/p/ABC123');
+          final result = await extractor.extractFromUrl(
+            'https://instagram.com/p/ABC123',
+          );
 
-        expect(result.success, isFalse,
+          expect(
+            result.success,
+            isFalse,
             reason:
-                'An unexpected exception inside the manager must not propagate as success');
-        expect(result.error, isNotNull,
+                'An unexpected exception inside the manager must not propagate as success',
+          );
+          expect(
+            result.error,
+            isNotNull,
             reason:
-                'The fallback path must populate error so receive_share_view can display it');
-      });
+                'The fallback path must populate error so receive_share_view can display it',
+          );
+        },
+      );
 
       // Intent: every failure that flows through the facade carries a non-null
       // metadata['reason'] code, so receive_share_view passes a meaningful errorType
@@ -423,53 +458,61 @@ void main() {
         'unknown_platform',
         'no_content',
         'network',
-        'parse_failed'
+        'parse_failed',
       };
-      test('facade failure carries a non-null metadata[reason] code (BUT-1348)',
-          () async {
-        const errorMessage = 'Platform not supported';
-        final extractor = SocialMediaExtractor(
-          manager: _FakeExtractionManager(
-            (_) => ExtractionResult(
-              success: false,
-              error: errorMessage,
-              metadata: const {'reason': 'unknown_platform'},
+      test(
+        'facade failure carries a non-null metadata[reason] code (BUT-1348)',
+        () async {
+          const errorMessage = 'Platform not supported';
+          final extractor = SocialMediaExtractor(
+            manager: _FakeExtractionManager(
+              (_) => ExtractionResult(
+                success: false,
+                error: errorMessage,
+                metadata: const {'reason': 'unknown_platform'},
+              ),
             ),
-          ),
-        );
-        addTearDown(extractor.dispose);
+          );
+          addTearDown(extractor.dispose);
 
-        final result =
-            await extractor.extractFromUrl('https://unsupported.example.com');
+          final result = await extractor.extractFromUrl(
+            'https://unsupported.example.com',
+          );
 
-        expect(
-          result.metadata['reason'],
-          isNotNull,
-          reason:
-              'BUT-1348: every failure ExtractionResult must carry a reason code so '
-              'receive_share_view logs a meaningful errorType, not null.',
-        );
-        expect(knownReasons, contains(result.metadata['reason']),
-            reason: 'reason must be one of the agreed stable codes');
-      });
+          expect(
+            result.metadata['reason'],
+            isNotNull,
+            reason:
+                'BUT-1348: every failure ExtractionResult must carry a reason code so '
+                'receive_share_view logs a meaningful errorType, not null.',
+          );
+          expect(
+            knownReasons,
+            contains(result.metadata['reason']),
+            reason: 'reason must be one of the agreed stable codes',
+          );
+        },
+      );
 
       // Intent: when the manager throws, the facade fallback still tags the result
       // with a 'network' reason code (not null). Would fail if the fallback dropped
       // the reason key. BUT-1348.
       test(
-          'throwing manager falls back to a non-null network reason code (BUT-1348)',
-          () async {
-        final extractor = SocialMediaExtractor(
-          manager: _ThrowingExtractionManager(),
-        );
-        addTearDown(extractor.dispose);
+        'throwing manager falls back to a non-null network reason code (BUT-1348)',
+        () async {
+          final extractor = SocialMediaExtractor(
+            manager: _ThrowingExtractionManager(),
+          );
+          addTearDown(extractor.dispose);
 
-        final result =
-            await extractor.extractFromUrl('https://instagram.com/p/ABC123');
+          final result = await extractor.extractFromUrl(
+            'https://instagram.com/p/ABC123',
+          );
 
-        expect(result.metadata['reason'], isNotNull);
-        expect(result.metadata['reason'], equals('network'));
-      });
+          expect(result.metadata['reason'], isNotNull);
+          expect(result.metadata['reason'], equals('network'));
+        },
+      );
 
       // Intent: the per-branch reason codes that production failure paths stamp are
       // exactly the stable set receive_share_view expects. Constructed directly because

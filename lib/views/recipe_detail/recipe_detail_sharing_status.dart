@@ -56,8 +56,9 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
     final categoryIds = recipe.socialData?.categoryIds ?? [];
 
     // Filter out owner from member list
-    final sharedMemberIds =
-        memberPermissions.keys.where((id) => id != currentUserId).toList();
+    final sharedMemberIds = memberPermissions.keys
+        .where((id) => id != currentUserId)
+        .toList();
 
     if (sharedMemberIds.isEmpty && categoryIds.isEmpty) {
       return const SizedBox.shrink();
@@ -73,22 +74,27 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
           // Header
           Row(
             children: [
-              Icon(Icons.share_outlined,
-                  size: AppDimensions.iconSizeM, color: cs.primary),
+              Icon(
+                Icons.share_outlined,
+                size: AppDimensions.iconSizeM,
+                color: cs.primary,
+              ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 context.l10n.recipeSharingStatus,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(color: cs.primary),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: cs.primary),
               ),
               const Spacer(),
               // Stop sharing with all
               TextButton.icon(
                 onPressed: () => _confirmStopAll(context),
-                icon: Icon(Icons.close,
-                    size: AppDimensions.iconSizeS, color: cs.error),
+                icon: Icon(
+                  Icons.close,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.error,
+                ),
                 label: Text(
                   context.l10n.recipeSharingStopAll,
                   style: TextStyle(color: cs.error, fontSize: 12),
@@ -102,10 +108,9 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
           if (sharedMemberIds.isNotEmpty) ...[
             Text(
               context.l10n.recipeSharingFriends,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             ...sharedMemberIds.map((userId) {
@@ -128,10 +133,9 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               const SizedBox(height: AppDimensions.spacingSm),
             Text(
               context.l10n.recipeSharingGroups,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             ...categoryIds.map((groupId) {
@@ -169,7 +173,9 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(
-            context, context.l10n.recipeSharingStopAllSuccess);
+          context,
+          context.l10n.recipeSharingStopAllSuccess,
+        );
         onSharingChanged();
       } else {
         SnackBarUtils.showError(context, context.l10n.commonUnknownError);
@@ -196,13 +202,17 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
 
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.social
-          .removeMember(recipeId: recipe.id, userId: memberId);
+      final success = await recipeService.social.removeMember(
+        recipeId: recipe.id,
+        userId: memberId,
+      );
 
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(
-            context, context.l10n.recipeSharingRevokeSuccess(displayName));
+          context,
+          context.l10n.recipeSharingRevokeSuccess(displayName),
+        );
         onSharingChanged();
       } else {
         SnackBarUtils.showError(context, context.l10n.commonUnknownError);
@@ -239,8 +249,11 @@ class _ShareeRow extends StatelessWidget {
           ),
           IconButton(
             onPressed: onRevoke,
-            icon: Icon(Icons.close,
-                size: AppDimensions.iconSizeS, color: cs.error),
+            icon: Icon(
+              Icons.close,
+              size: AppDimensions.iconSizeS,
+              color: cs.error,
+            ),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: EdgeInsets.zero,
             tooltip: context.l10n.recipeSharingRevoke,

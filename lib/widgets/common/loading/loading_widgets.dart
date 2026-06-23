@@ -24,15 +24,17 @@ class LoadingWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return ColoredBox(
-          color: overlayColor ??
+          color:
+              overlayColor ??
               cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
           child: Center(
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusL),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusL,
+                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -91,12 +93,16 @@ class LoadingWidgets {
                         padding: const EdgeInsets.all(AppDimensions.paddingM),
                         decoration: BoxDecoration(
                           color: cs.error.withValues(
-                              alpha: AppDimensions.opacityVeryLight),
+                            alpha: AppDimensions.opacityVeryLight,
+                          ),
                           borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM),
+                            AppDimensions.borderRadiusM,
+                          ),
                           border: Border.all(
-                              color: cs.error.withValues(
-                                  alpha: AppDimensions.opacityMediumLight)),
+                            color: cs.error.withValues(
+                              alpha: AppDimensions.opacityMediumLight,
+                            ),
+                          ),
                         ),
                         child: Text(
                           ctx.l10n.errorUnexpected,

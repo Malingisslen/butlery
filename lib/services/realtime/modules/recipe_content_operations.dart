@@ -153,8 +153,10 @@ class RecipeContentOperations {
     required String editedByDisplayName,
   }) {
     // Validate ingredients
-    final validIngredients =
-        ingredients.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
+    final validIngredients = ingredients
+        .map((i) => i.trim())
+        .where((i) => i.isNotEmpty)
+        .toList();
 
     if (validIngredients.isEmpty) {
       throw RecipeOperationError(
@@ -230,8 +232,10 @@ class RecipeContentOperations {
     required String editedByDisplayName,
   }) {
     // Validate instructions
-    final validInstructions =
-        instructions.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
+    final validInstructions = instructions
+        .map((i) => i.trim())
+        .where((i) => i.isNotEmpty)
+        .toList();
 
     if (validInstructions.isEmpty) {
       throw RecipeOperationError(

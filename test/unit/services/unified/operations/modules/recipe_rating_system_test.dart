@@ -21,19 +21,21 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
     });
 
     setUp(() async {
@@ -55,17 +57,20 @@ void main() {
       app_provider.ServiceLocator.initialize(MockDIContainer());
 
       // Stub getUserRating (called by rateRecipe to get previous rating for analytics)
-      when(() => mockRatingsRepository.getUserRating(any(), any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockRatingsRepository.getUserRating(any(), any()),
+      ).thenAnswer((_) async => null);
 
       // Stub analytics logRecipeRated (called after successful rating)
       final mockAnalytics =
           TestServiceLocator.get<AnalyticsService>() as MockAnalyticsService;
-      when(() => mockAnalytics.logRecipeRated(
-            recipeId: any(named: 'recipeId'),
-            rating: any(named: 'rating'),
-            previousRating: any(named: 'previousRating'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.logRecipeRated(
+          recipeId: any(named: 'recipeId'),
+          rating: any(named: 'rating'),
+          previousRating: any(named: 'previousRating'),
+        ),
+      ).thenAnswer((_) async {});
 
       // Create rating system instance
       ratingSystem = RecipeRatingSystem(
@@ -85,12 +90,14 @@ void main() {
     group('Core Rating Operations', () {
       test('should rate recipe successfully with valid rating', () async {
         // Arrange
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: 'recipe_1',
-              userId: 'user_123',
-              rating: 4.5,
-              review: 'Great recipe!',
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: 'recipe_1',
+            userId: 'user_123',
+            rating: 4.5,
+            review: 'Great recipe!',
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await ratingSystem.rateRecipe(
@@ -105,22 +112,26 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRatingsRepository.rateRecipe(
-              recipeId: 'recipe_1',
-              userId: 'user_123',
-              rating: 4.5,
-              review: 'Great recipe!',
-            )).called(1);
+        verify(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: 'recipe_1',
+            userId: 'user_123',
+            rating: 4.5,
+            review: 'Great recipe!',
+          ),
+        ).called(1);
       });
 
       test('should rate recipe without review', () async {
         // Arrange
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: 'recipe_1',
-              userId: 'user_123',
-              rating: 3.0,
-              review: null,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: 'recipe_1',
+            userId: 'user_123',
+            rating: 3.0,
+            review: null,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await ratingSystem.rateRecipe(
@@ -139,12 +150,14 @@ void main() {
 
       test('should trim review text before saving', () async {
         // Arrange
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: 'Trimmed review',
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: 'Trimmed review',
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await ratingSystem.rateRecipe(
@@ -158,12 +171,14 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: 'Trimmed review',
-            )).called(1);
+        verify(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: 'Trimmed review',
+          ),
+        ).called(1);
       });
     });
 
@@ -181,12 +196,14 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: any(named: 'review'),
-            ));
+        verifyNever(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+          ),
+        );
       });
 
       test('should reject rating above 5.0', () async {
@@ -236,12 +253,14 @@ void main() {
 
       test('should accept boundary ratings (1.0 and 5.0)', () async {
         // Arrange
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: any(named: 'review'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act - Test 1.0
         final result1 = await ratingSystem.rateRecipe(
@@ -305,12 +324,14 @@ void main() {
         var validatorCalled = false;
         var getterCalled = false;
 
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: any(named: 'review'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await ratingSystem.rateRecipe(
@@ -349,8 +370,9 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        when(() => mockRatingsRepository.getUserRating('recipe_1', 'user_123'))
-            .thenAnswer((_) async => testRating);
+        when(
+          () => mockRatingsRepository.getUserRating('recipe_1', 'user_123'),
+        ).thenAnswer((_) async => testRating);
 
         // Act
         final rating = await ratingSystem.getUserRating(
@@ -364,8 +386,9 @@ void main() {
 
       test('should handle null user rating', () async {
         // Arrange
-        when(() => mockRatingsRepository.getUserRating('recipe_1', 'user_123'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRatingsRepository.getUserRating('recipe_1', 'user_123'),
+        ).thenAnswer((_) async => null);
 
         // Act
         final rating = await ratingSystem.getUserRating(
@@ -400,12 +423,14 @@ void main() {
           ),
         ];
 
-        when(() => mockRatingsRepository.getRecipeRatings('recipe_1'))
-            .thenAnswer((_) async => ratings);
+        when(
+          () => mockRatingsRepository.getRecipeRatings('recipe_1'),
+        ).thenAnswer((_) async => ratings);
 
         // Act
-        final result =
-            await ratingSystem.getRecipeRatings(recipeId: 'recipe_1');
+        final result = await ratingSystem.getRecipeRatings(
+          recipeId: 'recipe_1',
+        );
 
         // Assert
         expect(result.length, equals(2));
@@ -414,12 +439,14 @@ void main() {
 
       test('should return empty list on error', () async {
         // Arrange
-        when(() => mockRatingsRepository.getRecipeRatings('recipe_1'))
-            .thenThrow(Exception('Failed'));
+        when(
+          () => mockRatingsRepository.getRecipeRatings('recipe_1'),
+        ).thenThrow(Exception('Failed'));
 
         // Act
-        final result =
-            await ratingSystem.getRecipeRatings(recipeId: 'recipe_1');
+        final result = await ratingSystem.getRecipeRatings(
+          recipeId: 'recipe_1',
+        );
 
         // Assert
         expect(result, isEmpty);
@@ -439,15 +466,18 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        when(() => mockRatingsRepository.getUserRating('recipe_1', 'user_123'))
-            .thenAnswer((_) async => existingRating);
+        when(
+          () => mockRatingsRepository.getUserRating('recipe_1', 'user_123'),
+        ).thenAnswer((_) async => existingRating);
 
-        when(() => mockRatingsRepository.updateRating(
-              recipeId: 'recipe_1',
-              userId: 'user_123',
-              rating: 5.0,
-              review: 'Amazing!',
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.updateRating(
+            recipeId: 'recipe_1',
+            userId: 'user_123',
+            rating: 5.0,
+            review: 'Amazing!',
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await ratingSystem.updateRating(
@@ -459,12 +489,14 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRatingsRepository.updateRating(
-              recipeId: 'recipe_1',
-              userId: 'user_123',
-              rating: 5.0,
-              review: 'Amazing!',
-            )).called(1);
+        verify(
+          () => mockRatingsRepository.updateRating(
+            recipeId: 'recipe_1',
+            userId: 'user_123',
+            rating: 5.0,
+            review: 'Amazing!',
+          ),
+        ).called(1);
       });
 
       test('should validate rating value on update', () async {
@@ -483,8 +515,9 @@ void main() {
     group('Delete Rating Operations', () {
       test('should delete rating', () async {
         // Arrange
-        when(() => mockRatingsRepository.removeRating('recipe_1', 'user_123'))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRatingsRepository.removeRating('recipe_1', 'user_123'),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await ratingSystem.deleteRating(
@@ -494,14 +527,16 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRatingsRepository.removeRating('recipe_1', 'user_123'))
-            .called(1);
+        verify(
+          () => mockRatingsRepository.removeRating('recipe_1', 'user_123'),
+        ).called(1);
       });
 
       test('should handle delete errors gracefully', () async {
         // Arrange
-        when(() => mockRatingsRepository.removeRating('recipe_1', 'user_123'))
-            .thenThrow(Exception('Delete failed'));
+        when(
+          () => mockRatingsRepository.removeRating('recipe_1', 'user_123'),
+        ).thenThrow(Exception('Delete failed'));
 
         // Act
         final result = await ratingSystem.deleteRating(
@@ -517,12 +552,14 @@ void main() {
     group('Error Handling', () {
       test('should handle repository errors gracefully', () async {
         // Arrange
-        when(() => mockRatingsRepository.rateRecipe(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              rating: any(named: 'rating'),
-              review: any(named: 'review'),
-            )).thenThrow(Exception('Repository error'));
+        when(
+          () => mockRatingsRepository.rateRecipe(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            rating: any(named: 'rating'),
+            review: any(named: 'review'),
+          ),
+        ).thenThrow(Exception('Repository error'));
 
         // Act
         final result = await ratingSystem.rateRecipe(
@@ -540,8 +577,9 @@ void main() {
 
       test('should handle getUserRating errors', () async {
         // Arrange
-        when(() => mockRatingsRepository.getUserRating(any(), any()))
-            .thenThrow(Exception('Failed'));
+        when(
+          () => mockRatingsRepository.getUserRating(any(), any()),
+        ).thenThrow(Exception('Failed'));
 
         // Act
         final rating = await ratingSystem.getUserRating(

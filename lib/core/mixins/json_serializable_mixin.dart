@@ -253,8 +253,11 @@ mixin JsonSerializableMixin {
   }
 
   /// Safe string extraction from JSON
-  String extractString(Map<String, dynamic> json, String key,
-      {String defaultValue = ''}) {
+  String extractString(
+    Map<String, dynamic> json,
+    String key, {
+    String defaultValue = '',
+  }) {
     final value = json[key];
     if (value is String) return value;
     return defaultValue;
@@ -267,8 +270,11 @@ mixin JsonSerializableMixin {
   }
 
   /// Safe int extraction from JSON
-  int extractInt(Map<String, dynamic> json, String key,
-      {int defaultValue = 0}) {
+  int extractInt(
+    Map<String, dynamic> json,
+    String key, {
+    int defaultValue = 0,
+  }) {
     final value = json[key];
     if (value is int) return value;
     if (value is double) return value.toInt();
@@ -283,8 +289,11 @@ mixin JsonSerializableMixin {
   }
 
   /// Safe double extraction from JSON
-  double extractDouble(Map<String, dynamic> json, String key,
-      {double defaultValue = 0.0}) {
+  double extractDouble(
+    Map<String, dynamic> json,
+    String key, {
+    double defaultValue = 0.0,
+  }) {
     final value = json[key];
     if (value is double) return value;
     if (value is int) return value.toDouble();
@@ -299,8 +308,11 @@ mixin JsonSerializableMixin {
   }
 
   /// Safe bool extraction from JSON
-  bool extractBool(Map<String, dynamic> json, String key,
-      {bool defaultValue = false}) {
+  bool extractBool(
+    Map<String, dynamic> json,
+    String key, {
+    bool defaultValue = false,
+  }) {
     final value = json[key];
     if (value is bool) return value;
     if (value is String) {

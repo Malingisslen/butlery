@@ -21,8 +21,8 @@ class OfflineInitialization {
   OfflineInitialization({
     VoidCallback? onConnectivityChanged,
     VoidCallback? onReconnected,
-  })  : _onConnectivityChanged = onConnectivityChanged,
-        _onReconnected = onReconnected;
+  }) : _onConnectivityChanged = onConnectivityChanged,
+       _onReconnected = onReconnected;
 
   bool get isOnline => _isOnline;
   bool get isInitialized => _isInitialized;
@@ -63,8 +63,10 @@ class OfflineInitialization {
       // surface real network failures through per-request errors, so treat
       // the app as always online on web and skip the stream.
       _isOnline = true;
-      AppLogger.info('📶 Web platform — assuming online (Firebase handles '
-          'per-request offline behavior)');
+      AppLogger.info(
+        '📶 Web platform — assuming online (Firebase handles '
+        'per-request offline behavior)',
+      );
       return;
     }
 

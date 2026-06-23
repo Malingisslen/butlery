@@ -75,8 +75,9 @@ class PerformanceNavigatorObserver extends NavigatorObserver {
     _startScreenTrace(
       route,
       routeName,
-      previousScreen:
-          previousRoute != null ? _getRouteName(previousRoute) : null,
+      previousScreen: previousRoute != null
+          ? _getRouteName(previousRoute)
+          : null,
     );
   }
 
@@ -156,7 +157,8 @@ class PerformanceNavigatorObserver extends NavigatorObserver {
       );
     } catch (e) {
       AppLogger.warning(
-          'Performance: Failed to start screen trace for $screenName: $e');
+        'Performance: Failed to start screen trace for $screenName: $e',
+      );
     }
   }
 
@@ -174,7 +176,8 @@ class PerformanceNavigatorObserver extends NavigatorObserver {
     } catch (e) {
       final routeName = _getRouteName(route);
       AppLogger.warning(
-          'Performance: Failed to stop screen trace for $routeName: $e');
+        'Performance: Failed to stop screen trace for $routeName: $e',
+      );
     }
   }
 
@@ -191,12 +194,14 @@ class PerformanceNavigatorObserver extends NavigatorObserver {
         } catch (e) {
           // Continue disposing other traces even if one fails
           AppLogger.warning(
-              'Performance: Failed to stop trace during dispose: $e');
+            'Performance: Failed to stop trace during dispose: $e',
+          );
         }
       }
 
       AppLogger.debug(
-          '📊 Performance: Disposed all active screen traces (${traces.length})');
+        '📊 Performance: Disposed all active screen traces (${traces.length})',
+      );
     } catch (e) {
       AppLogger.error('Performance: Failed to dispose traces: $e');
     }

@@ -42,13 +42,17 @@ void main() {
         final recipe = parser.parseRecipe(IcaTestFixtures.recipeMinimalData);
 
         // Recipe should be rejected due to insufficient ingredients (<3) and no instructions
-        expect(recipe, isNull,
-            reason: 'Recipe with only 2 ingredients should fail quality check');
+        expect(
+          recipe,
+          isNull,
+          reason: 'Recipe with only 2 ingredients should fail quality check',
+        );
       });
 
       test('should handle recipe with Swedish characters', () {
-        final recipe =
-            parser.parseRecipe(IcaTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          IcaTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Ärtsoppa med fläsk'));
@@ -117,11 +121,13 @@ void main() {
 
         // Check specific ingredients were cleaned
         expect(
-            ingredients.any((ing) => ing.toString().contains('500 g nötfärs')),
-            isTrue);
+          ingredients.any((ing) => ing.toString().contains('500 g nötfärs')),
+          isTrue,
+        );
         expect(
-            ingredients.any((ing) => ing.toString().contains('8 tortillabröd')),
-            isTrue);
+          ingredients.any((ing) => ing.toString().contains('8 tortillabröd')),
+          isTrue,
+        );
       });
 
       test('should trim whitespace from instructions', () {
@@ -180,8 +186,9 @@ void main() {
 
     group('Error Recovery', () {
       test('should fall back to CSS when JSON-LD is malformed', () {
-        final recipe =
-            parser.parseRecipe(IcaTestFixtures.recipeWithMalformedJson);
+        final recipe = parser.parseRecipe(
+          IcaTestFixtures.recipeWithMalformedJson,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Lasagne al forno'));
@@ -206,8 +213,9 @@ void main() {
 
     group('Quality Scoring', () {
       test('should give high quality score to complete recipe', () {
-        final recipe =
-            parser.parseRecipe(IcaTestFixtures.recipeCompleteMetadata);
+        final recipe = parser.parseRecipe(
+          IcaTestFixtures.recipeCompleteMetadata,
+        );
 
         expect(recipe, isNotNull);
 
@@ -228,7 +236,7 @@ void main() {
           'name': 'Simple Recipe',
           'recipeIngredient': [
             'Ingredient 1',
-            'Ingredient 2'
+            'Ingredient 2',
           ], // Only 2 ingredients
           // No instructions
         };
@@ -257,16 +265,18 @@ void main() {
 
     group('Swedish Text Handling', () {
       test('should preserve Swedish characters in title', () {
-        final recipe =
-            parser.parseRecipe(IcaTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          IcaTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Ärtsoppa med fläsk'));
       });
 
       test('should preserve Swedish characters in ingredients', () {
-        final recipe =
-            parser.parseRecipe(IcaTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          IcaTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;

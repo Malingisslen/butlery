@@ -80,12 +80,17 @@ abstract class BaseSharedContentModel<TContent> {
   ) {
     return {
       'sharedByUserId': SerializationUtils.safeString(data, 'sharedByUserId'),
-      'sharedByDisplayName':
-          SerializationUtils.safeString(data, 'sharedByDisplayName'),
-      'sharedAt':
-          SerializationUtils.parseRequiredDateTimeValue(data['sharedAt']),
-      'shareMessage':
-          SerializationUtils.safeNullableString(data, 'shareMessage'),
+      'sharedByDisplayName': SerializationUtils.safeString(
+        data,
+        'sharedByDisplayName',
+      ),
+      'sharedAt': SerializationUtils.parseRequiredDateTimeValue(
+        data['sharedAt'],
+      ),
+      'shareMessage': SerializationUtils.safeNullableString(
+        data,
+        'shareMessage',
+      ),
       'viewCount': SerializationUtils.safeInt(data, 'viewCount'),
       'engagementCount': SerializationUtils.safeInt(data, 'engagementCount'),
       'dismissalCount': SerializationUtils.safeInt(data, 'dismissalCount'),
@@ -98,11 +103,15 @@ abstract class BaseSharedContentModel<TContent> {
     return {
       'id': SerializationUtils.safeString(json, 'id'),
       'sharedByUserId': SerializationUtils.safeString(json, 'sharedByUserId'),
-      'sharedByDisplayName':
-          SerializationUtils.safeString(json, 'sharedByDisplayName'),
+      'sharedByDisplayName': SerializationUtils.safeString(
+        json,
+        'sharedByDisplayName',
+      ),
       'sharedAt': SerializationUtils.safeRequiredDateTime(json, 'sharedAt'),
-      'shareMessage':
-          SerializationUtils.safeNullableString(json, 'shareMessage'),
+      'shareMessage': SerializationUtils.safeNullableString(
+        json,
+        'shareMessage',
+      ),
       'viewCount': SerializationUtils.safeInt(json, 'viewCount'),
       'engagementCount': SerializationUtils.safeInt(json, 'engagementCount'),
       'dismissalCount': SerializationUtils.safeInt(json, 'dismissalCount'),

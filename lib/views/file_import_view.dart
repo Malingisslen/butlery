@@ -107,9 +107,11 @@ class _FileImportViewState extends State<FileImportView> {
                           const SizedBox(height: AppDimensions.spacingS),
                           _buildRequirement(context.l10n.importColumnTitle),
                           _buildRequirement(
-                              context.l10n.importColumnIngredients),
+                            context.l10n.importColumnIngredients,
+                          ),
                           _buildRequirement(
-                              context.l10n.importColumnInstructions),
+                            context.l10n.importColumnInstructions,
+                          ),
                           const SizedBox(height: AppDimensions.spacingS),
                           Text(
                             context.l10n.importFileColumnsOptional,
@@ -151,19 +153,24 @@ class _FileImportViewState extends State<FileImportView> {
                         if (_vm.importedCount > 0 || _vm.failedCount > 0)
                           Padding(
                             padding: const EdgeInsets.only(
-                                top: AppDimensions.spacingM),
+                              top: AppDimensions.spacingM,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (_vm.importedCount > 0) ...[
                                   Icon(
                                     Icons.check_circle,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
-                                  Text(context.l10n
-                                      .importSucceededCount(_vm.importedCount)),
+                                  Text(
+                                    context.l10n.importSucceededCount(
+                                      _vm.importedCount,
+                                    ),
+                                  ),
                                 ],
                                 if (_vm.importedCount > 0 &&
                                     _vm.failedCount > 0)
@@ -174,8 +181,11 @@ class _FileImportViewState extends State<FileImportView> {
                                     color: Theme.of(context).colorScheme.error,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
-                                  Text(context.l10n
-                                      .importFailedCount(_vm.failedCount)),
+                                  Text(
+                                    context.l10n.importFailedCount(
+                                      _vm.failedCount,
+                                    ),
+                                  ),
                                 ],
                               ],
                             ),
@@ -186,8 +196,9 @@ class _FileImportViewState extends State<FileImportView> {
                   // Status message
                   if (!_vm.isLoading && _vm.statusMessage != null)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(top: AppDimensions.spacingL),
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingL,
+                      ),
                       child: Card(
                         color: _vm.failedCount > 0
                             ? Theme.of(context).colorScheme.errorContainer
@@ -214,12 +225,16 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildRequirement(String text) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-          start: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+        start: AppDimensions.spacingM,
+        bottom: AppDimensions.spacingXs,
+      ),
       child: Row(
         children: [
-          Icon(Icons.check,
-              size: AppDimensions.iconSizeS,
-              color: context.butleryColors.success),
+          Icon(
+            Icons.check,
+            size: AppDimensions.iconSizeS,
+            color: context.butleryColors.success,
+          ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],
@@ -230,12 +245,16 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildOptional(String text) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-          start: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+        start: AppDimensions.spacingM,
+        bottom: AppDimensions.spacingXs,
+      ),
       child: Row(
         children: [
-          Icon(Icons.add,
-              size: AppDimensions.iconSizeS,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.add,
+            size: AppDimensions.iconSizeS,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

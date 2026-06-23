@@ -63,13 +63,15 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      registerFallbackValue(UserProfile(
-        uid: 'fallback',
-        email: 'fallback@test.com',
-        displayName: 'Fallback',
-        joinedAt: DateTime(2025, 1, 1),
-        lastActiveAt: DateTime(2025, 1, 1),
-      ));
+      registerFallbackValue(
+        UserProfile(
+          uid: 'fallback',
+          email: 'fallback@test.com',
+          displayName: 'Fallback',
+          joinedAt: DateTime(2025, 1, 1),
+          lastActiveAt: DateTime(2025, 1, 1),
+        ),
+      );
     });
 
     setUp(() async {
@@ -204,15 +206,19 @@ void main() {
         viewModel.toggleFriendSelection('friend-3');
 
         expect(viewModel.selectedFriendsCount, equals(3));
-        expect(viewModel.selectedFriendIds,
-            containsAll(['friend-1', 'friend-2', 'friend-3']));
+        expect(
+          viewModel.selectedFriendIds,
+          containsAll(['friend-1', 'friend-2', 'friend-3']),
+        );
       });
 
       test('should select all friends', () {
         viewModel.selectAllFriends();
 
-        expect(viewModel.selectedFriendsCount,
-            equals(viewModel.availableFriends.length));
+        expect(
+          viewModel.selectedFriendsCount,
+          equals(viewModel.availableFriends.length),
+        );
       });
 
       test('should clear friend selection', () {
@@ -319,25 +325,31 @@ void main() {
         await viewModel.loadFriends();
 
         // Configure mock coordinators
-        when(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: any(named: 'recipeId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenAnswer((_) async => 'invitation-123');
+        when(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: any(named: 'recipeId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer((_) async => 'invitation-123');
 
-        when(() => mockMenuCoordinator.createMenuInvitation(
-              menuId: any(named: 'menuId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenAnswer((_) async => 'invitation-456');
+        when(
+          () => mockMenuCoordinator.createMenuInvitation(
+            menuId: any(named: 'menuId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer((_) async => 'invitation-456');
 
-        when(() => mockShoppingCoordinator.createShoppingListInvitation(
-              shoppingListId: any(named: 'shoppingListId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => 'invitation-789');
+        when(
+          () => mockShoppingCoordinator.createShoppingListInvitation(
+            shoppingListId: any(named: 'shoppingListId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => 'invitation-789');
 
         // Configure menu service to return a basic menu
         final testMenu = SharedMenu(
@@ -369,12 +381,14 @@ void main() {
         addTearDown(() {
           if (!inflight.isCompleted) inflight.complete('inv-123');
         });
-        when(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: any(named: 'recipeId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenAnswer((_) => inflight.future);
+        when(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: any(named: 'recipeId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer((_) => inflight.future);
 
         // ignore: unawaited_futures
         viewModel.shareContent(
@@ -456,12 +470,14 @@ void main() {
           customMessage: 'Custom message',
         );
 
-        verify(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: 'recipe-123',
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: 'Custom message',
-              allowCollaboration: true,
-            )).called(1);
+        verify(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: 'recipe-123',
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: 'Custom message',
+            allowCollaboration: true,
+          ),
+        ).called(1);
       });
 
       test('should use default message when no custom message', () async {
@@ -473,12 +489,14 @@ void main() {
           contentType: ShareableContentType.recipe,
         );
 
-        verify(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: 'recipe-123',
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: 'Default message',
-              allowCollaboration: true,
-            )).called(1);
+        verify(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: 'recipe-123',
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: 'Default message',
+            allowCollaboration: true,
+          ),
+        ).called(1);
       });
 
       test('should handle menu not found', () async {
@@ -498,12 +516,14 @@ void main() {
       test('should handle sharing failure from coordinator', () async {
         viewModel.toggleFriendSelection('friend-1');
 
-        when(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: any(named: 'recipeId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: any(named: 'recipeId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer((_) async => null);
 
         final result = await viewModel.shareContent(
           contentId: 'recipe-123',
@@ -517,12 +537,14 @@ void main() {
       test('should handle sharing exception', () async {
         viewModel.toggleFriendSelection('friend-1');
 
-        when(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: any(named: 'recipeId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenThrow(Exception('Network error'));
+        when(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: any(named: 'recipeId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenThrow(Exception('Network error'));
 
         final result = await viewModel.shareContent(
           contentId: 'recipe-123',
@@ -559,15 +581,19 @@ void main() {
         viewModel.toggleFriendSelection('friend-1');
 
         // Configure coordinator with delay to catch isBusy state
-        when(() => mockRecipeCoordinator.createRecipeInvitation(
-              recipeId: any(named: 'recipeId'),
-              inviteeUserIds: any(named: 'inviteeUserIds'),
-              message: any(named: 'message'),
-              allowCollaboration: any(named: 'allowCollaboration'),
-            )).thenAnswer((_) => Future.delayed(
-              const Duration(milliseconds: 20),
-              () => 'invitation-123',
-            ));
+        when(
+          () => mockRecipeCoordinator.createRecipeInvitation(
+            recipeId: any(named: 'recipeId'),
+            inviteeUserIds: any(named: 'inviteeUserIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          ),
+        ).thenAnswer(
+          (_) => Future.delayed(
+            const Duration(milliseconds: 20),
+            () => 'invitation-123',
+          ),
+        );
 
         bool wasBusy = false;
         viewModel.addListener(() {
@@ -628,7 +654,9 @@ void main() {
         );
 
         expect(
-            viewModel.selectedFriendIds, containsAll(['friend-1', 'friend-2']));
+          viewModel.selectedFriendIds,
+          containsAll(['friend-1', 'friend-2']),
+        );
         expect(viewModel.shareMessage, isNotEmpty);
       });
 

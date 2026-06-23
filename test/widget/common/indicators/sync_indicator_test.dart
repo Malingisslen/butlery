@@ -98,13 +98,15 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                butleryColors = context.butleryColors;
-                return const SyncIndicator(
-                  hasPendingWrites: true,
-                  isFromCache: false,
-                );
-              }),
+              body: Builder(
+                builder: (context) {
+                  butleryColors = context.butleryColors;
+                  return const SyncIndicator(
+                    hasPendingWrites: true,
+                    isFromCache: false,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -119,13 +121,15 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return const SyncIndicator(
-                  hasPendingWrites: false,
-                  isFromCache: true,
-                );
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return const SyncIndicator(
+                    hasPendingWrites: false,
+                    isFromCache: true,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -142,14 +146,16 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                butleryColors = context.butleryColors;
-                return const SyncIndicator(
-                  hasPendingWrites: false,
-                  isFromCache: false,
-                  alwaysVisible: true,
-                );
-              }),
+              body: Builder(
+                builder: (context) {
+                  butleryColors = context.butleryColors;
+                  return const SyncIndicator(
+                    hasPendingWrites: false,
+                    isFromCache: false,
+                    alwaysVisible: true,
+                  );
+                },
+              ),
             ),
           ),
         );

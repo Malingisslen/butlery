@@ -40,12 +40,12 @@ Recipe _recipe({
 }
 
 IngredientData _ingredientData(String id, String swedish) => IngredientData(
-      id: id,
-      swedish: swedish,
-      english: swedish,
-      group: 'other',
-      properties: const {},
-    );
+  id: id,
+  swedish: swedish,
+  english: swedish,
+  group: 'other',
+  properties: const {},
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -211,17 +211,21 @@ void main() {
         ),
       ];
 
-      when(() => mockLookupService.lookupFromRaw(
-            ['2 dl mjölk', '500g kycklingfilé'],
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async => IngredientLookupResult(
-            matched: [
-              _ingredientData('milk', 'mjölk'),
-              _ingredientData('chicken-breast', 'kycklingfilé'),
-            ],
-            unmatched: const [],
-            coverage: 1.0,
-          ));
+      when(
+        () => mockLookupService.lookupFromRaw(
+          ['2 dl mjölk', '500g kycklingfilé'],
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer(
+        (_) async => IngredientLookupResult(
+          matched: [
+            _ingredientData('milk', 'mjölk'),
+            _ingredientData('chicken-breast', 'kycklingfilé'),
+          ],
+          unmatched: const [],
+          coverage: 1.0,
+        ),
+      );
 
       final results = await service.matchRecipesWithNormalization(
         selectedIngredientIds: {'milk', 'chicken-breast'},
@@ -240,14 +244,18 @@ void main() {
         raw: ['ägg'],
       );
 
-      when(() => mockLookupService.lookupFromRaw(
-            ['ägg'],
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async => IngredientLookupResult(
-            matched: [_ingredientData('egg', 'ägg')],
-            unmatched: const [],
-            coverage: 1.0,
-          ));
+      when(
+        () => mockLookupService.lookupFromRaw(
+          ['ägg'],
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer(
+        (_) async => IngredientLookupResult(
+          matched: [_ingredientData('egg', 'ägg')],
+          unmatched: const [],
+          coverage: 1.0,
+        ),
+      );
 
       // First call — triggers normalization
       await service.matchRecipesWithNormalization(
@@ -262,33 +270,44 @@ void main() {
       );
 
       // lookupFromRaw should only be called once (cached on second call)
-      verify(() => mockLookupService.lookupFromRaw(
-            ['ägg'],
-            userId: any(named: 'userId'),
-          )).called(1);
+      verify(
+        () => mockLookupService.lookupFromRaw(
+          ['ägg'],
+          userId: any(named: 'userId'),
+        ),
+      ).called(1);
     });
   });
 
   group('resolveIngredientNames', () {
     test('returns Swedish display names for ingredient IDs', () async {
       when(() => mockIngredientRepository.getById('chicken-breast')).thenAnswer(
-          (_) async => _ingredientData('chicken-breast', 'kycklingfilé'));
-      when(() => mockIngredientRepository.getById('rice'))
-          .thenAnswer((_) async => _ingredientData('rice', 'ris'));
+        (_) async => _ingredientData('chicken-breast', 'kycklingfilé'),
+      );
+      when(
+        () => mockIngredientRepository.getById('rice'),
+      ).thenAnswer((_) async => _ingredientData('rice', 'ris'));
 
-      final names =
-          await service.resolveIngredientNames(['chicken-breast', 'rice']);
+      final names = await service.resolveIngredientNames([
+        'chicken-breast',
+        'rice',
+      ]);
 
       expect(names, {'chicken-breast': 'kycklingfilé', 'rice': 'ris'});
     });
 
     test('resolves English name via findByName fallback', () async {
-      when(() => mockIngredientRepository.getById('chicken breast'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepository.findByName('chicken breast',
-              language: 'en'))
-          .thenAnswer(
-              (_) async => _ingredientData('chicken-breast', 'kycklingbröst'));
+      when(
+        () => mockIngredientRepository.getById('chicken breast'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockIngredientRepository.findByName(
+          'chicken breast',
+          language: 'en',
+        ),
+      ).thenAnswer(
+        (_) async => _ingredientData('chicken-breast', 'kycklingbröst'),
+      );
 
       final names = await service.resolveIngredientNames(['chicken breast']);
 
@@ -296,12 +315,18 @@ void main() {
     });
 
     test('falls back to cleaned ID when no lookup matches', () async {
-      when(() => mockIngredientRepository.getById('unknown-thing'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepository.findByName('unknown-thing',
-          language: 'en')).thenAnswer((_) async => null);
-      when(() => mockIngredientRepository.findByName('unknown-thing'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockIngredientRepository.getById('unknown-thing'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockIngredientRepository.findByName(
+          'unknown-thing',
+          language: 'en',
+        ),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockIngredientRepository.findByName('unknown-thing'),
+      ).thenAnswer((_) async => null);
 
       final names = await service.resolveIngredientNames(['unknown-thing']);
 

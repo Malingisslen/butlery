@@ -22,7 +22,7 @@ class ListActivityOperations {
         'userId': list.lastActivityByUserId,
         'userName': list.lastActivityByDisplayName,
         'description': 'Lista uppdaterad',
-      }
+      },
     ];
   }
 
@@ -48,8 +48,9 @@ class ListActivityOperations {
       'totalItems': totalItems,
       'boughtItems': boughtItems,
       'remainingItems': remainingItems,
-      'completionPercentage':
-          totalItems > 0 ? (boughtItems / totalItems * 100).round() : 0,
+      'completionPercentage': totalItems > 0
+          ? (boughtItems / totalItems * 100).round()
+          : 0,
       'memberCount': list.memberPermissions.length,
       'memberActivity': memberActivity,
       'lastActivity': list.updatedAt,
@@ -67,13 +68,15 @@ class ListActivityOperations {
   }
 
   bool canManageMembers(String listId) {
-    return ServiceLocator.get<PermissionService>()
-        .canManageShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canManageShoppingList(
+      listId,
+    );
   }
 
   bool canDelete(String listId) {
-    return ServiceLocator.get<PermissionService>()
-        .canDeleteShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canDeleteShoppingList(
+      listId,
+    );
   }
 
   SharedListPermission? getUserPermission(String listId) {

@@ -98,13 +98,13 @@ class RecipeCacheModule {
     required void Function() notifyListeners,
     void Function(Recipe recipe)? onRecipeUpdated,
     void Function(String recipeId)? onRecipeRemoved,
-  })  : _firestore = firestore,
-        _cacheHelper = cacheHelper,
-        _getCurrentUserId = getCurrentUserId,
-        _setError = setError,
-        _notifyListeners = notifyListeners,
-        _onRecipeUpdated = onRecipeUpdated,
-        _onRecipeRemoved = onRecipeRemoved {
+  }) : _firestore = firestore,
+       _cacheHelper = cacheHelper,
+       _getCurrentUserId = getCurrentUserId,
+       _setError = setError,
+       _notifyListeners = notifyListeners,
+       _onRecipeUpdated = onRecipeUpdated,
+       _onRecipeRemoved = onRecipeRemoved {
     // Set current user for cache helper
     _cacheHelper.setCurrentUser(_getCurrentUserId());
 
@@ -295,8 +295,10 @@ class RecipeCacheModule {
   /// BUT-1256: Test seam for the sync→cache removal path. See
   /// [debugApplyRecipeUpdate].
   @visibleForTesting
-  Future<void> debugApplyRecipeRemoval(String recipeId,
-      {String source = 'test'}) {
+  Future<void> debugApplyRecipeRemoval(
+    String recipeId, {
+    String source = 'test',
+  }) {
     return _removeCachedRecipe(recipeId, source);
   }
 

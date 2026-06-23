@@ -50,25 +50,32 @@ void main() {
     addedAt: DateTime(2026, 1, 1),
   );
 
-  test('restoreItem appends the service-returned item with its fresh id',
-      () async {
-    final service = _MockPantryService();
-    when(() => service.restoreItem(any(), removed))
-        .thenAnswer((_) async => removed.copyWith(id: 'new-id'));
+  test(
+    'restoreItem appends the service-returned item with its fresh id',
+    () async {
+      final service = _MockPantryService();
+      when(
+        () => service.restoreItem(any(), removed),
+      ).thenAnswer((_) async => removed.copyWith(id: 'new-id'));
 
-    final vm = PantryViewModel(
-      pantryService: service,
-      ingredientRepository: _MockIngredientRepository(),
-    );
+      final vm = PantryViewModel(
+        pantryService: service,
+        ingredientRepository: _MockIngredientRepository(),
+      );
 
-    await vm.restoreItem(removed);
+      await vm.restoreItem(removed);
 
-    expect(vm.items, hasLength(1));
-    expect(vm.items.single.id, 'new-id',
-        reason: 'The list must hold the re-persisted document id — keeping '
-            '"old-id" would make follow-up operations target a deleted doc.');
-    expect(vm.items.single.ingredientName, 'Mjölk');
-    expect(vm.hasError, isFalse);
-    vm.dispose();
-  });
+      expect(vm.items, hasLength(1));
+      expect(
+        vm.items.single.id,
+        'new-id',
+        reason:
+            'The list must hold the re-persisted document id — keeping '
+            '"old-id" would make follow-up operations target a deleted doc.',
+      );
+      expect(vm.items.single.ingredientName, 'Mjölk');
+      expect(vm.hasError, isFalse);
+      vm.dispose();
+    },
+  );
 }

@@ -51,14 +51,16 @@ class AppTheme {
       outlinedButtonTheme: ComponentThemes.outlinedButtonTheme(colorScheme),
       textButtonTheme: ComponentThemes.textButtonTheme(colorScheme),
       iconButtonTheme: ComponentThemes.iconButtonTheme(colorScheme),
-      floatingActionButtonTheme:
-          ComponentThemes.floatingActionButtonTheme(colorScheme),
+      floatingActionButtonTheme: ComponentThemes.floatingActionButtonTheme(
+        colorScheme,
+      ),
 
       cardTheme: ComponentThemes.cardTheme(colorScheme),
       inputDecorationTheme: ComponentThemes.inputDecorationTheme(colorScheme),
       appBarTheme: ComponentThemes.appBarTheme(colorScheme),
-      bottomNavigationBarTheme:
-          ComponentThemes.bottomNavigationBarTheme(colorScheme),
+      bottomNavigationBarTheme: ComponentThemes.bottomNavigationBarTheme(
+        colorScheme,
+      ),
       tabBarTheme: ComponentThemes.tabBarTheme(colorScheme),
       listTileTheme: ComponentThemes.listTileTheme(colorScheme),
       dialogTheme: ComponentThemes.dialogTheme(colorScheme),
@@ -70,8 +72,9 @@ class AppTheme {
       radioTheme: ComponentThemes.radioTheme(colorScheme),
       chipTheme: ComponentThemes.chipTheme(colorScheme),
       sliderTheme: ComponentThemes.sliderTheme(colorScheme),
-      progressIndicatorTheme:
-          ComponentThemes.progressIndicatorTheme(colorScheme),
+      progressIndicatorTheme: ComponentThemes.progressIndicatorTheme(
+        colorScheme,
+      ),
       scrollbarTheme: ComponentThemes.scrollbarTheme(colorScheme),
 
       scaffoldBackgroundColor: colorScheme.surface,

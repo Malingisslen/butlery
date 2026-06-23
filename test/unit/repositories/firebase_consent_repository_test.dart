@@ -295,14 +295,20 @@ void main() {
 
         // Seed multiple consent versions
         await _seedConsentHistory(fakeFirestore, userId, [
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 30))),
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 20)),
-              consentVersion: '1.1'),
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 10)),
-              consentVersion: '2.0'),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 30)),
+          ),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 20)),
+            consentVersion: '1.1',
+          ),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 10)),
+            consentVersion: '2.0',
+          ),
         ]);
 
         // Act
@@ -332,14 +338,22 @@ void main() {
 
         // Seed multiple consent versions
         await _seedConsentHistory(fakeFirestore, userId, [
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 5))),
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 4))),
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 3))),
-          _createConsent(userId,
-              grantedAt: now.subtract(const Duration(days: 2))),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 5)),
+          ),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 4)),
+          ),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 3)),
+          ),
+          _createConsent(
+            userId,
+            grantedAt: now.subtract(const Duration(days: 2)),
+          ),
         ]);
 
         // Act

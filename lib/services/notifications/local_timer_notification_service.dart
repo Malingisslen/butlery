@@ -27,8 +27,8 @@ class LocalTimerNotificationService extends BaseService {
   LocalTimerNotificationService({
     FlutterLocalNotificationsPlugin? plugin,
     bool Function()? isMobileOverride,
-  })  : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
-        _isMobileOverride = isMobileOverride;
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
+       _isMobileOverride = isMobileOverride;
 
   @override
   String get serviceName => 'LocalTimerNotificationService';
@@ -111,7 +111,8 @@ class LocalTimerNotificationService extends BaseService {
       // Exact-alarm permission can be revoked on Android 14+; degrade to the
       // in-app pulse rather than crashing the timer flow.
       AppLogger.warning(
-          'LocalTimerNotificationService: schedule failed for $timerId: $e');
+        'LocalTimerNotificationService: schedule failed for $timerId: $e',
+      );
     }
   }
 
@@ -122,7 +123,8 @@ class LocalTimerNotificationService extends BaseService {
       await _plugin.cancel(id: notificationIdFor(timerId));
     } catch (e) {
       AppLogger.warning(
-          'LocalTimerNotificationService: cancel failed for $timerId: $e');
+        'LocalTimerNotificationService: cancel failed for $timerId: $e',
+      );
     }
   }
 
@@ -170,7 +172,8 @@ class LocalTimerNotificationService extends BaseService {
       await _plugin.initialize(settings: initSettings);
     } catch (e) {
       AppLogger.warning(
-          'LocalTimerNotificationService: plugin init failed: $e');
+        'LocalTimerNotificationService: plugin init failed: $e',
+      );
     }
     await _requestIosPermission();
   }
@@ -178,20 +181,25 @@ class LocalTimerNotificationService extends BaseService {
   Future<void> _requestIosPermission() async {
     if (kIsWeb || !Platform.isIOS) return;
     try {
-      final ios = _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       await ios?.requestPermissions(alert: true, badge: false, sound: true);
     } catch (e) {
       AppLogger.warning(
-          'LocalTimerNotificationService: iOS permission request failed: $e');
+        'LocalTimerNotificationService: iOS permission request failed: $e',
+      );
     }
   }
 
   Future<void> _createAndroidChannel() async {
     if (kIsWeb || !Platform.isAndroid) return;
     try {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android == null) return;
       await android.createNotificationChannel(
         AndroidNotificationChannel(
@@ -203,7 +211,8 @@ class LocalTimerNotificationService extends BaseService {
       );
     } catch (e) {
       AppLogger.warning(
-          'LocalTimerNotificationService: channel create failed: $e');
+        'LocalTimerNotificationService: channel create failed: $e',
+      );
     }
   }
 

@@ -67,7 +67,8 @@ class BackupRestoreHandler {
             context,
             success: false,
             message: context.l10n.profileRestoreFailed(
-                result.errorMessage ?? context.l10n.errorUnexpected),
+              result.errorMessage ?? context.l10n.errorUnexpected,
+            ),
             closeModal: true,
           );
         }

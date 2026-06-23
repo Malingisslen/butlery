@@ -76,7 +76,8 @@ class ConversationListItem extends StatelessWidget {
         ),
         child: Semantics(
           label: context.l10n.a11yConversationOpen(
-              conversation.getDisplayTitle(currentUserId)),
+            conversation.getDisplayTitle(currentUserId),
+          ),
           button: true,
           child: InkWell(
             onTap: onTap,
@@ -182,8 +183,9 @@ class ConversationListItem extends StatelessWidget {
           height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color:
-                cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
+            color: cs.inversePrimary.withValues(
+              alpha: AppDimensions.opacityLight,
+            ),
           ),
           child: conversation.isGroup
               ? _buildGroupAvatar(context)

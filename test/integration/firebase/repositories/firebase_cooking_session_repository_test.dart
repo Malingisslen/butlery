@@ -45,14 +45,13 @@ void main() {
     String user = userId,
     String userName = 'Erik',
     DateTime? startedAt,
-  }) =>
-      CookingSession(
-        recipeId: id,
-        recipeTitle: title,
-        startedAt: startedAt ?? DateTime.fromMillisecondsSinceEpoch(1000),
-        userId: user,
-        userName: userName,
-      );
+  }) => CookingSession(
+    recipeId: id,
+    recipeTitle: title,
+    startedAt: startedAt ?? DateTime.fromMillisecondsSinceEpoch(1000),
+    userId: user,
+    userName: userName,
+  );
 
   _MockDatabaseReference refFor(String path) {
     return refs.putIfAbsent(path, () {
@@ -86,22 +85,24 @@ void main() {
   });
 
   group('startSession', () {
-    test('registers onDisconnect.remove() BEFORE set() — crash-safe order',
-        () async {
-      final session = buildSession();
+    test(
+      'registers onDisconnect.remove() BEFORE set() — crash-safe order',
+      () async {
+        final session = buildSession();
 
-      await repository.startSession(groupId: groupId, session: session);
+        await repository.startSession(groupId: groupId, session: session);
 
-      final userRef = refs['cooking_sessions/$groupId/$userId'];
-      expect(userRef, isNotNull);
-      final disconnect = disconnects[userRef]!;
+        final userRef = refs['cooking_sessions/$groupId/$userId'];
+        expect(userRef, isNotNull);
+        final disconnect = disconnects[userRef]!;
 
-      verifyInOrder([
-        () => userRef!.onDisconnect(),
-        () => disconnect.remove(),
-        () => userRef!.set(any()),
-      ]);
-    });
+        verifyInOrder([
+          () => userRef!.onDisconnect(),
+          () => disconnect.remove(),
+          () => userRef!.set(any()),
+        ]);
+      },
+    );
 
     test('writes the full serialized session payload', () async {
       final session = buildSession(title: 'Pasta');
@@ -109,8 +110,9 @@ void main() {
       await repository.startSession(groupId: groupId, session: session);
 
       final userRef = refs['cooking_sessions/$groupId/$userId']!;
-      final captured = verify(() => userRef.set(captureAny())).captured.single
-          as Map<String, dynamic>;
+      final captured =
+          verify(() => userRef.set(captureAny())).captured.single
+              as Map<String, dynamic>;
       expect(captured['recipeId'], 'recipe_1');
       expect(captured['recipeTitle'], 'Pasta');
       expect(captured['userId'], userId);
@@ -118,19 +120,21 @@ void main() {
       expect(captured['startedAt'], 1000);
     });
 
-    test('swallows write errors silently — offline must never interrupt cook',
-        () async {
-      // Pre-seed the ref with a throwing set().
-      final path = 'cooking_sessions/$groupId/$userId';
-      final ref = refFor(path);
-      when(() => ref.set(any())).thenThrow(StateError('offline'));
+    test(
+      'swallows write errors silently — offline must never interrupt cook',
+      () async {
+        // Pre-seed the ref with a throwing set().
+        final path = 'cooking_sessions/$groupId/$userId';
+        final ref = refFor(path);
+        when(() => ref.set(any())).thenThrow(StateError('offline'));
 
-      // Should NOT rethrow.
-      await expectLater(
-        repository.startSession(groupId: groupId, session: buildSession()),
-        completes,
-      );
-    });
+        // Should NOT rethrow.
+        await expectLater(
+          repository.startSession(groupId: groupId, session: buildSession()),
+          completes,
+        );
+      },
+    );
   });
 
   group('endSession', () {

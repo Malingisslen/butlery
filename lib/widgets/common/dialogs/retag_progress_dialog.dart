@@ -12,7 +12,7 @@ class RetagProgressDialog extends StatefulWidget {
   /// The retag function to execute. Receives an onProgress callback
   /// and returns the number of recipes successfully retagged.
   final Future<int> Function(void Function(int current, int total) onProgress)
-      retagFunction;
+  retagFunction;
 
   const RetagProgressDialog({super.key, required this.retagFunction});
 
@@ -87,8 +87,9 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
           if (_error != null) ...[
             Text(
               _error!,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: Theme.of(context).colorScheme.error),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
           ] else ...[
@@ -107,12 +108,12 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
             const SizedBox(height: AppDimensions.spacingMd),
             LinearProgressIndicator(
               value: _total > 0 ? _current / _total : null,
-              backgroundColor: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
+              backgroundColor: Theme.of(context).colorScheme.primary.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary),
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
           ],
         ],

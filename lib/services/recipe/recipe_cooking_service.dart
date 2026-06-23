@@ -20,7 +20,7 @@ class RecipeCookingService extends BaseService {
   final Set<_CookEventKey> _cookedThisSession = <_CookEventKey>{};
 
   RecipeCookingService({required CookEventRepository cookEventRepository})
-      : _cookEventRepository = cookEventRepository;
+    : _cookEventRepository = cookEventRepository;
 
   @override
   String get serviceName => 'RecipeCookingService';
@@ -38,7 +38,8 @@ class RecipeCookingService extends BaseService {
     // counter can legitimately move again after midnight.
     if (_cookedThisSession.contains(key)) {
       AppLogger.info(
-          'markAsCooked debounced: $recipeId already counted for ${key.day}');
+        'markAsCooked debounced: $recipeId already counted for ${key.day}',
+      );
       return false;
     }
 
@@ -66,9 +67,10 @@ class _CookEventKey {
   final String day; // YYYY-MM-DD
 
   _CookEventKey(this.recipeId, DateTime at)
-      : day = '${at.year.toString().padLeft(4, '0')}-'
-            '${at.month.toString().padLeft(2, '0')}-'
-            '${at.day.toString().padLeft(2, '0')}';
+    : day =
+          '${at.year.toString().padLeft(4, '0')}-'
+          '${at.month.toString().padLeft(2, '0')}-'
+          '${at.day.toString().padLeft(2, '0')}';
 
   @override
   bool operator ==(Object other) =>

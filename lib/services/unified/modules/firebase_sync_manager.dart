@@ -68,7 +68,8 @@ class FirebaseSyncManager {
   }) async {
     try {
       AppLogger.info(
-          '🔄 Starting Firebase sync for user: ${currentUserId.maskedUserId}');
+        '🔄 Starting Firebase sync for user: ${currentUserId.maskedUserId}',
+      );
 
       final subscriptions = <String, StreamSubscription>{};
 

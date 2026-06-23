@@ -60,7 +60,9 @@ void main() {
         );
 
         expect(
-            message.senderAvatarUrl, equals('https://example.com/avatar.jpg'));
+          message.senderAvatarUrl,
+          equals('https://example.com/avatar.jpg'),
+        );
         expect(message.deliveredAt, equals(deliveredTime));
         expect(message.readAt, equals(readTime));
         expect(message.metadata!['customField'], equals('value'));
@@ -145,7 +147,9 @@ void main() {
         expect(message.senderId, equals('user_789'));
         expect(message.senderDisplayName, equals('Anna Andersson'));
         expect(
-            message.senderAvatarUrl, equals('https://example.com/avatar.jpg'));
+          message.senderAvatarUrl,
+          equals('https://example.com/avatar.jpg'),
+        );
         expect(message.content, equals('Hej! Hur mår du?'));
         expect(message.type, equals(MessageType.text));
         expect(message.status, equals(MessageStatus.sending));
@@ -970,8 +974,10 @@ Last line with spaces    ''';
           recipeTitle: 'Räksmörgås à la "Skagen"',
         );
 
-        expect(message.metadata!['recipeTitle'],
-            equals('Räksmörgås à la "Skagen"'));
+        expect(
+          message.metadata!['recipeTitle'],
+          equals('Räksmörgås à la "Skagen"'),
+        );
         expect(message.displayContent, equals('🍽️ Räksmörgås à la "Skagen"'));
       });
     });

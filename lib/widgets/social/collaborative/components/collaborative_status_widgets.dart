@@ -23,18 +23,21 @@ class CollaborativeStatusWidgets {
         final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
 
         return Container(
-          padding: padding ??
+          padding:
+              padding ??
               const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingS,
                 vertical: AppDimensions.spacingXs,
               ),
           decoration: BoxDecoration(
             color: effectiveColor.withValues(
-                alpha: AppDimensions.opacityVeryLight),
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
             border: Border.all(
               color: effectiveColor.withValues(
-                  alpha: AppDimensions.opacityMediumLight),
+                alpha: AppDimensions.opacityMediumLight,
+              ),
             ),
           ),
           child: Row(
@@ -73,7 +76,8 @@ class CollaborativeStatusWidgets {
     return Builder(
       builder: (builderContext) {
         final cs = Theme.of(builderContext).colorScheme;
-        final bgColor = backgroundColor ??
+        final bgColor =
+            backgroundColor ??
             cs.primary.withValues(alpha: AppDimensions.opacityVeryLight);
 
         return Container(
@@ -83,8 +87,9 @@ class CollaborativeStatusWidgets {
             color: bgColor,
             border: Border(
               bottom: BorderSide(
-                color: cs.primary
-                    .withValues(alpha: AppDimensions.opacityMediumLight),
+                color: cs.primary.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
               ),
             ),
           ),
@@ -186,10 +191,13 @@ class CollaborativeStatusWidgets {
             ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
             : viewModel.getMenuCollaborativeStatus(
                 contentId,
-                menuData?.map((key, recipes) => MapEntry(
-                      key,
-                      recipes,
-                    )));
+                menuData?.map(
+                  (key, recipes) => MapEntry(
+                    key,
+                    recipes,
+                  ),
+                ),
+              );
 
         final isCollaborative = status.isCollaborative;
 
@@ -271,12 +279,14 @@ class _CollaborativeAppBar extends StatelessWidget
             if (isCollaborative) ...[
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingS),
+                  end: AppDimensions.spacingS,
+                ),
                 child: Center(
                   child: Tooltip(
                     message: participants.isNotEmpty
-                        ? context.l10n
-                            .collaborativeSharedWithCount(participants.length)
+                        ? context.l10n.collaborativeSharedWithCount(
+                            participants.length,
+                          )
                         : context.l10n.collaborativeSharedContent,
                     child: CollaborativeStatusWidgets.statusBadge(
                       text: participants.isNotEmpty

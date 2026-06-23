@@ -24,16 +24,21 @@ void main() {
     firebaseStreamController = StreamController<bool>.broadcast();
 
     // Setup default mock behavior
-    when(() => mockRepository.monitorFirebaseConnection())
-        .thenAnswer((_) => firebaseStreamController.stream);
-    when(() => mockRepository.checkFirebaseConnection())
-        .thenAnswer((_) async => true);
-    when(() => mockRepository.testEndpoint(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockRepository.getConnectionQuality())
-        .thenAnswer((_) async => ConnectionQuality.excellent);
-    when(() => mockRepository.connectionStream)
-        .thenAnswer((_) => Stream.value(true));
+    when(
+      () => mockRepository.monitorFirebaseConnection(),
+    ).thenAnswer((_) => firebaseStreamController.stream);
+    when(
+      () => mockRepository.checkFirebaseConnection(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockRepository.testEndpoint(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockRepository.getConnectionQuality(),
+    ).thenAnswer((_) async => ConnectionQuality.excellent);
+    when(
+      () => mockRepository.connectionStream,
+    ).thenAnswer((_) => Stream.value(true));
 
     // Create service with mock repository
     service = ConnectivityMonitoringService(mockRepository);
@@ -87,57 +92,61 @@ void main() {
     });
 
     group('Monitoring', () {
-      test('should start Firebase monitoring when startMonitoring is called',
-          () {
-        // Act
-        service.startMonitoring();
+      test(
+        'should start Firebase monitoring when startMonitoring is called',
+        () {
+          // Act
+          service.startMonitoring();
 
-        // Assert
-        verify(() => mockRepository.monitorFirebaseConnection()).called(1);
-      });
+          // Assert
+          verify(() => mockRepository.monitorFirebaseConnection()).called(1);
+        },
+      );
 
       test(
-          'should notify listeners when Firebase connection changes to disconnected',
-          () async {
-        // Arrange
-        bool listenerCalled = false;
-        service.addListener(() {
-          listenerCalled = true;
-        });
+        'should notify listeners when Firebase connection changes to disconnected',
+        () async {
+          // Arrange
+          bool listenerCalled = false;
+          service.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Act
-        service.startMonitoring();
-        firebaseStreamController.add(false);
-        await Future.delayed(Duration(milliseconds: 100));
+          // Act
+          service.startMonitoring();
+          firebaseStreamController.add(false);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(service.isConnectedToFirebase, isFalse);
-        expect(listenerCalled, isTrue);
-      });
+          // Assert
+          expect(service.isConnectedToFirebase, isFalse);
+          expect(listenerCalled, isTrue);
+        },
+      );
 
       test(
-          'should notify listeners when Firebase connection changes to connected',
-          () async {
-        // Arrange
-        bool listenerCalled = false;
+        'should notify listeners when Firebase connection changes to connected',
+        () async {
+          // Arrange
+          bool listenerCalled = false;
 
-        // First set to disconnected
-        service.startMonitoring();
-        firebaseStreamController.add(false);
-        await Future.delayed(Duration(milliseconds: 100));
+          // First set to disconnected
+          service.startMonitoring();
+          firebaseStreamController.add(false);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        service.addListener(() {
-          listenerCalled = true;
-        });
+          service.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Act
-        firebaseStreamController.add(true);
-        await Future.delayed(Duration(milliseconds: 100));
+          // Act
+          firebaseStreamController.add(true);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(service.isConnectedToFirebase, isTrue);
-        expect(listenerCalled, isTrue);
-      });
+          // Assert
+          expect(service.isConnectedToFirebase, isTrue);
+          expect(listenerCalled, isTrue);
+        },
+      );
 
       test('should handle Firebase monitoring stream errors', () async {
         // Arrange
@@ -193,55 +202,60 @@ void main() {
       });
 
       test(
-          'should show "Firebase otillgänglig" when internet connected but Firebase disconnected',
-          () async {
-        // Arrange
-        service.startMonitoring();
+        'should show "Firebase otillgänglig" when internet connected but Firebase disconnected',
+        () async {
+          // Arrange
+          service.startMonitoring();
 
-        // Act
-        firebaseStreamController.add(false);
-        await Future.delayed(Duration(milliseconds: 100));
+          // Act
+          firebaseStreamController.add(false);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(service.connectionStatusText, equals('Firebase otillgänglig'));
-      });
+          // Assert
+          expect(service.connectionStatusText, equals('Firebase otillgänglig'));
+        },
+      );
 
       test(
-          'should show "Frånkopplad" when both internet and Firebase disconnected',
-          () async {
-        // Arrange
-        // This would require mocking the internet check timer
-        // Since internet check uses static methods, we focus on Firebase
-        service.startMonitoring();
+        'should show "Frånkopplad" when both internet and Firebase disconnected',
+        () async {
+          // Arrange
+          // This would require mocking the internet check timer
+          // Since internet check uses static methods, we focus on Firebase
+          service.startMonitoring();
 
-        // Act
-        firebaseStreamController.add(false);
-        await Future.delayed(Duration(milliseconds: 100));
+          // Act
+          firebaseStreamController.add(false);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        // Manually set internet state for testing
-        // In real scenario, this would be set by the timer
-        expect(service.isConnectedToFirebase, isFalse);
-      });
+          // Assert
+          // Manually set internet state for testing
+          // In real scenario, this would be set by the timer
+          expect(service.isConnectedToFirebase, isFalse);
+        },
+      );
     });
 
     group('getCurrentConnectivity', () {
-      test('should return connectivity result from ConnectivityCheck',
-          () async {
-        // Act
-        // This tests the method exists and returns expected type
-        final result = await service.getCurrentConnectivity();
+      test(
+        'should return connectivity result from ConnectivityCheck',
+        () async {
+          // Act
+          // This tests the method exists and returns expected type
+          final result = await service.getCurrentConnectivity();
 
-        // Assert
-        expect(result, isA<ConnectivityResult>());
-      });
+          // Assert
+          expect(result, isA<ConnectivityResult>());
+        },
+      );
     });
 
     group('testFirebaseConnectivity', () {
       test('should return true when Firebase is connected', () async {
         // Arrange
-        when(() => mockRepository.checkFirebaseConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.checkFirebaseConnection(),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.testFirebaseConnectivity();
@@ -253,8 +267,9 @@ void main() {
 
       test('should return false when Firebase is disconnected', () async {
         // Arrange
-        when(() => mockRepository.checkFirebaseConnection())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.checkFirebaseConnection(),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await service.testFirebaseConnectivity();
@@ -265,8 +280,9 @@ void main() {
 
       test('should handle exceptions and return false', () async {
         // Arrange
-        when(() => mockRepository.checkFirebaseConnection())
-            .thenAnswer((_) async => throw Exception('Connection failed'));
+        when(
+          () => mockRepository.checkFirebaseConnection(),
+        ).thenAnswer((_) async => throw Exception('Connection failed'));
 
         // Act
         final result = await service.testFirebaseConnectivity();
@@ -277,20 +293,22 @@ void main() {
     });
 
     group('State Management', () {
-      test('should maintain separate states for internet and Firebase',
-          () async {
-        // Arrange
-        service.startMonitoring();
+      test(
+        'should maintain separate states for internet and Firebase',
+        () async {
+          // Arrange
+          service.startMonitoring();
 
-        // Act - Disconnect Firebase
-        firebaseStreamController.add(false);
-        await Future.delayed(Duration(milliseconds: 100));
+          // Act - Disconnect Firebase
+          firebaseStreamController.add(false);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(service.isConnectedToInternet, isTrue);
-        expect(service.isConnectedToFirebase, isFalse);
-        expect(service.isFullyConnected, isFalse);
-      });
+          // Assert
+          expect(service.isConnectedToInternet, isTrue);
+          expect(service.isConnectedToFirebase, isFalse);
+          expect(service.isFullyConnected, isFalse);
+        },
+      );
 
       test('should calculate isFullyConnected correctly', () async {
         // Arrange
@@ -448,8 +466,9 @@ void main() {
     group('Edge Cases', () {
       test('should handle null repository responses', () async {
         // Arrange
-        when(() => mockRepository.checkFirebaseConnection())
-            .thenAnswer((_) async => throw Exception('Null response'));
+        when(
+          () => mockRepository.checkFirebaseConnection(),
+        ).thenAnswer((_) async => throw Exception('Null response'));
 
         // Act
         final result = await service.testFirebaseConnectivity();
@@ -462,8 +481,9 @@ void main() {
         // Arrange — a slow-but-eventually-returning repository call.
         // Prior 10-second delay was pointless real-time waste; 50ms is enough
         // to exercise the "takes a while" path without slowing CI.
-        when(() => mockRepository.checkFirebaseConnection())
-            .thenAnswer((_) async {
+        when(() => mockRepository.checkFirebaseConnection()).thenAnswer((
+          _,
+        ) async {
           await Future.delayed(const Duration(milliseconds: 50));
           return true;
         });
@@ -475,26 +495,30 @@ void main() {
         expect(resultFuture, completion(isA<bool>()));
       });
 
-      test('should maintain state consistency during concurrent operations',
-          () async {
-        // Arrange
-        service.startMonitoring();
+      test(
+        'should maintain state consistency during concurrent operations',
+        () async {
+          // Arrange
+          service.startMonitoring();
 
-        // Act - Concurrent state changes
-        final futures = <Future>[];
-        for (int i = 0; i < 5; i++) {
-          futures.add(Future(() async {
-            firebaseStreamController.add(i % 2 == 0);
-            await Future.delayed(Duration(milliseconds: 50));
-          }));
-        }
+          // Act - Concurrent state changes
+          final futures = <Future>[];
+          for (int i = 0; i < 5; i++) {
+            futures.add(
+              Future(() async {
+                firebaseStreamController.add(i % 2 == 0);
+                await Future.delayed(Duration(milliseconds: 50));
+              }),
+            );
+          }
 
-        await Future.wait(futures);
+          await Future.wait(futures);
 
-        // Assert - State should be consistent
-        expect(service.isConnectedToFirebase, isA<bool>());
-        expect(service.connectionStatusText, isA<String>());
-      });
+          // Assert - State should be consistent
+          expect(service.isConnectedToFirebase, isA<bool>());
+          expect(service.connectionStatusText, isA<String>());
+        },
+      );
 
       test('should handle stream controller closed exception', () async {
         // Arrange

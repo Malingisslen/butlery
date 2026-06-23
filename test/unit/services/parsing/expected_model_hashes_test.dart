@@ -23,10 +23,14 @@ void main() {
         hashRegistry: const <int, String>{},
       );
 
-      expect(result.ok, isTrue,
-          reason: 'Pure result reports unverified via the flag, not ok=false '
-              '— policy lives in verifyModelDownload, which since BUT-877 '
-              'refuses unverified loads (fail-close).');
+      expect(
+        result.ok,
+        isTrue,
+        reason:
+            'Pure result reports unverified via the flag, not ok=false '
+            '— policy lives in verifyModelDownload, which since BUT-877 '
+            'refuses unverified loads (fail-close).',
+      );
       expect(result.unverified, isTrue);
       expect(result.expectedHash, isNull);
       expect(result.actualHash, hasLength(64));
@@ -70,7 +74,8 @@ void main() {
         expect(
           hexSha256.hasMatch(entry.value),
           isTrue,
-          reason: 'kExpectedNerModelHashes[v${entry.key}] = "${entry.value}" '
+          reason:
+              'kExpectedNerModelHashes[v${entry.key}] = "${entry.value}" '
               'must be 64 lowercase hex chars (SHA-256). A typo, uppercase, '
               'or whitespace would silently turn a real mismatch into '
               '`unverified` because the registry lookup would never match.',
@@ -79,17 +84,19 @@ void main() {
     });
 
     test(
-        'every kExpectedLineClassifierModelHashes entry is 64 lowercase hex chars',
-        () {
-      for (final entry in kExpectedLineClassifierModelHashes.entries) {
-        expect(
-          hexSha256.hasMatch(entry.value),
-          isTrue,
-          reason: 'kExpectedLineClassifierModelHashes[v${entry.key}] = '
-              '"${entry.value}" must be 64 lowercase hex chars (SHA-256).',
-        );
-      }
-    });
+      'every kExpectedLineClassifierModelHashes entry is 64 lowercase hex chars',
+      () {
+        for (final entry in kExpectedLineClassifierModelHashes.entries) {
+          expect(
+            hexSha256.hasMatch(entry.value),
+            isTrue,
+            reason:
+                'kExpectedLineClassifierModelHashes[v${entry.key}] = '
+                '"${entry.value}" must be 64 lowercase hex chars (SHA-256).',
+          );
+        }
+      },
+    );
   });
 
   group('ModelIntegrityCheckFailure', () {

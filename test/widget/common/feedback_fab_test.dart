@@ -22,12 +22,12 @@ import 'package:butlery/widgets/common/feedback_fab.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      // The FAB is a Positioned that expects an ancestor Stack.
-      home: Scaffold(body: Stack(children: [child])),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  // The FAB is a Positioned that expects an ancestor Stack.
+  home: Scaffold(body: Stack(children: [child])),
+);
 
 void _unregisterAuth() {
   final g = GetIt.instance;
@@ -51,35 +51,40 @@ void main() {
   });
 
   group('FeedbackFAB — unauthenticated / no service', () {
-    testWidgets('renders SizedBox.shrink when ServiceLocator is uninitialized',
-        (tester) async {
-      // No ServiceLocator.initialize call → tryGet returns null.
-      prod.ServiceLocator.reset();
-      await tester.pumpWidget(_wrap(const FeedbackFAB()));
+    testWidgets(
+      'renders SizedBox.shrink when ServiceLocator is uninitialized',
+      (tester) async {
+        // No ServiceLocator.initialize call → tryGet returns null.
+        prod.ServiceLocator.reset();
+        await tester.pumpWidget(_wrap(const FeedbackFAB()));
 
-      // Nothing visible (no Positioned, no '!' Text).
-      expect(find.text('!'), findsNothing);
-      expect(
+        // Nothing visible (no Positioned, no '!' Text).
+        expect(find.text('!'), findsNothing);
+        expect(
           find.descendant(
             of: find.byType(FeedbackFAB),
             matching: find.byType(Positioned),
           ),
-          findsNothing);
-    });
+          findsNothing,
+        );
+      },
+    );
 
-    testWidgets('renders nothing when AuthService.isAuthenticated is false',
-        (tester) async {
+    testWidgets('renders nothing when AuthService.isAuthenticated is false', (
+      tester,
+    ) async {
       await _bindAuth(isAuthenticated: false);
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
       expect(find.text('!'), findsNothing);
       expect(
-          find.descendant(
-            of: find.byType(FeedbackFAB),
-            matching: find.byType(GestureDetector),
-          ),
-          findsNothing);
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(GestureDetector),
+        ),
+        findsNothing,
+      );
     });
   });
 
@@ -93,22 +98,26 @@ void main() {
       await tester.pump();
 
       expect(
-          find.descendant(
-            of: find.byType(FeedbackFAB),
-            matching: find.text('!'),
-          ),
-          findsOneWidget);
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.text('!'),
+        ),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('positions at right: 16 and bottom: feedbackFabBottomOffset',
-        (tester) async {
+    testWidgets('positions at right: 16 and bottom: feedbackFabBottomOffset', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      final positioned = tester.widget<Positioned>(find.descendant(
-        of: find.byType(FeedbackFAB),
-        matching: find.byType(Positioned),
-      ));
+      final positioned = tester.widget<Positioned>(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(Positioned),
+        ),
+      );
       expect(positioned.right, 16);
       expect(positioned.bottom, AppDimensions.feedbackFabBottomOffset);
     });
@@ -117,10 +126,12 @@ void main() {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      final container = tester.widget<Container>(find.descendant(
-        of: find.byType(FeedbackFAB),
-        matching: find.byType(Container),
-      ));
+      final container = tester.widget<Container>(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(Container),
+        ),
+      );
       expect(container.constraints?.maxWidth, AppDimensions.minTouchTarget);
       expect(container.constraints?.maxHeight, AppDimensions.minTouchTarget);
     });
@@ -129,10 +140,12 @@ void main() {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      final detector = tester.widget<GestureDetector>(find.descendant(
-        of: find.byType(FeedbackFAB),
-        matching: find.byType(GestureDetector),
-      ));
+      final detector = tester.widget<GestureDetector>(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(GestureDetector),
+        ),
+      );
       expect(detector.behavior, HitTestBehavior.opaque);
       expect(detector.onTap, isNotNull);
     });
@@ -144,16 +157,19 @@ void main() {
       // Resolve the theme from the live element tree so we compare against
       // whatever MaterialApp applied.
       final cs = Theme.of(tester.element(find.byType(FeedbackFAB))).colorScheme;
-      final text = tester.widget<Text>(find.descendant(
-        of: find.byType(FeedbackFAB),
-        matching: find.text('!'),
-      ));
+      final text = tester.widget<Text>(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.text('!'),
+        ),
+      );
       expect(text.style?.color, cs.primary);
       expect(text.style?.fontSize, 24);
     });
 
-    testWidgets('wraps tap target in Semantics(label, button: true)',
-        (tester) async {
+    testWidgets('wraps tap target in Semantics(label, button: true)', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
@@ -169,8 +185,9 @@ void main() {
   });
 
   group('FeedbackFAB — auth state reactivity', () {
-    testWidgets('hides itself when AuthService notifies sign-out',
-        (tester) async {
+    testWidgets('hides itself when AuthService notifies sign-out', (
+      tester,
+    ) async {
       await _bindAuth(isAuthenticated: true);
       final auth = GetIt.instance<AuthService>();
 
@@ -189,8 +206,7 @@ void main() {
   });
 
   group('FeedbackFAB — tap handler', () {
-    testWidgets(
-        'tapping does not throw when appNavigatorKey is unwired '
+    testWidgets('tapping does not throw when appNavigatorKey is unwired '
         '(test environment)', (tester) async {
       // appNavigatorKey.currentState is null in this test (the FAB is not
       // mounted under the real app's MaterialApp(navigatorKey:)). _onTap
@@ -203,10 +219,12 @@ void main() {
       await tester.pumpWidget(_wrap(const FeedbackFAB()));
       await tester.pump();
 
-      await tester.tap(find.descendant(
-        of: find.byType(FeedbackFAB),
-        matching: find.byType(GestureDetector),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FeedbackFAB),
+          matching: find.byType(GestureDetector),
+        ),
+      );
       await tester.pump();
 
       // Still rendered, no exception bubbled up.
@@ -224,15 +242,16 @@ void main() {
       expect(appNavigatorKey, isA<GlobalKey<NavigatorState>>());
     });
 
-    testWidgets(
-        'wrapping a subtree under feedbackRepaintBoundaryKey allows '
+    testWidgets('wrapping a subtree under feedbackRepaintBoundaryKey allows '
         'RenderRepaintBoundary lookup', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: RepaintBoundary(
-          key: feedbackRepaintBoundaryKey,
-          child: const SizedBox(width: 10, height: 10),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RepaintBoundary(
+            key: feedbackRepaintBoundaryKey,
+            child: const SizedBox(width: 10, height: 10),
+          ),
         ),
-      ));
+      );
       final ro = feedbackRepaintBoundaryKey.currentContext?.findRenderObject();
       expect(ro, isA<RenderRepaintBoundary>());
     });

@@ -38,7 +38,7 @@ class FeatureFlagService {
   static const int _evaluatedTuplesMaxSize = 256;
 
   FeatureFlagService({FirebaseRemoteConfig? remoteConfig})
-      : _remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance;
+    : _remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance;
 
   /// Default flag values - used when Remote Config is unavailable or flag not set
   static const Map<String, dynamic> _defaults = {
@@ -90,15 +90,19 @@ class FeatureFlagService {
 
     try {
       // Set defaults for when Remote Config hasn't fetched values yet
-      await _remoteConfig.setDefaults(_defaults.map(
-        (key, value) => MapEntry(key, value),
-      ));
+      await _remoteConfig.setDefaults(
+        _defaults.map(
+          (key, value) => MapEntry(key, value),
+        ),
+      );
 
       // Configure fetch settings
-      await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 10),
-        minimumFetchInterval: const Duration(hours: 1),
-      ));
+      await _remoteConfig.setConfigSettings(
+        RemoteConfigSettings(
+          fetchTimeout: const Duration(seconds: 10),
+          minimumFetchInterval: const Duration(hours: 1),
+        ),
+      );
 
       // Fetch and activate latest values
       await _remoteConfig.fetchAndActivate();
@@ -108,7 +112,8 @@ class FeatureFlagService {
     } catch (e) {
       // Don't fail startup if Remote Config fails - use defaults
       AppLogger.warning(
-          'Failed to initialize Remote Config, using defaults: $e');
+        'Failed to initialize Remote Config, using defaults: $e',
+      );
       _initialized = true;
     }
   }

@@ -99,8 +99,9 @@ void main() {
     friendsService = MockUnifiedFriendsService();
     when(() => friendsService.refresh()).thenAnswer((_) async {});
     when(() => friendsService.getCategoryById(any())).thenReturn(null);
-    when(() => friendsService.sentInvitations)
-        .thenReturn(const <GroupInvitation>[]);
+    when(
+      () => friendsService.sentInvitations,
+    ).thenReturn(const <GroupInvitation>[]);
     TestServiceLocator.registerMock<UnifiedFriendsService>(friendsService);
 
     // Override the permission service with our gated fake; default to admin so
@@ -132,74 +133,81 @@ void main() {
 
   group('GroupDetailView — VM-driven state rendering', () {
     testWidgets(
-        'while group data is still loading it shows the Swedish loading copy',
-        (tester) async {
-      // Hold the VM in its loading branch: refresh() never completes, so
-      // executeAsync keeps isLoading=true and group stays null. The view's
-      // build() shows the loading scaffold while (isLoading && group == null).
-      final neverCompletes = Completer<void>();
-      when(() => friendsService.refresh())
-          .thenAnswer((_) => neverCompletes.future);
+      'while group data is still loading it shows the Swedish loading copy',
+      (tester) async {
+        // Hold the VM in its loading branch: refresh() never completes, so
+        // executeAsync keeps isLoading=true and group stays null. The view's
+        // build() shows the loading scaffold while (isLoading && group == null).
+        final neverCompletes = Completer<void>();
+        when(
+          () => friendsService.refresh(),
+        ).thenAnswer((_) => neverCompletes.future);
 
-      await tester.pumpWidget(viewApp());
-      // Discrete pumps: the LoadingIndicator wraps a CircularProgressIndicator
-      // whose perpetual animation would make pumpAndSettle time out.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpWidget(viewApp());
+        // Discrete pumps: the LoadingIndicator wraps a CircularProgressIndicator
+        // whose perpetual animation would make pumpAndSettle time out.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text(_appBarLoadingTitle), findsOneWidget);
-      expect(find.text(_bodyLoadingInfo), findsOneWidget);
-      expect(find.byType(LoadingIndicator), findsOneWidget);
+        expect(find.text(_appBarLoadingTitle), findsOneWidget);
+        expect(find.text(_bodyLoadingInfo), findsOneWidget);
+        expect(find.byType(LoadingIndicator), findsOneWidget);
 
-      // Not the not-found branch.
-      expect(find.text(_notFoundDescription), findsNothing);
+        // Not the not-found branch.
+        expect(find.text(_notFoundDescription), findsNothing);
 
-      // Let the pending future resolve so teardown doesn't see a leaked timer.
-      neverCompletes.complete();
-      await tester.pump();
-    });
-
-    testWidgets(
-        'once the in-flight load settles the loading spinner is torn down',
-        (tester) async {
-      // First frame: refresh() in-flight → loading copy shown.
-      final inFlight = Completer<void>();
-      when(() => friendsService.refresh()).thenAnswer((_) => inFlight.future);
-
-      await tester.pumpWidget(viewApp());
-      await tester.pump();
-      expect(find.byType(LoadingIndicator), findsOneWidget,
-          reason: 'spinner should be up while refresh is in flight');
-
-      // Complete the load (group resolves to null, the common transient
-      // state). The VM flips isLoading=false; the view must stop showing the
-      // loading copy — a regression that left the spinner pinned would fail
-      // here.
-      inFlight.complete();
-      await tester.pumpAndSettle();
-
-      expect(find.byType(LoadingIndicator), findsNothing);
-      expect(find.text(_bodyLoadingInfo), findsNothing);
-    });
+        // Let the pending future resolve so teardown doesn't see a leaked timer.
+        neverCompletes.complete();
+        await tester.pump();
+      },
+    );
 
     testWidgets(
-        'a group that resolves to null after load pops the view off the navigator',
-        (tester) async {
-      // The view is the SECOND route; once the VM settles with group==null its
-      // listener fires _navigateAway() which pops back to the host. This pins
-      // the "deleted/removed group navigates the user away" contract.
-      await tester.pumpWidget(viewApp(home: const _NotFoundHost()));
-      await tester.pumpAndSettle();
+      'once the in-flight load settles the loading spinner is torn down',
+      (tester) async {
+        // First frame: refresh() in-flight → loading copy shown.
+        final inFlight = Completer<void>();
+        when(() => friendsService.refresh()).thenAnswer((_) => inFlight.future);
 
-      await tester.tap(find.text('open'));
-      await tester.pump(); // start the push
-      await tester.pumpAndSettle(); // settle the VM + the pop
+        await tester.pumpWidget(viewApp());
+        await tester.pump();
+        expect(
+          find.byType(LoadingIndicator),
+          findsOneWidget,
+          reason: 'spinner should be up while refresh is in flight',
+        );
 
-      // After the auto-pop we are back on the host screen, and the detail
-      // view's not-found UI is gone.
-      expect(find.text('host'), findsOneWidget);
-      expect(find.text(_notFoundDescription), findsNothing);
-    });
+        // Complete the load (group resolves to null, the common transient
+        // state). The VM flips isLoading=false; the view must stop showing the
+        // loading copy — a regression that left the spinner pinned would fail
+        // here.
+        inFlight.complete();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(LoadingIndicator), findsNothing);
+        expect(find.text(_bodyLoadingInfo), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'a group that resolves to null after load pops the view off the navigator',
+      (tester) async {
+        // The view is the SECOND route; once the VM settles with group==null its
+        // listener fires _navigateAway() which pops back to the host. This pins
+        // the "deleted/removed group navigates the user away" contract.
+        await tester.pumpWidget(viewApp(home: const _NotFoundHost()));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('open'));
+        await tester.pump(); // start the push
+        await tester.pumpAndSettle(); // settle the VM + the pop
+
+        // After the auto-pop we are back on the host screen, and the detail
+        // view's not-found UI is gone.
+        expect(find.text('host'), findsOneWidget);
+        expect(find.text(_notFoundDescription), findsNothing);
+      },
+    );
   });
 
   group('GroupDetailAppBar — role-based access control gate', () {
@@ -209,43 +217,45 @@ void main() {
     // isolation against real production logic.
 
     testWidgets(
-        'as ADMIN the popup offers add-members, edit and delete affordances',
-        (tester) async {
-      permissionService.setGroupAdmin(groupId: _groupId, isAdmin: true);
+      'as ADMIN the popup offers add-members, edit and delete affordances',
+      (tester) async {
+        permissionService.setGroupAdmin(groupId: _groupId, isAdmin: true);
 
-      await _pumpGatedAppBar(tester, viewApp);
+        await _pumpGatedAppBar(tester, viewApp);
 
-      // Open the overflow menu.
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
+        // Open the overflow menu.
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
 
-      // Admin items are present.
-      expect(find.text(_menuAddMembers), findsOneWidget);
-      expect(find.text(_menuEditGroup), findsOneWidget);
-      expect(find.text(_menuDeleteGroup), findsOneWidget);
+        // Admin items are present.
+        expect(find.text(_menuAddMembers), findsOneWidget);
+        expect(find.text(_menuEditGroup), findsOneWidget);
+        expect(find.text(_menuDeleteGroup), findsOneWidget);
 
-      // The member-only "leave" item is NOT offered to an admin.
-      expect(find.text(_menuLeaveGroup), findsNothing);
-    });
+        // The member-only "leave" item is NOT offered to an admin.
+        expect(find.text(_menuLeaveGroup), findsNothing);
+      },
+    );
 
     testWidgets(
-        'as a non-admin MEMBER the admin affordances are absent and only leave is offered',
-        (tester) async {
-      permissionService.setGroupAdmin(groupId: _groupId, isAdmin: false);
+      'as a non-admin MEMBER the admin affordances are absent and only leave is offered',
+      (tester) async {
+        permissionService.setGroupAdmin(groupId: _groupId, isAdmin: false);
 
-      await _pumpGatedAppBar(tester, viewApp);
+        await _pumpGatedAppBar(tester, viewApp);
 
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
 
-      // Admin affordances are gone for a regular member.
-      expect(find.text(_menuAddMembers), findsNothing);
-      expect(find.text(_menuEditGroup), findsNothing);
-      expect(find.text(_menuDeleteGroup), findsNothing);
+        // Admin affordances are gone for a regular member.
+        expect(find.text(_menuAddMembers), findsNothing);
+        expect(find.text(_menuEditGroup), findsNothing);
+        expect(find.text(_menuDeleteGroup), findsNothing);
 
-      // The member gets the leave-group affordance instead.
-      expect(find.text(_menuLeaveGroup), findsOneWidget);
-    });
+        // The member gets the leave-group affordance instead.
+        expect(find.text(_menuLeaveGroup), findsOneWidget);
+      },
+    );
   });
 }
 

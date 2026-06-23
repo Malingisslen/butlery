@@ -19,35 +19,51 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 void main() {
   group('AnnounceChannel harness', () {
     testWidgets(
-        'captures a raw SemanticsService.announce payload (real channel, not a stub)',
-        (tester) async {
-      // Proves: the harness intercepts the actual flutter/accessibility channel
-      // that production SemanticsService.announce writes to.
-      final announces = AnnounceChannel.arm(tester);
-      await tester.pumpWidget(createLocalizedTestApp(child: const SizedBox()));
+      'captures a raw SemanticsService.sendAnnouncement payload (real channel, not a stub)',
+      (tester) async {
+        // Proves: the harness intercepts the actual flutter/accessibility channel
+        // that production SemanticsService.sendAnnouncement writes to.
+        final announces = AnnounceChannel.arm(tester);
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const SizedBox()),
+        );
 
-      SemanticsService.announce('hej', TextDirection.ltr);
-      await tester.pump();
+        SemanticsService.sendAnnouncement(
+          tester.view,
+          'hej',
+          TextDirection.ltr,
+        );
+        await tester.pump();
 
-      expect(announces.messages, ['hej']);
-      expect(announces.last, 'hej');
-      expect(announces.count, 1);
-    });
+        expect(announces.messages, ['hej']);
+        expect(announces.last, 'hej');
+        expect(announces.count, 1);
+      },
+    );
 
-    testWidgets('resolves the expected value from the live AppLocalizations',
-        (tester) async {
+    testWidgets('resolves the expected value from the live AppLocalizations', (
+      tester,
+    ) async {
       // Proves: the per-site tests can assert against the live l10n value
       // (survives ARB copy edits) rather than a hardcoded literal.
       final announces = AnnounceChannel.arm(tester);
       late AppLocalizations l10n;
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: Builder(builder: (context) {
-          l10n = context.l10n;
-          return const SizedBox();
-        }),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              l10n = context.l10n;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
-      SemanticsService.announce(l10n.a11yOcrComplete, TextDirection.ltr);
+      SemanticsService.sendAnnouncement(
+        tester.view,
+        l10n.a11yOcrComplete,
+        TextDirection.ltr,
+      );
       await tester.pump();
 
       expect(announces.messages, [l10n.a11yOcrComplete]);
@@ -55,31 +71,37 @@ void main() {
       expect(l10n.a11yOcrComplete, 'Textavläsning klar');
     });
 
-    testWidgets('reset() forgets captured messages but keeps intercepting',
-        (tester) async {
+    testWidgets('reset() forgets captured messages but keeps intercepting', (
+      tester,
+    ) async {
       // Proves: the "assert no FURTHER announce" idiom the announce-once guard
       // test relies on works — reset clears history without tearing down.
       final announces = AnnounceChannel.arm(tester);
       await tester.pumpWidget(createLocalizedTestApp(child: const SizedBox()));
 
-      SemanticsService.announce('one', TextDirection.ltr);
+      SemanticsService.sendAnnouncement(tester.view, 'one', TextDirection.ltr);
       await tester.pump();
       announces.reset();
       expect(announces.messages, isEmpty);
 
-      SemanticsService.announce('two', TextDirection.ltr);
+      SemanticsService.sendAnnouncement(tester.view, 'two', TextDirection.ltr);
       await tester.pump();
       expect(announces.messages, ['two']);
     });
 
-    testWidgets('dispose() stops capturing further announcements',
-        (tester) async {
+    testWidgets('dispose() stops capturing further announcements', (
+      tester,
+    ) async {
       // Proves: teardown actually removes the handler (no leak across tests).
       final announces = AnnounceChannel.arm(tester);
       await tester.pumpWidget(createLocalizedTestApp(child: const SizedBox()));
 
       announces.dispose();
-      SemanticsService.announce('after-dispose', TextDirection.ltr);
+      SemanticsService.sendAnnouncement(
+        tester.view,
+        'after-dispose',
+        TextDirection.ltr,
+      );
       await tester.pump();
 
       expect(announces.messages, isEmpty);

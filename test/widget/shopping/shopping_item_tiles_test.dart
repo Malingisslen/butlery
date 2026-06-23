@@ -86,8 +86,9 @@ void main() {
         expect(find.byIcon(Icons.delete), findsOneWidget);
       });
 
-      testWidgets('renders completed item with strikethrough',
-          (WidgetTester tester) async {
+      testWidgets('renders completed item with strikethrough', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -103,8 +104,9 @@ void main() {
 
         expect(find.byIcon(Icons.check), findsOneWidget);
 
-        final textWidget =
-            tester.widget<Text>(find.text(completedItem.displayText));
+        final textWidget = tester.widget<Text>(
+          find.text(completedItem.displayText),
+        );
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
@@ -128,8 +130,9 @@ void main() {
     });
 
     group('buildItemTile - Priority Indicators', () {
-      testWidgets('shows no priority indicator for normal priority',
-          (WidgetTester tester) async {
+      testWidgets('shows no priority indicator for normal priority', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -157,8 +160,9 @@ void main() {
         expect(priorityIndicators, findsNothing);
       });
 
-      testWidgets('shows primary color for high priority (4)',
-          (WidgetTester tester) async {
+      testWidgets('shows primary color for high priority (4)', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -189,8 +193,9 @@ void main() {
         expect(decoration.color, AppColors.lightColorScheme.primary);
       });
 
-      testWidgets('shows primary color for urgent priority (5)',
-          (WidgetTester tester) async {
+      testWidgets('shows primary color for urgent priority (5)', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -289,8 +294,9 @@ void main() {
         expect(deletedItem, equals(basicItem));
       });
 
-      testWidgets('shows correct tooltips on action buttons',
-          (WidgetTester tester) async {
+      testWidgets('shows correct tooltips on action buttons', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -318,8 +324,9 @@ void main() {
     });
 
     group('buildItemTile - Visual States', () {
-      testWidgets('applies correct styles for non-completed item',
-          (WidgetTester tester) async {
+      testWidgets('applies correct styles for non-completed item', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -333,16 +340,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textWidget =
-            tester.widget<Text>(find.text(basicItem.displayText));
+        final textWidget = tester.widget<Text>(
+          find.text(basicItem.displayText),
+        );
         // Production uses cs.onSurface which maps to AppColors.textDark
         expect(textWidget.style?.color, AppColors.textDark);
         expect(
-            textWidget.style?.decoration, anyOf(isNull, TextDecoration.none));
+          textWidget.style?.decoration,
+          anyOf(isNull, TextDecoration.none),
+        );
       });
 
-      testWidgets('applies correct styles for completed item',
-          (WidgetTester tester) async {
+      testWidgets('applies correct styles for completed item', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -356,15 +367,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textWidget =
-            tester.widget<Text>(find.text(completedItem.displayText));
+        final textWidget = tester.widget<Text>(
+          find.text(completedItem.displayText),
+        );
         // Production uses cs.onSurfaceVariant which maps to AppColors.textMedium
         expect(textWidget.style?.color, AppColors.textMedium);
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
-      testWidgets('applies correct styles for note on completed item',
-          (WidgetTester tester) async {
+      testWidgets('applies correct styles for note on completed item', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -382,8 +395,9 @@ void main() {
         expect(noteWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
-      testWidgets('handles long text with ellipsis',
-          (WidgetTester tester) async {
+      testWidgets('handles long text with ellipsis', (
+        WidgetTester tester,
+      ) async {
         final longItem = UnifiedShoppingItem(
           id: 'long-test',
           name:
@@ -420,18 +434,21 @@ void main() {
     });
 
     group('buildEmptyState', () {
-      testWidgets('renders empty state with all components',
-          (WidgetTester tester) async {
+      testWidgets('renders empty state with all components', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: Builder(builder: (context) {
-              return ShoppingItemTiles.buildEmptyState(
-                context: context,
-                title: 'Inga varor',
-                message: 'Din inköpslista är tom',
-                icon: Icons.shopping_cart_outlined,
-              );
-            }),
+            child: Builder(
+              builder: (context) {
+                return ShoppingItemTiles.buildEmptyState(
+                  context: context,
+                  title: 'Inga varor',
+                  message: 'Din inköpslista är tom',
+                  icon: Icons.shopping_cart_outlined,
+                );
+              },
+            ),
           ),
         );
 
@@ -439,22 +456,25 @@ void main() {
         expect(find.text('Din inköpslista är tom'), findsOneWidget);
         expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
 
-        final icon =
-            tester.widget<Icon>(find.byIcon(Icons.shopping_cart_outlined));
+        final icon = tester.widget<Icon>(
+          find.byIcon(Icons.shopping_cart_outlined),
+        );
         expect(icon.size, 64);
       });
 
       testWidgets('centers empty state content', (WidgetTester tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: Builder(builder: (context) {
-              return ShoppingItemTiles.buildEmptyState(
-                context: context,
-                title: 'Test Title',
-                message: 'Test Message',
-                icon: Icons.info,
-              );
-            }),
+            child: Builder(
+              builder: (context) {
+                return ShoppingItemTiles.buildEmptyState(
+                  context: context,
+                  title: 'Test Title',
+                  message: 'Test Message',
+                  icon: Icons.info,
+                );
+              },
+            ),
           ),
         );
 
@@ -468,18 +488,21 @@ void main() {
         expect(messageWidget.textAlign, TextAlign.center);
       });
 
-      testWidgets('applies correct styles to empty state',
-          (WidgetTester tester) async {
+      testWidgets('applies correct styles to empty state', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: Builder(builder: (context) {
-              return ShoppingItemTiles.buildEmptyState(
-                context: context,
-                title: 'Empty',
-                message: 'No items',
-                icon: Icons.inbox,
-              );
-            }),
+            child: Builder(
+              builder: (context) {
+                return ShoppingItemTiles.buildEmptyState(
+                  context: context,
+                  title: 'Empty',
+                  message: 'No items',
+                  icon: Icons.inbox,
+                );
+              },
+            ),
           ),
         );
 
@@ -495,8 +518,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('has proper semantics for buttons',
-          (WidgetTester tester) async {
+      testWidgets('has proper semantics for buttons', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -524,8 +548,9 @@ void main() {
         expect(deleteButtonWidget.tooltip, 'Ta bort Mjölk');
       });
 
-      testWidgets('maintains minimum touch target size',
-          (WidgetTester tester) async {
+      testWidgets('maintains minimum touch target size', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -543,12 +568,17 @@ void main() {
         // IconButton — it relies on Material's built-in 48dp interactive
         // minimum. Assert the rendered hit-area instead, which is what
         // actually matters for WCAG 2.5.5.
-        final editButtonSize =
-            tester.getSize(find.widgetWithIcon(IconButton, Icons.edit));
-        expect(editButtonSize.width,
-            greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-        expect(editButtonSize.height,
-            greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+        final editButtonSize = tester.getSize(
+          find.widgetWithIcon(IconButton, Icons.edit),
+        );
+        expect(
+          editButtonSize.width,
+          greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+        );
+        expect(
+          editButtonSize.height,
+          greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+        );
       });
     });
 
@@ -637,8 +667,9 @@ void main() {
     });
 
     group('Check-off Animations', () {
-      testWidgets('checkbox uses AnimatedContainer for fill transition',
-          (WidgetTester tester) async {
+      testWidgets('checkbox uses AnimatedContainer for fill transition', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -655,8 +686,9 @@ void main() {
         expect(find.byType(AnimatedContainer), findsOneWidget);
       });
 
-      testWidgets('checkbox uses ScaleTransition for pulse',
-          (WidgetTester tester) async {
+      testWidgets('checkbox uses ScaleTransition for pulse', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -679,8 +711,9 @@ void main() {
         expect(checkboxScale, findsOneWidget);
       });
 
-      testWidgets('checkbox uses AnimatedSwitcher for check icon',
-          (WidgetTester tester) async {
+      testWidgets('checkbox uses AnimatedSwitcher for check icon', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -697,8 +730,9 @@ void main() {
         expect(find.byType(AnimatedSwitcher), findsOneWidget);
       });
 
-      testWidgets('pulse animation triggers on isCompleted change',
-          (WidgetTester tester) async {
+      testWidgets('pulse animation triggers on isCompleted change', (
+        WidgetTester tester,
+      ) async {
         bool isCompleted = false;
 
         // Finder for our checkbox ScaleTransition (ancestor of AnimatedContainer)
@@ -755,8 +789,9 @@ void main() {
         expect(endScale.scale.value, 1.0);
       });
 
-      testWidgets('checkbox fill color animates on toggle',
-          (WidgetTester tester) async {
+      testWidgets('checkbox fill color animates on toggle', (
+        WidgetTester tester,
+      ) async {
         bool isCompleted = false;
 
         late StateSetter setOuterState;
@@ -796,8 +831,9 @@ void main() {
         expect(find.byIcon(Icons.check), findsNothing);
       });
 
-      testWidgets('AnimatedContainer uses theme duration and curve constants',
-          (WidgetTester tester) async {
+      testWidgets('AnimatedContainer uses theme duration and curve constants', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -818,8 +854,9 @@ void main() {
         expect(animatedContainer.curve, ThemeConstants.standardCurve);
       });
 
-      testWidgets('AnimatedSwitcher uses theme duration constant',
-          (WidgetTester tester) async {
+      testWidgets('AnimatedSwitcher uses theme duration constant', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingItemTile(
@@ -841,8 +878,9 @@ void main() {
     });
 
     group('Static API backward compatibility', () {
-      testWidgets('buildItemTile delegates to ShoppingItemTile widget',
-          (WidgetTester tester) async {
+      testWidgets('buildItemTile delegates to ShoppingItemTile widget', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -865,79 +903,90 @@ void main() {
       });
 
       testWidgets(
-          'BUT-948: buildDraggableItemTile no longer wraps the whole tile in '
-          'a long-press drag (freed for multi-select)',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Builder(
-              builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
-                context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+        'BUT-948: buildDraggableItemTile no longer wraps the whole tile in '
+        'a long-press drag (freed for multi-select)',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: Builder(
+                builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
+                  context,
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
+                ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        expect(
-            find.byType(LongPressDraggable<UnifiedShoppingItem>), findsNothing);
-        expect(find.byType(ShoppingItemTile), findsOneWidget);
-      });
+          expect(
+            find.byType(LongPressDraggable<UnifiedShoppingItem>),
+            findsNothing,
+          );
+          expect(find.byType(ShoppingItemTile), findsOneWidget);
+        },
+      );
 
       testWidgets(
-          'BUT-948: a grip-handle drag appears only when category-move is '
-          'allowed', (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Builder(
-              builder: (context) => ShoppingItemTiles.buildItemTile(
-                context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
-                onMoveToCategory: () {},
+        'BUT-948: a grip-handle drag appears only when category-move is '
+        'allowed',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: Builder(
+                builder: (context) => ShoppingItemTiles.buildItemTile(
+                  context,
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
+                  onMoveToCategory: () {},
+                ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        expect(find.byType(Draggable<UnifiedShoppingItem>), findsOneWidget,
-            reason: 'reorder moved onto a per-row drag handle');
-        expect(find.byIcon(Icons.drag_handle), findsOneWidget);
-      });
+          expect(
+            find.byType(Draggable<UnifiedShoppingItem>),
+            findsOneWidget,
+            reason: 'reorder moved onto a per-row drag handle',
+          );
+          expect(find.byIcon(Icons.drag_handle), findsOneWidget);
+        },
+      );
 
       testWidgets(
-          'buildDraggableItemTile skips drag wrapper for completed items',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Builder(
-              builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
-                context,
-                completedItem,
-                true,
-                (_) {},
-                (_) {},
-                (_) {},
+        'buildDraggableItemTile skips drag wrapper for completed items',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: Builder(
+                builder: (context) => ShoppingItemTiles.buildDraggableItemTile(
+                  context,
+                  completedItem,
+                  true,
+                  (_) {},
+                  (_) {},
+                  (_) {},
+                ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Completed items should NOT be draggable
-        expect(
-            find.byType(LongPressDraggable<UnifiedShoppingItem>), findsNothing);
-        expect(find.byType(ShoppingItemTile), findsOneWidget);
-      });
+          // Completed items should NOT be draggable
+          expect(
+            find.byType(LongPressDraggable<UnifiedShoppingItem>),
+            findsNothing,
+          );
+          expect(find.byType(ShoppingItemTile), findsOneWidget);
+        },
+      );
     });
   });
 }

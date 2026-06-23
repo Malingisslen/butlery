@@ -59,8 +59,7 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test(
-        'single-URL fetchFromUrl sets the offline message and never calls the '
+    test('single-URL fetchFromUrl sets the offline message and never calls the '
         'scraper', () async {
       viewModel.updateUrl('https://example.com/recipe');
 
@@ -68,12 +67,14 @@ void main() {
 
       expect(viewModel.error, AppLocale.current.importOfflineMessage);
       expect(viewModel.hasExtractedText, isFalse);
-      expect(viewModel.fetchContentCalls, 0,
-          reason: 'scraper must not run while offline');
+      expect(
+        viewModel.fetchContentCalls,
+        0,
+        reason: 'scraper must not run while offline',
+      );
     });
 
-    test(
-        'fetchAndParse stops at the offline pre-check without scraping or '
+    test('fetchAndParse stops at the offline pre-check without scraping or '
         'parsing', () async {
       viewModel.updateUrl('https://example.com/recipe');
 
@@ -84,8 +85,7 @@ void main() {
       expect(viewModel.hasParsedRecipe, isFalse);
     });
 
-    test(
-        'multi-URL fetchMultipleUrls sets the offline message and never calls '
+    test('multi-URL fetchMultipleUrls sets the offline message and never calls '
         'the scraper', () async {
       viewModel.updateUrl(
         'https://example.com/one\nhttps://example.com/two',
@@ -94,21 +94,26 @@ void main() {
       await viewModel.fetchMultipleUrls();
 
       expect(viewModel.error, AppLocale.current.importOfflineMessage);
-      expect(viewModel.fetchContentCalls, 0,
-          reason: 'no URL in the batch should be scraped while offline');
+      expect(
+        viewModel.fetchContentCalls,
+        0,
+        reason: 'no URL in the batch should be scraped while offline',
+      );
       expect(viewModel.hasAnyUrlSuccess, isFalse);
     });
 
-    test('online path is preserved — fetchFromUrl reaches the scraper',
-        () async {
-      when(() => mockConnectivity.isConnectedToInternet).thenReturn(true);
-      viewModel.updateUrl('https://example.com/recipe');
+    test(
+      'online path is preserved — fetchFromUrl reaches the scraper',
+      () async {
+        when(() => mockConnectivity.isConnectedToInternet).thenReturn(true);
+        viewModel.updateUrl('https://example.com/recipe');
 
-      await viewModel.fetchFromUrl();
+        await viewModel.fetchFromUrl();
 
-      expect(viewModel.fetchContentCalls, 1);
-      expect(viewModel.error, isNull);
-      expect(viewModel.hasExtractedText, isTrue);
-    });
+        expect(viewModel.fetchContentCalls, 1);
+        expect(viewModel.error, isNull);
+        expect(viewModel.hasExtractedText, isTrue);
+      },
+    );
   });
 }

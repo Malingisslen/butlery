@@ -12,26 +12,29 @@ void main() {
 
   Future<DateTime?> openDialog(WidgetTester tester) async {
     DateTime? result;
-    await tester.pumpWidget(createLocalizedTestApp(
-      child: Builder(
-        builder: (context) => ElevatedButton(
-          onPressed: () async {
-            result = await showDialog<DateTime>(
-              context: context,
-              builder: (_) => const MenuWeekSelectionDialog(),
-            );
-          },
-          child: const Text('open'),
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () async {
+              result = await showDialog<DateTime>(
+                context: context,
+                builder: (_) => const MenuWeekSelectionDialog(),
+              );
+            },
+            child: const Text('open'),
+          ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     return result;
   }
 
-  testWidgets('renders four week options with the current week marked',
-      (tester) async {
+  testWidgets('renders four week options with the current week marked', (
+    tester,
+  ) async {
     await withClock(Clock.fixed(fixedNow), () async {
       await openDialog(tester);
 
@@ -41,24 +44,27 @@ void main() {
     });
   });
 
-  testWidgets('returns the current week start when shared without changing',
-      (tester) async {
+  testWidgets('returns the current week start when shared without changing', (
+    tester,
+  ) async {
     await withClock(Clock.fixed(fixedNow), () async {
       // Capture the dialog result by reopening after the pop completes.
       DateTime? captured;
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () async {
-              captured = await showDialog<DateTime>(
-                context: context,
-                builder: (_) => const MenuWeekSelectionDialog(),
-              );
-            },
-            child: const Text('open'),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                captured = await showDialog<DateTime>(
+                  context: context,
+                  builder: (_) => const MenuWeekSelectionDialog(),
+                );
+              },
+              child: const Text('open'),
+            ),
           ),
         ),
-      ));
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
@@ -69,23 +75,26 @@ void main() {
     });
   });
 
-  testWidgets('returns the chosen week when a different option is selected',
-      (tester) async {
+  testWidgets('returns the chosen week when a different option is selected', (
+    tester,
+  ) async {
     await withClock(Clock.fixed(fixedNow), () async {
       DateTime? captured;
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () async {
-              captured = await showDialog<DateTime>(
-                context: context,
-                builder: (_) => const MenuWeekSelectionDialog(),
-              );
-            },
-            child: const Text('open'),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                captured = await showDialog<DateTime>(
+                  context: context,
+                  builder: (_) => const MenuWeekSelectionDialog(),
+                );
+              },
+              child: const Text('open'),
+            ),
           ),
         ),
-      ));
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
@@ -97,8 +106,9 @@ void main() {
 
       expect(
         captured,
-        equals(IsoWeekUtils.weekStartOf(
-            fixedNow.subtract(const Duration(days: 7)))),
+        equals(
+          IsoWeekUtils.weekStartOf(fixedNow.subtract(const Duration(days: 7))),
+        ),
       );
     });
   });
@@ -107,20 +117,22 @@ void main() {
     await withClock(Clock.fixed(fixedNow), () async {
       bool closed = false;
       DateTime? captured;
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () async {
-              captured = await showDialog<DateTime>(
-                context: context,
-                builder: (_) => const MenuWeekSelectionDialog(),
-              );
-              closed = true;
-            },
-            child: const Text('open'),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                captured = await showDialog<DateTime>(
+                  context: context,
+                  builder: (_) => const MenuWeekSelectionDialog(),
+                );
+                closed = true;
+              },
+              child: const Text('open'),
+            ),
           ),
         ),
-      ));
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 

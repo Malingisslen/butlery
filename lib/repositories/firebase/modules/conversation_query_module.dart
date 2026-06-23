@@ -12,7 +12,7 @@ class ConversationQueryModule {
   final FirebaseFirestore firestore;
   final String collectionName;
   final Conversation Function(DocumentSnapshot<Map<String, dynamic>>)
-      fromFirestore;
+  fromFirestore;
   final ConversationParticipantModule? participantModule;
 
   ConversationQueryModule({
@@ -39,14 +39,18 @@ class ConversationQueryModule {
           .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
     } catch (e) {
       AppLogger.error(
-          'Failed to get user conversations for ${userId.maskedUserId}', e);
+        'Failed to get user conversations for ${userId.maskedUserId}',
+        e,
+      );
       return const Stream.empty();
     }
   }
 
   /// Get a single conversation by ID.
-  Future<Conversation?> getConversation(String conversationId,
-      Future<Conversation?> Function(String) readFn) async {
+  Future<Conversation?> getConversation(
+    String conversationId,
+    Future<Conversation?> Function(String) readFn,
+  ) async {
     try {
       return await readFn(conversationId);
     } catch (e) {
@@ -56,14 +60,18 @@ class ConversationQueryModule {
   }
 
   /// Get list of participant IDs for a conversation.
-  Future<List<String>> getConversationParticipants(String conversationId,
-      Future<Conversation?> Function(String) readFn) async {
+  Future<List<String>> getConversationParticipants(
+    String conversationId,
+    Future<Conversation?> Function(String) readFn,
+  ) async {
     try {
       final conversation = await readFn(conversationId);
       return conversation?.participantIds ?? [];
     } catch (e) {
       AppLogger.error(
-          'Failed to get conversation participants: $conversationId', e);
+        'Failed to get conversation participants: $conversationId',
+        e,
+      );
       return [];
     }
   }
@@ -93,7 +101,9 @@ class ConversationQueryModule {
       return totalUnread;
     } catch (e) {
       AppLogger.error(
-          'Failed to get unread message count for ${userId.maskedUserId}', e);
+        'Failed to get unread message count for ${userId.maskedUserId}',
+        e,
+      );
       return 0;
     }
   }
@@ -124,8 +134,9 @@ class ConversationQueryModule {
           .length;
     } catch (e) {
       AppLogger.error(
-          'Failed to get unread conversations count for ${userId.maskedUserId}',
-          e);
+        'Failed to get unread conversations count for ${userId.maskedUserId}',
+        e,
+      );
       return 0;
     }
   }

@@ -105,7 +105,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   PreferredSizeWidget _buildAppBar(
-      BuildContext context, AddMembersToGroupViewModel viewModel) {
+    BuildContext context,
+    AddMembersToGroupViewModel viewModel,
+  ) {
     return AppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +148,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildBody(
-      BuildContext context, AddMembersToGroupViewModel viewModel) {
+    BuildContext context,
+    AddMembersToGroupViewModel viewModel,
+  ) {
     if (viewModel.isLoading && viewModel.availableFriends.isEmpty) {
       return StateWidget.loading(message: context.l10n.messagingLoadingFriends);
     }
@@ -225,7 +229,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             child: Text(
               viewModel.hasSelectedFriends
                   ? context.l10n.groupSelectedOfTotal(
-                      viewModel.selectedCount, viewModel.filteredFriends.length)
+                      viewModel.selectedCount,
+                      viewModel.filteredFriends.length,
+                    )
                   : context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.titleMedium,
             ),
@@ -252,7 +258,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   }
 
   Widget _buildFriendTile(
-      UserProfile friend, AddMembersToGroupViewModel viewModel) {
+    UserProfile friend,
+    AddMembersToGroupViewModel viewModel,
+  ) {
     final isSelected = viewModel.isFriendSelected(friend.uid);
     final hasInvitation = viewModel.hasInvitationStatus(friend.uid);
     final invitationStatus = viewModel.getInvitationStatusForUser(friend.uid);
@@ -272,7 +280,12 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         ),
         subtitle: null,
         trailing: _buildFriendTileTrailing(
-            friend, viewModel, isSelected, hasInvitation, invitationStatus),
+          friend,
+          viewModel,
+          isSelected,
+          hasInvitation,
+          invitationStatus,
+        ),
       ),
     );
   }
@@ -339,38 +352,42 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (viewModel.invitationError != null) ...[
-            Builder(builder: (context) {
-              final cs = Theme.of(context).colorScheme;
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: cs.error
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(color: cs.error),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: cs.error,
-                      size: AppDimensions.iconSizeM,
+            Builder(
+              builder: (context) {
+                final cs = Theme.of(context).colorScheme;
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    color: cs.error.withValues(
+                      alpha: AppDimensions.opacityVeryLight,
                     ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child: Text(
-                        viewModel.invitationError!,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: cs.error,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
+                    border: Border.all(color: cs.error),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: cs.error,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Expanded(
+                        child: Text(
+                          viewModel.invitationError!,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            color: cs.error,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }),
+                    ],
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           ActionButtons.primaryButton(
@@ -393,7 +410,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusM),
+                              AppDimensions.borderRadiusM,
+                            ),
                           ),
                         ),
                       );

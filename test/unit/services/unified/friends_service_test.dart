@@ -48,10 +48,12 @@ void main() {
         const toUserId = 'target_user_456';
         const message = 'Let\'s be friends!';
 
-        when(() => mockRepository.sendFriendRequest(
-              toUserId,
-              message: message,
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockRepository.sendFriendRequest(
+            toUserId,
+            message: message,
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.sendFriendRequest(
@@ -62,18 +64,21 @@ void main() {
         // Assert
         expect(success, isTrue);
 
-        verify(() => mockRepository.sendFriendRequest(
-              toUserId,
-              message: message,
-            )).called(1);
+        verify(
+          () => mockRepository.sendFriendRequest(
+            toUserId,
+            message: message,
+          ),
+        ).called(1);
       });
 
       test('should not send duplicate friend request', () async {
         // Arrange
         const toUserId = 'target_user_456';
 
-        when(() => mockRepository.sendFriendRequest(toUserId))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.sendFriendRequest(toUserId),
+        ).thenAnswer((_) async => false);
 
         // Act
         final success = await mockRepository.sendFriendRequest(toUserId);
@@ -86,8 +91,9 @@ void main() {
         // Arrange
         const requestId = 'request_123';
 
-        when(() => mockRepository.acceptFriendRequest(requestId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.acceptFriendRequest(requestId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.acceptFriendRequest(requestId);
@@ -102,8 +108,9 @@ void main() {
         // Arrange
         const requestId = 'request_123';
 
-        when(() => mockRepository.rejectFriendRequest(requestId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.rejectFriendRequest(requestId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.rejectFriendRequest(requestId);
@@ -118,8 +125,9 @@ void main() {
         // Arrange
         const requestId = 'request_123';
 
-        when(() => mockRepository.cancelFriendRequest(requestId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.cancelFriendRequest(requestId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.cancelFriendRequest(requestId);
@@ -149,8 +157,9 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.getIncomingRequests())
-            .thenAnswer((_) async => expectedRequests);
+        when(
+          () => mockRepository.getIncomingRequests(),
+        ).thenAnswer((_) async => expectedRequests);
 
         // Act
         final requests = await mockRepository.getIncomingRequests();
@@ -174,8 +183,9 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.getSentRequests())
-            .thenAnswer((_) async => expectedRequests);
+        when(
+          () => mockRepository.getSentRequests(),
+        ).thenAnswer((_) async => expectedRequests);
 
         // Act
         final requests = await mockRepository.getSentRequests();
@@ -192,8 +202,9 @@ void main() {
         const userId1 = 'test_user_123';
         const userId2 = 'target_user_456';
 
-        when(() => mockRepository.requestExists(userId1, userId2))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.requestExists(userId1, userId2),
+        ).thenAnswer((_) async => true);
 
         // Act
         final exists = await mockRepository.requestExists(userId1, userId2);
@@ -211,8 +222,9 @@ void main() {
         const userId1 = 'test_user_123';
         const userId2 = 'friend_456';
 
-        when(() => mockRepository.areFriends(userId1, userId2))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.areFriends(userId1, userId2),
+        ).thenAnswer((_) async => true);
 
         // Act
         final areFriends = await mockRepository.areFriends(userId1, userId2);
@@ -244,10 +256,12 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.fetchFriendIds(userId))
-            .thenAnswer((_) async => friendIds);
-        when(() => mockRepository.fetchFriendProfiles(friendIds))
-            .thenAnswer((_) async => expectedFriends);
+        when(
+          () => mockRepository.fetchFriendIds(userId),
+        ).thenAnswer((_) async => friendIds);
+        when(
+          () => mockRepository.fetchFriendProfiles(friendIds),
+        ).thenAnswer((_) async => expectedFriends);
 
         // Act
         final ids = await mockRepository.fetchFriendIds(userId);
@@ -264,8 +278,9 @@ void main() {
         // Arrange
         const friendId = 'friend_456';
 
-        when(() => mockRepository.removeFriend(friendId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.removeFriend(friendId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.removeFriend(friendId);
@@ -281,15 +296,17 @@ void main() {
         const userId1 = 'test_user_123';
         const userId2 = 'other_user_456';
 
-        when(() => mockRepository.addMutualFriends(userId1, userId2))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.addMutualFriends(userId1, userId2),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.addMutualFriends(userId1, userId2);
 
         // Assert
-        verify(() => mockRepository.addMutualFriends(userId1, userId2))
-            .called(1);
+        verify(
+          () => mockRepository.addMutualFriends(userId1, userId2),
+        ).called(1);
       });
     });
 
@@ -306,8 +323,9 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        when(() => mockRepository.saveCategory(userId, category))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.saveCategory(userId, category),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.saveCategory(userId, category);
@@ -336,8 +354,9 @@ void main() {
           ),
         ];
 
-        when(() => mockRepository.fetchCategories(userId))
-            .thenAnswer((_) async => expectedCategories);
+        when(
+          () => mockRepository.fetchCategories(userId),
+        ).thenAnswer((_) async => expectedCategories);
 
         // Act
         final categories = await mockRepository.fetchCategories(userId);
@@ -354,16 +373,29 @@ void main() {
         const categoryId = 'category_1';
         final memberIds = ['friend_456', 'friend_789'];
 
-        when(() => mockRepository.updateCategoryMembers(
-            userId, categoryId, memberIds)).thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateCategoryMembers(
+            userId,
+            categoryId,
+            memberIds,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateCategoryMembers(
-            userId, categoryId, memberIds);
+          userId,
+          categoryId,
+          memberIds,
+        );
 
         // Assert
-        verify(() => mockRepository.updateCategoryMembers(
-            userId, categoryId, memberIds)).called(1);
+        verify(
+          () => mockRepository.updateCategoryMembers(
+            userId,
+            categoryId,
+            memberIds,
+          ),
+        ).called(1);
       });
 
       test('should delete category', () async {
@@ -371,15 +403,17 @@ void main() {
         const userId = 'test_user_123';
         const categoryId = 'category_1';
 
-        when(() => mockRepository.deleteCategory(userId, categoryId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteCategory(userId, categoryId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteCategory(userId, categoryId);
 
         // Assert
-        verify(() => mockRepository.deleteCategory(userId, categoryId))
-            .called(1);
+        verify(
+          () => mockRepository.deleteCategory(userId, categoryId),
+        ).called(1);
       });
 
       test('should get category by ID', () async {
@@ -394,8 +428,9 @@ void main() {
           updatedAt: DateTime.now(),
         );
 
-        when(() => mockRepository.getCategory(userId, categoryId))
-            .thenAnswer((_) async => expectedCategory);
+        when(
+          () => mockRepository.getCategory(userId, categoryId),
+        ).thenAnswer((_) async => expectedCategory);
 
         // Act
         final category = await mockRepository.getCategory(userId, categoryId);

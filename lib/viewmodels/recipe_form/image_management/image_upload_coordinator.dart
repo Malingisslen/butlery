@@ -42,10 +42,10 @@ class ImageUploadCoordinator {
     required VoidCallback notifyListeners,
     required void Function(String) setError,
     required VoidCallback checkCompletionEvents,
-  })  : _storageService = storageService,
-        _notifyListeners = notifyListeners,
-        _setError = setError,
-        _checkCompletionEvents = checkCompletionEvents;
+  }) : _storageService = storageService,
+       _notifyListeners = notifyListeners,
+       _setError = setError,
+       _checkCompletionEvents = checkCompletionEvents;
 
   /// CRITICAL FIX: Thread-safe bulk upload with cancellation support and progress tracking.
   /// Uploads all pending images in parallel with coordinated progress reporting,
@@ -70,7 +70,8 @@ class ImageUploadCoordinator {
     // bool without calling `dispose()`) actually short-circuits in-flight work.
     if (isDisposedNow() || isUploadsCanceledNow()) {
       AppLogger.info(
-          '☁️ Upload canceled - manager disposed or uploads canceled');
+        '☁️ Upload canceled - manager disposed or uploads canceled',
+      );
       return [];
     }
 
@@ -80,7 +81,8 @@ class ImageUploadCoordinator {
     }
 
     AppLogger.info(
-        '🚀 Starting thread-safe upload of ${pendingImages.length} pending images');
+      '🚀 Starting thread-safe upload of ${pendingImages.length} pending images',
+    );
     _thumbnailUrls.clear();
     final List<String> uploadedUrls = [];
     int completed = 0;
@@ -114,11 +116,14 @@ class ImageUploadCoordinator {
 
       final uploadFutures = uploadOperations.map((op) => op.start());
       final results = await Future.wait(uploadFutures, eagerError: false);
-      final successfulUrls =
-          results.where((url) => url != null).cast<String>().toList();
+      final successfulUrls = results
+          .where((url) => url != null)
+          .cast<String>()
+          .toList();
 
       AppLogger.info(
-          '✅ Completed ${successfulUrls.length}/$total uploads successfully');
+        '✅ Completed ${successfulUrls.length}/$total uploads successfully',
+      );
       return successfulUrls;
     } catch (e) {
       // BUT-1128: surface the actual cause (network / auth / timeout / quota)
@@ -164,8 +169,9 @@ class ImageUploadCoordinator {
 
       // Update state to uploading
       if (imageStates.containsKey(filePath)) {
-        imageStates[filePath] =
-            imageStates[filePath]!.copyWith(state: ImageUploadState.uploading);
+        imageStates[filePath] = imageStates[filePath]!.copyWith(
+          state: ImageUploadState.uploading,
+        );
 
         if (!isDisposedNow()) {
           _notifyListeners();
@@ -175,7 +181,8 @@ class ImageUploadCoordinator {
       // CRITICAL FIX: Check cancellation before actual upload
       if (isDisposedNow() || isUploadsCanceledNow()) {
         AppLogger.info(
-            '☁️ Upload canceled during state update for ${file.path}');
+          '☁️ Upload canceled during state update for ${file.path}',
+        );
         return null;
       }
 
@@ -184,7 +191,8 @@ class ImageUploadCoordinator {
       // CRITICAL FIX: Check cancellation after upload completes
       if (isDisposedNow() || isUploadsCanceledNow()) {
         AppLogger.info(
-            '☁️ Upload canceled after completion for ${file.path} - ignoring result');
+          '☁️ Upload canceled after completion for ${file.path} - ignoring result',
+        );
         return null;
       }
 
@@ -210,8 +218,10 @@ class ImageUploadCoordinator {
       } else {
         // Update state to failed
         if (imageStates.containsKey(filePath)) {
-          imageStates[filePath] = imageStates[filePath]!
-              .copyWith(state: ImageUploadState.failed, error: 'Upload failed');
+          imageStates[filePath] = imageStates[filePath]!.copyWith(
+            state: ImageUploadState.failed,
+            error: 'Upload failed',
+          );
         }
 
         AppLogger.error('❌ Failed to upload ${file.path}');
@@ -222,8 +232,10 @@ class ImageUploadCoordinator {
       if (imageStates.containsKey(filePath) &&
           !isDisposedNow() &&
           !isUploadsCanceledNow()) {
-        imageStates[filePath] = imageStates[filePath]!
-            .copyWith(state: ImageUploadState.failed, error: e.toString());
+        imageStates[filePath] = imageStates[filePath]!.copyWith(
+          state: ImageUploadState.failed,
+          error: e.toString(),
+        );
       }
 
       AppLogger.error('❌ Error uploading ${file.path}: $e');
@@ -244,13 +256,15 @@ class ImageUploadCoordinator {
     }
 
     AppLogger.info(
-        '🔄 BULK_RETRY: Starting bulk retry for ${failedUploads.length} failed uploads');
+      '🔄 BULK_RETRY: Starting bulk retry for ${failedUploads.length} failed uploads',
+    );
 
     // Retry each failed upload
-    final retryFutures = failedUploads.keys.map((pathOrUrl) =>
-        retryFailedUpload(pathOrUrl).catchError((error) {
-          AppLogger.error('🔄 BULK_RETRY: Error retrying $pathOrUrl: $error');
-        }));
+    final retryFutures = failedUploads.keys.map(
+      (pathOrUrl) => retryFailedUpload(pathOrUrl).catchError((error) {
+        AppLogger.error('🔄 BULK_RETRY: Error retrying $pathOrUrl: $error');
+      }),
+    );
 
     await Future.wait(retryFutures);
     AppLogger.info('🔄 BULK_RETRY: Bulk retry completed');
@@ -269,7 +283,8 @@ class ImageUploadCoordinator {
     }
 
     AppLogger.info(
-        '🔄 BULK_CANCEL: Cancelling ${activeUploads.length} active uploads');
+      '🔄 BULK_CANCEL: Cancelling ${activeUploads.length} active uploads',
+    );
 
     for (final pathOrUrl in activeUploads.keys) {
       removeImageAndCleanup(pathOrUrl);
@@ -289,7 +304,8 @@ class ImageUploadCoordinator {
     }
 
     AppLogger.info(
-        '🔄 BULK_CLEAR: Clearing ${failedUploads.length} failed uploads');
+      '🔄 BULK_CLEAR: Clearing ${failedUploads.length} failed uploads',
+    );
 
     for (final pathOrUrl in failedUploads.keys) {
       imageStates.remove(pathOrUrl);

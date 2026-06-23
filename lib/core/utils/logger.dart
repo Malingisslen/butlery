@@ -60,7 +60,8 @@ class AppLogger {
     String errorType,
     String userAction,
     String? stackTrace,
-  )? _analyticsCallback;
+  )?
+  _analyticsCallback;
 
   /// Formats a message with correlation ID prefix if one is active.
   /// Returns the original message if no correlation ID is set.
@@ -92,7 +93,8 @@ class AppLogger {
       String errorType,
       String userAction,
       String? stackTrace,
-    ) callback,
+    )
+    callback,
   ) {
     _analyticsCallback = callback;
   }
@@ -240,12 +242,14 @@ class AppLogger {
     final sanitized = _sanitizeForCrashlytics(message);
     _safeCrashlytics(() => FirebaseCrashlytics.instance.log(sanitized));
     if (error != null) {
-      _safeCrashlytics(() => FirebaseCrashlytics.instance.recordError(
-            error,
-            stackTrace,
-            reason: sanitized,
-            fatal: false,
-          ));
+      _safeCrashlytics(
+        () => FirebaseCrashlytics.instance.recordError(
+          error,
+          stackTrace,
+          reason: sanitized,
+          fatal: false,
+        ),
+      );
     }
   }
 
@@ -369,7 +373,8 @@ class AppLogger {
   /// ```
   static void setUserIdentifier(String userId) {
     _safeCrashlytics(
-        () => FirebaseCrashlytics.instance.setUserIdentifier(userId));
+      () => FirebaseCrashlytics.instance.setUserIdentifier(userId),
+    );
   }
 
   /// Clears user identifier in Crashlytics when user logs out.

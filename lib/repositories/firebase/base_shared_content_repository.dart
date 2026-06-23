@@ -65,7 +65,8 @@ abstract class BaseSharedContentRepository<T>
     } catch (e) {
       // Log but don't fail - counter is best-effort optimization
       AppLogger.warning(
-          'Failed to increment counter for ${userId.maskedUserId}: $e');
+        'Failed to increment counter for ${userId.maskedUserId}: $e',
+      );
     }
   }
 
@@ -89,7 +90,8 @@ abstract class BaseSharedContentRepository<T>
     } catch (e) {
       // Log but don't fail - counter is best-effort optimization
       AppLogger.warning(
-          'Failed to decrement counter for ${userId.maskedUserId}: $e');
+        'Failed to decrement counter for ${userId.maskedUserId}: $e',
+      );
     }
   }
 
@@ -107,8 +109,10 @@ abstract class BaseSharedContentRepository<T>
     }
   }
 
-  Future<String> createSharedContent(T entity,
-      {List<String>? initialSharedToUserIds}) async {
+  Future<String> createSharedContent(
+    T entity, {
+    List<String>? initialSharedToUserIds,
+  }) async {
     final uid = requireCurrentUserId();
 
     validateRequiredFields(
@@ -141,7 +145,8 @@ abstract class BaseSharedContentRepository<T>
       );
 
       AppLogger.success(
-          '✅ Created shared $contentTypeName: ${getContentTitle(entity)}');
+        '✅ Created shared $contentTypeName: ${getContentTitle(entity)}',
+      );
       return docRef.id;
     } catch (e) {
       AppLogger.error('Failed to create shared $contentTypeName: $e');
@@ -166,7 +171,8 @@ abstract class BaseSharedContentRepository<T>
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot mark $contentTypeName as $importAction for another user');
+        'Cannot mark $contentTypeName as $importAction for another user',
+      );
     }
 
     try {
@@ -174,7 +180,8 @@ abstract class BaseSharedContentRepository<T>
       await addView(contentId, userId);
 
       AppLogger.success(
-          '✅ Marked shared $contentTypeName $contentId as $importAction by user ${userId.maskedUserId}');
+        '✅ Marked shared $contentTypeName $contentId as $importAction by user ${userId.maskedUserId}',
+      );
 
       logPermissionCheck(
         userId: uid,
@@ -185,7 +192,8 @@ abstract class BaseSharedContentRepository<T>
       );
     } catch (e) {
       AppLogger.error(
-          'Failed to mark $contentTypeName $contentId as $importAction: $e');
+        'Failed to mark $contentTypeName $contentId as $importAction: $e',
+      );
       throw RepositoryException('Failed to update $importAction status: $e');
     }
   }
@@ -205,7 +213,8 @@ abstract class BaseSharedContentRepository<T>
   @Deprecated('Use getSharedContentForUser with startAfter parameter instead')
   Future<DocumentSnapshot?> getLastDocumentForUser(String userId) async {
     AppLogger.warning(
-        'getLastDocumentForUser is deprecated - subcollection queries handle pagination differently');
+      'getLastDocumentForUser is deprecated - subcollection queries handle pagination differently',
+    );
     return null;
   }
 
@@ -214,18 +223,21 @@ abstract class BaseSharedContentRepository<T>
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot get unread count for another user');
+        'Cannot get unread count for another user',
+      );
     }
 
     try {
       // Fast path: use denormalized counter
       final count = await getUnreadCountFromCounter(userId);
       AppLogger.info(
-          '📊 Unread shared $contentTypeName count for user ${userId.maskedUserId}: $count');
+        '📊 Unread shared $contentTypeName count for user ${userId.maskedUserId}: $count',
+      );
       return count;
     } catch (e) {
       AppLogger.error(
-          'Failed to get unread count for user ${userId.maskedUserId}: $e');
+        'Failed to get unread count for user ${userId.maskedUserId}: $e',
+      );
       return 0;
     }
   }
@@ -236,7 +248,8 @@ abstract class BaseSharedContentRepository<T>
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot recalculate count for another user');
+        'Cannot recalculate count for another user',
+      );
     }
 
     try {
@@ -246,9 +259,11 @@ abstract class BaseSharedContentRepository<T>
       );
 
       final unreadCount = sharedContent
-          .where((content) =>
-              shouldShowToUser(content, userId) &&
-              !isViewedByUser(content, userId))
+          .where(
+            (content) =>
+                shouldShowToUser(content, userId) &&
+                !isViewedByUser(content, userId),
+          )
           .length;
 
       // Sync counter with actual value
@@ -259,11 +274,13 @@ abstract class BaseSharedContentRepository<T>
       }, SetOptions(merge: true));
 
       AppLogger.info(
-          '📊 Recalculated unread $contentTypeName count for user ${userId.maskedUserId}: $unreadCount');
+        '📊 Recalculated unread $contentTypeName count for user ${userId.maskedUserId}: $unreadCount',
+      );
       return unreadCount;
     } catch (e) {
       AppLogger.error(
-          'Failed to recalculate count for user ${userId.maskedUserId}: $e');
+        'Failed to recalculate count for user ${userId.maskedUserId}: $e',
+      );
       return 0;
     }
   }
@@ -274,19 +291,24 @@ abstract class BaseSharedContentRepository<T>
     try {
       final sharedContent = await read(contentId);
       if (sharedContent == null) {
-        throw ResourceNotFoundException('Shared $contentTypeName not found',
-            resourceType: resourceType, resourceId: contentId);
+        throw ResourceNotFoundException(
+          'Shared $contentTypeName not found',
+          resourceType: resourceType,
+          resourceId: contentId,
+        );
       }
 
       if (!isCreatedBy(sharedContent, uid)) {
         throw PermissionDeniedException(
-            'Cannot delete shared $contentTypeName - insufficient permissions');
+          'Cannot delete shared $contentTypeName - insufficient permissions',
+        );
       }
 
       await getCollectionRef().doc(contentId).delete();
 
       AppLogger.success(
-          '✅ Deleted shared $contentTypeName: ${getContentTitle(sharedContent)}');
+        '✅ Deleted shared $contentTypeName: ${getContentTitle(sharedContent)}',
+      );
 
       logPermissionCheck(
         userId: uid,
@@ -300,7 +322,8 @@ abstract class BaseSharedContentRepository<T>
         rethrow;
       }
       AppLogger.error(
-          'Failed to delete shared $contentTypeName $contentId: $e');
+        'Failed to delete shared $contentTypeName $contentId: $e',
+      );
       throw RepositoryException('Failed to delete shared $contentTypeName: $e');
     }
   }
@@ -317,7 +340,8 @@ abstract class BaseSharedContentRepository<T>
     final content = await read(contentId);
     if (content == null || !isCreatedBy(content, uid)) {
       throw PermissionDeniedException(
-          'Only the owner can add members to $contentTypeName');
+        'Only the owner can add members to $contentTypeName',
+      );
     }
 
     try {
@@ -360,7 +384,8 @@ abstract class BaseSharedContentRepository<T>
       }
 
       AppLogger.success(
-          '✅ Added user ${userId.maskedUserId} as member to $contentTypeName $contentId');
+        '✅ Added user ${userId.maskedUserId} as member to $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add member to $contentTypeName: $e');
       throw RepositoryException('Failed to add member: $e');
@@ -401,7 +426,8 @@ abstract class BaseSharedContentRepository<T>
       final content = await read(contentId);
       if (content == null || !isCreatedBy(content, currentUser)) {
         throw PermissionDeniedException(
-            'Only the owner can remove other members from $contentTypeName');
+          'Only the owner can remove other members from $contentTypeName',
+        );
       }
     }
 
@@ -418,7 +444,8 @@ abstract class BaseSharedContentRepository<T>
       });
 
       AppLogger.success(
-          '✅ Removed user ${userId.maskedUserId} from $contentTypeName $contentId');
+        '✅ Removed user ${userId.maskedUserId} from $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to remove member from $contentTypeName: $e');
       throw RepositoryException('Failed to remove member: $e');
@@ -464,7 +491,8 @@ abstract class BaseSharedContentRepository<T>
     try {
       await viewRepository.markAsViewed(contentId);
       AppLogger.success(
-          '✅ Added view for user ${userId.maskedUserId} on $contentTypeName $contentId');
+        '✅ Added view for user ${userId.maskedUserId} on $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add view: $e');
       throw RepositoryException('Failed to add view: $e');
@@ -493,7 +521,8 @@ abstract class BaseSharedContentRepository<T>
         targetId: targetId,
       );
       AppLogger.success(
-          '✅ Added $action for user ${userId.maskedUserId} on $contentTypeName $contentId');
+        '✅ Added $action for user ${userId.maskedUserId} on $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add engagement: $e');
       throw RepositoryException('Failed to add engagement: $e');
@@ -509,13 +538,17 @@ abstract class BaseSharedContentRepository<T>
     }
   }
 
-  Future<void> addDismissal(String contentId, String userId,
-      {String? reason}) async {
+  Future<void> addDismissal(
+    String contentId,
+    String userId, {
+    String? reason,
+  }) async {
     try {
       await dismissalRepository.dismiss(contentId, reason: reason);
 
       AppLogger.success(
-          '✅ Added dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId');
+        '✅ Added dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add dismissal: $e');
       throw RepositoryException('Failed to add dismissal: $e');
@@ -527,7 +560,8 @@ abstract class BaseSharedContentRepository<T>
       await dismissalRepository.undismiss(contentId);
 
       AppLogger.success(
-          '✅ Removed dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId');
+        '✅ Removed dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to remove dismissal: $e');
       throw RepositoryException('Failed to remove dismissal: $e');
@@ -548,7 +582,8 @@ abstract class BaseSharedContentRepository<T>
     final content = await read(contentId);
     if (content == null || !isCreatedBy(content, currentUser)) {
       throw PermissionDeniedException(
-          'Only the owner can add collaborators to $contentTypeName');
+        'Only the owner can add collaborators to $contentTypeName',
+      );
     }
 
     try {
@@ -557,13 +592,14 @@ abstract class BaseSharedContentRepository<T>
           .collection(FirestoreCollections.collaborators)
           .doc(userId)
           .set({
-        'userId': userId,
-        'joinedAt': timestampProvider.serverTimestamp(),
-        'lastEditAt': timestampProvider.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'userId': userId,
+            'joinedAt': timestampProvider.serverTimestamp(),
+            'lastEditAt': timestampProvider.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       AppLogger.success(
-          '✅ Added collaborator ${userId.maskedUserId} to $contentTypeName $contentId');
+        '✅ Added collaborator ${userId.maskedUserId} to $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add collaborator: $e');
       throw RepositoryException('Failed to add collaborator: $e');
@@ -577,7 +613,8 @@ abstract class BaseSharedContentRepository<T>
       final content = await read(contentId);
       if (content == null || !isCreatedBy(content, currentUser)) {
         throw PermissionDeniedException(
-            'Only the owner can remove other collaborators from $contentTypeName');
+          'Only the owner can remove other collaborators from $contentTypeName',
+        );
       }
     }
 
@@ -589,7 +626,8 @@ abstract class BaseSharedContentRepository<T>
           .delete();
 
       AppLogger.success(
-          '✅ Removed collaborator ${userId.maskedUserId} from $contentTypeName $contentId');
+        '✅ Removed collaborator ${userId.maskedUserId} from $contentTypeName $contentId',
+      );
     } catch (e) {
       AppLogger.error('Failed to remove collaborator: $e');
       throw RepositoryException('Failed to remove collaborator: $e');
@@ -641,7 +679,8 @@ abstract class BaseSharedContentRepository<T>
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot access shared $contentTypeName for another user');
+        'Cannot access shared $contentTypeName for another user',
+      );
     }
 
     try {
@@ -679,8 +718,9 @@ abstract class BaseSharedContentRepository<T>
         final docs = await Future.wait(docFutures);
         // Filter by contentType discriminator to return only matching type
         final validDocs = docs
-            .where((doc) =>
-                doc.exists && doc.data()?['contentType'] == contentType)
+            .where(
+              (doc) => doc.exists && doc.data()?['contentType'] == contentType,
+            )
             .toList();
 
         final batchContent = validDocs
@@ -699,13 +739,16 @@ abstract class BaseSharedContentRepository<T>
       final limitedContent = allContent.take(limit).toList();
 
       AppLogger.info(
-          '📊 Found ${limitedContent.length} shared $contentTypeName for user ${userId.maskedUserId}');
+        '📊 Found ${limitedContent.length} shared $contentTypeName for user ${userId.maskedUserId}',
+      );
       return limitedContent;
     } catch (e) {
       AppLogger.error(
-          'Failed to get shared $contentTypeName for user ${userId.maskedUserId} via subcollections: $e');
+        'Failed to get shared $contentTypeName for user ${userId.maskedUserId} via subcollections: $e',
+      );
       throw RepositoryException(
-          'Failed to retrieve shared $contentTypeName: $e');
+        'Failed to retrieve shared $contentTypeName: $e',
+      );
     }
   }
 
@@ -723,20 +766,28 @@ abstract class BaseSharedContentRepository<T>
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, T? entity) async {
+    String userId,
+    String resourceId,
+    T? entity,
+  ) async {
     if (entity == null) return false;
     return shouldShowToUser(entity, userId);
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, T entity) async {
+    String userId,
+    String resourceId,
+    T entity,
+  ) async {
     return isCreatedBy(entity, userId);
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     try {
       final content = await read(resourceId);
       if (content == null) return false;

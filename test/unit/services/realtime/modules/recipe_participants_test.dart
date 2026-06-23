@@ -34,8 +34,10 @@ void main() {
 
         // Assert
         expect(updated.participants[userId], ResourcePermission.editor);
-        expect(updated.participants.length,
-            1); // Only new editor (owner not in participants)
+        expect(
+          updated.participants.length,
+          1,
+        ); // Only new editor (owner not in participants)
       });
 
       test('should add collaborator with viewer permission', () {
@@ -75,8 +77,9 @@ void main() {
 
       test('should prevent owner removal', () {
         // Arrange
-        final recipe =
-            recipeBuilder.withOwner('owner_123', 'Recipe Owner').build();
+        final recipe = recipeBuilder
+            .withOwner('owner_123', 'Recipe Owner')
+            .build();
 
         // Act & Assert
         expect(
@@ -188,8 +191,10 @@ void main() {
 
         // Act & Assert
         expect(RecipeParticipants.canUserInvite(recipe, 'owner_123'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'),
-            false); // Only admin/owner can invite
+        expect(
+          RecipeParticipants.canUserInvite(recipe, 'editor_123'),
+          false,
+        ); // Only admin/owner can invite
         expect(RecipeParticipants.canUserInvite(recipe, 'viewer_456'), false);
       });
 
@@ -200,11 +205,14 @@ void main() {
             .build();
 
         // Act & Assert
-        expect(RecipeParticipants.canUserManagePermissions(recipe, 'owner_123'),
-            true);
         expect(
-            RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
-            false);
+          RecipeParticipants.canUserManagePermissions(recipe, 'owner_123'),
+          true,
+        );
+        expect(
+          RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
+          false,
+        );
       });
 
       test('should validate permission hierarchy', () {
@@ -233,17 +241,21 @@ void main() {
 
       test('should recognize owner override permissions', () {
         // Arrange
-        final recipe =
-            recipeBuilder.withOwner('super_owner', 'Owner Name').build();
+        final recipe = recipeBuilder
+            .withOwner('super_owner', 'Owner Name')
+            .build();
 
         // Act & Assert - Owner has all permissions via isOwner check
         expect(RecipeParticipants.canUserView(recipe, 'super_owner'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'super_owner'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'super_owner'),
-            true); // Owner can invite
         expect(
-            RecipeParticipants.canUserManagePermissions(recipe, 'super_owner'),
-            true); // Owner can manage
+          RecipeParticipants.canUserInvite(recipe, 'super_owner'),
+          true,
+        ); // Owner can invite
+        expect(
+          RecipeParticipants.canUserManagePermissions(recipe, 'super_owner'),
+          true,
+        ); // Owner can manage
       });
 
       test('should validate permission inheritance', () {
@@ -255,11 +267,14 @@ void main() {
         // Act & Assert - Editor inherits viewer permissions
         expect(RecipeParticipants.canUserView(recipe, 'editor_123'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'editor_123'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'),
-            false); // Only admin/owner can invite
         expect(
-            RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
-            false);
+          RecipeParticipants.canUserInvite(recipe, 'editor_123'),
+          false,
+        ); // Only admin/owner can invite
+        expect(
+          RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
+          false,
+        );
       });
     });
 
@@ -273,7 +288,9 @@ void main() {
 
         // Assert
         expect(
-            status, anyOf(contains('Kollaborativt'), contains('redigerare')));
+          status,
+          anyOf(contains('Kollaborativt'), contains('redigerare')),
+        );
       });
 
       test('should provide complete collaboration info', () {
@@ -288,8 +305,10 @@ void main() {
         final info = RecipeParticipants.getCollaborationInfo(recipe);
 
         // Assert
-        expect(info['participantCount'],
-            3); // 3 participants (owner not in participants map)
+        expect(
+          info['participantCount'],
+          3,
+        ); // 3 participants (owner not in participants map)
         expect(info['editorCount'], 2);
         expect(info['viewerCount'], 1);
         expect(info['isCollaborative'], true);
@@ -321,7 +340,9 @@ void main() {
         // Assert - Owner not in participants map, so private recipe
         expect(status, 'Privat recept');
         expect(
-            info['participantCount'], 0); // No participants (owner not counted)
+          info['participantCount'],
+          0,
+        ); // No participants (owner not counted)
         expect(info['isCollaborative'], false);
       });
     });
@@ -393,8 +414,9 @@ void main() {
 
       test('should provide error messages in Swedish', () {
         // Arrange
-        final recipe =
-            recipeBuilder.withOwner('owner_123', 'Test Owner').build();
+        final recipe = recipeBuilder
+            .withOwner('owner_123', 'Test Owner')
+            .build();
 
         // Act & Assert - RecipeParticipants checks owner BEFORE participant check
         try {

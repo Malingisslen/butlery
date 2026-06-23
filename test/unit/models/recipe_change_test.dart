@@ -79,9 +79,13 @@ void main() {
         expect(change.recipe.id, equals('recipe_123'));
         expect(change.recipe.title, equals('Köttbullar med potatismos'));
         expect(
-            change.recipe.description, equals('Klassiska svenska köttbullar'));
-        expect(change.recipe.ingredients,
-            equals(['Köttfärs', 'Mjölk', 'Ströbröd']));
+          change.recipe.description,
+          equals('Klassiska svenska köttbullar'),
+        );
+        expect(
+          change.recipe.ingredients,
+          equals(['Köttfärs', 'Mjölk', 'Ströbröd']),
+        );
         expect(change.recipe.createdBy, equals('user_789'));
       });
 
@@ -278,24 +282,30 @@ void main() {
       test('should handle hash collisions properly', () {
         final changes = <RecipeChange>{};
 
-        changes.add(RecipeChange(
-          type: RecipeChangeType.added,
-          recipe: testRecipe,
-        ));
+        changes.add(
+          RecipeChange(
+            type: RecipeChangeType.added,
+            recipe: testRecipe,
+          ),
+        );
 
         // Try to add duplicate (same type and recipe ID)
-        changes.add(RecipeChange(
-          type: RecipeChangeType.added,
-          recipe: testRecipe,
-        ));
+        changes.add(
+          RecipeChange(
+            type: RecipeChangeType.added,
+            recipe: testRecipe,
+          ),
+        );
 
         expect(changes.length, equals(1)); // Should not add duplicate
 
         // Add different change
-        changes.add(RecipeChange(
-          type: RecipeChangeType.modified,
-          recipe: testRecipe,
-        ));
+        changes.add(
+          RecipeChange(
+            type: RecipeChangeType.modified,
+            recipe: testRecipe,
+          ),
+        );
 
         expect(changes.length, equals(2));
       });
@@ -387,24 +397,30 @@ void main() {
         final timeline = <RecipeChange>[];
 
         // Recipe lifecycle
-        timeline.add(RecipeChange(
-          type: RecipeChangeType.added,
-          recipe: testRecipe,
-        ));
+        timeline.add(
+          RecipeChange(
+            type: RecipeChangeType.added,
+            recipe: testRecipe,
+          ),
+        );
 
         // Multiple modifications
         for (int i = 0; i < 5; i++) {
-          timeline.add(RecipeChange(
-            type: RecipeChangeType.modified,
-            recipe: testRecipe,
-          ));
+          timeline.add(
+            RecipeChange(
+              type: RecipeChangeType.modified,
+              recipe: testRecipe,
+            ),
+          );
         }
 
         // Final removal
-        timeline.add(RecipeChange(
-          type: RecipeChangeType.removed,
-          recipe: testRecipe,
-        ));
+        timeline.add(
+          RecipeChange(
+            type: RecipeChangeType.removed,
+            recipe: testRecipe,
+          ),
+        );
 
         expect(timeline.length, equals(7));
         expect(timeline.first.isAddition, isTrue);
@@ -459,8 +475,10 @@ void main() {
 
       test('should handle very large recipe data', () {
         final largeIngredients = List.generate(100, (i) => 'Ingredient $i');
-        final largeInstructions =
-            List.generate(100, (i) => 'Step $i: Do something');
+        final largeInstructions = List.generate(
+          100,
+          (i) => 'Step $i: Do something',
+        );
 
         final largeRecipe = RecipeFactory.build(
           id: 'recipe_large',

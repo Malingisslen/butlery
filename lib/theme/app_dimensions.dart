@@ -286,8 +286,9 @@ class AppDimensions {
   static const Duration animationDurationLong = Duration(milliseconds: 500);
 
   /// Extended animation duration (1200ms)
-  static const Duration animationDurationExtended =
-      Duration(milliseconds: 1200);
+  static const Duration animationDurationExtended = Duration(
+    milliseconds: 1200,
+  );
 
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
@@ -364,44 +365,74 @@ class AppDimensions {
   static const EdgeInsets paddingAll32 = EdgeInsets.all(spacingXl);
 
   /// Horizontal-only padding (used)
-  static const EdgeInsets paddingHorizontal8 =
-      EdgeInsets.symmetric(horizontal: spacingSm);
+  static const EdgeInsets paddingHorizontal8 = EdgeInsets.symmetric(
+    horizontal: spacingSm,
+  );
 
   /// Vertical-only padding (used)
-  static const EdgeInsets paddingVertical4 =
-      EdgeInsets.symmetric(vertical: spacingXs);
-  static const EdgeInsets paddingVertical8 =
-      EdgeInsets.symmetric(vertical: spacingSm);
-  static const EdgeInsets paddingVertical16 =
-      EdgeInsets.symmetric(vertical: spacingMd);
+  static const EdgeInsets paddingVertical4 = EdgeInsets.symmetric(
+    vertical: spacingXs,
+  );
+  static const EdgeInsets paddingVertical8 = EdgeInsets.symmetric(
+    vertical: spacingSm,
+  );
+  static const EdgeInsets paddingVertical16 = EdgeInsets.symmetric(
+    vertical: spacingMd,
+  );
 
   /// Symmetric padding combinations (used)
-  static const EdgeInsets paddingSymmetric4x8 =
-      EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingXs);
-  static const EdgeInsets paddingSymmetric12x8 =
-      EdgeInsets.symmetric(horizontal: spacingSm, vertical: paddingM);
-  static const EdgeInsets paddingSymmetric16x8 =
-      EdgeInsets.symmetric(horizontal: spacingMd, vertical: spacingSm);
-  static const EdgeInsets paddingSymmetric16x12 =
-      EdgeInsets.symmetric(horizontal: spacingMd, vertical: paddingM);
-  static const EdgeInsets paddingSymmetric16x4 =
-      EdgeInsets.symmetric(horizontal: spacingMd, vertical: spacingXs);
-  static const EdgeInsets paddingSymmetric20x12 =
-      EdgeInsets.symmetric(horizontal: paddingXl, vertical: paddingM);
-  static const EdgeInsets paddingSymmetric12x6 =
-      EdgeInsets.symmetric(horizontal: paddingM, vertical: spacing6);
-  static const EdgeInsets paddingSymmetric4x3 =
-      EdgeInsets.symmetric(horizontal: spacingS, vertical: spacingXs);
-  static const EdgeInsets paddingSymmetric4x2 =
-      EdgeInsets.symmetric(horizontal: spacingXs, vertical: 2.0);
-  static const EdgeInsets paddingSymmetric6x2 =
-      EdgeInsets.symmetric(horizontal: spacing6, vertical: 2.0);
-  static const EdgeInsets paddingSymmetric8x2 =
-      EdgeInsets.symmetric(horizontal: spacingSm, vertical: 2.0);
-  static const EdgeInsets paddingSymmetric4x12 =
-      EdgeInsets.symmetric(horizontal: spacingXs, vertical: paddingM);
-  static const EdgeInsets paddingSymmetric20x16 =
-      EdgeInsets.symmetric(horizontal: paddingXl, vertical: spacingMd);
+  static const EdgeInsets paddingSymmetric4x8 = EdgeInsets.symmetric(
+    horizontal: spacingSm,
+    vertical: spacingXs,
+  );
+  static const EdgeInsets paddingSymmetric12x8 = EdgeInsets.symmetric(
+    horizontal: spacingSm,
+    vertical: paddingM,
+  );
+  static const EdgeInsets paddingSymmetric16x8 = EdgeInsets.symmetric(
+    horizontal: spacingMd,
+    vertical: spacingSm,
+  );
+  static const EdgeInsets paddingSymmetric16x12 = EdgeInsets.symmetric(
+    horizontal: spacingMd,
+    vertical: paddingM,
+  );
+  static const EdgeInsets paddingSymmetric16x4 = EdgeInsets.symmetric(
+    horizontal: spacingMd,
+    vertical: spacingXs,
+  );
+  static const EdgeInsets paddingSymmetric20x12 = EdgeInsets.symmetric(
+    horizontal: paddingXl,
+    vertical: paddingM,
+  );
+  static const EdgeInsets paddingSymmetric12x6 = EdgeInsets.symmetric(
+    horizontal: paddingM,
+    vertical: spacing6,
+  );
+  static const EdgeInsets paddingSymmetric4x3 = EdgeInsets.symmetric(
+    horizontal: spacingS,
+    vertical: spacingXs,
+  );
+  static const EdgeInsets paddingSymmetric4x2 = EdgeInsets.symmetric(
+    horizontal: spacingXs,
+    vertical: 2.0,
+  );
+  static const EdgeInsets paddingSymmetric6x2 = EdgeInsets.symmetric(
+    horizontal: spacing6,
+    vertical: 2.0,
+  );
+  static const EdgeInsets paddingSymmetric8x2 = EdgeInsets.symmetric(
+    horizontal: spacingSm,
+    vertical: 2.0,
+  );
+  static const EdgeInsets paddingSymmetric4x12 = EdgeInsets.symmetric(
+    horizontal: spacingXs,
+    vertical: paddingM,
+  );
+  static const EdgeInsets paddingSymmetric20x16 = EdgeInsets.symmetric(
+    horizontal: paddingXl,
+    vertical: spacingMd,
+  );
 
   /// Only-directional padding (used)
   static const EdgeInsets paddingOnlyTop4 = EdgeInsets.only(top: spacingXs);
@@ -409,18 +440,24 @@ class AppDimensions {
   static const EdgeInsets paddingOnlyTop12 = EdgeInsets.only(top: paddingM);
   static const EdgeInsets paddingOnlyTop16 = EdgeInsets.only(top: spacingMd);
   static const EdgeInsets paddingOnlyTop24 = EdgeInsets.only(top: spacingLg);
-  static const EdgeInsets paddingOnlyBottom3 =
-      EdgeInsets.only(bottom: spacingS);
-  static const EdgeInsets paddingOnlyBottom4 =
-      EdgeInsets.only(bottom: spacingXs);
-  static const EdgeInsets paddingOnlyBottom8 =
-      EdgeInsets.only(bottom: spacingSm);
-  static const EdgeInsets paddingOnlyBottom12 =
-      EdgeInsets.only(bottom: paddingM);
-  static const EdgeInsets paddingOnlyBottom16 =
-      EdgeInsets.only(bottom: spacingMd);
-  static const EdgeInsets paddingOnlyBottom24 =
-      EdgeInsets.only(bottom: spacingLg);
+  static const EdgeInsets paddingOnlyBottom3 = EdgeInsets.only(
+    bottom: spacingS,
+  );
+  static const EdgeInsets paddingOnlyBottom4 = EdgeInsets.only(
+    bottom: spacingXs,
+  );
+  static const EdgeInsets paddingOnlyBottom8 = EdgeInsets.only(
+    bottom: spacingSm,
+  );
+  static const EdgeInsets paddingOnlyBottom12 = EdgeInsets.only(
+    bottom: paddingM,
+  );
+  static const EdgeInsets paddingOnlyBottom16 = EdgeInsets.only(
+    bottom: spacingMd,
+  );
+  static const EdgeInsets paddingOnlyBottom24 = EdgeInsets.only(
+    bottom: spacingLg,
+  );
 
   /// Directional EdgeInsets for RTL support — flips in Arabic/Hebrew layouts.
   /// BUT-565: replaced legacy `paddingOnlyLeft/Right{8,16}` constants —

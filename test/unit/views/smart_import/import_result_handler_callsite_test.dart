@@ -91,14 +91,17 @@ void main() {
   setUp(() async {
     await TestServiceLocator.initialize();
 
-    mockRecipeService = TestServiceLocator.get<UnifiedRecipeService>()
-        as MockUnifiedRecipeService;
+    mockRecipeService =
+        TestServiceLocator.get<UnifiedRecipeService>()
+            as MockUnifiedRecipeService;
 
     // Default: no URL or title match → falls through to content fingerprint.
-    when(() => mockRecipeService.findBySourceUrl(any()))
-        .thenAnswer((_) async => []);
-    when(() => mockRecipeService.findByTitle(any()))
-        .thenAnswer((_) async => []);
+    when(
+      () => mockRecipeService.findBySourceUrl(any()),
+    ).thenAnswer((_) async => []);
+    when(
+      () => mockRecipeService.findByTitle(any()),
+    ).thenAnswer((_) async => []);
   });
 
   tearDown(() async {
@@ -139,17 +142,24 @@ void main() {
       late bool result;
       late BuildContext capturedContext;
 
-      await tester.pumpWidget(_testApp(Builder(builder: (ctx) {
-        capturedContext = ctx;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        _testApp(
+          Builder(
+            builder: (ctx) {
+              capturedContext = ctx;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
       await tester.pump();
 
       // Act: checkForDuplicates runs synchronously until the first await that
       // involves the mocked service returning empty URL/title lists, then
       // scans `recipes` (the disjoint existing recipe), computes similarity
       // 0.0, which fails the gate → returns true (caller should continue).
-      result = await tester.runAsync(
+      result =
+          await tester.runAsync(
             () async => ImportResultHandler.checkForDuplicates(
               capturedContext,
               candidate,
@@ -158,17 +168,24 @@ void main() {
           true;
 
       // Assert: no dialog appeared; result is true (save as new).
-      expect(result, isTrue,
-          reason: 'A fingerprint score of 0.0 is below the 0.6 gate and must '
-              'not trigger the duplicate flow. If this fails, the gate '
-              'and clamp have been reordered or the threshold has been '
-              'lowered below 0.0.');
+      expect(
+        result,
+        isTrue,
+        reason:
+            'A fingerprint score of 0.0 is below the 0.6 gate and must '
+            'not trigger the duplicate flow. If this fails, the gate '
+            'and clamp have been reordered or the threshold has been '
+            'lowered below 0.0.',
+      );
       // showDuplicateMergeSheet uses showModalBottomSheet, not AlertDialog.
-      expect(find.text('Spara som nytt'), findsNothing,
-          reason:
-              'No duplicate merge sheet should appear for a zero-similarity '
-              'recipe pair. The "Spara som nytt" button is only rendered '
-              'inside the sheet — its absence proves no sheet was shown.');
+      expect(
+        find.text('Spara som nytt'),
+        findsNothing,
+        reason:
+            'No duplicate merge sheet should appear for a zero-similarity '
+            'recipe pair. The "Spara som nytt" button is only rendered '
+            'inside the sheet — its absence proves no sheet was shown.',
+      );
     },
   );
 
@@ -212,10 +229,16 @@ void main() {
 
       late BuildContext capturedContext;
 
-      await tester.pumpWidget(_testApp(Builder(builder: (ctx) {
-        capturedContext = ctx;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        _testApp(
+          Builder(
+            builder: (ctx) {
+              capturedContext = ctx;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
       await tester.pump();
 
       // Start checkForDuplicates WITHOUT awaiting it — the function suspends
@@ -227,8 +250,10 @@ void main() {
       // Using tester.runAsync here would block until the sheet is dismissed,
       // making it impossible to pump the sheet into view first.
       // ignore: unawaited_futures
-      final resultFuture =
-          ImportResultHandler.checkForDuplicates(capturedContext, candidate);
+      final resultFuture = ImportResultHandler.checkForDuplicates(
+        capturedContext,
+        candidate,
+      );
 
       // Drain: findBySourceUrl → [] (1 await point)
       await tester.pump();
@@ -241,12 +266,15 @@ void main() {
       // The "Spara som nytt" button is rendered by the sheet's action row
       // (duplicateMergeSaveAsNew = "Spara som nytt" in app_sv.arb).
       final saveAsNewBtn = find.text('Spara som nytt');
-      expect(saveAsNewBtn, findsOneWidget,
-          reason:
-              'The duplicate merge sheet must appear when content similarity '
-              'is 0.70 (above the 0.6 gate). If this is missing, the gate '
-              'threshold was raised or the content-fingerprint branch is '
-              'broken.');
+      expect(
+        saveAsNewBtn,
+        findsOneWidget,
+        reason:
+            'The duplicate merge sheet must appear when content similarity '
+            'is 0.70 (above the 0.6 gate). If this is missing, the gate '
+            'threshold was raised or the content-fingerprint branch is '
+            'broken.',
+      );
 
       await tester.tap(saveAsNewBtn);
       // Settle the sheet dismissal animation and let Navigator.pop resolve.
@@ -254,10 +282,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       final result = await resultFuture;
-      expect(result, isTrue,
-          reason: "saveAsNew returns true so the caller can proceed with 'save "
-              "as new'. If this fails, DuplicateMergeChoice.saveAsNew does "
-              'not return true.');
+      expect(
+        result,
+        isTrue,
+        reason:
+            "saveAsNew returns true so the caller can proceed with 'save "
+            "as new'. If this fails, DuplicateMergeChoice.saveAsNew does "
+            'not return true.',
+      );
     },
   );
 }

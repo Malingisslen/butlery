@@ -37,18 +37,18 @@ class TestRealtimeMenu extends RealtimeMenu {
     DateTime? lastEditedAt,
     super.editCount = 0,
   }) : super(
-          ownerDisplayName: ownerDisplayName ?? 'Test Owner',
-          participants: participants ?? {ownerId: ResourcePermission.owner},
-          createdAt: createdAt ?? DateTime.now(),
-          lastEditedAt: lastEditedAt ?? DateTime.now(),
-          lastEditedBy: ownerId,
-          lastEditedByDisplayName: ownerDisplayName ?? 'Test Owner',
-          data: RealtimeMenuData(
-            menuTitle: menuTitle,
-            menuSnapshot: menuSnapshot ?? {},
-            createdForDate: DateTime.now(),
-          ),
-        );
+         ownerDisplayName: ownerDisplayName ?? 'Test Owner',
+         participants: participants ?? {ownerId: ResourcePermission.owner},
+         createdAt: createdAt ?? DateTime.now(),
+         lastEditedAt: lastEditedAt ?? DateTime.now(),
+         lastEditedBy: ownerId,
+         lastEditedByDisplayName: ownerDisplayName ?? 'Test Owner',
+         data: RealtimeMenuData(
+           menuTitle: menuTitle,
+           menuSnapshot: menuSnapshot ?? {},
+           createdForDate: DateTime.now(),
+         ),
+       );
 }
 
 void main() {
@@ -62,11 +62,13 @@ void main() {
     await TestServiceLocator.initialize();
     registerFallbackValue(RealtimeResourceType.menu);
     registerFallbackValue(ResourcePermission.viewer);
-    registerFallbackValue(TestRealtimeMenu(
-      id: 'fallback',
-      menuTitle: 'Fallback Menu',
-      ownerId: 'test_user',
-    ));
+    registerFallbackValue(
+      TestRealtimeMenu(
+        id: 'fallback',
+        menuTitle: 'Fallback Menu',
+        ownerId: 'test_user',
+      ),
+    );
   });
 
   setUp(() async {
@@ -90,8 +92,9 @@ void main() {
     mockSyncService.setInitialized(true);
 
     // Stub fetchLatestResource to return null (falls through to cache)
-    when(() => mockSyncService.fetchLatestResource<RealtimeMenu>(any()))
-        .thenAnswer((_) async => null);
+    when(
+      () => mockSyncService.fetchLatestResource<RealtimeMenu>(any()),
+    ).thenAnswer((_) async => null);
 
     // Register PermissionService so ServiceLocator.get<PermissionService>() works
     if (GetIt.instance.isRegistered<PermissionService>()) {
@@ -124,8 +127,9 @@ void main() {
     });
 
     test('should track processing state during operations', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       expect(service.isProcessing, isFalse);
       final future = service.createRealtimeMenu(
@@ -138,8 +142,9 @@ void main() {
     });
 
     test('should handle error state management', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async => throw Exception('Sync failed'));
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async => throw Exception('Sync failed'));
 
       try {
         await service.createRealtimeMenu(
@@ -165,8 +170,9 @@ void main() {
         'Tuesday': [recipes[1]],
       };
 
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       final result = await service.createRealtimeMenu(
         menuTitle: 'Veckomeny',
@@ -178,8 +184,9 @@ void main() {
       expect(result, isA<RealtimeMenu>());
       expect(result.menuTitle, equals('Veckomeny'));
       expect(result.ownerId, equals('test_user_123'));
-      verify(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).called(1);
     });
 
     test('should throw when user not authenticated', () async {
@@ -195,8 +202,9 @@ void main() {
     });
 
     test('should cache menu after creation', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       await service.createRealtimeMenu(
         menuTitle: 'Cached Menu',
@@ -216,17 +224,20 @@ void main() {
       );
 
       final streamController = StreamController<RealtimeMenu>.broadcast();
-      when(() => mockSyncService.watchResource<RealtimeMenu>('menu_123'))
-          .thenAnswer((_) => streamController.stream);
+      when(
+        () => mockSyncService.watchResource<RealtimeMenu>('menu_123'),
+      ).thenAnswer((_) => streamController.stream);
 
       final stream = service.watchRealtimeMenu('menu_123');
 
       // Start listening first, then add item
       final future = expectLater(
         stream,
-        emits(isA<RealtimeMenu>()
-            .having((m) => m.id, 'id', 'menu_123')
-            .having((m) => m.menuTitle, 'title', 'Streaming Menu')),
+        emits(
+          isA<RealtimeMenu>()
+              .having((m) => m.id, 'id', 'menu_123')
+              .having((m) => m.menuTitle, 'title', 'Streaming Menu'),
+        ),
       );
       streamController.add(testMenu);
       await future;
@@ -251,22 +262,25 @@ void main() {
     });
 
     test('should update basic menu information', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       await service.updateBasicInfo(
         resourceId: testMenuId,
         menuTitle: 'Updated Menu',
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).called(1);
     });
 
     test('should add recipe to category', () async {
       final newRecipe = RecipeFactory.build(id: 'r3', title: 'New');
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       await service.addRecipeToCategory(
         resourceId: testMenuId,
@@ -274,8 +288,9 @@ void main() {
         recipe: newRecipe,
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).called(1);
     });
 
     test('should validate permissions for edits', () async {
@@ -329,8 +344,9 @@ void main() {
     });
 
     test('should add participant', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       await service.addParticipant(
         resourceId: testMenuId,
@@ -339,21 +355,24 @@ void main() {
         permission: ResourcePermission.editor,
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).called(1);
     });
 
     test('should remove participant', () async {
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async {});
 
       await service.removeParticipant(
         resourceId: testMenuId,
         userId: 'user_to_remove',
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).called(1);
     });
 
     test('should require edit permission for management', () async {
@@ -383,13 +402,21 @@ void main() {
 
   group('Delete Operation', () {
     test('should delete realtime menu', () async {
-      when(() => mockSyncService.deleteResource(
-          'menu_123', RealtimeResourceType.menu)).thenAnswer((_) async {});
+      when(
+        () => mockSyncService.deleteResource(
+          'menu_123',
+          RealtimeResourceType.menu,
+        ),
+      ).thenAnswer((_) async {});
 
       await service.deleteRealtimeMenu('menu_123');
 
-      verify(() => mockSyncService.deleteResource(
-          'menu_123', RealtimeResourceType.menu)).called(1);
+      verify(
+        () => mockSyncService.deleteResource(
+          'menu_123',
+          RealtimeResourceType.menu,
+        ),
+      ).called(1);
     });
 
     test('should require authentication for delete', () async {
@@ -459,7 +486,7 @@ void main() {
         currentUserId: 'test_user_123',
         defaultHasPermission: false,
         permissions: {
-          'menu_123': {ResourcePermission.editor: false}
+          'menu_123': {ResourcePermission.editor: false},
         },
       );
 
@@ -481,8 +508,9 @@ void main() {
       );
       mockSyncService.setCachedResource('menu_123', testMenu);
 
-      when(() => mockSyncService.updateResource<RealtimeMenu>(any()))
-          .thenAnswer((_) async => throw Exception('Network error'));
+      when(
+        () => mockSyncService.updateResource<RealtimeMenu>(any()),
+      ).thenAnswer((_) async => throw Exception('Network error'));
 
       await expectLater(
         () => service.updateBasicInfo(

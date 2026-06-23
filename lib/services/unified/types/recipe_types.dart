@@ -30,13 +30,14 @@ class RecipeOperationResult {
     this.warnings,
   });
 
-  factory RecipeOperationResult.success(
-          [String? message, List<String>? warnings]) =>
-      RecipeOperationResult._(
-        isSuccess: true,
-        message: message,
-        warnings: warnings,
-      );
+  factory RecipeOperationResult.success([
+    String? message,
+    List<String>? warnings,
+  ]) => RecipeOperationResult._(
+    isSuccess: true,
+    message: message,
+    warnings: warnings,
+  );
 
   factory RecipeOperationResult.failure(String message) =>
       RecipeOperationResult._(isSuccess: false, message: message);

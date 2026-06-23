@@ -80,16 +80,17 @@ class FCMTokenManager {
     required String userId,
     required DeviceRepository repository,
     required FirebaseMessaging messaging,
-  })  : _repository = repository,
-        _userId = userId,
-        _messaging = messaging;
+  }) : _repository = repository,
+       _userId = userId,
+       _messaging = messaging;
 
   /// Initialize FCM token management for the user
   /// This should be called after user authentication to ensure tokens are properly managed
   Future<void> initialize() async {
     try {
       AppLogger.info(
-          '🔔 Initializing FCM token management for user: ${_userId.maskedUserId}');
+        '🔔 Initializing FCM token management for user: ${_userId.maskedUserId}',
+      );
 
       // BUT-457: One-time migration — sweep any FCM token left in
       // SharedPreferences from older app versions over to SecureStorage,
@@ -163,7 +164,8 @@ class FCMTokenManager {
 
       if (newToken == null) {
         AppLogger.warning(
-            '⚠️ Failed to get FCM token - may not be supported on this platform');
+          '⚠️ Failed to get FCM token - may not be supported on this platform',
+        );
         return;
       }
 
@@ -239,10 +241,12 @@ class FCMTokenManager {
   /// Subscribe to notification topics based on user preferences
   /// This should be called after preferences are updated
   Future<void> updateTopicSubscriptions(
-      NotificationPreferences preferences) async {
+    NotificationPreferences preferences,
+  ) async {
     try {
       AppLogger.info(
-          '🔔 Updating FCM topic subscriptions based on preferences');
+        '🔔 Updating FCM topic subscriptions based on preferences',
+      );
 
       // User-specific topic (always subscribed when logged in)
       await _messaging.subscribeToTopic('user_$_userId');
@@ -250,7 +254,9 @@ class FCMTokenManager {
 
       // System updates - based on system notification preferences
       if (preferences.isEnabled(
-          NotificationCategory.system, NotificationType.digest)) {
+        NotificationCategory.system,
+        NotificationType.digest,
+      )) {
         await _messaging.subscribeToTopic('system_updates');
         AppLogger.debug('✅ Subscribed to system_updates topic');
       } else {
@@ -260,7 +266,9 @@ class FCMTokenManager {
 
       // Social digest - based on social notification preferences
       if (preferences.isEnabled(
-          NotificationCategory.social, NotificationType.digest)) {
+        NotificationCategory.social,
+        NotificationType.digest,
+      )) {
         await _messaging.subscribeToTopic('social_digest');
         AppLogger.debug('✅ Subscribed to social_digest topic');
       } else {
@@ -270,7 +278,9 @@ class FCMTokenManager {
 
       // Recipe recommendations - based on recipe preferences
       if (preferences.isEnabled(
-          NotificationCategory.recipes, NotificationType.digest)) {
+        NotificationCategory.recipes,
+        NotificationType.digest,
+      )) {
         await _messaging.subscribeToTopic('recipe_recommendations');
         AppLogger.debug('✅ Subscribed to recipe_recommendations topic');
       } else {
@@ -280,7 +290,9 @@ class FCMTokenManager {
 
       // Friend activity digest - based on friend preferences
       if (preferences.isEnabled(
-          NotificationCategory.friends, NotificationType.digest)) {
+        NotificationCategory.friends,
+        NotificationType.digest,
+      )) {
         await _messaging.subscribeToTopic('friend_activity');
         AppLogger.debug('✅ Subscribed to friend_activity topic');
       } else {
@@ -354,7 +366,9 @@ class FCMTokenManager {
     try {
       await _secureStorage.write(key: _tokenStorageKey, value: token);
       await _secureStorage.write(
-          key: _tokenTimestampKey, value: clock.now().toIso8601String());
+        key: _tokenTimestampKey,
+        value: clock.now().toIso8601String(),
+      );
       AppLogger.debug('Saved FCM token to secure storage');
     } catch (e) {
       AppLogger.warning('Failed to save token to secure storage: $e');
@@ -380,8 +394,9 @@ class FCMTokenManager {
   /// the next initialize() will retry. Sentinel is only set on success.
   Future<void> _migrateFromSharedPreferencesIfNeeded() async {
     try {
-      final alreadyMigrated =
-          await _secureStorage.read(key: _spMigrationDoneKey);
+      final alreadyMigrated = await _secureStorage.read(
+        key: _spMigrationDoneKey,
+      );
       if (alreadyMigrated == 'true') return;
 
       final prefs = await SharedPreferences.getInstance();
@@ -395,13 +410,17 @@ class FCMTokenManager {
           await _secureStorage.write(key: _tokenStorageKey, value: legacyToken);
           if (legacyTimestamp != null) {
             await _secureStorage.write(
-                key: _tokenTimestampKey, value: legacyTimestamp);
+              key: _tokenTimestampKey,
+              value: legacyTimestamp,
+            );
           }
           AppLogger.info(
-              'Migrated legacy FCM token from SharedPreferences to SecureStorage');
+            'Migrated legacy FCM token from SharedPreferences to SecureStorage',
+          );
         } else {
           AppLogger.debug(
-              'SecureStorage already has FCM token; dropping legacy SP copy');
+            'SecureStorage already has FCM token; dropping legacy SP copy',
+          );
         }
       }
 
@@ -413,7 +432,8 @@ class FCMTokenManager {
       await _secureStorage.write(key: _spMigrationDoneKey, value: 'true');
     } catch (e) {
       AppLogger.warning(
-          'FCM SharedPreferences migration failed (will retry next init): $e');
+        'FCM SharedPreferences migration failed (will retry next init): $e',
+      );
     }
   }
 
@@ -616,7 +636,8 @@ class FCMTokenManager {
   /// Dispose resources
   void dispose() {
     AppLogger.info(
-        '🔔 Disposing FCMTokenManager for user ${_userId.maskedUserId}');
+      '🔔 Disposing FCMTokenManager for user ${_userId.maskedUserId}',
+    );
 
     // Cancel token refresh subscription
     _tokenRefreshSubscription?.cancel();

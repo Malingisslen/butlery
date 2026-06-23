@@ -61,21 +61,21 @@ class UserPropertyBootstrap {
   /// post-beta paid-cohort slice has data from day 1, not from the day
   /// the property is first set.
   Future<void> emitSubscriptionTier(String tier) => _safe(
-        () => _analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: tier,
-        ),
-        'subscription_tier',
-      );
+    () => _analytics.setUserProperty(
+      name: AnalyticsUserProperties.subscriptionTier,
+      value: tier,
+    ),
+    'subscription_tier',
+  );
 
   /// Re-fire on locale change (Settings → "English"). Cheap; idempotent.
   Future<void> emitLanguage(Locale locale) => _safe(
-        () => _analytics.setUserProperty(
-          name: AnalyticsUserProperties.language,
-          value: locale.languageCode,
-        ),
-        'language',
-      );
+    () => _analytics.setUserProperty(
+      name: AnalyticsUserProperties.language,
+      value: locale.languageCode,
+    ),
+    'language',
+  );
 
   /// Re-classify and emit lifecycle after a cook completion. Caller owns
   /// the data fetch — this method is a thin pass-through to the classifier.

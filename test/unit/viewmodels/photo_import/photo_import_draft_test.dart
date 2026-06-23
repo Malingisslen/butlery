@@ -32,13 +32,15 @@ Gör så här:
 Vispa ihop smeten och stek i smör.''';
 
   group('PhotoImportDraft codec', () {
-    test('encode returns null when there is no OCR text — key gets removed',
-        () {
-      expect(
-        encodePhotoImportDraft(const PhotoImportDraft(ocrText: '')),
-        isNull,
-      );
-    });
+    test(
+      'encode returns null when there is no OCR text — key gets removed',
+      () {
+        expect(
+          encodePhotoImportDraft(const PhotoImportDraft(ocrText: '')),
+          isNull,
+        );
+      },
+    );
 
     test('round-trips text, image path and timestamp', () {
       const draft = PhotoImportDraft(
@@ -78,14 +80,17 @@ Vispa ihop smeten och stek i smör.''';
       expect(restored, bytes);
     });
 
-    test('delete removes the staged file; read of a gone file is null',
-        () async {
-      final path =
-          await image_store.stageDraftImage(Uint8List.fromList([1, 2, 3]));
-      await image_store.deleteDraftImage(path);
-      expect(File(path!).existsSync(), isFalse);
-      expect(await image_store.readDraftImage(path), isNull);
-    });
+    test(
+      'delete removes the staged file; read of a gone file is null',
+      () async {
+        final path = await image_store.stageDraftImage(
+          Uint8List.fromList([1, 2, 3]),
+        );
+        await image_store.deleteDraftImage(path);
+        expect(File(path!).existsSync(), isFalse);
+        expect(await image_store.readDraftImage(path), isNull);
+      },
+    );
   });
 
   group('PhotoImportViewModel draft persistence', () {
@@ -107,8 +112,9 @@ Vispa ihop smeten och stek i smör.''';
       tempDir = Directory.systemTemp.createTempSync('butlery_draft_vm_test');
       image_store.debugDraftImageDirOverride = tempDir;
       mockPersonalOps = MockPersonalRecipeOperations();
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Added'));
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
     });
 
     tearDown(() async {
@@ -123,16 +129,15 @@ Vispa ihop smeten och stek i smör.''';
     });
 
     PhotoImportViewModel makeVm() => PhotoImportViewModel(
-          // Real ImportManager (single TextImportStrategy) so restoreDraft's
-          // re-parse exercises the actual parser, not a DI mock.
-          importManager: ImportManager.withStrategies(
-            mockPersonalOps,
-            [TextImportStrategy()],
-          ),
-        );
+      // Real ImportManager (single TextImportStrategy) so restoreDraft's
+      // re-parse exercises the actual parser, not a DI mock.
+      importManager: ImportManager.withStrategies(
+        mockPersonalOps,
+        [TextImportStrategy()],
+      ),
+    );
 
-    test(
-        'draft survives VM disposal and restores image + text + parse '
+    test('draft survives VM disposal and restores image + text + parse '
         'into a fresh VM (the nav-away rescue)', () async {
       final bytes = Uint8List.fromList(List.generate(512, (i) => i % 7));
       final vm1 = makeVm();
@@ -149,23 +154,25 @@ Vispa ihop smeten och stek i smör.''';
       vm2.dispose();
     });
 
-    test('clearPhoto (explicit user clear) discards draft and staged image',
-        () async {
-      final vm = makeVm();
-      await vm.persistPhotoDraft(
-        imageBytes: Uint8List.fromList([9, 9, 9]),
-        ocrText: recipeText,
-      );
-      final staged = (await vm.loadPersistedDraft())!.imagePath;
-      expect(File(staged!).existsSync(), isTrue);
+    test(
+      'clearPhoto (explicit user clear) discards draft and staged image',
+      () async {
+        final vm = makeVm();
+        await vm.persistPhotoDraft(
+          imageBytes: Uint8List.fromList([9, 9, 9]),
+          ocrText: recipeText,
+        );
+        final staged = (await vm.loadPersistedDraft())!.imagePath;
+        expect(File(staged!).existsSync(), isTrue);
 
-      vm.clearPhoto();
-      await pumpEventQueue();
+        vm.clearPhoto();
+        await pumpEventQueue();
 
-      expect(await vm.loadPersistedDraft(), isNull);
-      expect(File(staged).existsSync(), isFalse);
-      vm.dispose();
-    });
+        expect(await vm.loadPersistedDraft(), isNull);
+        expect(File(staged).existsSync(), isFalse);
+        vm.dispose();
+      },
+    );
 
     test('restoreDraft returns false when nothing was persisted', () async {
       final vm = makeVm();
@@ -174,8 +181,7 @@ Vispa ihop smeten och stek i smör.''';
       vm.dispose();
     });
 
-    test(
-        'restoreDraft degrades to text-only when the OS purged the staged '
+    test('restoreDraft degrades to text-only when the OS purged the staged '
         'image', () async {
       final vm1 = makeVm();
       await vm1.persistPhotoDraft(

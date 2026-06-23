@@ -70,8 +70,9 @@ void main() {
     group('subscribe', () {
       test('should receive votes from service stream', () async {
         // Behavior: subscribing connects the VM to the service stream
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         final vote = _createActiveVote();
 
@@ -85,11 +86,11 @@ void main() {
         expect(viewModel.allVotes.first.id, vote.id);
       });
 
-      test('should update activeVotes when stream emits active votes',
-          () async {
+      test('should update activeVotes when stream emits active votes', () async {
         // Behavior: activeVotes filters to only non-resolved, non-expired votes
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         final activeVote = _createActiveVote();
         final resolvedVote = _createResolvedVote();
@@ -102,33 +103,38 @@ void main() {
         expect(viewModel.activeVotes.first.id, activeVote.id);
       });
 
-      test('should update resolvedVotes when stream emits resolved votes',
-          () async {
-        // Behavior: resolvedVotes filters to only resolved votes
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+      test(
+        'should update resolvedVotes when stream emits resolved votes',
+        () async {
+          // Behavior: resolvedVotes filters to only resolved votes
+          when(
+            () => mockVotingService.watchVotesForMenu(testMenuId),
+          ).thenAnswer((_) => votesStreamController.stream);
 
-        final resolvedVote = _createResolvedVote();
+          final resolvedVote = _createResolvedVote();
 
-        viewModel.subscribe();
-        votesStreamController.add([resolvedVote]);
-        await Future.delayed(Duration.zero);
+          viewModel.subscribe();
+          votesStreamController.add([resolvedVote]);
+          await Future.delayed(Duration.zero);
 
-        expect(viewModel.resolvedVotes, hasLength(1));
-        expect(viewModel.resolvedVotes.first.id, resolvedVote.id);
-      });
+          expect(viewModel.resolvedVotes, hasLength(1));
+          expect(viewModel.resolvedVotes.first.id, resolvedVote.id);
+        },
+      );
 
       test('should cancel previous subscription on re-subscribe', () async {
         // Behavior: calling subscribe() twice cancels the first stream
         final controller1 = StreamController<List<MenuSlotVote>>.broadcast();
         final controller2 = StreamController<List<MenuSlotVote>>.broadcast();
 
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => controller1.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => controller1.stream);
         viewModel.subscribe();
 
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => controller2.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => controller2.stream);
         viewModel.subscribe();
 
         // Emit on the old controller - should not update
@@ -149,8 +155,9 @@ void main() {
 
       test('should not update state after dispose', () async {
         // Behavior: isDisposed guard prevents state mutation after dispose
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         viewModel.subscribe();
         viewModel.dispose();
@@ -173,13 +180,15 @@ void main() {
           _createVoteOption(id: 'opt-2', recipeName: 'Pizza'),
         ];
 
-        when(() => mockVotingService.createVote(
-              menuId: testMenuId,
-              category: 'dinner',
-              slotIndex: 0,
-              alternatives: alternatives,
-              votingWindow: const Duration(hours: 12),
-            )).thenAnswer((_) async => _createActiveVote());
+        when(
+          () => mockVotingService.createVote(
+            menuId: testMenuId,
+            category: 'dinner',
+            slotIndex: 0,
+            alternatives: alternatives,
+            votingWindow: const Duration(hours: 12),
+          ),
+        ).thenAnswer((_) async => _createActiveVote());
 
         final result = await viewModel.createVote(
           category: 'dinner',
@@ -189,24 +198,28 @@ void main() {
         );
 
         expect(result, true);
-        verify(() => mockVotingService.createVote(
-              menuId: testMenuId,
-              category: 'dinner',
-              slotIndex: 0,
-              alternatives: alternatives,
-              votingWindow: const Duration(hours: 12),
-            )).called(1);
+        verify(
+          () => mockVotingService.createVote(
+            menuId: testMenuId,
+            category: 'dinner',
+            slotIndex: 0,
+            alternatives: alternatives,
+            votingWindow: const Duration(hours: 12),
+          ),
+        ).called(1);
       });
 
       test('should return false when service returns null', () async {
         // Behavior: null from service means vote creation failed
-        when(() => mockVotingService.createVote(
-              menuId: any(named: 'menuId'),
-              category: any(named: 'category'),
-              slotIndex: any(named: 'slotIndex'),
-              alternatives: any(named: 'alternatives'),
-              votingWindow: any(named: 'votingWindow'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockVotingService.createVote(
+            menuId: any(named: 'menuId'),
+            category: any(named: 'category'),
+            slotIndex: any(named: 'slotIndex'),
+            alternatives: any(named: 'alternatives'),
+            votingWindow: any(named: 'votingWindow'),
+          ),
+        ).thenAnswer((_) async => null);
 
         final result = await viewModel.createVote(
           category: 'lunch',
@@ -223,21 +236,23 @@ void main() {
     group('castVote', () {
       test('should delegate to service with correct parameters', () async {
         // Behavior: castVote forwards menuId, voteId, optionId to service
-        when(() => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.castVote('vote-1', 'option-1');
 
         expect(result, true);
-        verify(() =>
-                mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'))
-            .called(1);
+        verify(
+          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
+        ).called(1);
       });
 
       test('should return false when service returns false', () async {
         // Behavior: failed vote cast propagates false
-        when(() => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockVotingService.castVote(testMenuId, 'vote-1', 'option-1'),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.castVote('vote-1', 'option-1');
         expect(result, false);
@@ -249,20 +264,23 @@ void main() {
     group('resolveVote', () {
       test('should delegate to service with correct parameters', () async {
         // Behavior: resolveVote forwards menuId and voteId to service
-        when(() => mockVotingService.resolveVote(testMenuId, 'vote-1'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.resolveVote('vote-1');
 
         expect(result, true);
-        verify(() => mockVotingService.resolveVote(testMenuId, 'vote-1'))
-            .called(1);
+        verify(
+          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
+        ).called(1);
       });
 
       test('should return false when service returns false', () async {
         // Behavior: failed resolution propagates false
-        when(() => mockVotingService.resolveVote(testMenuId, 'vote-1'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockVotingService.resolveVote(testMenuId, 'vote-1'),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.resolveVote('vote-1');
         expect(result, false);
@@ -276,43 +294,47 @@ void main() {
         // Behavior: addAlternative forwards menuId, voteId, and option to service
         final option = _createVoteOption(id: 'opt-new', recipeName: 'Sushi');
 
-        when(() =>
-                mockVotingService.addAlternative(testMenuId, 'vote-1', option))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockVotingService.addAlternative(testMenuId, 'vote-1', option),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.addAlternative('vote-1', option);
 
         expect(result, true);
-        verify(() =>
-                mockVotingService.addAlternative(testMenuId, 'vote-1', option))
-            .called(1);
+        verify(
+          () => mockVotingService.addAlternative(testMenuId, 'vote-1', option),
+        ).called(1);
       });
     });
 
     // -- getVoteForSlot() --
 
     group('getVoteForSlot', () {
-      test('should return matching active vote for category and slot',
-          () async {
-        // Behavior: finds the active vote matching category + slotIndex
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+      test(
+        'should return matching active vote for category and slot',
+        () async {
+          // Behavior: finds the active vote matching category + slotIndex
+          when(
+            () => mockVotingService.watchVotesForMenu(testMenuId),
+          ).thenAnswer((_) => votesStreamController.stream);
 
-        final vote = _createActiveVote(category: 'dinner', slotIndex: 2);
+          final vote = _createActiveVote(category: 'dinner', slotIndex: 2);
 
-        viewModel.subscribe();
-        votesStreamController.add([vote]);
-        await Future.delayed(Duration.zero);
+          viewModel.subscribe();
+          votesStreamController.add([vote]);
+          await Future.delayed(Duration.zero);
 
-        final found = viewModel.getVoteForSlot('dinner', 2);
-        expect(found, isNotNull);
-        expect(found!.id, vote.id);
-      });
+          final found = viewModel.getVoteForSlot('dinner', 2);
+          expect(found, isNotNull);
+          expect(found!.id, vote.id);
+        },
+      );
 
       test('should return null when no matching vote exists', () async {
         // Behavior: returns null for non-matching slot
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         viewModel.subscribe();
         votesStreamController.add([_createActiveVote()]);
@@ -330,8 +352,9 @@ void main() {
 
       test('should not return resolved votes', () async {
         // Behavior: getVoteForSlot only returns active (not resolved) votes
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         final resolved = _createResolvedVote(category: 'dinner', slotIndex: 0);
 
@@ -349,8 +372,9 @@ void main() {
     group('dispose', () {
       test('should cancel stream subscription on dispose', () async {
         // Behavior: disposing the VM cancels the stream to prevent leaks
-        when(() => mockVotingService.watchVotesForMenu(testMenuId))
-            .thenAnswer((_) => votesStreamController.stream);
+        when(
+          () => mockVotingService.watchVotesForMenu(testMenuId),
+        ).thenAnswer((_) => votesStreamController.stream);
 
         viewModel.subscribe();
         viewModel.dispose();

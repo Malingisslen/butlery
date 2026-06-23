@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('mapMealTypeToSlot', () {
-    test('"frukost" maps to ovrigt (slot removed in BUT-211 simplification)',
-        () {
-      expect(mapMealTypeToSlot('frukost'), MealSlot.ovrigt);
-      expect(mapMealTypeToSlot('breakfast'), MealSlot.ovrigt);
-    });
+    test(
+      '"frukost" maps to ovrigt (slot removed in BUT-211 simplification)',
+      () {
+        expect(mapMealTypeToSlot('frukost'), MealSlot.ovrigt);
+        expect(mapMealTypeToSlot('breakfast'), MealSlot.ovrigt);
+      },
+    );
 
     test('"lunch" maps to lunch', () {
       expect(mapMealTypeToSlot('lunch'), MealSlot.lunch);

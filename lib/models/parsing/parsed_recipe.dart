@@ -70,13 +70,13 @@ class ParsedRecipe {
 
   /// Creates an empty recipe with failed fields.
   factory ParsedRecipe.empty({required ParseMetadata metadata}) => ParsedRecipe(
-        title: FieldResult.failed('No title'),
-        portions: FieldResult.failed('No portions'),
-        ingredients: FieldResult.failed('No ingredients'),
-        instructions: FieldResult.failed('No instructions'),
-        totalTime: FieldResult.failed('No time'),
-        metadata: metadata,
-      );
+    title: FieldResult.failed('No title'),
+    portions: FieldResult.failed('No portions'),
+    ingredients: FieldResult.failed('No ingredients'),
+    instructions: FieldResult.failed('No instructions'),
+    totalTime: FieldResult.failed('No time'),
+    metadata: metadata,
+  );
 
   /// Overall quality score (0.0-1.0) based on field confidence.
   ///
@@ -151,133 +151,133 @@ class ParsedRecipe {
     ParseMetadata? metadata,
     String? imageUrl,
     String? description,
-  }) =>
-      ParsedRecipe(
-        title: title ?? this.title,
-        portions: portions ?? this.portions,
-        ingredients: ingredients ?? this.ingredients,
-        instructions: instructions ?? this.instructions,
-        totalTime: totalTime ?? this.totalTime,
-        prepTime: prepTime ?? this.prepTime,
-        cookTime: cookTime ?? this.cookTime,
-        cuisine: cuisine ?? this.cuisine,
-        category: category ?? this.category,
-        difficulty: difficulty ?? this.difficulty,
-        nutrition: nutrition ?? this.nutrition,
-        metadata: metadata ?? this.metadata,
-        imageUrl: imageUrl ?? this.imageUrl,
-        description: description ?? this.description,
-      );
+  }) => ParsedRecipe(
+    title: title ?? this.title,
+    portions: portions ?? this.portions,
+    ingredients: ingredients ?? this.ingredients,
+    instructions: instructions ?? this.instructions,
+    totalTime: totalTime ?? this.totalTime,
+    prepTime: prepTime ?? this.prepTime,
+    cookTime: cookTime ?? this.cookTime,
+    cuisine: cuisine ?? this.cuisine,
+    category: category ?? this.category,
+    difficulty: difficulty ?? this.difficulty,
+    nutrition: nutrition ?? this.nutrition,
+    metadata: metadata ?? this.metadata,
+    imageUrl: imageUrl ?? this.imageUrl,
+    description: description ?? this.description,
+  );
 
   /// Converts to a simple Map for storage or conversion to Recipe model.
   Map<String, dynamic> toRecipeData() => {
-        if (title.hasValue) 'title': title.value,
-        if (portions.hasValue) 'portions': portions.value,
-        if (ingredients.hasValue)
-          'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
-        // BUT-1228: both lists derive from the same ParsedIngredient list, so
-        // entry i's `raw` equals ingredients[i] — the alignment invariant
-        // Recipe.structuredIngredients validates before serving the data.
-        if (ingredients.hasValue)
-          'structuredIngredients': ingredients.value!
-              .map((i) => RecipeIngredient.fromParsed(i).toJson())
-              .toList(),
-        if (instructions.hasValue) 'instructions': instructions.value,
-        if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
-        if (prepTime.hasValue) 'prepTimeMinutes': prepTime.value!.inMinutes,
-        if (cookTime.hasValue) 'cookTimeMinutes': cookTime.value!.inMinutes,
-        if (cuisine.hasValue) 'cuisine': cuisine.value,
-        if (category.hasValue) 'mealType': category.value,
-        if (difficulty.hasValue) 'difficulty': difficulty.value,
-        if (nutrition.hasValue) 'nutritionInfo': nutrition.value!.toJson(),
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (description != null) 'description': description,
-        'parseMetadata': metadata.toJson(),
-      };
+    if (title.hasValue) 'title': title.value,
+    if (portions.hasValue) 'portions': portions.value,
+    if (ingredients.hasValue)
+      'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
+    // BUT-1228: both lists derive from the same ParsedIngredient list, so
+    // entry i's `raw` equals ingredients[i] — the alignment invariant
+    // Recipe.structuredIngredients validates before serving the data.
+    if (ingredients.hasValue)
+      'structuredIngredients': ingredients.value!
+          .map((i) => RecipeIngredient.fromParsed(i).toJson())
+          .toList(),
+    if (instructions.hasValue) 'instructions': instructions.value,
+    if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
+    if (prepTime.hasValue) 'prepTimeMinutes': prepTime.value!.inMinutes,
+    if (cookTime.hasValue) 'cookTimeMinutes': cookTime.value!.inMinutes,
+    if (cuisine.hasValue) 'cuisine': cuisine.value,
+    if (category.hasValue) 'mealType': category.value,
+    if (difficulty.hasValue) 'difficulty': difficulty.value,
+    if (nutrition.hasValue) 'nutritionInfo': nutrition.value!.toJson(),
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    if (description != null) 'description': description,
+    'parseMetadata': metadata.toJson(),
+  };
 
   /// Converts to JSON including confidence data.
   Map<String, dynamic> toJson() => {
-        'title': title.toJson(),
-        'portions': portions.toJson(),
-        'ingredients': ingredients.toJson(
-          (list) => list.map((i) => i.toJson()).toList(),
-        ),
-        'instructions': instructions.toJson(),
-        'totalTime': totalTime.toJson(
-          (duration) => duration.inMinutes,
-        ),
-        'prepTime': prepTime.toJson((d) => d.inMinutes),
-        'cookTime': cookTime.toJson((d) => d.inMinutes),
-        'cuisine': cuisine.toJson(),
-        'category': category.toJson(),
-        'difficulty': difficulty.toJson(),
-        'nutrition': nutrition.toJson((n) => n.toJson()),
-        'metadata': metadata.toJson(),
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (description != null) 'description': description,
-      };
+    'title': title.toJson(),
+    'portions': portions.toJson(),
+    'ingredients': ingredients.toJson(
+      (list) => list.map((i) => i.toJson()).toList(),
+    ),
+    'instructions': instructions.toJson(),
+    'totalTime': totalTime.toJson(
+      (duration) => duration.inMinutes,
+    ),
+    'prepTime': prepTime.toJson((d) => d.inMinutes),
+    'cookTime': cookTime.toJson((d) => d.inMinutes),
+    'cuisine': cuisine.toJson(),
+    'category': category.toJson(),
+    'difficulty': difficulty.toJson(),
+    'nutrition': nutrition.toJson((n) => n.toJson()),
+    'metadata': metadata.toJson(),
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    if (description != null) 'description': description,
+  };
 
   /// Creates from JSON.
   factory ParsedRecipe.fromJson(Map<String, dynamic> json) => ParsedRecipe(
-        title: FieldResult.fromJson(
-          json['title'] as Map<String, dynamic>? ?? {},
-          (v) => v.toString(),
-        ),
-        portions: FieldResult.fromJson(
-          json['portions'] as Map<String, dynamic>? ?? {},
-          (v) => v is int ? v : int.tryParse(v.toString()) ?? 0,
-        ),
-        ingredients: FieldResult.fromJson(
-          json['ingredients'] as Map<String, dynamic>? ?? {},
-          (v) => (v is List ? v : [])
-              .map((i) => ParsedIngredient.fromJson(i is Map<String, dynamic>
+    title: FieldResult.fromJson(
+      json['title'] as Map<String, dynamic>? ?? {},
+      (v) => v.toString(),
+    ),
+    portions: FieldResult.fromJson(
+      json['portions'] as Map<String, dynamic>? ?? {},
+      (v) => v is int ? v : int.tryParse(v.toString()) ?? 0,
+    ),
+    ingredients: FieldResult.fromJson(
+      json['ingredients'] as Map<String, dynamic>? ?? {},
+      (v) => (v is List ? v : [])
+          .map(
+            (i) => ParsedIngredient.fromJson(
+              i is Map<String, dynamic>
                   ? i
-                  : Map<String, dynamic>.from(i as Map)))
-              .toList(),
-        ),
-        instructions: FieldResult.fromJson(
-          json['instructions'] as Map<String, dynamic>? ?? {},
-          (v) => (v is List ? v : []).map((e) => e.toString()).toList(),
-        ),
-        totalTime: FieldResult.fromJson(
-          json['totalTime'] as Map<String, dynamic>? ?? {},
-          (v) =>
-              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
-        ),
-        prepTime: FieldResult.fromJson(
-          json['prepTime'] as Map<String, dynamic>? ?? {},
-          (v) =>
-              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
-        ),
-        cookTime: FieldResult.fromJson(
-          json['cookTime'] as Map<String, dynamic>? ?? {},
-          (v) =>
-              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
-        ),
-        cuisine: FieldResult.fromJson(
-          json['cuisine'] as Map<String, dynamic>? ?? {},
-          (v) => v.toString(),
-        ),
-        category: FieldResult.fromJson(
-          json['category'] as Map<String, dynamic>? ?? {},
-          (v) => v.toString(),
-        ),
-        difficulty: FieldResult.fromJson(
-          json['difficulty'] as Map<String, dynamic>? ?? {},
-          (v) => v.toString(),
-        ),
-        nutrition: FieldResult.fromJson(
-          json['nutrition'] as Map<String, dynamic>? ?? {},
-          (v) => NutritionInfo.fromJson(v is Map<String, dynamic>
-              ? v
-              : Map<String, dynamic>.from(v as Map)),
-        ),
-        metadata: ParseMetadata.fromJson(
-          json['metadata'] as Map<String, dynamic>? ?? {},
-        ),
-        imageUrl: json['imageUrl']?.toString(),
-        description: json['description']?.toString(),
-      );
+                  : Map<String, dynamic>.from(i as Map),
+            ),
+          )
+          .toList(),
+    ),
+    instructions: FieldResult.fromJson(
+      json['instructions'] as Map<String, dynamic>? ?? {},
+      (v) => (v is List ? v : []).map((e) => e.toString()).toList(),
+    ),
+    totalTime: FieldResult.fromJson(
+      json['totalTime'] as Map<String, dynamic>? ?? {},
+      (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+    ),
+    prepTime: FieldResult.fromJson(
+      json['prepTime'] as Map<String, dynamic>? ?? {},
+      (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+    ),
+    cookTime: FieldResult.fromJson(
+      json['cookTime'] as Map<String, dynamic>? ?? {},
+      (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+    ),
+    cuisine: FieldResult.fromJson(
+      json['cuisine'] as Map<String, dynamic>? ?? {},
+      (v) => v.toString(),
+    ),
+    category: FieldResult.fromJson(
+      json['category'] as Map<String, dynamic>? ?? {},
+      (v) => v.toString(),
+    ),
+    difficulty: FieldResult.fromJson(
+      json['difficulty'] as Map<String, dynamic>? ?? {},
+      (v) => v.toString(),
+    ),
+    nutrition: FieldResult.fromJson(
+      json['nutrition'] as Map<String, dynamic>? ?? {},
+      (v) => NutritionInfo.fromJson(
+        v is Map<String, dynamic> ? v : Map<String, dynamic>.from(v as Map),
+      ),
+    ),
+    metadata: ParseMetadata.fromJson(
+      json['metadata'] as Map<String, dynamic>? ?? {},
+    ),
+    imageUrl: json['imageUrl']?.toString(),
+    description: json['description']?.toString(),
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -291,7 +291,8 @@ class ParsedRecipe {
   int get hashCode => Object.hash(title, ingredients);
 
   @override
-  String toString() => 'ParsedRecipe(title: ${title.value ?? "none"}, '
+  String toString() =>
+      'ParsedRecipe(title: ${title.value ?? "none"}, '
       'quality: ${(overallQuality * 100).toStringAsFixed(0)}%, '
       'complete: $isComplete)';
 }

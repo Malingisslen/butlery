@@ -247,24 +247,27 @@ class SocialAvatarComponents {
   ) {
     return Row(
       children: [
-        ...users.map((user) => Padding(
-              padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingSm),
-              child: avatar(
-                user: user,
-                size: avatarSize,
-                onTap: onUserTap != null ? () => onUserTap(user) : null,
-                showOnlineStatus: showOnlineStatus,
-                isOnline: isUserOnline(user),
-              ),
-            )),
+        ...users.map(
+          (user) => Padding(
+            padding: const EdgeInsetsDirectional.only(
+              end: AppDimensions.spacingSm,
+            ),
+            child: avatar(
+              user: user,
+              size: avatarSize,
+              onTap: onUserTap != null ? () => onUserTap(user) : null,
+              showOnlineStatus: showOnlineStatus,
+              isOnline: isUserOnline(user),
+            ),
+          ),
+        ),
         if (remainingCount > 0 && moreUsersText != null)
           Builder(
             builder: (context) => Text(
               moreUsersText.replaceAll('{count}', remainingCount.toString()),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
       ],
@@ -280,16 +283,18 @@ class SocialAvatarComponents {
   ) {
     return Column(
       children: users
-          .map((user) => Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-                child: userListTile(
-                  user: user,
-                  onTap: onUserTap != null ? () => onUserTap(user) : null,
-                  avatarSize: avatarSize,
-                  showOnlineStatus: showOnlineStatus,
-                  isOnline: isUserOnline(user),
-                ),
-              ))
+          .map(
+            (user) => Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+              child: userListTile(
+                user: user,
+                onTap: onUserTap != null ? () => onUserTap(user) : null,
+                avatarSize: avatarSize,
+                showOnlineStatus: showOnlineStatus,
+                isOnline: isUserOnline(user),
+              ),
+            ),
+          )
           .toList(),
     );
   }

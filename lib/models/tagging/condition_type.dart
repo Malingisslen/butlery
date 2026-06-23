@@ -107,17 +107,16 @@ extension ConditionTypeExtension on ConditionType {
 
   /// Returns true if this condition type uses numeric values.
   bool get isNumeric => switch (this) {
-        ConditionType.time ||
-        ConditionType.rating ||
-        ConditionType.recency ||
-        ConditionType.cookedRecency =>
-          true,
-        _ => false,
-      };
+    ConditionType.time ||
+    ConditionType.rating ||
+    ConditionType.recency ||
+    ConditionType.cookedRecency => true,
+    _ => false,
+  };
 
   /// Returns true if this condition type uses boolean values.
   bool get isBoolean => switch (this) {
-        ConditionType.hasImage => true,
-        _ => false,
-      };
+    ConditionType.hasImage => true,
+    _ => false,
+  };
 }

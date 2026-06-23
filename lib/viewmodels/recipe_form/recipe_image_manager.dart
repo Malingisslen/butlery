@@ -79,12 +79,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     ImageUploadService? uploadService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
-  })  : _uploadService =
-            uploadService ?? ServiceLocator.get<ImageUploadService>(),
-        _storageService =
-            storageService ?? ServiceLocator.get<StorageService>(),
-        _imagePickerService =
-            imagePickerService ?? ServiceLocator.get<ImagePickerService>() {
+  }) : _uploadService =
+           uploadService ?? ServiceLocator.get<ImageUploadService>(),
+       _storageService = storageService ?? ServiceLocator.get<StorageService>(),
+       _imagePickerService =
+           imagePickerService ?? ServiceLocator.get<ImagePickerService>() {
     // Initialize specialized managers
     _validator = ImageUploadValidator();
     _notificationManager = ImageUploadNotificationManager();
@@ -154,8 +153,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Check if any images are currently being uploaded
   bool get isUploadingImage {
     return _isUploadingImage ||
-        _imageStates.values
-            .any((status) => status.state == ImageUploadState.uploading);
+        _imageStates.values.any(
+          (status) => status.state == ImageUploadState.uploading,
+        );
   }
 
   String? get imageUploadError => _imageUploadError;
@@ -183,9 +183,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Map<String, ImageUploadStatus> get failedUploads {
     return Map.unmodifiable(
       Map.fromEntries(
-        _imageStates.entries.where((entry) =>
-            entry.value.state == ImageUploadState.failed &&
-            entry.value.canRetry),
+        _imageStates.entries.where(
+          (entry) =>
+              entry.value.state == ImageUploadState.failed &&
+              entry.value.canRetry,
+        ),
       ),
     );
   }
@@ -300,8 +302,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Visa image picker dialog och hantera bildval
-  Future<void> showImagePickerDialog(BuildContext context,
-      {String? recipeId}) async {
+  Future<void> showImagePickerDialog(
+    BuildContext context, {
+    String? recipeId,
+  }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
       return;
@@ -309,12 +313,15 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     try {
       _clearImageUploadError();
-      final imageSource =
-          await ImagePickerDialogs.showImageSourceDialog(context);
+      final imageSource = await ImagePickerDialogs.showImageSourceDialog(
+        context,
+      );
 
       if (imageSource != null) {
-        final pickedFile =
-            await _imagePickerService.pickImage(imageSource, enableCrop: true);
+        final pickedFile = await _imagePickerService.pickImage(
+          imageSource,
+          enableCrop: true,
+        );
 
         if (pickedFile != null) {
           final xFile = XFile(pickedFile.path);
@@ -330,8 +337,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Pick single image from camera directly (no dialog)
-  Future<void> pickImageFromCamera(BuildContext context,
-      {String? recipeId}) async {
+  Future<void> pickImageFromCamera(
+    BuildContext context, {
+    String? recipeId,
+  }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
       return;
@@ -341,8 +350,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService.pickImage(ImageSource.camera,
-          enableCrop: true);
+      final pickedFile = await _imagePickerService.pickImage(
+        ImageSource.camera,
+        enableCrop: true,
+      );
 
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
@@ -359,8 +370,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Pick single image from gallery directly (no dialog)
-  Future<void> pickImageFromGallery(BuildContext context,
-      {String? recipeId}) async {
+  Future<void> pickImageFromGallery(
+    BuildContext context, {
+    String? recipeId,
+  }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
       return;
@@ -370,8 +383,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile = await _imagePickerService
-          .pickImage(ImageSource.gallery, enableCrop: true);
+      final pickedFile = await _imagePickerService.pickImage(
+        ImageSource.gallery,
+        enableCrop: true,
+      );
 
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
@@ -388,8 +403,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Pick multiple images from gallery directly (no dialog)
-  Future<void> pickMultipleImagesFromGallery(BuildContext context,
-      {String? recipeId}) async {
+  Future<void> pickMultipleImagesFromGallery(
+    BuildContext context, {
+    String? recipeId,
+  }) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
       return;
@@ -416,8 +433,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Legacy method - kept for backwards compatibility
-  Future<void> showMultipleImagePickerDialog(BuildContext context,
-      {String? recipeId}) async {
+  Future<void> showMultipleImagePickerDialog(
+    BuildContext context, {
+    String? recipeId,
+  }) async {
     await pickMultipleImagesFromGallery(context, recipeId: recipeId);
   }
 
@@ -503,7 +522,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   /// Ladda upp flera bilder frÃ¥n lokala filer
   Future<void> uploadMultipleImages(
-      List<XFile> imageFiles, String recipeId) async {
+    List<XFile> imageFiles,
+    String recipeId,
+  ) async {
     if (imageFiles.isEmpty) return;
 
     final availableSlots = remainingImageSlots;
@@ -526,7 +547,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
 
       AppLogger.info(
-          'Started background uploads for ${filesToUpload.length} images');
+        'Started background uploads for ${filesToUpload.length} images',
+      );
 
       // Set limitation message if files were limited
       if (limitationMessage != null) {
@@ -570,10 +592,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           _pendingStorageDeletes.add(imageStatus.url!);
         }
         AppLogger.info(
-            'â˜ï¸ ðŸ—‘ï¸ Bild borttagen frÃ¥n Firebase storage: ${imageStatus.url}');
+          'â˜ï¸ ðŸ—‘ï¸ Bild borttagen frÃ¥n Firebase storage: ${imageStatus.url}',
+        );
       } else {
         AppLogger.info(
-            'ðŸ“ ðŸ—‘ï¸ Pending file removed (no storage cleanup needed): $pathOrUrl');
+          'ðŸ“ ðŸ—‘ï¸ Pending file removed (no storage cleanup needed): $pathOrUrl',
+        );
       }
     } catch (e) {
       AppLogger.error('âŒ Fel vid borttagning av bild: $e');
@@ -661,10 +685,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   /// Bearbeta resultat frÃ¥n image picker
   /// Process image picker result with instant feedback (no upload yet)
-  Future<void> _processImagePickerResult(dynamic result,
-      {String? recipeId}) async {
+  Future<void> _processImagePickerResult(
+    dynamic result, {
+    String? recipeId,
+  }) async {
     AppLogger.info(
-        'ðŸš€ INSTANT_IMAGES: Processing image picker result (no upload yet)');
+      'ðŸš€ INSTANT_IMAGES: Processing image picker result (no upload yet)',
+    );
 
     try {
       if (result is XFile) {
@@ -762,7 +789,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _notifyImmediately();
 
     AppLogger.info(
-        'âš¡ INSTANT_FEEDBACK: Image added with immediate UI update: $filePath');
+      'âš¡ INSTANT_FEEDBACK: Image added with immediate UI update: $filePath',
+    );
 
     // Start background upload immediately with temporary ID
     // Images will be uploaded right away for better performance
@@ -802,62 +830,66 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Start upload - service handles all progress tracking, retry, circuit breaker
     _uploadSingleFileWithEnhancedTracking(imageFile, recipeId)
         .then((uploadedUrl) {
-      //Always update state first, even if disposed/cancelled
-      // This prevents the spinner from getting stuck when upload completes
-      // during disposal (race condition fix)
-      if (uploadedUrl != null) {
-        AppLogger.info(
-            '✅ Background upload completed: $filePath -> $uploadedUrl');
+          //Always update state first, even if disposed/cancelled
+          // This prevents the spinner from getting stuck when upload completes
+          // during disposal (race condition fix)
+          if (uploadedUrl != null) {
+            AppLogger.info(
+              '✅ Background upload completed: $filePath -> $uploadedUrl',
+            );
 
-        // Update local state to completed (service already updated via onProgress)
-        _imageStates.remove(filePath); // Remove file path key
-        _imageStates[uploadedUrl] = ImageUploadStatus(
-          url: uploadedUrl,
-          state: ImageUploadState.completed,
-          progress: 1.0,
-        );
-      } else {
-        AppLogger.error('âŒ Background upload failed: $filePath');
-        // Service already handled retry/circuit breaker, just update local state
-        final failedStatus = _imageStates[filePath];
-        if (failedStatus != null) {
-          _imageStates[filePath] = failedStatus.copyWith(
-            state: ImageUploadState.failed,
-            error: 'Upload failed',
-          );
-        }
-      }
+            // Update local state to completed (service already updated via onProgress)
+            _imageStates.remove(filePath); // Remove file path key
+            _imageStates[uploadedUrl] = ImageUploadStatus(
+              url: uploadedUrl,
+              state: ImageUploadState.completed,
+              progress: 1.0,
+            );
+          } else {
+            AppLogger.error('âŒ Background upload failed: $filePath');
+            // Service already handled retry/circuit breaker, just update local state
+            final failedStatus = _imageStates[filePath];
+            if (failedStatus != null) {
+              _imageStates[filePath] = failedStatus.copyWith(
+                state: ImageUploadState.failed,
+                error: 'Upload failed',
+              );
+            }
+          }
 
-      // Only notify listeners if not disposed (notifications can be skipped, state update cannot)
-      if (!_disposed && !_uploadsCanceled) {
-        notifyListeners();
-        _checkAndTriggerCompletionEvents();
-      } else {
-        AppLogger.info(
-            '📦 Upload completed but manager disposed/cancelled, skipping notifications: $filePath');
-      }
-    }).catchError((error) {
-      //Always update state first, even if disposed/cancelled
-      AppLogger.error('❌ Background upload error: $error');
+          // Only notify listeners if not disposed (notifications can be skipped, state update cannot)
+          if (!_disposed && !_uploadsCanceled) {
+            notifyListeners();
+            _checkAndTriggerCompletionEvents();
+          } else {
+            AppLogger.info(
+              '📦 Upload completed but manager disposed/cancelled, skipping notifications: $filePath',
+            );
+          }
+        })
+        .catchError((error) {
+          //Always update state first, even if disposed/cancelled
+          AppLogger.error('❌ Background upload error: $error');
 
-      // Service already handled retry/circuit breaker, just update local state
-      final failedStatus = _imageStates[filePath];
-      if (failedStatus != null) {
-        _imageStates[filePath] = failedStatus.copyWith(
-          state: ImageUploadState.failed,
-          error: error.toString(),
-        );
-      }
+          // Service already handled retry/circuit breaker, just update local state
+          final failedStatus = _imageStates[filePath];
+          if (failedStatus != null) {
+            _imageStates[filePath] = failedStatus.copyWith(
+              state: ImageUploadState.failed,
+              error: error.toString(),
+            );
+          }
 
-      // Only notify listeners if not disposed
-      if (!_disposed && !_uploadsCanceled) {
-        notifyListeners();
-        _checkAndTriggerCompletionEvents();
-      } else {
-        AppLogger.info(
-            '📦 Upload error but manager disposed/cancelled, skipping notifications: $filePath');
-      }
-    });
+          // Only notify listeners if not disposed
+          if (!_disposed && !_uploadsCanceled) {
+            notifyListeners();
+            _checkAndTriggerCompletionEvents();
+          } else {
+            AppLogger.info(
+              '📦 Upload error but manager disposed/cancelled, skipping notifications: $filePath',
+            );
+          }
+        });
   }
 
   /// Start background upload for XFile (web blob URL handling).
@@ -877,56 +909,65 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Create uploading status via handler (async for file size)
     _xfileHandler
         .createUploadingXFileStatus(
-      xFile,
-      retryAttempts: currentState?.retryAttempts ?? 0,
-      maxRetryAttempts: currentState?.maxRetryAttempts ?? 3,
-    )
+          xFile,
+          retryAttempts: currentState?.retryAttempts ?? 0,
+          maxRetryAttempts: currentState?.maxRetryAttempts ?? 3,
+        )
         .then((uploadingStatus) {
-      _imageStates[filePath] = uploadingStatus;
-      notifyListeners();
+          _imageStates[filePath] = uploadingStatus;
+          notifyListeners();
 
-      // Upload via handler
-      _xfileHandler.uploadXFile(xFile, recipeId).then((uploadedUrl) {
-        // Always update state first, even if disposed/cancelled
-        if (uploadedUrl != null) {
-          AppLogger.info(
-              'Background XFile upload completed: $filePath -> $uploadedUrl');
-          _imageStates.remove(filePath);
-          _xfileHandler.removePendingXFile(filePath);
-          _imageStates[uploadedUrl] = _xfileHandler.createCompletedXFileStatus(
-            uploadedUrl,
-            totalBytes: uploadingStatus.totalBytes,
-          );
-        } else {
-          AppLogger.error('Background XFile upload failed: $filePath');
-          _imageStates[filePath] = _xfileHandler.createFailedXFileStatus(
-            'Upload failed',
-            progress: _imageStates[filePath]?.progress ?? 0.0,
-          );
+          // Upload via handler
+          _xfileHandler
+              .uploadXFile(xFile, recipeId)
+              .then((uploadedUrl) {
+                // Always update state first, even if disposed/cancelled
+                if (uploadedUrl != null) {
+                  AppLogger.info(
+                    'Background XFile upload completed: $filePath -> $uploadedUrl',
+                  );
+                  _imageStates.remove(filePath);
+                  _xfileHandler.removePendingXFile(filePath);
+                  _imageStates[uploadedUrl] = _xfileHandler
+                      .createCompletedXFileStatus(
+                        uploadedUrl,
+                        totalBytes: uploadingStatus.totalBytes,
+                      );
+                } else {
+                  AppLogger.error('Background XFile upload failed: $filePath');
+                  _imageStates[filePath] = _xfileHandler
+                      .createFailedXFileStatus(
+                        'Upload failed',
+                        progress: _imageStates[filePath]?.progress ?? 0.0,
+                      );
+                  _setImageUploadError(AppLocale.current.errorGeneric);
+                }
+
+                if (!_disposed && !_uploadsCanceled) {
+                  notifyListeners();
+                  _checkAndTriggerCompletionEvents();
+                }
+              })
+              .catchError((error) {
+                AppLogger.error(
+                  'Background XFile upload error: $filePath -> $error',
+                );
+                _imageStates[filePath] = _xfileHandler.createFailedXFileStatus(
+                  'Upload error',
+                  progress: _imageStates[filePath]?.progress ?? 0.0,
+                );
+                _setImageUploadError(AppLocale.current.errorGeneric);
+
+                if (!_disposed && !_uploadsCanceled) {
+                  notifyListeners();
+                  _checkAndTriggerCompletionEvents();
+                }
+              });
+        })
+        .catchError((error) {
+          AppLogger.error('Could not get XFile size: $filePath -> $error');
           _setImageUploadError(AppLocale.current.errorGeneric);
-        }
-
-        if (!_disposed && !_uploadsCanceled) {
-          notifyListeners();
-          _checkAndTriggerCompletionEvents();
-        }
-      }).catchError((error) {
-        AppLogger.error('Background XFile upload error: $filePath -> $error');
-        _imageStates[filePath] = _xfileHandler.createFailedXFileStatus(
-          'Upload error',
-          progress: _imageStates[filePath]?.progress ?? 0.0,
-        );
-        _setImageUploadError(AppLocale.current.errorGeneric);
-
-        if (!_disposed && !_uploadsCanceled) {
-          notifyListeners();
-          _checkAndTriggerCompletionEvents();
-        }
-      });
-    }).catchError((error) {
-      AppLogger.error('Could not get XFile size: $filePath -> $error');
-      _setImageUploadError(AppLocale.current.errorGeneric);
-    });
+        });
   }
 
   /// Retry all failed uploads that can be retried
@@ -979,7 +1020,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     if (failed > 0) {
       final errorTypes = _imageStates.values
           .where(
-              (s) => s.state == ImageUploadState.failed && s.errorType != null)
+            (s) => s.state == ImageUploadState.failed && s.errorType != null,
+          )
           .map((s) => s.errorType!)
           .toList();
       if (errorTypes.isNotEmpty) {
@@ -988,8 +1030,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         for (final t in errorTypes) {
           counts[t] = (counts[t] ?? 0) + 1;
         }
-        dominantErrorType =
-            counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+        dominantErrorType = counts.entries
+            .reduce((a, b) => a.value >= b.value ? a : b)
+            .key;
       }
     }
 
@@ -1006,7 +1049,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   ///Now uses ImageUploadService which provides automatic progress tracking,
   /// speed calculation, ETA, retry logic, and circuit breaker protection.
   Future<String?> _uploadSingleFileWithEnhancedTracking(
-      File imageFile, String recipeId) async {
+    File imageFile,
+    String recipeId,
+  ) async {
     final filePath = imageFile.path;
 
     try {
@@ -1149,7 +1194,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       try {
         notifyListeners();
         AppLogger.debug(
-            'ðŸ”” UI notification sent - images: ${imageUrls.length}, pending: ${pendingImages.length}');
+          'ðŸ”” UI notification sent - images: ${imageUrls.length}, pending: ${pendingImages.length}',
+        );
       } catch (e) {
         AppLogger.debug('Notification skipped due to disposal: $e');
       } finally {
@@ -1175,7 +1221,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   ///Delegates to upload_choice_dialog widget for UI rendering.
   /// Maintains separation of concerns (ViewModel should not build widgets).
   Future<UploadChoice?> showUploadChoiceDialog(
-      BuildContext context, UploadSafetyResult safetyResult) async {
+    BuildContext context,
+    UploadSafetyResult safetyResult,
+  ) async {
     return upload_dialog.showUploadChoiceDialog(
       context: context,
       safetyResult: safetyResult,
@@ -1205,8 +1253,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   ///Thread-safe upload all pending images with cancellation support
-  Future<List<String>> uploadPendingImagesInBackground(String recipeId,
-      {Function(int completed, int total)? onProgress}) async {
+  Future<List<String>> uploadPendingImagesInBackground(
+    String recipeId, {
+    Function(int completed, int total)? onProgress,
+  }) async {
     return _coordinator.uploadPendingImagesInBackground(
       pendingImages,
       recipeId,
@@ -1279,8 +1329,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     //Thread-safe state update for cancelled uploads
     _safeUpdateState(() {
-      final activeUploads =
-          _imageStates.entries.where((entry) => entry.value.isActive).toList();
+      final activeUploads = _imageStates.entries
+          .where((entry) => entry.value.isActive)
+          .toList();
 
       for (final entry in activeUploads) {
         _imageStates[entry.key] = entry.value.copyWith(

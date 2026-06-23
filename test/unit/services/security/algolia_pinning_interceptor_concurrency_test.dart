@@ -23,8 +23,7 @@ import 'package:butlery/repositories/algolia/algolia_pinning_interceptor.dart';
 
 void main() {
   group('PinningDioInterceptor concurrency (BUT-736)', () {
-    test(
-        'each concurrent request resolves with its own pin-check result, '
+    test('each concurrent request resolves with its own pin-check result, '
         'even when checks complete out of order', () async {
       // Asymmetric delays force the pin-check completions to interleave.
       // If the interceptor were sharing a single `_inflight` slot, the
@@ -91,12 +90,14 @@ void main() {
       // whichever slot happened to be in `_inflight` last.
       expect(outcomes['a'], 'next', reason: 'a was secure');
       expect(outcomes['c'], 'next', reason: 'c was secure');
-      expect(outcomes['b'], startsWith('reject:'),
-          reason: 'b was a mismatch and must reject');
+      expect(
+        outcomes['b'],
+        startsWith('reject:'),
+        reason: 'b was a mismatch and must reject',
+      );
     });
 
-    test(
-        'after a host finishes, a fresh request on that host is not '
+    test('after a host finishes, a fresh request on that host is not '
         'blocked by a stale map entry from an earlier request on a '
         'different host', () async {
       // Simulates the post-A-clobber scenario: A finishes and removes its
@@ -170,16 +171,20 @@ class _CapturingHandler extends RequestInterceptorHandler {
   }
 
   @override
-  void reject(DioException error,
-      [bool callFollowingErrorInterceptor = false]) {
+  void reject(
+    DioException error, [
+    bool callFollowingErrorInterceptor = false,
+  ]) {
     outcome = 'reject:${error.error.runtimeType}';
     onReject?.call(error);
     if (!_done.isCompleted) _done.complete();
   }
 
   @override
-  void resolve(Response response,
-      [bool callFollowingResponseInterceptor = false]) {
+  void resolve(
+    Response response, [
+    bool callFollowingResponseInterceptor = false,
+  ]) {
     outcome = 'resolve';
     if (!_done.isCompleted) _done.complete();
   }
@@ -187,8 +192,10 @@ class _CapturingHandler extends RequestInterceptorHandler {
 
 /// Pumps the microtask queue until [predicate] is true or a safety timeout
 /// elapses. Avoids `Future.delayed`-based polling, which is flaky in tests.
-Future<void> _pumpUntil(bool Function() predicate,
-    {Duration timeout = const Duration(seconds: 2)}) async {
+Future<void> _pumpUntil(
+  bool Function() predicate, {
+  Duration timeout = const Duration(seconds: 2),
+}) async {
   final deadline = DateTime.now().add(timeout);
   while (!predicate()) {
     if (DateTime.now().isAfter(deadline)) {

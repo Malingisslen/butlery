@@ -51,12 +51,16 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Get all uploads that need retry (failed but under max retries)
   Future<List<UploadQueueEntry>> getRetryableUploads(
-      String userId, int maxRetries) {
+    String userId,
+    int maxRetries,
+  ) {
     return (select(uploadQueueEntries)
-          ..where((e) =>
-              e.userId.equals(userId) &
-              e.status.equals('failed') &
-              e.retryCount.isSmallerThanValue(maxRetries))
+          ..where(
+            (e) =>
+                e.userId.equals(userId) &
+                e.status.equals('failed') &
+                e.retryCount.isSmallerThanValue(maxRetries),
+          )
           ..orderBy([(e) => OrderingTerm.asc(e.queuedAt)]))
         .get();
   }
@@ -66,9 +70,11 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     final count = countAll();
     final query = selectOnly(uploadQueueEntries)
       ..addColumns([count])
-      ..where(uploadQueueEntries.userId.equals(userId) &
-          (uploadQueueEntries.status.equals('pending') |
-              uploadQueueEntries.status.equals('failed')));
+      ..where(
+        uploadQueueEntries.userId.equals(userId) &
+            (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('failed')),
+      );
     final result = await query.getSingle();
     return (result.read(count) ?? 0) > 0;
   }
@@ -78,9 +84,11 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     final count = countAll();
     final query = selectOnly(uploadQueueEntries)
       ..addColumns([count])
-      ..where(uploadQueueEntries.userId.equals(userId) &
-          (uploadQueueEntries.status.equals('pending') |
-              uploadQueueEntries.status.equals('failed')));
+      ..where(
+        uploadQueueEntries.userId.equals(userId) &
+            (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('failed')),
+      );
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
@@ -102,9 +110,9 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Record a failure and increment retry count
   Future<void> recordFailure(String id, String errorMessage) async {
-    final entry = await (select(uploadQueueEntries)
-          ..where((e) => e.id.equals(id)))
-        .getSingleOrNull();
+    final entry = await (select(
+      uploadQueueEntries,
+    )..where((e) => e.id.equals(id))).getSingleOrNull();
 
     if (entry != null) {
       await (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
@@ -139,23 +147,26 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
   /// Remove completed and cancelled uploads older than given duration
   Future<void> cleanupOldEntries(Duration olderThan) {
     final cutoff = clock.now().subtract(olderThan);
-    return (delete(uploadQueueEntries)
-          ..where((e) =>
+    return (delete(uploadQueueEntries)..where(
+          (e) =>
               (e.status.equals('completed') | e.status.equals('cancelled')) &
-              e.queuedAt.isSmallerThanValue(cutoff)))
+              e.queuedAt.isSmallerThanValue(cutoff),
+        ))
         .go();
   }
 
   /// Get upload by ID
   Future<UploadQueueEntry?> getUpload(String id) {
-    return (select(uploadQueueEntries)..where((e) => e.id.equals(id)))
-        .getSingleOrNull();
+    return (select(
+      uploadQueueEntries,
+    )..where((e) => e.id.equals(id))).getSingleOrNull();
   }
 
   /// Clear all uploads for a user
   Future<void> clearForUser(String userId) {
-    return (delete(uploadQueueEntries)..where((e) => e.userId.equals(userId)))
-        .go();
+    return (delete(
+      uploadQueueEntries,
+    )..where((e) => e.userId.equals(userId))).go();
   }
 
   /// Watch pending count for a user (reactive)
@@ -163,26 +174,30 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     final count = countAll();
     final query = selectOnly(uploadQueueEntries)
       ..addColumns([count])
-      ..where(uploadQueueEntries.userId.equals(userId) &
-          (uploadQueueEntries.status.equals('pending') |
-              uploadQueueEntries.status.equals('failed')));
+      ..where(
+        uploadQueueEntries.userId.equals(userId) &
+            (uploadQueueEntries.status.equals('pending') |
+                uploadQueueEntries.status.equals('failed')),
+      );
     return query.watchSingle().map((row) => row.read(count) ?? 0);
   }
 
   /// Get all uploads for an entity (e.g., recipe)
   Future<List<UploadQueueEntry>> getUploadsForEntity(
-      String entityId, String entityType) {
-    return (select(uploadQueueEntries)
-          ..where((e) =>
-              e.entityId.equals(entityId) & e.entityType.equals(entityType)))
+    String entityId,
+    String entityType,
+  ) {
+    return (select(uploadQueueEntries)..where(
+          (e) => e.entityId.equals(entityId) & e.entityType.equals(entityType),
+        ))
         .get();
   }
 
   /// Remove all uploads for an entity
   Future<void> removeUploadsForEntity(String entityId, String entityType) {
-    return (delete(uploadQueueEntries)
-          ..where((e) =>
-              e.entityId.equals(entityId) & e.entityType.equals(entityType)))
+    return (delete(uploadQueueEntries)..where(
+          (e) => e.entityId.equals(entityId) & e.entityType.equals(entityType),
+        ))
         .go();
   }
 }

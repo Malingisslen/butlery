@@ -116,8 +116,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
       // Load unread messages count
       final messagingService = ServiceLocator.get<MessagingService>();
-      final unreadMessages =
-          await messagingService.getUnreadConversationsCount();
+      final unreadMessages = await messagingService
+          .getUnreadConversationsCount();
 
       if (mounted) {
         setState(() {
@@ -153,13 +153,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
           Container(
             width: 48,
             height: AppDimensions.spacingXs,
-            margin:
-                const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            margin: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingS,
+            ),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurfaceVariant
-                  .withValues(alpha: AppDimensions.opacityMedium),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
+                alpha: AppDimensions.opacityMedium,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
             ),
           ),
@@ -181,8 +181,10 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
                   // Data & Backup section
                   if (widget.showBackupOptions) ...[
-                    ProfileActions.buildDataBackupSection(context,
-                        rootContext: widget.rootContext),
+                    ProfileActions.buildDataBackupSection(
+                      context,
+                      rootContext: widget.rootContext,
+                    ),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
 

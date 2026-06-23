@@ -30,8 +30,8 @@ class InvitationSelectors {
               child: Text(
                 context.l10n.invitationNoTargetsAvailable,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           );
@@ -54,8 +54,10 @@ class InvitationSelectors {
         // Type filters if enabled
         if (showTypeFilters) ...[
           targetTypeFilters(
-            availableTypes:
-                availableTargets.map((t) => t.type.name).toSet().toList(),
+            availableTypes: availableTargets
+                .map((t) => t.type.name)
+                .toSet()
+                .toList(),
             onTypesChanged: (types) {
               // Filter logic would be handled by parent widget
             },
@@ -119,8 +121,9 @@ class InvitationSelectors {
           value: isSelected,
           onChanged: (value) {
             if (onSelectionChanged != null) {
-              final newSelection =
-                  List<InvitationTarget>.from(selectedTargets ?? []);
+              final newSelection = List<InvitationTarget>.from(
+                selectedTargets ?? [],
+              );
               if (value == true) {
                 newSelection.add(target);
               } else {
@@ -234,9 +237,11 @@ class InvitationSelectors {
               onSearchChanged: (query) {
                 if (onFilterChanged != null) {
                   final filtered = allTargets
-                      .where((target) => target.displayName
-                          .toLowerCase()
-                          .contains(query.toLowerCase()))
+                      .where(
+                        (target) => target.displayName.toLowerCase().contains(
+                          query.toLowerCase(),
+                        ),
+                      )
                       .toList();
                   onFilterChanged(filtered);
                 }
@@ -244,19 +249,24 @@ class InvitationSelectors {
             ),
           if (showSearch && (showTypeFilters || showSorting))
             const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
           if (showTypeFilters) ...[
             targetTypeFilters(
-              availableTypes:
-                  allTargets.map((t) => t.type.name).toSet().toList(),
+              availableTypes: allTargets
+                  .map((t) => t.type.name)
+                  .toSet()
+                  .toList(),
               onTypesChanged: (selectedTypes) {
                 if (onFilterChanged != null) {
                   final filtered = selectedTypes.isEmpty
                       ? allTargets
                       : allTargets
-                          .where((target) =>
-                              selectedTypes.contains(target.type.name))
-                          .toList();
+                            .where(
+                              (target) =>
+                                  selectedTypes.contains(target.type.name),
+                            )
+                            .toList();
                   onFilterChanged(filtered);
                 }
               },
@@ -276,31 +286,40 @@ class InvitationSelectors {
                     value: 'name',
                     items: [
                       DropdownMenuItem(
-                          value: 'name',
-                          child: Text(context.l10n.invitationSortByName)),
+                        value: 'name',
+                        child: Text(context.l10n.invitationSortByName),
+                      ),
                       DropdownMenuItem(
-                          value: 'type',
-                          child: Text(context.l10n.invitationSortByType)),
+                        value: 'type',
+                        child: Text(context.l10n.invitationSortByType),
+                      ),
                       DropdownMenuItem(
-                          value: 'members',
-                          child: Text(context.l10n.invitationSortByMembers)),
+                        value: 'members',
+                        child: Text(context.l10n.invitationSortByMembers),
+                      ),
                     ],
                     onChanged: (sortBy) {
                       if (onFilterChanged != null && sortBy != null) {
-                        final sorted =
-                            List<InvitationTarget>.from(filteredTargets);
+                        final sorted = List<InvitationTarget>.from(
+                          filteredTargets,
+                        );
                         switch (sortBy) {
                           case 'name':
-                            sorted.sort((a, b) =>
-                                a.displayName.compareTo(b.displayName));
+                            sorted.sort(
+                              (a, b) => a.displayName.compareTo(b.displayName),
+                            );
                             break;
                           case 'type':
                             sorted.sort(
-                                (a, b) => a.type.name.compareTo(b.type.name));
+                              (a, b) => a.type.name.compareTo(b.type.name),
+                            );
                             break;
                           case 'members':
-                            sorted.sort((a, b) => (b.memberCount ?? 0)
-                                .compareTo(a.memberCount ?? 0));
+                            sorted.sort(
+                              (a, b) => (b.memberCount ?? 0).compareTo(
+                                a.memberCount ?? 0,
+                              ),
+                            );
                             break;
                         }
                         onFilterChanged(sorted);
@@ -333,16 +352,15 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primary
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
-            color: Theme.of(context)
-                .colorScheme
-                .primary
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: Theme.of(context).colorScheme.primary.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,8 +384,8 @@ class InvitationSelectors {
             Text(
               context.l10n.invitationTargetsSelected(selectedTargets.length),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             )
           else
             Wrap(
@@ -379,9 +397,7 @@ class InvitationSelectors {
                   onDeleted: onRemoveTarget != null
                       ? () => onRemoveTarget(target)
                       : null,
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .primary
+                  backgroundColor: Theme.of(context).colorScheme.primary
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                 );
               }).toList(),
@@ -468,8 +484,9 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
                 ? Icon(
                     Icons.check,
                     size: 14,
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                   )
                 : null,
           ),

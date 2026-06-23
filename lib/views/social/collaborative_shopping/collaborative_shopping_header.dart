@@ -122,7 +122,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.zero,
         border: Border.all(
-            color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: color.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
       ),
       child: Text(
         viewModel.statusText,
@@ -166,7 +167,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       children: [
         Text(
           context.l10n.collaborativeCompletedOf(
-              viewModel.completedItems, viewModel.totalItems),
+            viewModel.completedItems,
+            viewModel.totalItems,
+          ),
           style: AppTextStyles.bodyBold,
         ),
         Text(
@@ -180,15 +183,17 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   }
 
   Widget _buildProgressBar(
-      BuildContext context, double progress, Color progressColor) {
+    BuildContext context,
+    double progress,
+    Color progressColor,
+  ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       child: LinearProgressIndicator(
         value: progress,
-        backgroundColor: Theme.of(context)
-            .colorScheme
-            .outline
-            .withValues(alpha: AppDimensions.opacityLight),
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityLight),
         valueColor: AlwaysStoppedAnimation<Color>(progressColor),
         minHeight: 8,
       ),

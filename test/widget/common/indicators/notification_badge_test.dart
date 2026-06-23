@@ -93,10 +93,12 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return const NotificationBadge(count: 3);
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return const NotificationBadge(count: 3);
+                },
+              ),
             ),
           ),
         );
@@ -108,16 +110,19 @@ void main() {
         expect(decoration.color, equals(cs.error));
       });
 
-      testWidgets('should use theme surfaceContainerHighest text color',
-          (tester) async {
+      testWidgets('should use theme surfaceContainerHighest text color', (
+        tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return const NotificationBadge(count: 3);
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return const NotificationBadge(count: 3);
+                },
+              ),
             ),
           ),
         );
@@ -126,8 +131,9 @@ void main() {
         expect(text.style?.color, equals(cs.surfaceContainerHighest));
       });
 
-      testWidgets('should use surface color for default border',
-          (tester) async {
+      testWidgets('should use surface color for default border', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -229,8 +235,9 @@ void main() {
         expect(text.textAlign, equals(TextAlign.center));
       });
 
-      testWidgets('should use w600 font weight from badge style',
-          (tester) async {
+      testWidgets('should use w600 font weight from badge style', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -328,8 +335,9 @@ void main() {
     });
 
     group('Visual Consistency', () {
-      testWidgets('should maintain circular shape with single digit',
-          (tester) async {
+      testWidgets('should maintain circular shape with single digit', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -345,8 +353,9 @@ void main() {
         expect(renderBox.size.height, greaterThanOrEqualTo(20));
       });
 
-      testWidgets('should maintain circular shape with double digits',
-          (tester) async {
+      testWidgets('should maintain circular shape with double digits', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -391,8 +400,9 @@ void main() {
         expect(find.text('-5'), findsOneWidget);
       });
 
-      testWidgets('should render correctly in different themes',
-          (tester) async {
+      testWidgets('should render correctly in different themes', (
+        tester,
+      ) async {
         // Light theme test
         await tester.pumpWidget(
           MaterialApp(
@@ -420,8 +430,9 @@ void main() {
         expect(find.text('5'), findsOneWidget);
       });
 
-      testWidgets('should handle very small parent constraints',
-          (tester) async {
+      testWidgets('should handle very small parent constraints', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -481,10 +492,12 @@ void main() {
           MaterialApp(
             home: Scaffold(
               backgroundColor: Colors.white,
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return const NotificationBadge(count: 5);
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return const NotificationBadge(count: 5);
+                },
+              ),
             ),
           ),
         );

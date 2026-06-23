@@ -117,8 +117,9 @@ class RealtimeMenuData {
     // Serialize menuSnapshot for Firestore
     final menuData = <String, List<Map<String, dynamic>>>{};
     for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toFirestore()).toList();
+      menuData[entry.key] = entry.value
+          .map((recipe) => recipe.toFirestore())
+          .toList();
     }
 
     return {
@@ -162,8 +163,10 @@ class RealtimeMenuData {
       menuSnapshot: menuSnapshot,
       menuNotes: SerializationUtils.safeNullableString(data, 'menuNotes'),
       favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,
-      originalPrompt:
-          SerializationUtils.safeNullableString(data, 'originalPrompt'),
+      originalPrompt: SerializationUtils.safeNullableString(
+        data,
+        'originalPrompt',
+      ),
     );
   }
 
@@ -172,8 +175,9 @@ class RealtimeMenuData {
     // Serialize menuSnapshot for JSON
     final menuData = <String, List<Map<String, dynamic>>>{};
     for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toFirestore()).toList();
+      menuData[entry.key] = entry.value
+          .map((recipe) => recipe.toFirestore())
+          .toList();
     }
 
     return {
@@ -211,13 +215,17 @@ class RealtimeMenuData {
 
     return RealtimeMenuData(
       menuTitle: SerializationUtils.safeString(json, 'menuTitle'),
-      createdForDate:
-          SerializationUtils.safeRequiredDateTime(json, 'createdForDate'),
+      createdForDate: SerializationUtils.safeRequiredDateTime(
+        json,
+        'createdForDate',
+      ),
       menuSnapshot: menuSnapshot,
       menuNotes: SerializationUtils.safeNullableString(json, 'menuNotes'),
       favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,
-      originalPrompt:
-          SerializationUtils.safeNullableString(json, 'originalPrompt'),
+      originalPrompt: SerializationUtils.safeNullableString(
+        json,
+        'originalPrompt',
+      ),
     );
   }
 
@@ -236,8 +244,9 @@ class RealtimeMenuData {
       menuTitle: menuTitle ?? this.menuTitle,
       createdForDate: createdForDate ?? this.createdForDate,
       menuSnapshot: menuSnapshot ?? this.menuSnapshot,
-      menuNotes:
-          menuNotes == _menuSentinel ? this.menuNotes : menuNotes as String?,
+      menuNotes: menuNotes == _menuSentinel
+          ? this.menuNotes
+          : menuNotes as String?,
       favoriteRecipeIds: favoriteRecipeIds == _menuSentinel
           ? this.favoriteRecipeIds
           : favoriteRecipeIds as List<String>?,
@@ -261,13 +270,13 @@ class RealtimeMenuData {
 
   @override
   int get hashCode => Object.hash(
-        menuTitle,
-        createdForDate,
-        menuSnapshot.length,
-        menuNotes,
-        favoriteRecipeIds?.length,
-        originalPrompt,
-      );
+    menuTitle,
+    createdForDate,
+    menuSnapshot.length,
+    menuNotes,
+    favoriteRecipeIds?.length,
+    originalPrompt,
+  );
 
   bool _mapEquals<K, V>(Map<K, List<V>>? a, Map<K, List<V>>? b) {
     if (a == null && b == null) return true;

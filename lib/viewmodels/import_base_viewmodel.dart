@@ -29,13 +29,14 @@ abstract class ImportBaseViewModel extends BaseViewModel
   ImportBaseViewModel({
     required ImportManager importManager,
     ConnectivityMonitoringService? connectivity,
-  })  : _importManager = importManager,
-        // BUT-1360 (mirrors BUT-610): default-resolve from ServiceLocator so
-        // existing subclass `super(importManager: ...)` calls need no change;
-        // tests inject an offline double. tryGet (not get) keeps the VM usable
-        // when connectivity DI is absent — that case is treated as online.
-        _connectivity = connectivity ??
-            ServiceLocator.tryGet<ConnectivityMonitoringService>();
+  }) : _importManager = importManager,
+       // BUT-1360 (mirrors BUT-610): default-resolve from ServiceLocator so
+       // existing subclass `super(importManager: ...)` calls need no change;
+       // tests inject an offline double. tryGet (not get) keeps the VM usable
+       // when connectivity DI is absent — that case is treated as online.
+       _connectivity =
+           connectivity ??
+           ServiceLocator.tryGet<ConnectivityMonitoringService>();
 
   /// BUT-1360 offline pre-check: unknown/missing connectivity defaults to online
   /// so the legacy parse path is never blocked when DI isn't wired.
@@ -92,7 +93,9 @@ abstract class ImportBaseViewModel extends BaseViewModel
         // BUT-960: parse is a Cloud Function round-trip. Without a client
         // timeout, a server-side hang leaves the spinner forever. 60s is
         // generous vs. the 30s OCR timeout — recipe parsing is heavier.
-        final result = await strategy.import(text).timeout(
+        final result = await strategy
+            .import(text)
+            .timeout(
               const Duration(seconds: 60),
               onTimeout: () =>
                   throw Exception(AppLocale.current.errorImportTimeout),
@@ -108,7 +111,8 @@ abstract class ImportBaseViewModel extends BaseViewModel
           return result.recipe;
         } else {
           throw Exception(
-              result.errorMessage ?? 'Failed to parse recipe from text');
+            result.errorMessage ?? 'Failed to parse recipe from text',
+          );
         }
       },
     );
@@ -172,8 +176,10 @@ abstract class ImportBaseViewModel extends BaseViewModel
 
       final storage = ServiceLocator.get<StorageRepository>();
       final recipeId = _parsedRecipe!.id;
-      final digest =
-          sha256.convert(draft.imageBytes).toString().substring(0, 16);
+      final digest = sha256
+          .convert(draft.imageBytes)
+          .toString()
+          .substring(0, 16);
       // BUT-1161: derive the extension from the real image bytes instead of
       // hardcoding .jpg — heirloom scans can be PNG/HEIC/WebP and a mismatched
       // suffix drives the wrong content-type fallback in the storage layer.
@@ -303,12 +309,12 @@ abstract class ImportBaseViewModel extends BaseViewModel
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'hasParsedRecipe': hasParsedRecipe,
-        'sourceUrl': _sourceUrl,
-        'canImport': canImport,
-        'importType': importType,
-      };
+    ...super.debugState,
+    'hasParsedRecipe': hasParsedRecipe,
+    'sourceUrl': _sourceUrl,
+    'canImport': canImport,
+    'importType': importType,
+  };
 
   @override
   void dispose() {
@@ -363,12 +369,12 @@ mixin TextImportMixin on ImportBaseViewModel {
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'inputText': _inputText.length > 50
-            ? '${_inputText.substring(0, 50)}...'
-            : _inputText,
-        'hasValidInput': hasValidInput,
-      };
+    ...super.debugState,
+    'inputText': _inputText.length > 50
+        ? '${_inputText.substring(0, 50)}...'
+        : _inputText,
+    'hasValidInput': hasValidInput,
+  };
 }
 
 mixin UrlImportMixin on ImportBaseViewModel {
@@ -462,9 +468,9 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'url': _url,
-        'hasExtractedText': hasExtractedText,
-        'canFetch': canFetch,
-      };
+    ...super.debugState,
+    'url': _url,
+    'hasExtractedText': hasExtractedText,
+    'canFetch': canFetch,
+  };
 }

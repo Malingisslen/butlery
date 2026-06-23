@@ -74,14 +74,16 @@ void main() {
     group('Rating Notifications', () {
       test('should send rating notification to recipe owner', () async {
         // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: ['user_123'],
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: ['user_123'],
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await RatingNotifications.sendRatingNotification(
@@ -93,26 +95,30 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: ['user_123'],
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: ['user_123'],
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+          ),
+        ).called(1);
       });
 
       test('should format rating notification with stars', () async {
         // Arrange
         String? capturedMessage;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
           capturedMessage = variables['commentPreview'];
@@ -129,21 +135,25 @@ void main() {
 
         // Assert
         expect(capturedMessage, contains('⭐⭐⭐⭐')); // 4 stars
-        expect(capturedMessage,
-            contains('Betygsatte ditt recept')); // Swedish message
+        expect(
+          capturedMessage,
+          contains('Betygsatte ditt recept'),
+        ); // Swedish message
       });
 
       test('should truncate long review text', () async {
         // Arrange
         String? capturedReview;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
           capturedReview = variables['commentPreview'];
@@ -166,36 +176,42 @@ void main() {
         expect(capturedReview, endsWith('...'));
       });
 
-      test('should handle collaborative recipe with socialData ownerId',
-          () async {
-        // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
+      test(
+        'should handle collaborative recipe with socialData ownerId',
+        () async {
+          // Arrange
+          when(
+            () => mockNotificationService.sendImmediateNotification(
               targetUserIds: ['user_456'],
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
               additionalData: any(named: 'additionalData'),
               actions: any(named: 'actions'),
               imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async {});
+            ),
+          ).thenAnswer((_) async {});
 
-        // Act
-        await RatingNotifications.sendRatingNotification(
-          notificationService: mockNotificationService,
-          recipe: collaborativeRecipe,
-          rating: 4.5,
-          raterName: 'Collaborator',
-          review: 'Great team effort!',
-        );
+          // Act
+          await RatingNotifications.sendRatingNotification(
+            notificationService: mockNotificationService,
+            recipe: collaborativeRecipe,
+            rating: 4.5,
+            raterName: 'Collaborator',
+            review: 'Great team effort!',
+          );
 
-        // Assert
-        verify(() => mockNotificationService.sendImmediateNotification(
+          // Assert
+          verify(
+            () => mockNotificationService.sendImmediateNotification(
               targetUserIds: ['user_456'], // Uses socialData.ownerId
               strategy: any(named: 'strategy'),
               variables: any(named: 'variables'),
               additionalData: any(named: 'additionalData'),
               actions: any(named: 'actions'),
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('should handle null notification service gracefully', () async {
         // Act & Assert (should not throw)
@@ -212,14 +228,16 @@ void main() {
 
       test('should handle errors gracefully', () async {
         // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenThrow(Exception('Notification failed'));
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenThrow(Exception('Notification failed'));
 
         // Act & Assert (should not throw)
         await expectLater(
@@ -237,14 +255,16 @@ void main() {
     group('Milestone Notifications', () {
       test('should send milestone notification for 5 ratings', () async {
         // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await RatingNotifications.sendRatingMilestoneNotification(
@@ -255,26 +275,30 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: ['user_123'],
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: ['user_123'],
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).called(1);
       });
 
       test('should send milestone notification for 10 ratings', () async {
         // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await RatingNotifications.sendRatingMilestoneNotification(
@@ -285,14 +309,16 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).called(1);
       });
 
       test('should not send milestone for non-milestone counts', () async {
@@ -305,29 +331,34 @@ void main() {
         );
 
         // Assert
-        verifyNever(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            ));
+        verifyNever(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        );
       });
 
       test('should include milestone type for 25 ratings', () async {
         // Arrange
         Map<String, dynamic>? capturedData;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
-          capturedData = invocation.namedArguments[#additionalData]
-              as Map<String, dynamic>;
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
+          capturedData =
+              invocation.namedArguments[#additionalData]
+                  as Map<String, dynamic>;
         });
 
         // Act
@@ -359,14 +390,16 @@ void main() {
     group('Summary Notifications', () {
       test('should send rating summary notification', () async {
         // Arrange
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: ['user_123'],
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: ['user_123'],
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((_) async {});
 
         final recipeRatingSummaries = [
           {
@@ -390,13 +423,15 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: ['user_123'],
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: ['user_123'],
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+          ),
+        ).called(1);
       });
 
       test('should not send empty summary', () async {
@@ -409,29 +444,34 @@ void main() {
         );
 
         // Assert
-        verifyNever(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            ));
+        verifyNever(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        );
       });
 
       test('should include period in summary data', () async {
         // Arrange
         Map<String, dynamic>? capturedData;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
-          capturedData = invocation.namedArguments[#additionalData]
-              as Map<String, dynamic>;
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
+          capturedData =
+              invocation.namedArguments[#additionalData]
+                  as Map<String, dynamic>;
         });
 
         // Act
@@ -439,7 +479,7 @@ void main() {
           notificationService: mockNotificationService,
           userId: 'user_123',
           recipeRatingSummaries: [
-            {'recipeName': 'Test', 'newRatings': 1, 'averageRating': 4.0}
+            {'recipeName': 'Test', 'newRatings': 1, 'averageRating': 4.0},
           ],
           period: 'monthly',
         );
@@ -453,14 +493,16 @@ void main() {
       test('should format recipe title in notification', () async {
         // Arrange
         String? capturedRecipeName;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
           final variables =
               invocation.namedArguments[#variables] as Map<String, String>;
           capturedRecipeName = variables['recipeName'];
@@ -481,14 +523,16 @@ void main() {
       test('should include rating action in notification', () async {
         // Arrange
         List<NotificationAction>? capturedActions;
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              actions: any(named: 'actions'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((invocation) async {
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            actions: any(named: 'actions'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((invocation) async {
           capturedActions =
               invocation.namedArguments[#actions] as List<NotificationAction>?;
         });

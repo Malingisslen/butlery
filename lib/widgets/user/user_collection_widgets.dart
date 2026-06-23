@@ -97,17 +97,23 @@ class UserCollectionWidgets {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.outline),
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeXl,
+                color: Theme.of(context).colorScheme.outline,
+              ),
               const SizedBox(height: AppDimensions.spacingXl),
-              Text(title ?? context.l10n.userNoUsers,
-                  style: AppTextStyles.titleMedium,
-                  textAlign: TextAlign.center),
+              Text(
+                title ?? context.l10n.userNoUsers,
+                style: AppTextStyles.titleMedium,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: AppDimensions.spacingM),
-              Text(subtitle ?? context.l10n.userNoUsersToShow,
-                  style: AppTextStyles.titleMedium,
-                  textAlign: TextAlign.center),
+              Text(
+                subtitle ?? context.l10n.userNoUsersToShow,
+                style: AppTextStyles.titleMedium,
+                textAlign: TextAlign.center,
+              ),
               if (onAction != null && actionLabel != null) ...[
                 const SizedBox(height: AppDimensions.spacingXl),
                 ElevatedButton(

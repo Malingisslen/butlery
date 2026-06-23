@@ -129,8 +129,9 @@ class LaggTillReceptView extends StatelessWidget {
         const spacing = AppDimensions.spacingMd;
         final buttonWidth = (constraints.maxWidth - spacing) / 2;
         final buttonHeight = (constraints.maxHeight - spacing) / 2;
-        final buttonSize =
-            buttonWidth < buttonHeight ? buttonWidth : buttonHeight;
+        final buttonSize = buttonWidth < buttonHeight
+            ? buttonWidth
+            : buttonHeight;
 
         // Clamp to reasonable sizes
         final size = buttonSize.clamp(120.0, AppDimensions.gridButtonSize);

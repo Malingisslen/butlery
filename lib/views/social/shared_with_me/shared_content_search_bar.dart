@@ -58,8 +58,9 @@ class SharedContentSearchBar {
                   ],
                 ),
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                 ),
               ),
               onChanged: viewModel.performUnifiedSearch,
@@ -70,11 +71,14 @@ class SharedContentSearchBar {
                 padding: const EdgeInsets.only(top: AppDimensions.spacingS),
                 child: Chip(
                   label: Text(context.l10n.sharedShowingImported),
-                  deleteIcon:
-                      const Icon(Icons.close, size: AppDimensions.iconSize18),
+                  deleteIcon: const Icon(
+                    Icons.close,
+                    size: AppDimensions.iconSize18,
+                  ),
                   onDeleted: () => viewModel.toggleShowImported(),
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
                   labelStyle: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),

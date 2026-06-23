@@ -41,7 +41,8 @@ class ConversationActionOperations {
 
       if (!conversation.participantIds.contains(currentUserId)) {
         throw PermissionDeniedException(
-            'User is not a participant in this conversation');
+          'User is not a participant in this conversation',
+        );
       }
 
       // Store pin setting in user's conversation metadata

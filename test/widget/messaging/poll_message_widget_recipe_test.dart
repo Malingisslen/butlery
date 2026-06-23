@@ -47,16 +47,19 @@ Poll _textPoll() {
 
 void main() {
   group('PollMessageWidget — recipe options', () {
-    testWidgets('renders recipe titles + portions row for recipe options',
-        (tester) async {
+    testWidgets('renders recipe titles + portions row for recipe options', (
+      tester,
+    ) async {
       final poll = _recipePoll();
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: PollMessageWidget(
-          poll: poll,
-          currentUserId: 'viewer',
-          isFromCurrentUser: false,
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: PollMessageWidget(
+            poll: poll,
+            currentUserId: 'viewer',
+            isFromCurrentUser: false,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Recipe titles
@@ -72,42 +75,48 @@ void main() {
     });
 
     testWidgets(
-        'tapping a recipe option calls onRecipeTap when widget provides it',
-        (tester) async {
-      final poll = _recipePoll();
-      String? tappedRecipeId;
+      'tapping a recipe option calls onRecipeTap when widget provides it',
+      (tester) async {
+        final poll = _recipePoll();
+        String? tappedRecipeId;
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: PollMessageWidget(
-          poll: poll,
-          currentUserId: 'viewer',
-          isFromCurrentUser: false,
-          onRecipeTap: (id) => tappedRecipeId = id,
-        ),
-      ));
-      await tester.pump();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: PollMessageWidget(
+              poll: poll,
+              currentUserId: 'viewer',
+              isFromCurrentUser: false,
+              onRecipeTap: (id) => tappedRecipeId = id,
+            ),
+          ),
+        );
+        await tester.pump();
 
-      // Tap the fallback thumbnail of the first option (Icon restaurant_menu).
-      final thumbnailIcons = find.byIcon(Icons.restaurant_menu);
-      expect(thumbnailIcons, findsWidgets);
-      await tester.tap(thumbnailIcons.first);
-      await tester.pump();
+        // Tap the fallback thumbnail of the first option (Icon restaurant_menu).
+        final thumbnailIcons = find.byIcon(Icons.restaurant_menu);
+        expect(thumbnailIcons, findsWidgets);
+        await tester.tap(thumbnailIcons.first);
+        await tester.pump();
 
-      expect(tappedRecipeId, equals('recipe-1'));
-    });
+        expect(tappedRecipeId, equals('recipe-1'));
+      },
+    );
   });
 
   group('PollMessageWidget — plain-text options (backward compat)', () {
-    testWidgets('renders plain-text options without recipe chrome',
-        (tester) async {
+    testWidgets('renders plain-text options without recipe chrome', (
+      tester,
+    ) async {
       final poll = _textPoll();
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: PollMessageWidget(
-          poll: poll,
-          currentUserId: 'viewer',
-          isFromCurrentUser: false,
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: PollMessageWidget(
+            poll: poll,
+            currentUserId: 'viewer',
+            isFromCurrentUser: false,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Pizza'), findsOneWidget);

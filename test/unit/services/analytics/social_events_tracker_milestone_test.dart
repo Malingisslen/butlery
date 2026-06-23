@@ -30,14 +30,18 @@ void main() {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       repo = _MockAnalyticsRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
-      when(() => repo.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
       consent = _MockConsentService();
       when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
@@ -55,29 +59,37 @@ void main() {
     });
 
     group('logFirstFriendIfMilestone', () {
-      test('fires first_friend + sets has_friend user prop on first call',
-          () async {
-        final joinedAt = DateTime.now().subtract(const Duration(minutes: 30));
+      test(
+        'fires first_friend + sets has_friend user prop on first call',
+        () async {
+          final joinedAt = DateTime.now().subtract(const Duration(minutes: 30));
 
-        final fired = await tracker.logFirstFriendIfMilestone(
-          userId: 'user-1',
-          joinedAt: joinedAt,
-        );
+          final fired = await tracker.logFirstFriendIfMilestone(
+            userId: 'user-1',
+            joinedAt: joinedAt,
+          );
 
-        expect(fired, isTrue);
+          expect(fired, isTrue);
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_friend',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => repo.logEvent(
+                      name: 'first_friend',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['minutes_since_signup'], inInclusiveRange(29, 31));
+          expect(captured['minutes_since_signup'], inInclusiveRange(29, 31));
 
-        verify(() => repo.setUserProperty(
+          verify(
+            () => repo.setUserProperty(
               name: 'has_friend',
               value: 'true',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('omits minutes_since_signup when joinedAt is null', () async {
         await tracker.logFirstFriendIfMilestone(
@@ -85,10 +97,14 @@ void main() {
           joinedAt: null,
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_friend',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'first_friend',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('minutes_since_signup'), isFalse);
       });
@@ -107,10 +123,12 @@ void main() {
         );
         expect(second, isFalse);
 
-        verifyNever(() => repo.logEvent(
-              name: 'first_friend',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_friend',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
 
       test('dedupe is per-user — different uid still fires', () async {
@@ -126,10 +144,12 @@ void main() {
         );
 
         expect(fired, isTrue);
-        verify(() => repo.logEvent(
-              name: 'first_friend',
-              parameters: any(named: 'parameters'),
-            )).called(1);
+        verify(
+          () => repo.logEvent(
+            name: 'first_friend',
+            parameters: any(named: 'parameters'),
+          ),
+        ).called(1);
       });
 
       test('skips when userId is null/empty', () async {
@@ -152,31 +172,39 @@ void main() {
         );
 
         expect(fired, isFalse);
-        verifyNever(() => repo.logEvent(
-              name: 'first_friend',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_friend',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
     });
 
     group('logFirstCommentIfMilestone', () {
-      test('fires first_comment + sets has_commented user prop on first call',
-          () async {
-        final fired = await tracker.logFirstCommentIfMilestone(
-          userId: 'user-1',
-          joinedAt: DateTime.now().subtract(const Duration(minutes: 60)),
-        );
+      test(
+        'fires first_comment + sets has_commented user prop on first call',
+        () async {
+          final fired = await tracker.logFirstCommentIfMilestone(
+            userId: 'user-1',
+            joinedAt: DateTime.now().subtract(const Duration(minutes: 60)),
+          );
 
-        expect(fired, isTrue);
-        verify(() => repo.logEvent(
+          expect(fired, isTrue);
+          verify(
+            () => repo.logEvent(
               name: 'first_comment',
               parameters: any(named: 'parameters'),
-            )).called(1);
-        verify(() => repo.setUserProperty(
+            ),
+          ).called(1);
+          verify(
+            () => repo.setUserProperty(
               name: 'has_commented',
               value: 'true',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('does NOT re-fire on subsequent comments for same user', () async {
         await tracker.logFirstCommentIfMilestone(userId: 'user-3');
@@ -186,10 +214,12 @@ void main() {
           userId: 'user-3',
         );
         expect(second, isFalse);
-        verifyNever(() => repo.logEvent(
-              name: 'first_comment',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_comment',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
 
       test('omits minutes_since_signup when joinedAt is null', () async {
@@ -198,10 +228,14 @@ void main() {
           joinedAt: null,
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_comment',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'first_comment',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('minutes_since_signup'), isFalse);
       });
@@ -213,42 +247,56 @@ void main() {
     });
 
     group('logFirstGroupIfMilestone', () {
-      test('fires first_group + sets has_group user prop on first call',
-          () async {
-        final fired = await tracker.logFirstGroupIfMilestone(
-          userId: 'user-1',
-          joinedAt: DateTime.now().subtract(const Duration(minutes: 15)),
-        );
+      test(
+        'fires first_group + sets has_group user prop on first call',
+        () async {
+          final fired = await tracker.logFirstGroupIfMilestone(
+            userId: 'user-1',
+            joinedAt: DateTime.now().subtract(const Duration(minutes: 15)),
+          );
 
-        expect(fired, isTrue);
-        verify(() => repo.logEvent(
+          expect(fired, isTrue);
+          verify(
+            () => repo.logEvent(
               name: 'first_group',
               parameters: any(named: 'parameters'),
-            )).called(1);
-        verify(() => repo.setUserProperty(
+            ),
+          ).called(1);
+          verify(
+            () => repo.setUserProperty(
               name: 'has_group',
               value: 'true',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
-      test('covers both create and join paths — only first one fires',
-          () async {
-        // Simulating: user creates a group first.
-        final first = await tracker.logFirstGroupIfMilestone(userId: 'user-3');
-        expect(first, isTrue);
+      test(
+        'covers both create and join paths — only first one fires',
+        () async {
+          // Simulating: user creates a group first.
+          final first = await tracker.logFirstGroupIfMilestone(
+            userId: 'user-3',
+          );
+          expect(first, isTrue);
 
-        clearInteractions(repo);
+          clearInteractions(repo);
 
-        // Simulating: same user later accepts an invitation to a different
-        // group. The second call must NOT re-fire.
-        final second = await tracker.logFirstGroupIfMilestone(userId: 'user-3');
-        expect(second, isFalse);
+          // Simulating: same user later accepts an invitation to a different
+          // group. The second call must NOT re-fire.
+          final second = await tracker.logFirstGroupIfMilestone(
+            userId: 'user-3',
+          );
+          expect(second, isFalse);
 
-        verifyNever(() => repo.logEvent(
+          verifyNever(
+            () => repo.logEvent(
               name: 'first_group',
               parameters: any(named: 'parameters'),
-            ));
-      });
+            ),
+          );
+        },
+      );
 
       test('dedupe is per-user — different uid still fires', () async {
         await tracker.logFirstGroupIfMilestone(userId: 'user-A');
@@ -264,10 +312,14 @@ void main() {
           joinedAt: null,
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_group',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'first_group',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('minutes_since_signup'), isFalse);
       });
@@ -281,10 +333,14 @@ void main() {
         );
 
         expect(fired, isTrue);
-        final captured = verify(() => repo.logEvent(
-              name: 'social_onboarding_started',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'social_onboarding_started',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
         expect(captured['entry_point'], equals('friends_tab'));
 
         final prefs = await SharedPreferences.getInstance();
@@ -305,10 +361,12 @@ void main() {
         );
         expect(second, isFalse);
 
-        verifyNever(() => repo.logEvent(
-              name: 'social_onboarding_started',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'social_onboarding_started',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
 
       test('does NOT fire without userId or consent', () async {
@@ -326,42 +384,45 @@ void main() {
 
         // No-consent path.
         when(() => consent.hasConsent(any())).thenAnswer((_) async => false);
-        final firedNoConsent =
-            await tracker.logSocialOnboardingStartedIfFirstEntry(
-          userId: 'user-noconsent',
-          entryPoint: 'friends_tab',
-        );
+        final firedNoConsent = await tracker
+            .logSocialOnboardingStartedIfFirstEntry(
+              userId: 'user-noconsent',
+              entryPoint: 'friends_tab',
+            );
         expect(firedNoConsent, isFalse);
-        verifyNever(() => repo.logEvent(
-              name: 'social_onboarding_started',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'social_onboarding_started',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
     });
 
     test(
-        'milestones use independent prefs keys — friend does not satisfy comment',
-        () async {
-      // Fire first_friend.
-      final friendFired = await tracker.logFirstFriendIfMilestone(
-        userId: 'user-X',
-      );
-      expect(friendFired, isTrue);
+      'milestones use independent prefs keys — friend does not satisfy comment',
+      () async {
+        // Fire first_friend.
+        final friendFired = await tracker.logFirstFriendIfMilestone(
+          userId: 'user-X',
+        );
+        expect(friendFired, isTrue);
 
-      clearInteractions(repo);
+        clearInteractions(repo);
 
-      // first_comment must still fire — they have different prefs prefixes.
-      final commentFired = await tracker.logFirstCommentIfMilestone(
-        userId: 'user-X',
-      );
-      expect(commentFired, isTrue);
+        // first_comment must still fire — they have different prefs prefixes.
+        final commentFired = await tracker.logFirstCommentIfMilestone(
+          userId: 'user-X',
+        );
+        expect(commentFired, isTrue);
 
-      // first_group must still fire too.
-      clearInteractions(repo);
-      final groupFired = await tracker.logFirstGroupIfMilestone(
-        userId: 'user-X',
-      );
-      expect(groupFired, isTrue);
-    });
+        // first_group must still fire too.
+        clearInteractions(repo);
+        final groupFired = await tracker.logFirstGroupIfMilestone(
+          userId: 'user-X',
+        );
+        expect(groupFired, isTrue);
+      },
+    );
   });
 }

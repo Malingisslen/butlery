@@ -8,15 +8,16 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 void main() {
-  testWidgets('renders default Swedish admin label when no label given',
-      (tester) async {
+  testWidgets('renders default Swedish admin label when no label given', (
+    tester,
+  ) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
     // Default label is AppLocale.current.adminYouAreAdmin — verify the
     // text is rendered (any non-empty Swedish string).
@@ -36,8 +37,9 @@ void main() {
     expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
   });
 
-  testWidgets('container has rounded border decoration with primary tint',
-      (tester) async {
+  testWidgets('container has rounded border decoration with primary tint', (
+    tester,
+  ) async {
     await tester.pumpWidget(_wrap(const AdminBadge()));
     final container = tester.widget<Container>(find.byType(Container).first);
     final deco = container.decoration! as BoxDecoration;
@@ -51,18 +53,21 @@ void main() {
     expect(row.mainAxisSize, MainAxisSize.min);
   });
 
-  testWidgets('icon + text are styled with the theme primary color',
-      (tester) async {
+  testWidgets('icon + text are styled with the theme primary color', (
+    tester,
+  ) async {
     final theme = ThemeData(
       colorScheme: const ColorScheme.light(primary: Colors.deepPurple),
     );
-    await tester.pumpWidget(MaterialApp(
-      theme: theme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: const Scaffold(body: AdminBadge(label: 'Admin')),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
+        home: const Scaffold(body: AdminBadge(label: 'Admin')),
+      ),
+    );
     final icon = tester.widget<Icon>(find.byType(Icon));
     expect(icon.color, Colors.deepPurple);
     final text = tester.widget<Text>(find.text('Admin'));

@@ -124,9 +124,11 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
                       color: cs.onPrimary,
                     )
                   : const Icon(Icons.download),
-              label: Text(viewModel.isImporting
-                  ? viewModel.progressMessage
-                  : context.l10n.importRecipeTitle),
+              label: Text(
+                viewModel.isImporting
+                    ? viewModel.progressMessage
+                    : context.l10n.importRecipeTitle,
+              ),
             ),
           ),
 
@@ -137,13 +139,16 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               decoration: BoxDecoration(
-                color: context.butleryColors.success
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
+                color: context.butleryColors.success.withValues(
+                  alpha: AppDimensions.opacityVeryLight,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle,
-                      color: context.butleryColors.success),
+                  Icon(
+                    Icons.check_circle,
+                    color: context.butleryColors.success,
+                  ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
                     child: Text(
@@ -277,8 +282,9 @@ class _ImportOptionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color:
-                      cs.primary.withValues(alpha: AppDimensions.opacityLight),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityLight,
+                  ),
                 ),
                 child: Icon(
                   icon,

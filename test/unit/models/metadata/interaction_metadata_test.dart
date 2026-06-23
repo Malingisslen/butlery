@@ -9,21 +9,23 @@ import 'package:butlery/models/metadata/interaction_metadata.dart';
 
 void main() {
   group('toFirestore', () {
-    test('emits user + timestamp + interactionType + optional value/comment',
-        () {
-      final i = InteractionMetadata(
-        userId: 'alice',
-        interactedAt: DateTime.utc(2026, 1, 1),
-        interactionType: 'rating',
-        value: 4.5,
-        comment: 'great',
-      );
-      final payload = i.toFirestore();
-      expect(payload['userId'], 'alice');
-      expect(payload['interactionType'], 'rating');
-      expect(payload['value'], 4.5);
-      expect(payload['comment'], 'great');
-    });
+    test(
+      'emits user + timestamp + interactionType + optional value/comment',
+      () {
+        final i = InteractionMetadata(
+          userId: 'alice',
+          interactedAt: DateTime.utc(2026, 1, 1),
+          interactionType: 'rating',
+          value: 4.5,
+          comment: 'great',
+        );
+        final payload = i.toFirestore();
+        expect(payload['userId'], 'alice');
+        expect(payload['interactionType'], 'rating');
+        expect(payload['value'], 4.5);
+        expect(payload['comment'], 'great');
+      },
+    );
 
     test('omits value when null', () {
       final i = InteractionMetadata(

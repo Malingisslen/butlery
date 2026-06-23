@@ -55,23 +55,23 @@ class CacheOptimization {
 
         cleanupResults['null_entries_removed'] =
             (cleanupResults['null_entries_removed']).orZero() +
-                (cleanupResult['null']).orZero();
+            (cleanupResult['null']).orZero();
         cleanupResults['corrupted_entries_removed'] =
             (cleanupResults['corrupted_entries_removed']).orZero() +
-                (cleanupResult['corrupted']).orZero();
+            (cleanupResult['corrupted']).orZero();
         cleanupResults['permission_invalid_removed'] =
             (cleanupResults['permission_invalid_removed']).orZero() +
-                (cleanupResult['permission']).orZero();
+            (cleanupResult['permission']).orZero();
         cleanupResults['old_recipes_removed'] =
             (cleanupResults['old_recipes_removed']).orZero() +
-                (cleanupResult['old']).orZero();
+            (cleanupResult['old']).orZero();
       }
 
       cleanupResults['total_removed'] =
           (cleanupResults['null_entries_removed']).orZero() +
-              (cleanupResults['corrupted_entries_removed']).orZero() +
-              (cleanupResults['permission_invalid_removed']).orZero() +
-              (cleanupResults['old_recipes_removed']).orZero();
+          (cleanupResults['corrupted_entries_removed']).orZero() +
+          (cleanupResults['permission_invalid_removed']).orZero() +
+          (cleanupResults['old_recipes_removed']).orZero();
 
       final totalRemoved = (cleanupResults['total_removed']).orZero();
       if (totalRemoved > 0) {
@@ -124,8 +124,8 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions =
-          (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions = (recipe.socialData?.memberPermissions)
+          .orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return true;
       }
@@ -149,8 +149,8 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions =
-          (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions = (recipe.socialData?.memberPermissions)
+          .orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return 'permission';
       }
@@ -171,7 +171,8 @@ class CacheOptimization {
   }) async {
     try {
       AppLogger.debug(
-          'Cleaning up invalid permissions for user: $currentUserId');
+        'Cleaning up invalid permissions for user: $currentUserId',
+      );
 
       final allKeys = await cacheHelper.getAllKeys();
       int removedCount = 0;
@@ -187,8 +188,8 @@ class CacheOptimization {
           if (recipe.isPersonal) {
             hasAccess = recipe.core.createdBy == currentUserId;
           } else if (recipe.isCollaborative) {
-            final memberPermissions =
-                (recipe.socialData?.memberPermissions).orEmpty();
+            final memberPermissions = (recipe.socialData?.memberPermissions)
+                .orEmpty();
             hasAccess = memberPermissions.containsKey(currentUserId);
           }
 
@@ -221,7 +222,8 @@ class CacheOptimization {
   }) async {
     try {
       AppLogger.debug(
-          'Cleaning up old recipes (max age: ${maxAge.inDays} days)');
+        'Cleaning up old recipes (max age: ${maxAge.inDays} days)',
+      );
 
       final allKeys = await cacheHelper.getAllKeys();
       int removedCount = 0;
@@ -239,7 +241,8 @@ class CacheOptimization {
             await cacheHelper.delete(key);
             removedCount++;
             AppLogger.debug(
-                'Removed old recipe: ${recipe.title} ($daysSinceUpdate days old)');
+              'Removed old recipe: ${recipe.title} ($daysSinceUpdate days old)',
+            );
           }
         } catch (e) {
           await cacheHelper.delete(key);
@@ -259,7 +262,8 @@ class CacheOptimization {
   }
 
   static Future<int> cleanupCorruptedEntries(
-      JsonCacheHelper cacheHelper) async {
+    JsonCacheHelper cacheHelper,
+  ) async {
     try {
       AppLogger.debug('Cleaning up corrupted cache entries');
 
@@ -295,7 +299,8 @@ class CacheOptimization {
 
       if (removedCount > 0) {
         AppLogger.info(
-            'Corrupted entry cleanup: removed $removedCount entries');
+          'Corrupted entry cleanup: removed $removedCount entries',
+        );
       }
 
       return removedCount;
@@ -314,7 +319,8 @@ class CacheOptimization {
       if (allKeys.length <= maxCacheSize) return 0;
 
       AppLogger.debug(
-          'Optimizing cache by LRU (current: ${allKeys.length}, max: $maxCacheSize)');
+        'Optimizing cache by LRU (current: ${allKeys.length}, max: $maxCacheSize)',
+      );
 
       final recipesByAge = <String, DateTime>{};
 
@@ -325,8 +331,9 @@ class CacheOptimization {
             final recipe = Recipe.fromJson(recipeData);
             // Empty id signals corrupted payload (lenient deserializer
             // doesn't throw). Force-evict by sorting first.
-            recipesByAge[key] =
-                recipe.id.isEmpty ? DateTime(2000) : recipe.core.updatedAt;
+            recipesByAge[key] = recipe.id.isEmpty
+                ? DateTime(2000)
+                : recipe.core.updatedAt;
           }
         } catch (e) {
           recipesByAge[key] = DateTime(2000);
@@ -362,7 +369,8 @@ class CacheOptimization {
       if (allKeys.length <= maxCacheSize) return 0;
 
       AppLogger.debug(
-          'Optimizing cache by priority (current: ${allKeys.length}, max: $maxCacheSize)');
+        'Optimizing cache by priority (current: ${allKeys.length}, max: $maxCacheSize)',
+      );
 
       final recipesByPriority = <String, int>{};
 
@@ -380,7 +388,8 @@ class CacheOptimization {
 
       final sortedKeys = recipesByPriority.keys.toList()
         ..sort(
-            (a, b) => recipesByPriority[a]!.compareTo(recipesByPriority[b]!));
+          (a, b) => recipesByPriority[a]!.compareTo(recipesByPriority[b]!),
+        );
 
       final keysToRemove = sortedKeys.take(allKeys.length - maxCacheSize);
       int removedCount = 0;
@@ -391,7 +400,8 @@ class CacheOptimization {
       }
 
       AppLogger.info(
-          'Priority optimization: removed $removedCount low-priority recipes');
+        'Priority optimization: removed $removedCount low-priority recipes',
+      );
       return removedCount;
     } catch (e) {
       AppLogger.error('Error optimizing cache by priority: $e');
@@ -410,8 +420,10 @@ class CacheOptimization {
       priority += 50;
     }
 
-    final daysSinceUpdate =
-        clock.now().difference(recipe.core.updatedAt).inDays;
+    final daysSinceUpdate = clock
+        .now()
+        .difference(recipe.core.updatedAt)
+        .inDays;
     if (daysSinceUpdate < 7) {
       priority += 30;
     } else if (daysSinceUpdate < 30) {
@@ -420,7 +432,8 @@ class CacheOptimization {
       priority += 10;
     }
 
-    final contentScore = (recipe.core.ingredients.length * 2) +
+    final contentScore =
+        (recipe.core.ingredients.length * 2) +
         (recipe.core.instructions.length * 3);
     priority += (contentScore / 10).round().clamp(0, 20);
 
@@ -482,22 +495,26 @@ class CacheOptimization {
 
       if ((assessment['corrupted_entries'] as int) > 0) {
         recommendations.add(
-            'Clean up ${assessment['corrupted_entries']} corrupted entries');
+          'Clean up ${assessment['corrupted_entries']} corrupted entries',
+        );
       }
 
       if ((assessment['permission_issues'] as int) > 0) {
         recommendations.add(
-            'Remove ${assessment['permission_issues']} recipes with permission issues');
+          'Remove ${assessment['permission_issues']} recipes with permission issues',
+        );
       }
 
       if ((assessment['old_entries'] as int) > 10) {
-        recommendations
-            .add('Consider removing ${assessment['old_entries']} old entries');
+        recommendations.add(
+          'Consider removing ${assessment['old_entries']} old entries',
+        );
       }
 
       if (allKeys.length > 1000) {
         recommendations.add(
-            'Cache size is large (${allKeys.length} entries), consider optimization');
+          'Cache size is large (${allKeys.length} entries), consider optimization',
+        );
       }
 
       return assessment;

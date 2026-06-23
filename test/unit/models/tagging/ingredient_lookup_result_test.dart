@@ -9,8 +9,9 @@ void main() {
     group('construction', () {
       test('creates with required parameters', () {
         final matched = [
-          TaggingTestHelper.ingredient(
-              'chicken', 'protein/meat/poultry', {'meat'}),
+          TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {
+            'meat',
+          }),
         ];
         final result = IngredientLookupResult(
           matched: matched,
@@ -120,10 +121,14 @@ void main() {
       test('allProperties returns unique properties from all ingredients', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            TaggingTestHelper.ingredient(
-                'chicken', 'protein/meat', {'meat', 'poultry'}),
-            TaggingTestHelper.ingredient(
-                'beef', 'protein/meat', {'meat', 'beef'}),
+            TaggingTestHelper.ingredient('chicken', 'protein/meat', {
+              'meat',
+              'poultry',
+            }),
+            TaggingTestHelper.ingredient('beef', 'protein/meat', {
+              'meat',
+              'beef',
+            }),
           ],
           unmatched: [],
         );
@@ -169,12 +174,17 @@ void main() {
       setUp(() {
         result = IngredientLookupResult.fromLists(
           matched: [
-            TaggingTestHelper.ingredient(
-                'chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
-            TaggingTestHelper.ingredient(
-                'egg', 'protein/egg', {'egg', 'animal-product'}),
-            TaggingTestHelper.ingredient(
-                'pasta', 'grain/pasta', {'contains-gluten'}),
+            TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {
+              'meat',
+              'poultry',
+            }),
+            TaggingTestHelper.ingredient('egg', 'protein/egg', {
+              'egg',
+              'animal-product',
+            }),
+            TaggingTestHelper.ingredient('pasta', 'grain/pasta', {
+              'contains-gluten',
+            }),
           ],
           unmatched: [],
         );
@@ -209,7 +219,10 @@ void main() {
             TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {}),
             TaggingTestHelper.ingredient('salmon', 'protein/seafood/fish', {}),
             TaggingTestHelper.ingredient(
-                'shrimp', 'protein/seafood/shellfish', {}),
+              'shrimp',
+              'protein/seafood/shellfish',
+              {},
+            ),
             TaggingTestHelper.ingredient('carrot', 'vegetable/root', {}),
           ],
           unmatched: [],
@@ -229,7 +242,9 @@ void main() {
 
         expect(seafood.length, 2);
         expect(
-            seafood.map((i) => i.swedish), containsAll(['salmon', 'shrimp']));
+          seafood.map((i) => i.swedish),
+          containsAll(['salmon', 'shrimp']),
+        );
       });
 
       test('convenience group getters work correctly', () {
@@ -247,7 +262,7 @@ void main() {
       test('getPropertyStatus returns CONTAINS when property exists', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'})
+            TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'}),
           ],
           unmatched: [],
         );
@@ -255,15 +270,17 @@ void main() {
         expect(result.getPropertyStatus('contains-gluten'), TriState.contains);
       });
 
-      test('getPropertyStatus returns FREE when 100% coverage and no property',
-          () {
-        final result = IngredientLookupResult.fromLists(
-          matched: [TaggingTestHelper.ingredient('rice', 'grain', {})],
-          unmatched: [],
-        );
+      test(
+        'getPropertyStatus returns FREE when 100% coverage and no property',
+        () {
+          final result = IngredientLookupResult.fromLists(
+            matched: [TaggingTestHelper.ingredient('rice', 'grain', {})],
+            unmatched: [],
+          );
 
-        expect(result.getPropertyStatus('contains-gluten'), TriState.free);
-      });
+          expect(result.getPropertyStatus('contains-gluten'), TriState.free);
+        },
+      );
 
       test('getPropertyStatus returns UNKNOWN when coverage < 100%', () {
         final result = IngredientLookupResult.fromLists(
@@ -277,7 +294,7 @@ void main() {
       test('getCombinedPropertyStatus uses OR logic', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            TaggingTestHelper.ingredient('almond', 'nut', {'tree-nut'})
+            TaggingTestHelper.ingredient('almond', 'nut', {'tree-nut'}),
           ],
           unmatched: [],
         );
@@ -304,7 +321,7 @@ void main() {
       test('getDietaryStatus checks excluded properties', () {
         final meatResult = IngredientLookupResult.fromLists(
           matched: [
-            TaggingTestHelper.ingredient('chicken', 'meat', {'meat'})
+            TaggingTestHelper.ingredient('chicken', 'meat', {'meat'}),
           ],
           unmatched: [],
         );

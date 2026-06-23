@@ -23,8 +23,8 @@ import 'package:butlery/services/tagging/config/cuisine_config.dart';
 /// Example: "tre frukoster och två middagar" → 3 breakfast + 2 dinner recipes
 class MenuService extends BaseService {
   MenuService({LexiconProvider? lexiconProvider, Random? random})
-      : _lexiconProvider = lexiconProvider,
-        _random = random ?? Random();
+    : _lexiconProvider = lexiconProvider,
+      _random = random ?? Random();
 
   final LexiconProvider? _lexiconProvider;
   Lexicon? _cachedLexicon;
@@ -160,11 +160,13 @@ class MenuService extends BaseService {
       if (available.isEmpty) break;
 
       final weights = available
-          .map((r) => _recipeWeight(
-                r,
-                seasonTag: seasonTag,
-                recentlyUsedIds: recentlyUsedIds,
-              ))
+          .map(
+            (r) => _recipeWeight(
+              r,
+              seasonTag: seasonTag,
+              recentlyUsedIds: recentlyUsedIds,
+            ),
+          )
           .toList();
       final totalWeight = weights.fold(0.0, (sum, w) => sum + w);
 
@@ -198,12 +200,11 @@ class MenuService extends BaseService {
     Recipe recipe, {
     required String seasonTag,
     Set<String> recentlyUsedIds = const {},
-  }) =>
-      _recipeWeight(
-        recipe,
-        seasonTag: seasonTag,
-        recentlyUsedIds: recentlyUsedIds,
-      );
+  }) => _recipeWeight(
+    recipe,
+    seasonTag: seasonTag,
+    recentlyUsedIds: recentlyUsedIds,
+  );
 
   static String? _cuisineOf(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
@@ -336,8 +337,9 @@ class MenuService extends BaseService {
     List<Recipe> allRecipes,
     Set<String> recentlyUsedRecipeIds,
   ) {
-    final globallyOk =
-        allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
+    final globallyOk = allRecipes
+        .where((r) => _passesGlobals(r, parsed))
+        .toList();
 
     if (globallyOk.length < allRecipes.length) {
       AppLogger.debug(
@@ -355,10 +357,12 @@ class MenuService extends BaseService {
     // Day pins land first (so tacofredag wins over generic selection).
     for (final pin in parsed.dayPins) {
       final pool = globallyOk
-          .where((r) =>
-              r.mealType.toLowerCase() == pin.mealType.toLowerCase() &&
-              _matchesConstraint(r, pin.constraint) &&
-              !usedIds.contains(r.id))
+          .where(
+            (r) =>
+                r.mealType.toLowerCase() == pin.mealType.toLowerCase() &&
+                _matchesConstraint(r, pin.constraint) &&
+                !usedIds.contains(r.id),
+          )
           .toList();
       if (pool.isEmpty) continue;
       final pick = _weightedSelect(
@@ -377,9 +381,11 @@ class MenuService extends BaseService {
     // Slot requests.
     for (final slot in parsed.slotRequests) {
       final slotPool = globallyOk
-          .where((r) =>
-              r.mealType.toLowerCase() == slot.mealType.toLowerCase() &&
-              !usedIds.contains(r.id))
+          .where(
+            (r) =>
+                r.mealType.toLowerCase() == slot.mealType.toLowerCase() &&
+                !usedIds.contains(r.id),
+          )
           .toList();
 
       if (slotPool.length < slot.totalCount) {

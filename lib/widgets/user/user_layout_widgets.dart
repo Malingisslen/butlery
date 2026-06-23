@@ -15,13 +15,12 @@ class UserLayoutWidgets {
     TextStyle? style,
     int? maxLines,
     TextOverflow? overflow,
-  }) =>
-      Text(
-        displayName,
-        style: style ?? AppTextStyles.titleMedium,
-        maxLines: maxLines,
-        overflow: overflow ?? TextOverflow.ellipsis,
-      );
+  }) => Text(
+    displayName,
+    style: style ?? AppTextStyles.titleMedium,
+    maxLines: maxLines,
+    overflow: overflow ?? TextOverflow.ellipsis,
+  );
 
   /// Optimerad user email
   static Widget userEmail({
@@ -29,13 +28,12 @@ class UserLayoutWidgets {
     TextStyle? style,
     int? maxLines,
     TextOverflow? overflow,
-  }) =>
-      Text(
-        email,
-        style: style ?? AppTextStyles.titleMedium,
-        maxLines: maxLines,
-        overflow: overflow ?? TextOverflow.ellipsis,
-      );
+  }) => Text(
+    email,
+    style: style ?? AppTextStyles.titleMedium,
+    maxLines: maxLines,
+    overflow: overflow ?? TextOverflow.ellipsis,
+  );
 
   /// Kombinerad user info
   static Widget userInfo({
@@ -134,7 +132,8 @@ class UserLayoutWidgets {
       margin: margin ?? const EdgeInsets.all(AppDimensions.paddingL),
       elevation: AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+      ),
       child: Semantics(
         label: displayName,
         button: true,
@@ -157,8 +156,8 @@ class UserLayoutWidgets {
                     ),
                     const SizedBox(width: AppDimensions.spacingM),
                     Expanded(
-                        child:
-                            userInfo(displayName: displayName, email: email)),
+                      child: userInfo(displayName: displayName, email: email),
+                    ),
                   ],
                 ),
                 if (subtitle != null) ...[

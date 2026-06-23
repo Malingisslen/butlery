@@ -154,7 +154,9 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
                 children: [
                   LayoutComponents.offlineIndicator(),
                   FriendRequestsHeaderBuilder.buildErrorDisplay(
-                      context, viewModel),
+                    context,
+                    viewModel,
+                  ),
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,

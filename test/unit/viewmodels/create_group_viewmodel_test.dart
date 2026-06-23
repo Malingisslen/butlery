@@ -25,8 +25,12 @@ class _MockManagementOps extends Mock implements FriendsManagementOperations {}
 class _MockInvitationsOps extends Mock
     implements FriendsInvitationsOperations {}
 
-FriendCategory _cat(
-    {String? id, String? name, String? description, String? emoji}) {
+FriendCategory _cat({
+  String? id,
+  String? name,
+  String? description,
+  String? emoji,
+}) {
   final now = DateTime.now();
   return FriendCategory(
     id: id ?? 'cat_${now.millisecondsSinceEpoch}',
@@ -103,19 +107,24 @@ void main() {
       when(() => mockFriendsService.invitations).thenReturn(mockInvitationsOps);
       when(() => mockFriendsService.error).thenReturn(null);
       when(() => mockCategoriesOps.getCategoryByName(any())).thenReturn(null);
-      when(() => mockCategoriesOps.getAllCategories())
-          .thenReturn([existingCategory]);
-      when(() => mockCategoriesOps.createCategory(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            icon: any(named: 'icon'),
-            initialMemberIds: any(named: 'initialMemberIds'),
-          )).thenAnswer((_) async => 'new_category_123');
+      when(
+        () => mockCategoriesOps.getAllCategories(),
+      ).thenReturn([existingCategory]);
+      when(
+        () => mockCategoriesOps.createCategory(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          icon: any(named: 'icon'),
+          initialMemberIds: any(named: 'initialMemberIds'),
+        ),
+      ).thenAnswer((_) async => 'new_category_123');
       when(() => mockManagementOps.getFriendById(any())).thenReturn(null);
-      when(() => mockInvitationsOps.sendEmailInvitation(
-            email: any(named: 'email'),
-            customMessage: any(named: 'customMessage'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockInvitationsOps.sendEmailInvitation(
+          email: any(named: 'email'),
+          customMessage: any(named: 'customMessage'),
+        ),
+      ).thenAnswer((_) async => true);
 
       viewModel = CreateGroupViewModel(
         friendsService: mockFriendsService,
@@ -185,8 +194,10 @@ void main() {
         viewModel.toggleFriend('friend_789');
 
         expect(viewModel.selectedFriendsCount, equals(3));
-        expect(viewModel.selectedFriendIds,
-            containsAll(['friend_123', 'friend_456', 'friend_789']));
+        expect(
+          viewModel.selectedFriendIds,
+          containsAll(['friend_123', 'friend_456', 'friend_789']),
+        );
       });
 
       test('should notify listeners on input changes', () {
@@ -218,13 +229,16 @@ void main() {
       });
 
       test('should detect duplicate group names', () {
-        when(() => mockCategoriesOps.getCategoryByName('Existerande Grupp'))
-            .thenReturn(existingCategory);
+        when(
+          () => mockCategoriesOps.getCategoryByName('Existerande Grupp'),
+        ).thenReturn(existingCategory);
 
         viewModel.updateName('Existerande Grupp');
 
-        expect(viewModel.nameError,
-            equals('Det h\u00e4r gruppnamnet finns redan'));
+        expect(
+          viewModel.nameError,
+          equals('Det h\u00e4r gruppnamnet finns redan'),
+        );
         expect(viewModel.isValid, isFalse);
       });
 
@@ -240,7 +254,9 @@ void main() {
         viewModel.updateName('\u00c5sa \u00c4ngstr\u00f6ms \u00d6rter');
 
         expect(
-            viewModel.name, equals('\u00c5sa \u00c4ngstr\u00f6ms \u00d6rter'));
+          viewModel.name,
+          equals('\u00c5sa \u00c4ngstr\u00f6ms \u00d6rter'),
+        );
         expect(viewModel.nameError, isNull);
         expect(viewModel.isValid, isTrue);
       });
@@ -271,8 +287,9 @@ void main() {
           emoji: '\u{1F373}',
         );
 
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([existingCategory, newCategory]);
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenReturn([existingCategory, newCategory]);
 
         final result = await viewModel.createGroup();
 
@@ -280,12 +297,14 @@ void main() {
         expect(viewModel.error, isNull);
         expect(viewModel.isLoading, isFalse);
 
-        verify(() => mockCategoriesOps.createCategory(
-              name: 'Receptgruppen',
-              description: 'En grupp',
-              icon: '\u{1F373}',
-              initialMemberIds: null,
-            )).called(1);
+        verify(
+          () => mockCategoriesOps.createCategory(
+            name: 'Receptgruppen',
+            description: 'En grupp',
+            icon: '\u{1F373}',
+            initialMemberIds: null,
+          ),
+        ).called(1);
       });
 
       test('should not create group with invalid form', () async {
@@ -296,21 +315,25 @@ void main() {
         expect(result, isFalse);
         expect(viewModel.error, isNull);
 
-        verifyNever(() => mockCategoriesOps.createCategory(
-              name: any(named: 'name'),
-              description: any(named: 'description'),
-              icon: any(named: 'icon'),
-              initialMemberIds: any(named: 'initialMemberIds'),
-            ));
+        verifyNever(
+          () => mockCategoriesOps.createCategory(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            icon: any(named: 'icon'),
+            initialMemberIds: any(named: 'initialMemberIds'),
+          ),
+        );
       });
 
       test('should handle group creation failure', () async {
-        when(() => mockCategoriesOps.createCategory(
-              name: any(named: 'name'),
-              description: any(named: 'description'),
-              icon: any(named: 'icon'),
-              initialMemberIds: any(named: 'initialMemberIds'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockCategoriesOps.createCategory(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            icon: any(named: 'icon'),
+            initialMemberIds: any(named: 'initialMemberIds'),
+          ),
+        ).thenAnswer((_) async => null);
 
         when(() => mockFriendsService.error).thenReturn('Network error');
 
@@ -322,8 +345,9 @@ void main() {
       });
 
       test('should handle missing created group', () async {
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([existingCategory]);
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenReturn([existingCategory]);
 
         final result = await viewModel.createGroup();
 
@@ -342,8 +366,9 @@ void main() {
           name: 'Receptgruppen',
         );
 
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([existingCategory, newCategory]);
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenReturn([existingCategory, newCategory]);
 
         await viewModel.createGroup();
 
@@ -352,12 +377,14 @@ void main() {
       });
 
       test('should handle exception during creation', () async {
-        when(() => mockCategoriesOps.createCategory(
-              name: any(named: 'name'),
-              description: any(named: 'description'),
-              icon: any(named: 'icon'),
-              initialMemberIds: any(named: 'initialMemberIds'),
-            )).thenThrow(Exception('Database error'));
+        when(
+          () => mockCategoriesOps.createCategory(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            icon: any(named: 'icon'),
+            initialMemberIds: any(named: 'initialMemberIds'),
+          ),
+        ).thenThrow(Exception('Database error'));
 
         final result = await viewModel.createGroup();
 
@@ -375,35 +402,51 @@ void main() {
         viewModel.toggleFriend('friend_123');
         viewModel.toggleFriend('friend_456');
         viewModel.toggleFriend('friend_789');
-        when(() => mockManagementOps.getFriendById('friend_123'))
-            .thenReturn(testFriend1);
-        when(() => mockManagementOps.getFriendById('friend_456'))
-            .thenReturn(testFriend2);
-        when(() => mockManagementOps.getFriendById('friend_789'))
-            .thenReturn(testFriend3);
+        when(
+          () => mockManagementOps.getFriendById('friend_123'),
+        ).thenReturn(testFriend1);
+        when(
+          () => mockManagementOps.getFriendById('friend_456'),
+        ).thenReturn(testFriend2);
+        when(
+          () => mockManagementOps.getFriendById('friend_789'),
+        ).thenReturn(testFriend3);
         createdCategory = _cat(id: 'new_category_123', name: 'Receptgruppen');
-        when(() => mockCategoriesOps.getAllCategories())
-            .thenReturn([existingCategory, createdCategory]);
+        when(
+          () => mockCategoriesOps.getAllCategories(),
+        ).thenReturn([existingCategory, createdCategory]);
       });
 
       test('should send invitations to friends with emails', () async {
         final result = await viewModel.createGroup();
         expect(result, isTrue);
-        verify(() => mockInvitationsOps.sendEmailInvitation(
+        verify(
+          () => mockInvitationsOps.sendEmailInvitation(
             email: 'anna@example.com',
-            customMessage: any(named: 'customMessage'))).called(1);
-        verify(() => mockInvitationsOps.sendEmailInvitation(
+            customMessage: any(named: 'customMessage'),
+          ),
+        ).called(1);
+        verify(
+          () => mockInvitationsOps.sendEmailInvitation(
             email: 'erik@example.com',
-            customMessage: any(named: 'customMessage'))).called(1);
-        verifyNever(() => mockInvitationsOps.sendEmailInvitation(
-            email: '', customMessage: any(named: 'customMessage')));
+            customMessage: any(named: 'customMessage'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockInvitationsOps.sendEmailInvitation(
+            email: '',
+            customMessage: any(named: 'customMessage'),
+          ),
+        );
       });
 
       test('should handle invitation sending failures', () async {
-        when(() => mockInvitationsOps.sendEmailInvitation(
-              email: any(named: 'email'),
-              customMessage: any(named: 'customMessage'),
-            )).thenAnswer((_) async => false);
+        when(
+          () => mockInvitationsOps.sendEmailInvitation(
+            email: any(named: 'email'),
+            customMessage: any(named: 'customMessage'),
+          ),
+        ).thenAnswer((_) async => false);
         final result = await viewModel.createGroup();
         expect(result, isTrue);
         expect(viewModel.error, isNull);
@@ -413,9 +456,12 @@ void main() {
         when(() => mockManagementOps.getFriendById(any())).thenReturn(null);
         final result = await viewModel.createGroup();
         expect(result, isTrue);
-        verifyNever(() => mockInvitationsOps.sendEmailInvitation(
+        verifyNever(
+          () => mockInvitationsOps.sendEmailInvitation(
             email: any(named: 'email'),
-            customMessage: any(named: 'customMessage')));
+            customMessage: any(named: 'customMessage'),
+          ),
+        );
       });
 
       test('should skip invitations when no friends selected', () async {
@@ -425,9 +471,12 @@ void main() {
         expect(viewModel.selectedFriendsCount, equals(0));
         final result = await viewModel.createGroup();
         expect(result, isTrue);
-        verifyNever(() => mockInvitationsOps.sendEmailInvitation(
+        verifyNever(
+          () => mockInvitationsOps.sendEmailInvitation(
             email: any(named: 'email'),
-            customMessage: any(named: 'customMessage')));
+            customMessage: any(named: 'customMessage'),
+          ),
+        );
       });
     });
 
@@ -475,11 +524,17 @@ void main() {
 
         expect(() => testViewModel.updateName('Test'), throwsFlutterError);
         expect(
-            () => testViewModel.updateDescription('Test'), throwsFlutterError);
+          () => testViewModel.updateDescription('Test'),
+          throwsFlutterError,
+        );
         expect(
-            () => testViewModel.updateEmoji('\u{1F389}'), throwsFlutterError);
+          () => testViewModel.updateEmoji('\u{1F389}'),
+          throwsFlutterError,
+        );
         expect(
-            () => testViewModel.toggleFriend('friend_123'), throwsFlutterError);
+          () => testViewModel.toggleFriend('friend_123'),
+          throwsFlutterError,
+        );
 
         expect(testViewModel.createGroup(), completion(isFalse));
       });

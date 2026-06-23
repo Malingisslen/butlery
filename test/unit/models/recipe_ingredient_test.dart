@@ -32,21 +32,25 @@ void main() {
     });
 
     test('parses Swedish decimal comma ("1,5" → 1.5)', () {
-      final ing = RecipeIngredient.fromParsed(ParsedIngredient.structured(
-        name: 'mjölk',
-        originalLine: '1,5 dl mjölk',
-        quantity: '1,5',
-        unit: 'dl',
-      ));
+      final ing = RecipeIngredient.fromParsed(
+        ParsedIngredient.structured(
+          name: 'mjölk',
+          originalLine: '1,5 dl mjölk',
+          quantity: '1,5',
+          unit: 'dl',
+        ),
+      );
       expect(ing.amount, 1.5);
     });
 
     test('unparseable quantity (range) yields null amount but keeps raw', () {
-      final ing = RecipeIngredient.fromParsed(ParsedIngredient.structured(
-        name: 'vitlöksklyftor',
-        originalLine: '1-2 vitlöksklyftor',
-        quantity: '1-2',
-      ));
+      final ing = RecipeIngredient.fromParsed(
+        ParsedIngredient.structured(
+          name: 'vitlöksklyftor',
+          originalLine: '1-2 vitlöksklyftor',
+          quantity: '1-2',
+        ),
+      );
       expect(ing.amount, isNull);
       expect(ing.raw, '1-2 vitlöksklyftor');
       expect(ing.isStructured, isFalse);
@@ -88,35 +92,42 @@ void main() {
 
   group('RecipeCore integration', () {
     RecipeCore coreWith({List<RecipeIngredient>? structured}) => RecipeCore(
-          id: 'r1',
-          title: 'Pannkakor',
-          description: '',
-          ingredients: ['2,5 dl vetemjöl', '3 ägg'],
-          structuredIngredients: structured,
-          instructions: ['Vispa', 'Stek'],
-          mealType: 'Middag',
-        );
+      id: 'r1',
+      title: 'Pannkakor',
+      description: '',
+      ingredients: ['2,5 dl vetemjöl', '3 ägg'],
+      structuredIngredients: structured,
+      instructions: ['Vispa', 'Stek'],
+      mealType: 'Middag',
+    );
 
     final structured = [
       const RecipeIngredient(
-          amount: 2.5, unit: 'dl', name: 'vetemjöl', raw: '2,5 dl vetemjöl'),
+        amount: 2.5,
+        unit: 'dl',
+        name: 'vetemjöl',
+        raw: '2,5 dl vetemjöl',
+      ),
       const RecipeIngredient(amount: 3, name: 'ägg', raw: '3 ägg'),
     ];
 
     test('structured ingredients round-trip through toJson/fromJson', () {
-      final restored =
-          RecipeCore.fromJson(coreWith(structured: structured).toJson());
+      final restored = RecipeCore.fromJson(
+        coreWith(structured: structured).toJson(),
+      );
       expect(restored.structuredIngredients, structured);
     });
 
-    test('structured ingredients round-trip through fromMap (Firestore path)',
-        () {
-      final data = coreWith(structured: structured).toJson()
-        ..remove('createdAt')
-        ..remove('updatedAt');
-      final restored = RecipeCore.fromMap('r1', data);
-      expect(restored.structuredIngredients, structured);
-    });
+    test(
+      'structured ingredients round-trip through fromMap (Firestore path)',
+      () {
+        final data = coreWith(structured: structured).toJson()
+          ..remove('createdAt')
+          ..remove('updatedAt');
+        final restored = RecipeCore.fromMap('r1', data);
+        expect(restored.structuredIngredients, structured);
+      },
+    );
 
     test('legacy doc without the field deserializes to null (no throw)', () {
       final data = coreWith().toJson();
@@ -138,27 +149,32 @@ void main() {
     Recipe recipeWith({
       required List<String> ingredients,
       List<RecipeIngredient>? structured,
-    }) =>
-        Recipe(
-          core: RecipeCore(
-            id: 'r1',
-            title: 'T',
-            description: '',
-            ingredients: ingredients,
-            structuredIngredients: structured,
-            instructions: const ['x'],
-            mealType: 'Middag',
-          ),
-          type: RecipeType.personal,
-        );
+    }) => Recipe(
+      core: RecipeCore(
+        id: 'r1',
+        title: 'T',
+        description: '',
+        ingredients: ingredients,
+        structuredIngredients: structured,
+        instructions: const ['x'],
+        mealType: 'Middag',
+      ),
+      type: RecipeType.personal,
+    );
 
     test('returns stored data when aligned with the ingredient strings', () {
       final structured = [
         const RecipeIngredient(
-            amount: 2, unit: 'dl', name: 'mjöl', raw: '2 dl mjöl'),
+          amount: 2,
+          unit: 'dl',
+          name: 'mjöl',
+          raw: '2 dl mjöl',
+        ),
       ];
-      final recipe =
-          recipeWith(ingredients: ['2 dl mjöl'], structured: structured);
+      final recipe = recipeWith(
+        ingredients: ['2 dl mjöl'],
+        structured: structured,
+      );
       expect(recipe.structuredIngredients, same(structured));
     });
 
@@ -167,13 +183,20 @@ void main() {
         ingredients: ['4 dl mjöl'], // edited — no longer matches raw below
         structured: [
           const RecipeIngredient(
-              amount: 2, unit: 'dl', name: 'mjöl', raw: '2 dl mjöl'),
+            amount: 2,
+            unit: 'dl',
+            name: 'mjöl',
+            raw: '2 dl mjöl',
+          ),
         ],
       );
       final effective = recipe.structuredIngredients;
       expect(effective.single.raw, '4 dl mjöl');
-      expect(effective.single.amount, isNull,
-          reason: 'stale amount (2) must never be served for the edited line');
+      expect(
+        effective.single.amount,
+        isNull,
+        reason: 'stale amount (2) must never be served for the edited line',
+      );
     });
 
     test('legacy recipe (no structured data) yields raw-only entries', () {
@@ -192,7 +215,11 @@ void main() {
       // match — otherwise the alignment getter would discard the data.
       final parsedList = [
         ParsedIngredient.structured(
-            name: 'mjöl', originalLine: '2 dl mjöl', quantity: '2', unit: 'dl'),
+          name: 'mjöl',
+          originalLine: '2 dl mjöl',
+          quantity: '2',
+          unit: 'dl',
+        ),
         ParsedIngredient.simple('en nypa salt'),
       ];
       final strings = parsedList.map((p) => p.originalLine).toList();

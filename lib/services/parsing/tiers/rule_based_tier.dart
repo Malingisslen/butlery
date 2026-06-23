@@ -21,8 +21,8 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
   RuleBasedTier({
     IngredientParsingStrategy? ingredientStrategy,
     NeuralLineClassifier? neuralClassifier,
-  })  : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy(),
-        _neuralClassifier = neuralClassifier;
+  }) : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy(),
+       _neuralClassifier = neuralClassifier;
 
   static const tierIdentifier = 'RuleBased';
 
@@ -121,8 +121,9 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     // Real ingredients nearly always have quantities; nav text never does.
     if (context.source == ImportSource.url &&
         structure.ingredients.length > 3) {
-      final linesWithQuantity =
-          structure.ingredients.where((l) => l.contains(RegExp(r'\d'))).length;
+      final linesWithQuantity = structure.ingredients
+          .where((l) => l.contains(RegExp(r'\d')))
+          .length;
       if (linesWithQuantity / structure.ingredients.length < 0.4) {
         return null;
       }

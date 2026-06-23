@@ -77,8 +77,10 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere((list) => list.id == activeListId,
-          orElse: () => throw StateError('Active list not found'));
+      lists.firstWhere(
+        (list) => list.id == activeListId,
+        orElse: () => throw StateError('Active list not found'),
+      );
 
       // Auto-categorize when category is empty or default
       var resolvedCategory = category ?? ShoppingCategory.other;
@@ -117,7 +119,8 @@ class ShoppingItemManagementModule {
 
   /// Add multiple items to active list using batch operations for better performance
   Future<bool> addItemsBatchToActiveList(
-      List<UnifiedShoppingItem> items) async {
+    List<UnifiedShoppingItem> items,
+  ) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
       return false;
@@ -142,7 +145,8 @@ class ShoppingItemManagementModule {
           final existingName = existing.name.trim().toLowerCase();
           if (existingName != normalizedName) return false;
           // Compatible units: same unit or both empty
-          final unitsMatch = existing.unit.trim().toLowerCase() ==
+          final unitsMatch =
+              existing.unit.trim().toLowerCase() ==
               newItem.unit.trim().toLowerCase();
           return unitsMatch;
         });
@@ -150,8 +154,9 @@ class ShoppingItemManagementModule {
         if (matchIndex >= 0) {
           // Merge: sum amounts into existing item
           final existing = existingItems[matchIndex];
-          final merged =
-              existing.copyWith(amount: existing.amount + newItem.amount);
+          final merged = existing.copyWith(
+            amount: existing.amount + newItem.amount,
+          );
           itemsToUpdate.add(merged);
         } else {
           itemsToAdd.add(newItem);
@@ -194,14 +199,17 @@ class ShoppingItemManagementModule {
             // Best-effort rollback; original value is logged below.
           }
         }
-        AppLogger.error('Failed to add batch to active list (rolled back '
-            '${committedUpdates.length} committed merges): $e');
+        AppLogger.error(
+          'Failed to add batch to active list (rolled back '
+          '${committedUpdates.length} committed merges): $e',
+        );
         return false;
       }
 
       // Update local state
-      final currentItems =
-          List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      final currentItems = List<UnifiedShoppingItem>.from(
+        lists[listIndex].items,
+      );
       for (final updated in itemsToUpdate) {
         final idx = currentItems.indexWhere((i) => i.id == updated.id);
         if (idx >= 0) currentItems[idx] = updated;
@@ -239,8 +247,9 @@ class ShoppingItemManagementModule {
         return false;
       }
 
-      final itemIndex =
-          lists[listIndex].items.indexWhere((item) => item.id == itemId);
+      final itemIndex = lists[listIndex].items.indexWhere(
+        (item) => item.id == itemId,
+      );
       if (itemIndex == -1) {
         return false;
       }
@@ -262,8 +271,9 @@ class ShoppingItemManagementModule {
       await repository.updateItem(activeListId, updatedItem);
 
       // Update local state
-      final updatedItems =
-          List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      final updatedItems = List<UnifiedShoppingItem>.from(
+        lists[listIndex].items,
+      );
       updatedItems[itemIndex] = updatedItem;
 
       lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
@@ -284,8 +294,10 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere((list) => list.id == activeListId,
-          orElse: () => throw StateError('Active list not found'));
+      lists.firstWhere(
+        (list) => list.id == activeListId,
+        orElse: () => throw StateError('Active list not found'),
+      );
 
       // Remove from Firebase first
       await repository.removeItem(activeListId, itemId);
@@ -293,8 +305,9 @@ class ShoppingItemManagementModule {
       // Update local state
       final listIndex = lists.indexWhere((list) => list.id == activeListId);
       if (listIndex >= 0) {
-        final updatedItems =
-            lists[listIndex].items.where((item) => item.id != itemId).toList();
+        final updatedItems = lists[listIndex].items
+            .where((item) => item.id != itemId)
+            .toList();
 
         lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
 
@@ -324,8 +337,9 @@ class ShoppingItemManagementModule {
       return false;
     }
 
-    final itemIndex =
-        lists[listIndex].items.indexWhere((item) => item.id == itemId);
+    final itemIndex = lists[listIndex].items.indexWhere(
+      (item) => item.id == itemId,
+    );
     if (itemIndex == -1) {
       return false;
     }
@@ -345,10 +359,12 @@ class ShoppingItemManagementModule {
       return true;
     } catch (e) {
       // ROLLBACK: Revert to original state on failure
-      final rollbackItems =
-          List<UnifiedShoppingItem>.from(lists[listIndex].items);
-      final rollbackIndex =
-          rollbackItems.indexWhere((item) => item.id == itemId);
+      final rollbackItems = List<UnifiedShoppingItem>.from(
+        lists[listIndex].items,
+      );
+      final rollbackIndex = rollbackItems.indexWhere(
+        (item) => item.id == itemId,
+      );
       if (rollbackIndex != -1) {
         rollbackItems[rollbackIndex] = currentItem;
         lists[listIndex] = lists[listIndex].copyWith(items: rollbackItems);
@@ -386,13 +402,15 @@ class ShoppingItemManagementModule {
     final listIndex = lists.indexWhere((list) => list.id == activeListId);
     if (listIndex == -1) return false;
 
-    final boughtItems =
-        lists[listIndex].items.where((item) => item.bought).toList();
+    final boughtItems = lists[listIndex].items
+        .where((item) => item.bought)
+        .toList();
     if (boughtItems.isEmpty) return true;
 
     // Optimistic UI: remove from local state immediately
-    final remainingItems =
-        lists[listIndex].items.where((item) => !item.bought).toList();
+    final remainingItems = lists[listIndex].items
+        .where((item) => !item.bought)
+        .toList();
     lists[listIndex] = lists[listIndex].copyWith(items: remainingItems);
     notifyListeners();
 
@@ -419,13 +437,15 @@ class ShoppingItemManagementModule {
     final listIndex = lists.indexWhere((list) => list.id == activeListId);
     if (listIndex == -1) return false;
 
-    final checkedItems =
-        lists[listIndex].items.where((item) => item.bought).toList();
+    final checkedItems = lists[listIndex].items
+        .where((item) => item.bought)
+        .toList();
     if (checkedItems.isEmpty) return true;
 
     // Optimistic UI: uncheck all in local state
-    final originalItems =
-        List<UnifiedShoppingItem>.from(lists[listIndex].items);
+    final originalItems = List<UnifiedShoppingItem>.from(
+      lists[listIndex].items,
+    );
     final updatedItems = lists[listIndex].items.map((item) {
       return item.bought ? item.copyWith(bought: false) : item;
     }).toList();
@@ -435,8 +455,10 @@ class ShoppingItemManagementModule {
     // Background: update checked items in Firebase (parallel)
     try {
       await Future.wait(
-        checkedItems.map((item) =>
-            repository.updateItem(activeListId, item.copyWith(bought: false))),
+        checkedItems.map(
+          (item) =>
+              repository.updateItem(activeListId, item.copyWith(bought: false)),
+        ),
       );
       return true;
     } catch (e) {

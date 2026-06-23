@@ -22,8 +22,9 @@ void main() {
 
     setUp(() {
       mockPersonalOps = MockPersonalRecipeOperations();
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Added'));
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
       importManager = ImportManager.withStrategies(
         mockPersonalOps,
         [TextImportStrategy()],
@@ -69,16 +70,21 @@ Ingredienser:
 Gör så här:
 Vispa ihop smeten och stek i smör.''';
 
-    test('returns exactly one recipe for a single-recipe blob (identity)',
-        () async {
-      final result = await importManager.autoParseMulti(singleRecipe);
-      expect(result.successfulRecipes, hasLength(1));
-    });
+    test(
+      'returns exactly one recipe for a single-recipe blob (identity)',
+      () async {
+        final result = await importManager.autoParseMulti(singleRecipe);
+        expect(result.successfulRecipes, hasLength(1));
+      },
+    );
 
     test('returns three recipes for a three-recipe page', () async {
       final result = await importManager.autoParseMulti(threeRecipePage);
-      expect(result.successfulRecipes.length, greaterThanOrEqualTo(3),
-          reason: 'each title→ingredients→instructions block parses');
+      expect(
+        result.successfulRecipes.length,
+        greaterThanOrEqualTo(3),
+        reason: 'each title→ingredients→instructions block parses',
+      );
     });
 
     test('is parse-only — never saves to PersonalRecipeOperations', () async {

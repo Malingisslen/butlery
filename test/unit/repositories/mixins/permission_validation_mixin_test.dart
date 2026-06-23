@@ -49,39 +49,54 @@ void main() {
   group('hasReadAccess', () {
     test('false when user is null', () async {
       expect(
-          await subject.hasReadAccess(
-              currentUserId: null, resourceOwnerId: 'alice'),
-          isFalse);
+        await subject.hasReadAccess(
+          currentUserId: null,
+          resourceOwnerId: 'alice',
+        ),
+        isFalse,
+      );
     });
 
     test('true when user is owner', () async {
       expect(
-          await subject.hasReadAccess(
-              currentUserId: 'alice', resourceOwnerId: 'alice'),
-          isTrue);
+        await subject.hasReadAccess(
+          currentUserId: 'alice',
+          resourceOwnerId: 'alice',
+        ),
+        isTrue,
+      );
     });
 
     test('true when resource is public', () async {
       expect(
-          await subject.hasReadAccess(
-              currentUserId: 'bob', resourceOwnerId: 'alice', isPublic: true),
-          isTrue);
+        await subject.hasReadAccess(
+          currentUserId: 'bob',
+          resourceOwnerId: 'alice',
+          isPublic: true,
+        ),
+        isTrue,
+      );
     });
 
     test('true when user is in shared list', () async {
       expect(
-          await subject.hasReadAccess(
-              currentUserId: 'bob',
-              resourceOwnerId: 'alice',
-              sharedWithUserIds: ['bob']),
-          isTrue);
+        await subject.hasReadAccess(
+          currentUserId: 'bob',
+          resourceOwnerId: 'alice',
+          sharedWithUserIds: ['bob'],
+        ),
+        isTrue,
+      );
     });
 
     test('false when not owner, not public, not shared', () async {
       expect(
-          await subject.hasReadAccess(
-              currentUserId: 'bob', resourceOwnerId: 'alice'),
-          isFalse);
+        await subject.hasReadAccess(
+          currentUserId: 'bob',
+          resourceOwnerId: 'alice',
+        ),
+        isFalse,
+      );
     });
   });
 
@@ -164,7 +179,7 @@ void main() {
       subject.validateRequiredFields(
         data: const {
           'name': 'Pasta',
-          'ingredients': ['x']
+          'ingredients': ['x'],
         },
         requiredFields: const ['name', 'ingredients'],
         resourceType: 'recipe',
@@ -188,7 +203,7 @@ void main() {
       subject.validateFieldConstraints(
         data: const {
           'title': 'Pasta',
-          'tags': ['veg']
+          'tags': ['veg'],
         },
         constraints: const {
           'title': FieldConstraint(minLength: 2, maxLength: 100),
@@ -228,7 +243,7 @@ void main() {
       expect(
         () => subject.validateFieldConstraints(
           data: const {
-            'tags': [1, 2, 3, 4, 5, 6]
+            'tags': [1, 2, 3, 4, 5, 6],
           },
           constraints: const {
             'tags': FieldConstraint(maxItems: 5),

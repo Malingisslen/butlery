@@ -10,26 +10,32 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 Future<void> _showDialog(
   WidgetTester tester, {
   required Future<int> Function(void Function(int, int)) retagFn,
 }) async {
-  await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-    return ElevatedButton(
-      onPressed: () => showDialog<void>(
-        context: ctx,
-        barrierDismissible: false,
-        builder: (_) => RetagProgressDialog(retagFunction: retagFn),
+  await tester.pumpWidget(
+    _wrap(
+      Builder(
+        builder: (ctx) {
+          return ElevatedButton(
+            onPressed: () => showDialog<void>(
+              context: ctx,
+              barrierDismissible: false,
+              builder: (_) => RetagProgressDialog(retagFunction: retagFn),
+            ),
+            child: const Text('Open'),
+          );
+        },
       ),
-      child: const Text('Open'),
-    );
-  })));
+    ),
+  );
   await tester.tap(find.text('Open'));
   await tester.pump(); // Show dialog frame
 }
@@ -57,10 +63,12 @@ void main() {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
       // The Avbryt button should be tappable
-      final btn = tester.widget<TextButton>(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(TextButton),
-      ));
+      final btn = tester.widget<TextButton>(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextButton),
+        ),
+      );
       expect(btn.onPressed, isNotNull);
       completer.complete(0);
       await tester.pumpAndSettle();
@@ -68,29 +76,36 @@ void main() {
   });
 
   group('RetagProgressDialog — progress updates', () {
-    testWidgets('LinearProgressIndicator is indeterminate when total=0',
-        (tester) async {
+    testWidgets('LinearProgressIndicator is indeterminate when total=0', (
+      tester,
+    ) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
       final lpi = tester.widget<LinearProgressIndicator>(
-          find.byType(LinearProgressIndicator));
+        find.byType(LinearProgressIndicator),
+      );
       expect(lpi.value, isNull);
       completer.complete(0);
       await tester.pumpAndSettle();
     });
 
-    testWidgets('LinearProgressIndicator value updates as progress reports',
-        (tester) async {
+    testWidgets('LinearProgressIndicator value updates as progress reports', (
+      tester,
+    ) async {
       final completer = Completer<int>();
       void Function(int, int)? captured;
-      await _showDialog(tester, retagFn: (onProgress) {
-        captured = onProgress;
-        return completer.future;
-      });
+      await _showDialog(
+        tester,
+        retagFn: (onProgress) {
+          captured = onProgress;
+          return completer.future;
+        },
+      );
       captured!(3, 10);
       await tester.pump();
       final lpi = tester.widget<LinearProgressIndicator>(
-          find.byType(LinearProgressIndicator));
+        find.byType(LinearProgressIndicator),
+      );
       expect(lpi.value, closeTo(0.3, 0.001));
       completer.complete(3);
       await tester.pumpAndSettle();
@@ -98,8 +113,9 @@ void main() {
   });
 
   group('RetagProgressDialog — completion', () {
-    testWidgets('completes → dialog pops and snackbar shows the count',
-        (tester) async {
+    testWidgets('completes → dialog pops and snackbar shows the count', (
+      tester,
+    ) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
       completer.complete(7);
@@ -112,8 +128,9 @@ void main() {
   });
 
   group('RetagProgressDialog — error', () {
-    testWidgets('error → dialog stays open with Close button + error text',
-        (tester) async {
+    testWidgets('error → dialog stays open with Close button + error text', (
+      tester,
+    ) async {
       final completer = Completer<int>();
       await _showDialog(tester, retagFn: (onProgress) => completer.future);
       completer.completeError(Exception('retag failed'));
@@ -132,10 +149,12 @@ void main() {
       completer.completeError(Exception('failed'));
       await tester.pumpAndSettle();
       // Tap the close button (only TextButton in error branch)
-      final btn = tester.widget<TextButton>(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(TextButton),
-      ));
+      final btn = tester.widget<TextButton>(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextButton),
+        ),
+      );
       expect(btn.onPressed, isNotNull);
       await tester.tap(find.byType(TextButton).last);
       await tester.pumpAndSettle();

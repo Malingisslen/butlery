@@ -35,13 +35,18 @@ const heldOutRecipes = <GoldenRecipe>[
     GoldenLine('2 tsk kardemumma', LineType.ingredient),
     GoldenLine('cirka 15 dl vetemjöl', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
-    GoldenLine('Smula jästen i en bunke och rör ut med ljummen mjölk.',
-        LineType.instruction),
-    GoldenLine('Tillsätt smör, socker, salt, kardemumma och nästan allt mjöl.',
-        LineType.instruction),
     GoldenLine(
-        'Knåda degen tills den släpper kanterna och låt jäsa i 40 minuter.',
-        LineType.instruction),
+      'Smula jästen i en bunke och rör ut med ljummen mjölk.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Tillsätt smör, socker, salt, kardemumma och nästan allt mjöl.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Knåda degen tills den släpper kanterna och låt jäsa i 40 minuter.',
+      LineType.instruction,
+    ),
   ]),
 
   // H2. Inverted structure — instructions appear before ingredients in the
@@ -51,15 +56,22 @@ const heldOutRecipes = <GoldenRecipe>[
     GoldenLine('Krämig potatissallad', LineType.title),
     GoldenLine('6 portioner', LineType.metadata),
     GoldenLine('Så gör du:', LineType.sectionHeader),
-    GoldenLine('Koka potatisen mjuk i saltat vatten och låt svalna helt.',
-        LineType.instruction),
-    GoldenLine('Skär potatisen i tärningar och lägg i en stor skål.',
-        LineType.instruction),
     GoldenLine(
-        'Blanda majonnäs, gräddfil, senap och pressad citron till en dressing.',
-        LineType.instruction),
-    GoldenLine('Vänd ner dressingen i potatisen och toppa med hackad gräslök.',
-        LineType.instruction),
+      'Koka potatisen mjuk i saltat vatten och låt svalna helt.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Skär potatisen i tärningar och lägg i en stor skål.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Blanda majonnäs, gräddfil, senap och pressad citron till en dressing.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Vänd ner dressingen i potatisen och toppa med hackad gräslök.',
+      LineType.instruction,
+    ),
     GoldenLine('Du behöver:', LineType.sectionHeader),
     GoldenLine('1 kg fast potatis', LineType.ingredient),
     GoldenLine('2 dl majonnäs', LineType.ingredient),
@@ -87,16 +99,21 @@ const heldOutRecipes = <GoldenRecipe>[
     GoldenLine('1 gul lök', LineType.ingredient),
     GoldenLine('Tillagning:', LineType.sectionHeader),
     GoldenLine(
-        'Koka upp vatten, ättika, salt, socker, peppar och lagerblad i en kastrull.',
-        LineType.instruction),
-    GoldenLine('Skiva löken tunt och lägg i lagen tillsammans med laxen.',
-        LineType.instruction),
+      'Koka upp vatten, ättika, salt, socker, peppar och lagerblad i en kastrull.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Sänk värmen till låg och låt sjuda försiktigt under lock i åtta minuter.',
-        LineType.instruction),
+      'Skiva löken tunt och lägg i lagen tillsammans med laxen.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Stäng av plattan och låt fisken dra i lagen tills allt har svalnat.',
-        LineType.instruction),
+      'Sänk värmen till låg och låt sjuda försiktigt under lock i åtta minuter.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Stäng av plattan och låt fisken dra i lagen tills allt har svalnat.',
+      LineType.instruction,
+    ),
   ]),
 
   // H4. Vegetarian dish with ingredient sub-grouping by inline labels.
@@ -112,17 +129,25 @@ const heldOutRecipes = <GoldenRecipe>[
     GoldenLine('1 msk garam masala', LineType.ingredient),
     GoldenLine('1 tsk gurkmeja', LineType.ingredient),
     GoldenLine('1 nypa salt', LineType.ingredient),
-    GoldenLine('Skölj linserna noggrant under kallt vatten i en sil.',
-        LineType.instruction),
-    GoldenLine('Hacka lök och vitlök fint och fräs i olja på medelvärme.',
-        LineType.instruction),
     GoldenLine(
-        'Tillsätt kryddorna och rör runt en kort stund tills doften känns.',
-        LineType.instruction),
+      'Skölj linserna noggrant under kallt vatten i en sil.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Häll i tomater, kokosmjölk och linser och låt sjuda tjugo minuter.',
-        LineType.instruction),
-    GoldenLine('Smaka av med salt och servera med ris eller naanbröd.',
-        LineType.instruction),
+      'Hacka lök och vitlök fint och fräs i olja på medelvärme.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Tillsätt kryddorna och rör runt en kort stund tills doften känns.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Häll i tomater, kokosmjölk och linser och låt sjuda tjugo minuter.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Smaka av med salt och servera med ris eller naanbröd.',
+      LineType.instruction,
+    ),
   ]),
 ];

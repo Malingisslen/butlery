@@ -42,12 +42,15 @@ void main() {
     });
 
     group('Rendering', () {
-      testWidgets('should render with required properties',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should render with required properties', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         expect(find.byType(MessageInputField), findsOneWidget);
         // Delegates to StyledInput.multiline which renders a TextFormField
@@ -57,21 +60,26 @@ void main() {
       testWidgets('should display hint text', (WidgetTester tester) async {
         const hintText = 'Write your message here';
 
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-          hintText: hintText,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+            hintText: hintText,
+          ),
+        );
 
         expect(find.text(hintText), findsOneWidget);
       });
 
-      testWidgets('should have outline border decoration',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should have outline border decoration', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         // StyledInput uses OutlineInputBorder with borderRadius8
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -79,32 +87,38 @@ void main() {
         expect(inputDecoration.border, isA<OutlineInputBorder>());
       });
 
-      testWidgets('should have proper content padding',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should have proper content padding', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
 
         // StyledInput.multiline uses default padding: spacingMd horizontal, (spacingSm + spacingXs) vertical
         expect(
-            inputDecoration.contentPadding,
-            equals(
-              const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-              ),
-            ));
+          inputDecoration.contentPadding,
+          equals(
+            const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
+          ),
+        );
       });
 
       testWidgets('should use OutlineInputBorder', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
@@ -115,10 +129,12 @@ void main() {
 
     group('Text Input', () {
       testWidgets('should accept text input', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         const inputText = 'Hello, this is a test message';
         await tester.enterText(find.byType(TextField), inputText);
@@ -127,10 +143,12 @@ void main() {
       });
 
       testWidgets('should support multiline text', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         const multilineText = 'Line 1\nLine 2\nLine 3';
         await tester.enterText(find.byType(TextField), multilineText);
@@ -139,31 +157,38 @@ void main() {
       });
 
       testWidgets('should have minLines of 1', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.minLines, equals(1));
       });
 
       testWidgets('should have maxLines of 5', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.maxLines, equals(5));
       });
 
-      testWidgets('should use multiline keyboard type',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should use multiline keyboard type', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         // StyledInput.multiline sets keyboardType to TextInputType.multiline
@@ -172,12 +197,15 @@ void main() {
     });
 
     group('Focus Management', () {
-      testWidgets('should respond to focus changes',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should respond to focus changes', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         expect(focusNode.hasFocus, isFalse);
 
@@ -188,10 +216,12 @@ void main() {
       });
 
       testWidgets('should use provided FocusNode', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.focusNode, equals(focusNode));
@@ -199,17 +229,20 @@ void main() {
     });
 
     group('Submit Functionality', () {
-      testWidgets('should not wire onSubmitted to text field action',
-          (WidgetTester tester) async {
+      testWidgets('should not wire onSubmitted to text field action', (
+        WidgetTester tester,
+      ) async {
         // MessageInputField intentionally does NOT call onSubmitted on text input action
         // (to prevent sending on every keystroke). Send is handled by an external send button.
         var submitted = false;
 
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-          onSubmitted: () => submitted = true,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+            onSubmitted: () => submitted = true,
+          ),
+        );
 
         await tester.enterText(find.byType(TextField), 'Test message');
         await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -219,13 +252,16 @@ void main() {
         expect(submitted, isFalse);
       });
 
-      testWidgets('should handle null onSubmitted gracefully',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-          onSubmitted: null,
-        ));
+      testWidgets('should handle null onSubmitted gracefully', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+            onSubmitted: null,
+          ),
+        );
 
         // Should not crash when submitting with null callback
         await tester.enterText(find.byType(TextField), 'Test message');
@@ -238,25 +274,31 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish hint text',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish hint text', (
+        WidgetTester tester,
+      ) async {
         const swedishHint = 'Skriv ett meddelande';
 
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-          hintText: swedishHint,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+            hintText: swedishHint,
+          ),
+        );
 
         expect(find.text(swedishHint), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should handle Swedish characters', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         const swedishText = 'Hej! Hur mar du? Jag ater smorgas';
         await tester.enterText(find.byType(TextField), swedishText);
@@ -267,20 +309,24 @@ void main() {
 
     group('Edge Cases', () {
       testWidgets('should handle empty input', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         await tester.enterText(find.byType(TextField), '');
         expect(controller.text, isEmpty);
       });
 
       testWidgets('should handle very long text', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         final longText = 'a' * 1000;
         await tester.enterText(find.byType(TextField), longText);
@@ -288,12 +334,15 @@ void main() {
         expect(controller.text, equals(longText));
       });
 
-      testWidgets('should handle rapid text changes',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should handle rapid text changes', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         await tester.enterText(find.byType(TextField), 'First');
         expect(controller.text, equals('First'));
@@ -305,12 +354,15 @@ void main() {
         expect(controller.text, equals('Third'));
       });
 
-      testWidgets('should handle controller text updates',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should handle controller text updates', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         controller.text = 'Programmatically set';
         await tester.pump();
@@ -318,20 +370,25 @@ void main() {
         expect(find.text('Programmatically set'), findsOneWidget);
       });
 
-      testWidgets('should preserve text when widget rebuilds',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+      testWidgets('should preserve text when widget rebuilds', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         await tester.enterText(find.byType(TextField), 'Persistent text');
 
         // Rebuild widget
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            controller: controller,
+            focusNode: focusNode,
+          ),
+        );
 
         expect(controller.text, equals('Persistent text'));
         expect(find.text('Persistent text'), findsOneWidget);

@@ -70,7 +70,8 @@ class SocialOperationsInitializer {
       }
 
       AppLogger.warning(
-          'Repositories not yet available for SocialRecipeOperations');
+        'Repositories not yet available for SocialRecipeOperations',
+      );
       return null;
     } catch (e) {
       AppLogger.error('Failed to initialize SocialRecipeOperations: $e');
@@ -88,11 +89,13 @@ class SocialOperationsInitializer {
   ) {
     AppLogger.warning('Creating fallback SocialRecipeOperations');
 
-    final ratingsRepo = providedRatingsRepo ??
+    final ratingsRepo =
+        providedRatingsRepo ??
         ServiceLocator.tryGet<RatingsRepository>() ??
         FirebaseRatingsRepository(authRepository: authRepository);
 
-    final firestoreRepo = providedFirestoreRepo ??
+    final firestoreRepo =
+        providedFirestoreRepo ??
         ServiceLocator.tryGet<FirestoreRepository>() ??
         FirestoreRepository();
 
@@ -122,7 +125,8 @@ class SocialOperationsInitializer {
       if (ratingsRepo != null && firestoreRepo != null) {
         final ctx = context;
         AppLogger.info(
-            'SocialRecipeOperations re-initialized with real repositories');
+          'SocialRecipeOperations re-initialized with real repositories',
+        );
         return SocialRecipeOperations(
           getCurrentUserId: ctx.getCurrentUserId,
           getCurrentUserDisplayName: ctx.getCurrentUserDisplayName,
@@ -159,7 +163,8 @@ class SocialOperationsInitializer {
   }) {
     if (attempt >= _maxRetries) {
       AppLogger.error(
-          'Max social init retries ($_maxRetries) reached, giving up');
+        'Max social init retries ($_maxRetries) reached, giving up',
+      );
       return null;
     }
 
@@ -169,8 +174,13 @@ class SocialOperationsInitializer {
         onSuccess(operations);
       } else {
         // Retry with exponential backoff using Duration multiplication
-        final nextTimer = scheduleRetry(context, onSuccess, delay * 2,
-            attempt: attempt + 1, onTimerCreated: onTimerCreated);
+        final nextTimer = scheduleRetry(
+          context,
+          onSuccess,
+          delay * 2,
+          attempt: attempt + 1,
+          onTimerCreated: onTimerCreated,
+        );
         if (nextTimer != null) {
           onTimerCreated?.call(nextTimer);
         }

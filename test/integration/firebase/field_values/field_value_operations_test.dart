@@ -207,31 +207,35 @@ void main() {
     });
 
     group('combined operations', () {
-      test('should handle multiple FieldValue operations in single update',
-          () async {
-        // Arrange
-        final docRef = await firestore.collection('test').add({
-          'name': 'Test',
-          'views': 100,
-          'tags': ['existing'],
-        });
+      test(
+        'should handle multiple FieldValue operations in single update',
+        () async {
+          // Arrange
+          final docRef = await firestore.collection('test').add({
+            'name': 'Test',
+            'views': 100,
+            'tags': ['existing'],
+          });
 
-        // Act
-        await docRef.update({
-          'updatedAt': FieldValue.serverTimestamp(),
-          'views': FieldValue.increment(1),
-          'tags': FieldValue.arrayUnion(['new1', 'new2']),
-        });
+          // Act
+          await docRef.update({
+            'updatedAt': FieldValue.serverTimestamp(),
+            'views': FieldValue.increment(1),
+            'tags': FieldValue.arrayUnion(['new1', 'new2']),
+          });
 
-        // Assert
-        final snapshot = await docRef.get();
-        final data = snapshot.data()!;
+          // Assert
+          final snapshot = await docRef.get();
+          final data = snapshot.data()!;
 
-        expect(data['updatedAt'], isA<Timestamp>());
-        expect(data['views'], equals(101));
-        expect(List<String>.from(data['tags']),
-            containsAll(['existing', 'new1', 'new2']));
-      });
+          expect(data['updatedAt'], isA<Timestamp>());
+          expect(data['views'], equals(101));
+          expect(
+            List<String>.from(data['tags']),
+            containsAll(['existing', 'new1', 'new2']),
+          );
+        },
+      );
     });
 
     group('advanced serverTimestamp operations', () {
@@ -259,38 +263,40 @@ void main() {
         expect(timestamps['lastModified'], isA<Timestamp>());
       });
 
-      test('should maintain timestamp consistency in batch operations',
-          () async {
-        // Arrange
-        final batch = firestore.batch();
-        final doc1 = firestore.collection('test').doc();
-        final doc2 = firestore.collection('test').doc();
+      test(
+        'should maintain timestamp consistency in batch operations',
+        () async {
+          // Arrange
+          final batch = firestore.batch();
+          final doc1 = firestore.collection('test').doc();
+          final doc2 = firestore.collection('test').doc();
 
-        batch.set(doc1, {
-          'createdAt': FieldValue.serverTimestamp(),
-          'type': 'document1',
-        });
+          batch.set(doc1, {
+            'createdAt': FieldValue.serverTimestamp(),
+            'type': 'document1',
+          });
 
-        batch.set(doc2, {
-          'createdAt': FieldValue.serverTimestamp(),
-          'type': 'document2',
-        });
+          batch.set(doc2, {
+            'createdAt': FieldValue.serverTimestamp(),
+            'type': 'document2',
+          });
 
-        // Act
-        await batch.commit();
+          // Act
+          await batch.commit();
 
-        // Assert
-        final snap1 = await doc1.get();
-        final snap2 = await doc2.get();
+          // Assert
+          final snap1 = await doc1.get();
+          final snap2 = await doc2.get();
 
-        expect(snap1.data()!['createdAt'], isA<Timestamp>());
-        expect(snap2.data()!['createdAt'], isA<Timestamp>());
+          expect(snap1.data()!['createdAt'], isA<Timestamp>());
+          expect(snap2.data()!['createdAt'], isA<Timestamp>());
 
-        // Timestamps should be very close (within 1 second)
-        final time1 = (snap1.data()!['createdAt'] as Timestamp).toDate();
-        final time2 = (snap2.data()!['createdAt'] as Timestamp).toDate();
-        expect(time1.difference(time2).abs().inSeconds, lessThanOrEqualTo(1));
-      });
+          // Timestamps should be very close (within 1 second)
+          final time1 = (snap1.data()!['createdAt'] as Timestamp).toDate();
+          final time2 = (snap2.data()!['createdAt'] as Timestamp).toDate();
+          expect(time1.difference(time2).abs().inSeconds, lessThanOrEqualTo(1));
+        },
+      );
     });
 
     group('advanced array operations', () {
@@ -313,9 +319,11 @@ void main() {
 
         // Assert
         final snapshot = await docRef.get();
-        final participants = List<Map<String, dynamic>>.from(snapshot
-            .data()!['participants']
-            .map((p) => Map<String, dynamic>.from(p)));
+        final participants = List<Map<String, dynamic>>.from(
+          snapshot.data()!['participants'].map(
+            (p) => Map<String, dynamic>.from(p),
+          ),
+        );
 
         expect(participants.length, equals(3)); // No duplicate
         expect(participants.any((p) => p['id'] == 'user3'), isTrue);
@@ -329,8 +337,12 @@ void main() {
 
         // Act
         await docRef.update({
-          'mixedArray':
-              FieldValue.arrayUnion([3.14, 'four', false, 1]), // 1 is duplicate
+          'mixedArray': FieldValue.arrayUnion([
+            3.14,
+            'four',
+            false,
+            1,
+          ]), // 1 is duplicate
         });
 
         // Assert
@@ -354,8 +366,10 @@ void main() {
 
         // Assert
         var snapshot = await docRef.get();
-        expect(List<String>.from(snapshot.data()!['items']),
-            equals(['first', 'second']));
+        expect(
+          List<String>.from(snapshot.data()!['items']),
+          equals(['first', 'second']),
+        );
 
         // Act - Remove all items
         await docRef.update({
@@ -393,7 +407,9 @@ void main() {
 
         // Act - Simulate concurrent updates
         final futures = List.generate(
-            5, (i) => docRef.update({'counter': FieldValue.increment(1)}));
+          5,
+          (i) => docRef.update({'counter': FieldValue.increment(1)}),
+        );
         await Future.wait(futures);
 
         // Assert
@@ -492,32 +508,36 @@ void main() {
         final data = snapshot.data()!;
         expect(data['balance'], equals(70));
         expect(
-            List<String>.from(data['transactions']), contains('withdraw:30'));
+          List<String>.from(data['transactions']),
+          contains('withdraw:30'),
+        );
         expect(data['lastUpdate'], isA<Timestamp>());
       });
     });
 
     group('edge cases and error scenarios', () {
-      test('should handle FieldValue on non-existent document with set merge',
-          () async {
-        // Arrange
-        final docRef = firestore.collection('test').doc('non_existent');
+      test(
+        'should handle FieldValue on non-existent document with set merge',
+        () async {
+          // Arrange
+          final docRef = firestore.collection('test').doc('non_existent');
 
-        // Act
-        await docRef.set({
-          'createdAt': FieldValue.serverTimestamp(),
-          'views': FieldValue.increment(1),
-          'tags': FieldValue.arrayUnion(['initial']),
-        }, SetOptions(merge: true));
+          // Act
+          await docRef.set({
+            'createdAt': FieldValue.serverTimestamp(),
+            'views': FieldValue.increment(1),
+            'tags': FieldValue.arrayUnion(['initial']),
+          }, SetOptions(merge: true));
 
-        // Assert
-        final snapshot = await docRef.get();
-        expect(snapshot.exists, isTrue);
-        final data = snapshot.data()!;
-        expect(data['createdAt'], isA<Timestamp>());
-        expect(data['views'], equals(1));
-        expect(List<String>.from(data['tags']), equals(['initial']));
-      });
+          // Assert
+          final snapshot = await docRef.get();
+          expect(snapshot.exists, isTrue);
+          final data = snapshot.data()!;
+          expect(data['createdAt'], isA<Timestamp>());
+          expect(data['views'], equals(1));
+          expect(List<String>.from(data['tags']), equals(['initial']));
+        },
+      );
 
       test('should handle arrayUnion with null values gracefully', () async {
         // Arrange

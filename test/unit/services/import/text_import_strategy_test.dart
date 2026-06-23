@@ -46,106 +46,124 @@ void main() {
       // The gold-corpus showed the title detector grabbing yield labels and
       // measurements as the recipe title on real cookbook pages. These prove it
       // no longer does — it picks the real heading instead.
-      test('does not pick a yield label ("2 PORTIONER") as the title',
-          () async {
-        const text = '2 PORTIONER\n'
-            'Pannkakor\n'
-            'Ingredienser:\n'
-            '3 dl vetemjöl\n'
-            '2 ägg\n'
-            'Gör så här:\n'
-            'Vispa ihop och stek.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title.toLowerCase(), isNot(contains('portioner')));
-        expect(title, isNot(startsWith('2')));
-      });
+      test(
+        'does not pick a yield label ("2 PORTIONER") as the title',
+        () async {
+          const text =
+              '2 PORTIONER\n'
+              'Pannkakor\n'
+              'Ingredienser:\n'
+              '3 dl vetemjöl\n'
+              '2 ägg\n'
+              'Gör så här:\n'
+              'Vispa ihop och stek.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title.toLowerCase(), isNot(contains('portioner')));
+          expect(title, isNot(startsWith('2')));
+        },
+      );
 
-      test('does not pick a measurement line ("100 g grönkål") as the title',
-          () async {
-        const text = '100 g grönkål\n'
-            'Grön smoothie\n'
-            'Ingredienser:\n'
-            '2 dl vatten\n'
-            '1 banan\n'
-            'Gör så här:\n'
-            'Mixa allt slätt.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title.toLowerCase(), isNot(contains('grönkål')));
-        expect(title, isNot(startsWith('100')));
-      });
+      test(
+        'does not pick a measurement line ("100 g grönkål") as the title',
+        () async {
+          const text =
+              '100 g grönkål\n'
+              'Grön smoothie\n'
+              'Ingredienser:\n'
+              '2 dl vatten\n'
+              '1 banan\n'
+              'Gör så här:\n'
+              'Mixa allt slätt.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title.toLowerCase(), isNot(contains('grönkål')));
+          expect(title, isNot(startsWith('100')));
+        },
+      );
 
-      test('does not pick a unit-less quantity line ("1 medelstor morot")',
-          () async {
-        // The "no unit at all" case: a leading number + noun is still an
-        // ingredient, never a title.
-        const text = '1 medelstor morot\n'
-            'Morotssoppa\n'
-            'Ingredienser:\n'
-            '2 dl grädde\n'
-            '1 lök\n'
-            'Gör så här:\n'
-            'Koka och mixa.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title, isNot(startsWith('1 ')));
-        expect(title.toLowerCase(), isNot(contains('medelstor')));
-      });
+      test(
+        'does not pick a unit-less quantity line ("1 medelstor morot")',
+        () async {
+          // The "no unit at all" case: a leading number + noun is still an
+          // ingredient, never a title.
+          const text =
+              '1 medelstor morot\n'
+              'Morotssoppa\n'
+              'Ingredienser:\n'
+              '2 dl grädde\n'
+              '1 lök\n'
+              'Gör så här:\n'
+              'Koka och mixa.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title, isNot(startsWith('1 ')));
+          expect(title.toLowerCase(), isNot(contains('medelstor')));
+        },
+      );
 
-      test('does not pick an ALL-CAPS section label ("SOM TILLBEHÖR")',
-          () async {
-        // Cookbook labels are set in caps; real titles are Title-Case.
-        const text = 'SOM TILLBEHÖR\n'
-            'Rotmos\n'
-            'Ingredienser:\n'
-            '500 g potatis\n'
-            '200 g kålrot\n'
-            'Gör så här:\n'
-            'Koka och mosa.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title.toLowerCase(), isNot(contains('tillbehör')));
-      });
+      test(
+        'does not pick an ALL-CAPS section label ("SOM TILLBEHÖR")',
+        () async {
+          // Cookbook labels are set in caps; real titles are Title-Case.
+          const text =
+              'SOM TILLBEHÖR\n'
+              'Rotmos\n'
+              'Ingredienser:\n'
+              '500 g potatis\n'
+              '200 g kålrot\n'
+              'Gör så här:\n'
+              'Koka och mosa.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title.toLowerCase(), isNot(contains('tillbehör')));
+        },
+      );
 
-      test('does not pick a "ca N" quantity line ("ca 8 tilapiafiléer")',
-          () async {
-        const text = 'ca 8 tilapiafiléer\n'
-            'Ugnsfisk\n'
-            'Ingredienser:\n'
-            '2 dl grädde\n'
-            '1 citron\n'
-            'Gör så här:\n'
-            'Grädda i ugn.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title.toLowerCase(), isNot(contains('tilapia')));
-      });
+      test(
+        'does not pick a "ca N" quantity line ("ca 8 tilapiafiléer")',
+        () async {
+          const text =
+              'ca 8 tilapiafiléer\n'
+              'Ugnsfisk\n'
+              'Ingredienser:\n'
+              '2 dl grädde\n'
+              '1 citron\n'
+              'Gör så här:\n'
+              'Grädda i ugn.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title.toLowerCase(), isNot(contains('tilapia')));
+        },
+      );
 
-      test('rejects a quantity line even when OCR mangled the unit ("2 di")',
-          () async {
-        // "2 di boveteflingor" — OCR misread dl→di; corrected before the guard
-        // so it's still recognised as a measurement and rejected as a title.
-        const text = '2 di boveteflingor\n'
-            'Frukostgröt\n'
-            'Ingredienser:\n'
-            '3 dl havremjölk\n'
-            '1 äpple\n'
-            'Gör så här:\n'
-            'Koka ihop.';
-        final result = await strategy.import(text);
-        final title = result.recipe?.title ?? '';
-        expect(title.toLowerCase(), isNot(contains('boveteflingor')));
-      });
+      test(
+        'rejects a quantity line even when OCR mangled the unit ("2 di")',
+        () async {
+          // "2 di boveteflingor" — OCR misread dl→di; corrected before the guard
+          // so it's still recognised as a measurement and rejected as a title.
+          const text =
+              '2 di boveteflingor\n'
+              'Frukostgröt\n'
+              'Ingredienser:\n'
+              '3 dl havremjölk\n'
+              '1 äpple\n'
+              'Gör så här:\n'
+              'Koka ihop.';
+          final result = await strategy.import(text);
+          final title = result.recipe?.title ?? '';
+          expect(title.toLowerCase(), isNot(contains('boveteflingor')));
+        },
+      );
     });
 
     group('Header-less ingredient extraction (corpus-found)', () {
-      test('OCR-corrects the unit and ignores instruction measurements',
-          () async {
+      test('OCR-corrects the unit and ignores instruction measurements', () async {
         // Header-less column (no "Ingredienser:"). "8 di" is an OCR misread of
         // "8 dl" — must still be captured. The instruction line carries its own
         // "1 dl"/"2 dl" measurements which must NOT become ingredients.
-        const text = '8 di dinkelflingor\n'
+        const text =
+            '8 di dinkelflingor\n'
             '3 dl solrosfrön\n'
             '1 msk salt\n'
             'Grötbas\n'
@@ -155,12 +173,17 @@ void main() {
             .join(' | ')
             .toLowerCase();
 
-        expect(ings, contains('dinkelflingor'),
-            reason: 'di→dl corrected so the measurement matched');
+        expect(
+          ings,
+          contains('dinkelflingor'),
+          reason: 'di→dl corrected so the measurement matched',
+        );
         expect(ings, contains('solrosfrön'));
-        expect(ings, isNot(contains('vatten')),
-            reason:
-                'measurement embedded in an instruction is not an ingredient');
+        expect(
+          ings,
+          isNot(contains('vatten')),
+          reason: 'measurement embedded in an instruction is not an ingredient',
+        );
       });
     });
 
@@ -191,10 +214,16 @@ void main() {
 
         // Act & Assert
         for (final input in validInputs) {
-          expect(strategy.canHandle(input), isTrue,
-              reason: 'Should handle: ${input.split('\n').first}...');
-          expect(strategy.validateInput(input), isTrue,
-              reason: 'Should validate: ${input.split('\n').first}...');
+          expect(
+            strategy.canHandle(input),
+            isTrue,
+            reason: 'Should handle: ${input.split('\n').first}...',
+          );
+          expect(
+            strategy.validateInput(input),
+            isTrue,
+            reason: 'Should validate: ${input.split('\n').first}...',
+          );
         }
       });
 
@@ -209,8 +238,11 @@ void main() {
 
         // Act & Assert
         for (final input in invalidInputs) {
-          expect(strategy.canHandle(input), isFalse,
-              reason: 'Should not handle: $input');
+          expect(
+            strategy.canHandle(input),
+            isFalse,
+            reason: 'Should not handle: $input',
+          );
         }
       });
 
@@ -274,13 +306,13 @@ För såsen:
         // Title extraction takes first non-header line after processing
         // Due to preprocessing, the title might be parsed differently
         expect(
-            recipe.title,
-            anyOf([
-              contains('Köttbullar'),
-              contains(
-                  'köttfärs'), // May extract first ingredient line as title
-              equals('Importerat recept') // Default fallback
-            ]));
+          recipe.title,
+          anyOf([
+            contains('Köttbullar'),
+            contains('köttfärs'), // May extract first ingredient line as title
+            equals('Importerat recept'), // Default fallback
+          ]),
+        );
         // Portions extraction looks for specific patterns - may be null
         if (recipe.portions != null) {
           expect(recipe.portions, equals(4));
@@ -298,10 +330,12 @@ För såsen:
         } else {
           // If ingredients were parsed, check for Swedish content
           expect(
-              recipe.ingredients
-                  .any((i) => i.contains('dl') || i.contains('köttfärs')),
-              isTrue,
-              reason: 'Should have at least some Swedish ingredients');
+            recipe.ingredients.any(
+              (i) => i.contains('dl') || i.contains('köttfärs'),
+            ),
+            isTrue,
+            reason: 'Should have at least some Swedish ingredients',
+          );
         }
 
         // Check instructions parsed - but may fail
@@ -309,7 +343,9 @@ För såsen:
             recipe.instructions[0] == 'Ingen instruktionsinformation') {
           // No instructions were parsed
           expect(
-              recipe.instructions[0], equals('Ingen instruktionsinformation'));
+            recipe.instructions[0],
+            equals('Ingen instruktionsinformation'),
+          );
         } else {
           expect(recipe.instructions, isNotEmpty);
           // May or may not contain specific words depending on parsing
@@ -338,11 +374,14 @@ Ingredienser:
         // Check that at least some Swedish measurements are preserved
         final hasSwedishMeasurements =
             ingredients.any((i) => i.contains('dl')) ||
-                ingredients.any((i) => i.contains('msk')) ||
-                ingredients.any((i) => i.contains('tsk')) ||
-                ingredients.any((i) => i.contains('krm'));
-        expect(hasSwedishMeasurements, isTrue,
-            reason: 'Should have at least one Swedish measurement unit');
+            ingredients.any((i) => i.contains('msk')) ||
+            ingredients.any((i) => i.contains('tsk')) ||
+            ingredients.any((i) => i.contains('krm'));
+        expect(
+          hasSwedishMeasurements,
+          isTrue,
+          reason: 'Should have at least one Swedish measurement unit',
+        );
       });
 
       test('should detect Swedish meal types', () async {
@@ -367,18 +406,21 @@ Ingredienser:
               expect(result.recipe!.mealType, equals('Fika'));
             } else {
               // Other meal types default to 'Lunch' when not detected
-              expect(result.recipe!.mealType,
-                  anyOf([equals(entry.value), equals('Lunch')]),
-                  reason: 'May default to Lunch for: ${entry.key}');
+              expect(
+                result.recipe!.mealType,
+                anyOf([equals(entry.value), equals('Lunch')]),
+                reason: 'May default to Lunch for: ${entry.key}',
+              );
             }
           }
         }
       });
 
-      test('should parse Kroppkakor recipe format correctly - BUG-040 fix',
-          () async {
-        // Arrange - This is the actual failing recipe format from BUG-040
-        const kroppkakorRecipe = '''
+      test(
+        'should parse Kroppkakor recipe format correctly - BUG-040 fix',
+        () async {
+          // Arrange - This is the actual failing recipe format from BUG-040
+          const kroppkakorRecipe = '''
 Kroppkakor av kokt potatis
 
 Ingredienser:
@@ -403,46 +445,71 @@ Instruktioner:
 7. Koka i saltat vatten tills de flyter upp
 ''';
 
-        // Act
-        final result = await strategy.import(kroppkakorRecipe);
+          // Act
+          final result = await strategy.import(kroppkakorRecipe);
 
-        // Assert
-        expect(result.isSuccess, isTrue,
-            reason: 'Recipe parsing should succeed');
-        expect(result.recipe, isNotNull);
+          // Assert
+          expect(
+            result.isSuccess,
+            isTrue,
+            reason: 'Recipe parsing should succeed',
+          );
+          expect(result.recipe, isNotNull);
 
-        final recipe = result.recipe!;
+          final recipe = result.recipe!;
 
-        // Title should be extracted correctly (not an ingredient line)
-        expect(recipe.title, equals('Kroppkakor av kokt potatis'),
-            reason: 'Should extract proper recipe title, not ingredient');
+          // Title should be extracted correctly (not an ingredient line)
+          expect(
+            recipe.title,
+            equals('Kroppkakor av kokt potatis'),
+            reason: 'Should extract proper recipe title, not ingredient',
+          );
 
-        // Should find ingredients (with new 'ingredienser' pattern recognition)
-        expect(
-            recipe.ingredients, isNot(equals(['Ingen ingrediensinformation'])),
+          // Should find ingredients (with new 'ingredienser' pattern recognition)
+          expect(
+            recipe.ingredients,
+            isNot(equals(['Ingen ingrediensinformation'])),
             reason:
-                'Should recognize "Ingredienser:" header and parse ingredients');
-        expect(recipe.ingredients.length, greaterThan(3),
-            reason: 'Should find multiple ingredients from the recipe');
+                'Should recognize "Ingredienser:" header and parse ingredients',
+          );
+          expect(
+            recipe.ingredients.length,
+            greaterThan(3),
+            reason: 'Should find multiple ingredients from the recipe',
+          );
 
-        // Check that some specific ingredients are found
-        final hasPotatoIngredient = recipe.ingredients
-            .any((ingredient) => ingredient.toLowerCase().contains('potatis'));
-        expect(hasPotatoIngredient, isTrue,
-            reason: 'Should find potato ingredient');
+          // Check that some specific ingredients are found
+          final hasPotatoIngredient = recipe.ingredients.any(
+            (ingredient) => ingredient.toLowerCase().contains('potatis'),
+          );
+          expect(
+            hasPotatoIngredient,
+            isTrue,
+            reason: 'Should find potato ingredient',
+          );
 
-        final hasFlourIngredient = recipe.ingredients
-            .any((ingredient) => ingredient.toLowerCase().contains('mjöl'));
-        expect(hasFlourIngredient, isTrue,
-            reason: 'Should find flour ingredient');
+          final hasFlourIngredient = recipe.ingredients.any(
+            (ingredient) => ingredient.toLowerCase().contains('mjöl'),
+          );
+          expect(
+            hasFlourIngredient,
+            isTrue,
+            reason: 'Should find flour ingredient',
+          );
 
-        // Should find instructions
-        expect(recipe.instructions,
+          // Should find instructions
+          expect(
+            recipe.instructions,
             isNot(equals(['Ingen instruktionsinformation'])),
-            reason: 'Should find cooking instructions');
-        expect(recipe.instructions.length, greaterThan(3),
-            reason: 'Should find multiple cooking steps');
-      });
+            reason: 'Should find cooking instructions',
+          );
+          expect(
+            recipe.instructions.length,
+            greaterThan(3),
+            reason: 'Should find multiple cooking steps',
+          );
+        },
+      );
     });
 
     group('Ingredient Extraction', () {
@@ -478,8 +545,8 @@ Ingredients:
           // At least some ingredients should be found
           final foundSomeIngredients =
               ingredients.any((i) => i.contains('flour')) ||
-                  ingredients.any((i) => i.contains('salt')) ||
-                  ingredients.any((i) => i.contains('eggs'));
+              ingredients.any((i) => i.contains('salt')) ||
+              ingredients.any((i) => i.contains('eggs'));
           expect(foundSomeIngredients, isTrue);
         }
       });
@@ -547,10 +614,13 @@ Ingredients:
           // Check that something was extracted
           expect(ingredients.length, greaterThan(0));
           // Fractions might be converted to ½
-          final hasFraction =
-              ingredients.any((i) => i.contains('1/2') || i.contains('½'));
-          expect(hasFraction || ingredients.any((i) => i.contains('pinch')),
-              isTrue);
+          final hasFraction = ingredients.any(
+            (i) => i.contains('1/2') || i.contains('½'),
+          );
+          expect(
+            hasFraction || ingredients.any((i) => i.contains('pinch')),
+            isTrue,
+          );
         }
       });
     });
@@ -624,9 +694,9 @@ Grädda i ugn 200 grader
           // Check for at least one Swedish instruction word
           final hasSwedishInstruction =
               instructions.any((i) => i.contains('Blanda')) ||
-                  instructions.any((i) => i.contains('Vispa')) ||
-                  instructions.any((i) => i.contains('Tillsätt')) ||
-                  instructions.any((i) => i.contains('Grädda'));
+              instructions.any((i) => i.contains('Vispa')) ||
+              instructions.any((i) => i.contains('Tillsätt')) ||
+              instructions.any((i) => i.contains('Grädda'));
           expect(hasSwedishInstruction, isTrue);
         }
       });
@@ -696,10 +766,13 @@ Top with cheese 🔥
         // Ingredients should be cleaned
         for (final ingredient in recipe.ingredients) {
           expect(
-              RegExp(r'[\u{1F300}-\u{1FAD6}]', unicode: true)
-                  .hasMatch(ingredient),
-              isFalse,
-              reason: 'Ingredient should not contain emojis: $ingredient');
+            RegExp(
+              r'[\u{1F300}-\u{1FAD6}]',
+              unicode: true,
+            ).hasMatch(ingredient),
+            isFalse,
+            reason: 'Ingredient should not contain emojis: $ingredient',
+          );
         }
       });
 
@@ -779,9 +852,11 @@ Full recipe: www.blog.com/full-recipe
             // Portions extraction is limited to specific patterns
             // May be null if pattern doesn't match exactly
             if (result.recipe!.portions != null) {
-              expect(result.recipe!.portions, greaterThan(0),
-                  reason:
-                      'Should extract servings from: ${text.split('\n')[1]}');
+              expect(
+                result.recipe!.portions,
+                greaterThan(0),
+                reason: 'Should extract servings from: ${text.split('\n')[1]}',
+              );
             }
           }
         }
@@ -810,8 +885,11 @@ Full recipe: www.blog.com/full-recipe
               expect(totalTime, anyOf([equals(15), equals(30), isNull]));
             } else if (totalTime != null) {
               // For simple time patterns, should match expected
-              expect(totalTime, equals(entry.value),
-                  reason: 'Should extract time from: ${entry.key}');
+              expect(
+                totalTime,
+                equals(entry.value),
+                reason: 'Should extract time from: ${entry.key}',
+              );
             }
           }
         }
@@ -875,7 +953,8 @@ Boil pasta, add sauce, top with cheese, serve hot
 
       test('should handle very long recipe text', () async {
         // Arrange
-        final longText = '''
+        final longText =
+            '''
 Long Recipe Name
 Ingredients:
 ${List.generate(50, (i) => '- Ingredient ${i + 1}').join('\n')}
@@ -960,37 +1039,44 @@ Instructions:
       // the final cleaned strings — index-aligned (raw == ingredients[i]) so
       // the Recipe.structuredIngredients facade getter accepts them, with
       // unparseable lines degrading to raw-only instead of failing the import.
-      test('persists index-aligned structured entries with parsed amounts',
-          () async {
-        const text = 'Pannkakor\n'
-            'Ingredienser:\n'
-            '3 dl vetemjöl\n'
-            '2 ägg\n'
-            'färsk basilika\n'
-            'Gör så här:\n'
-            'Vispa ihop alla ingredienser och stek i smör.';
+      test(
+        'persists index-aligned structured entries with parsed amounts',
+        () async {
+          const text =
+              'Pannkakor\n'
+              'Ingredienser:\n'
+              '3 dl vetemjöl\n'
+              '2 ägg\n'
+              'färsk basilika\n'
+              'Gör så här:\n'
+              'Vispa ihop alla ingredienser och stek i smör.';
 
-        final result = await strategy.import(text);
-        final recipe = result.recipe!;
-        final stored = recipe.core.structuredIngredients;
+          final result = await strategy.import(text);
+          final recipe = result.recipe!;
+          final stored = recipe.core.structuredIngredients;
 
-        expect(stored, isNotNull);
-        expect(stored!.length, recipe.ingredients.length);
-        for (var i = 0; i < stored.length; i++) {
-          expect(stored[i].raw, recipe.ingredients[i],
-              reason: 'entry $i must align with its free-text line');
-        }
-        // Facade getter must return the persisted entries (aligned), not the
-        // raw-only fallback.
-        expect(recipe.structuredIngredients, equals(stored));
+          expect(stored, isNotNull);
+          expect(stored!.length, recipe.ingredients.length);
+          for (var i = 0; i < stored.length; i++) {
+            expect(
+              stored[i].raw,
+              recipe.ingredients[i],
+              reason: 'entry $i must align with its free-text line',
+            );
+          }
+          // Facade getter must return the persisted entries (aligned), not the
+          // raw-only fallback.
+          expect(recipe.structuredIngredients, equals(stored));
 
-        final flour = stored.firstWhere((e) => e.raw.contains('vetemjöl'));
-        expect(flour.amount, 3);
-        expect(flour.unit, 'dl');
-      });
+          final flour = stored.firstWhere((e) => e.raw.contains('vetemjöl'));
+          expect(flour.amount, 3);
+          expect(flour.unit, 'dl');
+        },
+      );
 
       test('unparseable ingredient line degrades to raw-only entry', () async {
-        const text = 'Tomatsallad\n'
+        const text =
+            'Tomatsallad\n'
             'Ingredienser:\n'
             '2 st tomater\n'
             'färsk basilika\n'
@@ -1006,19 +1092,22 @@ Instructions:
         expect(basil.isStructured, isFalse);
       });
 
-      test('no ingredients extracted leaves structuredIngredients null',
-          () async {
-        // Instruction-only text: parse succeeds but ingredient list is empty —
-        // stay legacy (null) rather than persisting an empty list.
-        const text = 'Mystisk rätt\n'
-            'Gör så här:\n'
-            'Blanda allt och servera direkt till gästerna.';
+      test(
+        'no ingredients extracted leaves structuredIngredients null',
+        () async {
+          // Instruction-only text: parse succeeds but ingredient list is empty —
+          // stay legacy (null) rather than persisting an empty list.
+          const text =
+              'Mystisk rätt\n'
+              'Gör så här:\n'
+              'Blanda allt och servera direkt till gästerna.';
 
-        final result = await strategy.import(text);
+          final result = await strategy.import(text);
 
-        expect(result.recipe!.ingredients, isEmpty);
-        expect(result.recipe!.core.structuredIngredients, isNull);
-      });
+          expect(result.recipe!.ingredients, isEmpty);
+          expect(result.recipe!.core.structuredIngredients, isNull);
+        },
+      );
     });
   });
 }

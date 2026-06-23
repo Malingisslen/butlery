@@ -125,7 +125,7 @@ GoldenResult scoreCase(GoldenCase c, Object actual) {
         failureReason: ok
             ? null
             : 'similarity=${score.toStringAsFixed(4)} < 0.80 '
-                '(expected="${c.expected}" actual="$actual")',
+                  '(expected="${c.expected}" actual="$actual")',
       );
     case 'jaccard':
       final score = _jaccardForEntityLists(actual, c.expected);
@@ -203,8 +203,10 @@ String _normalizeForSimilarity(String s) {
   // Replace any char that is not a Unicode letter, digit, or whitespace
   // with a space, then collapse whitespace. Using \s and a Unicode-aware
   // letter class keeps åäö while dropping punctuation.
-  final stripped =
-      lowered.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), ' ');
+  final stripped = lowered.replaceAll(
+    RegExp(r'[^\p{L}\p{N}\s]', unicode: true),
+    ' ',
+  );
   return stripped.trim().replaceAll(RegExp(r'\s+'), ' ');
 }
 

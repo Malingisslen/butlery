@@ -55,17 +55,21 @@ void main() {
           text: 'Great recipe!',
         );
 
-        when(() => mockCommentsRepo.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            )).thenAnswer((_) async => comment);
+        when(
+          () => mockCommentsRepo.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+          ),
+        ).thenAnswer((_) async => comment);
 
-        when(() => mockAnalytics.logCommentCreated(
-              recipeId: any(named: 'recipeId'),
-              commentLength: any(named: 'commentLength'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAnalytics.logCommentCreated(
+            recipeId: any(named: 'recipeId'),
+            commentLength: any(named: 'commentLength'),
+          ),
+        ).thenAnswer((_) async {});
 
         final result = await crud.createComment(
           recipeId: 'r1',
@@ -75,12 +79,14 @@ void main() {
         );
 
         expect(result, 'c1');
-        verify(() => mockCommentsRepo.addComment(
-              recipeId: 'r1',
-              userId: 'u1',
-              content: 'Great recipe!',
-              parentCommentId: null,
-            )).called(1);
+        verify(
+          () => mockCommentsRepo.addComment(
+            recipeId: 'r1',
+            userId: 'u1',
+            content: 'Great recipe!',
+            parentCommentId: null,
+          ),
+        ).called(1);
       });
 
       test('trims content before saving', () async {
@@ -92,17 +98,21 @@ void main() {
           text: 'Trimmed',
         );
 
-        when(() => mockCommentsRepo.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            )).thenAnswer((_) async => comment);
+        when(
+          () => mockCommentsRepo.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+          ),
+        ).thenAnswer((_) async => comment);
 
-        when(() => mockAnalytics.logCommentCreated(
-              recipeId: any(named: 'recipeId'),
-              commentLength: any(named: 'commentLength'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAnalytics.logCommentCreated(
+            recipeId: any(named: 'recipeId'),
+            commentLength: any(named: 'commentLength'),
+          ),
+        ).thenAnswer((_) async {});
 
         await crud.createComment(
           recipeId: 'r1',
@@ -111,12 +121,14 @@ void main() {
           authorDisplayName: 'Anna',
         );
 
-        verify(() => mockCommentsRepo.addComment(
-              recipeId: 'r1',
-              userId: 'u1',
-              content: 'Trimmed',
-              parentCommentId: null,
-            )).called(1);
+        verify(
+          () => mockCommentsRepo.addComment(
+            recipeId: 'r1',
+            userId: 'u1',
+            content: 'Trimmed',
+            parentCommentId: null,
+          ),
+        ).called(1);
       });
 
       test('throws on empty content', () async {
@@ -141,17 +153,21 @@ void main() {
           parentCommentId: 'parent-1',
         );
 
-        when(() => mockCommentsRepo.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            )).thenAnswer((_) async => reply);
+        when(
+          () => mockCommentsRepo.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+          ),
+        ).thenAnswer((_) async => reply);
 
-        when(() => mockAnalytics.logCommentCreated(
-              recipeId: any(named: 'recipeId'),
-              commentLength: any(named: 'commentLength'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAnalytics.logCommentCreated(
+            recipeId: any(named: 'recipeId'),
+            commentLength: any(named: 'commentLength'),
+          ),
+        ).thenAnswer((_) async {});
 
         final result = await crud.createComment(
           recipeId: 'r1',
@@ -185,8 +201,9 @@ void main() {
           createdAt: DateTime(2024, 1, 2),
         );
 
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenAnswer((_) async => [reply, parent]);
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenAnswer((_) async => [reply, parent]);
 
         final comments = await crud.getComments(recipeId: 'r1');
 
@@ -209,8 +226,9 @@ void main() {
           ),
         );
 
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenAnswer((_) async => comments);
 
         final result = await crud.getComments(recipeId: 'r1', limit: 5);
         expect(result.length, 5);
@@ -236,8 +254,9 @@ void main() {
           ),
         ];
 
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenAnswer((_) async => comments);
 
         final result = await crud.getComments(
           recipeId: 'r1',
@@ -249,8 +268,9 @@ void main() {
       });
 
       test('returns empty list on error', () async {
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenThrow(Exception('DB error'));
 
         final result = await crud.getComments(recipeId: 'r1');
         expect(result, isEmpty);
@@ -259,8 +279,9 @@ void main() {
 
     group('editComment', () {
       test('edits comment successfully', () async {
-        when(() => mockCommentsRepo.updateComment(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCommentsRepo.updateComment(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await crud.editComment(
           commentId: 'c1',
@@ -269,13 +290,15 @@ void main() {
         );
 
         expect(result, isTrue);
-        verify(() => mockCommentsRepo.updateComment('c1', 'Updated text'))
-            .called(1);
+        verify(
+          () => mockCommentsRepo.updateComment('c1', 'Updated text'),
+        ).called(1);
       });
 
       test('trims content before editing', () async {
-        when(() => mockCommentsRepo.updateComment(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCommentsRepo.updateComment(any(), any()),
+        ).thenAnswer((_) async {});
 
         await crud.editComment(
           commentId: 'c1',
@@ -298,8 +321,9 @@ void main() {
       });
 
       test('returns false on error', () async {
-        when(() => mockCommentsRepo.updateComment(any(), any()))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockCommentsRepo.updateComment(any(), any()),
+        ).thenThrow(Exception('DB error'));
 
         final result = await crud.editComment(
           commentId: 'c1',
@@ -313,8 +337,9 @@ void main() {
 
     group('deleteComment', () {
       test('deletes comment successfully', () async {
-        when(() => mockCommentsRepo.deleteComment(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCommentsRepo.deleteComment(any()),
+        ).thenAnswer((_) async {});
 
         final result = await crud.deleteComment(
           commentId: 'c1',
@@ -327,8 +352,9 @@ void main() {
       });
 
       test('returns false on error', () async {
-        when(() => mockCommentsRepo.deleteComment(any()))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockCommentsRepo.deleteComment(any()),
+        ).thenThrow(Exception('DB error'));
 
         final result = await crud.deleteComment(
           commentId: 'c1',
@@ -350,8 +376,9 @@ void main() {
           text: 'Hello',
         );
 
-        when(() => mockCommentsRepo.read('c1'))
-            .thenAnswer((_) async => comment);
+        when(
+          () => mockCommentsRepo.read('c1'),
+        ).thenAnswer((_) async => comment);
 
         final result = await crud.getCommentById(commentId: 'c1');
         expect(result, isNotNull);
@@ -359,16 +386,18 @@ void main() {
       });
 
       test('returns null when not found', () async {
-        when(() => mockCommentsRepo.read('missing'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockCommentsRepo.read('missing'),
+        ).thenAnswer((_) async => null);
 
         final result = await crud.getCommentById(commentId: 'missing');
         expect(result, isNull);
       });
 
       test('returns null on error', () async {
-        when(() => mockCommentsRepo.read('c1'))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockCommentsRepo.read('c1'),
+        ).thenThrow(Exception('DB error'));
 
         final result = await crud.getCommentById(commentId: 'c1');
         expect(result, isNull);
@@ -394,16 +423,18 @@ void main() {
           ),
         ];
 
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenAnswer((_) async => comments);
 
         final count = await crud.getCommentCount(recipeId: 'r1');
         expect(count, 2);
       });
 
       test('returns 0 on error', () async {
-        when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockCommentsRepo.getCommentsForRecipe('r1'),
+        ).thenThrow(Exception('DB error'));
 
         final count = await crud.getCommentCount(recipeId: 'r1');
         expect(count, 0);
@@ -432,8 +463,9 @@ void main() {
           ),
         ];
 
-        when(() => mockCommentsRepo.getCommentsStream('r1'))
-            .thenAnswer((_) => Stream.value(comments));
+        when(
+          () => mockCommentsRepo.getCommentsStream('r1'),
+        ).thenAnswer((_) => Stream.value(comments));
 
         final stream = crud.createCommentStream(recipeId: 'r1');
         final result = await stream.first;
@@ -567,17 +599,21 @@ void main() {
         text: 'Test comment',
       );
 
-      when(() => mockCommentsRepo.addComment(
-            recipeId: any(named: 'recipeId'),
-            userId: any(named: 'userId'),
-            content: any(named: 'content'),
-            parentCommentId: any(named: 'parentCommentId'),
-          )).thenAnswer((_) async => comment);
+      when(
+        () => mockCommentsRepo.addComment(
+          recipeId: any(named: 'recipeId'),
+          userId: any(named: 'userId'),
+          content: any(named: 'content'),
+          parentCommentId: any(named: 'parentCommentId'),
+        ),
+      ).thenAnswer((_) async => comment);
 
-      when(() => mockAnalytics.logCommentCreated(
-            recipeId: any(named: 'recipeId'),
-            commentLength: any(named: 'commentLength'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.logCommentCreated(
+          recipeId: any(named: 'recipeId'),
+          commentLength: any(named: 'commentLength'),
+        ),
+      ).thenAnswer((_) async {});
 
       // getCommentById is called after creation for notifications
       when(() => mockCommentsRepo.read(any())).thenAnswer((_) async => comment);
@@ -591,8 +627,9 @@ void main() {
     });
 
     test('getComments delegates to crud operations', () async {
-      when(() => mockCommentsRepo.getCommentsForRecipe('r1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockCommentsRepo.getCommentsForRecipe('r1'),
+      ).thenAnswer((_) async => []);
 
       final result = await manager.getComments(recipeId: 'r1');
       expect(result, isEmpty);

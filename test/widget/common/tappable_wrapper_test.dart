@@ -20,27 +20,29 @@ void main() {
     });
 
     testWidgets(
-        'enforces minimum 48x48dp hit region even when the child is smaller',
-        (tester) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Center(
-            child: TappableWrapper(
-              onTap: () {},
-              semanticLabel: 'Test action',
-              child: const Icon(Icons.info_outline, size: 14),
+      'enforces minimum 48x48dp hit region even when the child is smaller',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Center(
+              child: TappableWrapper(
+                onTap: () {},
+                semanticLabel: 'Test action',
+                child: const Icon(Icons.info_outline, size: 14),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final size = tester.getSize(find.byType(TappableWrapper));
-      expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-      expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-    });
+        final size = tester.getSize(find.byType(TappableWrapper));
+        expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+        expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+      },
+    );
 
-    testWidgets('exposes the semantic label as a button to screen readers',
-        (tester) async {
+    testWidgets('exposes the semantic label as a button to screen readers', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: TappableWrapper(
@@ -77,8 +79,9 @@ void main() {
       expect(taps, 1);
     });
 
-    testWidgets('invokes onLongPress when the hit region is long-pressed',
-        (tester) async {
+    testWidgets('invokes onLongPress when the hit region is long-pressed', (
+      tester,
+    ) async {
       var longPresses = 0;
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -99,8 +102,7 @@ void main() {
       expect(longPresses, 1);
     });
 
-    testWidgets(
-        'disables tap callback and announces disabled state when '
+    testWidgets('disables tap callback and announces disabled state when '
         'enabled is false', (tester) async {
       var taps = 0;
       await tester.pumpWidget(

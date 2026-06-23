@@ -46,8 +46,9 @@ void main() {
     return selection;
   }
 
-  testWidgets('long-press enters selection and shows the selection circle',
-      (tester) async {
+  testWidgets('long-press enters selection and shows the selection circle', (
+    tester,
+  ) async {
     final selection = await pumpTile(tester);
 
     await tester.longPress(find.byType(InkWell).first);
@@ -61,8 +62,9 @@ void main() {
     expect(find.byIcon(Icons.drag_handle), findsNothing);
   });
 
-  testWidgets('tapping the only selected row exits selection mode',
-      (tester) async {
+  testWidgets('tapping the only selected row exits selection mode', (
+    tester,
+  ) async {
     final selection = await pumpTile(tester);
     selection.enterSelectionMode('s_1');
     await tester.pumpAndSettle();
@@ -73,8 +75,9 @@ void main() {
     expect(selection.isSelectionMode, isFalse);
   });
 
-  testWidgets('normal tap checks off (not select) when not in selection mode',
-      (tester) async {
+  testWidgets('normal tap checks off (not select) when not in selection mode', (
+    tester,
+  ) async {
     var tapped = false;
     final selection = ShoppingSelectionManager();
     await tester.pumpWidget(

@@ -59,8 +59,9 @@ void main() {
       syncTimer = null;
 
       // Setup mock repository behavior
-      when(() => mockRecipeRepository.update(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockRecipeRepository.update(any()),
+      ).thenAnswer((_) async => {});
     });
 
     tearDown(() async {
@@ -135,7 +136,9 @@ void main() {
 
         // Assert
         expect(
-            firstTimer!.isActive, isFalse); // First timer should be cancelled
+          firstTimer!.isActive,
+          isFalse,
+        ); // First timer should be cancelled
         expect(syncTimer!.isActive, isTrue); // New timer should be active
         expect(pendingSyncIds.length, equals(2));
 
@@ -164,9 +167,15 @@ void main() {
         // Assert
         expect(pendingSyncIds.length, equals(5));
         expect(
-            pendingSyncIds,
-            containsAll(
-                ['recipe_0', 'recipe_1', 'recipe_2', 'recipe_3', 'recipe_4']));
+          pendingSyncIds,
+          containsAll([
+            'recipe_0',
+            'recipe_1',
+            'recipe_2',
+            'recipe_3',
+            'recipe_4',
+          ]),
+        );
 
         // Wait for final debounce
         await Future.delayed(const Duration(milliseconds: 150));
@@ -215,16 +224,19 @@ void main() {
         );
 
         // Assert
-        expect(pendingSyncIds.contains('recipe_1'),
-            isTrue); // Should not be cleared
+        expect(
+          pendingSyncIds.contains('recipe_1'),
+          isTrue,
+        ); // Should not be cleared
         verifyNever(() => mockRecipeRepository.update(any()));
       });
 
       test('should re-add failed syncs to pending', () async {
         // Arrange
         pendingSyncIds.add('recipe_1');
-        when(() => mockRecipeRepository.update(any()))
-            .thenThrow(Exception('Sync failed'));
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenThrow(Exception('Sync failed'));
         Future<Recipe?> recipeLoader(String id) async => testRecipe;
 
         // Act
@@ -301,8 +313,9 @@ void main() {
       test('should handle sync errors in batch', () async {
         // Arrange
         final recipeIds = ['recipe_1'];
-        when(() => mockRecipeRepository.update(any()))
-            .thenThrow(Exception('Sync failed'));
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenThrow(Exception('Sync failed'));
         Future<Recipe?> recipeLoader(String id) async => testRecipe;
 
         // Act & Assert
@@ -372,13 +385,16 @@ void main() {
         pendingSyncIds.addAll(['recipe_1', 'recipe_2']);
 
         // Act
-        final status =
-            DebouncedSyncOperations.getPendingSyncStatus(pendingSyncIds);
+        final status = DebouncedSyncOperations.getPendingSyncStatus(
+          pendingSyncIds,
+        );
 
         // Assert
         expect(status['pendingCount'], equals(2));
         expect(
-            status['pendingRecipeIds'], containsAll(['recipe_1', 'recipe_2']));
+          status['pendingRecipeIds'],
+          containsAll(['recipe_1', 'recipe_2']),
+        );
         expect(status['hasPendingSync'], isTrue);
       });
 
@@ -578,17 +594,18 @@ void main() {
 
         // Act - Schedule multiple syncs concurrently
         final futures = List.generate(
-            10,
-            (i) => Future(() {
-                  DebouncedSyncOperations.scheduleSyncForRecipe(
-                    recipeId: 'concurrent_$i',
-                    pendingSyncIds: pendingSyncIds,
-                    getSyncTimer: () => syncTimer,
-                    setSyncTimer: (timer) => syncTimer = timer,
-                    syncDebounce: const Duration(milliseconds: 100),
-                    onSyncPending: () => syncCount++,
-                  );
-                }));
+          10,
+          (i) => Future(() {
+            DebouncedSyncOperations.scheduleSyncForRecipe(
+              recipeId: 'concurrent_$i',
+              pendingSyncIds: pendingSyncIds,
+              getSyncTimer: () => syncTimer,
+              setSyncTimer: (timer) => syncTimer = timer,
+              syncDebounce: const Duration(milliseconds: 100),
+              onSyncPending: () => syncCount++,
+            );
+          }),
+        );
 
         await Future.wait(futures);
 
@@ -656,8 +673,10 @@ void main() {
 
         // Assert
         verify(() => mockRecipeRepository.update(any())).called(100);
-        expect(stopwatch.elapsedMilliseconds,
-            lessThan(5000)); // Should complete within 5 seconds
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(5000),
+        ); // Should complete within 5 seconds
       });
     });
   });

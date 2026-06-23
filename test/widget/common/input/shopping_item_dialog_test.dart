@@ -80,8 +80,9 @@ void main() {
     );
 
     group('Basic Rendering', () {
-      testWidgets('renders add mode when no initial item',
-          (WidgetTester tester) async {
+      testWidgets('renders add mode when no initial item', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -91,13 +92,16 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('renders edit mode when initial item provided',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createDialogApp(
-          child: Scaffold(
-            body: AddUnifiedShoppingItemDialog(initialItem: testItem),
+      testWidgets('renders edit mode when initial item provided', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createDialogApp(
+            child: Scaffold(
+              body: AddUnifiedShoppingItemDialog(initialItem: testItem),
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit), findsOneWidget);
@@ -125,8 +129,9 @@ void main() {
     });
 
     group('Form Initialization', () {
-      testWidgets('empty name and default amount for new item',
-          (WidgetTester tester) async {
+      testWidgets('empty name and default amount for new item', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -142,11 +147,13 @@ void main() {
       });
 
       testWidgets('populates fields for editing', (WidgetTester tester) async {
-        await tester.pumpWidget(createDialogApp(
-          child: Scaffold(
-            body: AddUnifiedShoppingItemDialog(initialItem: testItem),
+        await tester.pumpWidget(
+          createDialogApp(
+            child: Scaffold(
+              body: AddUnifiedShoppingItemDialog(initialItem: testItem),
+            ),
           ),
-        ));
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Mj\u00f6lk'), findsOneWidget);
@@ -177,8 +184,9 @@ void main() {
         expect(find.text('2.5'), findsOneWidget);
       });
 
-      testWidgets('handles unit dropdown selection',
-          (WidgetTester tester) async {
+      testWidgets('handles unit dropdown selection', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -201,8 +209,9 @@ void main() {
     });
 
     group('Form Validation', () {
-      testWidgets('prevents submit with empty name',
-          (WidgetTester tester) async {
+      testWidgets('prevents submit with empty name', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -216,8 +225,9 @@ void main() {
         expect(find.byType(AlertDialog), findsOneWidget);
       });
 
-      testWidgets('accepts valid input and closes dialog',
-          (WidgetTester tester) async {
+      testWidgets('accepts valid input and closes dialog', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -236,13 +246,16 @@ void main() {
     });
 
     group('Form Submission', () {
-      testWidgets('creates new item with correct data',
-          (WidgetTester tester) async {
+      testWidgets('creates new item with correct data', (
+        WidgetTester tester,
+      ) async {
         UnifiedShoppingItem? resultItem;
 
-        await tester.pumpWidget(createDialogLauncher(
-          onResult: (item) => resultItem = item,
-        ));
+        await tester.pumpWidget(
+          createDialogLauncher(
+            onResult: (item) => resultItem = item,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Open dialog
@@ -268,14 +281,17 @@ void main() {
         expect(resultItem!.bought, isFalse);
       });
 
-      testWidgets('updates existing item preserving unchanged fields',
-          (WidgetTester tester) async {
+      testWidgets('updates existing item preserving unchanged fields', (
+        WidgetTester tester,
+      ) async {
         UnifiedShoppingItem? resultItem;
 
-        await tester.pumpWidget(createDialogLauncher(
-          initialItem: testItem,
-          onResult: (item) => resultItem = item,
-        ));
+        await tester.pumpWidget(
+          createDialogLauncher(
+            initialItem: testItem,
+            onResult: (item) => resultItem = item,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Open dialog
@@ -298,13 +314,16 @@ void main() {
         expect(resultItem!.id, equals(testItem.id));
       });
 
-      testWidgets('handles comma decimal separator',
-          (WidgetTester tester) async {
+      testWidgets('handles comma decimal separator', (
+        WidgetTester tester,
+      ) async {
         UnifiedShoppingItem? resultItem;
 
-        await tester.pumpWidget(createDialogLauncher(
-          onResult: (item) => resultItem = item,
-        ));
+        await tester.pumpWidget(
+          createDialogLauncher(
+            onResult: (item) => resultItem = item,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Open dialog
@@ -332,12 +351,14 @@ void main() {
         UnifiedShoppingItem? resultItem;
         bool callbackFired = false;
 
-        await tester.pumpWidget(createDialogLauncher(
-          onResult: (item) {
-            resultItem = item;
-            callbackFired = true;
-          },
-        ));
+        await tester.pumpWidget(
+          createDialogLauncher(
+            onResult: (item) {
+              resultItem = item;
+              callbackFired = true;
+            },
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Open dialog
@@ -369,8 +390,9 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('amount and unit fields use correct flex ratios',
-          (WidgetTester tester) async {
+      testWidgets('amount and unit fields use correct flex ratios', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -393,8 +415,9 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('handles mount safety in dropdown callbacks',
-          (WidgetTester tester) async {
+      testWidgets('handles mount safety in dropdown callbacks', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
@@ -409,8 +432,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('disposes controllers without error',
-          (WidgetTester tester) async {
+      testWidgets('disposes controllers without error', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 

@@ -23,8 +23,10 @@ void main() {
         expect(MessageType.text.displayName, equals('Textmeddelande'));
         expect(MessageType.recipeShare.displayName, equals('Receptdelning'));
         expect(MessageType.menuShare.displayName, equals('Menydelning'));
-        expect(MessageType.shoppingListShare.displayName,
-            equals('Inköpslistedelning'));
+        expect(
+          MessageType.shoppingListShare.displayName,
+          equals('Inköpslistedelning'),
+        );
         expect(MessageType.system.displayName, equals('Systemmeddelande'));
         expect(MessageType.image.displayName, equals('Bild'));
         expect(MessageType.voice.displayName, equals('Röstmeddelande'));
@@ -105,8 +107,10 @@ void main() {
         ];
 
         for (int i = 0; i < progressionOrder.length - 1; i++) {
-          expect(progressionOrder[i].index,
-              lessThan(progressionOrder[i + 1].index));
+          expect(
+            progressionOrder[i].index,
+            lessThan(progressionOrder[i + 1].index),
+          );
         }
 
         // Failed is separate from the progression
@@ -120,10 +124,14 @@ void main() {
         for (final type in MessageType.values) {
           final displayName = type.displayName;
           // Check for common Swedish patterns
-          expect(displayName,
-              isNot(contains('Share'))); // Should not contain English
-          expect(displayName,
-              isNot(contains('Message'))); // Should not contain English
+          expect(
+            displayName,
+            isNot(contains('Share')),
+          ); // Should not contain English
+          expect(
+            displayName,
+            isNot(contains('Message')),
+          ); // Should not contain English
         }
       });
 
@@ -132,12 +140,18 @@ void main() {
         for (final status in MessageStatus.values) {
           final displayName = status.displayName;
           // Check for Swedish patterns
-          expect(displayName,
-              isNot(contains('Send'))); // Should not contain English
-          expect(displayName,
-              isNot(contains('Read'))); // Should not contain English
-          expect(displayName,
-              isNot(contains('Delivered'))); // Should not contain English
+          expect(
+            displayName,
+            isNot(contains('Send')),
+          ); // Should not contain English
+          expect(
+            displayName,
+            isNot(contains('Read')),
+          ); // Should not contain English
+          expect(
+            displayName,
+            isNot(contains('Delivered')),
+          ); // Should not contain English
         }
       });
 
@@ -148,8 +162,9 @@ void main() {
       });
 
       test('should have unique icons for each status', () {
-        final icons =
-            MessageStatus.values.map((status) => status.icon).toList();
+        final icons = MessageStatus.values
+            .map((status) => status.icon)
+            .toList();
         final uniqueIcons = icons.toSet();
         expect(uniqueIcons.length, equals(icons.length));
       });

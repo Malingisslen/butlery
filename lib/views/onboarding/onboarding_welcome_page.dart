@@ -18,8 +18,9 @@ class OnboardingWelcomePage extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingXl,
+          ),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(

@@ -33,10 +33,12 @@ void main() {
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
       analytics = _MockAnalyticsService();
-      when(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
       service = OnboardingProgressService(
         firestore: fakeFirestore,
         analytics: analytics,
@@ -51,50 +53,56 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test('readProgress returns empty snapshot when doc does not exist',
-        () async {
-      final progress = await service.readProgress(uid);
+    test(
+      'readProgress returns empty snapshot when doc does not exist',
+      () async {
+        final progress = await service.readProgress(uid);
 
-      expect(progress.hasProgress, isFalse);
-      expect(progress.lastCompletedStep, isNull);
-      expect(progress.completed, isFalse);
-    });
+        expect(progress.hasProgress, isFalse);
+        expect(progress.lastCompletedStep, isNull);
+        expect(progress.completed, isFalse);
+      },
+    );
 
-    test('markStepComplete writes the step and completed=false on intermediate',
-        () async {
-      await service.markStepComplete(
-        userId: uid,
-        step: OnboardingStep.allergens,
-        isFinalStep: false,
-      );
+    test(
+      'markStepComplete writes the step and completed=false on intermediate',
+      () async {
+        await service.markStepComplete(
+          userId: uid,
+          step: OnboardingStep.allergens,
+          isFinalStep: false,
+        );
 
-      final snap = await fakeFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('onboarding')
-          .doc('progress')
-          .get();
+        final snap = await fakeFirestore
+            .collection('users')
+            .doc(uid)
+            .collection('onboarding')
+            .doc('progress')
+            .get();
 
-      expect(snap.exists, isTrue);
-      final data = snap.data()!;
-      expect(data['step'], equals('allergens'));
-      expect(data['completed'], isFalse);
-      // FakeFirebaseFirestore resolves serverTimestamp() to a real Timestamp.
-      expect(data['completedAt'], isA<Timestamp>());
-    });
+        expect(snap.exists, isTrue);
+        final data = snap.data()!;
+        expect(data['step'], equals('allergens'));
+        expect(data['completed'], isFalse);
+        // FakeFirebaseFirestore resolves serverTimestamp() to a real Timestamp.
+        expect(data['completedAt'], isA<Timestamp>());
+      },
+    );
 
-    test('markStepComplete with isFinalStep=true sets completed=true',
-        () async {
-      await service.markStepComplete(
-        userId: uid,
-        step: OnboardingStep.firstRecipe,
-        isFinalStep: true,
-      );
+    test(
+      'markStepComplete with isFinalStep=true sets completed=true',
+      () async {
+        await service.markStepComplete(
+          userId: uid,
+          step: OnboardingStep.firstRecipe,
+          isFinalStep: true,
+        );
 
-      final progress = await service.readProgress(uid);
-      expect(progress.completed, isTrue);
-      expect(progress.lastCompletedStep, OnboardingStep.firstRecipe);
-    });
+        final progress = await service.readProgress(uid);
+        expect(progress.completed, isTrue);
+        expect(progress.lastCompletedStep, OnboardingStep.firstRecipe);
+      },
+    );
 
     test('readProgress round-trips a previously-written step', () async {
       await service.markStepComplete(
@@ -211,33 +219,43 @@ void main() {
     });
 
     group('analytics events', () {
-      test('logResumed emits onboarding_resumed with last_step parameter',
-          () async {
-        await service.logResumed(lastStep: OnboardingStep.allergens);
+      test(
+        'logResumed emits onboarding_resumed with last_step parameter',
+        () async {
+          await service.logResumed(lastStep: OnboardingStep.allergens);
 
-        verify(() => analytics.logEvent(
+          verify(
+            () => analytics.logEvent(
               name: AnalyticsEvents.onboardingResumed,
               parameters: {'last_step': 'allergens'},
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
-      test('logAbandoned emits onboarding_abandoned with last_step parameter',
-          () async {
-        await service.logAbandoned(lastStep: OnboardingStep.dietary);
+      test(
+        'logAbandoned emits onboarding_abandoned with last_step parameter',
+        () async {
+          await service.logAbandoned(lastStep: OnboardingStep.dietary);
 
-        verify(() => analytics.logEvent(
+          verify(
+            () => analytics.logEvent(
               name: AnalyticsEvents.onboardingAbandoned,
               parameters: {'last_step': 'dietary'},
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('logResumed with null step emits last_step=none', () async {
         await service.logResumed(lastStep: null);
 
-        verify(() => analytics.logEvent(
-              name: AnalyticsEvents.onboardingResumed,
-              parameters: {'last_step': 'none'},
-            )).called(1);
+        verify(
+          () => analytics.logEvent(
+            name: AnalyticsEvents.onboardingResumed,
+            parameters: {'last_step': 'none'},
+          ),
+        ).called(1);
       });
     });
 

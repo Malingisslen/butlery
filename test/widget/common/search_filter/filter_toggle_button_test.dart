@@ -38,8 +38,9 @@ void main() {
     });
 
     group('Basic Rendering', () {
-      testWidgets('should render with required properties',
-          (WidgetTester tester) async {
+      testWidgets('should render with required properties', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -79,8 +80,9 @@ void main() {
     });
 
     group('Filter State - Hidden', () {
-      testWidgets('should display textMedium color when filters hidden',
-          (WidgetTester tester) async {
+      testWidgets('should display textMedium color when filters hidden', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -98,8 +100,9 @@ void main() {
         expect(icon.color, AppColors.textMedium);
       });
 
-      testWidgets('should show Swedish tooltip for hidden state',
-          (WidgetTester tester) async {
+      testWidgets('should show Swedish tooltip for hidden state', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -119,8 +122,9 @@ void main() {
     });
 
     group('Filter State - Shown', () {
-      testWidgets('should display forestGreen color when filters shown',
-          (WidgetTester tester) async {
+      testWidgets('should display forestGreen color when filters shown', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -138,8 +142,9 @@ void main() {
         expect(icon.color, AppColors.forestGreen);
       });
 
-      testWidgets('should show Swedish tooltip for shown state',
-          (WidgetTester tester) async {
+      testWidgets('should show Swedish tooltip for shown state', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -162,12 +167,13 @@ void main() {
       // Scope Positioned search to within FilterToggleButton to avoid
       // picking up Positioned widgets from the theme's badge/tooltip layers.
       Finder findIndicator() => find.descendant(
-            of: find.byType(FilterToggleButton),
-            matching: find.byType(Positioned),
-          );
+        of: find.byType(FilterToggleButton),
+        matching: find.byType(Positioned),
+      );
 
-      testWidgets('should not show indicator when no active filters',
-          (WidgetTester tester) async {
+      testWidgets('should not show indicator when no active filters', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -185,59 +191,64 @@ void main() {
       });
 
       testWidgets(
-          'should show indicator when has active filters and filters hidden',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          _buildApp(
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: false,
-                hasActiveFilters: true,
-                onToggle: () {},
+        'should show indicator when has active filters and filters hidden',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildApp(
+              home: Scaffold(
+                body: FilterToggleButton(
+                  showFilters: false,
+                  hasActiveFilters: true,
+                  onToggle: () {},
+                ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        expect(findIndicator(), findsOneWidget);
+          expect(findIndicator(), findsOneWidget);
 
-        // Find the indicator container with secondary (rust) color from theme
-        final containers = tester.widgetList<Container>(find.descendant(
-          of: find.byType(FilterToggleButton),
-          matching: find.byType(Container),
-        ));
-        final hasCircleIndicator = containers.any((container) {
-          if (container.decoration is BoxDecoration) {
-            final decoration = container.decoration as BoxDecoration;
-            return decoration.shape == BoxShape.circle;
-          }
-          return false;
-        });
-        expect(hasCircleIndicator, true);
-      });
+          // Find the indicator container with secondary (rust) color from theme
+          final containers = tester.widgetList<Container>(
+            find.descendant(
+              of: find.byType(FilterToggleButton),
+              matching: find.byType(Container),
+            ),
+          );
+          final hasCircleIndicator = containers.any((container) {
+            if (container.decoration is BoxDecoration) {
+              final decoration = container.decoration as BoxDecoration;
+              return decoration.shape == BoxShape.circle;
+            }
+            return false;
+          });
+          expect(hasCircleIndicator, true);
+        },
+      );
 
       testWidgets(
-          'should not show indicator when has active filters but filters shown',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          _buildApp(
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: true,
-                hasActiveFilters: true,
-                onToggle: () {},
+        'should not show indicator when has active filters but filters shown',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildApp(
+              home: Scaffold(
+                body: FilterToggleButton(
+                  showFilters: true,
+                  hasActiveFilters: true,
+                  onToggle: () {},
+                ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        expect(findIndicator(), findsNothing);
-      });
+          expect(findIndicator(), findsNothing);
+        },
+      );
 
-      testWidgets('should position indicator correctly',
-          (WidgetTester tester) async {
+      testWidgets('should position indicator correctly', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -258,8 +269,9 @@ void main() {
     });
 
     group('Interaction', () {
-      testWidgets('should call onToggle when tapped',
-          (WidgetTester tester) async {
+      testWidgets('should call onToggle when tapped', (
+        WidgetTester tester,
+      ) async {
         bool toggled = false;
 
         await tester.pumpWidget(
@@ -281,8 +293,9 @@ void main() {
         expect(toggled, true);
       });
 
-      testWidgets('should respond to multiple taps',
-          (WidgetTester tester) async {
+      testWidgets('should respond to multiple taps', (
+        WidgetTester tester,
+      ) async {
         int tapCount = 0;
 
         await tester.pumpWidget(
@@ -336,8 +349,9 @@ void main() {
         expect(tapCount, 3);
       });
 
-      testWidgets('should show ripple effect on tap',
-          (WidgetTester tester) async {
+      testWidgets('should show ripple effect on tap', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -399,56 +413,59 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets('should use theme primary color when shown with custom theme',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          _buildApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                primary: Colors.purple,
+      testWidgets(
+        'should use theme primary color when shown with custom theme',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildApp(
+              theme: ThemeData(
+                colorScheme: const ColorScheme.light().copyWith(
+                  primary: Colors.purple,
+                ),
+              ),
+              home: Scaffold(
+                body: FilterToggleButton(
+                  showFilters: true,
+                  hasActiveFilters: false,
+                  onToggle: () {},
+                ),
               ),
             ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: true,
-                hasActiveFilters: false,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Widget uses cs.primary from the theme
-        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-        expect(icon.color, Colors.purple);
-      });
+          // Widget uses cs.primary from the theme
+          final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+          expect(icon.color, Colors.purple);
+        },
+      );
 
       testWidgets(
-          'should use theme onSurfaceVariant when hidden with custom theme',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          _buildApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                onSurfaceVariant: Colors.grey,
+        'should use theme onSurfaceVariant when hidden with custom theme',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(
+            _buildApp(
+              theme: ThemeData(
+                colorScheme: const ColorScheme.light().copyWith(
+                  onSurfaceVariant: Colors.grey,
+                ),
+              ),
+              home: Scaffold(
+                body: FilterToggleButton(
+                  showFilters: false,
+                  hasActiveFilters: false,
+                  onToggle: () {},
+                ),
               ),
             ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: false,
-                hasActiveFilters: false,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Widget uses cs.onSurfaceVariant from the theme
-        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-        expect(icon.color, Colors.grey);
-      });
+          // Widget uses cs.onSurfaceVariant from the theme
+          final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+          expect(icon.color, Colors.grey);
+        },
+      );
     });
 
     group('Layout Integration', () {
@@ -500,11 +517,12 @@ void main() {
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(
-            find.descendant(
-              of: find.byType(FilterToggleButton),
-              matching: find.byType(Positioned),
-            ),
-            findsOneWidget); // Active filters indicator
+          find.descendant(
+            of: find.byType(FilterToggleButton),
+            matching: find.byType(Positioned),
+          ),
+          findsOneWidget,
+        ); // Active filters indicator
       });
 
       testWidgets('should work with padding', (WidgetTester tester) async {
@@ -564,15 +582,17 @@ void main() {
         expect(find.byType(TextField), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(
-            find.descendant(
-              of: find.byType(FilterToggleButton),
-              matching: find.byType(Positioned),
-            ),
-            findsOneWidget); // Active filter indicator
+          find.descendant(
+            of: find.byType(FilterToggleButton),
+            matching: find.byType(Positioned),
+          ),
+          findsOneWidget,
+        ); // Active filter indicator
       });
 
-      testWidgets('should toggle state in typical usage',
-          (WidgetTester tester) async {
+      testWidgets('should toggle state in typical usage', (
+        WidgetTester tester,
+      ) async {
         bool showFilters = false;
 
         await tester.pumpWidget(
@@ -597,8 +617,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially hidden
-        IconButton iconButton =
-            tester.widget<IconButton>(find.byType(IconButton));
+        IconButton iconButton = tester.widget<IconButton>(
+          find.byType(IconButton),
+        );
         expect(iconButton.tooltip, 'Visa filter');
 
         // Tap to show
@@ -612,8 +633,9 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish tooltips',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish tooltips', (
+        WidgetTester tester,
+      ) async {
         // Test hidden state
         await tester.pumpWidget(
           _buildApp(
@@ -628,8 +650,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        IconButton iconButton =
-            tester.widget<IconButton>(find.byType(IconButton));
+        IconButton iconButton = tester.widget<IconButton>(
+          find.byType(IconButton),
+        );
         expect(iconButton.tooltip, 'Visa filter');
 
         // Test shown state
@@ -652,8 +675,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('should be accessible with tooltips',
-          (WidgetTester tester) async {
+      testWidgets('should be accessible with tooltips', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -672,8 +696,9 @@ void main() {
         expect(iconButton.tooltip, 'Visa filter');
       });
 
-      testWidgets('should support semantic labels',
-          (WidgetTester tester) async {
+      testWidgets('should support semantic labels', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(
@@ -696,8 +721,9 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle rapid state changes',
-          (WidgetTester tester) async {
+      testWidgets('should handle rapid state changes', (
+        WidgetTester tester,
+      ) async {
         bool showFilters = false;
         bool hasActiveFilters = false;
 
@@ -732,8 +758,9 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets('should work with null-safe operations',
-          (WidgetTester tester) async {
+      testWidgets('should work with null-safe operations', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           _buildApp(
             home: Scaffold(

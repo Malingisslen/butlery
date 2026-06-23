@@ -109,10 +109,10 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   BaseSharedContentViewModel({
     PermissionService? permissionService,
     UnifiedFriendsService? friendsService,
-  })  : _permissionService =
-            permissionService ?? ServiceLocator.get<PermissionService>(),
-        _friendsService =
-            friendsService ?? ServiceLocator.tryGet<UnifiedFriendsService>() {
+  }) : _permissionService =
+           permissionService ?? ServiceLocator.get<PermissionService>(),
+       _friendsService =
+           friendsService ?? ServiceLocator.tryGet<UnifiedFriendsService>() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
     // Don't auto-initialize - coordinator will trigger when ready
     // This prevents race condition where currentUserId is null at constructor time
@@ -231,7 +231,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Load initial content from repository with pagination
   Future<void> loadContent() async {
     AppLogger.info(
-        '🔄 Loading $contentTypeName content (page 1, limit: $_pageSize)...');
+      '🔄 Loading $contentTypeName content (page 1, limit: $_pageSize)...',
+    );
     _setLoading(true);
 
     try {
@@ -254,7 +255,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
       _clearError();
       AppLogger.success(
-          '✅ Loaded ${_content.length} $contentTypeName(s) (hasMore: $_hasMoreContent)');
+        '✅ Loaded ${_content.length} $contentTypeName(s) (hasMore: $_hasMoreContent)',
+      );
     } catch (e) {
       _setError(sanitizeErrorForUser(e));
       AppLogger.error('Failed to load $contentTypeName content: $e');
@@ -276,12 +278,14 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     // Don't load if already loading or no more content
     if (_isLoadingMore || !_hasMoreContent || _lastDocument == null) {
       AppLogger.info(
-          '⏭️ Skipping load more: isLoadingMore=$_isLoadingMore, hasMore=$_hasMoreContent, lastDoc=${_lastDocument != null}');
+        '⏭️ Skipping load more: isLoadingMore=$_isLoadingMore, hasMore=$_hasMoreContent, lastDoc=${_lastDocument != null}',
+      );
       return;
     }
 
     AppLogger.info(
-        '🔄 Loading more $contentTypeName content (limit: $_pageSize)...');
+      '🔄 Loading more $contentTypeName content (limit: $_pageSize)...',
+    );
     _isLoadingMore = true;
     notifyListeners();
 
@@ -302,7 +306,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
       _clearError();
       AppLogger.success(
-          '✅ Loaded ${loadedContent.length} more $contentTypeName(s) (total: ${_content.length}, hasMore: $_hasMoreContent)');
+        '✅ Loaded ${loadedContent.length} more $contentTypeName(s) (total: ${_content.length}, hasMore: $_hasMoreContent)',
+      );
     } catch (e) {
       _setError(sanitizeErrorForUser(e));
       AppLogger.error('Failed to load more $contentTypeName: $e');
@@ -392,7 +397,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       _content[index] = newContent;
       _invalidateFilteredCache();
       AppLogger.info(
-          '🔄 Updated $contentTypeName: ${getContentTitle(newContent)}');
+        '🔄 Updated $contentTypeName: ${getContentTitle(newContent)}',
+      );
       notifyListeners();
     }
   }
@@ -402,7 +408,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     _content = List.from(newContent);
     _invalidateFilteredCache();
     AppLogger.info(
-        '🔄 Replaced $contentTypeName collection with ${_content.length} items');
+      '🔄 Replaced $contentTypeName collection with ${_content.length} items',
+    );
     notifyListeners();
   }
 

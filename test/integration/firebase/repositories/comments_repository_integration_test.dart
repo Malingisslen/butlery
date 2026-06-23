@@ -78,8 +78,10 @@ void main() {
         expect(comment.text, equals(content));
 
         // Verify in Firestore
-        final doc =
-            await firestore.collection('recipe_comments').doc(comment.id).get();
+        final doc = await firestore
+            .collection('recipe_comments')
+            .doc(comment.id)
+            .get();
 
         expect(doc.exists, isTrue);
 
@@ -114,8 +116,10 @@ void main() {
         await repository.updateComment(comment.id, updatedContent);
 
         // Assert
-        final doc =
-            await firestore.collection('recipe_comments').doc(comment.id).get();
+        final doc = await firestore
+            .collection('recipe_comments')
+            .doc(comment.id)
+            .get();
 
         expect(doc.data()?['text'], equals(updatedContent));
 
@@ -126,8 +130,9 @@ void main() {
         expect(updatedAtValue, anyOf(isA<DateTime>(), isA<Timestamp>()));
 
         // Verify editedAt is after createdAt
-        final createdAt =
-            TimestampTestHelper.toDateTime(doc.data()?['createdAt']);
+        final createdAt = TimestampTestHelper.toDateTime(
+          doc.data()?['createdAt'],
+        );
         final editedAt = TimestampTestHelper.toDateTime(editedAtValue);
         expect(createdAt, isNotNull);
         expect(editedAt, isNotNull);
@@ -168,161 +173,179 @@ void main() {
         for (int i = 0; i < comments.length - 1; i++) {
           expect(
             comments[i].createdAt.isBefore(comments[i + 1].createdAt) ||
-                comments[i]
-                    .createdAt
-                    .isAtSameMomentAs(comments[i + 1].createdAt),
+                comments[i].createdAt.isAtSameMomentAs(
+                  comments[i + 1].createdAt,
+                ),
             isTrue,
           );
         }
       });
     });
 
-    group('Like System with Transactions',
-        skip: 'FakeFirebaseFirestore does '
-            'not implement FieldValue.increment — cannot exercise the real '
-            'transaction path. Covered by Cloud Functions + emulator tests '
-            '(BUT-387 Phase 7).', () {
-      test('should toggle like with transaction and increment counter',
+    group(
+      'Like System with Transactions',
+      skip:
+          'FakeFirebaseFirestore does '
+          'not implement FieldValue.increment — cannot exercise the real '
+          'transaction path. Covered by Cloud Functions + emulator tests '
+          '(BUT-387 Phase 7).',
+      () {
+        test(
+          'should toggle like with transaction and increment counter',
           () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const commentId = 'comment_123';
-        final userId = testUser.uid;
+            // Arrange
+            const recipeId = 'recipe_123';
+            const commentId = 'comment_123';
+            final userId = testUser.uid;
 
-        // Create comment
-        await firestore.collection('recipe_comments').doc(commentId).set({
-          'recipeId': recipeId,
-          'authorId': 'author_456',
-          'authorDisplayName': 'Author User',
-          'text': 'Great recipe!',
-          'parentCommentId': null,
-          'createdAt': DateTime.now(),
-          'likedByUserIds': [],
-          'replyCount': 0,
-          'isDeleted': false,
-          'likesCount': 0,
+            // Create comment
+            await firestore.collection('recipe_comments').doc(commentId).set({
+              'recipeId': recipeId,
+              'authorId': 'author_456',
+              'authorDisplayName': 'Author User',
+              'text': 'Great recipe!',
+              'parentCommentId': null,
+              'createdAt': DateTime.now(),
+              'likedByUserIds': [],
+              'replyCount': 0,
+              'isDeleted': false,
+              'likesCount': 0,
+            });
+
+            // Act - Toggle like on
+            await repository.toggleCommentLike(commentId, userId);
+
+            // Assert - Like added
+            final likeDoc = await firestore
+                .collection('recipe_comments')
+                .doc(commentId)
+                .collection('likes')
+                .doc(userId)
+                .get();
+            expect(likeDoc.exists, isTrue);
+
+            final commentDoc = await firestore
+                .collection('recipe_comments')
+                .doc(commentId)
+                .get();
+            expect(commentDoc.data()?['likesCount'], equals(1));
+
+            // Act - Toggle like off
+            await repository.toggleCommentLike(commentId, userId);
+
+            // Assert - Like removed
+            final likeDocAfter = await firestore
+                .collection('recipe_comments')
+                .doc(commentId)
+                .collection('likes')
+                .doc(userId)
+                .get();
+            expect(likeDocAfter.exists, isFalse);
+
+            final commentDocAfter = await firestore
+                .collection('recipe_comments')
+                .doc(commentId)
+                .get();
+            expect(commentDocAfter.data()?['likesCount'], equals(0));
+          },
+        );
+
+        test('should handle concurrent likes correctly', () async {
+          // Arrange
+          const recipeId = 'recipe_123';
+          const commentId = 'comment_for_concurrent';
+
+          // Create comment
+          await firestore.collection('recipe_comments').doc(commentId).set({
+            'recipeId': recipeId,
+            'authorId': 'author_456',
+            'authorDisplayName': 'Author User',
+            'text': 'Test concurrent likes!',
+            'parentCommentId': null,
+            'createdAt': DateTime.now(),
+            'likedByUserIds': [],
+            'replyCount': 0,
+            'isDeleted': false,
+            'likesCount': 0,
+          });
+
+          // Act - Multiple users like concurrently
+          final futures = <Future>[];
+          for (int i = 0; i < 5; i++) {
+            futures.add(repository.toggleCommentLike(commentId, 'user_$i'));
+          }
+          await Future.wait(futures);
+
+          // Assert - All likes counted correctly
+          final commentDoc = await firestore
+              .collection('recipe_comments')
+              .doc(commentId)
+              .get();
+          expect(commentDoc.data()?['likesCount'], equals(5));
+
+          // Verify like subcollection
+          final likes = await firestore
+              .collection('recipe_comments')
+              .doc(commentId)
+              .collection('likes')
+              .get();
+          expect(likes.docs.length, equals(5));
         });
+      },
+    );
 
-        // Act - Toggle like on
-        await repository.toggleCommentLike(commentId, userId);
+    group(
+      'Reply System with Counters',
+      skip:
+          'FakeFirebaseFirestore does '
+          'not implement FieldValue.increment used by replyCount updates. '
+          'Emulator-level coverage lives in BUT-387 Phase 7.',
+      () {
+        test('should increment reply count when adding reply', () async {
+          // Arrange
+          const recipeId = 'recipe_123';
+          const parentId = 'parent_comment';
+          final userId = testUser.uid;
 
-        // Assert - Like added
-        final likeDoc = await firestore
-            .collection('recipe_comments')
-            .doc(commentId)
-            .collection('likes')
-            .doc(userId)
-            .get();
-        expect(likeDoc.exists, isTrue);
+          // Create parent comment
+          await firestore.collection('recipe_comments').doc(parentId).set({
+            'recipeId': recipeId,
+            'authorId': userId,
+            'authorDisplayName': 'Test User',
+            'text': 'Parent comment',
+            'parentCommentId': null,
+            'createdAt': DateTime.now(),
+            'likedByUserIds': [],
+            'replyCount': 0,
+            'isDeleted': false,
+          });
 
-        final commentDoc =
-            await firestore.collection('recipe_comments').doc(commentId).get();
-        expect(commentDoc.data()?['likesCount'], equals(1));
+          // Act - Add replies
+          for (int i = 0; i < 3; i++) {
+            await repository.addComment(
+              recipeId: recipeId,
+              userId: userId,
+              content: 'Reply $i',
+              parentCommentId: parentId,
+            );
+          }
 
-        // Act - Toggle like off
-        await repository.toggleCommentLike(commentId, userId);
+          // Assert - Reply count updated
+          final parentDoc = await firestore
+              .collection('recipe_comments')
+              .doc(parentId)
+              .get();
+          expect(parentDoc.data()?['replyCount'], equals(3));
 
-        // Assert - Like removed
-        final likeDocAfter = await firestore
-            .collection('recipe_comments')
-            .doc(commentId)
-            .collection('likes')
-            .doc(userId)
-            .get();
-        expect(likeDocAfter.exists, isFalse);
-
-        final commentDocAfter =
-            await firestore.collection('recipe_comments').doc(commentId).get();
-        expect(commentDocAfter.data()?['likesCount'], equals(0));
-      });
-
-      test('should handle concurrent likes correctly', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const commentId = 'comment_for_concurrent';
-
-        // Create comment
-        await firestore.collection('recipe_comments').doc(commentId).set({
-          'recipeId': recipeId,
-          'authorId': 'author_456',
-          'authorDisplayName': 'Author User',
-          'text': 'Test concurrent likes!',
-          'parentCommentId': null,
-          'createdAt': DateTime.now(),
-          'likedByUserIds': [],
-          'replyCount': 0,
-          'isDeleted': false,
-          'likesCount': 0,
+          // Verify replies exist
+          final replies = await firestore
+              .collection('recipe_comments')
+              .where('parentCommentId', isEqualTo: parentId)
+              .get();
+          expect(replies.docs.length, equals(3));
         });
-
-        // Act - Multiple users like concurrently
-        final futures = <Future>[];
-        for (int i = 0; i < 5; i++) {
-          futures.add(repository.toggleCommentLike(commentId, 'user_$i'));
-        }
-        await Future.wait(futures);
-
-        // Assert - All likes counted correctly
-        final commentDoc =
-            await firestore.collection('recipe_comments').doc(commentId).get();
-        expect(commentDoc.data()?['likesCount'], equals(5));
-
-        // Verify like subcollection
-        final likes = await firestore
-            .collection('recipe_comments')
-            .doc(commentId)
-            .collection('likes')
-            .get();
-        expect(likes.docs.length, equals(5));
-      });
-    });
-
-    group('Reply System with Counters',
-        skip: 'FakeFirebaseFirestore does '
-            'not implement FieldValue.increment used by replyCount updates. '
-            'Emulator-level coverage lives in BUT-387 Phase 7.', () {
-      test('should increment reply count when adding reply', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const parentId = 'parent_comment';
-        final userId = testUser.uid;
-
-        // Create parent comment
-        await firestore.collection('recipe_comments').doc(parentId).set({
-          'recipeId': recipeId,
-          'authorId': userId,
-          'authorDisplayName': 'Test User',
-          'text': 'Parent comment',
-          'parentCommentId': null,
-          'createdAt': DateTime.now(),
-          'likedByUserIds': [],
-          'replyCount': 0,
-          'isDeleted': false,
-        });
-
-        // Act - Add replies
-        for (int i = 0; i < 3; i++) {
-          await repository.addComment(
-            recipeId: recipeId,
-            userId: userId,
-            content: 'Reply $i',
-            parentCommentId: parentId,
-          );
-        }
-
-        // Assert - Reply count updated
-        final parentDoc =
-            await firestore.collection('recipe_comments').doc(parentId).get();
-        expect(parentDoc.data()?['replyCount'], equals(3));
-
-        // Verify replies exist
-        final replies = await firestore
-            .collection('recipe_comments')
-            .where('parentCommentId', isEqualTo: parentId)
-            .get();
-        expect(replies.docs.length, equals(3));
-      });
-    });
+      },
+    );
 
     group('Batch Operations', () {
       test('should handle batch comment creation', () async {

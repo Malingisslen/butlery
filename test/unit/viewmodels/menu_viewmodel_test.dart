@@ -81,14 +81,16 @@ void main() {
       await TestServiceLocator.initialize();
       production.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(testRecipe);
-      registerFallbackValue(SharedMenu.create(
-        sharedByUserId: testUserId,
-        sharedByDisplayName: 'Test',
-        sharedToUserIds: [testFriendId],
-        menuTitle: 'Fallback',
-        menuSnapshot: testMenuSnapshot,
-        shareMessage: '',
-      ));
+      registerFallbackValue(
+        SharedMenu.create(
+          sharedByUserId: testUserId,
+          sharedByDisplayName: 'Test',
+          sharedToUserIds: [testFriendId],
+          menuTitle: 'Fallback',
+          menuSnapshot: testMenuSnapshot,
+          shareMessage: '',
+        ),
+      );
     });
 
     setUp(() async {
@@ -120,8 +122,9 @@ void main() {
         error: null,
       );
 
-      when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-          .thenAnswer((_) async => testMenuSnapshot);
+      when(
+        () => mockMenuService.generateMenuFromPrompt(any(), any()),
+      ).thenAnswer((_) async => testMenuSnapshot);
 
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<MenuService>(mockMenuService);
@@ -165,8 +168,9 @@ void main() {
     group('Menu Generation', () {
       test('should generate menu with valid prompt', () async {
         const prompt = 'Vegetarisk veckomeny';
-        when(() => mockMenuService.generateMenuFromPrompt(prompt, any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(prompt, any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
 
         await viewModel.generateMenu(prompt);
 
@@ -175,8 +179,9 @@ void main() {
         expect(viewModel.menu.containsKey('Middag'), isTrue);
         expect(viewModel.totalRecipeCount, equals(2));
         expect(viewModel.lastPrompt, equals(prompt));
-        verify(() => mockMenuService.generateMenuFromPrompt(prompt, any()))
-            .called(1);
+        verify(
+          () => mockMenuService.generateMenuFromPrompt(prompt, any()),
+        ).called(1);
       });
 
       test('should reject empty prompt', () async {
@@ -196,8 +201,9 @@ void main() {
       });
 
       test('should handle generation error', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenThrow(Exception('Generation failed'));
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenThrow(Exception('Generation failed'));
 
         await viewModel.generateMenu('Valid prompt');
 
@@ -211,8 +217,9 @@ void main() {
           if (viewModel.isGenerating) wasGenerating = true;
         });
 
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
 
         await viewModel.generateMenu('Valid prompt');
 
@@ -221,8 +228,9 @@ void main() {
       });
 
       test('should regenerate section', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Initial prompt');
 
         // regenerateMenuSection passes the original prompt (not '1 Middag')
@@ -230,8 +238,9 @@ void main() {
         final regenerated = <String, List<Recipe>>{
           'Middag': [testRecipe2],
         };
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => regenerated);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => regenerated);
 
         await viewModel.regenerateSection('Middag');
 
@@ -251,8 +260,9 @@ void main() {
 
     group('Menu Saving', () {
       test('should save menu with name and comment', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
         final result = await viewModel.saveMenuWithNameAndComment(
@@ -274,12 +284,15 @@ void main() {
       });
 
       test('should reject saving with empty name', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
-        final result =
-            await viewModel.saveMenuWithNameAndComment('', 'Comment');
+        final result = await viewModel.saveMenuWithNameAndComment(
+          '',
+          'Comment',
+        );
 
         expect(result, isFalse);
         expect(viewModel.error, equals('Ange ett namn för menyn'));
@@ -306,8 +319,9 @@ void main() {
 
     group('Menu Management', () {
       test('should clear current menu', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
         expect(viewModel.hasMenu, isTrue);
 
@@ -347,8 +361,10 @@ void main() {
       test('should mark shared menu as viewed', () async {
         await viewModel.markSharedMenuAsViewed('shared123');
         // void method, verify no throw
-        expect(() => viewModel.markSharedMenuAsViewed('shared123'),
-            returnsNormally);
+        expect(
+          () => viewModel.markSharedMenuAsViewed('shared123'),
+          returnsNormally,
+        );
       });
     });
 
@@ -363,8 +379,9 @@ void main() {
       });
 
       test('should track menu state after generation', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
         expect(viewModel.menu['Middag'], hasLength(1));
@@ -387,8 +404,9 @@ void main() {
       });
 
       test('should handle concurrent operations', () async {
-        when(() => mockMenuService.generateMenuFromPrompt(any(), any()))
-            .thenAnswer((_) async => testMenuSnapshot);
+        when(
+          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        ).thenAnswer((_) async => testMenuSnapshot);
 
         final future1 = viewModel.generateMenu('First prompt');
         final future2 = viewModel.generateMenu('Second prompt');
@@ -478,128 +496,155 @@ void main() {
       }
 
       test(
-          'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
-          () {
-        final nutFree = recipeWith(
-          'nut_free',
-          tagWith(allergen: {'nötter': TriState.free}),
-        );
-        final containsNuts = recipeWith(
-          'contains_nuts',
-          tagWith(allergen: {'nötter': TriState.contains}),
-        );
+        'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
+        () {
+          final nutFree = recipeWith(
+            'nut_free',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final containsNuts = recipeWith(
+            'contains_nuts',
+            tagWith(allergen: {'nötter': TriState.contains}),
+          );
 
-        final vm = buildVmWith(
-          prefs: const UserAllergenPreferences(
-            trackedAllergens: {'nötter'},
-            trackedDietary: {},
-            includeUnknownInMenu: true,
-          ),
-          recipes: [nutFree, containsNuts],
-        );
-        addTearDown(vm.dispose);
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {'nötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: true,
+            ),
+            recipes: [nutFree, containsNuts],
+          );
+          addTearDown(vm.dispose);
 
-        final ids = vm.availableRecipes.map((r) => r.id).toSet();
-        expect(ids, contains('nut_free'));
-        expect(ids, isNot(contains('contains_nuts')),
+          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          expect(ids, contains('nut_free'));
+          expect(
+            ids,
+            isNot(contains('contains_nuts')),
             reason:
-                'nut-allergic user must never get a nut recipe in the personal menu');
-      });
+                'nut-allergic user must never get a nut recipe in the personal menu',
+          );
+        },
+      );
 
       test(
-          'criterion 2: excludes a recipe failing a tracked dietary preference',
-          () {
-        final vegetarian = recipeWith(
-          'vegetarian',
-          tagWith(dietary: {'vegetarisk': TriState.free}),
-        );
-        final notVegetarian = recipeWith(
-          'not_vegetarian',
-          tagWith(dietary: {'vegetarisk': TriState.contains}),
-        );
+        'criterion 2: excludes a recipe failing a tracked dietary preference',
+        () {
+          final vegetarian = recipeWith(
+            'vegetarian',
+            tagWith(dietary: {'vegetarisk': TriState.free}),
+          );
+          final notVegetarian = recipeWith(
+            'not_vegetarian',
+            tagWith(dietary: {'vegetarisk': TriState.contains}),
+          );
 
-        final vm = buildVmWith(
-          prefs: const UserAllergenPreferences(
-            trackedAllergens: {},
-            trackedDietary: {'vegetarisk'},
-            includeUnknownInMenu: true,
-          ),
-          recipes: [vegetarian, notVegetarian],
-        );
-        addTearDown(vm.dispose);
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {},
+              trackedDietary: {'vegetarisk'},
+              includeUnknownInMenu: true,
+            ),
+            recipes: [vegetarian, notVegetarian],
+          );
+          addTearDown(vm.dispose);
 
-        final ids = vm.availableRecipes.map((r) => r.id).toSet();
-        expect(ids, contains('vegetarian'));
-        expect(ids, isNot(contains('not_vegetarian')));
-      });
-
-      test(
-          'criterion 3: includeUnknownInMenu=false excludes UNKNOWN-status recipes',
-          () {
-        final free =
-            recipeWith('free', tagWith(allergen: {'nötter': TriState.free}));
-        final unknown = recipeWith(
-            'unknown', tagWith(allergen: {'nötter': TriState.unknown}));
-
-        final vm = buildVmWith(
-          prefs: const UserAllergenPreferences(
-            trackedAllergens: {'nötter'},
-            trackedDietary: {},
-            includeUnknownInMenu: false,
-          ),
-          recipes: [free, unknown],
-        );
-        addTearDown(vm.dispose);
-
-        final ids = vm.availableRecipes.map((r) => r.id).toSet();
-        expect(ids, equals({'free'}),
-            reason: 'strict mode must drop UNKNOWN-status recipes');
-      });
+          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          expect(ids, contains('vegetarian'));
+          expect(ids, isNot(contains('not_vegetarian')));
+        },
+      );
 
       test(
-          'criterion 3: includeUnknownInMenu=true keeps UNKNOWN-status recipes',
-          () {
-        final free =
-            recipeWith('free', tagWith(allergen: {'nötter': TriState.free}));
-        final unknown = recipeWith(
-            'unknown', tagWith(allergen: {'nötter': TriState.unknown}));
+        'criterion 3: includeUnknownInMenu=false excludes UNKNOWN-status recipes',
+        () {
+          final free = recipeWith(
+            'free',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final unknown = recipeWith(
+            'unknown',
+            tagWith(allergen: {'nötter': TriState.unknown}),
+          );
 
-        final vm = buildVmWith(
-          prefs: const UserAllergenPreferences(
-            trackedAllergens: {'nötter'},
-            trackedDietary: {},
-            includeUnknownInMenu: true,
-          ),
-          recipes: [free, unknown],
-        );
-        addTearDown(vm.dispose);
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {'nötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: false,
+            ),
+            recipes: [free, unknown],
+          );
+          addTearDown(vm.dispose);
 
-        final ids = vm.availableRecipes.map((r) => r.id).toSet();
-        expect(ids, equals({'free', 'unknown'}),
-            reason: 'tolerant mode must keep UNKNOWN-status recipes');
-      });
+          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          expect(
+            ids,
+            equals({'free'}),
+            reason: 'strict mode must drop UNKNOWN-status recipes',
+          );
+        },
+      );
 
       test(
-          'no-regression: with no tracked prefs the full pool is still available',
-          () {
-        final a = recipeWith('a', tagWith(allergen: {'nötter': TriState.free}));
-        final b =
-            recipeWith('b', tagWith(allergen: {'nötter': TriState.contains}));
+        'criterion 3: includeUnknownInMenu=true keeps UNKNOWN-status recipes',
+        () {
+          final free = recipeWith(
+            'free',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final unknown = recipeWith(
+            'unknown',
+            tagWith(allergen: {'nötter': TriState.unknown}),
+          );
 
-        final vm = buildVmWith(
-          prefs: const UserAllergenPreferences(
-            trackedAllergens: {},
-            trackedDietary: {},
-          ),
-          recipes: [a, b],
-        );
-        addTearDown(vm.dispose);
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {'nötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: true,
+            ),
+            recipes: [free, unknown],
+          );
+          addTearDown(vm.dispose);
 
-        // Filtering is ON but there is nothing to filter against, so the pool
-        // is unchanged — confirms we didn't over-filter when prefs are empty.
-        final ids = vm.availableRecipes.map((r) => r.id).toSet();
-        expect(ids, equals({'a', 'b'}));
-      });
+          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          expect(
+            ids,
+            equals({'free', 'unknown'}),
+            reason: 'tolerant mode must keep UNKNOWN-status recipes',
+          );
+        },
+      );
+
+      test(
+        'no-regression: with no tracked prefs the full pool is still available',
+        () {
+          final a = recipeWith(
+            'a',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final b = recipeWith(
+            'b',
+            tagWith(allergen: {'nötter': TriState.contains}),
+          );
+
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {},
+              trackedDietary: {},
+            ),
+            recipes: [a, b],
+          );
+          addTearDown(vm.dispose);
+
+          // Filtering is ON but there is nothing to filter against, so the pool
+          // is unchanged — confirms we didn't over-filter when prefs are empty.
+          final ids = vm.availableRecipes.map((r) => r.id).toSet();
+          expect(ids, equals({'a', 'b'}));
+        },
+      );
     });
   });
 }

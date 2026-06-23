@@ -91,12 +91,12 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
 
   @override
   Widget? get dialogIcon => Builder(
-        builder: (context) => Icon(
-          Icons.person_remove,
-          color: context.butleryColors.warning,
-          size: AppDimensions.iconSizeXxl,
-        ),
-      );
+    builder: (context) => Icon(
+      Icons.person_remove,
+      color: context.butleryColors.warning,
+      size: AppDimensions.iconSizeXxl,
+    ),
+  );
 
   @override
   String dialogTitleText(BuildContext context) =>

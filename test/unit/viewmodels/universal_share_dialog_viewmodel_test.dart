@@ -79,12 +79,14 @@ void main() {
         title: 'Test Recipe',
       );
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareRecipe(
         recipe: recipe,
@@ -97,22 +99,26 @@ void main() {
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.hasError, isFalse);
 
-      verify(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: 'recipe_123',
-            friendIds: ['friend_1', 'friend_2'],
-            message: 'Try this recipe!',
-            allowCollaboration: true,
-          )).called(1);
+      verify(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: 'recipe_123',
+          friendIds: ['friend_1', 'friend_2'],
+          message: 'Try this recipe!',
+          allowCollaboration: true,
+        ),
+      ).called(1);
     });
 
     test('should share recipe with groups successfully', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithGroups(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithGroups(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareRecipe(
         recipe: recipe,
@@ -122,27 +128,33 @@ void main() {
 
       expect(success, isTrue);
 
-      verify(() => mockSocialRecipeCoordinator.shareRecipeWithGroups(
-            'recipe_123',
-            ['group_1', 'group_2'],
-            ResourcePermission.read,
-          )).called(1);
+      verify(
+        () => mockSocialRecipeCoordinator.shareRecipeWithGroups(
+          'recipe_123',
+          ['group_1', 'group_2'],
+          ResourcePermission.read,
+        ),
+      ).called(1);
     });
 
     test('should share recipe with both friends and groups', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithGroups(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithGroups(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareRecipe(
         recipe: recipe,
@@ -152,28 +164,34 @@ void main() {
 
       expect(success, isTrue);
 
-      verify(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: 'recipe_123',
-            friendIds: ['friend_1'],
-            message: null,
-            allowCollaboration: false,
-          )).called(1);
-      verify(() => mockSocialRecipeCoordinator.shareRecipeWithGroups(
-            'recipe_123',
-            ['group_1'],
-            ResourcePermission.read,
-          )).called(1);
+      verify(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: 'recipe_123',
+          friendIds: ['friend_1'],
+          message: null,
+          allowCollaboration: false,
+        ),
+      ).called(1);
+      verify(
+        () => mockSocialRecipeCoordinator.shareRecipeWithGroups(
+          'recipe_123',
+          ['group_1'],
+          ResourcePermission.read,
+        ),
+      ).called(1);
     });
 
     test('should handle recipe sharing error', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenThrow(Exception('Share failed'));
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenThrow(Exception('Share failed'));
 
       final success = await viewModel.shareRecipe(
         recipe: recipe,
@@ -199,30 +217,38 @@ void main() {
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
       expect(
-          viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
+        viewModel.errorMessage,
+        contains('Inga vänner eller grupper valda'),
+      );
 
-      verifyNever(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          ));
-      verifyNever(() => mockSocialRecipeCoordinator.shareRecipeWithGroups(
-            any(),
-            any(),
-            any(),
-          ));
+      verifyNever(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      );
+      verifyNever(
+        () => mockSocialRecipeCoordinator.shareRecipeWithGroups(
+          any(),
+          any(),
+          any(),
+        ),
+      );
     });
 
     test('should handle recipe friend-share returning false', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => false);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => false);
 
       final success = await viewModel.shareRecipe(
         recipe: recipe,
@@ -250,7 +276,9 @@ void main() {
 
       expect(success, isFalse);
       expect(
-          viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
+        viewModel.errorMessage,
+        contains('Inga vänner eller grupper valda'),
+      );
     });
   });
 
@@ -319,12 +347,14 @@ void main() {
       expect(viewModel.hasError, isTrue);
 
       // Successful operation should clear error
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
       await viewModel.shareRecipe(
         recipe: RecipeFactory.build(),
@@ -340,12 +370,14 @@ void main() {
       final recipe = RecipeFactory.build();
       bool wasSharing = false;
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async {
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async {
         // Capture the sharing state during the operation
         wasSharing = viewModel.isSharing;
         return true;
@@ -367,12 +399,14 @@ void main() {
     test('should reset sharing state on error', () async {
       final recipe = RecipeFactory.build();
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenThrow(Exception('Error'));
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenThrow(Exception('Error'));
 
       await viewModel.shareRecipe(
         recipe: recipe,
@@ -387,12 +421,14 @@ void main() {
       var notificationCount = 0;
       viewModel.addListener(() => notificationCount++);
 
-      when(() => mockSocialRecipeCoordinator.shareRecipeWithFriends(
-            recipeId: any(named: 'recipeId'),
-            friendIds: any(named: 'friendIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: any(named: 'recipeId'),
+          friendIds: any(named: 'friendIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
       await viewModel.shareRecipe(
         recipe: RecipeFactory.build(),

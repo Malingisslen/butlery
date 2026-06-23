@@ -23,8 +23,7 @@ class ContentFilterResult {
   factory ContentFilterResult.rejected({
     required String reason,
     required String fieldName,
-  }) =>
-      ContentFilterResult._(false, reason, fieldName);
+  }) => ContentFilterResult._(false, reason, fieldName);
 }
 
 /// Client-side profanity filter for Swedish and English content.
@@ -103,10 +102,12 @@ class ContentFilterService extends BaseService {
     // run-collapse variants (`fuuuck`, `shitt`, `fffan`) without needing
     // a length-changing normalization step. Word boundaries still anchor
     // matches so `fantastisk` doesn't collide with `fan`.
-    final patterns = allWords.map((w) {
-      final chars = w.split('').map(RegExp.escape).map((c) => '$c+').join();
-      return chars;
-    }).join('|');
+    final patterns = allWords
+        .map((w) {
+          final chars = w.split('').map(RegExp.escape).map((c) => '$c+').join();
+          return chars;
+        })
+        .join('|');
     // Inputs are lowercased by [_normalize] before matching, so the regex
     // doesn't need `caseSensitive: false`. Words above are stored in
     // canonical lowercase form.

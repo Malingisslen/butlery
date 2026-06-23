@@ -43,14 +43,17 @@ void showSourceArtefactSheet({
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(ctx.l10n.recipeSourceSheetTitle,
-                style: AppTextStyles.titleBold),
+            Text(
+              ctx.l10n.recipeSourceSheetTitle,
+              style: AppTextStyles.titleBold,
+            ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '${_sourceTypeLabel(ctx, artefact.type)} · '
               '${ctx.l10n.recipeSourceCapturedAt(ContextualTimeFormatter.standard(artefact.fetchedAt))}',
-              style: AppTextStyles.metadataEmphasized
-                  .copyWith(color: cs.onSurfaceVariant),
+              style: AppTextStyles.metadataEmphasized.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
             if (isStale) ...[
               const SizedBox(height: AppDimensions.spacingM),
@@ -70,8 +73,10 @@ void showSourceArtefactSheet({
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.refresh_outlined,
-                    size: AppDimensions.iconSizeM),
+                icon: const Icon(
+                  Icons.refresh_outlined,
+                  size: AppDimensions.iconSizeM,
+                ),
                 label: Text(ctx.l10n.recipeSourceReextract),
                 onPressed: () async {
                   Navigator.of(sheetContext).pop();
@@ -118,8 +123,11 @@ class _StaleSourceBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.history_outlined,
-              size: AppDimensions.iconSizeM, color: warning),
+          Icon(
+            Icons.history_outlined,
+            size: AppDimensions.iconSizeM,
+            color: warning,
+          ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(message, style: AppTextStyles.bodyMedium),

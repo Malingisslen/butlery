@@ -35,16 +35,19 @@ Future<UploadChoice?> showUploadChoiceDialog({
   if (hasFailedUploads && hasPendingUploads) {
     dialogTitle = context.l10n.uploadInProgress;
     dialogContent = context.l10n.uploadMixedStatus(
-        safetyResult.failedImagePaths.length,
-        safetyResult.pendingImagePaths.length);
+      safetyResult.failedImagePaths.length,
+      safetyResult.pendingImagePaths.length,
+    );
   } else if (hasFailedUploads) {
     dialogTitle = context.l10n.uploadFailed;
-    dialogContent =
-        context.l10n.uploadFailedCount(safetyResult.failedImagePaths.length);
+    dialogContent = context.l10n.uploadFailedCount(
+      safetyResult.failedImagePaths.length,
+    );
   } else {
     dialogTitle = context.l10n.uploadInProgress;
-    dialogContent =
-        context.l10n.uploadPendingCount(safetyResult.pendingImagePaths.length);
+    dialogContent = context.l10n.uploadPendingCount(
+      safetyResult.pendingImagePaths.length,
+    );
   }
 
   // Add common actions
@@ -61,11 +64,14 @@ Future<UploadChoice?> showUploadChoiceDialog({
     TextButton(
       onPressed: () =>
           Navigator.of(context).pop(UploadChoice.saveWithoutPending),
-      style:
-          TextButton.styleFrom(foregroundColor: context.butleryColors.warning),
-      child: Text(hasFailedUploads
-          ? context.l10n.uploadSaveWithoutFailed
-          : context.l10n.uploadSaveWithoutPending),
+      style: TextButton.styleFrom(
+        foregroundColor: context.butleryColors.warning,
+      ),
+      child: Text(
+        hasFailedUploads
+            ? context.l10n.uploadSaveWithoutFailed
+            : context.l10n.uploadSaveWithoutPending,
+      ),
     ),
   ]);
 

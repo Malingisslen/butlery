@@ -6,7 +6,9 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHelpers {
   static String getContentTypeName(
-      BuildContext context, ShareContentType contentType) {
+    BuildContext context,
+    ShareContentType contentType,
+  ) {
     switch (contentType) {
       case ShareContentType.recipe:
         return context.l10n.shareContentTypeRecipe;
@@ -81,12 +83,17 @@ class ShareDialogHelpers {
         ? context.l10n.shareRealtimeSharing
         : context.l10n.shareStaticCopy;
 
-    return context.l10n
-        .shareSuccessMessage(contentName, modeText, recipientCount);
+    return context.l10n.shareSuccessMessage(
+      contentName,
+      modeText,
+      recipientCount,
+    );
   }
 
   static String getShareTitle(
-      BuildContext context, ShareContentType contentType) {
+    BuildContext context,
+    ShareContentType contentType,
+  ) {
     switch (contentType) {
       case ShareContentType.recipe:
         return context.l10n.shareRecipeWithFriends;

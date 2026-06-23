@@ -56,8 +56,10 @@ void main() {
     /// Seeds [count] recipes whose `updatedAt` strictly decreases by index, so
     /// that ordering by `core.updatedAt desc` yields recipe-0 first.
     Future<void> seedRecipes(int count) async {
-      final collection =
-          fakeFirestore.collection('users').doc(userId).collection('recipes');
+      final collection = fakeFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('recipes');
       // Use a fixed base so timestamps are deterministic across runs.
       final base = DateTime(2025, 1, 1, 12);
       for (int i = 0; i < count; i++) {
@@ -78,22 +80,30 @@ void main() {
       await seedRecipes(250);
 
       // Act
-      final List<Recipe> recipes =
-          await repository.watchRecipes(userId, pageSize: 100).first;
+      final List<Recipe> recipes = await repository
+          .watchRecipes(userId, pageSize: 100)
+          .first;
 
       // Assert
       expect(recipes, hasLength(100));
-      expect(recipes.first.id, equals('recipe-0000'),
-          reason: 'newest recipe should land first');
-      expect(recipes.last.id, equals('recipe-0099'),
-          reason: 'oldest of the 100 newest should land last');
+      expect(
+        recipes.first.id,
+        equals('recipe-0000'),
+        reason: 'newest recipe should land first',
+      );
+      expect(
+        recipes.last.id,
+        equals('recipe-0099'),
+        reason: 'oldest of the 100 newest should land last',
+      );
     });
 
     test('loadMoreRecipes appends the next page after the boundary', () async {
       // Arrange — 250 recipes; first page is recipes 0..99.
       await seedRecipes(250);
-      final firstPage =
-          await repository.watchRecipes(userId, pageSize: 100).first;
+      final firstPage = await repository
+          .watchRecipes(userId, pageSize: 100)
+          .first;
       expect(firstPage, hasLength(100));
       final boundary = firstPage.last; // recipe-0099
 
@@ -107,22 +117,29 @@ void main() {
 
       // Assert — recipes 100..199 in updatedAt-desc order.
       expect(secondPage, hasLength(100));
-      expect(secondPage.first.id, equals('recipe-0100'),
-          reason: 'first older recipe immediately after the boundary');
+      expect(
+        secondPage.first.id,
+        equals('recipe-0100'),
+        reason: 'first older recipe immediately after the boundary',
+      );
       expect(secondPage.last.id, equals('recipe-0199'));
 
       // No overlap with the first page — boundary recipe must NOT reappear.
       final firstIds = firstPage.map((r) => r.id).toSet();
       final secondIds = secondPage.map((r) => r.id).toSet();
-      expect(firstIds.intersection(secondIds), isEmpty,
-          reason: 'startAfterDocument must exclude the boundary itself');
+      expect(
+        firstIds.intersection(secondIds),
+        isEmpty,
+        reason: 'startAfterDocument must exclude the boundary itself',
+      );
     });
 
     test('loadMoreRecipes returns empty when no more recipes remain', () async {
       // Arrange — 50 recipes only; first page covers them all.
       await seedRecipes(50);
-      final firstPage =
-          await repository.watchRecipes(userId, pageSize: 100).first;
+      final firstPage = await repository
+          .watchRecipes(userId, pageSize: 100)
+          .first;
       expect(firstPage, hasLength(50));
       final boundary = firstPage.last;
 

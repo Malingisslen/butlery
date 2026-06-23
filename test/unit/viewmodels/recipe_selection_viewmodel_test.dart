@@ -38,10 +38,12 @@ void main() {
     when(() => mockRecipeService.recipes).thenReturn([]);
 
     // Default: no previously shared recipes
-    when(() => mockSocialOperations.getSharedByMe())
-        .thenAnswer((_) async => []);
-    when(() => mockSocialOperations.getSharedWithMe())
-        .thenAnswer((_) async => []);
+    when(
+      () => mockSocialOperations.getSharedByMe(),
+    ).thenAnswer((_) async => []);
+    when(
+      () => mockSocialOperations.getSharedWithMe(),
+    ).thenAnswer((_) async => []);
 
     targetFriend = UserProfile(
       uid: 'friend_123',
@@ -129,8 +131,9 @@ void main() {
       });
 
       when(() => mockRecipeService.recipes).thenReturn(recipes);
-      when(() => mockSocialOperations.getSharedByMe())
-          .thenAnswer((_) async => [sharedRecipe]);
+      when(
+        () => mockSocialOperations.getSharedByMe(),
+      ).thenAnswer((_) async => [sharedRecipe]);
 
       await viewModel.loadRecipes();
 
@@ -151,8 +154,9 @@ void main() {
       });
 
       when(() => mockRecipeService.recipes).thenReturn(recipes);
-      when(() => mockSocialOperations.getSharedWithMe())
-          .thenAnswer((_) async => [sharedWithMe]);
+      when(
+        () => mockSocialOperations.getSharedWithMe(),
+      ).thenAnswer((_) async => [sharedWithMe]);
 
       await viewModel.loadRecipes();
 
@@ -174,8 +178,9 @@ void main() {
       final recipes = [RecipeFactory.build(id: 'recipe_1')];
 
       when(() => mockRecipeService.recipes).thenReturn(recipes);
-      when(() => mockSocialOperations.getSharedByMe())
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockSocialOperations.getSharedByMe(),
+      ).thenThrow(Exception('Network error'));
 
       await viewModel.loadRecipes();
 
@@ -213,20 +218,25 @@ void main() {
       await viewModel.loadRecipes();
     });
 
-    test('should filter by title, description, ingredients (case-insensitive)',
-        () {
-      viewModel.updateSearchQuery('PASTA');
-      expect(viewModel.filteredRecipes.length, equals(1));
-      expect(viewModel.filteredRecipes.first.title, contains('Pasta'));
+    test(
+      'should filter by title, description, ingredients (case-insensitive)',
+      () {
+        viewModel.updateSearchQuery('PASTA');
+        expect(viewModel.filteredRecipes.length, equals(1));
+        expect(viewModel.filteredRecipes.first.title, contains('Pasta'));
 
-      viewModel.updateSearchQuery('italian');
-      expect(viewModel.filteredRecipes.length, equals(1));
-      expect(viewModel.filteredRecipes.first.description, contains('Italian'));
+        viewModel.updateSearchQuery('italian');
+        expect(viewModel.filteredRecipes.length, equals(1));
+        expect(
+          viewModel.filteredRecipes.first.description,
+          contains('Italian'),
+        );
 
-      viewModel.updateSearchQuery('chicken');
-      expect(viewModel.filteredRecipes.length, equals(1));
-      expect(viewModel.filteredRecipes.first.title, contains('Chicken'));
-    });
+        viewModel.updateSearchQuery('chicken');
+        expect(viewModel.filteredRecipes.length, equals(1));
+        expect(viewModel.filteredRecipes.first.title, contains('Chicken'));
+      },
+    );
 
     test('should clear search and support compatibility methods', () {
       viewModel.updateSearchQuery('pasta');
@@ -242,11 +252,13 @@ void main() {
     });
 
     test('should sort unshared recipes before shared ones', () async {
-      final sharedRecipe =
-          withSocial('recipe_2', {'friend_123': ResourcePermission.viewer});
+      final sharedRecipe = withSocial('recipe_2', {
+        'friend_123': ResourcePermission.viewer,
+      });
 
-      when(() => mockSocialOperations.getSharedByMe())
-          .thenAnswer((_) async => [sharedRecipe]);
+      when(
+        () => mockSocialOperations.getSharedByMe(),
+      ).thenAnswer((_) async => [sharedRecipe]);
 
       await viewModel.loadRecipes();
 
@@ -336,11 +348,13 @@ void main() {
       viewModel.toggleRecipeSelection('recipe_1');
       viewModel.toggleRecipeSelection('recipe_2');
 
-      when(() => mockSocialOperations.shareRecipe(
-            recipeId: any(named: 'recipeId'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) async => 'share_id');
+      when(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: any(named: 'recipeId'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) async => 'share_id');
 
       final success = await viewModel.shareSelectedRecipes();
 
@@ -350,27 +364,33 @@ void main() {
       expect(viewModel.alreadySharedRecipeIds.contains('recipe_1'), isTrue);
       expect(viewModel.alreadySharedRecipeIds.contains('recipe_2'), isTrue);
 
-      verify(() => mockSocialOperations.shareRecipe(
-            recipeId: 'recipe_1',
-            memberIds: ['friend_123'],
-            memberDisplayNames: {'friend_123': 'Anna Andersson'},
-          )).called(1);
+      verify(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: 'recipe_1',
+          memberIds: ['friend_123'],
+          memberDisplayNames: {'friend_123': 'Anna Andersson'},
+        ),
+      ).called(1);
 
-      verify(() => mockSocialOperations.shareRecipe(
-            recipeId: 'recipe_2',
-            memberIds: ['friend_123'],
-            memberDisplayNames: {'friend_123': 'Anna Andersson'},
-          )).called(1);
+      verify(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: 'recipe_2',
+          memberIds: ['friend_123'],
+          memberDisplayNames: {'friend_123': 'Anna Andersson'},
+        ),
+      ).called(1);
     });
 
     test('should handle sharing failure', () async {
       viewModel.toggleRecipeSelection('recipe_1');
 
-      when(() => mockSocialOperations.shareRecipe(
-            recipeId: any(named: 'recipeId'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) async => null);
+      when(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: any(named: 'recipeId'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) async => null);
 
       final success = await viewModel.shareSelectedRecipes();
 
@@ -385,21 +405,25 @@ void main() {
       final success = await viewModel.shareSelectedRecipes();
 
       expect(success, isFalse);
-      verifyNever(() => mockSocialOperations.shareRecipe(
-            recipeId: any(named: 'recipeId'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          ));
+      verifyNever(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: any(named: 'recipeId'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      );
     });
 
     test('should not share when already sharing', () async {
       viewModel.toggleRecipeSelection('recipe_1');
 
-      when(() => mockSocialOperations.shareRecipe(
-            recipeId: any(named: 'recipeId'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) async {
+      when(
+        () => mockSocialOperations.shareRecipe(
+          recipeId: any(named: 'recipeId'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) async {
         await Future.delayed(const Duration(milliseconds: 100));
         return 'share_id';
       });

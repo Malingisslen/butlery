@@ -120,7 +120,10 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   /// Add member to collaborative recipe with specified permission
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     return await _coordinator.addMemberToRecipe(recipeId, userId, permission);
   }
 
@@ -131,23 +134,41 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   /// Update member permission for collaborative recipe
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     return await _coordinator.updateMemberPermission(
-        recipeId, userId, permission);
+      recipeId,
+      userId,
+      permission,
+    );
   }
 
   /// Share a personal recipe with specific users
-  Future<bool> shareRecipeWithUsers(String recipeId, List<String> userIds,
-      ResourcePermission permission) async {
+  Future<bool> shareRecipeWithUsers(
+    String recipeId,
+    List<String> userIds,
+    ResourcePermission permission,
+  ) async {
     return await _coordinator.shareRecipeWithUsers(
-        recipeId, userIds, permission);
+      recipeId,
+      userIds,
+      permission,
+    );
   }
 
   /// Share recipe with friend categories/groups
-  Future<bool> shareRecipeWithGroups(String recipeId, List<String> groupIds,
-      ResourcePermission permission) async {
+  Future<bool> shareRecipeWithGroups(
+    String recipeId,
+    List<String> groupIds,
+    ResourcePermission permission,
+  ) async {
     return await _coordinator.shareRecipeWithGroups(
-        recipeId, groupIds, permission);
+      recipeId,
+      groupIds,
+      permission,
+    );
   }
 
   /// Unshare recipe (remove all collaborative access)
@@ -172,7 +193,9 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   /// Get user's permission level for a recipe
   Future<ResourcePermission?> getUserPermissionForRecipe(
-      String recipeId, String userId) async {
+    String recipeId,
+    String userId,
+  ) async {
     return await _coordinator.getUserPermissionForRecipe(recipeId, userId);
   }
 
@@ -188,7 +211,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   /// Get recipes with specific permission level using repository pattern
   Future<List<Recipe>> getRecipesWithPermission(
-      ResourcePermission permission) async {
+    ResourcePermission permission,
+  ) async {
     return await _coordinator.getRecipesWithPermission(permission);
   }
 
@@ -209,22 +233,32 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
 
   /// Send collaboration invitations
   Future<void> sendCollaborationInvitations(
-      String recipeId, List<String> userIds) async {
+    String recipeId,
+    List<String> userIds,
+  ) async {
     return await _coordinator.sendCollaborationInvitations(recipeId, userIds);
   }
 
   /// Send member addition notification
   Future<void> sendMemberAdditionNotification(
-      String recipeId, String addedUserId) async {
+    String recipeId,
+    String addedUserId,
+  ) async {
     return await _coordinator.sendMemberAdditionNotification(
-        recipeId, addedUserId);
+      recipeId,
+      addedUserId,
+    );
   }
 
   /// Send recipe sharing notifications
   Future<void> sendRecipeSharingNotifications(
-      String recipeId, List<String> sharedWithUserIds) async {
+    String recipeId,
+    List<String> sharedWithUserIds,
+  ) async {
     return await _coordinator.sendRecipeSharingNotifications(
-        recipeId, sharedWithUserIds);
+      recipeId,
+      sharedWithUserIds,
+    );
   }
 
   /// Validates collaborative recipe data before creation

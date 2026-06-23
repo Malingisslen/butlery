@@ -14,8 +14,9 @@ void main() {
   group('lexicalSimilarity', () {
     test('identical strings score exactly 1.0', () {
       expect(
-          lexicalSimilarity('tomatsås med basilika', 'tomatsås med basilika'),
-          1.0);
+        lexicalSimilarity('tomatsås med basilika', 'tomatsås med basilika'),
+        1.0,
+      );
     });
 
     test('empty vs empty scores 1.0', () {

@@ -21,8 +21,10 @@ void main() {
       );
 
       expect(diff.isNotEmpty, isTrue);
-      expect(diff.changedFields.map((f) => f.fieldKey).toList(),
-          ['portions', 'title']);
+      expect(diff.changedFields.map((f) => f.fieldKey).toList(), [
+        'portions',
+        'title',
+      ]);
 
       final title = diff.changedFields.firstWhere((f) => f.fieldKey == 'title');
       expect(title.localText, 'Soppa');
@@ -61,10 +63,10 @@ void main() {
     test('stringifies lists element-by-element so list edits surface', () {
       final diff = ConflictDiff.fromMaps(
         {
-          'instructions': ['Koka', 'Servera']
+          'instructions': ['Koka', 'Servera'],
         },
         {
-          'instructions': ['Koka', 'Krydda', 'Servera']
+          'instructions': ['Koka', 'Krydda', 'Servera'],
         },
       );
       expect(diff.changedFields, hasLength(1));
@@ -89,10 +91,10 @@ void main() {
     test('stringifies nested maps with sorted keys for stable output', () {
       final diff = ConflictDiff.fromMaps(
         {
-          'participants': {'b': 'editor', 'a': 'owner'}
+          'participants': {'b': 'editor', 'a': 'owner'},
         },
         {
-          'participants': {'a': 'owner', 'b': 'viewer'}
+          'participants': {'a': 'owner', 'b': 'viewer'},
         },
       );
       expect(diff.changedFields, hasLength(1));

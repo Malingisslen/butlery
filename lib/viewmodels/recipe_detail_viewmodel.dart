@@ -88,8 +88,8 @@ enum ReextractOutcome { success, failure }
 /// payload. Defaulted in the constructor to the production construction
 /// ([_defaultReextractStrategyFactory]); tests inject a fake to drive the
 /// re-extract contract without touching real network/parsing.
-typedef ReextractStrategyFactory = ImportStrategy Function(
-    SourceArtefactType type);
+typedef ReextractStrategyFactory =
+    ImportStrategy Function(SourceArtefactType type);
 
 /// Production default for [ReextractStrategyFactory]: URL artefacts re-extract
 /// via [UrlImportStrategy], everything else (transcript/caption/pasted/OCR
@@ -150,19 +150,20 @@ class RecipeDetailViewModel extends ChangeNotifier
     RecipeCookingService? cookingService,
     CookEventRepository? cookEventRepository,
     ReextractStrategyFactory? reextractStrategyFactory,
-  })  : _recipe = recipe,
-        _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-        _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
-        _cookingService =
-            cookingService ?? ServiceLocator.get<RecipeCookingService>(),
-        _cookEventRepository =
-            cookEventRepository ?? ServiceLocator.tryGet<CookEventRepository>(),
-        _reextractStrategyFactory =
-            reextractStrategyFactory ?? _defaultReextractStrategyFactory {
-    _recipeServiceSubscription =
-        _recipeService.stateStream.listen((_) => _onRecipeServiceUpdate());
+  }) : _recipe = recipe,
+       _recipeService =
+           recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+       _analyticsService =
+           analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+       _cookingService =
+           cookingService ?? ServiceLocator.get<RecipeCookingService>(),
+       _cookEventRepository =
+           cookEventRepository ?? ServiceLocator.tryGet<CookEventRepository>(),
+       _reextractStrategyFactory =
+           reextractStrategyFactory ?? _defaultReextractStrategyFactory {
+    _recipeServiceSubscription = _recipeService.stateStream.listen(
+      (_) => _onRecipeServiceUpdate(),
+    );
 
     _analyticsService.recipe.logRecipeViewed(
       recipeId: recipe.id,
@@ -321,7 +322,8 @@ class RecipeDetailViewModel extends ChangeNotifier
 
           return true;
         } else {
-          final errorMessage = _recipeService.error ??
+          final errorMessage =
+              _recipeService.error ??
               AppLocale.current.errorCouldNotDeleteRecipe;
           throw Exception(errorMessage);
         }
@@ -396,11 +398,13 @@ class RecipeDetailViewModel extends ChangeNotifier
         final userId = userService?.currentUserId;
 
         // BUT-834: idempotent first_cook milestone (SharedPreferences-deduped).
-        unawaited(_analyticsService.recipe.logFirstCookIfMilestone(
-          userId: userId,
-          mealType: _recipe.mealType,
-          joinedAt: profile?.joinedAt,
-        ));
+        unawaited(
+          _analyticsService.recipe.logFirstCookIfMilestone(
+            userId: userId,
+            mealType: _recipe.mealType,
+            joinedAt: profile?.joinedAt,
+          ),
+        );
 
         // BUT-830: re-emit lifecycle_stage so cohort progression
         // (`new_` → `activated` → `habitual`) propagates without waiting
@@ -432,16 +436,19 @@ class RecipeDetailViewModel extends ChangeNotifier
             if (counted > 1) cooksLast14d = counted;
           } catch (e) {
             AppLogger.warning(
-                'cooksLast14Days count failed, falling back to 1: $e');
+              'cooksLast14Days count failed, falling back to 1: $e',
+            );
           }
         }
         if (bootstrap != null) {
-          unawaited(bootstrap.emitLifecycle(
-            profile: profile,
-            lastCookAt: now,
-            cooksLast14Days: cooksLast14d,
-            now: now,
-          ));
+          unawaited(
+            bootstrap.emitLifecycle(
+              profile: profile,
+              lastCookAt: now,
+              cooksLast14Days: cooksLast14d,
+              now: now,
+            ),
+          );
         }
 
         return true;

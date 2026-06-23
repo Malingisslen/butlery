@@ -74,8 +74,10 @@ class DeferredModuleLoader {
   }
 
   /// Ensure a module is loaded (with caching to prevent duplicate loading)
-  static Future<void> ensureLoaded(String moduleName,
-      {bool forceReload = false}) async {
+  static Future<void> ensureLoaded(
+    String moduleName, {
+    bool forceReload = false,
+  }) async {
     final module = _modules[moduleName];
     if (module == null) {
       throw ModuleNotFoundError(moduleName);
@@ -100,7 +102,8 @@ class DeferredModuleLoader {
       await _loadingFutures[moduleName];
       stopwatch.stop();
       AppLogger.success(
-          '✅ Module $moduleName loaded in ${stopwatch.elapsedMilliseconds}ms');
+        '✅ Module $moduleName loaded in ${stopwatch.elapsedMilliseconds}ms',
+      );
     } catch (e) {
       stopwatch.stop();
       AppLogger.error('❌ Failed to load module $moduleName', e);

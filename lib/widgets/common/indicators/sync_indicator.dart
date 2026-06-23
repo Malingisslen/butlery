@@ -60,13 +60,16 @@ class _SyncIndicatorState extends State<SyncIndicator>
       vsync: this,
       duration: AppDimensions.animationDurationExtended,
     );
-    _pulseAnimation = Tween<double>(
-      begin: AppDimensions.opacityMedium,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation =
+        Tween<double>(
+          begin: AppDimensions.opacityMedium,
+          end: 1.0,
+        ).animate(
+          CurvedAnimation(
+            parent: _pulseController,
+            curve: Curves.easeInOut,
+          ),
+        );
     _syncOfflineDebounce();
     _updateAnimation();
   }

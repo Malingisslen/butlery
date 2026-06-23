@@ -32,10 +32,12 @@ class MessageMutationModule {
   Future<void> sendMessage(Message message) async {
     try {
       AppLogger.info(
-          '📤 [MessageMutation] sendMessage with atomic conversation update');
+        '📤 [MessageMutation] sendMessage with atomic conversation update',
+      );
       AppLogger.debug('📤 [MessageMutation] Message ID: ${message.id}');
       AppLogger.debug(
-          '📤 [MessageMutation] Conversation ID: ${message.conversationId}');
+        '📤 [MessageMutation] Conversation ID: ${message.conversationId}',
+      );
       AppLogger.debug('📤 [MessageMutation] Sender ID: ${message.senderId}');
       AppLogger.debug('📤 [MessageMutation] Content: "${message.content}"');
 
@@ -46,7 +48,8 @@ class MessageMutationModule {
         conversation = await readConversation(message.conversationId);
       } catch (e) {
         AppLogger.warning(
-            '⚠️ [MessageMutation] Could not read conversation: $e');
+          '⚠️ [MessageMutation] Could not read conversation: $e',
+        );
         // For deterministic IDs, conversation might not exist yet - that's OK
         if (!message.conversationId.startsWith('direct_')) {
           throw ResourceNotFoundException(
@@ -60,11 +63,13 @@ class MessageMutationModule {
       // Validate participant if conversation exists
       if (conversation != null) {
         AppLogger.debug(
-            '📤 [MessageMutation] Conversation found: ${conversation.id}');
+          '📤 [MessageMutation] Conversation found: ${conversation.id}',
+        );
 
         if (!conversation.isParticipant(message.senderId)) {
           AppLogger.error(
-              '❌ [MessageMutation] User ${message.senderId} is not a participant');
+            '❌ [MessageMutation] User ${message.senderId} is not a participant',
+          );
           throw PermissionDeniedException(
             'User is not a participant in this conversation',
             resource: 'conversation:${message.conversationId}',
@@ -72,15 +77,18 @@ class MessageMutationModule {
           );
         }
         AppLogger.debug(
-            '📤 [MessageMutation] User is participant - authorized');
+          '📤 [MessageMutation] User is participant - authorized',
+        );
       }
 
       // Handle missing conversation with smart fallback using message sender data
       if (conversation == null) {
         AppLogger.warning(
-            '⚠️ [MessageMutation] Conversation not found locally: ${message.conversationId}');
+          '⚠️ [MessageMutation] Conversation not found locally: ${message.conversationId}',
+        );
         AppLogger.info(
-            '📝 [MessageMutation] Creating fallback conversation with complete participant data');
+          '📝 [MessageMutation] Creating fallback conversation with complete participant data',
+        );
 
         // Parse deterministic conversation ID to extract other participant
         final conversationId = message.conversationId;
@@ -102,7 +110,8 @@ class MessageMutationModule {
         if (otherUserId != null) {
           try {
             AppLogger.debug(
-                '📝 [MessageMutation] Fetching profile for user: $otherUserId');
+              '📝 [MessageMutation] Fetching profile for user: $otherUserId',
+            );
             final userDoc = await firestore
                 .collection(FirestoreCollections.users)
                 .doc(otherUserId)
@@ -112,14 +121,17 @@ class MessageMutationModule {
               otherUserDisplayName = userData?['displayName'] as String?;
               otherUserAvatarUrl = userData?['avatarUrl'] as String?;
               AppLogger.success(
-                  '✅ [MessageMutation] Fetched other participant profile: $otherUserDisplayName');
+                '✅ [MessageMutation] Fetched other participant profile: $otherUserDisplayName',
+              );
             } else {
               AppLogger.warning(
-                  '⚠️ [MessageMutation] User profile not found for: $otherUserId');
+                '⚠️ [MessageMutation] User profile not found for: $otherUserId',
+              );
             }
           } catch (e) {
             AppLogger.warning(
-                '⚠️ [MessageMutation] Could not fetch user profile: $e');
+              '⚠️ [MessageMutation] Could not fetch user profile: $e',
+            );
           }
         }
 
@@ -147,22 +159,28 @@ class MessageMutationModule {
         );
 
         AppLogger.success(
-            '✅ [MessageMutation] Fallback conversation created with complete participant data');
+          '✅ [MessageMutation] Fallback conversation created with complete participant data',
+        );
       }
 
       // ATOMIC OPERATION: Write message + update conversation in single batch
       AppLogger.debug(
-          '📤 [MessageMutation] Creating atomic batch operation...');
+        '📤 [MessageMutation] Creating atomic batch operation...',
+      );
       AppLogger.debug(
-          '📤 [MessageMutation] Message initial status: ${message.status}');
+        '📤 [MessageMutation] Message initial status: ${message.status}',
+      );
       final batch = firestore.batch();
 
       // 1. Write message to messages collection with ORIGINAL status (sending)
-      final messageData =
-          MessageDto.toFirestore(message, timestampProvider: timestampProvider);
+      final messageData = MessageDto.toFirestore(
+        message,
+        timestampProvider: timestampProvider,
+      );
       batch.set(messagesRef.doc(message.id), messageData);
       AppLogger.debug(
-          '📤 [MessageMutation] Added message to batch with status: ${message.status}');
+        '📤 [MessageMutation] Added message to batch with status: ${message.status}',
+      );
 
       // 2. Update conversation with lastMessage (keeping original status)
       final updatedConversation = conversation.copyWith(
@@ -176,7 +194,8 @@ class MessageMutationModule {
         SetOptions(merge: true),
       );
       AppLogger.debug(
-          '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId}');
+        '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId}',
+      );
 
       // 3. Update rate limit doc for server-side enforcement
       batch.set(
@@ -187,8 +206,9 @@ class MessageMutationModule {
             .doc('messages'),
         {
           'lastWrite': timestampProvider.serverTimestamp(),
-          'expireAt':
-              Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+          'expireAt': Timestamp.fromDate(
+            clock.now().add(const Duration(days: 90)),
+          ),
         },
         SetOptions(merge: true),
       );
@@ -198,31 +218,36 @@ class MessageMutationModule {
       try {
         await batch.commit();
         AppLogger.success(
-            '✅ [MessageMutation] Atomic batch committed - message in Firestore with status: sending');
+          '✅ [MessageMutation] Atomic batch committed - message in Firestore with status: sending',
+        );
 
         // STEP 2: Update message status to "sent" AFTER batch commits successfully
         AppLogger.debug(
-            '📤 [MessageMutation] Scheduling status update to sent...');
+          '📤 [MessageMutation] Scheduling status update to sent...',
+        );
         Future.delayed(const Duration(milliseconds: 100), () async {
           try {
             await messagesRef.doc(message.id).update({
               'status': MessageStatus.sent.name,
             });
             AppLogger.success(
-                '✅ [MessageMutation] Message status updated to: sent');
+              '✅ [MessageMutation] Message status updated to: sent',
+            );
 
             // Also update conversation's lastMessage status
             await firestore
                 .collection(collectionName)
                 .doc(message.conversationId)
                 .update({
-              'lastMessage.status': MessageStatus.sent.name,
-            });
+                  'lastMessage.status': MessageStatus.sent.name,
+                });
             AppLogger.success(
-                '✅ [MessageMutation] Conversation lastMessage status updated to: sent');
+              '✅ [MessageMutation] Conversation lastMessage status updated to: sent',
+            );
           } catch (e) {
             AppLogger.warning(
-                '⚠️ [MessageMutation] Could not update message status: $e');
+              '⚠️ [MessageMutation] Could not update message status: $e',
+            );
           }
         });
       } catch (batchError) {
@@ -231,17 +256,21 @@ class MessageMutationModule {
         if (batchError.toString().contains('UNAVAILABLE') ||
             batchError.toString().contains('network')) {
           AppLogger.warning(
-              '📡 [MessageMutation] Network unavailable - batch queued for offline sync');
+            '📡 [MessageMutation] Network unavailable - batch queued for offline sync',
+          );
         } else {
           rethrow;
         }
       }
 
       AppLogger.success(
-          '✅ [MessageMutation] Message sent: ${message.id} in conversation ${message.conversationId}');
+        '✅ [MessageMutation] Message sent: ${message.id} in conversation ${message.conversationId}',
+      );
     } catch (e, stackTrace) {
       AppLogger.error(
-          '❌ [MessageMutation] Failed to send message ${message.id}', e);
+        '❌ [MessageMutation] Failed to send message ${message.id}',
+        e,
+      );
       AppLogger.error('❌ [MessageMutation] Stack trace: $stackTrace');
       rethrow;
     }
@@ -296,7 +325,8 @@ class MessageMutationModule {
       );
 
       AppLogger.debug(
-          'Message marked as read: $messageId by ${userId.maskedUserId}');
+        'Message marked as read: $messageId by ${userId.maskedUserId}',
+      );
     } catch (e) {
       AppLogger.error('Failed to mark message as read: $messageId', e);
       rethrow;
@@ -328,8 +358,9 @@ class MessageMutationModule {
       }
 
       final now = clock.now().toUtc();
-      final updatedLastReadTimestamps =
-          Map<String, DateTime>.from(conversation.lastReadTimestamps);
+      final updatedLastReadTimestamps = Map<String, DateTime>.from(
+        conversation.lastReadTimestamps,
+      );
       updatedLastReadTimestamps[userId] = now;
 
       final updatedConversation = conversation.copyWith(
@@ -340,10 +371,13 @@ class MessageMutationModule {
       await updateConversation(updatedConversation);
 
       AppLogger.debug(
-          'Conversation marked as read: $conversationId by ${userId.maskedUserId}');
+        'Conversation marked as read: $conversationId by ${userId.maskedUserId}',
+      );
     } catch (e) {
       AppLogger.error(
-          'Failed to mark conversation as read: $conversationId', e);
+        'Failed to mark conversation as read: $conversationId',
+        e,
+      );
       rethrow;
     }
   }
@@ -401,7 +435,8 @@ class MessageMutationModule {
       await batch.commit();
 
       AppLogger.debug(
-          'Batch marked ${messageIds.length} messages as delivered for ${userId.maskedUserId}');
+        'Batch marked ${messageIds.length} messages as delivered for ${userId.maskedUserId}',
+      );
     } catch (e) {
       AppLogger.error('Failed to batch mark messages as delivered', e);
       rethrow;
@@ -424,7 +459,8 @@ class MessageMutationModule {
       final data = doc.data()!;
       final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
       final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
-      final options = (pollMap['options'] as List<dynamic>?)
+      final options =
+          (pollMap['options'] as List<dynamic>?)
               ?.map((o) => Map<String, dynamic>.from(o as Map))
               .toList() ??
           [];

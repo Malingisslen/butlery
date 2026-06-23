@@ -70,13 +70,17 @@ class InlineTimerText extends StatelessWidget {
                     // Square design language — no border radius.
                     border: Border.all(color: accent),
                     color: accent.withValues(
-                        alpha: AppDimensions.opacityExtraVeryLight),
+                      alpha: AppDimensions.opacityExtraVeryLight,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.timer_outlined,
-                          size: AppDimensions.iconSizeS, color: accent),
+                      Icon(
+                        Icons.timer_outlined,
+                        size: AppDimensions.iconSizeS,
+                        color: accent,
+                      ),
                       const SizedBox(width: AppDimensions.spacingXxs),
                       Text(
                         phrase,

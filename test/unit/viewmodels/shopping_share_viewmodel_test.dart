@@ -115,7 +115,8 @@ void main() {
       ownerDisplayName: 'Test User',
     );
     return list.copyWith(
-      items: items ??
+      items:
+          items ??
           [
             UnifiedShoppingItem(
               id: 'item_1',
@@ -175,8 +176,9 @@ void main() {
     });
 
     test('should handle initialization error', () async {
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenThrow(Exception('Load failed'));
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenThrow(Exception('Load failed'));
 
       await viewModel.initializeCommand();
 
@@ -274,18 +276,21 @@ void main() {
       viewModel.toggleFriendSelectionCommand('friend_2');
       viewModel.updateShareMessageCommand('Helgens inköpslista');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 
       expect(success, isTrue);
       expect(viewModel.isSharing, isFalse);
 
-      verify(() => mockShareOps.shareListWithFriend(any(), 'friend_1'))
-          .called(1);
-      verify(() => mockShareOps.shareListWithFriend(any(), 'friend_2'))
-          .called(1);
+      verify(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_1'),
+      ).called(1);
+      verify(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_2'),
+      ).called(1);
     });
 
     test('should handle partial sharing failure', () async {
@@ -294,10 +299,12 @@ void main() {
       viewModel.toggleFriendSelectionCommand('friend_1');
       viewModel.toggleFriendSelectionCommand('friend_2');
 
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_1'))
-          .thenAnswer((_) async => true);
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_2'))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_2'),
+      ).thenAnswer((_) async => false);
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 
@@ -311,8 +318,9 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenThrow(Exception('Network error'));
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 
@@ -336,8 +344,9 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 
@@ -371,8 +380,9 @@ void main() {
     test('should handle refresh error', () async {
       await viewModel.initializeCommand();
 
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenThrow(Exception('Refresh failed'));
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenThrow(Exception('Refresh failed'));
 
       await viewModel.refreshFriendsCommand();
 
@@ -427,8 +437,9 @@ void main() {
 
   group('ShoppingShareViewModel - Error Handling', () {
     test('should clear error', () async {
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenThrow(Exception('Load failed'));
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenThrow(Exception('Load failed'));
 
       await viewModel.initializeCommand();
       expect(viewModel.error, isNotNull);
@@ -439,8 +450,9 @@ void main() {
     });
 
     test('should clear error when selecting friends', () async {
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenThrow(Exception('Load failed'));
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenThrow(Exception('Load failed'));
 
       await viewModel.initializeCommand();
       expect(viewModel.error, isNotNull);
@@ -455,8 +467,9 @@ void main() {
     });
 
     test('should clear error when updating message', () async {
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenThrow(Exception('Load failed'));
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenThrow(Exception('Load failed'));
 
       await viewModel.initializeCommand();
       expect(viewModel.error, isNotNull);
@@ -485,8 +498,9 @@ void main() {
 
       final shoppingList = createTestShoppingList();
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.canShare, isTrue);
@@ -512,8 +526,9 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final futures = [
         viewModel.shareShoppingListCommand(shoppingList),
@@ -531,14 +546,15 @@ void main() {
 
     test('should handle large friend lists efficiently', () async {
       final largeFriendList = List.generate(
-          100,
-          (index) => UserProfile(
-                uid: 'friend_$index',
-                displayName: 'Friend $index',
-                email: 'friend$index@example.com',
-                joinedAt: DateTime.now(),
-                lastActiveAt: DateTime.now(),
-              ));
+        100,
+        (index) => UserProfile(
+          uid: 'friend_$index',
+          displayName: 'Friend $index',
+          email: 'friend$index@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
 
       when(() => mockFriendsMgmt.getAllFriends()).thenReturn(largeFriendList);
 
@@ -566,8 +582,9 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareShoppingListCommand(emptyList);
 
@@ -593,8 +610,9 @@ void main() {
       viewModel.toggleFriendSelectionCommand('friend_1');
       viewModel.updateShareMessageCommand('Special message! @#\$%^&*()');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final success = await viewModel.shareShoppingListCommand(specialList);
 
@@ -608,10 +626,12 @@ void main() {
       viewModel.toggleFriendSelectionCommand('friend_1');
       viewModel.toggleFriendSelectionCommand('friend_2');
 
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_1'))
-          .thenAnswer((_) async => true);
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_2'))
-          .thenThrow(Exception('Network timeout'));
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_2'),
+      ).thenThrow(Exception('Network timeout'));
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 
@@ -628,11 +648,13 @@ void main() {
       expect(viewModel.selectedFriendIds.length, equals(2));
       expect(viewModel.shareMessage, equals('Test message'));
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenThrow(Exception('Share failed'));
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenThrow(Exception('Share failed'));
 
-      final success =
-          await viewModel.shareShoppingListCommand(createTestShoppingList());
+      final success = await viewModel.shareShoppingListCommand(
+        createTestShoppingList(),
+      );
 
       expect(success, isFalse);
       expect(viewModel.error, isNotNull);
@@ -646,13 +668,15 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final sharePromise = viewModel.shareShoppingListCommand(shoppingList);
 
-      when(() => mockFriendsMgmt.getAllFriends())
-          .thenReturn([testFriends.first]);
+      when(
+        () => mockFriendsMgmt.getAllFriends(),
+      ).thenReturn([testFriends.first]);
       await viewModel.refreshFriendsCommand();
 
       final success = await sharePromise;
@@ -709,8 +733,9 @@ void main() {
 
       viewModel.toggleFriendSelectionCommand('friend_1');
 
-      when(() => mockShareOps.shareListWithFriend(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), any()),
+      ).thenAnswer((_) async => true);
 
       final sharePromise = viewModel.shareShoppingListCommand(shoppingList);
 
@@ -750,12 +775,15 @@ void main() {
       viewModel.toggleFriendSelectionCommand('friend_2');
       viewModel.toggleFriendSelectionCommand('friend_3');
 
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_1'))
-          .thenAnswer((_) async => true);
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_2'))
-          .thenAnswer((_) async => false);
-      when(() => mockShareOps.shareListWithFriend(any(), 'friend_3'))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_2'),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockShareOps.shareListWithFriend(any(), 'friend_3'),
+      ).thenThrow(Exception('Network error'));
 
       final success = await viewModel.shareShoppingListCommand(shoppingList);
 

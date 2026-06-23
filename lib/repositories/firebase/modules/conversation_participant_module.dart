@@ -84,7 +84,8 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-        'Added participant $participantId to conversation $conversationId (subcollection)');
+      'Added participant $participantId to conversation $conversationId (subcollection)',
+    );
   }
 
   /// Add multiple participants to a conversation.
@@ -143,7 +144,8 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-        'Added ${participantDisplayNames.length} participants to conversation $conversationId (subcollection)');
+      'Added ${participantDisplayNames.length} participants to conversation $conversationId (subcollection)',
+    );
   }
 
   /// Remove a participant from a conversation.
@@ -175,7 +177,8 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.debug(
-        'Removed participant $participantId from conversation $conversationId (subcollection)');
+      'Removed participant $participantId from conversation $conversationId (subcollection)',
+    );
   }
 
   /// Update participant's last read timestamp.
@@ -243,7 +246,8 @@ class ConversationParticipantModule {
 
   /// Get all participants for a conversation.
   Future<List<ConversationParticipant>> getParticipants(
-      String conversationId) async {
+    String conversationId,
+  ) async {
     if (!_isEnabled) return [];
 
     final snapshot = await firestore
@@ -259,7 +263,8 @@ class ConversationParticipantModule {
 
   /// Stream participants for a conversation.
   Stream<List<ConversationParticipant>> watchParticipants(
-      String conversationId) {
+    String conversationId,
+  ) {
     if (!_isEnabled) return const Stream.empty();
 
     return firestore
@@ -267,9 +272,11 @@ class ConversationParticipantModule {
         .doc(conversationId)
         .collection(FirestoreCollections.participants)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ConversationParticipant.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ConversationParticipant.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   /// Get conversation memberships for a user (inverse index query).
@@ -301,9 +308,11 @@ class ConversationParticipantModule {
         .orderBy('lastActivityAt', descending: true)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ConversationMembership.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ConversationMembership.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   /// Check if a user is a participant in a conversation.
@@ -394,7 +403,8 @@ class ConversationParticipantModule {
 
     await batch.commit();
     AppLogger.info(
-        'Migrated conversation $conversationId to subcollection participants');
+      'Migrated conversation $conversationId to subcollection participants',
+    );
   }
 
   /// Check if should use subcollection based on participant count.

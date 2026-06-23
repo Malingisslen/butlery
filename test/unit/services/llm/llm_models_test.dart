@@ -64,8 +64,10 @@ void main() {
     });
 
     test('fromUrl factory produces imageUrl-only request', () {
-      final r =
-          OcrRecipeImageRequest.fromUrl('https://x/i.jpg', context: 'pasta');
+      final r = OcrRecipeImageRequest.fromUrl(
+        'https://x/i.jpg',
+        context: 'pasta',
+      );
       expect(r.imageUrl, 'https://x/i.jpg');
       expect(r.imageBase64, isNull);
       expect(r.context, 'pasta');
@@ -117,28 +119,27 @@ void main() {
       // lengths is brittle. We assert only the length invariant:
       // output length = 4 * ceil(input/3).
       expect(
-        OcrRecipeImageRequest.fromBytes(Uint8List.fromList([0xFF]))
-            .imageBase64!
-            .length,
-        4,
-      );
-      expect(
-        OcrRecipeImageRequest.fromBytes(Uint8List.fromList([0xFF, 0xD8]))
-            .imageBase64!
-            .length,
-        4,
-      );
-      expect(
-        OcrRecipeImageRequest.fromBytes(Uint8List.fromList([0xFF, 0xD8, 0xFF]))
-            .imageBase64!
-            .length,
+        OcrRecipeImageRequest.fromBytes(
+          Uint8List.fromList([0xFF]),
+        ).imageBase64!.length,
         4,
       );
       expect(
         OcrRecipeImageRequest.fromBytes(
-                Uint8List.fromList(List.filled(6, 0xFF)))
-            .imageBase64!
-            .length,
+          Uint8List.fromList([0xFF, 0xD8]),
+        ).imageBase64!.length,
+        4,
+      );
+      expect(
+        OcrRecipeImageRequest.fromBytes(
+          Uint8List.fromList([0xFF, 0xD8, 0xFF]),
+        ).imageBase64!.length,
+        4,
+      );
+      expect(
+        OcrRecipeImageRequest.fromBytes(
+          Uint8List.fromList(List.filled(6, 0xFF)),
+        ).imageBase64!.length,
         8,
       );
     });
@@ -200,13 +201,21 @@ void main() {
 
       test('preparation wrapped in parens at end', () {
         const i = ExtractedIngredient(
-            amount: 2, unit: 'dl', name: 'mjölk', preparation: 'kall');
+          amount: 2,
+          unit: 'dl',
+          name: 'mjölk',
+          preparation: 'kall',
+        );
         expect(i.formatted, '2 dl mjölk (kall)');
       });
 
       test('empty preparation treated as missing', () {
         const i = ExtractedIngredient(
-            amount: 2, unit: 'dl', name: 'mjölk', preparation: '');
+          amount: 2,
+          unit: 'dl',
+          name: 'mjölk',
+          preparation: '',
+        );
         expect(i.formatted, '2 dl mjölk');
       });
 
@@ -280,26 +289,28 @@ void main() {
   });
 
   group('StructureRecipeResponse', () {
-    test('fromJson parses success + recipe + cost + modelId + promptVersion',
-        () {
-      final r = StructureRecipeResponse.fromJson({
-        'success': true,
-        'recipe': {
-          'title': 'Pasta',
-          'ingredients': [],
-          'instructions': [],
-        },
-        'estimatedCost': 0.0023,
-        'promptVersion': 'v2',
-        'modelId': 'gemini-2.0-flash-001',
-      });
-      expect(r.success, isTrue);
-      expect(r.recipe!.title, 'Pasta');
-      expect(r.estimatedCost, 0.0023);
-      expect(r.promptVersion, 'v2');
-      expect(r.modelId, 'gemini-2.0-flash-001');
-      expect(r.error, isNull);
-    });
+    test(
+      'fromJson parses success + recipe + cost + modelId + promptVersion',
+      () {
+        final r = StructureRecipeResponse.fromJson({
+          'success': true,
+          'recipe': {
+            'title': 'Pasta',
+            'ingredients': [],
+            'instructions': [],
+          },
+          'estimatedCost': 0.0023,
+          'promptVersion': 'v2',
+          'modelId': 'gemini-2.0-flash-001',
+        });
+        expect(r.success, isTrue);
+        expect(r.recipe!.title, 'Pasta');
+        expect(r.estimatedCost, 0.0023);
+        expect(r.promptVersion, 'v2');
+        expect(r.modelId, 'gemini-2.0-flash-001');
+        expect(r.error, isNull);
+      },
+    );
 
     test('fromJson safe defaults for missing fields', () {
       final r = StructureRecipeResponse.fromJson(<String, dynamic>{});

@@ -3,7 +3,9 @@
 abstract class DeviceRepository {
   /// Save FCM token to Firestore (per-device model)
   Future<void> saveTokenToFirestore(
-      String docId, Map<String, dynamic> tokenData);
+    String docId,
+    Map<String, dynamic> tokenData,
+  );
 
   /// Update device information
   Future<void> updateDeviceInfo(String docId, Map<String, dynamic> deviceData);

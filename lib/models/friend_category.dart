@@ -34,8 +34,8 @@ class FriendCategory {
     this.sortOrder = 0,
     this.isDefault = false,
     this.isHousehold = false,
-  })  : createdAt = createdAt ?? clock.now(),
-        updatedAt = updatedAt ?? clock.now();
+  }) : createdAt = createdAt ?? clock.now(),
+       updatedAt = updatedAt ?? clock.now();
 
   /// Factory constructor with auto-generated ID
   factory FriendCategory.create({
@@ -185,10 +185,12 @@ class FriendCategory {
       description: SerializationUtils.safeNullableString(data, 'description'),
       emoji: SerializationUtils.safeNullableString(data, 'emoji'),
       friendUserIds: SerializationUtils.safeStringList(data, 'friendUserIds'),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
-      updatedAt:
-          SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        data['createdAt'],
+      ),
+      updatedAt: SerializationUtils.parseRequiredDateTimeValue(
+        data['updatedAt'],
+      ),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(data, 'isDefault'),
       isHousehold: SerializationUtils.safeBool(data, 'isHousehold'),
@@ -248,37 +250,37 @@ class FriendCategory {
 /// Predefined category data for quick setup
 class DefaultFriendCategories {
   static List<Map<String, dynamic>> get defaults => [
-        {
-          'name': AppLocale.current.friendCategoryDefaultFamily,
-          'description': AppLocale.current.friendCategoryDefaultFamilyDesc,
-          'emoji': '👨‍👩‍👧‍👦',
-          'sortOrder': 0,
-        },
-        {
-          'name': AppLocale.current.friendCategoryDefaultFriends,
-          'description': AppLocale.current.friendCategoryDefaultFriendsDesc,
-          'emoji': '👥',
-          'sortOrder': 1,
-        },
-        {
-          'name': AppLocale.current.friendCategoryDefaultNeighbors,
-          'description': AppLocale.current.friendCategoryDefaultNeighborsDesc,
-          'emoji': '🏠',
-          'sortOrder': 2,
-        },
-        {
-          'name': AppLocale.current.friendCategoryDefaultWork,
-          'description': AppLocale.current.friendCategoryDefaultWorkDesc,
-          'emoji': '💼',
-          'sortOrder': 3,
-        },
-        {
-          'name': AppLocale.current.friendCategoryDefaultFoodGroup,
-          'description': AppLocale.current.friendCategoryDefaultFoodGroupDesc,
-          'emoji': '👨‍🍳',
-          'sortOrder': 4,
-        },
-      ];
+    {
+      'name': AppLocale.current.friendCategoryDefaultFamily,
+      'description': AppLocale.current.friendCategoryDefaultFamilyDesc,
+      'emoji': '👨‍👩‍👧‍👦',
+      'sortOrder': 0,
+    },
+    {
+      'name': AppLocale.current.friendCategoryDefaultFriends,
+      'description': AppLocale.current.friendCategoryDefaultFriendsDesc,
+      'emoji': '👥',
+      'sortOrder': 1,
+    },
+    {
+      'name': AppLocale.current.friendCategoryDefaultNeighbors,
+      'description': AppLocale.current.friendCategoryDefaultNeighborsDesc,
+      'emoji': '🏠',
+      'sortOrder': 2,
+    },
+    {
+      'name': AppLocale.current.friendCategoryDefaultWork,
+      'description': AppLocale.current.friendCategoryDefaultWorkDesc,
+      'emoji': '💼',
+      'sortOrder': 3,
+    },
+    {
+      'name': AppLocale.current.friendCategoryDefaultFoodGroup,
+      'description': AppLocale.current.friendCategoryDefaultFoodGroupDesc,
+      'emoji': '👨‍🍳',
+      'sortOrder': 4,
+    },
+  ];
 
   /// Create default categories for a user
   static List<FriendCategory> createDefaultsForUser(String ownerId) {

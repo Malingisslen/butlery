@@ -69,12 +69,18 @@ void main() {
   ModelTestBase.testModelGroup('RealtimeResource', () {
     group('RealtimeResourceType', () {
       test('should create from string values', () {
-        expect(RealtimeResourceType.fromString('recipe'),
-            equals(RealtimeResourceType.recipe));
-        expect(RealtimeResourceType.fromString('menu'),
-            equals(RealtimeResourceType.menu));
-        expect(RealtimeResourceType.fromString('shopping_list'),
-            equals(RealtimeResourceType.shoppingList));
+        expect(
+          RealtimeResourceType.fromString('recipe'),
+          equals(RealtimeResourceType.recipe),
+        );
+        expect(
+          RealtimeResourceType.fromString('menu'),
+          equals(RealtimeResourceType.menu),
+        );
+        expect(
+          RealtimeResourceType.fromString('shopping_list'),
+          equals(RealtimeResourceType.shoppingList),
+        );
       });
 
       test('should throw on unknown type', () {
@@ -87,8 +93,10 @@ void main() {
       test('should provide Swedish display names', () {
         expect(RealtimeResourceType.recipe.displayName, equals('Recept'));
         expect(RealtimeResourceType.menu.displayName, equals('Meny'));
-        expect(RealtimeResourceType.shoppingList.displayName,
-            equals('Inköpslista'));
+        expect(
+          RealtimeResourceType.shoppingList.displayName,
+          equals('Inköpslista'),
+        );
       });
 
       test('should provide emoji icons', () {
@@ -100,8 +108,10 @@ void main() {
       test('should convert to string value', () {
         expect(RealtimeResourceType.recipe.toString(), equals('recipe'));
         expect(RealtimeResourceType.menu.toString(), equals('menu'));
-        expect(RealtimeResourceType.shoppingList.toString(),
-            equals('shopping_list'));
+        expect(
+          RealtimeResourceType.shoppingList.toString(),
+          equals('shopping_list'),
+        );
       });
     });
 
@@ -138,7 +148,7 @@ void main() {
         final lastEditedAt = DateTime(2025, 1, 2);
         final metadata = {
           'version': '1.0',
-          'tags': ['test']
+          'tags': ['test'],
         };
 
         final resource = TestRealtimeResource(
@@ -179,21 +189,25 @@ void main() {
         final after = DateTime.now();
 
         expect(
-            resource.createdAt.isAfter(before) ||
-                resource.createdAt.isAtSameMomentAs(before),
-            isTrue);
+          resource.createdAt.isAfter(before) ||
+              resource.createdAt.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            resource.createdAt.isBefore(after) ||
-                resource.createdAt.isAtSameMomentAs(after),
-            isTrue);
+          resource.createdAt.isBefore(after) ||
+              resource.createdAt.isAtSameMomentAs(after),
+          isTrue,
+        );
         expect(
-            resource.lastEditedAt.isAfter(before) ||
-                resource.lastEditedAt.isAtSameMomentAs(before),
-            isTrue);
+          resource.lastEditedAt.isAfter(before) ||
+              resource.lastEditedAt.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            resource.lastEditedAt.isBefore(after) ||
-                resource.lastEditedAt.isAtSameMomentAs(after),
-            isTrue);
+          resource.lastEditedAt.isBefore(after) ||
+              resource.lastEditedAt.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
 
@@ -261,12 +275,16 @@ void main() {
 
       test('should check if user can leave', () {
         expect(
-            resource.canUserLeave('user_owner'), isFalse); // Owner cannot leave
+          resource.canUserLeave('user_owner'),
+          isFalse,
+        ); // Owner cannot leave
         expect(resource.canUserLeave('user_admin'), isTrue);
         expect(resource.canUserLeave('user_editor'), isTrue);
         expect(resource.canUserLeave('user_viewer'), isTrue);
-        expect(resource.canUserLeave('user_unknown'),
-            isFalse); // Not a participant
+        expect(
+          resource.canUserLeave('user_unknown'),
+          isFalse,
+        ); // Not a participant
       });
 
       test('should handle owner not in participants map', () {
@@ -287,44 +305,69 @@ void main() {
         expect(resourceWithoutOwnerInMap.isOwner('user_owner'), isTrue);
         expect(resourceWithoutOwnerInMap.canUserEdit('user_owner'), isTrue);
         expect(resourceWithoutOwnerInMap.canUserDelete('user_owner'), isTrue);
-        expect(resourceWithoutOwnerInMap.canUserManagePermissions('user_owner'),
-            isTrue);
+        expect(
+          resourceWithoutOwnerInMap.canUserManagePermissions('user_owner'),
+          isTrue,
+        );
         expect(resourceWithoutOwnerInMap.canUserInvite('user_owner'), isTrue);
       });
 
       test('should validate hasPermission method', () {
         // Owner has all permissions
-        expect(resource.hasPermission('user_owner', ResourcePermission.viewer),
-            isTrue);
-        expect(resource.hasPermission('user_owner', ResourcePermission.editor),
-            isTrue);
-        expect(resource.hasPermission('user_owner', ResourcePermission.admin),
-            isTrue);
-        expect(resource.hasPermission('user_owner', ResourcePermission.owner),
-            isTrue);
+        expect(
+          resource.hasPermission('user_owner', ResourcePermission.viewer),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_owner', ResourcePermission.editor),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_owner', ResourcePermission.admin),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_owner', ResourcePermission.owner),
+          isTrue,
+        );
 
         // Editor has editor and viewer permissions
-        expect(resource.hasPermission('user_editor', ResourcePermission.viewer),
-            isTrue);
-        expect(resource.hasPermission('user_editor', ResourcePermission.editor),
-            isTrue);
-        expect(resource.hasPermission('user_editor', ResourcePermission.admin),
-            isFalse);
-        expect(resource.hasPermission('user_editor', ResourcePermission.owner),
-            isFalse);
+        expect(
+          resource.hasPermission('user_editor', ResourcePermission.viewer),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_editor', ResourcePermission.editor),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_editor', ResourcePermission.admin),
+          isFalse,
+        );
+        expect(
+          resource.hasPermission('user_editor', ResourcePermission.owner),
+          isFalse,
+        );
 
         // Viewer only has viewer permission
-        expect(resource.hasPermission('user_viewer', ResourcePermission.viewer),
-            isTrue);
-        expect(resource.hasPermission('user_viewer', ResourcePermission.editor),
-            isFalse);
-        expect(resource.hasPermission('user_viewer', ResourcePermission.admin),
-            isFalse);
+        expect(
+          resource.hasPermission('user_viewer', ResourcePermission.viewer),
+          isTrue,
+        );
+        expect(
+          resource.hasPermission('user_viewer', ResourcePermission.editor),
+          isFalse,
+        );
+        expect(
+          resource.hasPermission('user_viewer', ResourcePermission.admin),
+          isFalse,
+        );
 
         // Unknown user has no permissions
         expect(
-            resource.hasPermission('user_unknown', ResourcePermission.viewer),
-            isFalse);
+          resource.hasPermission('user_unknown', ResourcePermission.viewer),
+          isFalse,
+        );
       });
     });
 
@@ -364,11 +407,18 @@ void main() {
 
       test('should get user IDs by permission', () {
         expect(
-            resource.editorIds,
-            containsAll(
-                ['user_owner', 'user_admin', 'user_editor1', 'user_editor2']));
-        expect(resource.viewerIds,
-            containsAll(['user_viewer1', 'user_viewer2', 'user_viewer3']));
+          resource.editorIds,
+          containsAll([
+            'user_owner',
+            'user_admin',
+            'user_editor1',
+            'user_editor2',
+          ]),
+        );
+        expect(
+          resource.viewerIds,
+          containsAll(['user_viewer1', 'user_viewer2', 'user_viewer3']),
+        );
       });
 
       test('should filter participants by permission', () {
@@ -416,42 +466,50 @@ void main() {
 
         // 30 minutes ago
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(minutes: 30)));
+          DateTime.now().subtract(Duration(minutes: 30)),
+        );
         expect(resource.lastEditedTimeAgo, equals('30 min sedan'));
 
         // 2 hours ago
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(hours: 2)));
+          DateTime.now().subtract(Duration(hours: 2)),
+        );
         expect(resource.lastEditedTimeAgo, equals('2 tim sedan'));
 
         // 3 days ago
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 3)));
+          DateTime.now().subtract(Duration(days: 3)),
+        );
         expect(resource.lastEditedTimeAgo, equals('3 dagar sedan'));
 
         // 2 weeks ago
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 14)));
+          DateTime.now().subtract(Duration(days: 14)),
+        );
         expect(resource.lastEditedTimeAgo, equals('2 veckor sedan'));
       });
 
       test('should check recent activity', () {
         var resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(minutes: 30)));
+          DateTime.now().subtract(Duration(minutes: 30)),
+        );
         expect(resource.hasRecentActivity, isTrue);
 
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(hours: 2)));
+          DateTime.now().subtract(Duration(hours: 2)),
+        );
         expect(resource.hasRecentActivity, isFalse);
       });
 
       test('should check weekly activity', () {
         var resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 3)));
+          DateTime.now().subtract(Duration(days: 3)),
+        );
         expect(resource.hasWeeklyActivity, isTrue);
 
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 8)));
+          DateTime.now().subtract(Duration(days: 8)),
+        );
         expect(resource.hasWeeklyActivity, isFalse);
       });
 
@@ -464,15 +522,18 @@ void main() {
 
       test('should get activity text', () {
         var resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(minutes: 30)));
+          DateTime.now().subtract(Duration(minutes: 30)),
+        );
         expect(resource.activityText, equals('Aktiv nu'));
 
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 3)));
+          DateTime.now().subtract(Duration(days: 3)),
+        );
         expect(resource.activityText, equals('Aktiv denna veckan'));
 
         resource = _createResourceWithLastEdit(
-            DateTime.now().subtract(Duration(days: 10)));
+          DateTime.now().subtract(Duration(days: 10)),
+        );
         expect(resource.activityText, equals('Inaktiv'));
       });
 
@@ -488,7 +549,9 @@ void main() {
           editCount: 0,
         );
         expect(
-            resource.getChangesSummary(), equals('Skapades av Anna Andersson'));
+          resource.getChangesSummary(),
+          equals('Skapades av Anna Andersson'),
+        );
 
         resource = TestRealtimeResource(
           id: 'resource_123',
@@ -501,8 +564,10 @@ void main() {
           lastEditedByDisplayName: 'Erik Eriksson',
           editCount: 5,
         );
-        expect(resource.getChangesSummary(),
-            contains('Senast redigerad av Erik Eriksson'));
+        expect(
+          resource.getChangesSummary(),
+          contains('Senast redigerad av Erik Eriksson'),
+        );
         expect(resource.getChangesSummary(), contains('tim sedan'));
       });
     });
@@ -527,14 +592,22 @@ void main() {
         );
 
         expect(resource.getUserPermissionText('user_owner'), equals('Ägare'));
-        expect(resource.getUserPermissionText('user_admin'),
-            equals('Administratör'));
-        expect(resource.getUserPermissionText('user_editor'),
-            equals('Redigerare'));
         expect(
-            resource.getUserPermissionText('user_writer'), equals('Skrivare'));
-        expect(resource.getUserPermissionText('user_viewer'),
-            equals('Betraktare'));
+          resource.getUserPermissionText('user_admin'),
+          equals('Administratör'),
+        );
+        expect(
+          resource.getUserPermissionText('user_editor'),
+          equals('Redigerare'),
+        );
+        expect(
+          resource.getUserPermissionText('user_writer'),
+          equals('Skrivare'),
+        );
+        expect(
+          resource.getUserPermissionText('user_viewer'),
+          equals('Betraktare'),
+        );
         expect(resource.getUserPermissionText('user_reader'), equals('Läsare'));
         expect(resource.getUserPermissionText('user_unknown'), isNull);
       });
@@ -560,14 +633,18 @@ void main() {
       });
 
       test('should add participant', () {
-        final updated = resource.addParticipant(
-          'user_viewer',
-          'New Viewer',
-          ResourcePermission.viewer,
-        ) as TestRealtimeResource;
+        final updated =
+            resource.addParticipant(
+                  'user_viewer',
+                  'New Viewer',
+                  ResourcePermission.viewer,
+                )
+                as TestRealtimeResource;
 
-        expect(updated.participants['user_viewer'],
-            equals(ResourcePermission.viewer));
+        expect(
+          updated.participants['user_viewer'],
+          equals(ResourcePermission.viewer),
+        );
         expect(updated.participantCount, equals(3));
         expect(updated.editCount, equals(6));
         expect(updated.lastEditedBy, equals('user_owner'));
@@ -590,20 +667,26 @@ void main() {
       });
 
       test('should update participant permission', () {
-        final updated = resource.updateParticipantPermission(
-          'user_editor',
-          ResourcePermission.admin,
-        ) as TestRealtimeResource;
+        final updated =
+            resource.updateParticipantPermission(
+                  'user_editor',
+                  ResourcePermission.admin,
+                )
+                as TestRealtimeResource;
 
-        expect(updated.participants['user_editor'],
-            equals(ResourcePermission.admin));
+        expect(
+          updated.participants['user_editor'],
+          equals(ResourcePermission.admin),
+        );
         expect(updated.editCount, equals(6));
       });
 
       test('should throw when changing owner permission to non-owner', () {
         expect(
           () => resource.updateParticipantPermission(
-              'user_owner', ResourcePermission.editor),
+            'user_owner',
+            ResourcePermission.editor,
+          ),
           throwsArgumentError,
         );
       });
@@ -627,8 +710,9 @@ void main() {
       });
 
       test('should mark as edited by user', () {
-        final updated = resource.markEditedBy('user_456', 'Erik Eriksson')
-            as TestRealtimeResource;
+        final updated =
+            resource.markEditedBy('user_456', 'Erik Eriksson')
+                as TestRealtimeResource;
 
         expect(updated.lastEditedBy, equals('user_456'));
         expect(updated.lastEditedByDisplayName, equals('Erik Eriksson'));
@@ -733,17 +817,23 @@ void main() {
           'metadata': {'test': true},
         };
 
-        final parsed =
-            RealtimeResource.parseFirestoreMetadata(firestoreData, 'doc_123');
+        final parsed = RealtimeResource.parseFirestoreMetadata(
+          firestoreData,
+          'doc_123',
+        );
 
         expect(parsed['id'], equals('doc_123'));
         expect(parsed['type'], equals(RealtimeResourceType.menu));
         expect(parsed['ownerId'], equals('user_123'));
         expect(parsed['ownerDisplayName'], equals('Anna'));
-        expect(parsed['participants']['user_456'],
-            equals(ResourcePermission.editor));
-        expect(parsed['participants']['user_789'],
-            equals(ResourcePermission.viewer));
+        expect(
+          parsed['participants']['user_456'],
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          parsed['participants']['user_789'],
+          equals(ResourcePermission.viewer),
+        );
         expect(parsed['createdAt'], equals(DateTime(2025, 1, 1)));
         expect(parsed['lastEditedAt'], equals(DateTime(2025, 1, 2)));
         expect(parsed['editCount'], equals(5));
@@ -885,8 +975,10 @@ void main() {
           },
         };
 
-        final parsed =
-            RealtimeResource.parseFirestoreMetadata(firestoreData, 'doc_123');
+        final parsed = RealtimeResource.parseFirestoreMetadata(
+          firestoreData,
+          'doc_123',
+        );
         final participants =
             parsed['participants'] as Map<String, ResourcePermission>;
 

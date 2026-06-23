@@ -33,10 +33,12 @@ class CommentItemWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SocialAvatarComponents.avatar(
-                  displayName:
-                      socialViewModel.getAuthorDisplayName(comment.authorId),
-                  imageUrl:
-                      socialViewModel.getAuthorAvatarUrl(comment.authorId),
+                  displayName: socialViewModel.getAuthorDisplayName(
+                    comment.authorId,
+                  ),
+                  imageUrl: socialViewModel.getAuthorAvatarUrl(
+                    comment.authorId,
+                  ),
                   size: ImageSize.small,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
@@ -47,8 +49,9 @@ class CommentItemWidget extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            socialViewModel
-                                .getAuthorDisplayName(comment.authorId),
+                            socialViewModel.getAuthorDisplayName(
+                              comment.authorId,
+                            ),
                             style: AppTextStyles.labelLarge,
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
@@ -140,8 +143,9 @@ class CommentItemWidget extends StatelessWidget {
   List<Widget> _buildReplies(BuildContext context) {
     return socialViewModel.getReplies(comment.id).map((reply) {
       return Padding(
-        padding:
-            const EdgeInsetsDirectional.only(start: AppDimensions.spacingL),
+        padding: const EdgeInsetsDirectional.only(
+          start: AppDimensions.spacingL,
+        ),
         child: CommentItemWidget(
           socialViewModel: socialViewModel,
           comment: reply,

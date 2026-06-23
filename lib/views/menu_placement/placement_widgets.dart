@@ -69,7 +69,8 @@ class PlacementGrid extends StatelessWidget {
                   ),
                   for (final slot in MealSlot.values) ...[
                     Expanded(
-                        child: _PlacementCell(vm: vm, day: day, slot: slot)),
+                      child: _PlacementCell(vm: vm, day: day, slot: slot),
+                    ),
                     if (slot != MealSlot.ovrigt) const SizedBox(width: 4),
                   ],
                 ],
@@ -137,7 +138,9 @@ class _PlacementCell extends StatelessWidget {
               const SizedBox(height: 3),
             ],
             if (eligible)
-              Expanded(child: _EligibleCell(vm: vm, day: day, slot: slot)),
+              Expanded(
+                child: _EligibleCell(vm: vm, day: day, slot: slot),
+              ),
           ],
         ),
       ),
@@ -161,8 +164,10 @@ class _EligibleCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label:
-          context.l10n.a11yPlacementCell(day.displayLabel, slot.displayLabel),
+      label: context.l10n.a11yPlacementCell(
+        day.displayLabel,
+        slot.displayLabel,
+      ),
       button: true,
       child: InkWell(
         onTap: () => vm.placeSelectedAt(day),
@@ -377,8 +382,9 @@ class PlacementTrayCard extends StatelessWidget {
                     item.recipe.title,
                     style: AppTextStyles.labelSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      decoration:
-                          item.isPlaced ? TextDecoration.lineThrough : null,
+                      decoration: item.isPlaced
+                          ? TextDecoration.lineThrough
+                          : null,
                       height: 1.2,
                     ),
                     maxLines: 2,

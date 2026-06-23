@@ -29,7 +29,8 @@ class CollaborativeConnectionWidgets {
             ),
             decoration: BoxDecoration(
               color: successColor.withValues(
-                  alpha: AppDimensions.opacityVeryLight),
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
             ),
             child: Row(
@@ -62,8 +63,9 @@ class CollaborativeConnectionWidgets {
           decoration: BoxDecoration(
             color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
             border: Border.all(
-              color:
-                  cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
+              color: cs.error.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
             ),
           ),
           child: Row(
@@ -72,8 +74,8 @@ class CollaborativeConnectionWidgets {
                 Text(
                   statusEmoji,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: AppDimensions.iconSizeM.toDouble(),
-                      ),
+                    fontSize: AppDimensions.iconSizeM.toDouble(),
+                  ),
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
               ],

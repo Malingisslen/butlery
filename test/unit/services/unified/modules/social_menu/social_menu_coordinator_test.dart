@@ -196,27 +196,27 @@ class _AddParticipantThrowsRealtimeMenuService extends MockRealtimeMenuService {
 /// A collaborative shared menu (has a realtimeMenuId) — routes joinSharedMenu
 /// into the realtime/addParticipant branch rather than the static-import one.
 SharedMenu _collaborativeSharedMenu() => SharedMenu(
-      id: 'shared-collab-1',
-      sharedByUserId: 'owner-uid',
-      sharedByDisplayName: 'Owner',
-      menuTitle: 'Veckomeny',
-      menuSnapshot: {
-        'Måndag': [_makeRecipe()],
-      },
-      realtimeMenuId: 'rt-menu-1',
-    );
+  id: 'shared-collab-1',
+  sharedByUserId: 'owner-uid',
+  sharedByDisplayName: 'Owner',
+  menuTitle: 'Veckomeny',
+  menuSnapshot: {
+    'Måndag': [_makeRecipe()],
+  },
+  realtimeMenuId: 'rt-menu-1',
+);
 
 /// A static shared menu (no realtimeMenuId) — routes joinSharedMenu into the
 /// UnifiedMenuService.importSharedMenu branch rather than the realtime one.
 SharedMenu _staticSharedMenu() => SharedMenu(
-      id: 'shared-static-1',
-      sharedByUserId: 'owner-uid',
-      sharedByDisplayName: 'Owner',
-      menuTitle: 'Statisk meny',
-      menuSnapshot: {
-        'Måndag': [_makeRecipe()],
-      },
-    );
+  id: 'shared-static-1',
+  sharedByUserId: 'owner-uid',
+  sharedByDisplayName: 'Owner',
+  menuTitle: 'Statisk meny',
+  menuSnapshot: {
+    'Måndag': [_makeRecipe()],
+  },
+);
 
 Recipe _makeRecipe({
   String title = 'Pannkakor',
@@ -365,8 +365,11 @@ void main() {
         });
 
         expect(title, contains('Middag'));
-        expect(title, contains('2'),
-            reason: 'totalRecipeCount must reflect the fold across the list');
+        expect(
+          title,
+          contains('2'),
+          reason: 'totalRecipeCount must reflect the fold across the list',
+        );
       });
 
       /// Proves multi-category route joins category names with ", " and
@@ -398,8 +401,10 @@ void main() {
       /// Non-empty map but zero recipes inside any category → false. The
       /// totalRecipeCount==0 guard prevents "empty-but-categorized" shares.
       test('categories with no recipes → false', () {
-        expect(coordinator.validateMenuForSharing({'Mån': [], 'Tis': []}),
-            isFalse);
+        expect(
+          coordinator.validateMenuForSharing({'Mån': [], 'Tis': []}),
+          isFalse,
+        );
       });
 
       /// Any recipe with empty title → false. A buggy share could ship
@@ -540,21 +545,22 @@ void main() {
       /// Pins the additionalData key contract — a key rename in either
       /// direction would silently disable the toggle.
       test(
-          'additionalData.allowCollaboration=true → model.allowCollaboration=true',
-          () {
-        final shared = coordinator.createSharedContentModel(
-          originalContentId: 'm-1',
-          sharedByUserId: 'sender',
-          sharedByDisplayName: 'Anna',
-          sharedToUserIds: ['friend-1'],
-          contentSnapshot: {
-            'Mån': [_makeRecipe(title: 'A')],
-          },
-          additionalData: const {'allowCollaboration': true},
-        );
+        'additionalData.allowCollaboration=true → model.allowCollaboration=true',
+        () {
+          final shared = coordinator.createSharedContentModel(
+            originalContentId: 'm-1',
+            sharedByUserId: 'sender',
+            sharedByDisplayName: 'Anna',
+            sharedToUserIds: ['friend-1'],
+            contentSnapshot: {
+              'Mån': [_makeRecipe(title: 'A')],
+            },
+            additionalData: const {'allowCollaboration': true},
+          );
 
-        expect(shared.allowCollaboration, isTrue);
-      });
+          expect(shared.allowCollaboration, isTrue);
+        },
+      );
 
       /// Custom menuTitle from additionalData wins over computed title.
       /// User-typed names should never be overwritten by auto-generated
@@ -626,40 +632,54 @@ void main() {
       /// ("(Min kopia)" suffix) and have their cooking history reset.
       /// Category names stay original — unlike `createStaticCopyForOwner`
       /// which also suffixes categories, imports keep the menu layout.
-      test('attributes recipe titles with (Min kopia) and clears lastCookedAt',
-          () {
-        final original = _makeRecipe(
-          title: 'Köttbullar',
-          description: 'X',
-          lastCookedAt: DateTime(2025, 1, 1),
-        );
-        final shared = SharedMenu(
-          id: 'sm-1',
-          sharedByUserId: 'sender',
-          sharedByDisplayName: 'Anna',
-          menuTitle: 'V',
-          menuSnapshot: {
-            'Mån': [original],
-          },
-        );
+      test(
+        'attributes recipe titles with (Min kopia) and clears lastCookedAt',
+        () {
+          final original = _makeRecipe(
+            title: 'Köttbullar',
+            description: 'X',
+            lastCookedAt: DateTime(2025, 1, 1),
+          );
+          final shared = SharedMenu(
+            id: 'sm-1',
+            sharedByUserId: 'sender',
+            sharedByDisplayName: 'Anna',
+            menuTitle: 'V',
+            menuSnapshot: {
+              'Mån': [original],
+            },
+          );
 
-        final imported = coordinator.createImportedContent(
-          sharedContent: shared,
-          newOwnerId: 'me-uid',
-        );
+          final imported = coordinator.createImportedContent(
+            sharedContent: shared,
+            newOwnerId: 'me-uid',
+          );
 
-        final importedRecipe = imported['Mån']!.single;
-        expect(importedRecipe.title, endsWith('(Min kopia)'),
-            reason: 'BUT-1093: title gets "(Min kopia)" attribution suffix');
-        expect(importedRecipe.title, 'Köttbullar (Min kopia)');
-        expect(importedRecipe.lastCookedAt, isNull,
-            reason: 'BUT-1093: cooking history reset on import');
-        expect(importedRecipe.description, 'X',
-            reason: 'non-title fields preserved verbatim');
-        expect(imported.keys.toSet(), {'Mån'},
+          final importedRecipe = imported['Mån']!.single;
+          expect(
+            importedRecipe.title,
+            endsWith('(Min kopia)'),
+            reason: 'BUT-1093: title gets "(Min kopia)" attribution suffix',
+          );
+          expect(importedRecipe.title, 'Köttbullar (Min kopia)');
+          expect(
+            importedRecipe.lastCookedAt,
+            isNull,
+            reason: 'BUT-1093: cooking history reset on import',
+          );
+          expect(
+            importedRecipe.description,
+            'X',
+            reason: 'non-title fields preserved verbatim',
+          );
+          expect(
+            imported.keys.toSet(),
+            {'Mån'},
             reason:
-                'category names unchanged — only static copies suffix categories');
-      });
+                'category names unchanged — only static copies suffix categories',
+          );
+        },
+      );
     });
 
     group('getOriginalContentFromShared', () {
@@ -710,8 +730,11 @@ void main() {
 
         expect(out, isNotNull);
         // `triggerCopyOnWrite` returns `this` in this branch.
-        expect(identical(out, shared), isTrue,
-            reason: 'no-op for self-edit returns the same instance');
+        expect(
+          identical(out, shared),
+          isTrue,
+          reason: 'no-op for self-edit returns the same instance',
+        );
       });
 
       /// Pinned: different editor triggers CoW — copyOnWriteTriggered
@@ -775,11 +798,15 @@ void main() {
       /// commit 7b2d25b35 (BUT-1090 fix) made not-found go through the
       /// same outer catch as other failures.
       test('unknown id → null AND error set (post-BUT-1090 fix)', () async {
-        final out =
-            await coordinator.joinSharedMenu(sharedMenuId: 'does-not-exist');
+        final out = await coordinator.joinSharedMenu(
+          sharedMenuId: 'does-not-exist',
+        );
         expect(out, isNull);
-        expect(lastError, isNotNull,
-            reason: 'BUT-1090 fix: not-found now surfaces error banner');
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'BUT-1090 fix: not-found now surfaces error banner',
+        );
       });
 
       /// REGRESSION GUARD — was a real production bug (BUT-1090). Unlike
@@ -796,8 +823,7 @@ void main() {
       /// fail the test. The assertion proves: (a) the throw is swallowed
       /// → null returned, and (b) `setError(sanitised)` ran → caller can
       /// surface a banner instead of crashing.
-      test(
-          'repo throw is swallowed → null AND setError called '
+      test('repo throw is swallowed → null AND setError called '
           '(BUT-1090 regression)', () async {
         final throwingCoord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
@@ -813,13 +839,20 @@ void main() {
         );
         addTearDown(() async => await throwingCoord.dispose());
 
-        final out =
-            await throwingCoord.joinSharedMenu(sharedMenuId: 'whatever');
+        final out = await throwingCoord.joinSharedMenu(
+          sharedMenuId: 'whatever',
+        );
 
-        expect(out, isNull,
-            reason: 'outer try-catch must route throw to null return');
-        expect(lastError, isNotNull,
-            reason: 'sanitised error must be surfaced via setError');
+        expect(
+          out,
+          isNull,
+          reason: 'outer try-catch must route throw to null return',
+        );
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'sanitised error must be surfaced via setError',
+        );
       });
 
       /// BUT-1121 (BUT-1090 follow-up): the collaborative branch wraps
@@ -831,13 +864,14 @@ void main() {
       /// (outer catch → null + banner). This pins the independence: with
       /// addParticipant throwing, the join still returns a collaborative
       /// result, still marks the share joined, and sets NO error banner.
-      test(
-          'BUT-1121: addParticipant throw is swallowed by the inner catch — '
+      test('BUT-1121: addParticipant throw is swallowed by the inner catch — '
           'join still succeeds collaboratively, no banner', () async {
-        final repo =
-            _CollaborativeSharedMenuRepository(_collaborativeSharedMenu());
+        final repo = _CollaborativeSharedMenuRepository(
+          _collaborativeSharedMenu(),
+        );
         TestServiceLocator.registerMock<RealtimeMenuService>(
-            _AddParticipantThrowsRealtimeMenuService());
+          _AddParticipantThrowsRealtimeMenuService(),
+        );
 
         final coord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
@@ -855,16 +889,27 @@ void main() {
 
         final out = await coord.joinSharedMenu(sharedMenuId: 'shared-collab-1');
 
-        expect(out, isNotNull,
-            reason: 'inner catch must absorb the participant-add failure, '
-                'not let the outer catch abort the join');
+        expect(
+          out,
+          isNotNull,
+          reason:
+              'inner catch must absorb the participant-add failure, '
+              'not let the outer catch abort the join',
+        );
         expect(out!.isCollaborative, isTrue);
         expect(out.menuId, 'rt-menu-1');
-        expect(lastError, isNull,
-            reason: 'addParticipant failure is recoverable — no banner');
-        expect(repo.markCalled, isTrue,
-            reason: 'join still marks the share joined despite the failed '
-                'participant write');
+        expect(
+          lastError,
+          isNull,
+          reason: 'addParticipant failure is recoverable — no banner',
+        );
+        expect(
+          repo.markCalled,
+          isTrue,
+          reason:
+              'join still marks the share joined despite the failed '
+              'participant write',
+        );
       });
 
       /// BUT-1123: joinSharedMenu is contractually "never propagates an
@@ -877,16 +922,17 @@ void main() {
       /// markAsImportedOrJoined throws AFTER a successful read (collaborative
       /// branch, addParticipant fine) → the OUTER catch must absorb it → null
       /// + banner, no rethrow.
-      test(
-          'BUT-1123: markAsImportedOrJoined throw → null via outer catch, '
+      test('BUT-1123: markAsImportedOrJoined throw → null via outer catch, '
           'no rethrow', () async {
         final repo = _CollaborativeSharedMenuRepository(
-            _collaborativeSharedMenu(),
-            throwOnMark: true);
+          _collaborativeSharedMenu(),
+          throwOnMark: true,
+        );
         // addParticipant must NOT throw here, so the failure originates at the
         // mark step (outer catch), not the inner participant catch.
         TestServiceLocator.registerMock<RealtimeMenuService>(
-            MockRealtimeMenuService());
+          MockRealtimeMenuService(),
+        );
 
         final coord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
@@ -904,24 +950,31 @@ void main() {
 
         final out = await coord.joinSharedMenu(sharedMenuId: 'shared-collab-1');
 
-        expect(out, isNull,
-            reason: 'mark failure must route through the outer catch to null');
-        expect(lastError, isNotNull,
-            reason: 'outer catch surfaces a sanitised banner; no rethrow');
+        expect(
+          out,
+          isNull,
+          reason: 'mark failure must route through the outer catch to null',
+        );
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'outer catch surfaces a sanitised banner; no rethrow',
+        );
       });
 
       /// Static branch: read() returns a menu WITHOUT realtimeMenuId, so the
       /// join delegates to UnifiedMenuService.importSharedMenu. If that throws,
       /// the outer catch must absorb it → null + banner, no rethrow.
-      test(
-          'BUT-1123: importSharedMenu throw (static branch) → null via outer '
+      test('BUT-1123: importSharedMenu throw (static branch) → null via outer '
           'catch, no rethrow', () async {
         final repo = _CollaborativeSharedMenuRepository(_staticSharedMenu());
         final menuService = MockUnifiedMenuService();
-        when(() => menuService.importSharedMenu(
-              sharedMenuId: any(named: 'sharedMenuId'),
-              newTitle: any(named: 'newTitle'),
-            )).thenThrow(Exception('simulated importSharedMenu failure'));
+        when(
+          () => menuService.importSharedMenu(
+            sharedMenuId: any(named: 'sharedMenuId'),
+            newTitle: any(named: 'newTitle'),
+          ),
+        ).thenThrow(Exception('simulated importSharedMenu failure'));
         TestServiceLocator.registerMock<UnifiedMenuService>(menuService);
 
         final coord = SocialMenuCoordinator(
@@ -940,10 +993,16 @@ void main() {
 
         final out = await coord.joinSharedMenu(sharedMenuId: 'shared-static-1');
 
-        expect(out, isNull,
-            reason: 'static-import throw must route through the outer catch');
-        expect(lastError, isNotNull,
-            reason: 'outer catch surfaces a sanitised banner; no rethrow');
+        expect(
+          out,
+          isNull,
+          reason: 'static-import throw must route through the outer catch',
+        );
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'outer catch surfaces a sanitised banner; no rethrow',
+        );
       });
     });
 
@@ -970,8 +1029,7 @@ void main() {
       ///
       /// After fix: the catch routes through `setError(sanitizeErrorForUser(e))`
       /// so the caller sees a banner-eligible message.
-      test(
-          'BUT-1124: repo throw is swallowed → null AND setError called '
+      test('BUT-1124: repo throw is swallowed → null AND setError called '
           '(legacy path)', () async {
         final throwingCoord = SocialMenuCoordinator(
           getCurrentUserId: () => currentUserId,
@@ -991,10 +1049,16 @@ void main() {
             // ignore: deprecated_member_use_from_same_package
             await throwingCoord.importSharedMenu(sharedMenuId: 'whatever');
 
-        expect(out, isNull,
-            reason: 'legacy catch must route throw to null return');
-        expect(lastError, isNotNull,
-            reason: 'BUT-1124: sanitised error must be surfaced via setError');
+        expect(
+          out,
+          isNull,
+          reason: 'legacy catch must route throw to null return',
+        );
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'BUT-1124: sanitised error must be surfaced via setError',
+        );
       });
     });
 

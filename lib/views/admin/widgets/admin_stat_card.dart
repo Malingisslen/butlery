@@ -82,8 +82,10 @@ class _DeltaChip extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: color),
         const SizedBox(width: 2),
-        Text('${rounded.abs()} %',
-            style: AppTextStyles.bodySmall.copyWith(color: color)),
+        Text(
+          '${rounded.abs()} %',
+          style: AppTextStyles.bodySmall.copyWith(color: color),
+        ),
       ],
     );
   }

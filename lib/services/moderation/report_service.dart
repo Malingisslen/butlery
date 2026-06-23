@@ -23,9 +23,9 @@ class ReportService extends BaseService {
     required FirebaseReportRepository reportRepository,
     required auth.AuthRepository authRepository,
     required FirestoreRepository firestoreRepository,
-  })  : _reportRepository = reportRepository,
-        _authRepository = authRepository,
-        _firestore = firestoreRepository;
+  }) : _reportRepository = reportRepository,
+       _authRepository = authRepository,
+       _firestore = firestoreRepository;
 
   /// Submit a content report.
   Future<bool> submitReport({
@@ -40,7 +40,8 @@ class ReportService extends BaseService {
             final userId = _authRepository.currentUserId;
             if (userId == null) {
               AppLogger.warning(
-                  '[ReportService] Cannot submit report: not authenticated');
+                '[ReportService] Cannot submit report: not authenticated',
+              );
               return false;
             }
 
@@ -95,10 +96,11 @@ class ReportService extends BaseService {
         .snapshots()
         .map((snap) => snap.exists)
         .handleError((Object error) {
-      AppLogger.warning(
-          '[ReportService] watchIsAdmin error (treating as non-admin): $error');
-      return false;
-    });
+          AppLogger.warning(
+            '[ReportService] watchIsAdmin error (treating as non-admin): $error',
+          );
+          return false;
+        });
   }
 
   /// Stream open reports (status != 'closed') ordered by newest first.
@@ -110,10 +112,12 @@ class ReportService extends BaseService {
         .where('status', whereIn: ['new', 'in_review', 'actioned'])
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map(ContentReport.fromFirestore)
-            .whereType<ContentReport>()
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .map(ContentReport.fromFirestore)
+              .whereType<ContentReport>()
+              .toList(),
+        );
   }
 
   /// Advance a report's status one step forward. Returns `true` on success.
@@ -169,12 +173,14 @@ class ReportService extends BaseService {
             final ref = _resolveContentRef(report);
             if (ref == null) {
               AppLogger.warning(
-                  '[ReportService] Unknown contentType ${report.contentType}; cannot delete');
+                '[ReportService] Unknown contentType ${report.contentType}; cannot delete',
+              );
               return false;
             }
             await ref.delete();
             AppLogger.info(
-                '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}');
+              '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}',
+            );
             return true;
           },
           operationName: 'Delete reported content',
@@ -191,24 +197,27 @@ class ReportService extends BaseService {
           () async {
             if (report.contentType != ContentType.profile) {
               AppLogger.warning(
-                  '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing');
+                '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing',
+              );
               return false;
             }
             final ownerId = report.contentOwnerId;
             if (ownerId == null || ownerId.isEmpty) {
               AppLogger.warning(
-                  '[ReportService] profile report ${report.id} missing contentOwnerId');
+                '[ReportService] profile report ${report.id} missing contentOwnerId',
+              );
               return false;
             }
             await _firestore
                 .collection(FirestoreCollections.publicProfiles)
                 .doc(ownerId)
                 .update({
-              'isHidden': true,
-              'hiddenAt': FieldValue.serverTimestamp(),
-            });
+                  'isHidden': true,
+                  'hiddenAt': FieldValue.serverTimestamp(),
+                });
             AppLogger.info(
-                '[ReportService] Admin hid profile $ownerId via report ${report.id}');
+              '[ReportService] Admin hid profile $ownerId via report ${report.id}',
+            );
             return true;
           },
           operationName: 'Suspend reported profile',
@@ -218,7 +227,8 @@ class ReportService extends BaseService {
   }
 
   DocumentReference<Map<String, dynamic>>? _resolveContentRef(
-      ContentReport report) {
+    ContentReport report,
+  ) {
     switch (report.contentType) {
       case ContentType.recipe:
         // Recipes live under users/{ownerId}/recipes/{recipeId}.

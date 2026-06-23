@@ -42,10 +42,10 @@ class FirebaseRecipePresenceRepository {
   FirebaseRecipePresenceRepository({
     FirestoreRepository? firestoreRepository,
     TimestampProvider? timestampProvider,
-  })  : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-        _timestampProvider =
-            timestampProvider ?? const ServerTimestampProvider();
+  }) : _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+       _timestampProvider =
+           timestampProvider ?? const ServerTimestampProvider();
 
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
@@ -71,17 +71,18 @@ class FirebaseRecipePresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .set({
-        'userId': userId,
-        'displayName': displayName,
-        'avatarUrl': avatarUrl,
-        'joinedAt': _timestampProvider.serverTimestamp(),
-        'lastSeen': _timestampProvider.serverTimestamp(),
-        'expiresAt': PresenceTtl.computeExpiresAt(),
-        'isActive': true,
-      }, SetOptions(merge: true));
+            'userId': userId,
+            'displayName': displayName,
+            'avatarUrl': avatarUrl,
+            'joinedAt': _timestampProvider.serverTimestamp(),
+            'lastSeen': _timestampProvider.serverTimestamp(),
+            'expiresAt': PresenceTtl.computeExpiresAt(),
+            'isActive': true,
+          }, SetOptions(merge: true));
 
       AppLogger.debug(
-          'Set presence for user ${userId.maskedUserId} in recipe $recipeId');
+        'Set presence for user ${userId.maskedUserId} in recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.error('Failed to set user presence: $e');
       rethrow;
@@ -106,14 +107,15 @@ class FirebaseRecipePresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .update({
-        'isActive': false,
-        'leftAt': _timestampProvider.serverTimestamp(),
-        // Force immediate TTL eviction — the user explicitly left.
-        'expiresAt': Timestamp.fromDate(clock.now().toUtc()),
-      });
+            'isActive': false,
+            'leftAt': _timestampProvider.serverTimestamp(),
+            // Force immediate TTL eviction — the user explicitly left.
+            'expiresAt': Timestamp.fromDate(clock.now().toUtc()),
+          });
 
       AppLogger.debug(
-          'Marked user ${userId.maskedUserId} inactive in recipe $recipeId');
+        'Marked user ${userId.maskedUserId} inactive in recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.error('Failed to mark user inactive: $e');
       rethrow;
@@ -138,13 +140,14 @@ class FirebaseRecipePresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .update({
-        'lastSeen': _timestampProvider.serverTimestamp(),
-        // Refresh the TTL window so server-side sweeper does not evict us.
-        'expiresAt': PresenceTtl.computeExpiresAt(),
-      });
+            'lastSeen': _timestampProvider.serverTimestamp(),
+            // Refresh the TTL window so server-side sweeper does not evict us.
+            'expiresAt': PresenceTtl.computeExpiresAt(),
+          });
 
       AppLogger.debug(
-          'Updated heartbeat for user ${userId.maskedUserId} in recipe $recipeId');
+        'Updated heartbeat for user ${userId.maskedUserId} in recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.error('Failed to update presence heartbeat: $e');
       rethrow;
@@ -171,7 +174,8 @@ class FirebaseRecipePresenceRepository {
       // alongside `isActive == true` without a composite index; one-pass
       // in-memory filtering is fine for the tiny per-doc result set.
       return PresenceTtl.filterStaleRows(
-          snapshot.docs.map((doc) => doc.data()));
+        snapshot.docs.map((doc) => doc.data()),
+      );
     } catch (e) {
       AppLogger.error('Failed to get active users: $e');
       return [];
@@ -190,8 +194,11 @@ class FirebaseRecipePresenceRepository {
         .collection(FirestoreCollections.activeUsers)
         .where('isActive', isEqualTo: true)
         .snapshots()
-        .map((snapshot) => PresenceTtl.filterStaleRows(
-            snapshot.docs.map((doc) => doc.data())));
+        .map(
+          (snapshot) => PresenceTtl.filterStaleRows(
+            snapshot.docs.map((doc) => doc.data()),
+          ),
+        );
   }
 
   /// Delete all presence data for a recipe (cleanup operation)

@@ -97,7 +97,9 @@ void main() {
 
     test('displayPath falls back to file path when no url', () {
       expect(
-          _status(file: File('/tmp/local.jpg')).displayPath, '/tmp/local.jpg');
+        _status(file: File('/tmp/local.jpg')).displayPath,
+        '/tmp/local.jpg',
+      );
     });
 
     test('displayPath empty string when neither set', () {
@@ -131,40 +133,45 @@ void main() {
 
     test('"Ns" under 1 minute', () {
       expect(
-        _status(estimatedTimeRemaining: const Duration(seconds: 45))
-            .formattedTimeRemaining,
+        _status(
+          estimatedTimeRemaining: const Duration(seconds: 45),
+        ).formattedTimeRemaining,
         '45s',
       );
     });
 
     test('"Nm Ms" between 1 minute and 1 hour', () {
       expect(
-        _status(estimatedTimeRemaining: const Duration(minutes: 2, seconds: 30))
-            .formattedTimeRemaining,
+        _status(
+          estimatedTimeRemaining: const Duration(minutes: 2, seconds: 30),
+        ).formattedTimeRemaining,
         '2m 30s',
       );
     });
 
     test('"Nm" exactly when seconds == 0', () {
       expect(
-        _status(estimatedTimeRemaining: const Duration(minutes: 5))
-            .formattedTimeRemaining,
+        _status(
+          estimatedTimeRemaining: const Duration(minutes: 5),
+        ).formattedTimeRemaining,
         '5m',
       );
     });
 
     test('"Nh Mm" over 1 hour', () {
       expect(
-        _status(estimatedTimeRemaining: const Duration(hours: 1, minutes: 30))
-            .formattedTimeRemaining,
+        _status(
+          estimatedTimeRemaining: const Duration(hours: 1, minutes: 30),
+        ).formattedTimeRemaining,
         '1h 30m',
       );
     });
 
     test('"Nh" when remainder is 0 minutes', () {
       expect(
-        _status(estimatedTimeRemaining: const Duration(hours: 2))
-            .formattedTimeRemaining,
+        _status(
+          estimatedTimeRemaining: const Duration(hours: 2),
+        ).formattedTimeRemaining,
         '2h',
       );
     });
@@ -231,24 +238,28 @@ void main() {
       });
     });
 
-    test('withFailure increments count + stamps time + opens at threshold (10)',
-        () {
-      withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () {
-        // Below threshold: stays closed
-        var s = const CircuitBreakerState(failureCount: 0, isOpen: false);
-        s = s.withFailure();
-        expect(s.failureCount, 1);
-        expect(s.isOpen, isFalse);
-        expect(s.lastFailureTime, DateTime.utc(2026, 1, 1));
+    test(
+      'withFailure increments count + stamps time + opens at threshold (10)',
+      () {
+        withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () {
+          // Below threshold: stays closed
+          var s = const CircuitBreakerState(failureCount: 0, isOpen: false);
+          s = s.withFailure();
+          expect(s.failureCount, 1);
+          expect(s.isOpen, isFalse);
+          expect(s.lastFailureTime, DateTime.utc(2026, 1, 1));
 
-        // 9th → 10th flip opens
-        const nineFailures =
-            CircuitBreakerState(failureCount: 9, isOpen: false);
-        final tenth = nineFailures.withFailure();
-        expect(tenth.failureCount, 10);
-        expect(tenth.isOpen, isTrue);
-      });
-    });
+          // 9th → 10th flip opens
+          const nineFailures = CircuitBreakerState(
+            failureCount: 9,
+            isOpen: false,
+          );
+          final tenth = nineFailures.withFailure();
+          expect(tenth.failureCount, 10);
+          expect(tenth.isOpen, isTrue);
+        });
+      },
+    );
 
     test('reset returns the canonical closed state', () {
       const state = CircuitBreakerState(failureCount: 10, isOpen: true);

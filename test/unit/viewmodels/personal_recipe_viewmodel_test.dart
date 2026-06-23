@@ -76,53 +76,68 @@ void main() {
     getIt.registerSingleton<UnifiedRecipeService>(mockService);
 
     // Default stubs for personal operations
-    when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          imageUrls: any(named: 'imageUrls'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          rating: any(named: 'rating'),
-          personalTagIds: any(named: 'personalTagIds'),
-          sourceUrl: any(named: 'sourceUrl'),
-        )).thenAnswer((_) async => 'new-recipe-id');
+    when(
+      () => mockPersonalOps.createRecipe(
+        title: any(named: 'title'),
+        description: any(named: 'description'),
+        ingredients: any(named: 'ingredients'),
+        instructions: any(named: 'instructions'),
+        imageUrls: any(named: 'imageUrls'),
+        mealType: any(named: 'mealType'),
+        portions: any(named: 'portions'),
+        timeMinutes: any(named: 'timeMinutes'),
+        rating: any(named: 'rating'),
+        personalTagIds: any(named: 'personalTagIds'),
+        sourceUrl: any(named: 'sourceUrl'),
+      ),
+    ).thenAnswer((_) async => 'new-recipe-id');
 
-    when(() => mockPersonalOps.updateRecipe(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.deleteRecipe(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.updateRecipeContent(
-          recipeId: any(named: 'recipeId'),
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          rating: any(named: 'rating'),
-          personalTagIds: any(named: 'personalTagIds'),
-          sourceUrl: any(named: 'sourceUrl'),
-        )).thenAnswer((_) async => true);
-    when(() => mockPersonalOps.addIngredient(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.updateIngredient(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.removeIngredient(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.addInstruction(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.updateInstruction(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.removeInstruction(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.markAsCooked(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockPersonalOps.addLegacyRecipe(any()))
-        .thenAnswer((_) async => RecipeOperationResult.success('ok'));
-    when(() => mockPersonalOps.updateLegacyRecipe(any()))
-        .thenAnswer((_) async => RecipeOperationResult.success('ok'));
+    when(
+      () => mockPersonalOps.updateRecipe(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.deleteRecipe(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.updateRecipeContent(
+        recipeId: any(named: 'recipeId'),
+        title: any(named: 'title'),
+        description: any(named: 'description'),
+        mealType: any(named: 'mealType'),
+        portions: any(named: 'portions'),
+        timeMinutes: any(named: 'timeMinutes'),
+        rating: any(named: 'rating'),
+        personalTagIds: any(named: 'personalTagIds'),
+        sourceUrl: any(named: 'sourceUrl'),
+      ),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.addIngredient(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.updateIngredient(any(), any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.removeIngredient(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.addInstruction(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.updateInstruction(any(), any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.removeInstruction(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.markAsCooked(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockPersonalOps.addLegacyRecipe(any()),
+    ).thenAnswer((_) async => RecipeOperationResult.success('ok'));
+    when(
+      () => mockPersonalOps.updateLegacyRecipe(any()),
+    ).thenAnswer((_) async => RecipeOperationResult.success('ok'));
 
     viewModel = PersonalRecipeViewModel();
   });
@@ -227,25 +242,48 @@ void main() {
     test('createPersonalRecipe calls service and returns true', () async {
       final result = await viewModel.createPersonalRecipe(name: 'Pannkakor');
       expect(result, isTrue);
-      verify(() => mockPersonalOps.createRecipe(
-            title: 'Pannkakor',
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).called(1);
+      verify(
+        () => mockPersonalOps.createRecipe(
+          title: 'Pannkakor',
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).called(1);
     });
 
     test('createPersonalRecipe rejects empty name', () async {
       final result = await viewModel.createPersonalRecipe(name: '');
       expect(result, isFalse);
-      verifyNever(() => mockPersonalOps.createRecipe(
+      verifyNever(
+        () => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      );
+    });
+
+    test(
+      'createPersonalRecipe returns false when service returns null',
+      () async {
+        when(
+          () => mockPersonalOps.createRecipe(
             title: any(named: 'title'),
             description: any(named: 'description'),
             ingredients: any(named: 'ingredients'),
@@ -257,28 +295,13 @@ void main() {
             rating: any(named: 'rating'),
             personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
-          ));
-    });
+          ),
+        ).thenAnswer((_) async => null);
 
-    test('createPersonalRecipe returns false when service returns null',
-        () async {
-      when(() => mockPersonalOps.createRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer((_) async => null);
-
-      final result = await viewModel.createPersonalRecipe(name: 'Test');
-      expect(result, isFalse);
-    });
+        final result = await viewModel.createPersonalRecipe(name: 'Test');
+        expect(result, isFalse);
+      },
+    );
   });
 
   group('Update Operations', () {
@@ -336,8 +359,9 @@ void main() {
     test('addIngredient delegates to service', () async {
       final result = await viewModel.addIngredient(testRecipeId, '1 dl mjolk');
       expect(result, isTrue);
-      verify(() => mockPersonalOps.addIngredient(testRecipeId, '1 dl mjolk'))
-          .called(1);
+      verify(
+        () => mockPersonalOps.addIngredient(testRecipeId, '1 dl mjolk'),
+      ).called(1);
     });
 
     test('addIngredient rejects empty ingredient', () async {
@@ -346,8 +370,11 @@ void main() {
     });
 
     test('updateIngredient delegates to service', () async {
-      final result =
-          await viewModel.updateIngredient(testRecipeId, 0, '2 dl mjolk');
+      final result = await viewModel.updateIngredient(
+        testRecipeId,
+        0,
+        '2 dl mjolk',
+      );
       expect(result, isTrue);
     });
 
@@ -359,8 +386,10 @@ void main() {
 
   group('Instruction Operations', () {
     test('addInstruction delegates to service', () async {
-      final result =
-          await viewModel.addInstruction(testRecipeId, 'Servera varmt');
+      final result = await viewModel.addInstruction(
+        testRecipeId,
+        'Servera varmt',
+      );
       expect(result, isTrue);
     });
 
@@ -370,8 +399,11 @@ void main() {
     });
 
     test('updateInstruction delegates to service', () async {
-      final result =
-          await viewModel.updateInstruction(testRecipeId, 0, 'Steg 1 ny');
+      final result = await viewModel.updateInstruction(
+        testRecipeId,
+        0,
+        'Steg 1 ny',
+      );
       expect(result, isTrue);
     });
 
@@ -418,19 +450,21 @@ void main() {
 
   group('Error Handling', () {
     test('createPersonalRecipe handles service exception gracefully', () async {
-      when(() => mockPersonalOps.createRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenThrow(Exception('Network error'));
+      when(
+        () => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       final result = await viewModel.createPersonalRecipe(name: 'Test');
       // safeExecute catches and returns defaultValue (false)
@@ -438,8 +472,9 @@ void main() {
     });
 
     test('deletePersonalRecipe handles service returning false', () async {
-      when(() => mockPersonalOps.deleteRecipe(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockPersonalOps.deleteRecipe(any()),
+      ).thenAnswer((_) async => false);
       final result = await viewModel.deletePersonalRecipe(testRecipeId);
       expect(result, isFalse);
     });

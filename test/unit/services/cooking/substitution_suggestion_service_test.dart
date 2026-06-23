@@ -22,12 +22,12 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 class _MockLookupService extends Mock implements IngredientLookupService {}
 
 IngredientData _ingredient(String id, String swedish) => IngredientData(
-      id: id,
-      swedish: swedish,
-      english: swedish,
-      group: 'other',
-      properties: const {},
-    );
+  id: id,
+  swedish: swedish,
+  english: swedish,
+  group: 'other',
+  properties: const {},
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -153,12 +153,14 @@ void main() {
       // Proves we didn't waste a Firestore read on an unmatched name.
     });
 
-    test('empty / whitespace-only input returns empty list synchronously',
-        () async {
-      expect(await service.suggestFor(''), isEmpty);
-      expect(await service.suggestFor('   '), isEmpty);
-      verifyNever(() => lookup.lookupFromRaw(any()));
-    });
+    test(
+      'empty / whitespace-only input returns empty list synchronously',
+      () async {
+        expect(await service.suggestFor(''), isEmpty);
+        expect(await service.suggestFor('   '), isEmpty);
+        verifyNever(() => lookup.lookupFromRaw(any()));
+      },
+    );
 
     // BUT-610 (offline hardening): the ingredient lookup lazily loads the
     // global ingredient cache via a one-shot Firestore `.get()`. On a cold
@@ -167,8 +169,7 @@ void main() {
     // the cooking-mode substitution tap (cooking_mode_view._showSubstitutionSheet)
     // awaits it with NO try/catch — so a propagated throw is an unhandled
     // exception mid-cook. This proves the lookup failure is swallowed to [].
-    test(
-        'returns empty list (no throw) when the ingredient lookup throws '
+    test('returns empty list (no throw) when the ingredient lookup throws '
         'offline', () async {
       when(() => lookup.lookupFromRaw(any())).thenThrow(
         FirebaseException(

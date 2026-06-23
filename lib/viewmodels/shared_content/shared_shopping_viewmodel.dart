@@ -57,13 +57,15 @@ class SharedShoppingViewModel
     super.permissionService,
     super.friendsService,
   }) {
-    _socialShoppingCoordinator = socialShoppingCoordinator ??
+    _socialShoppingCoordinator =
+        socialShoppingCoordinator ??
         ServiceLocator.get<SocialShoppingCoordinator>();
     _shoppingService =
         shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
 
     AppLogger.info(
-        'SharedShoppingViewModel initialized with direct collaboration support');
+      'SharedShoppingViewModel initialized with direct collaboration support',
+    );
   }
   @override
   String get contentTypeName => 'shopping_list';
@@ -76,24 +78,30 @@ class SharedShoppingViewModel
     }
 
     AppLogger.info(
-        '🔄 Loading shared shopping lists from coordinator for user: ${userId.maskedUserId}');
-    final shoppingLists =
-        await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
+      '🔄 Loading shared shopping lists from coordinator for user: ${userId.maskedUserId}',
+    );
+    final shoppingLists = await _socialShoppingCoordinator
+        .getSharedShoppingListsForUser(userId);
 
     // Load status for all lists to populate cache (Issue #014)
     await _socialShoppingCoordinator.loadStatusForAllShoppingLists(
-        shoppingLists, userId);
+      shoppingLists,
+      userId,
+    );
 
     // Filter out dismissed shopping lists and content from blocked users
     final blocked = blockedUsers;
     final visibleLists = shoppingLists
-        .where((list) =>
-            !_socialShoppingCoordinator.isShoppingListDismissed(list.id) &&
-            !blocked.contains(list.sharedByUserId))
+        .where(
+          (list) =>
+              !_socialShoppingCoordinator.isShoppingListDismissed(list.id) &&
+              !blocked.contains(list.sharedByUserId),
+        )
         .toList();
 
     AppLogger.info(
-        '✅ Loaded ${shoppingLists.length} shared shopping lists (${visibleLists.length} visible)');
+      '✅ Loaded ${shoppingLists.length} shared shopping lists (${visibleLists.length} visible)',
+    );
     return visibleLists;
   }
 
@@ -136,7 +144,8 @@ class SharedShoppingViewModel
 
     return content
         .where(
-            (list) => !_socialShoppingCoordinator.isShoppingListViewed(list.id))
+          (list) => !_socialShoppingCoordinator.isShoppingListViewed(list.id),
+        )
         .length;
   }
 
@@ -154,9 +163,11 @@ class SharedShoppingViewModel
     if (userId == null) return [];
 
     return content
-        .where((list) =>
-            !_socialShoppingCoordinator.isShoppingListImported(list.id) &&
-            list.sharedByUserId != userId)
+        .where(
+          (list) =>
+              !_socialShoppingCoordinator.isShoppingListImported(list.id) &&
+              list.sharedByUserId != userId,
+        )
         .toList();
   }
 
@@ -166,8 +177,9 @@ class SharedShoppingViewModel
     if (userId == null) return [];
 
     return content
-        .where((list) =>
-            _socialShoppingCoordinator.isShoppingListImported(list.id))
+        .where(
+          (list) => _socialShoppingCoordinator.isShoppingListImported(list.id),
+        )
         .toList();
   }
 
@@ -191,17 +203,19 @@ class SharedShoppingViewModel
     return await executeOperation(
       'Join shopping list "${getContentTitle(sharedList)}"',
       () async {
-        final collaborativeListId =
-            await _socialShoppingCoordinator.joinSharedShoppingList(
-          sharedShoppingListId: sharedList.id,
-        );
+        final collaborativeListId = await _socialShoppingCoordinator
+            .joinSharedShoppingList(
+              sharedShoppingListId: sharedList.id,
+            );
 
         if (collaborativeListId != null) {
           // Reload status to update coordinator's cache (Issue #014)
           final userId = currentUserId;
           if (userId != null) {
             await _socialShoppingCoordinator.loadStatusForShoppingList(
-                sharedList.id, userId);
+              sharedList.id,
+              userId,
+            );
           }
           notifyListeners(); // Notify UI to refresh
 
@@ -218,8 +232,9 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Dismiss shopping list "${getContentTitle(sharedList)}"',
       () async {
-        return await _socialShoppingCoordinator
-            .dismissSharedShoppingList(sharedList.id);
+        return await _socialShoppingCoordinator.dismissSharedShoppingList(
+          sharedList.id,
+        );
       },
     );
 
@@ -252,12 +267,14 @@ class SharedShoppingViewModel
 
   /// Restore dismissed shopping list to user's list
   Future<bool> undismissSharedShoppingList(
-      SharedShoppingList sharedList) async {
+    SharedShoppingList sharedList,
+  ) async {
     final result = await executeOperation(
       'Restore shopping list "${getContentTitle(sharedList)}"',
       () async {
-        return await _socialShoppingCoordinator
-            .restoreSharedShoppingList(sharedList.id);
+        return await _socialShoppingCoordinator.restoreSharedShoppingList(
+          sharedList.id,
+        );
       },
     );
 
@@ -282,14 +299,17 @@ class SharedShoppingViewModel
           return true;
         }
 
-        await _socialShoppingCoordinator
-            .markShoppingListAsViewed(sharedList.id);
+        await _socialShoppingCoordinator.markShoppingListAsViewed(
+          sharedList.id,
+        );
 
         // Reload status to update coordinator's cache (Issue #014)
         final userId = currentUserId;
         if (userId != null) {
           await _socialShoppingCoordinator.loadStatusForShoppingList(
-              sharedList.id, userId);
+            sharedList.id,
+            userId,
+          );
         }
         notifyListeners(); // Notify UI to refresh
 
@@ -338,8 +358,10 @@ class SharedShoppingViewModel
       return AppLocale.current.shoppingListItemsToBuy(totalItems);
     }
 
-    return AppLocale.current
-        .shoppingListItemsRemaining(remainingItems, totalItems);
+    return AppLocale.current.shoppingListItemsRemaining(
+      remainingItems,
+      totalItems,
+    );
   }
 
   /// Get time ago text for shopping list
@@ -378,9 +400,11 @@ class SharedShoppingViewModel
   UnifiedShoppingList? getCollaborativeList(SharedShoppingList sharedList) {
     // Try to find the corresponding collaborative list in the shopping service
     return _shoppingService.lists
-        .where((list) =>
-            list.type == ListType.collaborative &&
-            list.name.contains(sharedList.listName))
+        .where(
+          (list) =>
+              list.type == ListType.collaborative &&
+              list.name.contains(sharedList.listName),
+        )
         .firstOrNull;
   }
 
@@ -394,15 +418,19 @@ class SharedShoppingViewModel
       'Mark all shopping lists as viewed',
       () async {
         final unviewedLists = content
-            .where((list) =>
-                !_socialShoppingCoordinator.isShoppingListViewed(list.id))
+            .where(
+              (list) =>
+                  !_socialShoppingCoordinator.isShoppingListViewed(list.id),
+            )
             .toList();
 
         for (final list in unviewedLists) {
           await _socialShoppingCoordinator.markShoppingListAsViewed(list.id);
           // Reload status to update coordinator's cache (Issue #014)
           await _socialShoppingCoordinator.loadStatusForShoppingList(
-              list.id, userId);
+            list.id,
+            userId,
+          );
         }
 
         // Notify UI to refresh

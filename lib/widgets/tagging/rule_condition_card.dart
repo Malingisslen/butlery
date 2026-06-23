@@ -38,8 +38,9 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
   @override
   void initState() {
     super.initState();
-    _valueController =
-        TextEditingController(text: widget.condition.stringValue);
+    _valueController = TextEditingController(
+      text: widget.condition.stringValue,
+    );
   }
 
   @override
@@ -73,15 +74,18 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                     items: ConditionType.values.map((type) {
                       return DropdownMenuItem(
                         value: type,
-                        child:
-                            Text(type.label, style: AppTextStyles.formOption),
+                        child: Text(
+                          type.label,
+                          style: AppTextStyles.formOption,
+                        ),
                       );
                     }).toList(),
                     onChanged: (value) {
                       if (value != null) {
                         widget.onTypeChanged(value);
-                        final newOperators =
-                            OperatorRegistry.getValidOperators(value);
+                        final newOperators = OperatorRegistry.getValidOperators(
+                          value,
+                        );
                         if (!newOperators.contains(widget.condition.operator)) {
                           widget.onOperatorChanged(newOperators.first);
                         }
@@ -117,8 +121,10 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                 if (widget.canDelete) ...[
                   const SizedBox(width: AppDimensions.spacingSm),
                   IconButton(
-                    icon:
-                        const Icon(Icons.close, size: AppDimensions.iconSizeM),
+                    icon: const Icon(
+                      Icons.close,
+                      size: AppDimensions.iconSizeM,
+                    ),
                     onPressed: widget.onDelete,
                     tooltip: context.l10n.ruleRemoveCondition,
                   ),

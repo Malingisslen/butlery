@@ -97,32 +97,33 @@ class UserNotification {
   });
 
   Map<String, dynamic> toFirestore() => {
-        'userId': userId,
-        if (senderId != null) 'senderId': senderId,
-        'type': type.toString(),
-        'title': title,
-        'body': body,
-        'data': data,
-        'isRead': isRead,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'readAt': readAt != null ? Timestamp.fromDate(readAt!) : null,
-      };
+    'userId': userId,
+    if (senderId != null) 'senderId': senderId,
+    'type': type.toString(),
+    'title': title,
+    'body': body,
+    'data': data,
+    'isRead': isRead,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'readAt': readAt != null ? Timestamp.fromDate(readAt!) : null,
+  };
 
   factory UserNotification.fromFirestore(
-          Map<String, dynamic> data, String id) =>
-      UserNotification(
-        id: id,
-        userId: data['userId'] ?? '',
-        senderId: data['senderId'] as String?,
-        type: NotificationType.values.firstWhere(
-          (e) => e.toString() == data['type'],
-          orElse: () => NotificationType.optional,
-        ),
-        title: data['title'] ?? '',
-        body: data['body'] ?? '',
-        data: data['data'],
-        isRead: data['isRead'] ?? false,
-        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
-        readAt: (data['readAt'] as Timestamp?)?.toDate(),
-      );
+    Map<String, dynamic> data,
+    String id,
+  ) => UserNotification(
+    id: id,
+    userId: data['userId'] ?? '',
+    senderId: data['senderId'] as String?,
+    type: NotificationType.values.firstWhere(
+      (e) => e.toString() == data['type'],
+      orElse: () => NotificationType.optional,
+    ),
+    title: data['title'] ?? '',
+    body: data['body'] ?? '',
+    data: data['data'],
+    isRead: data['isRead'] ?? false,
+    createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
+    readAt: (data['readAt'] as Timestamp?)?.toDate(),
+  );
 }

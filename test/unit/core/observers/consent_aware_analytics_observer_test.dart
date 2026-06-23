@@ -36,11 +36,12 @@ void main() {
     });
 
     test(
-        'didPush no-ops while consent is denied (default state is fail-closed)',
-        () {
-      observer.didPush(routeA, routeB);
-      verifyNever(() => inner.didPush(any(), any()));
-    });
+      'didPush no-ops while consent is denied (default state is fail-closed)',
+      () {
+        observer.didPush(routeA, routeB);
+        verifyNever(() => inner.didPush(any(), any()));
+      },
+    );
 
     test('didPop no-ops while consent is denied', () {
       observer.didPop(routeA, routeB);
@@ -49,8 +50,12 @@ void main() {
 
     test('didReplace no-ops while consent is denied', () {
       observer.didReplace(newRoute: routeA, oldRoute: routeB);
-      verifyNever(() => inner.didReplace(
-          newRoute: any(named: 'newRoute'), oldRoute: any(named: 'oldRoute')));
+      verifyNever(
+        () => inner.didReplace(
+          newRoute: any(named: 'newRoute'),
+          oldRoute: any(named: 'oldRoute'),
+        ),
+      );
     });
 
     test('didRemove no-ops while consent is denied', () {
@@ -71,16 +76,17 @@ void main() {
     });
 
     test(
-        'granting then withdrawing consent toggles forwarding off again (right to withdraw)',
-        () {
-      observer.debugConsent = true;
-      observer.didPush(routeA, routeB);
-      verify(() => inner.didPush(routeA, routeB)).called(1);
+      'granting then withdrawing consent toggles forwarding off again (right to withdraw)',
+      () {
+        observer.debugConsent = true;
+        observer.didPush(routeA, routeB);
+        verify(() => inner.didPush(routeA, routeB)).called(1);
 
-      observer.debugConsent = false;
-      observer.didPush(routeA, routeB);
-      // No additional call after withdrawal.
-      verifyNever(() => inner.didPush(routeA, routeB));
-    });
+        observer.debugConsent = false;
+        observer.didPush(routeA, routeB);
+        // No additional call after withdrawal.
+        verifyNever(() => inner.didPush(routeA, routeB));
+      },
+    );
   });
 }

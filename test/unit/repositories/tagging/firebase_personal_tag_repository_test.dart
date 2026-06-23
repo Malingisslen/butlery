@@ -54,10 +54,14 @@ void main() {
     group('getByIds', () {
       test('returns tags for valid IDs', () async {
         // Arrange: seed two tags in the user subcollection.
-        final tag1 =
-            PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
-        final tag2 =
-            PersonalTagBuilder().withId('tag-2').withName('Tag Two').build();
+        final tag1 = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Tag One')
+            .build();
+        final tag2 = PersonalTagBuilder()
+            .withId('tag-2')
+            .withName('Tag Two')
+            .build();
         await tagsRef().doc('tag-1').set(tag1.toFirestore());
         await tagsRef().doc('tag-2').set(tag2.toFirestore());
 
@@ -77,8 +81,10 @@ void main() {
 
       test('ignores missing IDs silently', () async {
         // Arrange: only tag-1 exists.
-        final tag1 =
-            PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
+        final tag1 = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Tag One')
+            .build();
         await tagsRef().doc('tag-1').set(tag1.toFirestore());
 
         // Act: request one existing + one missing.
@@ -94,7 +100,9 @@ void main() {
       test('updates sortOrder for all tags', () async {
         // Arrange: seed three tags with arbitrary sort orders.
         for (final id in ['tag-1', 'tag-2', 'tag-3']) {
-          await tagsRef().doc(id).set(
+          await tagsRef()
+              .doc(id)
+              .set(
                 PersonalTagBuilder()
                     .withId(id)
                     .withName(id)
@@ -124,21 +132,27 @@ void main() {
     group('clearGroupFromTags', () {
       test('clears groupId from all tags in group', () async {
         // Arrange: two tags in group-1, one in a different group.
-        await tagsRef().doc('tag-1').set(
+        await tagsRef()
+            .doc('tag-1')
+            .set(
               PersonalTagBuilder()
                   .withId('tag-1')
                   .withGroupId('group-1')
                   .build()
                   .toFirestore(),
             );
-        await tagsRef().doc('tag-2').set(
+        await tagsRef()
+            .doc('tag-2')
+            .set(
               PersonalTagBuilder()
                   .withId('tag-2')
                   .withGroupId('group-1')
                   .build()
                   .toFirestore(),
             );
-        await tagsRef().doc('tag-3').set(
+        await tagsRef()
+            .doc('tag-3')
+            .set(
               PersonalTagBuilder()
                   .withId('tag-3')
                   .withGroupId('group-other')
@@ -170,7 +184,9 @@ void main() {
     group('#7: addClearGroupToBatch', () {
       test('adds update operations to external batch', () async {
         // Arrange: one tag in group-1.
-        await tagsRef().doc('tag-1').set(
+        await tagsRef()
+            .doc('tag-1')
+            .set(
               PersonalTagBuilder()
                   .withId('tag-1')
                   .withGroupId('group-1')
@@ -181,14 +197,19 @@ void main() {
         final externalBatch = fakeFirestore.batch();
 
         // Act
-        final count =
-            await repository.addClearGroupToBatch(externalBatch, 'group-1');
+        final count = await repository.addClearGroupToBatch(
+          externalBatch,
+          'group-1',
+        );
 
         // Assert: operation added but NOT committed yet.
         expect(count, 1);
         var doc = await tagsRef().doc('tag-1').get();
-        expect(doc.data()!['groupId'], 'group-1',
-            reason: 'caller must commit the external batch');
+        expect(
+          doc.data()!['groupId'],
+          'group-1',
+          reason: 'caller must commit the external batch',
+        );
 
         // Once caller commits, the update lands.
         await externalBatch.commit();

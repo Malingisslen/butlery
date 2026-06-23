@@ -17,13 +17,17 @@ import 'package:butlery/services/notifications/local_timer_notification_service.
 /// methods (initialize before zonedSchedule) is the contract under test.
 class _RecordingPlugin extends Mock implements FlutterLocalNotificationsPlugin {
   _RecordingPlugin({this.throwOnInitialize = false}) {
-    when(() => initialize(
-          settings: any(named: 'settings'),
-          onDidReceiveNotificationResponse:
-              any(named: 'onDidReceiveNotificationResponse'),
-          onDidReceiveBackgroundNotificationResponse:
-              any(named: 'onDidReceiveBackgroundNotificationResponse'),
-        )).thenAnswer((_) async {
+    when(
+      () => initialize(
+        settings: any(named: 'settings'),
+        onDidReceiveNotificationResponse: any(
+          named: 'onDidReceiveNotificationResponse',
+        ),
+        onDidReceiveBackgroundNotificationResponse: any(
+          named: 'onDidReceiveBackgroundNotificationResponse',
+        ),
+      ),
+    ).thenAnswer((_) async {
       initializeCount++;
       calls.add('initialize');
       if (throwOnInitialize) {
@@ -31,20 +35,26 @@ class _RecordingPlugin extends Mock implements FlutterLocalNotificationsPlugin {
       }
       return true;
     });
-    when(() => zonedSchedule(
-          id: any(named: 'id'),
-          scheduledDate: any(named: 'scheduledDate'),
-          notificationDetails: any(named: 'notificationDetails'),
-          androidScheduleMode: any(named: 'androidScheduleMode'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          payload: any(named: 'payload'),
-          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
-        )).thenAnswer((_) async {
+    when(
+      () => zonedSchedule(
+        id: any(named: 'id'),
+        scheduledDate: any(named: 'scheduledDate'),
+        notificationDetails: any(named: 'notificationDetails'),
+        androidScheduleMode: any(named: 'androidScheduleMode'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        payload: any(named: 'payload'),
+        matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+      ),
+    ).thenAnswer((_) async {
       calls.add('zonedSchedule');
     });
-    when(() => cancel(id: any(named: 'id'), tag: any(named: 'tag')))
-        .thenAnswer((_) async {
+    when(
+      () => cancel(
+        id: any(named: 'id'),
+        tag: any(named: 'tag'),
+      ),
+    ).thenAnswer((_) async {
       calls.add('cancel');
     });
   }
@@ -117,18 +127,20 @@ void main() {
 
     setUp(() => service = LocalTimerNotificationService());
 
-    test('schedule is a safe no-op off mobile and never prepares the plugin',
-        () async {
-      // On the VM (non-mobile) scheduling must short-circuit before touching
-      // the plugin or the timezone DB — so isPrepared stays false and no throw
-      // escapes to the timer flow.
-      await service.schedule(
-        timerId: 'step-0',
-        duration: const Duration(minutes: 5),
-        label: 'koka pasta',
-      );
-      expect(service.isPrepared, isFalse);
-    });
+    test(
+      'schedule is a safe no-op off mobile and never prepares the plugin',
+      () async {
+        // On the VM (non-mobile) scheduling must short-circuit before touching
+        // the plugin or the timezone DB — so isPrepared stays false and no throw
+        // escapes to the timer flow.
+        await service.schedule(
+          timerId: 'step-0',
+          duration: const Duration(minutes: 5),
+          label: 'koka pasta',
+        );
+        expect(service.isPrepared, isFalse);
+      },
+    );
 
     test('schedule with non-positive duration is a no-op', () async {
       await service.schedule(
@@ -158,27 +170,32 @@ void main() {
     // only path that exercises the new _initializePlugin() init step folded
     // into isPrepared — the off-device group above can never reach it.
 
-    test('initialize() runs exactly once and BEFORE the first zonedSchedule',
-        () async {
-      final plugin = _RecordingPlugin();
-      final service = LocalTimerNotificationService(
-        plugin: plugin,
-        isMobileOverride: () => true,
-      );
+    test(
+      'initialize() runs exactly once and BEFORE the first zonedSchedule',
+      () async {
+        final plugin = _RecordingPlugin();
+        final service = LocalTimerNotificationService(
+          plugin: plugin,
+          isMobileOverride: () => true,
+        );
 
-      await service.schedule(
-        timerId: 'step-0',
-        duration: const Duration(minutes: 5),
-        label: 'koka pasta',
-      );
+        await service.schedule(
+          timerId: 'step-0',
+          duration: const Duration(minutes: 5),
+          label: 'koka pasta',
+        );
 
-      // Pins the contract from the class comment: on iOS zonedSchedule is a
-      // silent no-op until initialize() has run, so initialize MUST precede it.
-      expect(plugin.calls, equals(['initialize', 'zonedSchedule']),
-          reason: 'plugin must be initialized before the first schedule');
-      expect(plugin.initializeCount, equals(1));
-      expect(service.isPrepared, isTrue);
-    });
+        // Pins the contract from the class comment: on iOS zonedSchedule is a
+        // silent no-op until initialize() has run, so initialize MUST precede it.
+        expect(
+          plugin.calls,
+          equals(['initialize', 'zonedSchedule']),
+          reason: 'plugin must be initialized before the first schedule',
+        );
+        expect(plugin.initializeCount, equals(1));
+        expect(service.isPrepared, isTrue);
+      },
+    );
 
     test('initialize() is not repeated on a second schedule', () async {
       final plugin = _RecordingPlugin();
@@ -196,36 +213,46 @@ void main() {
         duration: const Duration(minutes: 3),
       );
 
-      expect(plugin.initializeCount, equals(1),
-          reason: 'prepare is idempotent — initialize runs once per service');
-      expect(plugin.calls,
-          equals(['initialize', 'zonedSchedule', 'zonedSchedule']));
+      expect(
+        plugin.initializeCount,
+        equals(1),
+        reason: 'prepare is idempotent — initialize runs once per service',
+      );
+      expect(
+        plugin.calls,
+        equals(['initialize', 'zonedSchedule', 'zonedSchedule']),
+      );
     });
 
-    test('a thrown initialize() degrades gracefully — schedule still completes',
-        () async {
-      // A failing initialize must be swallowed (warned, not rethrown) so the
-      // timer flow continues and the in-app pulse remains the fallback. The
-      // scheduled write is still attempted; the OS-level alert just may not
-      // fire. Critically, schedule() does not throw into the timer service.
-      final plugin = _RecordingPlugin(throwOnInitialize: true);
-      final service = LocalTimerNotificationService(
-        plugin: plugin,
-        isMobileOverride: () => true,
-      );
+    test(
+      'a thrown initialize() degrades gracefully — schedule still completes',
+      () async {
+        // A failing initialize must be swallowed (warned, not rethrown) so the
+        // timer flow continues and the in-app pulse remains the fallback. The
+        // scheduled write is still attempted; the OS-level alert just may not
+        // fire. Critically, schedule() does not throw into the timer service.
+        final plugin = _RecordingPlugin(throwOnInitialize: true);
+        final service = LocalTimerNotificationService(
+          plugin: plugin,
+          isMobileOverride: () => true,
+        );
 
-      await expectLater(
-        service.schedule(
-          timerId: 'step-0',
-          duration: const Duration(minutes: 5),
-        ),
-        completes,
-      );
-      expect(plugin.calls, equals(['initialize', 'zonedSchedule']));
-      expect(service.isPrepared, isTrue,
+        await expectLater(
+          service.schedule(
+            timerId: 'step-0',
+            duration: const Duration(minutes: 5),
+          ),
+          completes,
+        );
+        expect(plugin.calls, equals(['initialize', 'zonedSchedule']));
+        expect(
+          service.isPrepared,
+          isTrue,
           reason:
               'a swallowed init failure still marks prepare complete so the '
-              'timer flow is never blocked by notification setup');
-    });
+              'timer flow is never blocked by notification setup',
+        );
+      },
+    );
   });
 }

@@ -39,12 +39,12 @@ ParsedIngredient _ingredient({
 /// Wraps [child] with full theme + Swedish l10n so context.l10n and
 /// context.butleryColors both resolve to their light-mode values.
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: SingleChildScrollView(child: child)),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: SingleChildScrollView(child: child)),
+);
 
 /// Finds the accent-bar Container for a given [ParseConfidence] using the
 /// ValueKey set in _IngredientConfidenceRow.build.
@@ -63,11 +63,13 @@ void main() {
   group('Accent bar — colour-per-ParseConfidence', () {
     testWidgets('high confidence → success green bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'smör', confidence: ParseConfidence.high),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'smör', confidence: ParseConfidence.high),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -78,11 +80,13 @@ void main() {
 
     testWidgets('medium confidence → warning amber bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -93,11 +97,13 @@ void main() {
 
     testWidgets('low confidence → neutral grey bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -106,14 +112,20 @@ void main() {
       expect(_barColor(tester, bar), equals(colors.neutral));
     });
 
-    testWidgets('failed confidence → neutral grey bar (same as low)',
-        (tester) async {
+    testWidgets('failed confidence → neutral grey bar (same as low)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'okänd sak', confidence: ParseConfidence.failed),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'okänd sak',
+                confidence: ParseConfidence.failed,
+              ),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -126,14 +138,16 @@ void main() {
   group('No visible HÖG/MEDEL/LÅG/OKÄND pill labels', () {
     testWidgets('pill text labels are NOT rendered in the UI', (tester) async {
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'a', confidence: ParseConfidence.high),
-            _ingredient(name: 'b', confidence: ParseConfidence.medium),
-            _ingredient(name: 'c', confidence: ParseConfidence.low),
-            _ingredient(name: 'd', confidence: ParseConfidence.failed),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'a', confidence: ParseConfidence.high),
+              _ingredient(name: 'b', confidence: ParseConfidence.medium),
+              _ingredient(name: 'c', confidence: ParseConfidence.low),
+              _ingredient(name: 'd', confidence: ParseConfidence.failed),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -154,28 +168,35 @@ void main() {
     test('returns correct token per confidence', () {
       expect(confidenceColorFor(ParseConfidence.high, colors), colors.success);
       expect(
-          confidenceColorFor(ParseConfidence.medium, colors), colors.warning);
+        confidenceColorFor(ParseConfidence.medium, colors),
+        colors.warning,
+      );
       expect(confidenceColorFor(ParseConfidence.low, colors), colors.neutral);
       expect(
-          confidenceColorFor(ParseConfidence.failed, colors), colors.neutral);
+        confidenceColorFor(ParseConfidence.failed, colors),
+        colors.neutral,
+      );
     });
   });
 
   group('ParseConfidenceReview — subtitle counts non-high rows', () {
-    testWidgets('medium + low each count toward the review total',
-        (tester) async {
+    testWidgets('medium + low each count toward the review total', (
+      tester,
+    ) async {
       final ingredients = [
         _ingredient(name: 'a', confidence: ParseConfidence.low),
         _ingredient(name: 'b', confidence: ParseConfidence.medium),
         _ingredient(name: 'c', confidence: ParseConfidence.high),
       ];
 
-      await tester
-          .pumpWidget(_wrap(ParseConfidenceReview(ingredients: ingredients)));
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(ingredients: ingredients)),
+      );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       // 2 non-high rows (a=low, b=medium) → subtitle shows count=2
       expect(
         find.textContaining(l10n.parseConfidenceReviewCountSubtitle(2)),
@@ -183,19 +204,22 @@ void main() {
       );
     });
 
-    testWidgets('subtitle not shown when all rows are high confidence',
-        (tester) async {
+    testWidgets('subtitle not shown when all rows are high confidence', (
+      tester,
+    ) async {
       final ingredients = [
         _ingredient(name: 'a', confidence: ParseConfidence.high),
         _ingredient(name: 'b', confidence: ParseConfidence.high),
       ];
 
-      await tester
-          .pumpWidget(_wrap(ParseConfidenceReview(ingredients: ingredients)));
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(ingredients: ingredients)),
+      );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       // Assert against the count=1 string (not count=0): it can only be absent
       // because reviewCount==0 suppressed the whole subtitle, NOT because the
       // format string happens to differ — a stronger guard than findsNothing(0).
@@ -207,20 +231,23 @@ void main() {
   });
 
   group('ParseConfidenceReview — sort order', () {
-    testWidgets('low-confidence items appear before high-confidence ones',
-        (tester) async {
+    testWidgets('low-confidence items appear before high-confidence ones', (
+      tester,
+    ) async {
       final ingredients = [
         _ingredient(
-            name: 'smör',
-            confidence: ParseConfidence.high,
-            quantity: '100',
-            unit: 'g'),
+          name: 'smör',
+          confidence: ParseConfidence.high,
+          quantity: '100',
+          unit: 'g',
+        ),
         _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
         _ingredient(
-            name: 'mjölk',
-            confidence: ParseConfidence.medium,
-            quantity: '3',
-            unit: 'dl'),
+          name: 'mjölk',
+          confidence: ParseConfidence.medium,
+          quantity: '3',
+          unit: 'dl',
+        ),
       ];
 
       await tester.pumpWidget(
@@ -233,17 +260,22 @@ void main() {
       final highBar = _barContainer(ParseConfidence.high);
 
       expect(
-          tester.getTopLeft(lowBar).dy, lessThan(tester.getTopLeft(medBar).dy),
-          reason: 'low-confidence row should render above medium');
+        tester.getTopLeft(lowBar).dy,
+        lessThan(tester.getTopLeft(medBar).dy),
+        reason: 'low-confidence row should render above medium',
+      );
       expect(
-          tester.getTopLeft(medBar).dy, lessThan(tester.getTopLeft(highBar).dy),
-          reason: 'medium-confidence row should render above high');
+        tester.getTopLeft(medBar).dy,
+        lessThan(tester.getTopLeft(highBar).dy),
+        reason: 'medium-confidence row should render above high',
+      );
     });
   });
 
   group('ParseConfidenceReview — original line expand/collapse', () {
-    testWidgets('tapping a row with a genuinely different original shows it',
-        (tester) async {
+    testWidgets('tapping a row with a genuinely different original shows it', (
+      tester,
+    ) async {
       const originalText = '2dl vetemjöl siktat';
       final ingredients = [
         _ingredient(
@@ -268,36 +300,38 @@ void main() {
     });
 
     testWidgets(
-        'whitespace-only difference does NOT show the chevron or original line',
-        (tester) async {
-      // "100g smör" vs "100 g smör" — differ only by a space → no expand arrow.
-      final ingredients = [
-        _ingredient(
-          name: 'smör',
-          confidence: ParseConfidence.high,
-          originalLine: '100g smör',
-          quantity: '100',
-          unit: 'g',
-        ),
-      ];
+      'whitespace-only difference does NOT show the chevron or original line',
+      (tester) async {
+        // "100g smör" vs "100 g smör" — differ only by a space → no expand arrow.
+        final ingredients = [
+          _ingredient(
+            name: 'smör',
+            confidence: ParseConfidence.high,
+            originalLine: '100g smör',
+            quantity: '100',
+            unit: 'g',
+          ),
+        ];
 
-      await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(ingredients: ingredients)),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrap(ParseConfidenceReview(ingredients: ingredients)),
+        );
+        await tester.pumpAndSettle();
 
-      // No expand chevron rendered
-      expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
-      expect(find.byIcon(Icons.keyboard_arrow_up), findsNothing);
+        // No expand chevron rendered
+        expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
+        expect(find.byIcon(Icons.keyboard_arrow_up), findsNothing);
 
-      // Tapping the row still does nothing
-      await tester.tap(find.text('100 g smör'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('100g smör'), findsNothing);
-    });
+        // Tapping the row still does nothing
+        await tester.tap(find.text('100 g smör'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('100g smör'), findsNothing);
+      },
+    );
 
-    testWidgets('non-whitespace different original DOES show the chevron',
-        (tester) async {
+    testWidgets('non-whitespace different original DOES show the chevron', (
+      tester,
+    ) async {
       final ingredients = [
         _ingredient(
           name: 'mjölk',
@@ -319,21 +353,25 @@ void main() {
   });
 
   group('Accessibility — semantics label includes confidence word', () {
-    testWidgets('high-confidence row semantics include confidence word',
-        (tester) async {
+    testWidgets('high-confidence row semantics include confidence word', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'smör', confidence: ParseConfidence.high),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'smör', confidence: ParseConfidence.high),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       final expectedLabel = l10n.a11yIngredientWithConfidence(
         'smör',
         l10n.a11yConfidenceHigh,
@@ -348,21 +386,25 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('low-confidence row semantics include confidence word',
-        (tester) async {
+    testWidgets('low-confidence row semantics include confidence word', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       final expectedLabel = l10n.a11yIngredientWithConfidence(
         'mystisk sak',
         l10n.a11yConfidenceLow,
@@ -376,21 +418,25 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('medium-confidence row semantics include confidence word',
-        (tester) async {
+    testWidgets('medium-confidence row semantics include confidence word', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       final expectedLabel = l10n.a11yIngredientWithConfidence(
         'mjölk',
         l10n.a11yConfidenceMedium,
@@ -404,21 +450,28 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('failed-confidence row semantics include confidence word',
-        (tester) async {
+    testWidgets('failed-confidence row semantics include confidence word', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(
-          ingredients: [
-            _ingredient(name: 'okänd sak', confidence: ParseConfidence.failed),
-          ],
-        )),
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(
+                name: 'okänd sak',
+                confidence: ParseConfidence.failed,
+              ),
+            ],
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(
-          tester.element(find.byType(ParseConfidenceReview)));
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
       final expectedLabel = l10n.a11yIngredientWithConfidence(
         'okänd sak',
         l10n.a11yConfidenceFailed,

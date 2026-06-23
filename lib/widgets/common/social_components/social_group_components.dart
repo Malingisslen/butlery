@@ -30,8 +30,9 @@ class SocialGroupComponents {
     return SocialFacade.friendCategorySelector(
       context,
       categories: categories,
-      selectedCategoryIds:
-          selectedCategory != null ? {selectedCategory.id} : {},
+      selectedCategoryIds: selectedCategory != null
+          ? {selectedCategory.id}
+          : {},
       onCategoryToggled: (categoryId) {
         if (onCategoryChanged != null) {
           final category = categories.firstWhere((c) => c.id == categoryId);
@@ -172,8 +173,9 @@ class SocialGroupComponents {
         return ListTile(
           title: Text(category.name),
           subtitle: showMemberCount
-              ? Text(context.l10n.socialMembersCount(
-                  0)) // FriendCategory doesn't have memberIds
+              ? Text(
+                  context.l10n.socialMembersCount(0),
+                ) // FriendCategory doesn't have memberIds
               : null,
           leading: const Icon(Icons.group),
           trailing: isSelected
@@ -182,8 +184,9 @@ class SocialGroupComponents {
           selected: isSelected,
           onTap: () {
             if (allowMultiSelect && onMultiSelectChanged != null) {
-              final currentSelection =
-                  List<FriendCategory>.from(selectedCategories ?? []);
+              final currentSelection = List<FriendCategory>.from(
+                selectedCategories ?? [],
+              );
               if (isSelected) {
                 currentSelection.remove(category);
               } else {
@@ -251,14 +254,16 @@ class SocialGroupComponents {
         onPressed: onPressed,
         icon: Icon(icon),
         label: Builder(
-            builder: (context) => Text(text ?? context.l10n.socialAddCategory)),
+          builder: (context) => Text(text ?? context.l10n.socialAddCategory),
+        ),
       );
     } else {
       return ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon),
         label: Builder(
-            builder: (context) => Text(text ?? context.l10n.socialAddCategory)),
+          builder: (context) => Text(text ?? context.l10n.socialAddCategory),
+        ),
       );
     }
   }
@@ -312,8 +317,9 @@ class SocialGroupComponents {
   }) {
     final totalCategories = categories.length;
     const totalMembers = 0; // FriendCategory doesn't have memberIds
-    final averageSize =
-        totalCategories > 0 ? totalMembers / totalCategories : 0.0;
+    final averageSize = totalCategories > 0
+        ? totalMembers / totalCategories
+        : 0.0;
     final largestCategory = categories.isNotEmpty ? categories.first : null;
 
     return Card(
@@ -327,7 +333,8 @@ class SocialGroupComponents {
               style: AppTextStyles.titleBold,
             ),
             const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
             Row(
               children: [
                 Expanded(
@@ -355,7 +362,8 @@ class SocialGroupComponents {
             ),
             if (showAverageSize || showLargestCategory) ...[
               const SizedBox(
-                  height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              ),
               Row(
                 children: [
                   if (showAverageSize)
@@ -402,9 +410,11 @@ class SocialGroupComponents {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXxl,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXxl,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title ?? context.l10n.socialNoCategories,
@@ -414,16 +424,17 @@ class SocialGroupComponents {
           Text(
             subtitle ?? context.l10n.socialCreateFirstCategory,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null) ...[
             const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton(
               onPressed: onCreateFirst,
-              child:
-                  Text(createButtonText ?? context.l10n.socialCreateCategory),
+              child: Text(
+                createButtonText ?? context.l10n.socialCreateCategory,
+              ),
             ),
           ],
         ],

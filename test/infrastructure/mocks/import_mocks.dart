@@ -39,9 +39,13 @@ class FakeHttpRequest extends Fake implements http.BaseRequest {}
 class MockHttpResponseBuilder {
   /// Create successful HTTP response
   static http.Response success(String body, {int statusCode = 200}) {
-    return http.Response(body, statusCode, headers: {
-      'content-type': 'text/html; charset=utf-8',
-    });
+    return http.Response(
+      body,
+      statusCode,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+      },
+    );
   }
 
   /// Create 404 Not Found response
@@ -65,8 +69,9 @@ class MockHttpResponseBuilder {
   }
 
   /// Create 503 Service Unavailable response
-  static http.Response serviceUnavailable(
-      {String body = 'Service Unavailable'}) {
+  static http.Response serviceUnavailable({
+    String body = 'Service Unavailable',
+  }) {
     return http.Response(body, 503);
   }
 
@@ -139,18 +144,24 @@ class ImportMockSetup {
     registerFallbackValue(FakeUri());
     registerFallbackValue(FakeHttpRequest());
     registerFallbackValue(
-        SourcePlatform.unknown); // Enum fallback for WebScraper mocking
+      SourcePlatform.unknown,
+    ); // Enum fallback for WebScraper mocking
   }
 
   /// Setup default HTTP client stubs (can be overridden in specific tests)
   static void setupDefaultHttpStubs(MockHttpClient mockClient) {
     // Default: Return 404 for any unmatched URL
-    when(() => mockClient.get(any(), headers: any(named: 'headers')))
-        .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
+    when(
+      () => mockClient.get(any(), headers: any(named: 'headers')),
+    ).thenAnswer((_) async => MockHttpResponseBuilder.notFound());
 
-    when(() => mockClient.post(any(),
-            headers: any(named: 'headers'), body: any(named: 'body')))
-        .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
+    when(
+      () => mockClient.post(
+        any(),
+        headers: any(named: 'headers'),
+        body: any(named: 'body'),
+      ),
+    ).thenAnswer((_) async => MockHttpResponseBuilder.notFound());
   }
 }
 
@@ -164,10 +175,16 @@ class ImportTestAssertions {
   static void assertValidSwedishRecipe(Map<String, dynamic> recipe) {
     expect(recipe['title'], isNotNull, reason: 'Recipe must have title');
     expect(recipe['title'], isNotEmpty, reason: 'Recipe title cannot be empty');
-    expect(recipe['ingredients'], isNotNull,
-        reason: 'Recipe must have ingredients');
-    expect(recipe['instructions'], isNotNull,
-        reason: 'Recipe must have instructions');
+    expect(
+      recipe['ingredients'],
+      isNotNull,
+      reason: 'Recipe must have ingredients',
+    );
+    expect(
+      recipe['instructions'],
+      isNotNull,
+      reason: 'Recipe must have instructions',
+    );
   }
 
   /// Assert that metadata includes expected fields
@@ -177,24 +194,35 @@ class ImportTestAssertions {
   ) {
     expect(metadata, isNotNull, reason: 'Metadata should not be null');
     for (final field in requiredFields) {
-      expect(metadata!.containsKey(field), isTrue,
-          reason: 'Metadata must include "$field"');
+      expect(
+        metadata!.containsKey(field),
+        isTrue,
+        reason: 'Metadata must include "$field"',
+      );
     }
   }
 
   /// Assert that warnings contain specific text
   static void assertWarningsContain(
-      List<String> warnings, String expectedText) {
-    expect(warnings.any((w) => w.contains(expectedText)), isTrue,
-        reason: 'Warnings should contain "$expectedText"');
+    List<String> warnings,
+    String expectedText,
+  ) {
+    expect(
+      warnings.any((w) => w.contains(expectedText)),
+      isTrue,
+      reason: 'Warnings should contain "$expectedText"',
+    );
   }
 
   /// Assert that recipe portions are valid
   static void assertValidPortions(int? portions) {
     expect(portions, isNotNull, reason: 'Portions should not be null');
     expect(portions! > 0, isTrue, reason: 'Portions must be positive');
-    expect(portions <= 100, isTrue,
-        reason: 'Portions should be reasonable (<= 100)');
+    expect(
+      portions <= 100,
+      isTrue,
+      reason: 'Portions should be reasonable (<= 100)',
+    );
   }
 
   /// Assert that recipe time is valid
@@ -247,14 +275,18 @@ class URLMatchers {
 
   /// Match URL containing substring
   static Matcher urlContains(String substring) {
-    return predicate<Uri>((uri) => uri.toString().contains(substring),
-        'URL contains "$substring"');
+    return predicate<Uri>(
+      (uri) => uri.toString().contains(substring),
+      'URL contains "$substring"',
+    );
   }
 
   /// Match URL with specific domain
   static Matcher urlDomain(String domain) {
     return predicate<Uri>(
-        (uri) => uri.host == domain, 'URL domain is "$domain"');
+      (uri) => uri.host == domain,
+      'URL domain is "$domain"',
+    );
   }
 
   /// Match URL with specific path
@@ -279,16 +311,20 @@ void stubHttpGet(
   String responseBody, {
   int statusCode = 200,
 }) {
-  when(() => mockClient.get(
-        Uri.parse(url),
-        headers: any(named: 'headers'),
-      )).thenAnswer((_) async => http.Response(responseBody, statusCode));
+  when(
+    () => mockClient.get(
+      Uri.parse(url),
+      headers: any(named: 'headers'),
+    ),
+  ).thenAnswer((_) async => http.Response(responseBody, statusCode));
 }
 
 /// Verify HTTP client was called with specific URL
 void verifyHttpGet(MockHttpClient mockClient, String url) {
-  verify(() => mockClient.get(
-        Uri.parse(url),
-        headers: any(named: 'headers'),
-      )).called(1);
+  verify(
+    () => mockClient.get(
+      Uri.parse(url),
+      headers: any(named: 'headers'),
+    ),
+  ).called(1);
 }

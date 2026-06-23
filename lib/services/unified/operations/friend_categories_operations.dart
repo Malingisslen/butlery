@@ -15,7 +15,7 @@ class FriendsCategoriesOperations {
   final List<FriendCategory> Function() _getCategoriesList;
   final List<UserProfile> Function() _getFriendsList;
   final Map<String, Set<String>> Function()
-      _getFriendCategoryRelationshipsInternal;
+  _getFriendCategoryRelationshipsInternal;
   final void Function(FriendCategory) _addCategoryInternal;
   final void Function(String, FriendCategory) _updateCategoryInternalCallback;
   final void Function(String) _removeCategoryInternal;
@@ -31,32 +31,31 @@ class FriendsCategoriesOperations {
     required List<FriendCategory> Function() getCategoriesList,
     required List<UserProfile> Function() getFriendsList,
     required Map<String, Set<String>> Function()
-        getFriendCategoryRelationshipsInternal,
+    getFriendCategoryRelationshipsInternal,
     required void Function(FriendCategory) addCategoryInternal,
     required void Function(String, FriendCategory) updateCategoryInternal,
     required void Function(String) removeCategoryInternal,
     required void Function(String, String) addFriendToCategoryInternal,
     required Future<void> Function(FriendCategory)
-        syncCategoryToFirebaseInternal,
+    syncCategoryToFirebaseInternal,
     required Future<void> Function(String) deleteCategoryFromFirebaseInternal,
     required Future<void> Function() refresh,
     required FriendsManagementOperations Function() getManagement,
     required FriendsInvitationsOperations Function() getInvitations,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCategoriesList = getCategoriesList,
-        _getFriendsList = getFriendsList,
-        _getFriendCategoryRelationshipsInternal =
-            getFriendCategoryRelationshipsInternal,
-        _addCategoryInternal = addCategoryInternal,
-        _updateCategoryInternalCallback = updateCategoryInternal,
-        _removeCategoryInternal = removeCategoryInternal,
-        _addFriendToCategoryInternal = addFriendToCategoryInternal,
-        _syncCategoryToFirebaseInternal = syncCategoryToFirebaseInternal,
-        _deleteCategoryFromFirebaseInternal =
-            deleteCategoryFromFirebaseInternal,
-        _refresh = refresh,
-        _getManagement = getManagement,
-        _getInvitations = getInvitations;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCategoriesList = getCategoriesList,
+       _getFriendsList = getFriendsList,
+       _getFriendCategoryRelationshipsInternal =
+           getFriendCategoryRelationshipsInternal,
+       _addCategoryInternal = addCategoryInternal,
+       _updateCategoryInternalCallback = updateCategoryInternal,
+       _removeCategoryInternal = removeCategoryInternal,
+       _addFriendToCategoryInternal = addFriendToCategoryInternal,
+       _syncCategoryToFirebaseInternal = syncCategoryToFirebaseInternal,
+       _deleteCategoryFromFirebaseInternal = deleteCategoryFromFirebaseInternal,
+       _refresh = refresh,
+       _getManagement = getManagement,
+       _getInvitations = getInvitations;
 
   Future<String?> createCategory({
     required String name,
@@ -117,10 +116,12 @@ class FriendsCategoriesOperations {
             if (sent) sentCount++;
           }
           AppLogger.success(
-              '✅ Category created with $sentCount invitations sent: $name');
+            '✅ Category created with $sentCount invitations sent: $name',
+          );
         } catch (memberError) {
           AppLogger.warning(
-              '⚠️ Category created but failed to send some invitations: $memberError');
+            '⚠️ Category created but failed to send some invitations: $memberError',
+          );
           // Continue anyway - category was created successfully
         }
       } else {
@@ -151,11 +152,21 @@ class FriendsCategoriesOperations {
         return false;
       }
       return await _performCategoryUpdate(
-          refreshedCategory, name, description, icon, isPrivate);
+        refreshedCategory,
+        name,
+        description,
+        icon,
+        isPrivate,
+      );
     }
 
     return await _performCategoryUpdate(
-        category, name, description, icon, isPrivate);
+      category,
+      name,
+      description,
+      icon,
+      isPrivate,
+    );
   }
 
   Future<bool> _performCategoryUpdate(
@@ -236,11 +247,15 @@ class FriendsCategoriesOperations {
     }
   }
 
-  Future<bool> addFriendToCategory(String friendId, String categoryId,
-      {bool skipFriendshipCheck = false,
-      bool skipPermissionCheck = false}) async {
+  Future<bool> addFriendToCategory(
+    String friendId,
+    String categoryId, {
+    bool skipFriendshipCheck = false,
+    bool skipPermissionCheck = false,
+  }) async {
     AppLogger.info(
-        '🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck');
+      '🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck',
+    );
 
     final category = getCategoryById(categoryId);
     if (category == null) {
@@ -264,14 +279,16 @@ class FriendsCategoriesOperations {
 
     if (isFriendInCategory(friendId, categoryId)) {
       AppLogger.warning(
-          '⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId');
+        '⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId',
+      );
       return true; // Not an error, just already done
     }
 
     // ✅ FIXED: Skip permission check when accepting invitations (user is joining, not editing)
     if (!skipPermissionCheck && !_canEditCategory(category)) {
       AppLogger.warning(
-          '❌ [ADD_TO_CATEGORY] No permission to edit category: $categoryId');
+        '❌ [ADD_TO_CATEGORY] No permission to edit category: $categoryId',
+      );
       return false;
     }
 
@@ -289,7 +306,8 @@ class FriendsCategoriesOperations {
     if (categoryToSync != null) {
       await _syncCategoryToFirebaseInternal(categoryToSync);
       AppLogger.success(
-          '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced');
+        '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced',
+      );
     } else {
       AppLogger.warning('⚠️ [ADD_TO_CATEGORY] Category not found for sync');
     }
@@ -298,7 +316,9 @@ class FriendsCategoriesOperations {
   }
 
   Future<bool> removeFriendFromCategory(
-      String friendId, String categoryId) async {
+    String friendId,
+    String categoryId,
+  ) async {
     final category = getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
@@ -328,8 +348,9 @@ class FriendsCategoriesOperations {
       }
 
       // Update the category's member list
-      final updatedMemberIds =
-          category.friendUserIds.where((id) => id != friendId).toList();
+      final updatedMemberIds = category.friendUserIds
+          .where((id) => id != friendId)
+          .toList();
 
       final updatedCategory = category.copyWith(
         friendUserIds: updatedMemberIds,
@@ -342,7 +363,8 @@ class FriendsCategoriesOperations {
       await _syncCategoryToFirebaseInternal(updatedCategory);
 
       AppLogger.success(
-          '✅ Friend removed from category: $friendId -> $categoryId');
+        '✅ Friend removed from category: $friendId -> $categoryId',
+      );
 
       // Emit event bus notification for UI updates
       GroupEventBus.memberRemoved();
@@ -364,8 +386,10 @@ class FriendsCategoriesOperations {
     }
 
     // Remove from source category
-    final removeSuccess =
-        await removeFriendFromCategory(friendId, fromCategoryId);
+    final removeSuccess = await removeFriendFromCategory(
+      friendId,
+      fromCategoryId,
+    );
     if (!removeSuccess) return false;
 
     // Add to target category
@@ -475,8 +499,9 @@ class FriendsCategoriesOperations {
   }
 
   bool _categoryNameExists(String name) {
-    return _getCategoriesList()
-        .any((category) => category.name.toLowerCase() == name.toLowerCase());
+    return _getCategoriesList().any(
+      (category) => category.name.toLowerCase() == name.toLowerCase(),
+    );
   }
 
   int getCategoryMemberCount(String categoryId) {
@@ -502,7 +527,7 @@ class FriendsCategoriesOperations {
       'uncategorizedFriends': uncategorizedCount,
       'averageMembersPerCategory': totalCategories > 0
           ? categories.map((c) => c.memberIds.length).reduce((a, b) => a + b) /
-              totalCategories
+                totalCategories
           : 0.0,
     };
   }
@@ -537,14 +562,18 @@ class FriendsCategoriesOperations {
   // - Private categories: viewable by owner and members only
   // Implementation will be added when privacy feature is developed
 
-  Future<void> setCategoryPrivacy(String categoryId,
-      {required bool isPublic}) async {
+  Future<void> setCategoryPrivacy(
+    String categoryId, {
+    required bool isPublic,
+  }) async {
     AppLogger.info(
-        '🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
+      '🔒 Privacy setting requested for category: $categoryId (public: $isPublic)',
+    );
 
     // Feature not yet implemented — return gracefully instead of crashing
     AppLogger.warning(
-        '⚠️ Friend category privacy controls are not yet available');
+      '⚠️ Friend category privacy controls are not yet available',
+    );
   }
 
   List<FriendCategory> get categoriesList => _getCategoriesList();
@@ -566,7 +595,9 @@ class FriendsCategoriesOperations {
   }
 
   Future<bool> assignFriendToCategory(
-      String friendId, String categoryId) async {
+    String friendId,
+    String categoryId,
+  ) async {
     return await addFriendToCategory(friendId, categoryId);
   }
 

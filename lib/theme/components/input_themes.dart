@@ -88,8 +88,9 @@ class InputThemes {
         ),
       ),
       margin: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm),
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
     );
   }
 
@@ -144,71 +145,78 @@ class InputThemes {
   /// Uses AppColors directly since BoxDecoration is not part of ThemeData
   /// and these are brand-specific decorative borders.
   static BoxDecoration get recipeCardDecoration => BoxDecoration(
-        color: AppColors.cardWhite,
-        border: const Border(
-          left: BorderSide(
-            color: AppColors.recipeCardLeftBorder,
-            width: 4,
-          ),
-          bottom: BorderSide(
-            color: AppColors.recipeCardBottomBorder,
-            width: 3,
-          ),
-        ),
-        boxShadow: AppShadows.cardLifted,
-      );
+    color: AppColors.cardWhite,
+    border: const Border(
+      left: BorderSide(
+        color: AppColors.recipeCardLeftBorder,
+        width: 4,
+      ),
+      bottom: BorderSide(
+        color: AppColors.recipeCardBottomBorder,
+        width: 3,
+      ),
+    ),
+    boxShadow: AppShadows.cardLifted,
+  );
 
   /// Trending recipe card decoration
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
-        color: AppColors.primaryContainer
-            .withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityLight)),
-      );
+    color: AppColors.primaryContainer.withValues(
+      alpha: AppDimensions.opacityVeryLight,
+    ),
+    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    border: Border.all(
+      color: AppColors.forestGreen.withValues(
+        alpha: AppDimensions.opacityLight,
+      ),
+    ),
+  );
 
   /// Activity timeline item decoration
   static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
-        color: AppColors.secondaryContainer
-            .withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-            color:
-                AppColors.rust.withValues(alpha: AppDimensions.opacityLight)),
-      );
+    color: AppColors.secondaryContainer.withValues(
+      alpha: AppDimensions.opacityVeryLight,
+    ),
+    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    border: Border.all(
+      color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight),
+    ),
+  );
 
   /// Empty state container decoration
   static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
-        color: AppColors.primaryContainer
-            .withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityLight)),
-      );
+    color: AppColors.primaryContainer.withValues(
+      alpha: AppDimensions.opacityVeryLight,
+    ),
+    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    border: Border.all(
+      color: AppColors.forestGreen.withValues(
+        alpha: AppDimensions.opacityLight,
+      ),
+    ),
+  );
 
   /// Search box decoration — green+rust border always visible
   static BoxDecoration get searchBoxDecoration => BoxDecoration(
-        color: AppColors.cardWhite,
-        border: const Border(
-          top: BorderSide(color: AppColors.forestGreen, width: 1),
-          left: BorderSide(color: AppColors.forestGreen, width: 1),
-          right: BorderSide(color: AppColors.forestGreen, width: 1),
-          bottom: BorderSide(color: AppColors.rust, width: 2),
-        ),
-        boxShadow: AppShadows.searchBox,
-      );
+    color: AppColors.cardWhite,
+    border: const Border(
+      top: BorderSide(color: AppColors.forestGreen, width: 1),
+      left: BorderSide(color: AppColors.forestGreen, width: 1),
+      right: BorderSide(color: AppColors.forestGreen, width: 1),
+      bottom: BorderSide(color: AppColors.rust, width: 2),
+    ),
+    boxShadow: AppShadows.searchBox,
+  );
 
   /// Search box decoration (focused) — heavier green+rust border
   static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
-        color: AppColors.cardWhite,
-        border: const Border(
-          top: BorderSide(color: AppColors.forestGreen, width: 2),
-          left: BorderSide(color: AppColors.forestGreen, width: 2),
-          right: BorderSide(color: AppColors.forestGreen, width: 2),
-          bottom: BorderSide(color: AppColors.rust, width: 4),
-        ),
-        boxShadow: AppShadows.searchBox,
-      );
+    color: AppColors.cardWhite,
+    border: const Border(
+      top: BorderSide(color: AppColors.forestGreen, width: 2),
+      left: BorderSide(color: AppColors.forestGreen, width: 2),
+      right: BorderSide(color: AppColors.forestGreen, width: 2),
+      bottom: BorderSide(color: AppColors.rust, width: 4),
+    ),
+    boxShadow: AppShadows.searchBox,
+  );
 }

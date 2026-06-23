@@ -105,7 +105,9 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && viewModel.isImporting) {
           SnackBarUtils.showWarning(
-              context, context.l10n.importWaitForCompletion);
+            context,
+            context.l10n.importWaitForCompletion,
+          );
         }
       },
       child: Scaffold(
@@ -153,9 +155,11 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                 if (viewModel.detection != null &&
                                     viewModel.detection!.input.isNotEmpty) ...[
                                   const SizedBox(
-                                      height: AppDimensions.spacingL),
+                                    height: AppDimensions.spacingL,
+                                  ),
                                   PlatformBadgeWidget(
-                                      detection: viewModel.detection),
+                                    detection: viewModel.detection,
+                                  ),
                                 ],
 
                                 // Progress indicator
@@ -163,7 +167,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                     viewModel.phase ==
                                         ImportPhase.complete) ...[
                                   const SizedBox(
-                                      height: AppDimensions.spacingLg),
+                                    height: AppDimensions.spacingLg,
+                                  ),
                                   ImportProgressWidget(
                                     currentStep: viewModel.currentStep,
                                     message: viewModel.progressMessage,
@@ -179,13 +184,16 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                 if (viewModel.error != null &&
                                     viewModel.phase == ImportPhase.error) ...[
                                   const SizedBox(
-                                      height: AppDimensions.spacingMd),
+                                    height: AppDimensions.spacingMd,
+                                  ),
                                   ImportErrorMessage(
                                     message: viewModel.error!,
                                     colorScheme: colorScheme,
                                     onPasteText: () => _handlePaste(viewModel),
                                     onManualAdd: () => Navigator.pushNamed(
-                                        context, Routes.manualEntry),
+                                      context,
+                                      Routes.manualEntry,
+                                    ),
                                   ),
                                 ],
 
@@ -251,8 +259,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     switch (result) {
       case ImportSucceeded(:final recipe):
-        final proceed =
-            await ImportResultHandler.checkForDuplicates(context, recipe);
+        final proceed = await ImportResultHandler.checkForDuplicates(
+          context,
+          recipe,
+        );
         if (proceed && context.mounted) {
           ImportResultHandler.navigateToRecipeEditor(context, recipe);
         }
@@ -300,7 +310,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final text = helpResult.extractedText;
 
     // Detect if this is a short error message rather than actual recipe content
-    final isNeedsScreenshot = text.length < 150 &&
+    final isNeedsScreenshot =
+        text.length < 150 &&
         (text.toLowerCase().contains('skärmbild') ||
             text.toLowerCase().contains('screenshot') ||
             text.toLowerCase().contains('undertexter') ||
@@ -342,8 +353,11 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: Icon(Icons.videocam_off,
-            size: 48, color: theme.colorScheme.primary),
+        icon: Icon(
+          Icons.videocam_off,
+          size: 48,
+          color: theme.colorScheme.primary,
+        ),
         title: Text(context.l10n.importVideoNoText),
         content: Text(
           context.l10n.importVideoNoTextDescription,

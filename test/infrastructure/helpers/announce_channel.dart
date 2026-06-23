@@ -82,8 +82,8 @@ class AnnounceChannel {
   void dispose() {
     _tester.binding.defaultBinaryMessenger
         .setMockDecodedMessageHandler<dynamic>(
-      const BasicMessageChannel<dynamic>(_channelName, _codec),
-      null,
-    );
+          const BasicMessageChannel<dynamic>(_channelName, _codec),
+          null,
+        );
   }
 }

@@ -59,7 +59,8 @@ class TestableUrlImportViewModel extends UrlImportViewModel {
       );
       if (response.statusCode != 200) {
         throw Exception(
-            'Kunde inte hämta innehåll från URL: HTTP ${response.statusCode}');
+          'Kunde inte hämta innehåll från URL: HTTP ${response.statusCode}',
+        );
       }
       return response.body;
     }
@@ -185,44 +186,49 @@ void main() {
 
       // Configure ImportManager mock using centralized setImportManagerState()
       mockTextStrategy = MockTextImportStrategy();
-      when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
-          .thenAnswer((_) async => ImportResult.success(
-                RecipeFactory.build(
-                  title: 'Svenska Pannkakor',
-                  description: 'Klassiska tunna pannkakor',
-                  ingredients: [
-                    '3 ägg',
-                    '3 dl mjölk',
-                    '2 dl vetemjöl',
-                    '1 tsk salt',
-                    '2 msk smält smör'
-                  ],
-                  instructions: [
-                    'Vispa ihop',
-                    'Tillsätt mjöl',
-                    'Rör i smör',
-                    'Låt svälla',
-                    'Stek i panna'
-                  ],
-                  timeMinutes: 20,
-                  portions: 4,
-                ),
-              ));
+      when(
+        () => mockTextStrategy.import(any(), options: any(named: 'options')),
+      ).thenAnswer(
+        (_) async => ImportResult.success(
+          RecipeFactory.build(
+            title: 'Svenska Pannkakor',
+            description: 'Klassiska tunna pannkakor',
+            ingredients: [
+              '3 ägg',
+              '3 dl mjölk',
+              '2 dl vetemjöl',
+              '1 tsk salt',
+              '2 msk smält smör',
+            ],
+            instructions: [
+              'Vispa ihop',
+              'Tillsätt mjöl',
+              'Rör i smör',
+              'Låt svälla',
+              'Stek i panna',
+            ],
+            timeMinutes: 20,
+            portions: 4,
+          ),
+        ),
+      );
 
       mockImportManager.setImportManagerState(
         textImportStrategy: mockTextStrategy,
       );
 
       // Configure ImportManager save
-      when(() => mockImportManager.saveImportedRecipe(any()))
-          .thenAnswer((_) async => ImportManagerResult.success(
-                RecipeFactory.build(),
-                strategy: 'url',
-              ));
+      when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+        (_) async => ImportManagerResult.success(
+          RecipeFactory.build(),
+          strategy: 'url',
+        ),
+      );
 
       // Configure default HTTP responses
-      when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-          .thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
+      when(
+        () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+      ).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
 
       // Create viewModel
       viewModel = TestableUrlImportViewModel(
@@ -403,8 +409,10 @@ void main() {
       void expectBlocked(String url) {
         viewModel.updateUrl(url);
         expect(
-            viewModel.getUrlValidationErrors(), contains(privateAddressError),
-            reason: '$url should be flagged as a private/reserved host');
+          viewModel.getUrlValidationErrors(),
+          contains(privateAddressError),
+          reason: '$url should be flagged as a private/reserved host',
+        );
         // NOTE: canFetch only checks the scheme (ImportBaseViewModel._isValidUrl),
         // so it stays true here — the SSRF block surfaces through the validation
         // errors and the batch parseUrls() drop, which is what this guard governs.
@@ -412,59 +420,91 @@ void main() {
 
       void expectAllowed(String url) {
         viewModel.updateUrl(url);
-        expect(viewModel.getUrlValidationErrors(),
-            isNot(contains(privateAddressError)),
-            reason: '$url is public and must not be flagged private');
+        expect(
+          viewModel.getUrlValidationErrors(),
+          isNot(contains(privateAddressError)),
+          reason: '$url is public and must not be flagged private',
+        );
       }
 
       test('blocks localhost', () => expectBlocked('http://localhost/recipe'));
 
-      test('blocks loopback 127.0.0.1',
-          () => expectBlocked('http://127.0.0.1/recipe'));
+      test(
+        'blocks loopback 127.0.0.1',
+        () => expectBlocked('http://127.0.0.1/recipe'),
+      );
 
-      test('blocks the wider 127.0.0.0/8 loopback range (old copy missed this)',
-          () => expectBlocked('http://127.1.2.3/recipe'));
+      test(
+        'blocks the wider 127.0.0.0/8 loopback range (old copy missed this)',
+        () => expectBlocked('http://127.1.2.3/recipe'),
+      );
 
       test('blocks 0.0.0.0', () => expectBlocked('http://0.0.0.0/recipe'));
 
-      test('blocks 10.0.0.0/8 private range',
-          () => expectBlocked('http://10.0.0.5/recipe'));
+      test(
+        'blocks 10.0.0.0/8 private range',
+        () => expectBlocked('http://10.0.0.5/recipe'),
+      );
 
-      test('blocks 172.16.0.0/12 private range',
-          () => expectBlocked('http://172.16.0.1/recipe'));
+      test(
+        'blocks 172.16.0.0/12 private range',
+        () => expectBlocked('http://172.16.0.1/recipe'),
+      );
 
-      test('blocks 172.31.x (upper bound of 172.16.0.0/12)',
-          () => expectBlocked('http://172.31.255.254/recipe'));
+      test(
+        'blocks 172.31.x (upper bound of 172.16.0.0/12)',
+        () => expectBlocked('http://172.31.255.254/recipe'),
+      );
 
-      test('does NOT block 172.32.x (just outside 172.16.0.0/12)',
-          () => expectAllowed('http://172.32.0.1/recipe'));
+      test(
+        'does NOT block 172.32.x (just outside 172.16.0.0/12)',
+        () => expectAllowed('http://172.32.0.1/recipe'),
+      );
 
-      test('blocks 192.168.0.0/16 private range',
-          () => expectBlocked('http://192.168.1.10/recipe'));
+      test(
+        'blocks 192.168.0.0/16 private range',
+        () => expectBlocked('http://192.168.1.10/recipe'),
+      );
 
-      test('blocks 169.254.0.0/16 link-local',
-          () => expectBlocked('http://169.254.1.1/recipe'));
+      test(
+        'blocks 169.254.0.0/16 link-local',
+        () => expectBlocked('http://169.254.1.1/recipe'),
+      );
 
-      test('blocks IPv6 loopback ::1 (bracket-stripped uri.host form)',
-          () => expectBlocked('http://[::1]/recipe'));
+      test(
+        'blocks IPv6 loopback ::1 (bracket-stripped uri.host form)',
+        () => expectBlocked('http://[::1]/recipe'),
+      );
 
-      test('blocks IPv6 unique-local fc00::/7',
-          () => expectBlocked('http://[fc00::1]/recipe'));
+      test(
+        'blocks IPv6 unique-local fc00::/7',
+        () => expectBlocked('http://[fc00::1]/recipe'),
+      );
 
-      test('blocks IPv6 link-local fe80::/10',
-          () => expectBlocked('http://[fe80::1]/recipe'));
+      test(
+        'blocks IPv6 link-local fe80::/10',
+        () => expectBlocked('http://[fe80::1]/recipe'),
+      );
 
-      test('blocks IPv4-mapped IPv6 ::ffff:10.0.0.1 (old copy missed this)',
-          () => expectBlocked('http://[::ffff:10.0.0.1]/recipe'));
+      test(
+        'blocks IPv4-mapped IPv6 ::ffff:10.0.0.1 (old copy missed this)',
+        () => expectBlocked('http://[::ffff:10.0.0.1]/recipe'),
+      );
 
-      test('allows a public IPv4 host',
-          () => expectAllowed('http://93.184.216.34/recipe'));
+      test(
+        'allows a public IPv4 host',
+        () => expectAllowed('http://93.184.216.34/recipe'),
+      );
 
-      test('allows a public hostname',
-          () => expectAllowed('https://www.example.com/recipe'));
+      test(
+        'allows a public hostname',
+        () => expectAllowed('https://www.example.com/recipe'),
+      );
 
-      test('allows a public IPv6 host',
-          () => expectAllowed('http://[2606:2800:220:1:248:1893:25c8:1946]/r'));
+      test(
+        'allows a public IPv6 host',
+        () => expectAllowed('http://[2606:2800:220:1:248:1893:25c8:1946]/r'),
+      );
     });
 
     group('Recipe Site Recognition', () {
@@ -503,8 +543,11 @@ void main() {
 
         for (final site in sites) {
           viewModel.updateUrl(site);
-          expect(viewModel.isKnownRecipeSite(), isTrue,
-              reason: 'Should recognize $site');
+          expect(
+            viewModel.isKnownRecipeSite(),
+            isTrue,
+            reason: 'Should recognize $site',
+          );
         }
       });
 
@@ -540,8 +583,10 @@ void main() {
         final suggestions = viewModel.getUrlSuggestions();
 
         // Assert
-        expect(suggestions,
-            contains('Känd receptsida — bra chans att importera!'));
+        expect(
+          suggestions,
+          contains('Känd receptsida — bra chans att importera!'),
+        );
       });
 
       test('should warn for unknown site', () {
@@ -576,9 +621,9 @@ void main() {
 
         // Assert
         expect(
-            suggestions,
-            contains(
-                'URL:en är ovanligt lång — kontrollera att den är korrekt'));
+          suggestions,
+          contains('URL:en är ovanligt lång — kontrollera att den är korrekt'),
+        );
       });
 
       test('should identify social media links', () {
@@ -592,23 +637,28 @@ void main() {
         for (final url in socialUrls) {
           viewModel.updateUrl(url);
           final suggestions = viewModel.getUrlSuggestions();
-          expect(suggestions,
-              contains('Sociala medier — import kräver ibland extra steg'));
+          expect(
+            suggestions,
+            contains('Sociala medier — import kräver ibland extra steg'),
+          );
         }
       });
 
       test('should provide optimal suggestion for perfect URL', () {
         // Arrange
         viewModel.updateUrl(
-            'https://www.ica.se/pannkakor'); // URL without 'recept' keyword
+          'https://www.ica.se/pannkakor',
+        ); // URL without 'recept' keyword
 
         // Act
         final suggestions = viewModel.getUrlSuggestions();
 
         // Assert
         // When it's a known site but no recipe keyword, should still get known site message
-        expect(suggestions,
-            contains('Känd receptsida — bra chans att importera!'));
+        expect(
+          suggestions,
+          contains('Känd receptsida — bra chans att importera!'),
+        );
         // When only one positive suggestion and is known site, should show optimal
         expect(suggestions.any((s) => s.contains('Perfekt')), isTrue);
       });
@@ -638,8 +688,9 @@ void main() {
         expect(viewModel.hasExtractedText, isTrue);
         expect(viewModel.extractedText, isNotEmpty);
         expect(viewModel.error, isNull);
-        verify(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .called(1);
+        verify(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).called(1);
       });
 
       // A failing fetch (here a non-200 surfaced as a throw, but the same path
@@ -650,8 +701,9 @@ void main() {
       test('failed fetch sets the error state and extracts no text', () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/notfound');
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenAnswer((_) async => TestHttpResponse('Not Found', 404));
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer((_) async => TestHttpResponse('Not Found', 404));
 
         // Act — executeAsync rethrows, so catch the propagated exception
         try {
@@ -665,24 +717,27 @@ void main() {
         expect(viewModel.hasError, isTrue);
       });
 
-      test('network error during fetch propagates to the error state',
-          () async {
-        // Arrange
-        viewModel.updateUrl('https://www.example.com/error');
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenThrow(Exception('Network error'));
+      test(
+        'network error during fetch propagates to the error state',
+        () async {
+          // Arrange
+          viewModel.updateUrl('https://www.example.com/error');
+          when(
+            () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+          ).thenThrow(Exception('Network error'));
 
-        // Act — executeAsync rethrows, so catch the propagated exception
-        try {
-          await viewModel.fetchFromUrl();
-        } catch (_) {
-          // Expected: executeAsync sets error then rethrows
-        }
+          // Act — executeAsync rethrows, so catch the propagated exception
+          try {
+            await viewModel.fetchFromUrl();
+          } catch (_) {
+            // Expected: executeAsync sets error then rethrows
+          }
 
-        // Assert
-        expect(viewModel.hasExtractedText, isFalse);
-        expect(viewModel.hasError, isTrue);
-      });
+          // Assert
+          expect(viewModel.hasExtractedText, isFalse);
+          expect(viewModel.hasError, isTrue);
+        },
+      );
 
       test('should set source URL when fetching', () async {
         // Arrange
@@ -728,8 +783,9 @@ void main() {
       test('should not parse if fetch fails', () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/error');
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenThrow(Exception('Network error'));
 
         // Act — executeAsync rethrows, so catch the propagated exception
         try {
@@ -752,9 +808,9 @@ void main() {
 
         // Assert
         expect(viewModel.hasParsedRecipe, isTrue);
-        verify(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .called(1);
+        verify(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).called(1);
       });
     });
 
@@ -792,11 +848,12 @@ void main() {
         // Arrange
         viewModel.updateUrl('https://www.example.com/recipe');
         await viewModel.fetchFromUrl(); // Need to fetch first
-        when(() => mockImportManager.saveImportedRecipe(any()))
-            .thenAnswer((_) async => ImportManagerResult.failure(
-                  'Failed to save',
-                  strategy: 'url',
-                ));
+        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+          (_) async => ImportManagerResult.failure(
+            'Failed to save',
+            strategy: 'url',
+          ),
+        );
 
         // Act
         final result = await viewModel.importAndSave();
@@ -821,7 +878,9 @@ void main() {
         // Assert
         expect(wasLoading, isTrue);
         expect(
-            viewModel.isLoading, isFalse); // Should be false after completion
+          viewModel.isLoading,
+          isFalse,
+        ); // Should be false after completion
       });
     });
 
@@ -856,11 +915,14 @@ void main() {
       test('should detect missing ingredients', () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/recipe');
-        when(() => mockHttpClient.get(any(),
-            headers: any(
-                named: 'headers'))).thenAnswer((_) async => TestHttpResponse(
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer(
+          (_) async => TestHttpResponse(
             '<html><body>Recipe instructions only: Stek i panna. Servera varmt. Tid: 20 minuter.</body></html>',
-            200));
+            200,
+          ),
+        );
         await viewModel.fetchFromUrl();
 
         // Act
@@ -868,17 +930,22 @@ void main() {
 
         // Assert
         expect(
-            analysis['issues'], contains('Ingen ingredienssektion hittades'));
+          analysis['issues'],
+          contains('Ingen ingredienssektion hittades'),
+        );
       });
 
       test('should detect missing instructions', () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/recipe');
-        when(() => mockHttpClient.get(any(),
-            headers: any(
-                named: 'headers'))).thenAnswer((_) async => TestHttpResponse(
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenAnswer(
+          (_) async => TestHttpResponse(
             '<html><body>Ingredienser: 3 ägg, 2 dl mjölk, 1 dl mjöl. Portioner: 4.</body></html>',
-            200));
+            200,
+          ),
+        );
         await viewModel.fetchFromUrl();
 
         // Act
@@ -910,7 +977,9 @@ void main() {
 
         // Assert
         expect(
-            analysis['positives'], contains('Innehåller portionsinformation'));
+          analysis['positives'],
+          contains('Innehåller portionsinformation'),
+        );
       });
 
       test('should score content appropriately', () async {
@@ -930,20 +999,26 @@ void main() {
 
         for (final testCase in testCases) {
           viewModel.updateUrl('https://www.example.com/recipe');
-          when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-              .thenAnswer((_) async =>
-                  TestHttpResponse(testCase['content'] as String, 200));
+          when(
+            () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+          ).thenAnswer(
+            (_) async => TestHttpResponse(testCase['content'] as String, 200),
+          );
           await viewModel.fetchFromUrl();
 
           final analysis = viewModel.analyzeExtractedContent();
           expect(analysis['quality'], equals(testCase['expectedQuality']));
           if (testCase['minScore'] != null) {
-            expect(analysis['score'],
-                greaterThanOrEqualTo(testCase['minScore'] as int));
+            expect(
+              analysis['score'],
+              greaterThanOrEqualTo(testCase['minScore'] as int),
+            );
           }
           if (testCase['maxScore'] != null) {
-            expect(analysis['score'],
-                lessThanOrEqualTo(testCase['maxScore'] as int));
+            expect(
+              analysis['score'],
+              lessThanOrEqualTo(testCase['maxScore'] as int),
+            );
           }
         }
       });
@@ -1037,19 +1112,21 @@ void main() {
     // BUT-947: list-aware URL import — pasting several URLs imports each one
     // with per-URL progress and partial-success handling.
     group('Multiple URL import (BUT-947)', () {
-      test('parseUrls splits newline/comma/space lists and keeps only http(s)',
-          () {
-        final urls = UrlImportViewModel.parseUrls(
-          'https://a.com/r1\nhttps://b.com/r2, https://c.com/r3 not-a-url '
-          'ftp://d.com/x',
-        );
+      test(
+        'parseUrls splits newline/comma/space lists and keeps only http(s)',
+        () {
+          final urls = UrlImportViewModel.parseUrls(
+            'https://a.com/r1\nhttps://b.com/r2, https://c.com/r3 not-a-url '
+            'ftp://d.com/x',
+          );
 
-        expect(urls, [
-          'https://a.com/r1',
-          'https://b.com/r2',
-          'https://c.com/r3',
-        ]);
-      });
+          expect(urls, [
+            'https://a.com/r1',
+            'https://b.com/r2',
+            'https://c.com/r3',
+          ]);
+        },
+      );
 
       test('parseUrls de-duplicates while preserving order', () {
         final urls = UrlImportViewModel.parseUrls(
@@ -1076,30 +1153,33 @@ void main() {
         expect(urls, ['https://public.com/ok', 'https://other.com/ok']);
       });
 
-      test('isMultiUrl is true only when input parses to more than one URL',
-          () {
-        viewModel.updateUrl('https://a.com/r1');
-        expect(viewModel.isMultiUrl, isFalse);
+      test(
+        'isMultiUrl is true only when input parses to more than one URL',
+        () {
+          viewModel.updateUrl('https://a.com/r1');
+          expect(viewModel.isMultiUrl, isFalse);
 
-        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-        expect(viewModel.isMultiUrl, isTrue);
-      });
-
-      test('fetchMultipleUrls fetches every URL and records per-URL success',
-          () async {
-        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-
-        await viewModel.fetchMultipleUrls();
-
-        expect(viewModel.urlResults, hasLength(2));
-        expect(viewModel.urlResults.every((r) => r.isSuccess), isTrue);
-        expect(viewModel.hasAnyUrlSuccess, isTrue);
-        expect(viewModel.allUrlsFailed, isFalse);
-        expect(viewModel.hasError, isFalse);
-      });
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          expect(viewModel.isMultiUrl, isTrue);
+        },
+      );
 
       test(
-          'fetchMultipleUrls fetches URLs sequentially, never concurrently '
+        'fetchMultipleUrls fetches every URL and records per-URL success',
+        () async {
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+
+          await viewModel.fetchMultipleUrls();
+
+          expect(viewModel.urlResults, hasLength(2));
+          expect(viewModel.urlResults.every((r) => r.isSuccess), isTrue);
+          expect(viewModel.hasAnyUrlSuccess, isTrue);
+          expect(viewModel.allUrlsFailed, isFalse);
+          expect(viewModel.hasError, isFalse);
+        },
+      );
+
+      test('fetchMultipleUrls fetches URLs sequentially, never concurrently '
           '(BUT-947 cost/rate-limit safety)', () async {
         final tracking = ConcurrencyTrackingUrlImportViewModel(
           importManager: mockImportManager,
@@ -1118,28 +1198,33 @@ void main() {
         expect(tracking.urlResults.every((r) => r.isSuccess), isTrue);
       });
 
-      test('partial failure keeps successful rows and does not set batch error',
-          () async {
-        // Second URL fails; first succeeds.
-        when(() => mockHttpClient.get(
+      test(
+        'partial failure keeps successful rows and does not set batch error',
+        () async {
+          // Second URL fails; first succeeds.
+          when(
+            () => mockHttpClient.get(
               Uri.parse('https://b.com/r2'),
               headers: any(named: 'headers'),
-            )).thenThrow(Exception('boom'));
+            ),
+          ).thenThrow(Exception('boom'));
 
-        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-        await viewModel.fetchMultipleUrls();
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          await viewModel.fetchMultipleUrls();
 
-        expect(viewModel.urlResults[0].isSuccess, isTrue);
-        expect(viewModel.urlResults[1].isFailure, isTrue);
-        expect(viewModel.hasAnyUrlSuccess, isTrue);
-        expect(viewModel.allUrlsFailed, isFalse);
-        // Partial success → no global blocking error banner.
-        expect(viewModel.hasError, isFalse);
-      });
+          expect(viewModel.urlResults[0].isSuccess, isTrue);
+          expect(viewModel.urlResults[1].isFailure, isTrue);
+          expect(viewModel.hasAnyUrlSuccess, isTrue);
+          expect(viewModel.allUrlsFailed, isFalse);
+          // Partial success → no global blocking error banner.
+          expect(viewModel.hasError, isFalse);
+        },
+      );
 
       test('all URLs failing surfaces the batch-level error', () async {
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenThrow(Exception('boom'));
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenThrow(Exception('boom'));
 
         viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
         await viewModel.fetchMultipleUrls();
@@ -1150,10 +1235,12 @@ void main() {
 
       test('retryUrl re-fetches only the targeted failed URL', () async {
         // index 0 fails (primary + fallback both throw), index 1 succeeds.
-        when(() => mockHttpClient.get(
-              Uri.parse('https://a.com/bad'),
-              headers: any(named: 'headers'),
-            )).thenThrow(Exception('down'));
+        when(
+          () => mockHttpClient.get(
+            Uri.parse('https://a.com/bad'),
+            headers: any(named: 'headers'),
+          ),
+        ).thenThrow(Exception('down'));
 
         viewModel.updateUrl('https://a.com/bad\nhttps://b.com/r2');
         await viewModel.fetchMultipleUrls();
@@ -1161,10 +1248,12 @@ void main() {
         expect(viewModel.urlResults[1].isSuccess, isTrue);
 
         // The site comes back up; retrying just that row should now succeed.
-        when(() => mockHttpClient.get(
-              Uri.parse('https://a.com/bad'),
-              headers: any(named: 'headers'),
-            )).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
+        when(
+          () => mockHttpClient.get(
+            Uri.parse('https://a.com/bad'),
+            headers: any(named: 'headers'),
+          ),
+        ).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
 
         await viewModel.retryUrl(0);
 
@@ -1172,45 +1261,52 @@ void main() {
         expect(viewModel.urlResults[1].isSuccess, isTrue);
       });
 
-      test('fetchMultipleUrls with no fetchable URLs sets the validation error',
-          () async {
-        // isMultiUrl can be true while parseUrls yields nothing fetchable
-        // (e.g. two non-http tokens). The early-return must surface the
-        // "enter a valid URL" message rather than leaving an empty silent UI.
-        viewModel.updateUrl('ftp://a.com/x ftp://b.com/y');
+      test(
+        'fetchMultipleUrls with no fetchable URLs sets the validation error',
+        () async {
+          // isMultiUrl can be true while parseUrls yields nothing fetchable
+          // (e.g. two non-http tokens). The early-return must surface the
+          // "enter a valid URL" message rather than leaving an empty silent UI.
+          viewModel.updateUrl('ftp://a.com/x ftp://b.com/y');
 
-        await viewModel.fetchMultipleUrls();
+          await viewModel.fetchMultipleUrls();
 
-        expect(viewModel.urlResults, isEmpty);
-        expect(viewModel.error, equals('Vänligen ange en giltig URL'));
-      });
+          expect(viewModel.urlResults, isEmpty);
+          expect(viewModel.error, equals('Vänligen ange en giltig URL'));
+        },
+      );
 
-      test('retryUrl that recovers an all-failed batch clears the batch error',
-          () async {
-        // Distinct from the partial-batch retry test: here EVERY url fails
-        // first, so the batch-level error banner is set. A successful retry
-        // must clear it — otherwise the user sees "none could be fetched"
-        // sitting above a now-successful row.
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenThrow(Exception('all down'));
+      test(
+        'retryUrl that recovers an all-failed batch clears the batch error',
+        () async {
+          // Distinct from the partial-batch retry test: here EVERY url fails
+          // first, so the batch-level error banner is set. A successful retry
+          // must clear it — otherwise the user sees "none could be fetched"
+          // sitting above a now-successful row.
+          when(
+            () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+          ).thenThrow(Exception('all down'));
 
-        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-        await viewModel.fetchMultipleUrls();
-        expect(viewModel.allUrlsFailed, isTrue);
-        expect(viewModel.hasError, isTrue);
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          await viewModel.fetchMultipleUrls();
+          expect(viewModel.allUrlsFailed, isTrue);
+          expect(viewModel.hasError, isTrue);
 
-        // One link comes back; retry just that row.
-        when(() => mockHttpClient.get(
+          // One link comes back; retry just that row.
+          when(
+            () => mockHttpClient.get(
               Uri.parse('https://a.com/r1'),
               headers: any(named: 'headers'),
-            )).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
+            ),
+          ).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
 
-        await viewModel.retryUrl(0);
+          await viewModel.retryUrl(0);
 
-        expect(viewModel.urlResults[0].isSuccess, isTrue);
-        expect(viewModel.hasAnyUrlSuccess, isTrue);
-        expect(viewModel.hasError, isFalse);
-      });
+          expect(viewModel.urlResults[0].isSuccess, isTrue);
+          expect(viewModel.hasAnyUrlSuccess, isTrue);
+          expect(viewModel.hasError, isFalse);
+        },
+      );
 
       test('retryUrl ignores an out-of-range index without throwing', () async {
         viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
@@ -1237,28 +1333,37 @@ void main() {
       // count ONLY the successful rows — not the total, not failures. A regression
       // that counted total rows (or off-by-one) would offer to import N recipes
       // when only M fetched, dead-ending the user on the paste step.
-      test('successfulUrlCount counts only successful rows, excluding failures',
-          () async {
-        // r2 fails; r1 and r3 succeed → count must be 2, not 3.
-        when(() => mockHttpClient.get(
+      test(
+        'successfulUrlCount counts only successful rows, excluding failures',
+        () async {
+          // r2 fails; r1 and r3 succeed → count must be 2, not 3.
+          when(
+            () => mockHttpClient.get(
               Uri.parse('https://b.com/r2'),
               headers: any(named: 'headers'),
-            )).thenThrow(Exception('boom'));
+            ),
+          ).thenThrow(Exception('boom'));
 
-        viewModel.updateUrl(
-          'https://a.com/r1\nhttps://b.com/r2\nhttps://c.com/r3',
-        );
-        await viewModel.fetchMultipleUrls();
+          viewModel.updateUrl(
+            'https://a.com/r1\nhttps://b.com/r2\nhttps://c.com/r3',
+          );
+          await viewModel.fetchMultipleUrls();
 
-        expect(viewModel.urlResults, hasLength(3));
-        expect(viewModel.successfulUrlCount, 2,
-            reason: 'two of three succeeded — the failed row must not be '
-                'counted toward the CTA');
-      });
+          expect(viewModel.urlResults, hasLength(3));
+          expect(
+            viewModel.successfulUrlCount,
+            2,
+            reason:
+                'two of three succeeded — the failed row must not be '
+                'counted toward the CTA',
+          );
+        },
+      );
 
       test('successfulUrlCount is zero when every URL failed', () async {
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenThrow(Exception('all down'));
+        when(
+          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
+        ).thenThrow(Exception('all down'));
 
         viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
         await viewModel.fetchMultipleUrls();
@@ -1272,25 +1377,30 @@ void main() {
       // spinner per loading row; if isLoading didn't track the loading status,
       // the rows would render as pending/blank during the fetch. Prove it by
       // inspecting the rows the instant the sequential loop is mid-flight.
-      test('rows expose isLoading while the batch fetch is in flight',
-          () async {
-        late List<UrlImportResult> midFlightSnapshot;
-        final tracking = _LoadingObservingUrlImportViewModel(
-          importManager: mockImportManager,
-          onMidFetch: (vm) => midFlightSnapshot = vm.urlResults,
-        );
-        addTearDown(tracking.dispose);
+      test(
+        'rows expose isLoading while the batch fetch is in flight',
+        () async {
+          late List<UrlImportResult> midFlightSnapshot;
+          final tracking = _LoadingObservingUrlImportViewModel(
+            importManager: mockImportManager,
+            onMidFetch: (vm) => midFlightSnapshot = vm.urlResults,
+          );
+          addTearDown(tracking.dispose);
 
-        tracking.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-        await tracking.fetchMultipleUrls();
+          tracking.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          await tracking.fetchMultipleUrls();
 
-        // Captured during the first row's fetch: at least one row reports
-        // isLoading (the one being processed is still seeded loading).
-        expect(midFlightSnapshot.any((r) => r.isLoading), isTrue,
-            reason: 'rows must report isLoading while their fetch is pending');
-        // After settle, nothing is left loading.
-        expect(tracking.urlResults.any((r) => r.isLoading), isFalse);
-      });
+          // Captured during the first row's fetch: at least one row reports
+          // isLoading (the one being processed is still seeded loading).
+          expect(
+            midFlightSnapshot.any((r) => r.isLoading),
+            isTrue,
+            reason: 'rows must report isLoading while their fetch is pending',
+          );
+          // After settle, nothing is left loading.
+          expect(tracking.urlResults.any((r) => r.isLoading), isFalse);
+        },
+      );
 
       // clearUrlResults() is the explicit "discard the batch" affordance (the
       // view calls it when the user backs out). It must empty the rows AND
@@ -1318,9 +1428,13 @@ void main() {
         viewModel.clearUrlResults();
 
         expect(viewModel.urlResults, isEmpty);
-        expect(notifications, 0,
-            reason: 'clearing an already-empty batch must not notify and '
-                'trigger a needless rebuild');
+        expect(
+          notifications,
+          0,
+          reason:
+              'clearing an already-empty batch must not notify and '
+              'trigger a needless rebuild',
+        );
       });
 
       // BUT-1295: successfulBatchText is what feeds a settled batch fetch into
@@ -1338,21 +1452,24 @@ void main() {
           Set<String> failUrls = const {},
         }) {
           for (final entry in bodyByUrl.entries) {
-            when(() => mockHttpClient.get(
-                  Uri.parse(entry.key),
-                  headers: any(named: 'headers'),
-                )).thenAnswer((_) async => TestHttpResponse(entry.value, 200));
+            when(
+              () => mockHttpClient.get(
+                Uri.parse(entry.key),
+                headers: any(named: 'headers'),
+              ),
+            ).thenAnswer((_) async => TestHttpResponse(entry.value, 200));
           }
           for (final url in failUrls) {
-            when(() => mockHttpClient.get(
-                  Uri.parse(url),
-                  headers: any(named: 'headers'),
-                )).thenThrow(Exception('down'));
+            when(
+              () => mockHttpClient.get(
+                Uri.parse(url),
+                headers: any(named: 'headers'),
+              ),
+            ).thenThrow(Exception('down'));
           }
         }
 
-        test(
-            '[success, failure, success] joins ONLY the two successes with '
+        test('[success, failure, success] joins ONLY the two successes with '
             'the \\n\\n separator, skipping the failed row', () async {
           stubBodies(
             {
@@ -1373,28 +1490,38 @@ void main() {
           expect(viewModel.urlResults[1].isFailure, isTrue);
           expect(viewModel.urlResults[2].isSuccess, isTrue);
 
-          expect(viewModel.successfulBatchText, 'BODY_A\n\nBODY_C',
-              reason: 'only the two successful bodies are joined, with the '
-                  'recipe-boundary separator and no gap for the failure');
-        });
-
-        test('single success yields exactly that body with no separator',
-            () async {
-          stubBodies(
-            {
-              'https://a.com/r1': 'BODY_A',
-              'https://b.com/r2': 'BODY_B', // will fail
-            },
-            failUrls: {'https://b.com/r2'},
+          expect(
+            viewModel.successfulBatchText,
+            'BODY_A\n\nBODY_C',
+            reason:
+                'only the two successful bodies are joined, with the '
+                'recipe-boundary separator and no gap for the failure',
           );
-
-          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
-          await viewModel.fetchMultipleUrls();
-
-          expect(viewModel.successfulBatchText, 'BODY_A',
-              reason: 'a lone success must not be wrapped in a trailing or '
-                  'leading separator');
         });
+
+        test(
+          'single success yields exactly that body with no separator',
+          () async {
+            stubBodies(
+              {
+                'https://a.com/r1': 'BODY_A',
+                'https://b.com/r2': 'BODY_B', // will fail
+              },
+              failUrls: {'https://b.com/r2'},
+            );
+
+            viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+            await viewModel.fetchMultipleUrls();
+
+            expect(
+              viewModel.successfulBatchText,
+              'BODY_A',
+              reason:
+                  'a lone success must not be wrapped in a trailing or '
+                  'leading separator',
+            );
+          },
+        );
 
         test('all-failure batch yields an empty string', () async {
           stubBodies(
@@ -1406,9 +1533,13 @@ void main() {
           await viewModel.fetchMultipleUrls();
 
           expect(viewModel.allUrlsFailed, isTrue);
-          expect(viewModel.successfulBatchText, isEmpty,
-              reason: 'no successful rows means nothing to feed the paste '
-                  'step — the empty string, not a stray separator');
+          expect(
+            viewModel.successfulBatchText,
+            isEmpty,
+            reason:
+                'no successful rows means nothing to feed the paste '
+                'step — the empty string, not a stray separator',
+          );
         });
       });
     });
@@ -1429,43 +1560,61 @@ void main() {
             indexExpander: _FakeIndexExpander(links),
           );
 
-      test('detectIndexPage surfaces an opt-in candidate when links are found',
-          () async {
-        final vm = buildWith(harvested);
-        addTearDown(vm.dispose);
+      test(
+        'detectIndexPage surfaces an opt-in candidate when links are found',
+        () async {
+          final vm = buildWith(harvested);
+          addTearDown(vm.dispose);
 
-        await vm.detectIndexPage();
+          await vm.detectIndexPage();
 
-        expect(vm.isIndexPageCandidate, isTrue);
-        expect(vm.indexPageLinks, harvested);
-      });
+          expect(vm.isIndexPageCandidate, isTrue);
+          expect(vm.indexPageLinks, harvested);
+        },
+      );
 
-      test('detectIndexPage stays silent for a non-index page (no links)',
-          () async {
-        final vm = buildWith(const []);
-        addTearDown(vm.dispose);
+      test(
+        'detectIndexPage stays silent for a non-index page (no links)',
+        () async {
+          final vm = buildWith(const []);
+          addTearDown(vm.dispose);
 
-        await vm.detectIndexPage();
+          await vm.detectIndexPage();
 
-        expect(vm.isIndexPageCandidate, isFalse,
-            reason: 'an ordinary recipe page must not show the expand banner');
-      });
+          expect(
+            vm.isIndexPageCandidate,
+            isFalse,
+            reason: 'an ordinary recipe page must not show the expand banner',
+          );
+        },
+      );
 
-      test('expandIndexPage fans the harvested links into the batch flow',
-          () async {
-        final vm = buildWith(harvested);
-        addTearDown(vm.dispose);
-        await vm.detectIndexPage();
+      test(
+        'expandIndexPage fans the harvested links into the batch flow',
+        () async {
+          final vm = buildWith(harvested);
+          addTearDown(vm.dispose);
+          await vm.detectIndexPage();
 
-        await vm.expandIndexPage();
+          await vm.expandIndexPage();
 
-        expect(vm.urlResults.length, harvested.length,
-            reason: 'each harvested link becomes a batch row');
-        expect(vm.successfulUrlCount, harvested.length,
-            reason: 'the stub HTTP client returns 200 for every URL');
-        expect(vm.isIndexPageCandidate, isFalse,
-            reason: 'expanding consumes the candidate so the banner clears');
-      });
+          expect(
+            vm.urlResults.length,
+            harvested.length,
+            reason: 'each harvested link becomes a batch row',
+          );
+          expect(
+            vm.successfulUrlCount,
+            harvested.length,
+            reason: 'the stub HTTP client returns 200 for every URL',
+          );
+          expect(
+            vm.isIndexPageCandidate,
+            isFalse,
+            reason: 'expanding consumes the candidate so the banner clears',
+          );
+        },
+      );
 
       test('editing the URL clears a pending index candidate', () async {
         final vm = buildWith(harvested);
@@ -1475,8 +1624,11 @@ void main() {
 
         vm.updateUrl('https://recept.example.se/recept/en-annan-ratt');
 
-        expect(vm.isIndexPageCandidate, isFalse,
-            reason: 'a stale banner must not survive a fresh URL edit');
+        expect(
+          vm.isIndexPageCandidate,
+          isFalse,
+          reason: 'a stale banner must not survive a fresh URL edit',
+        );
       });
 
       test('expandIndexPage is a no-op when there is no candidate', () async {
@@ -1498,9 +1650,13 @@ void main() {
         vm.updateUrl('https://recept.example.se/recept/en-helt-annan-ratt');
         await probe;
 
-        expect(vm.isIndexPageCandidate, isFalse,
-            reason: 'links harvested for the old URL must not surface after a '
-                'mid-probe edit');
+        expect(
+          vm.isIndexPageCandidate,
+          isFalse,
+          reason:
+              'links harvested for the old URL must not surface after a '
+              'mid-probe edit',
+        );
       });
     });
   });

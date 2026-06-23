@@ -42,7 +42,8 @@ class MemberSelectionManager extends ChangeNotifier {
     final filtered = _getFilteredFriends();
     _selectedFriendIds.addAll(filtered.map((f) => f.uid));
     AppLogger.info(
-        '✅ Markerade alla synliga vänner (${_selectedFriendIds.length})');
+      '✅ Markerade alla synliga vänner (${_selectedFriendIds.length})',
+    );
     notifyListeners();
   }
 

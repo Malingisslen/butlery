@@ -51,8 +51,9 @@ void main() {
 
       final links = IndexPageDetector.extractRecipeLinks(html, baseUrl: base);
 
-      expect(
-          links, ['https://recept.example.se/recept/kycklinggryta-med-curry']);
+      expect(links, [
+        'https://recept.example.se/recept/kycklinggryta-med-curry',
+      ]);
     });
 
     test('drops navigation/utility paths even when same-host', () {
@@ -66,8 +67,9 @@ void main() {
 
       final links = IndexPageDetector.extractRecipeLinks(html, baseUrl: base);
 
-      expect(
-          links, ['https://recept.example.se/recept/kycklinggryta-med-curry']);
+      expect(links, [
+        'https://recept.example.se/recept/kycklinggryta-med-curry',
+      ]);
     });
 
     test('drops short top-level nav segments that are not slugs', () {
@@ -79,18 +81,20 @@ void main() {
       expect(links, ['https://recept.example.se/recept/lax-i-ugn']);
     });
 
-    test('de-duplicates links differing only by trailing slash or fragment',
-        () {
-      final html = anchors([
-        '/recept/lax-i-ugn',
-        '/recept/lax-i-ugn/',
-        '/recept/lax-i-ugn#tips',
-      ]);
+    test(
+      'de-duplicates links differing only by trailing slash or fragment',
+      () {
+        final html = anchors([
+          '/recept/lax-i-ugn',
+          '/recept/lax-i-ugn/',
+          '/recept/lax-i-ugn#tips',
+        ]);
 
-      final links = IndexPageDetector.extractRecipeLinks(html, baseUrl: base);
+        final links = IndexPageDetector.extractRecipeLinks(html, baseUrl: base);
 
-      expect(links, ['https://recept.example.se/recept/lax-i-ugn']);
-    });
+        expect(links, ['https://recept.example.se/recept/lax-i-ugn']);
+      },
+    );
 
     test('excludes the listing URL itself', () {
       final html = anchors(['/recept', '/recept/lax-i-ugn-med-citron']);
@@ -127,8 +131,10 @@ void main() {
         '/recept/lax-i-ugn-med-citron',
       ]);
 
-      final links =
-          IndexPageDetector.extractRecipeLinks(html, baseUrl: wwwBase);
+      final links = IndexPageDetector.extractRecipeLinks(
+        html,
+        baseUrl: wwwBase,
+      );
 
       expect(links, contains('https://ica.se/recept/kyckling-med-ris'));
       expect(links, contains('https://ica.se/recept/lax-i-ugn-med-citron'));
@@ -142,8 +148,9 @@ void main() {
 
       final links = IndexPageDetector.extractRecipeLinks(html, baseUrl: base);
 
-      expect(links, ['https://recept.example.se/recept/lax-i-ugn-med-citron'],
-          reason: 'a utm_* variant is the same recipe — dedup to one entry');
+      expect(links, [
+        'https://recept.example.se/recept/lax-i-ugn-med-citron',
+      ], reason: 'a utm_* variant is the same recipe — dedup to one entry');
     });
   });
 }

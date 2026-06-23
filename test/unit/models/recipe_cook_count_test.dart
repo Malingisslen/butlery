@@ -12,17 +12,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 Recipe _makeRecipe({int? cookCount}) => Recipe(
-      core: RecipeCore(
-        id: 'r1',
-        title: 'Pasta Carbonara',
-        description: 'Classic',
-        ingredients: const ['pasta', 'eggs', 'bacon'],
-        instructions: const ['Boil', 'Cook', 'Mix'],
-        mealType: 'Middag',
-        cookCount: cookCount,
-      ),
-      type: RecipeType.personal,
-    );
+  core: RecipeCore(
+    id: 'r1',
+    title: 'Pasta Carbonara',
+    description: 'Classic',
+    ingredients: const ['pasta', 'eggs', 'bacon'],
+    instructions: const ['Boil', 'Cook', 'Mix'],
+    mealType: 'Middag',
+    cookCount: cookCount,
+  ),
+  type: RecipeType.personal,
+);
 
 void main() {
   group('Recipe.cookCount serialization', () {
@@ -73,15 +73,20 @@ void main() {
       expect(recipe.cookCount, equals(0));
     });
 
-    test('explicit zero (post-backfill) survives round-trip and is NOT null',
-        () {
-      final before = _makeRecipe(cookCount: 0);
-      final after = Recipe.fromJson(before.toJson());
-      expect(after.cookCountRaw, equals(0));
-      expect(after.cookCountRaw, isNotNull,
+    test(
+      'explicit zero (post-backfill) survives round-trip and is NOT null',
+      () {
+        final before = _makeRecipe(cookCount: 0);
+        final after = Recipe.fromJson(before.toJson());
+        expect(after.cookCountRaw, equals(0));
+        expect(
+          after.cookCountRaw,
+          isNotNull,
           reason:
-              'zero is a real counted value, distinct from legacy null state');
-    });
+              'zero is a real counted value, distinct from legacy null state',
+        );
+      },
+    );
 
     test('Firestore round-trip preserves explicit cookCount', () {
       final before = _makeRecipe(cookCount: 12);
@@ -97,47 +102,55 @@ void main() {
       expect(after.cookCountRaw, isNull);
     });
 
-    test('Firestore cookCount set via FieldValue.increment decodes correctly',
-        () {
-      // Simulates the post-increment document state: Firestore resolves
-      // FieldValue.increment(1) server-side, so on re-read the field is an int.
-      final firestoreLike = {
-        'core': {
-          'id': 'r1',
-          'title': 'After increment',
-          'description': '',
-          'ingredients': <String>[],
-          'instructions': <String>[],
-          'mealType': 'Middag',
-          'imageUrls': <String>[],
-          'isPublic': false,
-          'isFavorite': false,
-          'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
-          'updatedAt': Timestamp.fromDate(DateTime(2026, 4, 18)),
-          'lastCookedAt': Timestamp.fromDate(DateTime(2026, 4, 18)),
-          'cookCount': 1, // what FieldValue.increment(1) resolved to
-        },
-        'type': RecipeType.personal.index,
-      };
-      final recipe = Recipe.fromMap('r1', firestoreLike);
-      expect(recipe.cookCountRaw, equals(1));
-      expect(recipe.lastCookedAt, isNotNull);
-    });
+    test(
+      'Firestore cookCount set via FieldValue.increment decodes correctly',
+      () {
+        // Simulates the post-increment document state: Firestore resolves
+        // FieldValue.increment(1) server-side, so on re-read the field is an int.
+        final firestoreLike = {
+          'core': {
+            'id': 'r1',
+            'title': 'After increment',
+            'description': '',
+            'ingredients': <String>[],
+            'instructions': <String>[],
+            'mealType': 'Middag',
+            'imageUrls': <String>[],
+            'isPublic': false,
+            'isFavorite': false,
+            'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+            'updatedAt': Timestamp.fromDate(DateTime(2026, 4, 18)),
+            'lastCookedAt': Timestamp.fromDate(DateTime(2026, 4, 18)),
+            'cookCount': 1, // what FieldValue.increment(1) resolved to
+          },
+          'type': RecipeType.personal.index,
+        };
+        final recipe = Recipe.fromMap('r1', firestoreLike);
+        expect(recipe.cookCountRaw, equals(1));
+        expect(recipe.lastCookedAt, isNotNull);
+      },
+    );
   });
 
   group('Recipe.copyWith cookCount sentinel semantics', () {
     test('omitting cookCount keeps existing value', () {
       final original = _makeRecipe(cookCount: 5);
       final updated = original.copyWith(title: 'Renamed');
-      expect(updated.cookCountRaw, equals(5),
-          reason: 'copyWith without cookCount must preserve it');
+      expect(
+        updated.cookCountRaw,
+        equals(5),
+        reason: 'copyWith without cookCount must preserve it',
+      );
     });
 
     test('passing cookCount: null explicitly clears it', () {
       final original = _makeRecipe(cookCount: 5);
       final cleared = original.copyWith(cookCount: null);
-      expect(cleared.cookCountRaw, isNull,
-          reason: 'sentinel distinguishes "unset" from "set to null"');
+      expect(
+        cleared.cookCountRaw,
+        isNull,
+        reason: 'sentinel distinguishes "unset" from "set to null"',
+      );
     });
 
     test('passing cookCount: n sets it', () {
@@ -149,9 +162,13 @@ void main() {
     test('legacy null + markAsCooked optimistic bump lands at 1', () {
       final original = _makeRecipe(); // cookCount=null
       final cooked = original.markAsCooked();
-      expect(cooked.cookCountRaw, equals(1),
-          reason: 'optimistic local update on legacy recipe must mirror the '
-              'Firestore rule "null -> 1 on first increment" contract');
+      expect(
+        cooked.cookCountRaw,
+        equals(1),
+        reason:
+            'optimistic local update on legacy recipe must mirror the '
+            'Firestore rule "null -> 1 on first increment" contract',
+      );
     });
 
     test('markAsCooked on counted recipe bumps by exactly 1', () {

@@ -70,10 +70,12 @@ void main() {
           RecipeFactory.build(id: 'r2', title: 'Pizza Margherita'),
         ];
 
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => testProfile);
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenAnswer((_) async => recipes);
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => recipes);
 
         final viewModel = createViewModel();
 
@@ -94,8 +96,9 @@ void main() {
       test('should set error when profile is not found (null)', () async {
         // Behavior: null profile from repo triggers an error with
         // publicProfileError message
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => null);
 
         final viewModel = createViewModel();
 
@@ -113,8 +116,9 @@ void main() {
 
       test('should set error when user repository throws', () async {
         // Behavior: repository exception is caught and surfaced as error state
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenThrow(Exception('Network error'));
 
         final viewModel = createViewModel();
 
@@ -130,10 +134,12 @@ void main() {
 
       test('should set error when recipe repository throws', () async {
         // Behavior: profile loads but recipe fetch fails — error state set
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => testProfile);
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenThrow(Exception('Firestore unavailable'));
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenThrow(Exception('Firestore unavailable'));
 
         final viewModel = createViewModel();
 
@@ -149,10 +155,12 @@ void main() {
       test('should handle user with no public recipes', () async {
         // Behavior: valid profile but empty recipe list is a normal state,
         // not an error
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => testProfile);
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenAnswer((_) async => <Recipe>[]);
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => <Recipe>[]);
 
         final viewModel = createViewModel();
 
@@ -175,8 +183,9 @@ void main() {
         // Behavior: isLoading is true during the async operation
         final completer = Completer<UserProfile?>();
 
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) => completer.future);
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) => completer.future);
 
         final viewModel = createViewModel();
 
@@ -188,8 +197,9 @@ void main() {
         completer.complete(testProfile);
 
         // Need recipe stub too for the second part
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenAnswer((_) async => <Recipe>[]);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => <Recipe>[]);
 
         await Future.delayed(Duration.zero);
         await Future.delayed(Duration.zero);
@@ -206,10 +216,12 @@ void main() {
     group('repository delegation', () {
       test('should call fetchProfile with the correct userId', () async {
         // Behavior: the VM passes its userId to the user repository
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => testProfile);
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenAnswer((_) async => <Recipe>[]);
+        when(
+          () => mockUserRepo.fetchProfile(testUserId),
+        ).thenAnswer((_) async => testProfile);
+        when(
+          () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+        ).thenAnswer((_) async => <Recipe>[]);
 
         final viewModel = createViewModel();
         await Future.delayed(Duration.zero);
@@ -220,23 +232,28 @@ void main() {
         viewModel.dispose();
       });
 
-      test('should call fetchPublicUserRecipes with the correct userId',
-          () async {
-        // Behavior: the VM passes its userId to the recipe repository
-        when(() => mockUserRepo.fetchProfile(testUserId))
-            .thenAnswer((_) async => testProfile);
-        when(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .thenAnswer((_) async => <Recipe>[]);
+      test(
+        'should call fetchPublicUserRecipes with the correct userId',
+        () async {
+          // Behavior: the VM passes its userId to the recipe repository
+          when(
+            () => mockUserRepo.fetchProfile(testUserId),
+          ).thenAnswer((_) async => testProfile);
+          when(
+            () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          ).thenAnswer((_) async => <Recipe>[]);
 
-        final viewModel = createViewModel();
-        await Future.delayed(Duration.zero);
-        await Future.delayed(Duration.zero);
+          final viewModel = createViewModel();
+          await Future.delayed(Duration.zero);
+          await Future.delayed(Duration.zero);
 
-        verify(() => mockRecipeRepo.fetchPublicUserRecipes(testUserId))
-            .called(1);
+          verify(
+            () => mockRecipeRepo.fetchPublicUserRecipes(testUserId),
+          ).called(1);
 
-        viewModel.dispose();
-      });
+          viewModel.dispose();
+        },
+      );
     });
   });
 }

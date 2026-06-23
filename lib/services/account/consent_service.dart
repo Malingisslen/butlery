@@ -61,8 +61,8 @@ class ConsentService extends BaseService implements Listenable {
   ConsentService({
     required auth.AuthRepository authRepository,
     required FirebaseConsentRepository consentRepository,
-  })  : _authRepository = authRepository,
-        _consentRepository = consentRepository {
+  }) : _authRepository = authRepository,
+       _consentRepository = consentRepository {
     // Cross-tab cache invalidation (web-only; no-op on native).
     listenForConsentInvalidation(_clearLocalCacheOnly);
   }
@@ -106,7 +106,8 @@ class ConsentService extends BaseService implements Listenable {
             final now = clock.now();
             final deviceInfo = await _getDeviceInfo();
 
-            final consent = existingConsent?.copyWith(
+            final consent =
+                existingConsent?.copyWith(
                   purposes: purposes,
                   updatedAt: now,
                   consentVersion: _currentConsentVersion,
@@ -122,15 +123,18 @@ class ConsentService extends BaseService implements Listenable {
                 );
 
             // Use repository for secure storage (includes permission validation and audit logging)
-            final success =
-                await _consentRepository.saveConsent(userId, consent);
+            final success = await _consentRepository.saveConsent(
+              userId,
+              consent,
+            );
 
             if (success) {
               _cachedConsent = consent;
               _cachedUserId = userId;
               _cachePopulated = true;
               app_logger.AppLogger.info(
-                  '[$_logTag] Consent saved for user ${userId.maskedUserId}');
+                '[$_logTag] Consent saved for user ${userId.maskedUserId}',
+              );
               _changeNotifier.notify();
             }
 
@@ -257,7 +261,8 @@ class ConsentService extends BaseService implements Listenable {
       return await service.hasConsent(purpose);
     } catch (e) {
       app_logger.AppLogger.warning(
-          '[$logTag] Failed to check ${purpose.name} consent, denying: $e');
+        '[$logTag] Failed to check ${purpose.name} consent, denying: $e',
+      );
       return false;
     }
   }
@@ -281,11 +286,13 @@ Future<bool> hasAnalyticsConsent(
 }) async {
   if (!container.isRegistered<ConsentService>()) return false;
   try {
-    return await container<ConsentService>()
-        .hasConsent(ConsentPurpose.analytics);
+    return await container<ConsentService>().hasConsent(
+      ConsentPurpose.analytics,
+    );
   } catch (e) {
     app_logger.AppLogger.warning(
-        '[$logTag] Analytics consent check failed, denying: $e');
+      '[$logTag] Analytics consent check failed, denying: $e',
+    );
     return false;
   }
 }

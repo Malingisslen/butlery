@@ -28,12 +28,12 @@ class CommentCrudOperations {
     CommentsRepository? commentsRepository,
     AnalyticsService? analyticsService,
     BlockedUserFilter? blockedFilter,
-  })  : _commentsRepository =
-            commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
-        _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
-        _blockedFilter =
-            blockedFilter ?? ServiceLocator.tryGet<BlockedUserFilter>();
+  }) : _commentsRepository =
+           commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+       _analyticsService =
+           analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+       _blockedFilter =
+           blockedFilter ?? ServiceLocator.tryGet<BlockedUserFilter>();
 
   /// Create comment — access control enforced by Firestore security rules
   Future<String?> createComment({
@@ -100,8 +100,9 @@ class CommentCrudOperations {
       // Apply limit and before filter manually for now
       var filteredComments = comments;
       if (before != null) {
-        filteredComments =
-            comments.where((c) => c.createdAt.isBefore(before)).toList();
+        filteredComments = comments
+            .where((c) => c.createdAt.isBefore(before))
+            .toList();
       }
 
       if (filteredComments.length > limit) {
@@ -140,7 +141,8 @@ class CommentCrudOperations {
   }
 
   Future<List<RecipeComment>> _applyBlockFilter(
-      List<RecipeComment> comments) async {
+    List<RecipeComment> comments,
+  ) async {
     final filter = _blockedFilter;
     if (filter == null || comments.isEmpty) return comments;
     try {
@@ -155,7 +157,8 @@ class CommentCrudOperations {
       // empty the comment list. Surface the warning and serve the
       // unfiltered set; the next snapshot will retry.
       AppLogger.warning(
-          '[CommentCrudOperations] Block filter failed; serving unfiltered: $e');
+        '[CommentCrudOperations] Block filter failed; serving unfiltered: $e',
+      );
       return comments;
     }
   }

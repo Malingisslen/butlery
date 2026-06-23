@@ -66,8 +66,9 @@ class SocialCommentsManager extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final recipeComments =
-          await _recipeService.social.getComments(recipeId: recipeId);
+      final recipeComments = await _recipeService.social.getComments(
+        recipeId: recipeId,
+      );
       _comments = _filterBlockedUsers(recipeComments);
       _commentCount = _comments.length;
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
@@ -107,29 +108,36 @@ class SocialCommentsManager extends ChangeNotifier {
     try {
       AppLogger.info('Starting real-time comment stream for recipe: $recipeId');
 
-      _commentStreamSubscription =
-          _recipeService.social.getCommentsStream(recipeId).listen(
-        (recipeComments) {
-          _comments = _filterBlockedUsers(recipeComments);
-          _isLoadingComments = false;
-          _commentsError = null;
-          _safeNotify();
-          AppLogger.debug(
-              'Real-time comment update received: ${_comments.length} comments');
-        },
-        onError: (error) {
-          _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
-          _isLoadingComments = false;
-          _safeNotify();
-          AppLogger.error('Comment stream error for recipe $recipeId: $error');
-        },
-      );
+      _commentStreamSubscription = _recipeService.social
+          .getCommentsStream(recipeId)
+          .listen(
+            (recipeComments) {
+              _comments = _filterBlockedUsers(recipeComments);
+              _isLoadingComments = false;
+              _commentsError = null;
+              _safeNotify();
+              AppLogger.debug(
+                'Real-time comment update received: ${_comments.length} comments',
+              );
+            },
+            onError: (error) {
+              _commentsError = AppLocale.current.errorCouldNotLoad(
+                'kommentarer',
+              );
+              _isLoadingComments = false;
+              _safeNotify();
+              AppLogger.error(
+                'Comment stream error for recipe $recipeId: $error',
+              );
+            },
+          );
     } catch (e) {
       _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
       _isLoadingComments = false;
       _safeNotify();
       AppLogger.error(
-          'Failed to start comment stream for recipe $recipeId: $e');
+        'Failed to start comment stream for recipe $recipeId: $e',
+      );
     }
   }
 
@@ -214,7 +222,10 @@ class SocialCommentsManager extends ChangeNotifier {
   }
 
   Future<void> editComment(
-      String recipeId, String commentId, String newContent) async {
+    String recipeId,
+    String commentId,
+    String newContent,
+  ) async {
     try {
       final success = await _recipeService.social.editComment(
         commentId: commentId,

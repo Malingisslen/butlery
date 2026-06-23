@@ -55,14 +55,22 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('1 tsk svartpeppar', LineType.ingredient),
     GoldenLine('', LineType.empty),
     GoldenLine('Gör så här:', LineType.sectionHeader),
-    GoldenLine('Koka pastan al dente i saltat vatten enligt paketet.',
-        LineType.instruction),
     GoldenLine(
-        'Stek pancetta i en stekpanna tills knaprig.', LineType.instruction),
+      'Koka pastan al dente i saltat vatten enligt paketet.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Vispa ihop ägg och riven pecorino i en bunke.', LineType.instruction),
+      'Stek pancetta i en stekpanna tills knaprig.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Blanda allt med pastan och servera direkt.', LineType.instruction),
+      'Vispa ihop ägg och riven pecorino i en bunke.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Blanda allt med pastan och servera direkt.',
+      LineType.instruction,
+    ),
   ]),
 
   // 2. Header-driven boost: short food-only lines after "Ingredienser:" must
@@ -77,9 +85,13 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('selleri', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
     GoldenLine(
-        'Hacka grönsakerna fint och stek dem i smöret.', LineType.instruction),
+      'Hacka grönsakerna fint och stek dem i smöret.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Tillsätt köttfärsen och bryn ordentligt.', LineType.instruction),
+      'Tillsätt köttfärsen och bryn ordentligt.',
+      LineType.instruction,
+    ),
   ]),
 
   // 3. No headers — ingredients and instructions interleaved by structure
@@ -91,12 +103,18 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('6 dl mjölk', LineType.ingredient),
     GoldenLine('3 dl vetemjöl', LineType.ingredient),
     GoldenLine('1 nypa salt', LineType.ingredient),
-    GoldenLine('Vispa ihop ägg och mjölk i en bunke ordentligt.',
-        LineType.instruction),
-    GoldenLine('Tillsätt mjöl och salt och blanda till en jämn smet.',
-        LineType.instruction),
     GoldenLine(
-        'Stek tunna pannkakor i smör tills gyllenbruna.', LineType.instruction),
+      'Vispa ihop ägg och mjölk i en bunke ordentligt.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Tillsätt mjöl och salt och blanda till en jämn smet.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Stek tunna pannkakor i smör tills gyllenbruna.',
+      LineType.instruction,
+    ),
   ]),
 
   // 4. Numbered instruction steps. "1." and "2." should be classified as
@@ -111,14 +129,22 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('4 msk kakao', LineType.ingredient),
     GoldenLine('1 tsk vaniljsocker', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
-    GoldenLine('1. Smält smöret i en kastrull och låt svalna något.',
-        LineType.instruction),
     GoldenLine(
-        '2. Vispa ihop ägg och socker tills luftigt.', LineType.instruction),
-    GoldenLine('3. Blanda i smör, mjöl, kakao och vaniljsocker.',
-        LineType.instruction),
+      '1. Smält smöret i en kastrull och låt svalna något.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        '4. Grädda i 175 grader i cirka 20 minuter.', LineType.instruction),
+      '2. Vispa ihop ägg och socker tills luftigt.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      '3. Blanda i smör, mjöl, kakao och vaniljsocker.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      '4. Grädda i 175 grader i cirka 20 minuter.',
+      LineType.instruction,
+    ),
   ]),
 
   // 5. Metadata embedded between title and ingredients. Tests that
@@ -133,10 +159,14 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('2 vitlöksklyftor', LineType.ingredient),
     GoldenLine('1 msk olivolja', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
-    GoldenLine('Hacka lök och vitlök fint och fräs i olivoljan.',
-        LineType.instruction),
     GoldenLine(
-        'Tillsätt tomater och låt sjuda i 20 minuter.', LineType.instruction),
+      'Hacka lök och vitlök fint och fräs i olivoljan.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Tillsätt tomater och låt sjuda i 20 minuter.',
+      LineType.instruction,
+    ),
   ]),
 
   // 6. Alternative header phrasing: "Du behöver" + "Så gör du".
@@ -149,8 +179,10 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('1 krm peppar', LineType.ingredient),
     GoldenLine('Så gör du:', LineType.sectionHeader),
     GoldenLine('Vispa ihop ägg och grädde i en skål.', LineType.instruction),
-    GoldenLine('Stek i smör på medelvärme tills nästan stelnad.',
-        LineType.instruction),
+    GoldenLine(
+      'Stek i smör på medelvärme tills nästan stelnad.',
+      LineType.instruction,
+    ),
   ]),
 
   // 7. Ingredient-only list followed by a one-line instruction. Tests the
@@ -179,7 +211,9 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('', LineType.empty),
     GoldenLine('Gör så här:', LineType.sectionHeader),
     GoldenLine(
-        'Koka pastan al dente och spara lite kokvatten.', LineType.instruction),
+      'Koka pastan al dente och spara lite kokvatten.',
+      LineType.instruction,
+    ),
     GoldenLine('Blanda pastan med pesto och parmesan.', LineType.instruction),
   ]),
 
@@ -194,17 +228,21 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('1 lök', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
     GoldenLine(
-        'Skär kycklingen i bitar och hacka löken fint i mindre tärningar.',
-        LineType.instruction),
+      'Skär kycklingen i bitar och hacka löken fint i mindre tärningar.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Hetta upp olja i en stekpanna och stek lök tills den blir mjuk och glansig.',
-        LineType.instruction),
+      'Hetta upp olja i en stekpanna och stek lök tills den blir mjuk och glansig.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Tillsätt currypasta och rör runt en minut innan kycklingen läggs i pannan.',
-        LineType.instruction),
+      'Tillsätt currypasta och rör runt en minut innan kycklingen läggs i pannan.',
+      LineType.instruction,
+    ),
     GoldenLine(
-        'Häll i kokosmjölken och låt allt sjuda i femton minuter under lock.',
-        LineType.instruction),
+      'Häll i kokosmjölken och låt allt sjuda i femton minuter under lock.',
+      LineType.instruction,
+    ),
   ]),
 
   // 10. Mixed-confidence run: some clear ingredients, some short food-only
@@ -222,13 +260,21 @@ const goldenRecipes = <GoldenRecipe>[
     GoldenLine('peppar', LineType.ingredient),
     GoldenLine('muskot', LineType.ingredient),
     GoldenLine('Gör så här:', LineType.sectionHeader),
-    GoldenLine('Skölj spenaten och låt den rinna av ordentligt.',
-        LineType.instruction),
-    GoldenLine('Smält smöret i en kastrull och pudra över mjölet.',
-        LineType.instruction),
-    GoldenLine('Tillsätt mjölken under vispning och låt koka upp.',
-        LineType.instruction),
-    GoldenLine('Vänd ner spenaten och smaka av med salt, peppar och muskot.',
-        LineType.instruction),
+    GoldenLine(
+      'Skölj spenaten och låt den rinna av ordentligt.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Smält smöret i en kastrull och pudra över mjölet.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Tillsätt mjölken under vispning och låt koka upp.',
+      LineType.instruction,
+    ),
+    GoldenLine(
+      'Vänd ner spenaten och smaka av med salt, peppar och muskot.',
+      LineType.instruction,
+    ),
   ]),
 ];

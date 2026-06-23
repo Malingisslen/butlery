@@ -41,26 +41,25 @@ class CollaborationModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        RealtimeSyncService,
-        RealtimeRecipeService,
-        RealtimeMenuService,
-        UnifiedShoppingService,
-        MenuCollaborationRepository,
-        ShoppingRepository,
-        CategoryPreferencesRepository,
-        MenuVotingRepository,
-        MenuVotingService,
-        // BUT-238: collaborative shopping presence
-        FirebaseShoppingPresenceRepository,
-        ShoppingPresenceModule,
-        // BUT-408: live cooking session presence ("Erik lagar just nu")
-        FirebaseCookingSessionRepository,
-        CookingSessionModule,
-      ];
+    RealtimeSyncService,
+    RealtimeRecipeService,
+    RealtimeMenuService,
+    UnifiedShoppingService,
+    MenuCollaborationRepository,
+    ShoppingRepository,
+    CategoryPreferencesRepository,
+    MenuVotingRepository,
+    MenuVotingService,
+    // BUT-238: collaborative shopping presence
+    FirebaseShoppingPresenceRepository,
+    ShoppingPresenceModule,
+    // BUT-408: live cooking session presence ("Erik lagar just nu")
+    FirebaseCookingSessionRepository,
+    CookingSessionModule,
+  ];
 
   @override
-  int get priority =>
-      40; // After Core (1), Content (10), Social (20), Messaging (30)
+  int get priority => 40; // After Core (1), Content (10), Social (20), Messaging (30)
 
   @override
   Future<void> configureUserScope(GetIt container) async {

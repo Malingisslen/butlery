@@ -99,7 +99,8 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    final quantity = double.tryParse(
+    final quantity =
+        double.tryParse(
           _quantityController.text.replaceAll(',', '.'),
         ) ??
         1.0;
@@ -201,8 +202,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 Expanded(
                   child: TextField(
                     controller: _quantityController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: l10n.pantryQuantityLabel,
                       border: const OutlineInputBorder(

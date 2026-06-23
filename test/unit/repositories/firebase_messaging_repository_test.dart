@@ -55,32 +55,45 @@ void main() {
     });
 
     group('Permission Validation - Conversations', () {
-      test('should allow participant to create conversation they are in',
-          () async {
-        // Arrange
-        final conversation = _createDirectConversation('user-123', 'user-456');
+      test(
+        'should allow participant to create conversation they are in',
+        () async {
+          // Arrange
+          final conversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+          );
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', conversation);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'user-123',
+            conversation,
+          );
 
-        // Assert
-        expect(canCreate, isTrue);
-      });
+          // Assert
+          expect(canCreate, isTrue);
+        },
+      );
 
       test(
-          'should reject non-participant from creating conversation they are not in',
-          () async {
-        // Arrange
-        final conversation = _createDirectConversation('user-456', 'user-789');
+        'should reject non-participant from creating conversation they are not in',
+        () async {
+          // Arrange
+          final conversation = _createDirectConversation(
+            'user-456',
+            'user-789',
+          );
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', conversation);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'user-123',
+            conversation,
+          );
 
-        // Assert
-        expect(canCreate, isFalse); // user-123 not a participant
-      });
+          // Assert
+          expect(canCreate, isFalse); // user-123 not a participant
+        },
+      );
 
       test('should allow participant to read conversation', () async {
         // Arrange
@@ -88,7 +101,10 @@ void main() {
 
         // Act
         final canRead = await repository.validateReadPermission(
-            'user-123', 'conv-1', conversation);
+          'user-123',
+          'conv-1',
+          conversation,
+        );
 
         // Assert
         expect(canRead, isTrue);
@@ -100,7 +116,10 @@ void main() {
 
         // Act
         final canRead = await repository.validateReadPermission(
-            'user-123', 'conv-1', conversation);
+          'user-123',
+          'conv-1',
+          conversation,
+        );
 
         // Assert
         expect(canRead, isFalse); // user-123 not a participant
@@ -108,76 +127,112 @@ void main() {
 
       test('should reject read when conversation is null', () async {
         // Act
-        final canRead =
-            await repository.validateReadPermission('user-123', 'conv-1', null);
+        final canRead = await repository.validateReadPermission(
+          'user-123',
+          'conv-1',
+          null,
+        );
 
         // Assert
         expect(canRead, isFalse);
       });
 
-      test('should allow participant to update conversation metadata',
-          () async {
-        // Arrange
-        final conversation = _createDirectConversation('user-123', 'user-456');
+      test(
+        'should allow participant to update conversation metadata',
+        () async {
+          // Arrange
+          final conversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+          );
 
-        // Act
-        final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'conv-1', conversation);
+          // Act
+          final canUpdate = await repository.validateUpdatePermission(
+            'user-123',
+            'conv-1',
+            conversation,
+          );
 
-        // Assert
-        expect(canUpdate, isTrue);
-      });
+          // Assert
+          expect(canUpdate, isTrue);
+        },
+      );
 
-      test('should reject non-participant from updating conversation',
-          () async {
-        // Arrange
-        final conversation = _createDirectConversation('user-456', 'user-789');
+      test(
+        'should reject non-participant from updating conversation',
+        () async {
+          // Arrange
+          final conversation = _createDirectConversation(
+            'user-456',
+            'user-789',
+          );
 
-        // Act
-        final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'conv-1', conversation);
+          // Act
+          final canUpdate = await repository.validateUpdatePermission(
+            'user-123',
+            'conv-1',
+            conversation,
+          );
 
-        // Assert
-        expect(canUpdate, isFalse); // user-123 not a participant
-      });
+          // Assert
+          expect(canUpdate, isFalse); // user-123 not a participant
+        },
+      );
 
-      test('should allow participant to delete conversation', () async {
-        // Arrange
-        const conversationId = 'conv-1';
-        final conversation = _createDirectConversation('user-123', 'user-456',
-            id: conversationId);
-        await _seedConversation(fakeFirestore, conversationId, conversation);
+      test(
+        'should allow participant to delete conversation',
+        () async {
+          // Arrange
+          const conversationId = 'conv-1';
+          final conversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+            id: conversationId,
+          );
+          await _seedConversation(fakeFirestore, conversationId, conversation);
 
-        // Act
-        final canDelete = await repository.validateDeletePermission(
-            'user-123', conversationId);
+          // Act
+          final canDelete = await repository.validateDeletePermission(
+            'user-123',
+            conversationId,
+          );
 
-        // Assert
-        expect(canDelete, isTrue);
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(canDelete, isTrue);
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
 
-      test('should reject non-participant from deleting conversation',
-          () async {
-        // Arrange
-        const conversationId = 'conv-1';
-        final conversation = _createDirectConversation('user-456', 'user-789',
-            id: conversationId);
-        await _seedConversation(fakeFirestore, conversationId, conversation);
+      test(
+        'should reject non-participant from deleting conversation',
+        () async {
+          // Arrange
+          const conversationId = 'conv-1';
+          final conversation = _createDirectConversation(
+            'user-456',
+            'user-789',
+            id: conversationId,
+          );
+          await _seedConversation(fakeFirestore, conversationId, conversation);
 
-        // Act
-        final canDelete = await repository.validateDeletePermission(
-            'user-123', conversationId);
+          // Act
+          final canDelete = await repository.validateDeletePermission(
+            'user-123',
+            conversationId,
+          );
 
-        // Assert
-        expect(canDelete, isFalse); // user-123 not a participant
-      });
+          // Assert
+          expect(canDelete, isFalse); // user-123 not a participant
+        },
+      );
 
       test('should reject delete when conversation does not exist', () async {
         // Act
         final canDelete = await repository.validateDeletePermission(
-            'user-123', 'nonexistent');
+          'user-123',
+          'nonexistent',
+        );
 
         // Assert
         expect(canDelete, isFalse);
@@ -185,24 +240,30 @@ void main() {
     });
 
     group('Get Conversation', () {
-      test('should retrieve existing conversation', () async {
-        // Arrange
-        const conversationId = 'conv-1';
-        final conversation = _createDirectConversation('user-123', 'user-456',
-            id: conversationId);
-        await _seedConversation(fakeFirestore, conversationId, conversation);
+      test(
+        'should retrieve existing conversation',
+        () async {
+          // Arrange
+          const conversationId = 'conv-1';
+          final conversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+            id: conversationId,
+          );
+          await _seedConversation(fakeFirestore, conversationId, conversation);
 
-        // Act
-        final result = await repository.getConversation(conversationId);
+          // Act
+          final result = await repository.getConversation(conversationId);
 
-        // Assert
-        expect(result, isNotNull);
-        expect(result!.id, equals(conversationId));
-        expect(result.participantIds, contains('user-123'));
-        expect(result.participantIds, contains('user-456'));
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(result, isNotNull);
+          expect(result!.id, equals(conversationId));
+          expect(result.participantIds, contains('user-123'));
+          expect(result.participantIds, contains('user-456'));
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
 
       test('should return null for non-existent conversation', () async {
         // Act
@@ -214,49 +275,64 @@ void main() {
     });
 
     group('Get Conversation Participants', () {
-      test('should retrieve participant IDs for conversation', () async {
-        // Arrange
-        const conversationId = 'conv-1';
-        final conversation = _createDirectConversation('user-123', 'user-456',
-            id: conversationId);
-        await _seedConversation(fakeFirestore, conversationId, conversation);
+      test(
+        'should retrieve participant IDs for conversation',
+        () async {
+          // Arrange
+          const conversationId = 'conv-1';
+          final conversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+            id: conversationId,
+          );
+          await _seedConversation(fakeFirestore, conversationId, conversation);
 
-        // Act
-        final participants =
-            await repository.getConversationParticipants(conversationId);
+          // Act
+          final participants = await repository.getConversationParticipants(
+            conversationId,
+          );
 
-        // Assert
-        expect(participants.length, equals(2));
-        expect(participants, contains('user-123'));
-        expect(participants, contains('user-456'));
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(participants.length, equals(2));
+          expect(participants, contains('user-123'));
+          expect(participants, contains('user-456'));
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
 
-      test('should retrieve participant IDs for group conversation', () async {
-        // Arrange
-        const conversationId = 'group-1';
-        final conversation = _createGroupConversation(
-          ['user-123', 'user-456', 'user-789'],
-          id: conversationId,
-        );
-        await _seedConversation(fakeFirestore, conversationId, conversation);
+      test(
+        'should retrieve participant IDs for group conversation',
+        () async {
+          // Arrange
+          const conversationId = 'group-1';
+          final conversation = _createGroupConversation(
+            ['user-123', 'user-456', 'user-789'],
+            id: conversationId,
+          );
+          await _seedConversation(fakeFirestore, conversationId, conversation);
 
-        // Act
-        final participants =
-            await repository.getConversationParticipants(conversationId);
+          // Act
+          final participants = await repository.getConversationParticipants(
+            conversationId,
+          );
 
-        // Assert
-        expect(participants.length, equals(3));
-        expect(participants, containsAll(['user-123', 'user-456', 'user-789']));
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(participants.length, equals(3));
+          expect(
+            participants,
+            containsAll(['user-123', 'user-456', 'user-789']),
+          );
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
 
       test('should return empty list for non-existent conversation', () async {
         // Act
-        final participants =
-            await repository.getConversationParticipants('nonexistent');
+        final participants = await repository.getConversationParticipants(
+          'nonexistent',
+        );
 
         // Assert
         expect(participants, isEmpty);
@@ -266,10 +342,16 @@ void main() {
     group('Get User Conversations', () {
       test('should stream user\'s conversations', () async {
         // Arrange
-        final conv1 =
-            _createDirectConversation('user-123', 'user-456', id: 'conv-1');
-        final conv2 =
-            _createDirectConversation('user-123', 'user-789', id: 'conv-2');
+        final conv1 = _createDirectConversation(
+          'user-123',
+          'user-456',
+          id: 'conv-1',
+        );
+        final conv2 = _createDirectConversation(
+          'user-123',
+          'user-789',
+          id: 'conv-2',
+        );
         await _seedConversation(fakeFirestore, 'conv-1', conv1);
         await _seedConversation(fakeFirestore, 'conv-2', conv2);
 
@@ -279,65 +361,87 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<Conversation>>((conversations) {
-            return conversations.length == 2 &&
-                conversations
-                    .every((c) => c.participantIds.contains('user-123'));
-          })),
+          completion(
+            predicate<List<Conversation>>((conversations) {
+              return conversations.length == 2 &&
+                  conversations.every(
+                    (c) => c.participantIds.contains('user-123'),
+                  );
+            }),
+          ),
         );
       });
 
-      test('should filter out conversations user is not participant in',
-          () async {
-        // Arrange
-        final conv1 =
-            _createDirectConversation('user-123', 'user-456', id: 'conv-1');
-        final conv2 = _createDirectConversation('user-456', 'user-789',
-            id: 'conv-2'); // user-123 not a participant
-        await _seedConversation(fakeFirestore, 'conv-1', conv1);
-        await _seedConversation(fakeFirestore, 'conv-2', conv2);
+      test(
+        'should filter out conversations user is not participant in',
+        () async {
+          // Arrange
+          final conv1 = _createDirectConversation(
+            'user-123',
+            'user-456',
+            id: 'conv-1',
+          );
+          final conv2 = _createDirectConversation(
+            'user-456',
+            'user-789',
+            id: 'conv-2',
+          ); // user-123 not a participant
+          await _seedConversation(fakeFirestore, 'conv-1', conv1);
+          await _seedConversation(fakeFirestore, 'conv-2', conv2);
 
-        // Act
-        final stream = repository.getUserConversations('user-123');
+          // Act
+          final stream = repository.getUserConversations('user-123');
 
-        // Assert
-        await expectLater(
-          stream.first,
-          completion(predicate<List<Conversation>>((conversations) {
-            return conversations.length == 1 &&
-                conversations.first.id == 'conv-1';
-          })),
-        );
-      });
+          // Assert
+          await expectLater(
+            stream.first,
+            completion(
+              predicate<List<Conversation>>((conversations) {
+                return conversations.length == 1 &&
+                    conversations.first.id == 'conv-1';
+              }),
+            ),
+          );
+        },
+      );
 
-      test('should return empty stream when user has no conversations',
-          () async {
-        // Act
-        final stream =
-            repository.getUserConversations('user-with-no-conversations');
+      test(
+        'should return empty stream when user has no conversations',
+        () async {
+          // Act
+          final stream = repository.getUserConversations(
+            'user-with-no-conversations',
+          );
 
-        // Assert
-        await expectLater(
-          stream.first,
-          completion(isEmpty),
-        );
-      });
+          // Assert
+          await expectLater(
+            stream.first,
+            completion(isEmpty),
+          );
+        },
+      );
     });
 
     group('Get Unread Counts', () {
       test('should count unread messages for user', () async {
         // Arrange
-        final conv1 =
-            _createDirectConversation('user-123', 'user-456', id: 'conv-1');
-        final conv2 =
-            _createDirectConversation('user-123', 'user-789', id: 'conv-2');
+        final conv1 = _createDirectConversation(
+          'user-123',
+          'user-456',
+          id: 'conv-1',
+        );
+        final conv2 = _createDirectConversation(
+          'user-123',
+          'user-789',
+          id: 'conv-2',
+        );
 
         // Set last read timestamp to 1 hour ago
         final oneHourAgo = DateTime.now().subtract(const Duration(hours: 1));
         final conv1WithRead = conv1.copyWith(
           lastReadTimestamps: {
             'user-123': oneHourAgo,
-            'user-456': DateTime.now()
+            'user-456': DateTime.now(),
           },
           lastMessage: Message.text(
             conversationId: 'conv-1',
@@ -350,7 +454,7 @@ void main() {
         final conv2WithRead = conv2.copyWith(
           lastReadTimestamps: {
             'user-123': oneHourAgo,
-            'user-789': DateTime.now()
+            'user-789': DateTime.now(),
           },
           lastMessage: Message.text(
             conversationId: 'conv-2',
@@ -369,15 +473,23 @@ void main() {
 
         // Assert
         expect(
-            count, greaterThanOrEqualTo(0)); // Module calculates actual count
+          count,
+          greaterThanOrEqualTo(0),
+        ); // Module calculates actual count
       });
 
       test('should count unread conversations for user', () async {
         // Arrange
-        final conv1 =
-            _createDirectConversation('user-123', 'user-456', id: 'conv-1');
-        final conv2 =
-            _createDirectConversation('user-123', 'user-789', id: 'conv-2');
+        final conv1 = _createDirectConversation(
+          'user-123',
+          'user-456',
+          id: 'conv-1',
+        );
+        final conv2 = _createDirectConversation(
+          'user-123',
+          'user-789',
+          id: 'conv-2',
+        );
 
         await _seedConversation(fakeFirestore, 'conv-1', conv1);
         await _seedConversation(fakeFirestore, 'conv-2', conv2);
@@ -387,7 +499,9 @@ void main() {
 
         // Assert
         expect(
-            count, greaterThanOrEqualTo(0)); // Module calculates actual count
+          count,
+          greaterThanOrEqualTo(0),
+        ); // Module calculates actual count
       });
     });
 
@@ -420,24 +534,35 @@ void main() {
       test('should stream messages for conversation', () async {
         // Arrange
         const conversationId = 'conv-1';
-        final msg1 = _createMessage(conversationId, 'user-123',
-            id: 'msg-1', content: 'First');
-        final msg2 = _createMessage(conversationId, 'user-456',
-            id: 'msg-2', content: 'Second');
+        final msg1 = _createMessage(
+          conversationId,
+          'user-123',
+          id: 'msg-1',
+          content: 'First',
+        );
+        final msg2 = _createMessage(
+          conversationId,
+          'user-456',
+          id: 'msg-2',
+          content: 'Second',
+        );
         await _seedMessage(fakeFirestore, 'msg-1', msg1);
         await _seedMessage(fakeFirestore, 'msg-2', msg2);
 
         // Act
-        final stream =
-            repository.getConversationMessages(conversationId: conversationId);
+        final stream = repository.getConversationMessages(
+          conversationId: conversationId,
+        );
 
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<Message>>((messages) {
-            return messages.length == 2 &&
-                messages.every((m) => m.conversationId == conversationId);
-          })),
+          completion(
+            predicate<List<Message>>((messages) {
+              return messages.length == 2 &&
+                  messages.every((m) => m.conversationId == conversationId);
+            }),
+          ),
         );
       });
 
@@ -458,25 +583,29 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<Message>>((messages) {
-            return messages.length == 50; // Enforces limit
-          })),
+          completion(
+            predicate<List<Message>>((messages) {
+              return messages.length == 50; // Enforces limit
+            }),
+          ),
         );
       });
 
-      test('should return empty stream for conversation with no messages',
-          () async {
-        // Act
-        final stream = repository.getConversationMessages(
-          conversationId: 'conv-with-no-messages',
-        );
+      test(
+        'should return empty stream for conversation with no messages',
+        () async {
+          // Act
+          final stream = repository.getConversationMessages(
+            conversationId: 'conv-with-no-messages',
+          );
 
-        // Assert
-        await expectLater(
-          stream.first,
-          completion(isEmpty),
-        );
-      });
+          // Assert
+          await expectLater(
+            stream.first,
+            completion(isEmpty),
+          );
+        },
+      );
     });
 
     group('Get Conversation Messages Page', () {
@@ -497,29 +626,41 @@ void main() {
         // Assert
         expect(messages.length, equals(5));
         expect(
-            messages.every((m) => m.conversationId == conversationId), isTrue);
-      });
-
-      test('should return empty list for conversation with no messages',
-          () async {
-        // Act
-        final messages = await repository.getConversationMessagesPage(
-          conversationId: 'conv-with-no-messages',
+          messages.every((m) => m.conversationId == conversationId),
+          isTrue,
         );
-
-        // Assert
-        expect(messages, isEmpty);
       });
+
+      test(
+        'should return empty list for conversation with no messages',
+        () async {
+          // Act
+          final messages = await repository.getConversationMessagesPage(
+            conversationId: 'conv-with-no-messages',
+          );
+
+          // Assert
+          expect(messages, isEmpty);
+        },
+      );
     });
 
     group('Search Messages', () {
       test('should search messages by content', () async {
         // Arrange
         const conversationId = 'conv-1';
-        final msg1 = _createMessage(conversationId, 'user-123',
-            id: 'msg-1', content: 'Hello world');
-        final msg2 = _createMessage(conversationId, 'user-456',
-            id: 'msg-2', content: 'Goodbye world');
+        final msg1 = _createMessage(
+          conversationId,
+          'user-123',
+          id: 'msg-1',
+          content: 'Hello world',
+        );
+        final msg2 = _createMessage(
+          conversationId,
+          'user-456',
+          id: 'msg-2',
+          content: 'Goodbye world',
+        );
         await _seedMessage(fakeFirestore, 'msg-1', msg1);
         await _seedMessage(fakeFirestore, 'msg-2', msg2);
 
@@ -530,15 +671,21 @@ void main() {
         );
 
         // Assert
-        expect(results.length,
-            greaterThanOrEqualTo(0)); // Search implementation may vary
+        expect(
+          results.length,
+          greaterThanOrEqualTo(0),
+        ); // Search implementation may vary
       });
 
       test('should return empty list when no matches found', () async {
         // Arrange
         const conversationId = 'conv-1';
-        final msg = _createMessage(conversationId, 'user-123',
-            id: 'msg-1', content: 'Hello');
+        final msg = _createMessage(
+          conversationId,
+          'user-123',
+          id: 'msg-1',
+          content: 'Hello',
+        );
         await _seedMessage(fakeFirestore, 'msg-1', msg);
 
         // Act
@@ -553,60 +700,78 @@ void main() {
     });
 
     group('Conversation Model Integration', () {
-      test('should correctly serialize and deserialize conversations',
-          () async {
-        // Arrange
-        const conversationId = 'conv-1';
-        final originalConversation = _createDirectConversation(
-            'user-123', 'user-456',
-            id: conversationId);
-        await _seedConversation(
-            fakeFirestore, conversationId, originalConversation);
+      test(
+        'should correctly serialize and deserialize conversations',
+        () async {
+          // Arrange
+          const conversationId = 'conv-1';
+          final originalConversation = _createDirectConversation(
+            'user-123',
+            'user-456',
+            id: conversationId,
+          );
+          await _seedConversation(
+            fakeFirestore,
+            conversationId,
+            originalConversation,
+          );
 
-        // Act
-        final retrieved = await repository.getConversation(conversationId);
+          // Act
+          final retrieved = await repository.getConversation(conversationId);
 
-        // Assert
-        expect(retrieved, isNotNull);
-        expect(retrieved!.id, equals(originalConversation.id));
-        expect(retrieved.participantIds,
-            equals(originalConversation.participantIds));
-        expect(retrieved.isGroup, equals(originalConversation.isGroup));
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(retrieved, isNotNull);
+          expect(retrieved!.id, equals(originalConversation.id));
+          expect(
+            retrieved.participantIds,
+            equals(originalConversation.participantIds),
+          );
+          expect(retrieved.isGroup, equals(originalConversation.isGroup));
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
 
-      test('should handle group conversation serialization', () async {
-        // Arrange
-        const conversationId = 'group-1';
-        final originalConversation = _createGroupConversation(
-          ['user-123', 'user-456', 'user-789'],
-          id: conversationId,
-          title: 'Test Group',
-        );
-        await _seedConversation(
-            fakeFirestore, conversationId, originalConversation);
+      test(
+        'should handle group conversation serialization',
+        () async {
+          // Arrange
+          const conversationId = 'group-1';
+          final originalConversation = _createGroupConversation(
+            ['user-123', 'user-456', 'user-789'],
+            id: conversationId,
+            title: 'Test Group',
+          );
+          await _seedConversation(
+            fakeFirestore,
+            conversationId,
+            originalConversation,
+          );
 
-        // Act
-        final retrieved = await repository.getConversation(conversationId);
+          // Act
+          final retrieved = await repository.getConversation(conversationId);
 
-        // Assert
-        expect(retrieved, isNotNull);
-        expect(retrieved!.id, equals(conversationId));
-        expect(retrieved.isGroup, isTrue);
-        expect(retrieved.title, equals('Test Group'));
-        expect(retrieved.participantIds.length, equals(3));
-      },
-          skip:
-              'Modular architecture - requires integration testing with real Firebase');
+          // Assert
+          expect(retrieved, isNotNull);
+          expect(retrieved!.id, equals(conversationId));
+          expect(retrieved.isGroup, isTrue);
+          expect(retrieved.title, equals('Test Group'));
+          expect(retrieved.participantIds.length, equals(3));
+        },
+        skip:
+            'Modular architecture - requires integration testing with real Firebase',
+      );
     });
 
     group('Message Model Integration', () {
       test('should correctly serialize and deserialize messages', () async {
         // Arrange
         const messageId = 'msg-1';
-        final originalMessage =
-            _createMessage('conv-1', 'user-123', id: messageId);
+        final originalMessage = _createMessage(
+          'conv-1',
+          'user-123',
+          id: messageId,
+        );
         await _seedMessage(fakeFirestore, messageId, originalMessage);
 
         // Act
@@ -616,7 +781,9 @@ void main() {
         expect(retrieved, isNotNull);
         expect(retrieved!.id, equals(originalMessage.id));
         expect(
-            retrieved.conversationId, equals(originalMessage.conversationId));
+          retrieved.conversationId,
+          equals(originalMessage.conversationId),
+        );
         expect(retrieved.senderId, equals(originalMessage.senderId));
         expect(retrieved.content, equals(originalMessage.content));
       });
@@ -756,13 +923,15 @@ Future<void> _seedMessage(
     'deliveredAt': message.deliveredAt != null
         ? Timestamp.fromDate(message.deliveredAt!)
         : null,
-    'readAt':
-        message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
+    'readAt': message.readAt != null
+        ? Timestamp.fromDate(message.readAt!)
+        : null,
     'metadata': message.metadata,
     'replyToMessageId': message.replyToMessageId,
     'isEdited': message.isEdited,
-    'editedAt':
-        message.editedAt != null ? Timestamp.fromDate(message.editedAt!) : null,
+    'editedAt': message.editedAt != null
+        ? Timestamp.fromDate(message.editedAt!)
+        : null,
   };
 
   await firestore.collection('messages').doc(messageId).set(data);

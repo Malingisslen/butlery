@@ -47,33 +47,40 @@ void main() {
     group('Social Media URL Detection', () {
       test('should detect Instagram post URL', () async {
         // Act
-        final result =
-            await service.detectContent('https://instagram.com/p/ABC123xyz');
+        final result = await service.detectContent(
+          'https://instagram.com/p/ABC123xyz',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
         expect(result.platform, equals(SourcePlatform.instagram));
         expect(
-            result.extractedUrl, equals('https://instagram.com/p/ABC123xyz'));
+          result.extractedUrl,
+          equals('https://instagram.com/p/ABC123xyz'),
+        );
         expect(result.metadata['requiresWebView'], isTrue);
       });
 
       test('should detect Instagram reel URL', () async {
         // Act
         final result = await service.detectContent(
-            'Check this out: https://instagram.com/reel/XYZ789abc');
+          'Check this out: https://instagram.com/reel/XYZ789abc',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
         expect(result.platform, equals(SourcePlatform.instagram));
-        expect(result.extractedUrl,
-            equals('https://instagram.com/reel/XYZ789abc'));
+        expect(
+          result.extractedUrl,
+          equals('https://instagram.com/reel/XYZ789abc'),
+        );
       });
 
       test('should detect shortened Instagram URL', () async {
         // Act
-        final result =
-            await service.detectContent('https://instagr.am/p/ShortLink123');
+        final result = await service.detectContent(
+          'https://instagr.am/p/ShortLink123',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
@@ -82,8 +89,9 @@ void main() {
 
       test('should detect Facebook post URL', () async {
         // Act
-        final result = await service
-            .detectContent('https://facebook.com/username/posts/123456789');
+        final result = await service.detectContent(
+          'https://facebook.com/username/posts/123456789',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
@@ -93,8 +101,9 @@ void main() {
 
       test('should detect Facebook watch URL', () async {
         // Act
-        final result = await service
-            .detectContent('https://facebook.com/watch/?v=987654321');
+        final result = await service.detectContent(
+          'https://facebook.com/watch/?v=987654321',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
@@ -112,8 +121,9 @@ void main() {
 
       test('should detect TikTok video URL', () async {
         // Act
-        final result = await service
-            .detectContent('https://tiktok.com/@username/video/123456789');
+        final result = await service.detectContent(
+          'https://tiktok.com/@username/video/123456789',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
@@ -123,8 +133,9 @@ void main() {
 
       test('should detect shortened TikTok URL', () async {
         // Act
-        final result =
-            await service.detectContent('https://vm.tiktok.com/ZM8abc123');
+        final result = await service.detectContent(
+          'https://vm.tiktok.com/ZM8abc123',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.socialMediaUrl));
@@ -133,20 +144,24 @@ void main() {
 
       test('should detect YouTube video URL', () async {
         // Act
-        final result = await service
-            .detectContent('https://youtube.com/watch?v=dQw4w9WgXcQ');
+        final result = await service.detectContent(
+          'https://youtube.com/watch?v=dQw4w9WgXcQ',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
         expect(result.platform, equals(SourcePlatform.website));
-        expect(result.extractedUrl,
-            equals('https://youtube.com/watch?v=dQw4w9WgXcQ'));
+        expect(
+          result.extractedUrl,
+          equals('https://youtube.com/watch?v=dQw4w9WgXcQ'),
+        );
       });
 
       test('should detect YouTube shorts URL', () async {
         // Act
-        final result =
-            await service.detectContent('https://youtube.com/shorts/ABC123');
+        final result = await service.detectContent(
+          'https://youtube.com/shorts/ABC123',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
@@ -155,8 +170,9 @@ void main() {
 
       test('should detect shortened YouTube URL', () async {
         // Act
-        final result =
-            await service.detectContent('https://youtu.be/VideoId123');
+        final result = await service.detectContent(
+          'https://youtu.be/VideoId123',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
@@ -167,20 +183,24 @@ void main() {
     group('Recipe URL Detection', () {
       test('should detect general recipe website URL', () async {
         // Act
-        final result = await service
-            .detectContent('https://www.arla.se/recept/pasta-carbonara');
+        final result = await service.detectContent(
+          'https://www.arla.se/recept/pasta-carbonara',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
         expect(result.platform, equals(SourcePlatform.website));
-        expect(result.extractedUrl,
-            equals('https://www.arla.se/recept/pasta-carbonara'));
+        expect(
+          result.extractedUrl,
+          equals('https://www.arla.se/recept/pasta-carbonara'),
+        );
       });
 
       test('should detect URL with additional text', () async {
         // Act
         final result = await service.detectContent(
-            'Check out this recipe: https://ica.se/recept/kottbullar with cream sauce');
+          'Check out this recipe: https://ica.se/recept/kottbullar with cream sauce',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
@@ -190,7 +210,8 @@ void main() {
       test('should extract first URL from multiple URLs', () async {
         // Act
         final result = await service.detectContent(
-            'https://first.com/recipe and https://second.com/recipe');
+          'https://first.com/recipe and https://second.com/recipe',
+        );
 
         // Assert
         expect(result.extractedUrl, equals('https://first.com/recipe'));
@@ -201,7 +222,8 @@ void main() {
       test('should detect Swedish recipe text with ingredients', () async {
         // Act
         final result = await service.detectContent(
-            'Recept för köttbullar\nIngredienser:\n500g köttfärs\n1 dl mjölk');
+          'Recept för köttbullar\nIngredienser:\n500g köttfärs\n1 dl mjölk',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -213,7 +235,8 @@ void main() {
       test('should detect Swedish cooking instructions', () async {
         // Act
         final result = await service.detectContent(
-            'Tillredning: Sätt ugnen på 200 grader. Blanda alla ingredienser och stek i 15 minuter.');
+          'Tillredning: Sätt ugnen på 200 grader. Blanda alla ingredienser och stek i 15 minuter.',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -225,7 +248,8 @@ void main() {
       test('should detect Swedish measurements', () async {
         // Act
         final result = await service.detectContent(
-            'Ta 2 matskedar socker, 3 teskedar salt och 5 deciliter mjöl');
+          'Ta 2 matskedar socker, 3 teskedar salt och 5 deciliter mjöl',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -237,7 +261,8 @@ void main() {
       test('should detect English recipe text', () async {
         // Act
         final result = await service.detectContent(
-            'Recipe: Chocolate Cake\nIngredients: 2 cups flour, 1 cup sugar\nInstructions: Mix and bake');
+          'Recipe: Chocolate Cake\nIngredients: 2 cups flour, 1 cup sugar\nInstructions: Mix and bake',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -249,7 +274,8 @@ void main() {
       test('should detect mixed Swedish and English recipe keywords', () async {
         // Act
         final result = await service.detectContent(
-            'Recept recipe with 2 cups mjöl and instruktioner för cooking');
+          'Recept recipe with 2 cups mjöl and instruktioner för cooking',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -262,7 +288,8 @@ void main() {
       test('should detect plain text without recipe keywords', () async {
         // Act
         final result = await service.detectContent(
-            'This is just a regular message without any special content');
+          'This is just a regular message without any special content',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.plainText));
@@ -330,7 +357,8 @@ void main() {
       test('should include metadata for social media URLs', () async {
         // Act
         final result = await service.detectContent(
-            'Check this out: https://instagram.com/p/ABC123 amazing recipe!');
+          'Check this out: https://instagram.com/p/ABC123 amazing recipe!',
+        );
 
         // Assert
         expect(result.metadata['requiresWebView'], isTrue);
@@ -339,8 +367,9 @@ void main() {
 
       test('should include detected keywords in metadata', () async {
         // Act
-        final result = await service
-            .detectContent('Recept: Blanda 2 matskedar socker med 3 dl mjölk');
+        final result = await service.detectContent(
+          'Recept: Blanda 2 matskedar socker med 3 dl mjölk',
+        );
 
         // Assert
         expect(result.metadata['detectedKeywords'], isA<List<String>>());
@@ -376,18 +405,22 @@ void main() {
       test('should handle special characters in URLs', () async {
         // Act
         final result = await service.detectContent(
-            'https://example.com/recipe?id=123&name=test#section');
+          'https://example.com/recipe?id=123&name=test#section',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
-        expect(result.extractedUrl,
-            equals('https://example.com/recipe?id=123&name=test#section'));
+        expect(
+          result.extractedUrl,
+          equals('https://example.com/recipe?id=123&name=test#section'),
+        );
       });
 
       test('should handle URLs with unicode characters', () async {
         // Act
-        final result = await service
-            .detectContent('https://example.com/recept/köttbullar');
+        final result = await service.detectContent(
+          'https://example.com/recept/köttbullar',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeUrl));
@@ -396,28 +429,33 @@ void main() {
 
       test('should be case insensitive for keyword detection', () async {
         // Act
-        final result =
-            await service.detectContent('RECEPT INGREDIENSER TILLREDNING');
+        final result = await service.detectContent(
+          'RECEPT INGREDIENSER TILLREDNING',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
       });
 
-      test('should handle mixed content with URL and recipe keywords',
-          () async {
-        // Act
-        final result = await service.detectContent(
-            'https://instagram.com/p/ABC123 recept ingredienser');
+      test(
+        'should handle mixed content with URL and recipe keywords',
+        () async {
+          // Act
+          final result = await service.detectContent(
+            'https://instagram.com/p/ABC123 recept ingredienser',
+          );
 
-        // Assert - URL takes precedence
-        expect(result.type, equals(ContentType.socialMediaUrl));
-        expect(result.platform, equals(SourcePlatform.instagram));
-      });
+          // Assert - URL takes precedence
+          expect(result.type, equals(ContentType.socialMediaUrl));
+          expect(result.platform, equals(SourcePlatform.instagram));
+        },
+      );
 
       test('should handle malformed URLs gracefully', () async {
         // Act
-        final result =
-            await service.detectContent('http://[invalid url with brackets]');
+        final result = await service.detectContent(
+          'http://[invalid url with brackets]',
+        );
 
         // Assert - Production code treats malformed URLs as plain text
         expect(result.type, equals(ContentType.plainText));
@@ -426,7 +464,8 @@ void main() {
       test('should handle content with line breaks', () async {
         // Act
         final result = await service.detectContent(
-            'Recept\n\nIngredienser:\n- Mjöl\n- Socker\n\nTillredning:\nBlanda allt');
+          'Recept\n\nIngredienser:\n- Mjöl\n- Socker\n\nTillredning:\nBlanda allt',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));
@@ -435,7 +474,8 @@ void main() {
       test('should detect recipe keywords in different positions', () async {
         // Act
         final result = await service.detectContent(
-            'Start text then recept in middle and ingredienser at end');
+          'Start text then recept in middle and ingredienser at end',
+        );
 
         // Assert
         expect(result.type, equals(ContentType.recipeText));

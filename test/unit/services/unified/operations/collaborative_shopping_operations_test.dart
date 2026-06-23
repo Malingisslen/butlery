@@ -35,16 +35,18 @@ void main() {
       registerFallbackValue(<String>[]);
       registerFallbackValue(<String, String>{});
       registerFallbackValue(<UnifiedShoppingItem>[]);
-      registerFallbackValue(UnifiedShoppingList(
-        id: 'test',
-        name: 'Test',
-        ownerId: 'test',
-        ownerDisplayName: 'Test',
-        items: [],
-        type: ListType.collaborative,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        UnifiedShoppingList(
+          id: 'test',
+          name: 'Test',
+          ownerId: 'test',
+          ownerDisplayName: 'Test',
+          items: [],
+          type: ListType.collaborative,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -62,8 +64,9 @@ void main() {
       if (GetIt.instance.isRegistered<PermissionService>()) {
         GetIt.instance.unregister<PermissionService>();
       }
-      GetIt.instance
-          .registerSingleton<PermissionService>(mockPermissionService);
+      GetIt.instance.registerSingleton<PermissionService>(
+        mockPermissionService,
+      );
 
       // Create test items
       testItem1 = UnifiedShoppingItem(
@@ -188,26 +191,32 @@ void main() {
       // that use the configuration above
 
       // Default stub behaviors for parent service methods
-      when(() => mockParentService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-            items: any(named: 'items'),
-            categoryIds: any(named: 'categoryIds'),
-            allowGuestEditing: any(named: 'allowGuestEditing'),
-            autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
-          )).thenAnswer((_) async => 'new_list_id');
+      when(
+        () => mockParentService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+          items: any(named: 'items'),
+          categoryIds: any(named: 'categoryIds'),
+          allowGuestEditing: any(named: 'allowGuestEditing'),
+          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
+        ),
+      ).thenAnswer((_) async => 'new_list_id');
 
-      when(() => mockParentService.createPersonalList(
-            any(),
-            items: any(named: 'items'),
-          )).thenAnswer((_) async => 'new_personal_list_id');
+      when(
+        () => mockParentService.createPersonalList(
+          any(),
+          items: any(named: 'items'),
+        ),
+      ).thenAnswer((_) async => 'new_personal_list_id');
 
-      when(() => mockParentService.updateList(any()))
-          .thenAnswer((_) async => true);
-      when(() => mockParentService.deleteList(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockParentService.updateList(any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockParentService.deleteList(any()),
+      ).thenAnswer((_) async => true);
 
       // Build operations with typed deps (no _parent back-reference)
       final lifecycleOps = ListLifecycleOperations(
@@ -271,19 +280,21 @@ void main() {
 
         // Assert
         expect(listId, equals('new_list_id'));
-        verify(() => mockParentService.createCollaborativeList(
-              name: 'Ny lista',
-              description: 'Test beskrivning',
-              memberIds: ['user_456', 'user_789'],
-              memberDisplayNames: {
-                'user_456': 'Anna',
-                'user_789': 'Erik',
-              },
-              items: null,
-              categoryIds: null,
-              allowGuestEditing: true,
-              autoRemoveCompleted: false,
-            )).called(1);
+        verify(
+          () => mockParentService.createCollaborativeList(
+            name: 'Ny lista',
+            description: 'Test beskrivning',
+            memberIds: ['user_456', 'user_789'],
+            memberDisplayNames: {
+              'user_456': 'Anna',
+              'user_789': 'Erik',
+            },
+            items: null,
+            categoryIds: null,
+            allowGuestEditing: true,
+            autoRemoveCompleted: false,
+          ),
+        ).called(1);
       });
 
       test('should get all collaborative lists', () {
@@ -342,30 +353,35 @@ void main() {
 
         // Assert
         expect(collaborativeId, equals('new_list_id'));
-        verify(() => mockParentService.createCollaborativeList(
-              name: 'Min lista',
-              description: 'Now collaborative',
-              memberIds: ['user_456'],
-              memberDisplayNames: {'user_456': 'Anna'},
-              items: [],
-              categoryIds: null,
-              allowGuestEditing: true,
-              autoRemoveCompleted: false,
-            )).called(1);
+        verify(
+          () => mockParentService.createCollaborativeList(
+            name: 'Min lista',
+            description: 'Now collaborative',
+            memberIds: ['user_456'],
+            memberDisplayNames: {'user_456': 'Anna'},
+            items: [],
+            categoryIds: null,
+            allowGuestEditing: true,
+            autoRemoveCompleted: false,
+          ),
+        ).called(1);
         verify(() => mockParentService.deleteList('personal_list_1')).called(1);
       });
 
       test('should convert collaborative list to personal', () async {
         // Act
-        final personalId =
-            await operations.convertCollaborativeToPersonal('collab_list_1');
+        final personalId = await operations.convertCollaborativeToPersonal(
+          'collab_list_1',
+        );
 
         // Assert
         expect(personalId, equals('new_personal_list_id'));
-        verify(() => mockParentService.createPersonalList(
-              'Familjehandling',
-              items: [testItem1],
-            )).called(1);
+        verify(
+          () => mockParentService.createPersonalList(
+            'Familjehandling',
+            items: [testItem1],
+          ),
+        ).called(1);
         verify(() => mockParentService.deleteList('collab_list_1')).called(1);
       });
     });
@@ -496,8 +512,9 @@ void main() {
       test('should add item to collaborative list', () async {
         // Arrange
         final originalList = testCollaborativeList;
-        when(() => mockParentService.updateList(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockParentService.updateList(any())).thenAnswer((
+          invocation,
+        ) async {
           final list = invocation.positionalArguments[0] as UnifiedShoppingList;
           // Verify the list has a new item
           expect(list.items.length, greaterThan(originalList.items.length));

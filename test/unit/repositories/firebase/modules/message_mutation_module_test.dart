@@ -75,14 +75,18 @@ void main() {
         await module.sendMessage(msg);
 
         // 1. Message written
-        final msgDoc =
-            await firestore.collection(_messagesPath).doc(msg.id).get();
+        final msgDoc = await firestore
+            .collection(_messagesPath)
+            .doc(msg.id)
+            .get();
         expect(msgDoc.exists, isTrue);
         expect(msgDoc.data()?['content'], equals('hello'));
 
         // 2. Conversation lastMessage updated (via merge set)
-        final convoDoc =
-            await firestore.collection(_convoCollection).doc(convo.id).get();
+        final convoDoc = await firestore
+            .collection(_convoCollection)
+            .doc(convo.id)
+            .get();
         expect(convoDoc.exists, isTrue);
         expect(convoDoc.data()?['lastMessage'], isA<Map<String, dynamic>>());
 
@@ -113,10 +117,15 @@ void main() {
         throwsA(isA<PermissionDeniedException>()),
       );
 
-      final msgDoc =
-          await firestore.collection(_messagesPath).doc(outsiderMsg.id).get();
-      expect(msgDoc.exists, isFalse,
-          reason: 'No message should land when permission is denied');
+      final msgDoc = await firestore
+          .collection(_messagesPath)
+          .doc(outsiderMsg.id)
+          .get();
+      expect(
+        msgDoc.exists,
+        isFalse,
+        reason: 'No message should land when permission is denied',
+      );
     });
 
     test(
@@ -150,7 +159,8 @@ void main() {
             .get();
         expect(convoDoc.exists, isTrue);
         final participantNames = Map<String, dynamic>.from(
-            convoDoc.data()?['participantDisplayNames'] as Map);
+          convoDoc.data()?['participantDisplayNames'] as Map,
+        );
         expect(participantNames['user-a'], equals('A'));
         expect(participantNames['user-b'], equals('B from profile'));
       },
@@ -183,10 +193,9 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
       // Seed a message doc.
-      await firestore
-          .collection(_messagesPath)
-          .doc('msg-1')
-          .set({'status': MessageStatus.sending.name});
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'status': MessageStatus.sending.name,
+      });
 
       await module.updateMessageStatus(
         messageId: 'msg-1',
@@ -201,10 +210,9 @@ void main() {
     test('sets readAt for read status with explicit timestamp', () async {
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
-      await firestore
-          .collection(_messagesPath)
-          .doc('msg-1')
-          .set({'status': MessageStatus.delivered.name});
+      await firestore.collection(_messagesPath).doc('msg-1').set({
+        'status': MessageStatus.delivered.name,
+      });
 
       final readAt = DateTime.utc(2026, 5, 19, 12, 0);
       await module.updateMessageStatus(
@@ -218,23 +226,27 @@ void main() {
       expect(doc.data()?['readAt'], isNotNull);
     });
 
-    test('markMessageAsRead is a thin wrapper around updateMessageStatus',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final module = _newModule(firestore);
-      await firestore
-          .collection(_messagesPath)
-          .doc('msg-1')
-          .set({'status': MessageStatus.delivered.name});
+    test(
+      'markMessageAsRead is a thin wrapper around updateMessageStatus',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await firestore.collection(_messagesPath).doc('msg-1').set({
+          'status': MessageStatus.delivered.name,
+        });
 
-      await module.markMessageAsRead(
-        messageId: 'msg-1',
-        userId: 'user-a',
-      );
+        await module.markMessageAsRead(
+          messageId: 'msg-1',
+          userId: 'user-a',
+        );
 
-      final doc = await firestore.collection(_messagesPath).doc('msg-1').get();
-      expect(doc.data()?['status'], equals(MessageStatus.read.name));
-    });
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
+        expect(doc.data()?['status'], equals(MessageStatus.read.name));
+      },
+    );
   });
 
   group('MessageMutationModule.markConversationAsRead', () {
@@ -267,26 +279,33 @@ void main() {
       },
     );
 
-    test('throws ResourceNotFoundException when conversation missing',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final module = _newModule(firestore, readConversation: (_) async => null);
+    test(
+      'throws ResourceNotFoundException when conversation missing',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => null,
+        );
 
-      await expectLater(
-        module.markConversationAsRead(
-          conversationId: 'missing',
-          userId: 'user-a',
-          updateConversation: (_) async {},
-        ),
-        throwsA(isA<ResourceNotFoundException>()),
-      );
-    });
+        await expectLater(
+          module.markConversationAsRead(
+            conversationId: 'missing',
+            userId: 'user-a',
+            updateConversation: (_) async {},
+          ),
+          throwsA(isA<ResourceNotFoundException>()),
+        );
+      },
+    );
 
     test('throws PermissionDeniedException for non-participants', () async {
       final firestore = FakeFirebaseFirestore();
       final convo = _twoPersonConvo();
-      final module =
-          _newModule(firestore, readConversation: (_) async => convo);
+      final module = _newModule(
+        firestore,
+        readConversation: (_) async => convo,
+      );
 
       await expectLater(
         module.markConversationAsRead(
@@ -339,10 +358,9 @@ void main() {
       final module = _newModule(firestore);
 
       for (final id in ['m-1', 'm-2', 'm-3']) {
-        await firestore
-            .collection(_messagesPath)
-            .doc(id)
-            .set({'status': MessageStatus.sending.name});
+        await firestore.collection(_messagesPath).doc(id).set({
+          'status': MessageStatus.sending.name,
+        });
       }
 
       await module.batchMarkAsDelivered(
@@ -352,8 +370,11 @@ void main() {
 
       for (final id in ['m-1', 'm-2', 'm-3']) {
         final doc = await firestore.collection(_messagesPath).doc(id).get();
-        expect(doc.data()?['status'], equals(MessageStatus.delivered.name),
-            reason: 'message $id should be marked delivered');
+        expect(
+          doc.data()?['status'],
+          equals(MessageStatus.delivered.name),
+          reason: 'message $id should be marked delivered',
+        );
         expect(doc.data()?['deliveredAt'], isNotNull);
       }
     });
@@ -384,8 +405,10 @@ void main() {
       final doc = await firestore.collection(_messagesPath).doc('msg-1').get();
       final opts = (doc.data()?['metadata']['poll']['options'] as List)
           .cast<Map<String, dynamic>>();
-      expect(opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-          equals(['user-1']));
+      expect(
+        opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
+        equals(['user-1']),
+      );
       expect(opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'], isEmpty);
     });
 
@@ -418,8 +441,10 @@ void main() {
           allowMultiple: true,
         );
 
-        final doc =
-            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
         final opts = (doc.data()?['metadata']['poll']['options'] as List)
             .cast<Map<String, dynamic>>();
         expect(opts.first['voterIds'], isEmpty);
@@ -452,8 +477,10 @@ void main() {
           allowMultiple: false,
         );
 
-        final doc =
-            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
         final opts = (doc.data()?['metadata']['poll']['options'] as List)
             .cast<Map<String, dynamic>>();
         expect(opts.first['voterIds'], equals(['user-1']));
@@ -486,13 +513,17 @@ void main() {
           allowMultiple: false,
         );
 
-        final doc =
-            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
         final opts = (doc.data()?['metadata']['poll']['options'] as List)
             .cast<Map<String, dynamic>>();
         expect(opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'], isEmpty);
-        expect(opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-            equals(['user-1']));
+        expect(
+          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
+          equals(['user-1']),
+        );
       },
     );
 
@@ -522,14 +553,20 @@ void main() {
           allowMultiple: true,
         );
 
-        final doc =
-            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
         final opts = (doc.data()?['metadata']['poll']['options'] as List)
             .cast<Map<String, dynamic>>();
-        expect(opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-            equals(['user-1']));
-        expect(opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-            equals(['user-1']));
+        expect(
+          opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
+          equals(['user-1']),
+        );
+        expect(
+          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
+          equals(['user-1']),
+        );
       },
     );
 
@@ -568,13 +605,17 @@ void main() {
 
         await module.closePoll(messageId: 'msg-1', closerId: 'user-1');
 
-        final doc =
-            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final doc = await firestore
+            .collection(_messagesPath)
+            .doc('msg-1')
+            .get();
         expect(doc.data()?['metadata']['poll']['isClosed'], isTrue);
         // Sibling keys MUST survive — closePoll is a partial mutation.
         expect(doc.data()?['metadata']['poll']['creatorId'], equals('user-1'));
         expect(
-            doc.data()?['metadata']['poll']['question'], equals('Which one?'));
+          doc.data()?['metadata']['poll']['question'],
+          equals('Which one?'),
+        );
       },
     );
 

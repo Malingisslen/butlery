@@ -25,26 +25,30 @@ void main() {
     });
 
     group('executeDebounced resolves superseded callers', () {
-      test('rapid calls complete all futures (N-1 null, last with result)',
-          () async {
-        final futures = <Future<int?>>[];
+      test(
+        'rapid calls complete all futures (N-1 null, last with result)',
+        () async {
+          final futures = <Future<int?>>[];
 
-        for (var i = 0; i < 5; i++) {
-          final index = i;
-          futures.add(vm.executeDebounced<int>(
-            'search',
-            () async => index,
-            const Duration(milliseconds: 50),
-          ));
-        }
+          for (var i = 0; i < 5; i++) {
+            final index = i;
+            futures.add(
+              vm.executeDebounced<int>(
+                'search',
+                () async => index,
+                const Duration(milliseconds: 50),
+              ),
+            );
+          }
 
-        final results = await Future.wait(futures);
+          final results = await Future.wait(futures);
 
-        for (var i = 0; i < 4; i++) {
-          expect(results[i], isNull, reason: 'Future $i should be null');
-        }
-        expect(results[4], equals(4));
-      });
+          for (var i = 0; i < 4; i++) {
+            expect(results[i], isNull, reason: 'Future $i should be null');
+          }
+          expect(results[4], equals(4));
+        },
+      );
 
       test('cancelOperation completes pending future with null', () async {
         final future = vm.executeDebounced<int>(
@@ -119,73 +123,77 @@ void main() {
     });
 
     group('debounce handles in-flight operations', () {
-      test('no StateError when debounce fires during active operation',
-          () async {
-        var callCount = 0;
-        final slowCompleter = Completer<int>();
+      test(
+        'no StateError when debounce fires during active operation',
+        () async {
+          var callCount = 0;
+          final slowCompleter = Completer<int>();
 
-        // First call starts a slow operation via zero-duration timer
-        final f1 = vm.executeDebounced<int>(
-          'search',
-          () => slowCompleter.future,
-          Duration.zero,
-        );
+          // First call starts a slow operation via zero-duration timer
+          final f1 = vm.executeDebounced<int>(
+            'search',
+            () => slowCompleter.future,
+            Duration.zero,
+          );
 
-        // Let timer fire and operation start
-        await _pump();
+          // Let timer fire and operation start
+          await _pump();
 
-        // Second call while first is in-flight
-        final f2 = vm.executeDebounced<int>(
-          'search',
-          () async {
-            callCount++;
-            return 99;
-          },
-          Duration.zero,
-        );
+          // Second call while first is in-flight
+          final f2 = vm.executeDebounced<int>(
+            'search',
+            () async {
+              callCount++;
+              return 99;
+            },
+            Duration.zero,
+          );
 
-        // Complete the slow operation — f1 was superseded
-        slowCompleter.complete(1);
-        await _pump();
+          // Complete the slow operation — f1 was superseded
+          slowCompleter.complete(1);
+          await _pump();
 
-        expect(await f1, isNull);
-        expect(callCount, equals(1));
-        expect(await f2, equals(99));
-      });
+          expect(await f1, isNull);
+          expect(callCount, equals(1));
+          expect(await f2, equals(99));
+        },
+      );
 
-      test('stale in-flight result is discarded via generation counter',
-          () async {
-        final completer1 = Completer<int>();
-        final completer2 = Completer<int>();
+      test(
+        'stale in-flight result is discarded via generation counter',
+        () async {
+          final completer1 = Completer<int>();
+          final completer2 = Completer<int>();
 
-        final f1 = vm.executeDebounced<int>(
-          'search',
-          () => completer1.future,
-          Duration.zero,
-        );
+          final f1 = vm.executeDebounced<int>(
+            'search',
+            () => completer1.future,
+            Duration.zero,
+          );
 
-        // Fire first timer
-        await _pump();
+          // Fire first timer
+          await _pump();
 
-        // Second call supersedes first
-        final f2 = vm.executeDebounced<int>(
-          'search',
-          () => completer2.future,
-          Duration.zero,
-        );
+          // Second call supersedes first
+          final f2 = vm.executeDebounced<int>(
+            'search',
+            () => completer2.future,
+            Duration.zero,
+          );
 
-        // Complete first operation after second was requested
-        completer1.complete(111);
-        await _pump();
+          // Complete first operation after second was requested
+          completer1.complete(111);
+          await _pump();
 
-        expect(await f1, isNull);
+          expect(await f1, isNull);
 
-        // Fire second timer and complete
-        await _pump();
-        completer2.complete(222);
+          // Fire second timer and complete
+          await _pump();
+          completer2.complete(222);
 
-        expect(await f2, equals(222));
-      });
+          expect(await f2, equals(222));
+        },
+      );
 
       test('error propagates from latest debounced operation', () async {
         final future = vm.executeDebounced<int>(

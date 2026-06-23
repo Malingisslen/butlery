@@ -167,23 +167,27 @@ void main() {
 
     group('User-Specific Methods (Not Initialized)', () {
       test(
-          'should return empty list for getRecipesForUser when not initialized',
-          () async {
-        final recipes = await offlineService.getRecipesForUser('user_123');
+        'should return empty list for getRecipesForUser when not initialized',
+        () async {
+          final recipes = await offlineService.getRecipesForUser('user_123');
 
-        // Assert
-        expect(recipes, isEmpty);
-      });
+          // Assert
+          expect(recipes, isEmpty);
+        },
+      );
 
       test(
-          'should return null for getOfflineRecipeForUser when not initialized',
-          () async {
-        final recipe = await offlineService.getOfflineRecipeForUser(
-            'recipe_123', 'user_123');
+        'should return null for getOfflineRecipeForUser when not initialized',
+        () async {
+          final recipe = await offlineService.getOfflineRecipeForUser(
+            'recipe_123',
+            'user_123',
+          );
 
-        // Assert
-        expect(recipe, isNull);
-      });
+          // Assert
+          expect(recipe, isNull);
+        },
+      );
 
       test('should handle clearUserData when not initialized', () async {
         // Act & Assert
@@ -312,7 +316,8 @@ void main() {
 
         // Act - Sort by priority (delete first, update second, create last)
         operations.sort(
-            (a, b) => (a['priority'] as int).compareTo(b['priority'] as int));
+          (a, b) => (a['priority'] as int).compareTo(b['priority'] as int),
+        );
 
         // Assert
         expect(operations[0]['type'], equals('delete'));

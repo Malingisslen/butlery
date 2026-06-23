@@ -143,8 +143,9 @@ class _SettingsBodyState extends State<_SettingsBody> {
                 ),
                 TextButton(
                   key: const Key('confirm_delete'),
-                  onPressed:
-                      canConfirm ? () => Navigator.pop(dialogCtx, true) : null,
+                  onPressed: canConfirm
+                      ? () => Navigator.pop(dialogCtx, true)
+                      : null,
                   child: const Text('Radera permanent'),
                 ),
               ],
@@ -259,155 +260,208 @@ void main() {
 
   group('Account deletion journey', () {
     testWidgets(
-        'cancelling the confirmation dialog does NOT call the deletion service',
-        (tester) async {
-      await tester.pumpWidget(_testApp(
-        viewModel: viewModel,
-        onDeleted: () => deletionCallbackFired = true,
-      ));
-      await tester.pumpAndSettle();
+      'cancelling the confirmation dialog does NOT call the deletion service',
+      (tester) async {
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onDeleted: () => deletionCallbackFired = true,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Open the dialog.
-      await tester.tap(find.byKey(const Key('delete_account_tile')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('delete_dialog')), findsOneWidget);
+        // Open the dialog.
+        await tester.tap(find.byKey(const Key('delete_account_tile')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('delete_dialog')), findsOneWidget);
 
-      // User changes their mind.
-      await tester.tap(find.byKey(const Key('cancel')));
-      await tester.pumpAndSettle();
+        // User changes their mind.
+        await tester.tap(find.byKey(const Key('cancel')));
+        await tester.pumpAndSettle();
 
-      // Dialog gone; service untouched; user doc still present.
-      expect(find.byKey(const Key('delete_dialog')), findsNothing);
-      verifyNever(() => mockDeletionService.deleteUserAccount(
+        // Dialog gone; service untouched; user doc still present.
+        expect(find.byKey(const Key('delete_dialog')), findsNothing);
+        verifyNever(
+          () => mockDeletionService.deleteUserAccount(
             reason: any(named: 'reason'),
             createAuditLog: any(named: 'createAuditLog'),
-          ));
-      expect(deletionCallbackFired, isFalse);
+          ),
+        );
+        expect(deletionCallbackFired, isFalse);
 
-      final doc = await firestore.collection('users').doc(userId).get();
-      expect(doc.exists, isTrue,
-          reason: 'Cancelling must not touch Firestore data');
-    });
+        final doc = await firestore.collection('users').doc(userId).get();
+        expect(
+          doc.exists,
+          isTrue,
+          reason: 'Cancelling must not touch Firestore data',
+        );
+      },
+    );
 
     testWidgets(
-        'confirming with correct phrase calls deletion service, removes user doc, fires deletion callback',
-        (tester) async {
-      // The service removes the user doc and reports success — exactly
-      // what the production service does when Firestore + auth deletion
-      // both succeed.
-      when(() => mockDeletionService.deleteUserAccount(
+      'confirming with correct phrase calls deletion service, removes user doc, fires deletion callback',
+      (tester) async {
+        // The service removes the user doc and reports success — exactly
+        // what the production service does when Firestore + auth deletion
+        // both succeed.
+        when(
+          () => mockDeletionService.deleteUserAccount(
             reason: any(named: 'reason'),
             createAuditLog: any(named: 'createAuditLog'),
-          )).thenAnswer((_) async {
-        await firestore.collection('users').doc(userId).delete();
-        return {
-          'success': true,
-          'deletedCollections': ['profile'],
-          'failedCollections': <String>[],
-          'errors': <String>[],
-          'auditLogId': 'audit_abc',
-        };
-      });
+          ),
+        ).thenAnswer((_) async {
+          await firestore.collection('users').doc(userId).delete();
+          return {
+            'success': true,
+            'deletedCollections': ['profile'],
+            'failedCollections': <String>[],
+            'errors': <String>[],
+            'auditLogId': 'audit_abc',
+          };
+        });
 
-      await tester.pumpWidget(_testApp(
-        viewModel: viewModel,
-        onDeleted: () => deletionCallbackFired = true,
-      ));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onDeleted: () => deletionCallbackFired = true,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Open dialog.
-      await tester.tap(find.byKey(const Key('delete_account_tile')));
-      await tester.pumpAndSettle();
+        // Open dialog.
+        await tester.tap(find.byKey(const Key('delete_account_tile')));
+        await tester.pumpAndSettle();
 
-      // Confirm button is disabled until the user types the phrase.
-      TextButton confirmButton() =>
-          tester.widget<TextButton>(find.byKey(const Key('confirm_delete')));
-      expect(confirmButton().onPressed, isNull,
-          reason: 'Confirm must be disabled before phrase typed');
+        // Confirm button is disabled until the user types the phrase.
+        TextButton confirmButton() =>
+            tester.widget<TextButton>(find.byKey(const Key('confirm_delete')));
+        expect(
+          confirmButton().onPressed,
+          isNull,
+          reason: 'Confirm must be disabled before phrase typed',
+        );
 
-      // Type the wrong thing — still disabled.
-      await tester.enterText(find.byKey(const Key('confirm_input')), 'radera');
-      await tester.pumpAndSettle();
-      expect(confirmButton().onPressed, isNull,
-          reason: 'Case-sensitive match required');
+        // Type the wrong thing — still disabled.
+        await tester.enterText(
+          find.byKey(const Key('confirm_input')),
+          'radera',
+        );
+        await tester.pumpAndSettle();
+        expect(
+          confirmButton().onPressed,
+          isNull,
+          reason: 'Case-sensitive match required',
+        );
 
-      // Type the correct phrase — enabled.
-      await tester.enterText(
-          find.byKey(const Key('confirm_input')), _confirmationText);
-      await tester.pumpAndSettle();
-      expect(confirmButton().onPressed, isNotNull);
+        // Type the correct phrase — enabled.
+        await tester.enterText(
+          find.byKey(const Key('confirm_input')),
+          _confirmationText,
+        );
+        await tester.pumpAndSettle();
+        expect(confirmButton().onPressed, isNotNull);
 
-      // Fire the destructive action.
-      await tester.tap(find.byKey(const Key('confirm_delete')));
-      await tester.pumpAndSettle();
+        // Fire the destructive action.
+        await tester.tap(find.byKey(const Key('confirm_delete')));
+        await tester.pumpAndSettle();
 
-      // Service was called once with the expected reason + audit flag.
-      final captured = verify(() => mockDeletionService.deleteUserAccount(
+        // Service was called once with the expected reason + audit flag.
+        final captured = verify(
+          () => mockDeletionService.deleteUserAccount(
             reason: captureAny(named: 'reason'),
             createAuditLog: captureAny(named: 'createAuditLog'),
-          )).captured;
-      expect(captured[0], 'Journey test');
-      expect(captured[1], isTrue,
-          reason: 'VM must request audit log for GDPR compliance');
+          ),
+        ).captured;
+        expect(captured[0], 'Journey test');
+        expect(
+          captured[1],
+          isTrue,
+          reason: 'VM must request audit log for GDPR compliance',
+        );
 
-      // User doc is gone from Firestore.
-      final doc = await firestore.collection('users').doc(userId).get();
-      expect(doc.exists, isFalse,
-          reason: 'Deletion service must have removed the user doc');
+        // User doc is gone from Firestore.
+        final doc = await firestore.collection('users').doc(userId).get();
+        expect(
+          doc.exists,
+          isFalse,
+          reason: 'Deletion service must have removed the user doc',
+        );
 
-      // VM reports not loading, no error; caller (real view) would now
-      // sign out + navigate away.
-      expect(viewModel.isLoading, isFalse);
-      expect(viewModel.hasError, isFalse);
-      expect(deletionCallbackFired, isTrue,
-          reason: 'onDeleted callback fires on success — the production view '
-              'uses this to trigger signOut + route back to login');
-    });
+        // VM reports not loading, no error; caller (real view) would now
+        // sign out + navigate away.
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.hasError, isFalse);
+        expect(
+          deletionCallbackFired,
+          isTrue,
+          reason:
+              'onDeleted callback fires on success — the production view '
+              'uses this to trigger signOut + route back to login',
+        );
+      },
+    );
 
     testWidgets(
-        'service reporting success:false leaves data alone and does NOT fire deletion callback',
-        (tester) async {
-      // Production behaviour: if deleteUserAccount returns success:false,
-      // ProfileViewModel.deleteAccount returns false and the view should
-      // NOT treat this as a completed deletion.
-      when(() => mockDeletionService.deleteUserAccount(
+      'service reporting success:false leaves data alone and does NOT fire deletion callback',
+      (tester) async {
+        // Production behaviour: if deleteUserAccount returns success:false,
+        // ProfileViewModel.deleteAccount returns false and the view should
+        // NOT treat this as a completed deletion.
+        when(
+          () => mockDeletionService.deleteUserAccount(
             reason: any(named: 'reason'),
             createAuditLog: any(named: 'createAuditLog'),
-          )).thenAnswer((_) async => {
+          ),
+        ).thenAnswer(
+          (_) async => {
             'success': false,
             'deletedCollections': <String>[],
             'failedCollections': ['profile'],
             'errors': ['some auth error'],
             'auditLogId': null,
-          });
+          },
+        );
 
-      await tester.pumpWidget(_testApp(
-        viewModel: viewModel,
-        onDeleted: () => deletionCallbackFired = true,
-      ));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onDeleted: () => deletionCallbackFired = true,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('delete_account_tile')));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-          find.byKey(const Key('confirm_input')), _confirmationText);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('confirm_delete')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('delete_account_tile')));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('confirm_input')),
+          _confirmationText,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('confirm_delete')));
+        await tester.pumpAndSettle();
 
-      // Service was called, but outcome is failure.
-      verify(() => mockDeletionService.deleteUserAccount(
+        // Service was called, but outcome is failure.
+        verify(
+          () => mockDeletionService.deleteUserAccount(
             reason: any(named: 'reason'),
             createAuditLog: any(named: 'createAuditLog'),
-          )).called(1);
+          ),
+        ).called(1);
 
-      // Firestore data remains; callback did NOT fire (caller stays on
-      // settings with the user's data intact).
-      final doc = await firestore.collection('users').doc(userId).get();
-      expect(doc.exists, isTrue,
-          reason: 'Seeded doc untouched when service reports failure');
-      expect(deletionCallbackFired, isFalse,
-          reason: 'Failed deletion must not trigger post-delete navigation');
-    });
+        // Firestore data remains; callback did NOT fire (caller stays on
+        // settings with the user's data intact).
+        final doc = await firestore.collection('users').doc(userId).get();
+        expect(
+          doc.exists,
+          isTrue,
+          reason: 'Seeded doc untouched when service reports failure',
+        );
+        expect(
+          deletionCallbackFired,
+          isFalse,
+          reason: 'Failed deletion must not trigger post-delete navigation',
+        );
+      },
+    );
   });
 }

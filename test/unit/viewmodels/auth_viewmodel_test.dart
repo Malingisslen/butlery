@@ -44,44 +44,66 @@ void main() {
     });
 
     group('Initialization and Default State', () {
-      test('should initialize with correct default state for all properties',
-          () {
-        // Arrange - viewModel created in setUp
+      test(
+        'should initialize with correct default state for all properties',
+        () {
+          // Arrange - viewModel created in setUp
 
-        // Act - no action needed, checking initial state
+          // Act - no action needed, checking initial state
 
-        // Assert
-        expect(viewModel.isLoginMode, isTrue,
-            reason: 'Should start in login mode');
-        expect(viewModel.isPasswordVisible, isFalse,
-            reason: 'Password should be hidden by default');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Should not be loading initially');
-        expect(viewModel.errorMessage, isNull,
-            reason: 'Should have no error message initially');
-        expect(viewModel.isAuthenticated, isFalse,
-            reason: 'Should not be authenticated initially');
-      });
+          // Assert
+          expect(
+            viewModel.isLoginMode,
+            isTrue,
+            reason: 'Should start in login mode',
+          );
+          expect(
+            viewModel.isPasswordVisible,
+            isFalse,
+            reason: 'Password should be hidden by default',
+          );
+          expect(
+            viewModel.isLoading,
+            isFalse,
+            reason: 'Should not be loading initially',
+          );
+          expect(
+            viewModel.errorMessage,
+            isNull,
+            reason: 'Should have no error message initially',
+          );
+          expect(
+            viewModel.isAuthenticated,
+            isFalse,
+            reason: 'Should not be authenticated initially',
+          );
+        },
+      );
 
-      test('should properly initialize AuthService listener connection',
-          () async {
-        // Arrange
-        final testViewModel = AuthViewModel(authService: mockAuthService);
-        var notificationCount = 0;
-        testViewModel.addListener(() => notificationCount++);
+      test(
+        'should properly initialize AuthService listener connection',
+        () async {
+          // Arrange
+          final testViewModel = AuthViewModel(authService: mockAuthService);
+          var notificationCount = 0;
+          testViewModel.addListener(() => notificationCount++);
 
-        // Act - trigger service change and notify
-        mockAuthService.setAuthState(isLoading: true);
-        mockAuthService.notifyListeners();
-        await Future.delayed(Duration(milliseconds: 10));
+          // Act - trigger service change and notify
+          mockAuthService.setAuthState(isLoading: true);
+          mockAuthService.notifyListeners();
+          await Future.delayed(Duration(milliseconds: 10));
 
-        // Assert
-        expect(notificationCount, greaterThan(0),
-            reason: 'Should be listening to AuthService changes');
+          // Assert
+          expect(
+            notificationCount,
+            greaterThan(0),
+            reason: 'Should be listening to AuthService changes',
+          );
 
-        // Cleanup
-        testViewModel.dispose();
-      });
+          // Cleanup
+          testViewModel.dispose();
+        },
+      );
     });
 
     group('Authentication Mode Management', () {
@@ -95,15 +117,17 @@ void main() {
         viewModel.toggleAuthMode();
         expect(viewModel.isLoginMode, isFalse);
         expect(
-            notificationCount,
-            equals(
-                3)); // toggleAuthMode() calls clearError() which triggers 3 notifications
+          notificationCount,
+          equals(3),
+        ); // toggleAuthMode() calls clearError() which triggers 3 notifications
 
         // Act & Assert - toggle back to login
         viewModel.toggleAuthMode();
         expect(viewModel.isLoginMode, isTrue);
-        expect(notificationCount,
-            equals(6)); // 3 more notifications from second toggle
+        expect(
+          notificationCount,
+          equals(6),
+        ); // 3 more notifications from second toggle
       });
 
       test('should clear error messages when toggling authentication mode', () {
@@ -149,37 +173,44 @@ void main() {
         expect(notificationCount, equals(2));
       });
 
-      test('should not affect other state when toggling password visibility',
-          () {
-        // Arrange
-        mockAuthService.setAuthState(
-            isLoading: true, isAuthenticated: true, error: 'Test error');
+      test(
+        'should not affect other state when toggling password visibility',
+        () {
+          // Arrange
+          mockAuthService.setAuthState(
+            isLoading: true,
+            isAuthenticated: true,
+            error: 'Test error',
+          );
 
-        // Act
-        viewModel.togglePasswordVisibility();
+          // Act
+          viewModel.togglePasswordVisibility();
 
-        // Assert
-        expect(viewModel.isLoginMode, isTrue);
-        expect(viewModel.isLoading, isTrue);
-        expect(viewModel.isAuthenticated, isTrue);
-        expect(viewModel.errorMessage, equals('Test error'));
-      });
+          // Assert
+          expect(viewModel.isLoginMode, isTrue);
+          expect(viewModel.isLoading, isTrue);
+          expect(viewModel.isAuthenticated, isTrue);
+          expect(viewModel.errorMessage, equals('Test error'));
+        },
+      );
     });
 
     group('Sign In Functionality', () {
-      test('should successfully sign in with valid email and password',
-          () async {
-        // Arrange - Use default successful behavior (shouldSucceed = true)
+      test(
+        'should successfully sign in with valid email and password',
+        () async {
+          // Arrange - Use default successful behavior (shouldSucceed = true)
 
-        // Act
-        final result = await viewModel.signIn(
-          email: 'test@example.com',
-          password: 'password123',
-        );
+          // Act
+          final result = await viewModel.signIn(
+            email: 'test@example.com',
+            password: 'password123',
+          );
 
-        // Assert - Verify behavior, not call count
-        expect(result, isTrue);
-      });
+          // Assert - Verify behavior, not call count
+          expect(result, isTrue);
+        },
+      );
 
       test('should reject empty email during sign in', () async {
         // Arrange - no mocking needed for validation failure
@@ -193,7 +224,9 @@ void main() {
         // Assert - Service should not be called due to validation failure
         expect(result, isFalse);
         expect(
-            viewModel.errorMessage, equals('Fyll i alla obligatoriska fält'));
+          viewModel.errorMessage,
+          equals('Fyll i alla obligatoriska fält'),
+        );
       });
 
       test('should reject invalid email format during sign in', () async {
@@ -213,32 +246,36 @@ void main() {
             password: 'password123',
           );
           expect(result, isFalse, reason: 'Should reject email: $email');
-          expect(viewModel.errorMessage,
-              equals('Fyll i alla obligatoriska fält korrekt'));
-        }
-      });
-
-      test('should accept valid email formats including Swedish characters',
-          () async {
-        // Arrange - Use default successful behavior (shouldSucceed = true)
-
-        final validEmails = [
-          'test@example.com',
-          'åsa.öberg@example.com',
-          'erik_svensson@example.se',
-          'anna-andersson@test.co.uk',
-          'test123@subdomain.example.com',
-        ];
-
-        // Act & Assert
-        for (final email in validEmails) {
-          final result = await viewModel.signIn(
-            email: email,
-            password: 'password123',
+          expect(
+            viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'),
           );
-          expect(result, isTrue, reason: 'Should accept email: $email');
         }
       });
+
+      test(
+        'should accept valid email formats including Swedish characters',
+        () async {
+          // Arrange - Use default successful behavior (shouldSucceed = true)
+
+          final validEmails = [
+            'test@example.com',
+            'åsa.öberg@example.com',
+            'erik_svensson@example.se',
+            'anna-andersson@test.co.uk',
+            'test123@subdomain.example.com',
+          ];
+
+          // Act & Assert
+          for (final email in validEmails) {
+            final result = await viewModel.signIn(
+              email: email,
+              password: 'password123',
+            );
+            expect(result, isTrue, reason: 'Should accept email: $email');
+          }
+        },
+      );
 
       test('should reject empty password during sign in', () async {
         // Arrange - no mocking needed for validation failure
@@ -264,7 +301,7 @@ void main() {
           '1234',
           '12345',
           '123456',
-          '1234567'
+          '1234567',
         ];
 
         // Act & Assert
@@ -273,12 +310,17 @@ void main() {
             email: 'test@example.com',
             password: password,
           );
-          expect(result, isFalse,
-              reason: 'Should reject password length: ${password.length}');
+          expect(
+            result,
+            isFalse,
+            reason: 'Should reject password length: ${password.length}',
+          );
           // Check appropriate error message based on length
           if (password.isEmpty) {
             expect(
-                viewModel.errorMessage, equals('Lösenord kan inte vara tomt'));
+              viewModel.errorMessage,
+              equals('Lösenord kan inte vara tomt'),
+            );
           } else {
             expect(viewModel.errorMessage, contains('minst 8 tecken'));
           }
@@ -298,26 +340,32 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should reject email with leading/trailing spaces during validation',
-          () async {
-        // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+      test(
+        'should reject email with leading/trailing spaces during validation',
+        () async {
+          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
 
-        // Act
-        final result = await viewModel.signIn(
-          email: '  test@example.com  ',
-          password: 'password123',
-        );
+          // Act
+          final result = await viewModel.signIn(
+            email: '  test@example.com  ',
+            password: 'password123',
+          );
 
-        // Assert - Should fail validation due to spaces (production behavior)
-        expect(result, isFalse);
-        expect(viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'));
-      });
+          // Assert - Should fail validation due to spaces (production behavior)
+          expect(result, isFalse);
+          expect(
+            viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'),
+          );
+        },
+      );
 
       test('should handle service failure during sign in', () async {
         // Arrange - Configure service to return false
         mockAuthService.setAuthState(
-            isAuthenticated: false, error: 'Service failure');
+          isAuthenticated: false,
+          error: 'Service failure',
+        );
 
         // Act
         final result = await viewModel.signIn(
@@ -332,20 +380,21 @@ void main() {
 
     group('Registration Functionality', () {
       test(
-          'should successfully register with valid credentials and display name',
-          () async {
-        // Arrange - Use default successful behavior (shouldSucceed = true)
+        'should successfully register with valid credentials and display name',
+        () async {
+          // Arrange - Use default successful behavior (shouldSucceed = true)
 
-        // Act
-        final result = await viewModel.register(
-          email: 'newuser@example.com',
-          password: 'securePassword123',
-          displayName: 'Test User',
-        );
+          // Act
+          final result = await viewModel.register(
+            email: 'newuser@example.com',
+            password: 'securePassword123',
+            displayName: 'Test User',
+          );
 
-        // Assert
-        expect(result, isTrue);
-      });
+          // Assert
+          expect(result, isTrue);
+        },
+      );
 
       test('should validate all fields before registration', () async {
         // Arrange - test empty fields
@@ -358,7 +407,9 @@ void main() {
         );
         expect(result, isFalse);
         expect(
-            viewModel.errorMessage, equals('Fyll i alla obligatoriska fält'));
+          viewModel.errorMessage,
+          equals('Fyll i alla obligatoriska fält'),
+        );
 
         // Act & Assert - empty password
         result = await viewModel.register(
@@ -377,7 +428,9 @@ void main() {
         );
         expect(result, isFalse);
         expect(
-            viewModel.errorMessage, equals('Visningsnamn kan inte vara tomt'));
+          viewModel.errorMessage,
+          equals('Visningsnamn kan inte vara tomt'),
+        );
       });
 
       test('should reject display name shorter than 2 characters', () async {
@@ -391,15 +444,22 @@ void main() {
             password: 'password123',
             displayName: name,
           );
-          expect(result, isFalse,
-              reason: 'Should reject display name: "$name"');
+          expect(
+            result,
+            isFalse,
+            reason: 'Should reject display name: "$name"',
+          );
           // Check appropriate error message based on length
           if (name.isEmpty) {
-            expect(viewModel.errorMessage,
-                equals('Visningsnamn kan inte vara tomt'));
+            expect(
+              viewModel.errorMessage,
+              equals('Visningsnamn kan inte vara tomt'),
+            );
           } else {
-            expect(viewModel.errorMessage,
-                equals('Visningsnamn måste vara minst 2 tecken'));
+            expect(
+              viewModel.errorMessage,
+              equals('Visningsnamn måste vara minst 2 tecken'),
+            );
           }
         }
       });
@@ -439,27 +499,33 @@ void main() {
         }
       });
 
-      test('should reject email with spaces during registration validation',
-          () async {
-        // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+      test(
+        'should reject email with spaces during registration validation',
+        () async {
+          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
 
-        // Act
-        final result = await viewModel.register(
-          email: '  test@example.com  ',
-          password: 'password123',
-          displayName: 'Test User',
-        );
+          // Act
+          final result = await viewModel.register(
+            email: '  test@example.com  ',
+            password: 'password123',
+            displayName: 'Test User',
+          );
 
-        // Assert - Should fail validation due to spaces (production behavior)
-        expect(result, isFalse);
-        expect(viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'));
-      });
+          // Assert - Should fail validation due to spaces (production behavior)
+          expect(result, isFalse);
+          expect(
+            viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'),
+          );
+        },
+      );
 
       test('should handle service failure during registration', () async {
         // Arrange - Configure service to return false
         mockAuthService.setAuthState(
-            isAuthenticated: false, error: 'Service failure');
+          isAuthenticated: false,
+          error: 'Service failure',
+        );
 
         // Act
         final result = await viewModel.register(
@@ -511,33 +577,44 @@ void main() {
           expect(result, isFalse, reason: 'Should reject email: $email');
           // Verify appropriate error message based on email
           if (email.isEmpty) {
-            expect(viewModel.errorMessage,
-                equals('Fyll i alla obligatoriska fält'));
+            expect(
+              viewModel.errorMessage,
+              equals('Fyll i alla obligatoriska fält'),
+            );
           } else {
-            expect(viewModel.errorMessage,
-                equals('Fyll i alla obligatoriska fält korrekt'));
+            expect(
+              viewModel.errorMessage,
+              equals('Fyll i alla obligatoriska fält korrekt'),
+            );
           }
         }
       });
 
-      test('should reject email with spaces during password reset validation',
-          () async {
-        // Arrange - Production validates BEFORE trimming, so spaces cause rejection
+      test(
+        'should reject email with spaces during password reset validation',
+        () async {
+          // Arrange - Production validates BEFORE trimming, so spaces cause rejection
 
-        // Act
-        final result =
-            await viewModel.sendPasswordReset('  test@example.com  ');
+          // Act
+          final result = await viewModel.sendPasswordReset(
+            '  test@example.com  ',
+          );
 
-        // Assert - Should fail validation due to spaces (production behavior)
-        expect(result, isFalse);
-        expect(viewModel.errorMessage,
-            equals('Fyll i alla obligatoriska fält korrekt'));
-      });
+          // Assert - Should fail validation due to spaces (production behavior)
+          expect(result, isFalse);
+          expect(
+            viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'),
+          );
+        },
+      );
 
       test('should handle service failure during password reset', () async {
         // Arrange - Configure service to return false
         mockAuthService.setAuthState(
-            isAuthenticated: false, error: 'Service failure');
+          isAuthenticated: false,
+          error: 'Service failure',
+        );
 
         // Act
         final result = await viewModel.sendPasswordReset('test@example.com');
@@ -624,17 +701,18 @@ void main() {
       });
 
       test(
-          'should handle multiple dispose calls as Flutter ChangeNotifier behavior',
-          () {
-        // Arrange
-        final testViewModel = AuthViewModel(authService: mockAuthService);
+        'should handle multiple dispose calls as Flutter ChangeNotifier behavior',
+        () {
+          // Arrange
+          final testViewModel = AuthViewModel(authService: mockAuthService);
 
-        // Act - First dispose should work
-        expect(() => testViewModel.dispose(), returnsNormally);
+          // Act - First dispose should work
+          expect(() => testViewModel.dispose(), returnsNormally);
 
-        // Act & Assert - Second dispose should throw FlutterError (correct ChangeNotifier behavior)
-        expect(() => testViewModel.dispose(), throwsFlutterError);
-      });
+          // Act & Assert - Second dispose should throw FlutterError (correct ChangeNotifier behavior)
+          expect(() => testViewModel.dispose(), throwsFlutterError);
+        },
+      );
 
       test('should not notify listeners after disposal', () {
         // Arrange
@@ -667,9 +745,9 @@ void main() {
         // Assert
         expect(viewModel.isLoginMode, isTrue); // Even number of toggles
         expect(
-            notificationCount,
-            equals(
-                30)); // 10 toggles × 3 notifications each (toggleAuthMode + clearError)
+          notificationCount,
+          equals(30),
+        ); // 10 toggles × 3 notifications each (toggleAuthMode + clearError)
       });
 
       test('should handle concurrent sign in attempts', () async {
@@ -770,43 +848,52 @@ void main() {
     });
 
     group('Swedish Localization Validation', () {
-      test('should accept Swedish special characters in all text fields',
-          () async {
-        // Arrange - Use default successful behavior (shouldSucceed = true)
+      test(
+        'should accept Swedish special characters in all text fields',
+        () async {
+          // Arrange - Use default successful behavior (shouldSucceed = true)
 
-        // Act
-        final result = await viewModel.register(
-          email: 'åäö@example.com',
-          password: 'lösenordÅÄÖ',
-          displayName: 'Åsa Öberg',
-        );
-
-        // Assert
-        expect(result, isTrue);
-      });
-
-      test('should reject Swedish domain names per email validation standards',
-          () async {
-        // Arrange - Production regex requires ASCII-only domain names (standard email validation)
-
-        final swedishDomains = [
-          'test@företag.se', // å, ö not allowed in domain part by production regex
-          'test@skåne.se', // å not allowed in domain part
-          'test@göteborg.se', // ö not allowed in domain part
-        ];
-
-        // Act & Assert - Should fail validation (production behavior)
-        for (final email in swedishDomains) {
-          final result = await viewModel.signIn(
-            email: email,
-            password: 'password123',
+          // Act
+          final result = await viewModel.register(
+            email: 'åäö@example.com',
+            password: 'lösenordÅÄÖ',
+            displayName: 'Åsa Öberg',
           );
-          expect(result, isFalse,
-              reason: 'Should reject email with non-ASCII domain: $email');
-          expect(viewModel.errorMessage,
-              equals('Fyll i alla obligatoriska fält korrekt'));
-        }
-      });
+
+          // Assert
+          expect(result, isTrue);
+        },
+      );
+
+      test(
+        'should reject Swedish domain names per email validation standards',
+        () async {
+          // Arrange - Production regex requires ASCII-only domain names (standard email validation)
+
+          final swedishDomains = [
+            'test@företag.se', // å, ö not allowed in domain part by production regex
+            'test@skåne.se', // å not allowed in domain part
+            'test@göteborg.se', // ö not allowed in domain part
+          ];
+
+          // Act & Assert - Should fail validation (production behavior)
+          for (final email in swedishDomains) {
+            final result = await viewModel.signIn(
+              email: email,
+              password: 'password123',
+            );
+            expect(
+              result,
+              isFalse,
+              reason: 'Should reject email with non-ASCII domain: $email',
+            );
+            expect(
+              viewModel.errorMessage,
+              equals('Fyll i alla obligatoriska fält korrekt'),
+            );
+          }
+        },
+      );
     });
   });
 }

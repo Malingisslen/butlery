@@ -117,34 +117,38 @@ void main() {
   });
 
   group('CookingModeViewModel.onEnter', () {
-    test('broadcasts the recipe via CookingSessionModule.startSession',
-        () async {
-      final vm = CookingModeViewModel(recipe: testRecipe);
+    test(
+      'broadcasts the recipe via CookingSessionModule.startSession',
+      () async {
+        final vm = CookingModeViewModel(recipe: testRecipe);
 
-      await vm.onEnter();
+        await vm.onEnter();
 
-      expect(fakeModule.startCalls, hasLength(1));
-      expect(fakeModule.startCalls.single.id, 'recipe_test');
-      expect(fakeModule.startCalls.single.title, 'Kycklinggryta');
-      expect(fakeModule.endCalls, 0);
+        expect(fakeModule.startCalls, hasLength(1));
+        expect(fakeModule.startCalls.single.id, 'recipe_test');
+        expect(fakeModule.startCalls.single.title, 'Kycklinggryta');
+        expect(fakeModule.endCalls, 0);
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
-    test('swallows module errors silently — cooking mode must not block',
-        () async {
-      // Swap in a throwing module.
-      final getIt = GetIt.instance;
-      getIt.unregister<CookingSessionModule>();
-      getIt.registerSingleton<CookingSessionModule>(_ThrowingModule());
+    test(
+      'swallows module errors silently — cooking mode must not block',
+      () async {
+        // Swap in a throwing module.
+        final getIt = GetIt.instance;
+        getIt.unregister<CookingSessionModule>();
+        getIt.registerSingleton<CookingSessionModule>(_ThrowingModule());
 
-      final vm = CookingModeViewModel(recipe: testRecipe);
+        final vm = CookingModeViewModel(recipe: testRecipe);
 
-      // Should not rethrow.
-      await expectLater(vm.onEnter(), completes);
+        // Should not rethrow.
+        await expectLater(vm.onEnter(), completes);
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('no-op when module is not registered', () async {
       final getIt = GetIt.instance;

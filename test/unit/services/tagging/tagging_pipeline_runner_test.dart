@@ -41,11 +41,14 @@ void main() {
     recipe = RecipeBuilder()
         .withTitle('Test Recipe')
         .withTimeMinutes(30)
-        .withIngredients(['rice', 'chicken']).build();
+        .withIngredients(['rice', 'chicken'])
+        .build();
     lookupResult = TaggingTestHelper.createLookup([
       TaggingTestHelper.ingredient('rice', 'grain', const {}),
-      TaggingTestHelper.ingredient(
-          'chicken', 'protein/meat/poultry', const {'meat', 'poultry'}),
+      TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', const {
+        'meat',
+        'poultry',
+      }),
     ]);
     // Real generator — phase combination logic (assembleResult) is part
     // of the contract we want to verify, not mocked away.
@@ -62,48 +65,58 @@ void main() {
     Future<Phase2Result> Function(Phase1Result, Recipe)? phase2,
     Future<Phase3Result> Function(Phase1Result, Phase2Result, Recipe)? phase3,
     Future<Phase4Result> Function(
-            Phase1Result, Phase2Result, Phase3Result, Recipe)?
-        phase4,
+      Phase1Result,
+      Phase2Result,
+      Phase3Result,
+      Recipe,
+    )?
+    phase4,
     Future<Phase5Result> Function(Phase4Result, Recipe)? phase5,
     Future<Phase5ResultPartial> Function(Phase1Result, Recipe)? phase5FromP1,
   }) {
     return TaggingPhaseCallables(
       lookup: lookup ?? (_, __) async => lookupResult,
-      phase1: phase1 ??
+      phase1:
+          phase1 ??
           (lk, r) async => Phase1Result(
-                tags: const {'p1-tag', 'under-30-min'},
-                allergenStatus: const {},
-                dietaryStatus: const {},
-                lookup: lk,
-              ),
-      phase2: phase2 ??
+            tags: const {'p1-tag', 'under-30-min'},
+            allergenStatus: const {},
+            dietaryStatus: const {},
+            lookup: lk,
+          ),
+      phase2:
+          phase2 ??
           (p1, r) async => Phase2Result(
-                tags: const {'p2-tag'},
-                phase1: p1,
-              ),
-      phase3: phase3 ??
+            tags: const {'p2-tag'},
+            phase1: p1,
+          ),
+      phase3:
+          phase3 ??
           (p1, p2, r) async => Phase3Result(
-                tags: const {'p3-tag'},
-                phase1: p1,
-                phase2: p2,
-              ),
-      phase4: phase4 ??
+            tags: const {'p3-tag'},
+            phase1: p1,
+            phase2: p2,
+          ),
+      phase4:
+          phase4 ??
           (p1, p2, p3, r) async => Phase4Result(
-                tags: const {'p4-tag'},
-                phase1: p1,
-                phase2: p2,
-                phase3: p3,
-              ),
-      phase5: phase5 ??
+            tags: const {'p4-tag'},
+            phase1: p1,
+            phase2: p2,
+            phase3: p3,
+          ),
+      phase5:
+          phase5 ??
           (p4, r) async => Phase5Result(
-                tags: const {'p5-tag'},
-                phase4: p4,
-              ),
-      phase5FromPhase1: phase5FromP1 ??
+            tags: const {'p5-tag'},
+            phase4: p4,
+          ),
+      phase5FromPhase1:
+          phase5FromP1 ??
           (p1, r) async => Phase5ResultPartial(
-                tags: const {'p5-fallback-tag'},
-                phase1: p1,
-              ),
+            tags: const {'p5-fallback-tag'},
+            phase1: p1,
+          ),
     );
   }
 
@@ -124,70 +137,100 @@ void main() {
   // ---- Mandatory targeted test ----------------------------------------
 
   group('BUT-553: Phase 2 hang (the targeted scenario)', () {
-    test('Phase 2 hang times out, Phases 3-5 still run with Phase-1 result',
-        () {
-      fakeAsync((async) {
-        // Phase 2 returns a Future that completes after 1 hour — well past
-        // its 5s budget. Other phases use the default (success).
-        final callables = buildCallables(
-          phase2: (p1, r) => Future.delayed(
+    test(
+      'Phase 2 hang times out, Phases 3-5 still run with Phase-1 result',
+      () {
+        fakeAsync((async) {
+          // Phase 2 returns a Future that completes after 1 hour — well past
+          // its 5s budget. Other phases use the default (success).
+          final callables = buildCallables(
+            phase2: (p1, r) => Future.delayed(
               const Duration(hours: 1),
               () => Phase2Result(
-                    tags: const {'never-emitted'},
-                    phase1: p1,
-                  )),
-        );
-        final runner = buildRunner(callables);
+                tags: const {'never-emitted'},
+                phase1: p1,
+              ),
+            ),
+          );
+          final runner = buildRunner(callables);
 
-        TaggingPipelineResult? result;
-        runner.run(
-            recipe: recipe,
-            ingredients: ['rice', 'chicken']).then((r) => result = r);
+          TaggingPipelineResult? result;
+          runner
+              .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+              .then((r) => result = r);
 
-        drain(async);
-        expect(result, isNotNull, reason: 'pipeline should complete');
+          drain(async);
+          expect(result, isNotNull, reason: 'pipeline should complete');
 
-        // Outcomes ordered by phase index: lookup (0), p1, p2, p3, p4, p5.
-        final outcomes = result!.outcomes;
-        final byIndex = {for (final o in outcomes) o.phaseIndex: o};
+          // Outcomes ordered by phase index: lookup (0), p1, p2, p3, p4, p5.
+          final outcomes = result!.outcomes;
+          final byIndex = {for (final o in outcomes) o.phaseIndex: o};
 
-        // 1) Phase 1 captured.
-        expect(byIndex[1]!.result, 'ok',
-            reason: 'Phase 1 should have run successfully');
+          // 1) Phase 1 captured.
+          expect(
+            byIndex[1]!.result,
+            'ok',
+            reason: 'Phase 1 should have run successfully',
+          );
 
-        // 2) Phase 2 timed out at the 5s budget.
-        expect(byIndex[2]!.result, 'timeout',
-            reason: 'Phase 2 should hit its 5s budget');
-        expect(byIndex[2]!.budgetMs, 5000);
+          // 2) Phase 2 timed out at the 5s budget.
+          expect(
+            byIndex[2]!.result,
+            'timeout',
+            reason: 'Phase 2 should hit its 5s budget',
+          );
+          expect(byIndex[2]!.budgetMs, 5000);
 
-        // 3) Phase 3, 4, 5 ran (using Phase-1 as input via empty Phase-2).
-        expect(byIndex[3]!.result, 'ok',
-            reason: 'Phase 3 should run despite Phase 2 timeout');
-        expect(byIndex[4]!.result, 'ok');
-        expect(byIndex[5]!.result, 'ok');
+          // 3) Phase 3, 4, 5 ran (using Phase-1 as input via empty Phase-2).
+          expect(
+            byIndex[3]!.result,
+            'ok',
+            reason: 'Phase 3 should run despite Phase 2 timeout',
+          );
+          expect(byIndex[4]!.result, 'ok');
+          expect(byIndex[5]!.result, 'ok');
 
-        // 4) Final TagResult contains contributions from Phases 1, 3, 4, 5.
-        // The Phase-1-fallback path is taken for Phase 5 (because
-        // Phase 2 didn't really run), so the cuisine tag is the
-        // p5-fallback variant.
-        final tags = result!.tagResult.tags;
-        expect(tags, contains('p1-tag'),
-            reason: 'Phase 1 contribution preserved');
-        expect(tags, contains('p3-tag'),
-            reason: 'Phase 3 ran with Phase-1 result');
-        expect(tags, contains('p4-tag'),
-            reason: 'Phase 4 ran with Phase-1 result');
-        expect(tags, contains('p5-fallback-tag'),
-            reason: 'Phase 5 took the Phase-1-fallback path');
-        expect(tags, isNot(contains('p2-tag')),
-            reason: 'Phase 2 hang means no Phase-2 tags');
-        expect(tags, isNot(contains('never-emitted')),
-            reason: 'Hung Phase 2 must not contribute tags');
+          // 4) Final TagResult contains contributions from Phases 1, 3, 4, 5.
+          // The Phase-1-fallback path is taken for Phase 5 (because
+          // Phase 2 didn't really run), so the cuisine tag is the
+          // p5-fallback variant.
+          final tags = result!.tagResult.tags;
+          expect(
+            tags,
+            contains('p1-tag'),
+            reason: 'Phase 1 contribution preserved',
+          );
+          expect(
+            tags,
+            contains('p3-tag'),
+            reason: 'Phase 3 ran with Phase-1 result',
+          );
+          expect(
+            tags,
+            contains('p4-tag'),
+            reason: 'Phase 4 ran with Phase-1 result',
+          );
+          expect(
+            tags,
+            contains('p5-fallback-tag'),
+            reason: 'Phase 5 took the Phase-1-fallback path',
+          );
+          expect(
+            tags,
+            isNot(contains('p2-tag')),
+            reason: 'Phase 2 hang means no Phase-2 tags',
+          );
+          expect(
+            tags,
+            isNot(contains('never-emitted')),
+            reason: 'Hung Phase 2 must not contribute tags',
+          );
 
-        // 5) Result marked partial — Phase 2 missing.
-        expect(result!.tagResult.isPartial, isTrue);
-      });
-    });
+          // 5) Result marked partial — Phase 2 missing.
+          expect(result!.tagResult.isPartial, isTrue);
+        });
+      },
+    );
   });
 
   // ---- Bonus tests (4 of them — happy path + 3 phase hangs) -----------
@@ -197,19 +240,20 @@ void main() {
       fakeAsync((async) {
         final callables = buildCallables(
           phase3: (p1, p2, r) => Future.delayed(
-              const Duration(hours: 1),
-              () => Phase3Result(
-                    tags: const {'never-p3'},
-                    phase1: p1,
-                    phase2: p2,
-                  )),
+            const Duration(hours: 1),
+            () => Phase3Result(
+              tags: const {'never-p3'},
+              phase1: p1,
+              phase2: p2,
+            ),
+          ),
         );
         final runner = buildRunner(callables);
 
         TaggingPipelineResult? result;
-        runner.run(
-            recipe: recipe,
-            ingredients: ['rice', 'chicken']).then((r) => result = r);
+        runner
+            .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+            .then((r) => result = r);
         drain(async);
 
         final byIndex = {for (final o in result!.outcomes) o.phaseIndex: o};
@@ -217,8 +261,11 @@ void main() {
         expect(byIndex[2]!.result, 'ok');
         expect(byIndex[3]!.result, 'timeout');
         expect(byIndex[3]!.budgetMs, 10000);
-        expect(byIndex[4]!.result, 'ok',
-            reason: 'Phase 4 should run despite Phase 3 timeout');
+        expect(
+          byIndex[4]!.result,
+          'ok',
+          reason: 'Phase 4 should run despite Phase 3 timeout',
+        );
         expect(byIndex[5]!.result, 'ok');
 
         final tags = result!.tagResult.tags;
@@ -237,11 +284,12 @@ void main() {
         final logged = <TaggingPhaseOutcome>[];
         final callables = buildCallables(
           phase5: (p4, r) => Future.delayed(
-              const Duration(hours: 1),
-              () => Phase5Result(
-                    tags: const {'never-p5'},
-                    phase4: p4,
-                  )),
+            const Duration(hours: 1),
+            () => Phase5Result(
+              tags: const {'never-p5'},
+              phase4: p4,
+            ),
+          ),
         );
         final runner = TaggingPipelineRunner.forTesting(
           generator: generator,
@@ -250,9 +298,9 @@ void main() {
         );
 
         TaggingPipelineResult? result;
-        runner.run(
-            recipe: recipe,
-            ingredients: ['rice', 'chicken']).then((r) => result = r);
+        runner
+            .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+            .then((r) => result = r);
         drain(async);
 
         final byIndex = {for (final o in result!.outcomes) o.phaseIndex: o};
@@ -287,20 +335,21 @@ void main() {
       fakeAsync((async) {
         final callables = buildCallables(
           phase1: (lk, r) => Future.delayed(
-              const Duration(hours: 1),
-              () => Phase1Result(
-                    tags: const {'never-p1'},
-                    allergenStatus: const {},
-                    dietaryStatus: const {},
-                    lookup: lk,
-                  )),
+            const Duration(hours: 1),
+            () => Phase1Result(
+              tags: const {'never-p1'},
+              allergenStatus: const {},
+              dietaryStatus: const {},
+              lookup: lk,
+            ),
+          ),
         );
         final runner = buildRunner(callables);
 
         TaggingPipelineResult? result;
-        runner.run(
-            recipe: recipe,
-            ingredients: ['rice', 'chicken']).then((r) => result = r);
+        runner
+            .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+            .then((r) => result = r);
         drain(async);
 
         final byIndex = {for (final o in result!.outcomes) o.phaseIndex: o};
@@ -325,15 +374,18 @@ void main() {
         final runner = buildRunner(buildCallables());
 
         TaggingPipelineResult? result;
-        runner.run(
-            recipe: recipe,
-            ingredients: ['rice', 'chicken']).then((r) => result = r);
+        runner
+            .run(recipe: recipe, ingredients: ['rice', 'chicken'])
+            .then((r) => result = r);
         drain(async);
 
         final byIndex = {for (final o in result!.outcomes) o.phaseIndex: o};
         for (var i = 0; i <= 5; i++) {
-          expect(byIndex[i]!.result, 'ok',
-              reason: 'Phase $i should be ok in happy path');
+          expect(
+            byIndex[i]!.result,
+            'ok',
+            reason: 'Phase $i should be ok in happy path',
+          );
         }
 
         final tags = result!.tagResult.tags;
@@ -348,10 +400,16 @@ void main() {
           }),
           reason: 'All phase contributions present',
         );
-        expect(tags, isNot(contains('p5-fallback-tag')),
-            reason: 'Full chain → no fallback path');
-        expect(result!.tagResult.isPartial, isFalse,
-            reason: 'No phases skipped → not partial');
+        expect(
+          tags,
+          isNot(contains('p5-fallback-tag')),
+          reason: 'Full chain → no fallback path',
+        );
+        expect(
+          result!.tagResult.isPartial,
+          isFalse,
+          reason: 'No phases skipped → not partial',
+        );
       });
     });
   });

@@ -62,12 +62,13 @@ void main() {
         expect(message, contains(AppLocale.current.ocrQualityTips));
       });
 
-      test(
-          'non-empty list emits the suggestions header + each bullet '
+      test('non-empty list emits the suggestions header + each bullet '
           'and suppresses the generic tips', () {
-        final result = _result(metadata: {
-          'recommendations': ['Använd JPEG eller PNG', 'Högre upplösning'],
-        });
+        final result = _result(
+          metadata: {
+            'recommendations': ['Använd JPEG eller PNG', 'Högre upplösning'],
+          },
+        );
 
         final message = OcrErrorMessageBuilder.build(result).message;
 
@@ -101,8 +102,7 @@ void main() {
     });
 
     group('result record fields', () {
-      test(
-          'qualityScore + recommendations are copied from metadata, '
+      test('qualityScore + recommendations are copied from metadata, '
           'confidence from the OCR result', () {
         final result = _result(
           confidence: 0.42,

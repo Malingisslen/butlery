@@ -85,8 +85,8 @@ class FirebaseShoppingRepository
     super.auditRepository,
     super.timestampProvider,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        ) {
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       ) {
     _initializeModules();
   }
 
@@ -139,8 +139,8 @@ class FirebaseShoppingRepository
 
   @override
   UnifiedShoppingList fromFirestore(
-          DocumentSnapshot<Map<String, dynamic>> doc) =>
-      UnifiedShoppingList.fromFirestore(doc);
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) => UnifiedShoppingList.fromFirestore(doc);
 
   @override
   Map<String, dynamic> toFirestore(UnifiedShoppingList entity) =>
@@ -150,14 +150,19 @@ class FirebaseShoppingRepository
   String getId(UnifiedShoppingList entity) => entity.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, UnifiedShoppingList entity) async {
+    String userId,
+    UnifiedShoppingList entity,
+  ) async {
     // Users can only create shopping lists in their own collection
     return entity.ownerId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, UnifiedShoppingList? entity) async {
+    String userId,
+    String resourceId,
+    UnifiedShoppingList? entity,
+  ) async {
     if (entity == null) return false;
 
     // Owner can always read
@@ -173,7 +178,10 @@ class FirebaseShoppingRepository
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, UnifiedShoppingList entity) async {
+    String userId,
+    String resourceId,
+    UnifiedShoppingList entity,
+  ) async {
     // Owner can always update
     if (entity.ownerId == userId) return true;
 
@@ -187,7 +195,9 @@ class FirebaseShoppingRepository
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only the owner can delete shopping lists
     try {
       final list = await read(resourceId);
@@ -207,13 +217,15 @@ class FirebaseShoppingRepository
   Future<UnifiedShoppingList> create(UnifiedShoppingList entity) async {
     if (entity.type == ListType.collaborative) {
       AppLogger.info(
-          'Routing collaborative list "${entity.name}" to shared collection',
-          'ShoppingRepository');
+        'Routing collaborative list "${entity.name}" to shared collection',
+        'ShoppingRepository',
+      );
       return await _routingModule.createCollaborativeList(entity);
     } else {
       AppLogger.info(
-          'Routing personal list "${entity.name}" to user collection',
-          'ShoppingRepository');
+        'Routing personal list "${entity.name}" to user collection',
+        'ShoppingRepository',
+      );
       return await super.create(entity);
     }
   }
@@ -223,8 +235,9 @@ class FirebaseShoppingRepository
   Future<UnifiedShoppingList> update(UnifiedShoppingList entity) async {
     if (entity.type == ListType.collaborative) {
       AppLogger.info(
-          'Updating collaborative list "${entity.name}" in shared collection',
-          'ShoppingRepository');
+        'Updating collaborative list "${entity.name}" in shared collection',
+        'ShoppingRepository',
+      );
       return await _routingModule.updateCollaborativeList(entity);
     } else {
       await super.update(entity);
@@ -239,13 +252,16 @@ class FirebaseShoppingRepository
     try {
       final collabDoc = await _sharedListsRef.doc(id).get();
       if (collabDoc.exists && collabDoc.data() != null) {
-        AppLogger.info('Reading collaborative list from shared collection',
-            'ShoppingRepository');
+        AppLogger.info(
+          'Reading collaborative list from shared collection',
+          'ShoppingRepository',
+        );
         return fromFirestore(collabDoc);
       }
     } catch (e) {
       AppLogger.warning(
-          'Error checking collaborative collection during read: $e');
+        'Error checking collaborative collection during read: $e',
+      );
     }
 
     // If not found in collaborative collection, try user collection
@@ -253,7 +269,9 @@ class FirebaseShoppingRepository
       final result = await super.read(id);
       if (result != null) {
         AppLogger.info(
-            'Reading personal list from user collection', 'ShoppingRepository');
+          'Reading personal list from user collection',
+          'ShoppingRepository',
+        );
       }
       return result;
     } catch (e) {
@@ -290,8 +308,10 @@ class FirebaseShoppingRepository
             'User $userId does not have permission to delete collaborative shopping list $id',
           );
         }
-        AppLogger.info('Deleting collaborative list from shared collection',
-            'ShoppingRepository');
+        AppLogger.info(
+          'Deleting collaborative list from shared collection',
+          'ShoppingRepository',
+        );
         await _sharedListsRef.doc(id).delete();
         return;
       }
@@ -299,12 +319,15 @@ class FirebaseShoppingRepository
       rethrow;
     } catch (e) {
       AppLogger.warning(
-          'Error checking collaborative collection during delete: $e');
+        'Error checking collaborative collection during delete: $e',
+      );
     }
 
     // If not found in collaborative collection, delete from user collection
     AppLogger.info(
-        'Deleting personal list from user collection', 'ShoppingRepository');
+      'Deleting personal list from user collection',
+      'ShoppingRepository',
+    );
     await super.delete(id);
   }
 
@@ -318,8 +341,9 @@ class FirebaseShoppingRepository
   /// Add multiple items to a list using Firebase batch operations for better performance
   @override
   Future<void> addItemsBatch(
-          String listId, List<UnifiedShoppingItem> items) async =>
-      _itemOpsModule.addItemsBatch(listId, items);
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async => _itemOpsModule.addItemsBatch(listId, items);
 
   @override
   Future<void> removeItem(String listId, String itemId) async =>
@@ -348,7 +372,8 @@ class FirebaseShoppingRepository
   /// DEPRECATED: Use standard create/update methods instead (they now route correctly)
   Future<void> saveCollaborativeList(UnifiedShoppingList list) async {
     AppLogger.warning(
-        'DEPRECATED: saveCollaborativeList() - use update() method instead');
+      'DEPRECATED: saveCollaborativeList() - use update() method instead',
+    );
     await _routingModule.updateCollaborativeList(list);
   }
 
@@ -362,7 +387,8 @@ class FirebaseShoppingRepository
   /// DEPRECATED: Use standard delete method instead (it now routes correctly)
   Future<void> deleteCollaborativeList(String listId) async {
     AppLogger.warning(
-        'DEPRECATED: deleteCollaborativeList() - use delete() method instead');
+      'DEPRECATED: deleteCollaborativeList() - use delete() method instead',
+    );
     await _sharedListsRef.doc(listId).delete();
   }
 
@@ -385,14 +411,13 @@ class FirebaseShoppingRepository
     String? description,
     List<String>? tags,
     bool isPublic = false,
-  }) async =>
-      _templateOpsModule.saveAsTemplate(
-        listId: listId,
-        templateName: templateName,
-        description: description,
-        tags: tags,
-        isPublic: isPublic,
-      );
+  }) async => _templateOpsModule.saveAsTemplate(
+    listId: listId,
+    templateName: templateName,
+    description: description,
+    tags: tags,
+    isPublic: isPublic,
+  );
 
   @override
   Future<void> updateTemplate({
@@ -401,14 +426,13 @@ class FirebaseShoppingRepository
     String? description,
     List<String>? tags,
     bool? isPublic,
-  }) async =>
-      _templateOpsModule.updateTemplate(
-        templateId: templateId,
-        name: name,
-        description: description,
-        tags: tags,
-        isPublic: isPublic,
-      );
+  }) async => _templateOpsModule.updateTemplate(
+    templateId: templateId,
+    name: name,
+    description: description,
+    tags: tags,
+    isPublic: isPublic,
+  );
 
   @override
   Future<void> deleteTemplate(String templateId) async =>
@@ -423,22 +447,20 @@ class FirebaseShoppingRepository
     int limit = 20,
     String? searchQuery,
     List<String>? tags,
-  }) async =>
-      _templateOpsModule.getPublicTemplates(
-        limit: limit,
-        searchQuery: searchQuery,
-        tags: tags,
-      );
+  }) async => _templateOpsModule.getPublicTemplates(
+    limit: limit,
+    searchQuery: searchQuery,
+    tags: tags,
+  );
 
   @override
   Future<String> createListFromTemplate({
     required String templateId,
     required String listName,
     String? description,
-  }) async =>
-      _templateOpsModule.createListFromTemplate(
-        templateId: templateId,
-        listName: listName,
-        description: description,
-      );
+  }) async => _templateOpsModule.createListFromTemplate(
+    templateId: templateId,
+    listName: listName,
+    description: description,
+  );
 }

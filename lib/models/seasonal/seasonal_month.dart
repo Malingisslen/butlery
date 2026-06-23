@@ -55,8 +55,9 @@ class SeasonalMonth {
     return SeasonalMonth(
       monthIndex: monthIndex,
       monthKey: monthKey,
-      ingredients:
-          ingredientsRaw.map((e) => (e as String).toLowerCase()).toList(),
+      ingredients: ingredientsRaw
+          .map((e) => (e as String).toLowerCase())
+          .toList(),
       vegetableType: _parseVegetableType(vegetableTypeName),
     );
   }

@@ -66,9 +66,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required MessagingRepository messagingRepository,
     required auth_repo.AuthRepository authRepository,
     required MessageReactionsService reactionsService,
-  })  : _messagingRepository = messagingRepository,
-        _authRepository = authRepository,
-        _reactionsService = reactionsService {
+  }) : _messagingRepository = messagingRepository,
+       _authRepository = authRepository,
+       _reactionsService = reactionsService {
     _sendingOps = MessageSendingOperations(
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
@@ -111,32 +111,37 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
       AppLogger.info('🔍 [MessagingService] startDirectConversation called');
       AppLogger.debug(
-          '🔍 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
+        '🔍 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})',
+      );
       AppLogger.debug(
-          '🔍 [MessagingService] Other user: $otherUserId ($otherUserDisplayName)');
+        '🔍 [MessagingService] Other user: $otherUserId ($otherUserDisplayName)',
+      );
 
       // FIXED: Skip findDirectConversation query lookup - go directly to createDirectConversation
       // which already handles "get or create" with deterministic IDs
       AppLogger.debug(
-          '🔍 [MessagingService] Getting/creating conversation with deterministic ID...');
-      final conversationId =
-          await _messagingRepository.createDirectConversation(
-        user1Id: currentUser.uid,
-        user1DisplayName:
-            currentUser.displayName ?? AppLocale.current.displayUnknownUser,
-        user1AvatarUrl: currentUser.photoURL,
-        user2Id: otherUserId,
-        user2DisplayName: otherUserDisplayName,
-        user2AvatarUrl: otherUserAvatarUrl,
+        '🔍 [MessagingService] Getting/creating conversation with deterministic ID...',
       );
+      final conversationId = await _messagingRepository
+          .createDirectConversation(
+            user1Id: currentUser.uid,
+            user1DisplayName:
+                currentUser.displayName ?? AppLocale.current.displayUnknownUser,
+            user1AvatarUrl: currentUser.photoURL,
+            user2Id: otherUserId,
+            user2DisplayName: otherUserDisplayName,
+            user2AvatarUrl: otherUserAvatarUrl,
+          );
 
       AppLogger.success(
-          '✅ [MessagingService] Conversation ready: $conversationId');
+        '✅ [MessagingService] Conversation ready: $conversationId',
+      );
       return conversationId;
     } catch (e) {
       AppLogger.error(
-          '❌ [MessagingService] Failed to start direct conversation with $otherUserId',
-          e);
+        '❌ [MessagingService] Failed to start direct conversation with $otherUserId',
+        e,
+      );
       rethrow;
     }
   }
@@ -224,7 +229,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return _filterBlocked(messages);
     } catch (e) {
       AppLogger.error(
-          'Failed to get conversation messages page for $conversationId', e);
+        'Failed to get conversation messages page for $conversationId',
+        e,
+      );
       return [];
     }
   }
@@ -246,7 +253,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       );
     } catch (e) {
       AppLogger.warning(
-          'MessagingService: block filter failed; serving unfiltered: $e');
+        'MessagingService: block filter failed; serving unfiltered: $e',
+      );
       return messages;
     }
   }
@@ -342,7 +350,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.debug('Conversation marked as read: $conversationId');
     } catch (e) {
       AppLogger.error(
-          'Failed to mark conversation as read: $conversationId', e);
+        'Failed to mark conversation as read: $conversationId',
+        e,
+      );
     }
   }
 
@@ -384,7 +394,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       });
 
       AppLogger.debug(
-          'Typing indicator set for $currentUserId in $conversationId');
+        'Typing indicator set for $currentUserId in $conversationId',
+      );
     } catch (e) {
       AppLogger.error('Failed to set typing indicator', e);
     }
@@ -399,7 +410,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
   }
 
   Future<void> _clearTypingIndicator(
-      String conversationId, String userId) async {
+    String conversationId,
+    String userId,
+  ) async {
     _typingUsers[conversationId]?.remove(userId);
     if (_typingUsers[conversationId]?.isEmpty == true) {
       _typingUsers.remove(conversationId);
@@ -408,7 +421,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     _typingTimers.remove(conversationId);
 
     AppLogger.debug(
-        'Typing indicator cleared for ${userId.maskedUserId} in $conversationId');
+      'Typing indicator cleared for ${userId.maskedUserId} in $conversationId',
+    );
   }
 
   /// Get users currently typing in conversation
@@ -487,8 +501,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final currentUserId = _authRepository.currentUserId;
       if (currentUserId == null) return 0;
 
-      return await _messagingRepository
-          .getUnreadConversationsCount(currentUserId);
+      return await _messagingRepository.getUnreadConversationsCount(
+        currentUserId,
+      );
     } catch (e) {
       AppLogger.error('Failed to get unread conversations count', e);
       return 0;
@@ -501,33 +516,30 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required List<String> participantIds,
     required Map<String, String> participantDisplayNames,
     required Map<String, String?> participantAvatarUrls,
-  }) async =>
-      _managementOps.addParticipantsToGroup(
-        conversationId: conversationId,
-        participantIds: participantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
-      );
+  }) async => _managementOps.addParticipantsToGroup(
+    conversationId: conversationId,
+    participantIds: participantIds,
+    participantDisplayNames: participantDisplayNames,
+    participantAvatarUrls: participantAvatarUrls,
+  );
 
   /// Remove participant from group conversation
   Future<void> removeParticipantFromGroup({
     required String conversationId,
     required String participantId,
-  }) async =>
-      _managementOps.removeParticipantFromGroup(
-        conversationId: conversationId,
-        participantId: participantId,
-      );
+  }) async => _managementOps.removeParticipantFromGroup(
+    conversationId: conversationId,
+    participantId: participantId,
+  );
 
   /// Update group conversation title
   Future<void> updateGroupTitle({
     required String conversationId,
     required String newTitle,
-  }) async =>
-      _managementOps.updateGroupTitle(
-        conversationId: conversationId,
-        newTitle: newTitle,
-      );
+  }) async => _managementOps.updateGroupTitle(
+    conversationId: conversationId,
+    newTitle: newTitle,
+  );
 
   /// Toggle an emoji reaction on a message
   Future<void> toggleReaction({
@@ -656,8 +668,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
       if (existingPoll.creatorId == currentUserId) {
         final winner = _resolveWinner(existingPoll);
         if (winner?.recipeId != null) {
-          final conversation = await _messagingRepository
-              .getConversation(existing.conversationId);
+          final conversation = await _messagingRepository.getConversation(
+            existing.conversationId,
+          );
           final isGroup = conversation?.isGroup ?? false;
 
           if (isGroup && conversation != null) {
@@ -720,7 +733,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// the recipe is not loaded (stale cache, deleted, etc.); callers treat
   /// that as a skip-auto-resolution signal.
   Recipe? _findWinnerRecipe(
-      UnifiedRecipeService recipeService, String winnerRecipeId) {
+    UnifiedRecipeService recipeService,
+    String winnerRecipeId,
+  ) {
     for (final r in recipeService.recipes) {
       if (r.id == winnerRecipeId) return r;
     }
@@ -756,14 +771,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
     final socialMenuOps = ServiceLocator.tryGet<SocialMenuOperations>();
     if (planService == null || recipeService == null || socialMenuOps == null) {
       AppLogger.warning(
-          'Auto-resolution skipped — required services not registered');
+        'Auto-resolution skipped — required services not registered',
+      );
       return;
     }
 
     final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
     if (winnerRecipe == null) {
       AppLogger.warning(
-          'Auto-resolution skipped — winner recipe $winnerRecipeId not found');
+        'Auto-resolution skipped — winner recipe $winnerRecipeId not found',
+      );
       return;
     }
 
@@ -822,14 +839,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
     final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
     if (groupService == null || recipeService == null) {
       AppLogger.warning(
-          'Auto-resolution (group) skipped — required services not registered');
+        'Auto-resolution (group) skipped — required services not registered',
+      );
       return;
     }
 
     final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
     if (winnerRecipe == null) {
       AppLogger.warning(
-          'Auto-resolution (group) skipped — winner recipe $winnerRecipeId not found');
+        'Auto-resolution (group) skipped — winner recipe $winnerRecipeId not found',
+      );
       return;
     }
 

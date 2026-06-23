@@ -106,7 +106,9 @@ class FirebaseNotificationsRepository
       });
     } catch (e) {
       AppLogger.error(
-          'Failed to send notification to ${userId.maskedUserId}', e);
+        'Failed to send notification to ${userId.maskedUserId}',
+        e,
+      );
       rethrow;
     }
   }
@@ -156,8 +158,10 @@ class FirebaseNotificationsRepository
         .limit(limit);
 
     if (since != null) {
-      query =
-          query.where('createdAt', isGreaterThan: Timestamp.fromDate(since));
+      query = query.where(
+        'createdAt',
+        isGreaterThan: Timestamp.fromDate(since),
+      );
     }
 
     final querySnapshot = await query.get();
@@ -204,26 +208,28 @@ class FirebaseNotificationsRepository
     final batch = firestore.batch();
 
     // Verify ownership of all notifications in parallel
-    await Future.wait(notificationIds.map((id) async {
-      final doc = await getDocumentWithPermissionCheck(
-        docRef: collection.doc(id),
-        currentUserId: currentUser,
-        resourceType: 'notification',
-      );
+    await Future.wait(
+      notificationIds.map((id) async {
+        final doc = await getDocumentWithPermissionCheck(
+          docRef: collection.doc(id),
+          currentUserId: currentUser,
+          resourceType: 'notification',
+        );
 
-      final notificationData = doc.data() as Map<String, dynamic>;
-      await validateOwnership(
-        currentUserId: currentUser,
-        resourceOwnerId: (notificationData['userId'] as String?).orEmpty(),
-        resourceType: 'notification',
-        resourceId: id,
-      );
+        final notificationData = doc.data() as Map<String, dynamic>;
+        await validateOwnership(
+          currentUserId: currentUser,
+          resourceOwnerId: (notificationData['userId'] as String?).orEmpty(),
+          resourceType: 'notification',
+          resourceId: id,
+        );
 
-      batch.update(collection.doc(id), {
-        'isRead': true,
-        'readAt': timestampProvider.serverTimestamp(),
-      });
-    }));
+        batch.update(collection.doc(id), {
+          'isRead': true,
+          'readAt': timestampProvider.serverTimestamp(),
+        });
+      }),
+    );
 
     await batch.commit();
 
@@ -251,8 +257,9 @@ class FirebaseNotificationsRepository
         .where('isRead', isEqualTo: false)
         .get();
 
-    for (final chunk
-        in unreadQuery.docs.chunked(kFirestoreBatchSafeChunkSize)) {
+    for (final chunk in unreadQuery.docs.chunked(
+      kFirestoreBatchSafeChunkSize,
+    )) {
       final batch = firestore.batch();
       for (final doc in chunk) {
         batch.update(doc.reference, {
@@ -382,7 +389,8 @@ class FirebaseNotificationsRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} user_notifications for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} user_notifications for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 
@@ -401,7 +409,8 @@ class FirebaseNotificationsRepository
         .doc(userId)
         .delete();
     AppLogger.info(
-        'Deleted user_notification_preferences for user ${userId.maskedUserId}');
+      'Deleted user_notification_preferences for user ${userId.maskedUserId}',
+    );
     return true;
   }
 }

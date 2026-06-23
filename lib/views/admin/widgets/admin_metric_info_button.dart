@@ -84,9 +84,12 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(heading,
-              style: AppTextStyles.metadataEmphasized
-                  .copyWith(color: cs.onSurfaceVariant)),
+          Text(
+            heading,
+            style: AppTextStyles.metadataEmphasized.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(body, style: AppTextStyles.bodyMedium),
         ],

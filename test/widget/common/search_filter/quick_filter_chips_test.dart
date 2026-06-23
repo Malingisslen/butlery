@@ -84,8 +84,9 @@ void main() {
     });
 
     group('Alla (All) Option Behavior', () {
-      testWidgets('should show Alla as selected when no filters are active',
-          (tester) async {
+      testWidgets('should show Alla as selected when no filters are active', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createTestWidget(
             selectedIds: {},
@@ -97,8 +98,9 @@ void main() {
         expect(find.text('Alla'), findsOneWidget);
       });
 
-      testWidgets('should hide Alla when showAllOption is false',
-          (tester) async {
+      testWidgets('should hide Alla when showAllOption is false', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createTestWidget(
             showAllOption: false,
@@ -109,8 +111,9 @@ void main() {
         expect(find.text('Alla'), findsNothing);
       });
 
-      testWidgets('should clear all filters when Alla is tapped',
-          (tester) async {
+      testWidgets('should clear all filters when Alla is tapped', (
+        tester,
+      ) async {
         final toggledIds = <String>[];
 
         await tester.pumpWidget(
@@ -127,8 +130,9 @@ void main() {
         expect(toggledIds, containsAll(['favorites', 'quick']));
       });
 
-      testWidgets('should not trigger callback when Alla is already selected',
-          (tester) async {
+      testWidgets('should not trigger callback when Alla is already selected', (
+        tester,
+      ) async {
         bool callbackCalled = false;
 
         await tester.pumpWidget(
@@ -193,8 +197,9 @@ void main() {
         expect(toggledIds, ['favorites', 'quick', 'vegetarian']);
       });
 
-      testWidgets('should handle toggling already selected filter',
-          (tester) async {
+      testWidgets('should handle toggling already selected filter', (
+        tester,
+      ) async {
         String? toggledId;
 
         await tester.pumpWidget(
@@ -212,8 +217,9 @@ void main() {
     });
 
     group('Default Recipe Filters', () {
-      testWidgets('should provide correct default filter options',
-          (tester) async {
+      testWidgets('should provide correct default filter options', (
+        tester,
+      ) async {
         late List<QuickFilterOption> defaults;
         await tester.pumpWidget(
           MaterialApp(

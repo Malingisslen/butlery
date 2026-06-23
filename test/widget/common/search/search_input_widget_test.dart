@@ -42,8 +42,9 @@ void main() {
     }
 
     group('Rendering', () {
-      testWidgets('renders search field with default hint text',
-          (tester) async {
+      testWidgets('renders search field with default hint text', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildWidget());
         await tester.pumpAndSettle();
 
@@ -97,8 +98,9 @@ void main() {
 
         // The outermost Padding wrapping the DecoratedBox
         final paddingWidgets = tester.widgetList<Padding>(find.byType(Padding));
-        final hasCustomPadding =
-            paddingWidgets.any((p) => p.padding == customPadding);
+        final hasCustomPadding = paddingWidgets.any(
+          (p) => p.padding == customPadding,
+        );
         expect(hasCustomPadding, isTrue);
       });
     });
@@ -114,8 +116,9 @@ void main() {
         expect(controller.text, equals('Köttbullar'));
       });
 
-      testWidgets('calls onClear callback when clear button is pressed',
-          (tester) async {
+      testWidgets('calls onClear callback when clear button is pressed', (
+        tester,
+      ) async {
         bool clearCalled = false;
         controller.text = 'Test';
 
@@ -169,7 +172,9 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(
-            find.byType(TextFormField), 'Räksmörgås med ägg och öl');
+          find.byType(TextFormField),
+          'Räksmörgås med ägg och öl',
+        );
         await tester.pump();
 
         expect(controller.text, equals('Räksmörgås med ägg och öl'));
@@ -200,8 +205,9 @@ void main() {
         await tester.pump();
       });
 
-      testWidgets('updates when controller text changes externally',
-          (tester) async {
+      testWidgets('updates when controller text changes externally', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildWidget());
         await tester.pumpAndSettle();
 
@@ -238,9 +244,11 @@ void main() {
 
     group('Trailing Widget', () {
       testWidgets('renders trailing widget when provided', (tester) async {
-        await tester.pumpWidget(buildWidget(
-          trailing: const Icon(Icons.tune, key: Key('trailing')),
-        ));
+        await tester.pumpWidget(
+          buildWidget(
+            trailing: const Icon(Icons.tune, key: Key('trailing')),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byKey(const Key('trailing')), findsOneWidget);
@@ -253,14 +261,17 @@ void main() {
         expect(find.byKey(const Key('trailing')), findsNothing);
       });
 
-      testWidgets('shows both clear button and trailing when text entered',
-          (tester) async {
+      testWidgets('shows both clear button and trailing when text entered', (
+        tester,
+      ) async {
         controller.text = 'test';
 
-        await tester.pumpWidget(buildWidget(
-          trailing: const Icon(Icons.tune, key: Key('trailing')),
-          onClear: () {},
-        ));
+        await tester.pumpWidget(
+          buildWidget(
+            trailing: const Icon(Icons.tune, key: Key('trailing')),
+            onClear: () {},
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.clear), findsOneWidget);
@@ -268,9 +279,11 @@ void main() {
       });
 
       testWidgets('shows only trailing when text is empty', (tester) async {
-        await tester.pumpWidget(buildWidget(
-          trailing: const Icon(Icons.tune, key: Key('trailing')),
-        ));
+        await tester.pumpWidget(
+          buildWidget(
+            trailing: const Icon(Icons.tune, key: Key('trailing')),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.clear), findsNothing);
@@ -279,8 +292,9 @@ void main() {
     });
 
     group('Classic Style', () {
-      testWidgets('classic style uses DecoratedBox with rounded border',
-          (tester) async {
+      testWidgets('classic style uses DecoratedBox with rounded border', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildWidget(useClassicStyle: true));
         await tester.pumpAndSettle();
 
@@ -289,8 +303,9 @@ void main() {
         expect(find.byType(DecoratedBox), findsWidgets);
       });
 
-      testWidgets('default style uses DecoratedBox with rust border',
-          (tester) async {
+      testWidgets('default style uses DecoratedBox with rust border', (
+        tester,
+      ) async {
         await tester.pumpWidget(buildWidget(useClassicStyle: false));
         await tester.pumpAndSettle();
 

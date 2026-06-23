@@ -39,7 +39,8 @@ GroupWeeklyMenuPlan _buildPlan({
     groupId: groupId,
     weekStartDate: IsoWeekUtils.weekStartOf(weekStart),
     entries: entries,
-    participants: participants ??
+    participants:
+        participants ??
         [
           GroupMenuParticipant(
             userId: 'user-alpha',
@@ -61,8 +62,9 @@ void main() {
 
     const callerId = 'user-alpha';
     const groupId = 'fam-abc';
-    final weekStart =
-        IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13)); // ISO Mon
+    final weekStart = IsoWeekUtils.weekStartOf(
+      DateTime(2026, 4, 13),
+    ); // ISO Mon
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -91,34 +93,41 @@ void main() {
 
     group('save (deterministic upsert)', () {
       test(
-          'should use deterministic `{groupId}_{YYYY}-W{WW}` doc ID so '
-          'saving the same (group, week) twice does not create duplicates',
-          () async {
-        final planA = _buildPlan(groupId: groupId, weekStart: weekStart);
-        await repository.save(planA);
+        'should use deterministic `{groupId}_{YYYY}-W{WW}` doc ID so '
+        'saving the same (group, week) twice does not create duplicates',
+        () async {
+          final planA = _buildPlan(groupId: groupId, weekStart: weekStart);
+          await repository.save(planA);
 
-        final planB = planA.copyWith(entries: [
-          WeeklyMenuPlanEntry.create(
-            day: DayOfWeek.wed,
-            slot: MealSlot.middag,
-            recipeId: 'recipe-1',
-            recipeTitle: 'Pasta',
-          ),
-        ]);
-        await repository.save(planB);
+          final planB = planA.copyWith(
+            entries: [
+              WeeklyMenuPlanEntry.create(
+                day: DayOfWeek.wed,
+                slot: MealSlot.middag,
+                recipeId: 'recipe-1',
+                recipeTitle: 'Pasta',
+              ),
+            ],
+          );
+          await repository.save(planB);
 
-        final snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, hasLength(1),
-            reason: 'upsert must overwrite, not append a second doc');
-        expect(
-            snapshot.docs.first.id, IsoWeekUtils.weekIdFor(groupId, weekStart));
-        final entriesField = snapshot.docs.first.data()['entries'] as List;
-        expect(entriesField, hasLength(1));
-        expect((entriesField.first as Map)['recipeTitle'], 'Pasta');
-      });
+          final snapshot = await firestore.collection(_collection).get();
+          expect(
+            snapshot.docs,
+            hasLength(1),
+            reason: 'upsert must overwrite, not append a second doc',
+          );
+          expect(
+            snapshot.docs.first.id,
+            IsoWeekUtils.weekIdFor(groupId, weekStart),
+          );
+          final entriesField = snapshot.docs.first.data()['entries'] as List;
+          expect(entriesField, hasLength(1));
+          expect((entriesField.first as Map)['recipeTitle'], 'Pasta');
+        },
+      );
 
-      test(
-          'should refuse to persist a plan whose doc-ID prefix does not match '
+      test('should refuse to persist a plan whose doc-ID prefix does not match '
           'the entity.groupId (internal self-consistency check)', () async {
         // Construct a plan whose id does NOT start with the entity's
         // groupId. save() must log-and-return rather than create the doc.
@@ -142,76 +151,89 @@ void main() {
         await repository.save(forged);
 
         final snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, isEmpty,
-            reason: 'save() must block when id/groupId prefix mismatch');
-      });
-
-      test(
-          'should persist when userId is an editor on the plan '
-          '(belt-and-braces permission check mirrors the user-plan repo)',
-          () async {
-        final plan = _buildPlan(
-          groupId: groupId,
-          weekStart: weekStart,
-          participants: [
-            GroupMenuParticipant(
-              userId: 'admin-uid',
-              permission: SharedListPermission.admin,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-            GroupMenuParticipant(
-              userId: 'editor-uid',
-              permission: SharedListPermission.edit,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-          ],
+        expect(
+          snapshot.docs,
+          isEmpty,
+          reason: 'save() must block when id/groupId prefix mismatch',
         );
-
-        await repository.save(plan, userId: 'editor-uid');
-
-        final snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, hasLength(1),
-            reason: 'editor must be allowed to save');
       });
 
       test(
-          'should refuse to persist when userId lacks editor permission '
-          '(view-only or non-participant) even if the doc-ID prefix is valid',
-          () async {
-        final plan = _buildPlan(
-          groupId: groupId,
-          weekStart: weekStart,
-          participants: [
-            GroupMenuParticipant(
-              userId: 'admin-uid',
-              permission: SharedListPermission.admin,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-            GroupMenuParticipant(
-              userId: 'viewer-uid',
-              permission: SharedListPermission.view,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-          ],
-        );
+        'should persist when userId is an editor on the plan '
+        '(belt-and-braces permission check mirrors the user-plan repo)',
+        () async {
+          final plan = _buildPlan(
+            groupId: groupId,
+            weekStart: weekStart,
+            participants: [
+              GroupMenuParticipant(
+                userId: 'admin-uid',
+                permission: SharedListPermission.admin,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+              GroupMenuParticipant(
+                userId: 'editor-uid',
+                permission: SharedListPermission.edit,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+            ],
+          );
 
-        // Viewer — not an editor — must be rejected.
-        await repository.save(plan, userId: 'viewer-uid');
-        var snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, isEmpty,
-            reason:
-                'view-only member must be blocked by save() permission check');
+          await repository.save(plan, userId: 'editor-uid');
 
-        // Non-participant stranger — also rejected.
-        await repository.save(plan, userId: 'stranger-uid');
-        snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, isEmpty,
-            reason:
-                'non-participant must be blocked by save() permission check');
-      });
+          final snapshot = await firestore.collection(_collection).get();
+          expect(
+            snapshot.docs,
+            hasLength(1),
+            reason: 'editor must be allowed to save',
+          );
+        },
+      );
 
       test(
-          'should persist the denormalised `memberPermissions` + '
+        'should refuse to persist when userId lacks editor permission '
+        '(view-only or non-participant) even if the doc-ID prefix is valid',
+        () async {
+          final plan = _buildPlan(
+            groupId: groupId,
+            weekStart: weekStart,
+            participants: [
+              GroupMenuParticipant(
+                userId: 'admin-uid',
+                permission: SharedListPermission.admin,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+              GroupMenuParticipant(
+                userId: 'viewer-uid',
+                permission: SharedListPermission.view,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+            ],
+          );
+
+          // Viewer — not an editor — must be rejected.
+          await repository.save(plan, userId: 'viewer-uid');
+          var snapshot = await firestore.collection(_collection).get();
+          expect(
+            snapshot.docs,
+            isEmpty,
+            reason:
+                'view-only member must be blocked by save() permission check',
+          );
+
+          // Non-participant stranger — also rejected.
+          await repository.save(plan, userId: 'stranger-uid');
+          snapshot = await firestore.collection(_collection).get();
+          expect(
+            snapshot.docs,
+            isEmpty,
+            reason:
+                'non-participant must be blocked by save() permission check',
+          );
+        },
+      );
+
+      test('should persist the denormalised `memberPermissions` + '
           '`participantUserIds` fields so Firestore rules can enforce '
           'per-user access', () async {
         final plan = _buildPlan(
@@ -237,11 +259,15 @@ void main() {
         );
         await repository.save(plan);
 
-        final snapshot =
-            await firestore.collection(_collection).doc(plan.id).get();
+        final snapshot = await firestore
+            .collection(_collection)
+            .doc(plan.id)
+            .get();
         final data = snapshot.data()!;
-        expect(data['participantUserIds'],
-            equals(['admin-uid', 'editor-uid', 'viewer-uid']));
+        expect(
+          data['participantUserIds'],
+          equals(['admin-uid', 'editor-uid', 'viewer-uid']),
+        );
         expect(
           data['memberPermissions'],
           equals({
@@ -257,41 +283,46 @@ void main() {
     group('fetchForWeek', () {
       test('should return null for a week with no saved plan', () async {
         final result = await repository.fetchForWeek(
-            groupId: groupId, weekStart: weekStart);
+          groupId: groupId,
+          weekStart: weekStart,
+        );
         expect(result, isNull);
       });
 
-      test('should round-trip a saved plan, preserving entries + participants',
-          () async {
-        final entry = WeeklyMenuPlanEntry.create(
-          day: DayOfWeek.fri,
-          slot: MealSlot.lunch,
-          recipeId: 'recipe-fri-lunch',
-          recipeTitle: 'Tacos',
-        );
-        final saved = _buildPlan(
-          groupId: groupId,
-          weekStart: weekStart,
-          entries: [entry],
-        );
-        await repository.save(saved);
+      test(
+        'should round-trip a saved plan, preserving entries + participants',
+        () async {
+          final entry = WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.fri,
+            slot: MealSlot.lunch,
+            recipeId: 'recipe-fri-lunch',
+            recipeTitle: 'Tacos',
+          );
+          final saved = _buildPlan(
+            groupId: groupId,
+            weekStart: weekStart,
+            entries: [entry],
+          );
+          await repository.save(saved);
 
-        final fetched = await repository.fetchForWeek(
-            groupId: groupId, weekStart: weekStart);
+          final fetched = await repository.fetchForWeek(
+            groupId: groupId,
+            weekStart: weekStart,
+          );
 
-        expect(fetched, isNotNull);
-        expect(fetched!.id, IsoWeekUtils.weekIdFor(groupId, weekStart));
-        expect(fetched.groupId, groupId);
-        expect(fetched.entries, hasLength(1));
-        expect(fetched.entries.first.recipeTitle, 'Tacos');
-        expect(fetched.participants, hasLength(1));
-        expect(fetched.participants.single.userId, 'user-alpha');
-      });
+          expect(fetched, isNotNull);
+          expect(fetched!.id, IsoWeekUtils.weekIdFor(groupId, weekStart));
+          expect(fetched.groupId, groupId);
+          expect(fetched.entries, hasLength(1));
+          expect(fetched.entries.first.recipeTitle, 'Tacos');
+          expect(fetched.participants, hasLength(1));
+          expect(fetched.participants.single.userId, 'user-alpha');
+        },
+      );
     });
 
     group('deleteAllByGroup — group-prefix range delete', () {
-      test(
-          'should delete only the target group\'s plans when multiple groups '
+      test('should delete only the target group\'s plans when multiple groups '
           'have docs in the same collection', () async {
         const groupIds = ['group-alpha', 'group-beta', 'group-gamma'];
         final weeks = [
@@ -323,10 +354,13 @@ void main() {
         expect(deleted, 3);
         final after = await firestore.collection(_collection).get();
         expect(after.docs, hasLength(6));
-        final remainingGroups =
-            after.docs.map((d) => d.data()['groupId']).toSet();
-        expect(remainingGroups, {'group-beta', 'group-gamma'},
-            reason: 'only the target group should have been erased');
+        final remainingGroups = after.docs
+            .map((d) => d.data()['groupId'])
+            .toSet();
+        expect(remainingGroups, {
+          'group-beta',
+          'group-gamma',
+        }, reason: 'only the target group should have been erased');
       });
 
       test('should return 0 when the group has no plans', () async {
@@ -334,12 +368,12 @@ void main() {
         expect(deleted, 0);
       });
 
-      test(
-          'should chunk deletes through batchDeleteDocs when the result set '
+      test('should chunk deletes through batchDeleteDocs when the result set '
           'exceeds the 500-op Firestore batch limit', () async {
         const targetGroup = 'bulk-group';
         for (var i = 0; i < 600; i++) {
-          final docId = '${targetGroup}_${2010 + (i ~/ 53)}'
+          final docId =
+              '${targetGroup}_${2010 + (i ~/ 53)}'
               '-W${((i % 53) + 1).toString().padLeft(2, '0')}';
           await firestore.collection(_collection).doc(docId).set({
             'groupId': targetGroup,
@@ -354,24 +388,26 @@ void main() {
         }
 
         // Seed an unrelated group so we can prove the prefix scope holds.
-        await firestore
-            .collection(_collection)
-            .doc('other-group_2026-W15')
-            .set({
-          'groupId': 'other-group',
-          'weekStartDate': Timestamp.now(),
-          'entries': <Map<String, dynamic>>[],
-          'participants': <Map<String, dynamic>>[],
-          'participantUserIds': <String>[],
-          'memberPermissions': <String, String>{},
-          'createdAt': Timestamp.now(),
-          'lastModifiedAt': Timestamp.now(),
-        });
+        await firestore.collection(_collection).doc('other-group_2026-W15').set(
+          {
+            'groupId': 'other-group',
+            'weekStartDate': Timestamp.now(),
+            'entries': <Map<String, dynamic>>[],
+            'participants': <Map<String, dynamic>>[],
+            'participantUserIds': <String>[],
+            'memberPermissions': <String, String>{},
+            'createdAt': Timestamp.now(),
+            'lastModifiedAt': Timestamp.now(),
+          },
+        );
 
         final deleted = await repository.deleteAllByGroup(targetGroup);
 
-        expect(deleted, 600,
-            reason: 'batch chunking must not drop docs past the 500 boundary');
+        expect(
+          deleted,
+          600,
+          reason: 'batch chunking must not drop docs past the 500 boundary',
+        );
         final after = await firestore.collection(_collection).get();
         expect(after.docs, hasLength(1));
         expect(after.docs.single.data()['groupId'], 'other-group');
@@ -380,48 +416,62 @@ void main() {
 
     group('permission filter (doc-ID prefix + participant membership)', () {
       test(
-          'validateUpdatePermission should reject when the actor is not an '
-          'editor/admin on the plan (participant permission enforcement)',
-          () async {
-        final plan = _buildPlan(
-          groupId: groupId,
-          weekStart: weekStart,
-          participants: [
-            GroupMenuParticipant(
-              userId: 'admin-uid',
-              permission: SharedListPermission.admin,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-            GroupMenuParticipant(
-              userId: 'viewer-uid',
-              permission: SharedListPermission.view,
-              addedAt: DateTime(2026, 4, 1),
-            ),
-          ],
-        );
+        'validateUpdatePermission should reject when the actor is not an '
+        'editor/admin on the plan (participant permission enforcement)',
+        () async {
+          final plan = _buildPlan(
+            groupId: groupId,
+            weekStart: weekStart,
+            participants: [
+              GroupMenuParticipant(
+                userId: 'admin-uid',
+                permission: SharedListPermission.admin,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+              GroupMenuParticipant(
+                userId: 'viewer-uid',
+                permission: SharedListPermission.view,
+                addedAt: DateTime(2026, 4, 1),
+              ),
+            ],
+          );
 
-        expect(
+          expect(
             await repository.validateUpdatePermission(
-                'admin-uid', plan.id, plan),
-            isTrue);
-        expect(
+              'admin-uid',
+              plan.id,
+              plan,
+            ),
+            isTrue,
+          );
+          expect(
             await repository.validateUpdatePermission(
-                'viewer-uid', plan.id, plan),
+              'viewer-uid',
+              plan.id,
+              plan,
+            ),
             isFalse,
-            reason: 'view-only members cannot write');
-        expect(
+            reason: 'view-only members cannot write',
+          );
+          expect(
             await repository.validateUpdatePermission(
-                'stranger-uid', plan.id, plan),
+              'stranger-uid',
+              plan.id,
+              plan,
+            ),
             isFalse,
-            reason: 'non-participants cannot write');
-      });
+            reason: 'non-participants cannot write',
+          );
+        },
+      );
 
-      test(
-          'validateCreatePermission should require the doc-ID prefix match '
+      test('validateCreatePermission should require the doc-ID prefix match '
           'AND the creator to be a participant', () async {
         final validPlan = _buildPlan(groupId: groupId, weekStart: weekStart);
-        expect(await repository.validateCreatePermission(callerId, validPlan),
-            isTrue);
+        expect(
+          await repository.validateCreatePermission(callerId, validPlan),
+          isTrue,
+        );
 
         // Creator not in participants — should be rejected.
         final unlistedPlan = _buildPlan(
@@ -436,20 +486,23 @@ void main() {
           ],
         );
         expect(
-            await repository.validateCreatePermission(callerId, unlistedPlan),
-            isFalse);
+          await repository.validateCreatePermission(callerId, unlistedPlan),
+          isFalse,
+        );
       });
 
-      test(
-          'validateReadPermission should accept only participants when an '
+      test('validateReadPermission should accept only participants when an '
           'entity snapshot is available (rules also enforce; this is the '
           'application-layer check)', () async {
         final plan = _buildPlan(groupId: groupId, weekStart: weekStart);
-        expect(await repository.validateReadPermission(callerId, plan.id, plan),
-            isTrue);
         expect(
-            await repository.validateReadPermission('stranger', plan.id, plan),
-            isFalse);
+          await repository.validateReadPermission(callerId, plan.id, plan),
+          isTrue,
+        );
+        expect(
+          await repository.validateReadPermission('stranger', plan.id, plan),
+          isFalse,
+        );
       });
     });
   });

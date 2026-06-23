@@ -87,10 +87,10 @@ class FriendsFirebaseSyncOperations {
           .collection(FirestoreCollections.userFriends)
           .doc(friend.uid)
           .set({
-        'friendSince': clock.now(),
-        'displayName': friend.displayName,
-        'displayNameLower': friend.displayName.toLowerCase(),
-      });
+            'friendSince': clock.now(),
+            'displayName': friend.displayName,
+            'displayNameLower': friend.displayName.toLowerCase(),
+          });
 
       // Also add reverse relationship
       await firestore
@@ -99,8 +99,8 @@ class FriendsFirebaseSyncOperations {
           .collection(FirestoreCollections.userFriends)
           .doc(userId)
           .set({
-        'friendSince': clock.now(),
-      });
+            'friendSince': clock.now(),
+          });
 
       AppLogger.success('Synced friend to Firebase');
     } catch (e) {
@@ -154,7 +154,8 @@ class FriendsFirebaseSyncOperations {
 
         if (opCount > 0) await batch.commit();
         AppLogger.success(
-            'Backfilled displayNameLower for ${docsToUpdate.length} friend docs');
+          'Backfilled displayNameLower for ${docsToUpdate.length} friend docs',
+        );
       }
 
       // Set migration flag

@@ -25,12 +25,12 @@ class SocialStage implements BootstrapStage {
 
   @override
   List<Type> get requiredModules => [
-        CoreModule,
-        ContentModule,
-        SocialModule,
-        MessagingModule,
-        CollaborationModule,
-      ];
+    CoreModule,
+    ContentModule,
+    SocialModule,
+    MessagingModule,
+    CollaborationModule,
+  ];
 
   @override
   Duration get timeout => const Duration(minutes: 1);

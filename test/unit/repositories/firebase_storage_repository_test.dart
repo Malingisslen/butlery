@@ -91,8 +91,9 @@ void main() {
 
         // firebase_storage_mocks keys this map by the raw `_path` which has
         // a leading slash; read by the key `storedSettableMetadataMap` uses.
-        final storedKey = mockStorage.storedSettableMetadataMap.keys
-            .firstWhere((k) => k.endsWith(path));
+        final storedKey = mockStorage.storedSettableMetadataMap.keys.firstWhere(
+          (k) => k.endsWith(path),
+        );
         final stored = mockStorage.storedSettableMetadataMap[storedKey];
         expect(stored, isNotNull);
 
@@ -103,22 +104,24 @@ void main() {
         expect(custom['uploadedBy'], testUserId);
       });
 
-      test('returns null when the upload path is outside the user directory',
-          () async {
-        final imageData = Uint8List.fromList([1, 2, 3]);
-        // Path does not belong to the current user — permission check fails,
-        // the repository swallows the exception and returns null.
-        const path = 'users/someone-else/recipes/path.jpg';
+      test(
+        'returns null when the upload path is outside the user directory',
+        () async {
+          final imageData = Uint8List.fromList([1, 2, 3]);
+          // Path does not belong to the current user — permission check fails,
+          // the repository swallows the exception and returns null.
+          const path = 'users/someone-else/recipes/path.jpg';
 
-        final result = await repository.uploadImageData(
-          imageData: imageData,
-          userId: 'someone-else',
-          path: path,
-        );
+          final result = await repository.uploadImageData(
+            imageData: imageData,
+            userId: 'someone-else',
+            path: path,
+          );
 
-        expect(result, isNull);
-        expect(mockStorage.storedDataMap.get(path), isNull);
-      });
+          expect(result, isNull);
+          expect(mockStorage.storedDataMap.get(path), isNull);
+        },
+      );
     });
 
     group('Multiple Image Upload', () {
@@ -133,8 +136,9 @@ void main() {
           (file2, '/path/img2.jpg'),
         ]) {
           when(() => f.path).thenReturn(p);
-          when(() => f.readAsBytes())
-              .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+          when(
+            () => f.readAsBytes(),
+          ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
           when(() => f.lengthSync()).thenReturn(3);
         }
 
@@ -175,8 +179,7 @@ void main() {
         expect(mockStorage.storedDataMap.keys, isEmpty);
       });
 
-      test('returns false when the current user does not own the file',
-          () async {
+      test('returns false when the current user does not own the file', () async {
         // Someone else's file — deleteImage rejects on permission check.
         const url =
             'https://firebasestorage.googleapis.com/v0/b/some-bucket/o/users/another-user/recipes/image.jpg';

@@ -85,8 +85,11 @@ void main() {
     group('Capability Checking - canView', () {
       test('should allow view for all permission levels', () {
         for (final permission in ResourcePermission.values) {
-          expect(permission.canView, isTrue,
-              reason: '${permission.name} should allow viewing');
+          expect(
+            permission.canView,
+            isTrue,
+            reason: '${permission.name} should allow viewing',
+          );
         }
       });
     });
@@ -119,120 +122,183 @@ void main() {
 
     group('ResourcePermissionHelper - fromString', () {
       test('should parse viewer permission', () {
-        expect(ResourcePermissionHelper.fromString('viewer'),
-            equals(ResourcePermission.viewer));
+        expect(
+          ResourcePermissionHelper.fromString('viewer'),
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should parse editor permission', () {
-        expect(ResourcePermissionHelper.fromString('editor'),
-            equals(ResourcePermission.editor));
+        expect(
+          ResourcePermissionHelper.fromString('editor'),
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should parse owner permission', () {
-        expect(ResourcePermissionHelper.fromString('owner'),
-            equals(ResourcePermission.owner));
+        expect(
+          ResourcePermissionHelper.fromString('owner'),
+          equals(ResourcePermission.owner),
+        );
       });
 
       test('should parse read permission', () {
-        expect(ResourcePermissionHelper.fromString('read'),
-            equals(ResourcePermission.read));
+        expect(
+          ResourcePermissionHelper.fromString('read'),
+          equals(ResourcePermission.read),
+        );
       });
 
       test('should parse write permission', () {
-        expect(ResourcePermissionHelper.fromString('write'),
-            equals(ResourcePermission.write));
+        expect(
+          ResourcePermissionHelper.fromString('write'),
+          equals(ResourcePermission.write),
+        );
       });
 
       test('should parse admin permission', () {
-        expect(ResourcePermissionHelper.fromString('admin'),
-            equals(ResourcePermission.admin));
+        expect(
+          ResourcePermissionHelper.fromString('admin'),
+          equals(ResourcePermission.admin),
+        );
       });
 
       test('should be case-insensitive', () {
-        expect(ResourcePermissionHelper.fromString('VIEWER'),
-            equals(ResourcePermission.viewer));
-        expect(ResourcePermissionHelper.fromString('Editor'),
-            equals(ResourcePermission.editor));
-        expect(ResourcePermissionHelper.fromString('ADMIN'),
-            equals(ResourcePermission.admin));
+        expect(
+          ResourcePermissionHelper.fromString('VIEWER'),
+          equals(ResourcePermission.viewer),
+        );
+        expect(
+          ResourcePermissionHelper.fromString('Editor'),
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          ResourcePermissionHelper.fromString('ADMIN'),
+          equals(ResourcePermission.admin),
+        );
       });
 
       test('should default to viewer for unknown strings', () {
-        expect(ResourcePermissionHelper.fromString('unknown'),
-            equals(ResourcePermission.viewer));
-        expect(ResourcePermissionHelper.fromString(''),
-            equals(ResourcePermission.viewer));
-        expect(ResourcePermissionHelper.fromString('invalid'),
-            equals(ResourcePermission.viewer));
+        expect(
+          ResourcePermissionHelper.fromString('unknown'),
+          equals(ResourcePermission.viewer),
+        );
+        expect(
+          ResourcePermissionHelper.fromString(''),
+          equals(ResourcePermission.viewer),
+        );
+        expect(
+          ResourcePermissionHelper.fromString('invalid'),
+          equals(ResourcePermission.viewer),
+        );
       });
     });
 
     group('ResourcePermissionHelper - Permission Hierarchy', () {
       test('should correctly identify hierarchy for modern permissions', () {
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.owner, ResourcePermission.editor),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.owner,
+            ResourcePermission.editor,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.owner, ResourcePermission.viewer),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.owner,
+            ResourcePermission.viewer,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.editor, ResourcePermission.viewer),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.editor,
+            ResourcePermission.viewer,
+          ),
+          isTrue,
+        );
       });
 
       test('should correctly identify hierarchy for legacy permissions', () {
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.admin, ResourcePermission.write),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.admin,
+            ResourcePermission.write,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.admin, ResourcePermission.read),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.admin,
+            ResourcePermission.read,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.write, ResourcePermission.read),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.write,
+            ResourcePermission.read,
+          ),
+          isTrue,
+        );
       });
 
       test('should correctly identify hierarchy between modern and legacy', () {
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.admin, ResourcePermission.owner),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.admin,
+            ResourcePermission.owner,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.owner, ResourcePermission.write),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.owner,
+            ResourcePermission.write,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.editor, ResourcePermission.viewer),
-            isTrue);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.editor,
+            ResourcePermission.viewer,
+          ),
+          isTrue,
+        );
       });
 
       test('should return false for equal permissions', () {
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.viewer, ResourcePermission.viewer),
-            isFalse);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.viewer,
+            ResourcePermission.viewer,
+          ),
+          isFalse,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.admin, ResourcePermission.admin),
-            isFalse);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.admin,
+            ResourcePermission.admin,
+          ),
+          isFalse,
+        );
       });
 
       test('should return false for lower permissions', () {
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.viewer, ResourcePermission.editor),
-            isFalse);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.viewer,
+            ResourcePermission.editor,
+          ),
+          isFalse,
+        );
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.read, ResourcePermission.write),
-            isFalse);
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.read,
+            ResourcePermission.write,
+          ),
+          isFalse,
+        );
       });
     });
 
@@ -243,8 +309,10 @@ void main() {
           ResourcePermission.editor,
           ResourcePermission.owner,
         ];
-        expect(ResourcePermissionHelper.getHighest(permissions),
-            equals(ResourcePermission.owner));
+        expect(
+          ResourcePermissionHelper.getHighest(permissions),
+          equals(ResourcePermission.owner),
+        );
       });
 
       test('should return admin as highest when present', () {
@@ -253,18 +321,24 @@ void main() {
           ResourcePermission.admin,
           ResourcePermission.owner,
         ];
-        expect(ResourcePermissionHelper.getHighest(permissions),
-            equals(ResourcePermission.admin));
+        expect(
+          ResourcePermissionHelper.getHighest(permissions),
+          equals(ResourcePermission.admin),
+        );
       });
 
       test('should handle single permission', () {
-        expect(ResourcePermissionHelper.getHighest([ResourcePermission.editor]),
-            equals(ResourcePermission.editor));
+        expect(
+          ResourcePermissionHelper.getHighest([ResourcePermission.editor]),
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should return viewer for empty list', () {
-        expect(ResourcePermissionHelper.getHighest([]),
-            equals(ResourcePermission.viewer));
+        expect(
+          ResourcePermissionHelper.getHighest([]),
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should handle duplicate permissions', () {
@@ -273,8 +347,10 @@ void main() {
           ResourcePermission.editor,
           ResourcePermission.viewer,
         ];
-        expect(ResourcePermissionHelper.getHighest(permissions),
-            equals(ResourcePermission.editor));
+        expect(
+          ResourcePermissionHelper.getHighest(permissions),
+          equals(ResourcePermission.editor),
+        );
       });
     });
 
@@ -290,68 +366,91 @@ void main() {
 
       test('should convert permission to name', () {
         expect(
-            ResourcePermissionHelper.permissionToName(
-                ResourcePermission.viewer),
-            equals('viewer'));
+          ResourcePermissionHelper.permissionToName(ResourcePermission.viewer),
+          equals('viewer'),
+        );
         expect(
-            ResourcePermissionHelper.permissionToName(ResourcePermission.admin),
-            equals('admin'));
+          ResourcePermissionHelper.permissionToName(ResourcePermission.admin),
+          equals('admin'),
+        );
       });
 
       test('should convert permission to string (legacy method)', () {
         expect(
-            ResourcePermissionHelper.permissionToString(
-                ResourcePermission.editor),
-            equals('editor'));
+          ResourcePermissionHelper.permissionToString(
+            ResourcePermission.editor,
+          ),
+          equals('editor'),
+        );
         expect(
-            ResourcePermissionHelper.permissionToString(
-                ResourcePermission.owner),
-            equals('owner'));
+          ResourcePermissionHelper.permissionToString(ResourcePermission.owner),
+          equals('owner'),
+        );
       });
 
       test('should check if permission can manage permissions', () {
         expect(
-            ResourcePermissionHelper.canManagePermissions(
-                ResourcePermission.admin),
-            isTrue);
+          ResourcePermissionHelper.canManagePermissions(
+            ResourcePermission.admin,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.canManagePermissions(
-                ResourcePermission.owner),
-            isTrue);
+          ResourcePermissionHelper.canManagePermissions(
+            ResourcePermission.owner,
+          ),
+          isTrue,
+        );
         expect(
-            ResourcePermissionHelper.canManagePermissions(
-                ResourcePermission.editor),
-            isFalse);
+          ResourcePermissionHelper.canManagePermissions(
+            ResourcePermission.editor,
+          ),
+          isFalse,
+        );
         expect(
-            ResourcePermissionHelper.canManagePermissions(
-                ResourcePermission.viewer),
-            isFalse);
+          ResourcePermissionHelper.canManagePermissions(
+            ResourcePermission.viewer,
+          ),
+          isFalse,
+        );
       });
 
       test('should validate edit content permission', () {
         // User has higher permission than required
         expect(
-            ResourcePermissionHelper.canEditContent(
-                ResourcePermission.owner, ResourcePermission.editor),
-            isTrue);
+          ResourcePermissionHelper.canEditContent(
+            ResourcePermission.owner,
+            ResourcePermission.editor,
+          ),
+          isTrue,
+        );
 
         // User has equal permission to required
         expect(
-            ResourcePermissionHelper.canEditContent(
-                ResourcePermission.editor, ResourcePermission.editor),
-            isTrue);
+          ResourcePermissionHelper.canEditContent(
+            ResourcePermission.editor,
+            ResourcePermission.editor,
+          ),
+          isTrue,
+        );
 
         // User has lower permission than required
         expect(
-            ResourcePermissionHelper.canEditContent(
-                ResourcePermission.viewer, ResourcePermission.editor),
-            isFalse);
+          ResourcePermissionHelper.canEditContent(
+            ResourcePermission.viewer,
+            ResourcePermission.editor,
+          ),
+          isFalse,
+        );
 
         // Admin can edit everything
         expect(
-            ResourcePermissionHelper.canEditContent(
-                ResourcePermission.admin, ResourcePermission.owner),
-            isTrue);
+          ResourcePermissionHelper.canEditContent(
+            ResourcePermission.admin,
+            ResourcePermission.owner,
+          ),
+          isTrue,
+        );
       });
     });
 
@@ -373,8 +472,9 @@ void main() {
           final parsed = ResourcePermissionHelper.fromString(name);
           expect(parsed, equals(permission));
 
-          final stringified =
-              ResourcePermissionHelper.permissionToName(permission);
+          final stringified = ResourcePermissionHelper.permissionToName(
+            permission,
+          );
           expect(stringified, equals(name));
         }
       });
@@ -382,14 +482,20 @@ void main() {
       test('should handle permission comparison edge cases', () {
         // Compare with same permission
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.viewer, ResourcePermission.read),
-            isFalse); // Both are level 1
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.viewer,
+            ResourcePermission.read,
+          ),
+          isFalse,
+        ); // Both are level 1
 
         expect(
-            ResourcePermissionHelper.isHigherThan(
-                ResourcePermission.editor, ResourcePermission.write),
-            isFalse); // Both are level 2
+          ResourcePermissionHelper.isHigherThan(
+            ResourcePermission.editor,
+            ResourcePermission.write,
+          ),
+          isFalse,
+        ); // Both are level 2
       });
     });
   });

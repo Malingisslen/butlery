@@ -34,8 +34,10 @@ class _FakeParsingRepo extends ParsingCorrectionRepository {
   }
 
   @override
-  Future<List<ParsingCorrection>> getByDomain(String domain,
-      {int limit = 100}) async {
+  Future<List<ParsingCorrection>> getByDomain(
+    String domain, {
+    int limit = 100,
+  }) async {
     return byDomain[domain] ?? const [];
   }
 }
@@ -68,20 +70,22 @@ void main() {
     vm.dispose();
   });
 
-  test('domains sorted most-corrected first; total + topDomain correct',
-      () async {
-    final vm = ParsingDetailsViewModel(
-      repository: _FakeParsingRepo(
-        domainStats: {'a.se': 1, 'b.se': 3, 'c.se': 2},
-      ),
-    );
-    await vm.load();
-    expect(vm.stats.map((s) => s.domain), ['b.se', 'c.se', 'a.se']);
-    expect(vm.totalCorrections, 6);
-    expect(vm.domainCount, 3);
-    expect(vm.topDomain, 'b.se');
-    vm.dispose();
-  });
+  test(
+    'domains sorted most-corrected first; total + topDomain correct',
+    () async {
+      final vm = ParsingDetailsViewModel(
+        repository: _FakeParsingRepo(
+          domainStats: {'a.se': 1, 'b.se': 3, 'c.se': 2},
+        ),
+      );
+      await vm.load();
+      expect(vm.stats.map((s) => s.domain), ['b.se', 'c.se', 'a.se']);
+      expect(vm.totalCorrections, 6);
+      expect(vm.domainCount, 3);
+      expect(vm.topDomain, 'b.se');
+      vm.dispose();
+    },
+  );
 
   test('dominant issue is the most-corrected field for the domain', () async {
     final vm = ParsingDetailsViewModel(
@@ -101,43 +105,47 @@ void main() {
     vm.dispose();
   });
 
-  test("'unknown' domain bucket is not fetched for detail (stays none)",
-      () async {
-    final vm = ParsingDetailsViewModel(
-      repository: _FakeParsingRepo(
-        domainStats: {'unknown': 5},
-        byDomain: {
-          'unknown': [_corr(title: _fc)], // provided, but must be skipped
-        },
-      ),
-    );
-    await vm.load();
-    expect(vm.stats.single.topIssue, ParsingIssue.none);
-    vm.dispose();
-  });
+  test(
+    "'unknown' domain bucket is not fetched for detail (stays none)",
+    () async {
+      final vm = ParsingDetailsViewModel(
+        repository: _FakeParsingRepo(
+          domainStats: {'unknown': 5},
+          byDomain: {
+            'unknown': [_corr(title: _fc)], // provided, but must be skipped
+          },
+        ),
+      );
+      await vm.load();
+      expect(vm.stats.single.topIssue, ParsingIssue.none);
+      vm.dispose();
+    },
+  );
 
-  test('domains beyond the detail cap keep their count but topIssue stays none',
-      () async {
-    // 31 domains, descending counts 31..1. The 31st (count 1) is past the
-    // _maxDetailDomains=30 cap, so its detail is never fetched.
-    final stats = <String, int>{};
-    final byDomain = <String, List<ParsingCorrection>>{};
-    for (var i = 0; i < 31; i++) {
-      final d = 'd$i.se';
-      stats[d] = 31 - i; // d0=31 (top) … d30=1 (last)
-      byDomain[d] = [_corr(title: _fc)]; // detail available for all
-    }
-    final vm = ParsingDetailsViewModel(
-      repository: _FakeParsingRepo(domainStats: stats, byDomain: byDomain),
-    );
-    await vm.load();
-    expect(vm.stats.length, 31);
-    // Top domain got detail; the capped last one did not.
-    expect(vm.stats.first.topIssue, ParsingIssue.title);
-    expect(vm.stats.last.topIssue, ParsingIssue.none);
-    expect(vm.stats.last.corrections, 1); // count still present
-    vm.dispose();
-  });
+  test(
+    'domains beyond the detail cap keep their count but topIssue stays none',
+    () async {
+      // 31 domains, descending counts 31..1. The 31st (count 1) is past the
+      // _maxDetailDomains=30 cap, so its detail is never fetched.
+      final stats = <String, int>{};
+      final byDomain = <String, List<ParsingCorrection>>{};
+      for (var i = 0; i < 31; i++) {
+        final d = 'd$i.se';
+        stats[d] = 31 - i; // d0=31 (top) … d30=1 (last)
+        byDomain[d] = [_corr(title: _fc)]; // detail available for all
+      }
+      final vm = ParsingDetailsViewModel(
+        repository: _FakeParsingRepo(domainStats: stats, byDomain: byDomain),
+      );
+      await vm.load();
+      expect(vm.stats.length, 31);
+      // Top domain got detail; the capped last one did not.
+      expect(vm.stats.first.topIssue, ParsingIssue.title);
+      expect(vm.stats.last.topIssue, ParsingIssue.none);
+      expect(vm.stats.last.corrections, 1); // count still present
+      vm.dispose();
+    },
+  );
 
   test('load failure sets error state', () async {
     final repo = _FakeParsingRepo()..throwOnLoad = true;

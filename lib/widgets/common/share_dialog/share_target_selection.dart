@@ -75,9 +75,9 @@ class ShareTargetSelection {
     // Filter friends based on search query
     final filteredFriends = friends.where((friend) {
       if (searchQuery.isEmpty) return true;
-      return friend.displayName
-          .toLowerCase()
-          .contains(searchQuery.toLowerCase());
+      return friend.displayName.toLowerCase().contains(
+        searchQuery.toLowerCase(),
+      );
     }).toList();
 
     if (filteredFriends.isEmpty) {
@@ -108,10 +108,9 @@ class ShareTargetSelection {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context)
-            .colorScheme
-            .outline
-            .withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {

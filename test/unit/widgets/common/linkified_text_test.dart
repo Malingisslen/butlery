@@ -21,8 +21,9 @@ void main() {
       expect(find.text('Just a comment about cooking'), findsOneWidget);
     });
 
-    testWidgets('linkifies a single URL in the middle of a sentence',
-        (tester) async {
+    testWidgets('linkifies a single URL in the middle of a sentence', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -47,8 +48,9 @@ void main() {
       );
     });
 
-    testWidgets('trailing sentence punctuation stays out of the URL',
-        (tester) async {
+    testWidgets('trailing sentence punctuation stays out of the URL', (
+      tester,
+    ) async {
       // Regex deliberately stops before `.`, `,`, `;`, `:`, `!`, `?`, `)`,
       // `]` when followed by whitespace or EOS. The dot at the end below
       // is the sentence terminator — must not get pulled into the URL.

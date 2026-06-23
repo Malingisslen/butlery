@@ -39,7 +39,9 @@ void main() {
         expect(recipe.core.timeMinutes, equals(45));
         expect(recipe.core.rating, equals(4.5));
         expect(
-            recipe.core.personalTagIds, equals(['Svenskt', 'Traditionellt']));
+          recipe.core.personalTagIds,
+          equals(['Svenskt', 'Traditionellt']),
+        );
         expect(recipe.core.sourceUrl, equals('https://example.com'));
         expect(recipe.core.imageUrls.length, equals(2));
         expect(recipe.core.isPublic, isTrue);
@@ -122,8 +124,10 @@ void main() {
         expect(recipe.socialData!.ownerId, equals('owner_123'));
         expect(recipe.socialData!.ownerDisplayName, equals('Anna Andersson'));
         expect(recipe.socialData!.allowGuestViewing, isFalse);
-        expect(recipe.socialData!.allowMemberInvites,
-            isFalse); // Shared don't allow invites
+        expect(
+          recipe.socialData!.allowMemberInvites,
+          isFalse,
+        ); // Shared don't allow invites
       });
 
       test('should create shared recipe with default guest viewing', () {
@@ -169,8 +173,10 @@ void main() {
         expect(recipe.socialData!.memberPermissions, equals(memberPermissions));
         expect(recipe.socialData!.allowGuestViewing, isTrue);
         expect(recipe.socialData!.allowMemberInvites, isFalse);
-        expect(recipe.socialData!.descriptionCollaborative,
-            equals('Let\'s cook together!'));
+        expect(
+          recipe.socialData!.descriptionCollaborative,
+          equals('Let\'s cook together!'),
+        );
       });
 
       test('should create collaborative recipe with default settings', () {
@@ -215,16 +221,24 @@ void main() {
 
         expect(recipe.type, equals(RecipeType.realtime));
         expect(recipe.core.isPublic, isTrue);
-        expect(recipe.socialData!.allowGuestViewing,
-            isTrue); // Default for realtime
-        expect(recipe.socialData!.allowMemberInvites,
-            isTrue); // Default for realtime
+        expect(
+          recipe.socialData!.allowGuestViewing,
+          isTrue,
+        ); // Default for realtime
+        expect(
+          recipe.socialData!.allowMemberInvites,
+          isTrue,
+        ); // Default for realtime
         expect(recipe.realtimeData, isNotNull);
         expect(recipe.realtimeData!.activeEditorIds, equals(activeEditors));
         expect(
-            recipe.realtimeData!.lastEditedByUserId, equals('realtime_owner'));
-        expect(recipe.realtimeData!.lastEditedByDisplayName,
-            equals('Realtime Owner'));
+          recipe.realtimeData!.lastEditedByUserId,
+          equals('realtime_owner'),
+        );
+        expect(
+          recipe.realtimeData!.lastEditedByDisplayName,
+          equals('Realtime Owner'),
+        );
         expect(recipe.realtimeData!.editCount, equals(0));
         expect(recipe.realtimeData!.isActive, isTrue);
       });
@@ -321,8 +335,10 @@ void main() {
         expect(collabRecipe.socialData!.memberPermissions, equals(members));
         expect(collabRecipe.socialData!.allowGuestViewing, isTrue);
         expect(collabRecipe.socialData!.allowMemberInvites, isFalse);
-        expect(collabRecipe.socialData!.descriptionCollaborative,
-            equals('Let\'s collaborate!'));
+        expect(
+          collabRecipe.socialData!.descriptionCollaborative,
+          equals('Let\'s collaborate!'),
+        );
       });
 
       test('should throw when converting non-personal to collaborative', () {
@@ -366,10 +382,14 @@ void main() {
         expect(realtimeRecipe.core, equals(collabRecipe.core));
         expect(realtimeRecipe.socialData, equals(collabRecipe.socialData));
         expect(realtimeRecipe.realtimeData, isNotNull);
-        expect(realtimeRecipe.realtimeData!.activeEditorIds,
-            equals(['editor_1', 'editor_2']));
-        expect(realtimeRecipe.realtimeData!.lastEditedByUserId,
-            equals('collab_owner'));
+        expect(
+          realtimeRecipe.realtimeData!.activeEditorIds,
+          equals(['editor_1', 'editor_2']),
+        );
+        expect(
+          realtimeRecipe.realtimeData!.lastEditedByUserId,
+          equals('collab_owner'),
+        );
         expect(realtimeRecipe.realtimeData!.editCount, equals(0));
         expect(realtimeRecipe.realtimeData!.isActive, isTrue);
       });
@@ -402,13 +422,17 @@ void main() {
         );
 
         expect(personalCopy.type, equals(RecipeType.personal));
-        expect(personalCopy.core.title,
-            equals('Shared Recipe (från Anna Andersson)'));
+        expect(
+          personalCopy.core.title,
+          equals('Shared Recipe (från Anna Andersson)'),
+        );
         expect(personalCopy.core.createdBy, equals('user_456'));
         expect(personalCopy.core.isPublic, isFalse);
         expect(personalCopy.core.ingredients, equals(['Pasta', 'Tomater']));
-        expect(personalCopy.core.sourceUrl,
-            equals('Kopierat från: Shared Recipe'));
+        expect(
+          personalCopy.core.sourceUrl,
+          equals('Kopierat från: Shared Recipe'),
+        );
         expect(personalCopy.socialData, isNull);
       });
 
@@ -423,23 +447,25 @@ void main() {
         expect(personalCopy.core.sourceUrl, equals('Kopierat från: My Recipe'));
       });
 
-      test('should create personal copy from recipe without owner display name',
-          () {
-        final simpleRecipe = RecipeFactory.createPersonal(
-          title: 'Simple',
-          description: 'Desc',
-          ingredients: ['A'],
-          instructions: ['B'],
-          mealType: 'Lunch',
-        );
+      test(
+        'should create personal copy from recipe without owner display name',
+        () {
+          final simpleRecipe = RecipeFactory.createPersonal(
+            title: 'Simple',
+            description: 'Desc',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Lunch',
+          );
 
-        final copy = RecipeFactory.createPersonalCopy(
-          simpleRecipe,
-          newOwnerId: 'copier',
-        );
+          final copy = RecipeFactory.createPersonalCopy(
+            simpleRecipe,
+            newOwnerId: 'copier',
+          );
 
-        expect(copy.core.title, equals('Simple (kopia)'));
-      });
+          expect(copy.core.title, equals('Simple (kopia)'));
+        },
+      );
     });
 
     group('Template and Import Methods', () {
@@ -681,179 +707,201 @@ void main() {
         );
 
         expect(sharedRecipe.offlineData, isNotNull);
-        expect(sharedRecipe.offlineData!.lastSyncedAt,
-            equals(DateTime(2025, 1, 1)));
+        expect(
+          sharedRecipe.offlineData!.lastSyncedAt,
+          equals(DateTime(2025, 1, 1)),
+        );
         expect(sharedRecipe.offlineData!.isModifiedOffline, isFalse);
       });
 
-      test('should handle recipes with null tags when creating personal copy',
-          () {
-        final recipe = RecipeFactory.createPersonal(
-          title: 'No Tags',
-          description: 'Recipe without tags',
-          ingredients: ['A'],
-          instructions: ['B'],
-          mealType: 'Lunch',
-          personalTagIds: null,
-        );
-
-        final copy = RecipeFactory.createPersonalCopy(
-          recipe,
-          newOwnerId: 'copier',
-        );
-
-        expect(copy.core.personalTagIds, isNull);
-      });
-
       test(
-          'BUG-2: createPersonalCopy should preserve tagResult from source recipe',
-          () {
-        // Arrange: Create a recipe with tag result data
-        final tagResult = TagResult(
-          tags: {'vegetarisk', 'pasta-dish', 'mild'},
-          allergenStatus: {'gluten': TriState.contains, 'mjölk': TriState.free},
-          dietaryStatus: {'vegetarisk': TriState.free},
-          coverage: 0.95,
-          unknownIngredients: ['unknown-spice'],
-          generatedAt: DateTime(2025, 6, 1),
-          generatorVersion: '1.0.0',
-        );
-
-        final sourceRecipe = Recipe(
-          core: RecipeCore(
-            title: 'Pasta med grönsakssås',
-            description: 'Vegetarisk pasta',
-            ingredients: ['Pasta', 'Tomater', 'Basilika'],
-            instructions: ['Koka pasta', 'Gör sås'],
-            mealType: 'Middag',
-            tagResult: tagResult,
-          ),
-          type: RecipeType.shared,
-          socialData: const RecipeSocialData(
-            ownerId: 'owner_123',
-            ownerDisplayName: 'Anna',
-          ),
-        );
-
-        // Act
-        final copy = RecipeFactory.createPersonalCopy(
-          sourceRecipe,
-          newOwnerId: 'new_user',
-        );
-
-        // Assert
-        expect(copy.core.tagResult, isNotNull,
-            reason: 'tagResult should be preserved in personal copy');
-        expect(copy.core.tagResult!.tags, contains('vegetarisk'));
-        expect(copy.core.tagResult!.tags, contains('pasta-dish'));
-        expect(copy.core.tagResult!.coverage, 0.95);
-      });
-
-      test(
-          'BUG-2: createPersonalCopy should preserve tagOverrides from source recipe',
-          () {
-        // Arrange
-        final tagOverrides = TagOverrides(
-          allergenOverrides: {'gluten': TriState.free},
-          addedTags: {'hälsosam'},
-          removedTags: {'stark'},
-          lastEditedAt: DateTime(2025, 5, 15),
-          lastEditedBy: 'owner_123',
-        );
-
-        final sourceRecipe = Recipe(
-          core: RecipeCore(
-            title: 'Test recipe',
-            description: 'Test',
-            ingredients: ['A', 'B'],
-            instructions: ['Step 1'],
-            mealType: 'Lunch',
-            tagOverrides: tagOverrides,
-          ),
-          type: RecipeType.personal,
-        );
-
-        // Act
-        final copy = RecipeFactory.createPersonalCopy(
-          sourceRecipe,
-          newOwnerId: 'copier_456',
-        );
-
-        // Assert
-        expect(copy.core.tagOverrides, isNotNull,
-            reason: 'tagOverrides should be preserved in personal copy');
-        expect(
-            copy.core.tagOverrides!.allergenOverrides['gluten'], TriState.free);
-        expect(copy.core.tagOverrides!.addedTags, contains('hälsosam'));
-        expect(copy.core.tagOverrides!.removedTags, contains('stark'));
-      });
-
-      test(
-          'BUG-2: createPersonalCopy should preserve ingredientsNormalized from source recipe',
-          () {
-        // Arrange
-        final normalized = ['pasta', 'tomat', 'basilika', 'olivolja'];
-
-        final sourceRecipe = Recipe(
-          core: RecipeCore(
-            title: 'Pasta',
-            description: 'Test',
-            ingredients: [
-              '400g pasta',
-              '3 tomater',
-              'Basilika',
-              '2 msk olivolja'
-            ],
-            instructions: ['Koka'],
-            mealType: 'Middag',
-            ingredientsNormalized: normalized,
-          ),
-          type: RecipeType.shared,
-          socialData: const RecipeSocialData(
-            ownerId: 'owner_123',
-            ownerDisplayName: 'Anna',
-          ),
-        );
-
-        // Act
-        final copy = RecipeFactory.createPersonalCopy(
-          sourceRecipe,
-          newOwnerId: 'new_user',
-        );
-
-        // Assert
-        expect(copy.core.ingredientsNormalized, isNotNull,
-            reason: 'ingredientsNormalized should be preserved');
-        expect(copy.core.ingredientsNormalized, equals(normalized));
-      });
-
-      test(
-          'BUG-2: createPersonalCopy should handle null tagResult, tagOverrides, and ingredientsNormalized',
-          () {
-        // Arrange: Recipe with all tag fields null
-        final sourceRecipe = Recipe(
-          core: RecipeCore(
-            title: 'Legacy recipe',
-            description: 'No tagging data',
+        'should handle recipes with null tags when creating personal copy',
+        () {
+          final recipe = RecipeFactory.createPersonal(
+            title: 'No Tags',
+            description: 'Recipe without tags',
             ingredients: ['A'],
             instructions: ['B'],
             mealType: 'Lunch',
-            // tagResult, tagOverrides, ingredientsNormalized are all null
-          ),
-          type: RecipeType.personal,
-        );
+            personalTagIds: null,
+          );
 
-        // Act
-        final copy = RecipeFactory.createPersonalCopy(
-          sourceRecipe,
-          newOwnerId: 'copier',
-        );
+          final copy = RecipeFactory.createPersonalCopy(
+            recipe,
+            newOwnerId: 'copier',
+          );
 
-        // Assert: null fields stay null
-        expect(copy.core.tagResult, isNull);
-        expect(copy.core.tagOverrides, isNull);
-        expect(copy.core.ingredientsNormalized, isNull);
-      });
+          expect(copy.core.personalTagIds, isNull);
+        },
+      );
+
+      test(
+        'BUG-2: createPersonalCopy should preserve tagResult from source recipe',
+        () {
+          // Arrange: Create a recipe with tag result data
+          final tagResult = TagResult(
+            tags: {'vegetarisk', 'pasta-dish', 'mild'},
+            allergenStatus: {
+              'gluten': TriState.contains,
+              'mjölk': TriState.free,
+            },
+            dietaryStatus: {'vegetarisk': TriState.free},
+            coverage: 0.95,
+            unknownIngredients: ['unknown-spice'],
+            generatedAt: DateTime(2025, 6, 1),
+            generatorVersion: '1.0.0',
+          );
+
+          final sourceRecipe = Recipe(
+            core: RecipeCore(
+              title: 'Pasta med grönsakssås',
+              description: 'Vegetarisk pasta',
+              ingredients: ['Pasta', 'Tomater', 'Basilika'],
+              instructions: ['Koka pasta', 'Gör sås'],
+              mealType: 'Middag',
+              tagResult: tagResult,
+            ),
+            type: RecipeType.shared,
+            socialData: const RecipeSocialData(
+              ownerId: 'owner_123',
+              ownerDisplayName: 'Anna',
+            ),
+          );
+
+          // Act
+          final copy = RecipeFactory.createPersonalCopy(
+            sourceRecipe,
+            newOwnerId: 'new_user',
+          );
+
+          // Assert
+          expect(
+            copy.core.tagResult,
+            isNotNull,
+            reason: 'tagResult should be preserved in personal copy',
+          );
+          expect(copy.core.tagResult!.tags, contains('vegetarisk'));
+          expect(copy.core.tagResult!.tags, contains('pasta-dish'));
+          expect(copy.core.tagResult!.coverage, 0.95);
+        },
+      );
+
+      test(
+        'BUG-2: createPersonalCopy should preserve tagOverrides from source recipe',
+        () {
+          // Arrange
+          final tagOverrides = TagOverrides(
+            allergenOverrides: {'gluten': TriState.free},
+            addedTags: {'hälsosam'},
+            removedTags: {'stark'},
+            lastEditedAt: DateTime(2025, 5, 15),
+            lastEditedBy: 'owner_123',
+          );
+
+          final sourceRecipe = Recipe(
+            core: RecipeCore(
+              title: 'Test recipe',
+              description: 'Test',
+              ingredients: ['A', 'B'],
+              instructions: ['Step 1'],
+              mealType: 'Lunch',
+              tagOverrides: tagOverrides,
+            ),
+            type: RecipeType.personal,
+          );
+
+          // Act
+          final copy = RecipeFactory.createPersonalCopy(
+            sourceRecipe,
+            newOwnerId: 'copier_456',
+          );
+
+          // Assert
+          expect(
+            copy.core.tagOverrides,
+            isNotNull,
+            reason: 'tagOverrides should be preserved in personal copy',
+          );
+          expect(
+            copy.core.tagOverrides!.allergenOverrides['gluten'],
+            TriState.free,
+          );
+          expect(copy.core.tagOverrides!.addedTags, contains('hälsosam'));
+          expect(copy.core.tagOverrides!.removedTags, contains('stark'));
+        },
+      );
+
+      test(
+        'BUG-2: createPersonalCopy should preserve ingredientsNormalized from source recipe',
+        () {
+          // Arrange
+          final normalized = ['pasta', 'tomat', 'basilika', 'olivolja'];
+
+          final sourceRecipe = Recipe(
+            core: RecipeCore(
+              title: 'Pasta',
+              description: 'Test',
+              ingredients: [
+                '400g pasta',
+                '3 tomater',
+                'Basilika',
+                '2 msk olivolja',
+              ],
+              instructions: ['Koka'],
+              mealType: 'Middag',
+              ingredientsNormalized: normalized,
+            ),
+            type: RecipeType.shared,
+            socialData: const RecipeSocialData(
+              ownerId: 'owner_123',
+              ownerDisplayName: 'Anna',
+            ),
+          );
+
+          // Act
+          final copy = RecipeFactory.createPersonalCopy(
+            sourceRecipe,
+            newOwnerId: 'new_user',
+          );
+
+          // Assert
+          expect(
+            copy.core.ingredientsNormalized,
+            isNotNull,
+            reason: 'ingredientsNormalized should be preserved',
+          );
+          expect(copy.core.ingredientsNormalized, equals(normalized));
+        },
+      );
+
+      test(
+        'BUG-2: createPersonalCopy should handle null tagResult, tagOverrides, and ingredientsNormalized',
+        () {
+          // Arrange: Recipe with all tag fields null
+          final sourceRecipe = Recipe(
+            core: RecipeCore(
+              title: 'Legacy recipe',
+              description: 'No tagging data',
+              ingredients: ['A'],
+              instructions: ['B'],
+              mealType: 'Lunch',
+              // tagResult, tagOverrides, ingredientsNormalized are all null
+            ),
+            type: RecipeType.personal,
+          );
+
+          // Act
+          final copy = RecipeFactory.createPersonalCopy(
+            sourceRecipe,
+            newOwnerId: 'copier',
+          );
+
+          // Assert: null fields stay null
+          expect(copy.core.tagResult, isNull);
+          expect(copy.core.tagOverrides, isNull);
+          expect(copy.core.ingredientsNormalized, isNull);
+        },
+      );
 
       test('should create valid timestamps for realtime recipes', () {
         final before = DateTime.now();
@@ -872,13 +920,15 @@ void main() {
 
         expect(recipe.realtimeData!.lastEditedAt, isNotNull);
         expect(
-            recipe.realtimeData!.lastEditedAt!.isAfter(before) ||
-                recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(before),
-            isTrue);
+          recipe.realtimeData!.lastEditedAt!.isAfter(before) ||
+              recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            recipe.realtimeData!.lastEditedAt!.isBefore(after) ||
-                recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(after),
-            isTrue);
+          recipe.realtimeData!.lastEditedAt!.isBefore(after) ||
+              recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
   });

@@ -143,8 +143,11 @@ class _HeaderRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text(l10n.adminOpsColDeleted,
-                style: _h, textAlign: TextAlign.end),
+            child: Text(
+              l10n.adminOpsColDeleted,
+              style: _h,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),

@@ -24,8 +24,10 @@ void main() {
         operation: 'delete',
         userId: 'alice',
       );
-      expect(e.toString(),
-          'PermissionDeniedException: denied, Operation: delete, Resource: recipe, User: alice');
+      expect(
+        e.toString(),
+        'PermissionDeniedException: denied, Operation: delete, Resource: recipe, User: alice',
+      );
     });
 
     test('omits absent fields individually', () {
@@ -50,8 +52,10 @@ void main() {
         resourceType: 'recipe',
         resourceId: 'r1',
       );
-      expect(e.toString(),
-          'ResourceNotFoundException: not found, Type: recipe, ID: r1');
+      expect(
+        e.toString(),
+        'ResourceNotFoundException: not found, Type: recipe, ID: r1',
+      );
     });
 
     test('omits absent fields', () {
@@ -79,10 +83,14 @@ void main() {
     });
 
     test('toString appends details with " - " separator', () {
-      final e =
-          AuthenticationException('must sign in', details: 'session expired');
-      expect(e.toString(),
-          'AuthenticationException: must sign in - session expired');
+      final e = AuthenticationException(
+        'must sign in',
+        details: 'session expired',
+      );
+      expect(
+        e.toString(),
+        'AuthenticationException: must sign in - session expired',
+      );
     });
   });
 

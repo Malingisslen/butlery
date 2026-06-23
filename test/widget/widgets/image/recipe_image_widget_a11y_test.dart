@@ -20,8 +20,9 @@ void main() {
   });
 
   group('BUT-551 RecipeImageWidget Semantics', () {
-    testWidgets('detail constructor announces dish name as image label',
-        (tester) async {
+    testWidgets('detail constructor announces dish name as image label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
@@ -40,8 +41,9 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('card constructor announces dish name as image label',
-        (tester) async {
+    testWidgets('card constructor announces dish name as image label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
@@ -58,24 +60,25 @@ void main() {
     });
 
     testWidgets(
-        'empty state with no onTap excludes decorative placeholder from a11y',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'empty state with no onTap excludes decorative placeholder from a11y',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: RecipeImageWidget.card(
-            imageUrls: const [],
-            semanticsLabel: 'No-image recipe',
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: RecipeImageWidget.card(
+              imageUrls: const [],
+              semanticsLabel: 'No-image recipe',
+            ),
           ),
-        ),
-      );
+        );
 
-      // semanticsLabel is only emitted when there are images — for the empty
-      // decorative state, neither the dish label nor an "image" announcement
-      // should reach the screen reader.
-      expect(find.bySemanticsLabel('No-image recipe'), findsNothing);
-      handle.dispose();
-    });
+        // semanticsLabel is only emitted when there are images — for the empty
+        // decorative state, neither the dish label nor an "image" announcement
+        // should reach the screen reader.
+        expect(find.bySemanticsLabel('No-image recipe'), findsNothing);
+        handle.dispose();
+      },
+    );
   });
 }

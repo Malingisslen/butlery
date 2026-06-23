@@ -57,8 +57,9 @@ class AdaptiveIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconData =
-        _isIOS && cupertinoIcon != null ? cupertinoIcon! : materialIcon;
+    final iconData = _isIOS && cupertinoIcon != null
+        ? cupertinoIcon!
+        : materialIcon;
     return Icon(
       iconData,
       size: size,
@@ -73,8 +74,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.book,
-        cupertinoIcon = CupertinoIcons.book;
+  }) : materialIcon = Icons.book,
+       cupertinoIcon = CupertinoIcons.book;
 
   /// Book outlined icon for inactive recipes navigation.
   const AdaptiveIcon.bookOutlined({
@@ -82,8 +83,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.book_outlined,
-        cupertinoIcon = CupertinoIcons.book;
+  }) : materialIcon = Icons.book_outlined,
+       cupertinoIcon = CupertinoIcons.book;
 
   /// Add/plus icon.
   const AdaptiveIcon.add({
@@ -91,8 +92,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.add,
-        cupertinoIcon = CupertinoIcons.add;
+  }) : materialIcon = Icons.add,
+       cupertinoIcon = CupertinoIcons.add;
 
   /// Add outlined icon.
   const AdaptiveIcon.addOutlined({
@@ -100,8 +101,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.add_outlined,
-        cupertinoIcon = CupertinoIcons.add;
+  }) : materialIcon = Icons.add_outlined,
+       cupertinoIcon = CupertinoIcons.add;
 
   /// Calendar icon for weekly menu.
   const AdaptiveIcon.calendar({
@@ -109,8 +110,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.calendar_today,
-        cupertinoIcon = CupertinoIcons.calendar;
+  }) : materialIcon = Icons.calendar_today,
+       cupertinoIcon = CupertinoIcons.calendar;
 
   /// Calendar outlined icon.
   const AdaptiveIcon.calendarOutlined({
@@ -118,8 +119,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.calendar_today_outlined,
-        cupertinoIcon = CupertinoIcons.calendar;
+  }) : materialIcon = Icons.calendar_today_outlined,
+       cupertinoIcon = CupertinoIcons.calendar;
 
   /// Shopping cart icon.
   const AdaptiveIcon.cart({
@@ -127,8 +128,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.shopping_cart,
-        cupertinoIcon = CupertinoIcons.cart;
+  }) : materialIcon = Icons.shopping_cart,
+       cupertinoIcon = CupertinoIcons.cart;
 
   /// Shopping cart outlined icon.
   const AdaptiveIcon.cartOutlined({
@@ -136,8 +137,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.shopping_cart_outlined,
-        cupertinoIcon = CupertinoIcons.cart;
+  }) : materialIcon = Icons.shopping_cart_outlined,
+       cupertinoIcon = CupertinoIcons.cart;
 
   /// Explore/compass icon for discovery.
   const AdaptiveIcon.explore({
@@ -145,8 +146,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.explore,
-        cupertinoIcon = CupertinoIcons.compass;
+  }) : materialIcon = Icons.explore,
+       cupertinoIcon = CupertinoIcons.compass;
 
   /// Explore outlined icon.
   const AdaptiveIcon.exploreOutlined({
@@ -154,8 +155,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.explore_outlined,
-        cupertinoIcon = CupertinoIcons.compass;
+  }) : materialIcon = Icons.explore_outlined,
+       cupertinoIcon = CupertinoIcons.compass;
 
   /// Share icon.
   const AdaptiveIcon.share({
@@ -163,8 +164,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.share,
-        cupertinoIcon = CupertinoIcons.share;
+  }) : materialIcon = Icons.share,
+       cupertinoIcon = CupertinoIcons.share;
 
   /// Delete/trash icon.
   const AdaptiveIcon.delete({
@@ -172,8 +173,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.delete,
-        cupertinoIcon = CupertinoIcons.trash;
+  }) : materialIcon = Icons.delete,
+       cupertinoIcon = CupertinoIcons.trash;
 
   /// Delete outlined icon.
   const AdaptiveIcon.deleteOutlined({
@@ -181,8 +182,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.delete_outline,
-        cupertinoIcon = CupertinoIcons.trash;
+  }) : materialIcon = Icons.delete_outline,
+       cupertinoIcon = CupertinoIcons.trash;
 
   /// Edit/pencil icon.
   const AdaptiveIcon.edit({
@@ -190,8 +191,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.edit,
-        cupertinoIcon = CupertinoIcons.pencil;
+  }) : materialIcon = Icons.edit,
+       cupertinoIcon = CupertinoIcons.pencil;
 
   /// Search icon.
   const AdaptiveIcon.search({
@@ -199,8 +200,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.search,
-        cupertinoIcon = CupertinoIcons.search;
+  }) : materialIcon = Icons.search,
+       cupertinoIcon = CupertinoIcons.search;
 
   /// More options (vertical ellipsis) icon.
   const AdaptiveIcon.moreVert({
@@ -208,8 +209,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.more_vert,
-        cupertinoIcon = CupertinoIcons.ellipsis_vertical;
+  }) : materialIcon = Icons.more_vert,
+       cupertinoIcon = CupertinoIcons.ellipsis_vertical;
 
   /// More options (horizontal ellipsis) icon.
   const AdaptiveIcon.moreHoriz({
@@ -217,8 +218,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.more_horiz,
-        cupertinoIcon = CupertinoIcons.ellipsis;
+  }) : materialIcon = Icons.more_horiz,
+       cupertinoIcon = CupertinoIcons.ellipsis;
 
   /// Close/X icon.
   const AdaptiveIcon.close({
@@ -226,8 +227,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.close,
-        cupertinoIcon = CupertinoIcons.xmark;
+  }) : materialIcon = Icons.close,
+       cupertinoIcon = CupertinoIcons.xmark;
 
   /// Check/checkmark icon.
   const AdaptiveIcon.check({
@@ -235,8 +236,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.check,
-        cupertinoIcon = CupertinoIcons.check_mark;
+  }) : materialIcon = Icons.check,
+       cupertinoIcon = CupertinoIcons.check_mark;
 
   /// Check circle icon.
   const AdaptiveIcon.checkCircle({
@@ -244,8 +245,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.check_circle,
-        cupertinoIcon = CupertinoIcons.check_mark_circled;
+  }) : materialIcon = Icons.check_circle,
+       cupertinoIcon = CupertinoIcons.check_mark_circled;
 
   /// Settings/gear icon.
   const AdaptiveIcon.settings({
@@ -253,8 +254,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.settings,
-        cupertinoIcon = CupertinoIcons.gear;
+  }) : materialIcon = Icons.settings,
+       cupertinoIcon = CupertinoIcons.gear;
 
   /// People/friends icon.
   const AdaptiveIcon.people({
@@ -262,8 +263,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.people,
-        cupertinoIcon = CupertinoIcons.person_2;
+  }) : materialIcon = Icons.people,
+       cupertinoIcon = CupertinoIcons.person_2;
 
   /// People outlined icon.
   const AdaptiveIcon.peopleOutlined({
@@ -271,8 +272,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.people_outline,
-        cupertinoIcon = CupertinoIcons.person_2;
+  }) : materialIcon = Icons.people_outline,
+       cupertinoIcon = CupertinoIcons.person_2;
 
   /// Person icon.
   const AdaptiveIcon.person({
@@ -280,8 +281,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.person,
-        cupertinoIcon = CupertinoIcons.person;
+  }) : materialIcon = Icons.person,
+       cupertinoIcon = CupertinoIcons.person;
 
   /// Person outlined icon.
   const AdaptiveIcon.personOutlined({
@@ -289,8 +290,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.person_outline,
-        cupertinoIcon = CupertinoIcons.person;
+  }) : materialIcon = Icons.person_outline,
+       cupertinoIcon = CupertinoIcons.person;
 
   /// Group icon.
   const AdaptiveIcon.group({
@@ -298,8 +299,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.group,
-        cupertinoIcon = CupertinoIcons.person_3;
+  }) : materialIcon = Icons.group,
+       cupertinoIcon = CupertinoIcons.person_3;
 
   /// Group outlined icon.
   const AdaptiveIcon.groupOutlined({
@@ -307,8 +308,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.group_outlined,
-        cupertinoIcon = CupertinoIcons.person_3;
+  }) : materialIcon = Icons.group_outlined,
+       cupertinoIcon = CupertinoIcons.person_3;
 
   /// Star/favorite icon.
   const AdaptiveIcon.star({
@@ -316,8 +317,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.star,
-        cupertinoIcon = CupertinoIcons.star_fill;
+  }) : materialIcon = Icons.star,
+       cupertinoIcon = CupertinoIcons.star_fill;
 
   /// Star outlined icon.
   const AdaptiveIcon.starOutlined({
@@ -325,8 +326,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.star_border,
-        cupertinoIcon = CupertinoIcons.star;
+  }) : materialIcon = Icons.star_border,
+       cupertinoIcon = CupertinoIcons.star;
 
   /// Favorite/heart icon.
   const AdaptiveIcon.favorite({
@@ -334,8 +335,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.favorite,
-        cupertinoIcon = CupertinoIcons.heart_fill;
+  }) : materialIcon = Icons.favorite,
+       cupertinoIcon = CupertinoIcons.heart_fill;
 
   /// Favorite outlined icon.
   const AdaptiveIcon.favoriteOutlined({
@@ -343,8 +344,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.favorite_border,
-        cupertinoIcon = CupertinoIcons.heart;
+  }) : materialIcon = Icons.favorite_border,
+       cupertinoIcon = CupertinoIcons.heart;
 
   /// Warning icon.
   const AdaptiveIcon.warning({
@@ -352,8 +353,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.warning,
-        cupertinoIcon = CupertinoIcons.exclamationmark_triangle;
+  }) : materialIcon = Icons.warning,
+       cupertinoIcon = CupertinoIcons.exclamationmark_triangle;
 
   /// Error icon.
   const AdaptiveIcon.error({
@@ -361,8 +362,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.error,
-        cupertinoIcon = CupertinoIcons.exclamationmark_circle;
+  }) : materialIcon = Icons.error,
+       cupertinoIcon = CupertinoIcons.exclamationmark_circle;
 
   /// Info icon.
   const AdaptiveIcon.info({
@@ -370,8 +371,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.info,
-        cupertinoIcon = CupertinoIcons.info;
+  }) : materialIcon = Icons.info,
+       cupertinoIcon = CupertinoIcons.info;
 
   /// Info outlined icon.
   const AdaptiveIcon.infoOutlined({
@@ -379,8 +380,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.info_outline,
-        cupertinoIcon = CupertinoIcons.info;
+  }) : materialIcon = Icons.info_outline,
+       cupertinoIcon = CupertinoIcons.info;
 
   /// Restaurant/food icon.
   const AdaptiveIcon.restaurant({
@@ -388,9 +389,9 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.restaurant,
-        cupertinoIcon =
-            CupertinoIcons.photo; // No direct equivalent, using photo
+  }) : materialIcon = Icons.restaurant,
+       cupertinoIcon =
+           CupertinoIcons.photo; // No direct equivalent, using photo
 
   /// Camera icon.
   const AdaptiveIcon.camera({
@@ -398,8 +399,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.camera_alt,
-        cupertinoIcon = CupertinoIcons.camera;
+  }) : materialIcon = Icons.camera_alt,
+       cupertinoIcon = CupertinoIcons.camera;
 
   /// Photo/image icon.
   const AdaptiveIcon.photo({
@@ -407,8 +408,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.photo,
-        cupertinoIcon = CupertinoIcons.photo;
+  }) : materialIcon = Icons.photo,
+       cupertinoIcon = CupertinoIcons.photo;
 
   /// Copy icon.
   const AdaptiveIcon.copy({
@@ -416,8 +417,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.copy,
-        cupertinoIcon = CupertinoIcons.doc_on_doc;
+  }) : materialIcon = Icons.copy,
+       cupertinoIcon = CupertinoIcons.doc_on_doc;
 
   /// Refresh icon.
   const AdaptiveIcon.refresh({
@@ -425,8 +426,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.refresh,
-        cupertinoIcon = CupertinoIcons.refresh;
+  }) : materialIcon = Icons.refresh,
+       cupertinoIcon = CupertinoIcons.refresh;
 
   /// Sync icon.
   const AdaptiveIcon.sync({
@@ -434,8 +435,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.sync,
-        cupertinoIcon = CupertinoIcons.arrow_2_circlepath;
+  }) : materialIcon = Icons.sync,
+       cupertinoIcon = CupertinoIcons.arrow_2_circlepath;
 
   /// Exit/logout icon.
   const AdaptiveIcon.exitToApp({
@@ -443,8 +444,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.exit_to_app,
-        cupertinoIcon = CupertinoIcons.square_arrow_right;
+  }) : materialIcon = Icons.exit_to_app,
+       cupertinoIcon = CupertinoIcons.square_arrow_right;
 
   /// Visibility/eye icon.
   const AdaptiveIcon.visibility({
@@ -452,8 +453,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.visibility,
-        cupertinoIcon = CupertinoIcons.eye;
+  }) : materialIcon = Icons.visibility,
+       cupertinoIcon = CupertinoIcons.eye;
 
   /// Visibility off icon.
   const AdaptiveIcon.visibilityOff({
@@ -461,8 +462,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.visibility_off,
-        cupertinoIcon = CupertinoIcons.eye_slash;
+  }) : materialIcon = Icons.visibility_off,
+       cupertinoIcon = CupertinoIcons.eye_slash;
 
   /// Bookmark icon.
   const AdaptiveIcon.bookmark({
@@ -470,8 +471,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.bookmark,
-        cupertinoIcon = CupertinoIcons.bookmark_fill;
+  }) : materialIcon = Icons.bookmark,
+       cupertinoIcon = CupertinoIcons.bookmark_fill;
 
   /// Bookmark outlined icon.
   const AdaptiveIcon.bookmarkOutlined({
@@ -479,8 +480,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.bookmark_border,
-        cupertinoIcon = CupertinoIcons.bookmark;
+  }) : materialIcon = Icons.bookmark_border,
+       cupertinoIcon = CupertinoIcons.bookmark;
 
   /// Arrow back icon.
   const AdaptiveIcon.arrowBack({
@@ -488,8 +489,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.arrow_back,
-        cupertinoIcon = CupertinoIcons.back;
+  }) : materialIcon = Icons.arrow_back,
+       cupertinoIcon = CupertinoIcons.back;
 
   /// Arrow forward icon.
   const AdaptiveIcon.arrowForward({
@@ -497,8 +498,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.arrow_forward,
-        cupertinoIcon = CupertinoIcons.forward;
+  }) : materialIcon = Icons.arrow_forward,
+       cupertinoIcon = CupertinoIcons.forward;
 
   /// Chevron right icon.
   const AdaptiveIcon.chevronRight({
@@ -506,8 +507,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.chevron_right,
-        cupertinoIcon = CupertinoIcons.chevron_right;
+  }) : materialIcon = Icons.chevron_right,
+       cupertinoIcon = CupertinoIcons.chevron_right;
 
   /// Chevron left icon.
   const AdaptiveIcon.chevronLeft({
@@ -515,8 +516,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.chevron_left,
-        cupertinoIcon = CupertinoIcons.chevron_left;
+  }) : materialIcon = Icons.chevron_left,
+       cupertinoIcon = CupertinoIcons.chevron_left;
 
   /// Expand more (down arrow) icon.
   const AdaptiveIcon.expandMore({
@@ -524,8 +525,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.expand_more,
-        cupertinoIcon = CupertinoIcons.chevron_down;
+  }) : materialIcon = Icons.expand_more,
+       cupertinoIcon = CupertinoIcons.chevron_down;
 
   /// Expand less (up arrow) icon.
   const AdaptiveIcon.expandLess({
@@ -533,8 +534,8 @@ class AdaptiveIcon extends StatelessWidget {
     this.size,
     this.color,
     this.semanticLabel,
-  })  : materialIcon = Icons.expand_less,
-        cupertinoIcon = CupertinoIcons.chevron_up;
+  }) : materialIcon = Icons.expand_less,
+       cupertinoIcon = CupertinoIcons.chevron_up;
 }
 
 /// Static helper to get the appropriate IconData for the current platform.

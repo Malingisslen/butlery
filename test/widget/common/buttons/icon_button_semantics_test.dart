@@ -21,8 +21,9 @@ void main() {
       await BaseUnitTest.setupUnit();
     });
 
-    testWidgets('fullscreen image viewer back button announces commonBack',
-        (tester) async {
+    testWidgets('fullscreen image viewer back button announces commonBack', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(
@@ -45,8 +46,9 @@ void main() {
       expect(find.byTooltip('Tillbaka'), findsOneWidget);
     });
 
-    testWidgets('password visibility toggle announces show/hide labels',
-        (tester) async {
+    testWidgets('password visibility toggle announces show/hide labels', (
+      tester,
+    ) async {
       var isVisible = false;
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -76,8 +78,9 @@ void main() {
       expect(find.byTooltip('Dölj lösenord'), findsOneWidget);
     });
 
-    testWidgets('bulk-selection close button announces bulkCancelSelection',
-        (tester) async {
+    testWidgets('bulk-selection close button announces bulkCancelSelection', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(

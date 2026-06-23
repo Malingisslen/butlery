@@ -68,7 +68,8 @@ class RecipeManagementHandler {
         final committed = await recipeService.deleteRecipe(recipe.id);
         if (!committed) {
           AppLogger.warning(
-              'BUT-927 delete commit returned false: ${recipe.id}');
+            'BUT-927 delete commit returned false: ${recipe.id}',
+          );
           return;
         }
         await analyticsService.logRecipeDeleted(
@@ -214,8 +215,9 @@ class RecipeManagementHandler {
                     .map(
                       (friend) => CheckboxListTile(
                         title: Text(friend.displayName),
-                        subtitle:
-                            friend.email.isNotEmpty ? Text(friend.email) : null,
+                        subtitle: friend.email.isNotEmpty
+                            ? Text(friend.email)
+                            : null,
                         value: selectedIds.contains(friend.uid),
                         activeColor: dialogCs.primary,
                         onChanged: (v) => setDialogState(() {
@@ -236,8 +238,9 @@ class RecipeManagementHandler {
                 child: Text(context.l10n.commonCancel),
               ),
               TextButton(
-                onPressed:
-                    selectedIds.isEmpty ? null : () => Navigator.pop(ctx, true),
+                onPressed: selectedIds.isEmpty
+                    ? null
+                    : () => Navigator.pop(ctx, true),
                 child: Text(context.l10n.commonEnable),
               ),
             ],
@@ -248,15 +251,19 @@ class RecipeManagementHandler {
 
     if (confirmed == true && selectedIds.isNotEmpty) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.realtime
-          .enableCollaborativeEditing(recipe.id, selectedIds.toList());
+      final success = await recipeService.realtime.enableCollaborativeEditing(
+        recipe.id,
+        selectedIds.toList(),
+      );
 
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, context.l10n.collaborationEnabled);
       } else {
         SnackBarUtils.showError(
-            context, context.l10n.collaborationCouldNotEnable);
+          context,
+          context.l10n.collaborationCouldNotEnable,
+        );
       }
     }
   }
@@ -286,16 +293,21 @@ class RecipeManagementHandler {
 
     if (confirmed == true) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success =
-          await recipeService.realtime.disableCollaborativeEditing(recipe.id);
+      final success = await recipeService.realtime.disableCollaborativeEditing(
+        recipe.id,
+      );
 
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(
-            context, context.l10n.collaborationDeactivated);
+          context,
+          context.l10n.collaborationDeactivated,
+        );
       } else {
         SnackBarUtils.showError(
-            context, context.l10n.collaborationCouldNotDeactivate);
+          context,
+          context.l10n.collaborationCouldNotDeactivate,
+        );
       }
     }
   }

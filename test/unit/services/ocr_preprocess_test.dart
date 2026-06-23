@@ -46,8 +46,9 @@ void main() {
 
       final decoded = img.decodeImage(out);
       expect(decoded, isNotNull);
-      final longEdge =
-          decoded!.width > decoded.height ? decoded.width : decoded.height;
+      final longEdge = decoded!.width > decoded.height
+          ? decoded.width
+          : decoded.height;
       expect(longEdge, lessThanOrEqualTo(2048));
       expect(longEdge, greaterThan(1024)); // Must actually contain content
     });
@@ -82,27 +83,30 @@ void main() {
       expect(decoded.height, 600);
     });
 
-    test('preprocessing is deterministic (same input → byte-identical output)',
-        () {
-      // Use a non-trivial image so JPEG encoding has actual content to hash
-      final src = img.Image(width: 256, height: 256);
-      for (var y = 0; y < 256; y++) {
-        for (var x = 0; x < 256; x++) {
-          src.setPixelRgb(x, y, x % 256, y % 256, (x ^ y) % 256);
+    test(
+      'preprocessing is deterministic (same input → byte-identical output)',
+      () {
+        // Use a non-trivial image so JPEG encoding has actual content to hash
+        final src = img.Image(width: 256, height: 256);
+        for (var y = 0; y < 256; y++) {
+          for (var x = 0; x < 256; x++) {
+            src.setPixelRgb(x, y, x % 256, y % 256, (x ^ y) % 256);
+          }
         }
-      }
-      final pngBytes = Uint8List.fromList(img.encodePng(src));
+        final pngBytes = Uint8List.fromList(img.encodePng(src));
 
-      final out1 = OCRExtractionService.preprocessImageForOcr(pngBytes);
-      final out2 = OCRExtractionService.preprocessImageForOcr(pngBytes);
+        final out1 = OCRExtractionService.preprocessImageForOcr(pngBytes);
+        final out2 = OCRExtractionService.preprocessImageForOcr(pngBytes);
 
-      expect(out1.length, out2.length);
-      expect(out1, orderedEquals(out2));
-    });
+        expect(out1.length, out2.length);
+        expect(out1, orderedEquals(out2));
+      },
+    );
 
     test('returns original bytes unchanged when decode fails', () {
       final garbage = Uint8List.fromList(
-          List.generate(64, (i) => i % 256)); // not a valid image
+        List.generate(64, (i) => i % 256),
+      ); // not a valid image
 
       final out = OCRExtractionService.preprocessImageForOcr(garbage);
 
@@ -127,17 +131,22 @@ void main() {
       for (final p in samplePoints) {
         final pixel = decoded.getPixel(p[0], p[1]);
         // Greyscale: R, G, B should be equal (or very close given JPEG noise)
-        expect((pixel.r - pixel.g).abs(), lessThan(8),
-            reason:
-                'Expected R≈G at (${p[0]},${p[1]}); got R=${pixel.r} G=${pixel.g}');
-        expect((pixel.g - pixel.b).abs(), lessThan(8),
-            reason:
-                'Expected G≈B at (${p[0]},${p[1]}); got G=${pixel.g} B=${pixel.b}');
+        expect(
+          (pixel.r - pixel.g).abs(),
+          lessThan(8),
+          reason:
+              'Expected R≈G at (${p[0]},${p[1]}); got R=${pixel.r} G=${pixel.g}',
+        );
+        expect(
+          (pixel.g - pixel.b).abs(),
+          lessThan(8),
+          reason:
+              'Expected G≈B at (${p[0]},${p[1]}); got G=${pixel.g} B=${pixel.b}',
+        );
       }
     });
 
-    test(
-        'BUT-666: same logical image in different containers produces '
+    test('BUT-666: same logical image in different containers produces '
         'identical preprocessed bytes (cache-key collapse)', () {
       // Build a 100x100 solid image and encode it three ways: PNG, JPEG q70,
       // JPEG q95. All three decode to the same RGB pixels — they only differ
@@ -170,15 +179,21 @@ void main() {
       //
       // (For the looser claim we'd need a perceptual hash — out of scope for
       // BUT-666; the ticket explicitly defers pHash as optional.)
-      expect(outLow, equals(outHigh),
-          reason: 'Two JPEG inputs differing only in source quality must '
-              'produce identical preprocessed bytes — that is the cache-key '
-              'collapse this ticket buys.');
+      expect(
+        outLow,
+        equals(outHigh),
+        reason:
+            'Two JPEG inputs differing only in source quality must '
+            'produce identical preprocessed bytes — that is the cache-key '
+            'collapse this ticket buys.',
+      );
 
       // The PNG-vs-JPEG paths should at minimum produce JPEG-formatted output
       // of comparable size (within ~10%) — proves the pipeline did its job.
-      expect(outPng.length,
-          inInclusiveRange((outLow.length * 0.7).round(), outLow.length * 2));
+      expect(
+        outPng.length,
+        inInclusiveRange((outLow.length * 0.7).round(), outLow.length * 2),
+      );
     });
 
     test('EXIF orientation: bakeOrientation reorients sideways images', () {
@@ -201,10 +216,16 @@ void main() {
 
       // After baking orientation 6 (90 CW), width and height should swap:
       // original 200x100 → baked 100x200
-      expect(decoded.width, 100,
-          reason: 'After orientation bake, width should be original height');
-      expect(decoded.height, 200,
-          reason: 'After orientation bake, height should be original width');
+      expect(
+        decoded.width,
+        100,
+        reason: 'After orientation bake, width should be original height',
+      );
+      expect(
+        decoded.height,
+        200,
+        reason: 'After orientation bake, height should be original width',
+      );
     });
   });
 }

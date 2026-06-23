@@ -48,17 +48,19 @@ void main() {
       );
     });
 
-    test('once dismissed, never prompts again regardless of session/deferred',
-        () {
-      expect(
-        PwaInstallGate.shouldPrompt(
-          hasDeferredPrompt: true,
-          sessionCount: PwaInstallGate.minSessions + 10,
-          dismissed: true,
-        ),
-        isFalse,
-      );
-    });
+    test(
+      'once dismissed, never prompts again regardless of session/deferred',
+      () {
+        expect(
+          PwaInstallGate.shouldPrompt(
+            hasDeferredPrompt: true,
+            sessionCount: PwaInstallGate.minSessions + 10,
+            dismissed: true,
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('PwaInstallGate stateful flow', () {
@@ -76,14 +78,16 @@ void main() {
       expect(gate.canPrompt(hasDeferredPrompt: true), isTrue);
     });
 
-    test('a missing deferred prompt suppresses the prompt on the 3rd session',
-        () {
-      final gate = PwaInstallGate();
-      gate.restore(sessionCount: 2, dismissed: false);
-      gate.incrementSession(); // session 3
-      expect(gate.canPrompt(hasDeferredPrompt: false), isFalse);
-      expect(gate.canPrompt(hasDeferredPrompt: true), isTrue);
-    });
+    test(
+      'a missing deferred prompt suppresses the prompt on the 3rd session',
+      () {
+        final gate = PwaInstallGate();
+        gate.restore(sessionCount: 2, dismissed: false);
+        gate.incrementSession(); // session 3
+        expect(gate.canPrompt(hasDeferredPrompt: false), isFalse);
+        expect(gate.canPrompt(hasDeferredPrompt: true), isTrue);
+      },
+    );
 
     test('restore reports dismissed and markDismissed sticks forever', () {
       final gate = PwaInstallGate();

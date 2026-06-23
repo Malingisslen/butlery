@@ -119,8 +119,8 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
       stream: widget.service.remainingFor(widget.timerId),
       initialData:
           widget.service.currentRemainingFor(widget.timerId) == Duration.zero
-              ? widget.initialDuration
-              : widget.service.currentRemainingFor(widget.timerId),
+          ? widget.initialDuration
+          : widget.service.currentRemainingFor(widget.timerId),
       builder: (context, snapshot) {
         final remaining = snapshot.data ?? widget.initialDuration;
         final isRunning = widget.service.isRunningFor(widget.timerId);
@@ -174,10 +174,9 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
                 context.l10n.timerDurationHint(widget.sourcePhrase!),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimaryContainer
-                      .withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                   fontStyle: FontStyle.italic,
                 ),
               ),

@@ -90,28 +90,34 @@ void main() {
     // directly; the default registration is unauthenticated.
     TestServiceLocator.registerMock<AuthRepository>(
       MockFactory.createAuthRepository(
-          isAuthenticated: true, userId: _testUserId),
+        isAuthenticated: true,
+        userId: _testUserId,
+      ),
     );
 
     final connectivity = MockConnectivityMonitoringService();
     when(() => connectivity.isConnectedToInternet).thenReturn(true);
     TestServiceLocator.registerMock<ConnectivityMonitoringService>(
-        connectivity);
+      connectivity,
+    );
 
     // Non-null file so the flow proceeds past the user-cancelled branch.
     final imagePicker = MockImagePickerService();
-    when(() => imagePicker.pickImage(any()))
-        .thenAnswer((_) async => File('snap.jpg'));
+    when(
+      () => imagePicker.pickImage(any()),
+    ).thenAnswer((_) async => File('snap.jpg'));
     TestServiceLocator.registerMock<ImagePickerService>(imagePicker);
 
     // Successful upload so the flow reaches CookSnap.create + repo save.
     final uploadService = _MockImageUploadService();
-    when(() => uploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            ))
-        .thenAnswer(
-            (_) async => UploadResult.success('https://example.com/snap.jpg'));
+    when(
+      () => uploadService.uploadImage(
+        file: any(named: 'file'),
+        userId: any(named: 'userId'),
+      ),
+    ).thenAnswer(
+      (_) async => UploadResult.success('https://example.com/snap.jpg'),
+    );
     TestServiceLocator.registerMock<ImageUploadService>(uploadService);
 
     // Profile lookup for displayName/avatar — null profile is a valid path
@@ -146,125 +152,155 @@ void main() {
   }
 
   group('CookSnapService — visibility write-chain (BUT-1214)', () {
-    test('addCookSnap(visibility: onlyMe) persists onlyMe on the saved snap',
-        () async {
-      // Proves: the user's "Bara jag" choice survives the service layer into
-      // the persisted document — the link that, if dropped, silently shares
-      // a private photo with the recipe's audience.
-      final snap = await addSnap(visibility: CookSnapVisibility.onlyMe);
+    test(
+      'addCookSnap(visibility: onlyMe) persists onlyMe on the saved snap',
+      () async {
+        // Proves: the user's "Bara jag" choice survives the service layer into
+        // the persisted document — the link that, if dropped, silently shares
+        // a private photo with the recipe's audience.
+        final snap = await addSnap(visibility: CookSnapVisibility.onlyMe);
 
-      expect(snap, isNotNull,
-          reason: 'sanity: the full add flow must reach the repo save');
-      expect(repository.saved, hasLength(1));
-      expect(
-        repository.saved.single.visibility,
-        CookSnapVisibility.onlyMe,
-        reason: 'the persisted snap must carry the author-only override',
-      );
-    });
+        expect(
+          snap,
+          isNotNull,
+          reason: 'sanity: the full add flow must reach the repo save',
+        );
+        expect(repository.saved, hasLength(1));
+        expect(
+          repository.saved.single.visibility,
+          CookSnapVisibility.onlyMe,
+          reason: 'the persisted snap must carry the author-only override',
+        );
+      },
+    );
 
-    test('addCookSnap without an explicit visibility persists sameAsRecipe',
-        () async {
-      // Proves: the default direction — an ordinary snap inherits the
-      // recipe's audience (BUT-901) and is NOT accidentally locked to
-      // author-only, which would hide every photo from friends.
-      final snap = await service.addCookSnap(
-        recipeId: 'recipe-1',
-        recipeAuthorId: _testUserId,
-        recipeName: 'Köttbullar',
-        source: ImageSource.gallery,
-      );
+    test(
+      'addCookSnap without an explicit visibility persists sameAsRecipe',
+      () async {
+        // Proves: the default direction — an ordinary snap inherits the
+        // recipe's audience (BUT-901) and is NOT accidentally locked to
+        // author-only, which would hide every photo from friends.
+        final snap = await service.addCookSnap(
+          recipeId: 'recipe-1',
+          recipeAuthorId: _testUserId,
+          recipeName: 'Köttbullar',
+          source: ImageSource.gallery,
+        );
 
-      expect(snap, isNotNull);
-      expect(repository.saved, hasLength(1));
-      expect(
-        repository.saved.single.visibility,
-        CookSnapVisibility.sameAsRecipe,
-        reason: 'omitting the override must keep the inherited audience',
-      );
-    });
+        expect(snap, isNotNull);
+        expect(repository.saved, hasLength(1));
+        expect(
+          repository.saved.single.visibility,
+          CookSnapVisibility.sameAsRecipe,
+          reason: 'omitting the override must keep the inherited audience',
+        );
+      },
+    );
   });
 
   group('CookSnapService — multi-photo album write-chain (BUT-949)', () {
     test(
-        'allowMultiple gallery pick uploads every file in cover-first order, '
-        'takes the cover thumbnail, and broadcasts the full album to the feed',
-        () async {
-      // Proves the album path end to end: pickMultipleImages → per-file upload
-      // loop preserving pick order → coverThumbnailUrl from the FIRST photo →
-      // photoUrls list persisted AND mirrored into activity-feed extraData. A
-      // regression (uploading only files.first, losing order, using the last
-      // thumbnail, or dropping photoUrls) would otherwise stay green.
-      final imagePicker = production.ServiceLocator.get<ImagePickerService>()
-          as MockImagePickerService;
-      when(() => imagePicker.pickMultipleImages(
-              maxImages: any(named: 'maxImages')))
-          .thenAnswer((_) async =>
-              [File('cover.jpg'), File('second.jpg'), File('third.jpg')]);
+      'allowMultiple gallery pick uploads every file in cover-first order, '
+      'takes the cover thumbnail, and broadcasts the full album to the feed',
+      () async {
+        // Proves the album path end to end: pickMultipleImages → per-file upload
+        // loop preserving pick order → coverThumbnailUrl from the FIRST photo →
+        // photoUrls list persisted AND mirrored into activity-feed extraData. A
+        // regression (uploading only files.first, losing order, using the last
+        // thumbnail, or dropping photoUrls) would otherwise stay green.
+        final imagePicker =
+            production.ServiceLocator.get<ImagePickerService>()
+                as MockImagePickerService;
+        when(
+          () => imagePicker.pickMultipleImages(
+            maxImages: any(named: 'maxImages'),
+          ),
+        ).thenAnswer(
+          (_) async => [
+            File('cover.jpg'),
+            File('second.jpg'),
+            File('third.jpg'),
+          ],
+        );
 
-      // Distinct url + thumbnail per upload call so order and cover-selection
-      // are observable, not coincidentally equal.
-      final uploadService = production.ServiceLocator.get<ImageUploadService>()
-          as _MockImageUploadService;
-      var call = 0;
-      when(() => uploadService.uploadImage(
+        // Distinct url + thumbnail per upload call so order and cover-selection
+        // are observable, not coincidentally equal.
+        final uploadService =
+            production.ServiceLocator.get<ImageUploadService>()
+                as _MockImageUploadService;
+        var call = 0;
+        when(
+          () => uploadService.uploadImage(
             file: any(named: 'file'),
             userId: any(named: 'userId'),
-          )).thenAnswer((_) async {
-        final i = call++;
-        return UploadResult.success(
-          'https://example.com/photo-$i.jpg',
-          thumbnailUrl: 'https://example.com/thumb-$i.jpg',
+          ),
+        ).thenAnswer((_) async {
+          final i = call++;
+          return UploadResult.success(
+            'https://example.com/photo-$i.jpg',
+            thumbnailUrl: 'https://example.com/thumb-$i.jpg',
+          );
+        });
+
+        // Capture the activity-feed broadcast (cooked event extraData).
+        final activityFeed = _CapturingActivityFeedService();
+        TestServiceLocator.registerMock<ActivityFeedService>(activityFeed);
+
+        final snap = await service.addCookSnap(
+          recipeId: 'recipe-1',
+          recipeAuthorId: _testUserId,
+          recipeName: 'Köttbullar',
+          source: ImageSource.gallery,
+          allowMultiple: true,
         );
-      });
 
-      // Capture the activity-feed broadcast (cooked event extraData).
-      final activityFeed = _CapturingActivityFeedService();
-      TestServiceLocator.registerMock<ActivityFeedService>(activityFeed);
+        expect(
+          snap,
+          isNotNull,
+          reason: 'sanity: the full album flow must reach the repo save',
+        );
+        expect(repository.saved, hasLength(1));
+        final saved = repository.saved.single;
 
-      final snap = await service.addCookSnap(
-        recipeId: 'recipe-1',
-        recipeAuthorId: _testUserId,
-        recipeName: 'Köttbullar',
-        source: ImageSource.gallery,
-        allowMultiple: true,
-      );
+        expect(
+          saved.photoUrls,
+          equals([
+            'https://example.com/photo-0.jpg',
+            'https://example.com/photo-1.jpg',
+            'https://example.com/photo-2.jpg',
+          ]),
+          reason: 'every picked file is uploaded, cover first, in pick order',
+        );
+        expect(
+          saved.thumbnailUrl,
+          equals('https://example.com/thumb-0.jpg'),
+          reason:
+              'the album thumbnail is the COVER (first) photo, not the '
+              'last upload',
+        );
 
-      expect(snap, isNotNull,
-          reason: 'sanity: the full album flow must reach the repo save');
-      expect(repository.saved, hasLength(1));
-      final saved = repository.saved.single;
+        expect(
+          activityFeed.emittedExtraData,
+          hasLength(1),
+          reason: 'exactly one cooked event is broadcast',
+        );
+        expect(
+          activityFeed.emittedExtraData.single?['photoUrls'],
+          equals(saved.photoUrls),
+          reason:
+              'the feed carousel renders from extraData[photoUrls]; dropping '
+              'it blanks the carousel',
+        );
+      },
+    );
 
-      expect(
-        saved.photoUrls,
-        equals([
-          'https://example.com/photo-0.jpg',
-          'https://example.com/photo-1.jpg',
-          'https://example.com/photo-2.jpg',
-        ]),
-        reason: 'every picked file is uploaded, cover first, in pick order',
-      );
-      expect(saved.thumbnailUrl, equals('https://example.com/thumb-0.jpg'),
-          reason: 'the album thumbnail is the COVER (first) photo, not the '
-              'last upload');
-
-      expect(activityFeed.emittedExtraData, hasLength(1),
-          reason: 'exactly one cooked event is broadcast');
-      expect(
-        activityFeed.emittedExtraData.single?['photoUrls'],
-        equals(saved.photoUrls),
-        reason: 'the feed carousel renders from extraData[photoUrls]; dropping '
-            'it blanks the carousel',
-      );
-    });
-
-    test(
-        'allowMultiple with the CAMERA source stays single-shot '
+    test('allowMultiple with the CAMERA source stays single-shot '
         '(pickImage, not pickMultipleImages)', () async {
       // The album pick is gallery-only by contract; camera is inherently a
       // single frame even when allowMultiple is true.
-      final imagePicker = production.ServiceLocator.get<ImagePickerService>()
-          as MockImagePickerService;
+      final imagePicker =
+          production.ServiceLocator.get<ImagePickerService>()
+              as MockImagePickerService;
 
       final snap = await service.addCookSnap(
         recipeId: 'recipe-1',
@@ -276,8 +312,10 @@ void main() {
 
       expect(snap, isNotNull);
       expect(repository.saved.single.photoUrls, hasLength(1));
-      verifyNever(() =>
-          imagePicker.pickMultipleImages(maxImages: any(named: 'maxImages')));
+      verifyNever(
+        () =>
+            imagePicker.pickMultipleImages(maxImages: any(named: 'maxImages')),
+      );
       verify(() => imagePicker.pickImage(ImageSource.camera)).called(1);
     });
   });

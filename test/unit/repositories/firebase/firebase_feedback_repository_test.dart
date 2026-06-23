@@ -14,13 +14,13 @@ import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart'
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 FeedbackEntry _entry({required String userId}) => FeedbackEntry(
-      id: 'fb1',
-      userId: userId,
-      category: FeedbackCategory.bug,
-      description: 'Something broke',
-      recentInteractions: const [],
-      createdAt: DateTime.utc(2026, 1, 1),
-    );
+  id: 'fb1',
+  userId: userId,
+  category: FeedbackCategory.bug,
+  description: 'Something broke',
+  recentInteractions: const [],
+  createdAt: DateTime.utc(2026, 1, 1),
+);
 
 FirebaseFeedbackRepository _repo(
   FakeFirebaseFirestore firestore, {
@@ -47,20 +47,25 @@ void main() {
       expect(docs.docs, hasLength(1));
     });
 
-    test('throws PermissionDenied and writes nothing for a forged userId',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      // Authed as bob, but the entry claims to be alice's.
-      final repo = _repo(firestore, authedUserId: 'bob');
+    test(
+      'throws PermissionDenied and writes nothing for a forged userId',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        // Authed as bob, but the entry claims to be alice's.
+        final repo = _repo(firestore, authedUserId: 'bob');
 
-      await expectLater(
-        () => repo.saveFeedback(_entry(userId: 'alice')),
-        throwsA(isA<PermissionDeniedException>()),
-      );
+        await expectLater(
+          () => repo.saveFeedback(_entry(userId: 'alice')),
+          throwsA(isA<PermissionDeniedException>()),
+        );
 
-      final docs = await firestore.collection('feedback').get();
-      expect(docs.docs, isEmpty,
-          reason: 'a denied create must not persist anything');
-    });
+        final docs = await firestore.collection('feedback').get();
+        expect(
+          docs.docs,
+          isEmpty,
+          reason: 'a denied create must not persist anything',
+        );
+      },
+    );
   });
 }

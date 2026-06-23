@@ -43,8 +43,9 @@ void main() {
           .withId('recipe_1')
           .withTitle('Simple Personal Recipe')
           .withCreatedBy('user_123')
-          .withIngredients(['Salt', 'Pepper']).withInstructions(
-              ['Mix', 'Cook']).build();
+          .withIngredients(['Salt', 'Pepper'])
+          .withInstructions(['Mix', 'Cook'])
+          .build();
 
       // Create collaborative recipe with social data
       collaborativeRecipe = Recipe(
@@ -81,8 +82,9 @@ void main() {
           .withInstructions(List.generate(8, (i) => 'Step $i'))
           .withPortions(4)
           .withTimeMinutes(60)
-          .withImageUrls(['https://example.com/image.jpg']).withTags(
-              ['swedish', 'dinner', 'traditional']).build();
+          .withImageUrls(['https://example.com/image.jpg'])
+          .withTags(['swedish', 'dinner', 'traditional'])
+          .build();
     });
 
     tearDown(() async {
@@ -97,8 +99,9 @@ void main() {
     group('Recipe Engagement Metrics', () {
       test('should calculate basic engagement metrics for personal recipe', () {
         // Act
-        final metrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(personalRecipe);
+        final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          personalRecipe,
+        );
 
         // Assert
         expect(metrics['member_count'], equals(1));
@@ -111,14 +114,17 @@ void main() {
       test('should calculate higher engagement for collaborative recipe', () {
         // Act
         final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
-            collaborativeRecipe);
+          collaborativeRecipe,
+        );
 
         // Assert
         expect(metrics['member_count'], equals(5)); // 4 members + 1 owner
         expect(metrics['is_collaborative'], isTrue);
         expect(metrics['sharing_enabled'], isTrue);
-        expect(metrics['engagement_score'],
-            greaterThan(40)); // Multiple members contribute to score
+        expect(
+          metrics['engagement_score'],
+          greaterThan(40),
+        ); // Multiple members contribute to score
       });
 
       test('should include recency in engagement score', () {
@@ -139,8 +145,9 @@ void main() {
         );
 
         // Act
-        final metrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(recentRecipe);
+        final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          recentRecipe,
+        );
         final factors = metrics['engagement_factors'] as Map<String, dynamic>;
 
         // Assert
@@ -149,11 +156,13 @@ void main() {
 
       test('should calculate engagement level correctly', () {
         // Act
-        final lowEngagement =
-            SocialEngagementMetrics.calculateRecipeEngagement(personalRecipe);
+        final lowEngagement = SocialEngagementMetrics.calculateRecipeEngagement(
+          personalRecipe,
+        );
         final highEngagement =
             SocialEngagementMetrics.calculateRecipeEngagement(
-                collaborativeRecipe);
+              collaborativeRecipe,
+            );
 
         // Assert
         expect(lowEngagement['engagement_level'], equals('low'));
@@ -162,20 +171,24 @@ void main() {
 
       test('should factor in recipe complexity', () {
         // Act
-        final simpleMetrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(personalRecipe);
+        final simpleMetrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          personalRecipe,
+        );
         final complexMetrics =
             SocialEngagementMetrics.calculateRecipeEngagement(complexRecipe);
 
         // Assert
-        expect(complexMetrics['engagement_score'],
-            greaterThan(simpleMetrics['engagement_score']));
+        expect(
+          complexMetrics['engagement_score'],
+          greaterThan(simpleMetrics['engagement_score']),
+        );
       });
 
       test('should calculate engagement factors breakdown', () {
         // Act
         final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
-            collaborativeRecipe);
+          collaborativeRecipe,
+        );
         final factors = metrics['engagement_factors'] as Map<String, dynamic>;
 
         // Assert
@@ -204,8 +217,9 @@ void main() {
         );
 
         // Act
-        final metrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(invalidRecipe);
+        final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          invalidRecipe,
+        );
 
         // Assert - Empty recipe still has base score from title
         expect(metrics['engagement_score'], greaterThanOrEqualTo(0));
@@ -232,8 +246,9 @@ void main() {
         );
 
         // Act - Using private method through public interface
-        final metrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(minimalRecipe);
+        final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          minimalRecipe,
+        );
         final factors = metrics['engagement_factors'] as Map<String, dynamic>;
 
         // Assert - Title is always present, so minimum score
@@ -242,13 +257,16 @@ void main() {
 
       test('should calculate completeness score for complete recipe', () {
         // Act
-        final metrics =
-            SocialEngagementMetrics.calculateRecipeEngagement(complexRecipe);
+        final metrics = SocialEngagementMetrics.calculateRecipeEngagement(
+          complexRecipe,
+        );
         final factors = metrics['engagement_factors'] as Map<String, dynamic>;
 
         // Assert - Complete recipe should have high completeness
-        expect(factors['completeness_contribution'],
-            greaterThan(4)); // Adjusted for actual scale
+        expect(
+          factors['completeness_contribution'],
+          greaterThan(4),
+        ); // Adjusted for actual scale
       });
     });
 
@@ -319,15 +337,16 @@ void main() {
       test('should handle Firestore errors gracefully', () async {
         // Arrange - Create mock that throws
         final mockFirestore = _ThrowingFirestore();
-        when(() => mockFirestore.collection(any()))
-            .thenThrow(Exception('Firestore error'));
+        when(
+          () => mockFirestore.collection(any()),
+        ).thenThrow(Exception('Firestore error'));
 
         // Act
         final stats = await SocialEngagementMetrics.calculateUserSocialStats(
           firestore: mockFirestore,
           userId: 'user_123',
           userRecipes: [
-            personalRecipe
+            personalRecipe,
           ], // Need a recipe to trigger Firestore calls
         );
 

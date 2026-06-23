@@ -33,8 +33,8 @@ class PersonalTagService extends BaseService {
     required PersonalTagRuleEvaluator ruleEvaluator,
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
-  })  : _crud = crudService,
-        _evaluator = ruleEvaluator;
+  }) : _crud = crudService,
+       _evaluator = ruleEvaluator;
 
   @override
   String get serviceName => 'PersonalTagService';
@@ -138,8 +138,7 @@ class PersonalTagService extends BaseService {
     String tagId,
     String ruleId, {
     required bool enabled,
-  }) =>
-      _crud.setRuleEnabled(tagId, ruleId, enabled: enabled);
+  }) => _crud.setRuleEnabled(tagId, ruleId, enabled: enabled);
 
   // -- Rule queries --
 
@@ -181,7 +180,11 @@ class PersonalTagService extends BaseService {
     final allTags = await getAllTags();
     final allGroups = await getAllGroups();
     return _evaluator.evaluateRulesForRecipe(
-        recipe, tagRulePairs, allTags, allGroups);
+      recipe,
+      tagRulePairs,
+      allTags,
+      allGroups,
+    );
   }
 
   Future<Map<String, Set<String>>> evaluateRulesForRecipes(
@@ -193,7 +196,11 @@ class PersonalTagService extends BaseService {
     final allTags = await getAllTags();
     final allGroups = await getAllGroups();
     return _evaluator.evaluateRulesForRecipes(
-        recipes, tagRulePairs, allTags, allGroups);
+      recipes,
+      tagRulePairs,
+      allTags,
+      allGroups,
+    );
   }
 
   Future<Map<String, List<String>>> evaluateRulesWithSources(
@@ -205,18 +212,26 @@ class PersonalTagService extends BaseService {
     final allTags = await getAllTags();
     final allGroups = await getAllGroups();
     return _evaluator.evaluateRulesWithSources(
-        recipe, tagRulePairs, allTags, allGroups);
+      recipe,
+      tagRulePairs,
+      allTags,
+      allGroups,
+    );
   }
 
   Future<Map<String, Map<String, List<String>>>>
-      evaluateRulesWithSourcesForRecipes(List<Recipe> recipes) async {
+  evaluateRulesWithSourcesForRecipes(List<Recipe> recipes) async {
     final tagRulePairs = await getEnabledRules();
     if (tagRulePairs.isEmpty || recipes.isEmpty) return {};
 
     final allTags = await getAllTags();
     final allGroups = await getAllGroups();
     return _evaluator.evaluateRulesWithSourcesForRecipes(
-        recipes, tagRulePairs, allTags, allGroups);
+      recipes,
+      tagRulePairs,
+      allTags,
+      allGroups,
+    );
   }
 
   Future<List<PersonalTag>> suggestTagsForRecipe(Recipe recipe) async {
@@ -226,7 +241,11 @@ class PersonalTagService extends BaseService {
     final allTags = await getAllTags();
     final allGroups = await getAllGroups();
     return _evaluator.suggestTagsForRecipe(
-        recipe, tagRulePairs, allTags, allGroups);
+      recipe,
+      tagRulePairs,
+      allTags,
+      allGroups,
+    );
   }
 
   // -- Orchestration methods (remain in facade) --

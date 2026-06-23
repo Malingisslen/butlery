@@ -23,8 +23,11 @@ void main() {
       'lib/services/analytics/analytics_events.dart',
       className: 'AnalyticsEvents',
     );
-    expect(declared, isNotEmpty,
-        reason: 'sanity check — should find dozens of constants');
+    expect(
+      declared,
+      isNotEmpty,
+      reason: 'sanity check — should find dozens of constants',
+    );
 
     final used = _collectQualifiedReferences('AnalyticsEvents');
     final dead = declared.difference(used);
@@ -32,7 +35,8 @@ void main() {
     expect(
       dead,
       isEmpty,
-      reason: 'AnalyticsEvents constants with zero `AnalyticsEvents.<name>` '
+      reason:
+          'AnalyticsEvents constants with zero `AnalyticsEvents.<name>` '
           'call sites in lib/. Either wire the emitter at the right call '
           'site or remove the constant. Dead constants make the analytics '
           'dashboard show zero for an event that was never actually emitted, '
@@ -54,7 +58,8 @@ void main() {
     expect(
       dead,
       isEmpty,
-      reason: 'AnalyticsUserProperties constants with zero '
+      reason:
+          'AnalyticsUserProperties constants with zero '
           '`AnalyticsUserProperties.<name>` call sites in lib/. Same '
           'dashboard-lies-about-coverage failure mode as the events case '
           'above.\nDead: $dead',
@@ -62,35 +67,39 @@ void main() {
   });
 
   test(
-      'every `logEvent(name: "...")` raw-string is also declared in AnalyticsEvents',
-      () {
-    // Caught the reverse direction the per-constant-test misses: someone
-    // calls `logEvent(name: 'app_opened', ...)` with a literal string but
-    // never adds the matching `AnalyticsEvents.appOpened` constant. The
-    // event ships, the funnel works — but the registry's typo-safety net
-    // is bypassed and a one-character typo silently kills the dashboard.
-    final declaredValues = _collectDeclaredEventValues(
-      'lib/services/analytics/analytics_events.dart',
-    );
-    final usedValues = _collectLogEventNameStrings();
-    final undeclared = usedValues.difference(declaredValues);
+    'every `logEvent(name: "...")` raw-string is also declared in AnalyticsEvents',
+    () {
+      // Caught the reverse direction the per-constant-test misses: someone
+      // calls `logEvent(name: 'app_opened', ...)` with a literal string but
+      // never adds the matching `AnalyticsEvents.appOpened` constant. The
+      // event ships, the funnel works — but the registry's typo-safety net
+      // is bypassed and a one-character typo silently kills the dashboard.
+      final declaredValues = _collectDeclaredEventValues(
+        'lib/services/analytics/analytics_events.dart',
+      );
+      final usedValues = _collectLogEventNameStrings();
+      final undeclared = usedValues.difference(declaredValues);
 
-    expect(
-      undeclared,
-      isEmpty,
-      reason: 'logEvent name strings in lib/ that have no matching constant '
-          'in AnalyticsEvents. Add the constant to the registry and reference '
-          'it via `AnalyticsEvents.<name>` at the call site so a typo can\'t '
-          'silently kill the funnel.\nUndeclared: $undeclared',
-    );
-  });
+      expect(
+        undeclared,
+        isEmpty,
+        reason:
+            'logEvent name strings in lib/ that have no matching constant '
+            'in AnalyticsEvents. Add the constant to the registry and reference '
+            'it via `AnalyticsEvents.<name>` at the call site so a typo can\'t '
+            'silently kill the funnel.\nUndeclared: $undeclared',
+      );
+    },
+  );
 }
 
 /// Parse the registry file for `static const <name> = ...` lines inside
 /// the named class block. Pure regex — no Dart analyzer dependency to
 /// keep the lint cheap and runnable from a regular `flutter test`.
-Set<String> _collectDeclaredConstants(String path,
-    {required String className}) {
+Set<String> _collectDeclaredConstants(
+  String path, {
+  required String className,
+}) {
   final source = File(path).readAsStringSync();
   // Locate the class body — `abstract final class <name> { ... }`.
   final classStart = source.indexOf('class $className');
@@ -138,8 +147,10 @@ Set<String> _collectDeclaredEventValues(String path) {
     }
   }
   final body = source.substring(braceStart, classEnd);
-  final valueRe =
-      RegExp(r"static\s+const\s+\w+\s*=\s*'([^']+)'", multiLine: true);
+  final valueRe = RegExp(
+    r"static\s+const\s+\w+\s*=\s*'([^']+)'",
+    multiLine: true,
+  );
   return valueRe.allMatches(body).map((m) => m.group(1)!).toSet();
 }
 

@@ -43,12 +43,14 @@ class RecipeCollaborativeManager extends ChangeNotifier
     PermissionService? permissionService,
     CollaborativeRecipeRepository? collaborativeRepository,
     ConnectivityMonitoringService? connectivityService,
-  })  : _permissionService =
-            permissionService ?? ServiceLocator.get<PermissionService>(),
-        _collaborativeRepository = collaborativeRepository ??
-            ServiceLocator.get<CollaborativeRecipeRepository>(),
-        _connectivityService = connectivityService ??
-            ServiceLocator.get<ConnectivityMonitoringService>();
+  }) : _permissionService =
+           permissionService ?? ServiceLocator.get<PermissionService>(),
+       _collaborativeRepository =
+           collaborativeRepository ??
+           ServiceLocator.get<CollaborativeRecipeRepository>(),
+       _connectivityService =
+           connectivityService ??
+           ServiceLocator.get<ConnectivityMonitoringService>();
 
   bool get isCollaborative => _isCollaborative;
   bool get isConnectedToFirebase => _isConnectedToFirebase;
@@ -69,7 +71,8 @@ class RecipeCollaborativeManager extends ChangeNotifier
 
     try {
       AppLogger.info(
-          'Aktiverar Firebase collaborative mode för recept: ${recipe.id}');
+        'Aktiverar Firebase collaborative mode för recept: ${recipe.id}',
+      );
 
       final userId = _permissionService.currentUserId;
       final userDisplayName =
@@ -98,17 +101,24 @@ class RecipeCollaborativeManager extends ChangeNotifier
     }
   }
 
-  Future<void> inviteUserToCollaboration(String userId, String userDisplayName,
-      ResourcePermission permission) async {
+  Future<void> inviteUserToCollaboration(
+    String userId,
+    String userDisplayName,
+    ResourcePermission permission,
+  ) async {
     if (_realtimeRecipe == null) return;
 
     try {
-      _realtimeRecipe =
-          _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
+      _realtimeRecipe = _realtimeRecipe!.addParticipant(
+        userId,
+        userDisplayName,
+        permission,
+      );
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info(
-          'Användare inbjuden till collaboration: ${userDisplayName.maskedName}');
+        'Användare inbjuden till collaboration: ${userDisplayName.maskedName}',
+      );
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid inbjudning av användare: $e');
@@ -124,7 +134,8 @@ class RecipeCollaborativeManager extends ChangeNotifier
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info(
-          'Användare borttagen från collaboration: ${userId.maskedUserId}');
+        'Användare borttagen från collaboration: ${userId.maskedUserId}',
+      );
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid borttagning av användare: $e');
@@ -192,29 +203,29 @@ class RecipeCollaborativeManager extends ChangeNotifier
     _realtimeSubscription = _collaborativeRepository
         .getRealtimeRecipeStream(_realtimeRecipe!.id)
         .listen(
-      (realtimeRecipe) {
-        if (realtimeRecipe != null) {
-          _handleRealtimeUpdate(realtimeRecipe);
-        }
-      },
-      onError: (error) {
-        AppLogger.error('Fel i realtime listener: $error');
-        _isConnectedToFirebase = false;
-        _connectionStatusText = AppLocale.current.errorNetwork;
-        notifyListeners();
-      },
-    );
+          (realtimeRecipe) {
+            if (realtimeRecipe != null) {
+              _handleRealtimeUpdate(realtimeRecipe);
+            }
+          },
+          onError: (error) {
+            AppLogger.error('Fel i realtime listener: $error');
+            _isConnectedToFirebase = false;
+            _connectionStatusText = AppLocale.current.errorNetwork;
+            notifyListeners();
+          },
+        );
 
     _participantsSubscription = _collaborativeRepository
         .getParticipantsStream(_realtimeRecipe!.id)
         .listen(
-      (participants) {
-        _updateLiveEditors(participants);
-      },
-      onError: (error) {
-        AppLogger.error('Fel i participants listener: $error');
-      },
-    );
+          (participants) {
+            _updateLiveEditors(participants);
+          },
+          onError: (error) {
+            AppLogger.error('Fel i participants listener: $error');
+          },
+        );
 
     _setupConnectivityMonitoring();
   }
@@ -291,7 +302,9 @@ class RecipeCollaborativeManager extends ChangeNotifier
 
     try {
       await _collaborativeRepository.clearUserPresence(
-          _realtimeRecipe!.id, userId);
+        _realtimeRecipe!.id,
+        userId,
+      );
     } catch (e) {
       AppLogger.error('Fel vid rensning av presence: $e');
     }

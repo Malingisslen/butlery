@@ -34,8 +34,10 @@ void main() {
 
         // Assert
         expect(updated.participants[userId], ResourcePermission.editor);
-        expect(updated.participants.length,
-            1); // Only new editor (owner not in participants)
+        expect(
+          updated.participants.length,
+          1,
+        ); // Only new editor (owner not in participants)
       });
 
       test('should add participant with viewer permission', () {
@@ -148,8 +150,10 @@ void main() {
         // Act & Assert
         expect(MenuParticipants.isParticipant(menu, 'user_123'), true);
         expect(MenuParticipants.isParticipant(menu, 'unknown_user'), false);
-        expect(MenuParticipants.isParticipant(menu, 'owner_123'),
-            false); // Owner not in participants map
+        expect(
+          MenuParticipants.isParticipant(menu, 'owner_123'),
+          false,
+        ); // Owner not in participants map
       });
 
       test('should check edit permissions correctly', () {
@@ -181,7 +185,9 @@ void main() {
         expect(editors, contains('editor_1'));
         expect(editors, contains('editor_2'));
         expect(
-            editors, isNot(contains('owner_123'))); // Owner not in participants
+          editors,
+          isNot(contains('owner_123')),
+        ); // Owner not in participants
         expect(editors, isNot(contains('viewer_1')));
         expect(editors.length, 2); // Only editors, not owner
       });
@@ -274,8 +280,9 @@ void main() {
 
       test('should recognize owner special privileges', () {
         // Arrange
-        final menu =
-            menuBuilder.withOwner('special_owner', 'Owner Name').build();
+        final menu = menuBuilder
+            .withOwner('special_owner', 'Owner Name')
+            .build();
 
         // Act & Assert
         expect(MenuParticipants.canUserEdit(menu, 'special_owner'), true);
@@ -299,8 +306,10 @@ void main() {
         final summary = MenuParticipants.getParticipantSummary(menu);
 
         // Assert - Summary is a Map with counts (owner not in participants)
-        expect(summary['totalParticipants'],
-            3); // 3 participants (owner not counted)
+        expect(
+          summary['totalParticipants'],
+          3,
+        ); // 3 participants (owner not counted)
         expect(summary['editorsCount'], 2);
         expect(summary['viewersCount'], 1);
       });
@@ -337,8 +346,10 @@ void main() {
         final viewers = MenuParticipants.getViewerIds(menu);
 
         // Assert - Owner not in participants map
-        expect(summary['totalParticipants'],
-            0); // No participants (owner not counted)
+        expect(
+          summary['totalParticipants'],
+          0,
+        ); // No participants (owner not counted)
         expect(summary['editorsCount'], 0);
         expect(summary['viewersCount'], 0);
         expect(editors, isEmpty);
@@ -388,8 +399,10 @@ void main() {
             .build();
 
         // Act - Remove multiple participants
-        var updated =
-            MenuParticipants.removeParticipant(menu, userId: 'user_2');
+        var updated = MenuParticipants.removeParticipant(
+          menu,
+          userId: 'user_2',
+        );
         updated = MenuParticipants.removeParticipant(updated, userId: 'user_4');
 
         // Assert
@@ -456,18 +469,24 @@ void main() {
     group('Permission Hierarchy Extended', () {
       test('should correctly order permission levels', () {
         // Arrange & Act
-        final readLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.read);
-        final viewerLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.viewer);
-        final writeLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.write);
-        final editorLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.editor);
-        final adminLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.admin);
-        final ownerLevel =
-            MenuParticipants.getPermissionLevel(ResourcePermission.owner);
+        final readLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.read,
+        );
+        final viewerLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.viewer,
+        );
+        final writeLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.write,
+        );
+        final editorLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.editor,
+        );
+        final adminLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.admin,
+        );
+        final ownerLevel = MenuParticipants.getPermissionLevel(
+          ResourcePermission.owner,
+        );
 
         // Assert hierarchy: read < viewer < write < editor < admin < owner
         expect(readLevel < viewerLevel, true);
@@ -567,8 +586,10 @@ void main() {
             .build();
 
         // Act
-        final permission =
-            MenuParticipants.findParticipantPermission(menu, 'user_123');
+        final permission = MenuParticipants.findParticipantPermission(
+          menu,
+          'user_123',
+        );
 
         // Assert
         expect(permission, ResourcePermission.editor);
@@ -616,8 +637,9 @@ void main() {
 
       test('should format participant list for display', () {
         // Arrange
-        final emptyMenu =
-            menuBuilder.withOwner('owner_123', 'Test Owner').build();
+        final emptyMenu = menuBuilder
+            .withOwner('owner_123', 'Test Owner')
+            .build();
         final collabMenu = menuBuilder
             .withOwner('owner_123', 'Test Owner')
             .withParticipant('user_1', ResourcePermission.editor)
@@ -625,10 +647,12 @@ void main() {
             .build();
 
         // Act
-        final emptyDisplay =
-            MenuParticipants.getParticipantListString(emptyMenu);
-        final collabDisplay =
-            MenuParticipants.getParticipantListString(collabMenu);
+        final emptyDisplay = MenuParticipants.getParticipantListString(
+          emptyMenu,
+        );
+        final collabDisplay = MenuParticipants.getParticipantListString(
+          collabMenu,
+        );
 
         // Assert
         // Empty menu shows owner and participant count

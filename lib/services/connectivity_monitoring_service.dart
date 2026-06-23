@@ -54,26 +54,28 @@ class ConnectivityMonitoringService extends ChangeNotifier
   }
 
   void _startFirebaseConnectionMonitoring() {
-    _firebaseConnectionSubscription =
-        _connectivityRepository.monitorFirebaseConnection().listen(
-      (isConnected) {
-        final wasConnected = _isConnectedToFirebase;
-        _isConnectedToFirebase = isConnected;
+    _firebaseConnectionSubscription = _connectivityRepository
+        .monitorFirebaseConnection()
+        .listen(
+          (isConnected) {
+            final wasConnected = _isConnectedToFirebase;
+            _isConnectedToFirebase = isConnected;
 
-        if (wasConnected != _isConnectedToFirebase) {
-          AppLogger.info(
-              'Firebase connection changed: $_isConnectedToFirebase');
-          _updateConnectionStatus();
-          notifyListeners();
-        }
-      },
-      onError: (error) {
-        AppLogger.warning('Firebase connection monitoring error: $error');
-        _isConnectedToFirebase = false;
-        _updateConnectionStatus();
-        notifyListeners();
-      },
-    );
+            if (wasConnected != _isConnectedToFirebase) {
+              AppLogger.info(
+                'Firebase connection changed: $_isConnectedToFirebase',
+              );
+              _updateConnectionStatus();
+              notifyListeners();
+            }
+          },
+          onError: (error) {
+            AppLogger.warning('Firebase connection monitoring error: $error');
+            _isConnectedToFirebase = false;
+            _updateConnectionStatus();
+            notifyListeners();
+          },
+        );
   }
 
   void _startInternetConnectivityMonitoring() {

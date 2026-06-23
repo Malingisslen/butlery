@@ -97,7 +97,9 @@ void main() {
         // Subtitle uses l10n.emptyNoRecipesSubtitle('Lägg till') ->
         // 'Första receptet läggs till via "Lägg till".'
         expect(
-            find.textContaining('Första receptet läggs till'), findsOneWidget);
+          find.textContaining('Första receptet läggs till'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('shows action button when provided', (tester) async {
@@ -181,8 +183,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // l10n.emptyNoShoppingListTitle / emptyNoShoppingListSubtitle.
-        expect(find.text('Ingen meny finns att avleda en inköpslista från'),
-            findsOneWidget);
+        expect(
+          find.text('Ingen meny finns att avleda en inköpslista från'),
+          findsOneWidget,
+        );
         expect(find.text('En veckomeny behövs först'), findsOneWidget);
       });
     });
@@ -247,7 +251,8 @@ void main() {
         expect(find.text('Inga destinationer tillgängliga'), findsOneWidget);
         expect(
           find.text(
-              'Lägg till vänner eller grupper för att kunna dela innehåll'),
+            'Lägg till vänner eller grupper för att kunna dela innehåll',
+          ),
           findsOneWidget,
         );
       });
@@ -298,8 +303,9 @@ void main() {
     });
 
     group('Styling', () {
-      testWidgets('applies custom icon color when using icon mode',
-          (tester) async {
+      testWidgets('applies custom icon color when using icon mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildEmptyState(
             variant: EmptyStateVariant.generic,
@@ -343,8 +349,9 @@ void main() {
         // The outer Padding is inside Center. Find Padding widgets
         // within the Center widget.
         final paddingWidgets = tester.widgetList<Padding>(find.byType(Padding));
-        final hasCustomPadding =
-            paddingWidgets.any((p) => p.padding == customPadding);
+        final hasCustomPadding = paddingWidgets.any(
+          (p) => p.padding == customPadding,
+        );
         expect(hasCustomPadding, isTrue);
       });
     });
@@ -439,9 +446,12 @@ void main() {
           // Each variant should display Swedish text containing
           // common Swedish characters or words
           expect(
-            find.textContaining(RegExp(
+            find.textContaining(
+              RegExp(
                 r'[åäöÅÄÖ]|ingen|inga|första|eller|för att',
-                caseSensitive: false)),
+                caseSensitive: false,
+              ),
+            ),
             findsWidgets,
             reason: 'Variant $variant should display Swedish text',
           );

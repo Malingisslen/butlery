@@ -97,9 +97,11 @@ class RecipeSectionDetector {
   /// Check if following text looks like instructions (for section header detection)
   static bool followingTextIsInstruction(List<String> lines, int currentIndex) {
     // Look at next 1-3 non-empty, non-header lines
-    for (int j = currentIndex + 1;
-        j < lines.length && j < currentIndex + 4;
-        j++) {
+    for (
+      int j = currentIndex + 1;
+      j < lines.length && j < currentIndex + 4;
+      j++
+    ) {
       final nextLine = lines[j].trim();
       if (nextLine.isEmpty) continue;
       if (isSectionHeader(nextLine)) continue;
@@ -155,8 +157,10 @@ class RecipeSectionDetector {
     if (actionVerbs.any((verb) => lower.startsWith(verb))) score += 3;
 
     // +2: Contains time indicator
-    if (RegExp(r'\d+\s*(min|minut|tim|sek)', caseSensitive: false)
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'\d+\s*(min|minut|tim|sek)',
+      caseSensitive: false,
+    ).hasMatch(lower)) {
       score += 2;
     }
 
@@ -166,9 +170,10 @@ class RecipeSectionDetector {
     }
 
     // +1: Contains sequencing words
-    if (RegExp(r'\b(sedan|därefter|tills|medan|när|sen)\b',
-            caseSensitive: false)
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'\b(sedan|därefter|tills|medan|när|sen)\b',
+      caseSensitive: false,
+    ).hasMatch(lower)) {
       score += 1;
     }
 
@@ -176,8 +181,10 @@ class RecipeSectionDetector {
     if (text.length > 40) score += 1;
 
     // -2: Contains measurement (likely ingredient)
-    if (RegExp(r'\d+\s*(dl|msk|tsk|g|kg|cl|ml)', caseSensitive: false)
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'\d+\s*(dl|msk|tsk|g|kg|cl|ml)',
+      caseSensitive: false,
+    ).hasMatch(lower)) {
       score -= 2;
     }
 
@@ -229,12 +236,13 @@ class RecipeSectionDetector {
       'du behöver',
       'behöver är',
       'ingredients',
-      'what you need'
+      'what you need',
     ];
     // Only match if line STARTS with header and is short (actual header)
     // This prevents matching "häll i resten av ingredienser" as a header
-    return headers.any((header) =>
-        clean.startsWith(header) && clean.length < header.length + 30);
+    return headers.any(
+      (header) => clean.startsWith(header) && clean.length < header.length + 30,
+    );
   }
 
   /// Check if line looks like an instruction header
@@ -246,7 +254,7 @@ class RecipeSectionDetector {
       'steg',
       'instructions',
       'method',
-      'directions'
+      'directions',
     ];
     return headers.any((header) => line.contains(header));
   }
@@ -255,15 +263,15 @@ class RecipeSectionDetector {
   static bool looksLikeIngredient(String line) {
     // Has common Swedish measurements
     if (RegExp(
-            r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|kg|g|hg|msk|tsk|st|krm|bit|skiva|klyfta|burk|pkt|påse)')
-        .hasMatch(line)) {
+      r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|kg|g|hg|msk|tsk|st|krm|bit|skiva|klyfta|burk|pkt|påse)',
+    ).hasMatch(line)) {
       return true;
     }
 
     // Has common English measurements
     if (RegExp(
-            r'\d+(?:[,\.]\d+)?\s*(cup|cups|oz|tbsp|tsp|lb|lbs|pound|pounds|ounce|ounces)')
-        .hasMatch(line)) {
+      r'\d+(?:[,\.]\d+)?\s*(cup|cups|oz|tbsp|tsp|lb|lbs|pound|pounds|ounce|ounces)',
+    ).hasMatch(line)) {
       return true;
     }
 
@@ -297,11 +305,12 @@ class RecipeSectionDetector {
       'milk',
       'cream',
       'oil',
-      'pepper'
+      'pepper',
     ];
     final lineLower = line.toLowerCase();
-    if (ingredientWords
-        .any((word) => RegExp('\\b$word\\b').hasMatch(lineLower))) {
+    if (ingredientWords.any(
+      (word) => RegExp('\\b$word\\b').hasMatch(lineLower),
+    )) {
       return true;
     }
 
@@ -324,8 +333,9 @@ class RecipeSectionDetector {
       'ingredients',
       'what you need',
     ];
-    return keywords
-        .any((keyword) => text.toLowerCase().contains(keyword.toLowerCase()));
+    return keywords.any(
+      (keyword) => text.toLowerCase().contains(keyword.toLowerCase()),
+    );
   }
 
   /// Check for instruction keywords in text
@@ -342,10 +352,11 @@ class RecipeSectionDetector {
       'koka',
       'stek',
       'blanda',
-      'rör'
+      'rör',
     ];
-    return keywords
-        .any((keyword) => text.toLowerCase().contains(keyword.toLowerCase()));
+    return keywords.any(
+      (keyword) => text.toLowerCase().contains(keyword.toLowerCase()),
+    );
   }
 
   /// Check if text has recipe-like structure (numbered lists, bullets, measurements)

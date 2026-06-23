@@ -37,11 +37,11 @@ class WordPieceTokenizer {
     required Map<String, int> vocab,
     required this.maxInputLength,
     required this.isCased,
-  })  : _vocab = vocab,
-        _unkTokenId = vocab[_unkToken] ?? 0,
-        _clsTokenId = vocab[_clsToken] ?? 101,
-        _sepTokenId = vocab[_sepToken] ?? 102,
-        _padTokenId = vocab[_padToken] ?? 0;
+  }) : _vocab = vocab,
+       _unkTokenId = vocab[_unkToken] ?? 0,
+       _clsTokenId = vocab[_clsToken] ?? 101,
+       _sepTokenId = vocab[_sepToken] ?? 102,
+       _padTokenId = vocab[_padToken] ?? 0;
 
   /// Load vocabulary from vocab.txt content (one token per line).
   factory WordPieceTokenizer.fromVocabString(

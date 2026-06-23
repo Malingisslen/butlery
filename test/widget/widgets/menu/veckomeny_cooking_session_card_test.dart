@@ -73,26 +73,25 @@ class _FakeCookingSessionModule extends Fake implements CookingSessionModule {
 }
 
 FriendCategory _group(String id, String ownerId) => FriendCategory(
-      id: id,
-      ownerId: ownerId,
-      name: id,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
-    );
+  id: id,
+  ownerId: ownerId,
+  name: id,
+  createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+  updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
+);
 
 CookingSession _session({
   required String userId,
   required String userName,
   String recipeId = 'r1',
   String recipeTitle = 'Köttbullar',
-}) =>
-    CookingSession(
-      recipeId: recipeId,
-      recipeTitle: recipeTitle,
-      startedAt: DateTime.fromMillisecondsSinceEpoch(1000),
-      userId: userId,
-      userName: userName,
-    );
+}) => CookingSession(
+  recipeId: recipeId,
+  recipeTitle: recipeTitle,
+  startedAt: DateTime.fromMillisecondsSinceEpoch(1000),
+  userId: userId,
+  userName: userName,
+);
 
 /// Register the fakes into GetIt and bridge the production locator. Pass
 /// [module] = null to exercise the "module not registered" hide-branch.
@@ -119,8 +118,9 @@ void main() {
   });
 
   group('VeckomenyCookingSessionCard hide-branches', () {
-    testWidgets('hides itself when no CookingSessionModule is registered',
-        (tester) async {
+    testWidgets('hides itself when no CookingSessionModule is registered', (
+      tester,
+    ) async {
       _wire(
         friends: _FakeFriendsService(
           userId: 'me',
@@ -134,8 +134,11 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CookingSessionCard), findsNothing,
-          reason: 'a missing CookingSessionModule must hide the card');
+      expect(
+        find.byType(CookingSessionCard),
+        findsNothing,
+        reason: 'a missing CookingSessionModule must hide the card',
+      );
       expect(find.byType(StreamBuilder<List<CookingSession>>), findsNothing);
     });
 
@@ -150,13 +153,17 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CookingSessionCard), findsNothing,
-          reason: 'a null currentUserId must hide the card');
+      expect(
+        find.byType(CookingSessionCard),
+        findsNothing,
+        reason: 'a null currentUserId must hide the card',
+      );
       expect(find.byType(StreamBuilder<List<CookingSession>>), findsNothing);
     });
 
-    testWidgets('hides itself when the user belongs to no friend groups',
-        (tester) async {
+    testWidgets('hides itself when the user belongs to no friend groups', (
+      tester,
+    ) async {
       _wire(
         friends: _FakeFriendsService(
           userId: 'me',
@@ -172,13 +179,15 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CookingSessionCard), findsNothing,
-          reason: 'no matching groups must hide the card');
+      expect(
+        find.byType(CookingSessionCard),
+        findsNothing,
+        reason: 'no matching groups must hide the card',
+      );
       expect(find.byType(StreamBuilder<List<CookingSession>>), findsNothing);
     });
 
-    testWidgets(
-        'builds the StreamBuilder but the inner card hides when the only '
+    testWidgets('builds the StreamBuilder but the inner card hides when the only '
         'live session is the current user', (tester) async {
       // The merged stream filters out the current user's own session, so the
       // StreamBuilder DOES build but hands an empty list to CookingSessionCard,
@@ -203,42 +212,55 @@ void main() {
       expect(find.byType(StreamBuilder<List<CookingSession>>), findsOneWidget);
       // ... and the card widget exists but renders nothing (no presence line).
       expect(find.byType(CookingSessionCard), findsOneWidget);
-      expect(find.textContaining('lagar'), findsNothing,
-          reason: 'no peer session means no "<name> lagar <recipe>" line');
+      expect(
+        find.textContaining('lagar'),
+        findsNothing,
+        reason: 'no peer session means no "<name> lagar <recipe>" line',
+      );
     });
   });
 
   group('VeckomenyCookingSessionCard populated StreamBuilder path', () {
     testWidgets(
-        "renders a friend's live cooking session through the StreamBuilder",
-        (tester) async {
-      _wire(
-        friends: _FakeFriendsService(
-          userId: 'me',
-          groups: [_group('g1', 'me')],
-        ),
-        module: _FakeCookingSessionModule({
-          'g1': [_session(userId: 'erik', userName: 'Erik')],
-        }),
-      );
+      "renders a friend's live cooking session through the StreamBuilder",
+      (tester) async {
+        _wire(
+          friends: _FakeFriendsService(
+            userId: 'me',
+            groups: [_group('g1', 'me')],
+          ),
+          module: _FakeCookingSessionModule({
+            'g1': [_session(userId: 'erik', userName: 'Erik')],
+          }),
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(child: const VeckomenyCookingSessionCard()),
-      );
-      // Two pumps drain the single-value stream into the StreamBuilder; we
-      // deliberately avoid pumpAndSettle here — the rendered card carries a
-      // looping PulseDot animation that never settles.
-      await tester.pump();
-      await tester.pump();
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const VeckomenyCookingSessionCard()),
+        );
+        // Two pumps drain the single-value stream into the StreamBuilder; we
+        // deliberately avoid pumpAndSettle here — the rendered card carries a
+        // looping PulseDot animation that never settles.
+        await tester.pump();
+        await tester.pump();
 
-      expect(find.byType(StreamBuilder<List<CookingSession>>), findsOneWidget,
-          reason: 'a non-empty group list builds the live StreamBuilder');
-      expect(find.byType(CookingSessionCard), findsOneWidget,
-          reason: 'the friend session flows into a rendered presence card');
-      // The card composes "<name> lagar <recipe>" — assert Erik surfaces so we
-      // know the friend session (not our own) reached the UI.
-      expect(find.textContaining('Erik'), findsOneWidget,
-          reason: "the friend's name must appear in the presence line");
-    });
+        expect(
+          find.byType(StreamBuilder<List<CookingSession>>),
+          findsOneWidget,
+          reason: 'a non-empty group list builds the live StreamBuilder',
+        );
+        expect(
+          find.byType(CookingSessionCard),
+          findsOneWidget,
+          reason: 'the friend session flows into a rendered presence card',
+        );
+        // The card composes "<name> lagar <recipe>" — assert Erik surfaces so we
+        // know the friend session (not our own) reached the UI.
+        expect(
+          find.textContaining('Erik'),
+          findsOneWidget,
+          reason: "the friend's name must appear in the presence line",
+        );
+      },
+    );
   });
 }

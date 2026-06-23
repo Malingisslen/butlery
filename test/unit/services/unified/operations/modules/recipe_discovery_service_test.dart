@@ -18,19 +18,21 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
     });
 
     setUp(() async {
@@ -181,10 +183,14 @@ void main() {
         // Assert
         expect(recipes.length, equals(2)); // collab_1 and collab_2
         expect(recipes.map((r) => r.id), containsAll(['collab_1', 'collab_2']));
-        expect(recipes.map((r) => r.id),
-            isNot(contains('collab_3'))); // User not a member
-        expect(recipes.map((r) => r.id),
-            isNot(contains('personal_1'))); // Not collaborative
+        expect(
+          recipes.map((r) => r.id),
+          isNot(contains('collab_3')),
+        ); // User not a member
+        expect(
+          recipes.map((r) => r.id),
+          isNot(contains('personal_1')),
+        ); // Not collaborative
       });
 
       test('should filter by category', () async {
@@ -272,8 +278,10 @@ void main() {
         final recipes = await discoveryService.getSharedWithMe();
 
         // Assert
-        expect(recipes.length,
-            equals(1)); // Only collab_2 where user is member but not owner
+        expect(
+          recipes.length,
+          equals(1),
+        ); // Only collab_2 where user is member but not owner
         expect(recipes[0].id, equals('collab_2'));
       });
 
@@ -366,9 +374,9 @@ void main() {
         // Assert
         expect(recipes.length, lessThanOrEqualTo(2));
         expect(
-            recipes.first.id,
-            equals(
-                'trending_1')); // Higher score due to more members and recent activity
+          recipes.first.id,
+          equals('trending_1'),
+        ); // Higher score due to more members and recent activity
       });
 
       test('should get recently shared recipes within time window', () async {
@@ -448,10 +456,11 @@ void main() {
 
         // Assert
         expect(
-            recipes
-                .where((r) => r.personalTagIds?.contains('italian') ?? false)
-                .length,
-            greaterThanOrEqualTo(2));
+          recipes
+              .where((r) => r.personalTagIds?.contains('italian') ?? false)
+              .length,
+          greaterThanOrEqualTo(2),
+        );
       });
 
       test('should calculate discovery statistics correctly', () {
@@ -505,8 +514,8 @@ void main() {
         );
 
         // Act
-        final categories =
-            await discoveryService.getPopularCollaborativeCategories();
+        final categories = await discoveryService
+            .getPopularCollaborativeCategories();
 
         // Assert
         expect(categories.containsKey('italian'), isTrue);
@@ -557,51 +566,53 @@ void main() {
         expect(recipes.any((r) => r.id == 'multi_2'), isTrue);
       });
 
-      test('should handle complex search queries with Swedish characters',
-          () async {
-        // Arrange
-        final swedishRecipes = [
-          RecipeBuilder()
-              .withId('swedish_1')
-              .withTitle('Köttbullar med lingonsylt')
-              .withDescription('Traditionella svenska köttbullar')
-              .asCollaborative()
-              .withTags(['svensk', 'kött', 'traditionell'])
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_123',
-                  memberPermissions: {},
-                ),
-              )
-              .build(),
-          RecipeBuilder()
-              .withId('swedish_2')
-              .withTitle('Räksmörgås')
-              .withDescription('Öppen smörgås med räkor')
-              .asCollaborative()
-              .withTags(['svensk', 'fisk', 'smörgås'])
-              .withSocialData(
-                RecipeSocialData(
-                  ownerId: 'user_123',
-                  memberPermissions: {},
-                ),
-              )
-              .build(),
-        ];
+      test(
+        'should handle complex search queries with Swedish characters',
+        () async {
+          // Arrange
+          final swedishRecipes = [
+            RecipeBuilder()
+                .withId('swedish_1')
+                .withTitle('Köttbullar med lingonsylt')
+                .withDescription('Traditionella svenska köttbullar')
+                .asCollaborative()
+                .withTags(['svensk', 'kött', 'traditionell'])
+                .withSocialData(
+                  RecipeSocialData(
+                    ownerId: 'user_123',
+                    memberPermissions: {},
+                  ),
+                )
+                .build(),
+            RecipeBuilder()
+                .withId('swedish_2')
+                .withTitle('Räksmörgås')
+                .withDescription('Öppen smörgås med räkor')
+                .asCollaborative()
+                .withTags(['svensk', 'fisk', 'smörgås'])
+                .withSocialData(
+                  RecipeSocialData(
+                    ownerId: 'user_123',
+                    memberPermissions: {},
+                  ),
+                )
+                .build(),
+          ];
 
-        mockParentService.setRecipeState(
-          currentUserId: 'user_123',
-          recipes: [...testRecipes, ...swedishRecipes],
-        );
+          mockParentService.setRecipeState(
+            currentUserId: 'user_123',
+            recipes: [...testRecipes, ...swedishRecipes],
+          );
 
-        // Act
-        final recipes = await discoveryService.searchRecipes(
-          query: 'köttbullar',
-        );
+          // Act
+          final recipes = await discoveryService.searchRecipes(
+            query: 'köttbullar',
+          );
 
-        // Assert
-        expect(recipes.any((r) => r.id == 'swedish_1'), isTrue);
-      });
+          // Assert
+          expect(recipes.any((r) => r.id == 'swedish_1'), isTrue);
+        },
+      );
 
       test('should combine search and category filters', () async {
         // Act
@@ -640,18 +651,19 @@ void main() {
       test('should handle pagination with limit', () async {
         // Arrange
         final manyRecipes = List.generate(
-            50,
-            (i) => RecipeBuilder()
-                .withId('recipe_$i')
-                .withTitle('Recipe $i')
-                .asCollaborative()
-                .withSocialData(
-                  RecipeSocialData(
-                    ownerId: 'user_123',
-                    memberPermissions: {},
-                  ),
-                )
-                .build());
+          50,
+          (i) => RecipeBuilder()
+              .withId('recipe_$i')
+              .withTitle('Recipe $i')
+              .asCollaborative()
+              .withSocialData(
+                RecipeSocialData(
+                  ownerId: 'user_123',
+                  memberPermissions: {},
+                ),
+              )
+              .build(),
+        );
 
         mockParentService.setRecipeState(
           currentUserId: 'user_123',
@@ -670,19 +682,20 @@ void main() {
       test('should handle large dataset efficiently', () async {
         // Arrange
         final largeDataset = List.generate(
-            1000,
-            (i) => RecipeBuilder()
-                .withId('large_$i')
-                .asCollaborative()
-                .withSocialData(
-                  RecipeSocialData(
-                    ownerId: i % 2 == 0 ? 'user_123' : 'other_user',
-                    memberPermissions: i % 2 == 0
-                        ? {}
-                        : {'user_123': ResourcePermission.viewer},
-                  ),
-                )
-                .build());
+          1000,
+          (i) => RecipeBuilder()
+              .withId('large_$i')
+              .asCollaborative()
+              .withSocialData(
+                RecipeSocialData(
+                  ownerId: i % 2 == 0 ? 'user_123' : 'other_user',
+                  memberPermissions: i % 2 == 0
+                      ? {}
+                      : {'user_123': ResourcePermission.viewer},
+                ),
+              )
+              .build(),
+        );
 
         mockParentService.setRecipeState(
           currentUserId: 'user_123',
@@ -754,8 +767,10 @@ void main() {
         );
 
         // Assert
-        expect(results.first.id,
-            equals('exact_title')); // Title match should be first
+        expect(
+          results.first.id,
+          equals('exact_title'),
+        ); // Title match should be first
       });
 
       test('should handle concurrent discovery operations', () async {

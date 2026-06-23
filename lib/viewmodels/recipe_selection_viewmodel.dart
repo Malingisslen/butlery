@@ -86,10 +86,10 @@ class RecipeSelectionViewModel extends ChangeNotifier
     required this.targetFriend,
     AnalyticsService? analyticsService,
     UserService? userService,
-  })  : _recipeService = recipeService,
-        _analyticsService =
-            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
-        _userService = userService ?? ServiceLocator.tryGet<UserService>();
+  }) : _recipeService = recipeService,
+       _analyticsService =
+           analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
+       _userService = userService ?? ServiceLocator.tryGet<UserService>();
 
   final AnalyticsService? _analyticsService;
   final UserService? _userService;
@@ -252,7 +252,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-          '📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}');
+        '📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}',
+      );
 
       final recipes = selectedRecipes;
       for (final recipe in recipes) {
@@ -273,19 +274,21 @@ class RecipeSelectionViewModel extends ChangeNotifier
       // is fire-and-forget so it never gates the post-share UI return.
       final analytics = _analyticsService;
       if (analytics != null) {
-        unawaited(Future.wait([
-          for (final recipe in recipes)
-            analytics.logRecipeShared(
-              method: 'friend',
-              recipeId: recipe.id,
-              recipientCount: 1,
+        unawaited(
+          Future.wait([
+            for (final recipe in recipes)
+              analytics.logRecipeShared(
+                method: 'friend',
+                recipeId: recipe.id,
+                recipientCount: 1,
+              ),
+            analytics.recipe.logFirstShareIfMilestone(
+              userId: _userService?.currentUserId,
+              shareMethod: 'friend',
+              joinedAt: _userService?.currentUserProfile?.joinedAt,
             ),
-          analytics.recipe.logFirstShareIfMilestone(
-            userId: _userService?.currentUserId,
-            shareMethod: 'friend',
-            joinedAt: _userService?.currentUserProfile?.joinedAt,
-          ),
-        ]));
+          ]),
+        );
       }
 
       // Add shared recipes to already-shared list
@@ -294,7 +297,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
 
       _setSharing(false);
       AppLogger.success(
-          '✅ Recept delade med ${targetFriend.displayName.maskedName}');
+        '✅ Recept delade med ${targetFriend.displayName.maskedName}',
+      );
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);
@@ -323,8 +327,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
       filtered = filtered.where((recipe) {
         return recipe.title.toLowerCase().contains(query) ||
             recipe.description.toLowerCase().contains(query) ||
-            recipe.ingredients
-                .any((ingredient) => ingredient.toLowerCase().contains(query));
+            recipe.ingredients.any(
+              (ingredient) => ingredient.toLowerCase().contains(query),
+            );
       }).toList();
     }
 
@@ -342,7 +347,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
     notifyListeners();
 
     AppLogger.debug(
-        '🔍 Filtrerade recept: ${_filteredRecipes.length}/${_allRecipes.length}');
+      '🔍 Filtrerade recept: ${_filteredRecipes.length}/${_allRecipes.length}',
+    );
   }
 
   /// Update recipes from service
@@ -356,8 +362,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
     if (_selectedRecipeIds.isEmpty) {
       return AppLocale.current.selectionNoRecipesSelected;
     }
-    return AppLocale.current
-        .selectionRecipesSelected(_selectedRecipeIds.length);
+    return AppLocale.current.selectionRecipesSelected(
+      _selectedRecipeIds.length,
+    );
   }
 
   /// Get share message for selected recipes
@@ -431,7 +438,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
       _alreadySharedRecipeIds.addAll(sharedRecipeIds);
 
       AppLogger.debug(
-          'Found ${sharedRecipeIds.length} recipes already shared with ${targetFriend.displayName}');
+        'Found ${sharedRecipeIds.length} recipes already shared with ${targetFriend.displayName}',
+      );
     } catch (e) {
       AppLogger.error('Error loading shared recipes', e);
       _alreadySharedRecipeIds.clear();

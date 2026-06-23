@@ -28,8 +28,9 @@ class SharedRecipeCard {
     final isImported = viewModel.recipeViewModel.isRecipeImported(sharedRecipe);
 
     return Material(
-      elevation:
-          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation: isRead
+          ? AppDimensions.elevationLow
+          : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Semantics(
         label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
@@ -64,8 +65,10 @@ class SharedRecipeCard {
                 // Header med delningsinfo
                 SharedCardHeader(
                   displayName: sharedRecipe.sharedByDisplayName,
-                  timestampText:
-                      timeago.format(sharedRecipe.sharedAt, locale: 'sv'),
+                  timestampText: timeago.format(
+                    sharedRecipe.sharedAt,
+                    locale: 'sv',
+                  ),
                   isRead: isRead,
                   onDismiss: () => SharedContentActions.dismissRecipe(
                     context,
@@ -109,7 +112,9 @@ class SharedRecipeCard {
   /// Build recipe content using denormalized fields for V2 efficiency.
   /// No need to access full snapshot for list display.
   static Widget _buildRecipeContent(
-      BuildContext context, SharedRecipe sharedRecipe) {
+    BuildContext context,
+    SharedRecipe sharedRecipe,
+  ) {
     final hasImage = sharedRecipe.recipeImageUrl != null;
     final cookTimeText = sharedRecipe.recipeTimeMinutes != null
         ? '${sharedRecipe.recipeTimeMinutes} min'
@@ -177,8 +182,9 @@ class SharedRecipeCard {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    context.l10n
-                        .recipePortionsCount(sharedRecipe.recipePortions ?? 0),
+                    context.l10n.recipePortionsCount(
+                      sharedRecipe.recipePortions ?? 0,
+                    ),
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -263,8 +269,8 @@ class SharedRecipeCard {
             icon: isImported
                 ? Icons.check
                 : viewModel.recipeViewModel.isOperating
-                    ? null // Loading handled by facade
-                    : Icons.download,
+                ? null // Loading handled by facade
+                : Icons.download,
             loading: viewModel.recipeViewModel.isOperating,
             compact: true,
           ),

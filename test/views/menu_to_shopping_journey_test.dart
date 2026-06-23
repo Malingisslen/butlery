@@ -62,8 +62,9 @@ class _MenuToShoppingBodyState extends State<_MenuToShoppingBody> {
 
   void _generate() {
     setState(() {
-      _generated =
-          ShoppingListGenerator.generateShoppingItemsFromMenu(widget.menu);
+      _generated = ShoppingListGenerator.generateShoppingItemsFromMenu(
+        widget.menu,
+      );
     });
   }
 
@@ -168,87 +169,100 @@ void main() {
 
   group('Menu → shopping list journey', () {
     testWidgets(
-        'menu with two recipes sharing an ingredient aggregates into one item',
-        (tester) async {
-      // Two recipes that both use "mjöl" and "ägg" but with different units
-      // where they can still merge (same unit + normalized name).
-      // "mjölk" is distinct from "mjöl" and must not be collapsed.
-      final pancakes = RecipeFactory.build(
-        id: 'pannkakor',
-        title: 'Pannkakor',
-        ingredients: ['3 dl mjöl', '3 ägg', '5 dl mjölk'],
-        portions: 4,
-      );
-      final crepes = RecipeFactory.build(
-        id: 'crepes',
-        title: 'Crêpes',
-        ingredients: ['2 dl mjöl', '2 ägg', '1 msk socker'],
-        portions: 4,
-      );
+      'menu with two recipes sharing an ingredient aggregates into one item',
+      (tester) async {
+        // Two recipes that both use "mjöl" and "ägg" but with different units
+        // where they can still merge (same unit + normalized name).
+        // "mjölk" is distinct from "mjöl" and must not be collapsed.
+        final pancakes = RecipeFactory.build(
+          id: 'pannkakor',
+          title: 'Pannkakor',
+          ingredients: ['3 dl mjöl', '3 ägg', '5 dl mjölk'],
+          portions: 4,
+        );
+        final crepes = RecipeFactory.build(
+          id: 'crepes',
+          title: 'Crêpes',
+          ingredients: ['2 dl mjöl', '2 ägg', '1 msk socker'],
+          portions: 4,
+        );
 
-      // Also store recipes in the fake firestore so the "repository" contract
-      // matches production (even though the generator itself is pure).
-      for (final r in [pancakes, crepes]) {
-        await firestore.collection('recipes').doc(r.id).set({
-          'id': r.id,
-          'title': r.title,
-          'ingredients': r.ingredients,
-        });
-      }
+        // Also store recipes in the fake firestore so the "repository" contract
+        // matches production (even though the generator itself is pure).
+        for (final r in [pancakes, crepes]) {
+          await firestore.collection('recipes').doc(r.id).set({
+            'id': r.id,
+            'title': r.title,
+            'ingredients': r.ingredients,
+          });
+        }
 
-      final menu = <String, List<Recipe>>{
-        'Middag': [pancakes, crepes],
-      };
+        final menu = <String, List<Recipe>>{
+          'Middag': [pancakes, crepes],
+        };
 
-      await tester.pumpWidget(_testApp(menu: menu));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_testApp(menu: menu));
+        await tester.pumpAndSettle();
 
-      // Nothing rendered until the user taps Generate.
-      expect(find.byKey(const Key('shopping_preview')), findsNothing);
+        // Nothing rendered until the user taps Generate.
+        expect(find.byKey(const Key('shopping_preview')), findsNothing);
 
-      await tester.tap(find.byKey(const Key('generate')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('generate')));
+        await tester.pumpAndSettle();
 
-      // Preview is rendered on a theme-resolved surface.
-      expect(find.byKey(const Key('shopping_preview')), findsOneWidget);
+        // Preview is rendered on a theme-resolved surface.
+        expect(find.byKey(const Key('shopping_preview')), findsOneWidget);
 
-      // Inspect the generated items for domain behaviour.
-      // The key call is the pure one — repeat it to assert on data.
-      final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        // Inspect the generated items for domain behaviour.
+        // The key call is the pure one — repeat it to assert on data.
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
 
-      // Duplicate ingredients across the two recipes were merged.
-      // (3 dl mjöl + 2 dl mjöl) → one item with amount 5.0
-      final mjol = items.firstWhere(
-        (i) => i.name.toLowerCase() == 'mjöl' && i.unit == 'dl',
-        orElse: () => throw StateError('mjöl not aggregated: $items'),
-      );
-      expect(mjol.amount, closeTo(5.0, 0.0001),
-          reason: '3 dl + 2 dl mjöl must sum to 5 dl');
+        // Duplicate ingredients across the two recipes were merged.
+        // (3 dl mjöl + 2 dl mjöl) → one item with amount 5.0
+        final mjol = items.firstWhere(
+          (i) => i.name.toLowerCase() == 'mjöl' && i.unit == 'dl',
+          orElse: () => throw StateError('mjöl not aggregated: $items'),
+        );
+        expect(
+          mjol.amount,
+          closeTo(5.0, 0.0001),
+          reason: '3 dl + 2 dl mjöl must sum to 5 dl',
+        );
 
-      // (3 ägg + 2 ägg) → one item with amount 5.
-      // Unit for "ägg" is empty (pure count), per IngredientProcessor.
-      final agg = items.firstWhere(
-        (i) => i.name.toLowerCase() == 'ägg',
-        orElse: () => throw StateError('ägg not aggregated: $items'),
-      );
-      expect(agg.amount, closeTo(5.0, 0.0001),
-          reason: '3 ägg + 2 ägg must sum to 5');
+        // (3 ägg + 2 ägg) → one item with amount 5.
+        // Unit for "ägg" is empty (pure count), per IngredientProcessor.
+        final agg = items.firstWhere(
+          (i) => i.name.toLowerCase() == 'ägg',
+          orElse: () => throw StateError('ägg not aggregated: $items'),
+        );
+        expect(
+          agg.amount,
+          closeTo(5.0, 0.0001),
+          reason: '3 ägg + 2 ägg must sum to 5',
+        );
 
-      // mjölk must NOT merge with mjöl — they share a prefix but normalize
-      // to different names. The user would notice if we auto-collapsed them.
-      final mjolkItems = items.where((i) => i.name.toLowerCase() == 'mjölk');
-      expect(mjolkItems, hasLength(1),
-          reason: 'mjölk is distinct from mjöl — must not be collapsed');
-      expect(mjolkItems.first.amount, closeTo(5.0, 0.0001));
+        // mjölk must NOT merge with mjöl — they share a prefix but normalize
+        // to different names. The user would notice if we auto-collapsed them.
+        final mjolkItems = items.where((i) => i.name.toLowerCase() == 'mjölk');
+        expect(
+          mjolkItems,
+          hasLength(1),
+          reason: 'mjölk is distinct from mjöl — must not be collapsed',
+        );
+        expect(mjolkItems.first.amount, closeTo(5.0, 0.0001));
 
-      // socker only appears in crepes — carries through unchanged.
-      final sockerItems = items.where((i) => i.name.toLowerCase() == 'socker');
-      expect(sockerItems, hasLength(1));
-      expect(sockerItems.first.amount, closeTo(1.0, 0.0001));
-    });
+        // socker only appears in crepes — carries through unchanged.
+        final sockerItems = items.where(
+          (i) => i.name.toLowerCase() == 'socker',
+        );
+        expect(sockerItems, hasLength(1));
+        expect(sockerItems.first.amount, closeTo(1.0, 0.0001));
+      },
+    );
 
-    testWidgets('empty menu produces empty list without crashing',
-        (tester) async {
+    testWidgets('empty menu produces empty list without crashing', (
+      tester,
+    ) async {
       await tester.pumpWidget(_testApp(menu: const {}));
       await tester.pumpAndSettle();
 
@@ -267,8 +281,9 @@ void main() {
       );
     });
 
-    testWidgets('pantry contents are NOT filtered out at the generator layer',
-        (tester) async {
+    testWidgets('pantry contents are NOT filtered out at the generator layer', (
+      tester,
+    ) async {
       // Domain invariant: ShoppingListGenerator aggregates unconditionally;
       // pantry exclusion is not part of the menu-to-shopping pipeline (as
       // of BUT-390). If someone adds pantry filtering here in the future
@@ -290,9 +305,12 @@ void main() {
 
       final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
 
-      expect(items.any((i) => i.name.toLowerCase() == 'salt'), isTrue,
-          reason:
-              'Pantry filtering is view-layer, not generator — salt must appear');
+      expect(
+        items.any((i) => i.name.toLowerCase() == 'salt'),
+        isTrue,
+        reason:
+            'Pantry filtering is view-layer, not generator — salt must appear',
+      );
       expect(items.any((i) => i.name.toLowerCase() == 'ägg'), isTrue);
       expect(items.any((i) => i.name.toLowerCase() == 'smör'), isTrue);
 

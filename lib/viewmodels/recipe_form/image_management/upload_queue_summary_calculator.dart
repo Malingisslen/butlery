@@ -77,8 +77,9 @@ class UploadQueueSummaryCalculator {
     final active = uploading + retrying;
     final hasActivity = pending > 0 || active > 0;
     final overallProgress = total > 0 ? totalProgress / total : 1.0;
-    final progressPercentage =
-        total > 0 ? ((overallProgress) * 100).round() : 100;
+    final progressPercentage = total > 0
+        ? ((overallProgress) * 100).round()
+        : 100;
 
     // Calculate analytics
     final averageSpeedBytesPerSecond = activeUploadsWithSpeed > 0
@@ -121,13 +122,25 @@ class UploadQueueSummaryCalculator {
 
       // Formatted display data
       'statusText': getEnhancedQueueStatusText(
-          pending, active, completed, failed, total, overallProgress,
-          cancelled: cancelled),
-      'progressText':
-          getProgressDisplayText(overallProgress, estimatedTimeRemaining),
+        pending,
+        active,
+        completed,
+        failed,
+        total,
+        overallProgress,
+        cancelled: cancelled,
+      ),
+      'progressText': getProgressDisplayText(
+        overallProgress,
+        estimatedTimeRemaining,
+      ),
       'speedText': getSpeedDisplayText(averageSpeedBytesPerSecond),
-      'summaryText':
-          getQueueSummaryText(completed, failed, total, totalElapsedTime),
+      'summaryText': getQueueSummaryText(
+        completed,
+        failed,
+        total,
+        totalElapsedTime,
+      ),
     };
   }
 
@@ -136,9 +149,15 @@ class UploadQueueSummaryCalculator {
   /// BUT-1102: `cancelled` is now threaded through so an all-cancelled queue
   /// surfaces a dedicated message instead of rendering blank UI. Optional
   /// for source compatibility with older call sites that didn't pass it.
-  static String getEnhancedQueueStatusText(int pending, int active,
-      int completed, int failed, int total, double overallProgress,
-      {int cancelled = 0}) {
+  static String getEnhancedQueueStatusText(
+    int pending,
+    int active,
+    int completed,
+    int failed,
+    int total,
+    double overallProgress, {
+    int cancelled = 0,
+  }) {
     if (total == 0) return '';
 
     final progressPercent = (overallProgress * 100).round();
@@ -174,7 +193,9 @@ class UploadQueueSummaryCalculator {
 
   /// Get progress display text with time estimates
   static String getProgressDisplayText(
-      double progress, Duration? timeRemaining) {
+    double progress,
+    Duration? timeRemaining,
+  ) {
     final progressPercent = (progress * 100).round();
 
     final l = AppLocale.current;
@@ -208,7 +229,11 @@ class UploadQueueSummaryCalculator {
 
   /// Get queue summary text with completion analytics
   static String getQueueSummaryText(
-      int completed, int failed, int total, Duration? elapsedTime) {
+    int completed,
+    int failed,
+    int total,
+    Duration? elapsedTime,
+  ) {
     if (total == 0) return '';
 
     final successRate = total > 0 ? ((completed / total) * 100).round() : 0;

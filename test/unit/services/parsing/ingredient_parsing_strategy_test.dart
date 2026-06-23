@@ -95,17 +95,19 @@ void main() {
       );
     });
 
-    test('exactly half uncertain → still selective (boundary, not majority)',
-        () {
-      // 2 of 4 is not a *majority*, so selective remains worthwhile.
-      expect(
-        IngredientParsingStrategy.shouldEnhanceSelectively(
-          uncertainCount: 2,
-          totalCount: 4,
-        ),
-        isTrue,
-      );
-    });
+    test(
+      'exactly half uncertain → still selective (boundary, not majority)',
+      () {
+        // 2 of 4 is not a *majority*, so selective remains worthwhile.
+        expect(
+          IngredientParsingStrategy.shouldEnhanceSelectively(
+            uncertainCount: 2,
+            totalCount: 4,
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('majority uncertain → full enhancement, not selective', () {
       // 3 of 4 uncertain → a full LLM pass is better than patching most lines.
@@ -130,18 +132,20 @@ void main() {
   });
 
   group('getUncertainLines', () {
-    test('should return map of uncertain line indices to original text',
-        () async {
-      final parsed = [
-        _ingredient('2 dl mjölk', ParseConfidence.high),
-        _ingredient('lite salt', ParseConfidence.low),
-        _ingredient('1 msk socker', ParseConfidence.high),
-      ];
-      final originalLines = ['2 dl mjölk', 'lite salt', '1 msk socker'];
+    test(
+      'should return map of uncertain line indices to original text',
+      () async {
+        final parsed = [
+          _ingredient('2 dl mjölk', ParseConfidence.high),
+          _ingredient('lite salt', ParseConfidence.low),
+          _ingredient('1 msk socker', ParseConfidence.high),
+        ];
+        final originalLines = ['2 dl mjölk', 'lite salt', '1 msk socker'];
 
-      final result = await strategy.getUncertainLines(parsed, originalLines);
-      expect(result, {1: 'lite salt'});
-    });
+        final result = await strategy.getUncertainLines(parsed, originalLines);
+        expect(result, {1: 'lite salt'});
+      },
+    );
 
     test('should return empty map when all lines are confident', () async {
       final parsed = [

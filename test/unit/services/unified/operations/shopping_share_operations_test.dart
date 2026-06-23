@@ -193,60 +193,79 @@ void main() {
     group('Social Sharing Operations', () {
       setUp(() {
         // Default stubs for social module
-        when(() => mockSocialModule.shareWithFriends(
-              listId: any(named: 'listId'),
-              friendIds: any(named: 'friendIds'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareWithFriends(
+            listId: any(named: 'listId'),
+            friendIds: any(named: 'friendIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.shareListWithFriend(any(), any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareListWithFriend(any(), any()),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.shareListWithMultipleFriends(
-              listId: any(named: 'listId'),
-              friendIds: any(named: 'friendIds'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareListWithMultipleFriends(
+            listId: any(named: 'listId'),
+            friendIds: any(named: 'friendIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.shareWithGroups(
-              listId: any(named: 'listId'),
-              groupIds: any(named: 'groupIds'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareWithGroups(
+            listId: any(named: 'listId'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.shareListWithGroup(any(), any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareListWithGroup(any(), any()),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.shareListWithMultipleGroups(
-              listId: any(named: 'listId'),
-              groupIds: any(named: 'groupIds'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.shareListWithMultipleGroups(
+            listId: any(named: 'listId'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.sendCollaborationInvite(
-              listId: any(named: 'listId'),
-              recipientId: any(named: 'recipientId'),
-              message: any(named: 'message'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.sendCollaborationInvite(
+            listId: any(named: 'listId'),
+            recipientId: any(named: 'recipientId'),
+            message: any(named: 'message'),
+          ),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.getShoppingListsSharedWithMe())
-            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(
+          () => mockSocialModule.getShoppingListsSharedWithMe(),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
 
-        when(() => mockSocialModule.getShoppingListsSharedByMe())
-            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        when(
+          () => mockSocialModule.getShoppingListsSharedByMe(),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
 
-        when(() => mockSocialModule.importSharedShoppingList(any()))
-            .thenAnswer((_) async => 'imported-list-id');
+        when(
+          () => mockSocialModule.importSharedShoppingList(any()),
+        ).thenAnswer((_) async => 'imported-list-id');
 
-        when(() => mockSocialModule.markSharedShoppingListAsViewed(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSocialModule.markSharedShoppingListAsViewed(any()),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockSocialModule.getShoppingListSharingStats(any()))
-            .thenAnswer((_) async => {
-                  'sharedWith': 0,
-                  'totalShared': 0,
-                  'lastShared': DateTime.now().toIso8601String(),
-                });
+        when(
+          () => mockSocialModule.getShoppingListSharingStats(any()),
+        ).thenAnswer(
+          (_) async => {
+            'sharedWith': 0,
+            'totalShared': 0,
+            'lastShared': DateTime.now().toIso8601String(),
+          },
+        );
       });
 
       test('should share with friends', () async {
@@ -256,16 +275,20 @@ void main() {
           message: 'Check out my shopping list!',
         );
         expect(result, isTrue);
-        verify(() => mockSocialModule.shareWithFriends(
-              listId: 'list-123',
-              friendIds: ['friend-1', 'friend-2'],
-              message: 'Check out my shopping list!',
-            )).called(1);
+        verify(
+          () => mockSocialModule.shareWithFriends(
+            listId: 'list-123',
+            friendIds: ['friend-1', 'friend-2'],
+            message: 'Check out my shopping list!',
+          ),
+        ).called(1);
       });
 
       test('should share with single friend', () async {
-        final result =
-            await mockSocialModule.shareListWithFriend('list-123', 'friend-1');
+        final result = await mockSocialModule.shareListWithFriend(
+          'list-123',
+          'friend-1',
+        );
         expect(result, isTrue);
       });
 
@@ -288,8 +311,10 @@ void main() {
       });
 
       test('should share with single group', () async {
-        final result =
-            await mockSocialModule.shareListWithGroup('list-123', 'family');
+        final result = await mockSocialModule.shareListWithGroup(
+          'list-123',
+          'family',
+        );
         expect(result, isTrue);
       });
 
@@ -324,23 +349,29 @@ void main() {
       });
 
       test('should import shared shopping list', () async {
-        final result =
-            await mockSocialModule.importSharedShoppingList('shared-list-123');
+        final result = await mockSocialModule.importSharedShoppingList(
+          'shared-list-123',
+        );
         expect(result, isA<String?>());
         expect(result, contains('list'));
       });
 
       test('should mark shared list as viewed', () async {
         // Should not throw
-        await mockSocialModule
-            .markSharedShoppingListAsViewed('shared-list-123');
-        verify(() => mockSocialModule
-            .markSharedShoppingListAsViewed('shared-list-123')).called(1);
+        await mockSocialModule.markSharedShoppingListAsViewed(
+          'shared-list-123',
+        );
+        verify(
+          () => mockSocialModule.markSharedShoppingListAsViewed(
+            'shared-list-123',
+          ),
+        ).called(1);
       });
 
       test('should get shopping list sharing stats', () async {
-        final result =
-            await mockSocialModule.getShoppingListSharingStats('list-123');
+        final result = await mockSocialModule.getShoppingListSharingStats(
+          'list-123',
+        );
         expect(result, isA<Map<String, dynamic>>());
         expect(result['sharedWith'], equals(0));
         expect(result['totalShared'], equals(0));

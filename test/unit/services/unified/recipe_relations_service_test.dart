@@ -103,8 +103,7 @@ void main() {
       expect(writes, isEmpty);
     });
 
-    test(
-        'link returns false on update failure (preserves partial-fail '
+    test('link returns false on update failure (preserves partial-fail '
         'semantics)', () async {
       store['a'] = _recipe(id: 'a');
       store['b'] = _recipe(id: 'b');
@@ -156,19 +155,21 @@ void main() {
       expect(ok, isFalse);
     });
 
-    test('unlink preserves other relations (only removes the named pair)',
-        () async {
-      store['a'] = _recipe(id: 'a', related: ['b', 'c']);
-      store['b'] = _recipe(id: 'b', related: ['a']);
-      store['c'] = _recipe(id: 'c', related: ['a']);
+    test(
+      'unlink preserves other relations (only removes the named pair)',
+      () async {
+        store['a'] = _recipe(id: 'a', related: ['b', 'c']);
+        store['b'] = _recipe(id: 'b', related: ['a']);
+        store['c'] = _recipe(id: 'c', related: ['a']);
 
-      final ok = await relations.unlink('a', 'b');
+        final ok = await relations.unlink('a', 'b');
 
-      expect(ok, isTrue);
-      expect(store['a']!.core.relatedRecipeIds, equals(['c']));
-      expect(store['b']!.core.relatedRecipeIds, isEmpty);
-      // c untouched — not part of the unlinked pair.
-      expect(store['c']!.core.relatedRecipeIds, equals(['a']));
-    });
+        expect(ok, isTrue);
+        expect(store['a']!.core.relatedRecipeIds, equals(['c']));
+        expect(store['b']!.core.relatedRecipeIds, isEmpty);
+        // c untouched — not part of the unlinked pair.
+        expect(store['c']!.core.relatedRecipeIds, equals(['a']));
+      },
+    );
   });
 }

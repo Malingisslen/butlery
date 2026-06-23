@@ -50,13 +50,13 @@ class ParticipantTracker {
   /// Alla participant activities
   List<ParticipantActivity> get allActivities {
     return _participantActivity.entries.map((entry) {
-      return ParticipantActivity(
-        userId: entry.key,
-        displayName: getDisplayName(entry.key),
-        lastSeen: entry.value,
-        isOnline: wasRecentlyActive(entry.key, const Duration(minutes: 5)),
-      );
-    }).toList()
+        return ParticipantActivity(
+          userId: entry.key,
+          displayName: getDisplayName(entry.key),
+          lastSeen: entry.value,
+          isOnline: wasRecentlyActive(entry.key, const Duration(minutes: 5)),
+        );
+      }).toList()
       ..sort((a, b) => b.lastSeen.compareTo(a.lastSeen)); // Most recent first
   }
 
@@ -109,7 +109,8 @@ class ParticipantTracker {
   List<String> get onlineParticipants {
     return _participantActivity.entries
         .where(
-            (entry) => wasRecentlyActive(entry.key, const Duration(minutes: 5)))
+          (entry) => wasRecentlyActive(entry.key, const Duration(minutes: 5)),
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -118,7 +119,8 @@ class ParticipantTracker {
   List<String> get recentlyActiveParticipants {
     return _participantActivity.entries
         .where(
-            (entry) => wasRecentlyActive(entry.key, const Duration(hours: 1)))
+          (entry) => wasRecentlyActive(entry.key, const Duration(hours: 1)),
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -129,7 +131,8 @@ class ParticipantTracker {
       _participantNames[userId] = displayName;
       onUpdated?.call();
       AppLogger.debug(
-          '👤 Display name uppdaterat för ${userId.maskedUserId}: ${displayName.maskedName}');
+        '👤 Display name uppdaterat för ${userId.maskedUserId}: ${displayName.maskedName}',
+      );
     }
   }
 
@@ -146,8 +149,9 @@ class ParticipantTracker {
     final cutoff = clock.now().subtract(const Duration(hours: 1));
     final oldCount = _participantActivity.length;
 
-    _participantActivity
-        .removeWhere((userId, lastSeen) => lastSeen.isBefore(cutoff));
+    _participantActivity.removeWhere(
+      (userId, lastSeen) => lastSeen.isBefore(cutoff),
+    );
 
     if (_participantActivity.length != oldCount) {
       final cleaned = oldCount - _participantActivity.length;
@@ -182,7 +186,8 @@ class ParticipantTracker {
     if (removed) {
       onUpdated?.call();
       AppLogger.debug(
-          '🚫 Deltagare ${userId.maskedUserId} borttagen från tracking');
+        '🚫 Deltagare ${userId.maskedUserId} borttagen från tracking',
+      );
     }
   }
 

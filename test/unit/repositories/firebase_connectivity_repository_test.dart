@@ -43,10 +43,9 @@ void main() {
     group('Connection Checking', () {
       test('should check Firebase connection', () async {
         // Arrange - Seed the .info/connected document
-        await fakeFirestore
-            .collection('.info')
-            .doc('connected')
-            .set({'connected': true});
+        await fakeFirestore.collection('.info').doc('connected').set({
+          'connected': true,
+        });
 
         // Act
         final isConnected = await repository.checkFirebaseConnection();
@@ -65,10 +64,9 @@ void main() {
 
       test('should test endpoint connectivity', () async {
         // Arrange - Seed a test document
-        await fakeFirestore
-            .collection('test')
-            .doc('endpoint')
-            .set({'data': 'test'});
+        await fakeFirestore.collection('test').doc('endpoint').set({
+          'data': 'test',
+        });
 
         // Act
         final canConnect = await repository.testEndpoint('test/endpoint');
@@ -79,8 +77,9 @@ void main() {
 
       test('should handle unreachable endpoint', () async {
         // Act - FakeFirestore returns response even for non-existent docs
-        final canConnect =
-            await repository.testEndpoint('nonexistent/endpoint');
+        final canConnect = await repository.testEndpoint(
+          'nonexistent/endpoint',
+        );
 
         // Assert - Should return a boolean
         expect(canConnect, isA<bool>());
@@ -130,25 +129,28 @@ void main() {
         expect(stream, isA<Stream<bool>>());
       });
 
-      test('should broadcast connection status changes', () async {
-        // Arrange
-        final stream = repository.connectionStream;
+      test(
+        'should broadcast connection status changes',
+        () async {
+          // Arrange
+          final stream = repository.connectionStream;
 
-        // Act - Listen to the stream
-        final future = stream.first;
+          // Act - Listen to the stream
+          final future = stream.first;
 
-        // Seed connectivity data
-        await fakeFirestore
-            .collection('.info')
-            .doc('connected')
-            .set({'connected': true});
+          // Seed connectivity data
+          await fakeFirestore.collection('.info').doc('connected').set({
+            'connected': true,
+          });
 
-        // Wait for stream to emit
-        await Future.delayed(const Duration(milliseconds: 100));
+          // Wait for stream to emit
+          await Future.delayed(const Duration(milliseconds: 100));
 
-        // Assert - Stream should emit a boolean value
-        expect(future, completion(isA<bool>()));
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+          // Assert - Stream should emit a boolean value
+          expect(future, completion(isA<bool>()));
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
 
       test('should monitor Firebase connection via stream', () {
         // Act
@@ -158,104 +160,120 @@ void main() {
         expect(stream, isA<Stream<bool>>());
       });
 
-      test('should handle Firebase connection monitoring errors gracefully',
-          () async {
-        // Act
-        final stream = repository.monitorFirebaseConnection();
+      test(
+        'should handle Firebase connection monitoring errors gracefully',
+        () async {
+          // Act
+          final stream = repository.monitorFirebaseConnection();
 
-        // Assert - Stream should not throw even if there are errors
-        expect(stream, isA<Stream<bool>>());
+          // Assert - Stream should not throw even if there are errors
+          expect(stream, isA<Stream<bool>>());
 
-        // Verify stream can be listened to without errors
-        final subscription = stream.listen((connected) {
-          expect(connected, isA<bool>());
-        });
+          // Verify stream can be listened to without errors
+          final subscription = stream.listen((connected) {
+            expect(connected, isA<bool>());
+          });
 
-        await Future.delayed(const Duration(milliseconds: 50));
-        await subscription.cancel();
-      }, skip: 'Stream listening requires proper test setup');
+          await Future.delayed(const Duration(milliseconds: 50));
+          await subscription.cancel();
+        },
+        skip: 'Stream listening requires proper test setup',
+      );
     });
 
     // ===== LIFECYCLE MANAGEMENT =====
 
     group('Lifecycle Management', () {
-      test('should dispose resources cleanly', () {
-        // Arrange
-        final stream = repository.connectionStream;
-        final subscription = stream.listen((_) {});
+      test(
+        'should dispose resources cleanly',
+        () {
+          // Arrange
+          final stream = repository.connectionStream;
+          final subscription = stream.listen((_) {});
 
-        // Act & Assert - Should not throw
-        repository.dispose();
-        subscription.cancel();
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+          // Act & Assert - Should not throw
+          repository.dispose();
+          subscription.cancel();
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
 
-      test('should stop monitoring when connection stream is cancelled',
-          () async {
-        // Arrange
-        final stream = repository.connectionStream;
-        final subscription = stream.listen((_) {});
+      test(
+        'should stop monitoring when connection stream is cancelled',
+        () async {
+          // Arrange
+          final stream = repository.connectionStream;
+          final subscription = stream.listen((_) {});
 
-        // Act
-        await subscription.cancel();
+          // Act
+          await subscription.cancel();
 
-        // Assert - Should not throw and resources should be cleaned up
-        expect(subscription.isPaused, isFalse);
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+          // Assert - Should not throw and resources should be cleaned up
+          expect(subscription.isPaused, isFalse);
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
 
-      test('should handle multiple connection stream subscriptions', () {
-        // Act - Create multiple subscriptions
-        final stream = repository.connectionStream;
-        final sub1 = stream.listen((_) {});
-        final sub2 = stream.listen((_) {});
+      test(
+        'should handle multiple connection stream subscriptions',
+        () {
+          // Act - Create multiple subscriptions
+          final stream = repository.connectionStream;
+          final sub1 = stream.listen((_) {});
+          final sub2 = stream.listen((_) {});
 
-        // Assert - Both subscriptions should work
-        expect(sub1, isA<Stream<bool>>());
-        expect(sub2, isA<Stream<bool>>());
+          // Assert - Both subscriptions should work
+          expect(sub1, isA<Stream<bool>>());
+          expect(sub2, isA<Stream<bool>>());
 
-        // Cleanup
-        sub1.cancel();
-        sub2.cancel();
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+          // Cleanup
+          sub1.cancel();
+          sub2.cancel();
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
     });
 
     // ===== INTEGRATION =====
 
     group('Integration', () {
-      test('should coordinate network and Firebase connectivity checks',
-          () async {
-        // Arrange - Seed Firebase connectivity
-        await fakeFirestore
-            .collection('.info')
-            .doc('connected')
-            .set({'connected': true});
+      test(
+        'should coordinate network and Firebase connectivity checks',
+        () async {
+          // Arrange - Seed Firebase connectivity
+          await fakeFirestore.collection('.info').doc('connected').set({
+            'connected': true,
+          });
 
-        // Act
-        final firebaseConnected = await repository.checkFirebaseConnection();
-        final quality = await repository.getConnectionQuality();
+          // Act
+          final firebaseConnected = await repository.checkFirebaseConnection();
+          final quality = await repository.getConnectionQuality();
 
-        // Assert
-        expect(firebaseConnected, isA<bool>());
-        expect(quality, isA<ConnectionQuality>());
-      });
+          // Assert
+          expect(firebaseConnected, isA<bool>());
+          expect(quality, isA<ConnectionQuality>());
+        },
+      );
 
-      test('should provide consistent connectivity status across methods',
-          () async {
-        // Arrange
-        await fakeFirestore
-            .collection('.info')
-            .doc('connected')
-            .set({'connected': true});
+      test(
+        'should provide consistent connectivity status across methods',
+        () async {
+          // Arrange
+          await fakeFirestore.collection('.info').doc('connected').set({
+            'connected': true,
+          });
 
-        // Act
-        final checkResult = await repository.checkFirebaseConnection();
-        final quality = await repository.getConnectionQuality();
+          // Act
+          final checkResult = await repository.checkFirebaseConnection();
+          final quality = await repository.getConnectionQuality();
 
-        // Assert - Results should be consistent
-        if (!checkResult) {
-          expect(quality, equals(ConnectionQuality.offline));
-        }
-        // If connected, quality should not be offline (unless network check fails)
-      });
+          // Assert - Results should be consistent
+          if (!checkResult) {
+            expect(quality, equals(ConnectionQuality.offline));
+          }
+          // If connected, quality should not be offline (unless network check fails)
+        },
+      );
     });
 
     // ===== EDGE CASES =====
@@ -290,21 +308,25 @@ void main() {
         expect(canConnect, isA<bool>());
       });
 
-      test('should handle concurrent stream subscriptions', () async {
-        // Act
-        final stream = repository.connectionStream;
-        final sub1 = stream.listen((_) {});
-        final sub2 = stream.listen((_) {});
-        final sub3 = stream.listen((_) {});
+      test(
+        'should handle concurrent stream subscriptions',
+        () async {
+          // Act
+          final stream = repository.connectionStream;
+          final sub1 = stream.listen((_) {});
+          final sub2 = stream.listen((_) {});
+          final sub3 = stream.listen((_) {});
 
-        // Wait briefly
-        await Future.delayed(const Duration(milliseconds: 50));
+          // Wait briefly
+          await Future.delayed(const Duration(milliseconds: 50));
 
-        // Assert & Cleanup - Should not throw
-        await sub1.cancel();
-        await sub2.cancel();
-        await sub3.cancel();
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+          // Assert & Cleanup - Should not throw
+          await sub1.cancel();
+          await sub2.cancel();
+          await sub3.cancel();
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
 
       test('should handle dispose being called multiple times', () {
         // Act & Assert - Should not throw
@@ -329,13 +351,17 @@ void main() {
         expect(stopwatch.elapsedMilliseconds, lessThan(1000));
       });
 
-      test('should not leak memory with stream subscriptions', () async {
-        // Act - Create and cancel many subscriptions
-        for (var i = 0; i < 10; i++) {
-          final sub = repository.connectionStream.listen((_) {});
-          await sub.cancel();
-        }
-      }, skip: 'Requires Flutter bindings for Connectivity plugin');
+      test(
+        'should not leak memory with stream subscriptions',
+        () async {
+          // Act - Create and cancel many subscriptions
+          for (var i = 0; i < 10; i++) {
+            final sub = repository.connectionStream.listen((_) {});
+            await sub.cancel();
+          }
+        },
+        skip: 'Requires Flutter bindings for Connectivity plugin',
+      );
     });
   });
 }

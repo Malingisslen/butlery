@@ -101,9 +101,9 @@ class UnifiedShoppingService
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     required ShoppingRepository shoppingRepository,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository,
-        _shoppingRepository = shoppingRepository {
+  }) : _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository,
+       _shoppingRepository = shoppingRepository {
     _initializeModules();
   }
 
@@ -206,7 +206,8 @@ class UnifiedShoppingService
   StreamSubscription<List<UnifiedShoppingList>>? _collaborativeStreamSub;
 
   final _stateSubject = BehaviorSubject<ShoppingServiceState>.seeded(
-      const ShoppingStateLoading());
+    const ShoppingStateLoading(),
+  );
 
   Stream<ShoppingServiceState> get stateStream => _stateSubject.stream;
   ShoppingServiceState get currentState => _stateSubject.value;
@@ -224,11 +225,13 @@ class UnifiedShoppingService
       _stateSubject.add(ShoppingStateError(message: _error!));
       return;
     }
-    _stateSubject.add(ShoppingStateData(
-      lists: _lists,
-      activeListId: _activeListId,
-      error: _error,
-    ));
+    _stateSubject.add(
+      ShoppingStateData(
+        lists: _lists,
+        activeListId: _activeListId,
+        error: _error,
+      ),
+    );
   }
 
   // Feature interface getters
@@ -296,8 +299,7 @@ class UnifiedShoppingService
 
   void _startCollaborativeStream() {
     _collaborativeStreamSub?.cancel();
-    _collaborativeStreamSub =
-        _shoppingRepository.collaborativeListsStream().listen(
+    _collaborativeStreamSub = _shoppingRepository.collaborativeListsStream().listen(
       (collabLists) {
         _lists.removeWhere((l) => l.isCollaborative);
         _lists.addAll(collabLists);
@@ -330,8 +332,10 @@ class UnifiedShoppingService
     }
   }
 
-  Future<String?> createPersonalList(String name,
-      {List<UnifiedShoppingItem>? items}) async {
+  Future<String?> createPersonalList(
+    String name, {
+    List<UnifiedShoppingItem>? items,
+  }) async {
     return await _listManagement.createPersonalList(name, items: items);
   }
 
@@ -545,7 +549,9 @@ class UnifiedShoppingService
         const activeListKey = 'active_list_id';
         await cacheHelper.saveActiveId(activeListKey, _activeListId);
         AppLogger.debug(
-            '💾 Saved active list ID: $_activeListId', 'ShoppingService');
+          '💾 Saved active list ID: $_activeListId',
+          'ShoppingService',
+        );
       },
       operationName: 'Save active list ID',
       // Don't rethrow - this is not critical for app functionality

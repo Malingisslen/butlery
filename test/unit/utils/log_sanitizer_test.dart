@@ -94,8 +94,10 @@ void main() {
 
     group('extensions', () {
       test('maskedEmail delegates to maskEmail', () {
-        expect('user@example.com'.maskedEmail,
-            LogSanitizer.maskEmail('user@example.com'));
+        expect(
+          'user@example.com'.maskedEmail,
+          LogSanitizer.maskEmail('user@example.com'),
+        );
       });
 
       test('maskedUserId delegates to maskUserId', () {
@@ -103,8 +105,10 @@ void main() {
       });
 
       test('maskedPhone delegates to maskPhoneNumber', () {
-        expect('+46701234567'.maskedPhone,
-            LogSanitizer.maskPhoneNumber('+46701234567'));
+        expect(
+          '+46701234567'.maskedPhone,
+          LogSanitizer.maskPhoneNumber('+46701234567'),
+        );
       });
 
       test('maskedName delegates to maskDisplayName', () {

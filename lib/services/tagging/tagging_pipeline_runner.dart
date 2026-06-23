@@ -41,13 +41,13 @@ class TaggingPhaseOutcome {
   });
 
   Map<String, Object?> toLogMap() => {
-        'phase_index': phaseIndex,
-        'phase_name': phaseName,
-        'elapsed_ms': elapsedMs,
-        'budget_ms': budgetMs,
-        'result': result,
-        if (errorClass != null) 'error_class': errorClass,
-      };
+    'phase_index': phaseIndex,
+    'phase_name': phaseName,
+    'elapsed_ms': elapsedMs,
+    'budget_ms': budgetMs,
+    'result': result,
+    if (errorClass != null) 'error_class': errorClass,
+  };
 }
 
 /// Result bundle returned by [TaggingPipelineRunner.run].
@@ -80,28 +80,33 @@ class TaggingPhaseCallables {
   final Future<IngredientLookupResult> Function(
     List<String> ingredients,
     String? userId,
-  ) lookup;
+  )
+  lookup;
   final Future<Phase1Result> Function(
     IngredientLookupResult,
     Recipe,
-  ) phase1;
+  )
+  phase1;
   final Future<Phase2Result> Function(Phase1Result, Recipe) phase2;
   final Future<Phase3Result> Function(
     Phase1Result,
     Phase2Result,
     Recipe,
-  ) phase3;
+  )
+  phase3;
   final Future<Phase4Result> Function(
     Phase1Result,
     Phase2Result,
     Phase3Result,
     Recipe,
-  ) phase4;
+  )
+  phase4;
   final Future<Phase5Result> Function(Phase4Result, Recipe) phase5;
   final Future<Phase5ResultPartial> Function(
     Phase1Result,
     Recipe,
-  ) phase5FromPhase1;
+  )
+  phase5FromPhase1;
 
   const TaggingPhaseCallables({
     required this.lookup,
@@ -132,7 +137,8 @@ TaggingPhaseCallables _defaultPhaseCallables(
     phase5: (p4, recipe) =>
         Future<Phase5Result>(() => generator.runPhase5(p4, recipe)),
     phase5FromPhase1: (p1, recipe) => Future<Phase5ResultPartial>(
-        () => generator.runPhase5FromPhase1(p1, recipe)),
+      () => generator.runPhase5FromPhase1(p1, recipe),
+    ),
   );
 }
 
@@ -171,9 +177,9 @@ class TaggingPipelineRunner {
     required TagGenerator generator,
     TaggingPhaseCallables? phaseCallables,
     this.onPhaseOutcome,
-  })  : _generator = generator,
-        _phases =
-            phaseCallables ?? _defaultPhaseCallables(lookupService, generator);
+  }) : _generator = generator,
+       _phases =
+           phaseCallables ?? _defaultPhaseCallables(lookupService, generator);
 
   /// Test-only constructor: injects [TaggingPhaseCallables] without
   /// requiring a real lookup service. The generator is still required for
@@ -182,8 +188,8 @@ class TaggingPipelineRunner {
     required TagGenerator generator,
     required TaggingPhaseCallables phaseCallables,
     this.onPhaseOutcome,
-  })  : _generator = generator,
-        _phases = phaseCallables;
+  }) : _generator = generator,
+       _phases = phaseCallables;
 
   /// Runs the full pipeline. [userId] is forwarded to the lookup service
   /// for user-defined ingredient resolution.
@@ -268,7 +274,8 @@ class TaggingPipelineRunner {
     );
     outcomes.add(phase3Exec.outcome);
     final phase3 = phase3Exec.value;
-    final phase3OrEmpty = phase3 ??
+    final phase3OrEmpty =
+        phase3 ??
         Phase3Result(
           tags: const {},
           phase1: phase1,
@@ -415,7 +422,8 @@ class TaggingPipelineRunner {
       generatedAt: clock.now(),
       generatorVersion: 'lookup_${outcome.result}',
       isPartial: true,
-      errorReason: 'Ingredient lookup ${outcome.result} '
+      errorReason:
+          'Ingredient lookup ${outcome.result} '
           '(elapsed=${outcome.elapsedMs}ms / budget=${outcome.budgetMs}ms)',
     );
   }

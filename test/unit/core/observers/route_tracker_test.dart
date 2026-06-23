@@ -39,15 +39,17 @@ void main() {
 
     testWidgets('updates currentRouteName on pushNamed', (tester) async {
       late BuildContext rootContext;
-      await tester.pumpWidget(appWith(
-        routes: {
-          '/': (ctx) {
-            rootContext = ctx;
-            return const Scaffold(body: Text('home'));
+      await tester.pumpWidget(
+        appWith(
+          routes: {
+            '/': (ctx) {
+              rootContext = ctx;
+              return const Scaffold(body: Text('home'));
+            },
+            '/search': (_) => const Scaffold(body: Text('search')),
           },
-          '/search': (_) => const Scaffold(body: Text('search')),
-        },
-      ));
+        ),
+      );
       await tester.pumpAndSettle();
 
       Navigator.of(rootContext).pushNamed('/search');
@@ -58,15 +60,17 @@ void main() {
 
     testWidgets('restores previous route name after pop', (tester) async {
       late BuildContext rootContext;
-      await tester.pumpWidget(appWith(
-        routes: {
-          '/': (ctx) {
-            rootContext = ctx;
-            return const Scaffold(body: Text('home'));
+      await tester.pumpWidget(
+        appWith(
+          routes: {
+            '/': (ctx) {
+              rootContext = ctx;
+              return const Scaffold(body: Text('home'));
+            },
+            '/search': (_) => const Scaffold(body: Text('search')),
           },
-          '/search': (_) => const Scaffold(body: Text('search')),
-        },
-      ));
+        ),
+      );
       await tester.pumpAndSettle();
 
       final navigator = Navigator.of(rootContext);
@@ -83,16 +87,18 @@ void main() {
       tester,
     ) async {
       late BuildContext rootContext;
-      await tester.pumpWidget(appWith(
-        routes: {
-          '/': (ctx) {
-            rootContext = ctx;
-            return const Scaffold(body: Text('home'));
+      await tester.pumpWidget(
+        appWith(
+          routes: {
+            '/': (ctx) {
+              rootContext = ctx;
+              return const Scaffold(body: Text('home'));
+            },
+            '/search': (_) => const Scaffold(body: Text('search')),
+            '/recipes': (_) => const Scaffold(body: Text('recipes')),
           },
-          '/search': (_) => const Scaffold(body: Text('search')),
-          '/recipes': (_) => const Scaffold(body: Text('recipes')),
-        },
-      ));
+        ),
+      );
       await tester.pumpAndSettle();
 
       Navigator.of(rootContext).pushNamed('/search');
@@ -111,15 +117,17 @@ void main() {
         // dedupe into the tracker, which would silently break other
         // legitimate same-route pushes.
         late BuildContext rootContext;
-        await tester.pumpWidget(appWith(
-          routes: {
-            '/': (ctx) {
-              rootContext = ctx;
-              return const Scaffold(body: Text('home'));
+        await tester.pumpWidget(
+          appWith(
+            routes: {
+              '/': (ctx) {
+                rootContext = ctx;
+                return const Scaffold(body: Text('home'));
+              },
+              '/search': (_) => const Scaffold(body: Text('search')),
             },
-            '/search': (_) => const Scaffold(body: Text('search')),
-          },
-        ));
+          ),
+        );
         await tester.pumpAndSettle();
 
         final navigator = Navigator.of(rootContext);

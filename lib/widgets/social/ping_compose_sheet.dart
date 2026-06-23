@@ -397,8 +397,9 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final bg =
-        enabled ? cs.onPrimaryContainer : context.butleryColors.iconMuted;
+    final bg = enabled
+        ? cs.onPrimaryContainer
+        : context.butleryColors.iconMuted;
 
     return Semantics(
       label: context.l10n.a11yPingComposeSend,

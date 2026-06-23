@@ -67,23 +67,28 @@ void main() {
         expect(result, isNot(contains('second')));
       });
 
-      test('should complete quickly on pathological input with many unclosed <',
-          () {
-        // Pathological input: many '<' without matching close tags.
-        // A naive regex approach would backtrack exponentially here.
-        final pathological = '<' * 10000 + 'safe content';
-        final stopwatch = Stopwatch()..start();
-        final result = sanitizer.sanitize(pathological);
-        stopwatch.stop();
+      test(
+        'should complete quickly on pathological input with many unclosed <',
+        () {
+          // Pathological input: many '<' without matching close tags.
+          // A naive regex approach would backtrack exponentially here.
+          final pathological = '<' * 10000 + 'safe content';
+          final stopwatch = Stopwatch()..start();
+          final result = sanitizer.sanitize(pathological);
+          stopwatch.stop();
 
-        // Should complete in well under 1 second (state-machine is O(n))
-        expect(stopwatch.elapsedMilliseconds, lessThan(1000),
+          // Should complete in well under 1 second (state-machine is O(n))
+          expect(
+            stopwatch.elapsedMilliseconds,
+            lessThan(1000),
             reason:
-                'State-machine approach should not hang on pathological input');
-        // The content may be truncated since there is no close tag,
-        // but it should not hang
-        expect(result, isNotNull);
-      });
+                'State-machine approach should not hang on pathological input',
+          );
+          // The content may be truncated since there is no close tag,
+          // but it should not hang
+          expect(result, isNotNull);
+        },
+      );
 
       test('should remove multiple script tags in same content', () {
         final input =
@@ -117,7 +122,8 @@ void main() {
       });
 
       test('should preserve JSON-LD script tags', () {
-        final input = '<div>Hello</div>'
+        final input =
+            '<div>Hello</div>'
             '<script type="application/ld+json">{"@type":"Recipe","name":"Pancakes"}</script>'
             '<script>alert("xss")</script>'
             '<p>World</p>';
@@ -268,20 +274,27 @@ void main() {
       test('should NOT flag "500 g mjol" as error page', () {
         final result = sanitizer.looksLikeErrorPage('500 g mjol');
 
-        expect(result, isFalse,
-            reason: '"500 g" is a cooking quantity, not an HTTP error');
+        expect(
+          result,
+          isFalse,
+          reason: '"500 g" is a cooking quantity, not an HTTP error',
+        );
       });
 
       test('should NOT flag "400 ml vatten" as error page', () {
         final result = sanitizer.looksLikeErrorPage('400 ml vatten');
 
-        expect(result, isFalse,
-            reason: '"400 ml" is a cooking quantity, not an HTTP error');
+        expect(
+          result,
+          isFalse,
+          reason: '"400 ml" is a cooking quantity, not an HTTP error',
+        );
       });
 
       test('should flag "Internal server error 500" as error page', () {
-        final result =
-            sanitizer.looksLikeErrorPage('Internal server error 500');
+        final result = sanitizer.looksLikeErrorPage(
+          'Internal server error 500',
+        );
 
         expect(result, isTrue);
       });
@@ -299,28 +312,35 @@ void main() {
       });
 
       test(
-          'should NOT flag recipe content containing "500 g" with recipe indicators as error',
-          () {
-        // Cross-check: content has "500" but also recipe indicators
-        final recipeContent = '''
+        'should NOT flag recipe content containing "500 g" with recipe indicators as error',
+        () {
+          // Cross-check: content has "500" but also recipe indicators
+          final recipeContent = '''
           Ingredienser:
           500 g mjol
           2 dl vatten
           Tillagning:
           Blanda allt.
         ''';
-        final result = sanitizer.looksLikeErrorPage(recipeContent);
+          final result = sanitizer.looksLikeErrorPage(recipeContent);
 
-        expect(result, isFalse,
+          expect(
+            result,
+            isFalse,
             reason:
-                'Recipe content with "500 g" and recipe indicators should not be an error page');
-      });
+                'Recipe content with "500 g" and recipe indicators should not be an error page',
+          );
+        },
+      );
 
       test('should NOT flag "403" alone without error context', () {
         final result = sanitizer.looksLikeErrorPage('403 g socker');
 
-        expect(result, isFalse,
-            reason: '"403 g" is a cooking quantity, not a Forbidden error');
+        expect(
+          result,
+          isFalse,
+          reason: '"403 g" is a cooking quantity, not a Forbidden error',
+        );
       });
 
       test('should flag "HTTP 403 Forbidden" as error page', () {
@@ -336,8 +356,9 @@ void main() {
       });
 
       test('should NOT flag normal recipe text as error page', () {
-        final result = sanitizer
-            .looksLikeErrorPage('Koka pastan i 10 minuter. Servera med sas.');
+        final result = sanitizer.looksLikeErrorPage(
+          'Koka pastan i 10 minuter. Servera med sas.',
+        );
 
         expect(result, isFalse);
       });
@@ -572,86 +593,121 @@ void main() {
         // happy path. Warning lets callers audit while keeping imports green.
         final result = sanitizer.check('<script>alert("xss")</script>');
 
-        expect(result.hasCriticalIssues, isFalse,
-            reason: 'Script tags must not abort URL imports');
-        expect(result.isClean, isTrue,
-            reason: 'Warnings alone do not fail the security gate');
         expect(
-            result.issues.any((i) =>
+          result.hasCriticalIssues,
+          isFalse,
+          reason: 'Script tags must not abort URL imports',
+        );
+        expect(
+          result.isClean,
+          isTrue,
+          reason: 'Warnings alone do not fail the security gate',
+        );
+        expect(
+          result.issues.any(
+            (i) =>
                 i.type == IssueType.scriptInjection &&
-                i.severity == IssueSeverity.warning),
+                i.severity == IssueSeverity.warning,
+          ),
+          isTrue,
+          reason: 'Script presence must be surfaced for audit',
+        );
+      });
+
+      test(
+        'surfaces <script type="text/javascript"> as warning (BUT-1061)',
+        () {
+          final result = sanitizer.check(
+            '<script type="text/javascript">window.x=1</script>',
+          );
+
+          expect(result.hasCriticalIssues, isFalse);
+          expect(
+            result.issues.any(
+              (i) =>
+                  i.type == IssueType.scriptInjection &&
+                  i.severity == IssueSeverity.warning,
+            ),
             isTrue,
-            reason: 'Script presence must be surfaced for audit');
-      });
-
-      test('surfaces <script type="text/javascript"> as warning (BUT-1061)',
-          () {
-        final result = sanitizer
-            .check('<script type="text/javascript">window.x=1</script>');
-
-        expect(result.hasCriticalIssues, isFalse);
-        expect(
-            result.issues.any((i) =>
-                i.type == IssueType.scriptInjection &&
-                i.severity == IssueSeverity.warning),
-            isTrue);
-      });
+          );
+        },
+      );
 
       test('does NOT surface JSON-LD script blocks (BUT-1061)', () {
         // schema.org structured data is a legitimate recipe artefact —
         // sanitize() preserves these blocks for the parser to extract.
         final result = sanitizer.check(
-            '<script type="application/ld+json">{"@type":"Recipe"}</script>');
+          '<script type="application/ld+json">{"@type":"Recipe"}</script>',
+        );
 
         expect(result.hasCriticalIssues, isFalse);
         expect(result.isClean, isTrue);
-        expect(result.issues.where((i) => i.type == IssueType.scriptInjection),
-            isEmpty,
-            reason: 'JSON-LD must not generate a warning');
+        expect(
+          result.issues.where((i) => i.type == IssueType.scriptInjection),
+          isEmpty,
+          reason: 'JSON-LD must not generate a warning',
+        );
       });
 
-      test('does NOT bypass via fake JSON-LD in unrelated attribute (BUT-1061)',
-          () {
-        // Tightened regex: only a real `type=` attribute exempts the tag.
-        // A `data-note="application/ld+json"` decoy must still trip the warning.
-        final result = sanitizer
-            .check('<script data-note="application/ld+json">alert(1)</script>');
+      test(
+        'does NOT bypass via fake JSON-LD in unrelated attribute (BUT-1061)',
+        () {
+          // Tightened regex: only a real `type=` attribute exempts the tag.
+          // A `data-note="application/ld+json"` decoy must still trip the warning.
+          final result = sanitizer.check(
+            '<script data-note="application/ld+json">alert(1)</script>',
+          );
 
-        expect(
-            result.issues.any((i) =>
-                i.type == IssueType.scriptInjection &&
-                i.severity == IssueSeverity.warning),
+          expect(
+            result.issues.any(
+              (i) =>
+                  i.type == IssueType.scriptInjection &&
+                  i.severity == IssueSeverity.warning,
+            ),
             isTrue,
             reason:
-                'Lookahead must anchor on `type=` to avoid attribute bypass');
-      });
+                'Lookahead must anchor on `type=` to avoid attribute bypass',
+          );
+        },
+      );
 
       test('should return warning for homoglyphs (not critical)', () {
         // Homoglyphs alone are a warning, not critical
         final result = sanitizer.check('p\u0430ss'); // Cyrillic a
 
         expect(result.hasCriticalIssues, isFalse);
-        expect(result.isClean, isTrue,
-            reason: 'Homoglyph warnings alone do not make content unclean');
+        expect(
+          result.isClean,
+          isTrue,
+          reason: 'Homoglyph warnings alone do not make content unclean',
+        );
         expect(result.issues, hasLength(1));
         expect(result.issues.first.severity, IssueSeverity.warning);
       });
 
-      test('should not flag event handler attributes (handled by sanitize())',
-          () {
-        final result = sanitizer.check('<div onclick="evil()">');
+      test(
+        'should not flag event handler attributes (handled by sanitize())',
+        () {
+          final result = sanitizer.check('<div onclick="evil()">');
 
-        expect(result.isClean, isTrue,
+          expect(
+            result.isClean,
+            isTrue,
             reason:
-                'Event handlers are stripped by sanitize(), not rejected by check()');
-      });
+                'Event handlers are stripped by sanitize(), not rejected by check()',
+          );
+        },
+      );
 
       test('should not flag javascript: protocol (handled by sanitize())', () {
         final result = sanitizer.check('href="javascript:void(0)"');
 
-        expect(result.isClean, isTrue,
-            reason:
-                'javascript: URLs are neutralized by sanitize(), not rejected by check()');
+        expect(
+          result.isClean,
+          isTrue,
+          reason:
+              'javascript: URLs are neutralized by sanitize(), not rejected by check()',
+        );
       });
     });
 
@@ -674,8 +730,9 @@ void main() {
       });
 
       test('should NOT recognize random text as recipe', () {
-        final result =
-            sanitizer.looksLikeRecipeContent('The weather is nice today');
+        final result = sanitizer.looksLikeRecipeContent(
+          'The weather is nice today',
+        );
 
         expect(result, isFalse);
       });
@@ -740,7 +797,8 @@ void main() {
       });
 
       test('should handle multiple dangerous tags mixed together', () {
-        final input = '<script>evil()</script><iframe>ad</iframe>'
+        final input =
+            '<script>evil()</script><iframe>ad</iframe>'
             '<style>.x{}</style><div>Safe</div>';
         final result = sanitizer.sanitize(input);
 

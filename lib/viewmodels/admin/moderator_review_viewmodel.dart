@@ -19,7 +19,7 @@ class ModeratorReviewViewModel extends BaseViewModel {
   bool _hasStarted = false;
 
   ModeratorReviewViewModel({ReportService? reportService})
-      : _reportService = reportService ?? ServiceLocator.get<ReportService>();
+    : _reportService = reportService ?? ServiceLocator.get<ReportService>();
 
   List<ContentReport> get reports => _reports;
 

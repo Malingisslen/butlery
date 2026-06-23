@@ -28,12 +28,18 @@ void main() {
       // Boundary: last valid index is length-1; length itself must fall back.
       expect(
         SerializationUtils.safeEnumByIndex(
-            _Sample.values.length - 1, _Sample.values, _Sample.a),
+          _Sample.values.length - 1,
+          _Sample.values,
+          _Sample.a,
+        ),
         equals(_Sample.c),
       );
       expect(
         SerializationUtils.safeEnumByIndex(
-            _Sample.values.length, _Sample.values, _Sample.a),
+          _Sample.values.length,
+          _Sample.values,
+          _Sample.a,
+        ),
         equals(_Sample.a),
       );
     });

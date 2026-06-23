@@ -18,16 +18,17 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 /// Pluggable compress function. Production wiring uses
 /// `FlutterImageCompress.compressWithList`; tests pass a fake.
-typedef HeicCompressFn = Future<Uint8List?> Function(
-  Uint8List bytes, {
-  required int quality,
-});
+typedef HeicCompressFn =
+    Future<Uint8List?> Function(
+      Uint8List bytes, {
+      required int quality,
+    });
 
 class HeicConverter {
   final HeicCompressFn _compress;
 
   HeicConverter({HeicCompressFn? compress})
-      : _compress = compress ?? _defaultCompress;
+    : _compress = compress ?? _defaultCompress;
 
   /// Returns JPEG bytes if [bytes] is HEIC and conversion succeeded;
   /// returns the original [bytes] unchanged for non-HEIC inputs;

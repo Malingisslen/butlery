@@ -226,8 +226,10 @@ class _SnapThumbnail extends StatelessWidget {
           children: [
             if (isOwn)
               ListTile(
-                leading: Icon(Icons.delete,
-                    color: Theme.of(context).colorScheme.error),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
                 title: Text(context.l10n.cookSnapDelete),
                 onTap: () {
                   Navigator.pop(context);

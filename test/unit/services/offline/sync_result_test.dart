@@ -90,8 +90,10 @@ void main() {
     group('Result State Validation', () {
       test('should correctly indicate complete success', () {
         // Arrange & Act
-        final result =
-            SyncResult.success('All 10 items synced', syncedCount: 10);
+        final result = SyncResult.success(
+          'All 10 items synced',
+          syncedCount: 10,
+        );
 
         // Assert
         expect(result.success, true);

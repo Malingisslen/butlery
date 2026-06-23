@@ -215,25 +215,27 @@ void main() {
     /// Non-HTTP schemes must be rejected — `file://` would read local files,
     /// `data:` would inline content, `javascript:` would be XSS. Only
     /// http(s) is safe.
-    test('rejects non-http(s) schemes (file/data/javascript/ftp/mailto/ws)',
-        () {
-      const rejected = [
-        'file:///etc/passwd',
-        'file:///C:/Windows/System32/drivers/etc/hosts',
-        'data:text/html,<script>alert(1)</script>',
-        'javascript:alert(1)',
-        'ftp://files.example.com/recipe.txt',
-        'mailto:chef@example.com',
-        'ws://example.com/socket',
-      ];
-      for (final url in rejected) {
-        expect(
-          strategy.canHandle(url),
-          isFalse,
-          reason: 'non-http scheme must be rejected: $url',
-        );
-      }
-    });
+    test(
+      'rejects non-http(s) schemes (file/data/javascript/ftp/mailto/ws)',
+      () {
+        const rejected = [
+          'file:///etc/passwd',
+          'file:///C:/Windows/System32/drivers/etc/hosts',
+          'data:text/html,<script>alert(1)</script>',
+          'javascript:alert(1)',
+          'ftp://files.example.com/recipe.txt',
+          'mailto:chef@example.com',
+          'ws://example.com/socket',
+        ];
+        for (final url in rejected) {
+          expect(
+            strategy.canHandle(url),
+            isFalse,
+            reason: 'non-http scheme must be rejected: $url',
+          );
+        }
+      },
+    );
 
     /// Empty / whitespace / no-host inputs are not URLs and must be
     /// rejected before we spend any cycles on them.
@@ -258,16 +260,17 @@ void main() {
   group('UrlImportStrategy.import (orchestration over real HTTP fetcher)', () {
     /// Happy path: Tier 2 fires because Tier 1 (`_recipeParser`) is null
     /// (no prod ServiceLocator) and the body has parseable JSON-LD.
-    test(
-        'JSON-LD page → success with extraction_method=schema.org and recipe '
+    test('JSON-LD page → success with extraction_method=schema.org and recipe '
         'content carried through', () async {
       final strategy = _strategyWith((req) async {
         expect(req.url.toString(), 'http://8.8.8.8/recipe');
-        return _htmlResponse(_jsonLdRecipeHtml(
-          title: 'Köttbullar',
-          ingredients: ['500 g köttfärs', '1 dl mjölk', '1 ägg'],
-          instructions: ['Blanda.', 'Forma.', 'Stek.'],
-        ));
+        return _htmlResponse(
+          _jsonLdRecipeHtml(
+            title: 'Köttbullar',
+            ingredients: ['500 g köttfärs', '1 dl mjölk', '1 ägg'],
+            instructions: ['Blanda.', 'Forma.', 'Stek.'],
+          ),
+        );
       });
 
       final result = await strategy.import('http://8.8.8.8/recipe');
@@ -307,8 +310,7 @@ void main() {
     ///
     /// This pins the chosen product-intent contract: prose-only pages →
     /// user-assistance, NOT a low-quality success-with-warnings.
-    test(
-        'unstructured prose HTML (no recipe structure) → Tier 7 '
+    test('unstructured prose HTML (no recipe structure) → Tier 7 '
         'user-assistance, NOT a Tier 5 low-quality success', () async {
       final strategy = _strategyWith(
         (req) async => _htmlResponse(_unstructuredHtml()),
@@ -319,7 +321,8 @@ void main() {
       expect(
         result.needsAssistance,
         isTrue,
-        reason: 'BUT-1077: prose with no ingredients/instructions must fall '
+        reason:
+            'BUT-1077: prose with no ingredients/instructions must fall '
             'through to Tier 7 (user-assisted), not be presented as a recipe',
       );
       expect(result.isSuccess, isFalse);
@@ -330,8 +333,7 @@ void main() {
     /// BUT-1077: Tier 5 quality gate passes when there IS actual recipe
     /// structure. A page with detectable ingredients or instructions must
     /// still succeed at Tier 5 with `extraction_method=html_text_parse`.
-    test(
-        'HTML with detectable recipe structure reaches Tier 5 → success with '
+    test('HTML with detectable recipe structure reaches Tier 5 → success with '
         'html_text_parse + quality warning + sourceUrl set', () async {
       // This page has no JSON-LD but has clear ingredient lines with
       // Swedish measurement units that RecipeSectionDetector recognises.
@@ -395,8 +397,7 @@ void main() {
     /// other Tier 5 tests miss (they all supply both axes): tightening the
     /// gate to `||` (require BOTH) would silently demote instructions-only
     /// pages to Tier 7, and only this test would go red.
-    test(
-        'BUT-1077: instructions-only page (zero ingredients) still passes the '
+    test('BUT-1077: instructions-only page (zero ingredients) still passes the '
         'AND gate → Tier 5 success, NOT Tier 7', () async {
       // Numbered method steps with Swedish cooking verbs that
       // TextImportStrategy recognises as instructions, and no ingredient
@@ -425,7 +426,8 @@ void main() {
       expect(
         result.isSuccess,
         isTrue,
-        reason: 'instructions present → the AND gate must NOT fall through; '
+        reason:
+            'instructions present → the AND gate must NOT fall through; '
             'an instructions-only page is a usable (if partial) recipe',
       );
       expect(result.needsAssistance, isFalse);
@@ -434,7 +436,8 @@ void main() {
       expect(
         result.recipe!.core.ingredients,
         isEmpty,
-        reason: 'this page has no ingredient list — the gate passed on '
+        reason:
+            'this page has no ingredient list — the gate passed on '
             'instructions alone, proving the AND (not OR) semantics',
       );
       expect(result.recipe!.core.instructions, isNotEmpty);
@@ -444,8 +447,7 @@ void main() {
     /// run. The strategy must surface a hard failure with diagnostic
     /// metadata (`html_fetched`, `html_length`) so the UI can explain
     /// "we fetched but found nothing."
-    test(
-        'tiny HTML body (<100 chars) → hard failure carrying html_length '
+    test('tiny HTML body (<100 chars) → hard failure carrying html_length '
         'metadata', () async {
       // 19 chars — under the > 100 guard. Note: passes the
       // "if (httpHtml != null)" Tier 2 check (which has no length guard)
@@ -508,28 +510,30 @@ void main() {
     /// HTTP 429 (rate limited): documented as no-special-case — same
     /// failure path as any other non-200. Pinning this explicitly because
     /// a "smart retry on 429" patch would silently change behaviour.
-    test('HTTP 429 is treated the same as any other non-200 (no retry logic)',
-        () async {
-      var requestCount = 0;
-      final strategy = _strategyWith((req) async {
-        requestCount++;
-        return http.Response('rate limited', 429);
-      });
+    test(
+      'HTTP 429 is treated the same as any other non-200 (no retry logic)',
+      () async {
+        var requestCount = 0;
+        final strategy = _strategyWith((req) async {
+          requestCount++;
+          return http.Response('rate limited', 429);
+        });
 
-      final result = await strategy.import('http://8.8.8.8/throttle');
+        final result = await strategy.import('http://8.8.8.8/throttle');
 
-      expect(result.isSuccess, isFalse);
-      expect(result.metadata?['html_fetched'], isFalse);
-      // The strategy makes at most 2 HTTP attempts (Tier 2 fetch + Tier 3
-      // headless scraper). The scraper would normally also call out, but
-      // it's not exercised here — we only assert that no SILENT retry
-      // happens on 429. A "smart retry" patch would push this >= 3.
-      expect(
-        requestCount,
-        lessThanOrEqualTo(2),
-        reason: '429 must not trigger an in-strategy retry loop',
-      );
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.metadata?['html_fetched'], isFalse);
+        // The strategy makes at most 2 HTTP attempts (Tier 2 fetch + Tier 3
+        // headless scraper). The scraper would normally also call out, but
+        // it's not exercised here — we only assert that no SILENT retry
+        // happens on 429. A "smart retry" patch would push this >= 3.
+        expect(
+          requestCount,
+          lessThanOrEqualTo(2),
+          reason: '429 must not trigger an in-strategy retry loop',
+        );
+      },
+    );
 
     /// A non-http(s) scheme that somehow reaches `import` (e.g. caller
     /// bypassed `canHandle`) must be handled gracefully: the inner
@@ -590,8 +594,7 @@ void main() {
     /// If the JSON-LD has @type=Recipe but no `recipeIngredient`, the
     /// schema.org extractor produces a Recipe with empty ingredients.
     /// The strategy must trust that — NOT crash trying to validate.
-    test(
-        'JSON-LD with missing recipeIngredient still succeeds with empty '
+    test('JSON-LD with missing recipeIngredient still succeeds with empty '
         'ingredients list', () async {
       const html = '''
 <!doctype html>
@@ -607,7 +610,8 @@ void main() {
       expect(
         result.isSuccess,
         isTrue,
-        reason: 'schema.org tier accepts any object whose @type is Recipe — '
+        reason:
+            'schema.org tier accepts any object whose @type is Recipe — '
             'the strategy must trust that and not second-guess content',
       );
       expect(result.recipe!.core.title, 'Sparse');
@@ -629,8 +633,7 @@ void main() {
     /// news articles as recipes with high confidence. Tier 7 (user-
     /// assistance) is the correct result — better than a low-quality
     /// success-with-warnings.
-    test(
-        'JSON-LD @type=Article does NOT trigger Tier 2; pure prose page '
+    test('JSON-LD @type=Article does NOT trigger Tier 2; pure prose page '
         'reaches Tier 7 (user-assisted) — never claims schema.org', () async {
       const html = '''
 <!doctype html>
@@ -653,7 +656,8 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(
         result.metadata?['extraction_method'],
         isNot(equals('schema.org')),
-        reason: '@type=Article must not be claimed as a schema.org Recipe — '
+        reason:
+            '@type=Article must not be claimed as a schema.org Recipe — '
             'doing so would mark news articles as high-confidence recipes',
       );
 
@@ -663,7 +667,8 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(
         result.needsAssistance,
         isTrue,
-        reason: 'BUT-1077: article page with no recipe structure must reach '
+        reason:
+            'BUT-1077: article page with no recipe structure must reach '
             'Tier 7 (user-assistance), not be presented as a recipe',
       );
       expect(result.isSuccess, isFalse);
@@ -674,8 +679,7 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
     /// BUT-1070 companion: when Tier 5 DOES fire on a page with non-Recipe
     /// JSON-LD (because there ARE detectable ingredients), the warning
     /// must mention "nyhetsartikel" to flag the suspicious context.
-    test(
-        'BUT-1070: Tier 5 with non-Recipe JSON-LD fires nyhetsartikel warning '
+    test('BUT-1070: Tier 5 with non-Recipe JSON-LD fires nyhetsartikel warning '
         'when ingredients ARE present', () async {
       // This page has @type=Article JSON-LD (non-Recipe) but also contains
       // Swedish ingredient lines that will pass Tier 5's quality gate.
@@ -718,7 +722,8 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       expect(
         result.warnings?.any((w) => w.contains('nyhetsartikel')),
         isTrue,
-        reason: 'BUT-1070: Tier 5 on a non-Recipe JSON-LD page must warn '
+        reason:
+            'BUT-1070: Tier 5 on a non-Recipe JSON-LD page must warn '
             '"nyhetsartikel" so the user knows the context is suspect',
       );
     });
@@ -726,24 +731,26 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
     /// Verifies that the inner try/catch in `import()` swallows unexpected
     /// exceptions. We make the http.Client throw synchronously — the
     /// strategy must NOT rethrow.
-    test('http.Client throws during send → returns failure, never rethrows',
-        () async {
-      final boomClient = MockClient((req) async {
-        throw StateError('synthetic boom');
-      });
-      final strategy = UrlImportStrategy(httpClient: boomClient);
+    test(
+      'http.Client throws during send → returns failure, never rethrows',
+      () async {
+        final boomClient = MockClient((req) async {
+          throw StateError('synthetic boom');
+        });
+        final strategy = UrlImportStrategy(httpClient: boomClient);
 
-      // No expect(throwsA(...)) — the contract is "swallow and return failure."
-      final result = await strategy.import('http://8.8.8.8/x');
+        // No expect(throwsA(...)) — the contract is "swallow and return failure."
+        final result = await strategy.import('http://8.8.8.8/x');
 
-      expect(result.isSuccess, isFalse);
-      expect(result.errorMessage, isNotNull);
-      expect(result.metadata?['strategy'], 'URL Import');
-      // HttpContentFetcher catches client-side exceptions and returns null,
-      // so we land in the "no html, no assist" failure path — html_fetched
-      // is false there.
-      expect(result.metadata?['html_fetched'], isFalse);
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.errorMessage, isNotNull);
+        expect(result.metadata?['strategy'], 'URL Import');
+        // HttpContentFetcher catches client-side exceptions and returns null,
+        // so we land in the "no html, no assist" failure path — html_fetched
+        // is false there.
+        expect(result.metadata?['html_fetched'], isFalse);
+      },
+    );
   });
 
   // -----------------------------------------------------------------------
@@ -771,42 +778,54 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
       final result = await strategy.import('http://rebind.example.com/recipe');
 
-      expect(result.isSuccess, isFalse,
-          reason: 'a host resolving to loopback must never import');
-      expect(sendCount, 0,
-          reason: 'the DNS-rebinding block must fire before any HTTP send');
+      expect(
+        result.isSuccess,
+        isFalse,
+        reason: 'a host resolving to loopback must never import',
+      );
+      expect(
+        sendCount,
+        0,
+        reason: 'the DNS-rebinding block must fire before any HTTP send',
+      );
       expect(result.metadata?['html_fetched'], isFalse);
     });
 
     /// Mirror case: a host resolving to a cloud-metadata link-local address
     /// (169.254.169.254) — the highest-value SSRF target — must also be
     /// blocked through the same seam.
-    test('host resolving to 169.254.169.254 (cloud metadata) is blocked',
-        () async {
-      var sendCount = 0;
-      final client = MockClient((req) async {
-        sendCount++;
-        return _htmlResponse(_jsonLdRecipeHtml());
-      });
-      final strategy = UrlImportStrategy(
-        httpClient: client,
-        dnsLookup: (host) async => [InternetAddress('169.254.169.254')],
-      );
+    test(
+      'host resolving to 169.254.169.254 (cloud metadata) is blocked',
+      () async {
+        var sendCount = 0;
+        final client = MockClient((req) async {
+          sendCount++;
+          return _htmlResponse(_jsonLdRecipeHtml());
+        });
+        final strategy = UrlImportStrategy(
+          httpClient: client,
+          dnsLookup: (host) async => [InternetAddress('169.254.169.254')],
+        );
 
-      final result = await strategy.import('http://metadata.example.com/x');
+        final result = await strategy.import('http://metadata.example.com/x');
 
-      expect(result.isSuccess, isFalse);
-      expect(sendCount, 0);
-    });
+        expect(result.isSuccess, isFalse);
+        expect(sendCount, 0);
+      },
+    );
 
     /// Positive control: when the same host resolves to a PUBLIC IP, the
     /// gate must let it through and the import succeeds. This proves the
     /// block above is the resolution check firing, not the seam swallowing
     /// every request.
     test('host resolving to a public IP passes the gate and imports', () async {
-      final client = MockClient((req) async => _htmlResponse(_jsonLdRecipeHtml(
+      final client = MockClient(
+        (req) async => _htmlResponse(
+          _jsonLdRecipeHtml(
             title: 'Våfflor',
-          )));
+          ),
+        ),
+      );
       final strategy = UrlImportStrategy(
         httpClient: client,
         dnsLookup: (host) async => [InternetAddress('93.184.216.34')],
@@ -814,8 +833,11 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
       final result = await strategy.import('http://good.example.com/recipe');
 
-      expect(result.isSuccess, isTrue,
-          reason: 'a public-resolving host must import normally');
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'a public-resolving host must import normally',
+      );
       expect(result.recipe!.core.title, 'Våfflor');
     });
   });
@@ -999,31 +1021,33 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
   // -----------------------------------------------------------------------
   group('ImportResult factories', () {
     Recipe makeRecipe() => Recipe(
-          core: RecipeCore(
-            id: 'test-id',
-            title: 'T',
-            description: '',
-            ingredients: ['a'],
-            instructions: ['b'],
-            mealType: 'Middag',
-            createdAt: DateTime(2026, 1, 1),
-            updatedAt: DateTime(2026, 1, 1),
-            createdBy: 'u1',
-          ),
-          type: RecipeType.personal,
-        );
+      core: RecipeCore(
+        id: 'test-id',
+        title: 'T',
+        description: '',
+        ingredients: ['a'],
+        instructions: ['b'],
+        mealType: 'Middag',
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+        createdBy: 'u1',
+      ),
+      type: RecipeType.personal,
+    );
 
-    test('success: isSuccess=true, recipe set, no error, not needing assist',
-        () {
-      final r = ImportResult.success(makeRecipe(), metadata: {'k': 'v'});
+    test(
+      'success: isSuccess=true, recipe set, no error, not needing assist',
+      () {
+        final r = ImportResult.success(makeRecipe(), metadata: {'k': 'v'});
 
-      expect(r.isSuccess, isTrue);
-      expect(r.recipe, isNotNull);
-      expect(r.errorMessage, isNull);
-      expect(r.needsAssistance, isFalse);
-      expect(r.hasMetadata, isTrue);
-      expect(r.metadata?['k'], 'v');
-    });
+        expect(r.isSuccess, isTrue);
+        expect(r.recipe, isNotNull);
+        expect(r.errorMessage, isNull);
+        expect(r.needsAssistance, isFalse);
+        expect(r.hasMetadata, isTrue);
+        expect(r.metadata?['k'], 'v');
+      },
+    );
 
     test('failure: isSuccess=false, no recipe, errorMessage carried', () {
       final r = ImportResult.failure('something went wrong');

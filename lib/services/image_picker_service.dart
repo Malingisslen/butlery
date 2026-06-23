@@ -74,10 +74,10 @@ class ImagePickerService extends BaseService {
     ImagePickerProvider? imagePickerProvider,
     PermissionProvider? permissionProvider,
     ImageValidator? imageValidator,
-  })  : _imagePickerProvider =
-            imagePickerProvider ?? DefaultImagePickerProvider(),
-        _permissionProvider = permissionProvider ?? DefaultPermissionProvider(),
-        _imageValidator = imageValidator ?? DefaultImageValidator();
+  }) : _imagePickerProvider =
+           imagePickerProvider ?? DefaultImagePickerProvider(),
+       _permissionProvider = permissionProvider ?? DefaultPermissionProvider(),
+       _imageValidator = imageValidator ?? DefaultImageValidator();
 
   /// Get the last picked XFile (for web platform)
   XFile? get lastPickedXFile => _lastPickedXFile;
@@ -112,7 +112,8 @@ class ImagePickerService extends BaseService {
   }) async {
     try {
       AppLogger.debug(
-          '🔍 IMAGE_PICKER: Starting image selection from: ${source.name}');
+        '🔍 IMAGE_PICKER: Starting image selection from: ${source.name}',
+      );
       AppLogger.info('🔍 Starting image selection from: ${source.name}');
 
       // Check permissions
@@ -123,7 +124,8 @@ class ImagePickerService extends BaseService {
 
       if (!hasPermission) {
         AppLogger.warning(
-            '❌ IMAGE_PICKER: Permission denied for ${source.name}');
+          '❌ IMAGE_PICKER: Permission denied for ${source.name}',
+        );
         AppLogger.warning('❌ Permission denied for ${source.name}');
         return null;
       }
@@ -144,7 +146,8 @@ class ImagePickerService extends BaseService {
 
       if (pickedFile == null) {
         AppLogger.info(
-            '❌ IMAGE_PICKER: No image selected (user cancelled or error)');
+          '❌ IMAGE_PICKER: No image selected (user cancelled or error)',
+        );
         AppLogger.info('❌ No image selected (user cancelled)');
         return null;
       }
@@ -158,7 +161,8 @@ class ImagePickerService extends BaseService {
       // On web, we work with XFile directly instead of File
       if (kIsWeb) {
         AppLogger.debug(
-            '🌐 IMAGE_PICKER: Web platform - returning placeholder File with blob URL');
+          '🌐 IMAGE_PICKER: Web platform - returning placeholder File with blob URL',
+        );
         // For web, return a File with the blob URL
         // The actual upload will need to read bytes from the XFile
         return File(pickedFile.path); // This is a blob URL on web
@@ -351,25 +355,29 @@ class ImagePickerService extends BaseService {
       // Check if we're on web platform - permissions are handled by browser
       if (kIsWeb) {
         AppLogger.debug(
-            '🌐 PERMISSION: Running on web - permissions handled by browser');
+          '🌐 PERMISSION: Running on web - permissions handled by browser',
+        );
         return true;
       }
 
       if (source == ImageSource.camera) {
         AppLogger.debug('🔍 PERMISSION: Checking camera permission...');
         AppLogger.info('🔍 Checking camera permission...');
-        final status =
-            await _permissionProvider.checkPermission(Permission.camera);
+        final status = await _permissionProvider.checkPermission(
+          Permission.camera,
+        );
         AppLogger.debug('📷 PERMISSION: Camera status: ${status.name}');
         AppLogger.info('📷 Camera permission status: ${status.name}');
 
         if (status.isDenied) {
           AppLogger.debug('🔑 PERMISSION: Requesting camera permission...');
           AppLogger.info('🔑 Requesting camera permission...');
-          final result =
-              await _permissionProvider.requestPermission(Permission.camera);
+          final result = await _permissionProvider.requestPermission(
+            Permission.camera,
+          );
           AppLogger.debug(
-              '📷 PERMISSION: Camera request result: ${result.name}');
+            '📷 PERMISSION: Camera request result: ${result.name}',
+          );
           AppLogger.info('📷 Camera permission result: ${result.name}');
           return result.isGranted;
         }
@@ -378,8 +386,9 @@ class ImagePickerService extends BaseService {
         // For gallery - handle both photos and storage permissions smartly
         AppLogger.debug('🔍 PERMISSION: Checking gallery permission...');
         AppLogger.info('🔍 Checking gallery permission...');
-        final status =
-            await _permissionProvider.checkPermission(Permission.photos);
+        final status = await _permissionProvider.checkPermission(
+          Permission.photos,
+        );
         AppLogger.debug('🖼️ PERMISSION: Gallery status: ${status.name}');
         AppLogger.info('🖼️ Gallery permission status: ${status.name}');
 
@@ -390,8 +399,9 @@ class ImagePickerService extends BaseService {
 
         if (status.isDenied) {
           AppLogger.info('🔑 Requesting gallery permission...');
-          final result =
-              await _permissionProvider.requestPermission(Permission.photos);
+          final result = await _permissionProvider.requestPermission(
+            Permission.photos,
+          );
           AppLogger.info('🖼️ Gallery permission result: ${result.name}');
 
           // LIMITED is also OK
@@ -402,12 +412,14 @@ class ImagePickerService extends BaseService {
 
         // If photos permission is permanently denied, try storage (older Android)
         if (status.isPermanentlyDenied) {
-          final storageStatus =
-              await _permissionProvider.checkPermission(Permission.storage);
+          final storageStatus = await _permissionProvider.checkPermission(
+            Permission.storage,
+          );
 
           if (storageStatus.isDenied) {
-            final storageResult =
-                await _permissionProvider.requestPermission(Permission.storage);
+            final storageResult = await _permissionProvider.requestPermission(
+              Permission.storage,
+            );
             return storageResult.isGranted;
           }
           return storageStatus.isGranted;
@@ -433,23 +445,27 @@ class ImagePickerService extends BaseService {
     AppLogger.info('🔍 DEBUG: Checking all permissions...');
 
     // Camera
-    final cameraStatus =
-        await _permissionProvider.checkPermission(Permission.camera);
+    final cameraStatus = await _permissionProvider.checkPermission(
+      Permission.camera,
+    );
     AppLogger.info('📷 Camera: ${cameraStatus.name}');
 
     // Photos
-    final photosStatus =
-        await _permissionProvider.checkPermission(Permission.photos);
+    final photosStatus = await _permissionProvider.checkPermission(
+      Permission.photos,
+    );
     AppLogger.info('🖼️ Photos: ${photosStatus.name}');
 
     // Storage (older Android)
-    final storageStatus =
-        await _permissionProvider.checkPermission(Permission.storage);
+    final storageStatus = await _permissionProvider.checkPermission(
+      Permission.storage,
+    );
     AppLogger.info('💾 Storage: ${storageStatus.name}');
 
     // Media (newer Android)
-    final mediaStatus =
-        await _permissionProvider.checkPermission(Permission.mediaLibrary);
+    final mediaStatus = await _permissionProvider.checkPermission(
+      Permission.mediaLibrary,
+    );
     AppLogger.info('📱 Media: ${mediaStatus.name}');
   }
 }

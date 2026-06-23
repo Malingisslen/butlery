@@ -117,7 +117,8 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
   ) {
     if (viewModel.isGloballyLoading || viewModel.recipeViewModel.isLoading) {
       return const Center(
-          child: LoadingIndicator(size: AppDimensions.iconSizeL));
+        child: LoadingIndicator(size: AppDimensions.iconSizeL),
+      );
     }
 
     if (viewModel.recipeViewModel.hasError) {

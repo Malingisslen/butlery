@@ -57,7 +57,7 @@ class FirebaseNotificationAnalyticsRepository
 
   @override
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      getDeliveriesForUser(
+  getDeliveriesForUser(
     String userId,
     DateTime since,
   ) async {
@@ -70,7 +70,7 @@ class FirebaseNotificationAnalyticsRepository
 
   @override
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      getEngagementsForUser(
+  getEngagementsForUser(
     String userId,
     DateTime since,
   ) async {

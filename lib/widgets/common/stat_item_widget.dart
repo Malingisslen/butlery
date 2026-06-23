@@ -37,18 +37,23 @@ class StatItemWidget extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon,
-            color: effectiveColor, size: iconSize ?? AppDimensions.iconSizeXl),
+        Icon(
+          icon,
+          color: effectiveColor,
+          size: iconSize ?? AppDimensions.iconSizeXl,
+        ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: (valueStyle ?? AppTextStyles.headlineMedium)
-              .copyWith(color: effectiveColor),
+          style: (valueStyle ?? AppTextStyles.headlineMedium).copyWith(
+            color: effectiveColor,
+          ),
         ),
         Text(
           label,
-          style: (labelStyle ?? AppTextStyles.bodyMedium)
-              .copyWith(color: effectiveLabelColor),
+          style: (labelStyle ?? AppTextStyles.bodyMedium).copyWith(
+            color: effectiveLabelColor,
+          ),
           textAlign: TextAlign.center,
         ),
       ],

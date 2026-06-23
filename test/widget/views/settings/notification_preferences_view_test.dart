@@ -61,10 +61,12 @@ void main() {
       when(() => offlineService.removeListener(any())).thenReturn(null);
 
       final container = DIContainer();
-      container.container
-          .registerSingleton<NotificationService>(notificationService);
-      container.container
-          .registerSingleton<NotificationPermissionService>(permissionService);
+      container.container.registerSingleton<NotificationService>(
+        notificationService,
+      );
+      container.container.registerSingleton<NotificationPermissionService>(
+        permissionService,
+      );
       container.container.registerSingleton<OfflineService>(offlineService);
       ServiceLocator.initialize(container);
     });
@@ -80,38 +82,47 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false, // the view supplies its own Scaffold.
-        child: const NotificationPreferencesView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false, // the view supplies its own Scaffold.
+          child: const NotificationPreferencesView(),
+        ),
+      );
       // Resolve the async getPreferences() future loaded in initState.
       await tester.pumpAndSettle();
     }
 
-    testWidgets('renders the toggle sections once preferences load',
-        (tester) async {
+    testWidgets('renders the toggle sections once preferences load', (
+      tester,
+    ) async {
       // Proves: a successful load shows the preference form (master toggle +
       // category + quiet-hours + sound/vibration), not a perpetual spinner.
-      when(() => notificationService.getPreferences())
-          .thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
 
       await pumpView(tester);
 
-      expect(find.byType(StateWidget), findsNothing,
-          reason: 'Loading/error state must clear once prefs resolve.');
+      expect(
+        find.byType(StateWidget),
+        findsNothing,
+        reason: 'Loading/error state must clear once prefs resolve.',
+      );
       expect(find.text(sv.notificationEnableTitle), findsOneWidget);
       expect(find.text(sv.notificationCategoriesTitle), findsOneWidget);
       expect(find.text(sv.notificationSound), findsOneWidget);
       expect(find.text(sv.notificationVibration), findsOneWidget);
     });
 
-    testWidgets('master toggle reflects the stored enabled=false state',
-        (tester) async {
+    testWidgets('master toggle reflects the stored enabled=false state', (
+      tester,
+    ) async {
       // Proves: the UI mirrors persisted state — if the user previously
       // disabled notifications the master switch shows OFF on next open.
       final disabled = _prefsWith(enabled: false);
-      when(() => notificationService.getPreferences())
-          .thenAnswer((_) async => disabled);
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => disabled);
 
       await pumpView(tester);
 
@@ -124,15 +135,16 @@ void main() {
       expect(masterSwitch.value, isFalse);
     });
 
-    testWidgets(
-        'enabling master with OS permission DENIED keeps it off and never '
+    testWidgets('enabling master with OS permission DENIED keeps it off and never '
         'persists enabled=true', (tester) async {
       // Proves the BUT-414 runtime-permission gate: if the OS grant is refused,
       // the master toggle stays OFF and we must NOT save an enabled preference.
-      when(() => notificationService.getPreferences())
-          .thenAnswer((_) async => _prefsWith(enabled: false));
-      when(() => permissionService.requestIfNeeded(any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => _prefsWith(enabled: false));
+      when(
+        () => permissionService.requestIfNeeded(any()),
+      ).thenAnswer((_) async => false);
 
       await pumpView(tester);
 
@@ -149,46 +161,62 @@ void main() {
           matching: find.byType(SwitchListTile),
         ),
       );
-      expect(masterSwitch.value, isFalse,
-          reason: 'A denied OS grant must leave the master toggle OFF.');
+      expect(
+        masterSwitch.value,
+        isFalse,
+        reason: 'A denied OS grant must leave the master toggle OFF.',
+      );
     });
 
     testWidgets(
-        'enabling master with OS permission GRANTED persists enabled=true',
-        (tester) async {
-      // Proves the happy path of the same gate: a granted permission DOES
-      // persist the enabled preference.
-      when(() => notificationService.getPreferences())
-          .thenAnswer((_) async => _prefsWith(enabled: false));
-      when(() => permissionService.requestIfNeeded(any()))
-          .thenAnswer((_) async => true);
-      when(() => notificationService.updatePreferences(any()))
-          .thenAnswer((_) async {});
+      'enabling master with OS permission GRANTED persists enabled=true',
+      (tester) async {
+        // Proves the happy path of the same gate: a granted permission DOES
+        // persist the enabled preference.
+        when(
+          () => notificationService.getPreferences(),
+        ).thenAnswer((_) async => _prefsWith(enabled: false));
+        when(
+          () => permissionService.requestIfNeeded(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => notificationService.updatePreferences(any()),
+        ).thenAnswer((_) async {});
 
-      await pumpView(tester);
+        await pumpView(tester);
 
-      await tester.tap(find.byType(SwitchListTile).first);
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(SwitchListTile).first);
+        await tester.pumpAndSettle();
 
-      final saved =
-          verify(() => notificationService.updatePreferences(captureAny()))
-              .captured
-              .single as NotificationPreferences;
-      expect(saved.enabled, isTrue,
-          reason: 'A granted OS permission must persist enabled=true.');
-    });
+        final saved =
+            verify(
+                  () => notificationService.updatePreferences(captureAny()),
+                ).captured.single
+                as NotificationPreferences;
+        expect(
+          saved.enabled,
+          isTrue,
+          reason: 'A granted OS permission must persist enabled=true.',
+        );
+      },
+    );
 
-    testWidgets('a failed preference load shows the retry error state',
-        (tester) async {
+    testWidgets('a failed preference load shows the retry error state', (
+      tester,
+    ) async {
       // Proves: a load failure surfaces the error/retry affordance instead of
       // hanging on the spinner — the user can recover.
-      when(() => notificationService.getPreferences())
-          .thenThrow(Exception('network down'));
+      when(
+        () => notificationService.getPreferences(),
+      ).thenThrow(Exception('network down'));
 
       await pumpView(tester);
 
-      expect(find.text(sv.commonRetry), findsOneWidget,
-          reason: 'A failed load must offer a retry action.');
+      expect(
+        find.text(sv.commonRetry),
+        findsOneWidget,
+        reason: 'A failed load must offer a retry action.',
+      );
     });
   });
 }

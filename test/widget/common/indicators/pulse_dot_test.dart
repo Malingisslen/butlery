@@ -20,8 +20,9 @@ void main() {
   }
 
   group('PulseDot', () {
-    testWidgets('renders a square of the configured size and color',
-        (tester) async {
+    testWidgets('renders a square of the configured size and color', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           const PulseDot(color: Color(0xFFFBBF24), size: 10),
@@ -76,8 +77,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('reduce-motion skips the Transform.scale wrapper',
-        (tester) async {
+    testWidgets('reduce-motion skips the Transform.scale wrapper', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           const PulseDot(color: Color(0xFF4A7C59), size: 8),

@@ -128,8 +128,10 @@ class _VeckomenyCookingSessionCardState
     if (module == null || userId == null) return const SizedBox.shrink();
 
     final groups = _friendsService.categoriesList
-        .where((FriendCategory c) =>
-            c.ownerId == userId || c.friendUserIds.contains(userId))
+        .where(
+          (FriendCategory c) =>
+              c.ownerId == userId || c.friendUserIds.contains(userId),
+        )
         .map((g) => g.id)
         .toList(growable: false);
     if (groups.isEmpty) return const SizedBox.shrink();
@@ -142,9 +144,10 @@ class _VeckomenyCookingSessionCardState
     // silently hiding, so a future change to the holder's null contract trips
     // a test rather than vanishing the card with no signal.
     assert(
-        stream != null,
-        'CookingSessionStreamHolder.stream must be non-null for a non-empty '
-        'group list');
+      stream != null,
+      'CookingSessionStreamHolder.stream must be non-null for a non-empty '
+      'group list',
+    );
 
     return StreamBuilder<List<CookingSession>>(
       stream: stream,

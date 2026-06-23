@@ -30,8 +30,8 @@ class FirebaseGroupWeeklyMenuPlanRepository
 
   @override
   GroupWeeklyMenuPlan fromFirestore(
-          DocumentSnapshot<Map<String, dynamic>> doc) =>
-      GroupWeeklyMenuPlan.fromMap(doc.id, doc.data()!);
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) => GroupWeeklyMenuPlan.fromMap(doc.id, doc.data()!);
 
   @override
   Map<String, dynamic> toFirestore(GroupWeeklyMenuPlan entity) =>
@@ -46,28 +46,38 @@ class FirebaseGroupWeeklyMenuPlanRepository
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, GroupWeeklyMenuPlan entity) async {
+    String userId,
+    GroupWeeklyMenuPlan entity,
+  ) async {
     return entity.id.startsWith('${entity.groupId}_') &&
         entity.participantFor(userId) != null;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, GroupWeeklyMenuPlan? entity) async {
+    String userId,
+    String resourceId,
+    GroupWeeklyMenuPlan? entity,
+  ) async {
     if (entity == null) return true; // delegated to firestore.rules
     return entity.canRead(userId);
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, GroupWeeklyMenuPlan entity) async {
+    String userId,
+    String resourceId,
+    GroupWeeklyMenuPlan entity,
+  ) async {
     return resourceId.startsWith('${entity.groupId}_') &&
         entity.canEdit(userId);
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // No entity snapshot here — rules enforce admin-only delete. This
     // returns true so the caller can delegate to the security rules.
     return true;
@@ -91,7 +101,8 @@ class FirebaseGroupWeeklyMenuPlanRepository
     // Self-consistency: doc-ID prefix must match groupId.
     if (!plan.id.startsWith('${plan.groupId}_')) {
       AppLogger.warning(
-          'Blocked group menu plan save (id/groupId mismatch): ${plan.id}');
+        'Blocked group menu plan save (id/groupId mismatch): ${plan.id}',
+      );
       return;
     }
     // Belt-and-braces permission check mirroring the per-user plan repo.
@@ -102,7 +113,8 @@ class FirebaseGroupWeeklyMenuPlanRepository
       final canWrite = await validateUpdatePermission(userId, plan.id, plan);
       if (!canWrite) {
         AppLogger.warning(
-            'Blocked group menu plan save (permission denied for ${userId.maskedUserId}): ${plan.id}');
+          'Blocked group menu plan save (permission denied for ${userId.maskedUserId}): ${plan.id}',
+        );
         return;
       }
     }
@@ -117,21 +129,28 @@ class FirebaseGroupWeeklyMenuPlanRepository
     final docId = GroupWeeklyMenuPlan.docIdFor(groupId, date);
     final docRef = collection.doc(docId);
 
-    return docRef.snapshots().map<GroupWeeklyMenuPlan?>((snapshot) {
-      if (!snapshot.exists) return null;
-      final data = snapshot.data();
-      if (data == null) return null;
-      try {
-        return GroupWeeklyMenuPlan.fromMap(snapshot.id, data);
-      } catch (e) {
-        AppLogger.warning('Failed to parse group menu plan ${snapshot.id}: $e');
-        return null;
-      }
-    }).handleError((Object error) {
-      AppLogger.error(
-          'Realtime group menu plan stream error ($groupId / $docId)', error);
-      throw error;
-    });
+    return docRef
+        .snapshots()
+        .map<GroupWeeklyMenuPlan?>((snapshot) {
+          if (!snapshot.exists) return null;
+          final data = snapshot.data();
+          if (data == null) return null;
+          try {
+            return GroupWeeklyMenuPlan.fromMap(snapshot.id, data);
+          } catch (e) {
+            AppLogger.warning(
+              'Failed to parse group menu plan ${snapshot.id}: $e',
+            );
+            return null;
+          }
+        })
+        .handleError((Object error) {
+          AppLogger.error(
+            'Realtime group menu plan stream error ($groupId / $docId)',
+            error,
+          );
+          throw error;
+        });
   }
 
   @override

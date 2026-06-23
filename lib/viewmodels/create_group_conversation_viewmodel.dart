@@ -64,8 +64,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   CreateGroupConversationViewModel({
     required MessagingService messagingService,
     required UnifiedFriendsService friendsService,
-  })  : _messagingService = messagingService,
-        _friendsService = friendsService;
+  }) : _messagingService = messagingService,
+       _friendsService = friendsService;
 
   // Getters
   List<UserProfile> get availableFriends => _availableFriends;
@@ -195,7 +195,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-          '🔄 Skapar gruppkonversation: $_groupName med ${_selectedMemberIds.length} medlemmar');
+        '🔄 Skapar gruppkonversation: $_groupName med ${_selectedMemberIds.length} medlemmar',
+      );
 
       // Build participant maps for group conversation
       final participantIds = _selectedMemberIds.toList();
@@ -252,7 +253,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier
     final lowerQuery = query.trim().toLowerCase();
     return _availableFriends
         .where(
-            (friend) => friend.displayName.toLowerCase().contains(lowerQuery))
+          (friend) => friend.displayName.toLowerCase().contains(lowerQuery),
+        )
         .toList();
   }
 

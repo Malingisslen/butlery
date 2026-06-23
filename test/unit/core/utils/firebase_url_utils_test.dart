@@ -14,7 +14,9 @@ void main() {
       // Uri.replace(queryParameters: {}) emits a trailing "?" with no
       // params; the key is stable but contains the trailing marker.
       expect(
-          key, 'https://firebasestorage.googleapis.com/v0/b/bucket/o/img.jpg?');
+        key,
+        'https://firebasestorage.googleapis.com/v0/b/bucket/o/img.jpg?',
+      );
       expect(key, isNot(contains('GoogleAccessId')));
       expect(key, isNot(contains('Signature')));
     });

@@ -13,9 +13,9 @@ import 'package:butlery/services/ocr_extraction_service.dart';
 class OCRTestImages {
   /// Create a valid PNG image (minimal header + data)
   static Uint8List get validPNG => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-        ...List.generate(1024, (i) => i % 256), // 1KB of data
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    ...List.generate(1024, (i) => i % 256), // 1KB of data
+  ]);
 
   /// Create a valid JPEG image (minimal header + data).
   ///
@@ -23,9 +23,9 @@ class OCRTestImages {
   /// images below `UploadConstants.minOcrImageBytes` = 50KB) doesn't filter
   /// this fixture out before the test reaches its OCR-mock assertions.
   static Uint8List get validJPEG => Uint8List.fromList([
-        0xFF, 0xD8, 0xFF, 0xE0, // JPEG signature
-        ...List.generate(60 * 1024, (i) => i % 256), // 60KB of data
-      ]);
+    0xFF, 0xD8, 0xFF, 0xE0, // JPEG signature
+    ...List.generate(60 * 1024, (i) => i % 256), // 60KB of data
+  ]);
 
   /// BUT-660: produce a unique 60KB PNG-header'd image for tests that need
   /// distinct cache keys. Inputs below 50KB are rejected by the pre-OCR
@@ -33,22 +33,22 @@ class OCRTestImages {
   /// helper instead of inline 100-byte blobs so the gate doesn't filter
   /// the test image out before reaching the OCR-mock assertions.
   static Uint8List uniqueImage(int seed) => Uint8List.fromList([
-        0x89,
-        0x50,
-        0x4E,
-        0x47,
-        0x0D,
-        0x0A,
-        0x1A,
-        0x0A,
-        ...List.generate(60 * 1024, (j) => (seed + j) % 256),
-      ]);
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    ...List.generate(60 * 1024, (j) => (seed + j) % 256),
+  ]);
 
   /// Create an invalid image format
   static Uint8List get invalidFormat => Uint8List.fromList([
-        0x00, 0x00, 0x00, 0x00, // Invalid signature
-        ...List.generate(100, (i) => i % 256),
-      ]);
+    0x00, 0x00, 0x00, 0x00, // Invalid signature
+    ...List.generate(100, (i) => i % 256),
+  ]);
 
   /// Create a very small image (poor quality).
   ///
@@ -57,23 +57,24 @@ class OCRTestImages {
   /// pass this to `extractText` the result will be a `pre_ocr_quality_gate`
   /// failure, not the advisory-warning path the fixture name suggests.
   static Uint8List get tooSmall => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(
-            10 * 1024, (i) => i % 256), // 10KB (below 50KB threshold)
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    ...List.generate(10 * 1024, (i) => i % 256), // 10KB (below 50KB threshold)
+  ]);
 
   /// Create a very large image (exceeds max size)
   static Uint8List get tooLarge => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(
-            11 * 1024 * 1024, (i) => i % 256), // 11MB (exceeds 10MB limit)
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    ...List.generate(
+      11 * 1024 * 1024,
+      (i) => i % 256,
+    ), // 11MB (exceeds 10MB limit)
+  ]);
 
   /// Create a medium-quality image (good for testing)
   static Uint8List get mediumQuality => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(500 * 1024, (i) => i % 256), // 500KB
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    ...List.generate(500 * 1024, (i) => i % 256), // 500KB
+  ]);
 }
 
 /// Sample OCR provider responses
@@ -247,8 +248,10 @@ class OCRTestHelpers {
     if (text.isEmpty) return 0.0;
 
     final textLength = text.trim().length;
-    final lineCount =
-        text.split('\n').where((line) => line.trim().isNotEmpty).length;
+    final lineCount = text
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .length;
 
     if (textLength == 0) return 0.0;
     if (textLength < 10) return 0.3;
@@ -264,12 +267,14 @@ class OCRTestHelpers {
       'vispa',
       'stek',
       'portioner',
-      'minut'
+      'minut',
     ];
-    final keywordMatches =
-        keywords.where((k) => text.toLowerCase().contains(k)).length;
-    final keywordBonus =
-        keywordMatches * 0.03 > 0.15 ? 0.15 : keywordMatches * 0.03;
+    final keywordMatches = keywords
+        .where((k) => text.toLowerCase().contains(k))
+        .length;
+    final keywordBonus = keywordMatches * 0.03 > 0.15
+        ? 0.15
+        : keywordMatches * 0.03;
 
     return (baseConfidence + structureBonus + keywordBonus) > 1.0
         ? 1.0

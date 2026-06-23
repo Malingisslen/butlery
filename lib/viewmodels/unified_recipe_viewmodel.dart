@@ -51,8 +51,9 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     _queryViewModel = RecipeQueryViewModel();
 
     // Set up state synchronization
-    _recipeServiceSubscription =
-        _recipeService.stateStream.listen((_) => _onServiceUpdate());
+    _recipeServiceSubscription = _recipeService.stateStream.listen(
+      (_) => _onServiceUpdate(),
+    );
     _personalViewModel.addListener(_onServiceUpdate);
     _socialViewModel.addListener(_onServiceUpdate);
     _realtimeViewModel.addListener(_onServiceUpdate);

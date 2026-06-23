@@ -22,10 +22,12 @@ void main() {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       analytics = _MockAnalyticsService();
-      when(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
     });
 
     tearDown(() {
@@ -36,35 +38,43 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test('sets first_recipe_source on first recipe with import source',
-        () async {
-      final fired = await FirstRecipeSourceMilestone.setIfFirstRecipe(
-        analytics: analytics,
-        userId: 'user-1',
-        source: 'import',
-      );
+    test(
+      'sets first_recipe_source on first recipe with import source',
+      () async {
+        final fired = await FirstRecipeSourceMilestone.setIfFirstRecipe(
+          analytics: analytics,
+          userId: 'user-1',
+          source: 'import',
+        );
 
-      expect(fired, isTrue);
-      verify(() => analytics.setUserProperty(
+        expect(fired, isTrue);
+        verify(
+          () => analytics.setUserProperty(
             name: 'first_recipe_source',
             value: 'import',
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
-    test('sets first_recipe_source on first recipe with manual source',
-        () async {
-      final fired = await FirstRecipeSourceMilestone.setIfFirstRecipe(
-        analytics: analytics,
-        userId: 'user-2',
-        source: 'manual',
-      );
+    test(
+      'sets first_recipe_source on first recipe with manual source',
+      () async {
+        final fired = await FirstRecipeSourceMilestone.setIfFirstRecipe(
+          analytics: analytics,
+          userId: 'user-2',
+          source: 'manual',
+        );
 
-      expect(fired, isTrue);
-      verify(() => analytics.setUserProperty(
+        expect(fired, isTrue);
+        verify(
+          () => analytics.setUserProperty(
             name: 'first_recipe_source',
             value: 'manual',
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
     test('sets first_recipe_source on first recipe with seed source', () async {
       final fired = await FirstRecipeSourceMilestone.setIfFirstRecipe(
@@ -74,10 +84,12 @@ void main() {
       );
 
       expect(fired, isTrue);
-      verify(() => analytics.setUserProperty(
-            name: 'first_recipe_source',
-            value: 'seed',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'first_recipe_source',
+          value: 'seed',
+        ),
+      ).called(1);
     });
 
     test('does NOT overwrite on subsequent calls for same user', () async {
@@ -99,10 +111,12 @@ void main() {
       );
       expect(second, isFalse);
 
-      verifyNever(() => analytics.setUserProperty(
-            name: 'first_recipe_source',
-            value: any(named: 'value'),
-          ));
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: 'first_recipe_source',
+          value: any(named: 'value'),
+        ),
+      );
     });
 
     test('dedupe is per-user — different uid still sets', () async {
@@ -120,10 +134,12 @@ void main() {
       );
 
       expect(fired, isTrue);
-      verify(() => analytics.setUserProperty(
-            name: 'first_recipe_source',
-            value: 'import',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'first_recipe_source',
+          value: 'import',
+        ),
+      ).called(1);
     });
 
     test('skips when userId is null/empty', () async {
@@ -140,10 +156,12 @@ void main() {
 
       expect(firedNull, isFalse);
       expect(firedEmpty, isFalse);
-      verifyNever(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          ));
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      );
     });
 
     test('skips when analytics is null', () async {

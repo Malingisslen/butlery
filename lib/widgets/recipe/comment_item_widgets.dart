@@ -72,13 +72,15 @@ class CommentItemWidgets {
         if (replies.isNotEmpty && depth < maxDepth)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.paddingXl),
+              start: AppDimensions.paddingXl,
+            ),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: cs.onSurfaceVariant
-                        .withValues(alpha: AppDimensions.opacityMediumLight),
+                    color: cs.onSurfaceVariant.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
                     width: 2,
                   ),
                 ),
@@ -279,10 +281,12 @@ class _CommentItemContentState extends State<_CommentItemContent> {
             padding: AppDimensions.paddingAll12,
             decoration: isReply
                 ? BoxDecoration(
-                    color:
-                        cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    color: cs.surface.withValues(
+                      alpha: AppDimensions.opacityHalf,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
                   )
                 : null,
             child: Column(
@@ -339,8 +343,9 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                               : AdaptiveIcons.favouriteOutline,
                           // Red is deliberate (BUT-1213): red = social like,
                           // green (cs.primary) = personal favourite.
-                          color:
-                              widget.isLiked ? cs.error : cs.onSurfaceVariant,
+                          color: widget.isLiked
+                              ? cs.error
+                              : cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
                         ),
                       ),
@@ -398,8 +403,9 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                 // Emoji reaction display or hint
                 if (widget.currentUserId != null &&
                     widget.onReactionTap != null) ...[
-                  if (comment.reactions.values
-                      .any((list) => list.isNotEmpty)) ...[
+                  if (comment.reactions.values.any(
+                    (list) => list.isNotEmpty,
+                  )) ...[
                     const SizedBox(height: AppDimensions.spacingS),
                     EmojiReactionDisplay(
                       reactions: comment.reactions,

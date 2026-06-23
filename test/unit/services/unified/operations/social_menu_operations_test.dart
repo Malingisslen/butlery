@@ -261,10 +261,10 @@ void main() {
               .collection('shared_content')
               .doc('menu-to-import')
               .set({
-            'sharedWithUserIds': ['test-user-123'],
-            'title': 'Menu to Import',
-            'isActive': true,
-          });
+                'sharedWithUserIds': ['test-user-123'],
+                'title': 'Menu to Import',
+                'isActive': true,
+              });
 
           // Create the user's received-menu pointer so .update() works
           await firestore
@@ -273,9 +273,9 @@ void main() {
               .collection('received_menus')
               .doc('menu-to-import')
               .set({
-            'sharedMenuId': 'menu-to-import',
-            'isImported': false,
-          });
+                'sharedMenuId': 'menu-to-import',
+                'isImported': false,
+              });
 
           // Act
           final result = await operations.importSharedMenu('menu-to-import');
@@ -306,10 +306,10 @@ void main() {
               .collection('shared_content')
               .doc('menu-to-delete')
               .set({
-            'sharedByUserId': 'test-user-123',
-            'isActive': true,
-            'title': 'My Menu to Delete',
-          });
+                'sharedByUserId': 'test-user-123',
+                'isActive': true,
+                'title': 'My Menu to Delete',
+              });
 
           // Act
           final result = await operations.deleteSharedMenu('menu-to-delete');
@@ -362,9 +362,9 @@ void main() {
             .collection('received_menus')
             .doc('menu-to-view')
             .set({
-          'sharedMenuId': 'menu-to-view',
-          'isViewed': false,
-        });
+              'sharedMenuId': 'menu-to-view',
+              'isViewed': false,
+            });
 
         // Act
         await operations.markMenuAsViewed('menu-to-view');
@@ -390,24 +390,23 @@ void main() {
             .collection('received_menus')
             .doc('pointer-1')
             .set({
-          'sharedMenuId': 'shared-menu-123',
-          'sharedAt': DateTime.now().toIso8601String(),
-          'isViewed': false,
-          'isImported': false,
-        });
+              'sharedMenuId': 'shared-menu-123',
+              'sharedAt': DateTime.now().toIso8601String(),
+              'isViewed': false,
+              'isImported': false,
+            });
 
         // Create the actual shared menu document
-        await firestore
-            .collection('shared_content')
-            .doc('shared-menu-123')
-            .set({
-          'isActive': true,
-          'title': 'Friend\'s Menu',
-          'sharedByDisplayName': 'Friend Name',
-          'sharedByAvatarUrl': 'https://example.com/avatar.jpg',
-          'totalRecipes': 8,
-          'description': 'A great menu shared by friend',
-        });
+        await firestore.collection('shared_content').doc('shared-menu-123').set(
+          {
+            'isActive': true,
+            'title': 'Friend\'s Menu',
+            'sharedByDisplayName': 'Friend Name',
+            'sharedByAvatarUrl': 'https://example.com/avatar.jpg',
+            'totalRecipes': 8,
+            'description': 'A great menu shared by friend',
+          },
+        );
 
         // Act
         final menus = await operations.getMenusSharedWithMe();
@@ -458,14 +457,13 @@ void main() {
       test('should return null when user has no access to menu', () async {
         // Arrange — seed menu without current user access
         final firestore = mockFirestoreRepository.firestore;
-        await firestore
-            .collection('shared_content')
-            .doc('restricted-menu')
-            .set({
-          'isActive': true,
-          'sharedWithUserIds': ['other-user-123'],
-          'title': 'Restricted Menu',
-        });
+        await firestore.collection('shared_content').doc('restricted-menu').set(
+          {
+            'isActive': true,
+            'sharedWithUserIds': ['other-user-123'],
+            'title': 'Restricted Menu',
+          },
+        );
 
         // Act
         final menuData = await operations.getSharedMenuData('restricted-menu');

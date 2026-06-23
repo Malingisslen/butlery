@@ -150,8 +150,9 @@ void main() {
           size: 1000,
         );
         // Manually back-date lastAccessed to simulate a long-ago access.
-        stale.lastAccessed =
-            stale.lastAccessed.subtract(const Duration(hours: 12));
+        stale.lastAccessed = stale.lastAccessed.subtract(
+          const Duration(hours: 12),
+        );
         stale.accessCount = 5;
 
         final fresh = CacheEntry<Recipe>(
@@ -165,7 +166,8 @@ void main() {
         expect(
           fresh.evictionScore,
           greaterThan(stale.evictionScore),
-          reason: 'Entry accessed recently must score higher (harder to evict) '
+          reason:
+              'Entry accessed recently must score higher (harder to evict) '
               'than an equally-counted entry last accessed 12 h ago',
         );
       },
@@ -187,8 +189,9 @@ void main() {
     setUp(() async {
       await TestServiceLocator.clearState();
 
-      mockRecipeService = TestServiceLocator.get<UnifiedRecipeService>()
-          as MockUnifiedRecipeService;
+      mockRecipeService =
+          TestServiceLocator.get<UnifiedRecipeService>()
+              as MockUnifiedRecipeService;
       mockPermissionService =
           TestServiceLocator.get<PermissionService>() as FakePermissionService;
 

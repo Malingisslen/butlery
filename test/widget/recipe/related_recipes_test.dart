@@ -54,55 +54,60 @@ Recipe _recipe({
 Widget _wrap(
   Widget child, {
   Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
-}) =>
-    MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: SingleChildScrollView(child: child)),
-      onGenerateRoute: onGenerateRoute,
-    );
+}) => MaterialApp(
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: SingleChildScrollView(child: child)),
+  onGenerateRoute: onGenerateRoute,
+);
 
 void main() {
   // ── 1 + 2: Editor chips ────────────────────────────────────────────────────
 
   group('RelatedRecipesEditor', () {
-    testWidgets('shows a chip for each resolved related recipe',
-        (tester) async {
+    testWidgets('shows a chip for each resolved related recipe', (
+      tester,
+    ) async {
       // Editor is purely presentational — it receives resolved (id, title)
       // records and never touches the ServiceLocator.
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesEditor(
-          currentRecipeId: 'r1',
-          relatedRecipes: const [
-            (id: 'r2', title: 'Pastasås'),
-            (id: 'r3', title: 'Köttbullar'),
-          ],
-          onLink: (_) async => true,
-          onUnlink: (_) async => true,
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [
+              (id: 'r2', title: 'Pastasås'),
+              (id: 'r3', title: 'Köttbullar'),
+            ],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Pastasås'), findsOneWidget);
       expect(find.text('Köttbullar'), findsOneWidget);
     });
 
-    testWidgets('tapping X chip calls onUnlink with the target id',
-        (tester) async {
+    testWidgets('tapping X chip calls onUnlink with the target id', (
+      tester,
+    ) async {
       String? unlinkedId;
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesEditor(
-          currentRecipeId: 'r1',
-          relatedRecipes: const [(id: 'r2', title: 'Pastasås')],
-          onLink: (_) async => true,
-          onUnlink: (id) async {
-            unlinkedId = id;
-            return true;
-          },
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [(id: 'r2', title: 'Pastasås')],
+            onLink: (_) async => true,
+            onUnlink: (id) async {
+              unlinkedId = id;
+              return true;
+            },
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Find the close icon inside the chip and tap it.
@@ -114,16 +119,19 @@ void main() {
       expect(unlinkedId, 'r2');
     });
 
-    testWidgets('link button is present with correct label text',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesEditor(
-          currentRecipeId: 'r1',
-          relatedRecipes: const [],
-          onLink: (_) async => true,
-          onUnlink: (_) async => true,
+    testWidgets('link button is present with correct label text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // The button label text confirms the button is rendered and localized.
@@ -138,21 +146,26 @@ void main() {
 
   group('RelatedRecipesSection', () {
     testWidgets('hidden when the related list is empty', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const RelatedRecipesSection(related: []),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const RelatedRecipesSection(related: []),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Relaterade recept'), findsNothing);
     });
 
-    testWidgets('shows section title and thumbnails when related list is set',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesSection(
-          related: [_recipe(id: 'r2', title: 'Pastasås')],
+    testWidgets('shows section title and thumbnails when related list is set', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesSection(
+            related: [_recipe(id: 'r2', title: 'Pastasås')],
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Relaterade recept'), findsOneWidget);
@@ -164,21 +177,26 @@ void main() {
 
   group('UsedInSection', () {
     testWidgets('hidden when the used-in list is empty', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const UsedInSection(usedIn: []),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const UsedInSection(usedIn: []),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Används i'), findsNothing);
     });
 
-    testWidgets('shows reverse-linked recipes when the list is set',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        UsedInSection(
-          usedIn: [_recipe(id: 'r2', title: 'Grundrecept')],
+    testWidgets('shows reverse-linked recipes when the list is set', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          UsedInSection(
+            usedIn: [_recipe(id: 'r2', title: 'Grundrecept')],
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Används i'), findsOneWidget);
@@ -190,42 +208,45 @@ void main() {
 
   group('Related thumbnail navigation', () {
     testWidgets(
-        'tapping a thumbnail pushes Routes.recipeDetail with the recipe',
-        (tester) async {
-      final linkedRecipe = _recipe(id: 'r2', title: 'Pastasås');
+      'tapping a thumbnail pushes Routes.recipeDetail with the recipe',
+      (tester) async {
+        final linkedRecipe = _recipe(id: 'r2', title: 'Pastasås');
 
-      Recipe? navigatedRecipe;
+        Recipe? navigatedRecipe;
 
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesSection(related: [linkedRecipe]),
-        onGenerateRoute: (settings) {
-          if (settings.name == Routes.recipeDetail) {
-            navigatedRecipe = settings.arguments as Recipe?;
-            return MaterialPageRoute<void>(
-              settings: settings,
-              builder: (_) => Scaffold(
-                body: Text(navigatedRecipe?.title ?? ''),
-              ),
-            );
-          }
-          return null;
-        },
-      ));
-      await tester.pump();
+        await tester.pumpWidget(
+          _wrap(
+            RelatedRecipesSection(related: [linkedRecipe]),
+            onGenerateRoute: (settings) {
+              if (settings.name == Routes.recipeDetail) {
+                navigatedRecipe = settings.arguments as Recipe?;
+                return MaterialPageRoute<void>(
+                  settings: settings,
+                  builder: (_) => Scaffold(
+                    body: Text(navigatedRecipe?.title ?? ''),
+                  ),
+                );
+              }
+              return null;
+            },
+          ),
+        );
+        await tester.pump();
 
-      // Tap the thumbnail (the InkWell wrapping it has the semantics label).
-      final handle = tester.ensureSemantics();
-      final thumb = find.bySemanticsLabel(
-        RegExp(r'Öppna relaterat recept: Pastasås'),
-      );
-      expect(thumb, findsOneWidget);
-      handle.dispose();
+        // Tap the thumbnail (the InkWell wrapping it has the semantics label).
+        final handle = tester.ensureSemantics();
+        final thumb = find.bySemanticsLabel(
+          RegExp(r'Öppna relaterat recept: Pastasås'),
+        );
+        expect(thumb, findsOneWidget);
+        handle.dispose();
 
-      await tester.tap(thumb);
-      await tester.pumpAndSettle();
+        await tester.tap(thumb);
+        await tester.pumpAndSettle();
 
-      expect(navigatedRecipe?.id, 'r2');
-      expect(find.text('Pastasås'), findsOneWidget);
-    });
+        expect(navigatedRecipe?.id, 'r2');
+        expect(find.text('Pastasås'), findsOneWidget);
+      },
+    );
   });
 }

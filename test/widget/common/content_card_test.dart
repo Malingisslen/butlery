@@ -36,17 +36,17 @@ import 'package:butlery/theme/app_theme.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: child),
-    );
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 UserProfile _user({
   String uid = 'u1',
@@ -65,20 +65,20 @@ UserProfile _user({
 }
 
 FriendRequest _request({String? message}) => FriendRequest(
-      id: 'req-1',
-      fromUserId: 'sender',
-      toUserId: 'me',
-      sentAt: DateTime(2026, 5, 1, 12),
-      message: message,
-    );
+  id: 'req-1',
+  fromUserId: 'sender',
+  toUserId: 'me',
+  sentAt: DateTime(2026, 5, 1, 12),
+  message: message,
+);
 
 Recipe _recipe() => RecipeFactory.build(
-      id: 'r1',
-      title: 'Köttbullar',
-      description: 'Klassisk husmanskost',
-      imageUrls: const [],
-      personalTagIds: const [],
-    );
+  id: 'r1',
+  title: 'Köttbullar',
+  description: 'Klassisk husmanskost',
+  imageUrls: const [],
+  personalTagIds: const [],
+);
 
 UnifiedShoppingList _shoppingList({String name = 'Veckans inköp'}) =>
     UnifiedShoppingList.personal(
@@ -90,9 +90,11 @@ UnifiedShoppingList _shoppingList({String name = 'Veckans inköp'}) =>
 void main() {
   group('ContentCard - delegation by type', () {
     testWidgets('recipe type delegates to RecipeCard', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: _recipe(), type: ContentCardType.recipe),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: _recipe(), type: ContentCardType.recipe),
+        ),
+      );
       expect(find.byType(RecipeCard), findsOneWidget);
       expect(find.byType(FriendCard), findsNothing);
       expect(find.byType(MenuCard), findsNothing);
@@ -101,130 +103,161 @@ void main() {
     });
 
     testWidgets('friend type delegates to FriendCard', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: _user(), type: ContentCardType.friend),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: _user(), type: ContentCardType.friend),
+        ),
+      );
       expect(find.byType(FriendCard), findsOneWidget);
       expect(find.byType(RecipeCard), findsNothing);
     });
 
-    testWidgets('friendRequest type delegates to FriendRequestCard',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: _request(), type: ContentCardType.friendRequest),
-      ));
+    testWidgets('friendRequest type delegates to FriendRequestCard', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: _request(), type: ContentCardType.friendRequest),
+        ),
+      );
       expect(find.byType(FriendRequestCard), findsOneWidget);
       expect(find.byType(FriendCard), findsNothing);
     });
 
-    testWidgets('menu type delegates to MenuCard (Map-of-Recipes payload)',
-        (tester) async {
+    testWidgets('menu type delegates to MenuCard (Map-of-Recipes payload)', (
+      tester,
+    ) async {
       final Map<String, List<Recipe>> menu = {
         'Måndag': [_recipe()],
       };
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: menu, type: ContentCardType.menu),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: menu, type: ContentCardType.menu),
+        ),
+      );
       expect(find.byType(MenuCard), findsOneWidget);
     });
 
-    testWidgets('shoppingList type delegates to ShoppingListCard',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _shoppingList(),
-          type: ContentCardType.shoppingList,
+    testWidgets('shoppingList type delegates to ShoppingListCard', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _shoppingList(),
+            type: ContentCardType.shoppingList,
+          ),
         ),
-      ));
+      );
       expect(find.byType(ShoppingListCard), findsOneWidget);
     });
   });
 
   group('ContentCard - assertion on wrong item type', () {
-    testWidgets('recipe type with non-Recipe item throws AssertionError',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: 'not a recipe', type: ContentCardType.recipe),
-      ));
+    testWidgets('recipe type with non-Recipe item throws AssertionError', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: 'not a recipe', type: ContentCardType.recipe),
+        ),
+      );
       expect(tester.takeException(), isA<AssertionError>());
     });
 
-    testWidgets('friend type with non-UserProfile item throws AssertionError',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: 'not a user', type: ContentCardType.friend),
-      ));
+    testWidgets('friend type with non-UserProfile item throws AssertionError', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: 'not a user', type: ContentCardType.friend),
+        ),
+      );
       expect(tester.takeException(), isA<AssertionError>());
     });
 
     testWidgets(
-        'friendRequest type with non-FriendRequest item throws AssertionError',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: 'nope', type: ContentCardType.friendRequest),
-      ));
-      expect(tester.takeException(), isA<AssertionError>());
-    });
+      'friendRequest type with non-FriendRequest item throws AssertionError',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(item: 'nope', type: ContentCardType.friendRequest),
+          ),
+        );
+        expect(tester.takeException(), isA<AssertionError>());
+      },
+    );
   });
 
   group('ContentCard - style mapping', () {
     testWidgets('detailed -> RecipeCardStyle.detailed', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          style: ContentCardStyle.detailed,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            style: ContentCardStyle.detailed,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.style, RecipeCardStyle.detailed);
     });
 
     testWidgets('compact -> RecipeCardStyle.compact', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          style: ContentCardStyle.compact,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            style: ContentCardStyle.compact,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.style, RecipeCardStyle.compact);
     });
 
     testWidgets('grid -> RecipeCardStyle.grid', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          style: ContentCardStyle.grid,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            style: ContentCardStyle.grid,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.style, RecipeCardStyle.grid);
     });
 
-    testWidgets('friend grid -> FriendCardStyle.list (grid mapped to list)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          style: ContentCardStyle.grid,
+    testWidgets('friend grid -> FriendCardStyle.list (grid mapped to list)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            style: ContentCardStyle.grid,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<FriendCard>(find.byType(FriendCard));
       expect(card.style, FriendCardStyle.list);
     });
 
     testWidgets('friend detailed -> FriendCardStyle.detailed', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          style: ContentCardStyle.detailed,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            style: ContentCardStyle.detailed,
+          ),
         ),
-      ));
+      );
       expect(
         tester.widget<FriendCard>(find.byType(FriendCard)).style,
         FriendCardStyle.detailed,
@@ -232,13 +265,15 @@ void main() {
     });
 
     testWidgets('friend compact -> FriendCardStyle.compact', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          style: ContentCardStyle.compact,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            style: ContentCardStyle.compact,
+          ),
         ),
-      ));
+      );
       expect(
         tester.widget<FriendCard>(find.byType(FriendCard)).style,
         FriendCardStyle.compact,
@@ -247,43 +282,49 @@ void main() {
 
     testWidgets('menu styles map across all three variants', (tester) async {
       final Map<String, List<Recipe>> menu = {
-        'Mån': [_recipe()]
+        'Mån': [_recipe()],
       };
       for (final pair in const [
         (ContentCardStyle.detailed, MenuCardStyle.detailed),
         (ContentCardStyle.compact, MenuCardStyle.compact),
         (ContentCardStyle.grid, MenuCardStyle.grid),
       ]) {
-        await tester.pumpWidget(_wrap(
-          ContentCard(
-            item: menu,
-            type: ContentCardType.menu,
-            style: pair.$1,
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: menu,
+              type: ContentCardType.menu,
+              style: pair.$1,
+            ),
           ),
-        ));
+        );
         expect(
           tester.widget<MenuCard>(find.byType(MenuCard)).style,
           pair.$2,
-          reason: 'ContentCardStyle.${pair.$1.name} should map to '
+          reason:
+              'ContentCardStyle.${pair.$1.name} should map to '
               'MenuCardStyle.${pair.$2.name}',
         );
       }
     });
 
-    testWidgets('shopping list styles map across all three variants',
-        (tester) async {
+    testWidgets('shopping list styles map across all three variants', (
+      tester,
+    ) async {
       for (final pair in const [
         (ContentCardStyle.detailed, ShoppingListCardStyle.detailed),
         (ContentCardStyle.compact, ShoppingListCardStyle.compact),
         (ContentCardStyle.grid, ShoppingListCardStyle.grid),
       ]) {
-        await tester.pumpWidget(_wrap(
-          ContentCard(
-            item: _shoppingList(),
-            type: ContentCardType.shoppingList,
-            style: pair.$1,
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: _shoppingList(),
+              type: ContentCardType.shoppingList,
+              style: pair.$1,
+            ),
           ),
-        ));
+        );
         expect(
           tester.widget<ShoppingListCard>(find.byType(ShoppingListCard)).style,
           pair.$2,
@@ -293,17 +334,20 @@ void main() {
   });
 
   group('ContentCard - prop forwarding (recipe)', () {
-    testWidgets('showImage / showTags / showMetadata forwarded to RecipeCard',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          showImage: false,
-          showTags: false,
-          showMetadata: false,
+    testWidgets('showImage / showTags / showMetadata forwarded to RecipeCard', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            showImage: false,
+            showTags: false,
+            showMetadata: false,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.showImage, isFalse);
       expect(card.showTags, isFalse);
@@ -313,60 +357,70 @@ void main() {
     testWidgets('margin / padding forwarded to RecipeCard', (tester) async {
       const margin = EdgeInsets.all(7);
       const padding = EdgeInsets.all(11);
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          margin: margin,
-          padding: padding,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            margin: margin,
+            padding: padding,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.margin, margin);
       expect(card.padding, padding);
     });
 
-    testWidgets('userAllergenPrefs / userDietaryPrefs / matchPercent forwarded',
-        (tester) async {
-      final allergens = {'gluten'};
-      final dietary = {'vegan'};
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          userAllergenPrefs: allergens,
-          userDietaryPrefs: dietary,
-          matchPercent: 0.75,
-        ),
-      ));
-      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
-      expect(card.userAllergenPrefs, allergens);
-      expect(card.userDietaryPrefs, dietary);
-      expect(card.matchPercent, 0.75);
-    });
+    testWidgets(
+      'userAllergenPrefs / userDietaryPrefs / matchPercent forwarded',
+      (tester) async {
+        final allergens = {'gluten'};
+        final dietary = {'vegan'};
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: _recipe(),
+              type: ContentCardType.recipe,
+              userAllergenPrefs: allergens,
+              userDietaryPrefs: dietary,
+              matchPercent: 0.75,
+            ),
+          ),
+        );
+        final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
+        expect(card.userAllergenPrefs, allergens);
+        expect(card.userDietaryPrefs, dietary);
+        expect(card.matchPercent, 0.75);
+      },
+    );
   });
 
   group('ContentCard - prop forwarding (friend)', () {
     testWidgets('showImage maps to FriendCard.showAvatar', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          showImage: false,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            showImage: false,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<FriendCard>(find.byType(FriendCard));
       expect(card.showAvatar, isFalse);
     });
 
     testWidgets('showOnlineStatus forwarded', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          showOnlineStatus: true,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            showOnlineStatus: true,
+          ),
         ),
-      ));
+      );
       expect(
         tester.widget<FriendCard>(find.byType(FriendCard)).showOnlineStatus,
         isTrue,
@@ -374,13 +428,15 @@ void main() {
     });
 
     testWidgets('subtitle forwarded to FriendCard', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          subtitle: 'Mutual: 3',
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            subtitle: 'Mutual: 3',
+          ),
         ),
-      ));
+      );
       expect(
         tester.widget<FriendCard>(find.byType(FriendCard)).subtitle,
         'Mutual: 3',
@@ -389,16 +445,19 @@ void main() {
       expect(find.text('Mutual: 3'), findsOneWidget);
     });
 
-    testWidgets('trailing widget reaches the rendered FriendCard',
-        (tester) async {
+    testWidgets('trailing widget reaches the rendered FriendCard', (
+      tester,
+    ) async {
       const trailingKey = Key('trailing-marker');
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          trailing: const Icon(Icons.chevron_right, key: trailingKey),
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            trailing: const Icon(Icons.chevron_right, key: trailingKey),
+          ),
         ),
-      ));
+      );
       expect(
         find.descendant(
           of: find.byType(FriendCard),
@@ -412,50 +471,57 @@ void main() {
   group('ContentCard - prop forwarding (menu & shopping list)', () {
     testWidgets('menu: showTags maps to MenuCard.showPreview', (tester) async {
       final Map<String, List<Recipe>> menu = {
-        'Mån': [_recipe()]
+        'Mån': [_recipe()],
       };
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: menu,
-          type: ContentCardType.menu,
-          showTags: false,
-          showSharingStatus: true,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: menu,
+            type: ContentCardType.menu,
+            showTags: false,
+            showSharingStatus: true,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<MenuCard>(find.byType(MenuCard));
       expect(card.showPreview, isFalse);
       expect(card.showSharingStatus, isTrue);
     });
 
-    testWidgets('shoppingList: showTags maps to ShoppingListCard.showPreview',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _shoppingList(),
-          type: ContentCardType.shoppingList,
-          showTags: false,
-          showSharingStatus: true,
+    testWidgets('shoppingList: showTags maps to ShoppingListCard.showPreview', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _shoppingList(),
+            type: ContentCardType.shoppingList,
+            showTags: false,
+            showSharingStatus: true,
+          ),
         ),
-      ));
-      final card =
-          tester.widget<ShoppingListCard>(find.byType(ShoppingListCard));
+      );
+      final card = tester.widget<ShoppingListCard>(
+        find.byType(ShoppingListCard),
+      );
       expect(card.showPreview, isFalse);
       expect(card.showSharingStatus, isTrue);
     });
   });
 
   group('ContentCard - callback adaptation', () {
-    testWidgets(
-        'recipe onTap (VoidCallback) is adapted to (Recipe)->void '
+    testWidgets('recipe onTap (VoidCallback) is adapted to (Recipe)->void '
         'and fires', (tester) async {
       var taps = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          onTap: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            onTap: () => taps++,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.onTap, isNotNull);
       card.onTap!(_recipe());
@@ -464,13 +530,15 @@ void main() {
 
     testWidgets('recipe onLongPress is adapted and fires', (tester) async {
       var longs = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          onLongPress: () => longs++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            onLongPress: () => longs++,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.onLongPress, isNotNull);
       card.onLongPress!(_recipe());
@@ -479,13 +547,15 @@ void main() {
 
     testWidgets('recipe onFavoriteToggle is adapted and fires', (tester) async {
       var favs = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _recipe(),
-          type: ContentCardType.recipe,
-          onFavoriteToggle: () => favs++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            onFavoriteToggle: () => favs++,
+          ),
         ),
-      ));
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.onFavoriteToggle, isNotNull);
       card.onFavoriteToggle!(_recipe());
@@ -493,42 +563,50 @@ void main() {
     });
 
     testWidgets('recipe callbacks are null when not provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard(item: _recipe(), type: ContentCardType.recipe),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: _recipe(), type: ContentCardType.recipe),
+        ),
+      );
       final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
       expect(card.onTap, isNull);
       expect(card.onLongPress, isNull);
       expect(card.onFavoriteToggle, isNull);
     });
 
-    testWidgets('friend onTap forwarded as-is and fires via tap',
-        (tester) async {
+    testWidgets('friend onTap forwarded as-is and fires via tap', (
+      tester,
+    ) async {
       var taps = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _user(),
-          type: ContentCardType.friend,
-          onTap: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _user(),
+            type: ContentCardType.friend,
+            onTap: () => taps++,
+          ),
         ),
-      ));
+      );
       await tester.tap(find.byType(FriendCard));
       await tester.pump();
       expect(taps, 1);
     });
 
-    testWidgets('friendRequest onAccept/onDecline forwarded and fire',
-        (tester) async {
+    testWidgets('friendRequest onAccept/onDecline forwarded and fire', (
+      tester,
+    ) async {
       var accepts = 0;
       var declines = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard(
-          item: _request(),
-          type: ContentCardType.friendRequest,
-          onAccept: () => accepts++,
-          onDecline: () => declines++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _request(),
+            type: ContentCardType.friendRequest,
+            onAccept: () => accepts++,
+            onDecline: () => declines++,
+          ),
         ),
-      ));
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
       await tester.pump();
       await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
@@ -539,8 +617,9 @@ void main() {
   });
 
   group('ContentCard - legacy static factories', () {
-    testWidgets('ContentCard.recipe builds a detailed RecipeCard',
-        (tester) async {
+    testWidgets('ContentCard.recipe builds a detailed RecipeCard', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(ContentCard.recipe(recipe: _recipe())));
       expect(find.byType(ContentCard), findsOneWidget);
       expect(find.byType(RecipeCard), findsOneWidget);
@@ -550,22 +629,26 @@ void main() {
     });
 
     testWidgets(
-        'ContentCard.compactRecipe forces compact style + showTags=false',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard.compactRecipe(recipe: _recipe()),
-      ));
-      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
-      expect(card.style, RecipeCardStyle.compact);
-      expect(card.showTags, isFalse);
-    });
+      'ContentCard.compactRecipe forces compact style + showTags=false',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard.compactRecipe(recipe: _recipe()),
+          ),
+        );
+        final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
+        expect(card.style, RecipeCardStyle.compact);
+        expect(card.showTags, isFalse);
+      },
+    );
 
-    testWidgets(
-        'ContentCard.friend builds detailed FriendCard, '
+    testWidgets('ContentCard.friend builds detailed FriendCard, '
         'showAvatar honoured', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ContentCard.friend(user: _user(), showAvatar: false),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard.friend(user: _user(), showAvatar: false),
+        ),
+      );
       final card = tester.widget<FriendCard>(find.byType(FriendCard));
       expect(card.style, FriendCardStyle.detailed);
       expect(card.showAvatar, isFalse);
@@ -573,12 +656,14 @@ void main() {
 
     testWidgets('ContentCard.friend trailing forwarded', (tester) async {
       const k = Key('trailing-legacy');
-      await tester.pumpWidget(_wrap(
-        ContentCard.friend(
-          user: _user(),
-          trailing: const Icon(Icons.message, key: k),
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard.friend(
+            user: _user(),
+            trailing: const Icon(Icons.message, key: k),
+          ),
         ),
-      ));
+      );
       expect(
         find.descendant(
           of: find.byType(FriendCard),
@@ -588,17 +673,20 @@ void main() {
       );
     });
 
-    testWidgets('ContentCard.friendRequest wires accept/decline callbacks',
-        (tester) async {
+    testWidgets('ContentCard.friendRequest wires accept/decline callbacks', (
+      tester,
+    ) async {
       var a = 0;
       var d = 0;
-      await tester.pumpWidget(_wrap(
-        ContentCard.friendRequest(
-          friendRequest: _request(),
-          onAccept: () => a++,
-          onDecline: () => d++,
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard.friendRequest(
+            friendRequest: _request(),
+            onAccept: () => a++,
+            onDecline: () => d++,
+          ),
         ),
-      ));
+      );
       expect(find.byType(FriendRequestCard), findsOneWidget);
       await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
       await tester.pump();

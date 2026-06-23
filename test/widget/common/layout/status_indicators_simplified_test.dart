@@ -58,15 +58,17 @@ void main() {
     });
 
     group('StatusIndicators facade', () {
-      testWidgets('offlineIndicator creates OfflineIndicator widget',
-          (tester) async {
+      testWidgets('offlineIndicator creates OfflineIndicator widget', (
+        tester,
+      ) async {
         final widget = StatusIndicators.offlineIndicator();
         await tester.pumpWidget(createLocalizedTestApp(child: widget));
         expect(find.byType(OfflineIndicator), findsOneWidget);
       });
 
-      testWidgets('offlineStatusIcon creates OfflineStatusIcon widget',
-          (tester) async {
+      testWidgets('offlineStatusIcon creates OfflineStatusIcon widget', (
+        tester,
+      ) async {
         final widget = StatusIndicators.offlineStatusIcon();
         await tester.pumpWidget(createLocalizedTestApp(child: widget));
         expect(find.byType(OfflineStatusIcon), findsOneWidget);

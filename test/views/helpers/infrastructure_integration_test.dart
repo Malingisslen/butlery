@@ -12,8 +12,9 @@ import 'view_test_helpers.dart';
 
 void main() {
   group('View Helper Infrastructure Integration', () {
-    testWidgets('ViewTestHelpers should create basic test widget',
-        (tester) async {
+    testWidgets('ViewTestHelpers should create basic test widget', (
+      tester,
+    ) async {
       await ViewTestHelpers.setupViewTestEnvironment();
 
       final testWidget = ViewTestHelpers.createTestViewWidget(
@@ -32,8 +33,9 @@ void main() {
       await ViewTestHelpers.teardownViewTestEnvironment();
     });
 
-    testWidgets('ViewTestHelpers should handle Swedish text input',
-        (tester) async {
+    testWidgets('ViewTestHelpers should handle Swedish text input', (
+      tester,
+    ) async {
       await ViewTestHelpers.setupViewTestEnvironment();
 
       final testWidget = ViewTestHelpers.createTestViewWidget(
@@ -100,8 +102,9 @@ void main() {
       await ViewTestHelpers.teardownViewTestEnvironment();
     });
 
-    testWidgets('ViewTestHelpers should handle screen size configuration',
-        (tester) async {
+    testWidgets('ViewTestHelpers should handle screen size configuration', (
+      tester,
+    ) async {
       await ViewTestHelpers.setupViewTestEnvironment();
 
       // Test phone size

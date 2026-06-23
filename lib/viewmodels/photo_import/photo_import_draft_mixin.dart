@@ -24,7 +24,8 @@ mixin PhotoImportDraftMixin {
   /// production passes nothing and gets the standard SharedPreferences-backed
   /// manager under the stable `photo_import_draft_v1` key.
   void initDraftPersistence({AutoSaveManager<PhotoImportDraft>? manager}) {
-    _draftManager = manager ??
+    _draftManager =
+        manager ??
         AutoSaveManager<PhotoImportDraft>(
           storageKey: _storageKey,
           encode: encodePhotoImportDraft,
@@ -45,11 +46,13 @@ mixin PhotoImportDraftMixin {
     final imagePath = imageBytes == null
         ? null
         : await image_store.stageDraftImage(imageBytes);
-    await manager.flush(PhotoImportDraft(
-      ocrText: ocrText,
-      imagePath: imagePath,
-      savedAtMs: DateTime.now().millisecondsSinceEpoch,
-    ));
+    await manager.flush(
+      PhotoImportDraft(
+        ocrText: ocrText,
+        imagePath: imagePath,
+        savedAtMs: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
   }
 
   /// Reads the persisted draft, if any.

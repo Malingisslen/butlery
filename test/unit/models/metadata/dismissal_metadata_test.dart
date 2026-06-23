@@ -88,8 +88,10 @@ void main() {
     });
 
     test('identical short-circuit', () {
-      final d =
-          DismissalMetadata(userId: 'a', dismissedAt: DateTime.utc(2026, 1, 1));
+      final d = DismissalMetadata(
+        userId: 'a',
+        dismissedAt: DateTime.utc(2026, 1, 1),
+      );
       expect(d == d, isTrue);
     });
   });

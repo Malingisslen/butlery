@@ -24,8 +24,10 @@ class MenuQualityAnalyzer {
     Map<String, List<Recipe>> menu,
   ) {
     final analysis = <String, dynamic>{
-      'totalRecipes':
-          menu.values.fold(0, (sum, recipes) => sum + recipes.length),
+      'totalRecipes': menu.values.fold(
+        0,
+        (sum, recipes) => sum + recipes.length,
+      ),
       'sections': menu.keys.length,
       'averageRecipesPerSection': 0.0,
       'hasVariety': false,
@@ -91,8 +93,9 @@ class MenuQualityAnalyzer {
       'senaste',
     ];
 
-    final hasGoodKeywords =
-        goodKeywords.any((keyword) => lowerPrompt.contains(keyword));
+    final hasGoodKeywords = goodKeywords.any(
+      (keyword) => lowerPrompt.contains(keyword),
+    );
 
     // Length check
     final hasGoodLength = prompt.length >= 10 && prompt.length <= 200;

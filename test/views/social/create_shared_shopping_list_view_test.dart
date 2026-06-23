@@ -92,8 +92,9 @@ void main() {
     // selector). The manager's postFrame `if (categoriesList.isEmpty) refresh()`
     // would then fire; the mock's noSuchMethod `refresh()` returns null (not a
     // Future) and throws, so we stub it to a real completed Future.
-    friendsService = TestServiceLocator.get<UnifiedFriendsService>()
-        as MockUnifiedFriendsService;
+    friendsService =
+        TestServiceLocator.get<UnifiedFriendsService>()
+            as MockUnifiedFriendsService;
     friendsService.setFriendsState(
       friends: [anna, bjorn],
       categoriesList: const [],
@@ -111,17 +112,20 @@ void main() {
 
     // The shopping service is the side-effect seam. Default: a successful
     // create returns a new list id. Individual tests can override.
-    shoppingService = TestServiceLocator.get<UnifiedShoppingService>()
-        as MockUnifiedShoppingService;
+    shoppingService =
+        TestServiceLocator.get<UnifiedShoppingService>()
+            as MockUnifiedShoppingService;
     shoppingService.setShoppingState(error: null);
-    when(() => shoppingService.createCollaborativeList(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          items: any(named: 'items'),
-          categoryIds: any(named: 'categoryIds'),
-        )).thenAnswer((_) async => 'new-list-id');
+    when(
+      () => shoppingService.createCollaborativeList(
+        name: any(named: 'name'),
+        description: any(named: 'description'),
+        memberIds: any(named: 'memberIds'),
+        memberDisplayNames: any(named: 'memberDisplayNames'),
+        items: any(named: 'items'),
+        categoryIds: any(named: 'categoryIds'),
+      ),
+    ).thenAnswer((_) async => 'new-list-id');
   });
 
   tearDown(() async {
@@ -209,154 +213,192 @@ void main() {
     await tester.pumpAndSettle();
     // Self-check: the toggle must have registered, else downstream side-effect
     // assertions would silently test an unselected state.
-    expect(find.text('1 vän vald'), findsWidgets,
-        reason: 'Tapping "$name" did not register as a friend selection');
+    expect(
+      find.text('1 vän vald'),
+      findsWidgets,
+      reason: 'Tapping "$name" did not register as a friend selection',
+    );
   }
 
   group('CreateSharedShoppingListView — share-list journey', () {
     testWidgets(
-        'renders the Swedish share form: app-bar title, friend picker, create action',
-        (tester) async {
-      await pumpView(tester);
+      'renders the Swedish share form: app-bar title, friend picker, create action',
+      (tester) async {
+        await pumpView(tester);
 
-      expect(find.text(_appBarTitle), findsOneWidget);
-      expect(find.text(_friendSectionHeader), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, _createButtonLabel),
-          findsOneWidget);
+        expect(find.text(_appBarTitle), findsOneWidget);
+        expect(find.text(_friendSectionHeader), findsOneWidget);
+        expect(
+          find.widgetWithText(ElevatedButton, _createButtonLabel),
+          findsOneWidget,
+        );
 
-      // Seeded friends are offered for selection.
-      expect(find.text('Anna'), findsOneWidget);
-      expect(find.text('Björn'), findsOneWidget);
+        // Seeded friends are offered for selection.
+        expect(find.text('Anna'), findsOneWidget);
+        expect(find.text('Björn'), findsOneWidget);
 
-      // Nothing picked yet → summary says so.
-      expect(find.text(_noFriendsSelected), findsOneWidget);
-    });
-
-    testWidgets(
-        'create stays disabled until BOTH a title is typed AND a friend is picked',
-        (tester) async {
-      await pumpView(tester);
-
-      // Empty form: button disabled.
-      expect(createButton(tester).onPressed, isNull,
-          reason: 'No title, no friends → cannot create');
-
-      // Title only: still disabled (a shared list needs someone to share with).
-      await tester.enterText(
-          find.byType(TextFormField).first, 'Veckans handling');
-      await tester.pumpAndSettle();
-      expect(createButton(tester).onPressed, isNull,
-          reason: 'Title but no friend selected → still cannot create');
-
-      // Pick a friend too: now enabled.
-      await pickFriend(tester, 'Anna');
-      expect(createButton(tester).onPressed, isNotNull,
-          reason: 'Title + at least one friend → create is enabled');
-    });
+        // Nothing picked yet → summary says so.
+        expect(find.text(_noFriendsSelected), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'tapping create invokes createCollaborativeList with the typed title and picked friend',
-        (tester) async {
-      await pumpView(tester);
+      'create stays disabled until BOTH a title is typed AND a friend is picked',
+      (tester) async {
+        await pumpView(tester);
 
-      // Snapshot the args AT INVOCATION TIME. The VM passes its internal
-      // `_selectedFriendIds` list by reference and then `clearForm()` mutates
-      // that same list on success — so a post-hoc `verify().captured` would
-      // read the now-empty list. Copying inside the stub captures the real
-      // values the service was called with.
-      String? capturedName;
-      List<String>? capturedMemberIds;
-      Map<String, String>? capturedDisplayNames;
-      when(() => shoppingService.createCollaborativeList(
+        // Empty form: button disabled.
+        expect(
+          createButton(tester).onPressed,
+          isNull,
+          reason: 'No title, no friends → cannot create',
+        );
+
+        // Title only: still disabled (a shared list needs someone to share with).
+        await tester.enterText(
+          find.byType(TextFormField).first,
+          'Veckans handling',
+        );
+        await tester.pumpAndSettle();
+        expect(
+          createButton(tester).onPressed,
+          isNull,
+          reason: 'Title but no friend selected → still cannot create',
+        );
+
+        // Pick a friend too: now enabled.
+        await pickFriend(tester, 'Anna');
+        expect(
+          createButton(tester).onPressed,
+          isNotNull,
+          reason: 'Title + at least one friend → create is enabled',
+        );
+      },
+    );
+
+    testWidgets(
+      'tapping create invokes createCollaborativeList with the typed title and picked friend',
+      (tester) async {
+        await pumpView(tester);
+
+        // Snapshot the args AT INVOCATION TIME. The VM passes its internal
+        // `_selectedFriendIds` list by reference and then `clearForm()` mutates
+        // that same list on success — so a post-hoc `verify().captured` would
+        // read the now-empty list. Copying inside the stub captures the real
+        // values the service was called with.
+        String? capturedName;
+        List<String>? capturedMemberIds;
+        Map<String, String>? capturedDisplayNames;
+        when(
+          () => shoppingService.createCollaborativeList(
             name: any(named: 'name'),
             description: any(named: 'description'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
-          )).thenAnswer((invocation) async {
-        capturedName = invocation.namedArguments[#name] as String;
-        capturedMemberIds =
-            List<String>.from(invocation.namedArguments[#memberIds] as List);
-        capturedDisplayNames = Map<String, String>.from(
-            invocation.namedArguments[#memberDisplayNames] as Map);
-        return 'new-list-id';
-      });
+          ),
+        ).thenAnswer((invocation) async {
+          capturedName = invocation.namedArguments[#name] as String;
+          capturedMemberIds = List<String>.from(
+            invocation.namedArguments[#memberIds] as List,
+          );
+          capturedDisplayNames = Map<String, String>.from(
+            invocation.namedArguments[#memberDisplayNames] as Map,
+          );
+          return 'new-list-id';
+        });
 
-      await pickFriend(tester, 'Anna');
-      await tester.enterText(
-          find.byType(TextFormField).first, 'Middag hos Anna');
-      await tester.pumpAndSettle();
+        await pickFriend(tester, 'Anna');
+        await tester.enterText(
+          find.byType(TextFormField).first,
+          'Middag hos Anna',
+        );
+        await tester.pumpAndSettle();
 
-      // Guard: the friend selection must still be live right before we create.
-      expect(find.text('1 vän vald'), findsWidgets,
-          reason: 'Friend selection lost after typing the title');
+        // Guard: the friend selection must still be live right before we create.
+        expect(
+          find.text('1 vän vald'),
+          findsWidgets,
+          reason: 'Friend selection lost after typing the title',
+        );
 
-      // The form is now valid, so the create action is enabled. We invoke its
-      // real onPressed callback directly rather than tapping: the friend
-      // selector's fixed-height container overflows and paints clipped rows
-      // over the bottom bar, so a positional tap on the create button can
-      // instead land on an overflowing friend checkbox (toggling the selection
-      // off). Calling the wired callback exercises the same real
-      // view → VM → service path without that hit-test hazard.
-      final onCreate = createButton(tester).onPressed;
-      expect(onCreate, isNotNull,
-          reason: 'Title + selected friend → create enabled');
-      onCreate!();
-      await tester.pumpAndSettle();
+        // The form is now valid, so the create action is enabled. We invoke its
+        // real onPressed callback directly rather than tapping: the friend
+        // selector's fixed-height container overflows and paints clipped rows
+        // over the bottom bar, so a positional tap on the create button can
+        // instead land on an overflowing friend checkbox (toggling the selection
+        // off). Calling the wired callback exercises the same real
+        // view → VM → service path without that hit-test hazard.
+        final onCreate = createButton(tester).onPressed;
+        expect(
+          onCreate,
+          isNotNull,
+          reason: 'Title + selected friend → create enabled',
+        );
+        onCreate!();
+        await tester.pumpAndSettle();
 
-      // Title is trimmed and passed through verbatim.
-      expect(capturedName, 'Middag hos Anna');
-      // The picked friend's uid is the only member.
-      expect(capturedMemberIds, ['friend_anna']);
-      // Member display-name map resolves Anna's uid → her name (the VM builds
-      // this from the friends service, falling back to '?').
-      expect(capturedDisplayNames, {'friend_anna': 'Anna'});
-    });
+        // Title is trimmed and passed through verbatim.
+        expect(capturedName, 'Middag hos Anna');
+        // The picked friend's uid is the only member.
+        expect(capturedMemberIds, ['friend_anna']);
+        // Member display-name map resolves Anna's uid → her name (the VM builds
+        // this from the friends service, falling back to '?').
+        expect(capturedDisplayNames, {'friend_anna': 'Anna'});
+      },
+    );
 
     testWidgets(
-        'a whitespace-only title keeps create disabled and never calls the service',
-        (tester) async {
-      await pumpView(tester);
+      'a whitespace-only title keeps create disabled and never calls the service',
+      (tester) async {
+        await pumpView(tester);
 
-      // Pick a friend so ONLY the title is the blocker.
-      await pickFriend(tester, 'Anna');
+        // Pick a friend so ONLY the title is the blocker.
+        await pickFriend(tester, 'Anna');
 
-      // Type only spaces — isTitleValid is false (trim().isEmpty).
-      await tester.enterText(find.byType(TextFormField).first, '   ');
-      await tester.pumpAndSettle();
+        // Type only spaces — isTitleValid is false (trim().isEmpty).
+        await tester.enterText(find.byType(TextFormField).first, '   ');
+        await tester.pumpAndSettle();
 
-      expect(createButton(tester).onPressed, isNull,
-          reason: 'Whitespace-only title is not a valid title');
+        expect(
+          createButton(tester).onPressed,
+          isNull,
+          reason: 'Whitespace-only title is not a valid title',
+        );
 
-      // The VM surfaces the Swedish "title required, not empty" error once the
-      // field is non-empty-but-blank.
-      expect(find.text('Titel krävs och får inte vara tom'), findsOneWidget);
+        // The VM surfaces the Swedish "title required, not empty" error once the
+        // field is non-empty-but-blank.
+        expect(find.text('Titel krävs och får inte vara tom'), findsOneWidget);
 
-      verifyNever(() => shoppingService.createCollaborativeList(
+        verifyNever(
+          () => shoppingService.createCollaborativeList(
             name: any(named: 'name'),
             description: any(named: 'description'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
-          ));
-    });
+          ),
+        );
+      },
+    );
 
     testWidgets(
-        'picking a friend updates the bottom selection summary from "none" to a count',
-        (tester) async {
-      await pumpView(tester);
+      'picking a friend updates the bottom selection summary from "none" to a count',
+      (tester) async {
+        await pumpView(tester);
 
-      expect(find.text(_noFriendsSelected), findsOneWidget);
+        expect(find.text(_noFriendsSelected), findsOneWidget);
 
-      await pickFriend(tester, 'Anna');
+        await pickFriend(tester, 'Anna');
 
-      // Swedish singular plural form: "1 vän vald". It appears in BOTH the
-      // friend selector's own summary AND the bottom action bar's summary —
-      // the point is the "none" state is gone and the count is shown.
-      expect(find.text(_noFriendsSelected), findsNothing);
-      expect(find.text('1 vän vald'), findsWidgets);
-    });
+        // Swedish singular plural form: "1 vän vald". It appears in BOTH the
+        // friend selector's own summary AND the bottom action bar's summary —
+        // the point is the "none" state is gone and the count is shown.
+        expect(find.text(_noFriendsSelected), findsNothing);
+        expect(find.text('1 vän vald'), findsWidgets);
+      },
+    );
   });
 }

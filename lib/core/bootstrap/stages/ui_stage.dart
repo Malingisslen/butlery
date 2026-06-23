@@ -22,8 +22,7 @@ class UIStage implements BootstrapStage {
   String get name => 'UI';
 
   @override
-  List<Type> get requiredModules =>
-      [CoreModule]; // Basic UI needs core services
+  List<Type> get requiredModules => [CoreModule]; // Basic UI needs core services
 
   @override
   Duration get timeout => const Duration(seconds: 15);

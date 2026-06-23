@@ -36,16 +36,19 @@ class ShoppingInitializationModule {
     // Early return if already initialized to prevent clearing local state
     // This fixes race condition when navigating after adding items
     if (_isInitialized) {
-      AppLogger.info('Shopping service already initialized, skipping reload',
-          'ShoppingService');
+      AppLogger.info(
+        'Shopping service already initialized, skipping reload',
+        'ShoppingService',
+      );
       return;
     }
 
     try {
       AppLogger.info('Initializing shopping service...', 'ShoppingService');
       AppLogger.info(
-          'Authentication status: ${authRepository.currentUser != null ? "✅ Authenticated" : "❌ Not authenticated"}',
-          'ShoppingService');
+        'Authentication status: ${authRepository.currentUser != null ? "✅ Authenticated" : "❌ Not authenticated"}',
+        'ShoppingService',
+      );
 
       // Set user for cache helper
       final currentUser = authRepository.currentUser;
@@ -69,14 +72,17 @@ class ShoppingInitializationModule {
       lists.clear();
       lists.addAll(loadedLists);
 
-      lists
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      lists.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
       AppLogger.info(
-          'Sorted ${loadedLists.length} shopping lists alphabetically');
+        'Sorted ${loadedLists.length} shopping lists alphabetically',
+      );
 
       notifyListeners();
       AppLogger.success(
-          '✅ Loaded ${loadedLists.length} shopping lists (personal + collaborative)');
+        '✅ Loaded ${loadedLists.length} shopping lists (personal + collaborative)',
+      );
     } catch (e) {
       AppLogger.error('Failed to load shopping lists: $e');
       // Log error but don't rethrow to allow app to continue with empty lists
@@ -90,22 +96,26 @@ class ShoppingInitializationModule {
       // Check if active list is already set (e.g., from setActiveList during navigation)
       if (getActiveListId() != null) {
         AppLogger.info(
-            'Active list already set to ${getActiveListId()}, skipping restoration to preserve navigation choice',
-            'ShoppingService');
+          'Active list already set to ${getActiveListId()}, skipping restoration to preserve navigation choice',
+          'ShoppingService',
+        );
         return;
       }
 
       // Try to load saved active list ID only if no active list is currently set
       const activeListKey = 'active_list_id';
-      final savedActiveListId =
-          await getCacheHelper().loadActiveId(activeListKey);
+      final savedActiveListId = await getCacheHelper().loadActiveId(
+        activeListKey,
+      );
 
       if (savedActiveListId != null &&
           lists.any((list) => list.id == savedActiveListId)) {
         // Saved list still exists, restore it
         setActiveListId(savedActiveListId);
-        AppLogger.info('✅ Restored active list from cache: $savedActiveListId',
-            'ShoppingService');
+        AppLogger.info(
+          '✅ Restored active list from cache: $savedActiveListId',
+          'ShoppingService',
+        );
       } else if (lists.isNotEmpty) {
         // No saved list or it no longer exists, auto-select first list as fallback
         final firstList = lists.first;
@@ -114,13 +124,16 @@ class ShoppingInitializationModule {
         // Save the fallback selection for next time
         await saveActiveListId();
         AppLogger.info(
-            '✅ Auto-selected first list as active fallback: ${firstList.id} (${firstList.name})',
-            'ShoppingService');
+          '✅ Auto-selected first list as active fallback: ${firstList.id} (${firstList.name})',
+          'ShoppingService',
+        );
       } else {
         // No lists available
         setActiveListId(null);
-        AppLogger.info('ℹ️  No lists available - activeListId set to null',
-            'ShoppingService');
+        AppLogger.info(
+          'ℹ️  No lists available - activeListId set to null',
+          'ShoppingService',
+        );
       }
 
       notifyListeners();

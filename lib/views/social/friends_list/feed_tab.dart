@@ -76,7 +76,8 @@ class FeedTab {
                   }
 
                   final event = events[index];
-                  final showDateHeader = index == 0 ||
+                  final showDateHeader =
+                      index == 0 ||
                       !_isSameDay(events[index - 1].createdAt, event.createdAt);
 
                   return AnimatedListItem(
@@ -188,8 +189,9 @@ class FeedTab {
         children: [
           Expanded(child: Divider(color: Theme.of(context).dividerColor)),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
             child: Text(
               label,
               style: AppTextStyles.labelSmall.copyWith(
@@ -206,8 +208,9 @@ class FeedTab {
 
   static Widget _buildActivityCard(BuildContext context, ActivityEvent event) {
     final cs = Theme.of(context).colorScheme;
-    final borderColor =
-        event.type == ActivityEventType.cooked ? cs.primary : cs.secondary;
+    final borderColor = event.type == ActivityEventType.cooked
+        ? cs.primary
+        : cs.secondary;
 
     final actionText = event.type == ActivityEventType.cooked
         ? context.l10n.feedActionCooked
@@ -247,7 +250,8 @@ class FeedTab {
             ),
           ),
           const SizedBox(
-              width: AppDimensions.spacingSm + AppDimensions.spacingXs),
+            width: AppDimensions.spacingSm + AppDimensions.spacingXs,
+          ),
           // Body
           Expanded(
             child: Column(
@@ -284,8 +288,9 @@ class FeedTab {
                 // a single image for legacy/single-photo events (BUT-949).
                 if (event.photoUrls.isNotEmpty)
                   Padding(
-                    padding:
-                        const EdgeInsets.only(top: AppDimensions.spacingSm),
+                    padding: const EdgeInsets.only(
+                      top: AppDimensions.spacingSm,
+                    ),
                     child: CookSnapPhotoCarousel(
                       photoUrls: event.photoUrls,
                     ),
@@ -324,7 +329,8 @@ class FeedTab {
                 ),
               ),
               const SizedBox(
-                  width: AppDimensions.spacingSm + AppDimensions.spacingXs),
+                width: AppDimensions.spacingSm + AppDimensions.spacingXs,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,12 +395,12 @@ class FeedTab {
         ),
       );
       if (confirmed != true || !context.mounted) return;
-      final ok =
-          await ServiceLocator.get<SocialRecipeService>().requestRecipeShare(
-        ownerId: event.actorId,
-        recipeId: event.recipeId,
-        recipeTitle: event.recipeTitle,
-      );
+      final ok = await ServiceLocator.get<SocialRecipeService>()
+          .requestRecipeShare(
+            ownerId: event.actorId,
+            recipeId: event.recipeId,
+            recipeTitle: event.recipeTitle,
+          );
       if (!context.mounted) return;
       if (ok) {
         SnackBarUtils.showSuccess(context, context.l10n.feedRecipeRequestSent);

@@ -40,7 +40,8 @@ class ConversationBuilder {
     return Conversation(
       id: defaultId,
       participantIds: defaultParticipantIds,
-      participantDisplayNames: participantDisplayNames ??
+      participantDisplayNames:
+          participantDisplayNames ??
           {
             'user1': 'Anna Andersson',
             'user2': 'Erik Svensson',
@@ -87,7 +88,8 @@ class ConversationBuilder {
     Message? lastMessage,
   }) {
     final ids = participantIds ?? ['user1', 'user2', 'user3'];
-    final names = participantDisplayNames ??
+    final names =
+        participantDisplayNames ??
         {
           'user1': 'Anna Andersson',
           'user2': 'Erik Svensson',
@@ -214,29 +216,37 @@ void main() {
         isAuthenticated: true,
       );
 
-      when(() => mockMessagingService.getMyConversations())
-          .thenAnswer((_) => conversationsStreamController.stream);
+      when(
+        () => mockMessagingService.getMyConversations(),
+      ).thenAnswer((_) => conversationsStreamController.stream);
 
-      when(() => mockMessagingService.markConversationAsRead(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockMessagingService.markConversationAsRead(any()),
+      ).thenAnswer((_) async => {});
 
-      when(() => mockMessagingService.startDirectConversation(
-            otherUserId: any(named: 'otherUserId'),
-            otherUserDisplayName: any(named: 'otherUserDisplayName'),
-            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-          )).thenAnswer((_) async => 'new_conv_direct');
+      when(
+        () => mockMessagingService.startDirectConversation(
+          otherUserId: any(named: 'otherUserId'),
+          otherUserDisplayName: any(named: 'otherUserDisplayName'),
+          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+        ),
+      ).thenAnswer((_) async => 'new_conv_direct');
 
-      when(() => mockMessagingService.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
-          )).thenAnswer((_) async => 'new_conv_group');
+      when(
+        () => mockMessagingService.createGroupConversation(
+          participantIds: any(named: 'participantIds'),
+          participantDisplayNames: any(named: 'participantDisplayNames'),
+          participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async => 'new_conv_group');
 
-      when(() => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
-          )).thenAnswer((_) async => {});
+      when(
+        () => mockMessagingService.removeParticipantFromGroup(
+          conversationId: any(named: 'conversationId'),
+          participantId: any(named: 'participantId'),
+        ),
+      ).thenAnswer((_) async => {});
 
       // Create viewModel
       viewModel = ConversationsViewModel(
@@ -277,8 +287,9 @@ void main() {
 
       test('should handle error during initialization', () {
         // Arrange
-        when(() => mockMessagingService.getMyConversations())
-            .thenThrow(Exception('Stream setup failed'));
+        when(
+          () => mockMessagingService.getMyConversations(),
+        ).thenThrow(Exception('Stream setup failed'));
 
         // Act
         final errorViewModel = ConversationsViewModel(
@@ -286,8 +297,10 @@ void main() {
         );
 
         // Assert
-        expect(errorViewModel.conversationsError,
-            equals('Kunde inte ladda konversationer'));
+        expect(
+          errorViewModel.conversationsError,
+          equals('Kunde inte ladda konversationer'),
+        );
         expect(errorViewModel.isLoadingConversations, isFalse);
 
         // Cleanup
@@ -373,8 +386,10 @@ void main() {
         await Future.delayed(Duration.zero);
 
         // Assert - Stream error, check stream state
-        expect(viewModel.conversationsError,
-            equals('Kunde inte ladda konversationer'));
+        expect(
+          viewModel.conversationsError,
+          equals('Kunde inte ladda konversationer'),
+        );
         expect(viewModel.isLoadingConversations, isFalse);
       });
 
@@ -393,8 +408,10 @@ void main() {
         testViewModel.dispose();
 
         // Act - Try to update after dispose
-        conversationsStreamController
-            .add([testDirectConversation, testGroupConversation]);
+        conversationsStreamController.add([
+          testDirectConversation,
+          testGroupConversation,
+        ]);
         await Future.delayed(Duration.zero);
 
         // Assert - Should not crash, conversations should remain as before dispose
@@ -489,8 +506,9 @@ void main() {
         // Assert
         expect(viewModel.conversations.length, equals(1));
         expect(
-            viewModel.conversations[0].participantDisplayNames['search_user'],
-            equals('Åsa Ängström'));
+          viewModel.conversations[0].participantDisplayNames['search_user'],
+          equals('Åsa Ängström'),
+        );
       });
 
       test('should return empty list when no search results', () {
@@ -517,11 +535,13 @@ void main() {
         expect(viewModel.isLoading, isFalse);
         expect(viewModel.error, isNull);
 
-        verify(() => mockMessagingService.startDirectConversation(
-              otherUserId: 'other_user_123',
-              otherUserDisplayName: 'Erik Eriksson',
-              otherUserAvatarUrl: 'https://example.com/avatar.jpg',
-            )).called(1);
+        verify(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: 'other_user_123',
+            otherUserDisplayName: 'Erik Eriksson',
+            otherUserAvatarUrl: 'https://example.com/avatar.jpg',
+          ),
+        ).called(1);
       });
 
       test('should create direct conversation without avatar URL', () async {
@@ -534,20 +554,24 @@ void main() {
         // Assert
         expect(conversationId, equals('new_conv_direct'));
 
-        verify(() => mockMessagingService.startDirectConversation(
-              otherUserId: 'other_user_123',
-              otherUserDisplayName: 'Erik Eriksson',
-              otherUserAvatarUrl: null,
-            )).called(1);
+        verify(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: 'other_user_123',
+            otherUserDisplayName: 'Erik Eriksson',
+            otherUserAvatarUrl: null,
+          ),
+        ).called(1);
       });
 
       test('should handle error during direct conversation creation', () async {
         // Arrange
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('Network error'));
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         final conversationId = await viewModel.startDirectConversation(
@@ -594,20 +618,24 @@ void main() {
 
         // Assert
         expect(conversationId, isNull);
-        verifyNever(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            ));
+        verifyNever(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        );
       });
 
       test('should clear creation error on successful creation', () async {
         // Arrange - Set initial error
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('First attempt failed'));
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenThrow(Exception('First attempt failed'));
 
         await viewModel.startDirectConversation(
           otherUserId: 'user1',
@@ -616,11 +644,13 @@ void main() {
         expect(viewModel.error, isNotNull);
 
         // Reset mock for successful attempt
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenAnswer((_) async => 'new_conv');
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenAnswer((_) async => 'new_conv');
 
         // Act
         await viewModel.startDirectConversation(
@@ -678,12 +708,14 @@ void main() {
         // Assert
         expect(conversationId, equals('new_conv_group'));
 
-        verify(() => mockMessagingService.createGroupConversation(
-              participantIds: participantIds,
-              participantDisplayNames: displayNames,
-              participantAvatarUrls: avatarUrls,
-              title: 'Stor grupp',
-            )).called(1);
+        verify(
+          () => mockMessagingService.createGroupConversation(
+            participantIds: participantIds,
+            participantDisplayNames: displayNames,
+            participantAvatarUrls: avatarUrls,
+            title: 'Stor grupp',
+          ),
+        ).called(1);
       });
 
       test('should handle participant display names and avatars', () async {
@@ -702,28 +734,32 @@ void main() {
         );
 
         // Assert
-        verify(() => mockMessagingService.createGroupConversation(
-              participantIds: ['user1', 'user2'],
-              participantDisplayNames: {
-                'user1': 'Åsa Ängström',
-                'user2': 'Örjan Öberg',
-              },
-              participantAvatarUrls: {
-                'user1': 'https://example.com/asa.jpg',
-                'user2': null,
-              },
-              title: 'Svenska tecken',
-            )).called(1);
+        verify(
+          () => mockMessagingService.createGroupConversation(
+            participantIds: ['user1', 'user2'],
+            participantDisplayNames: {
+              'user1': 'Åsa Ängström',
+              'user2': 'Örjan Öberg',
+            },
+            participantAvatarUrls: {
+              'user1': 'https://example.com/asa.jpg',
+              'user2': null,
+            },
+            title: 'Svenska tecken',
+          ),
+        ).called(1);
       });
 
       test('should handle error during group creation', () async {
         // Arrange
-        when(() => mockMessagingService.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-            )).thenThrow(Exception('Creation failed'));
+        when(
+          () => mockMessagingService.createGroupConversation(
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          ),
+        ).thenThrow(Exception('Creation failed'));
 
         // Act
         final conversationId = await viewModel.createGroupConversation(
@@ -776,12 +812,14 @@ void main() {
 
         // Assert
         expect(conversationId, isNull);
-        verifyNever(() => mockMessagingService.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-            ));
+        verifyNever(
+          () => mockMessagingService.createGroupConversation(
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          ),
+        );
       });
     });
 
@@ -791,14 +829,16 @@ void main() {
         await viewModel.markConversationAsRead('conv_123');
 
         // Assert
-        verify(() => mockMessagingService.markConversationAsRead('conv_123'))
-            .called(1);
+        verify(
+          () => mockMessagingService.markConversationAsRead('conv_123'),
+        ).called(1);
       });
 
       test('should handle error silently when marking as read fails', () async {
         // Arrange
-        when(() => mockMessagingService.markConversationAsRead(any()))
-            .thenThrow(Exception('Mark as read failed'));
+        when(
+          () => mockMessagingService.markConversationAsRead(any()),
+        ).thenThrow(Exception('Mark as read failed'));
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -840,10 +880,12 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: 'group_123',
-              participantId: testUserId,
-            )).called(1);
+        verify(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: 'group_123',
+            participantId: testUserId,
+          ),
+        ).called(1);
       });
 
       test('should handle when user not authenticated', () async {
@@ -861,18 +903,22 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: any(named: 'conversationId'),
-              participantId: any(named: 'participantId'),
-            ));
+        verifyNever(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          ),
+        );
       });
 
       test('should handle error when leaving group', () async {
         // Arrange
-        when(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: any(named: 'conversationId'),
-              participantId: any(named: 'participantId'),
-            )).thenThrow(Exception('Leave failed'));
+        when(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          ),
+        ).thenThrow(Exception('Leave failed'));
 
         // Act
         final result = await viewModel.leaveGroup('group_123');
@@ -887,10 +933,12 @@ void main() {
         expect(successResult, isTrue);
 
         // Test failure
-        when(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: any(named: 'conversationId'),
-              participantId: any(named: 'participantId'),
-            )).thenThrow(Exception('Failed'));
+        when(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          ),
+        ).thenThrow(Exception('Failed'));
 
         final failureResult = await viewModel.leaveGroup('group_fail');
         expect(failureResult, isFalse);
@@ -908,10 +956,12 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: any(named: 'conversationId'),
-              participantId: any(named: 'participantId'),
-            ));
+        verifyNever(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          ),
+        );
       });
     });
 
@@ -941,11 +991,13 @@ void main() {
 
       test('should clear conversation creation error', () async {
         // Arrange - Create an operation error
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('Creation error'));
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenThrow(Exception('Creation error'));
 
         await viewModel.startDirectConversation(
           otherUserId: 'user',
@@ -966,11 +1018,13 @@ void main() {
         await Future.delayed(Duration.zero);
 
         // Set creation error
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('Creation error'));
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenThrow(Exception('Creation error'));
 
         await viewModel.startDirectConversation(
           otherUserId: 'user',
@@ -998,55 +1052,64 @@ void main() {
       // with the same participant (get-or-create contract), the VM must surface
       // that existing ID unchanged — it must not try to create a duplicate.
       test(
-          'returns existing conversation ID when service returns same ID twice (get-or-create)',
-          () async {
-        when(() => mockMessagingService.startDirectConversation(
+        'returns existing conversation ID when service returns same ID twice (get-or-create)',
+        () async {
+          when(
+            () => mockMessagingService.startDirectConversation(
               otherUserId: 'known_user',
               otherUserDisplayName: 'Known User',
               otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenAnswer((_) async => 'conv_existing_123');
+            ),
+          ).thenAnswer((_) async => 'conv_existing_123');
 
-        final first = await viewModel.startDirectConversation(
-          otherUserId: 'known_user',
-          otherUserDisplayName: 'Known User',
-        );
-        final second = await viewModel.startDirectConversation(
-          otherUserId: 'known_user',
-          otherUserDisplayName: 'Known User',
-        );
+          final first = await viewModel.startDirectConversation(
+            otherUserId: 'known_user',
+            otherUserDisplayName: 'Known User',
+          );
+          final second = await viewModel.startDirectConversation(
+            otherUserId: 'known_user',
+            otherUserDisplayName: 'Known User',
+          );
 
-        // Both calls must surface the same ID (no duplicate created).
-        expect(first, equals('conv_existing_123'));
-        expect(second, equals('conv_existing_123'));
-        // The VM must have forwarded BOTH calls — the dedup is in the service.
-        verify(() => mockMessagingService.startDirectConversation(
+          // Both calls must surface the same ID (no duplicate created).
+          expect(first, equals('conv_existing_123'));
+          expect(second, equals('conv_existing_123'));
+          // The VM must have forwarded BOTH calls — the dedup is in the service.
+          verify(
+            () => mockMessagingService.startDirectConversation(
               otherUserId: 'known_user',
               otherUserDisplayName: 'Known User',
               otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).called(2);
-      });
+            ),
+          ).called(2);
+        },
+      );
 
       // Intent: calling startDirectConversation with the current user's own ID
       // is an input the service layer is responsible for handling. The VM must
       // not silently swallow the resulting error — it must surface it so the
       // caller knows the operation failed rather than succeeding silently.
-      test('surfaces error when service rejects self-conversation attempt',
-          () async {
-        when(() => mockMessagingService.startDirectConversation(
+      test(
+        'surfaces error when service rejects self-conversation attempt',
+        () async {
+          when(
+            () => mockMessagingService.startDirectConversation(
               otherUserId: testUserId, // same as current user
               otherUserDisplayName: any(named: 'otherUserDisplayName'),
               otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('Cannot start conversation with yourself'));
+            ),
+          ).thenThrow(Exception('Cannot start conversation with yourself'));
 
-        final result = await viewModel.startDirectConversation(
-          otherUserId: testUserId,
-          otherUserDisplayName: 'Test User',
-        );
+          final result = await viewModel.startDirectConversation(
+            otherUserId: testUserId,
+            otherUserDisplayName: 'Test User',
+          );
 
-        expect(result, isNull);
-        expect(viewModel.error, isNotNull);
-        expect(viewModel.isLoading, isFalse);
-      });
+          expect(result, isNull);
+          expect(viewModel.error, isNotNull);
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
 
       // Intent: if the service succeeds after a prior error, the error state
       // must be cleared so the user does not see a stale error message alongside
@@ -1054,11 +1117,13 @@ void main() {
       // error-clearing semantics — already proven for group creation above,
       // but the direct-conversation path goes through a separate executeAsync call.)
       test('clears prior error on successful retry', () async {
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenThrow(Exception('Timeout'));
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenThrow(Exception('Timeout'));
 
         await viewModel.startDirectConversation(
           otherUserId: 'user_a',
@@ -1066,11 +1131,13 @@ void main() {
         );
         expect(viewModel.error, isNotNull);
 
-        when(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            )).thenAnswer((_) async => 'conv_retry');
+        when(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        ).thenAnswer((_) async => 'conv_retry');
 
         final result = await viewModel.startDirectConversation(
           otherUserId: 'user_a',
@@ -1146,21 +1213,27 @@ void main() {
 
         // Assert - No operations should have been performed
         verifyNever(() => mockMessagingService.markConversationAsRead(any()));
-        verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-              conversationId: any(named: 'conversationId'),
-              participantId: any(named: 'participantId'),
-            ));
-        verifyNever(() => mockMessagingService.startDirectConversation(
-              otherUserId: any(named: 'otherUserId'),
-              otherUserDisplayName: any(named: 'otherUserDisplayName'),
-              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-            ));
-        verifyNever(() => mockMessagingService.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-            ));
+        verifyNever(
+          () => mockMessagingService.removeParticipantFromGroup(
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          ),
+        );
+        verifyNever(
+          () => mockMessagingService.startDirectConversation(
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          ),
+        );
+        verifyNever(
+          () => mockMessagingService.createGroupConversation(
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          ),
+        );
       });
     });
   });

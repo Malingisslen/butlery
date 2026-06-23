@@ -122,9 +122,9 @@ class FormScaffold extends StatelessWidget {
                         ? LoadingIndicator(
                             size: 16,
                             strokeWidth: 2,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                           )
                         : Text(context.l10n.commonSave),
                   ),

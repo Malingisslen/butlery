@@ -41,9 +41,11 @@ class ReportContentDialog {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success
-                ? context.l10n.reportSubmitted
-                : context.l10n.reportSubmitFailed),
+            content: Text(
+              success
+                  ? context.l10n.reportSubmitted
+                  : context.l10n.reportSubmitFailed,
+            ),
             backgroundColor: success
                 ? context.butleryColors.success
                 : Theme.of(context).colorScheme.error,
@@ -85,8 +87,9 @@ class ReportContentDialog {
           // (Google Play appeal policy expects a reporter description); the
           // submit button stays disabled until non-empty.
           final isOther = selectedReason == otherLabel;
-          final descriptionFilled =
-              descriptionController.text.trim().isNotEmpty;
+          final descriptionFilled = descriptionController.text
+              .trim()
+              .isNotEmpty;
           final canSubmit =
               selectedReason != null && (!isOther || descriptionFilled);
 
@@ -101,10 +104,12 @@ class ReportContentDialog {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: reasons
-                        .map((reason) => RadioListTile<String>(
-                              title: Text(reason),
-                              value: reason,
-                            ))
+                        .map(
+                          (reason) => RadioListTile<String>(
+                            title: Text(reason),
+                            value: reason,
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -137,14 +142,14 @@ class ReportContentDialog {
               ElevatedButton(
                 onPressed: canSubmit
                     ? () => Navigator.pop(
-                          context,
-                          _ReportOutcome(
-                            reason: selectedReason!,
-                            description: isOther
-                                ? descriptionController.text.trim()
-                                : null,
-                          ),
-                        )
+                        context,
+                        _ReportOutcome(
+                          reason: selectedReason!,
+                          description: isOther
+                              ? descriptionController.text.trim()
+                              : null,
+                        ),
+                      )
                     : null,
                 child: Text(l10n.reportSubmit),
               ),
@@ -186,8 +191,8 @@ class _GuidelinesNoteState extends State<_GuidelinesNote> {
   void initState() {
     super.initState();
     _recognizer = TapGestureRecognizer()
-      ..onTap =
-          () => Navigator.of(context).pushNamed(Routes.communityGuidelines);
+      ..onTap = () =>
+          Navigator.of(context).pushNamed(Routes.communityGuidelines);
   }
 
   @override

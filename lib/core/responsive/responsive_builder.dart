@@ -114,11 +114,9 @@ class ResponsiveBuilderFull extends StatelessWidget {
             return (tabletLarge ?? tablet ?? mobileLarge ?? mobile)(context);
 
           case DeviceCategory.desktop:
-            return (desktop ??
-                tabletLarge ??
-                tablet ??
-                mobileLarge ??
-                mobile)(context);
+            return (desktop ?? tabletLarge ?? tablet ?? mobileLarge ?? mobile)(
+              context,
+            );
 
           case DeviceCategory.desktopLarge:
             return (desktopLarge ??

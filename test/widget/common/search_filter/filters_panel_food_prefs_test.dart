@@ -34,8 +34,9 @@ void main() {
     // label finder pins the feature's contract without sharing-icon brittleness.
     final linkFinder = find.text('Hantera allergener & kost');
 
-    testWidgets('renders the manage link when the callback is provided',
-        (tester) async {
+    testWidgets('renders the manage link when the callback is provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(panel(onManageFoodPreferences: () {}));
       await tester.pumpAndSettle();
 
@@ -57,8 +58,9 @@ void main() {
       expect(tapped, 1);
     });
 
-    testWidgets('does not render the link when the callback is null',
-        (tester) async {
+    testWidgets('does not render the link when the callback is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(panel(onManageFoodPreferences: null));
       await tester.pumpAndSettle();
 

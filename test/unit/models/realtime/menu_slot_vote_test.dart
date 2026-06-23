@@ -9,12 +9,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 
 VoteOption _opt(String id, {String name = 'Recipe'}) => VoteOption(
-      id: id,
-      recipeId: 'r-$id',
-      recipeName: name,
-      recipeImageUrl: 'https://x/$id.jpg',
-      suggestedByUserId: 'u1',
-    );
+  id: id,
+  recipeId: 'r-$id',
+  recipeName: name,
+  recipeImageUrl: 'https://x/$id.jpg',
+  suggestedByUserId: 'u1',
+);
 
 MenuSlotVote _vote({
   String id = 'v1',
@@ -150,16 +150,18 @@ void main() {
       expect(v.leadingOption, isNull);
     });
 
-    test('tie-break is deterministic: lowest option id wins on equal counts',
-        () {
-      // Same tally (a:1, b:1) reached via two different vote-map insertion
-      // orders must yield the same leader — otherwise the leader would flip on
-      // map iteration order and two clients could disagree.
-      final order1 = _vote(votes: const {'u1': 'a', 'u2': 'b'});
-      final order2 = _vote(votes: const {'u1': 'b', 'u2': 'a'});
-      expect(order1.leadingOption?.id, 'a');
-      expect(order2.leadingOption?.id, 'a');
-    });
+    test(
+      'tie-break is deterministic: lowest option id wins on equal counts',
+      () {
+        // Same tally (a:1, b:1) reached via two different vote-map insertion
+        // orders must yield the same leader — otherwise the leader would flip on
+        // map iteration order and two clients could disagree.
+        final order1 = _vote(votes: const {'u1': 'a', 'u2': 'b'});
+        final order2 = _vote(votes: const {'u1': 'b', 'u2': 'a'});
+        expect(order1.leadingOption?.id, 'a');
+        expect(order2.leadingOption?.id, 'a');
+      },
+    );
 
     test('tie-break stays deterministic across more options', () {
       final v = _vote(
@@ -216,8 +218,10 @@ void main() {
       expect(restored.menuId, original.menuId);
       expect(restored.category, original.category);
       expect(restored.slotIndex, original.slotIndex);
-      expect(restored.alternatives.map((o) => o.id),
-          original.alternatives.map((o) => o.id));
+      expect(
+        restored.alternatives.map((o) => o.id),
+        original.alternatives.map((o) => o.id),
+      );
       expect(restored.votes, {'u1': 'a', 'u2': 'b'});
       expect(restored.isResolved, isTrue);
       expect(restored.winningOptionId, 'a');

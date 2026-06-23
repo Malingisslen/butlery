@@ -41,14 +41,19 @@ class FirebaseMenuCollaborationRepository
   String getId(SharedMenu menu) => menu.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, SharedMenu entity) async {
+    String userId,
+    SharedMenu entity,
+  ) async {
     // Users can only create shared menus as themselves (must be the owner)
     return entity.sharedByUserId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, SharedMenu? entity) async {
+    String userId,
+    String resourceId,
+    SharedMenu? entity,
+  ) async {
     if (entity == null) return false;
 
     // Owner can always read their shared menu
@@ -63,7 +68,10 @@ class FirebaseMenuCollaborationRepository
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, SharedMenu entity) async {
+    String userId,
+    String resourceId,
+    SharedMenu entity,
+  ) async {
     // Owner can always update their shared menu
     if (entity.sharedByUserId == userId) return true;
 
@@ -76,7 +84,9 @@ class FirebaseMenuCollaborationRepository
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only the owner can delete the shared menu
     try {
       final menu = await read(resourceId);
@@ -99,7 +109,8 @@ class FirebaseMenuCollaborationRepository
 
       if (userDisplayName == null) {
         AppLogger.error(
-            'Cannot enable collaboration: User display name not available');
+          'Cannot enable collaboration: User display name not available',
+        );
         return false;
       }
 
@@ -137,13 +148,15 @@ class FirebaseMenuCollaborationRepository
       }
 
       final menuData = menuDoc.data()!;
-      final allowCollaboration =
-          (menuData['allowCollaboration'] as bool?).orFalse();
+      final allowCollaboration = (menuData['allowCollaboration'] as bool?)
+          .orFalse();
       final sharedByUserId = menuData['sharedByUserId'] as String?;
-      final sharedToUserIds =
-          List<String>.from((menuData['sharedToUserIds'] as List?).orEmpty());
-      final collaboratorIds =
-          List<String>.from((menuData['collaboratorIds'] as List?).orEmpty());
+      final sharedToUserIds = List<String>.from(
+        (menuData['sharedToUserIds'] as List?).orEmpty(),
+      );
+      final collaboratorIds = List<String>.from(
+        (menuData['collaboratorIds'] as List?).orEmpty(),
+      );
 
       return allowCollaboration &&
           (sharedByUserId == userId ||
@@ -151,7 +164,9 @@ class FirebaseMenuCollaborationRepository
               collaboratorIds.contains(userId));
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to check collaboration permission: $e', stackTrace);
+        'Failed to check collaboration permission: $e',
+        stackTrace,
+      );
       return false;
     }
   }
@@ -191,7 +206,9 @@ class FirebaseMenuCollaborationRepository
       return true;
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to add recipe to collaborative menu: $e', stackTrace);
+        'Failed to add recipe to collaborative menu: $e',
+        stackTrace,
+      );
       return false;
     }
   }
@@ -209,7 +226,8 @@ class FirebaseMenuCollaborationRepository
 
       if (userDisplayName == null) {
         AppLogger.error(
-            'Cannot remove recipe: User display name not available');
+          'Cannot remove recipe: User display name not available',
+        );
         return false;
       }
 
@@ -227,16 +245,19 @@ class FirebaseMenuCollaborationRepository
       }
 
       final menuData = menuDoc.data()!;
-      final menuSnapshot =
-          (menuData['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final menuSnapshot = (menuData['menuSnapshot'] as Map<String, dynamic>?)
+          .orEmpty();
       final categoryRecipes = List<Map<String, dynamic>>.from(
-          (menuSnapshot[category] as List?).orEmpty());
+        (menuSnapshot[category] as List?).orEmpty(),
+      );
 
-      final recipeToRemove =
-          categoryRecipes.where((r) => r['id'] == recipeId).firstOrNull;
+      final recipeToRemove = categoryRecipes
+          .where((r) => r['id'] == recipeId)
+          .firstOrNull;
       if (recipeToRemove == null) {
         AppLogger.warning(
-            'Recipe not found in menu, may have been already removed');
+          'Recipe not found in menu, may have been already removed',
+        );
         return true;
       }
 
@@ -252,18 +273,23 @@ class FirebaseMenuCollaborationRepository
       return true;
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to remove recipe from collaborative menu: $e', stackTrace);
+        'Failed to remove recipe from collaborative menu: $e',
+        stackTrace,
+      );
       return false;
     }
   }
 
   @override
   void startCollaborationListener(
-      String menuId, Function(SharedMenu) onUpdate) {
+    String menuId,
+    Function(SharedMenu) onUpdate,
+  ) {
     if (_menuListeners.containsKey(menuId)) return;
 
-    _menuListeners[menuId] =
-        collection.doc(menuId).snapshots().listen((snapshot) {
+    _menuListeners[menuId] = collection.doc(menuId).snapshots().listen((
+      snapshot,
+    ) {
       if (snapshot.exists) {
         try {
           final menu = fromFirestore(snapshot);

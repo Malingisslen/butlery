@@ -51,11 +51,13 @@ class _RecordingStrategy extends IngredientParsingStrategy {
     }
     return FieldResult.success(
       lines
-          .map((l) => ParsedIngredient(
-                name: l,
-                originalLine: l,
-                confidence: ParseConfidence.high,
-              ))
+          .map(
+            (l) => ParsedIngredient(
+              name: l,
+              originalLine: l,
+              confidence: ParseConfidence.high,
+            ),
+          )
           .toList(),
     );
   }
@@ -78,10 +80,12 @@ String htmlWith({
   String ingredientClass = 'ingredient',
   String instructionClass = 'instruction',
 }) {
-  final ingredientLis =
-      ingredients.map((i) => '<li class="$ingredientClass">$i</li>').join();
-  final instructionLis =
-      instructions.map((i) => '<li class="$instructionClass">$i</li>').join();
+  final ingredientLis = ingredients
+      .map((i) => '<li class="$ingredientClass">$i</li>')
+      .join();
+  final instructionLis = instructions
+      .map((i) => '<li class="$instructionClass">$i</li>')
+      .join();
   return '''
 <!DOCTYPE html>
 <html>
@@ -155,8 +159,10 @@ void main() {
     /// Tier 2 only runs against URL imports; the per-domain config has no
     /// meaning for text/photo input. Skipping early saves the parse cycle.
     test('skips non-URL sources (text)', () {
-      final tier =
-          SiteConfigTier(ingredientStrategy: strategy, preloadedConfig: null);
+      final tier = SiteConfigTier(
+        ingredientStrategy: strategy,
+        preloadedConfig: null,
+      );
       final ctx = ParsingContext.fromText(
         text: htmlWith(),
         source: ImportSource.text,
@@ -216,8 +222,11 @@ void main() {
       final result = await tier.parse(ctx);
 
       expect(result.success, isTrue);
-      expect(loaderCalled, isFalse,
-          reason: 'preloaded config must short-circuit the loader call');
+      expect(
+        loaderCalled,
+        isFalse,
+        reason: 'preloaded config must short-circuit the loader call',
+      );
     });
 
     /// configLoader is invoked with the context's domain — not the raw URL
@@ -239,9 +248,13 @@ void main() {
 
       await tier.parse(ctx);
 
-      expect(loaderDomain, 'koket.se',
-          reason: 'ParsingContext strips www. and querystring '
-              '— loader must see canonical domain');
+      expect(
+        loaderDomain,
+        'koket.se',
+        reason:
+            'ParsingContext strips www. and querystring '
+            '— loader must see canonical domain',
+      );
     });
 
     /// With neither preloaded nor loader, the tier returns a skipped
@@ -288,8 +301,11 @@ void main() {
 
       final result = await tier.parse(ctx);
 
-      expect(empty.hasSelectors, isFalse,
-          reason: 'pre-flight: empty config should report no selectors');
+      expect(
+        empty.hasSelectors,
+        isFalse,
+        reason: 'pre-flight: empty config should report no selectors',
+      );
       expect(result.failureReason, TierFailureReason.skipped);
     });
 
@@ -307,8 +323,11 @@ void main() {
       final result = await tier.parse(ctx);
 
       expect(result.failureReason, TierFailureReason.skipped);
-      expect(strategy.receivedLines, isNull,
-          reason: 'unsupported site must NOT invoke ingredient strategy');
+      expect(
+        strategy.receivedLines,
+        isNull,
+        reason: 'unsupported site must NOT invoke ingredient strategy',
+      );
     });
   });
 
@@ -344,8 +363,11 @@ void main() {
         '6 dl mjolk',
         '3 agg',
       ]);
-      expect(strategy.receivedOcrFlag, isFalse,
-          reason: 'URL source must NOT request OCR correction');
+      expect(
+        strategy.receivedOcrFlag,
+        isFalse,
+        reason: 'URL source must NOT request OCR correction',
+      );
 
       // Instructions: step-number prefixes stripped.
       expect(recipe.instructions.value, [
@@ -414,8 +436,11 @@ void main() {
 
       final result = await tier.parse(ctx);
 
-      expect(result.recipe!.title.value, 'Real',
-          reason: 'primary selector must win when it returns a value');
+      expect(
+        result.recipe!.title.value,
+        'Real',
+        reason: 'primary selector must win when it returns a value',
+      );
     });
 
     /// Ingredient fallback is the most load-bearing fallback — without
@@ -470,8 +495,11 @@ void main() {
       // The crucial expectation: no throw.
       final result = await tier.parse(ctx);
 
-      expect(result.success, isTrue,
-          reason: 'invalid primary selector must fall back, not crash');
+      expect(
+        result.success,
+        isTrue,
+        reason: 'invalid primary selector must fall back, not crash',
+      );
       expect(result.recipe!.title.value, 'Pannkakor');
     });
 
@@ -643,8 +671,11 @@ void main() {
     test('zero portions → fallback to default (defends > 0 guard)', () async {
       final p = await portionsFor('0 portioner');
       expect(p!.value, 4);
-      expect(p.confidence, ParseConfidence.low,
-          reason: 'fallback must surface low-confidence');
+      expect(
+        p.confidence,
+        ParseConfidence.low,
+        reason: 'fallback must surface low-confidence',
+      );
     });
 
     /// `9999 portions` would crash menu generation if it got through —
@@ -728,11 +759,15 @@ void main() {
         ingredientStrategy: strategy,
         preloadedConfig: fullConfig(),
       );
-      final ctx = urlContextFor(htmlWith(instructions: [
-        '1. First step',
-        '2) Second step',
-        '3. Third step',
-      ]));
+      final ctx = urlContextFor(
+        htmlWith(
+          instructions: [
+            '1. First step',
+            '2) Second step',
+            '3. Third step',
+          ],
+        ),
+      );
 
       final result = await tier.parse(ctx);
 
@@ -768,21 +803,26 @@ void main() {
 
     /// Missing instructions → instructions field failed, BUT recipe still
     /// surfaces (ingredients gate is the only hard requirement).
-    test('missing instructions → field failed, recipe still surfaces',
-        () async {
-      final config = fullConfig(instructionsSelector: '.no-match');
-      final tier = SiteConfigTier(
-        ingredientStrategy: strategy,
-        preloadedConfig: config,
-      );
-      final ctx = urlContextFor(htmlWith());
+    test(
+      'missing instructions → field failed, recipe still surfaces',
+      () async {
+        final config = fullConfig(instructionsSelector: '.no-match');
+        final tier = SiteConfigTier(
+          ingredientStrategy: strategy,
+          preloadedConfig: config,
+        );
+        final ctx = urlContextFor(htmlWith());
 
-      final result = await tier.parse(ctx);
+        final result = await tier.parse(ctx);
 
-      expect(result.success, isTrue,
-          reason: 'title + ingredients sufficient for tier-level success');
-      expect(result.recipe!.instructions.confidence, ParseConfidence.failed);
-    });
+        expect(
+          result.success,
+          isTrue,
+          reason: 'title + ingredients sufficient for tier-level success',
+        );
+        expect(result.recipe!.instructions.confidence, ParseConfidence.failed);
+      },
+    );
   });
 
   // ----- document caching --------------------------------------------------
@@ -797,13 +837,19 @@ void main() {
         preloadedConfig: fullConfig(),
       );
       final ctx = urlContextFor(htmlWith());
-      expect(ctx.parsedDocument, isNull,
-          reason: 'fresh context must not have a cached document');
+      expect(
+        ctx.parsedDocument,
+        isNull,
+        reason: 'fresh context must not have a cached document',
+      );
 
       await tier.parse(ctx);
 
-      expect(ctx.parsedDocument, isNotNull,
-          reason: 'tier MUST cache parsed Document for downstream reuse');
+      expect(
+        ctx.parsedDocument,
+        isNotNull,
+        reason: 'tier MUST cache parsed Document for downstream reuse',
+      );
     });
 
     /// If the document is already cached, the tier MUST reuse it instead
@@ -821,8 +867,11 @@ void main() {
 
       final result = await tier.parse(ctx);
 
-      expect(result.recipe!.title.value, 'CachedTitle',
-          reason: 'tier must read from cached document, not re-parse raw HTML');
+      expect(
+        result.recipe!.title.value,
+        'CachedTitle',
+        reason: 'tier must read from cached document, not re-parse raw HTML',
+      );
     });
   });
 
@@ -880,8 +929,11 @@ void main() {
         captured = result.recipe!.metadata.timestamp;
       });
 
-      expect(captured, fixedTime,
-          reason: 'tier must use injectable clock for testability');
+      expect(
+        captured,
+        fixedTime,
+        reason: 'tier must use injectable clock for testability',
+      );
     });
   });
 }

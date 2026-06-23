@@ -64,12 +64,18 @@ void main() {
       test('should have all expected priority levels', () {
         // Assert
         expect(NotificationPriority.values, hasLength(4));
-        expect(NotificationPriority.values,
-            contains(NotificationPriority.critical));
         expect(
-            NotificationPriority.values, contains(NotificationPriority.high));
+          NotificationPriority.values,
+          contains(NotificationPriority.critical),
+        );
         expect(
-            NotificationPriority.values, contains(NotificationPriority.medium));
+          NotificationPriority.values,
+          contains(NotificationPriority.high),
+        );
+        expect(
+          NotificationPriority.values,
+          contains(NotificationPriority.medium),
+        );
         expect(NotificationPriority.values, contains(NotificationPriority.low));
       });
 
@@ -86,20 +92,34 @@ void main() {
       test('should have all expected categories', () {
         // Assert
         expect(NotificationCategory.values, hasLength(7));
-        expect(NotificationCategory.values,
-            contains(NotificationCategory.friends));
-        expect(NotificationCategory.values,
-            contains(NotificationCategory.recipes));
-        expect(NotificationCategory.values,
-            contains(NotificationCategory.collaboration));
-        expect(NotificationCategory.values,
-            contains(NotificationCategory.shopping));
-        expect(NotificationCategory.values,
-            contains(NotificationCategory.messaging));
         expect(
-            NotificationCategory.values, contains(NotificationCategory.social));
+          NotificationCategory.values,
+          contains(NotificationCategory.friends),
+        );
         expect(
-            NotificationCategory.values, contains(NotificationCategory.system));
+          NotificationCategory.values,
+          contains(NotificationCategory.recipes),
+        );
+        expect(
+          NotificationCategory.values,
+          contains(NotificationCategory.collaboration),
+        );
+        expect(
+          NotificationCategory.values,
+          contains(NotificationCategory.shopping),
+        );
+        expect(
+          NotificationCategory.values,
+          contains(NotificationCategory.messaging),
+        );
+        expect(
+          NotificationCategory.values,
+          contains(NotificationCategory.social),
+        );
+        expect(
+          NotificationCategory.values,
+          contains(NotificationCategory.system),
+        );
       });
     });
 
@@ -167,7 +187,9 @@ void main() {
         expect(strategy.priority, equals(NotificationPriority.critical));
         expect(strategy.category, equals(NotificationCategory.friends));
         expect(
-            strategy.localization['title_sv'], equals('Ny vänskapsförfrågan'));
+          strategy.localization['title_sv'],
+          equals('Ny vänskapsförfrågan'),
+        );
         expect(strategy.localization['title_en'], equals('New friend request'));
       });
 
@@ -180,8 +202,10 @@ void main() {
         expect(strategy.priority, equals(NotificationPriority.high));
         expect(strategy.category, equals(NotificationCategory.recipes));
         expect(strategy.localization['title_sv'], equals('Nytt recept delat'));
-        expect(strategy.localization['title_en'],
-            equals('Recipe shared with you'));
+        expect(
+          strategy.localization['title_en'],
+          equals('Recipe shared with you'),
+        );
       });
 
       test('should have recipe comment strategy', () {
@@ -405,8 +429,10 @@ void main() {
 
       test('should have predefined join collaboration action', () {
         // Assert
-        expect(NotificationAction.joinCollaboration.id,
-            equals('join_collaboration'));
+        expect(
+          NotificationAction.joinCollaboration.id,
+          equals('join_collaboration'),
+        );
         expect(NotificationAction.joinCollaboration.title, equals('Gå med'));
       });
     });
@@ -475,8 +501,11 @@ void main() {
         );
 
         final singleContent = config.contentBuilder([template]);
-        final multiContent =
-            config.contentBuilder([template, template, template]);
+        final multiContent = config.contentBuilder([
+          template,
+          template,
+          template,
+        ]);
 
         expect(singleContent, equals('Erik commented on your recipe'));
         expect(multiContent, equals('3 nya kommentarer på dina recept'));
@@ -498,8 +527,13 @@ void main() {
         );
 
         final singleContent = config.contentBuilder([template]);
-        final multiContent = config
-            .contentBuilder([template, template, template, template, template]);
+        final multiContent = config.contentBuilder([
+          template,
+          template,
+          template,
+          template,
+          template,
+        ]);
 
         expect(singleContent, equals('Anna liked your recipe'));
         expect(multiContent, equals('5 personer gillade dina recept'));
@@ -572,8 +606,10 @@ void main() {
 
         // Assert
         expect(template.title, equals('Recept: Köttbullar & Gräddsås'));
-        expect(template.body,
-            equals('Ingredienser: Kött, Ägg, Mjölk (3%), "Kryddor"'));
+        expect(
+          template.body,
+          equals('Ingredienser: Kött, Ägg, Mjölk (3%), "Kryddor"'),
+        );
       });
     });
   });

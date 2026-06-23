@@ -178,14 +178,16 @@ class AdaptiveTextField extends StatelessWidget {
           prefix: prefix != null
               ? Padding(
                   padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.spacingSm),
+                    start: AppDimensions.spacingSm,
+                  ),
                   child: prefix,
                 )
               : null,
           suffix: suffix != null
               ? Padding(
                   padding: const EdgeInsetsDirectional.only(
-                      end: AppDimensions.spacingSm),
+                    end: AppDimensions.spacingSm,
+                  ),
                   child: suffix,
                 )
               : null,
@@ -273,20 +275,18 @@ class AdaptiveTextField extends StatelessWidget {
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context)
-                .colorScheme
-                .outline
-                .withValues(alpha: AppDimensions.opacityHalf),
+            color: Theme.of(
+              context,
+            ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
         fillColor: enabled
             ? Theme.of(context).colorScheme.surfaceContainerHighest
-            : Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: AppDimensions.opacityDark),
+            : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(
+                alpha: AppDimensions.opacityDark,
+              ),
       ),
     );
   }

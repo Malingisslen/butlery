@@ -122,8 +122,9 @@ class FiltersPanelWidget extends StatelessWidget {
                       if (onAllergenFilterToggle != null)
                         FilterChipsWidget(
                           title: context.l10n.filterAllergenFree,
-                          options:
-                              RecipeFilters.allAllergenFreeFilters(context),
+                          options: RecipeFilters.allAllergenFreeFilters(
+                            context,
+                          ),
                           activeFilters: activeAllergenFilters,
                           onToggle: onAllergenFilterToggle!,
                         ),
@@ -187,8 +188,9 @@ class FiltersPanelWidget extends StatelessWidget {
                               style: AppTextStyles.labelLarge,
                             ),
                             style: TextButton.styleFrom(
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.error,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.error,
                             ),
                           ),
                         ),

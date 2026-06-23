@@ -98,10 +98,12 @@ class CookingSessionStreamHolder {
     }
 
     for (final id in groupIds) {
-      _subs.add(module.watchGroupSessions(id).listen((sessions) {
-        perGroupLatest[id] = sessions;
-        emit();
-      }));
+      _subs.add(
+        module.watchGroupSessions(id).listen((sessions) {
+          perGroupLatest[id] = sessions;
+          emit();
+        }),
+      );
     }
     emit();
   }

@@ -10,7 +10,8 @@ import 'package:butlery/core/utils/shopping_category_mapper.dart';
 class ShoppingItemOperationsManager {
   /// Group items by category with sorting
   Map<String, List<UnifiedShoppingItem>> groupItemsByCategory(
-      List<UnifiedShoppingItem> items) {
+    List<UnifiedShoppingItem> items,
+  ) {
     final Map<String, List<UnifiedShoppingItem>> grouped = {};
 
     for (final item in items) {
@@ -45,14 +46,18 @@ class ShoppingItemOperationsManager {
 
   /// Search items by name or category
   List<UnifiedShoppingItem> searchItems(
-      List<UnifiedShoppingItem> items, String query) {
+    List<UnifiedShoppingItem> items,
+    String query,
+  ) {
     if (query.trim().isEmpty) return items;
 
     final lowercaseQuery = query.toLowerCase();
     return items
-        .where((item) =>
-            item.name.toLowerCase().contains(lowercaseQuery) ||
-            item.category.toLowerCase().contains(lowercaseQuery))
+        .where(
+          (item) =>
+              item.name.toLowerCase().contains(lowercaseQuery) ||
+              item.category.toLowerCase().contains(lowercaseQuery),
+        )
         .toList();
   }
 
@@ -69,12 +74,14 @@ class ShoppingItemOperationsManager {
       required double amount,
       required String unit,
       required String category,
-    }) addItemCallback, {
+    })
+    addItemCallback, {
     List<dynamic>? existingItems,
     Future<bool> Function({
       required String itemId,
       required double newAmount,
-    })? updateItemCallback,
+    })?
+    updateItemCallback,
   }) async {
     for (final ingredient in ingredientData) {
       final name = ingredient['name'] as String;
@@ -87,8 +94,8 @@ class ShoppingItemOperationsManager {
       if (existingItems != null && updateItemCallback != null) {
         final normalizedName = name.trim().toLowerCase();
         final existing = existingItems.cast<dynamic>().where((item) {
-          final itemName =
-              ((item.name as String?)?.trim().toLowerCase()).orEmpty();
+          final itemName = ((item.name as String?)?.trim().toLowerCase())
+              .orEmpty();
           return itemName == normalizedName;
         }).toList();
 

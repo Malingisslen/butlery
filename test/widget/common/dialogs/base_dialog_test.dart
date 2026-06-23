@@ -11,18 +11,18 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 Widget _trigger(VoidCallback onTap) => Builder(
-      builder: (ctx) => ElevatedButton(
-        onPressed: () => onTap(),
-        child: const Text('Open'),
-      ),
-    );
+  builder: (ctx) => ElevatedButton(
+    onPressed: () => onTap(),
+    child: const Text('Open'),
+  ),
+);
 
 /// Concrete BaseDialog subclass for testing the abstract template.
 class _TestBaseDialog extends BaseDialog<String> {
@@ -68,11 +68,11 @@ class _TestFormDialog extends BaseFormDialog<String> {
 
   @override
   List<Widget> buildFormFields(BuildContext context) => [
-        TextFormField(
-          controller: _controller,
-          validator: (v) => (v == null || v.isEmpty) ? 'required' : null,
-        ),
-      ];
+    TextFormField(
+      controller: _controller,
+      validator: (v) => (v == null || v.isEmpty) ? 'required' : null,
+    ),
+  ];
 
   @override
   Future<String?> performAction(BuildContext context) async => _controller.text;
@@ -132,8 +132,9 @@ class _TestActionDialog extends BaseActionDialog<int> {
 
 void main() {
   group('BaseDialog — render', () {
-    testWidgets('renders title, body, default cancel and OK buttons',
-        (tester) async {
+    testWidgets('renders title, body, default cancel and OK buttons', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       // Wire the dialog via showDialog
       final ctx = tester.element(find.byType(ElevatedButton));
@@ -204,8 +205,9 @@ void main() {
       expect(find.text('OK'), findsNothing);
     });
 
-    testWidgets('isDangerous → primary label resolves to Ta bort + delete icon',
-        (tester) async {
+    testWidgets('isDangerous → primary label resolves to Ta bort + delete icon', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<void>(
@@ -224,8 +226,9 @@ void main() {
   });
 
   group('BaseDialog — primary action lifecycle', () {
-    testWidgets('successful action pops with the performAction result',
-        (tester) async {
+    testWidgets('successful action pops with the performAction result', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       final future = showDialog<String>(
@@ -240,8 +243,9 @@ void main() {
       expect(await future, 'success');
     });
 
-    testWidgets('failing action displays the error in-dialog without popping',
-        (tester) async {
+    testWidgets('failing action displays the error in-dialog without popping', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<String>(
@@ -263,8 +267,9 @@ void main() {
       expect(find.text('t'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('validateBeforeAction=false short-circuits without loading',
-        (tester) async {
+    testWidgets('validateBeforeAction=false short-circuits without loading', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<String>(
@@ -286,19 +291,26 @@ void main() {
   });
 
   group('ConfirmationDialog', () {
-    testWidgets('renders title + message + custom primary label',
-        (tester) async {
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        return ElevatedButton(
-          onPressed: () => ConfirmationDialog.show(
-            ctx,
-            title: 'Bekräfta',
-            message: 'Är du säker?',
-            primaryActionText: 'Ja',
+    testWidgets('renders title + message + custom primary label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) {
+              return ElevatedButton(
+                onPressed: () => ConfirmationDialog.show(
+                  ctx,
+                  title: 'Bekräfta',
+                  message: 'Är du säker?',
+                  primaryActionText: 'Ja',
+                ),
+                child: const Text('Open'),
+              );
+            },
           ),
-          child: const Text('Open'),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -309,19 +321,25 @@ void main() {
 
     testWidgets('show() returns true when primary tapped', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        return ElevatedButton(
-          onPressed: () async {
-            result = await ConfirmationDialog.show(
-              ctx,
-              title: 't',
-              message: 'm',
-              primaryActionText: 'OK',
-            );
-          },
-          child: const Text('Open'),
-        );
-      })));
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await ConfirmationDialog.show(
+                    ctx,
+                    title: 't',
+                    message: 'm',
+                    primaryActionText: 'OK',
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
@@ -330,19 +348,26 @@ void main() {
       expect(result, isTrue);
     });
 
-    testWidgets('customContent replaces the default Text(message)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        return ElevatedButton(
-          onPressed: () => ConfirmationDialog.show(
-            ctx,
-            title: 't',
-            message: 'should-not-render',
-            customContent: const Text('totally-custom'),
+    testWidgets('customContent replaces the default Text(message)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) {
+              return ElevatedButton(
+                onPressed: () => ConfirmationDialog.show(
+                  ctx,
+                  title: 't',
+                  message: 'should-not-render',
+                  customContent: const Text('totally-custom'),
+                ),
+                child: const Text('Open'),
+              );
+            },
           ),
-          child: const Text('Open'),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       expect(find.text('totally-custom'), findsOneWidget);
@@ -351,19 +376,26 @@ void main() {
   });
 
   group('DestructiveConfirmationDialog', () {
-    testWidgets('renders RichText with bold itemName interpolated',
-        (tester) async {
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        return ElevatedButton(
-          onPressed: () => DestructiveConfirmationDialog.show(
-            ctx,
-            title: 'Radera',
-            message: 'Vill du ta bort',
-            itemName: 'mitt recept',
+    testWidgets('renders RichText with bold itemName interpolated', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) {
+              return ElevatedButton(
+                onPressed: () => DestructiveConfirmationDialog.show(
+                  ctx,
+                  title: 'Radera',
+                  message: 'Vill du ta bort',
+                  itemName: 'mitt recept',
+                ),
+                child: const Text('Open'),
+              );
+            },
           ),
-          child: const Text('Open'),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -383,8 +415,9 @@ void main() {
   });
 
   group('BaseActionDialog', () {
-    testWidgets('renders title + content + action label + cancel',
-        (tester) async {
+    testWidgets('renders title + content + action label + cancel', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -402,8 +435,9 @@ void main() {
       expect(find.text('Hoppa över'), findsOneWidget);
     });
 
-    testWidgets('successful action returns performAction result',
-        (tester) async {
+    testWidgets('successful action returns performAction result', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       final future = showDialog<int>(
@@ -416,8 +450,9 @@ void main() {
       expect(await future, 42);
     });
 
-    testWidgets('failing action shows error_outline and stays open',
-        (tester) async {
+    testWidgets('failing action shows error_outline and stays open', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -431,23 +466,26 @@ void main() {
       expect(find.textContaining('action failure'), findsOneWidget);
     });
 
-    testWidgets('actionButtonStyleFor non-null → FilledButton with that style',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_trigger(() {})));
-      final ctx = tester.element(find.byType(ElevatedButton));
-      showDialog<int>(
-        context: ctx,
-        builder: (_) => _TestActionDialog(
-          actionLabel: 'Styled',
-          actionStyle: FilledButton.styleFrom(backgroundColor: Colors.purple),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Styled'), findsOneWidget);
-    });
+    testWidgets(
+      'actionButtonStyleFor non-null → FilledButton with that style',
+      (tester) async {
+        await tester.pumpWidget(_wrap(_trigger(() {})));
+        final ctx = tester.element(find.byType(ElevatedButton));
+        showDialog<int>(
+          context: ctx,
+          builder: (_) => _TestActionDialog(
+            actionLabel: 'Styled',
+            actionStyle: FilledButton.styleFrom(backgroundColor: Colors.purple),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Styled'), findsOneWidget);
+      },
+    );
 
-    testWidgets('validateBeforeAction=false skips performAction',
-        (tester) async {
+    testWidgets('validateBeforeAction=false skips performAction', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<int>(
@@ -479,8 +517,9 @@ void main() {
       expect(find.byType(Form), findsOneWidget);
     });
 
-    testWidgets('empty field → validator fails → action not invoked',
-        (tester) async {
+    testWidgets('empty field → validator fails → action not invoked', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<String>(
@@ -495,20 +534,27 @@ void main() {
       expect(find.text('required'), findsOneWidget);
     });
 
-    testWidgets('filled field → submit → returns the entered value',
-        (tester) async {
+    testWidgets('filled field → submit → returns the entered value', (
+      tester,
+    ) async {
       String? result;
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        return ElevatedButton(
-          onPressed: () async {
-            result = await showDialog<String>(
-              context: ctx,
-              builder: (_) => _TestFormDialog(),
-            );
-          },
-          child: const Text('Open'),
-        );
-      })));
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) {
+              return ElevatedButton(
+                onPressed: () async {
+                  result = await showDialog<String>(
+                    context: ctx,
+                    builder: (_) => _TestFormDialog(),
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -520,8 +566,9 @@ void main() {
   });
 
   group('LoadingDialog', () {
-    testWidgets('renders the message + CircularProgressIndicator',
-        (tester) async {
+    testWidgets('renders the message + CircularProgressIndicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       LoadingDialog.show(ctx, message: 'Sparar...');

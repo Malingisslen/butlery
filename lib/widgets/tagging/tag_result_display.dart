@@ -217,8 +217,10 @@ class TagResultDisplay extends StatelessWidget {
         color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-            color: warningColor.withValues(
-                alpha: AppDimensions.opacityMediumLight)),
+          color: warningColor.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -306,8 +308,9 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
                 child: LinearProgressIndicator(
                   value: tagResult.coverage,
                   backgroundColor: cs.outlineVariant,
@@ -329,7 +332,8 @@ class TagResultDisplay extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingS),
           Semantics(
             label: context.l10n.tagResultUnknownIngredientsA11y(
-                tagResult.unknownIngredients.length),
+              tagResult.unknownIngredients.length,
+            ),
             button: onUnknownIngredientsTap != null,
             child: GestureDetector(
               onTap: onUnknownIngredientsTap,
@@ -344,7 +348,8 @@ class TagResultDisplay extends StatelessWidget {
                   Expanded(
                     child: Text(
                       context.l10n.tagResultUnknownIngredients(
-                          tagResult.unknownIngredients.length),
+                        tagResult.unknownIngredients.length,
+                      ),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: context.butleryColors.warning,
                       ),

@@ -25,22 +25,25 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
-    final recipeId =
-        await viewModel.recipeViewModel.importSharedRecipe(sharedRecipe);
+    final recipeId = await viewModel.recipeViewModel.importSharedRecipe(
+      sharedRecipe,
+    );
 
     if (recipeId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle)),
+          content: Text(
+            context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle),
+          ),
           backgroundColor: context.butleryColors.success,
         ),
       );
     } else if (context.mounted && viewModel.recipeViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.recipeViewModel.error ??
-              context.l10n.sharedImportFailed),
+          content: Text(
+            viewModel.recipeViewModel.error ?? context.l10n.sharedImportFailed,
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -60,8 +63,11 @@ class SharedContentActions {
         // Navigate to collaborative menu view
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n
-                .sharedConnectingToCollaborativeMenu(sharedMenu.menuTitle)),
+            content: Text(
+              context.l10n.sharedConnectingToCollaborativeMenu(
+                sharedMenu.menuTitle,
+              ),
+            ),
             backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 2),
           ),
@@ -76,8 +82,9 @@ class SharedContentActions {
         // Regular menu import
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.sharedMenuImported(sharedMenu.menuTitle)),
+            content: Text(
+              context.l10n.sharedMenuImported(sharedMenu.menuTitle),
+            ),
             backgroundColor: context.butleryColors.success,
           ),
         );
@@ -86,7 +93,8 @@ class SharedContentActions {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed),
+            viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed,
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -105,7 +113,9 @@ class SharedContentActions {
         title: Text(context.l10n.sharedHideRecipe),
         content: Text(
           context.l10n.sharedHideRecipeConfirm(
-              sharedRecipe.recipeTitle, sharedRecipe.sharedByDisplayName),
+            sharedRecipe.recipeTitle,
+            sharedRecipe.sharedByDisplayName,
+          ),
         ),
         actions: [
           ActionButtons.secondaryButton(
@@ -123,14 +133,16 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success =
-          await viewModel.recipeViewModel.dismissSharedRecipe(sharedRecipe);
+      final success = await viewModel.recipeViewModel.dismissSharedRecipe(
+        sharedRecipe,
+      );
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                context.l10n.sharedContentHidden(sharedRecipe.recipeTitle)),
+              context.l10n.sharedContentHidden(sharedRecipe.recipeTitle),
+            ),
             backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
@@ -142,8 +154,10 @@ class SharedContentActions {
       } else if (context.mounted && viewModel.recipeViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.recipeViewModel.error ??
-                context.l10n.sharedCouldNotHideRecipe),
+            content: Text(
+              viewModel.recipeViewModel.error ??
+                  context.l10n.sharedCouldNotHideRecipe,
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -163,7 +177,9 @@ class SharedContentActions {
         title: Text(context.l10n.sharedHideMenu),
         content: Text(
           context.l10n.sharedHideMenuConfirm(
-              sharedMenu.menuTitle, sharedMenu.sharedByDisplayName),
+            sharedMenu.menuTitle,
+            sharedMenu.sharedByDisplayName,
+          ),
         ),
         actions: [
           ActionButtons.secondaryButton(
@@ -181,14 +197,16 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success =
-          await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
+      final success = await viewModel.menuViewModel.dismissSharedMenu(
+        sharedMenu,
+      );
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.sharedContentHidden(sharedMenu.menuTitle)),
+            content: Text(
+              context.l10n.sharedContentHidden(sharedMenu.menuTitle),
+            ),
             backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
@@ -200,8 +218,10 @@ class SharedContentActions {
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.menuViewModel.error ??
-                context.l10n.sharedCouldNotHideMenu),
+            content: Text(
+              viewModel.menuViewModel.error ??
+                  context.l10n.sharedCouldNotHideMenu,
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -222,8 +242,9 @@ class SharedContentActions {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(context.l10n.sharedJoinedList(sharedShoppingList.listName)),
+          content: Text(
+            context.l10n.sharedJoinedList(sharedShoppingList.listName),
+          ),
           backgroundColor: context.butleryColors.success,
         ),
       );
@@ -244,7 +265,8 @@ class SharedContentActions {
         }
       } catch (e) {
         AppLogger.error(
-            'Failed to set active list or navigate to unified shopping: $e');
+          'Failed to set active list or navigate to unified shopping: $e',
+        );
 
         // FALLBACK: Still try to navigate to shopping interface without setting active list
         try {
@@ -258,8 +280,11 @@ class SharedContentActions {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(context.l10n.sharedJoinedListFindInShopping(
-                    sharedShoppingList.listName)),
+                content: Text(
+                  context.l10n.sharedJoinedListFindInShopping(
+                    sharedShoppingList.listName,
+                  ),
+                ),
                 backgroundColor: context.butleryColors.success,
                 duration: const Duration(seconds: 4),
               ),
@@ -284,8 +309,10 @@ class SharedContentActions {
       if (viewModel.shoppingViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.shoppingViewModel.error ??
-                context.l10n.sharedCouldNotJoinList),
+            content: Text(
+              viewModel.shoppingViewModel.error ??
+                  context.l10n.sharedCouldNotJoinList,
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -312,8 +339,9 @@ class SharedContentActions {
         title: Text(context.l10n.sharedHideShoppingList),
         content: Text(
           context.l10n.sharedHideShoppingListConfirm(
-              sharedShoppingList.listName,
-              sharedShoppingList.sharedByDisplayName),
+            sharedShoppingList.listName,
+            sharedShoppingList.sharedByDisplayName,
+          ),
         ),
         actions: [
           ActionButtons.secondaryButton(
@@ -338,7 +366,8 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                context.l10n.sharedContentHidden(sharedShoppingList.listName)),
+              context.l10n.sharedContentHidden(sharedShoppingList.listName),
+            ),
             backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
@@ -350,8 +379,10 @@ class SharedContentActions {
       } else if (context.mounted && viewModel.shoppingViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.shoppingViewModel.error ??
-                context.l10n.sharedCouldNotHideShoppingList),
+            content: Text(
+              viewModel.shoppingViewModel.error ??
+                  context.l10n.sharedCouldNotHideShoppingList,
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -377,16 +408,18 @@ class SharedContentActions {
 
     try {
       final coordinator = ServiceLocator.get<SocialRecipeCoordinator>();
-      final success =
-          await coordinator.unshareRecipe(sharedRecipe.originalRecipeId);
+      final success = await coordinator.unshareRecipe(
+        sharedRecipe.originalRecipeId,
+      );
 
       if (!context.mounted) return;
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.unshareSuccess(sharedRecipe.recipeTitle)),
+            content: Text(
+              context.l10n.unshareSuccess(sharedRecipe.recipeTitle),
+            ),
             backgroundColor: context.butleryColors.success,
           ),
         );
@@ -459,8 +492,9 @@ class SharedContentActions {
     final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: context.l10n.unshareShoppingListTitle,
-      message:
-          context.l10n.unshareShoppingListConfirm(sharedShoppingList.listName),
+      message: context.l10n.unshareShoppingListConfirm(
+        sharedShoppingList.listName,
+      ),
       confirmText: context.l10n.unshareButton,
       icon: Icons.link_off,
       isDangerous: true,
@@ -468,15 +502,17 @@ class SharedContentActions {
 
     if (confirmed != true || !context.mounted) return;
 
-    final ok = await viewModel.shoppingViewModel
-        .unshareSharedShoppingList(sharedShoppingList);
+    final ok = await viewModel.shoppingViewModel.unshareSharedShoppingList(
+      sharedShoppingList,
+    );
     if (!context.mounted) return;
 
     if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(context.l10n.unshareSuccess(sharedShoppingList.listName)),
+          content: Text(
+            context.l10n.unshareSuccess(sharedShoppingList.listName),
+          ),
           backgroundColor: context.butleryColors.success,
         ),
       );

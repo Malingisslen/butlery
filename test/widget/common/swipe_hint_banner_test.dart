@@ -23,16 +23,18 @@ void main() {
     });
 
     testWidgets('does not render once the seen flag is set', (tester) async {
-      SharedPreferences.setMockInitialValues(
-          {SwipeHintBanner.recipeSwipeSeenKey: true});
+      SharedPreferences.setMockInitialValues({
+        SwipeHintBanner.recipeSwipeSeenKey: true,
+      });
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.swipe), findsNothing);
     });
 
-    testWidgets('dismiss hides the banner and persists the seen flag',
-        (tester) async {
+    testWidgets('dismiss hides the banner and persists the seen flag', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
@@ -50,38 +52,44 @@ void main() {
   group('SwipeHintBanner — parameterized per gesture (BUT-1199)', () {
     testWidgets('renders the supplied icon + message', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const SwipeHintBanner(
-          seenKey: SwipeHintBanner.cookingStepSeenKey,
-          icon: Icons.touch_app,
-          message: 'Long-press a step',
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const SwipeHintBanner(
+            seenKey: SwipeHintBanner.cookingStepSeenKey,
+            icon: Icons.touch_app,
+            message: 'Long-press a step',
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.touch_app), findsOneWidget);
       expect(find.text('Long-press a step'), findsOneWidget);
     });
 
-    testWidgets('honours its own seenKey, independent of the recipe hint',
-        (tester) async {
+    testWidgets('honours its own seenKey, independent of the recipe hint', (
+      tester,
+    ) async {
       // Recipe hint dismissed; the cooking hint must still show AND the recipe
       // hint must stay hidden — pinning both halves so a "always-show, ignore
       // the flag" regression also fails here, not just a key-bleed regression.
-      SharedPreferences.setMockInitialValues(
-          {SwipeHintBanner.recipeSwipeSeenKey: true});
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const Column(
-          children: [
-            SwipeHintBanner(), // recipe default — seen, must stay hidden
-            SwipeHintBanner(
-              seenKey: SwipeHintBanner.cookingStepSeenKey,
-              icon: Icons.touch_app,
-              message: 'Long-press a step',
-            ),
-          ],
+      SharedPreferences.setMockInitialValues({
+        SwipeHintBanner.recipeSwipeSeenKey: true,
+      });
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const Column(
+            children: [
+              SwipeHintBanner(), // recipe default — seen, must stay hidden
+              SwipeHintBanner(
+                seenKey: SwipeHintBanner.cookingStepSeenKey,
+                icon: Icons.touch_app,
+                message: 'Long-press a step',
+              ),
+            ],
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.swipe), findsNothing);
@@ -90,13 +98,15 @@ void main() {
 
     testWidgets('dismiss persists its own key only', (tester) async {
       SharedPreferences.setMockInitialValues({});
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const SwipeHintBanner(
-          seenKey: SwipeHintBanner.shoppingClaimSeenKey,
-          icon: Icons.swipe,
-          message: 'Swipe to claim',
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const SwipeHintBanner(
+            seenKey: SwipeHintBanner.shoppingClaimSeenKey,
+            icon: Icons.swipe,
+            message: 'Swipe to claim',
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.close));

@@ -42,26 +42,14 @@ void main() {
     // BUT-553: per-phase methods need Phase*Result fallbacks so mocktail
     // can match `any()` for the new runPhaseN signatures.
     registerFallbackValue(_createTestPhase1Result(_createTestLookupResult()));
-    registerFallbackValue(Phase2Result(
-      tags: const {},
-      phase1: _createTestPhase1Result(_createTestLookupResult()),
-    ));
-    registerFallbackValue(Phase3Result(
-      tags: const {},
-      phase1: _createTestPhase1Result(_createTestLookupResult()),
-      phase2: Phase2Result(
+    registerFallbackValue(
+      Phase2Result(
         tags: const {},
         phase1: _createTestPhase1Result(_createTestLookupResult()),
       ),
-    ));
-    registerFallbackValue(Phase4Result(
-      tags: const {},
-      phase1: _createTestPhase1Result(_createTestLookupResult()),
-      phase2: Phase2Result(
-        tags: const {},
-        phase1: _createTestPhase1Result(_createTestLookupResult()),
-      ),
-      phase3: Phase3Result(
+    );
+    registerFallbackValue(
+      Phase3Result(
         tags: const {},
         phase1: _createTestPhase1Result(_createTestLookupResult()),
         phase2: Phase2Result(
@@ -69,10 +57,9 @@ void main() {
           phase1: _createTestPhase1Result(_createTestLookupResult()),
         ),
       ),
-    ));
-    registerFallbackValue(Phase5Result(
-      tags: const {},
-      phase4: Phase4Result(
+    );
+    registerFallbackValue(
+      Phase4Result(
         tags: const {},
         phase1: _createTestPhase1Result(_createTestLookupResult()),
         phase2: Phase2Result(
@@ -88,11 +75,34 @@ void main() {
           ),
         ),
       ),
-    ));
-    registerFallbackValue(Phase5ResultPartial(
-      tags: const {},
-      phase1: _createTestPhase1Result(_createTestLookupResult()),
-    ));
+    );
+    registerFallbackValue(
+      Phase5Result(
+        tags: const {},
+        phase4: Phase4Result(
+          tags: const {},
+          phase1: _createTestPhase1Result(_createTestLookupResult()),
+          phase2: Phase2Result(
+            tags: const {},
+            phase1: _createTestPhase1Result(_createTestLookupResult()),
+          ),
+          phase3: Phase3Result(
+            tags: const {},
+            phase1: _createTestPhase1Result(_createTestLookupResult()),
+            phase2: Phase2Result(
+              tags: const {},
+              phase1: _createTestPhase1Result(_createTestLookupResult()),
+            ),
+          ),
+        ),
+      ),
+    );
+    registerFallbackValue(
+      Phase5ResultPartial(
+        tags: const {},
+        phase1: _createTestPhase1Result(_createTestLookupResult()),
+      ),
+    );
   });
 
   setUp(() {
@@ -118,9 +128,9 @@ void main() {
         // calls per-phase methods (runPhase1..5) on the generator instead
         // of `generate()`. The contract from the caller's view is
         // unchanged — non-null TagResult with tags from the pipeline.
-        final recipe = RecipeBuilder()
-            .withTitle('Test Recipe')
-            .withIngredients(['tomat', 'lök']).build();
+        final recipe = RecipeBuilder().withTitle('Test Recipe').withIngredients(
+          ['tomat', 'lök'],
+        ).build();
         final lookupResult = _createTestLookupResult();
         final phase1Result = _createTestPhase1Result(lookupResult);
         final phase2Result = Phase2Result(
@@ -152,37 +162,51 @@ void main() {
           generatedAt: DateTime.now(),
         );
 
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
-        when(() => mockTagGenerator.runPhase1(any(), any()))
-            .thenReturn(phase1Result);
-        when(() => mockTagGenerator.runPhase2(any(), any()))
-            .thenReturn(phase2Result);
-        when(() => mockTagGenerator.runPhase3(any(), any(), any()))
-            .thenReturn(phase3Result);
-        when(() => mockTagGenerator.runPhase4(any(), any(), any(), any()))
-            .thenReturn(phase4Result);
-        when(() => mockTagGenerator.runPhase5(any(), any()))
-            .thenReturn(phase5Result);
-        when(() => mockTagGenerator.assembleResult(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              phase1Result: any(named: 'phase1Result'),
-              phase2Result: any(named: 'phase2Result'),
-              phase3Result: any(named: 'phase3Result'),
-              phase4Result: any(named: 'phase4Result'),
-              phase5Result: any(named: 'phase5Result'),
-              phase5PartialResult: any(named: 'phase5PartialResult'),
-              isPartial: any(named: 'isPartial'),
-            )).thenReturn(fakeAssemble);
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => lookupResult);
+        when(
+          () => mockTagGenerator.runPhase1(any(), any()),
+        ).thenReturn(phase1Result);
+        when(
+          () => mockTagGenerator.runPhase2(any(), any()),
+        ).thenReturn(phase2Result);
+        when(
+          () => mockTagGenerator.runPhase3(any(), any(), any()),
+        ).thenReturn(phase3Result);
+        when(
+          () => mockTagGenerator.runPhase4(any(), any(), any(), any()),
+        ).thenReturn(phase4Result);
+        when(
+          () => mockTagGenerator.runPhase5(any(), any()),
+        ).thenReturn(phase5Result);
+        when(
+          () => mockTagGenerator.assembleResult(
+            ingredients: any(named: 'ingredients'),
+            recipe: any(named: 'recipe'),
+            phase1Result: any(named: 'phase1Result'),
+            phase2Result: any(named: 'phase2Result'),
+            phase3Result: any(named: 'phase3Result'),
+            phase4Result: any(named: 'phase4Result'),
+            phase5Result: any(named: 'phase5Result'),
+            phase5PartialResult: any(named: 'phase5PartialResult'),
+            isPartial: any(named: 'isPartial'),
+          ),
+        ).thenReturn(fakeAssemble);
 
         final result = await service.generateTags(recipe);
 
         expect(result, isNotNull);
         expect(result!.tags, isNotEmpty);
-        verify(() => mockLookupService.lookupFromRaw(any(),
-            userId: any(named: 'userId'))).called(1);
+        verify(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).called(1);
         // Each phase invoked exactly once on the happy path.
         verify(() => mockTagGenerator.runPhase1(any(), any())).called(1);
         verify(() => mockTagGenerator.runPhase5(any(), any())).called(1);
@@ -191,70 +215,89 @@ void main() {
       test('returns empty TagResult for recipe with no ingredients', () async {
         final recipe = RecipeBuilder()
             .withTitle('Empty Recipe')
-            .withIngredients([]).build();
+            .withIngredients([])
+            .build();
 
         final result = await service.generateTags(recipe);
 
         expect(result, isNotNull);
         expect(result!.tags, isEmpty);
         // Lookup should not be called for empty ingredients
-        verifyNever(() => mockLookupService.lookupFromRaw(any(),
-            userId: any(named: 'userId')));
+        verifyNever(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        );
       });
 
-      test('returns partial result with safe defaults on lookup timeout',
-          () async {
-        // BUT-553: Lookup floor case — when the lookup phase errors
-        // (or times out), the runner returns a safe-defaults TagResult
-        // with `timeout-warning` and skips all downstream phases.
-        final recipe = RecipeBuilder()
-            .withTitle('Timeout Recipe')
-            .withIngredients(['tomat']).build();
+      test(
+        'returns partial result with safe defaults on lookup timeout',
+        () async {
+          // BUT-553: Lookup floor case — when the lookup phase errors
+          // (or times out), the runner returns a safe-defaults TagResult
+          // with `timeout-warning` and skips all downstream phases.
+          final recipe = RecipeBuilder()
+              .withTitle('Timeout Recipe')
+              .withIngredients(['tomat'])
+              .build();
 
-        when(() => mockLookupService.lookupFromRaw(any(),
-            userId: any(named: 'userId'))).thenAnswer((_) async {
-          throw TimeoutException('Lookup timeout');
-        });
+          when(
+            () => mockLookupService.lookupFromRaw(
+              any(),
+              userId: any(named: 'userId'),
+            ),
+          ).thenAnswer((_) async {
+            throw TimeoutException('Lookup timeout');
+          });
 
-        final result = await service.generateTags(recipe);
+          final result = await service.generateTags(recipe);
 
-        expect(result, isNotNull);
-        // CRIT-4: Lookup error returns partial result with visible indicator.
-        // (BUT-553 changed the generatorVersion from 'lookup_timeout' to
-        // 'lookup_<outcome>' — for a TimeoutException it's still
-        // 'lookup_timeout'; for other errors it's 'lookup_error'.)
-        expect(result!.tags, contains('timeout-warning'));
-        expect(result.isPartial, isTrue);
-        expect(result.generatorVersion, 'lookup_timeout');
-        expect(result.coverage, 0.0);
-        expect(result.unknownIngredients, ['tomat']);
-        // No phases should run when lookup fails.
-        verifyNever(() => mockTagGenerator.runPhase1(any(), any()));
-      });
+          expect(result, isNotNull);
+          // CRIT-4: Lookup error returns partial result with visible indicator.
+          // (BUT-553 changed the generatorVersion from 'lookup_timeout' to
+          // 'lookup_<outcome>' — for a TimeoutException it's still
+          // 'lookup_timeout'; for other errors it's 'lookup_error'.)
+          expect(result!.tags, contains('timeout-warning'));
+          expect(result.isPartial, isTrue);
+          expect(result.generatorVersion, 'lookup_timeout');
+          expect(result.coverage, 0.0);
+          expect(result.unknownIngredients, ['tomat']);
+          // No phases should run when lookup fails.
+          verifyNever(() => mockTagGenerator.runPhase1(any(), any()));
+        },
+      );
     });
 
     group('H20: lookupIngredients', () {
       test('delegates to lookupService', () async {
         final lookupResult = _createTestLookupResult();
 
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => lookupResult);
 
         final result = await service.lookupIngredients(['tomat', 'lök']);
 
         expect(result, isNotNull);
         expect(result!.matchedCount, 2);
-        verify(() => mockLookupService.lookupFromRaw(['tomat', 'lök'],
-            userId: any(named: 'userId'))).called(1);
+        verify(
+          () => mockLookupService.lookupFromRaw([
+            'tomat',
+            'lök',
+          ], userId: any(named: 'userId')),
+        ).called(1);
       });
     });
 
     group('H20: needsRetagging', () {
       test('returns true for recipe with no tagResult', () {
-        final recipe = RecipeBuilder()
-            .withTitle('No Tags')
-            .withIngredients(['tomat']).build();
+        final recipe = RecipeBuilder().withTitle('No Tags').withIngredients([
+          'tomat',
+        ]).build();
 
         expect(service.needsRetagging(recipe), isTrue);
       });
@@ -299,15 +342,19 @@ void main() {
       test('returns unmatched ingredients from lookup', () async {
         final recipe = RecipeBuilder()
             .withTitle('Partial Match')
-            .withIngredients(['tomat', 'unknown1', 'unknown2']).build();
+            .withIngredients(['tomat', 'unknown1', 'unknown2'])
+            .build();
         final lookupResult = IngredientLookupResult.fromLists(
           matched: [_createTestIngredientData()],
           unmatched: ['unknown1', 'unknown2'],
         );
 
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => lookupResult);
 
         final result = await service.getUnknownIngredients(recipe);
 
@@ -317,14 +364,18 @@ void main() {
       });
 
       test('returns empty list when all ingredients matched', () async {
-        final recipe = RecipeBuilder()
-            .withTitle('Full Match')
-            .withIngredients(['tomat', 'lök']).build();
+        final recipe = RecipeBuilder().withTitle('Full Match').withIngredients([
+          'tomat',
+          'lök',
+        ]).build();
         final lookupResult = _createTestLookupResult();
 
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => lookupResult);
 
         final result = await service.getUnknownIngredients(recipe);
 

@@ -254,14 +254,16 @@ mixin AsyncOperationMixin on StateNotifierMixin {
             results.add(result);
           } else {
             AppLogger.error(
-                'Batch operation ${operationNames[i]} failed: $result');
+              'Batch operation ${operationNames[i]} failed: $result',
+            );
           }
         }
       }
 
       setSuccess();
       AppLogger.debug(
-          'Batch operations completed: ${results.length} successes');
+        'Batch operations completed: ${results.length} successes',
+      );
       return results;
     } catch (e) {
       setError(errorPrefix ?? sanitizeErrorForUser(e));
@@ -306,7 +308,8 @@ mixin AsyncOperationMixin on StateNotifierMixin {
 
       setSuccess();
       AppLogger.debug(
-          'Sequence operations completed: ${results.length} results');
+        'Sequence operations completed: ${results.length} results',
+      );
       return results;
     } catch (e) {
       setError(errorPrefix ?? sanitizeErrorForUser(e));

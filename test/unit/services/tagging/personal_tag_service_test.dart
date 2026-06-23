@@ -114,22 +114,25 @@ void main() {
     group('CRIT-5: evaluateRulesForRecipe', () {
       test('returns empty set when no enabled rules exist', () async {
         // Arrange: No tags with enabled rules
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => []);
 
-        final recipe = RecipeBuilder()
-            .withTitle('Test Recipe')
-            .withIngredients(['kyckling', 'lök']).build();
+        final recipe = RecipeBuilder().withTitle('Test Recipe').withIngredients(
+          ['kyckling', 'lök'],
+        ).build();
 
         // Act
         final result = await service.evaluateRulesForRecipe(recipe);
 
         // Assert
         expect(result, isEmpty);
-        verifyNever(() => mockLookupService.lookupFromRaw(
-              any(),
-              userId: any(named: 'userId'),
-            ));
+        verifyNever(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        );
       });
 
       test('matches recipe with ingredient condition', () async {
@@ -145,12 +148,14 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
         final recipe = RecipeBuilder()
             .withTitle('Kycklinggryta')
-            .withIngredients(['500g kyckling', 'lök', 'grädde']).build();
+            .withIngredients(['500g kyckling', 'lök', 'grädde'])
+            .build();
 
         // Act
         final result = await service.evaluateRulesForRecipe(recipe);
@@ -173,12 +178,14 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
         final recipe = RecipeBuilder()
             .withTitle('Pasta Bolognese')
-            .withIngredients(['köttfärs', 'tomat', 'lök']).build();
+            .withIngredients(['köttfärs', 'tomat', 'lök'])
+            .build();
 
         // Act
         final result = await service.evaluateRulesForRecipe(recipe);
@@ -200,26 +207,32 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
-        when(() => mockLookupService.lookupFromRaw(
-              any(),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) async => _createFishLookupResult());
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => _createFishLookupResult());
 
-        final recipe = RecipeBuilder()
-            .withTitle('Stekt lax')
-            .withIngredients(['lax', 'citron']).build();
+        final recipe = RecipeBuilder().withTitle('Stekt lax').withIngredients([
+          'lax',
+          'citron',
+        ]).build();
 
         // Act
         await service.evaluateRulesForRecipe(recipe);
 
         // Assert: Verify userId was passed with correct value (CRIT-5 fix)
-        verify(() => mockLookupService.lookupFromRaw(
-              any(),
-              userId: 'test-user-123', // Specific value from mock
-            )).called(1);
+        verify(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: 'test-user-123', // Specific value from mock
+          ),
+        ).called(1);
       });
 
       test('handles MatchMode.any requiring any condition', () async {
@@ -237,13 +250,15 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
         // Recipe with pasta in title (keyword match)
         final pastaRecipe = RecipeBuilder()
             .withTitle('Pasta carbonara')
-            .withIngredients(['spaghetti', 'bacon', 'ägg']).build();
+            .withIngredients(['spaghetti', 'bacon', 'ägg'])
+            .build();
 
         // Act
         final result = await service.evaluateRulesForRecipe(pastaRecipe);
@@ -266,11 +281,14 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
-        final recipe =
-            RecipeBuilder().withIngredients(['kyckling', 'lök']).build();
+        final recipe = RecipeBuilder().withIngredients([
+          'kyckling',
+          'lök',
+        ]).build();
 
         // Act
         final result = await service.evaluateRulesForRecipe(recipe);
@@ -303,8 +321,9 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [chickenTag, quickTag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [chickenTag, quickTag]);
 
         final recipe = RecipeBuilder()
             .withTitle('Snabb kyckling')
@@ -323,8 +342,9 @@ void main() {
 
     group('CRIT-5: evaluateRulesForRecipes (batch)', () {
       test('returns empty map when no enabled rules exist', () async {
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => []);
 
         final recipes = [
           RecipeBuilder().withId('recipe-1').build(),
@@ -351,20 +371,24 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
         final chickenRecipe = RecipeBuilder()
             .withId('recipe-1')
-            .withIngredients(['kyckling', 'lök']).build();
+            .withIngredients(['kyckling', 'lök'])
+            .build();
 
-        final beefRecipe = RecipeBuilder()
-            .withId('recipe-2')
-            .withIngredients(['nötkött', 'potatis']).build();
+        final beefRecipe = RecipeBuilder().withId('recipe-2').withIngredients([
+          'nötkött',
+          'potatis',
+        ]).build();
 
         final anotherChickenRecipe = RecipeBuilder()
             .withId('recipe-3')
-            .withIngredients(['kycklingbröst', 'grädde']).build();
+            .withIngredients(['kycklingbröst', 'grädde'])
+            .build();
 
         final recipes = [chickenRecipe, beefRecipe, anotherChickenRecipe];
 
@@ -392,13 +416,16 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
-        when(() => mockLookupService.lookupFromRaw(
-              any(),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) async => _createFishLookupResult());
+        when(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => _createFishLookupResult());
 
         final recipes = [
           RecipeBuilder().withId('recipe-1').withIngredients(['lax']).build(),
@@ -409,21 +436,26 @@ void main() {
         await service.evaluateRulesForRecipes(recipes);
 
         // Assert: Verify userId was passed for each recipe (CRIT-5 fix)
-        verify(() => mockLookupService.lookupFromRaw(
-              any(),
-              userId: any(named: 'userId'),
-            )).called(2);
+        verify(
+          () => mockLookupService.lookupFromRaw(
+            any(),
+            userId: any(named: 'userId'),
+          ),
+        ).called(2);
       });
 
       test('returns empty map for empty recipe list', () async {
         final tag = PersonalTagBuilder()
-            .withRule(PersonalTagRuleBuilder()
-                .withIngredientCondition('kyckling')
-                .build())
+            .withRule(
+              PersonalTagRuleBuilder()
+                  .withIngredientCondition('kyckling')
+                  .build(),
+            )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
         // Act
         final result = await service.evaluateRulesForRecipes([]);
@@ -447,11 +479,14 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
-        final recipe =
-            RecipeBuilder().withIngredients(['kyckling', 'lök']).build();
+        final recipe = RecipeBuilder().withIngredients([
+          'kyckling',
+          'lök',
+        ]).build();
 
         // Act
         final result = await service.suggestTagsForRecipe(recipe);
@@ -474,11 +509,14 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [tag]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [tag]);
 
-        final recipe =
-            RecipeBuilder().withIngredients(['kyckling', 'lök']).build();
+        final recipe = RecipeBuilder().withIngredients([
+          'kyckling',
+          'lök',
+        ]).build();
 
         // Act
         final result = await service.suggestTagsForRecipe(recipe);
@@ -520,10 +558,12 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [easyTag, mediumTag]);
-        when(() => mockGroupRepository.getAllSorted())
-            .thenAnswer((_) async => [group]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [easyTag, mediumTag]);
+        when(
+          () => mockGroupRepository.getAllSorted(),
+        ).thenAnswer((_) async => [group]);
 
         final recipe = RecipeBuilder()
             .withTimeMinutes(20) // Matches both <30 and <60
@@ -568,10 +608,12 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [easyTag, mediumTag]);
-        when(() => mockGroupRepository.getAllSorted())
-            .thenAnswer((_) async => [group]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [easyTag, mediumTag]);
+        when(
+          () => mockGroupRepository.getAllSorted(),
+        ).thenAnswer((_) async => [group]);
 
         final recipe = RecipeBuilder()
             .withTimeMinutes(20) // Matches both <30 and <60
@@ -622,10 +664,12 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [easyTag, lunchTag]);
-        when(() => mockGroupRepository.getAllSorted())
-            .thenAnswer((_) async => [difficultyGroup, mealTypeGroup]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [easyTag, lunchTag]);
+        when(
+          () => mockGroupRepository.getAllSorted(),
+        ).thenAnswer((_) async => [difficultyGroup, mealTypeGroup]);
 
         final recipe = RecipeBuilder()
             .withTitle('Quick lunch pasta')
@@ -671,10 +715,12 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [easyTag, favoriteTag]);
-        when(() => mockGroupRepository.getAllSorted())
-            .thenAnswer((_) async => [group]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [easyTag, favoriteTag]);
+        when(
+          () => mockGroupRepository.getAllSorted(),
+        ).thenAnswer((_) async => [group]);
 
         final recipe = RecipeBuilder()
             .withTitle('Min favorit pasta')
@@ -720,10 +766,12 @@ void main() {
             )
             .build();
 
-        when(() => mockTagRepository.getAllSorted())
-            .thenAnswer((_) async => [easyTag, mediumTag]);
-        when(() => mockGroupRepository.getAllSorted())
-            .thenAnswer((_) async => [group]);
+        when(
+          () => mockTagRepository.getAllSorted(),
+        ).thenAnswer((_) async => [easyTag, mediumTag]);
+        when(
+          () => mockGroupRepository.getAllSorted(),
+        ).thenAnswer((_) async => [group]);
 
         final recipes = [
           RecipeBuilder()
@@ -750,102 +798,135 @@ void main() {
     group('updateTag - rename cascade', () {
       test('should cascade rename to recipes when tag name changes', () async {
         // Arrange
-        final existingTag =
-            PersonalTagBuilder().withId('tag-1').withName('Old Name').build();
+        final existingTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Old Name')
+            .build();
 
-        final updatedTag =
-            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+        final updatedTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('New Name')
+            .build();
 
-        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
-            .thenAnswer((_) async => false);
-        when(() => mockTagRepository.read('tag-1'))
-            .thenAnswer((_) async => existingTag);
+        when(
+          () => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockTagRepository.read('tag-1'),
+        ).thenAnswer((_) async => existingTag);
         when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              'tag-1',
-              'New Name',
-            )).thenAnswer((_) async => 3);
+        when(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            'tag-1',
+            'New Name',
+          ),
+        ).thenAnswer((_) async => 3);
 
         // Act
         await service.updateTag(updatedTag);
 
         // Assert: Verify rename was cascaded to recipes using tag ID
-        verify(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              'tag-1',
-              'New Name',
-            )).called(1);
+        verify(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            'tag-1',
+            'New Name',
+          ),
+        ).called(1);
       });
 
       test('should not cascade when tag name has not changed', () async {
         // Arrange
-        final existingTag =
-            PersonalTagBuilder().withId('tag-1').withName('Same Name').build();
+        final existingTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Same Name')
+            .build();
 
-        final updatedTag =
-            PersonalTagBuilder().withId('tag-1').withName('Same Name').build();
+        final updatedTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Same Name')
+            .build();
 
-        when(() =>
-                mockTagRepository.nameExists('Same Name', excludeId: 'tag-1'))
-            .thenAnswer((_) async => false);
-        when(() => mockTagRepository.read('tag-1'))
-            .thenAnswer((_) async => existingTag);
+        when(
+          () => mockTagRepository.nameExists('Same Name', excludeId: 'tag-1'),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockTagRepository.read('tag-1'),
+        ).thenAnswer((_) async => existingTag);
         when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
 
         // Act
         await service.updateTag(updatedTag);
 
         // Assert: No rename cascade should occur
-        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              any(),
-              any(),
-            ));
+        verifyNever(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            any(),
+            any(),
+          ),
+        );
       });
 
-      test('should still update tag even when rename affects zero recipes',
-          () async {
-        // Arrange
-        final existingTag =
-            PersonalTagBuilder().withId('tag-1').withName('Old Name').build();
+      test(
+        'should still update tag even when rename affects zero recipes',
+        () async {
+          // Arrange
+          final existingTag = PersonalTagBuilder()
+              .withId('tag-1')
+              .withName('Old Name')
+              .build();
 
-        final updatedTag =
-            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+          final updatedTag = PersonalTagBuilder()
+              .withId('tag-1')
+              .withName('New Name')
+              .build();
 
-        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
-            .thenAnswer((_) async => false);
-        when(() => mockTagRepository.read('tag-1'))
-            .thenAnswer((_) async => existingTag);
-        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.renamePersonalTagInRecipes(
+          when(
+            () => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'),
+          ).thenAnswer((_) async => false);
+          when(
+            () => mockTagRepository.read('tag-1'),
+          ).thenAnswer((_) async => existingTag);
+          when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+          when(
+            () => mockRecipeRepository.renamePersonalTagInRecipes(
               'tag-1',
               'New Name',
-            )).thenAnswer((_) async => 0);
+            ),
+          ).thenAnswer((_) async => 0);
 
-        // Act
-        await service.updateTag(updatedTag);
+          // Act
+          await service.updateTag(updatedTag);
 
-        // Assert: Tag was updated in repository
-        verify(() => mockTagRepository.update(any())).called(1);
-        // Rename was still called using tag ID (returned 0 affected recipes)
-        verify(() => mockRecipeRepository.renamePersonalTagInRecipes(
+          // Assert: Tag was updated in repository
+          verify(() => mockTagRepository.update(any())).called(1);
+          // Rename was still called using tag ID (returned 0 affected recipes)
+          verify(
+            () => mockRecipeRepository.renamePersonalTagInRecipes(
               'tag-1',
               'New Name',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('should validate name before attempting rename cascade', () async {
         // Arrange: Tag with invalid name (contains comma)
-        final updatedTag =
-            PersonalTagBuilder().withId('tag-1').withName('Bad,Name').build();
+        final updatedTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Bad,Name')
+            .build();
 
         // Act: Should fail validation before reaching rename logic
         await service.updateTag(updatedTag);
 
         // Assert: Neither repository update nor rename should occur
         verifyNever(() => mockTagRepository.update(any()));
-        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              any(),
-              any(),
-            ));
+        verifyNever(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            any(),
+            any(),
+          ),
+        );
       });
 
       test('should reject update when new name already exists', () async {
@@ -855,18 +936,24 @@ void main() {
             .withName('Duplicate Name')
             .build();
 
-        when(() => mockTagRepository.nameExists('Duplicate Name',
-            excludeId: 'tag-1')).thenAnswer((_) async => true);
+        when(
+          () => mockTagRepository.nameExists(
+            'Duplicate Name',
+            excludeId: 'tag-1',
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         await service.updateTag(updatedTag);
 
         // Assert: No update or rename should occur
         verifyNever(() => mockTagRepository.update(any()));
-        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              any(),
-              any(),
-            ));
+        verifyNever(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            any(),
+            any(),
+          ),
+        );
       });
 
       test('should validate group exists when groupId is specified', () async {
@@ -877,46 +964,56 @@ void main() {
             .withGroupId('nonexistent-group')
             .build();
 
-        when(() =>
-                mockTagRepository.nameExists('Valid Name', excludeId: 'tag-1'))
-            .thenAnswer((_) async => false);
-        when(() => mockGroupRepository.read('nonexistent-group'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockTagRepository.nameExists('Valid Name', excludeId: 'tag-1'),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockGroupRepository.read('nonexistent-group'),
+        ).thenAnswer((_) async => null);
 
         // Act
         await service.updateTag(updatedTag);
 
         // Assert: No update or rename should occur
         verifyNever(() => mockTagRepository.update(any()));
-        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
-              any(),
-              any(),
-            ));
+        verifyNever(
+          () => mockRecipeRepository.renamePersonalTagInRecipes(
+            any(),
+            any(),
+          ),
+        );
       });
 
       test(
-          'should handle existing tag not found gracefully during rename check',
-          () async {
-        // Arrange: _tagRepository.read returns null for the existing tag
-        final updatedTag =
-            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+        'should handle existing tag not found gracefully during rename check',
+        () async {
+          // Arrange: _tagRepository.read returns null for the existing tag
+          final updatedTag = PersonalTagBuilder()
+              .withId('tag-1')
+              .withName('New Name')
+              .build();
 
-        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
-            .thenAnswer((_) async => false);
-        when(() => mockTagRepository.read('tag-1'))
-            .thenAnswer((_) async => null);
-        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+          when(
+            () => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'),
+          ).thenAnswer((_) async => false);
+          when(
+            () => mockTagRepository.read('tag-1'),
+          ).thenAnswer((_) async => null);
+          when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
 
-        // Act
-        await service.updateTag(updatedTag);
+          // Act
+          await service.updateTag(updatedTag);
 
-        // Assert: Tag is updated but no rename cascade (oldName is null)
-        verify(() => mockTagRepository.update(any())).called(1);
-        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+          // Assert: Tag is updated but no rename cascade (oldName is null)
+          verify(() => mockTagRepository.update(any())).called(1);
+          verifyNever(
+            () => mockRecipeRepository.renamePersonalTagInRecipes(
               any(),
               any(),
-            ));
-      });
+            ),
+          );
+        },
+      );
     });
 
     // BUT-1186: deleteTag now cascades the per-recipe removal via the
@@ -934,29 +1031,35 @@ void main() {
       });
 
       test('cascades removal via chunked path, then deletes the tag', () async {
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 5);
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
+        when(
+          () => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'),
+        ).thenAnswer((_) async => 5);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
+        ).thenReturn(null);
 
         await service.deleteTag('tag-1');
 
-        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .called(1);
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
-            .called(1);
+        verify(
+          () => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'),
+        ).called(1);
+        verify(
+          () => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'),
+        ).called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
       test('ordering — cascade runs BEFORE the tag delete commits', () async {
         final calls = <String>[];
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async {
+        when(
+          () => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'),
+        ).thenAnswer((_) async {
           calls.add('cascade');
           return 3;
         });
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
+        ).thenReturn(null);
         when(() => mockBatch.commit()).thenAnswer((_) async {
           calls.add('delete-commit');
         });
@@ -967,10 +1070,12 @@ void main() {
       });
 
       test('does NOT delete the tag when the cascade throws', () async {
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenThrow(Exception('network drop mid-cascade'));
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
+        when(
+          () => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'),
+        ).thenThrow(Exception('network drop mid-cascade'));
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
+        ).thenReturn(null);
 
         await service.deleteTag('tag-1');
 
@@ -981,15 +1086,18 @@ void main() {
       });
 
       test('deletes the tag even when cascade affects zero recipes', () async {
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 0);
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
+        when(
+          () => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
+        ).thenReturn(null);
 
         await service.deleteTag('tag-1');
 
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
-            .called(1);
+        verify(
+          () => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'),
+        ).called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
@@ -998,13 +1106,15 @@ void main() {
         final getIt = GetIt.instance;
         getIt.unregister<RecipeRepository>();
 
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'tag-1'),
+        ).thenReturn(null);
 
         await service.deleteTag('tag-1');
 
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
-            .called(1);
+        verify(
+          () => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'),
+        ).called(1);
         verify(() => mockBatch.commit()).called(1);
 
         // Re-register for other tests
@@ -1031,56 +1141,86 @@ void main() {
       PersonalTag toTag() =>
           PersonalTagBuilder().withId('to-id').withName('Destination').build();
 
-      test('retags recipes (chunked path), THEN deletes fromId separately',
-          () async {
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag());
-        when(() => mockRecipeRepository.replaceTagInRecipes(
-            'from-id', 'to-id', any())).thenAnswer((_) async => 4);
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
-            .thenReturn(null);
+      test(
+        'retags recipes (chunked path), THEN deletes fromId separately',
+        () async {
+          when(
+            () => mockTagRepository.read('to-id'),
+          ).thenAnswer((_) async => toTag());
+          when(
+            () => mockRecipeRepository.replaceTagInRecipes(
+              'from-id',
+              'to-id',
+              any(),
+            ),
+          ).thenAnswer((_) async => 4);
+          when(
+            () => mockTagRepository.addDeleteToBatch(any(), 'from-id'),
+          ).thenReturn(null);
 
-        final count = await service.mergeTags('from-id', 'to-id');
+          final count = await service.mergeTags('from-id', 'to-id');
 
-        expect(count, 4);
-        // Retag delegated to the self-chunking repo method (commits internally).
-        verify(() => mockRecipeRepository.replaceTagInRecipes(
-            'from-id', 'to-id', any())).called(1);
-        // Delete lands on its OWN batch, committed after the retag.
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'))
-            .called(1);
-        verify(() => mockBatch.commit()).called(1);
-      });
+          expect(count, 4);
+          // Retag delegated to the self-chunking repo method (commits internally).
+          verify(
+            () => mockRecipeRepository.replaceTagInRecipes(
+              'from-id',
+              'to-id',
+              any(),
+            ),
+          ).called(1);
+          // Delete lands on its OWN batch, committed after the retag.
+          verify(
+            () => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'),
+          ).called(1);
+          verify(() => mockBatch.commit()).called(1);
+        },
+      );
 
-      test('ordering — retag runs BEFORE the source-tag delete commits',
-          () async {
-        final calls = <String>[];
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag());
-        when(() => mockRecipeRepository.replaceTagInRecipes(
-            'from-id', 'to-id', any())).thenAnswer((_) async {
-          calls.add('retag');
-          return 4;
-        });
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
-            .thenReturn(null);
-        when(() => mockBatch.commit()).thenAnswer((_) async {
-          calls.add('delete-commit');
-        });
+      test(
+        'ordering — retag runs BEFORE the source-tag delete commits',
+        () async {
+          final calls = <String>[];
+          when(
+            () => mockTagRepository.read('to-id'),
+          ).thenAnswer((_) async => toTag());
+          when(
+            () => mockRecipeRepository.replaceTagInRecipes(
+              'from-id',
+              'to-id',
+              any(),
+            ),
+          ).thenAnswer((_) async {
+            calls.add('retag');
+            return 4;
+          });
+          when(
+            () => mockTagRepository.addDeleteToBatch(any(), 'from-id'),
+          ).thenReturn(null);
+          when(() => mockBatch.commit()).thenAnswer((_) async {
+            calls.add('delete-commit');
+          });
 
-        await service.mergeTags('from-id', 'to-id');
+          await service.mergeTags('from-id', 'to-id');
 
-        expect(calls, ['retag', 'delete-commit']);
-      });
+          expect(calls, ['retag', 'delete-commit']);
+        },
+      );
 
       test('does NOT delete fromId when the retag throws mid-way', () async {
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag());
-        when(() => mockRecipeRepository.replaceTagInRecipes(
-                'from-id', 'to-id', any()))
-            .thenThrow(Exception('network drop mid-retag'));
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.read('to-id'),
+        ).thenAnswer((_) async => toTag());
+        when(
+          () => mockRecipeRepository.replaceTagInRecipes(
+            'from-id',
+            'to-id',
+            any(),
+          ),
+        ).thenThrow(Exception('network drop mid-retag'));
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'from-id'),
+        ).thenReturn(null);
 
         final count = await service.mergeTags('from-id', 'to-id');
 
@@ -1091,35 +1231,46 @@ void main() {
         verifyNever(() => mockBatch.commit());
       });
 
-      test('passes destination tag rich-entry (manual source) to the repo',
-          () async {
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag());
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
-            .thenReturn(null);
+      test(
+        'passes destination tag rich-entry (manual source) to the repo',
+        () async {
+          when(
+            () => mockTagRepository.read('to-id'),
+          ).thenAnswer((_) async => toTag());
+          when(
+            () => mockTagRepository.addDeleteToBatch(any(), 'from-id'),
+          ).thenReturn(null);
 
-        Map<String, dynamic>? captured;
-        when(() => mockRecipeRepository.replaceTagInRecipes(
-            'from-id', 'to-id', any())).thenAnswer((invocation) async {
-          captured = invocation.positionalArguments[2] as Map<String, dynamic>;
-          return 1;
-        });
+          Map<String, dynamic>? captured;
+          when(
+            () => mockRecipeRepository.replaceTagInRecipes(
+              'from-id',
+              'to-id',
+              any(),
+            ),
+          ).thenAnswer((invocation) async {
+            captured =
+                invocation.positionalArguments[2] as Map<String, dynamic>;
+            return 1;
+          });
 
-        await service.mergeTags('from-id', 'to-id');
+          await service.mergeTags('from-id', 'to-id');
 
-        expect(captured, isNotNull);
-        expect(captured!['tagId'], 'to-id');
-        expect(captured!['name'], 'Destination');
-        expect(captured!['sources'], ['manual']);
-      });
+          expect(captured, isNotNull);
+          expect(captured!['tagId'], 'to-id');
+          expect(captured!['name'], 'Destination');
+          expect(captured!['sources'], ['manual']);
+        },
+      );
 
       test('is a no-op when fromId == toId', () async {
         final count = await service.mergeTags('same', 'same');
 
         expect(count, 0);
         verifyNever(() => mockTagRepository.newWriteBatch());
-        verifyNever(() =>
-            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
+        verifyNever(
+          () => mockRecipeRepository.replaceTagInRecipes(any(), any(), any()),
+        );
         verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
       });
 
@@ -1127,38 +1278,51 @@ void main() {
         expect(await service.mergeTags('', 'to-id'), 0);
         expect(await service.mergeTags('from-id', ''), 0);
         verifyNever(() => mockTagRepository.newWriteBatch());
-        verifyNever(() =>
-            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
+        verifyNever(
+          () => mockRecipeRepository.replaceTagInRecipes(any(), any(), any()),
+        );
       });
 
-      test('does not delete fromId when destination tag does not exist',
-          () async {
-        // Missing-dest guard throws BEFORE any retag or delete.
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => null);
+      test(
+        'does not delete fromId when destination tag does not exist',
+        () async {
+          // Missing-dest guard throws BEFORE any retag or delete.
+          when(
+            () => mockTagRepository.read('to-id'),
+          ).thenAnswer((_) async => null);
 
-        final count = await service.mergeTags('from-id', 'to-id');
+          final count = await service.mergeTags('from-id', 'to-id');
 
-        expect(count, 0);
-        verifyNever(() =>
-            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
-        verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
-        verifyNever(() => mockBatch.commit());
-      });
+          expect(count, 0);
+          verifyNever(
+            () => mockRecipeRepository.replaceTagInRecipes(any(), any(), any()),
+          );
+          verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
+          verifyNever(() => mockBatch.commit());
+        },
+      );
 
       test('deletes fromId even when retag affects zero recipes', () async {
-        when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag());
-        when(() => mockRecipeRepository.replaceTagInRecipes(
-            'from-id', 'to-id', any())).thenAnswer((_) async => 0);
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.read('to-id'),
+        ).thenAnswer((_) async => toTag());
+        when(
+          () => mockRecipeRepository.replaceTagInRecipes(
+            'from-id',
+            'to-id',
+            any(),
+          ),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), 'from-id'),
+        ).thenReturn(null);
 
         final count = await service.mergeTags('from-id', 'to-id');
 
         expect(count, 0);
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'))
-            .called(1);
+        verify(
+          () => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'),
+        ).called(1);
         verify(() => mockBatch.commit()).called(1);
       });
     });
@@ -1171,10 +1335,12 @@ void main() {
             .withName('Valid Tag')
             .build();
 
-        when(() => mockTagRepository.nameExists('Valid Tag'))
-            .thenAnswer((_) async => false);
-        when(() => mockTagRepository.create(any()))
-            .thenAnswer((_) async => tag);
+        when(
+          () => mockTagRepository.nameExists('Valid Tag'),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockTagRepository.create(any()),
+        ).thenAnswer((_) async => tag);
 
         // Act
         final result = await service.createTag(tag);
@@ -1189,8 +1355,9 @@ void main() {
         // Arrange
         final tag = PersonalTagBuilder().withName('Duplicate').build();
 
-        when(() => mockTagRepository.nameExists('Duplicate'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockTagRepository.nameExists('Duplicate'),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await service.createTag(tag);
@@ -1220,10 +1387,12 @@ void main() {
         const groupId = 'test-group-id';
 
         when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
-        when(() => mockTagRepository.addClearGroupToBatch(mockBatch, groupId))
-            .thenAnswer((_) async => 3); // 3 tags cleared
-        when(() => mockGroupRepository.addDeleteToBatch(mockBatch, groupId))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.addClearGroupToBatch(mockBatch, groupId),
+        ).thenAnswer((_) async => 3); // 3 tags cleared
+        when(
+          () => mockGroupRepository.addDeleteToBatch(mockBatch, groupId),
+        ).thenReturn(null);
         when(() => mockBatch.commit()).thenAnswer((_) async {});
 
         // Act
@@ -1231,10 +1400,12 @@ void main() {
 
         // Assert: Verify both operations use same batch
         verify(() => mockTagRepository.newWriteBatch()).called(1);
-        verify(() => mockTagRepository.addClearGroupToBatch(mockBatch, groupId))
-            .called(1);
-        verify(() => mockGroupRepository.addDeleteToBatch(mockBatch, groupId))
-            .called(1);
+        verify(
+          () => mockTagRepository.addClearGroupToBatch(mockBatch, groupId),
+        ).called(1);
+        verify(
+          () => mockGroupRepository.addDeleteToBatch(mockBatch, groupId),
+        ).called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
@@ -1244,10 +1415,12 @@ void main() {
         const groupId = 'empty-group-id';
 
         when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
-        when(() => mockTagRepository.addClearGroupToBatch(mockBatch, groupId))
-            .thenAnswer((_) async => 0); // No tags to clear
-        when(() => mockGroupRepository.addDeleteToBatch(mockBatch, groupId))
-            .thenReturn(null);
+        when(
+          () => mockTagRepository.addClearGroupToBatch(mockBatch, groupId),
+        ).thenAnswer((_) async => 0); // No tags to clear
+        when(
+          () => mockGroupRepository.addDeleteToBatch(mockBatch, groupId),
+        ).thenReturn(null);
         when(() => mockBatch.commit()).thenAnswer((_) async {});
 
         // Act
@@ -1255,8 +1428,9 @@ void main() {
 
         // Assert: Delete still happens even with no tags
         verify(() => mockBatch.commit()).called(1);
-        verify(() => mockGroupRepository.addDeleteToBatch(mockBatch, groupId))
-            .called(1);
+        verify(
+          () => mockGroupRepository.addDeleteToBatch(mockBatch, groupId),
+        ).called(1);
       });
 
       test('handles batch commit errors gracefully', () async {
@@ -1265,12 +1439,15 @@ void main() {
         const groupId = 'error-group-id';
 
         when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
-        when(() => mockTagRepository.addClearGroupToBatch(mockBatch, groupId))
-            .thenAnswer((_) async => 1);
-        when(() => mockGroupRepository.addDeleteToBatch(mockBatch, groupId))
-            .thenReturn(null);
-        when(() => mockBatch.commit())
-            .thenThrow(Exception('Firestore batch failed'));
+        when(
+          () => mockTagRepository.addClearGroupToBatch(mockBatch, groupId),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => mockGroupRepository.addDeleteToBatch(mockBatch, groupId),
+        ).thenReturn(null);
+        when(
+          () => mockBatch.commit(),
+        ).thenThrow(Exception('Firestore batch failed'));
 
         // Act: executeServiceOperation handles errors gracefully
         // The method should complete without throwing (error is logged)
@@ -1289,10 +1466,13 @@ void main() {
   // signal fires so a consumer that re-reads in response gets fresh data.
   group('BUT-1055: tagsMutated invalidation signal', () {
     test('fires once when a tag is created', () async {
-      final tag =
-          PersonalTagBuilder().withId('t1').withName('Vegetariskt').build();
-      when(() => mockTagRepository.nameExists('Vegetariskt'))
-          .thenAnswer((_) async => false);
+      final tag = PersonalTagBuilder()
+          .withId('t1')
+          .withName('Vegetariskt')
+          .build();
+      when(
+        () => mockTagRepository.nameExists('Vegetariskt'),
+      ).thenAnswer((_) async => false);
       when(() => mockTagRepository.create(any())).thenAnswer((_) async => tag);
 
       final events = <void>[];
@@ -1301,8 +1481,11 @@ void main() {
       await service.createTag(tag);
       await Future<void>.delayed(Duration.zero); // flush broadcast delivery
 
-      expect(events.length, 1,
-          reason: 'createTag must emit exactly one tagsMutated event');
+      expect(
+        events.length,
+        1,
+        reason: 'createTag must emit exactly one tagsMutated event',
+      );
       await sub.cancel();
     });
 
@@ -1311,10 +1494,12 @@ void main() {
       // groups cache, so tag consumers must not be needlessly woken.
       final group = PersonalTagGroup.create(name: 'Middag');
       registerFallbackValue(group);
-      when(() => mockGroupRepository.nameExists('Middag'))
-          .thenAnswer((_) async => false);
-      when(() => mockGroupRepository.create(any()))
-          .thenAnswer((_) async => group);
+      when(
+        () => mockGroupRepository.nameExists('Middag'),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockGroupRepository.create(any()),
+      ).thenAnswer((_) async => group);
 
       final events = <void>[];
       final sub = service.tagsMutated.listen(events.add);
@@ -1322,8 +1507,11 @@ void main() {
       await service.createGroup(group);
       await Future<void>.delayed(Duration.zero);
 
-      expect(events, isEmpty,
-          reason: 'group-only mutation must not emit tagsMutated');
+      expect(
+        events,
+        isEmpty,
+        reason: 'group-only mutation must not emit tagsMutated',
+      );
       await sub.cancel();
     });
 
@@ -1332,16 +1520,19 @@ void main() {
       final tagB = PersonalTagBuilder().withId('b').withName('B').build();
 
       // Prime the cache with [tagA].
-      when(() => mockTagRepository.getAllSorted())
-          .thenAnswer((_) async => [tagA]);
+      when(
+        () => mockTagRepository.getAllSorted(),
+      ).thenAnswer((_) async => [tagA]);
       final first = await service.getAllTags();
       expect(first.map((t) => t.id), ['a']);
 
       // Repository now holds the post-mutation set.
-      when(() => mockTagRepository.getAllSorted())
-          .thenAnswer((_) async => [tagA, tagB]);
-      when(() => mockTagRepository.nameExists('B'))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockTagRepository.getAllSorted(),
+      ).thenAnswer((_) async => [tagA, tagB]);
+      when(
+        () => mockTagRepository.nameExists('B'),
+      ).thenAnswer((_) async => false);
       when(() => mockTagRepository.create(any())).thenAnswer((_) async => tagB);
 
       await service.createTag(tagB); // _invalidateTagsCache → clears + emits
@@ -1349,8 +1540,11 @@ void main() {
       // Because the cache was cleared, this re-reads from the repository
       // rather than returning the stale primed [tagA].
       final second = await service.getAllTags();
-      expect(second.map((t) => t.id), ['a', 'b'],
-          reason: 'getAllTags after a mutation must reflect fresh repo data');
+      expect(
+        second.map((t) => t.id),
+        ['a', 'b'],
+        reason: 'getAllTags after a mutation must reflect fresh repo data',
+      );
       verify(() => mockTagRepository.getAllSorted()).called(2);
     });
   });

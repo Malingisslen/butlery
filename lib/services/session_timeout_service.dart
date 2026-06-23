@@ -122,8 +122,8 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     required AnalyticsService analyticsService,
     this.timeoutDuration = defaultTimeoutDuration,
     this.warningOffset = defaultWarningOffset,
-  })  : _authService = authService,
-        _analyticsService = analyticsService {
+  }) : _authService = authService,
+       _analyticsService = analyticsService {
     // Validate configuration
     if (warningOffset >= timeoutDuration) {
       throw ArgumentError(
@@ -183,7 +183,8 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// If timeout period has been exceeded while app was backgrounded, triggers immediate logout.
   void onAppResumed() {
     AppLogger.debug(
-        'SessionTimeoutService: App resumed, checking timeout status');
+      'SessionTimeoutService: App resumed, checking timeout status',
+    );
 
     if (_lastActivityTime == null) {
       // First resume after initialization
@@ -325,12 +326,14 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   Future<void> _performLogout({required String reason}) async {
     if (!_authService.isAuthenticated) {
       AppLogger.debug(
-          'SessionTimeoutService: User already logged out, skipping');
+        'SessionTimeoutService: User already logged out, skipping',
+      );
       return;
     }
 
     AppLogger.info(
-        'SessionTimeoutService: Performing logout (reason: $reason)');
+      'SessionTimeoutService: Performing logout (reason: $reason)',
+    );
 
     _cancelTimers();
     _isActive = false;

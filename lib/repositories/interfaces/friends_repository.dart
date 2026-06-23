@@ -98,7 +98,10 @@ abstract class FriendsRepository extends Repository<UserProfile> {
 
   /// Update an existing category with provided data
   Future<void> updateCategory(
-      String userId, String categoryId, Map<String, dynamic> data);
+    String userId,
+    String categoryId,
+    Map<String, dynamic> data,
+  );
 
   /// Delete a category for the given user
   Future<void> deleteCategory(String userId, String categoryId);
@@ -111,7 +114,10 @@ abstract class FriendsRepository extends Repository<UserProfile> {
 
   /// Update only the members list of a category
   Future<void> updateCategoryMembers(
-      String userId, String categoryId, List<String> memberIds);
+    String userId,
+    String categoryId,
+    List<String> memberIds,
+  );
 
   /// Get a single category by id for a user
   Future<FriendCategory?> getCategory(String userId, String categoryId);
@@ -136,20 +142,25 @@ abstract class FriendsRepository extends Repository<UserProfile> {
 
   /// Get document references for invitations that have expired
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
-      DateTime now);
+    DateTime now,
+  );
 
   /// Get old invitations older than given cutoff for a user
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
-      String userId, DateTime cutoffDate);
+    String userId,
+    DateTime cutoffDate,
+  );
 
   /// Delete a list of documents
   Future<void> deleteDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs);
+    List<DocumentReference<Map<String, dynamic>>> refs,
+  );
 
   /// Update a list of documents with the provided data
   Future<void> updateDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs,
-      Map<String, dynamic> data);
+    List<DocumentReference<Map<String, dynamic>>> refs,
+    Map<String, dynamic> data,
+  );
 
   /// Check if there is a pending invitation for user and group
   Future<bool> hasPendingInvitation(String groupId, String toUserId);

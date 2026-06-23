@@ -17,13 +17,12 @@ Map<String, dynamic> buildGroupDraft({
   required String description,
   required String emoji,
   required List<String> friendIds,
-}) =>
-    <String, dynamic>{
-      'name': name,
-      'description': description,
-      'emoji': emoji,
-      'friendIds': friendIds,
-    };
+}) => <String, dynamic>{
+  'name': name,
+  'description': description,
+  'emoji': emoji,
+  'friendIds': friendIds,
+};
 
 /// Encodes a draft to its persisted string, or `null` when the form is in its
 /// initial-empty state. Returning null makes [AutoSaveManager] remove the key,
@@ -33,7 +32,8 @@ String? encodeGroupDraft(Map<String, dynamic> draft) {
   final description = (draft['description'] as String?).orEmpty();
   final emoji = (draft['emoji'] as String?) ?? kGroupDraftDefaultEmoji;
   final friendIds = (draft['friendIds'] as List?) ?? const [];
-  final isEmpty = name.isEmpty &&
+  final isEmpty =
+      name.isEmpty &&
       description.isEmpty &&
       emoji == kGroupDraftDefaultEmoji &&
       friendIds.isEmpty;

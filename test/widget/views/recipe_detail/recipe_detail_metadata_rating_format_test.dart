@@ -56,7 +56,8 @@ void main() {
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
 
     TestServiceLocator.registerMock<RecipeCookingService>(
-        MockFactory.createRecipeCookingService());
+      MockFactory.createRecipeCookingService(),
+    );
   });
 
   tearDown(() async {
@@ -79,23 +80,32 @@ void main() {
     );
   }
 
-  testWidgets('rating renders with Swedish decimal comma (4,5 not 4.5)',
-      (tester) async {
+  testWidgets('rating renders with Swedish decimal comma (4,5 not 4.5)', (
+    tester,
+  ) async {
     final vm = RecipeDetailViewModel(recipe: recipe);
     addTearDown(vm.dispose);
 
-    await tester.pumpWidget(localize(
-      RecipeDetailMetadata(
-        viewModel: vm,
-        currentPortions: 4,
-        isScaled: false,
+    await tester.pumpWidget(
+      localize(
+        RecipeDetailMetadata(
+          viewModel: vm,
+          currentPortions: 4,
+          isScaled: false,
+        ),
       ),
-    ));
+    );
     await tester.pump();
 
-    expect(find.text('4,5'), findsOneWidget,
-        reason: 'rating must use sv-SE decimal comma');
-    expect(find.text('4.5'), findsNothing,
-        reason: 'the raw English decimal point is the bug');
+    expect(
+      find.text('4,5'),
+      findsOneWidget,
+      reason: 'rating must use sv-SE decimal comma',
+    );
+    expect(
+      find.text('4.5'),
+      findsNothing,
+      reason: 'the raw English decimal point is the bug',
+    );
   });
 }

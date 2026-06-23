@@ -7,7 +7,7 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 /// by Google Play's UGC appeal-process policy.
 class MyReportsViewModel extends BaseViewModel {
   MyReportsViewModel({required ReportService reportService})
-      : _reportService = reportService;
+    : _reportService = reportService;
 
   final ReportService _reportService;
 

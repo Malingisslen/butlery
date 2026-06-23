@@ -55,7 +55,9 @@ class ImportProgressWidget extends StatelessWidget {
 
     return AnimatedOpacity(
       duration: AnimationUtils.getDuration(
-          context, AppDimensions.animationDurationMedium),
+        context,
+        AppDimensions.animationDurationMedium,
+      ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
         padding: AppDimensions.paddingSymmetric20x16,
@@ -106,7 +108,9 @@ class ImportProgressWidget extends StatelessWidget {
               const SizedBox(height: AppDimensions.paddingM),
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
-                    context, AppDimensions.animationDurationMedium),
+                  context,
+                  AppDimensions.animationDurationMedium,
+                ),
                 child: Text(
                   _buildDisplayMessage(context),
                   key: ValueKey('$message-${elapsed?.inSeconds ?? 0}'),
@@ -149,7 +153,9 @@ class _StepIndicator extends StatelessWidget {
       children: [
         AnimatedContainer(
           duration: AnimationUtils.getDuration(
-              context, const Duration(milliseconds: 250)),
+            context,
+            const Duration(milliseconds: 250),
+          ),
           width: 36,
           height: 36,
           decoration: BoxDecoration(
@@ -170,19 +176,19 @@ class _StepIndicator extends StatelessWidget {
                     color: colorScheme.onPrimary,
                   )
                 : isComplete
-                    ? Icon(
-                        Icons.check,
-                        size: AppDimensions.iconSizeM,
-                        color: colorScheme.onPrimary,
-                      )
-                    : Text(
-                        '$step',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: isActive
-                              ? colorScheme.onPrimary
-                              : colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                ? Icon(
+                    Icons.check,
+                    size: AppDimensions.iconSizeM,
+                    color: colorScheme.onPrimary,
+                  )
+                : Text(
+                    '$step',
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: isActive
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingXs),
@@ -191,9 +197,10 @@ class _StepIndicator extends StatelessWidget {
           style:
               (isActive ? AppTextStyles.badgeLarge : AppTextStyles.labelSmall)
                   .copyWith(
-            color:
-                isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
-          ),
+                    color: isActive
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
         ),
       ],
     );
@@ -216,7 +223,9 @@ class _StepConnector extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
       child: AnimatedContainer(
         duration: AnimationUtils.getDuration(
-            context, const Duration(milliseconds: 250)),
+          context,
+          const Duration(milliseconds: 250),
+        ),
         width: 40,
         height: 2,
         color: isActive ? colorScheme.primary : colorScheme.outlineVariant,

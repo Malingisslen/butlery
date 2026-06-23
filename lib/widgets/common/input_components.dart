@@ -34,7 +34,7 @@ class InputComponents {
     required List<String> originalIngredients,
     List<RecipeIngredient>? structuredIngredients,
     required Function(int newPortions, List<String> scaledIngredients)
-        onPortionChanged,
+    onPortionChanged,
     int minPortions = 1,
     int maxPortions = 20,
   }) {

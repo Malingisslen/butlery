@@ -44,15 +44,18 @@ class FirebaseCategoryPreferencesRepository
   @override
   Object fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
       throw UnsupportedError(
-          'FirebaseCategoryPreferencesRepository: use typed accessors');
+        'FirebaseCategoryPreferencesRepository: use typed accessors',
+      );
 
   @override
   Map<String, dynamic> toFirestore(Object entity) => throw UnsupportedError(
-      'FirebaseCategoryPreferencesRepository: use typed accessors');
+    'FirebaseCategoryPreferencesRepository: use typed accessors',
+  );
 
   @override
   String getId(Object entity) => throw UnsupportedError(
-      'FirebaseCategoryPreferencesRepository: use typed accessors');
+    'FirebaseCategoryPreferencesRepository: use typed accessors',
+  );
 
   // The four permission hooks below would bypass per-method ownership checks
   // if the base class's generic CRUD ever called them. Throw so a stray call
@@ -60,25 +63,34 @@ class FirebaseCategoryPreferencesRepository
   @override
   Future<bool> validateCreatePermission(String userId, Object entity) async =>
       throw UnsupportedError(
-          'FirebaseCategoryPreferencesRepository: use typed accessors');
+        'FirebaseCategoryPreferencesRepository: use typed accessors',
+      );
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, Object? entity) async =>
-      throw UnsupportedError(
-          'FirebaseCategoryPreferencesRepository: use typed accessors');
+    String userId,
+    String resourceId,
+    Object? entity,
+  ) async => throw UnsupportedError(
+    'FirebaseCategoryPreferencesRepository: use typed accessors',
+  );
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, Object entity) async =>
-      throw UnsupportedError(
-          'FirebaseCategoryPreferencesRepository: use typed accessors');
+    String userId,
+    String resourceId,
+    Object entity,
+  ) async => throw UnsupportedError(
+    'FirebaseCategoryPreferencesRepository: use typed accessors',
+  );
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      throw UnsupportedError(
-          'FirebaseCategoryPreferencesRepository: use typed accessors');
+    String userId,
+    String resourceId,
+  ) async => throw UnsupportedError(
+    'FirebaseCategoryPreferencesRepository: use typed accessors',
+  );
 
   DocumentReference<Map<String, dynamic>> _prefsDoc(String userId) {
     return firestore
@@ -185,8 +197,10 @@ class FirebaseCategoryPreferencesRepository
         resource: 'ListCategoryOrder/$userId/${order.listId}',
         operation: 'update',
       );
-      await _listOrderDoc(userId, order.listId)
-          .set(order.toFirestore(), SetOptions(merge: true));
+      await _listOrderDoc(
+        userId,
+        order.listId,
+      ).set(order.toFirestore(), SetOptions(merge: true));
     } catch (e, st) {
       AppLogger.error('Failed to save list category order: $e', st);
       rethrow;

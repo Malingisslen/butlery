@@ -37,8 +37,9 @@ class ShareModeSelection {
                 selected: selectedMode == ShareMode.staticCopy,
                 child: InkWell(
                   onTap: () => onModeChanged(ShareMode.staticCopy),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
@@ -47,14 +48,15 @@ class ShareModeSelection {
                             ? Theme.of(context).colorScheme.primary
                             : Theme.of(context).colorScheme.outline,
                       ),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
+                      ),
                       color: selectedMode == ShareMode.staticCopy
-                          ? Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withValues(
-                                  alpha: AppDimensions.opacityMediumLight)
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer.withValues(
+                              alpha: AppDimensions.opacityMediumLight,
+                            )
                           : null,
                     ),
                     child: Row(
@@ -80,9 +82,9 @@ class ShareModeSelection {
                               Text(
                                 context.l10n.shareStaticCopyDescription,
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -102,8 +104,9 @@ class ShareModeSelection {
               selected: selectedMode == ShareMode.realtime,
               child: InkWell(
                 onTap: () => onModeChanged(ShareMode.realtime),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
@@ -112,13 +115,15 @@ class ShareModeSelection {
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.outline,
                     ),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
                     color: selectedMode == ShareMode.realtime
-                        ? Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withValues(alpha: AppDimensions.opacityMediumLight)
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer.withValues(
+                            alpha: AppDimensions.opacityMediumLight,
+                          )
                         : null,
                   ),
                   child: Row(
@@ -144,13 +149,15 @@ class ShareModeSelection {
                             Text(
                               contentType == ShareContentType.shoppingList
                                   ? context
-                                      .l10n.shareRealtimeShoppingDescription
+                                        .l10n
+                                        .shareRealtimeShoppingDescription
                                   : context
-                                      .l10n.shareRealtimeSharingDescription,
+                                        .l10n
+                                        .shareRealtimeSharingDescription,
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],

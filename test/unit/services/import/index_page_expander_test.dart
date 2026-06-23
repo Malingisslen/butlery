@@ -17,9 +17,9 @@ void main() {
   const base = 'https://recept.example.se/recept';
 
   String listingHtml(int count) => List.generate(
-        count,
-        (i) => '<a href="/recept/ratt-nummer-med-namn-$i">x</a>',
-      ).join('\n');
+    count,
+    (i) => '<a href="/recept/ratt-nummer-med-namn-$i">x</a>',
+  ).join('\n');
 
   test('harvests links when the page looks like an index', () async {
     final expander = IndexPageExpander(fetcher: _FakeFetcher(listingHtml(6)));

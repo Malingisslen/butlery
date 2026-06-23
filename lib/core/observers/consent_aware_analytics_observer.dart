@@ -31,8 +31,8 @@ class ConsentAwareAnalyticsObserver extends NavigatorObserver {
   ConsentAwareAnalyticsObserver({
     required FirebaseAnalyticsObserver inner,
     required ConsentService? Function() consentServiceResolver,
-  })  : _inner = inner,
-        _consentServiceResolver = consentServiceResolver;
+  }) : _inner = inner,
+       _consentServiceResolver = consentServiceResolver;
 
   /// Refresh the cached consent flag from [ConsentService]. Called lazily
   /// from each lifecycle callback — on most frames this hits an in-memory
@@ -53,14 +53,16 @@ class ConsentAwareAnalyticsObserver extends NavigatorObserver {
     // the current one. Acceptable because the first post-grant navigation
     // will still be logged.
     ConsentService.checkSafely(
-      service,
-      ConsentPurpose.analytics,
-      logTag: 'ConsentAwareAnalyticsObserver',
-    ).then((granted) {
-      _hasConsent = granted;
-    }).whenComplete(() {
-      _refreshInFlight = false;
-    });
+          service,
+          ConsentPurpose.analytics,
+          logTag: 'ConsentAwareAnalyticsObserver',
+        )
+        .then((granted) {
+          _hasConsent = granted;
+        })
+        .whenComplete(() {
+          _refreshInFlight = false;
+        });
   }
 
   @override

@@ -59,7 +59,8 @@ class ConnectionStateModule {
 
   /// Start monitoring Firebase connection state
   void startConnectionMonitoring(
-      Function(SyncErrorType, String, {dynamic originalError}) handleError) {
+    Function(SyncErrorType, String, {dynamic originalError}) handleError,
+  ) {
     // Listen to Firebase connection state via Firestore connectivity
     _connectivitySubscription = firestoreRepository.connectivityStream().listen(
       (snapshot) {
@@ -82,7 +83,8 @@ class ConnectionStateModule {
       onAuthStateChanged,
       onError: (error) {
         AppLogger.warning(
-            'Auth state stream error in ConnectionStateModule: $error');
+          'Auth state stream error in ConnectionStateModule: $error',
+        );
         // Treat auth stream errors as logout to prevent stale authenticated state
         onUserLoggedOut();
       },
@@ -106,7 +108,8 @@ class ConnectionStateModule {
       _isConnected = connected;
       connectionController.add(_isConnected);
       AppLogger.info(
-          '🌐 Connection state: ${_isConnected ? "ONLINE" : "OFFLINE"}');
+        '🌐 Connection state: ${_isConnected ? "ONLINE" : "OFFLINE"}',
+      );
       onConnectionStateChanged(connected);
       notifyListeners();
     }

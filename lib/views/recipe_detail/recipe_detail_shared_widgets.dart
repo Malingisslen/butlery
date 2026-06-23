@@ -114,7 +114,8 @@ abstract final class RecipeDetailSharedWidgets {
                   userAllergenPrefs: allergenPrefs.trackedAllergens,
                   userDietaryPrefs: allergenPrefs.trackedDietary,
                   showCoverage: tagResult.coverage < 1.0,
-                  isDegraded: ServiceLocator.tryGet<TaggingService>()
+                  isDegraded:
+                      ServiceLocator.tryGet<TaggingService>()
                           ?.isInDegradedMode ??
                       false,
                 ),
@@ -143,16 +144,17 @@ abstract final class RecipeDetailSharedWidgets {
   ) {
     final cs = Theme.of(context).colorScheme;
     final missing = recipe.missingFields;
-    final missingLabels = missing.map((f) => switch (f) {
-          RecipeField.title => context.l10n.recipeImproveMissingTitle,
-          RecipeField.ingredients =>
-            context.l10n.recipeImproveMissingIngredients,
-          RecipeField.instructions =>
-            context.l10n.recipeImproveMissingInstructions,
-          RecipeField.portions => context.l10n.recipeImproveMissingPortions,
-          RecipeField.time => context.l10n.recipeImproveMissingTime,
-          RecipeField.image => context.l10n.recipeImproveMissingImage,
-        });
+    final missingLabels = missing.map(
+      (f) => switch (f) {
+        RecipeField.title => context.l10n.recipeImproveMissingTitle,
+        RecipeField.ingredients => context.l10n.recipeImproveMissingIngredients,
+        RecipeField.instructions =>
+          context.l10n.recipeImproveMissingInstructions,
+        RecipeField.portions => context.l10n.recipeImproveMissingPortions,
+        RecipeField.time => context.l10n.recipeImproveMissingTime,
+        RecipeField.image => context.l10n.recipeImproveMissingImage,
+      },
+    );
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
       padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -165,8 +167,11 @@ abstract final class RecipeDetailSharedWidgets {
         children: [
           Row(
             children: [
-              Icon(Icons.tips_and_updates_outlined,
-                  size: 18, color: cs.primary),
+              Icon(
+                Icons.tips_and_updates_outlined,
+                size: 18,
+                color: cs.primary,
+              ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Flexible: the title must wrap at narrow widths (BUT-1230 —
               // an unbounded Text here overflowed the Row at <=420px).

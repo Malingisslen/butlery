@@ -54,15 +54,16 @@ void main() {
     });
 
     test(
-        'camera capture sets the offline message before the OCR/parse pipeline',
-        () async {
-      await viewModel.pickImageFromCamera();
+      'camera capture sets the offline message before the OCR/parse pipeline',
+      () async {
+        await viewModel.pickImageFromCamera();
 
-      expect(viewModel.error, AppLocale.current.importOfflineMessage);
-      expect(viewModel.hasOcrResult, isFalse);
-      // No parse is attempted — the guard returns before OCR even runs.
-      verifyNever(() => mockImportManager.autoParseMulti(any()));
-    });
+        expect(viewModel.error, AppLocale.current.importOfflineMessage);
+        expect(viewModel.hasOcrResult, isFalse);
+        // No parse is attempted — the guard returns before OCR even runs.
+        verifyNever(() => mockImportManager.autoParseMulti(any()));
+      },
+    );
 
     test('gallery capture sets the offline message before OCR/parse', () async {
       await viewModel.pickImageFromGallery();
@@ -71,16 +72,18 @@ void main() {
       verifyNever(() => mockImportManager.autoParseMulti(any()));
     });
 
-    test('retryOcr fails fast offline instead of re-running the OCR cascade',
-        () async {
-      // An image is in memory (prior capture) so retry passes its own guard
-      // and reaches the offline pre-check rather than the "no image" branch.
-      viewModel.setImageBytesForTesting(Uint8List.fromList([1, 2, 3]));
+    test(
+      'retryOcr fails fast offline instead of re-running the OCR cascade',
+      () async {
+        // An image is in memory (prior capture) so retry passes its own guard
+        // and reaches the offline pre-check rather than the "no image" branch.
+        viewModel.setImageBytesForTesting(Uint8List.fromList([1, 2, 3]));
 
-      await viewModel.retryOcr();
+        await viewModel.retryOcr();
 
-      expect(viewModel.error, AppLocale.current.importOfflineMessage);
-      verifyNever(() => mockImportManager.autoParseMulti(any()));
-    });
+        expect(viewModel.error, AppLocale.current.importOfflineMessage);
+        verifyNever(() => mockImportManager.autoParseMulti(any()));
+      },
+    );
   });
 }

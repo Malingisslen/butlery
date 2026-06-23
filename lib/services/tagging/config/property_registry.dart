@@ -54,7 +54,6 @@ class PropertyRegistry {
 
     // Special diet properties
     'nightshade', // Tomato, potato, peppers, eggplant, chili
-
     // Practical
     'vegan-friendly',
     'needs-cooking',

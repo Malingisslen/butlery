@@ -27,7 +27,7 @@ class RecipeStatsRepository {
   static const int _maxScan = 5000;
 
   RecipeStatsRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<RecipeStats> getRecipeStats() async {
     try {
@@ -51,7 +51,8 @@ class RecipeStatsRepository {
       return RecipeStats(total: snapshot.docs.length, byMethod: byMethod);
     } catch (e) {
       AppLogger.warning(
-          'RecipeStatsRepository: failed to load recipe stats: $e');
+        'RecipeStatsRepository: failed to load recipe stats: $e',
+      );
       return const RecipeStats(total: 0, byMethod: {});
     }
   }

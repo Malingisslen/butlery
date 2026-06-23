@@ -13,7 +13,9 @@ abstract class DeepLinkRepository {
 
   /// Store deep link metadata
   Future<void> storeDeepLinkMetadata(
-      String linkId, Map<String, dynamic> metadata);
+    String linkId,
+    Map<String, dynamic> metadata,
+  );
 
   /// Retrieve deep link metadata
   Future<Map<String, dynamic>?> getDeepLinkMetadata(String linkId);

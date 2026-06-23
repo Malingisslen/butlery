@@ -53,11 +53,12 @@ class TaggingService extends BaseService {
     TagGenerator? tagGenerator,
     UserIngredientRepository? userIngredientRepository,
     TaggingEventsTracker? eventsTracker,
-  })  : _lookupService = lookupService,
-        _tagGenerator = tagGenerator ??
-            TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
-        _userIngredientRepository = userIngredientRepository,
-        _eventsTracker = eventsTracker;
+  }) : _lookupService = lookupService,
+       _tagGenerator =
+           tagGenerator ??
+           TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
+       _userIngredientRepository = userIngredientRepository,
+       _eventsTracker = eventsTracker;
 
   /// Generates tags for a recipe.
   ///
@@ -182,8 +183,9 @@ class TaggingService extends BaseService {
   /// `all_unknown`). Keeps `_logTaggingMetrics` schema unchanged so the
   /// existing dashboard queries still resolve.
   String _statusFromPipeline(TaggingPipelineResult pipeline) {
-    final lookup =
-        pipeline.outcomes.where((o) => o.phaseIndex == 0).firstOrNull;
+    final lookup = pipeline.outcomes
+        .where((o) => o.phaseIndex == 0)
+        .firstOrNull;
     if (lookup != null && lookup.result == 'timeout') {
       return 'lookup_timeout';
     }
@@ -244,8 +246,10 @@ class TaggingService extends BaseService {
   ) async {
     return await executeServiceOperation(
       // M2: Pass userId for user-defined ingredient lookup
-      () => _lookupService.lookupFromRaw(ingredients,
-          userId: _getCurrentUserId()),
+      () => _lookupService.lookupFromRaw(
+        ingredients,
+        userId: _getCurrentUserId(),
+      ),
       operationName: 'Lookup ingredients',
       requiresAuth: false,
     );
@@ -387,13 +391,15 @@ class TaggingService extends BaseService {
           ' (forceRetag: $forceRetag)',
       'TaggingService',
     );
-    final recipesToRetag =
-        forceRetag ? recipes : recipes.where(needsRetagging).toList();
+    final recipesToRetag = forceRetag
+        ? recipes
+        : recipes.where(needsRetagging).toList();
     final total = recipesToRetag.length;
 
     if (total == 0) {
       AppLogger.info(
-          'No recipes need retagging for user ${userId.maskedUserId}');
+        'No recipes need retagging for user ${userId.maskedUserId}',
+      );
       onProgress?.call(0, 0);
       return 0;
     }
@@ -472,7 +478,8 @@ class TaggingService extends BaseService {
     }
 
     AppLogger.info(
-        'Retagged $retaggedCount recipes for user ${userId.maskedUserId}');
+      'Retagged $retaggedCount recipes for user ${userId.maskedUserId}',
+    );
     return retaggedCount;
   }
 

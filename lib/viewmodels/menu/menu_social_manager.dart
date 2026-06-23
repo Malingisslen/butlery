@@ -40,7 +40,8 @@ class MenuSocialManager {
 
       if (shareSuccess) {
         AppLogger.success(
-            '✅ Meny delad med ${friendUserIds.length} vänner: $menuName');
+          '✅ Meny delad med ${friendUserIds.length} vänner: $menuName',
+        );
         return true;
       } else {
         AppLogger.warning('⚠️ Social delning misslyckades');
@@ -103,18 +104,22 @@ class MenuSocialManager {
 
       for (final menuData in importedOnly) {
         try {
-          menuInfos.add(SavedMenuInfo(
-            key: menuData['id'] as String,
-            name: menuData['title'] as String,
-            savedDate:
-                SerializationUtils.safeRequiredDateTime(menuData, 'sharedAt'),
-            recipeCount: menuData['totalRecipes'] as int,
-            comment: (menuData['description'] as String?).orEmpty(),
-            originalAuthor: menuData['sharedByDisplayName'] as String?,
-            isModified: false,
-            isOwned: false, // Imported menus are not owned by current user
-            firebaseId: menuData['id'] as String?,
-          ));
+          menuInfos.add(
+            SavedMenuInfo(
+              key: menuData['id'] as String,
+              name: menuData['title'] as String,
+              savedDate: SerializationUtils.safeRequiredDateTime(
+                menuData,
+                'sharedAt',
+              ),
+              recipeCount: menuData['totalRecipes'] as int,
+              comment: (menuData['description'] as String?).orEmpty(),
+              originalAuthor: menuData['sharedByDisplayName'] as String?,
+              isModified: false,
+              isOwned: false, // Imported menus are not owned by current user
+              firebaseId: menuData['id'] as String?,
+            ),
+          );
         } catch (e) {
           AppLogger.warning('⚠️ Kunde inte läsa importerad meny: $e');
         }
@@ -143,14 +148,18 @@ class MenuSocialManager {
       }
 
       // getSharedMenuData already parses 'menu' into Recipe objects.
-      final menu = (sharedData['menu'] as Map<String, List<Recipe>>?) ??
+      final menu =
+          (sharedData['menu'] as Map<String, List<Recipe>>?) ??
           <String, List<Recipe>>{};
 
       return SavedMenuData(
         name: (sharedData['title'] as String?).orEmpty(),
-        savedDate:
-            SerializationUtils.safeRequiredDateTime(sharedData, 'sharedAt'),
-        recipeCount: (sharedData['totalRecipes'] as int?) ??
+        savedDate: SerializationUtils.safeRequiredDateTime(
+          sharedData,
+          'sharedAt',
+        ),
+        recipeCount:
+            (sharedData['totalRecipes'] as int?) ??
             menu.values.fold(0, (total, recipes) => total + recipes.length),
         menu: menu,
         lastPrompt: '', // Shared menus don't carry the original prompt.
@@ -187,11 +196,15 @@ class MenuSocialManager {
         'menusShared': stats['menusShared'] ?? 0,
         'menusReceived': sharedMenus.length,
         'menusImported': importedMenus.length,
-        'totalSocialInteractions': (stats['menusShared'] ?? 0) +
+        'totalSocialInteractions':
+            (stats['menusShared'] ?? 0) +
             sharedMenus.length +
             importedMenus.length,
-        'lastActivity':
-            _getLastSocialActivity(stats, sharedMenus, importedMenus),
+        'lastActivity': _getLastSocialActivity(
+          stats,
+          sharedMenus,
+          importedMenus,
+        ),
       };
     } catch (e) {
       AppLogger.error('Get social activity summary failed', e);
@@ -209,8 +222,9 @@ class MenuSocialManager {
     // Check last shared activity
     if (stats['lastSharedAt'] != null) {
       try {
-        lastActivity =
-            DateTime.tryParse((stats['lastSharedAt'] as String?).orEmpty());
+        lastActivity = DateTime.tryParse(
+          (stats['lastSharedAt'] as String?).orEmpty(),
+        );
       } catch (e) {
         // Ignore parsing errors
       }
@@ -219,8 +233,9 @@ class MenuSocialManager {
     // Check last received menu
     for (final menu in sharedMenus) {
       try {
-        final sharedAt =
-            DateTime.tryParse((menu['sharedAt'] as String?).orEmpty());
+        final sharedAt = DateTime.tryParse(
+          (menu['sharedAt'] as String?).orEmpty(),
+        );
         if (sharedAt != null &&
             (lastActivity == null || sharedAt.isAfter(lastActivity))) {
           lastActivity = sharedAt;
@@ -266,8 +281,10 @@ class MenuSocialManager {
     if (menu.isEmpty) return false;
 
     // Check that menu has at least one recipe
-    final totalRecipes =
-        menu.values.fold(0, (total, recipes) => total + recipes.length);
+    final totalRecipes = menu.values.fold(
+      0,
+      (total, recipes) => total + recipes.length,
+    );
     return totalRecipes > 0;
   }
 

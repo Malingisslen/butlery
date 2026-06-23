@@ -199,8 +199,10 @@ void main() {
       ) {
         if (matchingTagIds.isEmpty) return matchingTagIds;
 
-        final exclusiveGroupIds =
-            groups.where((g) => g.isExclusive).map((g) => g.id).toSet();
+        final exclusiveGroupIds = groups
+            .where((g) => g.isExclusive)
+            .map((g) => g.id)
+            .toSet();
 
         if (exclusiveGroupIds.isEmpty) return matchingTagIds;
 
@@ -236,12 +238,21 @@ void main() {
           isExclusive: true,
         );
 
-        final easyTag =
-            PersonalTag.create(name: 'Easy', sortOrder: 1, groupId: group.id);
-        final mediumTag =
-            PersonalTag.create(name: 'Medium', sortOrder: 2, groupId: group.id);
-        final hardTag =
-            PersonalTag.create(name: 'Hard', sortOrder: 3, groupId: group.id);
+        final easyTag = PersonalTag.create(
+          name: 'Easy',
+          sortOrder: 1,
+          groupId: group.id,
+        );
+        final mediumTag = PersonalTag.create(
+          name: 'Medium',
+          sortOrder: 2,
+          groupId: group.id,
+        );
+        final hardTag = PersonalTag.create(
+          name: 'Hard',
+          sortOrder: 3,
+          groupId: group.id,
+        );
 
         final matching = {easyTag.id, mediumTag.id, hardTag.id};
         final result = enforceExclusiveGroups(
@@ -262,12 +273,21 @@ void main() {
           isExclusive: false,
         );
 
-        final tag1 =
-            PersonalTag.create(name: 'A', sortOrder: 1, groupId: group.id);
-        final tag2 =
-            PersonalTag.create(name: 'B', sortOrder: 2, groupId: group.id);
-        final tag3 =
-            PersonalTag.create(name: 'C', sortOrder: 3, groupId: group.id);
+        final tag1 = PersonalTag.create(
+          name: 'A',
+          sortOrder: 1,
+          groupId: group.id,
+        );
+        final tag2 = PersonalTag.create(
+          name: 'B',
+          sortOrder: 2,
+          groupId: group.id,
+        );
+        final tag3 = PersonalTag.create(
+          name: 'C',
+          sortOrder: 3,
+          groupId: group.id,
+        );
 
         final matching = {tag1.id, tag2.id, tag3.id};
         final result = enforceExclusiveGroups(
@@ -294,13 +314,25 @@ void main() {
         );
 
         final excTag1 = PersonalTag.create(
-            name: 'E1', sortOrder: 1, groupId: exclusiveGroup.id);
+          name: 'E1',
+          sortOrder: 1,
+          groupId: exclusiveGroup.id,
+        );
         final excTag2 = PersonalTag.create(
-            name: 'E2', sortOrder: 2, groupId: exclusiveGroup.id);
+          name: 'E2',
+          sortOrder: 2,
+          groupId: exclusiveGroup.id,
+        );
         final nonExcTag1 = PersonalTag.create(
-            name: 'N1', sortOrder: 3, groupId: nonExclusiveGroup.id);
+          name: 'N1',
+          sortOrder: 3,
+          groupId: nonExclusiveGroup.id,
+        );
         final nonExcTag2 = PersonalTag.create(
-            name: 'N2', sortOrder: 4, groupId: nonExclusiveGroup.id);
+          name: 'N2',
+          sortOrder: 4,
+          groupId: nonExclusiveGroup.id,
+        );
 
         final matching = {excTag1.id, excTag2.id, nonExcTag1.id, nonExcTag2.id};
         final result = enforceExclusiveGroups(
@@ -324,8 +356,11 @@ void main() {
           isExclusive: true,
         );
 
-        final groupedTag =
-            PersonalTag.create(name: 'G1', sortOrder: 1, groupId: group.id);
+        final groupedTag = PersonalTag.create(
+          name: 'G1',
+          sortOrder: 1,
+          groupId: group.id,
+        );
         final ungroupedTag = PersonalTag.create(name: 'Favorit', sortOrder: 2);
 
         final matching = {groupedTag.id, ungroupedTag.id};

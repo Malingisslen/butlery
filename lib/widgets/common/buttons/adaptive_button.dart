@@ -52,8 +52,8 @@ class AdaptiveButton extends StatelessWidget {
     required this.child,
     this.padding,
     this.minSize = 44.0,
-  })  : color = null,
-        disabledColor = null;
+  }) : color = null,
+       disabledColor = null;
 
   /// Creates a text-style button for secondary actions.
   factory AdaptiveButton.text({

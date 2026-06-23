@@ -20,12 +20,15 @@ PermissionCacheService _service({
   int maxSize = 100,
 }) {
   final flags = _MockFeatureFlags();
-  when(() => flags.isEnabled(FeatureFlags.enablePermissionCaching))
-      .thenReturn(enabled);
-  when(() => flags.getInt(FeatureFlags.permissionCacheTtlSeconds))
-      .thenReturn(ttlSeconds);
-  when(() => flags.getInt(FeatureFlags.permissionCacheMaxSize))
-      .thenReturn(maxSize);
+  when(
+    () => flags.isEnabled(FeatureFlags.enablePermissionCaching),
+  ).thenReturn(enabled);
+  when(
+    () => flags.getInt(FeatureFlags.permissionCacheTtlSeconds),
+  ).thenReturn(ttlSeconds);
+  when(
+    () => flags.getInt(FeatureFlags.permissionCacheMaxSize),
+  ).thenReturn(maxSize);
   return PermissionCacheService(featureFlags: flags);
 }
 
@@ -125,7 +128,11 @@ void main() {
       );
       expect(
         service.get(
-            userId: 'u', resourceType: 't', resourceId: 'r', operation: 'read'),
+          userId: 'u',
+          resourceType: 't',
+          resourceId: 'r',
+          operation: 'read',
+        ),
         isNull,
       );
       service.dispose();
@@ -142,7 +149,11 @@ void main() {
         reason: 'owner',
       );
       final cached = service.get(
-          userId: 'u', resourceType: 't', resourceId: 'r', operation: 'read');
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r',
+        operation: 'read',
+      );
       expect(cached, isNotNull);
       expect(cached!.allowed, isTrue);
       expect(cached.reason, 'owner');
@@ -153,7 +164,11 @@ void main() {
       final service = _service();
       expect(
         service.get(
-            userId: 'u', resourceType: 't', resourceId: 'r', operation: 'read'),
+          userId: 'u',
+          resourceType: 't',
+          resourceId: 'r',
+          operation: 'read',
+        ),
         isNull,
       );
       service.dispose();
@@ -173,19 +188,21 @@ void main() {
         withClock(Clock.fixed(DateTime.utc(2026, 1, 1, 0, 0, 31)), () {
           expect(
             service.get(
-                userId: 'u',
-                resourceType: 't',
-                resourceId: 'r',
-                operation: 'read'),
+              userId: 'u',
+              resourceType: 't',
+              resourceId: 'r',
+              operation: 'read',
+            ),
             isNull,
           );
           // Subsequent get is still a miss — entry was evicted.
           expect(
             service.get(
-                userId: 'u',
-                resourceType: 't',
-                resourceId: 'r',
-                operation: 'read'),
+              userId: 'u',
+              resourceType: 't',
+              resourceId: 'r',
+              operation: 'read',
+            ),
             isNull,
           );
         });
@@ -196,49 +213,55 @@ void main() {
     test('invalidateResource removes entries matching (type, id)', () {
       final service = _service();
       service.set(
-          userId: 'u1',
-          resourceType: 'recipe',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u1',
+        resourceType: 'recipe',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
       service.set(
-          userId: 'u2',
-          resourceType: 'recipe',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u2',
+        resourceType: 'recipe',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
       service.set(
-          userId: 'u1',
-          resourceType: 'recipe',
-          resourceId: 'r2',
-          operation: 'read',
-          allowed: true);
+        userId: 'u1',
+        resourceType: 'recipe',
+        resourceId: 'r2',
+        operation: 'read',
+        allowed: true,
+      );
 
       service.invalidateResource(resourceType: 'recipe', resourceId: 'r1');
 
       expect(
         service.get(
-            userId: 'u1',
-            resourceType: 'recipe',
-            resourceId: 'r1',
-            operation: 'read'),
+          userId: 'u1',
+          resourceType: 'recipe',
+          resourceId: 'r1',
+          operation: 'read',
+        ),
         isNull,
       );
       expect(
         service.get(
-            userId: 'u2',
-            resourceType: 'recipe',
-            resourceId: 'r1',
-            operation: 'read'),
+          userId: 'u2',
+          resourceType: 'recipe',
+          resourceId: 'r1',
+          operation: 'read',
+        ),
         isNull,
       );
       // r2 entry untouched
       expect(
         service.get(
-            userId: 'u1',
-            resourceType: 'recipe',
-            resourceId: 'r2',
-            operation: 'read'),
+          userId: 'u1',
+          resourceType: 'recipe',
+          resourceId: 'r2',
+          operation: 'read',
+        ),
         isNotNull,
       );
       service.dispose();
@@ -247,49 +270,55 @@ void main() {
     test('invalidateUser removes all entries for a userId', () {
       final service = _service();
       service.set(
-          userId: 'u1',
-          resourceType: 't',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u1',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
       service.set(
-          userId: 'u1',
-          resourceType: 't',
-          resourceId: 'r2',
-          operation: 'read',
-          allowed: true);
+        userId: 'u1',
+        resourceType: 't',
+        resourceId: 'r2',
+        operation: 'read',
+        allowed: true,
+      );
       service.set(
-          userId: 'u2',
-          resourceType: 't',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u2',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
 
       service.invalidateUser('u1');
 
       expect(
         service.get(
-            userId: 'u1',
-            resourceType: 't',
-            resourceId: 'r1',
-            operation: 'read'),
+          userId: 'u1',
+          resourceType: 't',
+          resourceId: 'r1',
+          operation: 'read',
+        ),
         isNull,
       );
       expect(
         service.get(
-            userId: 'u1',
-            resourceType: 't',
-            resourceId: 'r2',
-            operation: 'read'),
+          userId: 'u1',
+          resourceType: 't',
+          resourceId: 'r2',
+          operation: 'read',
+        ),
         isNull,
       );
       // u2 entry untouched
       expect(
         service.get(
-            userId: 'u2',
-            resourceType: 't',
-            resourceId: 'r1',
-            operation: 'read'),
+          userId: 'u2',
+          resourceType: 't',
+          resourceId: 'r1',
+          operation: 'read',
+        ),
         isNotNull,
       );
       service.dispose();
@@ -299,20 +328,22 @@ void main() {
       final service = _service();
       for (var i = 0; i < 5; i++) {
         service.set(
-            userId: 'u',
-            resourceType: 't',
-            resourceId: 'r$i',
-            operation: 'read',
-            allowed: true);
+          userId: 'u',
+          resourceType: 't',
+          resourceId: 'r$i',
+          operation: 'read',
+          allowed: true,
+        );
       }
       service.invalidateAll();
       for (var i = 0; i < 5; i++) {
         expect(
           service.get(
-              userId: 'u',
-              resourceType: 't',
-              resourceId: 'r$i',
-              operation: 'read'),
+            userId: 'u',
+            resourceType: 't',
+            resourceId: 'r$i',
+            operation: 'read',
+          ),
           isNull,
         );
       }
@@ -330,16 +361,25 @@ void main() {
     test('getStatistics reports hits + misses + hitRate', () {
       final service = _service();
       service.set(
-          userId: 'u',
-          resourceType: 't',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
       // 1 hit, 1 miss
       service.get(
-          userId: 'u', resourceType: 't', resourceId: 'r1', operation: 'read');
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+      );
       service.get(
-          userId: 'u', resourceType: 't', resourceId: 'r2', operation: 'read');
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r2',
+        operation: 'read',
+      );
 
       final stats = service.getStatistics();
       expect(stats['enabled'], isTrue);
@@ -353,13 +393,18 @@ void main() {
     test('resetStatistics zeroes hits + misses', () {
       final service = _service();
       service.set(
-          userId: 'u',
-          resourceType: 't',
-          resourceId: 'r1',
-          operation: 'read',
-          allowed: true);
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+        allowed: true,
+      );
       service.get(
-          userId: 'u', resourceType: 't', resourceId: 'r1', operation: 'read');
+        userId: 'u',
+        resourceType: 't',
+        resourceId: 'r1',
+        operation: 'read',
+      );
       service.resetStatistics();
       expect(service.getStatistics()['hits'], 0);
       expect(service.getStatistics()['misses'], 0);

@@ -80,13 +80,15 @@ abstract class ParsingTier {
       );
 
       // Add to context
-      context.addTierResult(TierResultEntry(
-        tierName: tierName,
-        success: finalResult.success,
-        quality: finalResult.quality,
-        duration: finalResult.duration,
-        failureReason: finalResult.failureReason?.name,
-      ));
+      context.addTierResult(
+        TierResultEntry(
+          tierName: tierName,
+          success: finalResult.success,
+          quality: finalResult.quality,
+          duration: finalResult.duration,
+          failureReason: finalResult.failureReason?.name,
+        ),
+      );
 
       if (finalResult.success) {
         AppLogger.info(
@@ -110,13 +112,15 @@ abstract class ParsingTier {
         message: e.toString(),
       );
 
-      context.addTierResult(TierResultEntry(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: stopwatch.elapsed,
-        failureReason: 'exception: $e',
-      ));
+      context.addTierResult(
+        TierResultEntry(
+          tierName: tierName,
+          success: false,
+          quality: 0.0,
+          duration: stopwatch.elapsed,
+          failureReason: 'exception: $e',
+        ),
+      );
 
       return result;
     }
@@ -145,8 +149,9 @@ mixin QualityScoring {
       }
     }
 
-    final structureRatio =
-        ingredients.isEmpty ? 0.0 : structuredCount / ingredients.length;
+    final structureRatio = ingredients.isEmpty
+        ? 0.0
+        : structuredCount / ingredients.length;
     score += structureRatio * 0.3;
 
     return score.clamp(0.0, 1.0);
@@ -165,7 +170,7 @@ mixin QualityScoring {
     // Longer instructions = more detailed
     final avgLength =
         instructions.map((s) => s.length).reduce((a, b) => a + b) /
-            instructions.length;
+        instructions.length;
     if (avgLength > 50) score += 0.2;
     if (avgLength > 100) score += 0.2;
 
@@ -253,11 +258,15 @@ mixin QualityScoring {
     return ParsedRecipe(
       title: structure.title != null && structure.title!.isNotEmpty
           ? FieldResult.mediumConfidence(
-              structure.title!, 'Extracted from text')
+              structure.title!,
+              'Extracted from text',
+            )
           : FieldResult.failed('No title found'),
       portions: structure.portions != null
           ? FieldResult.mediumConfidence(
-              structure.portions!, 'Extracted from text')
+              structure.portions!,
+              'Extracted from text',
+            )
           : FieldResult.lowConfidence(
               ParsingTier.kDefaultPortions,
               'Defaulting to ${ParsingTier.kDefaultPortions} portions',
@@ -266,7 +275,9 @@ mixin QualityScoring {
       instructions: instructions,
       totalTime: structure.totalTime != null
           ? FieldResult.mediumConfidence(
-              structure.totalTime!, 'Extracted from text')
+              structure.totalTime!,
+              'Extracted from text',
+            )
           : FieldResult.failed('No time found'),
       metadata: metadata,
     );

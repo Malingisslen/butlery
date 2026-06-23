@@ -19,34 +19,43 @@ class RecipeListAvatarBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<UserService, FriendsViewModel,
-        SharedContentCoordinatorViewModel>(
-      builder: (context, userService, friendsViewModel, sharedContentViewModel,
-          child) {
-        final totalNotifications = _calculateTotalNotifications(
-          friendsViewModel,
-          sharedContentViewModel,
-        );
+    return Consumer3<
+      UserService,
+      FriendsViewModel,
+      SharedContentCoordinatorViewModel
+    >(
+      builder:
+          (
+            context,
+            userService,
+            friendsViewModel,
+            sharedContentViewModel,
+            child,
+          ) {
+            final totalNotifications = _calculateTotalNotifications(
+              friendsViewModel,
+              sharedContentViewModel,
+            );
 
-        return Stack(
-          children: [
-            // UI Redesign: No status indicator per interview decision
-            SocialAvatarComponents.avatar(
-              user: userService.currentUserProfile,
-              displayName: userService.currentDisplayName,
-              size: ImageSize.medium,
-              showOnlineStatus: false,
-              onTap: () => _showProfileMenu(context, userService),
-            ),
-            if (totalNotifications > 0)
-              Positioned(
-                top: 2,
-                right: 2,
-                child: NotificationBadge(count: totalNotifications),
-              ),
-          ],
-        );
-      },
+            return Stack(
+              children: [
+                // UI Redesign: No status indicator per interview decision
+                SocialAvatarComponents.avatar(
+                  user: userService.currentUserProfile,
+                  displayName: userService.currentDisplayName,
+                  size: ImageSize.medium,
+                  showOnlineStatus: false,
+                  onTap: () => _showProfileMenu(context, userService),
+                ),
+                if (totalNotifications > 0)
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: NotificationBadge(count: totalNotifications),
+                  ),
+              ],
+            );
+          },
     );
   }
 
@@ -68,7 +77,8 @@ class RecipeListAvatarBadge extends StatelessWidget {
       unreadMenus = sharedContentViewModel.menuViewModel.unreadCount;
     } catch (e) {
       AppLogger.warning(
-          '⚠️ One or more ViewModels disposed - showing fallback notification badge');
+        '⚠️ One or more ViewModels disposed - showing fallback notification badge',
+      );
     }
 
     return pendingFriendRequests +

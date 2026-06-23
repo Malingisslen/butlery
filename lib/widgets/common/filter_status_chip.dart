@@ -24,16 +24,14 @@ class FilterStatusChip extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .secondaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight),
+        color: Theme.of(context).colorScheme.secondaryContainer.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: Theme.of(context)
-              .colorScheme
-              .secondary
-              .withValues(alpha: AppDimensions.opacityLight),
+          color: Theme.of(
+            context,
+          ).colorScheme.secondary.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(

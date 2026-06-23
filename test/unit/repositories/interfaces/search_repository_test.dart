@@ -127,8 +127,10 @@ void main() {
     });
 
     test('mealType alone', () {
-      expect(const SearchFilters(mealType: 'Middag').toAlgoliaFilter(),
-          'mealType:"Middag"');
+      expect(
+        const SearchFilters(mealType: 'Middag').toAlgoliaFilter(),
+        'mealType:"Middag"',
+      );
     });
 
     test('every field renders to AND-joined Algolia syntax', () {
@@ -158,8 +160,10 @@ void main() {
     });
 
     test('isPublic false renders "isPublic:false"', () {
-      expect(const SearchFilters(isPublic: false).toAlgoliaFilter(),
-          'isPublic:false');
+      expect(
+        const SearchFilters(isPublic: false).toAlgoliaFilter(),
+        'isPublic:false',
+      );
     });
 
     test('empty tag list does not add filter', () {

@@ -95,8 +95,10 @@ void main() {
 
       test('should update online status with lastActiveAt timestamp', () async {
         // Arrange - Create profile first
-        final profile =
-            UserBuilder().withId(testUserId).withName('Test User').build();
+        final profile = UserBuilder()
+            .withId(testUserId)
+            .withName('Test User')
+            .build();
         await repository.saveProfile(profile);
 
         // Act
@@ -183,22 +185,22 @@ void main() {
           {
             'uid': 'user-1',
             'displayName': 'John Doe',
-            'displayNameLower': 'john doe'
+            'displayNameLower': 'john doe',
           },
           {
             'uid': 'user-2',
             'displayName': 'Jane Smith',
-            'displayNameLower': 'jane smith'
+            'displayNameLower': 'jane smith',
           },
           {
             'uid': 'user-3',
             'displayName': 'Johnny Walker',
-            'displayNameLower': 'johnny walker'
+            'displayNameLower': 'johnny walker',
           },
           {
             'uid': testUserId,
             'displayName': 'John Test',
-            'displayNameLower': 'john test'
+            'displayNameLower': 'john test',
           }, // Current user
         ];
 
@@ -207,12 +209,12 @@ void main() {
               .collection('public_profiles')
               .doc(profile['uid'] as String)
               .set({
-            ...profile,
-            'isSearchable': true,
-            'email': '${profile['uid']}@example.com',
-            'joinedAt': TestFieldValues.serverTimestamp(),
-            'lastActiveAt': TestFieldValues.serverTimestamp(),
-          });
+                ...profile,
+                'isSearchable': true,
+                'email': '${profile['uid']}@example.com',
+                'joinedAt': TestFieldValues.serverTimestamp(),
+                'lastActiveAt': TestFieldValues.serverTimestamp(),
+              });
         }
 
         // Act - Search for "john"
@@ -222,24 +224,25 @@ void main() {
         expect(results.length, greaterThanOrEqualTo(2));
         expect(results.any((p) => p.displayName == 'John Doe'), isTrue);
         expect(results.any((p) => p.displayName == 'Johnny Walker'), isTrue);
-        expect(results.any((p) => p.uid == testUserId),
-            isFalse); // Excludes current user
+        expect(
+          results.any((p) => p.uid == testUserId),
+          isFalse,
+        ); // Excludes current user
       });
 
       test('should search by email when allowed', () async {
         // Arrange
-        await fakeFirestore
-            .collection('public_profiles')
-            .doc('email-user')
-            .set({
-          'uid': 'email-user',
-          'displayName': 'Email User',
-          'displayNameLower': 'email user',
-          'email': 'unique@example.com',
-          'allowEmailSearch': true,
-          'isSearchable': true,
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
+        await fakeFirestore.collection('public_profiles').doc('email-user').set(
+          {
+            'uid': 'email-user',
+            'displayName': 'Email User',
+            'displayNameLower': 'email user',
+            'email': 'unique@example.com',
+            'allowEmailSearch': true,
+            'isSearchable': true,
+            'joinedAt': TestFieldValues.serverTimestamp(),
+          },
+        );
 
         // Act
         final results = await repository.searchProfiles('unique@example.com');
@@ -255,23 +258,23 @@ void main() {
             .collection('public_profiles')
             .doc('hidden-user')
             .set({
-          'uid': 'hidden-user',
-          'displayName': 'Hidden User',
-          'displayNameLower': 'hidden user',
-          'isSearchable': false, // Not searchable
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
+              'uid': 'hidden-user',
+              'displayName': 'Hidden User',
+              'displayNameLower': 'hidden user',
+              'isSearchable': false, // Not searchable
+              'joinedAt': TestFieldValues.serverTimestamp(),
+            });
 
         await fakeFirestore
             .collection('public_profiles')
             .doc('visible-user')
             .set({
-          'uid': 'visible-user',
-          'displayName': 'Hidden Visible', // Contains "hidden"
-          'displayNameLower': 'hidden visible',
-          'isSearchable': true,
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
+              'uid': 'visible-user',
+              'displayName': 'Hidden Visible', // Contains "hidden"
+              'displayNameLower': 'hidden visible',
+              'isSearchable': true,
+              'joinedAt': TestFieldValues.serverTimestamp(),
+            });
 
         // Act
         final results = await repository.searchProfiles('hidden');
@@ -283,31 +286,35 @@ void main() {
     });
 
     group('Display Name Availability', () {
-      test('should check display name availability with case insensitivity',
-          () async {
-        // Arrange
-        await fakeFirestore
-            .collection('public_profiles')
-            .doc('existing-user')
-            .set({
-          'uid': 'existing-user',
-          'displayName': 'John Doe',
-          'displayNameLower': 'john doe',
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
+      test(
+        'should check display name availability with case insensitivity',
+        () async {
+          // Arrange
+          await fakeFirestore
+              .collection('public_profiles')
+              .doc('existing-user')
+              .set({
+                'uid': 'existing-user',
+                'displayName': 'John Doe',
+                'displayNameLower': 'john doe',
+                'joinedAt': TestFieldValues.serverTimestamp(),
+              });
 
-        // Act
-        final taken1 = await repository.isDisplayNameAvailable('John Doe');
-        final taken2 = await repository.isDisplayNameAvailable('john doe');
-        final taken3 = await repository.isDisplayNameAvailable('JOHN DOE');
-        final available = await repository.isDisplayNameAvailable('Jane Smith');
+          // Act
+          final taken1 = await repository.isDisplayNameAvailable('John Doe');
+          final taken2 = await repository.isDisplayNameAvailable('john doe');
+          final taken3 = await repository.isDisplayNameAvailable('JOHN DOE');
+          final available = await repository.isDisplayNameAvailable(
+            'Jane Smith',
+          );
 
-        // Assert
-        expect(taken1, isFalse);
-        expect(taken2, isFalse);
-        expect(taken3, isFalse);
-        expect(available, isTrue);
-      });
+          // Assert
+          expect(taken1, isFalse);
+          expect(taken2, isFalse);
+          expect(taken3, isFalse);
+          expect(available, isTrue);
+        },
+      );
 
       test('should allow current user to keep their display name', () async {
         // Arrange
@@ -337,8 +344,10 @@ void main() {
         await repository.ensureBaseUserDocument(testUserId);
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('users').doc(testUserId).get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc(testUserId)
+            .get();
 
         expect(doc.exists, isTrue);
         expect(doc.data()?['uid'], equals(testUserId));
@@ -381,8 +390,9 @@ void main() {
     group('Real-time Updates', () {
       test('should receive real-time profile updates', () async {
         // Arrange
-        final profileRef =
-            fakeFirestore.collection('public_profiles').doc(testUserId);
+        final profileRef = fakeFirestore
+            .collection('public_profiles')
+            .doc(testUserId);
 
         // Create initial profile
         await profileRef.set({

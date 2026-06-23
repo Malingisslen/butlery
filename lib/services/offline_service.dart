@@ -117,7 +117,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   AppDatabase get database {
     if (!_isInitializationReady) {
       throw StateError(
-          'OfflineService not initialized - call initialize() first');
+        'OfflineService not initialized - call initialize() first',
+      );
     }
     return _initialization.database;
   }
@@ -168,7 +169,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     if (_currentUserId != userId) {
       _currentUserId = userId;
       AppLogger.info(
-          '👤 Offline service använder nu user: ${userId ?? "INGEN"}');
+        '👤 Offline service använder nu user: ${userId ?? "INGEN"}',
+      );
       // Always notify listeners so UI reacts to user change
       notifyListeners();
       // Refresh sync state for new user (also notifies when initialized)
@@ -227,14 +229,18 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Get specific offline recipe for user
   Future<Recipe?> getOfflineRecipeForUser(
-      String recipeId, String userId) async {
+    String recipeId,
+    String userId,
+  ) async {
     if (!isInitialized) return null;
     return _userStorage.getRecipeForUser(recipeId, userId);
   }
 
   /// Delete recipe for specific user
   Future<void> deleteRecipeOfflineForUser(
-      String recipeId, String userId) async {
+    String recipeId,
+    String userId,
+  ) async {
     await _userStorage.deleteRecipeForUser(recipeId, userId);
     await refreshSyncState();
   }
@@ -243,7 +249,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   Future<void> clearUserData(String userId) async {
     if (!isInitialized) {
       AppLogger.warning(
-          '⚠️ OfflineService inte initialiserad, kan inte rensa user data');
+        '⚠️ OfflineService inte initialiserad, kan inte rensa user data',
+      );
       return;
     }
 
@@ -295,8 +302,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
 
     try {
       // Get the recipe from local storage
-      final recipe =
-          await _userStorage.getRecipeForUser(recipeId, _currentUserId!);
+      final recipe = await _userStorage.getRecipeForUser(
+        recipeId,
+        _currentUserId!,
+      );
       if (recipe == null) {
         AppLogger.warning('⚠️ Recipe $recipeId not found in offline storage');
         return;
@@ -319,7 +328,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       final tagResult = await taggingService.generateTags(recipe);
       if (tagResult == null) {
         AppLogger.warning(
-            '⚠️ Tagging returned null for recipe: ${recipe.title}');
+          '⚠️ Tagging returned null for recipe: ${recipe.title}',
+        );
         return;
       }
 
@@ -333,8 +343,11 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       );
 
       // Save updated recipe back to local storage (will also sync to Firebase)
-      await _userStorage.saveRecipeForUser(updatedRecipe, _currentUserId!,
-          isOnline: isOnline);
+      await _userStorage.saveRecipeForUser(
+        updatedRecipe,
+        _currentUserId!,
+        isOnline: isOnline,
+      );
 
       AppLogger.success(
         '✅ Retagged recipe "${recipe.title}" with ${tagResult.tags.length} tags '

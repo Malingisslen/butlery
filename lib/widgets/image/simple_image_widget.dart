@@ -125,11 +125,13 @@ class SimpleImageWidget extends StatelessWidget {
           imageUrl: imageUrl!,
           config: config,
           fit: fit,
-          placeholder: placeholder ??
+          placeholder:
+              placeholder ??
               ImageComponents.buildLoadingPlaceholder(
                 config: config,
               ),
-          errorWidget: errorWidget ??
+          errorWidget:
+              errorWidget ??
               ImageComponents.buildErrorPlaceholder(
                 config: config,
               ),
@@ -243,24 +245,24 @@ class NetworkImageWidget extends StatelessWidget {
       placeholder: placeholder != null
           ? (_, __) => placeholder!
           : (_, __) => Container(
-                width: width,
-                height: height,
-                color: cs.surfaceContainerHighest,
-                child: const Center(
-                  child: LoadingIndicator(),
-                ),
+              width: width,
+              height: height,
+              color: cs.surfaceContainerHighest,
+              child: const Center(
+                child: LoadingIndicator(),
               ),
+            ),
       errorWidget: errorWidget != null
           ? (_, __, ___) => errorWidget!
           : (_, __, ___) => Container(
-                width: width,
-                height: height,
-                color: cs.surfaceContainerHighest,
-                child: Icon(
-                  Icons.error_outline,
-                  color: cs.error,
-                ),
+              width: width,
+              height: height,
+              color: cs.surfaceContainerHighest,
+              child: Icon(
+                Icons.error_outline,
+                color: cs.error,
               ),
+            ),
     );
 
     // Apply border radius if specified
@@ -337,13 +339,16 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
       duration: AppDimensions.animationDurationCommon,
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.5,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation =
+        Tween<double>(
+          begin: 1.0,
+          end: 1.5,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     if (_isExpanded) {
       _animationController.forward();
@@ -449,8 +454,10 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.image_outlined,
-                      size: AppDimensions.iconSizeXl),
+                  const Icon(
+                    Icons.image_outlined,
+                    size: AppDimensions.iconSizeXl,
+                  ),
                   const SizedBox(height: AppDimensions.spacingSm),
                   Text(context.l10n.imageTapToLoad),
                 ],

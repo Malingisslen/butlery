@@ -25,30 +25,36 @@ class ConfidenceIndicator extends StatelessWidget {
 
     if (confidence >= 0.8) {
       // High confidence - Green
-      badgeBackgroundColor = context.butleryColors.success
-          .withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor = context.butleryColors.success
-          .withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor = context.butleryColors.success.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      );
+      badgeBorderColor = context.butleryColors.success.withValues(
+        alpha: AppDimensions.opacityMediumLight,
+      );
       badgeIconColor = context.butleryColors.success;
       badgeTextColor = context.butleryColors.onSuccessContainer;
       icon = Icons.check_circle;
       label = context.l10n.importHighQuality;
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
-      badgeBackgroundColor = context.butleryColors.warning
-          .withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor = context.butleryColors.warning
-          .withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor = context.butleryColors.warning.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      );
+      badgeBorderColor = context.butleryColors.warning.withValues(
+        alpha: AppDimensions.opacityMediumLight,
+      );
       badgeIconColor = context.butleryColors.warning;
       badgeTextColor = context.butleryColors.onWarningContainer;
       icon = Icons.info;
       label = context.l10n.importGoodQuality;
     } else {
       // Low confidence - Red
-      badgeBackgroundColor =
-          cs.error.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor =
-          cs.error.withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor = cs.error.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      );
+      badgeBorderColor = cs.error.withValues(
+        alpha: AppDimensions.opacityMediumLight,
+      );
       badgeIconColor = cs.error;
       badgeTextColor = cs.onErrorContainer;
       icon = Icons.warning;

@@ -16,9 +16,9 @@ class ListMemberOperations {
     required String? Function() getCurrentUserId,
     required Future<bool> Function(UnifiedShoppingList list) updateList,
     required ListLifecycleOperations lifecycleOps,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _updateList = updateList,
-        _lifecycleOps = lifecycleOps;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _updateList = updateList,
+       _lifecycleOps = lifecycleOps;
 
   Future<bool> addMember({
     required String listId,
@@ -56,7 +56,8 @@ class ListMemberOperations {
       await _updateList(updatedList);
 
       AppLogger.success(
-          'Added member ${userDisplayName.maskedName} to ${list.name}');
+        'Added member ${userDisplayName.maskedName} to ${list.name}',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to add member', e);
@@ -87,8 +88,9 @@ class ListMemberOperations {
     }
 
     try {
-      final updatedPermissions =
-          Map<String, SharedListPermission>.from(list.memberPermissions);
+      final updatedPermissions = Map<String, SharedListPermission>.from(
+        list.memberPermissions,
+      );
       updatedPermissions.remove(userId);
 
       final updatedList = list.copyWith(
@@ -119,7 +121,8 @@ class ListMemberOperations {
 
     if (!canManageMembers(listId)) {
       AppLogger.error(
-          'Cannot update permission: No permission to manage members');
+        'Cannot update permission: No permission to manage members',
+      );
       return false;
     }
 
@@ -169,7 +172,8 @@ class ListMemberOperations {
 
     if (ServiceLocator.get<PermissionService>().isShoppingListOwner(listId)) {
       AppLogger.error(
-          'Owner cannot leave list. Transfer ownership or delete list.');
+        'Owner cannot leave list. Transfer ownership or delete list.',
+      );
       return false;
     }
 
@@ -186,7 +190,8 @@ class ListMemberOperations {
   }
 
   bool canManageMembers(String listId) {
-    return ServiceLocator.get<PermissionService>()
-        .canManageShoppingList(listId);
+    return ServiceLocator.get<PermissionService>().canManageShoppingList(
+      listId,
+    );
   }
 }

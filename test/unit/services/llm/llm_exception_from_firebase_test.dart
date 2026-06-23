@@ -27,7 +27,8 @@ void main() {
   group('LlmException.fromFirebase', () {
     test('maps unauthenticated to llmMustBeLoggedIn (Swedish default)', () {
       final ex = LlmException.fromFirebase(
-          Exception('FirebaseFunctionsException: unauthenticated; nope'));
+        Exception('FirebaseFunctionsException: unauthenticated; nope'),
+      );
 
       expect(ex.code, 'unauthenticated');
       expect(ex.isRateLimited, isFalse);
@@ -40,7 +41,8 @@ void main() {
 
     test('maps resource-exhausted with rate-limit metadata', () {
       final ex = LlmException.fromFirebase(
-          Exception('code=resource-exhausted slow down'));
+        Exception('code=resource-exhausted slow down'),
+      );
 
       expect(ex.code, 'resource-exhausted');
       expect(ex.isRateLimited, isTrue);
@@ -49,8 +51,9 @@ void main() {
     });
 
     test('maps invalid-argument and surfaces the raw cause to the user', () {
-      final ex =
-          LlmException.fromFirebase(Exception('invalid-argument: bad text'));
+      final ex = LlmException.fromFirebase(
+        Exception('invalid-argument: bad text'),
+      );
 
       expect(ex.code, 'invalid-argument');
       // The l10n template includes the raw error so users have a hint.
@@ -65,33 +68,37 @@ void main() {
       expect(ex.message, AppLocale.current.llmTimeout);
       // Regression guard: must NOT fall through to the generic bucket.
       expect(
+        ex.message,
+        isNot(equals(AppLocale.current.llmGenericError('deadline-exceeded'))),
+      );
+    });
+
+    test(
+      'BUT-582: maps unavailable to llmTemporarilyUnavailable (not generic)',
+      () {
+        final ex = LlmException.fromFirebase(Exception('unavailable'));
+
+        expect(ex.code, 'unavailable');
+        expect(ex.message, AppLocale.current.llmTemporarilyUnavailable);
+        // Regression guard: must NOT fall through to the generic bucket.
+        expect(
           ex.message,
-          isNot(
-              equals(AppLocale.current.llmGenericError('deadline-exceeded'))));
-    });
-
-    test('BUT-582: maps unavailable to llmTemporarilyUnavailable (not generic)',
-        () {
-      final ex = LlmException.fromFirebase(Exception('unavailable'));
-
-      expect(ex.code, 'unavailable');
-      expect(ex.message, AppLocale.current.llmTemporarilyUnavailable);
-      // Regression guard: must NOT fall through to the generic bucket.
-      expect(ex.message,
-          isNot(equals(AppLocale.current.llmGenericError('unavailable'))));
-    });
+          isNot(equals(AppLocale.current.llmGenericError('unavailable'))),
+        );
+      },
+    );
 
     test('falls through to unknown bucket on unrecognised error', () {
-      final ex =
-          LlmException.fromFirebase(Exception('some unrelated explosion'));
+      final ex = LlmException.fromFirebase(
+        Exception('some unrelated explosion'),
+      );
 
       expect(ex.code, 'unknown');
       // The generic l10n template embeds the raw cause for support diagnosis.
       expect(ex.message, contains('some unrelated explosion'));
     });
 
-    test('Swedish ↔ English copy parity: all 6 codes have distinct messages',
-        () {
+    test('Swedish ↔ English copy parity: all 6 codes have distinct messages', () {
       // Catches a regression where two codes accidentally share the same copy
       // (e.g. timeout and unavailable both falling back to a generic string).
       final en = AppLocalizationsEn();
@@ -103,9 +110,12 @@ void main() {
         en.llmTemporarilyUnavailable,
         en.llmGenericError('x'),
       };
-      expect(messages.length, 6,
-          reason:
-              'Each Firebase error code must map to a distinct user-facing message');
+      expect(
+        messages.length,
+        6,
+        reason:
+            'Each Firebase error code must map to a distinct user-facing message',
+      );
     });
   });
 }

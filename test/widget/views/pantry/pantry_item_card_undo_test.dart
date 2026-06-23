@@ -54,7 +54,8 @@ void main() {
             // BUT-948: the card now reads selection state; provide a real
             // (empty) manager so the non-selection swipe path is exercised.
             ChangeNotifierProvider<PantrySelectionManager>.value(
-                value: PantrySelectionManager()),
+              value: PantrySelectionManager(),
+            ),
           ],
           child: ListView(children: [PantryItemCard(item: item)]),
         ),
@@ -69,19 +70,28 @@ void main() {
   testWidgets('swipe deletes immediately — no confirm dialog', (tester) async {
     final mockVm = await pumpAndSwipe(tester);
 
-    expect(find.byType(AlertDialog), findsNothing,
-        reason: 'Reversible-destructive class: a dialog on a recoverable '
-            'action is friction without protection (ui-conventions.md).');
+    expect(
+      find.byType(AlertDialog),
+      findsNothing,
+      reason:
+          'Reversible-destructive class: a dialog on a recoverable '
+          'action is friction without protection (ui-conventions.md).',
+    );
     verify(() => mockVm.removeItem('p_1')).called(1);
   });
 
-  testWidgets('undo snackbar appears after dismissal and restores the item',
-      (tester) async {
+  testWidgets('undo snackbar appears after dismissal and restores the item', (
+    tester,
+  ) async {
     final mockVm = await pumpAndSwipe(tester);
 
-    expect(find.byType(SnackBar), findsOneWidget,
-        reason: 'Messenger is captured pre-dismissal, so the snackbar must '
-            'survive the row element being deactivated.');
+    expect(
+      find.byType(SnackBar),
+      findsOneWidget,
+      reason:
+          'Messenger is captured pre-dismissal, so the snackbar must '
+          'survive the row element being deactivated.',
+    );
     expect(find.text('Ångra'), findsOneWidget);
 
     await tester.tap(find.text('Ångra'));

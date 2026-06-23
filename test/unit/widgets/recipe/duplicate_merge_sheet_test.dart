@@ -215,14 +215,22 @@ void main() {
   group('DuplicateMergeChoice', () {
     test('all enum values exist', () {
       expect(DuplicateMergeChoice.values, hasLength(4));
-      expect(DuplicateMergeChoice.values,
-          contains(DuplicateMergeChoice.keepExisting));
-      expect(DuplicateMergeChoice.values,
-          contains(DuplicateMergeChoice.replaceWithNew));
-      expect(DuplicateMergeChoice.values,
-          contains(DuplicateMergeChoice.saveAsNew));
-      expect(DuplicateMergeChoice.values,
-          contains(DuplicateMergeChoice.mergeBestFields));
+      expect(
+        DuplicateMergeChoice.values,
+        contains(DuplicateMergeChoice.keepExisting),
+      );
+      expect(
+        DuplicateMergeChoice.values,
+        contains(DuplicateMergeChoice.replaceWithNew),
+      );
+      expect(
+        DuplicateMergeChoice.values,
+        contains(DuplicateMergeChoice.saveAsNew),
+      );
+      expect(
+        DuplicateMergeChoice.values,
+        contains(DuplicateMergeChoice.mergeBestFields),
+      );
     });
   });
 }

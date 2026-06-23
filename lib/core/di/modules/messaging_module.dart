@@ -70,19 +70,19 @@ class MessagingModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        MessagingRepository,
-        MessagingService,
-        MessageReactionsService,
-        PresenceService,
-        NotificationsRepository, // Also provides notifications repository
-        NotificationHistoryRepository,
-        NotificationBatchRepository,
-        NotificationAnalyticsRepository,
-        DeviceRepository,
-        NotificationService,
-        NotificationPermissionService,
-        FCMService,
-      ];
+    MessagingRepository,
+    MessagingService,
+    MessageReactionsService,
+    PresenceService,
+    NotificationsRepository, // Also provides notifications repository
+    NotificationHistoryRepository,
+    NotificationBatchRepository,
+    NotificationAnalyticsRepository,
+    DeviceRepository,
+    NotificationService,
+    NotificationPermissionService,
+    FCMService,
+  ];
 
   @override
   int get priority => 30; // After Core (1), Content (10), and Social (20)
@@ -136,7 +136,8 @@ class MessagingModule implements DIModule {
       if (!container.isRegistered<NotificationsRepository>()) {
         container.registerLazySingleton<NotificationsRepository>(
           () => FirebaseNotificationsRepository(
-              authRepository: container<AuthRepository>()),
+            authRepository: container<AuthRepository>(),
+          ),
         );
       }
       // MessageReactionsService - handles emoji reactions on messages

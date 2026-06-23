@@ -148,12 +148,13 @@ Future<void> expectTabWalksControlsTopToBottom(
   final onScreenPrimary = trackTextFieldsOnly
       ? textFieldNodes.where((n) => topOf(n) != null).length
       : FocusManager.instance.rootScope.traversalDescendants
-          .where((n) => isPrimary(n) && topOf(n) != null)
-          .length;
+            .where((n) => isPrimary(n) && topOf(n) != null)
+            .length;
   expect(
     onScreenPrimary,
     greaterThanOrEqualTo(minControls),
-    reason: '$viewName: need at least $minControls focusable primary controls '
+    reason:
+        '$viewName: need at least $minControls focusable primary controls '
         'to prove Tab order; found $onScreenPrimary.',
   );
 
@@ -207,16 +208,15 @@ Future<void> expectTabWalksControlsTopToBottom(
   expect(
     visitedTops,
     sortedTops,
-    reason: '$viewName: Tab must visit controls in visual (reading) order over '
+    reason:
+        '$viewName: Tab must visit controls in visual (reading) order over '
         'one traversal cycle, but the order was not top-to-bottom (BUT-701 '
         'regression). Visited: $visitedTops',
   );
 }
 
 void main() {
-  group(
-      'FocusTraversalGroup keyboard tab-order (BUT-1307 / BUT-1309 / BUT-701)',
-      () {
+  group('FocusTraversalGroup keyboard tab-order (BUT-1307 / BUT-1309 / BUT-701)', () {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       production.ServiceLocator.initialize(DIContainer());

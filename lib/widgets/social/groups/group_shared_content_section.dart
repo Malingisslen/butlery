@@ -168,8 +168,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   Future<void> _showRecipeDetailsDialog(SharedContentItem item) async {
     try {
       final sharedRecipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
-      final sharedRecipe =
-          await sharedRecipeViewModel.getSharedRecipeById(item.id);
+      final sharedRecipe = await sharedRecipeViewModel.getSharedRecipeById(
+        item.id,
+      );
 
       if (sharedRecipe == null) {
         if (!mounted) return;
@@ -187,7 +188,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     } catch (e) {
       if (!mounted) return;
       SnackBarUtils.showError(
-          context, context.l10n.groupErrorOpeningRecipe(e.toString()));
+        context,
+        context.l10n.groupErrorOpeningRecipe(e.toString()),
+      );
     }
   }
 
@@ -214,8 +217,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   Future<void> _importRecipe(SharedContentItem item) async {
     try {
       final sharedRecipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
-      final sharedRecipe =
-          await sharedRecipeViewModel.getSharedRecipeById(item.id);
+      final sharedRecipe = await sharedRecipeViewModel.getSharedRecipeById(
+        item.id,
+      );
 
       if (sharedRecipe == null) {
         if (!mounted) return;
@@ -227,11 +231,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (!mounted) return;
       SnackBarUtils.showSuccess(
-          context, context.l10n.groupRecipeImportedSuccess(item.title));
+        context,
+        context.l10n.groupRecipeImportedSuccess(item.title),
+      );
     } catch (e) {
       if (!mounted) return;
       SnackBarUtils.showError(
-          context, context.l10n.groupRecipeImportFailed(e.toString()));
+        context,
+        context.l10n.groupRecipeImportFailed(e.toString()),
+      );
     }
   }
 
@@ -239,8 +247,9 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for shopping list import functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(context.l10n.groupImportingShoppingListComingSoon(item.title)),
+        content: Text(
+          context.l10n.groupImportingShoppingListComingSoon(item.title),
+        ),
         backgroundColor: context.butleryColors.success,
       ),
     );
@@ -261,11 +270,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                 final recipes = recipesSnapshot.data ?? [];
                 final menus = menusSnapshot.data ?? [];
                 final shoppingLists = shoppingListsSnapshot.data ?? [];
-                final totalItems =
-                    _getTotalItems(recipes, menus, shoppingLists);
+                final totalItems = _getTotalItems(
+                  recipes,
+                  menus,
+                  shoppingLists,
+                );
 
                 // Show loading if any stream is still loading
-                final isLoading = !recipesSnapshot.hasData ||
+                final isLoading =
+                    !recipesSnapshot.hasData ||
                     !menusSnapshot.hasData ||
                     !shoppingListsSnapshot.hasData;
 
@@ -290,69 +303,82 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         ),
                         if (totalItems > 0) ...[
                           const SizedBox(width: AppDimensions.spacingS),
-                          Builder(builder: (context) {
-                            final cs = Theme.of(context).colorScheme;
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.paddingS,
-                                vertical: AppDimensions.spacingXs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: cs.primary.withValues(
-                                    alpha: AppDimensions.opacityVeryLight),
-                                borderRadius: BorderRadius.circular(
-                                    AppDimensions.borderRadiusS),
-                              ),
-                              child: Text(
-                                totalItems.toString(),
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: cs.primary,
+                          Builder(
+                            builder: (context) {
+                              final cs = Theme.of(context).colorScheme;
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.paddingS,
+                                  vertical: AppDimensions.spacingXs,
                                 ),
-                              ),
-                            );
-                          }),
+                                decoration: BoxDecoration(
+                                  color: cs.primary.withValues(
+                                    alpha: AppDimensions.opacityVeryLight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimensions.borderRadiusS,
+                                  ),
+                                ),
+                                child: Text(
+                                  totalItems.toString(),
+                                  style: AppTextStyles.labelLarge.copyWith(
+                                    color: cs.primary,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ],
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
 
                     // Tab bar
-                    Builder(builder: (context) {
-                      final cs = Theme.of(context).colorScheme;
-                      return DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: cs.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusM),
-                        ),
-                        child: TabBar(
-                          controller: _tabController,
-                          indicatorColor: cs.primary,
-                          labelColor: cs.primary,
-                          unselectedLabelColor: cs.onSurfaceVariant,
-                          tabs: [
-                            Tab(
-                              icon: const Icon(Icons.restaurant_menu,
-                                  size: AppDimensions.iconSizeM),
-                              text:
-                                  '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
+                    Builder(
+                      builder: (context) {
+                        final cs = Theme.of(context).colorScheme;
+                        return DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: cs.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusM,
                             ),
-                            Tab(
-                              icon: const Icon(Icons.calendar_today,
-                                  size: AppDimensions.iconSizeM),
-                              text:
-                                  '${context.l10n.groupTabMenus} (${menus.length})',
-                            ),
-                            Tab(
-                              icon: const Icon(Icons.shopping_cart,
-                                  size: AppDimensions.iconSizeM),
-                              text:
-                                  '${context.l10n.groupTabLists} (${shoppingLists.length})',
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                          ),
+                          child: TabBar(
+                            controller: _tabController,
+                            indicatorColor: cs.primary,
+                            labelColor: cs.primary,
+                            unselectedLabelColor: cs.onSurfaceVariant,
+                            tabs: [
+                              Tab(
+                                icon: const Icon(
+                                  Icons.restaurant_menu,
+                                  size: AppDimensions.iconSizeM,
+                                ),
+                                text:
+                                    '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
+                              ),
+                              Tab(
+                                icon: const Icon(
+                                  Icons.calendar_today,
+                                  size: AppDimensions.iconSizeM,
+                                ),
+                                text:
+                                    '${context.l10n.groupTabMenus} (${menus.length})',
+                              ),
+                              Tab(
+                                icon: const Icon(
+                                  Icons.shopping_cart,
+                                  size: AppDimensions.iconSizeM,
+                                ),
+                                text:
+                                    '${context.l10n.groupTabLists} (${shoppingLists.length})',
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: AppDimensions.spacingM),
 
                     // Tab content

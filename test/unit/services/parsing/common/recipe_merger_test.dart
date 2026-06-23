@@ -108,33 +108,34 @@ void main() {
     // the merged output to infer similarity decisions.
 
     test(
-        'should NOT treat "salt" vs "basalt" as similar (substring false positive prevented)',
-        () {
-      // If "salt" and "basalt" were similar, merging would deduplicate them.
-      // We expect both to appear in the merged result.
-      final primary = makeRecipe(
-        ingredients: [ingredient('salt')],
-      );
-      final secondary = makeRecipe(
-        ingredients: [ingredient('basalt')],
-      );
+      'should NOT treat "salt" vs "basalt" as similar (substring false positive prevented)',
+      () {
+        // If "salt" and "basalt" were similar, merging would deduplicate them.
+        // We expect both to appear in the merged result.
+        final primary = makeRecipe(
+          ingredients: [ingredient('salt')],
+        );
+        final secondary = makeRecipe(
+          ingredients: [ingredient('basalt')],
+        );
 
-      final result = merger.merge([
-        tierSuccess(primary, tierName: 'T1'),
-        tierSuccess(secondary, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primary, tierName: 'T1'),
+          tierSuccess(secondary, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final names = result!.ingredients.value!.map((i) => i.name).toList();
-      expect(names, contains('salt'));
-      expect(names, contains('basalt'));
-      expect(
-        names.length,
-        2,
-        reason:
-            '"salt" and "basalt" are different words and should not be deduplicated',
-      );
-    });
+        expect(result, isNotNull);
+        final names = result!.ingredients.value!.map((i) => i.name).toList();
+        expect(names, contains('salt'));
+        expect(names, contains('basalt'));
+        expect(
+          names.length,
+          2,
+          reason:
+              '"salt" and "basalt" are different words and should not be deduplicated',
+        );
+      },
+    );
 
     test('should treat "salt" vs "salt" as similar (exact match)', () {
       final primary = makeRecipe(
@@ -159,60 +160,62 @@ void main() {
     });
 
     test(
-        'should treat "olivolja" vs "olivolja extra virgin" as similar (word-subset)',
-        () {
-      // "olivolja" is a word-subset of "olivolja extra virgin"
-      final primary = makeRecipe(
-        ingredients: [ingredient('olivolja')],
-      );
-      final secondary = makeRecipe(
-        ingredients: [ingredient('olivolja extra virgin')],
-      );
+      'should treat "olivolja" vs "olivolja extra virgin" as similar (word-subset)',
+      () {
+        // "olivolja" is a word-subset of "olivolja extra virgin"
+        final primary = makeRecipe(
+          ingredients: [ingredient('olivolja')],
+        );
+        final secondary = makeRecipe(
+          ingredients: [ingredient('olivolja extra virgin')],
+        );
 
-      final result = merger.merge([
-        tierSuccess(primary, tierName: 'T1'),
-        tierSuccess(secondary, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primary, tierName: 'T1'),
+          tierSuccess(secondary, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final names = result!.ingredients.value!.map((i) => i.name).toList();
-      // One should be deduplicated as a match
-      expect(
-        names.length,
-        1,
-        reason:
-            '"olivolja" is a word-subset of "olivolja extra virgin" and should be matched',
-      );
-    });
+        expect(result, isNotNull);
+        final names = result!.ingredients.value!.map((i) => i.name).toList();
+        // One should be deduplicated as a match
+        expect(
+          names.length,
+          1,
+          reason:
+              '"olivolja" is a word-subset of "olivolja extra virgin" and should be matched',
+        );
+      },
+    );
 
     test(
-        'should NOT treat "rodlok" vs "lok" as similar (different words, not subset)',
-        () {
-      // "rodlok" is a single word; "lok" is a different single word.
-      // Neither word-set is a subset of the other.
-      final primary = makeRecipe(
-        ingredients: [ingredient('rodlok')],
-      );
-      final secondary = makeRecipe(
-        ingredients: [ingredient('lok')],
-      );
+      'should NOT treat "rodlok" vs "lok" as similar (different words, not subset)',
+      () {
+        // "rodlok" is a single word; "lok" is a different single word.
+        // Neither word-set is a subset of the other.
+        final primary = makeRecipe(
+          ingredients: [ingredient('rodlok')],
+        );
+        final secondary = makeRecipe(
+          ingredients: [ingredient('lok')],
+        );
 
-      final result = merger.merge([
-        tierSuccess(primary, tierName: 'T1'),
-        tierSuccess(secondary, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primary, tierName: 'T1'),
+          tierSuccess(secondary, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final names = result!.ingredients.value!.map((i) => i.name).toList();
-      expect(names, contains('rodlok'));
-      expect(names, contains('lok'));
-      expect(
-        names.length,
-        2,
-        reason:
-            '"rodlok" and "lok" are different words and should not be deduplicated',
-      );
-    });
+        expect(result, isNotNull);
+        final names = result!.ingredients.value!.map((i) => i.name).toList();
+        expect(names, contains('rodlok'));
+        expect(names, contains('lok'));
+        expect(
+          names.length,
+          2,
+          reason:
+              '"rodlok" and "lok" are different words and should not be deduplicated',
+        );
+      },
+    );
 
     test('should treat "smor" vs "smor" as similar (exact match)', () {
       final primary = makeRecipe(
@@ -242,14 +245,16 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('merge() basic behavior', () {
-    test('should return recipe as-is when given a single successful result',
-        () {
-      final recipe = makeRecipe(title: 'Pannkakor');
-      final result = merger.merge([tierSuccess(recipe)]);
+    test(
+      'should return recipe as-is when given a single successful result',
+      () {
+        final recipe = makeRecipe(title: 'Pannkakor');
+        final result = merger.merge([tierSuccess(recipe)]);
 
-      expect(result, isNotNull);
-      expect(result!.title.value, 'Pannkakor');
-    });
+        expect(result, isNotNull);
+        expect(result!.title.value, 'Pannkakor');
+      },
+    );
 
     test('should return null when given empty results list', () {
       final result = merger.merge([]);
@@ -276,58 +281,62 @@ void main() {
       expect(result!.title.value, 'Lasagne');
     });
 
-    test('should prefer higher confidence field when merging multiple results',
-        () {
-      final primaryRecipe = makeRecipe(
-        title: 'Low Confidence Title',
-        titleConfidence: ParseConfidence.low,
-        portions: 4,
-        portionsConfidence: ParseConfidence.high,
-      );
-      final secondaryRecipe = makeRecipe(
-        title: 'High Confidence Title',
-        titleConfidence: ParseConfidence.high,
-        portions: 2,
-        portionsConfidence: ParseConfidence.low,
-      );
+    test(
+      'should prefer higher confidence field when merging multiple results',
+      () {
+        final primaryRecipe = makeRecipe(
+          title: 'Low Confidence Title',
+          titleConfidence: ParseConfidence.low,
+          portions: 4,
+          portionsConfidence: ParseConfidence.high,
+        );
+        final secondaryRecipe = makeRecipe(
+          title: 'High Confidence Title',
+          titleConfidence: ParseConfidence.high,
+          portions: 2,
+          portionsConfidence: ParseConfidence.low,
+        );
 
-      // Primary has higher overall quality due to more high-confidence fields
-      // so it will be sorted first. But the title field from secondary should
-      // win since secondary title confidence (1.0) > primary title confidence
-      // (0.3) + threshold (0.1).
-      final result = merger.merge([
-        tierSuccess(primaryRecipe, tierName: 'T1'),
-        tierSuccess(secondaryRecipe, tierName: 'T2'),
-      ]);
+        // Primary has higher overall quality due to more high-confidence fields
+        // so it will be sorted first. But the title field from secondary should
+        // win since secondary title confidence (1.0) > primary title confidence
+        // (0.3) + threshold (0.1).
+        final result = merger.merge([
+          tierSuccess(primaryRecipe, tierName: 'T1'),
+          tierSuccess(secondaryRecipe, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      // The higher-quality recipe becomes primary after sort.
-      // Secondary's title (high=1.0) beats primary's title (low=0.3) by >0.1.
-      // Secondary's portions (low=0.3) does NOT beat primary's portions (high=1.0).
-      expect(result!.portions.value, 4);
-    });
+        expect(result, isNotNull);
+        // The higher-quality recipe becomes primary after sort.
+        // Secondary's title (high=1.0) beats primary's title (low=0.3) by >0.1.
+        // Secondary's portions (low=0.3) does NOT beat primary's portions (high=1.0).
+        expect(result!.portions.value, 4);
+      },
+    );
 
-    test('should keep primary field when secondary is not significantly better',
-        () {
-      // Both have high confidence (score=1.0). Secondary does NOT exceed
-      // primary by more than the 0.1 threshold, so primary wins.
-      final primaryRecipe = makeRecipe(
-        title: 'Primary Title',
-        titleConfidence: ParseConfidence.high,
-      );
-      final secondaryRecipe = makeRecipe(
-        title: 'Secondary Title',
-        titleConfidence: ParseConfidence.high,
-      );
+    test(
+      'should keep primary field when secondary is not significantly better',
+      () {
+        // Both have high confidence (score=1.0). Secondary does NOT exceed
+        // primary by more than the 0.1 threshold, so primary wins.
+        final primaryRecipe = makeRecipe(
+          title: 'Primary Title',
+          titleConfidence: ParseConfidence.high,
+        );
+        final secondaryRecipe = makeRecipe(
+          title: 'Secondary Title',
+          titleConfidence: ParseConfidence.high,
+        );
 
-      final result = merger.merge([
-        tierSuccess(primaryRecipe, tierName: 'T1'),
-        tierSuccess(secondaryRecipe, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primaryRecipe, tierName: 'T1'),
+          tierSuccess(secondaryRecipe, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      expect(result!.title.value, 'Primary Title');
-    });
+        expect(result, isNotNull);
+        expect(result!.title.value, 'Primary Title');
+      },
+    );
 
     test('should use secondary field when primary has no value', () {
       final primaryRecipe = ParsedRecipe(
@@ -372,8 +381,9 @@ void main() {
       ]);
 
       expect(result, isNotNull);
-      final tierNames =
-          result!.metadata.tierResults.map((t) => t.tierName).toList();
+      final tierNames = result!.metadata.tierResults
+          .map((t) => t.tierName)
+          .toList();
       expect(tierNames, contains(SchemaOrgTier.tierIdentifier));
       expect(tierNames, contains(RuleBasedTier.tierIdentifier));
       expect(tierNames, contains(LlmTier.tierIdentifier));
@@ -387,146 +397,154 @@ void main() {
 
   group('_mergeIngredients', () {
     test(
-        'should prefer secondary when it has significantly more ingredients (>1.5x)',
-        () {
-      // Primary: 2 ingredients, secondary: 4 ingredients (4 > 2 * 1.5 = 3)
-      final primaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt'),
-          ingredient('peppar'),
-        ],
-      );
-      final secondaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt'),
-          ingredient('peppar'),
-          ingredient('olivolja'),
-          ingredient('vitlok'),
-        ],
-      );
+      'should prefer secondary when it has significantly more ingredients (>1.5x)',
+      () {
+        // Primary: 2 ingredients, secondary: 4 ingredients (4 > 2 * 1.5 = 3)
+        final primaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient('salt'),
+            ingredient('peppar'),
+          ],
+        );
+        final secondaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient('salt'),
+            ingredient('peppar'),
+            ingredient('olivolja'),
+            ingredient('vitlok'),
+          ],
+        );
 
-      // Make secondary lower quality overall so primary is sorted first
-      // (we want to test that secondary ingredients still win via count)
-      final result = merger.merge([
-        tierSuccess(primaryRecipe, tierName: 'T1'),
-        tierSuccess(secondaryRecipe, tierName: 'T2'),
-      ]);
+        // Make secondary lower quality overall so primary is sorted first
+        // (we want to test that secondary ingredients still win via count)
+        final result = merger.merge([
+          tierSuccess(primaryRecipe, tierName: 'T1'),
+          tierSuccess(secondaryRecipe, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final names = result!.ingredients.value!.map((i) => i.name).toList();
-      // Secondary has 4 ingredients which is > 2 * 1.5 = 3,
-      // so secondary ingredients should be preferred wholesale
-      expect(names.length, 4);
-      expect(names, contains('olivolja'));
-      expect(names, contains('vitlok'));
-    });
-
-    test(
-        'should prefer secondary when it has higher average confidence (>0.2 better)',
-        () {
-      // We need primary to be the higher-quality recipe overall so it is
-      // sorted first, while secondary has better ingredient confidence.
-      // Give primary high confidence on everything except ingredients.
-      final primary = makeRecipe(
-        title: 'Recipe',
-        titleConfidence: ParseConfidence.high,
-        portionsConfidence: ParseConfidence.high,
-        instructionsConfidence: ParseConfidence.high,
-        totalTimeConfidence: ParseConfidence.high,
-        ingredients: [
-          ingredient('salt', confidence: ParseConfidence.low),
-          ingredient('peppar', confidence: ParseConfidence.low),
-        ],
-        ingredientsConfidence: ParseConfidence.low,
-      );
-      final secondary = makeRecipe(
-        title: 'Recipe',
-        titleConfidence: ParseConfidence.low,
-        portionsConfidence: ParseConfidence.low,
-        instructionsConfidence: ParseConfidence.low,
-        totalTimeConfidence: ParseConfidence.low,
-        ingredients: [
-          ingredient('salt', confidence: ParseConfidence.high),
-          ingredient('peppar', confidence: ParseConfidence.high),
-        ],
-        ingredientsConfidence: ParseConfidence.high,
-      );
-
-      final result = merger.merge([
-        tierSuccess(primary, tierName: 'T1'),
-        tierSuccess(secondary, tierName: 'T2'),
-      ]);
-
-      expect(result, isNotNull);
-      // Secondary ingredients field (high confidence) should replace
-      // primary ingredients field (low confidence) because
-      // confidenceScore 1.0 > 0.3 + 0.1 threshold
-      expect(result!.ingredients.confidence, ParseConfidence.high);
-    });
+        expect(result, isNotNull);
+        final names = result!.ingredients.value!.map((i) => i.name).toList();
+        // Secondary has 4 ingredients which is > 2 * 1.5 = 3,
+        // so secondary ingredients should be preferred wholesale
+        expect(names.length, 4);
+        expect(names, contains('olivolja'));
+        expect(names, contains('vitlok'));
+      },
+    );
 
     test(
-        'should merge individual ingredients when neither count nor confidence rule triggers',
-        () {
-      // Same count (3 each), similar average confidence, but secondary has
-      // one unique ingredient that should get added to the merged list.
-      final primaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt'),
-          ingredient('peppar'),
-          ingredient('olivolja'),
-        ],
-      );
-      final secondaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt'),
-          ingredient('peppar'),
-          ingredient('vitlok'),
-        ],
-      );
+      'should prefer secondary when it has higher average confidence (>0.2 better)',
+      () {
+        // We need primary to be the higher-quality recipe overall so it is
+        // sorted first, while secondary has better ingredient confidence.
+        // Give primary high confidence on everything except ingredients.
+        final primary = makeRecipe(
+          title: 'Recipe',
+          titleConfidence: ParseConfidence.high,
+          portionsConfidence: ParseConfidence.high,
+          instructionsConfidence: ParseConfidence.high,
+          totalTimeConfidence: ParseConfidence.high,
+          ingredients: [
+            ingredient('salt', confidence: ParseConfidence.low),
+            ingredient('peppar', confidence: ParseConfidence.low),
+          ],
+          ingredientsConfidence: ParseConfidence.low,
+        );
+        final secondary = makeRecipe(
+          title: 'Recipe',
+          titleConfidence: ParseConfidence.low,
+          portionsConfidence: ParseConfidence.low,
+          instructionsConfidence: ParseConfidence.low,
+          totalTimeConfidence: ParseConfidence.low,
+          ingredients: [
+            ingredient('salt', confidence: ParseConfidence.high),
+            ingredient('peppar', confidence: ParseConfidence.high),
+          ],
+          ingredientsConfidence: ParseConfidence.high,
+        );
 
-      final result = merger.merge([
-        tierSuccess(primaryRecipe, tierName: 'T1'),
-        tierSuccess(secondaryRecipe, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primary, tierName: 'T1'),
+          tierSuccess(secondary, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final names = result!.ingredients.value!.map((i) => i.name).toList();
-      // All unique ingredients should be present
-      expect(names, contains('salt'));
-      expect(names, contains('peppar'));
-      expect(names, contains('olivolja'));
-      expect(names, contains('vitlok'));
-      expect(names.length, 4);
-    });
+        expect(result, isNotNull);
+        // Secondary ingredients field (high confidence) should replace
+        // primary ingredients field (low confidence) because
+        // confidenceScore 1.0 > 0.3 + 0.1 threshold
+        expect(result!.ingredients.confidence, ParseConfidence.high);
+      },
+    );
 
     test(
-        'should pick higher-confidence version when merging matching ingredients',
-        () {
-      final primaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt', confidence: ParseConfidence.medium),
-        ],
-      );
-      final secondaryRecipe = makeRecipe(
-        ingredients: [
-          ingredient('salt',
-              confidence: ParseConfidence.high, quantity: '1', unit: 'tsk'),
-        ],
-      );
+      'should merge individual ingredients when neither count nor confidence rule triggers',
+      () {
+        // Same count (3 each), similar average confidence, but secondary has
+        // one unique ingredient that should get added to the merged list.
+        final primaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient('salt'),
+            ingredient('peppar'),
+            ingredient('olivolja'),
+          ],
+        );
+        final secondaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient('salt'),
+            ingredient('peppar'),
+            ingredient('vitlok'),
+          ],
+        );
 
-      final result = merger.merge([
-        tierSuccess(primaryRecipe, tierName: 'T1'),
-        tierSuccess(secondaryRecipe, tierName: 'T2'),
-      ]);
+        final result = merger.merge([
+          tierSuccess(primaryRecipe, tierName: 'T1'),
+          tierSuccess(secondaryRecipe, tierName: 'T2'),
+        ]);
 
-      expect(result, isNotNull);
-      final merged = result!.ingredients.value!;
-      expect(merged.length, 1);
-      // The secondary version (high confidence, structured) should win
-      expect(merged.first.confidence, ParseConfidence.high);
-      expect(merged.first.quantity, '1');
-      expect(merged.first.unit, 'tsk');
-    });
+        expect(result, isNotNull);
+        final names = result!.ingredients.value!.map((i) => i.name).toList();
+        // All unique ingredients should be present
+        expect(names, contains('salt'));
+        expect(names, contains('peppar'));
+        expect(names, contains('olivolja'));
+        expect(names, contains('vitlok'));
+        expect(names.length, 4);
+      },
+    );
+
+    test(
+      'should pick higher-confidence version when merging matching ingredients',
+      () {
+        final primaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient('salt', confidence: ParseConfidence.medium),
+          ],
+        );
+        final secondaryRecipe = makeRecipe(
+          ingredients: [
+            ingredient(
+              'salt',
+              confidence: ParseConfidence.high,
+              quantity: '1',
+              unit: 'tsk',
+            ),
+          ],
+        );
+
+        final result = merger.merge([
+          tierSuccess(primaryRecipe, tierName: 'T1'),
+          tierSuccess(secondaryRecipe, tierName: 'T2'),
+        ]);
+
+        expect(result, isNotNull);
+        final merged = result!.ingredients.value!;
+        expect(merged.length, 1);
+        // The secondary version (high confidence, structured) should win
+        expect(merged.first.confidence, ParseConfidence.high);
+        expect(merged.first.quantity, '1');
+        expect(merged.first.unit, 'tsk');
+      },
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -601,10 +619,16 @@ void main() {
 
       final result = merger.patchWeakFields(base, patch);
 
-      expect(result.title.value, 'Better Title',
-          reason: 'Weak title should be patched');
-      expect(result.portions.value, 4,
-          reason: 'Weak portions should be patched');
+      expect(
+        result.title.value,
+        'Better Title',
+        reason: 'Weak title should be patched',
+      );
+      expect(
+        result.portions.value,
+        4,
+        reason: 'Weak portions should be patched',
+      );
       expect(
         result.instructions.value,
         ['Vag instructions'],

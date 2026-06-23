@@ -54,12 +54,15 @@ class SettingsHubView extends StatelessWidget {
                 const AutoAddPantryTile(),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(
-                    title: context.l10n.settingsSectionNotifications),
+                  title: context.l10n.settingsSectionNotifications,
+                ),
                 _SettingsTile(
                   icon: Icons.notifications_outlined,
                   title: context.l10n.notificationTitle,
                   onTap: () => Navigator.pushNamed(
-                      context, Routes.settingsNotifications),
+                    context,
+                    Routes.settingsNotifications,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionAccount),
@@ -67,7 +70,9 @@ class SettingsHubView extends StatelessWidget {
                   icon: Icons.security,
                   title: context.l10n.accountSecurityTitle,
                   onTap: () => Navigator.pushNamed(
-                      context, Routes.settingsAccountSecurity),
+                    context,
+                    Routes.settingsAccountSecurity,
+                  ),
                 ),
                 // BUT-970: surface backup_service from ProfileMenu into formal
                 // Settings (it was already wired via BackupRestoreHandler, just
@@ -221,9 +226,12 @@ class _SettingsTile extends StatelessWidget {
       leading: Icon(icon, color: cs.onSurfaceVariant),
       title: Text(title, style: AppTextStyles.bodyMedium),
       subtitle: subtitle != null
-          ? Text(subtitle!,
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant))
+          ? Text(
+              subtitle!,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            )
           : null,
       trailing: Icon(Icons.chevron_right, color: cs.outline),
       onTap: onTap,
@@ -306,8 +314,10 @@ class _AutoAddPantryTileState extends State<AutoAddPantryTile> {
         _userService.currentUserProfile?.autoAddBoughtToPantry ?? false;
     return SwitchListTile(
       secondary: Icon(Icons.kitchen_outlined, color: cs.onSurfaceVariant),
-      title: Text(context.l10n.settingsAutoAddPantryTitle,
-          style: AppTextStyles.bodyMedium),
+      title: Text(
+        context.l10n.settingsAutoAddPantryTitle,
+        style: AppTextStyles.bodyMedium,
+      ),
       subtitle: Text(
         context.l10n.settingsAutoAddPantrySubtitle,
         style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
@@ -356,8 +366,10 @@ class _LanguageTileState extends State<LanguageTile> {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
       leading: Icon(Icons.language, color: cs.onSurfaceVariant),
-      title: Text(context.l10n.settingsLanguageTitle,
-          style: AppTextStyles.bodyMedium),
+      title: Text(
+        context.l10n.settingsLanguageTitle,
+        style: AppTextStyles.bodyMedium,
+      ),
       subtitle: Text(
         LocaleProvider.getLocaleName(_localeProvider.locale.languageCode),
         style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
@@ -377,12 +389,13 @@ class _LanguageTileState extends State<LanguageTile> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: LocaleProvider.supportedLocales
-                .map((code) => ListTile(
-                      title: Text(LocaleProvider.getLocaleName(code)),
-                      trailing:
-                          code == current ? const Icon(Icons.check) : null,
-                      onTap: () => Navigator.of(ctx).pop(code),
-                    ))
+                .map(
+                  (code) => ListTile(
+                    title: Text(LocaleProvider.getLocaleName(code)),
+                    trailing: code == current ? const Icon(Icons.check) : null,
+                    onTap: () => Navigator.of(ctx).pop(code),
+                  ),
+                )
                 .toList(),
           ),
           actions: [

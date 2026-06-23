@@ -59,20 +59,20 @@ class TaggingModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        TagConfigService,
-        IngredientRepository,
-        UserIngredientRepository,
-        IngredientLookupService,
-        TaggingEventsTracker,
-        TaggingService,
-        FirebasePersonalTagRepository,
-        FirebasePersonalTagGroupRepository,
-        PersonalTagCrudService,
-        PersonalTagRuleEvaluator,
-        PersonalTagService,
-        TagEditingService,
-        TagResolutionService,
-      ];
+    TagConfigService,
+    IngredientRepository,
+    UserIngredientRepository,
+    IngredientLookupService,
+    TaggingEventsTracker,
+    TaggingService,
+    FirebasePersonalTagRepository,
+    FirebasePersonalTagGroupRepository,
+    PersonalTagCrudService,
+    PersonalTagRuleEvaluator,
+    PersonalTagService,
+    TagEditingService,
+    TagResolutionService,
+  ];
 
   @override
   int get priority => 5; // After Core (1), before Content (10)

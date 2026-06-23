@@ -56,7 +56,8 @@ class UserAllergenPreferences {
     if (data == null) return defaults;
 
     return UserAllergenPreferences(
-      trackedAllergens: _parseStringSet(data['trackedAllergens']) ??
+      trackedAllergens:
+          _parseStringSet(data['trackedAllergens']) ??
           defaults.trackedAllergens,
       trackedDietary:
           _parseStringSet(data['trackedDietary']) ?? defaults.trackedDietary,
@@ -194,13 +195,13 @@ class UserAllergenPreferences {
 
   @override
   int get hashCode => Object.hash(
-        trackedAllergens,
-        trackedDietary,
-        showOnCards,
-        showOnDetail,
-        showCoverage,
-        includeUnknownInMenu,
-      );
+    trackedAllergens,
+    trackedDietary,
+    showOnCards,
+    showOnDetail,
+    showCoverage,
+    includeUnknownInMenu,
+  );
 
   @override
   String toString() =>

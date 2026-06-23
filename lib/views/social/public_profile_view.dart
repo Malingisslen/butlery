@@ -284,10 +284,12 @@ class _PublicRecipesSection extends StatelessWidget {
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        ...recipes.map((recipe) => _PublicRecipeCard(
-              key: ValueKey(recipe.id),
-              recipe: recipe,
-            )),
+        ...recipes.map(
+          (recipe) => _PublicRecipeCard(
+            key: ValueKey(recipe.id),
+            recipe: recipe,
+          ),
+        ),
       ],
     );
   }
@@ -323,8 +325,9 @@ class _PublicRecipeCard extends StatelessWidget {
                 children: [
                   // Recipe image or placeholder
                   ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                     child: SizedBox(
                       width: 64,
                       height: 64,
@@ -332,7 +335,8 @@ class _PublicRecipeCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: recipe.primaryImageUrl!,
                               cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                  recipe.primaryImageUrl!),
+                                recipe.primaryImageUrl!,
+                              ),
                               fit: BoxFit.cover,
                               placeholder: (_, __) => _imagePlaceholder(cs),
                               errorWidget: (_, __, ___) =>

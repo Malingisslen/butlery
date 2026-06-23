@@ -11,8 +11,7 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
     'invalid-email' => l.errorInvalidEmailAddress,
     'user-not-found' ||
     'wrong-password' ||
-    'invalid-credential' =>
-      l.errorInvalidCredentials,
+    'invalid-credential' => l.errorInvalidCredentials,
     'user-disabled' => l.errorAccountDisabled,
     'too-many-requests' => l.errorTooManyAttempts,
     'network-request-failed' => l.errorNetwork,
@@ -20,8 +19,7 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
     'session-expired' ||
     'user-token-expired' ||
     'invalid-user-token' ||
-    'requires-recent-login' =>
-      l.errorSessionExpired,
+    'requires-recent-login' => l.errorSessionExpired,
     'quota-exceeded' => l.errorTooManySmsAttempts,
     'invalid-phone-number' => l.errorInvalidPhoneNumber,
     'missing-phone-number' => l.errorPhoneNumberMissing,

@@ -12,7 +12,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 enum RealtimeResourceType {
   recipe('recipe'),
   menu('menu'),
-  shoppingList('shopping_list');
+  shoppingList('shopping_list')
+  ;
 
   const RealtimeResourceType(this.value);
 
@@ -45,10 +46,10 @@ enum RealtimeResourceType {
 
   /// Get icon for resource type
   String get icon => switch (this) {
-        RealtimeResourceType.recipe => '🍳',
-        RealtimeResourceType.menu => '📋',
-        RealtimeResourceType.shoppingList => '🛒',
-      };
+    RealtimeResourceType.recipe => '🍳',
+    RealtimeResourceType.menu => '📋',
+    RealtimeResourceType.shoppingList => '🛒',
+  };
 
   @override
   String toString() => value;
@@ -109,10 +110,10 @@ abstract class RealtimeResource {
     this.editCount = 0,
     this.isActive = true,
     Map<String, dynamic>? metadata,
-  })  : participantIds = participantIds ?? participants.keys.toList(),
-        createdAt = createdAt ?? clock.now(),
-        lastEditedAt = lastEditedAt ?? clock.now(),
-        metadata = metadata ?? {};
+  }) : participantIds = participantIds ?? participants.keys.toList(),
+       createdAt = createdAt ?? clock.now(),
+       lastEditedAt = lastEditedAt ?? clock.now(),
+       metadata = metadata ?? {};
 
   /// Check if a user has a specific permission
   bool hasPermission(String userId, ResourcePermission requiredPermission) {
@@ -192,8 +193,12 @@ abstract class RealtimeResource {
   /// Number of editors (including owner)
   int get editorCount {
     return participants.values
-        .where((p) => ResourcePermissionHelper.canEditContent(
-            p, ResourcePermission.editor))
+        .where(
+          (p) => ResourcePermissionHelper.canEditContent(
+            p,
+            ResourcePermission.editor,
+          ),
+        )
         .length;
   }
 
@@ -207,8 +212,12 @@ abstract class RealtimeResource {
   /// List of all participants who can edit
   List<String> get editorIds {
     return participants.entries
-        .where((entry) => ResourcePermissionHelper.canEditContent(
-            entry.value, ResourcePermission.editor))
+        .where(
+          (entry) => ResourcePermissionHelper.canEditContent(
+            entry.value,
+            ResourcePermission.editor,
+          ),
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -319,7 +328,9 @@ abstract class RealtimeResource {
       'ownerDisplayName': ownerDisplayName,
       'participants': participants.map(
         (userId, permission) => MapEntry(
-            userId, ResourcePermissionHelper.permissionToString(permission)),
+          userId,
+          ResourcePermissionHelper.permissionToString(permission),
+        ),
       ),
       'participantIds': participantIds,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -377,11 +388,14 @@ abstract class RealtimeResource {
       'lastEditedAt':
           (data['lastEditedAt'] as Timestamp?)?.toDate() ?? clock.now(),
       'lastEditedBy': (data['lastEditedBy'] as String?).orEmpty(),
-      'lastEditedByDisplayName':
-          (data['lastEditedByDisplayName'] as String?).orEmpty(),
+      'lastEditedByDisplayName': (data['lastEditedByDisplayName'] as String?)
+          .orEmpty(),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive':
-          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive': SerializationUtils.safeBool(
+        data,
+        'isActive',
+        defaultValue: true,
+      ),
       'metadata': Map<String, dynamic>.from(data['metadata'] ?? {}),
     };
   }
@@ -395,7 +409,9 @@ abstract class RealtimeResource {
       'ownerDisplayName': ownerDisplayName,
       'participants': participants.map(
         (userId, permission) => MapEntry(
-            userId, ResourcePermissionHelper.permissionToString(permission)),
+          userId,
+          ResourcePermissionHelper.permissionToString(permission),
+        ),
       ),
       'participantIds': participantIds,
       'createdAt': createdAt.toIso8601String(),
@@ -414,8 +430,9 @@ abstract class RealtimeResource {
     String userDisplayName,
     ResourcePermission permission,
   ) {
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants[userId] = permission;
 
     // Keep participantIds in sync
@@ -440,8 +457,9 @@ abstract class RealtimeResource {
       throw ArgumentError(AppLocale.current.errorCannotRemoveResourceOwner);
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants.remove(userId);
 
     // Keep participantIds in sync
@@ -467,8 +485,9 @@ abstract class RealtimeResource {
       throw ArgumentError(AppLocale.current.errorOwnerMustKeepPermission);
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants[userId] = newPermission;
 
     return copyWithMetadata(

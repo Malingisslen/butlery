@@ -39,8 +39,11 @@ void main() {
     // so that install banners never appear on iOS/Android.
     // Would fail if the stub were accidentally changed to return true.
     test('canPromptInstall is always false on non-web', () {
-      expect(service.canPromptInstall, isFalse,
-          reason: 'PWA install banner must never surface on non-web platforms');
+      expect(
+        service.canPromptInstall,
+        isFalse,
+        reason: 'PWA install banner must never surface on non-web platforms',
+      );
     });
 
     // Intent: proves onInitialize() does not throw on non-web, so the service

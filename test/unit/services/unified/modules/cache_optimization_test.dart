@@ -121,10 +121,12 @@ void main() {
             .withCreatedBy('user_999')
             .build();
 
-        mockCacheHelper.setCacheState(cache: {
-          'recent_recipe': recentRecipe.toJson(),
-          'other_recipe': otherUserRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent_recipe': recentRecipe.toJson(),
+            'other_recipe': otherUserRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.cleanupInvalidPermissions(
@@ -141,9 +143,11 @@ void main() {
 
       test('should keep collaborative recipes where user is member', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'collaborative_recipe': collaborativeRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'collaborative_recipe': collaborativeRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.cleanupInvalidPermissions(
@@ -157,80 +161,92 @@ void main() {
         expect(remainingKeys, contains('collaborative_recipe'));
       });
 
-      test('should remove collaborative recipes where user is not member',
-          () async {
-        // Arrange
-        final nonMemberCollabRecipe = Recipe(
-          core: RecipeCore(
-            id: 'non_member_collab',
-            title: 'Non Member Collab',
-            description: 'Test',
-            ingredients: ['ingredient'],
-            instructions: ['instruction'],
-            imageUrls: [],
-            mealType: 'Middag',
-            portions: 4,
-            timeMinutes: 30,
-            rating: 4.0,
-            personalTagIds: [],
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            createdBy: 'user_999',
-          ),
-          type: RecipeType.collaborative,
-          socialData: RecipeSocialData(
-            memberPermissions: {
-              'user_999': ResourcePermission.owner,
-              'user_888': ResourcePermission.editor,
+      test(
+        'should remove collaborative recipes where user is not member',
+        () async {
+          // Arrange
+          final nonMemberCollabRecipe = Recipe(
+            core: RecipeCore(
+              id: 'non_member_collab',
+              title: 'Non Member Collab',
+              description: 'Test',
+              ingredients: ['ingredient'],
+              instructions: ['instruction'],
+              imageUrls: [],
+              mealType: 'Middag',
+              portions: 4,
+              timeMinutes: 30,
+              rating: 4.0,
+              personalTagIds: [],
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              createdBy: 'user_999',
+            ),
+            type: RecipeType.collaborative,
+            socialData: RecipeSocialData(
+              memberPermissions: {
+                'user_999': ResourcePermission.owner,
+                'user_888': ResourcePermission.editor,
+              },
+            ),
+          );
+
+          mockCacheHelper.setCacheState(
+            cache: {
+              'non_member_collab': nonMemberCollabRecipe.toJson(),
             },
-          ),
-        );
+          );
 
-        mockCacheHelper.setCacheState(cache: {
-          'non_member_collab': nonMemberCollabRecipe.toJson(),
-        });
+          // Act
+          final removedCount =
+              await CacheOptimization.cleanupInvalidPermissions(
+                cacheHelper: mockCacheHelper,
+                currentUserId: 'user_123',
+              );
 
-        // Act
-        final removedCount = await CacheOptimization.cleanupInvalidPermissions(
-          cacheHelper: mockCacheHelper,
-          currentUserId: 'user_123',
-        );
+          // Assert
+          expect(removedCount, equals(1));
+          final remainingKeys = await mockCacheHelper.getAllKeys();
+          expect(remainingKeys, isEmpty);
+        },
+      );
 
-        // Assert
-        expect(removedCount, equals(1));
-        final remainingKeys = await mockCacheHelper.getAllKeys();
-        expect(remainingKeys, isEmpty);
-      });
+      test(
+        'should handle corrupted entries during permission cleanup',
+        () async {
+          // Arrange
+          mockCacheHelper.setCacheState(
+            cache: {
+              'good_recipe': recentRecipe.toJson(),
+              'corrupted': {'invalid': 'data'},
+            },
+          );
 
-      test('should handle corrupted entries during permission cleanup',
-          () async {
-        // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'good_recipe': recentRecipe.toJson(),
-          'corrupted': {'invalid': 'data'},
-        });
+          // Act
+          final removedCount =
+              await CacheOptimization.cleanupInvalidPermissions(
+                cacheHelper: mockCacheHelper,
+                currentUserId: 'user_123',
+              );
 
-        // Act
-        final removedCount = await CacheOptimization.cleanupInvalidPermissions(
-          cacheHelper: mockCacheHelper,
-          currentUserId: 'user_123',
-        );
-
-        // Assert
-        expect(removedCount, equals(1)); // Corrupted entry removed
-        final remainingKeys = await mockCacheHelper.getAllKeys();
-        expect(remainingKeys, contains('good_recipe'));
-        expect(remainingKeys, isNot(contains('corrupted')));
-      });
+          // Assert
+          expect(removedCount, equals(1)); // Corrupted entry removed
+          final remainingKeys = await mockCacheHelper.getAllKeys();
+          expect(remainingKeys, contains('good_recipe'));
+          expect(remainingKeys, isNot(contains('corrupted')));
+        },
+      );
     });
 
     group('Cleanup Old Recipes', () {
       test('should remove old personal recipes', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recent_recipe': recentRecipe.toJson(),
-          'old_recipe': oldRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent_recipe': recentRecipe.toJson(),
+            'old_recipe': oldRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.cleanupOldRecipes(
@@ -265,10 +281,12 @@ void main() {
           ),
         );
 
-        mockCacheHelper.setCacheState(cache: {
-          'old_recipe': oldRecipe.toJson(),
-          'old_collab': oldCollabRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'old_recipe': oldRecipe.toJson(),
+            'old_collab': oldCollabRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.cleanupOldRecipes(
@@ -303,15 +321,18 @@ void main() {
     group('Cleanup Corrupted Entries', () {
       test('should remove corrupted entries', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'good_recipe': recentRecipe.toJson(),
-          'corrupted1': {'invalid': 'data'},
-          'corrupted2': {'missing': 'required_fields'},
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'good_recipe': recentRecipe.toJson(),
+            'corrupted1': {'invalid': 'data'},
+            'corrupted2': {'missing': 'required_fields'},
+          },
+        );
 
         // Act
-        final removedCount =
-            await CacheOptimization.cleanupCorruptedEntries(mockCacheHelper);
+        final removedCount = await CacheOptimization.cleanupCorruptedEntries(
+          mockCacheHelper,
+        );
 
         // Assert
         expect(removedCount, equals(2));
@@ -323,13 +344,16 @@ void main() {
       test('should remove null entries', () async {
         // Arrange
         final helper = FakeJsonCacheHelper();
-        helper.setCacheState(cache: {
-          'good_recipe': recentRecipe.toJson(),
-        });
+        helper.setCacheState(
+          cache: {
+            'good_recipe': recentRecipe.toJson(),
+          },
+        );
 
         // Act
-        final removedCount =
-            await CacheOptimization.cleanupCorruptedEntries(helper);
+        final removedCount = await CacheOptimization.cleanupCorruptedEntries(
+          helper,
+        );
 
         // Assert
         expect(removedCount, equals(0));
@@ -346,11 +370,13 @@ void main() {
           ..updatedAt = DateTime.now().subtract(const Duration(days: 500));
         final veryOldRecipe = veryOldBuilder.build();
 
-        mockCacheHelper.setCacheState(cache: {
-          'recent_recipe': recentRecipe.toJson(),
-          'old_recipe': oldRecipe.toJson(),
-          'very_old': veryOldRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent_recipe': recentRecipe.toJson(),
+            'old_recipe': oldRecipe.toJson(),
+            'very_old': veryOldRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.optimizeCacheByLRU(
@@ -368,10 +394,12 @@ void main() {
 
       test('should not remove recipes when under max size', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recent_recipe': recentRecipe.toJson(),
-          'old_recipe': oldRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent_recipe': recentRecipe.toJson(),
+            'old_recipe': oldRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.optimizeCacheByLRU(
@@ -387,10 +415,12 @@ void main() {
 
       test('should handle corrupted entries in LRU optimization', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recent_recipe': recentRecipe.toJson(),
-          'corrupted': {'invalid': 'data'},
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent_recipe': recentRecipe.toJson(),
+            'corrupted': {'invalid': 'data'},
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.optimizeCacheByLRU(
@@ -421,11 +451,13 @@ void main() {
           ..updatedAt = DateTime.now().subtract(const Duration(days: 100));
         final otherRecipe = otherBuilder.build();
 
-        mockCacheHelper.setCacheState(cache: {
-          'owned': ownedRecipe.toJson(),
-          'other': otherRecipe.toJson(),
-          'collaborative': collaborativeRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'owned': ownedRecipe.toJson(),
+            'other': otherRecipe.toJson(),
+            'collaborative': collaborativeRecipe.toJson(),
+          },
+        );
 
         // Act
         final removedCount = await CacheOptimization.optimizeCacheByPriority(
@@ -515,12 +547,14 @@ void main() {
           ..updatedAt = DateTime.now().subtract(const Duration(days: 200));
         final oldPersonalRecipe = oldPersonalBuilder.build();
 
-        mockCacheHelper.setCacheState(cache: {
-          'recent': recentRecipe.toJson(),
-          'old_personal': oldPersonalRecipe.toJson(),
-          'other_user': otherUserRecipe.toJson(),
-          'corrupted': {'invalid': 'data'},
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recent': recentRecipe.toJson(),
+            'old_personal': oldPersonalRecipe.toJson(),
+            'other_user': otherUserRecipe.toJson(),
+            'corrupted': {'invalid': 'data'},
+          },
+        );
 
         // Act
         final health = await CacheOptimization.assessCacheHealth(
@@ -536,10 +570,14 @@ void main() {
 
         final recommendations = health['recommendations'] as List;
         expect(recommendations, isNotEmpty);
-        expect(recommendations.any((r) => r.toString().contains('corrupted')),
-            isTrue);
-        expect(recommendations.any((r) => r.toString().contains('permission')),
-            isTrue);
+        expect(
+          recommendations.any((r) => r.toString().contains('corrupted')),
+          isTrue,
+        );
+        expect(
+          recommendations.any((r) => r.toString().contains('permission')),
+          isTrue,
+        );
       });
 
       test('should recommend optimization for large cache', () async {
@@ -564,7 +602,9 @@ void main() {
         expect(health['total_entries'], equals(1001));
         final recommendations = health['recommendations'] as List;
         expect(
-            recommendations.any((r) => r.toString().contains('large')), isTrue);
+          recommendations.any((r) => r.toString().contains('large')),
+          isTrue,
+        );
       });
 
       test('should handle empty cache', () async {
@@ -620,9 +660,13 @@ void main() {
         expect(cache.containsKey('recipe_0'), isFalse); // Evicted (LRU)
         expect(cache.containsKey('recipe_1'), isFalse); // Evicted (LRU)
         expect(
-            cache.containsKey('recipe_2'), isTrue); // Kept (recently accessed)
+          cache.containsKey('recipe_2'),
+          isTrue,
+        ); // Kept (recently accessed)
         expect(
-            cache.containsKey('recipe_4'), isTrue); // Kept (recently accessed)
+          cache.containsKey('recipe_4'),
+          isTrue,
+        ); // Kept (recently accessed)
       });
 
       test('should implement TTL cache with time-based expiry', () async {
@@ -645,8 +689,9 @@ void main() {
             .withTitle('Expired Recipe')
             .build();
         cache['expired_recipe'] = expiredRecipe.toFirestore();
-        expiryTimes['expired_recipe'] =
-            now.subtract(const Duration(minutes: 1));
+        expiryTimes['expired_recipe'] = now.subtract(
+          const Duration(minutes: 1),
+        );
 
         // Act - Remove expired entries
         final keysToRemove = <String>[];
@@ -858,13 +903,15 @@ void main() {
 
         // Act - Simulate parallel operations
         for (int i = 0; i < 20; i++) {
-          operations.add(Future.microtask(() async {
-            // Simulate async operation
-            await Future.delayed(Duration(microseconds: 100));
+          operations.add(
+            Future.microtask(() async {
+              // Simulate async operation
+              await Future.delayed(Duration(microseconds: 100));
 
-            final recipe = RecipeBuilder().withId('recipe_$i').build();
-            cache['recipe_$i'] = recipe.toFirestore();
-          }));
+              final recipe = RecipeBuilder().withId('recipe_$i').build();
+              cache['recipe_$i'] = recipe.toFirestore();
+            }),
+          );
         }
 
         await Future.wait(operations);
@@ -888,7 +935,8 @@ void main() {
             .withId('swedish_recipe')
             .withTitle('Köttbullar med lingonsylt')
             .withDescription('Traditionella svenska köttbullar med gräddsås')
-            .withIngredients(['500g nötfärs', '1 dl ströbröd', 'Ägg']).build();
+            .withIngredients(['500g nötfärs', '1 dl ströbröd', 'Ägg'])
+            .build();
 
         final cache = <String, Map<String, dynamic>>{};
 
@@ -902,7 +950,8 @@ void main() {
         final title = cached['title'] ?? cached['core']?['title'] ?? '';
         final description =
             cached['description'] ?? cached['core']?['description'] ?? '';
-        final ingredients = cached['ingredients'] as List? ??
+        final ingredients =
+            cached['ingredients'] as List? ??
             cached['core']?['ingredients'] as List? ??
             [];
 

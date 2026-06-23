@@ -50,7 +50,9 @@ class RealtimeStreamManager {
       AppLogger.info('🎮 Starting to watch menu: $menuId');
 
       _currentMenuId = menuId;
-      _menuSubscription = _menuService.watchRealtimeMenu(menuId).listen(
+      _menuSubscription = _menuService
+          .watchRealtimeMenu(menuId)
+          .listen(
             _handleMenuUpdate,
             onError: _handleMenuError,
             onDone: _handleStreamDone,

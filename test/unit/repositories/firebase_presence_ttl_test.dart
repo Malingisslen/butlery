@@ -92,34 +92,35 @@ void main() {
       );
     });
 
-    test('markUserInactive sets expiresAt = now (forces immediate eviction)',
-        () async {
-      await repo.setUserPresence(
-        recipeId: recipeId,
-        userId: 'user_a',
-        displayName: 'Anna',
-      );
+    test(
+      'markUserInactive sets expiresAt = now (forces immediate eviction)',
+      () async {
+        await repo.setUserPresence(
+          recipeId: recipeId,
+          userId: 'user_a',
+          displayName: 'Anna',
+        );
 
-      await repo.markUserInactive(recipeId: recipeId, userId: 'user_a');
+        await repo.markUserInactive(recipeId: recipeId, userId: 'user_a');
 
-      final snap = await fake
-          .collection(FirestoreCollections.recipePresence)
-          .doc(recipeId)
-          .collection(FirestoreCollections.activeUsers)
-          .doc('user_a')
-          .get();
-      final raw = snap.data()!['expiresAt'] as Timestamp;
-      // expiresAt should be in the past (or very close to now) — anything
-      // within +1s tolerance of "now" satisfies the contract.
-      expect(
-        raw
-            .toDate()
-            .toUtc()
-            .isBefore(DateTime.now().toUtc().add(const Duration(seconds: 1))),
-        isTrue,
-        reason: 'leave should evict immediately, was $raw',
-      );
-    });
+        final snap = await fake
+            .collection(FirestoreCollections.recipePresence)
+            .doc(recipeId)
+            .collection(FirestoreCollections.activeUsers)
+            .doc('user_a')
+            .get();
+        final raw = snap.data()!['expiresAt'] as Timestamp;
+        // expiresAt should be in the past (or very close to now) — anything
+        // within +1s tolerance of "now" satisfies the contract.
+        expect(
+          raw.toDate().toUtc().isBefore(
+            DateTime.now().toUtc().add(const Duration(seconds: 1)),
+          ),
+          isTrue,
+          reason: 'leave should evict immediately, was $raw',
+        );
+      },
+    );
 
     test(
       'watchActiveUsers drops rows where expiresAt is in the past, keeps fresh rows',
@@ -143,10 +144,12 @@ void main() {
           'userId': 'stale_user',
           'displayName': 'Stale',
           'isActive': true,
-          'lastSeen':
-              Timestamp.fromDate(now.subtract(const Duration(minutes: 5))),
-          'expiresAt':
-              Timestamp.fromDate(now.subtract(const Duration(seconds: 30))),
+          'lastSeen': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 5)),
+          ),
+          'expiresAt': Timestamp.fromDate(
+            now.subtract(const Duration(seconds: 30)),
+          ),
         });
 
         final rows = await repo.watchActiveUsers(recipeId).first;
@@ -155,28 +158,30 @@ void main() {
       },
     );
 
-    test('watchActiveUsers includes rows with no expiresAt (legacy data)',
-        () async {
-      // Pre-BUT-477 rows lacked the field. We optimistically include them
-      // because the server-side TTL sweeper has nothing to delete on either,
-      // and surfacing such users is the lesser harm.
-      final now = DateTime.now().toUtc();
-      await fake
-          .collection(FirestoreCollections.recipePresence)
-          .doc(recipeId)
-          .collection(FirestoreCollections.activeUsers)
-          .doc('legacy_user')
-          .set({
-        'userId': 'legacy_user',
-        'displayName': 'Legacy',
-        'isActive': true,
-        'lastSeen': Timestamp.fromDate(now),
-        // no expiresAt
-      });
+    test(
+      'watchActiveUsers includes rows with no expiresAt (legacy data)',
+      () async {
+        // Pre-BUT-477 rows lacked the field. We optimistically include them
+        // because the server-side TTL sweeper has nothing to delete on either,
+        // and surfacing such users is the lesser harm.
+        final now = DateTime.now().toUtc();
+        await fake
+            .collection(FirestoreCollections.recipePresence)
+            .doc(recipeId)
+            .collection(FirestoreCollections.activeUsers)
+            .doc('legacy_user')
+            .set({
+              'userId': 'legacy_user',
+              'displayName': 'Legacy',
+              'isActive': true,
+              'lastSeen': Timestamp.fromDate(now),
+              // no expiresAt
+            });
 
-      final rows = await repo.watchActiveUsers(recipeId).first;
-      expect(rows.map((r) => r['userId']), contains('legacy_user'));
-    });
+        final rows = await repo.watchActiveUsers(recipeId).first;
+        expect(rows.map((r) => r['userId']), contains('legacy_user'));
+      },
+    );
   });
 
   group('FirebaseShoppingPresenceRepository — expiresAt TTL (BUT-477)', () {
@@ -239,10 +244,12 @@ void main() {
         'userId': 'stale_user',
         'displayName': 'Stale',
         'isActive': true,
-        'lastSeen':
-            Timestamp.fromDate(now.subtract(const Duration(minutes: 5))),
-        'expiresAt':
-            Timestamp.fromDate(now.subtract(const Duration(seconds: 30))),
+        'lastSeen': Timestamp.fromDate(
+          now.subtract(const Duration(minutes: 5)),
+        ),
+        'expiresAt': Timestamp.fromDate(
+          now.subtract(const Duration(seconds: 30)),
+        ),
       });
 
       final rows = await repo.watchActiveUsers(listId).first;

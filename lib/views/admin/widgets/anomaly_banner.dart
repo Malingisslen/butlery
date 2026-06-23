@@ -63,15 +63,17 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
                 children: [
                   Text(
                     '${l10n.adminAnomalyTitle} · ${_report.date}',
-                    style: AppTextStyles.metadataEmphasized
-                        .copyWith(color: cs.onErrorContainer),
+                    style: AppTextStyles.metadataEmphasized.copyWith(
+                      color: cs.onErrorContainer,
+                    ),
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   for (final anomaly in _report.anomalies)
                     Text(
                       _line(l10n, anomaly),
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: cs.onErrorContainer),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onErrorContainer,
+                      ),
                     ),
                 ],
               ),

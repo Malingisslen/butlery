@@ -115,8 +115,10 @@ class _ReportTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        ContextualTimeFormatter.dateTime(report.createdAt.toLocal(),
-            localeName: localeName),
+        ContextualTimeFormatter.dateTime(
+          report.createdAt.toLocal(),
+          localeName: localeName,
+        ),
         style: AppTextStyles.bodySmall,
       ),
       trailing: _StatusBadge(status: report.status, l10n: l10n),

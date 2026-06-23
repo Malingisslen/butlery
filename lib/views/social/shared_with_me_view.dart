@@ -115,9 +115,15 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                     ),
                     SharedContentAppBar.build(context, viewModel),
                     SharedContentSearchBar.build(
-                        context, viewModel, _searchController),
+                      context,
+                      viewModel,
+                      _searchController,
+                    ),
                     SharedContentTabBar.build(
-                        context, viewModel, _tabController),
+                      context,
+                      viewModel,
+                      _tabController,
+                    ),
                     _buildContent(context, viewModel),
                   ],
                 ),
@@ -130,7 +136,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
   }
 
   Widget _buildContent(
-      BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+  ) {
     if (viewModel.isGloballyLoading) {
       return SliverFillRemaining(
         child: Center(
@@ -172,7 +180,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
     // Check if search is active and no results - check each specialized viewmodel
     final hasSearchQuery = viewModel.searchViewModel.hasSearchQuery;
-    final hasFilteredContent = viewModel.recipeViewModel.hasFilteredContent ||
+    final hasFilteredContent =
+        viewModel.recipeViewModel.hasFilteredContent ||
         viewModel.menuViewModel.hasFilteredContent ||
         viewModel.shoppingViewModel.hasFilteredContent;
 
@@ -193,11 +202,20 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
         controller: _tabController,
         children: [
           SharedContentLists.buildRecipesList(
-              context, viewModel, _searchController),
+            context,
+            viewModel,
+            _searchController,
+          ),
           SharedContentLists.buildMenusList(
-              context, viewModel, _searchController),
+            context,
+            viewModel,
+            _searchController,
+          ),
           SharedContentLists.buildSharedShoppingListsList(
-              context, viewModel, _searchController),
+            context,
+            viewModel,
+            _searchController,
+          ),
         ],
       ),
     );

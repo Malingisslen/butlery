@@ -20,13 +20,13 @@ void main() {
     // Three entries whose doc `id` differs from `notificationId` on purpose:
     // dismissSelected must filter on `id`, not `notificationId`.
     NotificationHistoryEntry entry(String id) => NotificationHistoryEntry(
-          id: id,
-          notificationId: 'notif-$id',
-          category: 'social',
-          type: 'comment',
-          data: const {},
-          sentAt: DateTime(2026, 1, 1),
-        );
+      id: id,
+      notificationId: 'notif-$id',
+      category: 'social',
+      type: 'comment',
+      data: const {},
+      sentAt: DateTime(2026, 1, 1),
+    );
 
     final seed = [entry('a'), entry('b'), entry('c')];
 
@@ -36,12 +36,15 @@ void main() {
 
     setUp(() async {
       mockService = MockNotificationService();
-      when(() => mockService.getNotificationHistory(
-            limit: any(named: 'limit'),
-            before: any(named: 'before'),
-          )).thenAnswer((_) async => List.of(seed));
-      when(() => mockService.deleteHistoryNotifications(any()))
-          .thenAnswer((_) async => 0);
+      when(
+        () => mockService.getNotificationHistory(
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((_) async => List.of(seed));
+      when(
+        () => mockService.deleteHistoryNotifications(any()),
+      ).thenAnswer((_) async => 0);
 
       viewModel = NotificationsViewModel(notificationService: mockService);
       await viewModel.loadHistory();
@@ -62,9 +65,11 @@ void main() {
     test('forwards exactly the requested doc ids to the service', () async {
       await viewModel.dismissSelected({'a', 'b'});
 
-      final captured = verify(
-        () => mockService.deleteHistoryNotifications(captureAny()),
-      ).captured.single as List<String>;
+      final captured =
+          verify(
+                () => mockService.deleteHistoryNotifications(captureAny()),
+              ).captured.single
+              as List<String>;
       expect(captured.toSet(), {'a', 'b'});
     });
 
@@ -77,24 +82,27 @@ void main() {
       expect(notifications, greaterThanOrEqualTo(1));
     });
 
-    test('optimistic removal stands even when the backend delete fails',
-        () async {
-      // `deleteHistoryNotifications` is async, so a real permission denial
-      // surfaces as a *rejected future* (not a synchronous throw) — that is
-      // the path the VM's `.catchError` is designed to swallow. Use a typed
-      // Future<int>.error so the rejected future carries the same type
-      // argument as production (mocktail's `async => throw` erases it to
-      // Future<dynamic>, which trips Future.catchError's return-type check).
-      when(() => mockService.deleteHistoryNotifications(any()))
-          .thenAnswer((_) => Future<int>.error(Exception('permission denied')));
+    test(
+      'optimistic removal stands even when the backend delete fails',
+      () async {
+        // `deleteHistoryNotifications` is async, so a real permission denial
+        // surfaces as a *rejected future* (not a synchronous throw) — that is
+        // the path the VM's `.catchError` is designed to swallow. Use a typed
+        // Future<int>.error so the rejected future carries the same type
+        // argument as production (mocktail's `async => throw` erases it to
+        // Future<dynamic>, which trips Future.catchError's return-type check).
+        when(
+          () => mockService.deleteHistoryNotifications(any()),
+        ).thenAnswer((_) => Future<int>.error(Exception('permission denied')));
 
-      final removed = await viewModel.dismissSelected({'a'});
+        final removed = await viewModel.dismissSelected({'a'});
 
-      // Fire-and-forget: the failure is swallowed and the entry stays removed
-      // (a refresh would resurrect it, but the VM does not rollback by design).
-      expect(removed, 1);
-      expect(viewModel.entries.map((e) => e.id), ['b', 'c']);
-    });
+        // Fire-and-forget: the failure is swallowed and the entry stays removed
+        // (a refresh would resurrect it, but the VM does not rollback by design).
+        expect(removed, 1);
+        expect(viewModel.entries.map((e) => e.id), ['b', 'c']);
+      },
+    );
 
     test('empty selection is a no-op — no service call, returns 0', () async {
       final removed = await viewModel.dismissSelected({});
@@ -104,15 +112,17 @@ void main() {
       verifyNever(() => mockService.deleteHistoryNotifications(any()));
     });
 
-    test('selection matching no loaded entry is a no-op — no service call',
-        () async {
-      // 'notif-a' is the notificationId of entry 'a'; dismissSelected keys on
-      // the doc id, so passing a notificationId must match nothing.
-      final removed = await viewModel.dismissSelected({'notif-a', 'zzz'});
+    test(
+      'selection matching no loaded entry is a no-op — no service call',
+      () async {
+        // 'notif-a' is the notificationId of entry 'a'; dismissSelected keys on
+        // the doc id, so passing a notificationId must match nothing.
+        final removed = await viewModel.dismissSelected({'notif-a', 'zzz'});
 
-      expect(removed, 0);
-      expect(viewModel.entries.length, 3);
-      verifyNever(() => mockService.deleteHistoryNotifications(any()));
-    });
+        expect(removed, 0);
+        expect(viewModel.entries.length, 3);
+        verifyNever(() => mockService.deleteHistoryNotifications(any()));
+      },
+    );
   });
 }

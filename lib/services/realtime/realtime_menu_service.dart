@@ -36,8 +36,8 @@ class RealtimeMenuService extends ChangeNotifier
   RealtimeMenuService({
     required RealtimeSyncService syncService,
     required AuthService authService,
-  })  : _syncService = syncService,
-        _authService = authService;
+  }) : _syncService = syncService,
+       _authService = authService;
 
   /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;
@@ -400,8 +400,8 @@ class RealtimeMenuService extends ChangeNotifier
       // Fetch latest version from Firestore to avoid stale read-modify-write
       final currentMenu =
           await _syncService.fetchLatestResource<RealtimeMenu>(resourceId) ??
-              _currentMenu ??
-              _syncService.getCachedResource<RealtimeMenu>(resourceId);
+          _currentMenu ??
+          _syncService.getCachedResource<RealtimeMenu>(resourceId);
       if (currentMenu == null) {
         throw MenuOperationError(
           operation: operation,
@@ -425,9 +425,12 @@ class RealtimeMenuService extends ChangeNotifier
       _currentMenu = updatedMenu;
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
     } catch (e) {
-      _handleError(operation,
-          AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
-          resourceId: resourceId, originalError: e);
+      _handleError(
+        operation,
+        AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
+        resourceId: resourceId,
+        originalError: e,
+      );
       rethrow;
     } finally {
       _setProcessing(false);

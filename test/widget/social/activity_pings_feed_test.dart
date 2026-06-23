@@ -77,9 +77,9 @@ class _FakeFriendsService implements UnifiedFriendsService {
     required String myId,
     required List<FriendCategory> categories,
     required List<UserProfile> friends,
-  })  : _myId = myId,
-        _cats = categories,
-        _friends = friends;
+  }) : _myId = myId,
+       _cats = categories,
+       _friends = friends;
 
   @override
   String? get currentUserId => _myId;
@@ -95,12 +95,12 @@ class _FakeFriendsService implements UnifiedFriendsService {
 }
 
 UserProfile _profile(String uid, {String? name}) => UserProfile(
-      uid: uid,
-      displayName: name ?? uid[0].toUpperCase() + uid.substring(1),
-      email: '$uid@butlery.test',
-      joinedAt: DateTime(2026, 1, 1),
-      lastActiveAt: DateTime(2026, 4, 20),
-    );
+  uid: uid,
+  displayName: name ?? uid[0].toUpperCase() + uid.substring(1),
+  email: '$uid@butlery.test',
+  joinedAt: DateTime(2026, 1, 1),
+  lastActiveAt: DateTime(2026, 4, 20),
+);
 
 Ping _ping({
   required String id,
@@ -109,16 +109,15 @@ Ping _ping({
   String? message,
   bool acknowledged = false,
   DateTime? at,
-}) =>
-    Ping(
-      id: id,
-      groupId: 'g1',
-      fromUserId: from,
-      type: type,
-      message: message,
-      createdAt: at ?? DateTime.now(),
-      acknowledged: acknowledged,
-    );
+}) => Ping(
+  id: id,
+  groupId: 'g1',
+  fromUserId: from,
+  type: type,
+  message: message,
+  createdAt: at ?? DateTime.now(),
+  acknowledged: acknowledged,
+);
 
 ActivityEvent _activity({
   required String id,
@@ -128,17 +127,16 @@ ActivityEvent _activity({
   String recipeTitle = 'Kycklinggryta',
   Map<String, dynamic>? extra,
   DateTime? at,
-}) =>
-    ActivityEvent(
-      id: id,
-      actorId: actor,
-      actorDisplayName: actor[0].toUpperCase() + actor.substring(1),
-      type: type,
-      recipeId: recipeId,
-      recipeTitle: recipeTitle,
-      extraData: extra ?? const {},
-      createdAt: at ?? DateTime.now(),
-    );
+}) => ActivityEvent(
+  id: id,
+  actorId: actor,
+  actorDisplayName: actor[0].toUpperCase() + actor.substring(1),
+  type: type,
+  recipeId: recipeId,
+  recipeTitle: recipeTitle,
+  extraData: extra ?? const {},
+  createdAt: at ?? DateTime.now(),
+);
 
 Widget _wrap(Widget child) {
   return MaterialApp(
@@ -170,18 +168,23 @@ _FakeFriendsService _friendsWithGroup({
 
 void main() {
   group('ActivityPingsFeed', () {
-    testWidgets('empty state → SizedBox.shrink (no feed rendered)',
-        (tester) async {
+    testWidgets('empty state → SizedBox.shrink (no feed rendered)', (
+      tester,
+    ) async {
       final pings = _FakePingService();
       final repo = _FakeActivityRepo(const []);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
       // Flush the stream's initial frame + the first activity fetch.
       pings.controller.add(const []);
       await tester.pump();
@@ -192,18 +195,23 @@ void main() {
       expect(find.textContaining('min sedan'), findsNothing);
     });
 
-    testWidgets('one un-acked nudge ping renders with message suffix',
-        (tester) async {
+    testWidgets('one un-acked nudge ping renders with message suffix', (
+      tester,
+    ) async {
       final pings = _FakePingService();
       final repo = _FakeActivityRepo(const []);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add([
         _ping(
@@ -227,12 +235,16 @@ void main() {
       final repo = _FakeActivityRepo(const []);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add([
         _ping(id: 'p1', from: 'erik', acknowledged: true),
@@ -256,12 +268,16 @@ void main() {
       ]);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       // 5 fresh pings — the 60-minute-old activity event must be dropped.
       pings.controller.add([
@@ -280,18 +296,23 @@ void main() {
       expect(find.textContaining('började laga'), findsNothing);
     });
 
-    testWidgets('tap on un-acked ping → pingService.acknowledge called',
-        (tester) async {
+    testWidgets('tap on un-acked ping → pingService.acknowledge called', (
+      tester,
+    ) async {
       final pings = _FakePingService();
       final repo = _FakeActivityRepo(const []);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add([_ping(id: 'p1', from: 'erik')]);
       await tester.pump();
@@ -306,8 +327,9 @@ void main() {
       expect(pings.ackCalls.first.groupId, 'g1');
     });
 
-    testWidgets('addedIngredient activity renders Swedish copy',
-        (tester) async {
+    testWidgets('addedIngredient activity renders Swedish copy', (
+      tester,
+    ) async {
       final pings = _FakePingService();
       final now = DateTime.now();
       final repo = _FakeActivityRepo([
@@ -321,12 +343,16 @@ void main() {
       ]);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['sara']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add(const []);
       // Let the initial activity fetch resolve.
@@ -339,8 +365,9 @@ void main() {
     // BUT-764: regression guard for the BUT-629 lifecycle pause/resume.
     // Without this, a refactor that breaks the lifecycle wiring would
     // silently re-introduce the ~30 fetches/hr cost on backgrounded phones.
-    testWidgets('pauses activity polling while app backgrounded',
-        (tester) async {
+    testWidgets('pauses activity polling while app backgrounded', (
+      tester,
+    ) async {
       final pings = _FakePingService();
       final now = DateTime.now();
       final repo = _FakeActivityRepo([
@@ -353,12 +380,16 @@ void main() {
       ]);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add(const []);
       // Init fetch has been scheduled — pump twice to flush the microtask.
@@ -379,14 +410,20 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pump();
       await tester.pump();
-      expect(repo.fetchCount, 2,
-          reason: 'one immediate fetch on resume (no stale data)');
+      expect(
+        repo.fetchCount,
+        2,
+        reason: 'one immediate fetch on resume (no stale data)',
+      );
 
       // Advance one full refresh interval — the resumed periodic timer
       // should fire one more fetch.
       await tester.pump(const Duration(minutes: 2));
-      expect(repo.fetchCount, greaterThanOrEqualTo(3),
-          reason: 'periodic timer resumed after foreground');
+      expect(
+        repo.fetchCount,
+        greaterThanOrEqualTo(3),
+        reason: 'periodic timer resumed after foreground',
+      );
 
       // Tear down cleanly so the periodic timer doesn't leak into the
       // next test (and to avoid the "Timer is still pending" tester error).
@@ -408,12 +445,16 @@ void main() {
       ]);
       final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
 
-      await tester.pumpWidget(_wrap(ActivityPingsFeed(
-        groupId: 'g1',
-        pingService: pings,
-        activityRepository: repo,
-        friendsService: friends,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ActivityPingsFeed(
+            groupId: 'g1',
+            pingService: pings,
+            activityRepository: repo,
+            friendsService: friends,
+          ),
+        ),
+      );
 
       pings.controller.add(const []);
       await tester.pump();

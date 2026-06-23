@@ -77,7 +77,7 @@ class _FakeStateManager extends Fake implements FriendsStateManager {
   final List<({String id, GroupInvitation invitation})> updatedSentInvitations =
       [];
   final List<({String id, GroupInvitation invitation})>
-      updatedReceivedInvitations = [];
+  updatedReceivedInvitations = [];
 
   void seedFriends(List<UserProfile> friends) => _friends = friends;
   void seedCategories(List<FriendCategory> cats) => _categories = cats;
@@ -290,8 +290,9 @@ void main() {
     /// refactor flipped the equality (then non-owners would full-write).
     test('owner path calls saveCategory with full document', () async {
       final c = _cat(id: 'c1', ownerId: currentUserId);
-      when(() => categoryRepo.saveCategory(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => categoryRepo.saveCategory(any(), any()),
+      ).thenAnswer((_) async {});
 
       await ops.syncCategoryToFirebaseInternal(c);
 
@@ -303,22 +304,26 @@ void main() {
     /// to addSelfToCategory (members-only field update). If the routing
     /// were flipped, a member could overwrite the entire category doc —
     /// rename it, remove other members, even claim ownership client-side.
-    test('non-owner path calls addSelfToCategory, never saveCategory',
-        () async {
-      final c = _cat(
-        id: 'c1',
-        ownerId: 'someone-else',
-        memberIds: [currentUserId],
-      );
-      when(() => categoryRepo.addSelfToCategory(any(), any()))
-          .thenAnswer((_) async {});
+    test(
+      'non-owner path calls addSelfToCategory, never saveCategory',
+      () async {
+        final c = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: [currentUserId],
+        );
+        when(
+          () => categoryRepo.addSelfToCategory(any(), any()),
+        ).thenAnswer((_) async {});
 
-      await ops.syncCategoryToFirebaseInternal(c);
+        await ops.syncCategoryToFirebaseInternal(c);
 
-      verify(() => categoryRepo.addSelfToCategory('someone-else', 'c1'))
-          .called(1);
-      verifyNever(() => categoryRepo.saveCategory(any(), any()));
-    });
+        verify(
+          () => categoryRepo.addSelfToCategory('someone-else', 'c1'),
+        ).called(1);
+        verifyNever(() => categoryRepo.saveCategory(any(), any()));
+      },
+    );
 
     /// Proves the unauthenticated short-circuit returns silently (no
     /// exception bubbling to UI, no repository write attempted).
@@ -333,21 +338,24 @@ void main() {
     });
 
     /// Proves the type guard: a stray Map or null cannot trigger a write.
-    test('non-FriendCategory input does not call any repository method',
-        () async {
-      await ops.syncCategoryToFirebaseInternal({'fake': true});
-      await ops.syncCategoryToFirebaseInternal(null);
+    test(
+      'non-FriendCategory input does not call any repository method',
+      () async {
+        await ops.syncCategoryToFirebaseInternal({'fake': true});
+        await ops.syncCategoryToFirebaseInternal(null);
 
-      verifyNever(() => categoryRepo.saveCategory(any(), any()));
-      verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
-    });
+        verifyNever(() => categoryRepo.saveCategory(any(), any()));
+        verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+      },
+    );
 
     /// Proves real errors (non-assertion-error) propagate to the caller —
     /// callers rely on rethrow to surface failures, e.g. for retry UI.
     test('rethrows generic exceptions to caller', () async {
       final c = _cat(id: 'c1', ownerId: currentUserId);
-      when(() => categoryRepo.saveCategory(any(), any()))
-          .thenThrow(StateError('boom'));
+      when(
+        () => categoryRepo.saveCategory(any(), any()),
+      ).thenThrow(StateError('boom'));
 
       expect(
         () => ops.syncCategoryToFirebaseInternal(c),
@@ -373,8 +381,9 @@ void main() {
         saveCalls++;
         throw Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9');
       });
-      when(() => categoryRepo.getCategory(any(), any()))
-          .thenAnswer((_) async => c); // saved doc matches.
+      when(
+        () => categoryRepo.getCategory(any(), any()),
+      ).thenAnswer((_) async => c); // saved doc matches.
 
       await ops.syncCategoryToFirebaseInternal(c); // must NOT throw.
 
@@ -407,8 +416,9 @@ void main() {
         }
         // Retry succeeds.
       });
-      when(() => categoryRepo.getCategory(any(), any()))
-          .thenAnswer((_) async => actuallySaved);
+      when(
+        () => categoryRepo.getCategory(any(), any()),
+      ).thenAnswer((_) async => actuallySaved);
 
       await ops.syncCategoryToFirebaseInternal(intended);
 
@@ -425,8 +435,9 @@ void main() {
     /// the category's stored ownerId. Caller can't pass an ownerId arg
     /// here, so this also guards against a refactor that adds one.
     test('deletes using current user id as scope', () async {
-      when(() => categoryRepo.deleteCategory(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => categoryRepo.deleteCategory(any(), any()),
+      ).thenAnswer((_) async {});
 
       await ops.deleteCategoryFromFirebaseInternal('c1');
 
@@ -442,8 +453,9 @@ void main() {
     });
 
     test('rethrows on delete failure', () async {
-      when(() => categoryRepo.deleteCategory(any(), any()))
-          .thenThrow(StateError('denied'));
+      when(
+        () => categoryRepo.deleteCategory(any(), any()),
+      ).thenThrow(StateError('denied'));
 
       expect(
         () => ops.deleteCategoryFromFirebaseInternal('c1'),
@@ -503,8 +515,11 @@ void main() {
       expect(updated.friendUserIds, ['f1', 'f2']);
       expect(updated.updatedAt, now);
       expect(updated.id, 'c1', reason: 'id must be preserved');
-      expect(updated.ownerId, currentUserId,
-          reason: 'ownerId must be preserved — cannot be silently rewritten');
+      expect(
+        updated.ownerId,
+        currentUserId,
+        reason: 'ownerId must be preserved — cannot be silently rewritten',
+      );
     });
   });
 
@@ -524,41 +539,56 @@ void main() {
     /// must DELETE the doc. Firestore rules block sender-side updates,
     /// so a refactor flipping this to `updateInvitation` would silently
     /// fail with permission denied in production.
-    test('cancelled status DELETES invitation (rule-safe sender path)',
-        () async {
-      when(() => friendsRepo.deleteInvitation(any())).thenAnswer((_) async {});
+    test(
+      'cancelled status DELETES invitation (rule-safe sender path)',
+      () async {
+        when(
+          () => friendsRepo.deleteInvitation(any()),
+        ).thenAnswer((_) async {});
 
-      await ops.updateInvitationStatusInternal(
-          'inv-1', GroupInvitationStatus.cancelled);
+        await ops.updateInvitationStatusInternal(
+          'inv-1',
+          GroupInvitationStatus.cancelled,
+        );
 
-      verify(() => friendsRepo.deleteInvitation('inv-1')).called(1);
-      verifyNever(() => friendsRepo.updateInvitation(any(), any()));
-    });
+        verify(() => friendsRepo.deleteInvitation('inv-1')).called(1);
+        verifyNever(() => friendsRepo.updateInvitation(any(), any()));
+      },
+    );
 
     /// CONTRACT: accepted / rejected go through UPDATE with the status
     /// string (e.g. "accepted", not "GroupInvitationStatus.accepted") and
     /// a respondedAt timestamp. Wire-format must stay stable for clients.
-    test('accepted status UPDATES with normalised string + respondedAt',
-        () async {
-      Map<String, dynamic>? captured;
-      when(() => friendsRepo.updateInvitation(any(), any())).thenAnswer((inv) {
-        captured = inv.positionalArguments[1] as Map<String, dynamic>;
-        return Future.value();
-      });
-      final now = DateTime.utc(2026, 5, 27, 12, 0, 0);
+    test(
+      'accepted status UPDATES with normalised string + respondedAt',
+      () async {
+        Map<String, dynamic>? captured;
+        when(() => friendsRepo.updateInvitation(any(), any())).thenAnswer((
+          inv,
+        ) {
+          captured = inv.positionalArguments[1] as Map<String, dynamic>;
+          return Future.value();
+        });
+        final now = DateTime.utc(2026, 5, 27, 12, 0, 0);
 
-      await withClock(Clock.fixed(now), () async {
-        await ops.updateInvitationStatusInternal(
-            'inv-1', GroupInvitationStatus.accepted);
-      });
+        await withClock(Clock.fixed(now), () async {
+          await ops.updateInvitationStatusInternal(
+            'inv-1',
+            GroupInvitationStatus.accepted,
+          );
+        });
 
-      verify(() => friendsRepo.updateInvitation('inv-1', any())).called(1);
-      expect(captured, isNotNull);
-      expect(captured!['status'], 'accepted',
-          reason: 'enum value, not enum-name with class prefix');
-      expect(captured!['respondedAt'], now);
-      verifyNever(() => friendsRepo.deleteInvitation(any()));
-    });
+        verify(() => friendsRepo.updateInvitation('inv-1', any())).called(1);
+        expect(captured, isNotNull);
+        expect(
+          captured!['status'],
+          'accepted',
+          reason: 'enum value, not enum-name with class prefix',
+        );
+        expect(captured!['respondedAt'], now);
+        verifyNever(() => friendsRepo.deleteInvitation(any()));
+      },
+    );
 
     test('rejected status UPDATES with "rejected" string', () async {
       Map<String, dynamic>? captured;
@@ -568,7 +598,9 @@ void main() {
       });
 
       await ops.updateInvitationStatusInternal(
-          'inv-1', GroupInvitationStatus.rejected);
+        'inv-1',
+        GroupInvitationStatus.rejected,
+      );
 
       expect(captured!['status'], 'rejected');
     });
@@ -585,12 +617,15 @@ void main() {
     });
 
     test('rethrows on repository failure', () async {
-      when(() => friendsRepo.updateInvitation(any(), any()))
-          .thenThrow(StateError('boom'));
+      when(
+        () => friendsRepo.updateInvitation(any(), any()),
+      ).thenThrow(StateError('boom'));
 
       expect(
         () => ops.updateInvitationStatusInternal(
-            'inv-1', GroupInvitationStatus.accepted),
+          'inv-1',
+          GroupInvitationStatus.accepted,
+        ),
         throwsA(isA<StateError>()),
       );
     });
@@ -630,22 +665,26 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('sent-invitation tracking', () {
-    test('addSentInvitationInternal delegates only for GroupInvitation type',
-        () {
-      ops.addSentInvitationInternal('not-an-invitation');
-      ops.addSentInvitationInternal(null);
-      expect(stateManager.addedSentInvitations, isEmpty);
+    test(
+      'addSentInvitationInternal delegates only for GroupInvitation type',
+      () {
+        ops.addSentInvitationInternal('not-an-invitation');
+        ops.addSentInvitationInternal(null);
+        expect(stateManager.addedSentInvitations, isEmpty);
 
-      final inv = _inv(id: 'i1');
-      ops.addSentInvitationInternal(inv);
-      expect(stateManager.addedSentInvitations, [inv]);
-    });
+        final inv = _inv(id: 'i1');
+        ops.addSentInvitationInternal(inv);
+        expect(stateManager.addedSentInvitations, [inv]);
+      },
+    );
 
     test('getSentInvitationByIdInternal returns null when missing', () {
       stateManager.seedSentInvitations([_inv(id: 'i1')]);
 
-      expect((ops.getSentInvitationByIdInternal('i1') as GroupInvitation).id,
-          'i1');
+      expect(
+        (ops.getSentInvitationByIdInternal('i1') as GroupInvitation).id,
+        'i1',
+      );
       expect(ops.getSentInvitationByIdInternal('missing'), isNull);
     });
 
@@ -653,15 +692,17 @@ void main() {
     /// AND the received lists. This handles the case where the same
     /// invitation appears in both lists (rare, but happens on local
     /// optimistic updates).
-    test('updateSentInvitationInternal updates both sent and received lists',
-        () {
-      final inv = _inv(id: 'i1', status: GroupInvitationStatus.accepted);
+    test(
+      'updateSentInvitationInternal updates both sent and received lists',
+      () {
+        final inv = _inv(id: 'i1', status: GroupInvitationStatus.accepted);
 
-      ops.updateSentInvitationInternal('i1', inv);
+        ops.updateSentInvitationInternal('i1', inv);
 
-      expect(stateManager.updatedSentInvitations, hasLength(1));
-      expect(stateManager.updatedReceivedInvitations, hasLength(1));
-    });
+        expect(stateManager.updatedSentInvitations, hasLength(1));
+        expect(stateManager.updatedReceivedInvitations, hasLength(1));
+      },
+    );
 
     test('updateSentInvitationInternal ignores wrong type', () {
       ops.updateSentInvitationInternal('i1', {'status': 'accepted'});
@@ -680,13 +721,17 @@ void main() {
     /// "invitation sent" UI never lies to the user.
     test('sendEmailInvitationInternal always returns false', () async {
       final result = await ops.sendEmailInvitationInternal(
-          email: 'x@y.se', invitation: _inv(id: 'i1'));
+        email: 'x@y.se',
+        invitation: _inv(id: 'i1'),
+      );
       expect(result, isFalse);
     });
 
     test('sendSMSInvitationInternal always returns false', () async {
       final result = await ops.sendSMSInvitationInternal(
-          phoneNumber: '+46700000000', invitation: _inv(id: 'i1'));
+        phoneNumber: '+46700000000',
+        invitation: _inv(id: 'i1'),
+      );
       expect(result, isFalse);
     });
   });
@@ -719,8 +764,9 @@ void main() {
     /// Proves the catch-all guard. A thrown UserService (e.g. ServiceLocator
     /// not initialised) must not crash a chat header / notification badge.
     test('returns "Unknown" when UserService throws', () {
-      when(() => userService.currentUserProfile)
-          .thenThrow(StateError('not init'));
+      when(
+        () => userService.currentUserProfile,
+      ).thenThrow(StateError('not init'));
 
       expect(ops.getCurrentUserDisplayNameInternal(), 'Unknown');
     });

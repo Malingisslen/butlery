@@ -88,12 +88,16 @@ abstract class ModelTestBase {
 
       // Verify Firestore-specific types
       if (firestoreData.containsKey('createdAt')) {
-        expect(firestoreData['createdAt'],
-            anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
+        expect(
+          firestoreData['createdAt'],
+          anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()),
+        );
       }
       if (firestoreData.containsKey('updatedAt')) {
-        expect(firestoreData['updatedAt'],
-            anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
+        expect(
+          firestoreData['updatedAt'],
+          anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()),
+        );
       }
 
       if (customAssertions != null) {
@@ -230,11 +234,13 @@ abstract class ModelTestBase {
       if (expectedError != null) {
         expect(
           () => fromJson(invalidJson),
-          throwsA(isA<Type>().having(
-            (e) => e.runtimeType,
-            'error type',
-            expectedError,
-          )),
+          throwsA(
+            isA<Type>().having(
+              (e) => e.runtimeType,
+              'error type',
+              expectedError,
+            ),
+          ),
         );
       } else {
         expect(

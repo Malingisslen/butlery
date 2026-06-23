@@ -56,9 +56,9 @@ class InAppReviewService {
     InAppReview? inAppReview,
     AnalyticsService? analytics,
     DateTime Function()? now,
-  })  : _inAppReview = inAppReview ?? InAppReview.instance,
-        _analytics = analytics,
-        _now = now ?? DateTime.now;
+  }) : _inAppReview = inAppReview ?? InAppReview.instance,
+       _analytics = analytics,
+       _now = now ?? DateTime.now;
 
   /// Called from the rating-submission flow. Records the cook (if rating
   /// qualifies) and prompts when all criteria are met.

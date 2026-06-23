@@ -38,13 +38,22 @@ class ShoppingListHeader {
         children: [
           // List selector dropdown with management buttons
           _buildListSelector(
-              context, viewModel, onRenameList, onDeleteList, onConvertList),
+            context,
+            viewModel,
+            onRenameList,
+            onDeleteList,
+            onConvertList,
+          ),
 
           if (viewModel.activeList != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
             _buildListActions(
-                context, viewModel, onClearCompleted, onUncheckAll,
-                onSortCategories: onSortCategories),
+              context,
+              viewModel,
+              onClearCompleted,
+              onUncheckAll,
+              onSortCategories: onSortCategories,
+            ),
           ],
         ],
       ),
@@ -119,8 +128,9 @@ class ShoppingListHeader {
             DecoratedBox(
               decoration: BoxDecoration(
                 color: cs.surface,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius12),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius12,
+                ),
                 border: Border.all(color: cs.outlineVariant),
               ),
               child: AppIconButton(
@@ -129,8 +139,9 @@ class ShoppingListHeader {
                 semanticLabel: viewModel.activeList?.isPersonal == true
                     ? context.l10n.shoppingConvertToCollaborative
                     : context.l10n.shoppingConvertToPersonal,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityDark,
+                ),
                 iconSize: AppDimensions.iconSizeAction,
               ),
             ),
@@ -178,11 +189,16 @@ class ShoppingListHeader {
             style: OutlinedButton.styleFrom(
               padding: AppDimensions.paddingVertical8,
               side: BorderSide(
-                  color: cs.onSurfaceVariant
-                      .withValues(alpha: AppDimensions.opacityHalf)),
+                color: cs.onSurfaceVariant.withValues(
+                  alpha: AppDimensions.opacityHalf,
+                ),
+              ),
             ),
-            icon: Icon(Icons.sort,
-                size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+            icon: Icon(
+              Icons.sort,
+              size: AppDimensions.iconSizeS,
+              color: cs.onSurfaceVariant,
+            ),
             label: Text(
               context.l10n.shoppingSortCategories,
               style: AppTextStyles.metadataEmphasized.copyWith(
@@ -202,11 +218,16 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                    color: cs.onSurfaceVariant
-                        .withValues(alpha: AppDimensions.opacityHalf)),
+                  color: cs.onSurfaceVariant.withValues(
+                    alpha: AppDimensions.opacityHalf,
+                  ),
+                ),
               ),
-              icon: Icon(Icons.clear,
-                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+              icon: Icon(
+                Icons.clear,
+                size: AppDimensions.iconSizeS,
+                color: cs.onSurfaceVariant,
+              ),
               label: Text(
                 context.l10n.shoppingClearCount(viewModel.boughtItems),
                 style: AppTextStyles.metadataEmphasized.copyWith(
@@ -227,11 +248,16 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                    color: cs.primary
-                        .withValues(alpha: AppDimensions.opacityHalf)),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityHalf,
+                  ),
+                ),
               ),
-              icon: Icon(Icons.check_box_outline_blank,
-                  size: AppDimensions.iconSizeS, color: cs.primary),
+              icon: Icon(
+                Icons.check_box_outline_blank,
+                size: AppDimensions.iconSizeS,
+                color: cs.primary,
+              ),
               label: Text(
                 context.l10n.shoppingUncheckAll,
                 style: AppTextStyles.metadataEmphasized.copyWith(
@@ -246,7 +272,9 @@ class ShoppingListHeader {
 
   /// Build enhanced dropdown item with sharing status indicators
   static Widget _buildListDropdownItem(
-      BuildContext context, UnifiedShoppingList list) {
+    BuildContext context,
+    UnifiedShoppingList list,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;

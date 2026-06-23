@@ -22,10 +22,10 @@ class RecipeRatingSystem {
   RecipeRatingSystem({
     RatingsRepository? ratingsRepository,
     AnalyticsService? analyticsService,
-  })  : _ratingsRepository =
-            ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-        _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>();
+  }) : _ratingsRepository =
+           ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+       _analyticsService =
+           analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
   /// Rate a recipe with validation
   Future<bool> rateRecipe({
@@ -59,8 +59,10 @@ class RecipeRatingSystem {
       }
 
       // Get previous rating for analytics
-      final previousRating =
-          await _ratingsRepository.getUserRating(recipeId, currentUserId);
+      final previousRating = await _ratingsRepository.getUserRating(
+        recipeId,
+        currentUserId,
+      );
 
       // Create or update rating using repository
       await _ratingsRepository.rateRecipe(
@@ -110,7 +112,8 @@ class RecipeRatingSystem {
   }) async {
     try {
       AppLogger.debug(
-          '📊 Getting ratings for recipe $recipeId (limit: $limit)');
+        '📊 Getting ratings for recipe $recipeId (limit: $limit)',
+      );
       return await _ratingsRepository.getRecipeRatings(
         recipeId,
         limit: limit,
@@ -138,8 +141,10 @@ class RecipeRatingSystem {
       }
 
       // Check if rating exists
-      final existingRating =
-          await _ratingsRepository.getUserRating(recipeId, userId);
+      final existingRating = await _ratingsRepository.getUserRating(
+        recipeId,
+        userId,
+      );
       if (existingRating == null) {
         AppLogger.error('❌ Cannot update: Rating not found');
         return false;
@@ -213,7 +218,8 @@ class RecipeRatingSystem {
   }) async {
     try {
       AppLogger.debug(
-          '📊 Getting ratings given by user ${userId.maskedUserId}');
+        '📊 Getting ratings given by user ${userId.maskedUserId}',
+      );
       final ratings = await _ratingsRepository.getUserRatings(userId);
 
       if (limit != null && ratings.length > limit) {
@@ -235,7 +241,8 @@ class RecipeRatingSystem {
   }) async {
     try {
       AppLogger.debug(
-          '📊 Getting ratings received for ${userRecipeIds.length} recipes');
+        '📊 Getting ratings received for ${userRecipeIds.length} recipes',
+      );
 
       final allRatings = <RecipeRating>[];
 
@@ -254,8 +261,9 @@ class RecipeRatingSystem {
       allRatings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       // Apply limit if specified
-      final result =
-          limit != null ? allRatings.take(limit).toList() : allRatings;
+      final result = limit != null
+          ? allRatings.take(limit).toList()
+          : allRatings;
 
       AppLogger.debug('📋 Found ${result.length} ratings received');
       return result;

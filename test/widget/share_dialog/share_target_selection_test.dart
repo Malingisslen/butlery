@@ -37,8 +37,9 @@ void main() {
       ];
     });
 
-    testWidgets('renders share target selection using Builder for context',
-        (WidgetTester tester) async {
+    testWidgets('renders share target selection using Builder for context', (
+      WidgetTester tester,
+    ) async {
       final selectedIds = <String>{};
       String searchQuery = '';
 
@@ -66,8 +67,9 @@ void main() {
       expect(find.text('Clara Carlsson'), findsOneWidget);
     });
 
-    testWidgets('shows correct Swedish text for empty friends',
-        (WidgetTester tester) async {
+    testWidgets('shows correct Swedish text for empty friends', (
+      WidgetTester tester,
+    ) async {
       final selectedIds = <String>{};
       String searchQuery = '';
 
@@ -91,16 +93,17 @@ void main() {
       expect(find.byIcon(Icons.people_outline), findsOneWidget);
     });
 
-    testWidgets('shows correct Swedish text for no search results',
-        (WidgetTester tester) async {
+    testWidgets('shows correct Swedish text for no search results', (
+      WidgetTester tester,
+    ) async {
       final selectedIds = <String>{};
       String searchQuery = 'xyz123';
 
       // Filter friends manually to simulate the actual filtering behavior
       final filteredFriends = mockFriends.where((friend) {
-        return friend.displayName
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
+        return friend.displayName.toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        );
       }).toList();
 
       await tester.pumpWidget(

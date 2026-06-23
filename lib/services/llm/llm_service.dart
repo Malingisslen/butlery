@@ -62,15 +62,15 @@ class LlmService extends BaseService {
     required ConsentService consentService,
     FirebaseFunctions? functions,
     CircuitBreaker? backendBreaker,
-  })  : _rateLimiter = rateLimiter,
-        _consentService = consentService,
-        _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: _region),
-        _backendBreaker = backendBreaker ??
-            CircuitBreaker(
-              failureThreshold: _failureThreshold,
-              resetTime: _resetTime,
-            );
+  }) : _rateLimiter = rateLimiter,
+       _consentService = consentService,
+       _functions = functions ?? FirebaseFunctions.instanceFor(region: _region),
+       _backendBreaker =
+           backendBreaker ??
+           CircuitBreaker(
+             failureThreshold: _failureThreshold,
+             resetTime: _resetTime,
+           );
 
   /// Test seam: read-only view of the backend circuit breaker so unit tests
   /// can assert open/closed transitions without poking the private field.
@@ -152,7 +152,8 @@ class LlmService extends BaseService {
   }) async {
     if (imageBytes == null && imageUrl == null) {
       throw const LlmException(
-          'Either imageBytes or imageUrl must be provided');
+        'Either imageBytes or imageUrl must be provided',
+      );
     }
 
     AppLogger.debug(
@@ -230,8 +231,10 @@ class LlmService extends BaseService {
       'LlmService: parseIngredientLines called with ${lines.length} lines',
     );
 
-    final operation =
-        ImportOperation.withLlm('llm', LlmOperationType.ingredientLines);
+    final operation = ImportOperation.withLlm(
+      'llm',
+      LlmOperationType.ingredientLines,
+    );
     final request = StructureRecipeRequest(
       text: lines.join('\n'),
       mode: StructureMode.ingredientLines,

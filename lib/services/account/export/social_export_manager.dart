@@ -17,7 +17,7 @@ class SocialExportManager {
   static const String _logTag = 'SocialExportManager';
 
   SocialExportManager({FirebaseDataExportRepository? dataExportRepository})
-      : _exportRepo = dataExportRepository;
+    : _exportRepo = dataExportRepository;
 
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
@@ -32,8 +32,9 @@ class SocialExportManager {
         'friend_categories': [],
       };
       final friendLimit = ExportPaginationHelper.getLimitForType('friends');
-      final requestLimit =
-          ExportPaginationHelper.getLimitForType('friend_requests');
+      final requestLimit = ExportPaginationHelper.getLimitForType(
+        'friend_requests',
+      );
 
       final friends = await _exports.exportFriendsSubcollection(
         userId,
@@ -98,10 +99,12 @@ class SocialExportManager {
         'total_conversations': 0,
         'total_messages': 0,
       };
-      final conversationLimit =
-          ExportPaginationHelper.getLimitForType('conversations');
-      final messageLimit =
-          ExportPaginationHelper.getLimitForType('messages_per_conversation');
+      final conversationLimit = ExportPaginationHelper.getLimitForType(
+        'conversations',
+      );
+      final messageLimit = ExportPaginationHelper.getLimitForType(
+        'messages_per_conversation',
+      );
 
       final conversations = await _exports.exportConversationsAndMessages(
         userId,
@@ -111,8 +114,8 @@ class SocialExportManager {
 
       for (final convo in conversations) {
         final messagesList = <Map<String, dynamic>>[];
-        final rawMessages =
-            (convo['messages'] as List).cast<Map<String, dynamic>>();
+        final rawMessages = (convo['messages'] as List)
+            .cast<Map<String, dynamic>>();
 
         for (final msg in rawMessages) {
           // Only include messages sent by this user or received by this user.
@@ -191,7 +194,9 @@ class SocialExportManager {
       return sharedData;
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export shared content', e);
+        '[$_logTag] Failed to export shared content',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -214,7 +219,8 @@ class SocialExportManager {
 
   /// Export conversation memberships
   Future<Map<String, dynamic>> exportConversationMemberships(
-      String userId) async {
+    String userId,
+  ) async {
     try {
       final memberships = await _exports.exportConversationMemberships(userId);
       return {
@@ -222,7 +228,9 @@ class SocialExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export conversation memberships', e);
+        '[$_logTag] Failed to export conversation memberships',
+        e,
+      );
       return {'error': e.toString()};
     }
   }

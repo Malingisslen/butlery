@@ -12,7 +12,10 @@ void main() {
     test('returns null for empty title', () {
       expect(
         fingerprinter.generate(
-            title: '', ingredients: ['mjol'], instructionCount: 1),
+          title: '',
+          ingredients: ['mjol'],
+          instructionCount: 1,
+        ),
         isNull,
       );
     });
@@ -20,7 +23,10 @@ void main() {
     test('returns null for empty ingredients', () {
       expect(
         fingerprinter.generate(
-            title: 'Pannkakor', ingredients: [], instructionCount: 1),
+          title: 'Pannkakor',
+          ingredients: [],
+          instructionCount: 1,
+        ),
         isNull,
       );
     });

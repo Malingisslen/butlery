@@ -23,10 +23,14 @@ SiteConfig _cfg(String domain, {required int success, required int fail}) =>
     );
 
 MetricValue _resolve(
-        MetricKey key, List<SiteConfig> configs, AppLocalizations l10n,
-        {Map<String, dynamic>? snapshot}) =>
-    resolvers[key]!(
-        InsightsData(importConfigs: configs, importSnapshot: snapshot), l10n);
+  MetricKey key,
+  List<SiteConfig> configs,
+  AppLocalizations l10n, {
+  Map<String, dynamic>? snapshot,
+}) => resolvers[key]!(
+  InsightsData(importConfigs: configs, importSnapshot: snapshot),
+  l10n,
+);
 
 void main() {
   late AppLocalizations l10n;
@@ -52,18 +56,19 @@ void main() {
       _cfg('c.se', success: 2, fail: 2),
     ];
     expect(
-        (_resolve(MetricKey.importSuccess, configs, l10n) as ScalarMetric)
-            .value,
-        7);
+      (_resolve(MetricKey.importSuccess, configs, l10n) as ScalarMetric).value,
+      7,
+    );
     expect(
-        (_resolve(MetricKey.importFailure, configs, l10n) as ScalarMetric)
-            .value,
-        5);
+      (_resolve(MetricKey.importFailure, configs, l10n) as ScalarMetric).value,
+      5,
+    );
     // 7 / 12 = 58.3% → 58
     expect(
-        (_resolve(MetricKey.importSuccessRate, configs, l10n) as ScalarMetric)
-            .value,
-        58);
+      (_resolve(MetricKey.importSuccessRate, configs, l10n) as ScalarMetric)
+          .value,
+      58,
+    );
   });
 
   test('rate is 0 when there is no activity, not NaN', () {
@@ -71,22 +76,24 @@ void main() {
     expect((value as ScalarMetric).value, 0);
   });
 
-  test('domain matrix sorts failing worst-rate first and carries 3 columns',
-      () {
-    final configs = [
-      _cfg('ok.se', success: 5, fail: 0), // no failures → last
-      _cfg('half.se', success: 2, fail: 2), // 50%
-      _cfg('broken.se', success: 0, fail: 3), // 0% → first
-    ];
-    final value =
-        _resolve(MetricKey.importDomainTable, configs, l10n) as MatrixMetric;
-    expect(value.rowLabels, ['broken.se', 'half.se', 'ok.se']);
-    expect(value.colLabels.length, 3);
-    // broken.se row: 0 success, 3 fail, 0% rate
-    expect(value.cells.first, [0, 3, 0]);
-    // ok.se row: 5 success, 0 fail, 100% rate
-    expect(value.cells.last, [5, 0, 100]);
-  });
+  test(
+    'domain matrix sorts failing worst-rate first and carries 3 columns',
+    () {
+      final configs = [
+        _cfg('ok.se', success: 5, fail: 0), // no failures → last
+        _cfg('half.se', success: 2, fail: 2), // 50%
+        _cfg('broken.se', success: 0, fail: 3), // 0% → first
+      ];
+      final value =
+          _resolve(MetricKey.importDomainTable, configs, l10n) as MatrixMetric;
+      expect(value.rowLabels, ['broken.se', 'half.se', 'ok.se']);
+      expect(value.colLabels.length, 3);
+      // broken.se row: 0 success, 3 fail, 0% rate
+      expect(value.cells.first, [0, 3, 0]);
+      // ok.se row: 5 success, 0 fail, 100% rate
+      expect(value.cells.last, [5, 0, 100]);
+    },
+  );
 
   test('import scalars carry snapshot totals as previous for deltas', () {
     final configs = [_cfg('a.se', success: 8, fail: 2)];

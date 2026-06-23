@@ -55,15 +55,17 @@ class ConversationsViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     try {
-      _conversationsSubscription =
-          _messagingService.getMyConversations().listen(
-                _onConversationsUpdate,
-                onError: _onConversationsError,
-              );
+      _conversationsSubscription = _messagingService
+          .getMyConversations()
+          .listen(
+            _onConversationsUpdate,
+            onError: _onConversationsError,
+          );
     } catch (e) {
       AppLogger.error('Failed to initialize conversations', e);
       _setConversationsError(
-          AppLocale.current.errorCouldNotLoad('konversationer'));
+        AppLocale.current.errorCouldNotLoad('konversationer'),
+      );
     }
   }
 
@@ -82,7 +84,8 @@ class ConversationsViewModel extends ChangeNotifier
 
     AppLogger.error('Conversations stream error', error);
     _setConversationsError(
-        AppLocale.current.errorCouldNotLoad('konversationer'));
+      AppLocale.current.errorCouldNotLoad('konversationer'),
+    );
   }
 
   void _setConversationsError(String error) {
@@ -112,8 +115,9 @@ class ConversationsViewModel extends ChangeNotifier
       _filteredConversations = List.from(_allConversations);
     } else {
       _filteredConversations = _allConversations.where((conversation) {
-        final title =
-            conversation.getDisplayTitle(currentUserId.orEmpty()).toLowerCase();
+        final title = conversation
+            .getDisplayTitle(currentUserId.orEmpty())
+            .toLowerCase();
         final lastMessageContent =
             (conversation.lastMessage?.content.toLowerCase()).orEmpty();
 
@@ -133,12 +137,12 @@ class ConversationsViewModel extends ChangeNotifier
     try {
       return await executeAsync<String?>(
         () async {
-          final conversationId =
-              await _messagingService.startDirectConversation(
-            otherUserId: otherUserId,
-            otherUserDisplayName: otherUserDisplayName,
-            otherUserAvatarUrl: otherUserAvatarUrl,
-          );
+          final conversationId = await _messagingService
+              .startDirectConversation(
+                otherUserId: otherUserId,
+                otherUserDisplayName: otherUserDisplayName,
+                otherUserAvatarUrl: otherUserAvatarUrl,
+              );
 
           AppLogger.success('Direct conversation started: $conversationId');
           return conversationId;
@@ -162,13 +166,13 @@ class ConversationsViewModel extends ChangeNotifier
     try {
       return await executeAsync<String?>(
         () async {
-          final conversationId =
-              await _messagingService.createGroupConversation(
-            participantIds: participantIds,
-            participantDisplayNames: participantDisplayNames,
-            participantAvatarUrls: participantAvatarUrls,
-            title: title,
-          );
+          final conversationId = await _messagingService
+              .createGroupConversation(
+                participantIds: participantIds,
+                participantDisplayNames: participantDisplayNames,
+                participantAvatarUrls: participantAvatarUrls,
+                title: title,
+              );
 
           AppLogger.success('Group conversation created: $conversationId');
           return conversationId;
@@ -207,9 +211,9 @@ class ConversationsViewModel extends ChangeNotifier
         participantId: currentUser,
       );
 
-      await ServiceLocator.tryGet<AnalyticsService>()
-          ?.social
-          .logGroupLeft(groupId: conversationId);
+      await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
+        groupId: conversationId,
+      );
 
       AppLogger.success('Left group conversation: $conversationId');
       return true;

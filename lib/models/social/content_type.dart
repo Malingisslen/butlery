@@ -13,7 +13,8 @@ enum ContentType {
   message('message'),
   profile('profile'),
   cookSnap('cook_snap'),
-  group('group');
+  group('group')
+  ;
 
   const ContentType(this.wireName);
 

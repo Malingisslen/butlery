@@ -189,7 +189,7 @@ class ValidationHelper {
         'case': 'empty_description',
         'id': 'test',
         'title': 'Test',
-        'description': ''
+        'description': '',
       },
 
       // Null required fields
@@ -198,7 +198,7 @@ class ValidationHelper {
         'case': 'null_title',
         'id': 'test',
         'title': null,
-        'description': 'Test'
+        'description': 'Test',
       },
 
       // Invalid numeric values
@@ -249,21 +249,21 @@ class ValidationHelper {
       // Single item collections
       {
         'case': 'single_ingredient',
-        'ingredients': ['One ingredient']
+        'ingredients': ['One ingredient'],
       },
       {
         'case': 'single_instruction',
-        'instructions': ['One step']
+        'instructions': ['One step'],
       },
 
       // Large collections
       {
         'case': 'many_ingredients',
-        'ingredients': List.generate(100, (i) => 'Ingredient $i')
+        'ingredients': List.generate(100, (i) => 'Ingredient $i'),
       },
       {
         'case': 'many_instructions',
-        'instructions': List.generate(50, (i) => 'Step $i')
+        'instructions': List.generate(50, (i) => 'Step $i'),
       },
     ];
   }
@@ -312,12 +312,12 @@ class ValidationHelper {
         {
           'case': 'swedish_chars',
           'title': 'Räksmörgås',
-          'description': 'Öppna smörgåsar'
+          'description': 'Öppna smörgåsar',
         },
         {
           'case': 'special_chars',
           'title': 'Recipe & More!',
-          'description': 'Test @ 100%'
+          'description': 'Test @ 100%',
         },
         {'case': 'whitespace_only', 'title': '   ', 'description': '\t\n'},
       ],

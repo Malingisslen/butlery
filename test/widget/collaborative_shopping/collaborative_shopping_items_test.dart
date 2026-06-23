@@ -67,8 +67,10 @@ class _FakeCollaborativeShoppingViewModel extends ChangeNotifier
 
   @override
   List<UnifiedShoppingItem> get othersItems => activeItems
-      .where((i) =>
-          i.assignedToUserId != null && i.assignedToUserId != currentUserId)
+      .where(
+        (i) =>
+            i.assignedToUserId != null && i.assignedToUserId != currentUserId,
+      )
       .toList();
 
   @override
@@ -131,69 +133,79 @@ void main() {
     }
 
     testWidgets('Alla mode: renders flat list of all items', (tester) async {
-      final vm = _FakeCollaborativeShoppingViewModel(items: [
-        item(id: '1', name: 'Mjölk'),
-        item(id: '2', name: 'Ägg'),
-      ]);
+      final vm = _FakeCollaborativeShoppingViewModel(
+        items: [
+          item(id: '1', name: 'Mjölk'),
+          item(id: '2', name: 'Ägg'),
+        ],
+      );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
         ),
-      ));
+      );
 
       expect(find.text('Mjölk'), findsOneWidget);
       expect(find.text('Ägg'), findsOneWidget);
     });
 
     testWidgets(
-        'Min del mode: splits items into Min del / Annas del / Otilldelat',
-        (tester) async {
-      final vm = _FakeCollaborativeShoppingViewModel(
-        viewMode: ShoppingViewMode.myPart,
-        items: [
-          item(
+      'Min del mode: splits items into Min del / Annas del / Otilldelat',
+      (tester) async {
+        final vm = _FakeCollaborativeShoppingViewModel(
+          viewMode: ShoppingViewMode.myPart,
+          items: [
+            item(
               id: '1',
               name: 'Mjölk',
               assignedTo: 'me',
-              assignedDisplayName: 'Me'),
-          item(
+              assignedDisplayName: 'Me',
+            ),
+            item(
               id: '2',
               name: 'Bröd',
               assignedTo: 'anna',
-              assignedDisplayName: 'Anna'),
-          item(id: '3', name: 'Pasta'), // unassigned
-        ],
-      );
+              assignedDisplayName: 'Anna',
+            ),
+            item(id: '3', name: 'Pasta'), // unassigned
+          ],
+        );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
-        ),
-      ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: CollaborativeShoppingItems(
+              viewModel: vm,
+              onToggleItem: (_) {},
+            ),
+          ),
+        );
 
-      // All three section headers should render.
-      // Swedish strings from the ARB: "Min del", "Annas del", "Otilldelat".
-      expect(
-        find.textContaining('MIN DEL', findRichText: false),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('OTILLDELAT', findRichText: false),
-        findsOneWidget,
-      );
-      // "Annas del" — uppercased header reads "ANNAS DEL".
-      expect(find.textContaining('ANNAS DEL'), findsOneWidget);
+        // All three section headers should render.
+        // Swedish strings from the ARB: "Min del", "Annas del", "Otilldelat".
+        expect(
+          find.textContaining('MIN DEL', findRichText: false),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('OTILLDELAT', findRichText: false),
+          findsOneWidget,
+        );
+        // "Annas del" — uppercased header reads "ANNAS DEL".
+        expect(find.textContaining('ANNAS DEL'), findsOneWidget);
 
-      expect(find.text('Mjölk'), findsOneWidget);
-      expect(find.text('Bröd'), findsOneWidget);
-      expect(find.text('Pasta'), findsOneWidget);
-    });
+        expect(find.text('Mjölk'), findsOneWidget);
+        expect(find.text('Bröd'), findsOneWidget);
+        expect(find.text('Pasta'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Efter zon mode: groups items by ShoppingCategory',
-        (tester) async {
+    testWidgets('Efter zon mode: groups items by ShoppingCategory', (
+      tester,
+    ) async {
       final vm = _FakeCollaborativeShoppingViewModel(
         viewMode: ShoppingViewMode.byZone,
         items: [
@@ -202,12 +214,14 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Mjölk'), findsOneWidget);
@@ -224,12 +238,14 @@ void main() {
         },
       );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
         ),
-      ));
+      );
 
       // "Tar jag" button appears on unassigned items for editors.
       final claimButton = find.text('Tar jag');
@@ -240,8 +256,9 @@ void main() {
       expect(claimed, equals(['1']));
     });
 
-    testWidgets('claim conflict: snackbar surfaces "nn tog den"',
-        (tester) async {
+    testWidgets('claim conflict: snackbar surfaces "nn tog den"', (
+      tester,
+    ) async {
       final vm = _FakeCollaborativeShoppingViewModel(
         items: [item(id: '1', name: 'Mjölk')],
         onClaim: (_) => const ClaimResult(
@@ -250,12 +267,14 @@ void main() {
         ),
       );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Tar jag'));
       await tester.pump();
@@ -266,16 +285,20 @@ void main() {
     });
 
     testWidgets('view mode toggle switches between modes', (tester) async {
-      final vm = _FakeCollaborativeShoppingViewModel(items: [
-        item(id: '1', name: 'Mjölk'),
-      ]);
+      final vm = _FakeCollaborativeShoppingViewModel(
+        items: [
+          item(id: '1', name: 'Mjölk'),
+        ],
+      );
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: CollaborativeShoppingItems(
-          viewModel: vm,
-          onToggleItem: (_) {},
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
         ),
-      ));
+      );
 
       // Tapping "Min del" should call setViewMode — via the segmented button.
       await tester.tap(find.text('Min del'));

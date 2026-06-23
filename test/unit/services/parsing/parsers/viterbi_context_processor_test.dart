@@ -53,13 +53,12 @@ void main() {
     LineType type, {
     double confidence = 0.9,
     LineType? secondary,
-  }) =>
-      ClassifiedLine(
-        text: text,
-        type: type,
-        confidence: confidence,
-        secondaryType: secondary,
-      );
+  }) => ClassifiedLine(
+    text: text,
+    type: type,
+    confidence: confidence,
+    secondaryType: secondary,
+  );
 
   group('ViterbiContextProcessor — pure function contract', () {
     test('output length equals input length', () {
@@ -120,9 +119,13 @@ void main() {
       final output = viterbi.classifyWithContext(input);
 
       expect(output.length, 1);
-      expect(identical(output[0], input[0]), isTrue,
-          reason: 'Single-line short-circuit should return the same instance, '
-              'not allocate a new one');
+      expect(
+        identical(output[0], input[0]),
+        isTrue,
+        reason:
+            'Single-line short-circuit should return the same instance, '
+            'not allocate a new one',
+      );
     });
 
     test('all-empty-lines input does not crash and preserves length', () {
@@ -170,15 +173,21 @@ void main() {
 
     test('instruction → instruction run is preserved end-to-end', () {
       final input = [
-        line('Koka pastan al dente och häll av vattnet noggrant.',
-            LineType.instruction,
-            confidence: 0.85),
-        line('Stek köttfärsen i olja tills brun, ca fem minuter.',
-            LineType.instruction,
-            confidence: 0.85),
-        line('Tillsätt salt och peppar och rör om ordentligt.',
-            LineType.instruction,
-            confidence: 0.85),
+        line(
+          'Koka pastan al dente och häll av vattnet noggrant.',
+          LineType.instruction,
+          confidence: 0.85,
+        ),
+        line(
+          'Stek köttfärsen i olja tills brun, ca fem minuter.',
+          LineType.instruction,
+          confidence: 0.85,
+        ),
+        line(
+          'Tillsätt salt och peppar och rör om ordentligt.',
+          LineType.instruction,
+          confidence: 0.85,
+        ),
       ];
 
       final output = viterbi.classifyWithContext(input);
@@ -188,29 +197,35 @@ void main() {
       }
     });
 
-    test('ingredient → instruction transition at section boundary is allowed',
-        () {
-      // High-confidence ingredients followed by high-confidence instruction.
-      // Each line is anchored, so the boundary transition does not collapse
-      // either side into the other.
-      final input = [
-        line('2 dl mjölk', LineType.ingredient, confidence: 0.85),
-        line('3 ägg', LineType.ingredient, confidence: 0.85),
-        line('Koka pastan al dente och häll av vattnet noggrant.',
+    test(
+      'ingredient → instruction transition at section boundary is allowed',
+      () {
+        // High-confidence ingredients followed by high-confidence instruction.
+        // Each line is anchored, so the boundary transition does not collapse
+        // either side into the other.
+        final input = [
+          line('2 dl mjölk', LineType.ingredient, confidence: 0.85),
+          line('3 ägg', LineType.ingredient, confidence: 0.85),
+          line(
+            'Koka pastan al dente och häll av vattnet noggrant.',
             LineType.instruction,
-            confidence: 0.85),
-        line('Stek tills allt är gyllenbrunt och servera direkt.',
+            confidence: 0.85,
+          ),
+          line(
+            'Stek tills allt är gyllenbrunt och servera direkt.',
             LineType.instruction,
-            confidence: 0.85),
-      ];
+            confidence: 0.85,
+          ),
+        ];
 
-      final output = viterbi.classifyWithContext(input);
+        final output = viterbi.classifyWithContext(input);
 
-      expect(output[0].type, LineType.ingredient);
-      expect(output[1].type, LineType.ingredient);
-      expect(output[2].type, LineType.instruction);
-      expect(output[3].type, LineType.instruction);
-    });
+        expect(output[0].type, LineType.ingredient);
+        expect(output[1].type, LineType.ingredient);
+        expect(output[2].type, LineType.instruction);
+        expect(output[3].type, LineType.instruction);
+      },
+    );
 
     test('section header switches downstream context to ingredients', () {
       // Lines that, classified standalone, would all be `title` get pulled
@@ -244,8 +259,9 @@ void main() {
         classifier.classifyLine('3 ägg'),
         classifier.classifyLine('Gör så här:'),
         classifier.classifyLine('Koka pastan al dente och häll av vattnet.'),
-        classifier
-            .classifyLine('Blanda mjöl och socker noggrant i en stor bunke.'),
+        classifier.classifyLine(
+          'Blanda mjöl och socker noggrant i en stor bunke.',
+        ),
       ];
 
       final output = viterbi.classifyWithContext(input);
@@ -259,88 +275,118 @@ void main() {
     });
   });
 
-  group('ViterbiContextProcessor — emission scoring & confidence anchoring',
+  group('ViterbiContextProcessor — emission scoring & confidence anchoring', () {
+    test(
+      'high-confidence (>=0.75) line resists pull from a contradictory run',
       () {
-    test('high-confidence (>=0.75) line resists pull from a contradictory run',
-        () {
-      // 5 high-confidence ingredient lines, then a high-confidence instruction.
-      // The instruction's emission weight (2.5x) should anchor it against the
-      // ingredient run's transition prior.
-      final input = [
-        line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
-        line('3 ägg', LineType.ingredient, confidence: 0.9),
-        line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
-        line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
-        line('Vispa ihop allt mycket noggrant tills slätt och blankt.',
+        // 5 high-confidence ingredient lines, then a high-confidence instruction.
+        // The instruction's emission weight (2.5x) should anchor it against the
+        // ingredient run's transition prior.
+        final input = [
+          line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
+          line('3 ägg', LineType.ingredient, confidence: 0.9),
+          line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
+          line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
+          line(
+            'Vispa ihop allt mycket noggrant tills slätt och blankt.',
             LineType.instruction,
-            confidence: 0.9),
-      ];
+            confidence: 0.9,
+          ),
+        ];
 
-      final output = viterbi.classifyWithContext(input);
+        final output = viterbi.classifyWithContext(input);
 
-      expect(output[4].type, LineType.instruction,
-          reason: 'High-confidence instruction (>=0.75) must not be pulled '
-              'into ingredient by surrounding context');
-    });
-
-    test(
-        'low-confidence ambiguous line gets pulled toward surrounding ingredient run',
-        () {
-      // Make the middle line ambiguous (low confidence noise) — context
-      // should be allowed to pull it toward ingredient.
-      final input = [
-        line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
-        line('3 ägg', LineType.ingredient, confidence: 0.9),
-        line('persilja', LineType.noise,
-            confidence: 0.4, secondary: LineType.ingredient),
-        line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
-        line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
-      ];
-
-      final output = viterbi.classifyWithContext(input);
-
-      expect(output[2].type, LineType.ingredient,
-          reason: 'Low-confidence line in ingredient run should be pulled to '
-              'ingredient by Viterbi context');
-    });
+        expect(
+          output[4].type,
+          LineType.instruction,
+          reason:
+              'High-confidence instruction (>=0.75) must not be pulled '
+              'into ingredient by surrounding context',
+        );
+      },
+    );
 
     test(
-        'overridden line gets secondaryType=original.type and blended confidence',
-        () {
-      final original = line('persilja', LineType.noise,
-          confidence: 0.4, secondary: LineType.ingredient);
-      final input = [
-        line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
-        line('3 ägg', LineType.ingredient, confidence: 0.9),
-        original,
-        line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
-        line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
-      ];
+      'low-confidence ambiguous line gets pulled toward surrounding ingredient run',
+      () {
+        // Make the middle line ambiguous (low confidence noise) — context
+        // should be allowed to pull it toward ingredient.
+        final input = [
+          line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
+          line('3 ägg', LineType.ingredient, confidence: 0.9),
+          line(
+            'persilja',
+            LineType.noise,
+            confidence: 0.4,
+            secondary: LineType.ingredient,
+          ),
+          line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
+          line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
+        ];
 
-      final output = viterbi.classifyWithContext(input);
+        final output = viterbi.classifyWithContext(input);
 
-      expect(output[2].type, isNot(original.type));
-      expect(output[2].secondaryType, original.type,
-          reason: 'When Viterbi overrides type, secondaryType must record '
-              'the original (per-line) classification');
-      expect(output[2].confidence, inInclusiveRange(0.3, 0.95),
-          reason: 'Override confidence is clamped to [0.3, 0.95]');
-    });
+        expect(
+          output[2].type,
+          LineType.ingredient,
+          reason:
+              'Low-confidence line in ingredient run should be pulled to '
+              'ingredient by Viterbi context',
+        );
+      },
+    );
 
-    test('unchanged-type line returns the original instance (no allocation)',
-        () {
-      final a = line('2 dl mjölk', LineType.ingredient, confidence: 0.9);
-      final b = line('3 ägg', LineType.ingredient, confidence: 0.9);
-      final c = line('500 g köttfärs', LineType.ingredient, confidence: 0.9);
-      final input = [a, b, c];
+    test(
+      'overridden line gets secondaryType=original.type and blended confidence',
+      () {
+        final original = line(
+          'persilja',
+          LineType.noise,
+          confidence: 0.4,
+          secondary: LineType.ingredient,
+        );
+        final input = [
+          line('2 dl mjölk', LineType.ingredient, confidence: 0.9),
+          line('3 ägg', LineType.ingredient, confidence: 0.9),
+          original,
+          line('500 g köttfärs', LineType.ingredient, confidence: 0.9),
+          line('1 msk olivolja', LineType.ingredient, confidence: 0.9),
+        ];
 
-      final output = viterbi.classifyWithContext(input);
+        final output = viterbi.classifyWithContext(input);
 
-      // All stay ingredient → all returned as the same instance.
-      expect(identical(output[0], a), isTrue);
-      expect(identical(output[1], b), isTrue);
-      expect(identical(output[2], c), isTrue);
-    });
+        expect(output[2].type, isNot(original.type));
+        expect(
+          output[2].secondaryType,
+          original.type,
+          reason:
+              'When Viterbi overrides type, secondaryType must record '
+              'the original (per-line) classification',
+        );
+        expect(
+          output[2].confidence,
+          inInclusiveRange(0.3, 0.95),
+          reason: 'Override confidence is clamped to [0.3, 0.95]',
+        );
+      },
+    );
+
+    test(
+      'unchanged-type line returns the original instance (no allocation)',
+      () {
+        final a = line('2 dl mjölk', LineType.ingredient, confidence: 0.9);
+        final b = line('3 ägg', LineType.ingredient, confidence: 0.9);
+        final c = line('500 g köttfärs', LineType.ingredient, confidence: 0.9);
+        final input = [a, b, c];
+
+        final output = viterbi.classifyWithContext(input);
+
+        // All stay ingredient → all returned as the same instance.
+        expect(identical(output[0], a), isTrue);
+        expect(identical(output[1], b), isTrue);
+        expect(identical(output[2], c), isTrue);
+      },
+    );
   });
 
   group('ViterbiContextProcessor — section-header boost mechanics', () {
@@ -353,8 +399,12 @@ void main() {
       final input = <ClassifiedLine>[
         classifier.classifyLine('Ingredienser:'),
         for (var i = 0; i < 16; i++)
-          line('item$i', LineType.noise,
-              confidence: 0.4, secondary: LineType.ingredient),
+          line(
+            'item$i',
+            LineType.noise,
+            confidence: 0.4,
+            secondary: LineType.ingredient,
+          ),
       ];
 
       final output = viterbi.classifyWithContext(input);
@@ -374,10 +424,16 @@ void main() {
       // must not be populated; downstream lines fall back to plain emissions.
       final input = [
         line('Anteckningar:', LineType.sectionHeader, confidence: 0.95),
-        line('detta är en kommentar utan tydlig betydelse.', LineType.noise,
-            confidence: 0.4),
-        line('ytterligare anteckningar utan riktning.', LineType.noise,
-            confidence: 0.4),
+        line(
+          'detta är en kommentar utan tydlig betydelse.',
+          LineType.noise,
+          confidence: 0.4,
+        ),
+        line(
+          'ytterligare anteckningar utan riktning.',
+          LineType.noise,
+          confidence: 0.4,
+        ),
       ];
 
       // Should run cleanly; no assertions on output types — just contract:
@@ -385,9 +441,11 @@ void main() {
       final output = viterbi.classifyWithContext(input);
 
       expect(output.length, input.length);
-      expect(output[0].type, LineType.sectionHeader,
-          reason:
-              'High-confidence (0.95) sectionHeader resists context override');
+      expect(
+        output[0].type,
+        LineType.sectionHeader,
+        reason: 'High-confidence (0.95) sectionHeader resists context override',
+      );
     });
   });
 
@@ -399,8 +457,9 @@ void main() {
       final perRecipe = <String, double>{};
 
       for (final recipe in fixtures) {
-        final classified =
-            recipe.lines.map((e) => classifier.classifyLine(e.line)).toList();
+        final classified = recipe.lines
+            .map((e) => classifier.classifyLine(e.line))
+            .toList();
         final contextual = viterbi.classifyWithContext(classified);
 
         var recipeTotal = 0;
@@ -420,15 +479,18 @@ void main() {
           }
         }
 
-        perRecipe[recipe.name] =
-            recipeTotal == 0 ? 1.0 : recipeCorrect / recipeTotal;
+        perRecipe[recipe.name] = recipeTotal == 0
+            ? 1.0
+            : recipeCorrect / recipeTotal;
       }
 
       final accuracy = totalLines == 0 ? 1.0 : correctLines / totalLines;
       // ignore: avoid_print
-      print('Viterbi golden-set accuracy: '
-          '${(accuracy * 100).toStringAsFixed(1)}% '
-          '($correctLines/$totalLines lines across ${fixtures.length} recipes)');
+      print(
+        'Viterbi golden-set accuracy: '
+        '${(accuracy * 100).toStringAsFixed(1)}% '
+        '($correctLines/$totalLines lines across ${fixtures.length} recipes)',
+      );
       perRecipe.forEach((name, acc) {
         // ignore: avoid_print
         print('  - $name: ${(acc * 100).toStringAsFixed(1)}%');
@@ -441,18 +503,25 @@ void main() {
       // this number. Adjust ONLY when raising the bar (never to make a
       // failing change pass).
       const baseline = 0.95;
-      expect(accuracy, greaterThanOrEqualTo(baseline),
-          reason: 'Viterbi golden-set accuracy regressed below baseline. '
-              'If the new behaviour is intentional, update the baseline. '
-              'If not, the change broke classification — investigate.');
+      expect(
+        accuracy,
+        greaterThanOrEqualTo(baseline),
+        reason:
+            'Viterbi golden-set accuracy regressed below baseline. '
+            'If the new behaviour is intentional, update the baseline. '
+            'If not, the change broke classification — investigate.',
+      );
     });
 
     test('every fixture recipe has >= 5 scorable lines (fixture sanity)', () {
       // Fixture quality gate: a recipe with 1-2 lines is not a useful golden.
       for (final recipe in goldenRecipes) {
         final scorable = recipe.lines.where((e) => e.expected != null).length;
-        expect(scorable, greaterThanOrEqualTo(5),
-            reason: '"${recipe.name}" has only $scorable scorable lines');
+        expect(
+          scorable,
+          greaterThanOrEqualTo(5),
+          reason: '"${recipe.name}" has only $scorable scorable lines',
+        );
       }
     });
   });

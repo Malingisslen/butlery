@@ -31,13 +31,13 @@ class TestRealtimeRecipe extends RealtimeRecipe {
     DateTime? lastEditedAt,
     super.editCount = 0,
   }) : super(
-          ownerDisplayName: ownerDisplayName ?? 'Test Owner',
-          participants: participants ?? {ownerId: ResourcePermission.owner},
-          createdAt: createdAt ?? DateTime.now(),
-          lastEditedAt: lastEditedAt ?? DateTime.now(),
-          lastEditedBy: ownerId,
-          lastEditedByDisplayName: ownerDisplayName ?? 'Test Owner',
-        );
+         ownerDisplayName: ownerDisplayName ?? 'Test Owner',
+         participants: participants ?? {ownerId: ResourcePermission.owner},
+         createdAt: createdAt ?? DateTime.now(),
+         lastEditedAt: lastEditedAt ?? DateTime.now(),
+         lastEditedBy: ownerId,
+         lastEditedByDisplayName: ownerDisplayName ?? 'Test Owner',
+       );
 
   factory TestRealtimeRecipe.fromRecipe({
     required Recipe recipe,
@@ -65,11 +65,13 @@ void main() {
     await TestServiceLocator.initialize();
     registerFallbackValue(RealtimeResourceType.recipe);
     registerFallbackValue(ResourcePermission.viewer);
-    registerFallbackValue(TestRealtimeRecipe(
-      id: 'fallback',
-      recipe: RecipeFactory.build(title: 'Fallback Recipe'),
-      ownerId: 'test_user',
-    ));
+    registerFallbackValue(
+      TestRealtimeRecipe(
+        id: 'fallback',
+        recipe: RecipeFactory.build(title: 'Fallback Recipe'),
+        ownerId: 'test_user',
+      ),
+    );
   });
 
   setUp(() async {
@@ -109,8 +111,9 @@ void main() {
 
     test('should track processing state during operations', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123', title: 'Test');
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       expect(service.isProcessing, isFalse);
       final future = service.createRealtimeRecipe(recipe: recipe);
@@ -121,8 +124,9 @@ void main() {
 
     test('should handle error state management', () async {
       final recipe = RecipeFactory.build();
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async => throw Exception('Sync failed'));
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async => throw Exception('Sync failed'));
 
       try {
         await service.createRealtimeRecipe(recipe: recipe);
@@ -140,8 +144,9 @@ void main() {
         id: 'recipe_123',
         title: 'Kottbullar',
       );
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       final result = await service.createRealtimeRecipe(
         recipe: recipe,
@@ -152,13 +157,16 @@ void main() {
       expect(result, isA<RealtimeRecipe>());
       expect(result.recipe.id, equals('recipe_123'));
       expect(result.ownerId, equals('test_user_123'));
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
 
     test('should require authentication for creation', () async {
       mockPermissionService.setPermissionState(
-          currentUserId: null, isAuthenticated: false);
+        currentUserId: null,
+        isAuthenticated: false,
+      );
       final recipe = RecipeFactory.build();
 
       expect(
@@ -178,8 +186,9 @@ void main() {
       );
 
       RealtimeRecipe? capturedRecipe;
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((invocation) async {
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((invocation) async {
         capturedRecipe = invocation.positionalArguments[0] as RealtimeRecipe;
       });
 
@@ -187,8 +196,10 @@ void main() {
 
       expect(capturedRecipe, isNotNull);
       expect(capturedRecipe!.recipe.title, equals('Complete Recipe'));
-      expect(capturedRecipe!.recipe.ingredients,
-          equals(['Ingredient 1', 'Ingredient 2']));
+      expect(
+        capturedRecipe!.recipe.ingredients,
+        equals(['Ingredient 1', 'Ingredient 2']),
+      );
       expect(capturedRecipe!.recipe.portions, equals(6));
     });
   });
@@ -202,16 +213,22 @@ void main() {
       );
 
       final streamController = StreamController<RealtimeRecipe>.broadcast();
-      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'))
-          .thenAnswer((_) => streamController.stream);
+      when(
+        () => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'),
+      ).thenAnswer((_) => streamController.stream);
 
       final stream = service.watchRealtimeRecipe('recipe_123');
 
       // Schedule add after expectLater starts listening
       final future = expectLater(
         stream,
-        emits(isA<RealtimeRecipe>()
-            .having((r) => r.recipe.title, 'title', 'Streaming')),
+        emits(
+          isA<RealtimeRecipe>().having(
+            (r) => r.recipe.title,
+            'title',
+            'Streaming',
+          ),
+        ),
       );
       streamController.add(testRealtimeRecipe);
       await future;
@@ -222,8 +239,9 @@ void main() {
       final updated = RecipeFactory.build(id: 'recipe_123', title: 'Updated');
 
       final streamController = StreamController<RealtimeRecipe>.broadcast();
-      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'))
-          .thenAnswer((_) => streamController.stream);
+      when(
+        () => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'),
+      ).thenAnswer((_) => streamController.stream);
 
       final stream = service.watchRealtimeRecipe('recipe_123');
 
@@ -231,16 +249,30 @@ void main() {
       final future = expectLater(
         stream,
         emitsInOrder([
-          isA<RealtimeRecipe>()
-              .having((r) => r.recipe.title, 'title', 'Initial'),
-          isA<RealtimeRecipe>()
-              .having((r) => r.recipe.title, 'title', 'Updated'),
+          isA<RealtimeRecipe>().having(
+            (r) => r.recipe.title,
+            'title',
+            'Initial',
+          ),
+          isA<RealtimeRecipe>().having(
+            (r) => r.recipe.title,
+            'title',
+            'Updated',
+          ),
         ]),
       );
-      streamController.add(TestRealtimeRecipe.fromRecipe(
-          recipe: initial, ownerId: 'test_user_123'));
-      streamController.add(TestRealtimeRecipe.fromRecipe(
-          recipe: updated, ownerId: 'test_user_123'));
+      streamController.add(
+        TestRealtimeRecipe.fromRecipe(
+          recipe: initial,
+          ownerId: 'test_user_123',
+        ),
+      );
+      streamController.add(
+        TestRealtimeRecipe.fromRecipe(
+          recipe: updated,
+          ownerId: 'test_user_123',
+        ),
+      );
       await future;
     });
   });
@@ -265,25 +297,29 @@ void main() {
     });
 
     test('should update basic recipe information', () async {
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       await service.updateBasicInfo(
         resourceId: testRecipeId,
         title: 'Updated Title',
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
 
     test('should add and remove ingredients', () async {
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       await service.addIngredient(resourceId: testRecipeId, ingredient: 'New');
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
 
     test('should validate permissions for edits', () async {
@@ -291,7 +327,7 @@ void main() {
         currentUserId: 'test_user_123',
         defaultHasPermission: false,
         permissions: {
-          testRecipeId: {ResourcePermission.editor: false}
+          testRecipeId: {ResourcePermission.editor: false},
         },
       );
 
@@ -302,16 +338,18 @@ void main() {
     });
 
     test('should track edit history', () async {
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((invocation) async {
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((invocation) async {
         final updated = invocation.positionalArguments[0] as RealtimeRecipe;
         expect(updated.lastEditedBy, equals('test_user_123'));
         expect(updated.editCount, greaterThan(testRealtimeRecipe.editCount));
       });
 
       await service.updateBasicInfo(resourceId: testRecipeId, title: 'Updated');
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
   });
 
@@ -333,8 +371,9 @@ void main() {
     });
 
     test('should add participant with permissions', () async {
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       await service.addParticipant(
         resourceId: testRecipeId,
@@ -343,38 +382,51 @@ void main() {
         permission: ResourcePermission.editor,
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
 
     test('should remove participant', () async {
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async {});
 
       await service.removeParticipant(
         resourceId: testRecipeId,
         userId: 'existing_editor',
       );
 
-      verify(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .called(1);
+      verify(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).called(1);
     });
   });
 
   group('Delete Operation', () {
     test('should delete realtime recipe', () async {
-      when(() => mockSyncService.deleteResource(
-          'recipe_123', RealtimeResourceType.recipe)).thenAnswer((_) async {});
+      when(
+        () => mockSyncService.deleteResource(
+          'recipe_123',
+          RealtimeResourceType.recipe,
+        ),
+      ).thenAnswer((_) async {});
 
       await service.deleteRealtimeRecipe('recipe_123');
 
-      verify(() => mockSyncService.deleteResource(
-          'recipe_123', RealtimeResourceType.recipe)).called(1);
+      verify(
+        () => mockSyncService.deleteResource(
+          'recipe_123',
+          RealtimeResourceType.recipe,
+        ),
+      ).called(1);
     });
 
     test('should require authentication for delete', () async {
       mockPermissionService.setPermissionState(
-          currentUserId: null, isAuthenticated: false);
+        currentUserId: null,
+        isAuthenticated: false,
+      );
 
       expect(
         () => service.deleteRealtimeRecipe('recipe_123'),
@@ -383,9 +435,12 @@ void main() {
     });
 
     test('should handle delete errors', () async {
-      when(() => mockSyncService.deleteResource(
-              'recipe_123', RealtimeResourceType.recipe))
-          .thenAnswer((_) async => throw Exception('Delete failed'));
+      when(
+        () => mockSyncService.deleteResource(
+          'recipe_123',
+          RealtimeResourceType.recipe,
+        ),
+      ).thenAnswer((_) async => throw Exception('Delete failed'));
 
       await expectLater(
         () => service.deleteRealtimeRecipe('recipe_123'),
@@ -397,8 +452,10 @@ void main() {
 
   group('Utility Operations', () {
     test('should create personal copy of recipe', () {
-      final recipe =
-          RecipeFactory.build(id: 'recipe_123', title: 'Utility Test');
+      final recipe = RecipeFactory.build(
+        id: 'recipe_123',
+        title: 'Utility Test',
+      );
       final realtimeRecipe = TestRealtimeRecipe(
         id: 'recipe_123',
         recipe: recipe,
@@ -424,12 +481,16 @@ void main() {
 
       expect(
         service.hasRecipeChangedSince(
-            realtimeRecipe, DateTime(2024, 1, 15, 9, 0)),
+          realtimeRecipe,
+          DateTime(2024, 1, 15, 9, 0),
+        ),
         isTrue,
       );
       expect(
         service.hasRecipeChangedSince(
-            realtimeRecipe, DateTime(2024, 1, 15, 11, 0)),
+          realtimeRecipe,
+          DateTime(2024, 1, 15, 11, 0),
+        ),
         isFalse,
       );
     });
@@ -438,7 +499,9 @@ void main() {
   group('Error Scenarios', () {
     test('should handle unauthenticated create', () async {
       mockPermissionService.setPermissionState(
-          currentUserId: null, isAuthenticated: false);
+        currentUserId: null,
+        isAuthenticated: false,
+      );
       final recipe = RecipeFactory.build();
       expect(
         () => service.createRealtimeRecipe(recipe: recipe),
@@ -448,7 +511,9 @@ void main() {
 
     test('should handle unauthenticated update', () async {
       mockPermissionService.setPermissionState(
-          currentUserId: null, isAuthenticated: false);
+        currentUserId: null,
+        isAuthenticated: false,
+      );
       expect(
         () =>
             service.updateBasicInfo(resourceId: 'recipe_123', title: 'Updated'),
@@ -471,8 +536,9 @@ void main() {
       );
       mockSyncService.setCachedResource('recipe_123', testRealtimeRecipe);
 
-      when(() => mockSyncService.updateResource<RealtimeRecipe>(any()))
-          .thenAnswer((_) async => throw Exception('Network error'));
+      when(
+        () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+      ).thenAnswer((_) async => throw Exception('Network error'));
 
       await expectLater(
         () => service.updateBasicInfo(resourceId: 'recipe_123', title: 'Fail'),
@@ -487,63 +553,71 @@ void main() {
     // main-stream (thrown inside watchRealtimeRecipe) AND side-channel
     // (errorStream forwarded from RealtimeSyncService).
 
-    test('errorStream forwards SyncErrors from the underlying sync service',
-        () async {
-      // Set up a stream controller so we can deliver data and then an error
-      final streamController = StreamController<RealtimeRecipe>.broadcast();
-      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'))
-          .thenAnswer((_) => streamController.stream);
+    test(
+      'errorStream forwards SyncErrors from the underlying sync service',
+      () async {
+        // Set up a stream controller so we can deliver data and then an error
+        final streamController = StreamController<RealtimeRecipe>.broadcast();
+        when(
+          () => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'),
+        ).thenAnswer((_) => streamController.stream);
 
-      // Subscribe to the side-channel before triggering the error
-      final errorFuture = service.errorStream.first;
+        // Subscribe to the side-channel before triggering the error
+        final errorFuture = service.errorStream.first;
 
-      // Emit a sync error on the underlying mock — this goes through
-      // errorStream, not the main recipe stream.
-      final syncError = rt.SyncError(
-        type: rt.SyncErrorType.firestoreError,
-        message: 'test error',
-        resourceId: 'recipe_123',
-      );
-      mockSyncService.setError(syncError);
+        // Emit a sync error on the underlying mock — this goes through
+        // errorStream, not the main recipe stream.
+        final syncError = rt.SyncError(
+          type: rt.SyncErrorType.firestoreError,
+          message: 'test error',
+          resourceId: 'recipe_123',
+        );
+        mockSyncService.setError(syncError);
 
-      final received = await errorFuture;
-      expect(received.type, equals(rt.SyncErrorType.firestoreError));
-      expect(received.resourceId, equals('recipe_123'));
+        final received = await errorFuture;
+        expect(received.type, equals(rt.SyncErrorType.firestoreError));
+        expect(received.resourceId, equals('recipe_123'));
 
-      streamController.close();
-    });
+        streamController.close();
+      },
+    );
 
-    test('main-stream errors survive independently of the side-channel',
-        () async {
-      // Verifies that a thrown error on the watch stream surfaces to the
-      // caller without requiring subscription to errorStream.
-      final streamController = StreamController<RealtimeRecipe>.broadcast();
-      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_456'))
-          .thenAnswer((_) => streamController.stream);
+    test(
+      'main-stream errors survive independently of the side-channel',
+      () async {
+        // Verifies that a thrown error on the watch stream surfaces to the
+        // caller without requiring subscription to errorStream.
+        final streamController = StreamController<RealtimeRecipe>.broadcast();
+        when(
+          () => mockSyncService.watchResource<RealtimeRecipe>('recipe_456'),
+        ).thenAnswer((_) => streamController.stream);
 
-      final stream = service.watchRealtimeRecipe('recipe_456');
-      Object? caughtError;
-      final errorFuture = stream.first.then<Object?>((_) => null).onError(
-        (e, _) {
-          caughtError = e;
-          return null;
-        },
-      );
+        final stream = service.watchRealtimeRecipe('recipe_456');
+        Object? caughtError;
+        final errorFuture = stream.first.then<Object?>((_) => null).onError(
+          (e, _) {
+            caughtError = e;
+            return null;
+          },
+        );
 
-      streamController.addError(rt.SyncError(
-        type: rt.SyncErrorType.documentNotFound,
-        message: 'not found',
-        resourceId: 'recipe_456',
-      ));
+        streamController.addError(
+          rt.SyncError(
+            type: rt.SyncErrorType.documentNotFound,
+            message: 'not found',
+            resourceId: 'recipe_456',
+          ),
+        );
 
-      await errorFuture;
-      expect(caughtError, isA<rt.SyncError>());
-      expect(
-        (caughtError as rt.SyncError).type,
-        equals(rt.SyncErrorType.documentNotFound),
-      );
+        await errorFuture;
+        expect(caughtError, isA<rt.SyncError>());
+        expect(
+          (caughtError as rt.SyncError).type,
+          equals(rt.SyncErrorType.documentNotFound),
+        );
 
-      streamController.close();
-    });
+        streamController.close();
+      },
+    );
   });
 }

@@ -40,79 +40,108 @@ void main() {
       // Stub all repository methods used by the service and its trackers
       when(() => mockRepo.initialize()).thenAnswer((_) async {});
       when(() => mockRepo.observer).thenReturn(null);
-      when(() => mockRepo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logLogin(
-            loginMethod: any(named: 'loginMethod'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logSignUp(
-            signUpMethod: any(named: 'signUpMethod'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logLogin(
+          loginMethod: any(named: 'loginMethod'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logSignUp(
+          signUpMethod: any(named: 'signUpMethod'),
+        ),
+      ).thenAnswer((_) async {});
       when(() => mockRepo.logLogout()).thenAnswer((_) async {});
       when(() => mockRepo.logAccountDeleted(any())).thenAnswer((_) async {});
-      when(() => mockRepo.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.setAnalyticsCollectionEnabled(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepo.setUserProperties(
-            recipeCount: any(named: 'recipeCount'),
-            hasUsedImport: any(named: 'hasUsedImport'),
-            hasSharedRecipe: any(named: 'hasSharedRecipe'),
-            hasCooked: any(named: 'hasCooked'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logImportStarted(
-            source: any(named: 'source'),
-            platform: any(named: 'platform'),
-            sessionId: any(named: 'sessionId'),
-            imageFormat: any(named: 'imageFormat'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logImportSuccess(
-            source: any(named: 'source'),
-            platform: any(named: 'platform'),
-            recipeLength: any(named: 'recipeLength'),
-            sessionId: any(named: 'sessionId'),
-            imageFormat: any(named: 'imageFormat'),
-            imageFormatSent: any(named: 'imageFormatSent'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logExtractionError(
-            url: any(named: 'url'),
-            platform: any(named: 'platform'),
-            error: any(named: 'error'),
-            errorType: any(named: 'errorType'),
-            imageFormat: any(named: 'imageFormat'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logManualCopyFallback(
-            platform: any(named: 'platform'),
-            reason: any(named: 'reason'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logRecipeCreated(
-            source: any(named: 'source'),
-            hasImage: any(named: 'hasImage'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logRecipeShared(
-            method: any(named: 'method'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logRecipeCooked(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isFirstTime: any(named: 'isFirstTime'),
-            daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logMenuGenerated(
-            recipeCount: any(named: 'recipeCount'),
-            method: any(named: 'method'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logRecipeDeleted(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isPersonal: any(named: 'isPersonal'),
-            createdAt: any(named: 'createdAt'),
-            daysSinceCreated: any(named: 'daysSinceCreated'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockRepo.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.setAnalyticsCollectionEnabled(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.setUserProperties(
+          recipeCount: any(named: 'recipeCount'),
+          hasUsedImport: any(named: 'hasUsedImport'),
+          hasSharedRecipe: any(named: 'hasSharedRecipe'),
+          hasCooked: any(named: 'hasCooked'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logImportStarted(
+          source: any(named: 'source'),
+          platform: any(named: 'platform'),
+          sessionId: any(named: 'sessionId'),
+          imageFormat: any(named: 'imageFormat'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logImportSuccess(
+          source: any(named: 'source'),
+          platform: any(named: 'platform'),
+          recipeLength: any(named: 'recipeLength'),
+          sessionId: any(named: 'sessionId'),
+          imageFormat: any(named: 'imageFormat'),
+          imageFormatSent: any(named: 'imageFormatSent'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logExtractionError(
+          url: any(named: 'url'),
+          platform: any(named: 'platform'),
+          error: any(named: 'error'),
+          errorType: any(named: 'errorType'),
+          imageFormat: any(named: 'imageFormat'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logManualCopyFallback(
+          platform: any(named: 'platform'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logRecipeCreated(
+          source: any(named: 'source'),
+          hasImage: any(named: 'hasImage'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logRecipeShared(
+          method: any(named: 'method'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logRecipeCooked(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isFirstTime: any(named: 'isFirstTime'),
+          daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logMenuGenerated(
+          recipeCount: any(named: 'recipeCount'),
+          method: any(named: 'method'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logRecipeDeleted(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isPersonal: any(named: 'isPersonal'),
+          createdAt: any(named: 'createdAt'),
+          daysSinceCreated: any(named: 'daysSinceCreated'),
+        ),
+      ).thenAnswer((_) async {});
 
       service = AnalyticsService(repository: mockRepo);
 
@@ -166,12 +195,14 @@ void main() {
     group('Import Events', () {
       test('should log import started', () async {
         await service.logImportStarted(source: 'web', platform: 'website');
-        verify(() => mockRepo.logImportStarted(
-              source: 'web',
-              platform: 'website',
-              sessionId: null,
-              imageFormat: 'unknown',
-            )).called(1);
+        verify(
+          () => mockRepo.logImportStarted(
+            source: 'web',
+            platform: 'website',
+            sessionId: null,
+            imageFormat: 'unknown',
+          ),
+        ).called(1);
       });
 
       test('should log import success', () async {
@@ -180,14 +211,16 @@ void main() {
           platform: 'instagram',
           recipeLength: 1200,
         );
-        verify(() => mockRepo.logImportSuccess(
-              source: 'manual',
-              platform: 'instagram',
-              recipeLength: 1200,
-              sessionId: null,
-              imageFormat: 'unknown',
-              imageFormatSent: 'unknown',
-            )).called(1);
+        verify(
+          () => mockRepo.logImportSuccess(
+            source: 'manual',
+            platform: 'instagram',
+            recipeLength: 1200,
+            sessionId: null,
+            imageFormat: 'unknown',
+            imageFormatSent: 'unknown',
+          ),
+        ).called(1);
       });
 
       // BUT-662: photo OCR path threads original + post-conversion format
@@ -198,14 +231,16 @@ void main() {
           imageFormat: 'heic',
           imageFormatSent: 'jpeg',
         );
-        verify(() => mockRepo.logImportSuccess(
-              source: 'photo',
-              platform: null,
-              recipeLength: null,
-              sessionId: null,
-              imageFormat: 'heic',
-              imageFormatSent: 'jpeg',
-            )).called(1);
+        verify(
+          () => mockRepo.logImportSuccess(
+            source: 'photo',
+            platform: null,
+            recipeLength: null,
+            sessionId: null,
+            imageFormat: 'heic',
+            imageFormatSent: 'jpeg',
+          ),
+        ).called(1);
       });
     });
 
@@ -216,13 +251,15 @@ void main() {
           platform: SourcePlatform.website,
           error: 'timeout',
         );
-        verify(() => mockRepo.logExtractionError(
-              url: 'https://example.com',
-              platform: 'website',
-              error: 'timeout',
-              errorType: null,
-              imageFormat: 'unknown',
-            )).called(1);
+        verify(
+          () => mockRepo.logExtractionError(
+            url: 'https://example.com',
+            platform: 'website',
+            error: 'timeout',
+            errorType: null,
+            imageFormat: 'unknown',
+          ),
+        ).called(1);
       });
 
       test('should log extraction error with explicit type', () async {
@@ -232,13 +269,15 @@ void main() {
           error: 'blocked',
           errorType: 'custom_error',
         );
-        verify(() => mockRepo.logExtractionError(
-              url: 'https://example.com',
-              platform: 'instagram',
-              error: 'blocked',
-              errorType: 'custom_error',
-              imageFormat: 'unknown',
-            )).called(1);
+        verify(
+          () => mockRepo.logExtractionError(
+            url: 'https://example.com',
+            platform: 'instagram',
+            error: 'blocked',
+            errorType: 'custom_error',
+            imageFormat: 'unknown',
+          ),
+        ).called(1);
       });
 
       test('should log manual copy fallback', () async {
@@ -246,20 +285,24 @@ void main() {
           platform: SourcePlatform.tiktok,
           reason: 'User chose manual',
         );
-        verify(() => mockRepo.logManualCopyFallback(
-              platform: 'tiktok',
-              reason: 'User chose manual',
-            )).called(1);
+        verify(
+          () => mockRepo.logManualCopyFallback(
+            platform: 'tiktok',
+            reason: 'User chose manual',
+          ),
+        ).called(1);
       });
     });
 
     group('Recipe Events', () {
       test('should log recipe created', () async {
         await service.logRecipeCreated(source: 'import', hasImage: true);
-        verify(() => mockRepo.logRecipeCreated(
-              source: 'import',
-              hasImage: true,
-            )).called(1);
+        verify(
+          () => mockRepo.logRecipeCreated(
+            source: 'import',
+            hasImage: true,
+          ),
+        ).called(1);
       });
 
       test('should log recipe shared via generic logEvent path', () async {
@@ -271,10 +314,14 @@ void main() {
           recipeId: 'r1',
           recipientCount: 3,
         );
-        final captured = verify(() => mockRepo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockRepo.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
         expect(captured['method'], 'link');
         expect(captured['recipe_id'], 'r1');
         expect(captured['recipient_count_bucket'], '2-5');
@@ -287,12 +334,14 @@ void main() {
           isFirstTime: false,
           daysSinceLastCooked: 7,
         );
-        verify(() => mockRepo.logRecipeCooked(
-              recipeId: 'r1',
-              mealType: 'dinner',
-              isFirstTime: false,
-              daysSinceLastCooked: 7,
-            )).called(1);
+        verify(
+          () => mockRepo.logRecipeCooked(
+            recipeId: 'r1',
+            mealType: 'dinner',
+            isFirstTime: false,
+            daysSinceLastCooked: 7,
+          ),
+        ).called(1);
       });
 
       test('should log recipe deleted', () async {
@@ -304,35 +353,41 @@ void main() {
           createdAt: created,
           daysSinceCreated: 30,
         );
-        verify(() => mockRepo.logRecipeDeleted(
-              recipeId: 'r2',
-              mealType: 'lunch',
-              isPersonal: true,
-              createdAt: created,
-              daysSinceCreated: 30,
-            )).called(1);
+        verify(
+          () => mockRepo.logRecipeDeleted(
+            recipeId: 'r2',
+            mealType: 'lunch',
+            isPersonal: true,
+            createdAt: created,
+            daysSinceCreated: 30,
+          ),
+        ).called(1);
       });
     });
 
     group('Menu Events', () {
       test('should log menu generated', () async {
         await service.logMenuGenerated(recipeCount: 7, method: 'auto');
-        verify(() => mockRepo.logMenuGenerated(
-              recipeCount: 7,
-              method: 'auto',
-            )).called(1);
+        verify(
+          () => mockRepo.logMenuGenerated(
+            recipeCount: 7,
+            method: 'auto',
+          ),
+        ).called(1);
       });
     });
 
     group('User Properties', () {
       test('should set user properties with recipe count', () async {
         await service.setUserProperties(recipeCount: 10);
-        verify(() => mockRepo.setUserProperties(
-              recipeCount: 10,
-              hasUsedImport: null,
-              hasSharedRecipe: null,
-              hasCooked: null,
-            )).called(1);
+        verify(
+          () => mockRepo.setUserProperties(
+            recipeCount: 10,
+            hasUsedImport: null,
+            hasSharedRecipe: null,
+            hasCooked: null,
+          ),
+        ).called(1);
       });
 
       test('should set boolean user properties', () async {
@@ -341,12 +396,14 @@ void main() {
           hasSharedRecipe: false,
           hasCooked: true,
         );
-        verify(() => mockRepo.setUserProperties(
-              recipeCount: null,
-              hasUsedImport: true,
-              hasSharedRecipe: false,
-              hasCooked: true,
-            )).called(1);
+        verify(
+          () => mockRepo.setUserProperties(
+            recipeCount: null,
+            hasUsedImport: true,
+            hasSharedRecipe: false,
+            hasCooked: true,
+          ),
+        ).called(1);
       });
     });
 
@@ -389,27 +446,34 @@ void main() {
 
       when(() => mockRepo.initialize()).thenAnswer((_) async {});
       when(() => mockRepo.observer).thenReturn(null);
-      when(() => mockRepo.logImportSuccess(
-            source: any(named: 'source'),
-            platform: any(named: 'platform'),
-            recipeLength: any(named: 'recipeLength'),
-            sessionId: any(named: 'sessionId'),
-            imageFormat: any(named: 'imageFormat'),
-            imageFormatSent: any(named: 'imageFormatSent'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logRecipeCooked(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isFirstTime: any(named: 'isFirstTime'),
-            daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.logMenuGenerated(
-            recipeCount: any(named: 'recipeCount'),
-            method: any(named: 'method'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logImportSuccess(
+          source: any(named: 'source'),
+          platform: any(named: 'platform'),
+          recipeLength: any(named: 'recipeLength'),
+          sessionId: any(named: 'sessionId'),
+          imageFormat: any(named: 'imageFormat'),
+          imageFormatSent: any(named: 'imageFormatSent'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logRecipeCooked(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isFirstTime: any(named: 'isFirstTime'),
+          daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.logMenuGenerated(
+          recipeCount: any(named: 'recipeCount'),
+          method: any(named: 'method'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockWinback.attemptAttribution(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockWinback.attemptAttribution(any()),
+      ).thenAnswer((_) async {});
       // Hot-path optimization in AnalyticsService skips the probe when
       // hasContext == false — these tests verify probe is INVOKED, so
       // we stub hasContext to true.

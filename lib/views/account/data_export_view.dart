@@ -107,9 +107,9 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportGdprDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                    height: 1.5,
-                  ),
+                color: cs.onSurfaceVariant,
+                height: 1.5,
+              ),
             ),
           ],
         ),
@@ -118,7 +118,9 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildExportButton(
-      BuildContext context, DataExportViewModel viewModel) {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) {
     if (viewModel.hasExportedData) {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
@@ -154,8 +156,8 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportMayTakeSeconds,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -201,12 +203,15 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildSuccessState(
-      BuildContext context, DataExportViewModel viewModel) {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: context.butleryColors.success
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+      color: context.butleryColors.success.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
@@ -225,15 +230,15 @@ class DataExportView extends StatelessWidget {
             Text(
               '${context.l10n.dataExportExportedAt} ${viewModel.exportTimestampText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '${context.l10n.dataExportFileSize}: ${viewModel.exportSizeText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppDimensions.paddingXl),
             Row(
@@ -275,8 +280,9 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: context.butleryColors.info
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+      color: context.butleryColors.info.withValues(
+        alpha: AppDimensions.opacityVeryLight,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
@@ -309,9 +315,9 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportOnlyYourData,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -339,7 +345,9 @@ class DataExportView extends StatelessWidget {
   // Action handlers
 
   Future<void> _handleExport(
-      BuildContext context, DataExportViewModel viewModel) async {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) async {
     final success = await viewModel.exportData();
 
     if (success && context.mounted) {
@@ -353,12 +361,18 @@ class DataExportView extends StatelessWidget {
   }
 
   Future<void> _handleDownload(
-      BuildContext context, DataExportViewModel viewModel) async {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) async {
     if (viewModel.exportedData == null) return;
 
     try {
-      final timestamp =
-          clock.now().toIso8601String().replaceAll(':', '-').split('.').first;
+      final timestamp = clock
+          .now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .split('.')
+          .first;
       final fileName = 'butlery_data_export_$timestamp.json';
 
       await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
@@ -382,9 +396,11 @@ class DataExportView extends StatelessWidget {
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.dataExportCouldNotSaveFile(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            )),
+            content: Text(
+              context.l10n.dataExportCouldNotSaveFile(
+                SnackBarUtils.userFriendlyMessage(context, e),
+              ),
+            ),
             backgroundColor: cs.error,
           ),
         );
@@ -393,15 +409,21 @@ class DataExportView extends StatelessWidget {
   }
 
   Future<void> _handleShare(
-      BuildContext context, DataExportViewModel viewModel) async {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) async {
     if (viewModel.exportedData == null) return;
 
     final shareSubject = context.l10n.dataExportShareSubject;
     final shareText = context.l10n.dataExportShareText;
 
     try {
-      final timestamp =
-          clock.now().toIso8601String().replaceAll(':', '-').split('.').first;
+      final timestamp = clock
+          .now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .split('.')
+          .first;
       final fileName = 'butlery_data_export_$timestamp.json';
 
       await export_helper.shareJsonFile(
@@ -415,9 +437,11 @@ class DataExportView extends StatelessWidget {
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.dataExportCouldNotShare(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            )),
+            content: Text(
+              context.l10n.dataExportCouldNotShare(
+                SnackBarUtils.userFriendlyMessage(context, e),
+              ),
+            ),
             backgroundColor: cs.error,
           ),
         );
@@ -426,7 +450,9 @@ class DataExportView extends StatelessWidget {
   }
 
   Future<void> _handleClear(
-      BuildContext context, DataExportViewModel viewModel) async {
+    BuildContext context,
+    DataExportViewModel viewModel,
+  ) async {
     final cs = Theme.of(context).colorScheme;
 
     final confirmed = await showDialog<bool>(

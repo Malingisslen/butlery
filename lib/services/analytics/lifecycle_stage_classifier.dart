@@ -23,7 +23,8 @@ enum LifecycleStage {
   activated,
   habitual,
   dormant,
-  churned;
+  churned
+  ;
 
   /// Wire value emitted to Firebase Analytics. Strips the trailing
   /// underscore so dashboards see a clean `new` bucket.

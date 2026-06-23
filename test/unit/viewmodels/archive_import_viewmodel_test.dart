@@ -45,10 +45,13 @@ void main() {
         isInitialized: true,
       );
 
-      when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success(
-                'Recept importerade',
-              ));
+      when(
+        () => mockPersonalOperations.addMultipleUnifiedRecipes(any()),
+      ).thenAnswer(
+        (_) async => RecipeOperationResult.success(
+          'Recept importerade',
+        ),
+      );
 
       // Use real SearchService (pure logic, no dependencies)
       final realSearchService = SearchService();
@@ -123,18 +126,18 @@ void main() {
       });
 
       test('should find recipes by ingredient', () {
-        // Real recipes have 'chicken breast' as ingredient
-        viewModel.updateSearch('chicken');
+        // Kycklingcurry has 'kycklingfilé' as ingredient (seed data is Swedish).
+        viewModel.updateSearch('kyckling');
 
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, contains('Chicken'));
+        expect(viewModel.filteredRecipes[0].title, contains('Kyckling'));
       });
 
       test('should handle case-insensitive search', () {
-        viewModel.updateSearch('PANCAKES');
+        viewModel.updateSearch('PANNKAKOR');
 
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, contains('Pancakes'));
+        expect(viewModel.filteredRecipes[0].title, contains('Pannkakor'));
       });
 
       test('should clear search query', () {
@@ -183,19 +186,23 @@ void main() {
 
         expect(viewModel.filteredRecipes.length, equals(2));
         expect(
-            viewModel.filteredRecipes
-                .every((r) => r.personalTagIds?.contains('middag') ?? false),
-            isTrue);
+          viewModel.filteredRecipes.every(
+            (r) => r.personalTagIds?.contains('middag') ?? false,
+          ),
+          isTrue,
+        );
       });
 
       test('should filter recipes by multiple tags with AND logic', () {
-        // 'snabbt' AND 'vegetariskt' -> Vegetable Stir Fry only
+        // 'snabbt' AND 'vegetariskt' -> Wokade grönsaker only
         viewModel.toggleTag('snabbt');
         viewModel.toggleTag('vegetariskt');
 
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(
-            viewModel.filteredRecipes[0].title, equals('Vegetable Stir Fry'));
+          viewModel.filteredRecipes[0].title,
+          equals('Wokade grönsaker'),
+        );
       });
 
       test('should handle tag removal', () {
@@ -231,8 +238,10 @@ void main() {
 
         // Vegetable Stir Fry (20), Caesar Salad (15), Pancakes (20), Pasta Bolognese (30)
         expect(viewModel.filteredRecipes.length, equals(4));
-        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 30),
-            isTrue);
+        expect(
+          viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 30),
+          isTrue,
+        );
       });
 
       test('should filter recipes under 60 minutes', () {
@@ -240,8 +249,10 @@ void main() {
 
         // All 6 recipes are under 60 minutes
         expect(viewModel.filteredRecipes.length, equals(realRecipeCount));
-        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 60),
-            isTrue);
+        expect(
+          viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 60),
+          isTrue,
+        );
       });
 
       test('should show all recipes with TimeFilter.all', () {
@@ -266,11 +277,11 @@ void main() {
       test('should combine all filter types', () {
         viewModel.toggleTag('snabbt');
         viewModel.setTimeFilter(TimeFilter.under30);
-        viewModel.updateSearch('salad');
+        viewModel.updateSearch('sallad');
 
-        // 'snabbt' + <=30min + 'salad' -> Caesar Salad
+        // 'snabbt' + <=30min + 'sallad' -> Caesarsallad
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, equals('Caesar Salad'));
+        expect(viewModel.filteredRecipes[0].title, equals('Caesarsallad'));
       });
 
       test('should handle no matching results', () {
@@ -354,20 +365,26 @@ void main() {
 
         expect(viewModel.hasError, isFalse);
         expect(viewModel.selectedCount, equals(0));
-        final captured = verify(() =>
-                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
-            .captured
-            .first as List<Recipe>;
+        final captured =
+            verify(
+                  () => mockPersonalOperations.addMultipleUnifiedRecipes(
+                    captureAny(),
+                  ),
+                ).captured.first
+                as List<Recipe>;
         expect(captured.length, equals(2));
-        expect(captured.every((r) => r.sourceUrl == 'Fr\u00e5n Butlerys arkiv'),
-            isTrue);
+        expect(
+          captured.every((r) => r.sourceUrl == 'Fr\u00e5n Butlerys arkiv'),
+          isTrue,
+        );
       });
 
       test('rejects import when no recipes selected', () async {
         await viewModel.importSelectedRecipes();
         expect(viewModel.hasError, isTrue);
         verifyNever(
-            () => mockPersonalOperations.addMultipleUnifiedRecipes(any()));
+          () => mockPersonalOperations.addMultipleUnifiedRecipes(any()),
+        );
       });
 
       test('imports all filtered or all recipes', () async {
@@ -376,43 +393,54 @@ void main() {
         expect(viewModel.filteredRecipes.length, equals(2));
         await viewModel.importAllRecipes();
         expect(viewModel.hasError, isFalse);
-        var captured = verify(() =>
-                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
-            .captured
-            .first as List<Recipe>;
+        var captured =
+            verify(
+                  () => mockPersonalOperations.addMultipleUnifiedRecipes(
+                    captureAny(),
+                  ),
+                ).captured.first
+                as List<Recipe>;
         expect(captured.length, equals(2));
 
         // Without filter
         viewModel.clearFilters();
         await viewModel.importAllRecipes();
-        captured = verify(() =>
-                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
-            .captured
-            .first as List<Recipe>;
+        captured =
+            verify(
+                  () => mockPersonalOperations.addMultipleUnifiedRecipes(
+                    captureAny(),
+                  ),
+                ).captured.first
+                as List<Recipe>;
         expect(captured.length, equals(realRecipeCount));
       });
 
       test('handles import failure and exception', () async {
         viewModel.toggleRecipeSelection(viewModel.archivedRecipes[0].id);
-        when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
-            .thenAnswer((_) async =>
-                RecipeOperationResult.failure('Kunde inte importera recept'));
+        when(
+          () => mockPersonalOperations.addMultipleUnifiedRecipes(any()),
+        ).thenAnswer(
+          (_) async =>
+              RecipeOperationResult.failure('Kunde inte importera recept'),
+        );
 
         await viewModel.importSelectedRecipes();
         expect(viewModel.error, equals('Kunde inte importera recept'));
         expect(viewModel.selectedCount, equals(1));
 
         // Exception path
-        when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockPersonalOperations.addMultipleUnifiedRecipes(any()),
+        ).thenThrow(Exception('Network error'));
         await viewModel.importSelectedRecipes();
         expect(viewModel.hasError, isTrue);
       });
 
       test('tracks importing state', () async {
         viewModel.toggleRecipeSelection(viewModel.archivedRecipes[0].id);
-        when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
-            .thenAnswer((_) async => RecipeOperationResult.success('OK'));
+        when(
+          () => mockPersonalOperations.addMultipleUnifiedRecipes(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.success('OK'));
         bool wasImporting = false;
         viewModel.addListener(() {
           if (viewModel.isImporting) wasImporting = true;
@@ -473,7 +501,9 @@ void main() {
     group('Lifecycle', () {
       test('disposes without errors', () {
         final vm = ArchiveImportViewModel(
-            recipeService: mockRecipeService, searchService: SearchService());
+          recipeService: mockRecipeService,
+          searchService: SearchService(),
+        );
         expect(() => vm.dispose(), returnsNormally);
       });
 

@@ -192,19 +192,23 @@ void main() {
     // splitConcatenatedIngredients
     // ---------------------------------------------------------------
     group('splitConcatenatedIngredients', () {
-      test('should split word+digit+unit concatenation into separate lines',
-          () {
-        // Use a word that does not contain a Swedish section header substring
-        // to isolate Pattern 1 (letters followed by digit + unit)
-        final result = TextImportNormalizer.splitConcatenatedIngredients(
-          'socker2 msk',
-        );
-        final lines =
-            result.split('\n').where((l) => l.trim().isNotEmpty).toList();
-        expect(lines.length, greaterThanOrEqualTo(2));
-        expect(lines[0].trim(), equals('socker'));
-        expect(lines[1].trim(), equals('2 msk'));
-      });
+      test(
+        'should split word+digit+unit concatenation into separate lines',
+        () {
+          // Use a word that does not contain a Swedish section header substring
+          // to isolate Pattern 1 (letters followed by digit + unit)
+          final result = TextImportNormalizer.splitConcatenatedIngredients(
+            'socker2 msk',
+          );
+          final lines = result
+              .split('\n')
+              .where((l) => l.trim().isNotEmpty)
+              .toList();
+          expect(lines.length, greaterThanOrEqualTo(2));
+          expect(lines[0].trim(), equals('socker'));
+          expect(lines[1].trim(), equals('2 msk'));
+        },
+      );
 
       test('should also split words containing Swedish section substrings', () {
         // "oystersås" contains "sås" which matches Pattern 2 as a section
@@ -212,19 +216,25 @@ void main() {
         final result = TextImportNormalizer.splitConcatenatedIngredients(
           'oystersås2 msk',
         );
-        final lines =
-            result.split('\n').where((l) => l.trim().isNotEmpty).toList();
+        final lines = result
+            .split('\n')
+            .where((l) => l.trim().isNotEmpty)
+            .toList();
         expect(lines.length, greaterThanOrEqualTo(3));
         expect(lines, contains('oyster'));
       });
 
-      test('should leave properly spaced text without unit-words unchanged',
-          () {
-        // Use a word that does not contain a Swedish section header substring
-        const input = '2 msk socker';
-        final result = TextImportNormalizer.splitConcatenatedIngredients(input);
-        expect(result.trim(), equals(input));
-      });
+      test(
+        'should leave properly spaced text without unit-words unchanged',
+        () {
+          // Use a word that does not contain a Swedish section header substring
+          const input = '2 msk socker';
+          final result = TextImportNormalizer.splitConcatenatedIngredients(
+            input,
+          );
+          expect(result.trim(), equals(input));
+        },
+      );
 
       test('should split ALL CAPS headers from following content', () {
         final result = TextImportNormalizer.splitConcatenatedIngredients(
@@ -248,8 +258,10 @@ void main() {
         final result = TextImportNormalizer.splitConcatenatedIngredients(
           'soja1 msk socker2 dl',
         );
-        final lines =
-            result.split('\n').where((l) => l.trim().isNotEmpty).toList();
+        final lines = result
+            .split('\n')
+            .where((l) => l.trim().isNotEmpty)
+            .toList();
         expect(lines.length, greaterThanOrEqualTo(3));
       });
 
@@ -373,8 +385,9 @@ void main() {
       });
 
       test('should format "2dl" as "2 dl"', () {
-        final result =
-            TextImportNormalizer.preprocessText('Tillsätt 2dl mjölk');
+        final result = TextImportNormalizer.preprocessText(
+          'Tillsätt 2dl mjölk',
+        );
         expect(result, contains('2 dl'));
       });
 
@@ -428,29 +441,31 @@ void main() {
         expect(result, contains('100 g smör'));
       });
 
-      test('should handle full Instagram recipe with social media artifacts',
-          () {
-        final result = TextImportNormalizer.preprocessText(
-          '🔥 BÄSTA PASTAN!!! #pasta #middag #lättlagat\n'
-          '----------\n'
-          'Ingredienser\n'
-          'pasta400g vatten1dl\n'
-          'Gör så här\n'
-          'Koka pastan i 8 min.Servera med sås.',
-        );
-        // Emojis removed
-        expect(result, isNot(contains('🔥')));
-        // Hashtags removed
-        expect(result, isNot(contains('#')));
-        // Line separators removed
-        expect(result, isNot(contains('----------')));
-        // Measurements formatted
-        expect(result, contains('400 g'));
-        expect(result, contains('1 dl'));
-        // Sentences split
-        expect(result, contains('Koka'));
-        expect(result, contains('Servera'));
-      });
+      test(
+        'should handle full Instagram recipe with social media artifacts',
+        () {
+          final result = TextImportNormalizer.preprocessText(
+            '🔥 BÄSTA PASTAN!!! #pasta #middag #lättlagat\n'
+            '----------\n'
+            'Ingredienser\n'
+            'pasta400g vatten1dl\n'
+            'Gör så här\n'
+            'Koka pastan i 8 min.Servera med sås.',
+          );
+          // Emojis removed
+          expect(result, isNot(contains('🔥')));
+          // Hashtags removed
+          expect(result, isNot(contains('#')));
+          // Line separators removed
+          expect(result, isNot(contains('----------')));
+          // Measurements formatted
+          expect(result, contains('400 g'));
+          expect(result, contains('1 dl'));
+          // Sentences split
+          expect(result, contains('Koka'));
+          expect(result, contains('Servera'));
+        },
+      );
     });
   });
 }

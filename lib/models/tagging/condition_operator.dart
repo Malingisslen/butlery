@@ -110,12 +110,11 @@ extension ConditionOperatorExtension on ConditionOperator {
 
   /// Returns true if this operator works with numeric values.
   bool get isNumeric => switch (this) {
-        ConditionOperator.lessThan ||
-        ConditionOperator.lessThanOrEqual ||
-        ConditionOperator.greaterThan ||
-        ConditionOperator.greaterThanOrEqual ||
-        ConditionOperator.withinDays =>
-          true,
-        _ => false,
-      };
+    ConditionOperator.lessThan ||
+    ConditionOperator.lessThanOrEqual ||
+    ConditionOperator.greaterThan ||
+    ConditionOperator.greaterThanOrEqual ||
+    ConditionOperator.withinDays => true,
+    _ => false,
+  };
 }

@@ -48,8 +48,9 @@ void main() {
     late MockFirebaseAuth mockAuth;
 
     const ownerId = 'user-alpha';
-    final weekStart =
-        IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13)); // ISO week Mon
+    final weekStart = IsoWeekUtils.weekStartOf(
+      DateTime(2026, 4, 13),
+    ); // ISO week Mon
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -83,39 +84,46 @@ void main() {
 
     group('save (deterministic upsert)', () {
       test(
-          'should use deterministic `{userId}_{YYYY}-W{WW}` doc ID so '
-          'saving the same (user, week) twice does not create duplicates',
-          () async {
-        // Arrange — a plan for the current user + current ISO week.
-        final planA = _buildPlan(userId: ownerId, weekStart: weekStart);
+        'should use deterministic `{userId}_{YYYY}-W{WW}` doc ID so '
+        'saving the same (user, week) twice does not create duplicates',
+        () async {
+          // Arrange — a plan for the current user + current ISO week.
+          final planA = _buildPlan(userId: ownerId, weekStart: weekStart);
 
-        // Act — save, mutate, save again. Deterministic ID means both writes
-        // hit the same document.
-        await repository.save(planA);
+          // Act — save, mutate, save again. Deterministic ID means both writes
+          // hit the same document.
+          await repository.save(planA);
 
-        final planB = planA.copyWith(entries: [
-          WeeklyMenuPlanEntry.create(
-            day: DayOfWeek.wed,
-            slot: MealSlot.middag,
-            recipeId: 'recipe-1',
-            recipeTitle: 'Pasta',
-          ),
-        ]);
-        await repository.save(planB);
+          final planB = planA.copyWith(
+            entries: [
+              WeeklyMenuPlanEntry.create(
+                day: DayOfWeek.wed,
+                slot: MealSlot.middag,
+                recipeId: 'recipe-1',
+                recipeTitle: 'Pasta',
+              ),
+            ],
+          );
+          await repository.save(planB);
 
-        // Assert — exactly one doc in the collection, with the latest entries.
-        final snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, hasLength(1),
-            reason: 'upsert must overwrite, not append a second doc');
-        expect(
-            snapshot.docs.first.id, IsoWeekUtils.weekIdFor(ownerId, weekStart));
-        final entriesField = snapshot.docs.first.data()['entries'] as List;
-        expect(entriesField, hasLength(1));
-        expect((entriesField.first as Map)['recipeTitle'], 'Pasta');
-      });
+          // Assert — exactly one doc in the collection, with the latest entries.
+          final snapshot = await firestore.collection(_collection).get();
+          expect(
+            snapshot.docs,
+            hasLength(1),
+            reason: 'upsert must overwrite, not append a second doc',
+          );
+          expect(
+            snapshot.docs.first.id,
+            IsoWeekUtils.weekIdFor(ownerId, weekStart),
+          );
+          final entriesField = snapshot.docs.first.data()['entries'] as List;
+          expect(entriesField, hasLength(1));
+          expect((entriesField.first as Map)['recipeTitle'], 'Pasta');
+        },
+      );
 
-      test(
-          'should refuse to persist a plan whose `userId` does not match the '
+      test('should refuse to persist a plan whose `userId` does not match the '
           'doc-ID prefix (internal self-consistency check)', () async {
         // Arrange — construct a WeeklyMenuPlan with a doc ID that does NOT
         // start with the entity's userId. `save()` calls
@@ -143,58 +151,65 @@ void main() {
 
         // Assert — no document ever made it to Firestore.
         final snapshot = await firestore.collection(_collection).get();
-        expect(snapshot.docs, isEmpty,
-            reason: 'save() must log-and-return when canWrite is false');
+        expect(
+          snapshot.docs,
+          isEmpty,
+          reason: 'save() must log-and-return when canWrite is false',
+        );
       });
     });
 
     group('fetchForWeek', () {
-      test(
-          'should return null for a week with no saved plan '
+      test('should return null for a week with no saved plan '
           '(callers treat null as empty, not as an error)', () async {
         // Arrange — Firestore is empty; no explicit setup required.
 
         // Act
         final result = await repository.fetchForWeek(
-            userId: ownerId, weekStart: weekStart);
+          userId: ownerId,
+          weekStart: weekStart,
+        );
 
         // Assert
         expect(result, isNull);
       });
 
-      test('should round-trip a saved plan, preserving entries and week anchor',
-          () async {
-        // Arrange
-        final entry = WeeklyMenuPlanEntry.create(
-          day: DayOfWeek.fri,
-          slot: MealSlot.lunch,
-          recipeId: 'recipe-fri-lunch',
-          recipeTitle: 'Tacos',
-        );
-        final saved = _buildPlan(
-          userId: ownerId,
-          weekStart: weekStart,
-          entries: [entry],
-        );
-        await repository.save(saved);
+      test(
+        'should round-trip a saved plan, preserving entries and week anchor',
+        () async {
+          // Arrange
+          final entry = WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.fri,
+            slot: MealSlot.lunch,
+            recipeId: 'recipe-fri-lunch',
+            recipeTitle: 'Tacos',
+          );
+          final saved = _buildPlan(
+            userId: ownerId,
+            weekStart: weekStart,
+            entries: [entry],
+          );
+          await repository.save(saved);
 
-        // Act
-        final fetched = await repository.fetchForWeek(
-            userId: ownerId, weekStart: weekStart);
+          // Act
+          final fetched = await repository.fetchForWeek(
+            userId: ownerId,
+            weekStart: weekStart,
+          );
 
-        // Assert
-        expect(fetched, isNotNull);
-        expect(fetched!.id, IsoWeekUtils.weekIdFor(ownerId, weekStart));
-        expect(fetched.userId, ownerId);
-        expect(fetched.weekStartDate, IsoWeekUtils.weekStartOf(weekStart));
-        expect(fetched.entries, hasLength(1));
-        expect(fetched.entries.first.recipeTitle, 'Tacos');
-      });
+          // Assert
+          expect(fetched, isNotNull);
+          expect(fetched!.id, IsoWeekUtils.weekIdFor(ownerId, weekStart));
+          expect(fetched.userId, ownerId);
+          expect(fetched.weekStartDate, IsoWeekUtils.weekStartOf(weekStart));
+          expect(fetched.entries, hasLength(1));
+          expect(fetched.entries.first.recipeTitle, 'Tacos');
+        },
+      );
     });
 
     group('deleteAllByUser — owner-prefix range delete', () {
-      test(
-          'should delete only the target user\'s plans when multiple users '
+      test('should delete only the target user\'s plans when multiple users '
           'have docs in the same collection', () async {
         // Arrange — seed 3 plans each for 3 users. All share the same
         // top-level collection; the doc-ID prefix is the only separator.
@@ -226,25 +241,27 @@ void main() {
         expect(deleted, 3);
         final after = await firestore.collection(_collection).get();
         expect(after.docs, hasLength(6));
-        final remainingUsers =
-            after.docs.map((d) => d.data()['userId']).toSet();
+        final remainingUsers = after.docs
+            .map((d) => d.data()['userId'])
+            .toSet();
         expect(remainingUsers, {'user-beta', 'user-gamma'});
       });
 
-      test('should return 0 and do nothing when the user has no plans',
-          () async {
-        // Arrange — empty collection. Caller is the authenticated user
-        // (ownerId) deleting their own data; validateOwnership requires
-        // the targetted userId to match the auth context.
-        // Act
-        final deleted = await repository.deleteAllByUser(ownerId);
-
-        // Assert
-        expect(deleted, 0);
-      });
-
       test(
-          'should chunk deletes through batchDeleteDocs when the result set '
+        'should return 0 and do nothing when the user has no plans',
+        () async {
+          // Arrange — empty collection. Caller is the authenticated user
+          // (ownerId) deleting their own data; validateOwnership requires
+          // the targetted userId to match the auth context.
+          // Act
+          final deleted = await repository.deleteAllByUser(ownerId);
+
+          // Assert
+          expect(deleted, 0);
+        },
+      );
+
+      test('should chunk deletes through batchDeleteDocs when the result set '
           'exceeds the 500-op Firestore batch limit', () async {
         // Arrange — seed 600 docs for the authenticated user (ownerId).
         // validateOwnership requires the deleteAllByUser target to match
@@ -252,7 +269,8 @@ void main() {
         // years to stay under the "53 weeks per year" ceiling while
         // giving us unique doc IDs.
         for (var i = 0; i < 600; i++) {
-          final docId = '${ownerId}_${2010 + (i ~/ 53)}'
+          final docId =
+              '${ownerId}_${2010 + (i ~/ 53)}'
               '-W${((i % 53) + 1).toString().padLeft(2, '0')}';
           await firestore.collection(_collection).doc(docId).set({
             'userId': ownerId,
@@ -266,24 +284,26 @@ void main() {
         expect(before.docs, hasLength(600));
 
         // Also seed a different owner — must survive the bulk delete.
-        await firestore
-            .collection(_collection)
-            .doc('other-owner_2026-W15')
-            .set({
-          'userId': 'other-owner',
-          'weekStartDate': Timestamp.now(),
-          'entries': <Map<String, dynamic>>[],
-          'createdAt': Timestamp.now(),
-          'updatedAt': Timestamp.now(),
-        });
+        await firestore.collection(_collection).doc('other-owner_2026-W15').set(
+          {
+            'userId': 'other-owner',
+            'weekStartDate': Timestamp.now(),
+            'entries': <Map<String, dynamic>>[],
+            'createdAt': Timestamp.now(),
+            'updatedAt': Timestamp.now(),
+          },
+        );
 
         // Act — call deleteAllByUser. The implementation's batchDeleteDocs
         // helper has to split >500 docs across >1 batches (500-op limit).
         final deleted = await repository.deleteAllByUser(ownerId);
 
         // Assert — all 600 bulk docs gone, the unrelated user's doc untouched.
-        expect(deleted, 600,
-            reason: 'batch chunking must not drop docs past the 500 boundary');
+        expect(
+          deleted,
+          600,
+          reason: 'batch chunking must not drop docs past the 500 boundary',
+        );
         final after = await firestore.collection(_collection).get();
         expect(after.docs, hasLength(1));
         expect(after.docs.single.data()['userId'], 'other-owner');
@@ -291,8 +311,7 @@ void main() {
     });
 
     group('permission filter (doc-ID prefix)', () {
-      test(
-          'validateUpdatePermission should reject when either entity.userId '
+      test('validateUpdatePermission should reject when either entity.userId '
           'or the resourceId prefix does not match the caller', () async {
         // Caller is ownerId. Three forged combinations, all must fail.
 
@@ -304,29 +323,39 @@ void main() {
         final docIdOwned = IsoWeekUtils.weekIdFor(ownerId, weekStart);
         expect(
           await repository.validateUpdatePermission(
-              ownerId, docIdOwned, mismatchedEntity),
+            ownerId,
+            docIdOwned,
+            mismatchedEntity,
+          ),
           isFalse,
         );
 
         // 2. entity.userId match, resourceId prefix mismatch.
-        final mismatchedResource =
-            _buildPlan(userId: ownerId, weekStart: weekStart);
+        final mismatchedResource = _buildPlan(
+          userId: ownerId,
+          weekStart: weekStart,
+        );
         expect(
           await repository.validateUpdatePermission(
-              ownerId, 'user-beta_2026-W15', mismatchedResource),
+            ownerId,
+            'user-beta_2026-W15',
+            mismatchedResource,
+          ),
           isFalse,
         );
 
         // 3. Both match — should pass.
         expect(
           await repository.validateUpdatePermission(
-              ownerId, docIdOwned, mismatchedResource),
+            ownerId,
+            docIdOwned,
+            mismatchedResource,
+          ),
           isTrue,
         );
       });
 
-      test(
-          'validateReadPermission / validateDeletePermission should accept '
+      test('validateReadPermission / validateDeletePermission should accept '
           'only docs prefixed with the caller userId', () async {
         // Arrange — two candidate doc IDs, one owned, one foreign.
         final owned = '${ownerId}_2026-W15';
@@ -353,21 +382,25 @@ void main() {
         );
       });
 
-      test('validateCreatePermission should require entity.userId == caller',
-          () async {
-        final ownedEntity = _buildPlan(userId: ownerId, weekStart: weekStart);
-        final foreignEntity =
-            _buildPlan(userId: 'user-beta', weekStart: weekStart);
+      test(
+        'validateCreatePermission should require entity.userId == caller',
+        () async {
+          final ownedEntity = _buildPlan(userId: ownerId, weekStart: weekStart);
+          final foreignEntity = _buildPlan(
+            userId: 'user-beta',
+            weekStart: weekStart,
+          );
 
-        expect(
-          await repository.validateCreatePermission(ownerId, ownedEntity),
-          isTrue,
-        );
-        expect(
-          await repository.validateCreatePermission(ownerId, foreignEntity),
-          isFalse,
-        );
-      });
+          expect(
+            await repository.validateCreatePermission(ownerId, ownedEntity),
+            isTrue,
+          );
+          expect(
+            await repository.validateCreatePermission(ownerId, foreignEntity),
+            isFalse,
+          );
+        },
+      );
     });
   });
 }

@@ -84,12 +84,14 @@ void main() {
       expect(service.serviceName, equals('OCRExtractionService'));
     });
 
-    test('should initialize without errors when API keys are missing',
-        () async {
-      final service = OCRExtractionService.createForTesting();
+    test(
+      'should initialize without errors when API keys are missing',
+      () async {
+        final service = OCRExtractionService.createForTesting();
 
-      await expectLater(service.initialize(), completes);
-    });
+        await expectLater(service.initialize(), completes);
+      },
+    );
 
     test('should track month start date during initialization', () async {
       final testTime = DateTime(2025, 1, 15, 12, 0, 0);
@@ -107,11 +109,17 @@ void main() {
       final status = service.getServiceStatus();
 
       expect(
-          status['circuit_breakers']['ocr_space']['state'], equals('closed'));
-      expect(status['circuit_breakers']['google_vision']['state'],
-          equals('closed'));
+        status['circuit_breakers']['ocr_space']['state'],
+        equals('closed'),
+      );
       expect(
-          status['circuit_breakers']['tesseract']['state'], equals('closed'));
+        status['circuit_breakers']['google_vision']['state'],
+        equals('closed'),
+      );
+      expect(
+        status['circuit_breakers']['tesseract']['state'],
+        equals('closed'),
+      );
     });
 
     test('should report correct API key configuration status', () {
@@ -222,10 +230,12 @@ void main() {
     });
 
     test('should include quality score between 0 and 1', () {
-      final assessment1 =
-          OCRTestHelpers.createQualityAssessment(qualityScore: 0.0);
-      final assessment2 =
-          OCRTestHelpers.createQualityAssessment(qualityScore: 1.0);
+      final assessment1 = OCRTestHelpers.createQualityAssessment(
+        qualityScore: 0.0,
+      );
+      final assessment2 = OCRTestHelpers.createQualityAssessment(
+        qualityScore: 1.0,
+      );
 
       expect(assessment1.qualityScore, equals(0.0));
       expect(assessment2.qualityScore, equals(1.0));
@@ -472,7 +482,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -495,7 +506,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -518,7 +530,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -541,7 +554,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -561,7 +575,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -575,8 +590,10 @@ void main() {
       await service.extractText(imageBytes);
 
       final stats = service.getUsageStats();
-      expect(stats['cache_hit_rate'],
-          closeTo(0.666, 0.01)); // 2 hits out of 3 total
+      expect(
+        stats['cache_hit_rate'],
+        closeTo(0.666, 0.01),
+      ); // 2 hits out of 3 total
     });
 
     test('should evict oldest entries when cache is full', () async {
@@ -585,7 +602,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -608,7 +626,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -619,8 +638,7 @@ void main() {
       verify(() => mockClient.send(any())).called(1);
     });
 
-    test('should NOT cache failure results (transient errors retried)',
-        () async {
+    test('should NOT cache failure results (transient errors retried)', () async {
       final imageBytes = OCRTestImages.mediumQuality;
 
       when(() => mockClient.send(any())).thenThrow(Exception('Network error'));
@@ -643,7 +661,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -655,50 +674,57 @@ void main() {
     });
 
     test(
-        'clearCacheForTesting clears the service own LruMaps (cache + raw index)',
-        () async {
-      // BUT-1253: clearCacheForTesting() previously only cleared the
-      // BaseService cache, leaving _cache (OCR results) and
-      // _rawHashToPreprocessedHash populated. A repeat extraction of the same
-      // bytes would then return a stale cache hit instead of re-hitting the
-      // API — so the only behavior that proves the LruMaps were actually
-      // cleared is that the second extraction calls the provider again.
-      final imageBytes = OCRTestImages.mediumQuality;
-      final mockResponse = MockStreamedResponse();
+      'clearCacheForTesting clears the service own LruMaps (cache + raw index)',
+      () async {
+        // BUT-1253: clearCacheForTesting() previously only cleared the
+        // BaseService cache, leaving _cache (OCR results) and
+        // _rawHashToPreprocessedHash populated. A repeat extraction of the same
+        // bytes would then return a stale cache hit instead of re-hitting the
+        // API — so the only behavior that proves the LruMaps were actually
+        // cleared is that the second extraction calls the provider again.
+        final imageBytes = OCRTestImages.mediumQuality;
+        final mockResponse = MockStreamedResponse();
 
-      when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        when(() => mockResponse.statusCode).thenReturn(200);
+        when(() => mockResponse.stream).thenAnswer(
+          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+        );
 
-      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
+        when(
+          () => mockClient.send(any()),
+        ).thenAnswer((_) async => mockResponse);
 
-      // Register this mock-driven service as the singleton so the static
-      // clearCacheForTesting() hook (which operates on `instance`) acts on it.
-      final singletonService = OCRExtractionService.createForTesting(
-        testHttpClient: mockClient,
-        testOcrApiKey: 'test-key',
-        testTimeProvider: () => testTime,
-        registerAsInstance: true,
-      );
+        // Register this mock-driven service as the singleton so the static
+        // clearCacheForTesting() hook (which operates on `instance`) acts on it.
+        final singletonService = OCRExtractionService.createForTesting(
+          testHttpClient: mockClient,
+          testOcrApiKey: 'test-key',
+          testTimeProvider: () => testTime,
+          registerAsInstance: true,
+        );
 
-      // First extraction populates both LruMaps.
-      await singletonService.extractText(imageBytes);
-      expect(singletonService.getServiceStatus()['cache_size'], greaterThan(0));
+        // First extraction populates both LruMaps.
+        await singletonService.extractText(imageBytes);
+        expect(
+          singletonService.getServiceStatus()['cache_size'],
+          greaterThan(0),
+        );
 
-      OCRExtractionService.clearCacheForTesting();
+        OCRExtractionService.clearCacheForTesting();
 
-      // Result cache is empty after the clear.
-      expect(singletonService.getServiceStatus()['cache_size'], equals(0));
+        // Result cache is empty after the clear.
+        expect(singletonService.getServiceStatus()['cache_size'], equals(0));
 
-      // Same bytes again: with both the result cache AND the raw-hash
-      // fast-path index cleared, this must re-hit the provider (2 calls
-      // total). If only the BaseService cache had been cleared, the raw-hash
-      // index would still short-circuit to a stale result (1 call).
-      await singletonService.extractText(imageBytes);
-      verify(() => mockClient.send(any())).called(2);
+        // Same bytes again: with both the result cache AND the raw-hash
+        // fast-path index cleared, this must re-hit the provider (2 calls
+        // total). If only the BaseService cache had been cleared, the raw-hash
+        // index would still short-circuit to a stale result (1 call).
+        await singletonService.extractText(imageBytes);
+        verify(() => mockClient.send(any())).called(2);
 
-      await singletonService.dispose();
-    });
+        await singletonService.dispose();
+      },
+    );
 
     test('should cap cache at maxSize with LRU eviction', () async {
       // BUT-817: cache backed by LruMap — bound holds at maxSize (100); each
@@ -709,7 +735,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -758,7 +785,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -775,14 +803,21 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer((_) =>
-          _createByteStream(OCRProviderResponses.ocrSpaceProcessingError));
+      when(() => mockResponse.stream).thenAnswer(
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceProcessingError),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -798,10 +833,16 @@ void main() {
       when(() => mockClient.send(any())).thenThrow(Exception('OCR.space down'));
 
       // Google Vision succeeds
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -817,21 +858,26 @@ void main() {
       when(() => mockClient.send(any())).thenThrow(Exception('OCR.space down'));
 
       // Google Vision fails
-      when(() => mockClient.post(
-            Uri.parse(
-                'https://vision.googleapis.com/v1/images:annotate?key=test-google-key'),
-            headers: any(named: 'headers'),
-            body: any(named: 'body'),
-          )).thenThrow(Exception('Google Vision down'));
+      when(
+        () => mockClient.post(
+          Uri.parse(
+            'https://vision.googleapis.com/v1/images:annotate?key=test-google-key',
+          ),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenThrow(Exception('Google Vision down'));
 
       // Tesseract succeeds
-      when(() => mockClient.post(
-                Uri.parse('http://test-tesseract.com/api'),
-                headers: any(named: 'headers'),
-                body: any(named: 'body'),
-              ))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.tesseractSuccess, 200));
+      when(
+        () => mockClient.post(
+          Uri.parse('http://test-tesseract.com/api'),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(OCRProviderResponses.tesseractSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -845,7 +891,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -863,7 +910,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -878,15 +926,24 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream).thenAnswer((_) => _createByteStream(
-          '{"ParsedResults": [{"ParsedText": ""}], "IsErroredOnProcessing": false}'));
+      when(() => mockResponse.stream).thenAnswer(
+        (_) => _createByteStream(
+          '{"ParsedResults": [{"ParsedText": ""}], "IsErroredOnProcessing": false}',
+        ),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionNoText, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionNoText, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -900,7 +957,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -914,9 +972,13 @@ void main() {
 
       // All providers fail
       when(() => mockClient.send(any())).thenThrow(Exception('Network error'));
-      when(() => mockClient.post(any(),
+      when(
+        () => mockClient.post(
+          any(),
           headers: any(named: 'headers'),
-          body: any(named: 'body'))).thenThrow(Exception('Network error'));
+          body: any(named: 'body'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       final result = await service.extractText(imageBytes);
 
@@ -932,10 +994,16 @@ void main() {
         (_) async => throw Exception('Timeout'),
       );
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -949,15 +1017,22 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(200);
-      when(() => mockResponse.stream)
-          .thenAnswer((_) => _createByteStream('invalid json'));
+      when(
+        () => mockResponse.stream,
+      ).thenAnswer((_) => _createByteStream('invalid json'));
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -971,15 +1046,22 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(401);
-      when(() => mockResponse.stream)
-          .thenAnswer((_) => _createByteStream('Unauthorized'));
+      when(
+        () => mockResponse.stream,
+      ).thenAnswer((_) => _createByteStream('Unauthorized'));
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -993,15 +1075,22 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(500);
-      when(() => mockResponse.stream)
-          .thenAnswer((_) => _createByteStream('Server error'));
+      when(
+        () => mockResponse.stream,
+      ).thenAnswer((_) => _createByteStream('Server error'));
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -1016,7 +1105,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1055,27 +1145,40 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
       final result = await service.extractText(imageBytes);
 
       expect(result.processingMethod, equals('ocr_space'));
-      verifyNever(() => mockClient.post(any(),
-          headers: any(named: 'headers'), body: any(named: 'body')));
+      verifyNever(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      );
     });
 
     test('should fall back to Google Vision when OCR.space fails', () async {
       final imageBytes = OCRTestImages.mediumQuality;
 
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+      when(
+        () => mockClient.send(any()),
+      ).thenThrow(Exception('OCR.space error'));
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -1083,43 +1186,58 @@ void main() {
     });
 
     test(
-        'should fall back to Tesseract when both OCR.space and Google Vision fail',
-        () async {
-      final imageBytes = OCRTestImages.mediumQuality;
+      'should fall back to Tesseract when both OCR.space and Google Vision fail',
+      () async {
+        final imageBytes = OCRTestImages.mediumQuality;
 
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+        when(
+          () => mockClient.send(any()),
+        ).thenThrow(Exception('OCR.space error'));
 
-      when(() => mockClient.post(
+        when(
+          () => mockClient.post(
             Uri.parse(
-                'https://vision.googleapis.com/v1/images:annotate?key=test-google-key'),
+              'https://vision.googleapis.com/v1/images:annotate?key=test-google-key',
+            ),
             headers: any(named: 'headers'),
             body: any(named: 'body'),
-          )).thenThrow(Exception('Google Vision error'));
+          ),
+        ).thenThrow(Exception('Google Vision error'));
 
-      when(() => mockClient.post(
-                Uri.parse('http://test-tesseract.com/api'),
-                headers: any(named: 'headers'),
-                body: any(named: 'body'),
-              ))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.tesseractSuccess, 200));
+        when(
+          () => mockClient.post(
+            Uri.parse('http://test-tesseract.com/api'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              http.Response(OCRProviderResponses.tesseractSuccess, 200),
+        );
 
-      final result = await service.extractText(imageBytes);
+        final result = await service.extractText(imageBytes);
 
-      expect(result.processingMethod, equals('tesseract'));
-    });
+        expect(result.processingMethod, equals('tesseract'));
+      },
+    );
 
     test('should skip provider when circuit breaker is open', () async {
       // Stub Google Vision to succeed throughout, so only OCR.space trips
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       // Trigger circuit breaker for OCR.space (5 failures)
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+      when(
+        () => mockClient.send(any()),
+      ).thenThrow(Exception('OCR.space error'));
 
       for (var i = 0; i < 5; i++) {
         final uniqueImage = OCRTestImages.uniqueImage(i);
@@ -1140,14 +1258,21 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceLowQuality));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceLowQuality),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       final result = await service.extractText(imageBytes);
 
@@ -1166,16 +1291,19 @@ void main() {
 
       final imageBytes = OCRTestImages.mediumQuality;
 
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+      when(
+        () => mockClient.send(any()),
+      ).thenThrow(Exception('OCR.space error'));
 
-      when(() => mockClient.post(
-                Uri.parse('http://test-tesseract.com/api'),
-                headers: any(named: 'headers'),
-                body: any(named: 'body'),
-              ))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.tesseractSuccess, 200));
+      when(
+        () => mockClient.post(
+          Uri.parse('http://test-tesseract.com/api'),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(OCRProviderResponses.tesseractSuccess, 200),
+      );
 
       final result = await serviceNoGoogleKey.extractText(imageBytes);
 
@@ -1185,8 +1313,7 @@ void main() {
       await serviceNoGoogleKey.dispose();
     });
 
-    test(
-        'returns unavailable (not generic "better lighting") when no provider '
+    test('returns unavailable (not generic "better lighting") when no provider '
         'is configured', () async {
       // BUG-25: with every API key / URL absent, no provider runs, so the
       // generic failure path used to surface "try better lighting" — wrong for
@@ -1197,8 +1324,9 @@ void main() {
         testTimeProvider: () => testTime,
       );
 
-      final result =
-          await serviceNoKeys.extractText(OCRTestImages.mediumQuality);
+      final result = await serviceNoKeys.extractText(
+        OCRTestImages.mediumQuality,
+      );
 
       expect(result.isSuccessful, isFalse);
       expect(result.processingMethod, equals('no_provider_configured'));
@@ -1212,8 +1340,13 @@ void main() {
       expect(breakers['tesseract_state'], equals('open'));
       // No HTTP attempted at all.
       verifyNever(() => mockClient.send(any()));
-      verifyNever(() => mockClient.post(any(),
-          headers: any(named: 'headers'), body: any(named: 'body')));
+      verifyNever(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      );
 
       await serviceNoKeys.dispose();
     });
@@ -1221,13 +1354,20 @@ void main() {
     test('should record usage for successful provider', () async {
       final imageBytes = OCRTestImages.mediumQuality;
 
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+      when(
+        () => mockClient.send(any()),
+      ).thenThrow(Exception('OCR.space error'));
 
-      when(() => mockClient.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((_) async =>
-              http.Response(OCRProviderResponses.googleVisionSuccess, 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            http.Response(OCRProviderResponses.googleVisionSuccess, 200),
+      );
 
       await service.extractText(imageBytes);
 
@@ -1241,8 +1381,9 @@ void main() {
       final mockResponse = MockStreamedResponse();
 
       // Trigger 5 failures to open circuit breaker
-      when(() => mockClient.send(any()))
-          .thenThrow(Exception('OCR.space error'));
+      when(
+        () => mockClient.send(any()),
+      ).thenThrow(Exception('OCR.space error'));
 
       for (var i = 0; i < 5; i++) {
         try {
@@ -1259,7 +1400,8 @@ void main() {
       // Now OCR.space works
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1267,7 +1409,9 @@ void main() {
 
       status = service.getServiceStatus();
       expect(
-          status['circuit_breakers']['ocr_space']['state'], equals('closed'));
+        status['circuit_breakers']['ocr_space']['state'],
+        equals('closed'),
+      );
     });
   });
 
@@ -1303,7 +1447,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1319,7 +1464,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1342,7 +1488,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1358,7 +1505,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1381,7 +1529,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1397,7 +1546,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1410,8 +1560,10 @@ void main() {
       final stats = service.getUsageStats();
       // No warning at 4% usage (warning triggers at 80% = 400 requests)
       final warnings = stats['warnings'] as List;
-      expect(warnings.where((w) => w.toString().contains('monthly limit')),
-          isEmpty);
+      expect(
+        warnings.where((w) => w.toString().contains('monthly limit')),
+        isEmpty,
+      );
     });
 
     test('should calculate usage percentage correctly', () async {
@@ -1419,7 +1571,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1438,7 +1591,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1454,7 +1608,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1471,7 +1626,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1489,7 +1645,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1506,7 +1663,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1519,7 +1677,9 @@ void main() {
       final stats = service.getUsageStats();
       final warnings = stats['warnings'] as List;
       expect(
-          warnings.any((w) => w.toString().contains('cache hit rate')), isTrue);
+        warnings.any((w) => w.toString().contains('cache hit rate')),
+        isTrue,
+      );
     });
   });
 
@@ -1546,7 +1706,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1562,7 +1723,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1578,7 +1740,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1594,7 +1757,8 @@ void main() {
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1634,8 +1798,9 @@ void main() {
     });
 
     test('should return 0.5 confidence for short text (10-30 chars)', () {
-      final confidence =
-          OCRTestHelpers.calculateExpectedConfidence('This is a test');
+      final confidence = OCRTestHelpers.calculateExpectedConfidence(
+        'This is a test',
+      );
       expect(confidence, equals(0.5));
     });
 
@@ -1652,8 +1817,9 @@ Line 2
 Line 3
 Line 4
 Line 5''';
-      final confidence =
-          OCRTestHelpers.calculateExpectedConfidence(multiLineText);
+      final confidence = OCRTestHelpers.calculateExpectedConfidence(
+        multiLineText,
+      );
 
       // Short text base (0.5) + structure bonus (5 lines * 0.03 = 0.15) = 0.65-0.7
       expect(confidence, greaterThanOrEqualTo(0.65));
@@ -1667,8 +1833,9 @@ Line 5''';
         Stek i 10 minuter
         4 portioner
       ''';
-      final confidence =
-          OCRTestHelpers.calculateExpectedConfidence(textWithKeywords);
+      final confidence = OCRTestHelpers.calculateExpectedConfidence(
+        textWithKeywords,
+      );
 
       // Base + structure + keywords (5 keywords * 0.03 = 0.15)
       expect(confidence, greaterThan(0.8));
@@ -1703,18 +1870,26 @@ Line 5''';
     test('should report circuit breaker states', () {
       final status = service.getServiceStatus();
       expect(
-          status['circuit_breakers']['ocr_space']['state'], equals('closed'));
-      expect(status['circuit_breakers']['google_vision']['state'],
-          equals('closed'));
+        status['circuit_breakers']['ocr_space']['state'],
+        equals('closed'),
+      );
       expect(
-          status['circuit_breakers']['tesseract']['state'], equals('closed'));
+        status['circuit_breakers']['google_vision']['state'],
+        equals('closed'),
+      );
+      expect(
+        status['circuit_breakers']['tesseract']['state'],
+        equals('closed'),
+      );
     });
 
     test('should report circuit breaker failure counts', () {
       final status = service.getServiceStatus();
       expect(status['circuit_breakers']['ocr_space']['failures'], equals(0));
       expect(
-          status['circuit_breakers']['google_vision']['failures'], equals(0));
+        status['circuit_breakers']['google_vision']['failures'],
+        equals(0),
+      );
       expect(status['circuit_breakers']['tesseract']['failures'], equals(0));
     });
 
@@ -1722,7 +1897,9 @@ Line 5''';
       final status = service.getServiceStatus();
       expect(status['circuit_breakers']['ocr_space']['can_execute'], isTrue);
       expect(
-          status['circuit_breakers']['google_vision']['can_execute'], isTrue);
+        status['circuit_breakers']['google_vision']['can_execute'],
+        isTrue,
+      );
       expect(status['circuit_breakers']['tesseract']['can_execute'], isTrue);
     });
 
@@ -1758,7 +1935,8 @@ Line 5''';
 
       when(() => mockResponse.statusCode).thenReturn(200);
       when(() => mockResponse.stream).thenAnswer(
-          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
@@ -1812,15 +1990,16 @@ Line 5''';
 
       // Verify all expected keys are present
       expect(
-          status.keys,
-          containsAll([
-            'timestamp',
-            'cache_size',
-            'circuit_breakers',
-            'device_compatibility',
-            'api_keys_configured',
-            'configuration',
-          ]));
+        status.keys,
+        containsAll([
+          'timestamp',
+          'cache_size',
+          'circuit_breakers',
+          'device_compatibility',
+          'api_keys_configured',
+          'configuration',
+        ]),
+      );
     });
   });
 }

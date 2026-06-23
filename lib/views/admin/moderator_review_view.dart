@@ -111,8 +111,10 @@ class _ReportsList extends StatelessWidget {
     }
     if (vm.reports.isEmpty) {
       return Center(
-        child: Text(context.l10n.moderatorNoOpenReports,
-            style: AppTextStyles.bodyMedium),
+        child: Text(
+          context.l10n.moderatorNoOpenReports,
+          style: AppTextStyles.bodyMedium,
+        ),
       );
     }
     return ListView.separated(
@@ -160,8 +162,9 @@ class _ReportCard extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '${context.l10n.moderatorReasonLabel}: ${report.reason}',
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
             if (report.description != null && report.description!.isNotEmpty)
               Padding(
@@ -174,8 +177,9 @@ class _ReportCard extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
-              style:
-                  AppTextStyles.metadataEmphasized.copyWith(color: cs.outline),
+              style: AppTextStyles.metadataEmphasized.copyWith(
+                color: cs.outline,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Wrap(
@@ -189,9 +193,11 @@ class _ReportCard extends StatelessWidget {
                   ),
                 OutlinedButton(
                   onPressed: () => _confirmTakeDown(context, vm),
-                  child: Text(vm.isReversibleAction(report)
-                      ? context.l10n.moderatorActionHide
-                      : context.l10n.moderatorActionDelete),
+                  child: Text(
+                    vm.isReversibleAction(report)
+                        ? context.l10n.moderatorActionHide
+                        : context.l10n.moderatorActionDelete,
+                  ),
                 ),
                 if (report.status != ReportStatus.closed)
                   TextButton(
@@ -207,7 +213,9 @@ class _ReportCard extends StatelessWidget {
   }
 
   Future<void> _confirmTakeDown(
-      BuildContext context, ModeratorReviewViewModel vm) async {
+    BuildContext context,
+    ModeratorReviewViewModel vm,
+  ) async {
     final reversible = vm.isReversibleAction(report);
     final l10n = context.l10n;
     final title = reversible
@@ -216,8 +224,9 @@ class _ReportCard extends StatelessWidget {
     final body = reversible
         ? l10n.moderatorHideConfirmBody
         : l10n.moderatorDeleteConfirmBody;
-    final confirm =
-        reversible ? l10n.moderatorActionHide : l10n.moderatorActionDelete;
+    final confirm = reversible
+        ? l10n.moderatorActionHide
+        : l10n.moderatorActionDelete;
     final cancel = l10n.commonCancel;
 
     // Construct the Future synchronously so the analyzer doesn't flag the

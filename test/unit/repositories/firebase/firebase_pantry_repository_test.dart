@@ -139,7 +139,9 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await repo.add(
-          _alice, _item(id: 'i1', ingredientId: 'ing-mjolk', name: 'Mjölk'));
+        _alice,
+        _item(id: 'i1', ingredientId: 'ing-mjolk', name: 'Mjölk'),
+      );
 
       final got = await repo.getByIngredientId(_alice, 'ing-mjolk');
       expect(got, isNotNull);
@@ -161,11 +163,15 @@ void main() {
       final repo = _repo(firestore);
       await withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () async {
         // Expires in 3 days — within 7-day cutoff.
-        await repo.add(_alice,
-            _item(id: 'i1', expiry: DateTime.utc(2026, 1, 4), name: 'Soon'));
+        await repo.add(
+          _alice,
+          _item(id: 'i1', expiry: DateTime.utc(2026, 1, 4), name: 'Soon'),
+        );
         // Expires in 30 days — outside 7-day cutoff.
-        await repo.add(_alice,
-            _item(id: 'i2', expiry: DateTime.utc(2026, 2, 1), name: 'Later'));
+        await repo.add(
+          _alice,
+          _item(id: 'i2', expiry: DateTime.utc(2026, 2, 1), name: 'Later'),
+        );
 
         final expiring = await repo.getExpiringSoon(_alice, 7);
         expect(expiring.map((i) => i.id), ['i1']);

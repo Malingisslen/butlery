@@ -28,19 +28,23 @@ void main() {
 
     test('maps Esc to CloseDialogIntent', () {
       final intent = AppShortcuts.bindings.entries
-          .firstWhere((e) =>
-              e.key is SingleActivator &&
-              (e.key as SingleActivator).trigger == LogicalKeyboardKey.escape)
+          .firstWhere(
+            (e) =>
+                e.key is SingleActivator &&
+                (e.key as SingleActivator).trigger == LogicalKeyboardKey.escape,
+          )
           .value;
       expect(intent, isA<CloseDialogIntent>());
     });
 
     test('maps Backspace to NavigateBackIntent', () {
       final intent = AppShortcuts.bindings.entries
-          .firstWhere((e) =>
-              e.key is SingleActivator &&
-              (e.key as SingleActivator).trigger ==
-                  LogicalKeyboardKey.backspace)
+          .firstWhere(
+            (e) =>
+                e.key is SingleActivator &&
+                (e.key as SingleActivator).trigger ==
+                    LogicalKeyboardKey.backspace,
+          )
           .value;
       expect(intent, isA<NavigateBackIntent>());
     });
@@ -57,11 +61,11 @@ void main() {
       final fired = <Type>[];
 
       Action<T> capture<T extends Intent>() => CallbackAction<T>(
-            onInvoke: (intent) {
-              fired.add(T);
-              return null;
-            },
-          );
+        onInvoke: (intent) {
+          fired.add(T);
+          return null;
+        },
+      );
 
       await tester.pumpWidget(
         MaterialApp(

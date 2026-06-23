@@ -137,11 +137,13 @@ class UploadRetryManager {
     final jitterFactor = _random.nextDouble(); // 0.0 to 1.0
     final jitteredDelay = (maxDelaySeconds * jitterFactor).round();
 
-    final finalDelay =
-        Duration(seconds: max(jitteredDelay, 1)); // Minimum 1 second
+    final finalDelay = Duration(
+      seconds: max(jitteredDelay, 1),
+    ); // Minimum 1 second
 
     AppLogger.info(
-        '🔄 RETRY_BACKOFF: Attempt $attemptNumber -> ${finalDelay.inSeconds}s delay (base: ${maxDelaySeconds}s, jitter: ${jitterFactor.toStringAsFixed(2)})');
+      '🔄 RETRY_BACKOFF: Attempt $attemptNumber -> ${finalDelay.inSeconds}s delay (base: ${maxDelaySeconds}s, jitter: ${jitterFactor.toStringAsFixed(2)})',
+    );
 
     return finalDelay;
   }
@@ -156,7 +158,8 @@ class UploadRetryManager {
     final errorType = status.errorType ?? ImageUploadErrorType.unknown;
     if (isCircuitBreakerOpen(errorType)) {
       AppLogger.warning(
-          '🔄 RETRY: Circuit breaker open for ${errorType.name}, blocking retry');
+        '🔄 RETRY: Circuit breaker open for ${errorType.name}, blocking retry',
+      );
       return false;
     }
 
@@ -211,11 +214,13 @@ class UploadRetryManager {
 
     if (newState.isOpen && !currentState.isOpen) {
       AppLogger.warning(
-          '🔄 CIRCUIT_BREAKER: Opened for ${errorType.name} after ${newState.failureCount} failures');
+        '🔄 CIRCUIT_BREAKER: Opened for ${errorType.name} after ${newState.failureCount} failures',
+      );
     }
 
     AppLogger.debug(
-        '🔄 CIRCUIT_BREAKER: Recorded failure for ${errorType.name} (count: ${newState.failureCount})');
+      '🔄 CIRCUIT_BREAKER: Recorded failure for ${errorType.name} (count: ${newState.failureCount})',
+    );
   }
 
   /// Record success and potentially reset circuit breaker
@@ -274,7 +279,8 @@ class UploadRetryManager {
   /// Call this method after creating the UploadRetryManager to enable
   /// automatic circuit breaker reset when network connectivity is restored.
   void initializeConnectivityMonitoring(
-      ConnectivityMonitoringService connectivityService) {
+    ConnectivityMonitoringService connectivityService,
+  ) {
     _connectivityService = connectivityService;
     _wasConnected = connectivityService.isFullyConnected;
 
@@ -282,7 +288,8 @@ class UploadRetryManager {
     connectivityService.addListener(_onConnectivityChanged);
 
     AppLogger.info(
-        '🔄 CIRCUIT_BREAKER: Connectivity monitoring initialized (connected: $_wasConnected)');
+      '🔄 CIRCUIT_BREAKER: Connectivity monitoring initialized (connected: $_wasConnected)',
+    );
   }
 
   /// Handle connectivity state changes
@@ -292,7 +299,8 @@ class UploadRetryManager {
     // If we transitioned from disconnected to connected, reset circuit breakers
     if (!_wasConnected && isConnected) {
       AppLogger.info(
-          '🔄 CIRCUIT_BREAKER: Network reconnected - resetting all circuit breakers');
+        '🔄 CIRCUIT_BREAKER: Network reconnected - resetting all circuit breakers',
+      );
       _resetNetworkRelatedCircuitBreakers();
     }
 
@@ -317,7 +325,8 @@ class UploadRetryManager {
           isOpen: false,
         );
         AppLogger.info(
-            '🔄 CIRCUIT_BREAKER: Reset ${errorType.name} after reconnection');
+          '🔄 CIRCUIT_BREAKER: Reset ${errorType.name} after reconnection',
+        );
       }
     }
   }

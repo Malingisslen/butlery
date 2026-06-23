@@ -39,8 +39,9 @@ class MemberSearchManager extends ChangeNotifier {
       _filteredFriends = List.from(_availableFriends);
     } else {
       _filteredFriends = _availableFriends
-          .where((friend) =>
-              friend.displayName.toLowerCase().contains(_searchQuery))
+          .where(
+            (friend) => friend.displayName.toLowerCase().contains(_searchQuery),
+          )
           .toList();
     }
   }

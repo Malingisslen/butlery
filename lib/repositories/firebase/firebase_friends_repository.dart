@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_friends_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -32,9 +33,12 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
+    // Injectable so unit tests can supply a mock instead of touching
+    // FirebaseFunctions.instanceFor (which throws with no Firebase app).
+    FirebaseFunctions? functions,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        ) {
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       ) {
     _socialRequestRepo = FirebaseSocialRequestRepository(
       firestore: firestore,
       authRepository: this.authRepository,
@@ -44,6 +48,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       firestore: firestore,
       authRepository: this.authRepository,
       timestampProvider: timestampProvider,
+      functions: functions,
     );
     _friendCategoryRepo = FriendCategoryRepository(
       firestore: firestore,
@@ -67,25 +72,35 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, UserProfile entity) async {
+    String userId,
+    UserProfile entity,
+  ) async {
     return userId == entity.uid;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, UserProfile? entity) async {
+    String userId,
+    String resourceId,
+    UserProfile? entity,
+  ) async {
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, UserProfile entity) async {
+    String userId,
+    String resourceId,
+    UserProfile entity,
+  ) async {
     return userId == entity.uid;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     return userId == resourceId;
   }
 
@@ -105,8 +120,10 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     try {
       final fromId = requireCurrentUserId();
       if (fromId == toUserId) return false;
-      final exists =
-          await _socialRequestRepo.friendRequestExists(fromId, toUserId);
+      final exists = await _socialRequestRepo.friendRequestExists(
+        fromId,
+        toUserId,
+      );
       if (exists) return false;
 
       final request = SocialRequest.friendRequest(
@@ -126,7 +143,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     try {
       final currentUser = requireCurrentUserId();
       AppLogger.debug(
-          'Accepting friend request $requestId for user $currentUser');
+        'Accepting friend request $requestId for user $currentUser',
+      );
 
       // Pre-release audit B1: the mutual friend-doc write now runs server-side
       // via the `acceptFriendRequest` callable (validates the request, writes
@@ -145,7 +163,9 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       return true;
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to accept friend request $requestId: $e', stackTrace);
+        'Failed to accept friend request $requestId: $e',
+        stackTrace,
+      );
       return false;
     }
   }
@@ -248,7 +268,10 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<void> updateCategory(
-      String userId, String categoryId, Map<String, dynamic> data) async {
+    String userId,
+    String categoryId,
+    Map<String, dynamic> data,
+  ) async {
     return await _friendCategoryRepo.updateCategory(userId, categoryId, data);
   }
 
@@ -264,15 +287,23 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<void> createCategoryForUser(
-      String userId, FriendCategory category) async {
+    String userId,
+    FriendCategory category,
+  ) async {
     return await _friendCategoryRepo.createCategoryForUser(userId, category);
   }
 
   @override
   Future<void> updateCategoryMembers(
-      String userId, String categoryId, List<String> memberIds) async {
+    String userId,
+    String categoryId,
+    List<String> memberIds,
+  ) async {
     return await _friendCategoryRepo.updateCategoryMembers(
-        userId, categoryId, memberIds);
+      userId,
+      categoryId,
+      memberIds,
+    );
   }
 
   @override
@@ -319,7 +350,9 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<void> updateInvitation(
-      String invitationId, Map<String, dynamic> data) async {
+    String invitationId,
+    Map<String, dynamic> data,
+  ) async {
     await _socialRequestRepo.updateRequestStatus(invitationId, data);
   }
 
@@ -338,26 +371,31 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
-      DateTime now) async {
+    DateTime now,
+  ) async {
     return await _socialRequestRepo.expiredRequests(now);
   }
 
   @override
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
-      String userId, DateTime cutoffDate) async {
+    String userId,
+    DateTime cutoffDate,
+  ) async {
     return await _socialRequestRepo.oldRequests(userId, cutoffDate);
   }
 
   @override
   Future<void> deleteDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs) async {
+    List<DocumentReference<Map<String, dynamic>>> refs,
+  ) async {
     return await _socialRequestRepo.deleteDocuments(refs);
   }
 
   @override
   Future<void> updateDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs,
-      Map<String, dynamic> data) async {
+    List<DocumentReference<Map<String, dynamic>>> refs,
+    Map<String, dynamic> data,
+  ) async {
     return await _socialRequestRepo.updateDocuments(refs, data);
   }
 
@@ -393,15 +431,20 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   // ── Statistics ──
 
   Future<Map<String, dynamic>> getComprehensiveFriendStatistics(
-      String userId) async {
-    final friendStats =
-        await _friendRelationshipRepo.getFriendStatistics(userId);
-    final requestStats =
-        await _socialRequestRepo.getFriendRequestStatistics(userId);
-    final categoryStats =
-        await _friendCategoryRepo.getCategoryStatistics(userId);
-    final invitationStats =
-        await _socialRequestRepo.getInvitationStatistics(userId);
+    String userId,
+  ) async {
+    final friendStats = await _friendRelationshipRepo.getFriendStatistics(
+      userId,
+    );
+    final requestStats = await _socialRequestRepo.getFriendRequestStatistics(
+      userId,
+    );
+    final categoryStats = await _friendCategoryRepo.getCategoryStatistics(
+      userId,
+    );
+    final invitationStats = await _socialRequestRepo.getInvitationStatistics(
+      userId,
+    );
 
     return {
       'friends': friendStats,
@@ -428,15 +471,27 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   Future<void> addFriendToCategory(
-      String userId, String categoryId, String friendId) async {
+    String userId,
+    String categoryId,
+    String friendId,
+  ) async {
     return await _friendCategoryRepo.addFriendToCategory(
-        userId, categoryId, friendId);
+      userId,
+      categoryId,
+      friendId,
+    );
   }
 
   Future<void> removeFriendFromCategory(
-      String userId, String categoryId, String friendId) async {
+    String userId,
+    String categoryId,
+    String friendId,
+  ) async {
     return await _friendCategoryRepo.removeFriendFromCategory(
-        userId, categoryId, friendId);
+      userId,
+      categoryId,
+      friendId,
+    );
   }
 
   Future<List<UserProfile>> searchFriends(String userId, String query) async {
@@ -444,7 +499,9 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   Future<List<FriendCategory>> searchCategories(
-      String userId, String query) async {
+    String userId,
+    String query,
+  ) async {
     return await _friendCategoryRepo.searchCategories(userId, query);
   }
 }

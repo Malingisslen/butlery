@@ -40,25 +40,35 @@ class FirebaseActivityEventRepository
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, ActivityEvent entity) async {
+    String userId,
+    ActivityEvent entity,
+  ) async {
     return entity.actorId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, ActivityEvent? entity) async {
+    String userId,
+    String resourceId,
+    ActivityEvent? entity,
+  ) async {
     return true; // Friend filtering is query-level
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, ActivityEvent entity) async {
+    String userId,
+    String resourceId,
+    ActivityEvent entity,
+  ) async {
     return entity.actorId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     return true; // Deletion allowed for own events via GDPR cascade
   }
 
@@ -95,8 +105,9 @@ class FirebaseActivityEventRepository
           .doc(FirestoreCollections.activityEvents),
       {
         'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
       },
       SetOptions(merge: true),
     );
@@ -187,7 +198,8 @@ class FirebaseActivityEventRepository
 
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} activity events for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} activity events for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 }

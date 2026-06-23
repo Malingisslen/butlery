@@ -73,10 +73,13 @@ class MenuContentWidgets {
             prefixIcon: const Icon(Icons.edit),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.clear,
-                        size: AppDimensions.iconSizeAction,
-                        color: cs.onSurface
-                            .withValues(alpha: AppDimensions.opacityDark)),
+                    icon: Icon(
+                      Icons.clear,
+                      size: AppDimensions.iconSizeAction,
+                      color: cs.onSurface.withValues(
+                        alpha: AppDimensions.opacityDark,
+                      ),
+                    ),
                     onPressed: onClear,
                     tooltip: context.l10n.commonClear,
                   )
@@ -113,8 +116,8 @@ class MenuContentWidgets {
           label: viewModel.isGenerating
               ? context.l10n.menuGenerating
               : (viewModel.hasMenu
-                  ? context.l10n.menuGenerateNew
-                  : context.l10n.menuGenerate),
+                    ? context.l10n.menuGenerateNew
+                    : context.l10n.menuGenerate),
           icon: Icons.restaurant_menu,
           onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
           isLoading: viewModel.isGenerating,
@@ -171,8 +174,9 @@ class MenuContentWidgets {
     return ListView(
       children: [
         buildMenuSummary(context, viewModel: viewModel),
-        for (final entry
-            in MenuViewHelpers.getSortedMenuEntries(viewModel.menu)) ...[
+        for (final entry in MenuViewHelpers.getSortedMenuEntries(
+          viewModel.menu,
+        )) ...[
           buildMenuSection(
             context,
             viewModel: viewModel,
@@ -183,7 +187,8 @@ class MenuContentWidgets {
           const Divider(),
         ],
         const SizedBox(
-            height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
+          height: AppDimensions.spacingXxxl + AppDimensions.spacingL,
+        ),
       ],
     );
   }
@@ -303,19 +308,22 @@ class MenuContentWidgets {
               // Swap/refresh button moved to icon only
               Material(
                 color: cs.surface,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
                 child: Semantics(
                   label: context.l10n.a11yMenuSectionRegenerate(
-                      MenuViewHelpers.capitalizeCategory(category)),
+                    MenuViewHelpers.capitalizeCategory(category),
+                  ),
                   button: true,
                   enabled: !viewModel.isGenerating,
                   child: InkWell(
                     onTap: viewModel.isGenerating
                         ? null
                         : () => viewModel.regenerateSection(category),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimensions.spacingSm),
                       child: Icon(
@@ -351,22 +359,26 @@ class MenuContentWidgets {
           ),
           // Show vote card if active vote exists for this slot
           if (votingViewModel case final vvm?) ...[
-            Builder(builder: (context) {
-              final vote = vvm.getVoteForSlot(category, i);
-              if (vote == null) return const SizedBox.shrink();
-              final userId = ServiceLocator.get<PermissionService>()
-                  .currentUserId
-                  .orEmpty();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                child: MenuVoteCard(
-                  vote: vote,
-                  currentUserId: userId,
-                  onVote: (optionId) => vvm.castVote(vote.id, optionId),
-                  onResolve: () => vvm.resolveVote(vote.id),
-                ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final vote = vvm.getVoteForSlot(category, i);
+                if (vote == null) return const SizedBox.shrink();
+                final userId = ServiceLocator.get<PermissionService>()
+                    .currentUserId
+                    .orEmpty();
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppDimensions.spacingS,
+                  ),
+                  child: MenuVoteCard(
+                    vote: vote,
+                    currentUserId: userId,
+                    onVote: (optionId) => vvm.castVote(vote.id, optionId),
+                    onResolve: () => vvm.resolveVote(vote.id),
+                  ),
+                );
+              },
+            ),
           ],
         ],
       ],
@@ -529,22 +541,23 @@ class _MenuRecipeCard extends StatelessWidget {
                       color: cs.surface,
                       borderRadius: BorderRadius.zero,
                       child: Semantics(
-                        label: context.l10n
-                            .a11yMenuSuggestAlternative(recipe.title),
+                        label: context.l10n.a11yMenuSuggestAlternative(
+                          recipe.title,
+                        ),
                         button: true,
                         child: InkWell(
                           onTap: () async {
                             final selectedRecipe =
                                 await SuggestAlternativeSheet.show(
-                              context,
-                              availableRecipes: viewModel.availableRecipes,
-                              excludeRecipeIds: [recipe.id],
-                            );
+                                  context,
+                                  availableRecipes: viewModel.availableRecipes,
+                                  excludeRecipeIds: [recipe.id],
+                                );
                             if (selectedRecipe != null) {
                               final userId =
                                   ServiceLocator.get<PermissionService>()
-                                          .currentUserId ??
-                                      '';
+                                      .currentUserId ??
+                                  '';
                               final currentOption = VoteOption(
                                 id: recipe.id,
                                 recipeId: recipe.id,
@@ -560,8 +573,8 @@ class _MenuRecipeCard extends StatelessWidget {
                                 recipeName: selectedRecipe.title,
                                 recipeImageUrl:
                                     selectedRecipe.imageUrls.isNotEmpty
-                                        ? selectedRecipe.imageUrls.first
-                                        : null,
+                                    ? selectedRecipe.imageUrls.first
+                                    : null,
                                 suggestedByUserId: userId,
                               );
                               votingViewModel!.createVote(
@@ -572,8 +585,9 @@ class _MenuRecipeCard extends StatelessWidget {
                             }
                           },
                           child: Padding(
-                            padding:
-                                const EdgeInsets.all(AppDimensions.spacingXs),
+                            padding: const EdgeInsets.all(
+                              AppDimensions.spacingXs,
+                            ),
                             child: Icon(
                               Icons.how_to_vote,
                               size: AppDimensions.iconSizeS,
@@ -598,12 +612,16 @@ class _MenuRecipeCard extends StatelessWidget {
                             ? null
                             : () async {
                                 final result = await viewModel.swapRecipe(
-                                    recipe, category);
+                                  recipe,
+                                  category,
+                                );
                                 if (result.recipe == null && context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(result.exhaustedMessage ??
-                                          context.l10n.menuNoMoreRecipes),
+                                      content: Text(
+                                        result.exhaustedMessage ??
+                                            context.l10n.menuNoMoreRecipes,
+                                      ),
                                       backgroundColor: cs.secondary,
                                     ),
                                   );
@@ -611,17 +629,20 @@ class _MenuRecipeCard extends StatelessWidget {
                                     context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(context.l10n
-                                          .menuSwapAlternatives(
-                                              result.alternativesRemaining)),
+                                      content: Text(
+                                        context.l10n.menuSwapAlternatives(
+                                          result.alternativesRemaining,
+                                        ),
+                                      ),
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
                                 }
                               },
                         child: Padding(
-                          padding:
-                              const EdgeInsets.all(AppDimensions.spacingXs),
+                          padding: const EdgeInsets.all(
+                            AppDimensions.spacingXs,
+                          ),
                           child: Icon(
                             Icons.swap_horiz,
                             size: AppDimensions.iconSizeS,

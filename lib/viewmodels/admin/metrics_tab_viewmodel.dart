@@ -15,15 +15,18 @@ class MetricsTabViewModel extends BaseViewModel {
   AppLocalizations? _l10n;
 
   MetricsTabViewModel({MetricsAssembler? assembler})
-      : _assembler = assembler ?? ServiceLocator.get<MetricsAssembler>();
+    : _assembler = assembler ?? ServiceLocator.get<MetricsAssembler>();
 
   Map<MetricKey, MetricValue> get values => _values;
 
   /// Resolved value for [key], or null before the first load completes.
   MetricValue? valueOf(MetricKey key) => _values[key];
 
-  Future<void> load(List<MetricKey> keys, AppLocalizations l10n,
-      {bool force = false}) async {
+  Future<void> load(
+    List<MetricKey> keys,
+    AppLocalizations l10n, {
+    bool force = false,
+  }) async {
     _keys = keys;
     _l10n = l10n;
     await executeAsyncVoid(

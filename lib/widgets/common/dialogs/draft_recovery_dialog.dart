@@ -97,8 +97,9 @@ class DraftRecoveryDialog extends StatelessWidget {
 
   /// Build individual draft tile
   Widget _buildDraftTile(BuildContext context, DraftMetadata draft) {
-    final draftTitle =
-        draft.title.isEmpty ? context.l10n.draftUnnamedRecipe : draft.title;
+    final draftTitle = draft.title.isEmpty
+        ? context.l10n.draftUnnamedRecipe
+        : draft.title;
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Semantics(
@@ -114,12 +115,12 @@ class DraftRecoveryDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingS),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: AppDimensions.opacityVeryLight),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    color: Theme.of(context).colorScheme.primary.withValues(
+                      alpha: AppDimensions.opacityVeryLight,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                   ),
                   child: Icon(
                     Icons.article_outlined,

@@ -45,9 +45,9 @@ class FCMService extends BaseService {
   FCMService({
     FirebaseMessaging? messaging,
     FlutterLocalNotificationsPlugin? localNotifications,
-  })  : _messaging = messaging ?? FirebaseMessaging.instance,
-        _localNotifications =
-            localNotifications ?? FlutterLocalNotificationsPlugin();
+  }) : _messaging = messaging ?? FirebaseMessaging.instance,
+       _localNotifications =
+           localNotifications ?? FlutterLocalNotificationsPlugin();
 
   @override
   String get serviceName => 'FCMService';
@@ -119,11 +119,13 @@ class FCMService extends BaseService {
           _pushPermissionsRequested = true;
         } else {
           AppLogger.info(
-              '🔔 FCM: Skipping permission request — pushNotifications consent not granted');
+            '🔔 FCM: Skipping permission request — pushNotifications consent not granted',
+          );
         }
 
-        _tokenRefreshSubscription =
-            _messaging.onTokenRefresh.listen(_onTokenRefresh);
+        _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
+          _onTokenRefresh,
+        );
 
         _isInitialized = true;
         AppLogger.success('FCM service initialized successfully');
@@ -201,8 +203,10 @@ class FCMService extends BaseService {
   /// Fails closed — if consent cannot be determined, deny by default.
   Future<bool> _hasPushConsent() async {
     return ConsentService.checkSafely(
-        _consentService, ConsentPurpose.pushNotifications,
-        logTag: 'FCMService');
+      _consentService,
+      ConsentPurpose.pushNotifications,
+      logTag: 'FCMService',
+    );
   }
 
   /// BUT-356, BUT-573 — handle grant *and* revoke mid-session.
@@ -213,13 +217,15 @@ class FCMService extends BaseService {
       final hasConsent = await _hasPushConsent();
       if (hasConsent && !_pushPermissionsRequested) {
         AppLogger.info(
-            '🔔 FCM: Push consent granted mid-session — requesting permissions');
+          '🔔 FCM: Push consent granted mid-session — requesting permissions',
+        );
         await _requestPermissions();
         await _refreshToken();
         _pushPermissionsRequested = true;
       } else if (!hasConsent && _pushPermissionsRequested) {
         AppLogger.info(
-            '🔔 FCM: Push consent revoked mid-session — clearing token (BUT-573)');
+          '🔔 FCM: Push consent revoked mid-session — clearing token (BUT-573)',
+        );
         await _revokePushAccess();
         _pushPermissionsRequested = false;
       }
@@ -255,7 +261,8 @@ class FCMService extends BaseService {
 
     if (!hasUserService) {
       AppLogger.info(
-          '🔔 FCM: UserService not registered — skipping profile-token clear');
+        '🔔 FCM: UserService not registered — skipping profile-token clear',
+      );
     }
 
     _currentToken = null;
@@ -290,9 +297,10 @@ class FCMService extends BaseService {
         playSound: true,
       );
 
-      final androidPlugin =
-          _localNotifications.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
       if (androidPlugin != null) {
         await androidPlugin.createNotificationChannel(generalChannel);
@@ -301,10 +309,12 @@ class FCMService extends BaseService {
         AppLogger.success('✅ Android notification channels created');
       }
 
-      const initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
-      const initializationSettings =
-          InitializationSettings(android: initializationSettingsAndroid);
+      const initializationSettingsAndroid = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
+      const initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+      );
 
       await _localNotifications.initialize(
         settings: initializationSettings,
@@ -331,7 +341,8 @@ class FCMService extends BaseService {
       );
 
       AppLogger.info(
-          '🔔 Notification permission status: ${settings.authorizationStatus}');
+        '🔔 Notification permission status: ${settings.authorizationStatus}',
+      );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         AppLogger.success('✅ Notification permissions granted');
@@ -351,31 +362,36 @@ class FCMService extends BaseService {
 
   Future<void> _setupMessageHandlers() async {
     try {
-      _onMessageSubscription =
-          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      _onMessageSubscription = FirebaseMessaging.onMessage.listen((
+        RemoteMessage message,
+      ) {
         AppLogger.info('🔔 Received foreground message: ${message.messageId}');
         _logMessageDetails(message);
         _onMessageReceived?.call(message);
       });
 
-      _onMessageOpenedAppSubscription =
-          FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        AppLogger.info('🔔 App opened from notification: ${message.messageId}');
-        _logMessageDetails(message);
-        _onMessageOpenedApp?.call(message);
-      });
+      _onMessageOpenedAppSubscription = FirebaseMessaging.onMessageOpenedApp
+          .listen((RemoteMessage message) {
+            AppLogger.info(
+              '🔔 App opened from notification: ${message.messageId}',
+            );
+            _logMessageDetails(message);
+            _onMessageOpenedApp?.call(message);
+          });
 
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         AppLogger.info(
-            '🔔 App launched from notification: ${initialMessage.messageId}');
+          '🔔 App launched from notification: ${initialMessage.messageId}',
+        );
         _logMessageDetails(initialMessage);
         _onMessageOpenedApp?.call(initialMessage);
       }
 
       // Background handler must be top-level (Firebase isolate requirement).
       FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
+        _firebaseMessagingBackgroundHandler,
+      );
 
       AppLogger.success('✅ FCM message handlers set up successfully');
     } catch (e) {
@@ -394,7 +410,8 @@ class FCMService extends BaseService {
 
       if (_currentToken != null) {
         AppLogger.info(
-            '🔔 FCM token retrieved: ${_currentToken!.substring(0, _currentToken!.length.clamp(0, 20))}...');
+          '🔔 FCM token retrieved: ${_currentToken!.substring(0, _currentToken!.length.clamp(0, 20))}...',
+        );
       } else {
         AppLogger.warning('⚠️ Failed to retrieve FCM token');
       }
@@ -427,7 +444,8 @@ class FCMService extends BaseService {
   Future<void> _onTokenRefresh(String token) async {
     try {
       AppLogger.info(
-          '🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...');
+        '🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...',
+      );
       _currentToken = token;
       await _updateUserToken(token);
     } catch (e) {
@@ -439,7 +457,8 @@ class FCMService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info(
-            'Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
+          'Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...',
+        );
 
         final userService = ServiceLocator.get<UserService>();
         await userService.updateFCMToken(token);
@@ -492,7 +511,8 @@ class FCMService extends BaseService {
 
   void showForegroundNotification(RemoteMessage message) {
     AppLogger.info(
-        '🔔 Should show foreground notification: ${message.notification?.title}');
+      '🔔 Should show foreground notification: ${message.notification?.title}',
+    );
   }
 
   /// Uses [appNavigatorKey] to avoid stale BuildContext crashes.
@@ -503,7 +523,8 @@ class FCMService extends BaseService {
       final screen = data['screen'];
 
       AppLogger.info(
-          '🔔 Handling notification navigation: type=$notificationType, screen=$screen');
+        '🔔 Handling notification navigation: type=$notificationType, screen=$screen',
+      );
 
       final navigator = appNavigatorKey.currentState;
       if (navigator == null) {
@@ -522,15 +543,19 @@ class FCMService extends BaseService {
           await _navigateToCollaboration(navigator, data);
           break;
         case NotificationPayloadType.recipeComment:
-          await _navigateToSharedRecipe(navigator, data,
-              scrollToComments: true);
+          await _navigateToSharedRecipe(
+            navigator,
+            data,
+            scrollToComments: true,
+          );
           break;
         case NotificationPayloadType.recipeShareRequest:
           await _navigateToOwnRecipeForShareRequest(navigator, data);
           break;
         default:
           AppLogger.warning(
-              '⚠️ Unknown notification type for navigation: $notificationType');
+            '⚠️ Unknown notification type for navigation: $notificationType',
+          );
       }
     } catch (e) {
       AppLogger.error('❌ Failed to handle notification navigation', e);
@@ -548,8 +573,10 @@ class FCMService extends BaseService {
   }
 
   Future<void> _navigateToSharedRecipe(
-      NavigatorState navigator, Map<String, dynamic> data,
-      {bool scrollToComments = false}) async {
+    NavigatorState navigator,
+    Map<String, dynamic> data, {
+    bool scrollToComments = false,
+  }) async {
     final recipeId = data['recipeId'] as String?;
     if (recipeId == null) return;
 
@@ -566,7 +593,9 @@ class FCMService extends BaseService {
   /// Opens the owner's own recipe with a one-tap share-back banner.
   /// Tapped when the owner receives a "X wants your recipe" push notification.
   Future<void> _navigateToOwnRecipeForShareRequest(
-      NavigatorState navigator, Map<String, dynamic> data) async {
+    NavigatorState navigator,
+    Map<String, dynamic> data,
+  ) async {
     final recipeId = data['recipeId'] as String?;
     final requestId = data['requestId'] as String?;
     if (recipeId == null || requestId == null) return;
@@ -575,8 +604,9 @@ class FCMService extends BaseService {
     if (fromUserId == null || fromUserId.isEmpty) return;
     final fromUserName = data['fromUserName'] as String?;
 
-    final recipe =
-        ServiceLocator.get<UnifiedRecipeService>().getRecipeById(recipeId);
+    final recipe = ServiceLocator.get<UnifiedRecipeService>().getRecipeById(
+      recipeId,
+    );
     if (recipe == null) return;
 
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
@@ -597,7 +627,9 @@ class FCMService extends BaseService {
   }
 
   Future<void> _navigateToCollaboration(
-      NavigatorState navigator, Map<String, dynamic> data) async {
+    NavigatorState navigator,
+    Map<String, dynamic> data,
+  ) async {
     final resourceId = data['resourceId'] as String?;
     final resourceType = data['resourceType'] as String?;
 
@@ -619,23 +651,28 @@ class FCMService extends BaseService {
         }
         break;
       case 'shopping_list':
-        navigator.pushNamed(Routes.collaborativeShopping,
-            arguments: resourceId);
+        navigator.pushNamed(
+          Routes.collaborativeShopping,
+          arguments: resourceId,
+        );
         break;
       default:
         AppLogger.warning(
-            '⚠️ Unknown collaboration resource type: $resourceType');
+          '⚠️ Unknown collaboration resource type: $resourceType',
+        );
     }
   }
 
   void _logMessageDetails(RemoteMessage message) {
     if (kDebugMode) {
-      AppLogger.debug('🔔 Message details: '
-          'messageId=${message.messageId}, '
-          'title=${message.notification?.title}, '
-          'body=${message.notification?.body}, '
-          'from=${message.from}, '
-          'category=${message.category}');
+      AppLogger.debug(
+        '🔔 Message details: '
+        'messageId=${message.messageId}, '
+        'title=${message.notification?.title}, '
+        'body=${message.notification?.body}, '
+        'from=${message.from}, '
+        'category=${message.category}',
+      );
     }
   }
 
@@ -679,9 +716,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     AppLogger.info('🔔 Handling background message: ${message.messageId}');
 
     if (kDebugMode) {
-      AppLogger.debug('🔔 Background message: '
-          'title=${message.notification?.title}, '
-          'body=${message.notification?.body}');
+      AppLogger.debug(
+        '🔔 Background message: '
+        'title=${message.notification?.title}, '
+        'body=${message.notification?.body}',
+      );
     }
   } catch (e) {
     AppLogger.error('❌ Failed to handle background message', e);

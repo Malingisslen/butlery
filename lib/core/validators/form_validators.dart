@@ -116,19 +116,22 @@ class FormValidators {
       final number = double.tryParse(value.replaceAll(',', '.'));
       if (number == null) {
         return AppLocale.current.validationMustBeNumber(
-            fieldName ?? AppLocale.current.validationDefaultValueLabel);
+          fieldName ?? AppLocale.current.validationDefaultValueLabel,
+        );
       }
 
       if (min != null && number < min) {
         return AppLocale.current.validationMinValue(
-            fieldName ?? AppLocale.current.validationDefaultValueLabel,
-            min.toString());
+          fieldName ?? AppLocale.current.validationDefaultValueLabel,
+          min.toString(),
+        );
       }
 
       if (max != null && number > max) {
         return AppLocale.current.validationMaxValue(
-            fieldName ?? AppLocale.current.validationDefaultValueLabel,
-            max.toString());
+          fieldName ?? AppLocale.current.validationDefaultValueLabel,
+          max.toString(),
+        );
       }
 
       return null;
@@ -156,21 +159,28 @@ class FormValidators {
   /// Betyg validator (0-5)
   static FormFieldValidator<String> rating() {
     return numberRange(
-        min: 0, max: 5, fieldName: AppLocale.current.validationFieldRating);
+      min: 0,
+      max: 5,
+      fieldName: AppLocale.current.validationFieldRating,
+    );
   }
 
   /// Portioner validator (1-100)
   static FormFieldValidator<String> portions() {
     return numberRange(
-        min: 1, max: 100, fieldName: AppLocale.current.validationFieldPortions);
+      min: 1,
+      max: 100,
+      fieldName: AppLocale.current.validationFieldPortions,
+    );
   }
 
   /// Tid validator (1-1440 minuter = 24 timmar)
   static FormFieldValidator<String> cookingTime() {
     return numberRange(
-        min: 1,
-        max: 1440,
-        fieldName: AppLocale.current.validationFieldCookingTime);
+      min: 1,
+      max: 1440,
+      fieldName: AppLocale.current.validationFieldCookingTime,
+    );
   }
 
   /// Display name validator for user profiles.
@@ -395,7 +405,8 @@ class FormValidators {
 
   /// Optional validation - only validate if value is not empty
   static FormFieldValidator<String> optional(
-      FormFieldValidator<String> validator) {
+    FormFieldValidator<String> validator,
+  ) {
     return (value) {
       if (value == null || value.isEmpty) {
         return null;

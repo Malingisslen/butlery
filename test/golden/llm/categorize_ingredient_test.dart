@@ -50,13 +50,16 @@ void main() {
 
     _writeArtifactSummary('categorize_ingredient', results);
 
-    final actualPassing =
-        results.where((r) => r.passed).map((r) => r.id).toSet();
+    final actualPassing = results
+        .where((r) => r.passed)
+        .map((r) => r.id)
+        .toSet();
 
     expect(
       actualPassing,
       _expectedPassing,
-      reason: 'Pass-set drift detected.\n'
+      reason:
+          'Pass-set drift detected.\n'
           'Regressed (were passing, now fail): '
           '${_expectedPassing.difference(actualPassing)}\n'
           'Newly passing (update _expectedPassing): '

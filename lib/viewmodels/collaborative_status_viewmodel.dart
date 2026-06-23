@@ -32,16 +32,16 @@ class CollaborativeStatus {
   });
 
   CollaborativeStatus.loading()
-      : isCollaborative = false,
-        participants = const [],
-        lastChecked = null,
-        error = null;
+    : isCollaborative = false,
+      participants = const [],
+      lastChecked = null,
+      error = null;
 
   CollaborativeStatus.error(String errorMessage)
-      : isCollaborative = false,
-        participants = const [],
-        lastChecked = clock.now(),
-        error = errorMessage;
+    : isCollaborative = false,
+      participants = const [],
+      lastChecked = clock.now(),
+      error = errorMessage;
 
   bool get isLoading => lastChecked == null && error == null;
   bool get hasError => error != null;
@@ -69,7 +69,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
   CollaborativeStatusViewModel({
     SocialRecipeService? socialRecipeService,
   }) : _socialRecipeService =
-            socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
+           socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
@@ -82,7 +82,9 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Get cached status for content
   CollaborativeStatus? getCachedStatus(
-      String contentId, CollaborativeContentType type) {
+    String contentId,
+    CollaborativeContentType type,
+  ) {
     final key = _buildCacheKey(contentId, type);
     final cached = _statusCache[key];
 
@@ -102,7 +104,9 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Get collaborative status for recipe (modern API)
   CollaborativeStatus getRecipeCollaborativeStatus(
-      String recipeId, Recipe? recipe) {
+    String recipeId,
+    Recipe? recipe,
+  ) {
     final cached = getCachedStatus(recipeId, CollaborativeContentType.recipe);
     if (cached != null) return cached;
 
@@ -124,7 +128,9 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Get collaborative status for menu
   CollaborativeStatus getMenuCollaborativeStatus(
-      String menuId, Map<String, List<Recipe>>? menuData) {
+    String menuId,
+    Map<String, List<Recipe>>? menuData,
+  ) {
     final cached = getCachedStatus(menuId, CollaborativeContentType.menu);
     if (cached != null) return cached;
 
@@ -139,14 +145,18 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Legacy support for boolean API
   bool getMenuCollaborativeStatusLegacy(
-      String menuId, Map<String, List<Recipe>>? menuData) {
+    String menuId,
+    Map<String, List<Recipe>>? menuData,
+  ) {
     return getMenuCollaborativeStatus(menuId, menuData).isCollaborative;
   }
 
   /// Get collaborative status for shopping list
   CollaborativeStatus getShoppingListCollaborativeStatus(String listId) {
-    final cached =
-        getCachedStatus(listId, CollaborativeContentType.shoppingList);
+    final cached = getCachedStatus(
+      listId,
+      CollaborativeContentType.shoppingList,
+    );
     if (cached != null) return cached;
 
     _checkContentStatusAsync(listId, CollaborativeContentType.shoppingList);
@@ -160,7 +170,9 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Universal async check for all content types
   Future<void> _checkContentStatusAsync(
-      String contentId, CollaborativeContentType type) async {
+    String contentId,
+    CollaborativeContentType type,
+  ) async {
     final userId = currentUserId;
     if (userId == null) return;
 
@@ -179,7 +191,8 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-          '🔍 Async check: ${type.name} $contentId collaborative status');
+        '🔍 Async check: ${type.name} $contentId collaborative status',
+      );
 
       // Call the correct service method based on type
       late bool isShared;
@@ -188,21 +201,27 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       switch (type) {
         case CollaborativeContentType.recipe:
           isShared = await _socialRecipeService.isRecipeSharedByUser(
-              contentId, userId);
+            contentId,
+            userId,
+          );
           if (isShared) {
-            participants =
-                await _socialRecipeService.getRecipeParticipants(contentId);
+            participants = await _socialRecipeService.getRecipeParticipants(
+              contentId,
+            );
           } else {
             participants = [];
           }
           break;
 
         case CollaborativeContentType.menu:
-          isShared =
-              await _socialRecipeService.isMenuSharedByUser(contentId, userId);
+          isShared = await _socialRecipeService.isMenuSharedByUser(
+            contentId,
+            userId,
+          );
           if (isShared) {
-            participants =
-                await _socialRecipeService.getMenuParticipants(contentId);
+            participants = await _socialRecipeService.getMenuParticipants(
+              contentId,
+            );
           } else {
             participants = [];
           }
@@ -210,7 +229,9 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
         case CollaborativeContentType.shoppingList:
           isShared = await _socialRecipeService.isShoppingListSharedByUser(
-              contentId, userId);
+            contentId,
+            userId,
+          );
           if (isShared) {
             participants = await _socialRecipeService
                 .getShoppingListParticipants(contentId);
@@ -233,10 +254,13 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       });
 
       AppLogger.info(
-          '✅ ${type.name} $contentId status cached: $isShared (${participants.length} participants)');
+        '✅ ${type.name} $contentId status cached: $isShared (${participants.length} participants)',
+      );
     } catch (e) {
       AppLogger.error(
-          '❌ Failed ${type.name} collaborative check for $contentId', e);
+        '❌ Failed ${type.name} collaborative check for $contentId',
+        e,
+      );
 
       _statusCache[key] = CollaborativeStatus.error(e.toString());
 
@@ -279,11 +303,13 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     // Tags analysis
     final tags = recipe.personalTagIds ?? [];
-    if (tags.any((tag) =>
-        tag.toLowerCase().contains('delad') ||
-        tag.toLowerCase().contains('shared') ||
-        tag.toLowerCase().contains('från-meny') ||
-        tag.toLowerCase().contains('importerat'))) {
+    if (tags.any(
+      (tag) =>
+          tag.toLowerCase().contains('delad') ||
+          tag.toLowerCase().contains('shared') ||
+          tag.toLowerCase().contains('från-meny') ||
+          tag.toLowerCase().contains('importerat'),
+    )) {
       return true;
     }
 
@@ -316,22 +342,31 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     if (userId == null) return;
 
     // Samla alla uncached IDs
-    final recipesToCheck = recipeIds
-            ?.where((id) =>
-                getCachedStatus(id, CollaborativeContentType.recipe) == null)
+    final recipesToCheck =
+        recipeIds
+            ?.where(
+              (id) =>
+                  getCachedStatus(id, CollaborativeContentType.recipe) == null,
+            )
             .toList() ??
         [];
 
-    final menusToCheck = menuIds
-            ?.where((id) =>
-                getCachedStatus(id, CollaborativeContentType.menu) == null)
+    final menusToCheck =
+        menuIds
+            ?.where(
+              (id) =>
+                  getCachedStatus(id, CollaborativeContentType.menu) == null,
+            )
             .toList() ??
         [];
 
-    final shoppingToCheck = shoppingListIds
-            ?.where((id) =>
-                getCachedStatus(id, CollaborativeContentType.shoppingList) ==
-                null)
+    final shoppingToCheck =
+        shoppingListIds
+            ?.where(
+              (id) =>
+                  getCachedStatus(id, CollaborativeContentType.shoppingList) ==
+                  null,
+            )
             .toList() ??
         [];
 
@@ -341,8 +376,10 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       return;
     }
 
-    AppLogger.info('🚀 Batch checking: ${recipesToCheck.length} recipes, '
-        '${menusToCheck.length} menus, ${shoppingToCheck.length} shopping lists');
+    AppLogger.info(
+      '🚀 Batch checking: ${recipesToCheck.length} recipes, '
+      '${menusToCheck.length} menus, ${shoppingToCheck.length} shopping lists',
+    );
 
     // Parallel processing for all content types
     final futures = <Future<void>>[];
@@ -350,19 +387,22 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     // Recept
     for (final recipeId in recipesToCheck) {
       futures.add(
-          _checkContentStatusAsync(recipeId, CollaborativeContentType.recipe));
+        _checkContentStatusAsync(recipeId, CollaborativeContentType.recipe),
+      );
     }
 
     // Menyer
     for (final menuId in menusToCheck) {
-      futures
-          .add(_checkContentStatusAsync(menuId, CollaborativeContentType.menu));
+      futures.add(
+        _checkContentStatusAsync(menuId, CollaborativeContentType.menu),
+      );
     }
 
     // Shopping lists
     for (final listId in shoppingToCheck) {
-      futures.add(_checkContentStatusAsync(
-          listId, CollaborativeContentType.shoppingList));
+      futures.add(
+        _checkContentStatusAsync(listId, CollaborativeContentType.shoppingList),
+      );
     }
 
     // Wait for all checks
@@ -409,17 +449,17 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// 📊 Enhanced debug info
   Map<String, dynamic> get debugInfo => {
-        'totalCacheSize': _statusCache.length,
-        'activeChecks': _checkingKeys.length,
-        'currentUserId': currentUserId,
-        'cacheByType': {
-          for (final type in CollaborativeContentType.values)
-            type.name: _statusCache.keys
-                .where((key) => key.startsWith('${type.name}:'))
-                .length,
-        },
-        'cacheTtlMinutes': _cacheTtl.inMinutes,
-      };
+    'totalCacheSize': _statusCache.length,
+    'activeChecks': _checkingKeys.length,
+    'currentUserId': currentUserId,
+    'cacheByType': {
+      for (final type in CollaborativeContentType.values)
+        type.name: _statusCache.keys
+            .where((key) => key.startsWith('${type.name}:'))
+            .length,
+    },
+    'cacheTtlMinutes': _cacheTtl.inMinutes,
+  };
 
   @override
   void dispose() {

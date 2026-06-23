@@ -70,51 +70,56 @@ class ErrorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Butlery - Error',
       theme: AppTheme.lightTheme,
-      home: Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return Scaffold(
-          backgroundColor: cs.surface,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: AppDimensions.iconSizeXxl,
-                    color: cs.error,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  const Text(
-                    'Application Error',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Container(
-                    constraints: const BoxConstraints(maxHeight: 400),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        message,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontFamily: 'monospace',
-                        ),
-                        textAlign: TextAlign.start,
+      home: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Scaffold(
+            backgroundColor: cs.surface,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: AppDimensions.iconSizeXxl,
+                      color: cs.error,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    const Text(
+                      'Application Error',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  ElevatedButton(
-                    onPressed: onRestart,
-                    child: const Text('Restart App'),
-                  ),
-                ],
+                    const SizedBox(height: AppDimensions.spacingM),
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 400),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          message,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
+                          textAlign: TextAlign.start,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    ElevatedButton(
+                      onPressed: onRestart,
+                      child: const Text('Restart App'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 }
@@ -267,8 +272,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       await bootstrap.initialized;
 
       if (bootstrap.isInitialized) {
-        _sessionTimeoutService =
-            bootstrap.container.get<SessionTimeoutService>();
+        _sessionTimeoutService = bootstrap.container
+            .get<SessionTimeoutService>();
 
         // Register warning dialog callback
         _sessionTimeoutService?.registerWarningCallback(() {
@@ -505,8 +510,10 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     try {
       final bootstrap = ApplicationBootstrap();
       if (bootstrap.isInitialized && _sessionStartTime != null) {
-        final sessionDuration =
-            clock.now().difference(_sessionStartTime!).inSeconds;
+        final sessionDuration = clock
+            .now()
+            .difference(_sessionStartTime!)
+            .inSeconds;
 
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         await analyticsService.logEvent(
@@ -536,7 +543,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final pausedAt = _lastBackgroundedAt;
       final now = clock.now();
 
-      final needsNew = existing == null ||
+      final needsNew =
+          existing == null ||
           (pausedAt != null &&
               now.difference(pausedAt) >= _sessionIdleResetThreshold);
 
@@ -596,8 +604,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // consent is denied these calls silently no-op. lifecycle_stage uses
         // whatever profile data is loaded; if no UserService session yet
         // (cold start before login), classifier falls back to `new_`.
-        _userPropertyBootstrap =
-            bootstrap.container.get<UserPropertyBootstrap>();
+        _userPropertyBootstrap = bootstrap.container
+            .get<UserPropertyBootstrap>();
         UserProfile? profile;
         try {
           profile = bootstrap.container.get<UserService>().currentUserProfile;
@@ -623,9 +631,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         try {
           final userId = bootstrap.container.get<UserService>().currentUserId;
           if (userId != null && userId.isNotEmpty) {
-            unawaited(bootstrap.container
-                .get<WinbackAttributionService>()
-                .bootstrap(userId: userId));
+            unawaited(
+              bootstrap.container.get<WinbackAttributionService>().bootstrap(
+                userId: userId,
+              ),
+            );
           }
         } catch (_) {
           // Non-critical.
@@ -660,8 +670,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   Widget _buildMainApp() {
     // Lazily create once so rebuilds don't allocate a new observer each time
-    _interactionObserver ??=
-        InteractionRouteObserver(ServiceLocator.get<InteractionLogger>());
+    _interactionObserver ??= InteractionRouteObserver(
+      ServiceLocator.get<InteractionLogger>(),
+    );
 
     // Seasonal accent: resolved once per rebuild via package:clock so tests
     // can override it. Service returns the base palette unmodified in summer.
@@ -767,44 +778,46 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     return MaterialApp(
       title: 'Butlery',
       theme: AppTheme.lightTheme,
-      home: Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return Scaffold(
-          backgroundColor: cs.surface,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: AppDimensions.iconSizeHero,
-                  height: AppDimensions.iconSizeHero,
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
+      home: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Scaffold(
+            backgroundColor: cs.surface,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: AppDimensions.iconSizeHero,
+                    height: AppDimensions.iconSizeHero,
+                    decoration: BoxDecoration(
+                      color: cs.primary,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusL,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.restaurant_menu,
+                      size: AppDimensions.iconSizeHero,
+                      color: cs.outlineVariant,
                     ),
                   ),
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    size: AppDimensions.iconSizeHero,
-                    color: cs.outlineVariant,
+                  const SizedBox(height: AppDimensions.spacingXxxl),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: cs.outline,
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXxxl),
-                const CircularProgressIndicator(),
-                const SizedBox(height: AppDimensions.spacingXl),
-                Text(
-                  message,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: cs.outline,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 

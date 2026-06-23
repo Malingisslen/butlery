@@ -43,16 +43,18 @@ class PersonalTagTile extends StatelessWidget {
 
     return Semantics(
       label: context.l10n.personalTagTileSemantics(
-          tag.name, usageCount, enabledRuleCount, ruleCount),
+        tag.name,
+        usageCount,
+        enabledRuleCount,
+        ruleCount,
+      ),
       button: true,
       selected: inSelectionMode ? isSelected : null,
       child: Opacity(
         opacity: isUnused ? 0.6 : 1.0,
         child: ListTile(
           selected: isSelected,
-          selectedTileColor: Theme.of(context)
-              .colorScheme
-              .primaryContainer
+          selectedTileColor: Theme.of(context).colorScheme.primaryContainer
               .withValues(alpha: AppDimensions.opacityLight),
           leading: inSelectionMode
               ? Icon(
@@ -66,10 +68,12 @@ class PersonalTagTile extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       backgroundColor: hasActiveRules
-                          ? context.butleryColors.success
-                              .withValues(alpha: AppDimensions.opacityLight)
-                          : colorScheme.primary
-                              .withValues(alpha: AppDimensions.opacityLight),
+                          ? context.butleryColors.success.withValues(
+                              alpha: AppDimensions.opacityLight,
+                            )
+                          : colorScheme.primary.withValues(
+                              alpha: AppDimensions.opacityLight,
+                            ),
                       child: Icon(
                         Icons.label,
                         color: hasActiveRules
@@ -107,11 +111,16 @@ class PersonalTagTile extends StatelessWidget {
             children: [
               Text(
                 _buildSubtitle(
-                    context, usageCount, ruleCount, enabledRuleCount),
+                  context,
+                  usageCount,
+                  ruleCount,
+                  enabledRuleCount,
+                ),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: isUnused
-                      ? colorScheme.onSurfaceVariant
-                          .withValues(alpha: AppDimensions.opacityDark)
+                      ? colorScheme.onSurfaceVariant.withValues(
+                          alpha: AppDimensions.opacityDark,
+                        )
                       : colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -137,8 +146,9 @@ class PersonalTagTile extends StatelessWidget {
               ? () => selection.toggle(tag.id)
               : () => _navigateToTagDetail(context),
           // BUT-948: long-press = multi-select (convention).
-          onLongPress:
-              inSelectionMode ? null : () => selection.enterSelection(tag.id),
+          onLongPress: inSelectionMode
+              ? null
+              : () => selection.enterSelection(tag.id),
         ),
       ),
     );
@@ -152,8 +162,12 @@ class PersonalTagTile extends StatelessWidget {
     );
   }
 
-  static String _buildSubtitle(BuildContext context, int usageCount,
-      int ruleCount, int enabledRuleCount) {
+  static String _buildSubtitle(
+    BuildContext context,
+    int usageCount,
+    int ruleCount,
+    int enabledRuleCount,
+  ) {
     final parts = <String>[];
 
     if (usageCount > 0) {
@@ -164,8 +178,9 @@ class PersonalTagTile extends StatelessWidget {
       if (enabledRuleCount == ruleCount) {
         parts.add(context.l10n.personalTagRuleCount(ruleCount));
       } else {
-        parts.add(context.l10n
-            .personalTagRuleCountActive(enabledRuleCount, ruleCount));
+        parts.add(
+          context.l10n.personalTagRuleCountActive(enabledRuleCount, ruleCount),
+        );
       }
     }
 
@@ -217,11 +232,13 @@ class PersonalTagSection extends StatelessWidget {
             ],
           ),
         ),
-        ...tags.map((tag) => PersonalTagTile(
-              key: ValueKey(tag.id),
-              tag: tag,
-              viewModel: viewModel,
-            )),
+        ...tags.map(
+          (tag) => PersonalTagTile(
+            key: ValueKey(tag.id),
+            tag: tag,
+            viewModel: viewModel,
+          ),
+        ),
         if (tags.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -310,11 +327,13 @@ class UnusedTagsSection extends StatelessWidget {
         ),
       ),
       children: [
-        ...unusedTags.map((tag) => PersonalTagTile(
-              key: ValueKey(tag.id),
-              tag: tag,
-              viewModel: viewModel,
-            )),
+        ...unusedTags.map(
+          (tag) => PersonalTagTile(
+            key: ValueKey(tag.id),
+            tag: tag,
+            viewModel: viewModel,
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
@@ -378,10 +397,14 @@ class PersonalTagGroupSection extends StatelessWidget {
           PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete,
-                  color: Theme.of(context).colorScheme.error),
-              title: Text(context.l10n.personalTagDeleteGroup,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              leading: Icon(
+                Icons.delete,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                context.l10n.personalTagDeleteGroup,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
               contentPadding: EdgeInsets.zero,
             ),
           ),

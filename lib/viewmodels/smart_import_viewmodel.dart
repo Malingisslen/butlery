@@ -119,8 +119,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   SmartImportViewModel({
     required ImportManager importManager,
     InputDetector? inputDetector,
-  })  : _importManager = importManager,
-        _inputDetector = inputDetector ?? InputDetector() {
+  }) : _importManager = importManager,
+       _inputDetector = inputDetector ?? InputDetector() {
     _progressTracker = ImportProgressTracker(
       notifyListeners: notifyListeners,
       setPhase: _setPhase,
@@ -313,7 +313,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   /// Handle import result from ImportManager.
   Future<SmartImportResult> _handleImportResult(
-      ImportManagerResult result) async {
+    ImportManagerResult result,
+  ) async {
     // Check if user assistance is needed
     if (result.needsAssistance) {
       _setPhase(ImportPhase.needsHelp);
@@ -373,10 +374,12 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
       if (!saveResult.isSuccess) {
         _setPhase(ImportPhase.error);
-        setError(saveResult.errorMessage ??
-            AppLocale.current.errorCouldNotSaveRecipe);
-        final failResult = ImportFailed(saveResult.errorMessage ??
-            AppLocale.current.errorCouldNotSaveRecipe);
+        setError(
+          saveResult.errorMessage ?? AppLocale.current.errorCouldNotSaveRecipe,
+        );
+        final failResult = ImportFailed(
+          saveResult.errorMessage ?? AppLocale.current.errorCouldNotSaveRecipe,
+        );
         _lastResult = failResult;
         return failResult;
       }
@@ -586,15 +589,15 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'input': _input.length > 50 ? '${_input.substring(0, 50)}...' : _input,
-        'phase': _phase.name,
-        'detection': _detection?.platform.name,
-        'canImport': canImport,
-        'isImporting': isImporting,
-        'hasPendingImport': _hasPendingImport,
-        'isOnline': isOnline,
-      };
+    ...super.debugState,
+    'input': _input.length > 50 ? '${_input.substring(0, 50)}...' : _input,
+    'phase': _phase.name,
+    'detection': _detection?.platform.name,
+    'canImport': canImport,
+    'isImporting': isImporting,
+    'hasPendingImport': _hasPendingImport,
+    'isOnline': isOnline,
+  };
 
   @override
   void dispose() {

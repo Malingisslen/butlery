@@ -13,8 +13,9 @@ void main() {
     });
 
     test('valid ISO string parses correctly', () {
-      final result =
-          SerializationUtils.parseDateTimeValue('2024-01-15T10:30:00.000');
+      final result = SerializationUtils.parseDateTimeValue(
+        '2024-01-15T10:30:00.000',
+      );
       expect(result, equals(DateTime(2024, 1, 15, 10, 30)));
     });
 
@@ -78,7 +79,9 @@ void main() {
       final result = SerializationUtils.parseRequiredDateTimeValue(null);
       final after = DateTime.now();
       expect(
-          result.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
+        result.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
       expect(result.isBefore(after.add(const Duration(seconds: 1))), isTrue);
     });
 
@@ -93,17 +96,21 @@ void main() {
 
     test('valid value parses normally', () {
       final result = SerializationUtils.parseRequiredDateTimeValue(
-          '2024-01-15T10:30:00.000');
+        '2024-01-15T10:30:00.000',
+      );
       expect(result, equals(DateTime(2024, 1, 15, 10, 30)));
     });
 
     test('invalid string falls back to DateTime.now()', () {
       final before = DateTime.now();
-      final result =
-          SerializationUtils.parseRequiredDateTimeValue('not-a-date');
+      final result = SerializationUtils.parseRequiredDateTimeValue(
+        'not-a-date',
+      );
       final after = DateTime.now();
       expect(
-          result.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
+        result.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
       expect(result.isBefore(after.add(const Duration(seconds: 1))), isTrue);
     });
   });
@@ -128,7 +135,7 @@ void main() {
 
     test('map + key handles Map seconds value', () {
       final map = {
-        'date': {'seconds': 1705312200, 'nanoseconds': 0}
+        'date': {'seconds': 1705312200, 'nanoseconds': 0},
       };
       final result = SerializationUtils.safeDateTime(map, 'date');
       expect(result, isNotNull);
@@ -154,7 +161,9 @@ void main() {
       final result = SerializationUtils.safeRequiredDateTime({}, 'date');
       final after = DateTime.now();
       expect(
-          result.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
+        result.isAfter(before.subtract(const Duration(seconds: 1))),
+        isTrue,
+      );
       expect(result.isBefore(after.add(const Duration(seconds: 1))), isTrue);
     });
   });

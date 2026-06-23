@@ -92,21 +92,24 @@ class MenuShoppingAggregator {
 
     final merged = _mergeCompatibleUnits(byKey.values);
 
-    final items = merged
-        .map((acc) => AggregatedShoppingItem(
-              name: acc.displayName,
-              amount: acc.hasAmount ? acc.sum : null,
-              unit: acc.unit,
-              category: IngredientCategorizer.categorize(acc.displayName),
-              sourceCount: acc.sourceCount,
-            ))
-        .toList()
-      // Stable, shopping-friendly order: by category, then name.
-      ..sort((a, b) {
-        final byCategory = a.category.compareTo(b.category);
-        if (byCategory != 0) return byCategory;
-        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-      });
+    final items =
+        merged
+            .map(
+              (acc) => AggregatedShoppingItem(
+                name: acc.displayName,
+                amount: acc.hasAmount ? acc.sum : null,
+                unit: acc.unit,
+                category: IngredientCategorizer.categorize(acc.displayName),
+                sourceCount: acc.sourceCount,
+              ),
+            )
+            .toList()
+          // Stable, shopping-friendly order: by category, then name.
+          ..sort((a, b) {
+            final byCategory = a.category.compareTo(b.category);
+            if (byCategory != 0) return byCategory;
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          });
     return items;
   }
 
@@ -179,13 +182,15 @@ class _MergeGroup {
   _Accumulator toAccumulator() {
     // Sum lives in the base unit; convert up to the most readable Swedish
     // unit for display (e.g. 500 ml stays ml, 1300 g → 1.3 kg).
-    final display =
-        SmartUnitConverter.convertToReadableUnit(baseQuantity, baseUnit);
+    final display = SmartUnitConverter.convertToReadableUnit(
+      baseQuantity,
+      baseUnit,
+    );
     return _Accumulator(
-      displayName: firstSeen.displayName,
-      nameKey: firstSeen.nameKey,
-      unit: display.unit,
-    )
+        displayName: firstSeen.displayName,
+        nameKey: firstSeen.nameKey,
+        unit: display.unit,
+      )
       ..sum = display.quantity
       ..hasAmount = true
       ..sourceCount = sourceCount;

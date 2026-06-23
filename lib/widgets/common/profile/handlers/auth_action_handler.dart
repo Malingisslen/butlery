@@ -118,7 +118,9 @@ class AuthActionHandler {
         } else {
           // Deletion failed
           ProfileDialogs.showErrorDialog(
-              context, context.l10n.profileAccountCouldNotBeFullyDeleted);
+            context,
+            context.l10n.profileAccountCouldNotBeFullyDeleted,
+          );
         }
       }
     } catch (e) {

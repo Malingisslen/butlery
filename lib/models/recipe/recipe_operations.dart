@@ -55,8 +55,9 @@ class RecipeOperations {
     updatedIngredients[index] = newIngredient.trim();
 
     final structured = _structuredForEdit(recipe);
-    structured?[index] =
-        StructuredIngredientDeriver.derive(newIngredient.trim());
+    structured?[index] = StructuredIngredientDeriver.derive(
+      newIngredient.trim(),
+    );
 
     return recipe.copyWith(
       ingredients: updatedIngredients,
@@ -166,7 +167,7 @@ class RecipeOperations {
 
     final updatedInstructions = [
       ...recipe.core.instructions,
-      instruction.trim()
+      instruction.trim(),
     ];
     return recipe.copyWith(
       instructions: updatedInstructions,
@@ -354,8 +355,9 @@ class RecipeOperations {
       description: description,
       mealType: mealType,
       portions: portions == _sentinel ? recipe.core.portions : portions,
-      timeMinutes:
-          timeMinutes == _sentinel ? recipe.core.timeMinutes : timeMinutes,
+      timeMinutes: timeMinutes == _sentinel
+          ? recipe.core.timeMinutes
+          : timeMinutes,
       rating: rating == _sentinel ? recipe.core.rating : rating,
       personalTagIds: personalTagIds == _sentinel
           ? recipe.core.personalTagIds

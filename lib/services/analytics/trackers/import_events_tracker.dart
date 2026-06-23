@@ -8,7 +8,7 @@ class ImportEventsTracker extends BaseTracker {
   final BaseService? _parentService;
 
   ImportEventsTracker({required super.repository, BaseService? parentService})
-      : _parentService = parentService;
+    : _parentService = parentService;
 
   /// Log import start event
   Future<void> logImportStarted({

@@ -16,8 +16,8 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     AuthRepository? authRepository,
     super.timestampProvider,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
       firestore
@@ -39,26 +39,36 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   String getId(FriendCategory entity) => entity.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, FriendCategory entity) async {
+    String userId,
+    FriendCategory entity,
+  ) async {
     return userId == entity.ownerId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, FriendCategory? entity) async {
+    String userId,
+    String resourceId,
+    FriendCategory? entity,
+  ) async {
     if (entity == null) return false;
     return entity.ownerId == userId || entity.friendUserIds.contains(userId);
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, FriendCategory entity) async {
+    String userId,
+    String resourceId,
+    FriendCategory entity,
+  ) async {
     return entity.ownerId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only the owner can delete — fetch to check ownership
     try {
       final doc = await _categoriesRef(userId).doc(resourceId).get();
@@ -77,8 +87,9 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     // Only the owner can do a full document write
     if (currentUser != userId) {
       throw PermissionDeniedException(
-          'Only the owner can fully save a category. '
-          'Use addSelfToCategory() for member self-addition.');
+        'Only the owner can fully save a category. '
+        'Use addSelfToCategory() for member self-addition.',
+      );
     }
 
     // Validate required fields
@@ -130,7 +141,10 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Update a friend category.
   Future<void> updateCategory(
-      String userId, String categoryId, Map<String, dynamic> data) async {
+    String userId,
+    String categoryId,
+    Map<String, dynamic> data,
+  ) async {
     // Validate user owns the category they're updating
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
@@ -195,7 +209,9 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Create a new category for a user.
   Future<void> createCategoryForUser(
-      String userId, FriendCategory category) async {
+    String userId,
+    FriendCategory category,
+  ) async {
     // Validate user is creating their own category
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
@@ -223,7 +239,10 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Update category members.
   Future<void> updateCategoryMembers(
-      String userId, String categoryId, List<String> memberIds) async {
+    String userId,
+    String categoryId,
+    List<String> memberIds,
+  ) async {
     // Validate user owns the category they're updating
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
@@ -255,7 +274,10 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Add a friend to a category.
   Future<void> addFriendToCategory(
-      String userId, String categoryId, String friendId) async {
+    String userId,
+    String categoryId,
+    String friendId,
+  ) async {
     final category = await getCategory(userId, categoryId);
     if (category == null) return;
 
@@ -268,7 +290,10 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Remove a friend from a category.
   Future<void> removeFriendFromCategory(
-      String userId, String categoryId, String friendId) async {
+    String userId,
+    String categoryId,
+    String friendId,
+  ) async {
     final category = await getCategory(userId, categoryId);
     if (category == null) return;
 
@@ -282,11 +307,15 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   /// Only the current owner can initiate a transfer. The transaction verifies
   /// ownership hasn't changed since read (prevents TOCTOU race conditions).
   Future<void> transferOwnership(
-      String currentOwnerId, String categoryId, String newOwnerId) async {
+    String currentOwnerId,
+    String categoryId,
+    String newOwnerId,
+  ) async {
     final currentUser = requireCurrentUserId();
     if (currentUser != currentOwnerId) {
       throw PermissionDeniedException(
-          'Only the current owner can transfer ownership');
+        'Only the current owner can transfer ownership',
+      );
     }
 
     final docRef = _categoriesRef(currentOwnerId).doc(categoryId);
@@ -294,8 +323,11 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     await firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) {
-        throw ResourceNotFoundException('Group not found',
-            resourceType: 'friend_category', resourceId: categoryId);
+        throw ResourceNotFoundException(
+          'Group not found',
+          resourceType: 'friend_category',
+          resourceId: categoryId,
+        );
       }
 
       final category = FriendCategory.fromMap(snapshot.id, snapshot.data()!);
@@ -320,7 +352,9 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Get categories that contain a specific friend.
   Future<List<FriendCategory>> getCategoriesContainingFriend(
-      String userId, String friendId) async {
+    String userId,
+    String friendId,
+  ) async {
     final categories = await fetchCategories(userId);
     return categories
         .where((category) => category.friendUserIds.contains(friendId))
@@ -335,10 +369,14 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   /// up snapshot payload size on every change. 100 is well clear of the
   /// real ceiling while keeping the listener bounded.
   Stream<List<FriendCategory>> categoriesStream(String userId) {
-    return _categoriesRef(userId).limit(100).snapshots().map((snapshot) =>
-        snapshot.docs
-            .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
-            .toList());
+    return _categoriesRef(userId)
+        .limit(100)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 
   /// BUG-018 FIX: Stream categories where user is a member (across all users).
@@ -351,21 +389,27 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
         .where('friendUserIds', arrayContains: userId)
         .limit(200)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 
   /// Get category statistics for a user.
   Future<Map<String, dynamic>> getCategoryStatistics(String userId) async {
     final categories = await fetchCategories(userId);
     final totalMembers = categories.fold<int>(
-        0, (total, cat) => total + cat.friendUserIds.length);
-    final averageSize =
-        categories.isNotEmpty ? (totalMembers / categories.length).round() : 0;
+      0,
+      (total, cat) => total + cat.friendUserIds.length,
+    );
+    final averageSize = categories.isNotEmpty
+        ? (totalMembers / categories.length).round()
+        : 0;
     final largestCategory = categories.isNotEmpty
         ? categories.reduce(
-            (a, b) => a.friendUserIds.length > b.friendUserIds.length ? a : b)
+            (a, b) => a.friendUserIds.length > b.friendUserIds.length ? a : b,
+          )
         : null;
 
     return {
@@ -380,7 +424,9 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// Search categories by name.
   Future<List<FriendCategory>> searchCategories(
-      String userId, String query) async {
+    String userId,
+    String query,
+  ) async {
     final categories = await fetchCategories(userId);
     final lowercaseQuery = query.toLowerCase();
 
@@ -400,26 +446,36 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   }
 
   /// Get largest categories (sorted by member count).
-  Future<List<FriendCategory>> getLargestCategories(String userId,
-      {int limit = 5}) async {
+  Future<List<FriendCategory>> getLargestCategories(
+    String userId, {
+    int limit = 5,
+  }) async {
     final categories = await fetchCategories(userId);
     categories.sort(
-        (a, b) => b.friendUserIds.length.compareTo(a.friendUserIds.length));
+      (a, b) => b.friendUserIds.length.compareTo(a.friendUserIds.length),
+    );
     return categories.take(limit).toList();
   }
 
   /// Check if a category name already exists for a user.
-  Future<bool> categoryNameExists(String userId, String name,
-      {String? excludeCategoryId}) async {
+  Future<bool> categoryNameExists(
+    String userId,
+    String name, {
+    String? excludeCategoryId,
+  }) async {
     final categories = await fetchCategories(userId);
-    return categories.any((category) =>
-        category.name.toLowerCase() == name.toLowerCase() &&
-        category.id != excludeCategoryId);
+    return categories.any(
+      (category) =>
+          category.name.toLowerCase() == name.toLowerCase() &&
+          category.id != excludeCategoryId,
+    );
   }
 
   /// Bulk update multiple categories.
   Future<void> bulkUpdateCategories(
-      String userId, Map<String, Map<String, dynamic>> updates) async {
+    String userId,
+    Map<String, Map<String, dynamic>> updates,
+  ) async {
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
       currentUserId: currentUser,

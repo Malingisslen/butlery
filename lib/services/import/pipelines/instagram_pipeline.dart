@@ -32,7 +32,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
   ];
 
   InstagramPipeline({required LlmEnhancementService llmService})
-      : _llmService = llmService;
+    : _llmService = llmService;
 
   @override
   String get strategyName => 'instagram';
@@ -181,42 +181,42 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
   ImportResult _convertToLegacyResult(ImportResultV2 resultV2) {
     return switch (resultV2) {
       final ImportSuccess success => ImportResult.success(
-          success.recipe,
-          metadata: {
-            'pipeline': success.pipeline,
-            'tier': success.tier,
-            'method': success.method,
-            'usedLlm': success.usedLlm,
-            ...?success.metadata,
-          },
-        ),
+        success.recipe,
+        metadata: {
+          'pipeline': success.pipeline,
+          'tier': success.tier,
+          'method': success.method,
+          'usedLlm': success.usedLlm,
+          ...?success.metadata,
+        },
+      ),
       final ImportNeedsAssistance assistance => ImportResult.assistance(
-          extractedText: assistance.extractedText,
-          suggestedTitle: assistance.suggestedTitle,
-          metadata: assistance.partialData,
-        ),
+        extractedText: assistance.extractedText,
+        suggestedTitle: assistance.suggestedTitle,
+        metadata: assistance.partialData,
+      ),
       final ImportNeedsScreenshot screenshot => ImportResult.failure(
-          screenshot.message,
-          metadata: {
-            'platform': screenshot.platform,
-            'url': screenshot.url,
-            'thumbnailUrl': screenshot.thumbnailUrl,
-            'needsScreenshot': true,
-          },
-        ),
+        screenshot.message,
+        metadata: {
+          'platform': screenshot.platform,
+          'url': screenshot.url,
+          'thumbnailUrl': screenshot.thumbnailUrl,
+          'needsScreenshot': true,
+        },
+      ),
       final ImportPartial partial => ImportResult.assistance(
-          extractedText: partial.extractedText.orEmpty(),
-          suggestedTitle: partial.title,
-          metadata: partial.partialData,
-        ),
+        extractedText: partial.extractedText.orEmpty(),
+        suggestedTitle: partial.title,
+        metadata: partial.partialData,
+      ),
       final ImportFailure failure => ImportResult.failure(
-          failure.message,
-          metadata: {
-            'errorCode': failure.errorCode.name,
-            'pipeline': failure.pipeline,
-            'tier': failure.tier,
-          },
-        ),
+        failure.message,
+        metadata: {
+          'errorCode': failure.errorCode.name,
+          'pipeline': failure.pipeline,
+          'tier': failure.tier,
+        },
+      ),
     };
   }
 }

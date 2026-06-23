@@ -23,11 +23,11 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 UserProfile _user({
   String uid = 'u1',
@@ -47,12 +47,12 @@ UserProfile _user({
 }
 
 FriendRequest _request({String? message}) => FriendRequest(
-      id: 'req-1',
-      fromUserId: 'sender',
-      toUserId: 'me',
-      sentAt: DateTime(2026, 5, 1, 12),
-      message: message,
-    );
+  id: 'req-1',
+  fromUserId: 'sender',
+  toUserId: 'me',
+  sentAt: DateTime(2026, 5, 1, 12),
+  message: message,
+);
 
 void main() {
   group('FriendCard - rendering', () {
@@ -61,37 +61,45 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('detailed style shows email metadata by default',
-        (tester) async {
+    testWidgets('detailed style shows email metadata by default', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(FriendCard(user: _user())));
       expect(find.text('anna@example.com'), findsOneWidget);
     });
 
     testWidgets('showMetadata=false hides the email row', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), showMetadata: false),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), showMetadata: false),
+        ),
+      );
       expect(find.text('anna@example.com'), findsNothing);
       // Display name still rendered
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('subtitle takes precedence over metadata when supplied',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), subtitle: 'Mutual: 3'),
-      ));
+    testWidgets('subtitle takes precedence over metadata when supplied', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), subtitle: 'Mutual: 3'),
+        ),
+      );
       expect(find.text('Mutual: 3'), findsOneWidget);
     });
 
     testWidgets('trailing widget renders inside the card', (tester) async {
       const trailingKey = Key('trailing-marker');
-      await tester.pumpWidget(_wrap(
-        FriendCard(
-          user: _user(),
-          trailing: const Icon(Icons.chevron_right, key: trailingKey),
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(
+            user: _user(),
+            trailing: const Icon(Icons.chevron_right, key: trailingKey),
+          ),
         ),
-      ));
+      );
       expect(
         find.descendant(
           of: find.byType(FriendCard),
@@ -102,18 +110,22 @@ void main() {
     });
 
     testWidgets('compact style still renders the display name', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), style: FriendCardStyle.compact),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), style: FriendCardStyle.compact),
+        ),
+      );
       expect(find.text('Anna Andersson'), findsOneWidget);
       // Compact style does NOT show metadata even if showMetadata=true
       expect(find.text('anna@example.com'), findsNothing);
     });
 
     testWidgets('list style uses a ListTile internally', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), style: FriendCardStyle.list),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), style: FriendCardStyle.list),
+        ),
+      );
       expect(
         find.descendant(
           of: find.byType(FriendCard),
@@ -124,11 +136,14 @@ void main() {
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
 
-    testWidgets('empty email produces no metadata row in detailed style',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(email: '')),
-      ));
+    testWidgets('empty email produces no metadata row in detailed style', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(email: '')),
+        ),
+      );
       expect(find.text('anna@example.com'), findsNothing);
       expect(find.text('Anna Andersson'), findsOneWidget);
     });
@@ -137,20 +152,25 @@ void main() {
   group('FriendCard - interaction', () {
     testWidgets('onTap fires when card is tapped (detailed)', (tester) async {
       var taps = 0;
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), onTap: () => taps++),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), onTap: () => taps++),
+        ),
+      );
       await tester.tap(find.byType(FriendCard));
       await tester.pump();
       expect(taps, 1);
     });
 
-    testWidgets('onLongPress fires when card is long-pressed (detailed)',
-        (tester) async {
+    testWidgets('onLongPress fires when card is long-pressed (detailed)', (
+      tester,
+    ) async {
       var longs = 0;
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), onLongPress: () => longs++),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), onLongPress: () => longs++),
+        ),
+      );
       await tester.longPress(find.byType(FriendCard));
       await tester.pump();
       expect(longs, 1);
@@ -158,13 +178,15 @@ void main() {
 
     testWidgets('onTap fires in list style (ListTile path)', (tester) async {
       var taps = 0;
-      await tester.pumpWidget(_wrap(
-        FriendCard(
-          user: _user(),
-          style: FriendCardStyle.list,
-          onTap: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(
+            user: _user(),
+            style: FriendCardStyle.list,
+            onTap: () => taps++,
+          ),
         ),
-      ));
+      );
       await tester.tap(find.byType(ListTile));
       await tester.pump();
       expect(taps, 1);
@@ -186,28 +208,37 @@ void main() {
   });
 
   group('FriendRequestCard - rendering', () {
-    testWidgets('renders the Swedish title and supporting copy',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(friendRequest: _request()),
-      ));
+    testWidgets('renders the Swedish title and supporting copy', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(friendRequest: _request()),
+        ),
+      );
       expect(find.text('Vänförfrågan'), findsOneWidget);
       expect(find.text('Vill bli din vän'), findsOneWidget);
     });
 
     testWidgets('renders the optional message when present', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-            friendRequest: _request(message: 'Hej, kommer du ihåg mig?')),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(message: 'Hej, kommer du ihåg mig?'),
+          ),
+        ),
+      );
       expect(find.text('Hej, kommer du ihåg mig?'), findsOneWidget);
     });
 
-    testWidgets('does not render a message paragraph when message is empty',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(friendRequest: _request(message: '')),
-      ));
+    testWidgets('does not render a message paragraph when message is empty', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(friendRequest: _request(message: '')),
+        ),
+      );
       // Title is rendered; an empty message string should NOT appear as a
       // separate Text widget. We assert via the absence of any Text whose
       // data is exactly the empty string.
@@ -217,46 +248,56 @@ void main() {
       expect(emptyTexts, findsNothing);
     });
 
-    testWidgets('omits both action buttons when callbacks are null',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(friendRequest: _request()),
-      ));
+    testWidgets('omits both action buttons when callbacks are null', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(friendRequest: _request()),
+        ),
+      );
       expect(find.byType(OutlinedButton), findsNothing);
       expect(find.byType(ElevatedButton), findsNothing);
     });
 
-    testWidgets('renders both accept and decline buttons when wired',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onAccept: () {},
-          onDecline: () {},
+    testWidgets('renders both accept and decline buttons when wired', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onAccept: () {},
+            onDecline: () {},
+          ),
         ),
-      ));
+      );
       expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Acceptera'), findsOneWidget);
     });
 
     testWidgets('renders only decline when onAccept is null', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onDecline: () {},
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onDecline: () {},
+          ),
         ),
-      ));
+      );
       expect(find.widgetWithText(OutlinedButton, 'Avvisa'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsNothing);
     });
 
     testWidgets('renders only accept when onDecline is null', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onAccept: () {},
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onAccept: () {},
+          ),
         ),
-      ));
+      );
       expect(find.widgetWithText(ElevatedButton, 'Acceptera'), findsOneWidget);
       expect(find.byType(OutlinedButton), findsNothing);
     });
@@ -265,28 +306,33 @@ void main() {
   group('FriendRequestCard - interaction', () {
     testWidgets('onAccept fires when accept button is tapped', (tester) async {
       var accepts = 0;
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onAccept: () => accepts++,
-          onDecline: () {},
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onAccept: () => accepts++,
+            onDecline: () {},
+          ),
         ),
-      ));
+      );
       await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
       await tester.pump();
       expect(accepts, 1);
     });
 
-    testWidgets('onDecline fires when decline button is tapped',
-        (tester) async {
+    testWidgets('onDecline fires when decline button is tapped', (
+      tester,
+    ) async {
       var declines = 0;
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onAccept: () {},
-          onDecline: () => declines++,
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onAccept: () {},
+            onDecline: () => declines++,
+          ),
         ),
-      ));
+      );
       await tester.tap(find.widgetWithText(OutlinedButton, 'Avvisa'));
       await tester.pump();
       expect(declines, 1);
@@ -294,12 +340,14 @@ void main() {
 
     testWidgets('onTap fires when the card body is tapped', (tester) async {
       var taps = 0;
-      await tester.pumpWidget(_wrap(
-        FriendRequestCard(
-          friendRequest: _request(),
-          onTap: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          FriendRequestCard(
+            friendRequest: _request(),
+            onTap: () => taps++,
+          ),
         ),
-      ));
+      );
       // Tap on the title text (avoids hitting an unrelated descendant
       // semantically wrapped element).
       await tester.tap(find.text('Vänförfrågan'));

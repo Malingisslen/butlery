@@ -47,7 +47,8 @@ class LinkifiedText {
     return Builder(
       builder: (context) {
         final theme = Theme.of(context);
-        final effectiveLinkStyle = linkStyle ??
+        final effectiveLinkStyle =
+            linkStyle ??
             (style ?? const TextStyle()).copyWith(
               color: theme.colorScheme.primary,
               decoration: TextDecoration.underline,

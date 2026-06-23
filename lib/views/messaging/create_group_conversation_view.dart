@@ -75,7 +75,8 @@ class _CreateGroupConversationViewState
           // BUT-727: guard accidental dismiss after typing a name or picking
           // members. Don't block while creating — that flow already returns
           // a value, so canPop should be true once create starts.
-          final isDirty = !viewModel.isCreatingGroup &&
+          final isDirty =
+              !viewModel.isCreatingGroup &&
               (viewModel.groupName.trim().isNotEmpty ||
                   viewModel.hasSelectedMembers);
           return PopScope(
@@ -84,8 +85,8 @@ class _CreateGroupConversationViewState
               if (didPop) return;
               final shouldLeave =
                   await CommonDialogActions.showUnsavedChangesConfirmation(
-                context: context,
-              );
+                    context: context,
+                  );
               if (shouldLeave == true && context.mounted) {
                 Navigator.of(context).pop();
               }
@@ -117,7 +118,9 @@ class _CreateGroupConversationViewState
   }
 
   PreferredSizeWidget _buildAppBar(
-      BuildContext context, CreateGroupConversationViewModel viewModel) {
+    BuildContext context,
+    CreateGroupConversationViewModel viewModel,
+  ) {
     return AppBar(
       title: Text(
         context.l10n.messagingCreateGroup,
@@ -140,7 +143,9 @@ class _CreateGroupConversationViewState
   }
 
   Widget _buildBody(
-      BuildContext context, CreateGroupConversationViewModel viewModel) {
+    BuildContext context,
+    CreateGroupConversationViewModel viewModel,
+  ) {
     if (viewModel.isLoading && viewModel.availableFriends.isEmpty) {
       return StateWidget.loading(message: context.l10n.messagingLoadingFriends);
     }
@@ -216,7 +221,8 @@ class _CreateGroupConversationViewState
   }
 
   Widget _buildSelectedMembersPreview(
-      CreateGroupConversationViewModel viewModel) {
+    CreateGroupConversationViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -229,8 +235,9 @@ class _CreateGroupConversationViewState
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              context.l10n
-                  .messagingSelectedMembers(viewModel.selectedMemberCount),
+              context.l10n.messagingSelectedMembers(
+                viewModel.selectedMemberCount,
+              ),
               style: AppTextStyles.titleMedium.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -249,8 +256,10 @@ class _CreateGroupConversationViewState
                 size: ImageSize.small,
               ),
               label: Text(member.displayName),
-              deleteIcon:
-                  const Icon(Icons.close, size: AppDimensions.iconSizeS),
+              deleteIcon: const Icon(
+                Icons.close,
+                size: AppDimensions.iconSizeS,
+              ),
               onDeleted: () => viewModel.toggleMemberSelection(member.uid),
             );
           }).toList(),
@@ -294,7 +303,9 @@ class _CreateGroupConversationViewState
   }
 
   Widget _buildFriendItem(
-      CreateGroupConversationViewModel viewModel, UserProfile friend) {
+    CreateGroupConversationViewModel viewModel,
+    UserProfile friend,
+  ) {
     final isSelected = viewModel.isMemberSelected(friend.uid);
 
     return SelectionCard(
@@ -339,7 +350,9 @@ class _CreateGroupConversationViewState
   }
 
   Widget _buildBottomBar(
-      BuildContext context, CreateGroupConversationViewModel viewModel) {
+    BuildContext context,
+    CreateGroupConversationViewModel viewModel,
+  ) {
     return BottomActionContainer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -370,7 +383,9 @@ class _CreateGroupConversationViewState
   }
 
   Future<void> _handleCreateGroup(
-      BuildContext context, CreateGroupConversationViewModel viewModel) async {
+    BuildContext context,
+    CreateGroupConversationViewModel viewModel,
+  ) async {
     // Capture context dependencies before async gap
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);

@@ -19,16 +19,18 @@ class ShoppingRepositoryRoutingModule {
     required Map<String, dynamic> data,
     required List<String> requiredFields,
     required String resourceType,
-  }) validateRequiredFields;
+  })
+  validateRequiredFields;
   final void Function({
     required String userId,
     required String resource,
     required String operation,
     required bool granted,
     String? details,
-  }) logPermissionCheck;
+  })
+  logPermissionCheck;
   final UnifiedShoppingList Function(DocumentSnapshot<Map<String, dynamic>> doc)
-      fromFirestore;
+  fromFirestore;
 
   ShoppingRepositoryRoutingModule({
     required this.firestore,
@@ -42,7 +44,8 @@ class ShoppingRepositoryRoutingModule {
 
   /// Create collaborative list in shared collection
   Future<UnifiedShoppingList> createCollaborativeList(
-      UnifiedShoppingList entity) async {
+    UnifiedShoppingList entity,
+  ) async {
     final uid = requireCurrentUserId();
 
     // Validate required fields for collaborative lists
@@ -87,13 +90,15 @@ class ShoppingRepositoryRoutingModule {
     );
 
     AppLogger.success(
-        'Created collaborative list "${listToSave.name}" with ${entity.items.length} items in shared collection');
+      'Created collaborative list "${listToSave.name}" with ${entity.items.length} items in shared collection',
+    );
     return listToSave;
   }
 
   /// Update collaborative list in shared collection
   Future<UnifiedShoppingList> updateCollaborativeList(
-      UnifiedShoppingList entity) async {
+    UnifiedShoppingList entity,
+  ) async {
     final uid = requireCurrentUserId();
 
     // Validate entity exists
@@ -119,7 +124,8 @@ class ShoppingRepositoryRoutingModule {
     );
 
     AppLogger.info(
-        'Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection');
+      'Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection',
+    );
     return entity;
   }
 }

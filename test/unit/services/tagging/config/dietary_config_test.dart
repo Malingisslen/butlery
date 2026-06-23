@@ -108,8 +108,11 @@ void main() {
     group('tagSv', () {
       test('all entries have Swedish tag names', () {
         for (final entry in DietaryConfig.all) {
-          expect(entry.tagSv, isNotEmpty,
-              reason: '${entry.key} should have a Swedish tag name');
+          expect(
+            entry.tagSv,
+            isNotEmpty,
+            reason: '${entry.key} should have a Swedish tag name',
+          );
         }
       });
 

@@ -255,10 +255,15 @@ extension DateTimeTestExtensions on DateTime {
   DateTime get normalized => TimestampTestHelper.normalizeTimestamp(this);
 
   /// Compare with another timestamp with tolerance
-  bool isCloseTo(dynamic other,
-      {Duration tolerance = const Duration(seconds: 1)}) {
-    return TimestampTestHelper.areTimestampsEqual(this, other,
-        tolerance: tolerance);
+  bool isCloseTo(
+    dynamic other, {
+    Duration tolerance = const Duration(seconds: 1),
+  }) {
+    return TimestampTestHelper.areTimestampsEqual(
+      this,
+      other,
+      tolerance: tolerance,
+    );
   }
 }
 
@@ -273,10 +278,15 @@ extension TimestampTestExtensions on Timestamp {
   DateTime get normalized => TimestampTestHelper.normalizeTimestamp(this);
 
   /// Compare with another timestamp with tolerance
-  bool isCloseTo(dynamic other,
-      {Duration tolerance = const Duration(seconds: 1)}) {
-    return TimestampTestHelper.areTimestampsEqual(this, other,
-        tolerance: tolerance);
+  bool isCloseTo(
+    dynamic other, {
+    Duration tolerance = const Duration(seconds: 1),
+  }) {
+    return TimestampTestHelper.areTimestampsEqual(
+      this,
+      other,
+      tolerance: tolerance,
+    );
   }
 
   /// Format for debugging

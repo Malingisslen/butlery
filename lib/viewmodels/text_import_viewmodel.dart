@@ -130,12 +130,13 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // BUT-960: parse is a Cloud Function round-trip; a 60s client timeout
       // ensures a server-side hang surfaces errorImportTimeout instead of an
       // endless spinner (mirrors parseTextToRecipe).
-      final result =
-          await importManager.autoParseMulti(inputText.trim()).timeout(
-                const Duration(seconds: 60),
-                onTimeout: () =>
-                    throw Exception(AppLocale.current.errorImportTimeout),
-              );
+      final result = await importManager
+          .autoParseMulti(inputText.trim())
+          .timeout(
+            const Duration(seconds: 60),
+            onTimeout: () =>
+                throw Exception(AppLocale.current.errorImportTimeout),
+          );
       final parsed = result.successfulRecipes;
 
       if (parsed.isEmpty) {
@@ -163,9 +164,11 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // The timeout throws its own localized copy; everything else collapses to
       // the standard import-failed banner.
       final message = e.toString();
-      setError(message.contains(AppLocale.current.errorImportTimeout)
-          ? AppLocale.current.errorImportTimeout
-          : AppLocale.current.errorImportFailed);
+      setError(
+        message.contains(AppLocale.current.errorImportTimeout)
+            ? AppLocale.current.errorImportTimeout
+            : AppLocale.current.errorImportFailed,
+      );
       return false;
     } finally {
       setLoading(false);
@@ -496,10 +499,10 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// - Text analysis results for parsing optimization
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'inputSuggestions': getInputSuggestions(),
-        'inputValidationResult': hasValidInput,
-        'textLength': inputText.length,
-        'hasParsingErrors': hasError,
-      };
+    ...super.debugState,
+    'inputSuggestions': getInputSuggestions(),
+    'inputValidationResult': hasValidInput,
+    'textLength': inputText.length,
+    'hasParsingErrors': hasError,
+  };
 }

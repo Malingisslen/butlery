@@ -30,8 +30,10 @@ class RequestsTab extends StatelessWidget {
           const _DiscoverySection(),
           const SizedBox(height: AppDimensions.spacingXl),
           // Request sections — rebuild only when request lists change
-          Selector<FriendsViewModel,
-              ({List<FriendRequest> incoming, List<FriendRequest> sent})>(
+          Selector<
+            FriendsViewModel,
+            ({List<FriendRequest> incoming, List<FriendRequest> sent})
+          >(
             selector: (_, vm) =>
                 (incoming: vm.incomingRequests, sent: vm.sentRequests),
             shouldRebuild: (prev, next) =>
@@ -44,7 +46,10 @@ class RequestsTab extends StatelessWidget {
                 children: [
                   if (requests.incoming.isNotEmpty) ...[
                     _buildIncomingRequestsSection(
-                        context, vm, requests.incoming),
+                      context,
+                      vm,
+                      requests.incoming,
+                    ),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
                   if (requests.sent.isNotEmpty) ...[
@@ -94,8 +99,9 @@ class RequestsTab extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
               ),
               child: Text(
                 '${requests.length}',
@@ -107,10 +113,12 @@ class RequestsTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        ...requests.map((request) => Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-              child: FriendRequestCard.build(context, request, viewModel),
-            )),
+        ...requests.map(
+          (request) => Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            child: FriendRequestCard.build(context, request, viewModel),
+          ),
+        ),
       ],
     );
   }
@@ -146,8 +154,9 @@ class RequestsTab extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: cs.onSurfaceVariant,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
               ),
               child: Text(
                 '${requests.length}',
@@ -159,10 +168,12 @@ class RequestsTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        ...requests.map((request) => Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-              child: _buildSentRequestCard(context, request, viewModel),
-            )),
+        ...requests.map(
+          (request) => Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+            child: _buildSentRequestCard(context, request, viewModel),
+          ),
+        ),
       ],
     );
   }
@@ -330,8 +341,9 @@ class _DiscoverySection extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingS),
           Text(
             context.l10n.socialFindNewFriendsDescription,
-            style:
-                AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingM),

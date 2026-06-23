@@ -88,7 +88,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           final itemCount = viewModel.activeList?.items.length ?? 0;
           final boughtCount =
               viewModel.activeList?.items.where((item) => item.bought).length ??
-                  0;
+              0;
 
           final isShoppingTab = _currentTabIndex == 0;
           final selection = context.watch<ShoppingSelectionManager>();
@@ -99,8 +99,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             appBar: MainViewHeader(
               title: context.l10n.shoppingListTitle,
               ghostIllustration: VegetableType.carrot,
-              countBadge:
-                  context.l10n.shoppingCountBadge(itemCount, boughtCount),
+              countBadge: context.l10n.shoppingCountBadge(
+                itemCount,
+                boughtCount,
+              ),
               actions: isShoppingTab
                   ? ShoppingAppBar.buildHeaderActions(
                       context,
@@ -124,8 +126,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             bottomNavigationBar: inSelection
                 ? SelectionBulkBar(
                     count: selection.selectedCount,
-                    label: context.l10n
-                        .shoppingSelectedCount(selection.selectedCount),
+                    label: context.l10n.shoppingSelectedCount(
+                      selection.selectedCount,
+                    ),
                     onClose: selection.clearSelection,
                     onDelete: () => _deleteSelectedShopping(selection),
                   )
@@ -328,8 +331,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     final removed = _viewModel.items.where((i) => ids.contains(i.id)).toList();
     // Items may have vanished via real-time sync between selecting and deleting.
     if (removed.isEmpty) return;
-    final removedMsg =
-        context.l10n.shoppingItemsRemovedUndoMessage(removed.length);
+    final removedMsg = context.l10n.shoppingItemsRemovedUndoMessage(
+      removed.length,
+    );
     final undoLabel = context.l10n.commonUndo;
 
     selection.clearSelection();
@@ -482,7 +486,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// - Collaborative synchronization with real-time updates and multi-user coordination
   /// - Success feedback with operation summary and user experience optimization
   Future<void> _clearBoughtItemsWithConfirmation(
-      UnifiedShoppingViewModel viewModel) async {
+    UnifiedShoppingViewModel viewModel,
+  ) async {
     await ShoppingDialogs.showClearCompletedConfirmation(
       context,
       viewModel,
@@ -524,7 +529,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
   /// Show delete list confirmation dialog with item count warning
   Future<void> _showDeleteListConfirmation(
-      UnifiedShoppingViewModel viewModel) async {
+    UnifiedShoppingViewModel viewModel,
+  ) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
       _showErrorSnackBar(context.l10n.shoppingNoListForDelete);

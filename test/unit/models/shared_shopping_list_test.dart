@@ -54,17 +54,19 @@ void main() {
       expect(s.id, hasLength(36));
     });
 
-    test('itemCount falls back to 0 when neither listItems nor itemCount given',
-        () {
-      final s = SharedShoppingList.create(
-        sharedByUserId: 'alice',
-        sharedByDisplayName: 'Alice',
-        sharedToUserIds: const [],
-        shareMessage: '',
-        listName: 'X',
-      );
-      expect(s.itemCount, 0);
-    });
+    test(
+      'itemCount falls back to 0 when neither listItems nor itemCount given',
+      () {
+        final s = SharedShoppingList.create(
+          sharedByUserId: 'alice',
+          sharedByDisplayName: 'Alice',
+          sharedToUserIds: const [],
+          shareMessage: '',
+          listName: 'X',
+        );
+        expect(s.itemCount, 0);
+      },
+    );
 
     test('itemCount honors explicit override', () {
       final s = SharedShoppingList.create(
@@ -115,19 +117,24 @@ void main() {
 
     test('getContentTitle returns listName', () {
       expect(
-          _build(listName: 'Helgens lista').getContentTitle(), 'Helgens lista');
+        _build(listName: 'Helgens lista').getContentTitle(),
+        'Helgens lista',
+      );
     });
 
     test('getContentDescription uses description when present', () {
-      expect(_build(listDescription: 'Specifik').getContentDescription(),
-          'Specifik');
+      expect(
+        _build(listDescription: 'Specifik').getContentDescription(),
+        'Specifik',
+      );
     });
 
     test(
-        'getContentDescription falls back to "<n> artiklar" when no description',
-        () {
-      expect(_build(itemCount: 5).getContentDescription(), '5 artiklar');
-    });
+      'getContentDescription falls back to "<n> artiklar" when no description',
+      () {
+        expect(_build(itemCount: 5).getContentDescription(), '5 artiklar');
+      },
+    );
   });
 
   group('itemCountText', () {
@@ -160,8 +167,10 @@ void main() {
         listDescription: 'för fredag',
         shoppingListId: 'list-1',
       );
-      final restored =
-          SharedShoppingList.fromMap(original.id, original.toFirestore());
+      final restored = SharedShoppingList.fromMap(
+        original.id,
+        original.toFirestore(),
+      );
 
       expect(restored.id, original.id);
       expect(restored.listName, original.listName);
@@ -169,7 +178,9 @@ void main() {
       expect(restored.itemCount, original.itemCount);
       expect(restored.originalOwnerId, original.originalOwnerId);
       expect(
-          restored.originalOwnerDisplayName, original.originalOwnerDisplayName);
+        restored.originalOwnerDisplayName,
+        original.originalOwnerDisplayName,
+      );
       expect(restored.shoppingListId, original.shoppingListId);
       expect(restored.engagementCount, original.engagementCount);
       expect(restored.viewCount, original.viewCount);
@@ -189,25 +200,29 @@ void main() {
       expect(restored.shoppingListId, original.shoppingListId);
     });
 
-    test('fromMap uses sharedByUserId as fallback for missing originalOwnerId',
-        () {
-      final restored = SharedShoppingList.fromMap('id', {
-        'sharedByUserId': 'alice',
-        'sharedByDisplayName': 'Alice',
-        'sharedAt': DateTime.utc(2026, 1, 1),
-        'listName': 'X',
-      });
-      expect(restored.originalOwnerId, 'alice');
-    });
+    test(
+      'fromMap uses sharedByUserId as fallback for missing originalOwnerId',
+      () {
+        final restored = SharedShoppingList.fromMap('id', {
+          'sharedByUserId': 'alice',
+          'sharedByDisplayName': 'Alice',
+          'sharedAt': DateTime.utc(2026, 1, 1),
+          'listName': 'X',
+        });
+        expect(restored.originalOwnerId, 'alice');
+      },
+    );
   });
 
   group('copyWithStatus', () {
     test('updates viewCount + engagementCount + dismissalCount', () {
-      final updated = _build().copyWithStatus(
-        viewCount: 10,
-        engagementCount: 5,
-        dismissalCount: 2,
-      ) as SharedShoppingList;
+      final updated =
+          _build().copyWithStatus(
+                viewCount: 10,
+                engagementCount: 5,
+                dismissalCount: 2,
+              )
+              as SharedShoppingList;
       expect(updated.viewCount, 10);
       expect(updated.engagementCount, 5);
       expect(updated.dismissalCount, 2);
@@ -223,8 +238,9 @@ void main() {
 
   group('copyWith', () {
     test('joinedCount param wins over engagementCount', () {
-      final updated = _build(engagementCount: 1)
-          .copyWith(joinedCount: 99, engagementCount: 5);
+      final updated = _build(
+        engagementCount: 1,
+      ).copyWith(joinedCount: 99, engagementCount: 5);
       expect(updated.engagementCount, 99);
     });
 

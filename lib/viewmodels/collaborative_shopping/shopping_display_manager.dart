@@ -44,8 +44,12 @@ class ShoppingDisplayManager {
     }
   }
 
-  Color getStatusColor(ColorScheme cs, ButleryColors butleryColors,
-      bool hasData, String statusText) {
+  Color getStatusColor(
+    ColorScheme cs,
+    ButleryColors butleryColors,
+    bool hasData,
+    String statusText,
+  ) {
     if (!hasData) return cs.onSurfaceVariant;
 
     final l = AppLocale.current;
@@ -54,8 +58,11 @@ class ShoppingDisplayManager {
     return cs.onSurfaceVariant;
   }
 
-  Color getProgressColor(ColorScheme cs, ButleryColors butleryColors,
-      double completionPercentage) {
+  Color getProgressColor(
+    ColorScheme cs,
+    ButleryColors butleryColors,
+    double completionPercentage,
+  ) {
     if (completionPercentage == 100) return butleryColors.success;
     if (completionPercentage > 50) return butleryColors.warning;
     return cs.primary;

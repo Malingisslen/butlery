@@ -137,8 +137,9 @@ class PersistenceService extends BaseService {
       final prefs = await _prefs;
 
       // Convert each recipe to a Map
-      final List<Map<String, dynamic>> recipesJson =
-          recipes.map((recipe) => recipe.toJson()).toList();
+      final List<Map<String, dynamic>> recipesJson = recipes
+          .map((recipe) => recipe.toJson())
+          .toList();
 
       // Convert the full list to JSON text
       final String recipesString = jsonEncode(recipesJson);
@@ -395,7 +396,10 @@ class PersistenceService extends BaseService {
       return prefs.getStringList(_recipeMealTypeFiltersKey) ?? const [];
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe meal-type filters', e, 'Persistence');
+        'Failed to load recipe meal-type filters',
+        e,
+        'Persistence',
+      );
       return const [];
     }
   }
@@ -407,7 +411,10 @@ class PersistenceService extends BaseService {
       await prefs.setStringList(_recipeMealTypeFiltersKey, ids);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe meal-type filters', e, 'Persistence');
+        'Failed to save recipe meal-type filters',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -438,7 +445,10 @@ class PersistenceService extends BaseService {
       return prefs.getStringList(_recipeAllergenFiltersKey) ?? const [];
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe allergen filters', e, 'Persistence');
+        'Failed to load recipe allergen filters',
+        e,
+        'Persistence',
+      );
       return const [];
     }
   }
@@ -449,7 +459,10 @@ class PersistenceService extends BaseService {
       await prefs.setStringList(_recipeAllergenFiltersKey, ids);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe allergen filters', e, 'Persistence');
+        'Failed to save recipe allergen filters',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -460,7 +473,10 @@ class PersistenceService extends BaseService {
       return prefs.getStringList(_recipeDietaryFiltersKey) ?? const [];
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe dietary filters', e, 'Persistence');
+        'Failed to load recipe dietary filters',
+        e,
+        'Persistence',
+      );
       return const [];
     }
   }
@@ -471,7 +487,10 @@ class PersistenceService extends BaseService {
       await prefs.setStringList(_recipeDietaryFiltersKey, ids);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe dietary filters', e, 'Persistence');
+        'Failed to save recipe dietary filters',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -482,7 +501,10 @@ class PersistenceService extends BaseService {
       return prefs.getStringList(_recipePersonalTagFiltersKey) ?? const [];
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe personal-tag filters', e, 'Persistence');
+        'Failed to load recipe personal-tag filters',
+        e,
+        'Persistence',
+      );
       return const [];
     }
   }
@@ -493,7 +515,10 @@ class PersistenceService extends BaseService {
       await prefs.setStringList(_recipePersonalTagFiltersKey, ids);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe personal-tag filters', e, 'Persistence');
+        'Failed to save recipe personal-tag filters',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -504,8 +529,11 @@ class PersistenceService extends BaseService {
       return prefs.getStringList(_recipeExcludedPersonalTagFiltersKey) ??
           const [];
     } catch (e) {
-      AppLogger.error('Failed to load recipe excluded personal-tag filters', e,
-          'Persistence');
+      AppLogger.error(
+        'Failed to load recipe excluded personal-tag filters',
+        e,
+        'Persistence',
+      );
       return const [];
     }
   }
@@ -515,8 +543,11 @@ class PersistenceService extends BaseService {
       final prefs = await _prefs;
       await prefs.setStringList(_recipeExcludedPersonalTagFiltersKey, ids);
     } catch (e) {
-      AppLogger.error('Failed to save recipe excluded personal-tag filters', e,
-          'Persistence');
+      AppLogger.error(
+        'Failed to save recipe excluded personal-tag filters',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -527,7 +558,10 @@ class PersistenceService extends BaseService {
       return prefs.getBool(_recipeFavoritesOnlyKey) ?? false;
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe favorites-only flag', e, 'Persistence');
+        'Failed to load recipe favorites-only flag',
+        e,
+        'Persistence',
+      );
       return false;
     }
   }
@@ -538,7 +572,10 @@ class PersistenceService extends BaseService {
       await prefs.setBool(_recipeFavoritesOnlyKey, value);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe favorites-only flag', e, 'Persistence');
+        'Failed to save recipe favorites-only flag',
+        e,
+        'Persistence',
+      );
     }
   }
 
@@ -550,7 +587,10 @@ class PersistenceService extends BaseService {
       return prefs.getDouble(_recipeListScrollOffsetKey) ?? 0.0;
     } catch (e) {
       AppLogger.error(
-          'Failed to load recipe-list scroll offset', e, 'Persistence');
+        'Failed to load recipe-list scroll offset',
+        e,
+        'Persistence',
+      );
       return 0.0;
     }
   }
@@ -561,7 +601,10 @@ class PersistenceService extends BaseService {
       await prefs.setDouble(_recipeListScrollOffsetKey, offset);
     } catch (e) {
       AppLogger.error(
-          'Failed to save recipe-list scroll offset', e, 'Persistence');
+        'Failed to save recipe-list scroll offset',
+        e,
+        'Persistence',
+      );
     }
   }
 

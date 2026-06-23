@@ -51,10 +51,10 @@ class MessagingMediaService extends BaseService {
     required auth_repo.AuthRepository authRepository,
     ImageUploadService? uploadService,
     ImagePicker? imagePicker,
-  })  : _uploadService = uploadService ?? ImageUploadService(),
-        _messagingService = messagingService,
-        _authRepository = authRepository,
-        _imagePicker = imagePicker ?? ImagePicker();
+  }) : _uploadService = uploadService ?? ImageUploadService(),
+       _messagingService = messagingService,
+       _authRepository = authRepository,
+       _imagePicker = imagePicker ?? ImagePicker();
 
   /// Pick image and send in conversation.
   /// Complete workflow: pick → upload → send message.
@@ -69,7 +69,8 @@ class MessagingMediaService extends BaseService {
   }) async {
     try {
       AppLogger.info(
-          '🖼️ Picking image from ${source == ImageSource.camera ? "camera" : "gallery"}');
+        '🖼️ Picking image from ${source == ImageSource.camera ? "camera" : "gallery"}',
+      );
 
       // Pick image
       final XFile? pickedFile = await _imagePicker.pickImage(
@@ -131,13 +132,16 @@ class MessagingMediaService extends BaseService {
       }
 
       // Validate image format via magic bytes
-      final headerBytes = await imageFile.openRead(0, 12).fold<List<int>>(
-        [],
-        (prev, chunk) => prev..addAll(chunk),
-      );
+      final headerBytes = await imageFile
+          .openRead(0, 12)
+          .fold<List<int>>(
+            [],
+            (prev, chunk) => prev..addAll(chunk),
+          );
       if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
         AppLogger.error(
-            '❌ Unsupported image format: ${path.extension(imagePath)}');
+          '❌ Unsupported image format: ${path.extension(imagePath)}',
+        );
         return false;
       }
 
@@ -145,13 +149,15 @@ class MessagingMediaService extends BaseService {
       final result = await _uploadService.uploadImage(
         file: imageFile,
         userId: currentUserId,
-        onProgress:
-            onProgress != null ? (status) => onProgress(status.progress) : null,
+        onProgress: onProgress != null
+            ? (status) => onProgress(status.progress)
+            : null,
       );
 
       if (!result.success || result.url == null || result.url!.isEmpty) {
         AppLogger.error(
-            '❌ Failed to upload image: ${result.error ?? "no URL returned"}');
+          '❌ Failed to upload image: ${result.error ?? "no URL returned"}',
+        );
         return false;
       }
 
@@ -218,7 +224,8 @@ class MessagingMediaService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Successfully sent $successCount/${pickedFiles.length} images');
+        '✅ Successfully sent $successCount/${pickedFiles.length} images',
+      );
       return successCount;
     } catch (e) {
       AppLogger.error('❌ Failed to pick and send multiple images', e);
@@ -248,8 +255,10 @@ class MessagingMediaService extends BaseService {
   /// [imagePath] Local file path
   /// [maxSizeMB] Maximum allowed size in MB (default 10MB)
   /// Returns null if valid, error message if invalid
-  Future<String?> validateImage(String imagePath,
-      {double maxSizeMB = 10.0}) async {
+  Future<String?> validateImage(
+    String imagePath, {
+    double maxSizeMB = 10.0,
+  }) async {
     try {
       final l = AppLocale.current;
       final file = File(imagePath);

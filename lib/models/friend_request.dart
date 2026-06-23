@@ -33,9 +33,9 @@ class FriendRequest with JsonSerializableMixin {
     this.respondedAt,
     this.message,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? clock.now().toUtc(),
-        expiresAt =
-            expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
+  }) : sentAt = sentAt ?? clock.now().toUtc(),
+       expiresAt =
+           expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
 
   factory FriendRequest.create({
     required String fromUserId,
@@ -113,7 +113,8 @@ class FriendRequest with JsonSerializableMixin {
   }
 
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
-    final sentAt = utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+    final sentAt =
+        utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
         clock.now().toUtc();
     return FriendRequest(
       id: id,
@@ -127,7 +128,8 @@ class FriendRequest with JsonSerializableMixin {
         (e) => e.name,
       ),
       sentAt: sentAt,
-      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
+      expiresAt:
+          utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
           sentAt.add(_expiryDuration),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
       message: utils.SerializationUtils.safeNullableString(data, 'message'),
@@ -149,8 +151,9 @@ class FriendRequest with JsonSerializableMixin {
   }
 
   factory FriendRequest.fromJson(Map<String, dynamic> json) {
-    final sentAt =
-        utils.SerializationUtils.parseRequiredDateTimeValue(json['sentAt']);
+    final sentAt = utils.SerializationUtils.parseRequiredDateTimeValue(
+      json['sentAt'],
+    );
     return FriendRequest(
       id: utils.SerializationUtils.safeString(json, 'id'),
       fromUserId: utils.SerializationUtils.safeString(json, 'fromUserId'),
@@ -162,9 +165,10 @@ class FriendRequest with JsonSerializableMixin {
       sentAt: sentAt,
       expiresAt:
           utils.SerializationUtils.parseDateTimeValue(json['expiresAt']) ??
-              sentAt.add(_expiryDuration),
-      respondedAt:
-          utils.SerializationUtils.parseDateTimeValue(json['respondedAt']),
+          sentAt.add(_expiryDuration),
+      respondedAt: utils.SerializationUtils.parseDateTimeValue(
+        json['respondedAt'],
+      ),
       message: utils.SerializationUtils.safeNullableString(json, 'message'),
     );
   }

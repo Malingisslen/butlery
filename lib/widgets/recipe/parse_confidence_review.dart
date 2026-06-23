@@ -60,8 +60,9 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
 
     indexed.sort((a, b) {
       // Lower score = higher sort priority (uncertain items first)
-      return a.ingredient.confidence.score
-          .compareTo(b.ingredient.confidence.score);
+      return a.ingredient.confidence.score.compareTo(
+        b.ingredient.confidence.score,
+      );
     });
 
     return indexed;
@@ -99,8 +100,9 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
       child: InkWell(
         onTap: () => setState(() => _expanded = !_expanded),
         child: Padding(
-          padding:
-              const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.spacingXs,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -113,8 +115,9 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                     ),
                     if (reviewCount > 0)
                       Text(
-                        context.l10n
-                            .parseConfidenceReviewCountSubtitle(reviewCount),
+                        context.l10n.parseConfidenceReviewCountSubtitle(
+                          reviewCount,
+                        ),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: context.butleryColors.warning,
                         ),
@@ -201,7 +204,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                     // Thin colour accent bar — 4 px wide, full row height, square.
                     Container(
                       key: ValueKey(
-                          'confidence-bar-${widget.ingredient.confidence.name}'),
+                        'confidence-bar-${widget.ingredient.confidence.name}',
+                      ),
                       width: _barWidth,
                       color: barColor,
                     ),
@@ -244,7 +248,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
             ),
             child: Text(
               context.l10n.parseConfidenceOriginalPrefix(
-                  widget.ingredient.originalLine),
+                widget.ingredient.originalLine,
+              ),
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,

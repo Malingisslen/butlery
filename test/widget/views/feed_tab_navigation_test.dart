@@ -161,8 +161,11 @@ void main() {
 
         // Tap the recipe preview row.
         final recipeTile = find.text(_recipeTitle.toLowerCase());
-        expect(recipeTile, findsOneWidget,
-            reason: 'Recipe title must appear in the feed');
+        expect(
+          recipeTile,
+          findsOneWidget,
+          reason: 'Recipe title must appear in the feed',
+        );
         await tester.tap(recipeTile);
         // Wait for the async _navigateToRecipe to complete.
         await tester.pumpAndSettle();
@@ -171,16 +174,25 @@ void main() {
         final captured = verify(
           () => navObserver.didPush(captureAny(), any()),
         ).captured;
-        expect(captured, isNotEmpty,
-            reason: 'Navigator should have pushed a route');
+        expect(
+          captured,
+          isNotEmpty,
+          reason: 'Navigator should have pushed a route',
+        );
 
         final pushedRoute = captured.last as Route<dynamic>;
         final args = pushedRoute.settings.arguments as Map<String, dynamic>?;
         expect(args, isNotNull, reason: 'Route arguments must be a map');
-        expect(args!['readOnly'], isTrue,
-            reason: 'readOnly must be true for a friend recipe');
-        expect(args['recipe'], equals(friendRecipe),
-            reason: 'The friend recipe must be passed as the route argument');
+        expect(
+          args!['readOnly'],
+          isTrue,
+          reason: 'readOnly must be true for a friend recipe',
+        );
+        expect(
+          args['recipe'],
+          equals(friendRecipe),
+          reason: 'The friend recipe must be passed as the route argument',
+        );
       },
     );
 
@@ -219,23 +231,32 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
 
         final recipeTile = find.text(_recipeTitle.toLowerCase());
-        expect(recipeTile, findsOneWidget,
-            reason: 'Own recipe title must appear in feed');
+        expect(
+          recipeTile,
+          findsOneWidget,
+          reason: 'Own recipe title must appear in feed',
+        );
         await tester.tap(recipeTile);
         await tester.pumpAndSettle();
 
         final captured = verify(
           () => navObserver.didPush(captureAny(), any()),
         ).captured;
-        expect(captured, isNotEmpty,
-            reason: 'Navigator should have pushed a route');
+        expect(
+          captured,
+          isNotEmpty,
+          reason: 'Navigator should have pushed a route',
+        );
 
         final pushedRoute = captured.last as Route<dynamic>;
         final args = pushedRoute.settings.arguments as Map<String, dynamic>?;
         expect(args, isNotNull, reason: 'Route arguments must be a map');
-        expect(args!['readOnly'], isFalse,
-            reason:
-                'readOnly must be false when the recipe belongs to current user');
+        expect(
+          args!['readOnly'],
+          isFalse,
+          reason:
+              'readOnly must be false when the recipe belongs to current user',
+        );
         expect(args['recipe'], equals(ownRecipe));
       },
     );

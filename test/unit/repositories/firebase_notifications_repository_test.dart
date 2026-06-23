@@ -58,32 +58,41 @@ void main() {
 
     group('Permission Validation', () {
       test(
-          'should reject create when senderId is null (system uses Cloud Functions)',
-          () async {
-        // Arrange - notification without senderId (system notification)
-        final notification = _createNotification('user-123');
+        'should reject create when senderId is null (system uses Cloud Functions)',
+        () async {
+          // Arrange - notification without senderId (system notification)
+          final notification = _createNotification('user-123');
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('system', notification);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'system',
+            notification,
+          );
 
-        // Assert - system notifications now go through Cloud Functions, not client SDK
-        expect(canCreate, isFalse);
-      });
+          // Assert - system notifications now go through Cloud Functions, not client SDK
+          expect(canCreate, isFalse);
+        },
+      );
 
-      test('should allow users to create notification for themselves',
-          () async {
-        // Arrange - senderId must match the authenticated user
-        final notification =
-            _createNotification('user-123', senderId: 'user-123');
+      test(
+        'should allow users to create notification for themselves',
+        () async {
+          // Arrange - senderId must match the authenticated user
+          final notification = _createNotification(
+            'user-123',
+            senderId: 'user-123',
+          );
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', notification);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'user-123',
+            notification,
+          );
 
-        // Assert
-        expect(canCreate, isTrue);
-      });
+          // Assert
+          expect(canCreate, isTrue);
+        },
+      );
 
       test('should allow user to read their own notification', () async {
         // Arrange
@@ -91,29 +100,40 @@ void main() {
 
         // Act
         final canRead = await repository.validateReadPermission(
-            'user-123', 'notif-1', notification);
+          'user-123',
+          'notif-1',
+          notification,
+        );
 
         // Assert
         expect(canRead, isTrue);
       });
 
-      test('should reject user from reading another user\'s notification',
-          () async {
-        // Arrange
-        final notification = _createNotification('other-user');
+      test(
+        'should reject user from reading another user\'s notification',
+        () async {
+          // Arrange
+          final notification = _createNotification('other-user');
 
-        // Act
-        final canRead = await repository.validateReadPermission(
-            'user-123', 'notif-1', notification);
+          // Act
+          final canRead = await repository.validateReadPermission(
+            'user-123',
+            'notif-1',
+            notification,
+          );
 
-        // Assert
-        expect(canRead, isFalse); // Can't read other user's notifications
-      });
+          // Assert
+          expect(canRead, isFalse); // Can't read other user's notifications
+        },
+      );
 
       test('should reject read when notification is null', () async {
         // Act
         final canRead = await repository.validateReadPermission(
-            'user-123', 'notif-1', null);
+          'user-123',
+          'notif-1',
+          null,
+        );
 
         // Assert
         expect(canRead, isFalse);
@@ -125,60 +145,80 @@ void main() {
 
         // Act
         final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'notif-1', notification);
+          'user-123',
+          'notif-1',
+          notification,
+        );
 
         // Assert
         expect(canUpdate, isTrue);
       });
 
-      test('should reject user from updating another user\'s notification',
-          () async {
-        // Arrange
-        final notification = _createNotification('other-user');
+      test(
+        'should reject user from updating another user\'s notification',
+        () async {
+          // Arrange
+          final notification = _createNotification('other-user');
 
-        // Act
-        final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'notif-1', notification);
+          // Act
+          final canUpdate = await repository.validateUpdatePermission(
+            'user-123',
+            'notif-1',
+            notification,
+          );
 
-        // Assert
-        expect(canUpdate, isFalse);
-      });
+          // Assert
+          expect(canUpdate, isFalse);
+        },
+      );
 
       test('should allow user to delete their own notification', () async {
         // Arrange
         const notificationId = 'notif-1';
-        final notification =
-            _createNotification('user-123', id: notificationId);
+        final notification = _createNotification(
+          'user-123',
+          id: notificationId,
+        );
         await _seedNotification(fakeFirestore, notificationId, notification);
 
         // Act
         final canDelete = await repository.validateDeletePermission(
-            'user-123', notificationId);
+          'user-123',
+          notificationId,
+        );
 
         // Assert
         expect(canDelete, isTrue);
       });
 
-      test('should reject user from deleting another user\'s notification',
-          () async {
-        // Arrange
-        const notificationId = 'notif-1';
-        final notification =
-            _createNotification('other-user', id: notificationId);
-        await _seedNotification(fakeFirestore, notificationId, notification);
+      test(
+        'should reject user from deleting another user\'s notification',
+        () async {
+          // Arrange
+          const notificationId = 'notif-1';
+          final notification = _createNotification(
+            'other-user',
+            id: notificationId,
+          );
+          await _seedNotification(fakeFirestore, notificationId, notification);
 
-        // Act
-        final canDelete = await repository.validateDeletePermission(
-            'user-123', notificationId);
+          // Act
+          final canDelete = await repository.validateDeletePermission(
+            'user-123',
+            notificationId,
+          );
 
-        // Assert
-        expect(canDelete, isFalse);
-      });
+          // Assert
+          expect(canDelete, isFalse);
+        },
+      );
 
       test('should reject delete when notification does not exist', () async {
         // Act
         final canDelete = await repository.validateDeletePermission(
-            'user-123', 'nonexistent');
+          'user-123',
+          'nonexistent',
+        );
 
         // Assert
         expect(canDelete, isFalse);
@@ -206,8 +246,9 @@ void main() {
           );
 
           // Assert
-          final docs =
-              await fakeFirestore.collection('user_notifications').get();
+          final docs = await fakeFirestore
+              .collection('user_notifications')
+              .get();
           expect(docs.docs.length, equals(1));
           final notificationData = docs.docs.first.data();
           expect(notificationData['userId'], equals(userId));
@@ -238,11 +279,14 @@ void main() {
           );
 
           // Assert
-          final docs =
-              await fakeFirestore.collection('user_notifications').get();
+          final docs = await fakeFirestore
+              .collection('user_notifications')
+              .get();
           expect(docs.docs.length, equals(3));
           expect(
-              docs.docs.every((doc) => doc.data()['title'] == title), isTrue);
+            docs.docs.every((doc) => doc.data()['title'] == title),
+            isTrue,
+          );
         },
       );
     });
@@ -251,19 +295,30 @@ void main() {
       test('should retrieve user notifications', () async {
         // Arrange
         const userId = 'user-123';
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification(userId, id: 'notif-1'));
-        await _seedNotification(fakeFirestore, 'notif-2',
-            _createNotification(userId, id: 'notif-2'));
-        await _seedNotification(fakeFirestore, 'notif-3',
-            _createNotification('other-user', id: 'notif-3'));
+        await _seedNotification(
+          fakeFirestore,
+          'notif-1',
+          _createNotification(userId, id: 'notif-1'),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'notif-2',
+          _createNotification(userId, id: 'notif-2'),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'notif-3',
+          _createNotification('other-user', id: 'notif-3'),
+        );
 
         // Act
         final notifications = await repository.getUserNotifications(userId);
 
         // Assert
         expect(
-            notifications.length, equals(2)); // Only user-123's notifications
+          notifications.length,
+          equals(2),
+        ); // Only user-123's notifications
         expect(notifications.every((n) => n.userId == userId), isTrue);
       });
 
@@ -271,13 +326,18 @@ void main() {
         // Arrange
         const userId = 'user-123';
         for (int i = 0; i < 60; i++) {
-          await _seedNotification(fakeFirestore, 'notif-$i',
-              _createNotification(userId, id: 'notif-$i'));
+          await _seedNotification(
+            fakeFirestore,
+            'notif-$i',
+            _createNotification(userId, id: 'notif-$i'),
+          );
         }
 
         // Act
-        final notifications =
-            await repository.getUserNotifications(userId, limit: 50);
+        final notifications = await repository.getUserNotifications(
+          userId,
+          limit: 50,
+        );
 
         // Assert
         expect(notifications.length, equals(50)); // Enforces limit
@@ -290,13 +350,20 @@ void main() {
         final oldDate = now.subtract(const Duration(days: 5));
         final recentDate = now.subtract(const Duration(hours: 1));
 
-        await _seedNotification(fakeFirestore, 'old-notif',
-            _createNotification(userId, id: 'old-notif', createdAt: oldDate));
         await _seedNotification(
-            fakeFirestore,
-            'recent-notif',
-            _createNotification(userId,
-                id: 'recent-notif', createdAt: recentDate));
+          fakeFirestore,
+          'old-notif',
+          _createNotification(userId, id: 'old-notif', createdAt: oldDate),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'recent-notif',
+          _createNotification(
+            userId,
+            id: 'recent-notif',
+            createdAt: recentDate,
+          ),
+        );
 
         // Act
         final notifications = await repository.getUserNotifications(
@@ -311,8 +378,9 @@ void main() {
 
       test('should return empty list when user has no notifications', () async {
         // Act
-        final notifications =
-            await repository.getUserNotifications('user-with-no-notifications');
+        final notifications = await repository.getUserNotifications(
+          'user-with-no-notifications',
+        );
 
         // Assert
         expect(notifications, isEmpty);
@@ -325,8 +393,11 @@ void main() {
         () async {
           // Arrange
           const notificationId = 'notif-1';
-          final notification = _createNotification('user-123',
-              id: notificationId, isRead: false);
+          final notification = _createNotification(
+            'user-123',
+            id: notificationId,
+            isRead: false,
+          );
           await _seedNotification(fakeFirestore, notificationId, notification);
 
           // Act
@@ -341,20 +412,24 @@ void main() {
         },
       );
 
-      test('should reject marking another user\'s notification as read',
-          () async {
-        // Arrange
-        const notificationId = 'notif-1';
-        final notification =
-            _createNotification('other-user', id: notificationId);
-        await _seedNotification(fakeFirestore, notificationId, notification);
+      test(
+        'should reject marking another user\'s notification as read',
+        () async {
+          // Arrange
+          const notificationId = 'notif-1';
+          final notification = _createNotification(
+            'other-user',
+            id: notificationId,
+          );
+          await _seedNotification(fakeFirestore, notificationId, notification);
 
-        // Act & Assert
-        expect(
-          () => repository.markAsRead(notificationId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () => repository.markAsRead(notificationId),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
 
       test('should reject when notification does not exist', () async {
         // Act & Assert
@@ -372,8 +447,11 @@ void main() {
           // Arrange
           const notificationIds = ['notif-1', 'notif-2', 'notif-3'];
           for (final id in notificationIds) {
-            await _seedNotification(fakeFirestore, id,
-                _createNotification('user-123', id: id, isRead: false));
+            await _seedNotification(
+              fakeFirestore,
+              id,
+              _createNotification('user-123', id: id, isRead: false),
+            );
           }
 
           // Act
@@ -390,21 +468,29 @@ void main() {
         },
       );
 
-      test('should reject marking another user\'s notifications as read',
-          () async {
-        // Arrange
-        const notificationIds = ['notif-1', 'notif-2'];
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification('user-123', id: 'notif-1'));
-        await _seedNotification(fakeFirestore, 'notif-2',
-            _createNotification('other-user', id: 'notif-2'));
+      test(
+        'should reject marking another user\'s notifications as read',
+        () async {
+          // Arrange
+          const notificationIds = ['notif-1', 'notif-2'];
+          await _seedNotification(
+            fakeFirestore,
+            'notif-1',
+            _createNotification('user-123', id: 'notif-1'),
+          );
+          await _seedNotification(
+            fakeFirestore,
+            'notif-2',
+            _createNotification('other-user', id: 'notif-2'),
+          );
 
-        // Act & Assert
-        expect(
-          () => repository.markMultipleAsRead(notificationIds),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () => repository.markMultipleAsRead(notificationIds),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     group('Mark All As Read', () {
@@ -413,12 +499,21 @@ void main() {
         () async {
           // Arrange
           const userId = 'user-123';
-          await _seedNotification(fakeFirestore, 'notif-1',
-              _createNotification(userId, id: 'notif-1', isRead: false));
-          await _seedNotification(fakeFirestore, 'notif-2',
-              _createNotification(userId, id: 'notif-2', isRead: false));
-          await _seedNotification(fakeFirestore, 'notif-3',
-              _createNotification('other-user', id: 'notif-3', isRead: false));
+          await _seedNotification(
+            fakeFirestore,
+            'notif-1',
+            _createNotification(userId, id: 'notif-1', isRead: false),
+          );
+          await _seedNotification(
+            fakeFirestore,
+            'notif-2',
+            _createNotification(userId, id: 'notif-2', isRead: false),
+          );
+          await _seedNotification(
+            fakeFirestore,
+            'notif-3',
+            _createNotification('other-user', id: 'notif-3', isRead: false),
+          );
 
           // Act
           await repository.markAllAsRead(userId);
@@ -439,27 +534,33 @@ void main() {
 
           expect(doc1.data()!['isRead'], isTrue); // user-123's notification
           expect(doc2.data()!['isRead'], isTrue); // user-123's notification
-          expect(doc3.data()!['isRead'],
-              isFalse); // other-user's notification unchanged
+          expect(
+            doc3.data()!['isRead'],
+            isFalse,
+          ); // other-user's notification unchanged
         },
       );
 
-      test('should reject marking all notifications for another user',
-          () async {
-        // Act & Assert
-        expect(
-          () => repository.markAllAsRead('other-user'),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+      test(
+        'should reject marking all notifications for another user',
+        () async {
+          // Act & Assert
+          expect(
+            () => repository.markAllAsRead('other-user'),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     group('Delete Notification', () {
       test('should delete notification successfully', () async {
         // Arrange
         const notificationId = 'notif-1';
-        final notification =
-            _createNotification('user-123', id: notificationId);
+        final notification = _createNotification(
+          'user-123',
+          id: notificationId,
+        );
         await _seedNotification(fakeFirestore, notificationId, notification);
 
         // Verify notification exists
@@ -483,8 +584,10 @@ void main() {
       test('should reject deleting another user\'s notification', () async {
         // Arrange
         const notificationId = 'notif-1';
-        final notification =
-            _createNotification('other-user', id: notificationId);
+        final notification = _createNotification(
+          'other-user',
+          id: notificationId,
+        );
         await _seedNotification(fakeFirestore, notificationId, notification);
 
         // Act & Assert
@@ -507,12 +610,21 @@ void main() {
       test('should count unread notifications correctly', () async {
         // Arrange
         const userId = 'user-123';
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification(userId, id: 'notif-1', isRead: false));
-        await _seedNotification(fakeFirestore, 'notif-2',
-            _createNotification(userId, id: 'notif-2', isRead: false));
-        await _seedNotification(fakeFirestore, 'notif-3',
-            _createNotification(userId, id: 'notif-3', isRead: true));
+        await _seedNotification(
+          fakeFirestore,
+          'notif-1',
+          _createNotification(userId, id: 'notif-1', isRead: false),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'notif-2',
+          _createNotification(userId, id: 'notif-2', isRead: false),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'notif-3',
+          _createNotification(userId, id: 'notif-3', isRead: true),
+        );
 
         // Act
         final count = await repository.getUnreadCount(userId);
@@ -524,8 +636,11 @@ void main() {
       test('should return 0 when all notifications are read', () async {
         // Arrange
         const userId = 'user-123';
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification(userId, id: 'notif-1', isRead: true));
+        await _seedNotification(
+          fakeFirestore,
+          'notif-1',
+          _createNotification(userId, id: 'notif-1', isRead: true),
+        );
 
         // Act
         final count = await repository.getUnreadCount(userId);
@@ -536,8 +651,9 @@ void main() {
 
       test('should return 0 when user has no notifications', () async {
         // Act
-        final count =
-            await repository.getUnreadCount('user-with-no-notifications');
+        final count = await repository.getUnreadCount(
+          'user-with-no-notifications',
+        );
 
         // Assert
         expect(count, equals(0));
@@ -548,10 +664,16 @@ void main() {
       test('should stream user notifications', () async {
         // Arrange
         const userId = 'user-123';
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification(userId, id: 'notif-1'));
-        await _seedNotification(fakeFirestore, 'notif-2',
-            _createNotification(userId, id: 'notif-2'));
+        await _seedNotification(
+          fakeFirestore,
+          'notif-1',
+          _createNotification(userId, id: 'notif-1'),
+        );
+        await _seedNotification(
+          fakeFirestore,
+          'notif-2',
+          _createNotification(userId, id: 'notif-2'),
+        );
 
         // Act
         final stream = repository.getNotificationsStream(userId);
@@ -559,10 +681,12 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<UserNotification>>((notifications) {
-            return notifications.length == 2 &&
-                notifications.every((n) => n.userId == userId);
-          })),
+          completion(
+            predicate<List<UserNotification>>((notifications) {
+              return notifications.length == 2 &&
+                  notifications.every((n) => n.userId == userId);
+            }),
+          ),
         );
       });
 
@@ -570,8 +694,11 @@ void main() {
         // Arrange
         const userId = 'user-123';
         for (int i = 0; i < 60; i++) {
-          await _seedNotification(fakeFirestore, 'notif-$i',
-              _createNotification(userId, id: 'notif-$i'));
+          await _seedNotification(
+            fakeFirestore,
+            'notif-$i',
+            _createNotification(userId, id: 'notif-$i'),
+          );
         }
 
         // Act
@@ -580,62 +707,77 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<UserNotification>>((notifications) {
-            return notifications.length == 50; // Enforces limit
-          })),
+          completion(
+            predicate<List<UserNotification>>((notifications) {
+              return notifications.length == 50; // Enforces limit
+            }),
+          ),
         );
       });
 
-      test('should return empty stream when user has no notifications',
-          () async {
-        // Act
-        final stream =
-            repository.getNotificationsStream('user-with-no-notifications');
+      test(
+        'should return empty stream when user has no notifications',
+        () async {
+          // Act
+          final stream = repository.getNotificationsStream(
+            'user-with-no-notifications',
+          );
 
-        // Assert
-        await expectLater(
-          stream.first,
-          completion(isEmpty),
-        );
-      });
+          // Assert
+          await expectLater(
+            stream.first,
+            completion(isEmpty),
+          );
+        },
+      );
     });
 
     group('Notification Preferences', () {
       test(
-          'should serialize notification preferences with correct field structure',
-          () {
-        // Arrange
-        final preferences = NotificationPreferences.defaults();
+        'should serialize notification preferences with correct field structure',
+        () {
+          // Arrange
+          final preferences = NotificationPreferences.defaults();
 
-        // Act - verify toFirestore() output directly (avoids FakeFirebaseFirestore
-        // FieldValue.serverTimestamp() limitation with SetOptions merge)
-        final data = preferences.toFirestore();
+          // Act - verify toFirestore() output directly (avoids FakeFirebaseFirestore
+          // FieldValue.serverTimestamp() limitation with SetOptions merge)
+          final data = preferences.toFirestore();
 
-        // Assert - verify structure matches current NotificationPreferences model
-        expect(data['enabled'], isTrue);
-        expect(data['allowBatching'], isTrue);
-        expect(data['soundEnabled'], isTrue);
-        expect(data['vibrationEnabled'], isTrue);
-        expect(data['digestFrequency'], equals('never'));
+          // Assert - verify structure matches current NotificationPreferences model
+          expect(data['enabled'], isTrue);
+          expect(data['allowBatching'], isTrue);
+          expect(data['soundEnabled'], isTrue);
+          expect(data['vibrationEnabled'], isTrue);
+          expect(data['digestFrequency'], equals('never'));
 
-        // Verify nested categorySettings map (use enum.toString() to stay in sync with serialization)
-        final categorySettings = data['categorySettings'] as Map<String, bool>;
-        expect(
-            categorySettings[NotificationCategory.friends.toString()], isTrue);
-        expect(
-            categorySettings[NotificationCategory.recipes.toString()], isTrue);
-        expect(categorySettings[NotificationCategory.shopping.toString()],
-            isFalse);
-        expect(
-            categorySettings[NotificationCategory.social.toString()], isFalse);
+          // Verify nested categorySettings map (use enum.toString() to stay in sync with serialization)
+          final categorySettings =
+              data['categorySettings'] as Map<String, bool>;
+          expect(
+            categorySettings[NotificationCategory.friends.toString()],
+            isTrue,
+          );
+          expect(
+            categorySettings[NotificationCategory.recipes.toString()],
+            isTrue,
+          );
+          expect(
+            categorySettings[NotificationCategory.shopping.toString()],
+            isFalse,
+          );
+          expect(
+            categorySettings[NotificationCategory.social.toString()],
+            isFalse,
+          );
 
-        // Verify nested typeSettings map
-        final typeSettings = data['typeSettings'] as Map<String, bool>;
-        expect(typeSettings[NotificationType.immediate.toString()], isTrue);
-        expect(typeSettings[NotificationType.batchable.toString()], isTrue);
-        expect(typeSettings[NotificationType.digest.toString()], isFalse);
-        expect(typeSettings[NotificationType.optional.toString()], isFalse);
-      });
+          // Verify nested typeSettings map
+          final typeSettings = data['typeSettings'] as Map<String, bool>;
+          expect(typeSettings[NotificationType.immediate.toString()], isTrue);
+          expect(typeSettings[NotificationType.batchable.toString()], isTrue);
+          expect(typeSettings[NotificationType.digest.toString()], isFalse);
+          expect(typeSettings[NotificationType.optional.toString()], isFalse);
+        },
+      );
 
       test('should reject updating preferences for another user', () async {
         // Arrange
@@ -644,7 +786,9 @@ void main() {
         // Act & Assert
         expect(
           () => repository.updateNotificationPreferences(
-              'other-user', preferences),
+            'other-user',
+            preferences,
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
       });
@@ -656,27 +800,27 @@ void main() {
             .collection('user_notification_preferences')
             .doc(userId)
             .set({
-          'enabled': false,
-          'categorySettings': {
-            'NotificationCategory.friends': true,
-            'NotificationCategory.recipes': false,
-            'NotificationCategory.collaboration': true,
-            'NotificationCategory.shopping': false,
-            'NotificationCategory.social': false,
-            'NotificationCategory.system': true,
-          },
-          'typeSettings': {
-            'NotificationType.immediate': true,
-            'NotificationType.batchable': true,
-            'NotificationType.silent': true,
-            'NotificationType.digest': false,
-            'NotificationType.optional': false,
-          },
-          'allowBatching': true,
-          'digestFrequency': 'daily',
-          'soundEnabled': false,
-          'vibrationEnabled': false,
-        });
+              'enabled': false,
+              'categorySettings': {
+                'NotificationCategory.friends': true,
+                'NotificationCategory.recipes': false,
+                'NotificationCategory.collaboration': true,
+                'NotificationCategory.shopping': false,
+                'NotificationCategory.social': false,
+                'NotificationCategory.system': true,
+              },
+              'typeSettings': {
+                'NotificationType.immediate': true,
+                'NotificationType.batchable': true,
+                'NotificationType.silent': true,
+                'NotificationType.digest': false,
+                'NotificationType.optional': false,
+              },
+              'allowBatching': true,
+              'digestFrequency': 'daily',
+              'soundEnabled': false,
+              'vibrationEnabled': false,
+            });
 
         // Act
         final preferences = await repository.getNotificationPreferences(userId);
@@ -691,8 +835,9 @@ void main() {
 
       test('should return default preferences when none exist', () async {
         // Act
-        final preferences =
-            await repository.getNotificationPreferences('user-with-no-prefs');
+        final preferences = await repository.getNotificationPreferences(
+          'user-with-no-prefs',
+        );
 
         // Assert - All defaults should be true
         expect(preferences.enabled, isTrue);
@@ -703,31 +848,45 @@ void main() {
     });
 
     group('Notification Model Integration', () {
-      test('should correctly serialize and deserialize notifications',
-          () async {
-        // Arrange
-        const notificationId = 'notif-1';
-        final originalNotification =
-            _createNotification('user-123', id: notificationId);
-        await _seedNotification(
-            fakeFirestore, notificationId, originalNotification);
+      test(
+        'should correctly serialize and deserialize notifications',
+        () async {
+          // Arrange
+          const notificationId = 'notif-1';
+          final originalNotification = _createNotification(
+            'user-123',
+            id: notificationId,
+          );
+          await _seedNotification(
+            fakeFirestore,
+            notificationId,
+            originalNotification,
+          );
 
-        // Act
-        final doc = await fakeFirestore
-            .collection('user_notifications')
-            .doc(notificationId)
-            .get();
-        final retrievedNotification =
-            UserNotification.fromFirestore(doc.data()!, doc.id);
+          // Act
+          final doc = await fakeFirestore
+              .collection('user_notifications')
+              .doc(notificationId)
+              .get();
+          final retrievedNotification = UserNotification.fromFirestore(
+            doc.data()!,
+            doc.id,
+          );
 
-        // Assert
-        expect(retrievedNotification.id, equals(originalNotification.id));
-        expect(
-            retrievedNotification.userId, equals(originalNotification.userId));
-        expect(retrievedNotification.type, equals(originalNotification.type));
-        expect(retrievedNotification.title, equals(originalNotification.title));
-        expect(retrievedNotification.body, equals(originalNotification.body));
-      });
+          // Assert
+          expect(retrievedNotification.id, equals(originalNotification.id));
+          expect(
+            retrievedNotification.userId,
+            equals(originalNotification.userId),
+          );
+          expect(retrievedNotification.type, equals(originalNotification.type));
+          expect(
+            retrievedNotification.title,
+            equals(originalNotification.title),
+          );
+          expect(retrievedNotification.body, equals(originalNotification.body));
+        },
+      );
     });
   });
 }

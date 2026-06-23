@@ -25,16 +25,18 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      registerFallbackValue(GroupInvitation(
-        id: 'test',
-        groupId: '',
-        groupName: '',
-        groupEmoji: '',
-        fromUserId: 'test',
-        fromUserName: 'Test',
-        toUserId: 'test',
-        sentAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        GroupInvitation(
+          id: 'test',
+          groupId: '',
+          groupName: '',
+          groupEmoji: '',
+          fromUserId: 'test',
+          fromUserName: 'Test',
+          toUserId: 'test',
+          sentAt: DateTime.now(),
+        ),
+      );
       registerFallbackValue(GroupInvitationStatus.pending);
     });
 
@@ -127,16 +129,18 @@ void main() {
 
       test('should not send duplicate email invitation', () async {
         // Arrange - Add existing invitation
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: 'existing-1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'friend@example.com',
-          sentAt: DateTime.now(),
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: 'existing-1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'friend@example.com',
+            sentAt: DateTime.now(),
+          ),
+        );
 
         // Act
         final result = await operations.sendEmailInvitation(
@@ -146,8 +150,10 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        expect(mockParentService.sentInvitationsList.length,
-            equals(1)); // Still just 1
+        expect(
+          mockParentService.sentInvitationsList.length,
+          equals(1),
+        ); // Still just 1
       });
 
       test('should use default sender name if not provided', () async {
@@ -197,16 +203,18 @@ void main() {
 
       test('should not send duplicate SMS invitation', () async {
         // Arrange - Add existing invitation
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: 'existing-1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: '+46701234567',
-          sentAt: DateTime.now(),
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: 'existing-1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: '+46701234567',
+            sentAt: DateTime.now(),
+          ),
+        );
 
         // Act
         final result = await operations.sendSMSInvitation(
@@ -235,7 +243,9 @@ void main() {
 
         final invitation = mockParentService.sentInvitationsList.first;
         expect(
-            invitation.personalMessage, equals('Join my cooking community!'));
+          invitation.personalMessage,
+          equals('Join my cooking community!'),
+        );
         expect(invitation.expiresAt, isNotNull);
       });
 
@@ -327,8 +337,9 @@ void main() {
         // Assert
         expect(result, isTrue);
 
-        final cancelled =
-            mockParentService.getSentInvitationByIdInternal('inv-123');
+        final cancelled = mockParentService.getSentInvitationByIdInternal(
+          'inv-123',
+        );
         expect(cancelled!.status, equals(GroupInvitationStatus.cancelled));
       });
 
@@ -353,8 +364,9 @@ void main() {
         // Assert
         expect(result, isFalse);
 
-        final invitation2 =
-            mockParentService.getSentInvitationByIdInternal('inv-123');
+        final invitation2 = mockParentService.getSentInvitationByIdInternal(
+          'inv-123',
+        );
         expect(invitation2!.status, equals(GroupInvitationStatus.accepted));
       });
 
@@ -379,8 +391,9 @@ void main() {
         // Assert
         expect(result, isTrue);
 
-        final resent =
-            mockParentService.getSentInvitationByIdInternal('inv-123');
+        final resent = mockParentService.getSentInvitationByIdInternal(
+          'inv-123',
+        );
         expect(resent!.status, equals(GroupInvitationStatus.pending));
       });
 
@@ -427,8 +440,9 @@ void main() {
         // Assert
         expect(result, isTrue);
 
-        final viewed =
-            mockParentService.getSentInvitationByIdInternal('inv-123');
+        final viewed = mockParentService.getSentInvitationByIdInternal(
+          'inv-123',
+        );
         expect(viewed?.respondedAt, isNotNull);
       });
     });
@@ -436,28 +450,32 @@ void main() {
     group('Invitation Queries', () {
       test('should get pending invitations', () {
         // Arrange - seed with known invitations
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'test@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.pending,
-        ));
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '2',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'other@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.accepted,
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'test@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.pending,
+          ),
+        );
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '2',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'other@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.accepted,
+          ),
+        );
 
         // Act
         final pending = operations.getPendingInvitations();
@@ -469,32 +487,37 @@ void main() {
 
       test('should get invitations by status', () {
         // Arrange - seed with known invitations
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'test@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.pending,
-        ));
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '2',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'other@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.accepted,
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'test@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.pending,
+          ),
+        );
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '2',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'other@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.accepted,
+          ),
+        );
 
         // Act
-        final accepted =
-            operations.getInvitationsByStatus(GroupInvitationStatus.accepted);
+        final accepted = operations.getInvitationsByStatus(
+          GroupInvitationStatus.accepted,
+        );
 
         // Assert
         expect(accepted.length, equals(1));
@@ -503,17 +526,19 @@ void main() {
 
       test('should check if invitation exists', () {
         // Arrange - seed with known invitation
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'test@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.pending,
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'test@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.pending,
+          ),
+        );
 
         // Act & Assert
         expect(operations.hasInvitation(email: 'test@example.com'), isTrue);
@@ -522,39 +547,45 @@ void main() {
 
       test('should get invitation statistics', () {
         // Arrange - seed with known invitations
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '1',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'a@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.pending,
-        ));
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '2',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'b@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.accepted,
-        ));
-        mockParentService.addSentInvitationInternal(GroupInvitation(
-          id: '3',
-          groupId: '',
-          groupName: '',
-          groupEmoji: '',
-          fromUserId: 'test-user-123',
-          fromUserName: 'Test User',
-          toUserId: 'c@example.com',
-          sentAt: DateTime.now(),
-          status: GroupInvitationStatus.rejected,
-        ));
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '1',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'a@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.pending,
+          ),
+        );
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '2',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'b@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.accepted,
+          ),
+        );
+        mockParentService.addSentInvitationInternal(
+          GroupInvitation(
+            id: '3',
+            groupId: '',
+            groupName: '',
+            groupEmoji: '',
+            fromUserId: 'test-user-123',
+            fromUserName: 'Test User',
+            toUserId: 'c@example.com',
+            sentAt: DateTime.now(),
+            status: GroupInvitationStatus.rejected,
+          ),
+        );
 
         // Act
         final stats = operations.getInvitationStats();

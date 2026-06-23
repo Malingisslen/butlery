@@ -49,18 +49,20 @@ void main() {
       expect(e.engagedAt.toUtc(), DateTime.utc(2026, 1, 1));
     });
 
-    test('safe-default for missing action; targetId null when absent',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection('e').doc('alice').set({
-        'userId': 'alice',
-        'timestamp': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
-      });
-      final doc = await firestore.collection('e').doc('alice').get();
-      final e = EngagementMetadata.fromFirestore(doc);
-      expect(e.action, '');
-      expect(e.targetId, isNull);
-    });
+    test(
+      'safe-default for missing action; targetId null when absent',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('e').doc('alice').set({
+          'userId': 'alice',
+          'timestamp': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        });
+        final doc = await firestore.collection('e').doc('alice').get();
+        final e = EngagementMetadata.fromFirestore(doc);
+        expect(e.action, '');
+        expect(e.targetId, isNull);
+      },
+    );
   });
 
   group('equality', () {

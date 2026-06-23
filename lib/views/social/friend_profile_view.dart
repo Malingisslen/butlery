@@ -84,8 +84,10 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 value: 'report',
                 child: Row(
                   children: [
-                    Icon(Icons.flag_outlined,
-                        color: Theme.of(context).colorScheme.error),
+                    Icon(
+                      Icons.flag_outlined,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(context.l10n.reportContent),
                   ],
@@ -146,9 +148,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             style: friend.bio?.isNotEmpty == true
                                 ? AppTextStyles.bodyMedium
                                 : AppTextStyles.bodyMedium.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                             textAlign: TextAlign.center,
                           ),
@@ -198,7 +200,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                 ),
                                 icon: const Icon(Icons.restaurant_menu),
                                 label: Text(
-                                    context.l10n.publicProfilePublicRecipes),
+                                  context.l10n.publicProfilePublicRecipes,
+                                ),
                               ),
                             ),
                           ],
@@ -218,7 +221,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                               ),
                               icon: const Icon(Icons.folder_shared_outlined),
                               label: Text(
-                                  context.l10n.sharedRecipesByFriendButton),
+                                context.l10n.sharedRecipesByFriendButton,
+                              ),
                             ),
                           ),
 
@@ -236,10 +240,13 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                           : () => _startConversation(context),
                                       icon: _isStartingConversation
                                           ? const LoadingIndicator(
-                                              size: 16, strokeWidth: 2)
+                                              size: 16,
+                                              strokeWidth: 2,
+                                            )
                                           : const Icon(Icons.message),
-                                      label:
-                                          Text(context.l10n.socialSendMessage),
+                                      label: Text(
+                                        context.l10n.socialSendMessage,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: AppDimensions.spacingL),
@@ -248,8 +255,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                       onPressed: () =>
                                           _showRecipeSelection(context),
                                       icon: const Icon(Icons.share),
-                                      label:
-                                          Text(context.l10n.socialShareRecipe),
+                                      label: Text(
+                                        context.l10n.socialShareRecipe,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -261,7 +269,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   onPressed: () => _shareProfile(context),
                                   icon: const Icon(Icons.link),
                                   label: Text(
-                                      context.l10n.publicProfileShareButton),
+                                    context.l10n.publicProfileShareButton,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: AppDimensions.spacingM),
@@ -271,7 +280,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   onPressed: () =>
                                       _showRemoveFriendDialog(context),
                                   style: ComponentThemes.deleteButtonStyle(
-                                      Theme.of(context).colorScheme),
+                                    Theme.of(context).colorScheme,
+                                  ),
                                   icon: const Icon(Icons.person_remove),
                                   label: Text(context.l10n.socialRemoveFriend),
                                 ),
@@ -338,10 +348,12 @@ class _FriendProfileViewState extends State<FriendProfileView> {
 
   Future<void> _shareProfile(BuildContext context) async {
     final profileUrl = DeepLinkService.generateProfileLink(friend.uid);
-    await SharePlus.instance.share(ShareParams(
-      text: profileUrl,
-      subject: friend.displayName,
-    ));
+    await SharePlus.instance.share(
+      ShareParams(
+        text: profileUrl,
+        subject: friend.displayName,
+      ),
+    );
   }
 
   Future<void> _showRemoveFriendDialog(BuildContext context) async {

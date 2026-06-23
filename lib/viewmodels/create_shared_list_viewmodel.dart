@@ -32,10 +32,10 @@ class CreateSharedListViewModel extends BaseViewModel {
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
     UnifiedFriendsService? friendsService,
-  })  : _shoppingService =
-            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
-        _friendsService =
-            friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
+  }) : _shoppingService =
+           shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
+       _friendsService =
+           friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
   String get title => _title;
   String get description => _description;
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
@@ -68,8 +68,9 @@ class CreateSharedListViewModel extends BaseViewModel {
     if (_selectedFriendIds.isEmpty) {
       return AppLocale.current.selectionNoFriendsSelected;
     }
-    return AppLocale.current
-        .selectionFriendsSelected(_selectedFriendIds.length);
+    return AppLocale.current.selectionFriendsSelected(
+      _selectedFriendIds.length,
+    );
   }
 
   String get trimmedTitle => _title.trim();
@@ -91,7 +92,8 @@ class CreateSharedListViewModel extends BaseViewModel {
     }
 
     AppLogger.info(
-        '🔧 CreateSharedListViewModel initialiserad med menu: ${menu?.keys.join(", ")}');
+      '🔧 CreateSharedListViewModel initialiserad med menu: ${menu?.keys.join(", ")}',
+    );
   }
 
   void updateTitle(String value) {
@@ -147,7 +149,8 @@ class CreateSharedListViewModel extends BaseViewModel {
 
     try {
       AppLogger.info(
-          '🔄 Skapar delad lista: "$trimmedTitle" med ${_selectedFriendIds.length} vänner');
+        '🔄 Skapar delad lista: "$trimmedTitle" med ${_selectedFriendIds.length} vänner',
+      );
 
       // Create member display names map from friend IDs
       final memberDisplayNames = <String, String>{};
@@ -219,11 +222,11 @@ class CreateSharedListViewModel extends BaseViewModel {
   }
 
   Map<String, dynamic> get analyticsData => {
-        'title_length': _title.length,
-        'has_description': hasDescription,
-        'selected_friends_count': _selectedFriendIds.length,
-        'menu_days_count': _menu?.keys.length ?? 0,
-      };
+    'title_length': _title.length,
+    'has_description': hasDescription,
+    'selected_friends_count': _selectedFriendIds.length,
+    'menu_days_count': _menu?.keys.length ?? 0,
+  };
   @override
   void dispose() {
     AppLogger.info('🗑️ CreateSharedListViewModel disposed');

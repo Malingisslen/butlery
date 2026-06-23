@@ -56,7 +56,7 @@ enum RecipeType {
   /// Recipe with real-time collaborative editing capabilities.
   /// Realtime recipes support simultaneous editing by multiple users
   /// with live updates, operational transforms, and presence indicators.
-  realtime
+  realtime,
 }
 
 /// Status of recipe data integrity verification.
@@ -382,10 +382,10 @@ class RecipeCore with JsonSerializableMixin {
     this.nutritionInfo,
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
     this.schemaVersion = 1,
-  })  : id = id ?? const Uuid().v4(),
-        imageUrls = imageUrls ?? [],
-        createdAt = createdAt ?? clock.now(),
-        updatedAt = updatedAt ?? clock.now() {
+  }) : id = id ?? const Uuid().v4(),
+       imageUrls = imageUrls ?? [],
+       createdAt = createdAt ?? clock.now(),
+       updatedAt = updatedAt ?? clock.now() {
     // Debug-only: verify personalTagIds and personalTags stay in sync.
     // Both null or both non-null, and IDs must match when both present.
     assert(
@@ -455,8 +455,9 @@ class RecipeCore with JsonSerializableMixin {
     // Recompute checksum if critical fields changed
     final needsChecksumUpdate =
         title != null || ingredients != null || instructions != null;
-    final resolvedChecksum =
-        dataChecksum == _sentinel ? this.dataChecksum : dataChecksum as String?;
+    final resolvedChecksum = dataChecksum == _sentinel
+        ? this.dataChecksum
+        : dataChecksum as String?;
     final newChecksum = needsChecksumUpdate
         ? computeChecksum(
             id: id,
@@ -476,8 +477,9 @@ class RecipeCore with JsonSerializableMixin {
       title: newTitle,
       description: description ?? this.description,
       portions: portions == _sentinel ? this.portions : portions as int?,
-      timeMinutes:
-          timeMinutes == _sentinel ? this.timeMinutes : timeMinutes as int?,
+      timeMinutes: timeMinutes == _sentinel
+          ? this.timeMinutes
+          : timeMinutes as int?,
       ingredients: newIngredients,
       structuredIngredients: structuredIngredients == _sentinel
           ? this.structuredIngredients
@@ -516,8 +518,9 @@ class RecipeCore with JsonSerializableMixin {
       ingredientsNormalized: ingredientsNormalized == _sentinel
           ? this.ingredientsNormalized
           : (ingredientsNormalized as List?)?.cast<String>(),
-      ratingCount:
-          ratingCount == _sentinel ? this.ratingCount : ratingCount as int?,
+      ratingCount: ratingCount == _sentinel
+          ? this.ratingCount
+          : ratingCount as int?,
       averageRating: averageRating == _sentinel
           ? this.averageRating
           : averageRating as double?,
@@ -528,13 +531,15 @@ class RecipeCore with JsonSerializableMixin {
           ? this.lastRatedAt
           : lastRatedAt as DateTime?,
       dataChecksum: newChecksum,
-      tagResult:
-          tagResult == _sentinel ? this.tagResult : tagResult as TagResult?,
+      tagResult: tagResult == _sentinel
+          ? this.tagResult
+          : tagResult as TagResult?,
       tagOverrides: tagOverrides == _sentinel
           ? this.tagOverrides
           : tagOverrides as TagOverrides?,
-      heirloom:
-          heirloom == _sentinel ? this.heirloom : heirloom as HeirloomMetadata?,
+      heirloom: heirloom == _sentinel
+          ? this.heirloom
+          : heirloom as HeirloomMetadata?,
       personalTagVersion: personalTagVersion == _sentinel
           ? this.personalTagVersion
           : personalTagVersion as int?,
@@ -546,8 +551,9 @@ class RecipeCore with JsonSerializableMixin {
           ? this.cookTimeMinutes
           : cookTimeMinutes as int?,
       cuisine: cuisine == _sentinel ? this.cuisine : cuisine as String?,
-      difficulty:
-          difficulty == _sentinel ? this.difficulty : difficulty as String?,
+      difficulty: difficulty == _sentinel
+          ? this.difficulty
+          : difficulty as String?,
       nutritionInfo: nutritionInfo == _sentinel
           ? this.nutritionInfo
           : nutritionInfo as NutritionInfo?,
@@ -588,114 +594,122 @@ class RecipeCore with JsonSerializableMixin {
 
   @override
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'portions': portions,
-        'timeMinutes': timeMinutes,
-        'ingredients': ingredients,
-        // Omit when null so legacy/manual recipes stay legacy — readers
-        // treat absence as "no structured data" and fall back to raw.
-        if (structuredIngredients != null)
-          'structuredIngredients':
-              structuredIngredients!.map((i) => i.toJson()).toList(),
-        'instructions': instructions,
-        'personalTagIds': personalTagIds,
-        'personalTags': personalTags?.map((t) => t.toMap()).toList(),
-        'rating': rating,
-        'mealType': mealType,
-        'sourceUrl': sourceUrl,
-        'relatedRecipeIds': relatedRecipeIds,
-        'sourceArtefact': sourceArtefact?.toJson(),
-        'imageUrls': imageUrls,
-        'thumbnailUrl': thumbnailUrl,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
-        'createdBy': createdBy,
-        'isPublic': isPublic,
-        'lastCookedAt': lastCookedAt?.toIso8601String(),
-        // Omit cookCount when null so legacy recipes stay legacy — readers
-        // treat absence as "pre-counter era," distinct from an explicit 0.
-        if (cookCount != null) 'cookCount': cookCount,
-        'ingredientsNormalized': ingredientsNormalized,
-        'ratingCount': ratingCount,
-        'averageRating': averageRating,
-        'ratingDistribution': ratingDistribution,
-        'lastRatedAt': lastRatedAt?.toIso8601String(),
-        'dataChecksum': dataChecksum,
-        'tagResult': tagResult?.toJson(),
-        'tagOverrides': tagOverrides?.toJson(),
-        'heirloom': heirloom?.toJson(),
-        'personalTagVersion': personalTagVersion,
-        'isFavorite': isFavorite,
-        'prepTimeMinutes': prepTimeMinutes,
-        'cookTimeMinutes': cookTimeMinutes,
-        'cuisine': cuisine,
-        'difficulty': difficulty,
-        'nutritionInfo': nutritionInfo?.toJson(),
-        'schemaVersion': schemaVersion,
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'portions': portions,
+    'timeMinutes': timeMinutes,
+    'ingredients': ingredients,
+    // Omit when null so legacy/manual recipes stay legacy — readers
+    // treat absence as "no structured data" and fall back to raw.
+    if (structuredIngredients != null)
+      'structuredIngredients': structuredIngredients!
+          .map((i) => i.toJson())
+          .toList(),
+    'instructions': instructions,
+    'personalTagIds': personalTagIds,
+    'personalTags': personalTags?.map((t) => t.toMap()).toList(),
+    'rating': rating,
+    'mealType': mealType,
+    'sourceUrl': sourceUrl,
+    'relatedRecipeIds': relatedRecipeIds,
+    'sourceArtefact': sourceArtefact?.toJson(),
+    'imageUrls': imageUrls,
+    'thumbnailUrl': thumbnailUrl,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+    'createdBy': createdBy,
+    'isPublic': isPublic,
+    'lastCookedAt': lastCookedAt?.toIso8601String(),
+    // Omit cookCount when null so legacy recipes stay legacy — readers
+    // treat absence as "pre-counter era," distinct from an explicit 0.
+    if (cookCount != null) 'cookCount': cookCount,
+    'ingredientsNormalized': ingredientsNormalized,
+    'ratingCount': ratingCount,
+    'averageRating': averageRating,
+    'ratingDistribution': ratingDistribution,
+    'lastRatedAt': lastRatedAt?.toIso8601String(),
+    'dataChecksum': dataChecksum,
+    'tagResult': tagResult?.toJson(),
+    'tagOverrides': tagOverrides?.toJson(),
+    'heirloom': heirloom?.toJson(),
+    'personalTagVersion': personalTagVersion,
+    'isFavorite': isFavorite,
+    'prepTimeMinutes': prepTimeMinutes,
+    'cookTimeMinutes': cookTimeMinutes,
+    'cuisine': cuisine,
+    'difficulty': difficulty,
+    'nutritionInfo': nutritionInfo?.toJson(),
+    'schemaVersion': schemaVersion,
+  };
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'title': title,
-        'titleLower': title.toLowerCase(),
-        'description': description,
-        'portions': portions,
-        'timeMinutes': timeMinutes,
-        'ingredients': ingredients,
-        // Omit when null — see toJson.
-        if (structuredIngredients != null)
-          'structuredIngredients':
-              structuredIngredients!.map((i) => i.toJson()).toList(),
-        'instructions': instructions,
-        'personalTagIds': personalTagIds,
-        'personalTags': personalTags?.map((t) => t.toMap()).toList(),
-        'rating': rating,
-        'mealType': mealType,
-        'sourceUrl': sourceUrl,
-        'relatedRecipeIds': relatedRecipeIds,
-        'sourceArtefact': sourceArtefact?.toJson(),
-        'imageUrls': imageUrls,
-        'thumbnailUrl': thumbnailUrl,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'updatedAt': Timestamp.fromDate(updatedAt),
-        'createdBy': createdBy,
-        'isPublic': isPublic,
-        'lastCookedAt':
-            lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
-        // Safe-map: write cookCount only when set so legacy docs are untouched
-        // and the security rule's "null -> 1 on first increment" branch applies.
-        if (cookCount != null) 'cookCount': cookCount,
-        'ingredientsNormalized': ingredientsNormalized,
-        'ratingCount': ratingCount,
-        'averageRating': averageRating,
-        'ratingDistribution': ratingDistribution,
-        'lastRatedAt':
-            lastRatedAt != null ? Timestamp.fromDate(lastRatedAt!) : null,
-        'dataChecksum': dataChecksum,
-        'tagResult': tagResult?.toFirestore(),
-        'tagOverrides': tagOverrides?.toJson(),
-        'heirloom': heirloom?.toFirestore(),
-        'personalTagVersion': personalTagVersion,
-        'isFavorite': isFavorite,
-        'prepTimeMinutes': prepTimeMinutes,
-        'cookTimeMinutes': cookTimeMinutes,
-        'cuisine': cuisine,
-        'difficulty': difficulty,
-        'nutritionInfo': nutritionInfo?.toFirestore(),
-        'schemaVersion': schemaVersion,
-      };
+    'id': id,
+    'title': title,
+    'titleLower': title.toLowerCase(),
+    'description': description,
+    'portions': portions,
+    'timeMinutes': timeMinutes,
+    'ingredients': ingredients,
+    // Omit when null — see toJson.
+    if (structuredIngredients != null)
+      'structuredIngredients': structuredIngredients!
+          .map((i) => i.toJson())
+          .toList(),
+    'instructions': instructions,
+    'personalTagIds': personalTagIds,
+    'personalTags': personalTags?.map((t) => t.toMap()).toList(),
+    'rating': rating,
+    'mealType': mealType,
+    'sourceUrl': sourceUrl,
+    'relatedRecipeIds': relatedRecipeIds,
+    'sourceArtefact': sourceArtefact?.toJson(),
+    'imageUrls': imageUrls,
+    'thumbnailUrl': thumbnailUrl,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'updatedAt': Timestamp.fromDate(updatedAt),
+    'createdBy': createdBy,
+    'isPublic': isPublic,
+    'lastCookedAt': lastCookedAt != null
+        ? Timestamp.fromDate(lastCookedAt!)
+        : null,
+    // Safe-map: write cookCount only when set so legacy docs are untouched
+    // and the security rule's "null -> 1 on first increment" branch applies.
+    if (cookCount != null) 'cookCount': cookCount,
+    'ingredientsNormalized': ingredientsNormalized,
+    'ratingCount': ratingCount,
+    'averageRating': averageRating,
+    'ratingDistribution': ratingDistribution,
+    'lastRatedAt': lastRatedAt != null
+        ? Timestamp.fromDate(lastRatedAt!)
+        : null,
+    'dataChecksum': dataChecksum,
+    'tagResult': tagResult?.toFirestore(),
+    'tagOverrides': tagOverrides?.toJson(),
+    'heirloom': heirloom?.toFirestore(),
+    'personalTagVersion': personalTagVersion,
+    'isFavorite': isFavorite,
+    'prepTimeMinutes': prepTimeMinutes,
+    'cookTimeMinutes': cookTimeMinutes,
+    'cuisine': cuisine,
+    'difficulty': difficulty,
+    'nutritionInfo': nutritionInfo?.toFirestore(),
+    'schemaVersion': schemaVersion,
+  };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
     final id = utils.SerializationUtils.safeString(json, 'id');
     final title = utils.SerializationUtils.safeString(json, 'title');
-    final ingredients =
-        List<String>.from((json['ingredients'] as List?).orEmpty());
-    final instructions =
-        List<String>.from((json['instructions'] as List?).orEmpty());
-    final storedChecksum =
-        utils.SerializationUtils.safeNullableString(json, 'dataChecksum');
+    final ingredients = List<String>.from(
+      (json['ingredients'] as List?).orEmpty(),
+    );
+    final instructions = List<String>.from(
+      (json['instructions'] as List?).orEmpty(),
+    );
+    final storedChecksum = utils.SerializationUtils.safeNullableString(
+      json,
+      'dataChecksum',
+    );
 
     // Compute data integrity status
     DataIntegrityStatus integrityStatus;
@@ -724,11 +738,14 @@ class RecipeCore with JsonSerializableMixin {
       title: title,
       description: utils.SerializationUtils.safeString(json, 'description'),
       portions: utils.SerializationUtils.safeNullableInt(json, 'portions'),
-      timeMinutes:
-          utils.SerializationUtils.safeNullableInt(json, 'timeMinutes'),
+      timeMinutes: utils.SerializationUtils.safeNullableInt(
+        json,
+        'timeMinutes',
+      ),
       ingredients: ingredients,
-      structuredIngredients:
-          RecipeIngredient.listFromJson(json['structuredIngredients']),
+      structuredIngredients: RecipeIngredient.listFromJson(
+        json['structuredIngredients'],
+      ),
       instructions: instructions,
       personalTagIds: json['personalTagIds'] != null
           ? List<String>.from(json['personalTagIds'])
@@ -738,23 +755,33 @@ class RecipeCore with JsonSerializableMixin {
         json['personalTagIds'],
       ),
       rating: (json['rating'] as num?)?.toDouble(),
-      mealType: utils.SerializationUtils.safeString(json, 'mealType',
-          defaultValue: 'Middag'),
+      mealType: utils.SerializationUtils.safeString(
+        json,
+        'mealType',
+        defaultValue: 'Middag',
+      ),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
       relatedRecipeIds: json['relatedRecipeIds'] is List
           ? List<String>.from(json['relatedRecipeIds'] as List)
           : null,
       sourceArtefact: json['sourceArtefact'] is Map<String, dynamic>
           ? SourceArtefact.fromJson(
-              json['sourceArtefact'] as Map<String, dynamic>)
+              json['sourceArtefact'] as Map<String, dynamic>,
+            )
           : null,
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
-      thumbnailUrl:
-          utils.SerializationUtils.safeNullableString(json, 'thumbnailUrl'),
-      createdAt:
-          utils.SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
-      updatedAt:
-          utils.SerializationUtils.safeRequiredDateTime(json, 'updatedAt'),
+      thumbnailUrl: utils.SerializationUtils.safeNullableString(
+        json,
+        'thumbnailUrl',
+      ),
+      createdAt: utils.SerializationUtils.safeRequiredDateTime(
+        json,
+        'createdAt',
+      ),
+      updatedAt: utils.SerializationUtils.safeRequiredDateTime(
+        json,
+        'updatedAt',
+      ),
       createdBy: utils.SerializationUtils.safeNullableString(json, 'createdBy'),
       isPublic: utils.SerializationUtils.safeBool(json, 'isPublic'),
       lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
@@ -762,29 +789,42 @@ class RecipeCore with JsonSerializableMixin {
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
-      ratingCount:
-          utils.SerializationUtils.safeNullableInt(json, 'ratingCount'),
+      ratingCount: utils.SerializationUtils.safeNullableInt(
+        json,
+        'ratingCount',
+      ),
       averageRating: (json['averageRating'] as num?)?.toDouble(),
-      ratingDistribution:
-          utils.SerializationUtils.safeIntKeyIntMap(json, 'ratingDistribution'),
+      ratingDistribution: utils.SerializationUtils.safeIntKeyIntMap(
+        json,
+        'ratingDistribution',
+      ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(json, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
       heirloom: _parseHeirloom(json['heirloom']),
-      personalTagVersion:
-          utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
+      personalTagVersion: utils.SerializationUtils.safeNullableInt(
+        json,
+        'personalTagVersion',
+      ),
       isFavorite: utils.SerializationUtils.safeBool(json, 'isFavorite'),
-      prepTimeMinutes:
-          utils.SerializationUtils.safeNullableInt(json, 'prepTimeMinutes'),
-      cookTimeMinutes:
-          utils.SerializationUtils.safeNullableInt(json, 'cookTimeMinutes'),
+      prepTimeMinutes: utils.SerializationUtils.safeNullableInt(
+        json,
+        'prepTimeMinutes',
+      ),
+      cookTimeMinutes: utils.SerializationUtils.safeNullableInt(
+        json,
+        'cookTimeMinutes',
+      ),
       cuisine: utils.SerializationUtils.safeNullableString(json, 'cuisine'),
-      difficulty:
-          utils.SerializationUtils.safeNullableString(json, 'difficulty'),
+      difficulty: utils.SerializationUtils.safeNullableString(
+        json,
+        'difficulty',
+      ),
       nutritionInfo: json['nutritionInfo'] != null
           ? NutritionInfo.fromJson(
-              json['nutritionInfo'] as Map<String, dynamic>)
+              json['nutritionInfo'] as Map<String, dynamic>,
+            )
           : null,
       dataIntegrityStatus: integrityStatus,
       schemaVersion: json['schemaVersion'] as int? ?? 1,
@@ -884,12 +924,18 @@ class RecipeCore with JsonSerializableMixin {
   /// Create from repository data map (removes Firebase dependency)
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
     final title = utils.SerializationUtils.safeString(data, 'title');
-    final ingredients =
-        utils.SerializationUtils.safeStringList(data, 'ingredients');
-    final instructions =
-        utils.SerializationUtils.safeStringList(data, 'instructions');
-    final storedChecksum =
-        utils.SerializationUtils.safeNullableString(data, 'dataChecksum');
+    final ingredients = utils.SerializationUtils.safeStringList(
+      data,
+      'ingredients',
+    );
+    final instructions = utils.SerializationUtils.safeStringList(
+      data,
+      'instructions',
+    );
+    final storedChecksum = utils.SerializationUtils.safeNullableString(
+      data,
+      'dataChecksum',
+    );
 
     // Compute data integrity status
     DataIntegrityStatus integrityStatus;
@@ -918,72 +964,111 @@ class RecipeCore with JsonSerializableMixin {
       title: title,
       description: utils.SerializationUtils.safeString(data, 'description'),
       portions: utils.SerializationUtils.safeNullableInt(data, 'portions'),
-      timeMinutes:
-          utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
+      timeMinutes: utils.SerializationUtils.safeNullableInt(
+        data,
+        'timeMinutes',
+      ),
       ingredients: ingredients,
-      structuredIngredients:
-          RecipeIngredient.listFromJson(data['structuredIngredients']),
+      structuredIngredients: RecipeIngredient.listFromJson(
+        data['structuredIngredients'],
+      ),
       instructions: instructions,
       personalTagIds:
-          utils.SerializationUtils.safeStringList(data, 'personalTagIds')
-                  .isNotEmpty
-              ? utils.SerializationUtils.safeStringList(data, 'personalTagIds')
-              : null,
+          utils.SerializationUtils.safeStringList(
+            data,
+            'personalTagIds',
+          ).isNotEmpty
+          ? utils.SerializationUtils.safeStringList(data, 'personalTagIds')
+          : null,
       personalTags: _parsePersonalTags(
         data['personalTags'],
         data['personalTagIds'],
       ),
       rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
-      mealType: utils.SerializationUtils.safeString(data, 'mealType',
-          defaultValue: 'Middag'),
+      mealType: utils.SerializationUtils.safeString(
+        data,
+        'mealType',
+        defaultValue: 'Middag',
+      ),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
       relatedRecipeIds: data['relatedRecipeIds'] is List
           ? List<String>.from(data['relatedRecipeIds'] as List)
           : null,
       sourceArtefact: data['sourceArtefact'] is Map<String, dynamic>
           ? SourceArtefact.fromJson(
-              data['sourceArtefact'] as Map<String, dynamic>)
+              data['sourceArtefact'] as Map<String, dynamic>,
+            )
           : null,
       imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
-      thumbnailUrl:
-          utils.SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
-      createdAt:
-          utils.SerializationUtils.safeDateTime(data, 'createdAt').orNow(),
-      updatedAt:
-          utils.SerializationUtils.safeDateTime(data, 'updatedAt').orNow(),
+      thumbnailUrl: utils.SerializationUtils.safeNullableString(
+        data,
+        'thumbnailUrl',
+      ),
+      createdAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'createdAt',
+      ).orNow(),
+      updatedAt: utils.SerializationUtils.safeDateTime(
+        data,
+        'updatedAt',
+      ).orNow(),
       createdBy: utils.SerializationUtils.safeNullableString(data, 'createdBy'),
-      isPublic: utils.SerializationUtils.safeBool(data, 'isPublic',
-          defaultValue: false),
+      isPublic: utils.SerializationUtils.safeBool(
+        data,
+        'isPublic',
+        defaultValue: false,
+      ),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
       cookCount: utils.SerializationUtils.safeNullableInt(data, 'cookCount'),
       ingredientsNormalized:
-          utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
-                  .isNotEmpty
-              ? utils.SerializationUtils.safeStringList(
-                  data, 'ingredientsNormalized')
-              : null,
-      ratingCount:
-          utils.SerializationUtils.safeNullableInt(data, 'ratingCount'),
-      averageRating:
-          utils.SerializationUtils.safeNullableDouble(data, 'averageRating'),
-      ratingDistribution:
-          utils.SerializationUtils.safeIntKeyIntMap(data, 'ratingDistribution'),
+          utils.SerializationUtils.safeStringList(
+            data,
+            'ingredientsNormalized',
+          ).isNotEmpty
+          ? utils.SerializationUtils.safeStringList(
+              data,
+              'ingredientsNormalized',
+            )
+          : null,
+      ratingCount: utils.SerializationUtils.safeNullableInt(
+        data,
+        'ratingCount',
+      ),
+      averageRating: utils.SerializationUtils.safeNullableDouble(
+        data,
+        'averageRating',
+      ),
+      ratingDistribution: utils.SerializationUtils.safeIntKeyIntMap(
+        data,
+        'ratingDistribution',
+      ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
       heirloom: _parseHeirloom(data['heirloom']),
-      personalTagVersion:
-          utils.SerializationUtils.safeNullableInt(data, 'personalTagVersion'),
-      isFavorite: utils.SerializationUtils.safeBool(data, 'isFavorite',
-          defaultValue: false),
-      prepTimeMinutes:
-          utils.SerializationUtils.safeNullableInt(data, 'prepTimeMinutes'),
-      cookTimeMinutes:
-          utils.SerializationUtils.safeNullableInt(data, 'cookTimeMinutes'),
+      personalTagVersion: utils.SerializationUtils.safeNullableInt(
+        data,
+        'personalTagVersion',
+      ),
+      isFavorite: utils.SerializationUtils.safeBool(
+        data,
+        'isFavorite',
+        defaultValue: false,
+      ),
+      prepTimeMinutes: utils.SerializationUtils.safeNullableInt(
+        data,
+        'prepTimeMinutes',
+      ),
+      cookTimeMinutes: utils.SerializationUtils.safeNullableInt(
+        data,
+        'cookTimeMinutes',
+      ),
       cuisine: utils.SerializationUtils.safeNullableString(data, 'cuisine'),
-      difficulty:
-          utils.SerializationUtils.safeNullableString(data, 'difficulty'),
+      difficulty: utils.SerializationUtils.safeNullableString(
+        data,
+        'difficulty',
+      ),
       nutritionInfo: _parseNutritionInfo(data['nutritionInfo']),
       dataIntegrityStatus: integrityStatus,
       schemaVersion: data['schemaVersion'] as int? ?? 1,
@@ -1030,38 +1115,52 @@ class RecipeSocialData {
   });
 
   Map<String, dynamic> toJson() => {
-        'ownerId': ownerId,
-        'ownerDisplayName': ownerDisplayName,
-        'memberPermissions':
-            memberPermissions?.map((k, v) => MapEntry(k, v.index)),
-        'allowGuestViewing': allowGuestViewing,
-        'allowMemberInvites': allowMemberInvites,
-        'categoryIds': categoryIds,
-        'descriptionCollaborative': descriptionCollaborative,
-      };
+    'ownerId': ownerId,
+    'ownerDisplayName': ownerDisplayName,
+    'memberPermissions': memberPermissions?.map((k, v) => MapEntry(k, v.index)),
+    'allowGuestViewing': allowGuestViewing,
+    'allowMemberInvites': allowMemberInvites,
+    'categoryIds': categoryIds,
+    'descriptionCollaborative': descriptionCollaborative,
+  };
 
   factory RecipeSocialData.fromJson(Map<String, dynamic> json) =>
       RecipeSocialData(
         ownerId: utils.SerializationUtils.safeNullableString(json, 'ownerId'),
         ownerDisplayName: utils.SerializationUtils.safeNullableString(
-            json, 'ownerDisplayName'),
+          json,
+          'ownerDisplayName',
+        ),
         memberPermissions: json['memberPermissions'] != null
             ? Map<String, ResourcePermission>.from(
-                (json['memberPermissions'] as Map).map((k, v) => MapEntry(
+                (json['memberPermissions'] as Map).map(
+                  (k, v) => MapEntry(
                     k,
-                    utils.SerializationUtils.safeEnumByIndex(v,
-                        ResourcePermission.values, ResourcePermission.viewer))))
+                    utils.SerializationUtils.safeEnumByIndex(
+                      v,
+                      ResourcePermission.values,
+                      ResourcePermission.viewer,
+                    ),
+                  ),
+                ),
+              )
             : null,
-        allowGuestViewing:
-            utils.SerializationUtils.safeBool(json, 'allowGuestViewing'),
+        allowGuestViewing: utils.SerializationUtils.safeBool(
+          json,
+          'allowGuestViewing',
+        ),
         allowMemberInvites: utils.SerializationUtils.safeBool(
-            json, 'allowMemberInvites',
-            defaultValue: true),
+          json,
+          'allowMemberInvites',
+          defaultValue: true,
+        ),
         categoryIds: json['categoryIds'] != null
             ? List<String>.from(json['categoryIds'])
             : null,
         descriptionCollaborative: utils.SerializationUtils.safeNullableString(
-            json, 'descriptionCollaborative'),
+          json,
+          'descriptionCollaborative',
+        ),
       );
 
   RecipeSocialData copyWith({
@@ -1114,15 +1213,14 @@ class RecipeRealtimeData {
   });
 
   Map<String, dynamic> toJson() => {
-        'activeEditorIds': activeEditorIds,
-        'lastSeenAt':
-            lastSeenAt?.map((k, v) => MapEntry(k, v.toIso8601String())),
-        'lastEditedByUserId': lastEditedByUserId,
-        'lastEditedByDisplayName': lastEditedByDisplayName,
-        'lastEditedAt': lastEditedAt?.toIso8601String(),
-        'editCount': editCount,
-        'isActive': isActive,
-      };
+    'activeEditorIds': activeEditorIds,
+    'lastSeenAt': lastSeenAt?.map((k, v) => MapEntry(k, v.toIso8601String())),
+    'lastEditedByUserId': lastEditedByUserId,
+    'lastEditedByDisplayName': lastEditedByDisplayName,
+    'lastEditedAt': lastEditedAt?.toIso8601String(),
+    'editCount': editCount,
+    'isActive': isActive,
+  };
 
   factory RecipeRealtimeData.fromJson(Map<String, dynamic> json) =>
       RecipeRealtimeData(
@@ -1130,19 +1228,33 @@ class RecipeRealtimeData {
             ? List<String>.from(json['activeEditorIds'])
             : null,
         lastSeenAt: json['lastSeenAt'] != null
-            ? Map<String, DateTime>.from((json['lastSeenAt'] as Map).map(
-                (k, v) => MapEntry(
-                    k, utils.SerializationUtils.parseRequiredDateTimeValue(v))))
+            ? Map<String, DateTime>.from(
+                (json['lastSeenAt'] as Map).map(
+                  (k, v) => MapEntry(
+                    k,
+                    utils.SerializationUtils.parseRequiredDateTimeValue(v),
+                  ),
+                ),
+              )
             : null,
         lastEditedByUserId: utils.SerializationUtils.safeNullableString(
-            json, 'lastEditedByUserId'),
+          json,
+          'lastEditedByUserId',
+        ),
         lastEditedByDisplayName: utils.SerializationUtils.safeNullableString(
-            json, 'lastEditedByDisplayName'),
-        lastEditedAt:
-            utils.SerializationUtils.safeDateTime(json, 'lastEditedAt'),
+          json,
+          'lastEditedByDisplayName',
+        ),
+        lastEditedAt: utils.SerializationUtils.safeDateTime(
+          json,
+          'lastEditedAt',
+        ),
         editCount: utils.SerializationUtils.safeInt(json, 'editCount'),
-        isActive: utils.SerializationUtils.safeBool(json, 'isActive',
-            defaultValue: true),
+        isActive: utils.SerializationUtils.safeBool(
+          json,
+          'isActive',
+          defaultValue: true,
+        ),
       );
 }
 
@@ -1161,17 +1273,21 @@ class RecipeOfflineData {
   bool get needsSync => isModifiedOffline || lastSyncedAt == null;
 
   Map<String, dynamic> toJson() => {
-        'lastSyncedAt': lastSyncedAt?.toIso8601String(),
-        'isModifiedOffline': isModifiedOffline,
-        'pendingChanges': pendingChanges,
-      };
+    'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+    'isModifiedOffline': isModifiedOffline,
+    'pendingChanges': pendingChanges,
+  };
 
   factory RecipeOfflineData.fromJson(Map<String, dynamic> json) =>
       RecipeOfflineData(
-        lastSyncedAt:
-            utils.SerializationUtils.safeDateTime(json, 'lastSyncedAt'),
-        isModifiedOffline:
-            utils.SerializationUtils.safeBool(json, 'isModifiedOffline'),
+        lastSyncedAt: utils.SerializationUtils.safeDateTime(
+          json,
+          'lastSyncedAt',
+        ),
+        isModifiedOffline: utils.SerializationUtils.safeBool(
+          json,
+          'isModifiedOffline',
+        ),
         pendingChanges: json['pendingChanges'] != null
             ? List<String>.from(json['pendingChanges'])
             : null,
@@ -1542,8 +1658,8 @@ class Recipe {
       socialData: (type == RecipeType.personal && type != this.type)
           ? null
           : (socialData == _sentinel
-              ? this.socialData
-              : socialData as RecipeSocialData?),
+                ? this.socialData
+                : socialData as RecipeSocialData?),
       realtimeData: realtimeData == _sentinel
           ? this.realtimeData
           : realtimeData as RecipeRealtimeData?,

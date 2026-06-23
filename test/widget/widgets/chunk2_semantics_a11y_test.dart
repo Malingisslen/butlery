@@ -54,8 +54,9 @@ void main() {
   }
 
   group('BUT-697 chunk-2 widget Semantics labels', () {
-    testWidgets('recipe_shelf — shelf card exposes recipe-open label',
-        (tester) async {
+    testWidgets('recipe_shelf — shelf card exposes recipe-open label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       final recipe = (RecipeBuilder()..title = 'Pannkakor').build();
 
@@ -79,8 +80,9 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('menu_vote_card — unselected option exposes vote label',
-        (tester) async {
+    testWidgets('menu_vote_card — unselected option exposes vote label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -99,8 +101,9 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('menu_vote_card — selected option exposes selected label',
-        (tester) async {
+    testWidgets('menu_vote_card — selected option exposes selected label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -120,33 +123,34 @@ void main() {
     });
 
     testWidgets(
-        'parsed_extraction_chips — refine prompt exposes a button label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      // notUnderstood populated => trace.hasGaps == true => link renders.
-      const parsed = ParsedMenuRequest(
-        slotRequests: [],
-        globalAllergenAvoid: {},
-        globalDietaryRequire: {},
-        dayPins: [],
-        trace: ExtractionTrace(notUnderstood: ['fancy']),
-        rawPrompt: 'something fancy',
-      );
+      'parsed_extraction_chips — refine prompt exposes a button label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        // notUnderstood populated => trace.hasGaps == true => link renders.
+        const parsed = ParsedMenuRequest(
+          slotRequests: [],
+          globalAllergenAvoid: {},
+          globalDietaryRequire: {},
+          dayPins: [],
+          trace: ExtractionTrace(notUnderstood: ['fancy']),
+          rawPrompt: 'something fancy',
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: ParsedExtractionChips(
-            parsed: parsed,
-            onRefinePrompt: () {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ParsedExtractionChips(
+              parsed: parsed,
+              onRefinePrompt: () {},
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'Förbättra menyprompten')),
-        findsWidgets,
-      );
-      handle.dispose();
-    });
+        expect(
+          find.bySemanticsLabel(RegExp(r'Förbättra menyprompten')),
+          findsWidgets,
+        );
+        handle.dispose();
+      },
+    );
   });
 }

@@ -24,7 +24,7 @@ class ShareTargetSelectionEnhanced {
     Function(String) onFriendToggled,
     Function(String) onGroupToggled, {
     Set<String>?
-        existingCollaborators, // PHASE 2: Add existing collaborators info
+    existingCollaborators, // PHASE 2: Add existing collaborators info
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,14 +197,14 @@ class ShareTargetSelectionEnhanced {
     String searchQuery,
     Function(String) onFriendToggled, {
     Set<String>?
-        existingCollaborators, // PHASE 2: Add existing collaborators info
+    existingCollaborators, // PHASE 2: Add existing collaborators info
   }) {
     // Filter friends based on search query
     final filteredFriends = friends.where((friend) {
       if (searchQuery.isEmpty) return true;
-      return friend.displayName
-          .toLowerCase()
-          .contains(searchQuery.toLowerCase());
+      return friend.displayName.toLowerCase().contains(
+        searchQuery.toLowerCase(),
+      );
     }).toList();
 
     if (filteredFriends.isEmpty) {
@@ -223,10 +223,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context)
-            .colorScheme
-            .outline
-            .withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -252,10 +251,9 @@ class ShareTargetSelectionEnhanced {
               friend.displayName,
               style: AppTextStyles.contentTitle.copyWith(
                 color: isExistingCollaborator
-                    ? Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: AppDimensions.opacityMediumDark)
+                    ? Theme.of(context).colorScheme.onSurface.withValues(
+                        alpha: AppDimensions.opacityMediumDark,
+                      )
                     : null,
               ),
             ),
@@ -271,7 +269,8 @@ class ShareTargetSelectionEnhanced {
                 if (isExistingCollaborator) ...[
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
-                    context.l10n
+                    context
+                        .l10n
                         .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
                     style: AppTextStyles.metadataEmphasized.copyWith(
                       color: Theme.of(context).colorScheme.primary,
@@ -284,13 +283,15 @@ class ShareTargetSelectionEnhanced {
               value: isSelected,
               onChanged: isExistingCollaborator
                   ? null
-                  : (_) => onFriendToggled(friend
-                      .uid), // PHASE 2: Disable checkbox for existing collaborators
+                  : (_) => onFriendToggled(
+                      friend.uid,
+                    ), // PHASE 2: Disable checkbox for existing collaborators
             ),
             onTap: isExistingCollaborator
                 ? null
-                : () => onFriendToggled(friend
-                    .uid), // PHASE 2: Disable tap for existing collaborators
+                : () => onFriendToggled(
+                    friend.uid,
+                  ), // PHASE 2: Disable tap for existing collaborators
           ),
         );
       },
@@ -326,10 +327,9 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context)
-            .colorScheme
-            .outline
-            .withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {

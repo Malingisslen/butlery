@@ -111,34 +111,40 @@ void main() {
   });
 
   group('facade delegation — conversation operations', () {
-    test('createDirectConversation produces deterministic id and persists',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
+    test(
+      'createDirectConversation produces deterministic id and persists',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
 
-      final id = await repo.createDirectConversation(
-        user1Id: 'bob',
-        user1DisplayName: 'B',
-        user2Id: 'alice',
-        user2DisplayName: 'A',
-      );
+        final id = await repo.createDirectConversation(
+          user1Id: 'bob',
+          user1DisplayName: 'B',
+          user2Id: 'alice',
+          user2DisplayName: 'A',
+        );
 
-      expect(id, 'direct_alice_bob');
-      final doc = await firestore.collection('conversations').doc(id).get();
-      expect(doc.exists, isTrue);
-    });
+        expect(id, 'direct_alice_bob');
+        final doc = await firestore.collection('conversations').doc(id).get();
+        expect(doc.exists, isTrue);
+      },
+    );
 
-    test('getUserConversations stream emits user-participating conversations',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedConvo(firestore, _convo(id: 'c1'));
-      await _seedConvo(
-          firestore, _convo(id: 'c2', participants: const ['carol', 'dave']));
+    test(
+      'getUserConversations stream emits user-participating conversations',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedConvo(firestore, _convo(id: 'c1'));
+        await _seedConvo(
+          firestore,
+          _convo(id: 'c2', participants: const ['carol', 'dave']),
+        );
 
-      final first = await repo.getUserConversations('alice').first;
-      expect(first.map((c) => c.id), ['c1']);
-    });
+        final first = await repo.getUserConversations('alice').first;
+        expect(first.map((c) => c.id), ['c1']);
+      },
+    );
 
     test('getConversation returns conversation when participant', () async {
       final firestore = FakeFirebaseFirestore();
@@ -170,28 +176,38 @@ void main() {
       await repo.deleteConversation('c1');
 
       // The mutation module deletes from the top-level collection directly.
-      final topLevel =
-          await firestore.collection('conversations').doc('c1').get();
+      final topLevel = await firestore
+          .collection('conversations')
+          .doc('c1')
+          .get();
       expect(topLevel.exists, isFalse);
     });
 
-    test('deprecated findDirectConversation returns null for unknown pair',
-        () async {
-      final repo = _repo(FakeFirebaseFirestore());
-      final got =
-          await repo.findDirectConversation(user1Id: 'alice', user2Id: 'bob');
-      expect(got, isNull);
-    });
+    test(
+      'deprecated findDirectConversation returns null for unknown pair',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
+        final got = await repo.findDirectConversation(
+          user1Id: 'alice',
+          user2Id: 'bob',
+        );
+        expect(got, isNull);
+      },
+    );
 
-    test('deprecated findDirectConversation returns id when pair exists',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedConvo(firestore, _convo(id: 'c-existing'));
+    test(
+      'deprecated findDirectConversation returns id when pair exists',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedConvo(firestore, _convo(id: 'c-existing'));
 
-      final id =
-          await repo.findDirectConversation(user1Id: 'alice', user2Id: 'bob');
-      expect(id, 'c-existing');
-    });
+        final id = await repo.findDirectConversation(
+          user1Id: 'alice',
+          user2Id: 'bob',
+        );
+        expect(id, 'c-existing');
+      },
+    );
   });
 }

@@ -54,8 +54,9 @@ void main() {
       errors = [];
       events = [];
 
-      when(() => mockService.watchRealtimeMenu(any()))
-          .thenAnswer((_) => streamCtrl.stream);
+      when(
+        () => mockService.watchRealtimeMenu(any()),
+      ).thenAnswer((_) => streamCtrl.stream);
 
       manager = RealtimeStreamManager(
         menuService: mockService,
@@ -140,8 +141,9 @@ void main() {
       });
 
       test('should clean up on service exception', () async {
-        when(() => mockService.watchRealtimeMenu(menuId1))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockService.watchRealtimeMenu(menuId1),
+        ).thenThrow(Exception('Network error'));
 
         await expectLater(
           manager.startWatching(menuId1),

@@ -57,11 +57,11 @@ class _FakeFirestoreRepository extends Fake implements FirestoreRepository {
 const _collectionName = 'globalRecipeCache';
 
 ExtractionMeta _meta() => const ExtractionMeta(
-      pipeline: 'website',
-      tier: 0,
-      method: 'json-ld',
-      confidence: 0.95,
-    );
+  pipeline: 'website',
+  tier: 0,
+  method: 'json-ld',
+  confidence: 0.95,
+);
 
 /// Write a `CacheEntry`-shaped document directly to fake firestore so we
 /// can control `cachedAt` precisely — production code's `toFirestore()`
@@ -84,7 +84,8 @@ Future<void> _seedDoc(
     'contentFingerprint': contentFingerprint,
     if (domain != null) 'domain': domain,
     'sourceType': sourceType,
-    'recipe': recipe ??
+    'recipe':
+        recipe ??
         {
           'title': 'Test Recipe',
           'ingredients': ['mjöl', 'socker'],
@@ -235,9 +236,12 @@ void main() {
       final b = 'https://example.com/r?c=3&a=1&b=2';
       final hashA = urlNormalizer.hash(a)!;
       final hashB = urlNormalizer.hash(b)!;
-      expect(hashA, hashB,
-          reason:
-              'precondition: normalizer must produce the same hash for reordered query params');
+      expect(
+        hashA,
+        hashB,
+        reason:
+            'precondition: normalizer must produce the same hash for reordered query params',
+      );
 
       await _seedDoc(
         firestore,
@@ -266,15 +270,20 @@ void main() {
           docId: hash,
           urlHash: hash,
           contentFingerprint: 'fresh',
-          cachedAt: now.subtract(const Duration(days: 90)).add(
+          cachedAt: now
+              .subtract(const Duration(days: 90))
+              .add(
                 const Duration(milliseconds: 1),
               ),
           ttlDays: 90,
         );
 
         final result = await cache.findByUrl('https://example.com/fresh');
-        expect(result, isNotNull,
-            reason: 'entry 1ms before its TTL must still be a cache hit');
+        expect(
+          result,
+          isNotNull,
+          reason: 'entry 1ms before its TTL must still be a cache hit',
+        );
       });
     });
 
@@ -293,33 +302,40 @@ void main() {
         );
 
         final result = await cache.findByUrl('https://example.com/stale');
-        expect(result, isNull,
-            reason: 'expired entry must be filtered out, not returned');
+        expect(
+          result,
+          isNull,
+          reason: 'expired entry must be filtered out, not returned',
+        );
       });
     });
 
     /// Proves: short-TTL source types (e.g., text/ocr with 30-day TTL)
     /// expire faster than the 90-day default. A regression that hard-
     /// coded TTL would let stale text entries leak through.
-    test('honours per-entry TTL — 30-day text entry expires at day 31',
-        () async {
-      final hash = urlNormalizer.hash('https://example.com/text-source')!;
-      final now = DateTime.utc(2026, 5, 25, 12);
-      await withClock(Clock.fixed(now), () async {
-        await _seedDoc(
-          firestore,
-          docId: hash,
-          urlHash: hash,
-          contentFingerprint: 'text-fp',
-          sourceType: 'text',
-          cachedAt: now.subtract(const Duration(days: 31)),
-          ttlDays: 30,
-        );
+    test(
+      'honours per-entry TTL — 30-day text entry expires at day 31',
+      () async {
+        final hash = urlNormalizer.hash('https://example.com/text-source')!;
+        final now = DateTime.utc(2026, 5, 25, 12);
+        await withClock(Clock.fixed(now), () async {
+          await _seedDoc(
+            firestore,
+            docId: hash,
+            urlHash: hash,
+            contentFingerprint: 'text-fp',
+            sourceType: 'text',
+            cachedAt: now.subtract(const Duration(days: 31)),
+            ttlDays: 30,
+          );
 
-        final result = await cache.findByUrl('https://example.com/text-source');
-        expect(result, isNull);
-      });
-    });
+          final result = await cache.findByUrl(
+            'https://example.com/text-source',
+          );
+          expect(result, isNull);
+        });
+      },
+    );
   });
 
   group('findByFingerprint / findByContent', () {
@@ -372,9 +388,11 @@ void main() {
         ingredients: ingredients,
         instructionCount: 3,
       );
-      expect(fp, isNotNull,
-          reason:
-              'precondition: fingerprinter must produce a fp for valid input');
+      expect(
+        fp,
+        isNotNull,
+        reason: 'precondition: fingerprinter must produce a fp for valid input',
+      );
 
       await _seedDoc(
         firestore,
@@ -393,49 +411,61 @@ void main() {
       expect(result!.contentFingerprint, fp);
     });
 
-    test('findByContent returns null when fingerprint cannot be generated',
-        () async {
-      // Empty title + empty ingredients → fingerprinter returns null.
-      final result = await cache.findByContent(
-        title: '',
-        ingredients: const [],
-        instructionCount: 0,
-      );
-      expect(result, isNull);
-    });
+    test(
+      'findByContent returns null when fingerprint cannot be generated',
+      () async {
+        // Empty title + empty ingredients → fingerprinter returns null.
+        final result = await cache.findByContent(
+          title: '',
+          ingredients: const [],
+          instructionCount: 0,
+        );
+        expect(result, isNull);
+      },
+    );
   });
 
   group('save — happy paths and key derivation', () {
     /// Proves: a saved URL recipe is keyed by URL hash and is
     /// retrievable via findByUrl. This is the round-trip contract.
-    test('round-trip: save(url) then findByUrl returns the same recipe',
-        () async {
-      const url = 'https://ica.se/recept/pannkakor-12345';
-      final recipe = {
-        'title': 'Pannkakor',
-        'ingredients': ['mjöl', 'mjölk', 'ägg'],
-        'instructions': ['blanda', 'stek'],
-      };
+    test(
+      'round-trip: save(url) then findByUrl returns the same recipe',
+      () async {
+        const url = 'https://ica.se/recept/pannkakor-12345';
+        final recipe = {
+          'title': 'Pannkakor',
+          'ingredients': ['mjöl', 'mjölk', 'ägg'],
+          'instructions': ['blanda', 'stek'],
+        };
 
-      final ok = await cache.save(
-        input: url,
-        recipeData: recipe,
-        extractionMeta: _meta(),
-        sourceType: 'website',
-      );
-      expect(ok, isTrue);
+        final ok = await cache.save(
+          input: url,
+          recipeData: recipe,
+          extractionMeta: _meta(),
+          sourceType: 'website',
+        );
+        expect(ok, isTrue);
 
-      // Verify the doc was actually written under the URL hash.
-      final expectedHash = urlNormalizer.hash(url)!;
-      final doc =
-          await firestore.collection(_collectionName).doc(expectedHash).get();
-      expect(doc.exists, isTrue);
-      expect(doc.data()!['domain'], 'ica.se',
-          reason: 'save must extract and persist domain');
-      expect(doc.data()!['sourceType'], 'website');
-      expect(doc.data()!['ttlDays'], 90,
-          reason: 'website source type maps to 90-day TTL');
-    });
+        // Verify the doc was actually written under the URL hash.
+        final expectedHash = urlNormalizer.hash(url)!;
+        final doc = await firestore
+            .collection(_collectionName)
+            .doc(expectedHash)
+            .get();
+        expect(doc.exists, isTrue);
+        expect(
+          doc.data()!['domain'],
+          'ica.se',
+          reason: 'save must extract and persist domain',
+        );
+        expect(doc.data()!['sourceType'], 'website');
+        expect(
+          doc.data()!['ttlDays'],
+          90,
+          reason: 'website source type maps to 90-day TTL',
+        );
+      },
+    );
 
     /// Proves: save() picks the right TTL per source. Catches a flipped
     /// or missing entry in the `_ttlBySource` map.
@@ -510,15 +540,26 @@ void main() {
       expect(ok, isTrue);
 
       final fp = fingerprinter.generateFromMap(recipe);
-      expect(fp, isNotNull,
-          reason: 'precondition: fingerprint must be generatable');
-      final doc =
-          await firestore.collection(_collectionName).doc('fp_$fp').get();
+      expect(
+        fp,
+        isNotNull,
+        reason: 'precondition: fingerprint must be generatable',
+      );
+      final doc = await firestore
+          .collection(_collectionName)
+          .doc('fp_$fp')
+          .get();
       expect(doc.exists, isTrue);
-      expect(doc.data()!['domain'], isNull,
-          reason: 'non-URL input has no domain');
-      expect(doc.data()!['ttlDays'], 30,
-          reason: 'text source type uses a 30-day TTL');
+      expect(
+        doc.data()!['domain'],
+        isNull,
+        reason: 'non-URL input has no domain',
+      );
+      expect(
+        doc.data()!['ttlDays'],
+        30,
+        reason: 'text source type uses a 30-day TTL',
+      );
     });
 
     /// Proves: when BOTH key sources fail (non-URL input AND a recipe
@@ -540,50 +581,58 @@ void main() {
       expect(ok, isFalse);
 
       final all = await firestore.collection(_collectionName).get();
-      expect(all.docs, isEmpty,
-          reason: 'failed save must not leave a garbage doc behind');
+      expect(
+        all.docs,
+        isEmpty,
+        reason: 'failed save must not leave a garbage doc behind',
+      );
     });
 
     /// Proves: a re-save under the same URL overwrites the previous
     /// document (production uses `SetOptions(merge: false)`). Catches
     /// a regression that flipped it to `merge: true`, which would
     /// leave stale fields from the old recipe.
-    test('re-save under same URL overwrites previous data (merge:false)',
-        () async {
-      const url = 'https://example.com/recipe/overwrite-me';
+    test(
+      're-save under same URL overwrites previous data (merge:false)',
+      () async {
+        const url = 'https://example.com/recipe/overwrite-me';
 
-      await cache.save(
-        input: url,
-        recipeData: const {
-          'title': 'Original',
-          'ingredients': ['a', 'b'],
-          'instructions': ['1', '2'],
-          // Field that exists in v1 but not v2 — must be GONE after re-save.
-          'legacyField': 'should-disappear',
-        },
-        extractionMeta: _meta(),
-        sourceType: 'website',
-      );
+        await cache.save(
+          input: url,
+          recipeData: const {
+            'title': 'Original',
+            'ingredients': ['a', 'b'],
+            'instructions': ['1', '2'],
+            // Field that exists in v1 but not v2 — must be GONE after re-save.
+            'legacyField': 'should-disappear',
+          },
+          extractionMeta: _meta(),
+          sourceType: 'website',
+        );
 
-      await cache.save(
-        input: url,
-        recipeData: const {
-          'title': 'Replacement',
-          'ingredients': ['x', 'y'],
-          'instructions': ['1'],
-        },
-        extractionMeta: _meta(),
-        sourceType: 'website',
-      );
+        await cache.save(
+          input: url,
+          recipeData: const {
+            'title': 'Replacement',
+            'ingredients': ['x', 'y'],
+            'instructions': ['1'],
+          },
+          extractionMeta: _meta(),
+          sourceType: 'website',
+        );
 
-      final hash = urlNormalizer.hash(url)!;
-      final doc = await firestore.collection(_collectionName).doc(hash).get();
-      final recipe = doc.data()!['recipe'] as Map<String, dynamic>;
-      expect(recipe['title'], 'Replacement');
-      expect(recipe.containsKey('legacyField'), isFalse,
+        final hash = urlNormalizer.hash(url)!;
+        final doc = await firestore.collection(_collectionName).doc(hash).get();
+        final recipe = doc.data()!['recipe'] as Map<String, dynamic>;
+        expect(recipe['title'], 'Replacement');
+        expect(
+          recipe.containsKey('legacyField'),
+          isFalse,
           reason:
-              'merge:false must overwrite; stale legacyField from v1 must NOT survive');
-    });
+              'merge:false must overwrite; stale legacyField from v1 must NOT survive',
+        );
+      },
+    );
   });
 
   group('save — auth gate', () {
@@ -607,12 +656,18 @@ void main() {
         sourceType: 'website',
       );
 
-      expect(ok, isFalse,
-          reason:
-              'save without auth must return false (executeServiceOperation default)');
+      expect(
+        ok,
+        isFalse,
+        reason:
+            'save without auth must return false (executeServiceOperation default)',
+      );
       final all = await firestore.collection(_collectionName).get();
-      expect(all.docs, isEmpty,
-          reason: 'no doc should be written when auth check fails');
+      expect(
+        all.docs,
+        isEmpty,
+        reason: 'no doc should be written when auth check fails',
+      );
     });
   });
 
@@ -626,52 +681,57 @@ void main() {
     /// Proves: stats reports total count and aggregates the sample.
     /// Catches an off-by-one in the aggregator or a swapped numerator/
     /// denominator in the rate calculations.
-    test('aggregates totals, expired count, and access count over sample',
-        () async {
-      final now = DateTime.utc(2026, 5, 25);
-      await withClock(Clock.fixed(now), () async {
-        // 2 fresh entries from example.com (access counts 5 and 7).
-        await _seedDoc(
-          firestore,
-          docId: 'fresh-1',
-          urlHash: 'h1',
-          contentFingerprint: 'fp1',
-          domain: 'example.com',
-          cachedAt: now.subtract(const Duration(days: 1)),
-          accessCount: 5,
-        );
-        await _seedDoc(
-          firestore,
-          docId: 'fresh-2',
-          urlHash: 'h2',
-          contentFingerprint: 'fp2',
-          domain: 'example.com',
-          cachedAt: now.subtract(const Duration(days: 2)),
-          accessCount: 7,
-        );
-        // 1 expired entry from ica.se (access count 3).
-        await _seedDoc(
-          firestore,
-          docId: 'old-1',
-          urlHash: 'h3',
-          contentFingerprint: 'fp3',
-          domain: 'ica.se',
-          cachedAt: now.subtract(const Duration(days: 200)),
-          ttlDays: 90,
-          accessCount: 3,
-        );
+    test(
+      'aggregates totals, expired count, and access count over sample',
+      () async {
+        final now = DateTime.utc(2026, 5, 25);
+        await withClock(Clock.fixed(now), () async {
+          // 2 fresh entries from example.com (access counts 5 and 7).
+          await _seedDoc(
+            firestore,
+            docId: 'fresh-1',
+            urlHash: 'h1',
+            contentFingerprint: 'fp1',
+            domain: 'example.com',
+            cachedAt: now.subtract(const Duration(days: 1)),
+            accessCount: 5,
+          );
+          await _seedDoc(
+            firestore,
+            docId: 'fresh-2',
+            urlHash: 'h2',
+            contentFingerprint: 'fp2',
+            domain: 'example.com',
+            cachedAt: now.subtract(const Duration(days: 2)),
+            accessCount: 7,
+          );
+          // 1 expired entry from ica.se (access count 3).
+          await _seedDoc(
+            firestore,
+            docId: 'old-1',
+            urlHash: 'h3',
+            contentFingerprint: 'fp3',
+            domain: 'ica.se',
+            cachedAt: now.subtract(const Duration(days: 200)),
+            ttlDays: 90,
+            accessCount: 3,
+          );
 
-        final stats = await cache.getStats();
-        expect(stats, isNotNull);
-        expect(stats!.totalEntries, 3);
-        expect(stats.sampleSize, 3);
-        expect(stats.expiredInSample, 1,
-            reason: 'one of three entries is past its TTL');
-        expect(stats.totalAccessesInSample, 5 + 7 + 3);
-        expect(stats.topDomains['example.com'], 2);
-        expect(stats.topDomains['ica.se'], 1);
-      });
-    });
+          final stats = await cache.getStats();
+          expect(stats, isNotNull);
+          expect(stats!.totalEntries, 3);
+          expect(stats.sampleSize, 3);
+          expect(
+            stats.expiredInSample,
+            1,
+            reason: 'one of three entries is past its TTL',
+          );
+          expect(stats.totalAccessesInSample, 5 + 7 + 3);
+          expect(stats.topDomains['example.com'], 2);
+          expect(stats.topDomains['ica.se'], 1);
+        });
+      },
+    );
 
     test('returns zeroed stats for an empty cache', () async {
       final stats = await cache.getStats();

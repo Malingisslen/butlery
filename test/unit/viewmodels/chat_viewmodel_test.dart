@@ -40,7 +40,8 @@ class ConversationBuilder {
     return Conversation(
       id: defaultId,
       participantIds: defaultParticipantIds,
-      participantDisplayNames: participantDisplayNames ??
+      participantDisplayNames:
+          participantDisplayNames ??
           {
             'user1': 'Anna Andersson',
             'user2': 'Erik Svensson',
@@ -63,7 +64,8 @@ class ConversationBuilder {
     Map<String, String>? participantDisplayNames,
   }) {
     final ids = participantIds ?? ['user1', 'user2', 'user3'];
-    final names = participantDisplayNames ??
+    final names =
+        participantDisplayNames ??
         {
           'user1': 'Anna Andersson',
           'user2': 'Erik Svensson',
@@ -174,51 +176,65 @@ void main() {
       );
 
       // Configure the messaging service with a message stream
-      messagesStreamController =
-          mockMessagingService.createMessageStream(testConversationId);
+      messagesStreamController = mockMessagingService.createMessageStream(
+        testConversationId,
+      );
 
       // Setup default mock behaviors
-      when(() => mockMessagingService.getConversation(any()))
-          .thenAnswer((_) async => ConversationBuilder.build(
-                id: testConversationId,
-                participantIds: [testUserId, 'user2'],
-              ));
+      when(() => mockMessagingService.getConversation(any())).thenAnswer(
+        (_) async => ConversationBuilder.build(
+          id: testConversationId,
+          participantIds: [testUserId, 'user2'],
+        ),
+      );
 
-      when(() => mockMessagingService.getConversationMessages(
-            conversationId: any(named: 'conversationId'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) => messagesStreamController.stream);
+      when(
+        () => mockMessagingService.getConversationMessages(
+          conversationId: any(named: 'conversationId'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) => messagesStreamController.stream);
 
-      when(() => mockMessagingService.sendTextMessage(
-            conversationId: any(named: 'conversationId'),
-            content: any(named: 'content'),
-            replyToMessageId: any(named: 'replyToMessageId'),
-          )).thenAnswer((_) async => MessageBuilder.build());
+      when(
+        () => mockMessagingService.sendTextMessage(
+          conversationId: any(named: 'conversationId'),
+          content: any(named: 'content'),
+          replyToMessageId: any(named: 'replyToMessageId'),
+        ),
+      ).thenAnswer((_) async => MessageBuilder.build());
 
-      when(() => mockMessagingService.sendRecipeShare(
-            conversationId: any(named: 'conversationId'),
-            recipeId: any(named: 'recipeId'),
-            recipeTitle: any(named: 'recipeTitle'),
-            message: any(named: 'message'),
-          )).thenAnswer((_) async => MessageBuilder.buildRecipeShare());
+      when(
+        () => mockMessagingService.sendRecipeShare(
+          conversationId: any(named: 'conversationId'),
+          recipeId: any(named: 'recipeId'),
+          recipeTitle: any(named: 'recipeTitle'),
+          message: any(named: 'message'),
+        ),
+      ).thenAnswer((_) async => MessageBuilder.buildRecipeShare());
 
-      when(() => mockMessagingService.deleteMessage(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockMessagingService.deleteMessage(any()),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockMessagingService.markConversationAsRead(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockMessagingService.markConversationAsRead(any()),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMessagingService.setTypingIndicator(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockMessagingService.setTypingIndicator(any()),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMessagingService.clearTypingIndicator(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockMessagingService.clearTypingIndicator(any()),
+      ).thenAnswer((_) async {});
 
       // Configure presence service for typing indicators
-      when(() => mockPresenceService.startTyping(any()))
-          .thenAnswer((_) async {});
-      when(() => mockPresenceService.stopTyping(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockPresenceService.startTyping(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockPresenceService.stopTyping(any()),
+      ).thenAnswer((_) async {});
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<MessagingService>(mockMessagingService);
@@ -232,8 +248,9 @@ void main() {
 
       // Configure UnifiedFriendsService so _checkFriendshipStatus sees
       // 'user2' as a friend (otherwise canSendMessages returns false).
-      final friendsService = TestServiceLocator.get<UnifiedFriendsService>()
-          as MockUnifiedFriendsService;
+      final friendsService =
+          TestServiceLocator.get<UnifiedFriendsService>()
+              as MockUnifiedFriendsService;
       final managementMock = MockFriendsManagementOperations();
       managementMock.setManagementState(
         friends: [
@@ -296,30 +313,34 @@ void main() {
         expect(viewModel.conversation, isNotNull); // Has initial conversation
       });
 
-      test('should load conversation on initialization when not provided',
-          () async {
-        // Arrange
-        final testConversation = ConversationBuilder.build(
-          id: testConversationId,
-          title: 'Test Chatt',
-        );
-        when(() => mockMessagingService.getConversation(testConversationId))
-            .thenAnswer((_) async => testConversation);
+      test(
+        'should load conversation on initialization when not provided',
+        () async {
+          // Arrange
+          final testConversation = ConversationBuilder.build(
+            id: testConversationId,
+            title: 'Test Chatt',
+          );
+          when(
+            () => mockMessagingService.getConversation(testConversationId),
+          ).thenAnswer((_) async => testConversation);
 
-        // Act - create viewModel without initial conversation
-        final newViewModel = ChatViewModel(
-          messagingService: mockMessagingService,
-          conversationId: testConversationId,
-        );
-        await Future.delayed(const Duration(milliseconds: 100));
+          // Act - create viewModel without initial conversation
+          final newViewModel = ChatViewModel(
+            messagingService: mockMessagingService,
+            conversationId: testConversationId,
+          );
+          await Future.delayed(const Duration(milliseconds: 100));
 
-        // Assert
-        verify(() => mockMessagingService.getConversation(testConversationId))
-            .called(1);
+          // Assert
+          verify(
+            () => mockMessagingService.getConversation(testConversationId),
+          ).called(1);
 
-        // Clean up
-        newViewModel.dispose();
-      });
+          // Clean up
+          newViewModel.dispose();
+        },
+      );
 
       test('should initialize with provided conversation', () {
         // Arrange
@@ -430,11 +451,13 @@ void main() {
         expect(result, isTrue);
         expect(viewModel.isSending, isFalse);
         expect(viewModel.sendError, isNull);
-        verify(() => mockMessagingService.sendTextMessage(
-              conversationId: testConversationId,
-              content: messageContent,
-              replyToMessageId: null,
-            )).called(1);
+        verify(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: testConversationId,
+            content: messageContent,
+            replyToMessageId: null,
+          ),
+        ).called(1);
       });
 
       test('should reject empty message', () async {
@@ -447,20 +470,24 @@ void main() {
         // Assert
         expect(result, isFalse);
         expect(viewModel.sendError, equals('Meddelandet kan inte vara tomt'));
-        verifyNever(() => mockMessagingService.sendTextMessage(
-              conversationId: any(named: 'conversationId'),
-              content: any(named: 'content'),
-              replyToMessageId: any(named: 'replyToMessageId'),
-            ));
+        verifyNever(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: any(named: 'conversationId'),
+            content: any(named: 'content'),
+            replyToMessageId: any(named: 'replyToMessageId'),
+          ),
+        );
       });
 
       test('should handle send message error', () async {
         // Arrange
-        when(() => mockMessagingService.sendTextMessage(
-              conversationId: any(named: 'conversationId'),
-              content: any(named: 'content'),
-              replyToMessageId: any(named: 'replyToMessageId'),
-            )).thenThrow(Exception('Network error'));
+        when(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: any(named: 'conversationId'),
+            content: any(named: 'content'),
+            replyToMessageId: any(named: 'replyToMessageId'),
+          ),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         final result = await viewModel.sendTextMessage('Test');
@@ -486,12 +513,14 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockMessagingService.sendRecipeShare(
-              conversationId: testConversationId,
-              recipeId: recipeId,
-              recipeTitle: recipeTitle,
-              message: message,
-            )).called(1);
+        verify(
+          () => mockMessagingService.sendRecipeShare(
+            conversationId: testConversationId,
+            recipeId: recipeId,
+            recipeTitle: recipeTitle,
+            message: message,
+          ),
+        ).called(1);
       });
 
       test('should delete message successfully', () async {
@@ -508,8 +537,9 @@ void main() {
 
       test('should handle delete message error', () async {
         // Arrange
-        when(() => mockMessagingService.deleteMessage(any()))
-            .thenThrow(Exception('Permission denied'));
+        when(
+          () => mockMessagingService.deleteMessage(any()),
+        ).thenThrow(Exception('Permission denied'));
 
         // Act
         final result = await viewModel.deleteMessage('msg_123');
@@ -545,81 +575,100 @@ void main() {
       }
 
       setUp(() {
-        when(() => mockMessagingService.votePoll(
-              messageId: any(named: 'messageId'),
-              optionId: any(named: 'optionId'),
-              allowMultiple: any(named: 'allowMultiple'),
-            )).thenAnswer((_) async {});
-        when(() => mockMessagingService.closePoll(
-              messageId: any(named: 'messageId'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockMessagingService.votePoll(
+            messageId: any(named: 'messageId'),
+            optionId: any(named: 'optionId'),
+            allowMultiple: any(named: 'allowMultiple'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockMessagingService.closePoll(
+            messageId: any(named: 'messageId'),
+          ),
+        ).thenAnswer((_) async {});
       });
 
-      test('votePoll resolves allowMultiple=true from the poll metadata',
-          () async {
-        // Arrange — a multi-choice poll arrives over the stream
-        final poll = buildPollMessage(id: 'p1', allowMultipleChoices: true);
-        messagesStreamController.add([poll]);
-        await Future.delayed(const Duration(milliseconds: 50));
+      test(
+        'votePoll resolves allowMultiple=true from the poll metadata',
+        () async {
+          // Arrange — a multi-choice poll arrives over the stream
+          final poll = buildPollMessage(id: 'p1', allowMultipleChoices: true);
+          messagesStreamController.add([poll]);
+          await Future.delayed(const Duration(milliseconds: 50));
 
-        // Act
-        await viewModel.votePoll('p1', 'opt_a');
+          // Act
+          await viewModel.votePoll('p1', 'opt_a');
 
-        // Assert — the flag read from metadata is forwarded to the service
-        verify(() => mockMessagingService.votePoll(
+          // Assert — the flag read from metadata is forwarded to the service
+          verify(
+            () => mockMessagingService.votePoll(
               messageId: 'p1',
               optionId: 'opt_a',
               allowMultiple: true,
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
-      test('votePoll resolves allowMultiple=false for single-choice polls',
-          () async {
-        // Arrange
-        final poll = buildPollMessage(id: 'p2', allowMultipleChoices: false);
-        messagesStreamController.add([poll]);
-        await Future.delayed(const Duration(milliseconds: 50));
+      test(
+        'votePoll resolves allowMultiple=false for single-choice polls',
+        () async {
+          // Arrange
+          final poll = buildPollMessage(id: 'p2', allowMultipleChoices: false);
+          messagesStreamController.add([poll]);
+          await Future.delayed(const Duration(milliseconds: 50));
 
-        // Act
-        await viewModel.votePoll('p2', 'opt_b');
+          // Act
+          await viewModel.votePoll('p2', 'opt_b');
 
-        // Assert
-        verify(() => mockMessagingService.votePoll(
+          // Assert
+          verify(
+            () => mockMessagingService.votePoll(
               messageId: 'p2',
               optionId: 'opt_b',
               allowMultiple: false,
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('votePoll is a no-op when the message is not in the list', () async {
         // Act — vote for a message id that never arrived
         await viewModel.votePoll('missing', 'opt_a');
 
         // Assert — nothing reaches the service (no poll metadata to resolve)
-        verifyNever(() => mockMessagingService.votePoll(
+        verifyNever(
+          () => mockMessagingService.votePoll(
+            messageId: any(named: 'messageId'),
+            optionId: any(named: 'optionId'),
+            allowMultiple: any(named: 'allowMultiple'),
+          ),
+        );
+      });
+
+      test(
+        'votePoll is a no-op when the message carries no poll metadata',
+        () async {
+          // Arrange — a plain text message (no 'poll' key) under the target id
+          messagesStreamController.add([
+            MessageBuilder.build(id: 'plain', content: 'hej'),
+          ]);
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          // Act
+          await viewModel.votePoll('plain', 'opt_a');
+
+          // Assert — the second guard (missing poll metadata) blocks the call
+          verifyNever(
+            () => mockMessagingService.votePoll(
               messageId: any(named: 'messageId'),
               optionId: any(named: 'optionId'),
               allowMultiple: any(named: 'allowMultiple'),
-            ));
-      });
-
-      test('votePoll is a no-op when the message carries no poll metadata',
-          () async {
-        // Arrange — a plain text message (no 'poll' key) under the target id
-        messagesStreamController
-            .add([MessageBuilder.build(id: 'plain', content: 'hej')]);
-        await Future.delayed(const Duration(milliseconds: 50));
-
-        // Act
-        await viewModel.votePoll('plain', 'opt_a');
-
-        // Assert — the second guard (missing poll metadata) blocks the call
-        verifyNever(() => mockMessagingService.votePoll(
-              messageId: any(named: 'messageId'),
-              optionId: any(named: 'optionId'),
-              allowMultiple: any(named: 'allowMultiple'),
-            ));
-      });
+            ),
+          );
+        },
+      );
 
       test('closePoll delegates to the messaging service', () async {
         // Act
@@ -674,11 +723,13 @@ void main() {
         // Assert
         expect(result, isTrue);
         expect(viewModel.replyToMessage, isNull); // Should clear after sending
-        verify(() => mockMessagingService.sendTextMessage(
-              conversationId: testConversationId,
-              content: replyContent,
-              replyToMessageId: 'original_msg',
-            )).called(1);
+        verify(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: testConversationId,
+            content: replyContent,
+            replyToMessageId: 'original_msg',
+          ),
+        ).called(1);
       });
 
       test('should not send reply without target', () async {
@@ -689,11 +740,13 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockMessagingService.sendTextMessage(
-              conversationId: any(named: 'conversationId'),
-              content: any(named: 'content'),
-              replyToMessageId: any(named: 'replyToMessageId'),
-            ));
+        verifyNever(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: any(named: 'conversationId'),
+            content: any(named: 'content'),
+            replyToMessageId: any(named: 'replyToMessageId'),
+          ),
+        );
       });
 
       test('should clear reply after successful send', () async {
@@ -715,8 +768,9 @@ void main() {
         viewModel.setTyping();
 
         // Assert - typing now uses PresenceService, not MessagingService
-        verify(() => mockPresenceService.startTyping(testConversationId))
-            .called(1);
+        verify(
+          () => mockPresenceService.startTyping(testConversationId),
+        ).called(1);
       });
 
       test('should clear typing indicator', () {
@@ -724,8 +778,9 @@ void main() {
         viewModel.clearTyping();
 
         // Assert - typing now uses PresenceService, not MessagingService
-        verify(() => mockPresenceService.stopTyping(testConversationId))
-            .called(1);
+        verify(
+          () => mockPresenceService.stopTyping(testConversationId),
+        ).called(1);
       });
     });
 
@@ -768,9 +823,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 50));
 
         // Assert
-        verify(() =>
-                mockMessagingService.markConversationAsRead(testConversationId))
-            .called(1);
+        verify(
+          () => mockMessagingService.markConversationAsRead(testConversationId),
+        ).called(1);
       });
     });
 
@@ -782,12 +837,18 @@ void main() {
         final message3 = MessageBuilder.build(senderId: 'user3');
 
         // Act & Assert
-        expect(viewModel.shouldShowAvatar(message1, null),
-            isTrue); // First message
-        expect(viewModel.shouldShowAvatar(message2, message1),
-            isFalse); // Same sender
-        expect(viewModel.shouldShowAvatar(message3, message2),
-            isTrue); // Different sender
+        expect(
+          viewModel.shouldShowAvatar(message1, null),
+          isTrue,
+        ); // First message
+        expect(
+          viewModel.shouldShowAvatar(message2, message1),
+          isFalse,
+        ); // Same sender
+        expect(
+          viewModel.shouldShowAvatar(message3, message2),
+          isTrue,
+        ); // Different sender
       });
 
       test('should not show avatar for own messages', () {
@@ -862,8 +923,9 @@ void main() {
 
       test('should handle conversation load error', () async {
         // Arrange
-        when(() => mockMessagingService.getConversation(any()))
-            .thenThrow(Exception('Not found'));
+        when(
+          () => mockMessagingService.getConversation(any()),
+        ).thenThrow(Exception('Not found'));
 
         // Act
         final newViewModel = ChatViewModel(
@@ -931,9 +993,9 @@ void main() {
         await viewModel.markAsRead();
 
         // Assert
-        verify(() =>
-                mockMessagingService.markConversationAsRead(testConversationId))
-            .called(1);
+        verify(
+          () => mockMessagingService.markConversationAsRead(testConversationId),
+        ).called(1);
       });
     });
 

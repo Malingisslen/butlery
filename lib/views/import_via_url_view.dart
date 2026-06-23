@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -268,7 +269,8 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                         ActionButtons.primaryButton(
                           context,
                           label: context.l10n.importUrlBatchImport(
-                              viewModel.successfulUrlCount),
+                            viewModel.successfulUrlCount,
+                          ),
                           onPressed: viewModel.isLoading
                               ? null
                               : _navigateToBatchTextImport,
@@ -290,9 +292,11 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                       ActionButtons.primaryButton(
                         context,
                         label: context.l10n.importIndexPageExpand(
-                            viewModel.indexPageLinks.length),
-                        onPressed:
-                            viewModel.isLoading ? null : _expandIndexPage,
+                          viewModel.indexPageLinks.length,
+                        ),
+                        onPressed: viewModel.isLoading
+                            ? null
+                            : _expandIndexPage,
                         isExpanded: true,
                       ),
                     ],
@@ -301,8 +305,10 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                     if (viewModel.urlResults.isEmpty &&
                         viewModel.hasExtractedText) ...[
                       const SizedBox(height: AppDimensions.spacingXl),
-                      Text(context.l10n.importExtractedText,
-                          style: AppTextStyles.headlineSmall),
+                      Text(
+                        context.l10n.importExtractedText,
+                        style: AppTextStyles.headlineSmall,
+                      ),
                       const SizedBox(height: AppDimensions.spacingS),
                       Expanded(
                         child: StyledInput(
@@ -407,20 +413,25 @@ class _UrlResultRow extends StatelessWidget {
   Widget _statusIcon(BuildContext context) {
     switch (result.status) {
       case UrlFetchStatus.loading:
-        return const SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        );
+        return const LoadingIndicator(size: 18, strokeWidth: 2);
       case UrlFetchStatus.success:
-        return Icon(Icons.check_circle,
-            color: context.butleryColors.success, size: 20);
+        return Icon(
+          Icons.check_circle,
+          color: context.butleryColors.success,
+          size: 20,
+        );
       case UrlFetchStatus.failure:
-        return Icon(Icons.error,
-            color: Theme.of(context).colorScheme.error, size: 20);
+        return Icon(
+          Icons.error,
+          color: Theme.of(context).colorScheme.error,
+          size: 20,
+        );
       case UrlFetchStatus.pending:
-        return const Icon(Icons.schedule,
-            color: AppColors.greenMuted, size: 20);
+        return const Icon(
+          Icons.schedule,
+          color: AppColors.greenMuted,
+          size: 20,
+        );
     }
   }
 }

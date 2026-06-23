@@ -123,7 +123,8 @@ class NotificationTestHelpers {
     String? errorMessage,
   }) {
     return NotificationHistoryEntry(
-      notificationId: notificationId ??
+      notificationId:
+          notificationId ??
           'history-notification-${DateTime.now().millisecondsSinceEpoch}',
       userId: userId ?? 'test-user-123',
       title: title ?? 'Historical Notification',
@@ -413,7 +414,9 @@ class NotificationPreferences {
   }
 
   factory NotificationPreferences.fromMap(
-      String userId, Map<String, dynamic> map) {
+    String userId,
+    Map<String, dynamic> map,
+  ) {
     return NotificationPreferences(
       userId: userId,
       enableAll: map['enableAll'] ?? true,

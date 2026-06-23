@@ -109,8 +109,8 @@ class GroupDetailAppBar {
                 Text(
                   context.l10n.groupDeleteGroup,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
               ],
             ),
@@ -129,8 +129,8 @@ class GroupDetailAppBar {
                 Text(
                   context.l10n.groupLeaveGroup,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
                 ),
               ],
             ),

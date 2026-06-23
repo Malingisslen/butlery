@@ -62,8 +62,8 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
   FirebaseShoppingPresenceModule({
     required FirebaseShoppingPresenceRepository repository,
     PermissionService? permissionService,
-  })  : _repository = repository,
-        _permissionServiceOverride = permissionService;
+  }) : _repository = repository,
+       _permissionServiceOverride = permissionService;
 
   PermissionService get _permissionService =>
       _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
@@ -82,7 +82,8 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
         avatarUrl: currentUser.avatarUrl,
       );
       AppLogger.info(
-          'Shopping presence: ${currentUser.displayName} entered list $listId');
+        'Shopping presence: ${currentUser.displayName} entered list $listId',
+      );
       return true;
     } catch (e) {
       AppLogger.error('showPresence failed', e);
@@ -133,18 +134,20 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
       final cutoff = clock.now().subtract(ttl);
       // Client-side TTL filter — Firestore rule allows stale rows until
       // heartbeat GC catches up. We drop anything older than 2×heartbeat.
-      return rows.where((row) {
-        final lastSeen = row['lastSeen'];
-        if (lastSeen == null) return true; // optimistically include
-        if (lastSeen is DateTime) return lastSeen.isAfter(cutoff);
-        // Firestore Timestamp → DateTime
-        try {
-          final dt = (lastSeen as dynamic).toDate();
-          return dt is DateTime && dt.isAfter(cutoff);
-        } catch (_) {
-          return true;
-        }
-      }).toList(growable: false);
+      return rows
+          .where((row) {
+            final lastSeen = row['lastSeen'];
+            if (lastSeen == null) return true; // optimistically include
+            if (lastSeen is DateTime) return lastSeen.isAfter(cutoff);
+            // Firestore Timestamp → DateTime
+            try {
+              final dt = (lastSeen as dynamic).toDate();
+              return dt is DateTime && dt.isAfter(cutoff);
+            } catch (_) {
+              return true;
+            }
+          })
+          .toList(growable: false);
     });
   }
 
@@ -154,8 +157,10 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
     Duration heartbeatInterval = defaultHeartbeat,
   }) {
     _heartbeatSubscriptions[listId]?.cancel();
-    final subscription = Stream<void>.periodic(heartbeatInterval, (_) {})
-        .listen((_) => updatePresenceHeartbeat(listId));
+    final subscription = Stream<void>.periodic(
+      heartbeatInterval,
+      (_) {},
+    ).listen((_) => updatePresenceHeartbeat(listId));
     _heartbeatSubscriptions[listId] = subscription;
     return subscription;
   }

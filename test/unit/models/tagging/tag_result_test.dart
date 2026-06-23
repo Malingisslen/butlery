@@ -584,33 +584,37 @@ void main() {
 
       // CRIT-2: Coverage validation now asserts in debug mode (throws AssertionError)
       // In release mode it would clamp, but tests run in debug mode.
-      test('CRIT-2: constructor throws assertion for coverage > 1.0 in debug',
-          () {
-        expect(
-          () => TagResult(
-            tags: {},
-            allergenStatus: {},
-            dietaryStatus: {},
-            coverage: 1.5,
-            generatedAt: DateTime.now(),
-          ),
-          throwsA(isA<AssertionError>()),
-        );
-      });
+      test(
+        'CRIT-2: constructor throws assertion for coverage > 1.0 in debug',
+        () {
+          expect(
+            () => TagResult(
+              tags: {},
+              allergenStatus: {},
+              dietaryStatus: {},
+              coverage: 1.5,
+              generatedAt: DateTime.now(),
+            ),
+            throwsA(isA<AssertionError>()),
+          );
+        },
+      );
 
-      test('CRIT-2: constructor throws assertion for coverage < 0.0 in debug',
-          () {
-        expect(
-          () => TagResult(
-            tags: {},
-            allergenStatus: {},
-            dietaryStatus: {},
-            coverage: -0.5,
-            generatedAt: DateTime.now(),
-          ),
-          throwsA(isA<AssertionError>()),
-        );
-      });
+      test(
+        'CRIT-2: constructor throws assertion for coverage < 0.0 in debug',
+        () {
+          expect(
+            () => TagResult(
+              tags: {},
+              allergenStatus: {},
+              dietaryStatus: {},
+              coverage: -0.5,
+              generatedAt: DateTime.now(),
+            ),
+            throwsA(isA<AssertionError>()),
+          );
+        },
+      );
 
       test('CRIT-2: valid coverage values are preserved', () {
         // Valid coverage should remain unchanged
@@ -820,7 +824,9 @@ void main() {
         expect(restored.dietaryStatus, equals(original.dietaryStatus));
         expect(restored.coverage, equals(original.coverage));
         expect(
-            restored.unknownIngredients, equals(original.unknownIngredients));
+          restored.unknownIngredients,
+          equals(original.unknownIngredients),
+        );
         expect(restored.generatorVersion, equals(original.generatorVersion));
         expect(restored.isPartial, equals(original.isPartial));
         expect(restored.generatedAt, equals(original.generatedAt));

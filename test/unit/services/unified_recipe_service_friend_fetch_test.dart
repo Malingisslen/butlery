@@ -125,8 +125,9 @@ void main() {
         user: mockUser as User?,
         userId: 'test_user_123',
       );
-      when(() => mockAuthRepository.authStateChanges())
-          .thenAnswer((_) => Stream.value(mockUser as User?));
+      when(
+        () => mockAuthRepository.authStateChanges(),
+      ).thenAnswer((_) => Stream.value(mockUser as User?));
       when(
         () => mockRecipeRepository.subscribeToUserRecipes(
           any(),
@@ -137,18 +138,24 @@ void main() {
 
       TestServiceLocator.registerMock<RecipeRepository>(mockRecipeRepository);
       TestServiceLocator.registerMock<CommentsRepository>(
-          mockCommentsRepository);
+        mockCommentsRepository,
+      );
       TestServiceLocator.registerMock<RatingsRepository>(mockRatingsRepository);
       TestServiceLocator.registerMock<NotificationsRepository>(
-          mockNotificationsRepository);
+        mockNotificationsRepository,
+      );
       TestServiceLocator.registerMock<FirestoreRepository>(
-          mockFirestoreRepository);
+        mockFirestoreRepository,
+      );
       TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-          mockCollaborativeRepository);
+        mockCollaborativeRepository,
+      );
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
-          _MockFirebaseRecipePresenceRepository());
+        _MockFirebaseRecipePresenceRepository(),
+      );
       TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(
-          _MockFirebaseSharedRecipeRepository());
+        _MockFirebaseSharedRecipeRepository(),
+      );
       TestServiceLocator.registerMock<UserRepository>(_MockUserRepository());
 
       final mockCacheDao = _MockCacheDao();
@@ -159,7 +166,8 @@ void main() {
       TestServiceLocator.registerMock<OfflineService>(mockOfflineService);
       TestServiceLocator.registerMock<TaggingService>(_MockTaggingService());
       TestServiceLocator.registerMock<PersonalTagService>(
-          _MockPersonalTagService());
+        _MockPersonalTagService(),
+      );
       TestServiceLocator.registerMock<StorageService>(_MockStorageService());
 
       app_provider.ServiceLocator.reset();
@@ -190,8 +198,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 1. Cache-hit: returns cached recipe, does NOT call repository.
     // -------------------------------------------------------------------------
-    test(
-        'returns locally-cached recipe and does not call the repository '
+    test('returns locally-cached recipe and does not call the repository '
         'when the recipe is already in the cache', () async {
       const ownerId = 'friend-uid';
       const recipeId = 'recipe-abc';
@@ -216,8 +223,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 2. Cache-miss: delegates to repository and returns its result.
     // -------------------------------------------------------------------------
-    test(
-        'calls repository.readSharedRecipe with correct ids and returns its '
+    test('calls repository.readSharedRecipe with correct ids and returns its '
         'result when the recipe is not in the local cache', () async {
       const ownerId = 'friend-uid';
       const recipeId = 'recipe-xyz';
@@ -247,8 +253,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 3. Repo-null: repository returns null → fetchFriendRecipe returns null.
     // -------------------------------------------------------------------------
-    test(
-        'returns null when the repository returns null '
+    test('returns null when the repository returns null '
         '(recipe not found or not visible to the current user)', () async {
       const ownerId = 'friend-uid';
       const recipeId = 'recipe-missing';

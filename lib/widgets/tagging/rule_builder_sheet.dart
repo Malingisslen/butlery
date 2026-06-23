@@ -64,11 +64,13 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
 
   void _addCondition() {
     setState(() {
-      _conditions.add(const RuleCondition(
-        type: ConditionType.ingredient,
-        operator: ConditionOperator.contains,
-        value: '',
-      ));
+      _conditions.add(
+        const RuleCondition(
+          type: ConditionType.ingredient,
+          operator: ConditionOperator.contains,
+          value: '',
+        ),
+      );
     });
   }
 
@@ -106,13 +108,17 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
       if (condition.type.isNumeric) {
         if (condition.numericValue == 0) {
           SnackBarUtils.showError(
-              context, context.l10n.ruleAllConditionsNeedValue);
+            context,
+            context.l10n.ruleAllConditionsNeedValue,
+          );
           return;
         }
       } else {
         if (condition.stringValue.trim().isEmpty) {
           SnackBarUtils.showError(
-              context, context.l10n.ruleAllConditionsNeedValue);
+            context,
+            context.l10n.ruleAllConditionsNeedValue,
+          );
           return;
         }
       }
@@ -223,9 +229,11 @@ class _RuleBuilderSheetState extends State<RuleBuilderSheet> {
             fit: FlexFit.loose,
             child: FilledButton(
               onPressed: _save,
-              child: Text(_isEditing
-                  ? context.l10n.commonSave
-                  : context.l10n.commonCreate),
+              child: Text(
+                _isEditing
+                    ? context.l10n.commonSave
+                    : context.l10n.commonCreate,
+              ),
             ),
           ),
         ],

@@ -81,32 +81,37 @@ class AppDatabase extends _$AppDatabase {
   /// Clear all data for a specific user
   Future<void> clearUserData(String userId) async {
     await (delete(offlineRecipes)..where((t) => t.userId.equals(userId))).go();
-    await (delete(syncQueueEntries)..where((t) => t.userId.equals(userId)))
-        .go();
-    await (delete(jsonCacheEntries)..where((t) => t.userId.equals(userId)))
-        .go();
-    await (delete(parseCacheEntries)..where((t) => t.userId.equals(userId)))
-        .go();
-    await (delete(uploadQueueEntries)..where((t) => t.userId.equals(userId)))
-        .go();
+    await (delete(
+      syncQueueEntries,
+    )..where((t) => t.userId.equals(userId))).go();
+    await (delete(
+      jsonCacheEntries,
+    )..where((t) => t.userId.equals(userId))).go();
+    await (delete(
+      parseCacheEntries,
+    )..where((t) => t.userId.equals(userId))).go();
+    await (delete(
+      uploadQueueEntries,
+    )..where((t) => t.userId.equals(userId))).go();
   }
 
   /// Get database statistics
   Future<Map<String, int>> getStats() async {
-    final recipes = await (selectOnly(offlineRecipes)..addColumns([countAll()]))
-        .getSingle();
-    final syncQueue = await (selectOnly(syncQueueEntries)
-          ..addColumns([countAll()]))
-        .getSingle();
-    final jsonCache = await (selectOnly(jsonCacheEntries)
-          ..addColumns([countAll()]))
-        .getSingle();
-    final parseCache = await (selectOnly(parseCacheEntries)
-          ..addColumns([countAll()]))
-        .getSingle();
-    final uploadQueue = await (selectOnly(uploadQueueEntries)
-          ..addColumns([countAll()]))
-        .getSingle();
+    final recipes = await (selectOnly(
+      offlineRecipes,
+    )..addColumns([countAll()])).getSingle();
+    final syncQueue = await (selectOnly(
+      syncQueueEntries,
+    )..addColumns([countAll()])).getSingle();
+    final jsonCache = await (selectOnly(
+      jsonCacheEntries,
+    )..addColumns([countAll()])).getSingle();
+    final parseCache = await (selectOnly(
+      parseCacheEntries,
+    )..addColumns([countAll()])).getSingle();
+    final uploadQueue = await (selectOnly(
+      uploadQueueEntries,
+    )..addColumns([countAll()])).getSingle();
 
     return {
       'offlineRecipes': recipes.read(countAll()) ?? 0,
@@ -160,8 +165,8 @@ LazyDatabase _openConnection() {
         // silently falls back to stock sqlite3 and the database opens
         // *unencrypted* — fail loudly here instead of silently degrading.
         final cipherVersionRow = db.select('PRAGMA cipher_version').firstOrNull;
-        final cipherVersion =
-            (cipherVersionRow?.values.first?.toString()).orEmpty();
+        final cipherVersion = (cipherVersionRow?.values.first?.toString())
+            .orEmpty();
         if (cipherVersion.isEmpty) {
           throw StateError(
             'SQLCipher library failed to load — database would open unencrypted. '

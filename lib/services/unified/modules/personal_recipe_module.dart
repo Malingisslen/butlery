@@ -88,8 +88,10 @@ class PersonalRecipeModule with StreamManagementMixin {
 
   /// HIGH-11: Checks if a recipe's sync is considered fresh (within threshold).
   /// Useful for detecting stale cache vs Firebase discrepancies.
-  bool isSyncFresh(String recipeId,
-      {Duration threshold = const Duration(minutes: 5)}) {
+  bool isSyncFresh(
+    String recipeId, {
+    Duration threshold = const Duration(minutes: 5),
+  }) {
     final lastSync = _lastSyncedAt[recipeId];
     if (lastSync == null) return false;
     return clock.now().difference(lastSync) <= threshold;
@@ -107,17 +109,17 @@ class PersonalRecipeModule with StreamManagementMixin {
     TaggingService? taggingService,
     PersonalTagService? personalTagService,
     void Function(String recipeTitle)? onTaggingFailed,
-  })  : _recipeRepository = recipeRepository,
-        _userRepository = userRepository,
-        _getCacheHelper = getCacheHelper,
-        _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _setError = setError,
-        _notifyListeners = notifyListeners,
-        _getServiceAdapter = getServiceAdapter,
-        _taggingService = taggingService,
-        _personalTagService = personalTagService,
-        _onTaggingFailed = onTaggingFailed;
+  }) : _recipeRepository = recipeRepository,
+       _userRepository = userRepository,
+       _getCacheHelper = getCacheHelper,
+       _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _setError = setError,
+       _notifyListeners = notifyListeners,
+       _getServiceAdapter = getServiceAdapter,
+       _taggingService = taggingService,
+       _personalTagService = personalTagService,
+       _onTaggingFailed = onTaggingFailed;
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -177,7 +179,8 @@ class PersonalRecipeModule with StreamManagementMixin {
           try {
             await _userRepository.incrementPublicRecipeCount(currentUserId);
             AppLogger.debug(
-                '✅ Incremented public recipe count for user $currentUserId');
+              '✅ Incremented public recipe count for user $currentUserId',
+            );
           } catch (e) {
             AppLogger.warning('⚠️ Failed to increment recipe count: $e');
             // Continue anyway - don't fail recipe creation for counter issues
@@ -186,11 +189,14 @@ class PersonalRecipeModule with StreamManagementMixin {
           // BUG-003 FIX: On web, cache is a no-op (Drift stubbed), so we MUST
           // await Firebase sync to ensure recipes persist.
           if (kIsWeb) {
-            final syncSuccess =
-                await _syncRecipeToFirebaseAwaited(newRecipe, 'create');
+            final syncSuccess = await _syncRecipeToFirebaseAwaited(
+              newRecipe,
+              'create',
+            );
             if (!syncSuccess) {
               _setError(
-                  AppLocale.current.errorCouldNotSaveRecipeCheckConnection);
+                AppLocale.current.errorCouldNotSaveRecipeCheckConnection,
+              );
               return null;
             }
             AppLogger.success('✅ Personal recipe "$title" created and synced');
@@ -198,7 +204,8 @@ class PersonalRecipeModule with StreamManagementMixin {
             // On mobile, use background sync (cache is real, UX is faster)
             _startBackgroundRecipeSync(newRecipe, 'create');
             AppLogger.success(
-                '✅ Personal recipe "$title" created (syncing in background)');
+              '✅ Personal recipe "$title" created (syncing in background)',
+            );
           }
           // BUG-003: Store the created recipe for direct retrieval on web
           _lastCreatedRecipe = newRecipe;
@@ -207,13 +214,17 @@ class PersonalRecipeModule with StreamManagementMixin {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe creation: $e');
-      _setError(AppLocale.current
-          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
+      _setError(
+        AppLocale.current.errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60),
+      );
       return null;
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
-      _setError(AppLocale.current
-          .errorCouldNotCreate(AppLocale.current.resourceTypeRecipe));
+      _setError(
+        AppLocale.current.errorCouldNotCreate(
+          AppLocale.current.resourceTypeRecipe,
+        ),
+      );
       return null;
     }
   }
@@ -252,33 +263,42 @@ class PersonalRecipeModule with StreamManagementMixin {
 
           // BUG-003 FIX: On web, await Firebase sync directly
           if (kIsWeb) {
-            final syncSuccess =
-                await _syncRecipeToFirebaseAwaited(editedRecipe, 'update');
+            final syncSuccess = await _syncRecipeToFirebaseAwaited(
+              editedRecipe,
+              'update',
+            );
             if (!syncSuccess) {
               _setError(
-                  AppLocale.current.errorCouldNotUpdateRecipeCheckConnection);
+                AppLocale.current.errorCouldNotUpdateRecipeCheckConnection,
+              );
               return false;
             }
             AppLogger.success(
-                '✅ Personal recipe "${editedRecipe.title}" updated and synced');
+              '✅ Personal recipe "${editedRecipe.title}" updated and synced',
+            );
           } else {
             // On mobile, use background sync (cache is real, UX is faster)
             _startBackgroundRecipeSync(editedRecipe, 'update');
             AppLogger.success(
-                '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
+              '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)',
+            );
           }
           return true;
         },
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe update: $e');
-      _setError(AppLocale.current
-          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
+      _setError(
+        AppLocale.current.errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60),
+      );
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
-      _setError(AppLocale.current
-          .errorCouldNotUpdate(AppLocale.current.resourceTypeRecipe));
+      _setError(
+        AppLocale.current.errorCouldNotUpdate(
+          AppLocale.current.resourceTypeRecipe,
+        ),
+      );
       return false;
     }
   }
@@ -315,14 +335,16 @@ class PersonalRecipeModule with StreamManagementMixin {
           await _removeFromCache(recipeId);
 
           // Delete from Firebase using repository pattern
-          final deleteSuccess =
-              await _getServiceAdapter().deleteRecipe(recipeId);
+          final deleteSuccess = await _getServiceAdapter().deleteRecipe(
+            recipeId,
+          );
           if (deleteSuccess) {
             // Decrement user's public recipe count
             try {
               await _userRepository.decrementPublicRecipeCount(currentUserId);
               AppLogger.debug(
-                  '✅ Decremented public recipe count for user $currentUserId');
+                '✅ Decremented public recipe count for user $currentUserId',
+              );
             } catch (e) {
               AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
               // Continue anyway - don't fail recipe deletion for counter issues
@@ -338,8 +360,9 @@ class PersonalRecipeModule with StreamManagementMixin {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe deletion: $e');
-      _setError(AppLocale.current
-          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
+      _setError(
+        AppLocale.current.errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60),
+      );
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
@@ -388,7 +411,10 @@ class PersonalRecipeModule with StreamManagementMixin {
   }
 
   Future<bool> updateIngredient(
-      String recipeId, int index, String newIngredient) async {
+    String recipeId,
+    int index,
+    String newIngredient,
+  ) async {
     final currentUserId = PermissionHelper.requireAuthWithError(
       getCurrentUserId: _getCurrentUserId,
       setError: _setError,
@@ -399,7 +425,8 @@ class PersonalRecipeModule with StreamManagementMixin {
     try {
       // This would need recipe loading implementation
       AppLogger.info(
-          'Ingredient updated in recipe $recipeId at index $index: $newIngredient');
+        'Ingredient updated in recipe $recipeId at index $index: $newIngredient',
+      );
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update ingredient: $e');
@@ -419,7 +446,8 @@ class PersonalRecipeModule with StreamManagementMixin {
     try {
       // This would need recipe loading implementation
       AppLogger.info(
-          'Ingredient removed from recipe $recipeId at index $index');
+        'Ingredient removed from recipe $recipeId at index $index',
+      );
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove ingredient: $e');
@@ -448,7 +476,10 @@ class PersonalRecipeModule with StreamManagementMixin {
   }
 
   Future<bool> updateInstruction(
-      String recipeId, int index, String newInstruction) async {
+    String recipeId,
+    int index,
+    String newInstruction,
+  ) async {
     final currentUserId = PermissionHelper.requireAuthWithError(
       getCurrentUserId: _getCurrentUserId,
       setError: _setError,
@@ -459,7 +490,8 @@ class PersonalRecipeModule with StreamManagementMixin {
     try {
       // This would need recipe loading implementation
       AppLogger.info(
-          'Instruction updated in recipe $recipeId at index $index: $newInstruction');
+        'Instruction updated in recipe $recipeId at index $index: $newInstruction',
+      );
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update instruction: $e');
@@ -479,7 +511,8 @@ class PersonalRecipeModule with StreamManagementMixin {
     try {
       // This would need recipe loading implementation
       AppLogger.info(
-          'Instruction removed from recipe $recipeId at index $index');
+        'Instruction removed from recipe $recipeId at index $index',
+      );
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove instruction: $e');
@@ -588,7 +621,8 @@ class PersonalRecipeModule with StreamManagementMixin {
   }
 
   Future<List<String>> importRecipesFromData(
-      List<Map<String, dynamic>> recipesData) async {
+    List<Map<String, dynamic>> recipesData,
+  ) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError(AppLocale.current.errorMustBeLoggedInToImport);
@@ -610,8 +644,10 @@ class PersonalRecipeModule with StreamManagementMixin {
           );
 
           // Apply tagging to imported recipes
-          personalRecipe =
-              await _applyTagging(personalRecipe, source: 'import');
+          personalRecipe = await _applyTagging(
+            personalRecipe,
+            source: 'import',
+          );
 
           await _saveToCache(personalRecipe);
           await _getServiceAdapter().createRecipe(personalRecipe);
@@ -626,7 +662,8 @@ class PersonalRecipeModule with StreamManagementMixin {
       if (importedIds.isNotEmpty) {
         _notifyListeners();
         AppLogger.success(
-            '✅ ${importedIds.length} recipes imported successfully');
+          '✅ ${importedIds.length} recipes imported successfully',
+        );
       }
 
       return importedIds;
@@ -640,8 +677,9 @@ class PersonalRecipeModule with StreamManagementMixin {
   Future<List<Map<String, dynamic>>> exportPersonalRecipes() async {
     try {
       final cachedRecipes = await loadCachedPersonalRecipes();
-      final exportData =
-          cachedRecipes.map((recipe) => recipe.toJson()).toList();
+      final exportData = cachedRecipes
+          .map((recipe) => recipe.toJson())
+          .toList();
 
       AppLogger.success('✅ ${exportData.length} recipes exported');
       return exportData;
@@ -675,30 +713,41 @@ class PersonalRecipeModule with StreamManagementMixin {
   /// On web, the local cache (Drift) is stubbed, so we MUST await Firebase
   /// to ensure recipes actually persist. Returns true if sync succeeded.
   Future<bool> _syncRecipeToFirebaseAwaited(
-      Recipe recipe, String operation) async {
+    Recipe recipe,
+    String operation,
+  ) async {
     try {
       AppLogger.info(
-          '🔄 [Web] Awaiting $operation for recipe: ${recipe.title}');
+        '🔄 [Web] Awaiting $operation for recipe: ${recipe.title}',
+      );
       _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
 
       bool success = false;
       if (operation == 'create') {
         final createdId = await _getServiceAdapter()
             .createRecipe(recipe)
-            .timeout(_syncTimeout, onTimeout: () {
-          AppLogger.warning(
-              '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}');
-          return null;
-        });
+            .timeout(
+              _syncTimeout,
+              onTimeout: () {
+                AppLogger.warning(
+                  '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}',
+                );
+                return null;
+              },
+            );
         success = createdId != null;
       } else if (operation == 'update') {
         success = await _getServiceAdapter()
             .updateRecipe(recipe)
-            .timeout(_syncTimeout, onTimeout: () {
-          AppLogger.warning(
-              '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}');
-          return false;
-        });
+            .timeout(
+              _syncTimeout,
+              onTimeout: () {
+                AppLogger.warning(
+                  '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}',
+                );
+                return false;
+              },
+            );
       }
 
       if (success) {
@@ -719,8 +768,11 @@ class PersonalRecipeModule with StreamManagementMixin {
     }
   }
 
-  void _startBackgroundRecipeSync(Recipe recipe, String operation,
-      {int retryAttempt = 0}) {
+  void _startBackgroundRecipeSync(
+    Recipe recipe,
+    String operation, {
+    int retryAttempt = 0,
+  }) {
     // Cancel any pending retry for this recipe — new sync supersedes old retry
     cancelNamedTimer('retry_${recipe.id}');
 
@@ -738,47 +790,59 @@ class PersonalRecipeModule with StreamManagementMixin {
       // Guard: abort if user changed (logout/switch) since sync was queued
       if (_getCurrentUserId() != startingUserId || startingUserId == null) {
         AppLogger.warning(
-            '⚠️ Aborting background $operation for ${recipe.title}: '
-            'user changed since sync was queued');
+          '⚠️ Aborting background $operation for ${recipe.title}: '
+          'user changed since sync was queued',
+        );
         _syncStatus[recipeId] = RecipeSyncStatus.failed;
         return;
       }
 
       try {
         AppLogger.info(
-            '🔄 Starting background $operation for recipe: ${recipe.title}');
+          '🔄 Starting background $operation for recipe: ${recipe.title}',
+        );
 
         bool success = false;
         // CRIT-4: Add timeout to prevent indefinite hangs
         if (operation == 'create') {
           final createdId = await _getServiceAdapter()
               .createRecipe(recipe)
-              .timeout(_syncTimeout, onTimeout: () {
-            AppLogger.warning(
-                '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}');
-            return null;
-          });
+              .timeout(
+                _syncTimeout,
+                onTimeout: () {
+                  AppLogger.warning(
+                    '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}',
+                  );
+                  return null;
+                },
+              );
           success = createdId != null;
         } else if (operation == 'update') {
           success = await _getServiceAdapter()
               .updateRecipe(recipe)
-              .timeout(_syncTimeout, onTimeout: () {
-            AppLogger.warning(
-                '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}');
-            return false;
-          });
+              .timeout(
+                _syncTimeout,
+                onTimeout: () {
+                  AppLogger.warning(
+                    '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}',
+                  );
+                  return false;
+                },
+              );
         }
 
         if (success) {
           AppLogger.success(
-              '✅ Background $operation completed for: ${recipe.title}');
+            '✅ Background $operation completed for: ${recipe.title}',
+          );
           // HIGH-10: Mark as synced on success
           _syncStatus[recipeId] = RecipeSyncStatus.synced;
           // HIGH-11: Record sync timestamp for verification
           _lastSyncedAt[recipeId] = clock.now();
         } else {
           AppLogger.error(
-              '❌ Background $operation failed for: ${recipe.title}');
+            '❌ Background $operation failed for: ${recipe.title}',
+          );
           // HIGH-10: Mark as pending for retry
           _syncStatus[recipeId] = RecipeSyncStatus.pending;
           // Pass ID instead of recipe object to avoid stale closure data loss
@@ -786,7 +850,8 @@ class PersonalRecipeModule with StreamManagementMixin {
         }
       } catch (e) {
         AppLogger.error(
-            '❌ Background $operation error for ${recipe.title}: $e');
+          '❌ Background $operation error for ${recipe.title}: $e',
+        );
         // HIGH-10: Mark as pending for retry
         _syncStatus[recipeId] = RecipeSyncStatus.pending;
         _scheduleRetrySync(recipeId, operation, retryAttempt);
@@ -808,7 +873,10 @@ class PersonalRecipeModule with StreamManagementMixin {
   }
 
   void _scheduleRetrySync(
-      String recipeId, String operation, int currentAttempt) {
+    String recipeId,
+    String operation,
+    int currentAttempt,
+  ) {
     final nextAttempt = currentAttempt + 1;
 
     // Enforce maximum retry limit
@@ -843,8 +911,11 @@ class PersonalRecipeModule with StreamManagementMixin {
           _syncStatus.remove(recipeId);
           return;
         }
-        _startBackgroundRecipeSync(freshRecipe, operation,
-            retryAttempt: nextAttempt);
+        _startBackgroundRecipeSync(
+          freshRecipe,
+          operation,
+          retryAttempt: nextAttempt,
+        );
       } catch (e) {
         AppLogger.error('❌ Retry sync error for $recipeId: $e');
         _syncStatus[recipeId] = RecipeSyncStatus.failed;
@@ -865,8 +936,10 @@ class PersonalRecipeModule with StreamManagementMixin {
   /// to indicate retagging is needed.
   ///
   /// GDPR Article 30: Logs tag modifications for allergen/dietary audit trail.
-  Future<Recipe> _applyTagging(Recipe recipe,
-      {String source = 'auto_tagging'}) async {
+  Future<Recipe> _applyTagging(
+    Recipe recipe, {
+    String source = 'auto_tagging',
+  }) async {
     if (_taggingService == null) {
       return recipe;
     }
@@ -901,7 +974,8 @@ class PersonalRecipeModule with StreamManagementMixin {
 
       // Tagging returned null - log warning and notify UI
       AppLogger.warning(
-          '⚠️ Tagging returned null for "${recipe.title}" - marking as needs retagging');
+        '⚠️ Tagging returned null for "${recipe.title}" - marking as needs retagging',
+      );
       // CRIT-7: Notify UI that tagging failed
       _onTaggingFailed?.call(recipe.title);
     } catch (e) {
@@ -967,15 +1041,17 @@ class PersonalRecipeModule with StreamManagementMixin {
 
     try {
       // Evaluate all enabled rules against this recipe
-      final matchingTagIds =
-          await _personalTagService.evaluateRulesForRecipe(recipe);
+      final matchingTagIds = await _personalTagService.evaluateRulesForRecipe(
+        recipe,
+      );
 
       if (matchingTagIds.isEmpty) return recipe;
 
       // Get the actual tag objects for ID and name
       final allTags = await _personalTagService.getAllTags();
-      final matchingTags =
-          allTags.where((t) => matchingTagIds.contains(t.id)).toList();
+      final matchingTags = allTags
+          .where((t) => matchingTagIds.contains(t.id))
+          .toList();
 
       if (matchingTags.isEmpty) return recipe;
 

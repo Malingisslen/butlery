@@ -12,7 +12,7 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 class ConflictResolutionModule {
   final FirestoreRepository firestoreRepository;
   final Future<T> Function<T extends RealtimeResource>(String resourceId)
-      getLatestResource;
+  getLatestResource;
 
   /// BUT-1031: optional sink for conflict events. RealtimeSyncService wires
   /// this to a broadcast StreamController; null in standalone tests.
@@ -45,8 +45,9 @@ class ConflictResolutionModule {
     final timeSinceUpdate = clock.now().difference(lastUpdate).inMilliseconds;
     if (timeSinceUpdate < conflictResolutionWindowMs) {
       try {
-        final remoteResource =
-            await getLatestResource<RealtimeResource>(resource.id);
+        final remoteResource = await getLatestResource<RealtimeResource>(
+          resource.id,
+        );
         return remoteResource.lastEditedAt.isAfter(lastUpdate);
       } catch (e) {
         // If we can't fetch remote version, assume no conflict
@@ -59,19 +60,23 @@ class ConflictResolutionModule {
 
   /// Resolve conflicts using edit count and timestamp strategy
   Future<T> resolveConflict<T extends RealtimeResource>(
-      T local, T remote) async {
+    T local,
+    T remote,
+  ) async {
     AppLogger.info('⚠️ Löser konflikt för resurs: ${local.id}');
 
     try {
       // Standard conflict resolution: latest editCount wins
       if (local.editCount > remote.editCount) {
         AppLogger.info(
-            '📝 Lokal version vinner (editCount: ${local.editCount} > ${remote.editCount})');
+          '📝 Lokal version vinner (editCount: ${local.editCount} > ${remote.editCount})',
+        );
         _emitConflict(local, remote, ConflictResolutionStrategy.localWon);
         return local;
       } else if (remote.editCount > local.editCount) {
         AppLogger.info(
-            '☁️ Remote version vinner (editCount: ${remote.editCount} > ${local.editCount})');
+          '☁️ Remote version vinner (editCount: ${remote.editCount} > ${local.editCount})',
+        );
         _emitConflict(local, remote, ConflictResolutionStrategy.remoteWon);
         return remote;
       } else {
@@ -94,28 +99,36 @@ class ConflictResolutionModule {
       // bug" rather than "your edit was overwritten," and the banner copy
       // assumes the latter. Logged via the SyncError side-channel instead.
       AppLogger.warning(
-          '🛡️ Väljer remote version vid conflict resolution-fel');
+        '🛡️ Väljer remote version vid conflict resolution-fel',
+      );
       return remote;
     }
   }
 
   void _emitConflict<T extends RealtimeResource>(
-      T local, T remote, ConflictResolutionStrategy strategy) {
+    T local,
+    T remote,
+    ConflictResolutionStrategy strategy,
+  ) {
     final sink = onConflict;
     if (sink == null) return;
-    sink(ConflictEvent(
-      collectionPath: collectionPath,
-      docId: local.id,
-      localValue: local,
-      remoteValue: remote,
-      chosenStrategy: strategy,
-      occurredAt: clock.now(),
-    ));
+    sink(
+      ConflictEvent(
+        collectionPath: collectionPath,
+        docId: local.id,
+        localValue: local,
+        remoteValue: remote,
+        chosenStrategy: strategy,
+        occurredAt: clock.now(),
+      ),
+    );
   }
 
   /// Perform the update to Firebase
-  Future<void> performUpdate(DocumentReference<Map<String, dynamic>> docRef,
-      RealtimeResource resource) async {
+  Future<void> performUpdate(
+    DocumentReference<Map<String, dynamic>> docRef,
+    RealtimeResource resource,
+  ) async {
     await firestoreRepository.setDocument(docRef, resource.toFirestore());
   }
 

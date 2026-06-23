@@ -382,9 +382,11 @@ class NotificationTemplate {
     List<NotificationAction>? actions,
   }) {
     // Use Swedish by default (app is primarily Swedish)
-    final titleTemplate = strategy.localization['title_sv'] ??
+    final titleTemplate =
+        strategy.localization['title_sv'] ??
         AppLocale.current.notificationDefaultTitle;
-    final bodyTemplate = strategy.localization['body_sv'] ??
+    final bodyTemplate =
+        strategy.localization['body_sv'] ??
         AppLocale.current.notificationDefaultBody;
 
     // Substitute variables in templates
@@ -429,27 +431,27 @@ class NotificationAction {
 
   /// Accept friend request action
   static NotificationAction get acceptFriend => NotificationAction(
-        id: 'accept_friend',
-        title: AppLocale.current.notificationActionAccept,
-      );
+    id: 'accept_friend',
+    title: AppLocale.current.notificationActionAccept,
+  );
 
   /// Decline friend request action
   static NotificationAction get declineFriend => NotificationAction(
-        id: 'decline_friend',
-        title: AppLocale.current.notificationActionDecline,
-      );
+    id: 'decline_friend',
+    title: AppLocale.current.notificationActionDecline,
+  );
 
   /// View recipe action
   static NotificationAction get viewRecipe => NotificationAction(
-        id: 'view_recipe',
-        title: AppLocale.current.notificationActionViewRecipe,
-      );
+    id: 'view_recipe',
+    title: AppLocale.current.notificationActionViewRecipe,
+  );
 
   /// Join collaboration action
   static NotificationAction get joinCollaboration => NotificationAction(
-        id: 'join_collaboration',
-        title: AppLocale.current.notificationActionJoin,
-      );
+    id: 'join_collaboration',
+    title: AppLocale.current.notificationActionJoin,
+  );
 }
 
 /// Notification batching configuration

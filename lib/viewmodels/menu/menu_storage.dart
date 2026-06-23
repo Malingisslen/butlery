@@ -27,8 +27,8 @@ class MenuStorage {
 
   /// Creates MenuStorage with dependency injection support
   MenuStorage({FirestoreRepository? firestoreRepository})
-      : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+    : _firestoreRepository =
+          firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   /// Save menu to Firestore
   ///
@@ -60,13 +60,15 @@ class MenuStorage {
     );
 
     // Save to Firestore
-    final docRef =
-        await _firestoreRepository.collection(FirestoreCollections.menus).add(
-              sharedMenu.toFirestore(),
-            );
+    final docRef = await _firestoreRepository
+        .collection(FirestoreCollections.menus)
+        .add(
+          sharedMenu.toFirestore(),
+        );
 
     AppLogger.success(
-        '✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)');
+      '✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)',
+    );
     return docRef.id;
   }
 
@@ -78,14 +80,13 @@ class MenuStorage {
     required Map<String, List<Recipe>> menu,
     required String lastPrompt,
     required int totalRecipeCount,
-  }) =>
-      saveMenu(
-        menuName: menuName,
-        comment: comment,
-        menu: menu,
-        lastPrompt: lastPrompt,
-        totalRecipeCount: totalRecipeCount,
-      );
+  }) => saveMenu(
+    menuName: menuName,
+    comment: comment,
+    menu: menu,
+    lastPrompt: lastPrompt,
+    totalRecipeCount: totalRecipeCount,
+  );
 
   /// Load a specific menu by its Firestore document ID
   ///
@@ -167,17 +168,19 @@ class MenuStorage {
       for (final doc in snapshot.docs) {
         try {
           final menu = SharedMenu.fromFirestore(doc.data(), doc.id);
-          menuInfos.add(SavedMenuInfo(
-            key: doc.id,
-            name: menu.menuTitle,
-            savedDate: menu.sharedAt,
-            recipeCount: menu.totalRecipeCount,
-            comment: menu.shareMessage.orEmpty(),
-            originalAuthor: null,
-            isModified: false,
-            isOwned: true,
-            firebaseId: doc.id,
-          ));
+          menuInfos.add(
+            SavedMenuInfo(
+              key: doc.id,
+              name: menu.menuTitle,
+              savedDate: menu.sharedAt,
+              recipeCount: menu.totalRecipeCount,
+              comment: menu.shareMessage.orEmpty(),
+              originalAuthor: null,
+              isModified: false,
+              isOwned: true,
+              firebaseId: doc.id,
+            ),
+          );
         } catch (e) {
           AppLogger.warning('⚠️ Could not parse menu ${doc.id}: $e');
         }
@@ -222,7 +225,8 @@ class MenuStorage {
       final data = doc.data();
       if (data?['sharedByUserId'] != userId) {
         AppLogger.warning(
-            'Cannot delete menu $menuId - not owned by current user');
+          'Cannot delete menu $menuId - not owned by current user',
+        );
         return false;
       }
 
@@ -262,9 +266,9 @@ class MenuStorage {
           .collection(FirestoreCollections.menus)
           .doc(menuId)
           .update({
-        'isModified': true,
-        'modifiedAt': FieldValue.serverTimestamp(),
-      });
+            'isModified': true,
+            'modifiedAt': FieldValue.serverTimestamp(),
+          });
 
       AppLogger.success('✅ Menu marked as modified: $menuId');
       return true;
@@ -334,10 +338,12 @@ class SavedMenuData {
       'name': name,
       'savedDate': savedDate.millisecondsSinceEpoch,
       'recipeCount': recipeCount,
-      'menu': menu.map((key, recipes) => MapEntry(
-            key,
-            recipes.map((recipe) => recipe.toJson()).toList(),
-          )),
+      'menu': menu.map(
+        (key, recipes) => MapEntry(
+          key,
+          recipes.map((recipe) => recipe.toJson()).toList(),
+        ),
+      ),
       'lastPrompt': lastPrompt,
       'comment': comment,
       'originalAuthor': originalAuthor,
@@ -355,8 +361,10 @@ class SavedMenuData {
       menuJson.forEach((key, recipeList) {
         if (recipeList is List) {
           menuMap[key] = recipeList
-              .map((recipeJson) =>
-                  Recipe.fromJson(recipeJson as Map<String, dynamic>))
+              .map(
+                (recipeJson) =>
+                    Recipe.fromJson(recipeJson as Map<String, dynamic>),
+              )
               .toList();
         }
       });
@@ -365,7 +373,8 @@ class SavedMenuData {
     return SavedMenuData(
       name: (json['name'] as String?).orEmpty(),
       savedDate: DateTime.fromMillisecondsSinceEpoch(
-          (json['savedDate'] as int?).orZero()),
+        (json['savedDate'] as int?).orZero(),
+      ),
       recipeCount: (json['recipeCount'] as int?).orZero(),
       menu: menuMap,
       lastPrompt: (json['lastPrompt'] as String?).orEmpty(),

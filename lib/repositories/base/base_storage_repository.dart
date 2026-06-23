@@ -70,9 +70,9 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
     FirebaseStorage? storage,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
-  })  : _storageOverride = storage,
-        _authRepository = authRepository,
-        _auditRepository = auditRepository;
+  }) : _storageOverride = storage,
+       _authRepository = authRepository,
+       _auditRepository = auditRepository;
 
   /// Protected access to FirebaseStorage instance for subclasses
   @protected
@@ -169,8 +169,10 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
   }
 
   /// Helper method for recursive directory deletion
-  Future<void> _deleteDirectoryRecursive(Reference dirRef,
-      {bool logAudit = true}) async {
+  Future<void> _deleteDirectoryRecursive(
+    Reference dirRef, {
+    bool logAudit = true,
+  }) async {
     try {
       final result = await dirRef.listAll();
 

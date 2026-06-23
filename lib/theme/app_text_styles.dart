@@ -38,113 +38,113 @@ class AppTextStyles {
 
   /// Display Small - For prominent section headlines (Josefin Sans)
   static TextStyle get displaySmall => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Headline Medium - For section headers and content categories (Josefin Sans)
   static TextStyle get headlineMedium => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Headline Small - For subsection titles and secondary headers (Josefin Sans)
   static TextStyle get headlineSmall => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Headline Bold - For prominent countdown timers and emphasis (Josefin Sans)
   static TextStyle get headlineBold => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Title Large - For recipe names and primary content (Space Grotesk)
   static TextStyle get titleLarge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 17,
-        fontWeight: FontWeight.w500,
-        height: 1.3,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 17,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
 
   /// Title Medium - For secondary titles and content headers (Space Grotesk)
   static TextStyle get titleMedium => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        height: 1.3,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
 
   /// Title Small - Alias for headlineSmall
   static TextStyle get titleSmall => headlineSmall;
 
   /// Body Large - For main content text and instructions
   static TextStyle get bodyLarge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 16,
-        fontWeight: FontWeight.normal,
-        height: 1.5,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    height: 1.5,
+  );
 
   /// Body Medium - For secondary content and descriptions
   static TextStyle get bodyMedium => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.normal,
-        height: 1.4,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    height: 1.4,
+  );
 
   /// Body Small - For metadata and supplementary information
   static TextStyle get bodySmall => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 13,
-        fontWeight: FontWeight.normal,
-        height: 1.3,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.normal,
+    height: 1.3,
+  );
 
   /// Label Large - For prominent buttons
   static TextStyle get labelLarge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Label Medium - For standard buttons
   static TextStyle get labelMedium => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+  );
 
   /// Label Small - For small buttons and tags
   static TextStyle get labelSmall => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+  );
 
   // ── Semantic variants (keep explicit colors for status meaning) ──
 
   /// Recipe metadata style
   static TextStyle get recipeMeta => bodySmall.copyWith(
-        color: AppColors.recipeMeta,
-        fontWeight: FontWeight.w500,
-      );
+    color: AppColors.recipeMeta,
+    fontWeight: FontWeight.w500,
+  );
 
   /// Section header style
   static TextStyle get sectionHeader => headlineSmall.copyWith(
-        color: AppColors.sectionHeader,
-        fontWeight: FontWeight.w700,
-      );
+    color: AppColors.sectionHeader,
+    fontWeight: FontWeight.w700,
+  );
 
   /// Section title style (alias for section header)
   static TextStyle get sectionTitleStyle => sectionHeader;
@@ -169,31 +169,31 @@ class AppTextStyles {
 
   /// Navigation text style (Josefin Sans for nav items)
   static TextStyle get navigationText => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.3,
+  );
 
   /// Error text style
   static TextStyle get errorText => bodySmall.copyWith(
-        color: AppColors.error,
-        fontWeight: FontWeight.w500,
-      );
+    color: AppColors.error,
+    fontWeight: FontWeight.w500,
+  );
 
   /// Success text style
   static TextStyle get successText => bodySmall.copyWith(
-        color: AppColors.success,
-        fontWeight: FontWeight.w500,
-      );
+    color: AppColors.success,
+    fontWeight: FontWeight.w500,
+  );
 
   /// App bar title style (Josefin Sans, 18px per mockup)
   static TextStyle get appBarTitle => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Card title style
   static TextStyle get cardTitle => titleMedium;
@@ -215,106 +215,106 @@ class AppTextStyles {
 
   /// Hint text style
   static TextStyle get hintText => bodyMedium.copyWith(
-        color: AppColors.textLight,
-      );
+    color: AppColors.textLight,
+  );
 
   /// Metadata emphasized - for timestamps, counts with emphasis
   static TextStyle get metadataEmphasized => bodySmall.copyWith(
-        fontWeight: FontWeight.w500,
-      );
+    fontWeight: FontWeight.w500,
+  );
 
   /// Badge text style
   static TextStyle get badge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Badge text style large
   static TextStyle get badgeLarge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Title bold - for emphasized titles
   static TextStyle get titleBold => titleMedium.copyWith(
-        fontWeight: FontWeight.w700,
-      );
+    fontWeight: FontWeight.w700,
+  );
 
   /// Body bold - for emphasized body text
   static TextStyle get bodyBold => bodyMedium.copyWith(
-        fontWeight: FontWeight.w600,
-      );
+    fontWeight: FontWeight.w600,
+  );
 
   /// Body large bold
   static TextStyle get bodyLargeBold => bodyLarge.copyWith(
-        fontWeight: FontWeight.w600,
-      );
+    fontWeight: FontWeight.w600,
+  );
 
   /// Small text - 10px for very small labels
   static TextStyle get textXs => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.normal,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.normal,
+  );
 
   /// Small text emphasized - 10px bold
   static TextStyle get textXsBold => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Medium small text - 11px
   static TextStyle get textSm => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.normal,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.normal,
+  );
 
   /// 14px regular text - for form options and rule conditions
   static TextStyle get formOption => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.normal,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+  );
 
   /// 14px medium weight text - for content labels
   static TextStyle get contentLabel => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+  );
 
   /// 16px medium weight text - for content titles
   static TextStyle get contentTitle => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+  );
 
   /// 20px semibold text - for group titles
   static TextStyle get groupTitle => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Body medium with error color - for inline error messages
   static TextStyle get bodyMediumError => bodyMedium.copyWith(
-        color: AppColors.error,
-      );
+    color: AppColors.error,
+  );
 
   /// Body medium with success color - for success state messages
   static TextStyle get bodyMediumSuccess => bodyMedium.copyWith(
-        color: AppColors.success,
-      );
+    color: AppColors.success,
+  );
 
   /// Body medium with warning color - for warning state messages
   static TextStyle get bodyMediumWarning => bodyMedium.copyWith(
-        color: AppColors.warningText,
-      );
+    color: AppColors.warningText,
+  );
 
   /// Body medium muted - for secondary/muted body text
   static TextStyle get bodyMediumMuted => bodyMedium;
@@ -324,133 +324,133 @@ class AppTextStyles {
 
   /// Label small success - for success badges/indicators
   static TextStyle get labelSmallSuccess => labelSmall.copyWith(
-        color: AppColors.success,
-      );
+    color: AppColors.success,
+  );
 
   /// Small link text - for clickable metadata links
   static TextStyle get linkSmall => bodySmall.copyWith(
-        color: AppColors.forestGreen,
-      );
+    color: AppColors.forestGreen,
+  );
 
   /// Muted label - for section headers in cards
   static TextStyle get labelMediumMuted => labelMedium;
 
   /// Light body large - for text on dark/overlay backgrounds
   static TextStyle get bodyLargeLight => bodyLarge.copyWith(
-        color: AppColors.neutralLight,
-      );
+    color: AppColors.neutralLight,
+  );
 
   /// Snackbar/toast text - light text on dark backgrounds
   static TextStyle get snackbarText => bodyMedium.copyWith(
-        color: AppColors.neutralLight,
-      );
+    color: AppColors.neutralLight,
+  );
 
   /// Button text on colored backgrounds - white text for contrast
   static TextStyle get buttonTextLight => labelLarge.copyWith(
-        color: AppColors.cardWhite,
-      );
+    color: AppColors.cardWhite,
+  );
 
   /// Warning text - for warning state messages
   static TextStyle get warningText => bodySmall.copyWith(
-        color: AppColors.warningText,
-      );
+    color: AppColors.warningText,
+  );
 
   /// Info text - for informational messages
   static TextStyle get infoText => bodySmall.copyWith(
-        color: AppColors.info,
-      );
+    color: AppColors.info,
+  );
 
   /// Header title style - for ButleryHeader (Josefin Sans, lowercase)
   static TextStyle get headerTitle => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   /// Main view header title - bold editorial style for main views (44px, Josefin Sans)
   static TextStyle get mainViewTitle => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 44,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1,
-        height: 0.95,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 44,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1,
+    height: 0.95,
+  );
 
   /// Header count badge text style (rust-colored, no border)
   static TextStyle get headerCountBadge => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: AppColors.rustLight,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: AppColors.rustLight,
+  );
 
   /// Section header label style (Josefin Sans lowercase, 13px)
   static TextStyle get sectionLabel => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.5,
-        color: AppColors.forestGreenDark,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.5,
+    color: AppColors.forestGreenDark,
+  );
 
   /// Filter chip text style
   static TextStyle get filterChip => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+  );
 
   /// Navigation item label (Josefin Sans, 10px per mockup)
   static TextStyle get navLabel => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.3,
+  );
 
   /// Empty state title (Josefin Sans)
   static TextStyle get emptyStateTitle => TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.0,
-      );
+    fontFamily: _headerFontFamily,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.0,
+  );
 
   /// Empty state body
   static TextStyle get emptyStateBody => bodyMedium;
 
   /// Recipe card title (16px/w700 — bold for clear hierarchy)
   static TextStyle get recipeCardTitle => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+  );
 
   /// Recipe card description (13px/w300 — light for contrast against bold title)
   static TextStyle get recipeCardDescription => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 13,
-        fontWeight: FontWeight.w300,
-        height: 1.3,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w300,
+    height: 1.3,
+  );
 
   /// Recipe card meta (11px/w500 uppercase — distinct third layer)
   static TextStyle get recipeCardMeta => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.3,
+  );
 
   /// Badge text style for unified badges
   static TextStyle get badgeText => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.2,
-      );
+    fontFamily: _primaryFontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.2,
+  );
 
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
   /// Colors are omitted — M3 applies colorScheme.onSurface automatically.

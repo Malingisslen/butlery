@@ -54,8 +54,9 @@ void main() {
     });
 
     test('nested blocks share the image-level ocr.txt', () {
-      final nested =
-          paths.recipeEntries('testbok').where((e) => e.imageId == 'multipage');
+      final nested = paths
+          .recipeEntries('testbok')
+          .where((e) => e.imageId == 'multipage');
       expect(nested, hasLength(2));
       for (final e in nested) {
         expect(e.ocrTextPath, endsWith('multipage/ocr.txt'));

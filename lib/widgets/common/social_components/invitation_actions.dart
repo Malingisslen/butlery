@@ -47,16 +47,15 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primary
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           top: BorderSide(
-              color: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color: Theme.of(context).colorScheme.primary.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
+          ),
         ),
       ),
       child: Row(
@@ -148,10 +147,12 @@ class InvitationActions {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: buttons.reversed
-          .map((button) => Padding(
-                padding: AppDimensions.paddingOnlyBottom16,
-                child: button,
-              ))
+          .map(
+            (button) => Padding(
+              padding: AppDimensions.paddingOnlyBottom16,
+              child: button,
+            ),
+          )
           .toList(),
     );
   }
@@ -187,11 +188,14 @@ class InvitationActions {
           if (showRemove && onBulkRemove != null)
             TextButton.icon(
               onPressed: onBulkRemove,
-              icon: Icon(Icons.delete,
-                  color: Theme.of(context).colorScheme.error),
+              icon: Icon(
+                Icons.delete,
+                color: Theme.of(context).colorScheme.error,
+              ),
               label: Text(removeText ?? context.l10n.commonDelete),
               style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error),
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
             ),
           if (showExport && onBulkExport != null)
             TextButton.icon(
@@ -256,8 +260,9 @@ class InvitationActions {
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   subtitle: Text(
-                    context.l10n
-                        .shareGroupMembersCount(target.memberCount ?? 0),
+                    context.l10n.shareGroupMembersCount(
+                      target.memberCount ?? 0,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
@@ -278,7 +283,8 @@ class InvitationActions {
           },
           style: isDangerous
               ? ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error)
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                )
               : null,
           child: Text(confirmText ?? context.l10n.commonContinue),
         ),
@@ -348,10 +354,14 @@ class InvitationActions {
             value: 'remove',
             child: Builder(
               builder: (context) => ListTile(
-                leading: Icon(Icons.delete,
-                    color: Theme.of(context).colorScheme.error),
-                title: Text(context.l10n.commonDelete,
-                    style: AppTextStyles.bodyMediumError),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  context.l10n.commonDelete,
+                  style: AppTextStyles.bodyMediumError,
+                ),
                 dense: true,
               ),
             ),
@@ -382,7 +392,8 @@ class InvitationActions {
 
     return Dismissible(
       key: UniqueKey(),
-      background: leftAction ??
+      background:
+          leftAction ??
           Container(
             color: resolvedLeftColor,
             alignment: AlignmentDirectional.centerStart,
@@ -398,7 +409,8 @@ class InvitationActions {
               ],
             ),
           ),
-      secondaryBackground: rightAction ??
+      secondaryBackground:
+          rightAction ??
           Container(
             color: resolvedRightColor,
             alignment: AlignmentDirectional.centerEnd,

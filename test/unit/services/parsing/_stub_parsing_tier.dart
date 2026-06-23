@@ -33,8 +33,8 @@ ParsedRecipe buildRecipeAtConfidenceBucket(double confidenceBucket) {
   final conf = confidenceBucket >= 0.85
       ? ParseConfidence.high
       : (confidenceBucket >= 0.5
-          ? ParseConfidence.medium
-          : ParseConfidence.low);
+            ? ParseConfidence.medium
+            : ParseConfidence.low);
 
   return ParsedRecipe(
     title: FieldResult(value: 'Test Recipe', confidence: conf),
@@ -76,10 +76,10 @@ class StubParsingTier extends ParsingTier {
     TierResult? result,
     TierResult Function(ParsingContext)? resultFactory,
     bool Function(ParsingContext)? skipPredicate,
-  })  : _name = name,
-        _resultFactory =
-            resultFactory ?? (result != null ? (_) => result : null),
-        _skipPredicate = skipPredicate;
+  }) : _name = name,
+       _resultFactory =
+           resultFactory ?? (result != null ? (_) => result : null),
+       _skipPredicate = skipPredicate;
 
   @override
   String get tierName => _name;

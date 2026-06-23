@@ -64,23 +64,29 @@ void main() {
     }
 
     group('deleteAllByUser', () {
-      test('happy path — owner deletes their notifications, returns count',
-          () async {
-        await seedNotifications(_ownerUid, 3);
-        await seedNotifications(_strangerUid, 2);
+      test(
+        'happy path — owner deletes their notifications, returns count',
+        () async {
+          await seedNotifications(_ownerUid, 3);
+          await seedNotifications(_strangerUid, 2);
 
-        final count = await repo.deleteAllByUser(_ownerUid);
+          final count = await repo.deleteAllByUser(_ownerUid);
 
-        expect(count, equals(3));
-        final remaining =
-            await fakeFirestore.collection('user_notifications').get();
-        expect(remaining.docs.length, equals(2),
-            reason: 'stranger docs untouched');
-        expect(
-          remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
-          isTrue,
-        );
-      });
+          expect(count, equals(3));
+          final remaining = await fakeFirestore
+              .collection('user_notifications')
+              .get();
+          expect(
+            remaining.docs.length,
+            equals(2),
+            reason: 'stranger docs untouched',
+          );
+          expect(
+            remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
+            isTrue,
+          );
+        },
+      );
 
       test('empty path — no docs match, returns 0, no batch fired', () async {
         final count = await repo.deleteAllByUser(_ownerUid);
@@ -96,8 +102,9 @@ void main() {
         );
 
         // Stranger docs untouched.
-        final remaining =
-            await fakeFirestore.collection('user_notifications').get();
+        final remaining = await fakeFirestore
+            .collection('user_notifications')
+            .get();
         expect(remaining.docs.length, equals(2));
       });
 
@@ -109,8 +116,9 @@ void main() {
         final count = await repo.deleteAllByUser(_ownerUid);
 
         expect(count, equals(401));
-        final remaining =
-            await fakeFirestore.collection('user_notifications').get();
+        final remaining = await fakeFirestore
+            .collection('user_notifications')
+            .get();
         expect(remaining.docs, isEmpty);
       });
     });
@@ -180,19 +188,22 @@ void main() {
       }
     }
 
-    test('happy path — owner scrub returns count, leaves others alone',
-        () async {
-      await seedHistory(_ownerUid, 4);
-      await seedHistory(_strangerUid, 1);
+    test(
+      'happy path — owner scrub returns count, leaves others alone',
+      () async {
+        await seedHistory(_ownerUid, 4);
+        await seedHistory(_strangerUid, 1);
 
-      final count = await repo.deleteAllByUser(_ownerUid);
+        final count = await repo.deleteAllByUser(_ownerUid);
 
-      expect(count, equals(4));
-      final remaining =
-          await fakeFirestore.collection('notification_history').get();
-      expect(remaining.docs.length, equals(1));
-      expect(remaining.docs.first.data()['userId'], equals(_strangerUid));
-    });
+        expect(count, equals(4));
+        final remaining = await fakeFirestore
+            .collection('notification_history')
+            .get();
+        expect(remaining.docs.length, equals(1));
+        expect(remaining.docs.first.data()['userId'], equals(_strangerUid));
+      },
+    );
 
     test('empty path — no docs match, returns 0', () async {
       final count = await repo.deleteAllByUser(_ownerUid);
@@ -232,33 +243,36 @@ void main() {
             .collection('notification_batches')
             .doc('$userId-batch-$i')
             .set({
-          'userId': userId,
-          'batchKey': '$userId-batch-$i',
-          'notifications': const [],
-          'count': 0,
-          'lastUpdated': DateTime(2026, 4, i + 1),
-          'createdAt': DateTime(2026, 4, i + 1),
-          'scheduledFor': DateTime(2026, 4, i + 2),
-        });
+              'userId': userId,
+              'batchKey': '$userId-batch-$i',
+              'notifications': const [],
+              'count': 0,
+              'lastUpdated': DateTime(2026, 4, i + 1),
+              'createdAt': DateTime(2026, 4, i + 1),
+              'scheduledFor': DateTime(2026, 4, i + 2),
+            });
       }
     }
 
-    test('happy path — owner scrub returns count, leaves others alone',
-        () async {
-      await seedBatches(_ownerUid, 2);
-      await seedBatches(_strangerUid, 3);
+    test(
+      'happy path — owner scrub returns count, leaves others alone',
+      () async {
+        await seedBatches(_ownerUid, 2);
+        await seedBatches(_strangerUid, 3);
 
-      final count = await repo.deleteAllByUser(_ownerUid);
+        final count = await repo.deleteAllByUser(_ownerUid);
 
-      expect(count, equals(2));
-      final remaining =
-          await fakeFirestore.collection('notification_batches').get();
-      expect(remaining.docs.length, equals(3));
-      expect(
-        remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
-        isTrue,
-      );
-    });
+        expect(count, equals(2));
+        final remaining = await fakeFirestore
+            .collection('notification_batches')
+            .get();
+        expect(remaining.docs.length, equals(3));
+        expect(
+          remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
+          isTrue,
+        );
+      },
+    );
 
     test('empty path — no docs match, returns 0', () async {
       final count = await repo.deleteAllByUser(_ownerUid);
@@ -298,29 +312,33 @@ void main() {
             .collection('user_fcm_tokens')
             .doc('${userId}_device-$i')
             .set({
-          'userId': userId,
-          'docId': '${userId}_device-$i',
-          'token': 'token-$i',
-          'isActive': true,
-        });
+              'userId': userId,
+              'docId': '${userId}_device-$i',
+              'token': 'token-$i',
+              'isActive': true,
+            });
       }
     }
 
-    test('happy path — owner scrub returns count, leaves others alone',
-        () async {
-      await seedTokens(_ownerUid, 3);
-      await seedTokens(_strangerUid, 2);
+    test(
+      'happy path — owner scrub returns count, leaves others alone',
+      () async {
+        await seedTokens(_ownerUid, 3);
+        await seedTokens(_strangerUid, 2);
 
-      final count = await repo.deleteAllByUser(_ownerUid);
+        final count = await repo.deleteAllByUser(_ownerUid);
 
-      expect(count, equals(3));
-      final remaining = await fakeFirestore.collection('user_fcm_tokens').get();
-      expect(remaining.docs.length, equals(2));
-      expect(
-        remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
-        isTrue,
-      );
-    });
+        expect(count, equals(3));
+        final remaining = await fakeFirestore
+            .collection('user_fcm_tokens')
+            .get();
+        expect(remaining.docs.length, equals(2));
+        expect(
+          remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
+          isTrue,
+        );
+      },
+    );
 
     test('empty path — no docs match, returns 0', () async {
       final count = await repo.deleteAllByUser(_ownerUid);
@@ -372,49 +390,58 @@ void main() {
       }
     }
 
-    test('1:1 conversation — messages deleted + conversation removed',
-        () async {
-      await seedConversation(
-        convoId: 'convo-direct',
-        participantIds: [_ownerUid, _strangerUid],
-        messageCount: 3,
-      );
+    test(
+      '1:1 conversation — messages deleted + conversation removed',
+      () async {
+        await seedConversation(
+          convoId: 'convo-direct',
+          participantIds: [_ownerUid, _strangerUid],
+          messageCount: 3,
+        );
 
-      final count = await repo.deleteAllMessagesForUser(_ownerUid);
+        final count = await repo.deleteAllMessagesForUser(_ownerUid);
 
-      expect(count, equals(3));
-      final convoAfter = await fakeFirestore
-          .collection('conversations')
-          .doc('convo-direct')
-          .get();
-      expect(convoAfter.exists, isFalse,
-          reason: '1:1 conversation should be deleted entirely');
-    });
+        expect(count, equals(3));
+        final convoAfter = await fakeFirestore
+            .collection('conversations')
+            .doc('convo-direct')
+            .get();
+        expect(
+          convoAfter.exists,
+          isFalse,
+          reason: '1:1 conversation should be deleted entirely',
+        );
+      },
+    );
 
     test(
-        'group conversation (>2 participants) — messages deleted + user removed from participantIds',
-        () async {
-      await seedConversation(
-        convoId: 'convo-group',
-        participantIds: [_ownerUid, _strangerUid, 'third-uid'],
-        messageCount: 4,
-      );
+      'group conversation (>2 participants) — messages deleted + user removed from participantIds',
+      () async {
+        await seedConversation(
+          convoId: 'convo-group',
+          participantIds: [_ownerUid, _strangerUid, 'third-uid'],
+          messageCount: 4,
+        );
 
-      final count = await repo.deleteAllMessagesForUser(_ownerUid);
+        final count = await repo.deleteAllMessagesForUser(_ownerUid);
 
-      expect(count, equals(4));
-      final convoAfter = await fakeFirestore
-          .collection('conversations')
-          .doc('convo-group')
-          .get();
-      expect(convoAfter.exists, isTrue,
-          reason: 'group conversation continues for the other participants');
-      expect(
-        List<String>.from(convoAfter.data()!['participantIds'] ?? []),
-        equals([_strangerUid, 'third-uid']),
-        reason: 'leaving user removed from participantIds',
-      );
-    });
+        expect(count, equals(4));
+        final convoAfter = await fakeFirestore
+            .collection('conversations')
+            .doc('convo-group')
+            .get();
+        expect(
+          convoAfter.exists,
+          isTrue,
+          reason: 'group conversation continues for the other participants',
+        );
+        expect(
+          List<String>.from(convoAfter.data()!['participantIds'] ?? []),
+          equals([_strangerUid, 'third-uid']),
+          reason: 'leaving user removed from participantIds',
+        );
+      },
+    );
 
     test('no conversations — returns 0', () async {
       final count = await repo.deleteAllMessagesForUser(_ownerUid);
@@ -460,23 +487,26 @@ void main() {
       }
     }
 
-    test('happy path — owner scrub returns count, leaves others alone',
-        () async {
-      await seedRealtimeRecipes(_ownerUid, 2);
-      await seedRealtimeRecipes(_strangerUid, 3);
+    test(
+      'happy path — owner scrub returns count, leaves others alone',
+      () async {
+        await seedRealtimeRecipes(_ownerUid, 2);
+        await seedRealtimeRecipes(_strangerUid, 3);
 
-      final count = await repo.deleteAllByUser(_ownerUid);
+        final count = await repo.deleteAllByUser(_ownerUid);
 
-      expect(count, equals(2));
-      final remaining =
-          await fakeFirestore.collection('realtime_recipes').get();
-      expect(remaining.docs.length, equals(3));
-      expect(
-        remaining.docs.every((d) => d.data()['ownerId'] == _strangerUid),
-        isTrue,
-        reason: 'realtime_recipes uses ownerId, not userId',
-      );
-    });
+        expect(count, equals(2));
+        final remaining = await fakeFirestore
+            .collection('realtime_recipes')
+            .get();
+        expect(remaining.docs.length, equals(3));
+        expect(
+          remaining.docs.every((d) => d.data()['ownerId'] == _strangerUid),
+          isTrue,
+          reason: 'realtime_recipes uses ownerId, not userId',
+        );
+      },
+    );
 
     test('empty path — no docs match, returns 0', () async {
       final count = await repo.deleteAllByUser(_ownerUid);

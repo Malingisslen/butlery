@@ -434,8 +434,9 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
 
   /// Build avatar widget
   Widget _buildAvatarWidget() {
-    final imageUrl =
-        widget.imageUrls.isNotEmpty ? widget.imageUrls.first : null;
+    final imageUrl = widget.imageUrls.isNotEmpty
+        ? widget.imageUrls.first
+        : null;
 
     if (widget.onImageSelected != null) {
       return AvatarImageWidget.editable(

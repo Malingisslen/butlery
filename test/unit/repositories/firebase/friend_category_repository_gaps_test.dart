@@ -78,8 +78,11 @@ void main() {
     test('appends current user to friendUserIds', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore, authedUserId: _bob);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'Friends'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends'),
+      );
 
       await repo.addSelfToCategory(_alice, 'c1');
 
@@ -97,14 +100,21 @@ void main() {
     test('returns categories where user is a friendUserIds member', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c1', name: 'A', members: [_bob]));
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c2', name: 'B', members: []));
-      await _seed(firestore,
-          ownerId: 'someone-else',
-          category: _cat(id: 'c3', name: 'C', members: [_bob]));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'A', members: [_bob]),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'B', members: []),
+      );
+      await _seed(
+        firestore,
+        ownerId: 'someone-else',
+        category: _cat(id: 'c3', name: 'C', members: [_bob]),
+      );
 
       final results = await repo.fetchMemberCategories(_bob);
       expect(results.map((c) => c.id).toSet(), {'c1', 'c3'});
@@ -115,9 +125,11 @@ void main() {
     test('atomically flips ownerId when caller is current owner', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c1', name: 'Friends', owner: _alice));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends', owner: _alice),
+      );
 
       await repo.transferOwnership(_alice, 'c1', _bob);
 
@@ -154,15 +166,21 @@ void main() {
     test('returns only categories the friend is a member of', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c1', name: 'A', members: ['carol']));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c2', name: 'B', members: ['carol', 'dave']));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c3', name: 'C', members: ['dave']));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'A', members: ['carol']),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'B', members: ['carol', 'dave']),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c3', name: 'C', members: ['dave']),
+      );
 
       final results = await repo.getCategoriesContainingFriend(_alice, 'carol');
       expect(results.map((c) => c.id).toSet(), {'c1', 'c2'});
@@ -173,41 +191,57 @@ void main() {
     test('categoriesStream emits owned categories', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'Friends'));
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c2', name: 'Family'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends'),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'Family'),
+      );
 
       final first = await repo.categoriesStream(_alice).first;
       expect(first.length, 2);
     });
 
-    test('memberCategoriesStream emits categories user is a member of',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seed(firestore,
+    test(
+      'memberCategoriesStream emits categories user is a member of',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seed(
+          firestore,
           ownerId: _alice,
-          category: _cat(id: 'c1', name: 'A', members: [_bob]));
-      await _seed(firestore,
+          category: _cat(id: 'c1', name: 'A', members: [_bob]),
+        );
+        await _seed(
+          firestore,
           ownerId: _alice,
-          category: _cat(id: 'c2', name: 'B', members: ['carol']));
+          category: _cat(id: 'c2', name: 'B', members: ['carol']),
+        );
 
-      final first = await repo.memberCategoriesStream(_bob).first;
-      expect(first.map((c) => c.id), ['c1']);
-    });
+        final first = await repo.memberCategoriesStream(_bob).first;
+        expect(first.map((c) => c.id), ['c1']);
+      },
+    );
   });
 
   group('getCategoryStatistics', () {
     test('aggregates total counts + averageSize + largest', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c1', name: 'Small', members: ['a']));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c2', name: 'Big', members: ['a', 'b', 'c']));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Small', members: ['a']),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'Big', members: ['a', 'b', 'c']),
+      );
 
       final stats = await repo.getCategoryStatistics(_alice);
       expect(stats['totalCategories'], 2);
@@ -235,10 +269,16 @@ void main() {
     test('matches name (case-insensitive)', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'Friends'));
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c2', name: 'Family'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends'),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'Family'),
+      );
 
       final results = await repo.searchCategories(_alice, 'FRI');
       expect(results.map((c) => c.id), ['c1']);
@@ -247,10 +287,15 @@ void main() {
     test('matches description when present', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(
-              id: 'c1', name: 'Friends', description: 'Close acquaintances'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(
+          id: 'c1',
+          name: 'Friends',
+          description: 'Close acquaintances',
+        ),
+      );
 
       final results = await repo.searchCategories(_alice, 'close');
       expect(results.map((c) => c.id), ['c1']);
@@ -261,11 +306,16 @@ void main() {
     test('getEmptyCategories returns only zero-member categories', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'Empty'));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c2', name: 'NonEmpty', members: ['x']));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Empty'),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'NonEmpty', members: ['x']),
+      );
 
       final empties = await repo.getEmptyCategories(_alice);
       expect(empties.map((c) => c.id), ['c1']);
@@ -274,15 +324,21 @@ void main() {
     test('getLargestCategories sorts desc and applies limit', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c1', name: 'Small', members: ['a']));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c2', name: 'Medium', members: ['a', 'b']));
-      await _seed(firestore,
-          ownerId: _alice,
-          category: _cat(id: 'c3', name: 'Big', members: ['a', 'b', 'c', 'd']));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Small', members: ['a']),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'Medium', members: ['a', 'b']),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c3', name: 'Big', members: ['a', 'b', 'c', 'd']),
+      );
 
       final top2 = await repo.getLargestCategories(_alice, limit: 2);
       expect(top2.map((c) => c.id), ['c3', 'c2']);
@@ -291,14 +347,21 @@ void main() {
     test('categoryNameExists case-insensitive + excludes given id', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'Friends'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends'),
+      );
 
       expect(await repo.categoryNameExists(_alice, 'FRIENDS'), isTrue);
       expect(
-          await repo.categoryNameExists(_alice, 'FRIENDS',
-              excludeCategoryId: 'c1'),
-          isFalse);
+        await repo.categoryNameExists(
+          _alice,
+          'FRIENDS',
+          excludeCategoryId: 'c1',
+        ),
+        isFalse,
+      );
       expect(await repo.categoryNameExists(_alice, 'NewName'), isFalse);
     });
   });
@@ -307,10 +370,16 @@ void main() {
     test('batch-updates multiple categories', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c1', name: 'A'));
-      await _seed(firestore,
-          ownerId: _alice, category: _cat(id: 'c2', name: 'B'));
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'A'),
+      );
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c2', name: 'B'),
+      );
 
       await repo.bulkUpdateCategories(_alice, {
         'c1': {'name': 'A-updated'},
@@ -338,7 +407,7 @@ void main() {
 
       await expectLater(
         () => repo.bulkUpdateCategories(_alice, {
-          'c1': {'name': 'x'}
+          'c1': {'name': 'x'},
         }),
         throwsA(isA<PermissionDeniedException>()),
       );

@@ -17,7 +17,7 @@ class SharedShoppingListsViewModel extends ChangeNotifier
   SharedShoppingListsViewModel({
     UnifiedShoppingService? shoppingService,
   }) : _shoppingService =
-            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>() {
+           shoppingService ?? ServiceLocator.get<UnifiedShoppingService>() {
     loadSharedLists();
   }
 

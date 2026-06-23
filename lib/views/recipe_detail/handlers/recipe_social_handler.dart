@@ -65,7 +65,9 @@ class RecipeSocialHandler {
 
     if (currentUserId == null) {
       SnackBarUtils.showError(
-          context, context.l10n.socialMustBeLoggedInToComment);
+        context,
+        context.l10n.socialMustBeLoggedInToComment,
+      );
       return;
     }
 
@@ -75,7 +77,9 @@ class RecipeSocialHandler {
       if (userProfile == null) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.socialCouldNotFetchUserData);
+            context,
+            context.l10n.socialCouldNotFetchUserData,
+          );
         }
         return;
       }
@@ -86,7 +90,8 @@ class RecipeSocialHandler {
 
       SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
       // BUT-905: announce to screen readers — the snackbar isn't reliably read.
-      SemanticsService.announce(
+      SemanticsService.sendAnnouncement(
+        View.of(context),
         context.l10n.a11yCommentPosted,
         Directionality.of(context),
       );
@@ -121,7 +126,9 @@ class RecipeSocialHandler {
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(
-          context, context.l10n.socialCouldNotCreateProfile);
+        context,
+        context.l10n.socialCouldNotCreateProfile,
+      );
     }
   }
 }

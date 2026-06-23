@@ -54,15 +54,18 @@ void main() {
 
       // Stub analytics methods used during auth operations (logEvent has
       // a concrete no-op in MockAnalyticsService — don't re-stub it).
-      when(() => mockAnalyticsService.logSignUp(method: any(named: 'method')))
-          .thenAnswer((_) async {});
-      when(() => mockAnalyticsService.logLogin(method: any(named: 'method')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockAnalyticsService.logSignUp(method: any(named: 'method')),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockAnalyticsService.logLogin(method: any(named: 'method')),
+      ).thenAnswer((_) async {});
       when(() => mockAnalyticsService.logLogout()).thenAnswer((_) async {});
 
       // Stub the authStateChanges stream to return an empty stream by default
-      when(() => mockAuthRepository.authStateChanges())
-          .thenAnswer((_) => Stream.value(null));
+      when(
+        () => mockAuthRepository.authStateChanges(),
+      ).thenAnswer((_) => Stream.value(null));
 
       authService = AuthService(
         authRepository: mockAuthRepository,
@@ -93,52 +96,55 @@ void main() {
         expect(authService.currentUserId, null);
       });
 
-      test('BUT-833: pins analytics user identifier on auth state transitions',
-          () async {
-        // Arrange — tear down the setUp's `authService` (subscribed to a
-        // single-shot `Stream.value(null)`) before we re-stub the mock,
-        // so its dangling subscription doesn't keep ChangeNotifier state
-        // around for the lifetime of this test.
-        authService.dispose();
-        // Push a sequence of auth states through the stream and assert
-        // the analytics chokepoint received each transition.
-        final controller = StreamController<User?>();
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => controller.stream);
+      test(
+        'BUT-833: pins analytics user identifier on auth state transitions',
+        () async {
+          // Arrange — tear down the setUp's `authService` (subscribed to a
+          // single-shot `Stream.value(null)`) before we re-stub the mock,
+          // so its dangling subscription doesn't keep ChangeNotifier state
+          // around for the lifetime of this test.
+          authService.dispose();
+          // Push a sequence of auth states through the stream and assert
+          // the analytics chokepoint received each transition.
+          final controller = StreamController<User?>();
+          when(
+            () => mockAuthRepository.authStateChanges(),
+          ).thenAnswer((_) => controller.stream);
 
-        final localAuthService = AuthService(
-          authRepository: mockAuthRepository,
-          analyticsService: mockAnalyticsService,
-        );
+          final localAuthService = AuthService(
+            authRepository: mockAuthRepository,
+            analyticsService: mockAnalyticsService,
+          );
 
-        final signedInUser = MockFactory.createMockUser(
-          uid: 'auth_state_user_42',
-          email: 'state@example.com',
-          displayName: 'State User',
-        );
+          final signedInUser = MockFactory.createMockUser(
+            uid: 'auth_state_user_42',
+            email: 'state@example.com',
+            displayName: 'State User',
+          );
 
-        // Act — emit signed-in then signed-out.
-        controller.add(signedInUser);
-        await Future<void>.delayed(Duration.zero);
+          // Act — emit signed-in then signed-out.
+          controller.add(signedInUser);
+          await Future<void>.delayed(Duration.zero);
 
-        // Assert signed-in propagated.
-        expect(
-          mockAnalyticsService.capturedUserId,
-          'auth_state_user_42',
-        );
+          // Assert signed-in propagated.
+          expect(
+            mockAnalyticsService.capturedUserId,
+            'auth_state_user_42',
+          );
 
-        controller.add(null);
-        await Future<void>.delayed(Duration.zero);
+          controller.add(null);
+          await Future<void>.delayed(Duration.zero);
 
-        // Assert sign-out cleared.
-        expect(
-          mockAnalyticsService.capturedUserId,
-          isNull,
-        );
+          // Assert sign-out cleared.
+          expect(
+            mockAnalyticsService.capturedUserId,
+            isNull,
+          );
 
-        await controller.close();
-        localAuthService.dispose();
-      });
+          await controller.close();
+          localAuthService.dispose();
+        },
+      );
 
       test('should update authentication state when user signs in', () async {
         // Arrange
@@ -148,10 +154,12 @@ void main() {
           displayName: 'Test User',
         );
 
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {});
 
         mockAuthRepository.setAuthState(
           user: mockUser,
@@ -166,10 +174,12 @@ void main() {
 
         // Assert
         expect(result, true);
-        verify(() => mockAuthRepository.signIn(
-              email: 'test@example.com',
-              password: 'password123',
-            )).called(1);
+        verify(
+          () => mockAuthRepository.signIn(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).called(1);
       });
     });
 
@@ -183,18 +193,23 @@ void main() {
         );
         final mockCredential = FakeUserCredential(mockUser);
 
-        when(() => mockAuthRepository.createUser(
-              any(),
-              any(),
-            )).thenAnswer((_) async => mockCredential);
+        when(
+          () => mockAuthRepository.createUser(
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async => mockCredential);
 
-        when(() => mockAuthRepository.updateDisplayName(
-              any(),
-              any(),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.updateDisplayName(
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async {});
 
-        when(() => mockAuthRepository.sendEmailVerification())
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.sendEmailVerification(),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await authService.registerWithEmail(
@@ -205,26 +220,34 @@ void main() {
 
         // Assert
         expect(result, true);
-        verify(() => mockAuthRepository.createUser(
-              'newuser@example.com',
-              'securePassword123',
-            )).called(1);
-        verify(() => mockAuthRepository.updateDisplayName(
-              any(),
-              'New User',
-            )).called(1);
+        verify(
+          () => mockAuthRepository.createUser(
+            'newuser@example.com',
+            'securePassword123',
+          ),
+        ).called(1);
+        verify(
+          () => mockAuthRepository.updateDisplayName(
+            any(),
+            'New User',
+          ),
+        ).called(1);
         verify(() => mockAuthRepository.sendEmailVerification()).called(1);
       });
 
       test('should handle registration errors gracefully', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(
-              any(),
-              any(),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'email-already-in-use',
-              message: 'Email already exists',
-            ));
+        when(
+          () => mockAuthRepository.createUser(
+            any(),
+            any(),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'email-already-in-use',
+            message: 'Email already exists',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -255,31 +278,35 @@ void main() {
     group('Password Reset', () {
       test('should send password reset email', () async {
         // Arrange
-        when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.sendPasswordResetEmail(any()),
+        ).thenAnswer((_) async {});
 
         // Act
-        final result =
-            await authService.sendPasswordResetEmail('test@example.com');
+        final result = await authService.sendPasswordResetEmail(
+          'test@example.com',
+        );
 
         // Assert
         expect(result, true);
-        verify(() =>
-                mockAuthRepository.sendPasswordResetEmail('test@example.com'))
-            .called(1);
+        verify(
+          () => mockAuthRepository.sendPasswordResetEmail('test@example.com'),
+        ).called(1);
       });
 
       test('should handle password reset errors', () async {
         // Arrange
-        when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'user-not-found',
-                  message: 'User not found',
-                ));
+        when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'User not found',
+          ),
+        );
 
         // Act
-        final result =
-            await authService.sendPasswordResetEmail('unknown@example.com');
+        final result = await authService.sendPasswordResetEmail(
+          'unknown@example.com',
+        );
 
         // Assert
         expect(result, false);
@@ -288,32 +315,38 @@ void main() {
     });
 
     group('Error Handling', () {
-      test('should translate Firebase error codes to Swedish messages',
-          () async {
-        // Test various error codes
-        final errorTests = [
-          ('weak-password', 'för svagt'),
-          ('invalid-email', 'Ogiltig'),
-          ('user-disabled', 'inaktiverats'),
-          ('too-many-requests', 'många försök'),
-        ];
+      test(
+        'should translate Firebase error codes to Swedish messages',
+        () async {
+          // Test various error codes
+          final errorTests = [
+            ('weak-password', 'för svagt'),
+            ('invalid-email', 'Ogiltig'),
+            ('user-disabled', 'inaktiverats'),
+            ('too-many-requests', 'många försök'),
+          ];
 
-        for (final (code, expectedMessage) in errorTests) {
-          when(() => mockAuthRepository.signIn(
-                    email: any(named: 'email'),
-                    password: any(named: 'password'),
-                  ))
-              .thenAnswer((_) async => throw FirebaseAuthException(code: code));
+          for (final (code, expectedMessage) in errorTests) {
+            when(
+              () => mockAuthRepository.signIn(
+                email: any(named: 'email'),
+                password: any(named: 'password'),
+              ),
+            ).thenAnswer((_) async => throw FirebaseAuthException(code: code));
 
-          await authService.signInWithEmail(
-            email: 'test@example.com',
-            password: 'password',
-          );
+            await authService.signInWithEmail(
+              email: 'test@example.com',
+              password: 'password',
+            );
 
-          expect(authService.errorMessage, contains(expectedMessage),
-              reason: 'Error code $code should contain "$expectedMessage"');
-        }
-      });
+            expect(
+              authService.errorMessage,
+              contains(expectedMessage),
+              reason: 'Error code $code should contain "$expectedMessage"',
+            );
+          }
+        },
+      );
     });
 
     group('Loading State', () {
@@ -321,10 +354,12 @@ void main() {
         // Arrange
         bool? loadingStateDuringOperation;
 
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
           // Capture loading state during the operation
           loadingStateDuringOperation = authService.isLoading;
         });
@@ -340,10 +375,16 @@ void main() {
 
         // Assert
         expect(initialLoading, false, reason: 'Should start not loading');
-        expect(loadingStateDuringOperation, true,
-            reason: 'Should be loading during operation');
-        expect(authService.isLoading, false,
-            reason: 'Should not be loading after operation');
+        expect(
+          loadingStateDuringOperation,
+          true,
+          reason: 'Should be loading during operation',
+        );
+        expect(
+          authService.isLoading,
+          false,
+          reason: 'Should not be loading after operation',
+        );
       });
     });
 
@@ -362,8 +403,9 @@ void main() {
         );
 
         // Override the auth state stream to provide the user
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
 
         // Re-create the service to pick up the new stream
         authService = AuthService(
@@ -374,8 +416,9 @@ void main() {
         // Give the stream time to emit
         await Future.delayed(Duration(milliseconds: 10));
 
-        when(() => mockAuthRepository.deleteCurrentUser())
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.deleteCurrentUser(),
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await authService.deleteAccount();
@@ -391,8 +434,9 @@ void main() {
         mockAuthRepository.setAuthState(user: mockUser, isAuthenticated: true);
 
         // Override the auth state stream to provide the user
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
 
         // Re-create the service to pick up the new stream
         authService = AuthService(
@@ -403,11 +447,12 @@ void main() {
         // Give the stream time to emit
         await Future.delayed(Duration(milliseconds: 10));
 
-        when(() => mockAuthRepository.deleteCurrentUser())
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'requires-recent-login',
-                  message: 'Recent login required',
-                ));
+        when(() => mockAuthRepository.deleteCurrentUser()).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'requires-recent-login',
+            message: 'Recent login required',
+          ),
+        );
 
         // Act
         final result = await authService.deleteAccount();
@@ -422,12 +467,14 @@ void main() {
     group('Clear Error', () {
       test('should clear error message', () async {
         // Arrange - Create an error state
-        when(() => mockAuthRepository.signIn(
-                  email: any(named: 'email'),
-                  password: any(named: 'password'),
-                ))
-            .thenAnswer((_) async =>
-                throw FirebaseAuthException(code: 'invalid-email'));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'invalid-email'),
+        );
 
         await authService.signInWithEmail(
           email: 'bad-email',
@@ -453,10 +500,12 @@ void main() {
         // Arrange — throw immediately; the test cares about the error
         // translation, not the timeout duration. The previous 30-second
         // real wait added 30s per run with zero assertion value.
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
           FirebaseAuthException(
             code: 'network-request-failed',
             message: 'Network timeout',
@@ -477,11 +526,12 @@ void main() {
 
       test('should handle no internet connection during sign up', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'network-request-failed',
-                  message: 'No internet connection',
-                ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'network-request-failed',
+            message: 'No internet connection',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -497,15 +547,17 @@ void main() {
 
       test('should handle network errors during password reset', () async {
         // Arrange
-        when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'network-request-failed',
-                  message: 'Network unavailable',
-                ));
+        when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'network-request-failed',
+            message: 'Network unavailable',
+          ),
+        );
 
         // Act
-        final result =
-            await authService.sendPasswordResetEmail('test@example.com');
+        final result = await authService.sendPasswordResetEmail(
+          'test@example.com',
+        );
 
         // Assert
         expect(result, false);
@@ -514,88 +566,110 @@ void main() {
     });
 
     group('Firebase Auth Error Scenarios', () {
-      test('should handle user-not-found with generic credentials error',
-          () async {
-        // Arrange — user-not-found now returns generic message (prevents enumeration)
-        when(() => mockAuthRepository.signIn(
+      test(
+        'should handle user-not-found with generic credentials error',
+        () async {
+          // Arrange — user-not-found now returns generic message (prevents enumeration)
+          when(
+            () => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
+            ),
+          ).thenAnswer(
+            (_) async => throw FirebaseAuthException(
               code: 'user-not-found',
               message: 'No user found',
-            ));
+            ),
+          );
 
-        // Act
-        final result = await authService.signInWithEmail(
-          email: 'nonexistent@example.com',
-          password: 'password',
-        );
-
-        // Assert — same generic message as wrong-password
-        expect(result, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
-      });
-
-      test('should handle wrong-password with generic credentials error',
-          () async {
-        // Arrange — wrong-password now returns generic message (prevents enumeration)
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'wrong-password',
-              message: 'Incorrect password',
-            ));
-
-        // Act
-        final result = await authService.signInWithEmail(
-          email: 'test@example.com',
-          password: 'wrongpassword',
-        );
-
-        // Assert — same generic message as user-not-found
-        expect(result, false);
-        expect(authService.errorMessage, contains('Fel email eller lösenord'));
-      });
-
-      test(
-          'user-not-found, wrong-password, and invalid-credential all produce identical error',
-          () async {
-        final errorCodes = [
-          'user-not-found',
-          'wrong-password',
-          'invalid-credential'
-        ];
-        final messages = <String>[];
-
-        for (final code in errorCodes) {
-          authService.clearError();
-          when(() => mockAuthRepository.signIn(
-                email: any(named: 'email'),
-                password: any(named: 'password'),
-              )).thenThrow(FirebaseAuthException(code: code));
-
-          await authService.signInWithEmail(
-            email: 'test@example.com',
+          // Act
+          final result = await authService.signInWithEmail(
+            email: 'nonexistent@example.com',
             password: 'password',
           );
 
-          messages.add(authService.errorMessage ?? '');
-        }
+          // Assert — same generic message as wrong-password
+          expect(result, false);
+          expect(
+            authService.errorMessage,
+            contains('Fel email eller lösenord'),
+          );
+        },
+      );
 
-        // All three should produce the exact same message
-        expect(messages[0], equals(messages[1]));
-        expect(messages[1], equals(messages[2]));
-        expect(messages[0], contains('Fel email eller lösenord'));
-      });
+      test(
+        'should handle wrong-password with generic credentials error',
+        () async {
+          // Arrange — wrong-password now returns generic message (prevents enumeration)
+          when(
+            () => mockAuthRepository.signIn(
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+            ),
+          ).thenAnswer(
+            (_) async => throw FirebaseAuthException(
+              code: 'wrong-password',
+              message: 'Incorrect password',
+            ),
+          );
+
+          // Act
+          final result = await authService.signInWithEmail(
+            email: 'test@example.com',
+            password: 'wrongpassword',
+          );
+
+          // Assert — same generic message as user-not-found
+          expect(result, false);
+          expect(
+            authService.errorMessage,
+            contains('Fel email eller lösenord'),
+          );
+        },
+      );
+
+      test(
+        'user-not-found, wrong-password, and invalid-credential all produce identical error',
+        () async {
+          final errorCodes = [
+            'user-not-found',
+            'wrong-password',
+            'invalid-credential',
+          ];
+          final messages = <String>[];
+
+          for (final code in errorCodes) {
+            authService.clearError();
+            when(
+              () => mockAuthRepository.signIn(
+                email: any(named: 'email'),
+                password: any(named: 'password'),
+              ),
+            ).thenThrow(FirebaseAuthException(code: code));
+
+            await authService.signInWithEmail(
+              email: 'test@example.com',
+              password: 'password',
+            );
+
+            messages.add(authService.errorMessage ?? '');
+          }
+
+          // All three should produce the exact same message
+          expect(messages[0], equals(messages[1]));
+          expect(messages[1], equals(messages[2]));
+          expect(messages[0], contains('Fel email eller lösenord'));
+        },
+      );
 
       test('should handle email-already-in-use error', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'email-already-in-use',
-                  message: 'Email already registered',
-                ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'email-already-in-use',
+            message: 'Email already registered',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -606,17 +680,20 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage,
-            equals('Email-adressen används redan av ett annat konto.'));
+        expect(
+          authService.errorMessage,
+          equals('Email-adressen används redan av ett annat konto.'),
+        );
       });
 
       test('should handle weak-password error', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'weak-password',
-                  message: 'Password too weak',
-                ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'weak-password',
+            message: 'Password too weak',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -627,19 +704,25 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage,
-            equals('Lösenordet är för svagt. Använd minst 6 tecken.'));
+        expect(
+          authService.errorMessage,
+          equals('Lösenordet är för svagt. Använd minst 6 tecken.'),
+        );
       });
 
       test('should handle invalid-email error', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'invalid-email',
-              message: 'Invalid email format',
-            ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'invalid-email',
+            message: 'Invalid email format',
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -654,13 +737,17 @@ void main() {
 
       test('should handle too-many-requests error', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'too-many-requests',
-              message: 'Too many failed attempts',
-            ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'too-many-requests',
+            message: 'Too many failed attempts',
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -670,17 +757,20 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage,
-            equals('För många försök. Vänta en stund och försök igen.'));
+        expect(
+          authService.errorMessage,
+          equals('För många försök. Vänta en stund och försök igen.'),
+        );
       });
 
       test('should handle operation-not-allowed error', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'operation-not-allowed',
-                  message: 'Email/password accounts are not enabled',
-                ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'operation-not-allowed',
+            message: 'Email/password accounts are not enabled',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -696,13 +786,17 @@ void main() {
 
       test('should handle user-disabled error', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'user-disabled',
-          message: 'User account has been disabled',
-        ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(
+            code: 'user-disabled',
+            message: 'User account has been disabled',
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -713,18 +807,24 @@ void main() {
         // Assert
         expect(result, false);
         expect(
-            authService.errorMessage, equals('Detta konto har inaktiverats.'));
+          authService.errorMessage,
+          equals('Detta konto har inaktiverats.'),
+        );
       });
 
       test('should handle unknown Firebase error codes gracefully', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'unknown-error-code',
-          message: 'Something unexpected happened',
-        ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(
+            code: 'unknown-error-code',
+            message: 'Something unexpected happened',
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -741,13 +841,17 @@ void main() {
     group('Input Validation Errors', () {
       test('should handle empty email during sign in', () async {
         // Arrange - AuthService doesn't validate, Firebase will
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'invalid-email',
-          message: 'Empty email',
-        ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(
+            code: 'invalid-email',
+            message: 'Empty email',
+          ),
+        );
 
         // Act — use a 3+ char email so substring(0,3) in the logger doesn't crash
         final result = await authService.signInWithEmail(
@@ -758,21 +862,27 @@ void main() {
         // Assert
         expect(result, false);
         expect(authService.errorMessage, contains('Ogiltig'));
-        verify(() => mockAuthRepository.signIn(
-              email: 'bad',
-              password: 'password123',
-            )).called(1);
+        verify(
+          () => mockAuthRepository.signIn(
+            email: 'bad',
+            password: 'password123',
+          ),
+        ).called(1);
       });
 
       test('should handle empty password during sign in', () async {
         // Arrange - AuthService doesn't validate, Firebase will
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'wrong-password',
-          message: 'Empty password',
-        ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(
+            code: 'wrong-password',
+            message: 'Empty password',
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -783,19 +893,22 @@ void main() {
         // Assert
         expect(result, false);
         expect(authService.errorMessage, contains('Fel email eller lösenord'));
-        verify(() => mockAuthRepository.signIn(
-              email: 'test@example.com',
-              password: '',
-            )).called(1);
+        verify(
+          () => mockAuthRepository.signIn(
+            email: 'test@example.com',
+            password: '',
+          ),
+        ).called(1);
       });
 
       test('should handle invalid email format during registration', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
-          code: 'invalid-email',
-          message: 'Invalid email format',
-        ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenThrow(
+          FirebaseAuthException(
+            code: 'invalid-email',
+            message: 'Invalid email format',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -811,11 +924,12 @@ void main() {
 
       test('should handle password too short during registration', () async {
         // Arrange
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenThrow(FirebaseAuthException(
-          code: 'weak-password',
-          message: 'Password should be at least 6 characters',
-        ));
+        when(() => mockAuthRepository.createUser(any(), any())).thenThrow(
+          FirebaseAuthException(
+            code: 'weak-password',
+            message: 'Password should be at least 6 characters',
+          ),
+        );
 
         // Act
         final result = await authService.registerWithEmail(
@@ -838,12 +952,15 @@ void main() {
         );
         final mockCredential = FakeUserCredential(mockUser);
 
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => mockCredential);
-        when(() => mockAuthRepository.updateDisplayName(any(), any()))
-            .thenAnswer((_) async {});
-        when(() => mockAuthRepository.sendEmailVerification())
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.createUser(any(), any()),
+        ).thenAnswer((_) async => mockCredential);
+        when(
+          () => mockAuthRepository.updateDisplayName(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.sendEmailVerification(),
+        ).thenAnswer((_) async {});
 
         // Act - Test with empty string for display name
         final result = await authService.registerWithEmail(
@@ -863,10 +980,12 @@ void main() {
       test('should handle multiple simultaneous sign-in attempts', () async {
         // Arrange
         var callCount = 0;
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
           callCount++;
           // Simulate delay to test concurrent calls
           await Future.delayed(Duration(milliseconds: 100));
@@ -898,10 +1017,12 @@ void main() {
 
       test('should handle sign out during sign in', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
           // Simulate delay for concurrent operation
           await Future.delayed(Duration(milliseconds: 50));
           // Return successful sign in
@@ -926,10 +1047,12 @@ void main() {
         // and the service treats that as a failed login.
         expect(signInResult, false);
         verify(() => mockAuthRepository.signOut()).called(1);
-        verify(() => mockAuthRepository.signIn(
-              email: 'test@example.com',
-              password: 'password',
-            )).called(1);
+        verify(
+          () => mockAuthRepository.signIn(
+            email: 'test@example.com',
+            password: 'password',
+          ),
+        ).called(1);
       });
 
       test('should prevent concurrent delete operations', () async {
@@ -937,8 +1060,9 @@ void main() {
         final mockUser = MockFactory.createMockUser(uid: 'test_user');
         mockAuthRepository.setAuthState(user: mockUser, isAuthenticated: true);
 
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
 
         authService = AuthService(
           authRepository: mockAuthRepository,
@@ -947,8 +1071,9 @@ void main() {
         await Future.delayed(Duration(milliseconds: 10));
 
         var deleteCallCount = 0;
-        when(() => mockAuthRepository.deleteCurrentUser())
-            .thenAnswer((_) async {
+        when(() => mockAuthRepository.deleteCurrentUser()).thenAnswer((
+          _,
+        ) async {
           deleteCallCount++;
           await Future.delayed(Duration(milliseconds: 100));
           if (deleteCallCount > 1) {
@@ -975,10 +1100,12 @@ void main() {
     group('Error Recovery', () {
       test('should clear error state after successful operation', () async {
         // Arrange - First create an error
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(code: 'wrong-password'));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(FirebaseAuthException(code: 'wrong-password'));
 
         await authService.signInWithEmail(
           email: 'test@example.com',
@@ -990,12 +1117,16 @@ void main() {
         // Now setup successful sign in — mock must set a user so the
         // service sees currentUser != null after signIn completes.
         final mockUser = MockFactory.createMockUser(uid: 'test_user');
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
           mockAuthRepository.setAuthState(
-              user: mockUser, isAuthenticated: true);
+            user: mockUser,
+            isAuthenticated: true,
+          );
         });
 
         // Act
@@ -1025,10 +1156,12 @@ void main() {
           // Reset error state
           authService.clearError();
 
-          when(() => mockAuthRepository.signIn(
-                email: any(named: 'email'),
-                password: any(named: 'password'),
-              )).thenThrow(FirebaseAuthException(code: code));
+          when(
+            () => mockAuthRepository.signIn(
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+            ),
+          ).thenThrow(FirebaseAuthException(code: code));
 
           // Act
           await authService.signInWithEmail(
@@ -1037,23 +1170,33 @@ void main() {
           );
 
           // Assert - Error message should be user-friendly
-          expect(authService.errorMessage, isNotEmpty,
-              reason: 'Should have error message for $code');
-          expect(authService.errorMessage, contains(expectedPhrase),
-              reason: 'Error for $code should contain "$expectedPhrase"');
+          expect(
+            authService.errorMessage,
+            isNotEmpty,
+            reason: 'Should have error message for $code',
+          );
+          expect(
+            authService.errorMessage,
+            contains(expectedPhrase),
+            reason: 'Error for $code should contain "$expectedPhrase"',
+          );
           // Should not expose technical details
-          expect(authService.errorMessage?.toLowerCase(),
-              isNot(contains('exception')),
-              reason: 'Should not contain technical terms for $code');
+          expect(
+            authService.errorMessage?.toLowerCase(),
+            isNot(contains('exception')),
+            reason: 'Should not contain technical terms for $code',
+          );
         }
       });
 
       test('should preserve error message until explicitly cleared', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(code: 'user-not-found'));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(FirebaseAuthException(code: 'user-not-found'));
 
         // Act
         await authService.signInWithEmail(
@@ -1079,46 +1222,54 @@ void main() {
 
       test('should handle error during error recovery', () async {
         // Arrange - First error
-        when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenThrow(FirebaseAuthException(
-          code: 'user-not-found',
-          message: 'User not found',
-        ));
+        when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
+          FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'User not found',
+          ),
+        );
 
         // Act
-        final result1 =
-            await authService.sendPasswordResetEmail('unknown@example.com');
+        final result1 = await authService.sendPasswordResetEmail(
+          'unknown@example.com',
+        );
 
         // Assert
         expect(result1, false);
         expect(authService.errorMessage, contains('Fel email eller lösenord'));
 
         // Arrange - Second error during recovery attempt
-        when(() => mockAuthRepository.sendPasswordResetEmail(any()))
-            .thenThrow(FirebaseAuthException(
-          code: 'network-request-failed',
-          message: 'Network error',
-        ));
+        when(() => mockAuthRepository.sendPasswordResetEmail(any())).thenThrow(
+          FirebaseAuthException(
+            code: 'network-request-failed',
+            message: 'Network error',
+          ),
+        );
 
         // Act
-        final result2 =
-            await authService.sendPasswordResetEmail('test@example.com');
+        final result2 = await authService.sendPasswordResetEmail(
+          'test@example.com',
+        );
 
         // Assert - Should update to new error
         expect(result2, false);
         expect(authService.errorMessage, contains('Nätverksfel'));
-        expect(authService.errorMessage,
-            isNot(contains('Fel email eller lösenord')));
+        expect(
+          authService.errorMessage,
+          isNot(contains('Fel email eller lösenord')),
+        );
       });
     });
 
     group('Special Edge Cases', () {
       test('should handle null user after successful sign in', () async {
         // Arrange - Repository signs in successfully but returns null user
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Keep auth state as null
         mockAuthRepository.setAuthState(user: null, isAuthenticated: false);
@@ -1137,13 +1288,17 @@ void main() {
 
       test('should handle error with null message', () async {
         // Arrange
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'unknown-error',
-          message: null,
-        ));
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(
+            code: 'unknown-error',
+            message: null,
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(
@@ -1166,10 +1321,12 @@ void main() {
         ];
 
         var errorIndex = 0;
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {
           if (errorIndex < errors.length) {
             throw errors[errorIndex++];
           }
@@ -1203,13 +1360,17 @@ void main() {
           emailVerified: true,
         );
         mockAuthRepository.setAuthState(user: mockUser, isAuthenticated: true);
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {});
 
         await authService.signInWithEmail(
-            email: 'u1@example.com', password: 'pw');
+          email: 'u1@example.com',
+          password: 'pw',
+        );
 
         expect(authService.currentUserDisplayName, equals('Display One'));
         expect(authService.currentUserEmail, equals('u1@example.com'));
@@ -1240,15 +1401,18 @@ void main() {
           user: MockFactory.createMockUser(uid: 'force1'),
           isAuthenticated: true,
         );
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {});
         await authService.signInWithEmail(email: 'a@b.c', password: 'pw');
         expect(authService.isAuthenticated, isTrue);
 
-        when(() => mockAuthRepository.signOut())
-            .thenAnswer((_) async => throw Exception('boom'));
+        when(
+          () => mockAuthRepository.signOut(),
+        ).thenAnswer((_) async => throw Exception('boom'));
 
         await authService.forceSignOut();
 
@@ -1264,10 +1428,12 @@ void main() {
           user: MockFactory.createMockUser(uid: 'inact1'),
           isAuthenticated: true,
         );
-        when(() => mockAuthRepository.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async {});
         await authService.signInWithEmail(email: 'a@b.c', password: 'pw');
 
         when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
@@ -1283,44 +1449,54 @@ void main() {
 
     group('reauthenticateWithPassword', () {
       test('returns true on success', () async {
-        when(() => mockAuthRepository.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async {});
 
         final ok = await authService.reauthenticateWithPassword('pw');
 
         expect(ok, isTrue);
-        verify(() => mockAuthRepository.reauthenticateWithPassword('pw'))
-            .called(1);
+        verify(
+          () => mockAuthRepository.reauthenticateWithPassword('pw'),
+        ).called(1);
       });
 
-      test('returns false and sets translated error on FirebaseAuthException',
-          () async {
-        when(() => mockAuthRepository.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async =>
-                throw FirebaseAuthException(code: 'wrong-password'));
+      test(
+        'returns false and sets translated error on FirebaseAuthException',
+        () async {
+          when(
+            () => mockAuthRepository.reauthenticateWithPassword(any()),
+          ).thenAnswer(
+            (_) async => throw FirebaseAuthException(code: 'wrong-password'),
+          );
 
-        final ok = await authService.reauthenticateWithPassword('bad');
+          final ok = await authService.reauthenticateWithPassword('bad');
 
-        expect(ok, isFalse);
-        expect(authService.errorMessage, isNotNull);
-      });
+          expect(ok, isFalse);
+          expect(authService.errorMessage, isNotNull);
+        },
+      );
 
-      test('returns false and sets generic error on unexpected exception',
-          () async {
-        when(() => mockAuthRepository.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => throw StateError('network broken'));
+      test(
+        'returns false and sets generic error on unexpected exception',
+        () async {
+          when(
+            () => mockAuthRepository.reauthenticateWithPassword(any()),
+          ).thenAnswer((_) async => throw StateError('network broken'));
 
-        final ok = await authService.reauthenticateWithPassword('pw');
+          final ok = await authService.reauthenticateWithPassword('pw');
 
-        expect(ok, isFalse);
-        expect(authService.errorMessage, isNotNull);
-      });
+          expect(ok, isFalse);
+          expect(authService.errorMessage, isNotNull);
+        },
+      );
     });
 
     group('changePassword', () {
       test('returns true on success', () async {
-        when(() => mockAuthRepository.updatePassword(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.updatePassword(any()),
+        ).thenAnswer((_) async {});
 
         final ok = await authService.changePassword('new-pass');
 
@@ -1330,7 +1506,8 @@ void main() {
 
       test('maps FirebaseAuthException to user-facing error', () async {
         when(() => mockAuthRepository.updatePassword(any())).thenAnswer(
-            (_) async => throw FirebaseAuthException(code: 'weak-password'));
+          (_) async => throw FirebaseAuthException(code: 'weak-password'),
+        );
 
         final ok = await authService.changePassword('123');
 
@@ -1338,35 +1515,41 @@ void main() {
         expect(authService.errorMessage, isNotNull);
       });
 
-      test('returns false and sets generic error on unexpected exception',
-          () async {
-        when(() => mockAuthRepository.updatePassword(any()))
-            .thenAnswer((_) async => throw StateError('boom'));
+      test(
+        'returns false and sets generic error on unexpected exception',
+        () async {
+          when(
+            () => mockAuthRepository.updatePassword(any()),
+          ).thenAnswer((_) async => throw StateError('boom'));
 
-        final ok = await authService.changePassword('pw');
+          final ok = await authService.changePassword('pw');
 
-        expect(ok, isFalse);
-        expect(authService.errorMessage, isNotNull);
-      });
+          expect(ok, isFalse);
+          expect(authService.errorMessage, isNotNull);
+        },
+      );
     });
 
     group('changeEmail', () {
       test('returns true on success', () async {
-        when(() => mockAuthRepository.verifyBeforeUpdateEmail(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.verifyBeforeUpdateEmail(any()),
+        ).thenAnswer((_) async {});
 
         final ok = await authService.changeEmail('new@example.com');
 
         expect(ok, isTrue);
-        verify(() =>
-                mockAuthRepository.verifyBeforeUpdateEmail('new@example.com'))
-            .called(1);
+        verify(
+          () => mockAuthRepository.verifyBeforeUpdateEmail('new@example.com'),
+        ).called(1);
       });
 
       test('FirebaseAuthException sets translated error', () async {
-        when(() => mockAuthRepository.verifyBeforeUpdateEmail(any()))
-            .thenAnswer((_) async =>
-                throw FirebaseAuthException(code: 'invalid-email'));
+        when(
+          () => mockAuthRepository.verifyBeforeUpdateEmail(any()),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(code: 'invalid-email'),
+        );
 
         final ok = await authService.changeEmail('bad');
 
@@ -1375,8 +1558,9 @@ void main() {
       });
 
       test('unexpected exception sets generic error', () async {
-        when(() => mockAuthRepository.verifyBeforeUpdateEmail(any()))
-            .thenAnswer((_) async => throw StateError('boom'));
+        when(
+          () => mockAuthRepository.verifyBeforeUpdateEmail(any()),
+        ).thenAnswer((_) async => throw StateError('boom'));
 
         final ok = await authService.changeEmail('x@y.z');
 
@@ -1387,8 +1571,9 @@ void main() {
 
     group('sendEmailVerification', () {
       test('completes when the repository succeeds', () async {
-        when(() => mockAuthRepository.sendEmailVerification())
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.sendEmailVerification(),
+        ).thenAnswer((_) async {});
 
         await expectLater(
           authService.sendEmailVerification(),
@@ -1399,8 +1584,8 @@ void main() {
 
       test('rethrows FirebaseAuthException after setting error', () async {
         when(() => mockAuthRepository.sendEmailVerification()).thenAnswer(
-            (_) async =>
-                throw FirebaseAuthException(code: 'too-many-requests'));
+          (_) async => throw FirebaseAuthException(code: 'too-many-requests'),
+        );
 
         await expectLater(
           authService.sendEmailVerification(),
@@ -1409,17 +1594,20 @@ void main() {
         expect(authService.errorMessage, isNotNull);
       });
 
-      test('rethrows unexpected exception after setting generic error',
-          () async {
-        when(() => mockAuthRepository.sendEmailVerification())
-            .thenAnswer((_) async => throw StateError('boom'));
+      test(
+        'rethrows unexpected exception after setting generic error',
+        () async {
+          when(
+            () => mockAuthRepository.sendEmailVerification(),
+          ).thenAnswer((_) async => throw StateError('boom'));
 
-        await expectLater(
-          authService.sendEmailVerification(),
-          throwsA(isA<StateError>()),
-        );
-        expect(authService.errorMessage, isNotNull);
-      });
+          await expectLater(
+            authService.sendEmailVerification(),
+            throwsA(isA<StateError>()),
+          );
+          expect(authService.errorMessage, isNotNull);
+        },
+      );
     });
 
     group('reloadUser', () {
@@ -1428,8 +1616,9 @@ void main() {
           uid: 'reload1',
           displayName: 'After Reload',
         );
-        when(() => mockAuthRepository.reloadCurrentUser())
-            .thenAnswer((_) async {});
+        when(
+          () => mockAuthRepository.reloadCurrentUser(),
+        ).thenAnswer((_) async {});
         mockAuthRepository.setAuthState(user: reloaded, isAuthenticated: true);
 
         await authService.reloadUser();
@@ -1439,34 +1628,40 @@ void main() {
       });
 
       test('swallows repository errors without throwing', () async {
-        when(() => mockAuthRepository.reloadCurrentUser())
-            .thenAnswer((_) async => throw Exception('network'));
+        when(
+          () => mockAuthRepository.reloadCurrentUser(),
+        ).thenAnswer((_) async => throw Exception('network'));
 
         await expectLater(authService.reloadUser(), completes);
       });
     });
 
     group('deleteAccount unexpected-error path', () {
-      test('non-FirebaseAuthException sets the dedicated error message',
-          () async {
-        mockAuthRepository.setAuthState(
-          user: MockFactory.createMockUser(uid: 'del1'),
-          isAuthenticated: true,
-        );
-        when(() => mockAuthRepository.signIn(
+      test(
+        'non-FirebaseAuthException sets the dedicated error message',
+        () async {
+          mockAuthRepository.setAuthState(
+            user: MockFactory.createMockUser(uid: 'del1'),
+            isAuthenticated: true,
+          );
+          when(
+            () => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
-            )).thenAnswer((_) async {});
-        await authService.signInWithEmail(email: 'a@b.c', password: 'pw');
+            ),
+          ).thenAnswer((_) async {});
+          await authService.signInWithEmail(email: 'a@b.c', password: 'pw');
 
-        when(() => mockAuthRepository.deleteCurrentUser())
-            .thenAnswer((_) async => throw StateError('boom'));
+          when(
+            () => mockAuthRepository.deleteCurrentUser(),
+          ).thenAnswer((_) async => throw StateError('boom'));
 
-        final ok = await authService.deleteAccount();
+          final ok = await authService.deleteAccount();
 
-        expect(ok, isFalse);
-        expect(authService.errorMessage, isNotNull);
-      });
+          expect(ok, isFalse);
+          expect(authService.errorMessage, isNotNull);
+        },
+      );
 
       test('returns false when no user is signed in', () async {
         final ok = await authService.deleteAccount();
@@ -1477,34 +1672,41 @@ void main() {
     });
 
     group('sign-in and sign-up unexpected-error paths', () {
-      test('signInWithEmail returns false for non-Firebase exceptions',
-          () async {
-        when(() => mockAuthRepository.signIn(
+      test(
+        'signInWithEmail returns false for non-Firebase exceptions',
+        () async {
+          when(
+            () => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
-            )).thenAnswer((_) async => throw StateError('boom'));
+            ),
+          ).thenAnswer((_) async => throw StateError('boom'));
 
-        final ok = await authService.signInWithEmail(
-          email: 'a@b.c',
-          password: 'pw',
-        );
+          final ok = await authService.signInWithEmail(
+            email: 'a@b.c',
+            password: 'pw',
+          );
 
-        expect(ok, isFalse);
-      });
+          expect(ok, isFalse);
+        },
+      );
 
-      test('registerWithEmail returns false for non-Firebase exceptions',
-          () async {
-        when(() => mockAuthRepository.createUser(any(), any()))
-            .thenAnswer((_) async => throw StateError('boom'));
+      test(
+        'registerWithEmail returns false for non-Firebase exceptions',
+        () async {
+          when(
+            () => mockAuthRepository.createUser(any(), any()),
+          ).thenAnswer((_) async => throw StateError('boom'));
 
-        final ok = await authService.registerWithEmail(
-          email: 'a@b.c',
-          password: 'pw',
-          displayName: 'X',
-        );
+          final ok = await authService.registerWithEmail(
+            email: 'a@b.c',
+            password: 'pw',
+            displayName: 'X',
+          );
 
-        expect(ok, isFalse);
-      });
+          expect(ok, isFalse);
+        },
+      );
     });
 
     // BUT-1021: AuthService stream-error contract (BUT-966 follow-up).
@@ -1529,8 +1731,9 @@ void main() {
         authService.dispose();
 
         streamController = StreamController<User?>();
-        when(() => mockAuthRepository.authStateChanges())
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => streamController.stream);
         when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
 
         streamAuthService = AuthService(
@@ -1556,31 +1759,46 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
 
-      test('user-token-expired: invalidates session and surfaces Swedish copy',
-          () async {
-        streamController.addError(
-          FirebaseAuthException(code: 'user-token-expired'),
-        );
-        await settleStreamError();
+      test(
+        'user-token-expired: invalidates session and surfaces Swedish copy',
+        () async {
+          streamController.addError(
+            FirebaseAuthException(code: 'user-token-expired'),
+          );
+          await settleStreamError();
 
-        expect(streamAuthService.sessionExpired, isTrue,
-            reason: 'session must be marked expired so login view can banner');
-        expect(streamAuthService.currentUser, isNull,
-            reason: 'no fake-authenticated state');
-        expect(streamAuthService.errorMessage, isNotNull);
-        expect(streamAuthService.errorMessage, contains('Sessionen'),
-            reason: 'errorSessionExpired Swedish copy must surface');
-        verify(() => mockAuthRepository.signOut()).called(1);
+          expect(
+            streamAuthService.sessionExpired,
+            isTrue,
+            reason: 'session must be marked expired so login view can banner',
+          );
+          expect(
+            streamAuthService.currentUser,
+            isNull,
+            reason: 'no fake-authenticated state',
+          );
+          expect(streamAuthService.errorMessage, isNotNull);
+          expect(
+            streamAuthService.errorMessage,
+            contains('Sessionen'),
+            reason: 'errorSessionExpired Swedish copy must surface',
+          );
+          verify(() => mockAuthRepository.signOut()).called(1);
 
-        final events = mockAnalyticsService.capturedEvents
-            .where((e) => e.name == 'session_timeout_logout')
-            .toList();
-        expect(events, hasLength(1));
-        expect(
-            events.single.parameters?['reason'], equals('auth_stream_error'));
-        expect(events.single.parameters?['error_code'],
-            equals('user-token-expired'));
-      });
+          final events = mockAnalyticsService.capturedEvents
+              .where((e) => e.name == 'session_timeout_logout')
+              .toList();
+          expect(events, hasLength(1));
+          expect(
+            events.single.parameters?['reason'],
+            equals('auth_stream_error'),
+          );
+          expect(
+            events.single.parameters?['error_code'],
+            equals('user-token-expired'),
+          );
+        },
+      );
 
       test('user-disabled: same contract as token-expired', () async {
         streamController.addError(
@@ -1598,49 +1816,59 @@ void main() {
             .toList();
         expect(events, hasLength(1));
         expect(
-            events.single.parameters?['error_code'], equals('user-disabled'));
-      });
-
-      test(
-          'BUG-31: non-FirebaseAuthException is transient — session is preserved',
-          () async {
-        // A StateError reaching the auth stream is a transient/one-off blip
-        // (network hiccup, single stream error), NOT a credential revocation.
-        // Previously this force-signed-out the user mid-session (incl. during
-        // onboarding). The corrected contract: log it, keep the session, let
-        // the stream recover. Real revocation goes through the fatal-code path.
-        streamController.addError(StateError('stream broken'));
-        await settleStreamError();
-
-        expect(streamAuthService.sessionExpired, isFalse,
-            reason: 'transient error must not invalidate the session');
-        verifyNever(() => mockAuthRepository.signOut());
-
-        final events = mockAnalyticsService.capturedEvents
-            .where((e) => e.name == 'session_timeout_logout')
-            .toList();
-        expect(events, isEmpty,
-            reason: 'no logout event for a transient stream error');
-      });
-
-      test(
-          'BUG-31: unknown FirebaseAuthException code is transient — session preserved',
-          () async {
-        // An unrecognized Firebase code (e.g. a momentary 'unavailable') is not
-        // in the fatal set, so it must NOT end the session.
-        streamController.addError(
-          FirebaseAuthException(code: 'unavailable'),
+          events.single.parameters?['error_code'],
+          equals('user-disabled'),
         );
-        await settleStreamError();
-
-        expect(streamAuthService.sessionExpired, isFalse);
-        verifyNever(() => mockAuthRepository.signOut());
-
-        final events = mockAnalyticsService.capturedEvents
-            .where((e) => e.name == 'session_timeout_logout')
-            .toList();
-        expect(events, isEmpty);
       });
+
+      test(
+        'BUG-31: non-FirebaseAuthException is transient — session is preserved',
+        () async {
+          // A StateError reaching the auth stream is a transient/one-off blip
+          // (network hiccup, single stream error), NOT a credential revocation.
+          // Previously this force-signed-out the user mid-session (incl. during
+          // onboarding). The corrected contract: log it, keep the session, let
+          // the stream recover. Real revocation goes through the fatal-code path.
+          streamController.addError(StateError('stream broken'));
+          await settleStreamError();
+
+          expect(
+            streamAuthService.sessionExpired,
+            isFalse,
+            reason: 'transient error must not invalidate the session',
+          );
+          verifyNever(() => mockAuthRepository.signOut());
+
+          final events = mockAnalyticsService.capturedEvents
+              .where((e) => e.name == 'session_timeout_logout')
+              .toList();
+          expect(
+            events,
+            isEmpty,
+            reason: 'no logout event for a transient stream error',
+          );
+        },
+      );
+
+      test(
+        'BUG-31: unknown FirebaseAuthException code is transient — session preserved',
+        () async {
+          // An unrecognized Firebase code (e.g. a momentary 'unavailable') is not
+          // in the fatal set, so it must NOT end the session.
+          streamController.addError(
+            FirebaseAuthException(code: 'unavailable'),
+          );
+          await settleStreamError();
+
+          expect(streamAuthService.sessionExpired, isFalse);
+          verifyNever(() => mockAuthRepository.signOut());
+
+          final events = mockAnalyticsService.capturedEvents
+              .where((e) => e.name == 'session_timeout_logout')
+              .toList();
+          expect(events, isEmpty);
+        },
+      );
 
       test('BUG-31: user-not-found is fatal — invalidates session', () async {
         streamController.addError(
@@ -1653,21 +1881,24 @@ void main() {
         verify(() => mockAuthRepository.signOut()).called(1);
       });
 
-      test('forceSignOut failure does not crash the stream error handler',
-          () async {
-        when(() => mockAuthRepository.signOut())
-            .thenAnswer((_) async => throw Exception('signOut blew up'));
+      test(
+        'forceSignOut failure does not crash the stream error handler',
+        () async {
+          when(
+            () => mockAuthRepository.signOut(),
+          ).thenAnswer((_) async => throw Exception('signOut blew up'));
 
-        streamController.addError(
-          FirebaseAuthException(code: 'user-token-expired'),
-        );
-        await settleStreamError();
+          streamController.addError(
+            FirebaseAuthException(code: 'user-token-expired'),
+          );
+          await settleStreamError();
 
-        // forceSignOut catches its own errors in finally — service still
-        // ends up with sessionExpired=true and currentUser=null.
-        expect(streamAuthService.sessionExpired, isTrue);
-        expect(streamAuthService.currentUser, isNull);
-      });
+          // forceSignOut catches its own errors in finally — service still
+          // ends up with sessionExpired=true and currentUser=null.
+          expect(streamAuthService.sessionExpired, isTrue);
+          expect(streamAuthService.currentUser, isNull);
+        },
+      );
     });
   });
 }

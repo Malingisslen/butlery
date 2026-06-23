@@ -61,12 +61,12 @@ IngredientLookupResult _lookupWith(Set<String> matchedProperties) {
 }
 
 PersonalTagGroup _exclusiveGroup(String id) => PersonalTagGroup(
-      id: id,
-      name: 'Exklusiv grupp',
-      isExclusive: true,
-      createdAt: DateTime(2025),
-      updatedAt: DateTime(2025),
-    );
+  id: id,
+  name: 'Exklusiv grupp',
+  isExclusive: true,
+  createdAt: DateTime(2025),
+  updatedAt: DateTime(2025),
+);
 
 void main() {
   late PersonalTagRuleEvaluator evaluator;
@@ -122,10 +122,12 @@ void main() {
       );
 
       expect(result, isEmpty);
-      verifyNever(() => mockLookup.lookupFromRaw(
-            any(),
-            userId: any(named: 'userId'),
-          ));
+      verifyNever(
+        () => mockLookup.lookupFromRaw(
+          any(),
+          userId: any(named: 'userId'),
+        ),
+      );
     },
   );
 
@@ -149,7 +151,8 @@ void main() {
 
       final recipe = RecipeBuilder()
           .withTitle('Pasta bolognese')
-          .withIngredients(['pasta', 'köttfärs']).build();
+          .withIngredients(['pasta', 'köttfärs'])
+          .build();
 
       final result = await evaluator.evaluateRulesForRecipe(
         recipe,
@@ -182,7 +185,8 @@ void main() {
 
       final recipe = RecipeBuilder()
           .withTitle('Pasta bolognese')
-          .withIngredients(['pasta', 'köttfärs']).build();
+          .withIngredients(['pasta', 'köttfärs'])
+          .build();
 
       final result = await evaluator.evaluateRulesForRecipe(
         recipe,
@@ -191,8 +195,11 @@ void main() {
         [],
       );
 
-      expect(result, isEmpty,
-          reason: 'No keyword "lax" in recipe — tag must not be applied');
+      expect(
+        result,
+        isEmpty,
+        reason: 'No keyword "lax" in recipe — tag must not be applied',
+      );
     },
   );
 
@@ -235,7 +242,8 @@ void main() {
 
       final recipe = RecipeBuilder()
           .withTitle('Pasta carbonara')
-          .withIngredients(['pasta', 'ägg']).build();
+          .withIngredients(['pasta', 'ägg'])
+          .build();
 
       final result = await evaluator.evaluateRulesForRecipe(
         recipe,
@@ -245,8 +253,11 @@ void main() {
       );
 
       // Exactly one tag from the exclusive group must survive.
-      expect(result.length, equals(1),
-          reason: 'Exclusive group must emit exactly one tag');
+      expect(
+        result.length,
+        equals(1),
+        reason: 'Exclusive group must emit exactly one tag',
+      );
       // The surviving tag must belong to the group.
       expect(
         {easyTag.id, hardTag.id}.containsAll(result),
@@ -265,8 +276,10 @@ void main() {
       // If a rule matches, its ID must appear in the sources list for that tag.
       // A test that only checks "tag is present" can't catch a bug where
       // sources are empty or misattributed.
-      final tag =
-          PersonalTagBuilder().withId('quick-tag').withName('Snabb').build();
+      final tag = PersonalTagBuilder()
+          .withId('quick-tag')
+          .withName('Snabb')
+          .build();
 
       final rule = PersonalTagRuleBuilder()
           .withId('rule-quick-kw')
@@ -274,9 +287,9 @@ void main() {
           .withKeywordCondition('snabb')
           .build();
 
-      final recipe = RecipeBuilder()
-          .withTitle('Snabb pasta')
-          .withIngredients(['pasta']).build();
+      final recipe = RecipeBuilder().withTitle('Snabb pasta').withIngredients([
+        'pasta',
+      ]).build();
 
       final result = await evaluator.evaluateRulesWithSources(
         recipe,

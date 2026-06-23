@@ -52,8 +52,9 @@ void main() {
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
 
     // Get the Firestore repository from TestServiceLocator
-    mockFirestoreRepo = TestServiceLocator.get<FirestoreRepository>()
-        as FakeFirestoreRepository;
+    mockFirestoreRepo =
+        TestServiceLocator.get<FirestoreRepository>()
+            as FakeFirestoreRepository;
 
     // Create MenuStorage with injected repository
     menuStorage = MenuStorage(firestoreRepository: mockFirestoreRepo);
@@ -376,8 +377,10 @@ void main() {
       final restored = SavedMenuData.fromJson(json);
 
       expect(restored.name, equals(original.name));
-      expect(restored.savedDate.millisecondsSinceEpoch,
-          equals(original.savedDate.millisecondsSinceEpoch));
+      expect(
+        restored.savedDate.millisecondsSinceEpoch,
+        equals(original.savedDate.millisecondsSinceEpoch),
+      );
       expect(restored.recipeCount, equals(original.recipeCount));
       expect(restored.lastPrompt, equals(original.lastPrompt));
       expect(restored.comment, equals(original.comment));

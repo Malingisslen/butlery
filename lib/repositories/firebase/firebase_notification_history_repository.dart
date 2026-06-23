@@ -27,8 +27,8 @@ class FirebaseNotificationHistoryRepository
 
   @override
   Map<String, dynamic> fromFirestore(
-          DocumentSnapshot<Map<String, dynamic>> doc) =>
-      {'id': doc.id, ...doc.data() ?? {}};
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) => {'id': doc.id, ...doc.data() ?? {}};
 
   @override
   Map<String, dynamic> toFirestore(Map<String, dynamic> entity) => entity;
@@ -39,22 +39,29 @@ class FirebaseNotificationHistoryRepository
 
   @override
   Future<bool> validateCreatePermission(
-          String userId, Map<String, dynamic> entity) async =>
-      entity['userId'] == userId;
+    String userId,
+    Map<String, dynamic> entity,
+  ) async => entity['userId'] == userId;
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId,
-          Map<String, dynamic>? entity) async =>
-      entity?['userId'] == userId;
+  Future<bool> validateReadPermission(
+    String userId,
+    String resourceId,
+    Map<String, dynamic>? entity,
+  ) async => entity?['userId'] == userId;
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId,
-          Map<String, dynamic> entity) async =>
-      entity['userId'] == userId;
+  Future<bool> validateUpdatePermission(
+    String userId,
+    String resourceId,
+    Map<String, dynamic> entity,
+  ) async => entity['userId'] == userId;
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // BUT-1133: history docs carry a per-doc `userId` owner. Deletion must
     // be owner-scoped — an authenticated user must not be able to delete
     // another user's notification (privacy / GDPR). A missing doc denies.
@@ -89,8 +96,9 @@ class FirebaseNotificationHistoryRepository
         'type': type.name,
         'data': data,
         'sentAt': timestampProvider.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         'delivered': false,
         'opened': false,
       });
@@ -152,8 +160,12 @@ class FirebaseNotificationHistoryRepository
 
       final snapshot = await query.get();
       return snapshot.docs
-          .map((doc) => NotificationHistoryEntry.fromFirestore(
-              {'id': doc.id, ...doc.data()}))
+          .map(
+            (doc) => NotificationHistoryEntry.fromFirestore({
+              'id': doc.id,
+              ...doc.data(),
+            }),
+          )
           .toList();
     } catch (e) {
       AppLogger.error('Failed to fetch notification history', e);
@@ -179,8 +191,9 @@ class FirebaseNotificationHistoryRepository
     // Chunk into 500-op batches (Firestore limit).
     final timestamp = timestampProvider.serverTimestamp();
     for (var i = 0; i < snapshot.docs.length; i += 500) {
-      final end =
-          (i + 500 < snapshot.docs.length) ? i + 500 : snapshot.docs.length;
+      final end = (i + 500 < snapshot.docs.length)
+          ? i + 500
+          : snapshot.docs.length;
       final batch = firestore.batch();
       for (final doc in snapshot.docs.sublist(i, end)) {
         batch.update(doc.reference, {
@@ -191,7 +204,8 @@ class FirebaseNotificationHistoryRepository
       await batch.commit();
     }
     AppLogger.info(
-        'Marked ${snapshot.docs.length} notifications as opened for user ${userId.maskedUserId}');
+      'Marked ${snapshot.docs.length} notifications as opened for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 
@@ -208,7 +222,8 @@ class FirebaseNotificationHistoryRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} notification_history for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} notification_history for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 
@@ -230,7 +245,8 @@ class FirebaseNotificationHistoryRepository
     if (targets.isEmpty) return 0;
     await batchDeleteDocs(firestore, targets);
     AppLogger.info(
-        'Deleted ${targets.length} notification_history by id for user ${userId.maskedUserId}');
+      'Deleted ${targets.length} notification_history by id for user ${userId.maskedUserId}',
+    );
     return targets.length;
   }
 }

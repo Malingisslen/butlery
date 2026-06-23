@@ -185,7 +185,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       if (mounted) {
         setState(() {
           _actions.onPortionChanged(
-              widget.recipe.portions ?? 1, widget.recipe.ingredients);
+            widget.recipe.portions ?? 1,
+            widget.recipe.ingredients,
+          );
         });
       }
     });
@@ -218,9 +220,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             currentIndex: 0,
             items: ButleryAdaptiveNavigation.getNavigationItems(context),
             onTap: (index) {
-              final route =
-                  ButleryAdaptiveNavigation.getNavigationItems(context)[index]
-                      .route;
+              final route = ButleryAdaptiveNavigation.getNavigationItems(
+                context,
+              )[index].route;
               Navigator.pushNamed(context, route);
             },
           ),
@@ -281,7 +283,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             child: GestureDetector(
                               onTap: () =>
                                   RecipeDetailSharedWidgets.showFullscreenImage(
-                                      context, recipe.imageUrls, 0),
+                                    context,
+                                    recipe.imageUrls,
+                                    0,
+                                  ),
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
@@ -290,20 +295,23 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     colors: [
                                       Colors.transparent,
                                       cs.onSurface.withValues(
-                                          alpha:
-                                              AppDimensions.opacityMediumLight),
+                                        alpha: AppDimensions.opacityMediumLight,
+                                      ),
                                     ],
                                   ),
                                 ),
                                 child: CachedNetworkImage(
                                   imageUrl: recipe.imageUrls.first,
                                   cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                      recipe.imageUrls.first),
+                                    recipe.imageUrls.first,
+                                  ),
                                   fit: BoxFit.cover,
-                                  memCacheWidth: (600 *
-                                          MediaQuery.of(context)
-                                              .devicePixelRatio)
-                                      .round(),
+                                  memCacheWidth:
+                                      (600 *
+                                              MediaQuery.of(
+                                                context,
+                                              ).devicePixelRatio)
+                                          .round(),
                                   placeholder: (context, url) => ColoredBox(
                                     color: cs.surfaceContainerHighest,
                                     child: const Center(
@@ -329,7 +337,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             child: Center(
                               child: VegetableIllustration(
                                 type: VegetableIllustration.randomForRecipe(
-                                    recipe.id),
+                                  recipe.id,
+                                ),
                                 size: 120,
                                 opacity: 0.85,
                               ),
@@ -378,7 +387,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             if (!context.mounted) return;
                             // BUT-905: announce the new state to screen readers,
                             // which the icon swap alone doesn't convey.
-                            SemanticsService.announce(
+                            SemanticsService.sendAnnouncement(
+                              View.of(context),
                               viewModel.recipe.isFavorite
                                   ? context.l10n.a11yRecipeFavorited
                                   : context.l10n.a11yRecipeUnfavorited,
@@ -425,8 +435,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // Save a copy (fork) — promoted to a primary app-bar action
                   // on shared recipes the user doesn't own (BUT-972). Owners
                   // get it as the "Duplicate" overflow item below instead.
-                  if (showForkInAppBar(recipe.createdBy,
-                      ServiceLocator.get<PermissionService>().currentUserId))
+                  if (showForkInAppBar(
+                    recipe.createdBy,
+                    ServiceLocator.get<PermissionService>().currentUserId,
+                  ))
                     Padding(
                       key: const ValueKey('test-recipe-detail-save-copy'),
                       padding: AppDimensions.paddingVertical8,
@@ -437,7 +449,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         child: _HeroButton(
                           icon: Icons.content_copy_outlined,
                           onPressed: () => _handleMenuAction(
-                              context, _MenuAction.fork, viewModel, recipe),
+                            context,
+                            _MenuAction.fork,
+                            viewModel,
+                            recipe,
+                          ),
                           tooltip: context.l10n.recipeCreateCopy,
                         ),
                       ),
@@ -446,9 +462,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   Padding(
                     key: const ValueKey('test-recipe-detail-more'),
                     padding: const EdgeInsetsDirectional.only(
-                        top: AppDimensions.spacingSm,
-                        bottom: AppDimensions.spacingSm,
-                        end: AppDimensions.spacingSm),
+                      top: AppDimensions.spacingSm,
+                      bottom: AppDimensions.spacingSm,
+                      end: AppDimensions.spacingSm,
+                    ),
                     child: Semantics(
                       identifier: 'btn-recipe-more',
                       button: true,
@@ -468,11 +485,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.edit,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.edit_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeEdit),
                                   ],
                                 ),
@@ -481,18 +501,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             // secondary action; shared recipes promote it to the
                             // app-bar instead (BUT-972).
                             if (showForkInOverflow(
-                                recipe.createdBy,
-                                ServiceLocator.get<PermissionService>()
-                                    .currentUserId))
+                              recipe.createdBy,
+                              ServiceLocator.get<PermissionService>()
+                                  .currentUserId,
+                            ))
                               PopupMenuItem(
                                 value: _MenuAction.fork,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.content_copy_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.content_copy_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeCreateCopy),
                                   ],
                                 ),
@@ -501,13 +525,16 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             // multi-select day/slot picker.
                             PopupMenuItem(
                               key: const ValueKey(
-                                  'test-recipe-detail-add-to-menu'),
+                                'test-recipe-detail-add-to-menu',
+                              ),
                               value: _MenuAction.addToMenu,
                               child: Row(
                                 children: [
-                                  Icon(Icons.calendar_month_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
+                                  Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary,
+                                  ),
                                   const SizedBox(width: AppDimensions.spacingM),
                                   Text(context.l10n.bulkAddToMenu),
                                 ],
@@ -517,9 +544,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               value: _MenuAction.generateShoppingList,
                               child: Row(
                                 children: [
-                                  Icon(Icons.shopping_cart_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
+                                  Icon(
+                                    Icons.shopping_cart_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary,
+                                  ),
                                   const SizedBox(width: AppDimensions.spacingM),
                                   Text(context.l10n.recipeCreateShoppingList),
                                 ],
@@ -531,11 +560,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.reTag,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.local_offer_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.local_offer_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeUpdateTags),
                                   ],
                                 ),
@@ -545,34 +577,43 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.editTags,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit_note,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.edit_note,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeEditTags),
                                   ],
                                 ),
                               ),
                             if (!widget.readOnly)
                               PopupMenuItem(
-                                key:
-                                    const ValueKey('test-recipe-detail-delete'),
+                                key: const ValueKey(
+                                  'test-recipe-detail-delete',
+                                ),
                                 value: _MenuAction.delete,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.error),
+                                    Icon(
+                                      Icons.delete_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.error,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
-                                    Text(context.l10n.recipeDelete,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: menuCs.error,
-                                            )),
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(
+                                      context.l10n.recipeDelete,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: menuCs.error,
+                                          ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -592,12 +633,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.primary,
                                     ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
-                                    Text(recipe.isCollaborative
-                                        ? context
-                                            .l10n.recipeCollaborationDisable
-                                        : context
-                                            .l10n.recipeCollaborationEnable),
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(
+                                      recipe.isCollaborative
+                                          ? context
+                                                .l10n
+                                                .recipeCollaborationDisable
+                                          : context
+                                                .l10n
+                                                .recipeCollaborationEnable,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -607,11 +653,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.source,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.link_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.link_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeViewSource),
                                   ],
                                 ),
@@ -624,11 +673,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.viewSourceArtefact,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.description_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.description_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipeViewCapturedSource),
                                   ],
                                 ),
@@ -638,11 +690,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 value: _MenuAction.printRecipe,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.print_outlined,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.primary),
+                                    Icon(
+                                      Icons.print_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
                                     const SizedBox(
-                                        width: AppDimensions.spacingM),
+                                      width: AppDimensions.spacingM,
+                                    ),
                                     Text(context.l10n.recipePrint),
                                   ],
                                 ),
@@ -651,9 +706,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               value: _MenuAction.report,
                               child: Row(
                                 children: [
-                                  Icon(Icons.flag_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.error),
+                                  Icon(
+                                    Icons.flag_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.error,
+                                  ),
                                   const SizedBox(width: AppDimensions.spacingM),
                                   Text(context.l10n.reportContent),
                                 ],
@@ -662,7 +719,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ];
                         },
                         onSelected: (action) => _handleMenuAction(
-                            context, action, viewModel, recipe),
+                          context,
+                          action,
+                          viewModel,
+                          recipe,
+                        ),
                       ),
                     ),
                   ),
@@ -676,15 +737,21 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   recipe.createdBy ==
                       ServiceLocator.get<PermissionService>().currentUserId)
                 SliverToBoxAdapter(
-                  child:
-                      _ShareRequestBanner(shareRequest: widget.shareRequest!),
+                  child: _ShareRequestBanner(
+                    shareRequest: widget.shareRequest!,
+                  ),
                 ),
 
               // Recipe content — tablet uses two-column layout, mobile single-column
               SliverToBoxAdapter(
                 child: Breakpoints.isMobile(context)
                     ? _buildMobileContent(
-                        context, viewModel, recipe, bottomPadding, cs)
+                        context,
+                        viewModel,
+                        recipe,
+                        bottomPadding,
+                        cs,
+                      )
                     : Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 1200),
@@ -740,7 +807,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             ],
             if (recipe.completenessScore < incompleteThreshold)
               RecipeDetailSharedWidgets.buildCompletenessBanner(
-                  context, recipe),
+                context,
+                recipe,
+              ),
             Selector<UserService, UserAllergenPreferences>(
               selector: (_, svc) => svc.allergenPreferences,
               builder: (context, allergenPrefs, _) {
@@ -755,7 +824,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   },
                   onImageTap: (imageUrls, index) =>
                       RecipeDetailSharedWidgets.showFullscreenImage(
-                          context, imageUrls, index),
+                        context,
+                        imageUrls,
+                        index,
+                      ),
                   userAllergenPrefs: allergenPrefs.showOnDetail
                       ? allergenPrefs.trackedAllergens
                       : null,
@@ -817,7 +889,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 
   Future<void> _showAddSnapSheet(
-      BuildContext context, CookSnapViewModel vm, Recipe recipe) async {
+    BuildContext context,
+    CookSnapViewModel vm,
+    Recipe recipe,
+  ) async {
     final source = await ImagePickerDialogs.showImageSourceDialog(context);
     if (source == null || !mounted) return;
 
@@ -862,11 +937,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   /// the chosen visibility, or null if cancelled.
   Future<CookSnapVisibility?> _confirmSnapVisibility(
     BuildContext context,
-    ({
-      CookSnapVisibilityScope scope,
-      List<String> resolvedNames,
-      int total
-    }) audience,
+    ({CookSnapVisibilityScope scope, List<String> resolvedNames, int total})
+    audience,
   ) {
     final String message;
     if (audience.scope == CookSnapVisibilityScope.public) {
@@ -890,7 +962,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   /// Snap stays visible during the window (no optimistic removal);
   /// timeout commits the delete, Undo tap short-circuits it.
   Future<void> _deleteCookSnapWithUndo(
-      String snapId, CookSnapViewModel vm) async {
+    String snapId,
+    CookSnapViewModel vm,
+  ) async {
     final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: '', // The dialog already says "Delete photo"; no identifier.
@@ -922,19 +996,27 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     await print_service.printRecipeHtml(recipe);
   }
 
-  Future<void> _handleMenuAction(BuildContext context, _MenuAction action,
-      RecipeDetailViewModel viewModel, Recipe recipe) async {
+  Future<void> _handleMenuAction(
+    BuildContext context,
+    _MenuAction action,
+    RecipeDetailViewModel viewModel,
+    Recipe recipe,
+  ) async {
     switch (action) {
       case _MenuAction.edit:
         assert(!widget.readOnly, 'edit must be unreachable in readOnly mode');
         _actions.editRecipe(context);
       case _MenuAction.fork:
-        Navigator.pushNamed(context, Routes.manualEntry, arguments: {
-          'initialRecipe': recipe.copyWith(
-            title: context.l10n.recipeDuplicateTitle(recipe.title),
-          ),
-          'isTemplate': true,
-        });
+        Navigator.pushNamed(
+          context,
+          Routes.manualEntry,
+          arguments: {
+            'initialRecipe': recipe.copyWith(
+              title: context.l10n.recipeDuplicateTitle(recipe.title),
+            ),
+            'isTemplate': true,
+          },
+        );
       case _MenuAction.addToMenu:
         await _actions.addToMenu(context);
       case _MenuAction.generateShoppingList:
@@ -944,7 +1026,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         await _actions.retagRecipe(context);
       case _MenuAction.editTags:
         assert(
-            !widget.readOnly, 'editTags must be unreachable in readOnly mode');
+          !widget.readOnly,
+          'editTags must be unreachable in readOnly mode',
+        );
         final overrides = await TagEditorDialog.show(context, recipe);
         if (overrides != null && context.mounted) {
           // BUT-1304: route the persist through the ViewModel (MVVM) instead of
@@ -1009,17 +1093,23 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     if (confirmed != true || !context.mounted) return;
 
     SnackBarUtils.showInfo(
-        context, context.l10n.recipeSourceReextractInProgress);
+      context,
+      context.l10n.recipeSourceReextractInProgress,
+    );
 
     final outcome = await viewModel.reextractFromSource(artefact);
     if (!context.mounted) return;
 
     if (outcome == ReextractOutcome.success) {
       SnackBarUtils.showSuccess(
-          context, context.l10n.recipeSourceReextractSuccess);
+        context,
+        context.l10n.recipeSourceReextractSuccess,
+      );
     } else {
       SnackBarUtils.showError(
-          context, context.l10n.recipeSourceReextractFailed);
+        context,
+        context.l10n.recipeSourceReextractFailed,
+      );
     }
   }
 }

@@ -101,8 +101,11 @@ mixin BootstrapStageHelpers {
   }
 
   /// Log stage operation with consistent formatting.
-  void logStageOperation(String stageName, String operation,
-      {String? details}) {
+  void logStageOperation(
+    String stageName,
+    String operation, {
+    String? details,
+  }) {
     // Logging removed - use structured logging if needed
   }
 

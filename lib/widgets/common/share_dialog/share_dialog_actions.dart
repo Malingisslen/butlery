@@ -38,10 +38,9 @@ class ShareDialogActions {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Theme.of(context)
-                  .colorScheme
-                  .outline
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: Theme.of(context).colorScheme.outline.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
             ),
           ),
         ),
@@ -116,7 +115,8 @@ class ShareDialogActions {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: warningColor.withValues(
-                alpha: AppDimensions.opacityMediumLight),
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
         child: Row(
@@ -150,8 +150,9 @@ class ShareDialogActions {
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color:
-              successColor.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: successColor.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Row(

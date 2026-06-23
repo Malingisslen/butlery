@@ -26,7 +26,8 @@ class CommentReactionsSystem {
   }) async {
     try {
       AppLogger.info(
-          'Toggling reaction "$emoji" on comment $commentId for user ${userId.maskedUserId}');
+        'Toggling reaction "$emoji" on comment $commentId for user ${userId.maskedUserId}',
+      );
 
       final docRef = _firestoreRepository.firestore
           .collection(FirestoreCollections.recipeComments)

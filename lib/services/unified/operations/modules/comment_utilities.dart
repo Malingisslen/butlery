@@ -100,11 +100,13 @@ class CommentUtilities {
       if (comment != null) {
         // Update reply count - this is a simplified approach
         // In a more robust system, reply count would be managed by the repository
-        final updatedComment =
-            comment.copyWith(replyCount: comment.replyCount + 1);
+        final updatedComment = comment.copyWith(
+          replyCount: comment.replyCount + 1,
+        );
         await _commentsRepository.update(updatedComment);
         AppLogger.debug(
-            '✅ Incremented reply count for comment $parentCommentId');
+          '✅ Incremented reply count for comment $parentCommentId',
+        );
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to increment reply count: $e');
@@ -124,7 +126,8 @@ class CommentUtilities {
         final updatedComment = comment.copyWith(replyCount: newCount);
         await _commentsRepository.update(updatedComment);
         AppLogger.debug(
-            '✅ Decremented reply count for comment $parentCommentId');
+          '✅ Decremented reply count for comment $parentCommentId',
+        );
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to decrement reply count: $e');
@@ -152,11 +155,14 @@ class CommentUtilities {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       final totalComments = comments.length;
-      final topLevelComments =
-          comments.where((c) => c.parentCommentId == null).length;
+      final topLevelComments = comments
+          .where((c) => c.parentCommentId == null)
+          .length;
       final replies = totalComments - topLevelComments;
-      final totalLikes =
-          comments.fold<int>(0, (total, comment) => total + comment.likeCount);
+      final totalLikes = comments.fold<int>(
+        0,
+        (total, comment) => total + comment.likeCount,
+      );
 
       final uniqueCommenters = comments.map((c) => c.authorId).toSet().length;
       final deletedComments = comments.where((c) => c.isDeleted).length;
@@ -170,8 +176,9 @@ class CommentUtilities {
         'unique_commenters': uniqueCommenters,
         'deleted_comments': deletedComments,
         'edited_comments': editedComments,
-        'average_likes_per_comment':
-            totalComments > 0 ? (totalLikes / totalComments).round() : 0,
+        'average_likes_per_comment': totalComments > 0
+            ? (totalLikes / totalComments).round()
+            : 0,
         'reply_rate': topLevelComments > 0
             ? (replies / topLevelComments).toDouble()
             : 0.0,
@@ -234,8 +241,10 @@ class CommentUtilities {
       }
 
       // Sort by timestamp descending
-      activities.sort((a, b) =>
-          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+      activities.sort(
+        (a, b) =>
+            (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
+      );
 
       return activities;
     } catch (e) {
@@ -276,8 +285,10 @@ class CommentUtilities {
 
       // Sort by comment count and return top commenters
       final sortedCommenters = authorCounts.values.toList()
-        ..sort((a, b) =>
-            (b['commentCount'] as int).compareTo(a['commentCount'] as int));
+        ..sort(
+          (a, b) =>
+              (b['commentCount'] as int).compareTo(a['commentCount'] as int),
+        );
 
       return sortedCommenters.take(limit).toList();
     } catch (e) {
@@ -293,7 +304,8 @@ class CommentUtilities {
 
   /// Dispose comment stream controller safely
   static void disposeCommentStream(
-      StreamController<List<RecipeComment>>? controller) {
+    StreamController<List<RecipeComment>>? controller,
+  ) {
     try {
       controller?.close();
     } catch (e) {
@@ -303,7 +315,8 @@ class CommentUtilities {
 
   /// Cleanup multiple comment streams
   static void cleanupCommentStreams(
-      Map<String, StreamController<List<RecipeComment>>> streams) {
+    Map<String, StreamController<List<RecipeComment>>> streams,
+  ) {
     AppLogger.info('🧹 Cleaning up ${streams.length} comment streams');
 
     for (final controller in streams.values) {

@@ -9,11 +9,11 @@ import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 
 ParsedRecipe _recipe() => ParsedRecipe.empty(
-      metadata: ParseMetadata.cacheHit(
-        source: ImportSource.url,
-        parserVersion: 'test-1',
-      ),
-    );
+  metadata: ParseMetadata.cacheHit(
+    source: ImportSource.url,
+    parserVersion: 'test-1',
+  ),
+);
 
 void main() {
   group('store + retrieve', () {

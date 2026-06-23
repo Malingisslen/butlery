@@ -115,8 +115,9 @@ class ReplyBanner extends StatelessWidget {
       case MessageType.recipeShare:
         // Recipe title is in metadata
         final title = message.metadata?['recipeTitle'] as String?;
-        return context.l10n
-            .messagingRecipePreview(title ?? context.l10n.recipeRecipe);
+        return context.l10n.messagingRecipePreview(
+          title ?? context.l10n.recipeRecipe,
+        );
       default:
         return message.content;
     }

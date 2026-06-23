@@ -14,11 +14,18 @@ abstract class MenuVotingRepository {
 
   /// Cast a vote (atomic update of userId → optionId).
   Future<void> castVote(
-      String menuId, String voteId, String userId, String optionId);
+    String menuId,
+    String voteId,
+    String userId,
+    String optionId,
+  );
 
   /// Resolve a vote with the winning option.
   Future<void> resolveVote(
-      String menuId, String voteId, String winningOptionId);
+    String menuId,
+    String voteId,
+    String winningOptionId,
+  );
 
   /// Stream all votes for a menu.
   Stream<List<MenuSlotVote>> watchVotesForMenu(String menuId);

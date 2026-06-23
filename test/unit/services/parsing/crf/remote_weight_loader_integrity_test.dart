@@ -38,8 +38,7 @@ void main() {
   });
 
   group('RemoteWeightLoader fail-close integrity (BUT-1238)', () {
-    test(
-        'production registry is empty → any published weights are refused '
+    test('production registry is empty → any published weights are refused '
         'and nothing is cached', () async {
       // No registry override: exercises the real (committed, currently
       // empty) kExpectedCrfWeightHashes. If this test starts failing
@@ -57,11 +56,18 @@ void main() {
 
       final parser = await loader.tryLoadRemoteWeights(bundledVersion: 1);
 
-      expect(parser, isNull,
-          reason: 'Empty registry must refuse every download (fail-close) — '
-              'the bundled CRF weights keep parsing.');
-      expect(tempDir.listSync(recursive: true).whereType<File>(), isEmpty,
-          reason: 'Refused bytes never touch disk.');
+      expect(
+        parser,
+        isNull,
+        reason:
+            'Empty registry must refuse every download (fail-close) — '
+            'the bundled CRF weights keep parsing.',
+      );
+      expect(
+        tempDir.listSync(recursive: true).whereType<File>(),
+        isEmpty,
+        reason: 'Refused bytes never touch disk.',
+      );
     });
 
     test('version absent from a non-empty registry is refused', () async {
@@ -78,15 +84,20 @@ void main() {
 
       final parser = await loader.tryLoadRemoteWeights(bundledVersion: 1);
 
-      expect(parser, isNull,
-          reason: 'Unregistered version must be refused — publishing new '
-              'weights requires a registry entry in the same PR.');
+      expect(
+        parser,
+        isNull,
+        reason:
+            'Unregistered version must be refused — publishing new '
+            'weights requires a registry entry in the same PR.',
+      );
       expect(tempDir.listSync(recursive: true).whereType<File>(), isEmpty);
     });
 
     test('hash mismatch is refused and nothing is cached', () async {
-      final tampered =
-          Uint8List.fromList(utf8.encode('{"features":{},"transitions":{}}'));
+      final tampered = Uint8List.fromList(
+        utf8.encode('{"features":{},"transitions":{}}'),
+      );
       final loader = _TestRemoteWeightLoader(
         storage: _FakeWeightsStorage(
           _FakeWeightsReference(version: 2, bytes: tampered),
@@ -99,37 +110,52 @@ void main() {
 
       final parser = await loader.tryLoadRemoteWeights(bundledVersion: 1);
 
-      expect(parser, isNull,
-          reason: 'Tampered bytes (hash mismatch) must be refused before '
-              'CrfWeights.fromJson or any disk write.');
-      expect(tempDir.listSync(recursive: true).whereType<File>(), isEmpty,
-          reason: 'Mismatched bytes never touch disk.');
-    });
-
-    test('matching hash loads the parser and caches weights + version',
-        () async {
-      final bytes = Uint8List.fromList(utf8.encode(_validWeightsJson));
-      final loader = _TestRemoteWeightLoader(
-        storage: _FakeWeightsStorage(
-          _FakeWeightsReference(version: 2, bytes: bytes),
-        ),
-        cacheDir: tempDir,
-        registry: {2: sha256.convert(bytes).toString()},
+      expect(
+        parser,
+        isNull,
+        reason:
+            'Tampered bytes (hash mismatch) must be refused before '
+            'CrfWeights.fromJson or any disk write.',
       );
-
-      final parser = await loader.tryLoadRemoteWeights(bundledVersion: 1);
-
-      expect(parser, isNotNull,
-          reason: 'Registered + matching hash is the only path that loads.');
-      final cached = tempDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .map((f) => f.uri.pathSegments.last)
-          .toSet();
-      expect(cached, contains('crf_remote_weights.json'),
-          reason: 'Verified weights are cached for offline use.');
-      expect(cached, contains('crf_remote_version.txt'));
+      expect(
+        tempDir.listSync(recursive: true).whereType<File>(),
+        isEmpty,
+        reason: 'Mismatched bytes never touch disk.',
+      );
     });
+
+    test(
+      'matching hash loads the parser and caches weights + version',
+      () async {
+        final bytes = Uint8List.fromList(utf8.encode(_validWeightsJson));
+        final loader = _TestRemoteWeightLoader(
+          storage: _FakeWeightsStorage(
+            _FakeWeightsReference(version: 2, bytes: bytes),
+          ),
+          cacheDir: tempDir,
+          registry: {2: sha256.convert(bytes).toString()},
+        );
+
+        final parser = await loader.tryLoadRemoteWeights(bundledVersion: 1);
+
+        expect(
+          parser,
+          isNotNull,
+          reason: 'Registered + matching hash is the only path that loads.',
+        );
+        final cached = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .map((f) => f.uri.pathSegments.last)
+            .toSet();
+        expect(
+          cached,
+          contains('crf_remote_weights.json'),
+          reason: 'Verified weights are cached for offline use.',
+        );
+        expect(cached, contains('crf_remote_version.txt'));
+      },
+    );
   });
 }
 
@@ -141,9 +167,9 @@ class _TestRemoteWeightLoader extends RemoteWeightLoader {
     required FirebaseStorage storage,
     required Directory cacheDir,
     Map<int, String>? registry,
-  })  : _testCacheDir = cacheDir,
-        _registry = registry,
-        super(storage: storage);
+  }) : _testCacheDir = cacheDir,
+       _registry = registry,
+       super(storage: storage);
 
   @override
   Future<Directory> getCacheDir() async => _testCacheDir;
@@ -166,8 +192,8 @@ class _FakeWeightsReference extends Fake implements Reference {
 
   @override
   Future<FullMetadata> getMetadata() async => FullMetadata({
-        'customMetadata': {'version': '$version'},
-      });
+    'customMetadata': {'version': '$version'},
+  });
 
   @override
   Future<Uint8List?> getData([int maxSize = 10485760]) async => bytes;

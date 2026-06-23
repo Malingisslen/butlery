@@ -119,7 +119,8 @@ class RecipeQualityScorer {
   static RecipeQualityScore score(Map<String, dynamic> recipe) {
     // Check title
     final title = (recipe['name']?.toString().trim()).orEmpty();
-    final hasTitle = title.isNotEmpty &&
+    final hasTitle =
+        title.isNotEmpty &&
         title != 'Importerat recept' &&
         title != 'Imported Recipe' &&
         title.length >= 3;
@@ -136,7 +137,8 @@ class RecipeQualityScorer {
 
     // Check portions
     final portions = recipe['recipeYield'];
-    final hasPortions = portions != null &&
+    final hasPortions =
+        portions != null &&
         portions.toString().trim().isNotEmpty &&
         _containsNumber(portions.toString());
 
@@ -148,7 +150,8 @@ class RecipeQualityScorer {
 
     // Check image
     final image = recipe['image'];
-    final hasImage = image != null &&
+    final hasImage =
+        image != null &&
         (image is String && image.trim().isNotEmpty ||
             image is List && image.isNotEmpty ||
             image is Map && image['url'] != null);

@@ -130,35 +130,55 @@ class _HeroBanner extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     Widget card(IconData icon, int value, String label) => Expanded(
-          child: Column(children: [
-            Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text('$value',
-                style: AppTextStyles.headlineBold.copyWith(color: cs.surface)),
-            Text(label,
-                style: AppTextStyles.labelSmall
-                    .copyWith(color: cs.surface.withValues(alpha: 0.8)),
-                textAlign: TextAlign.center),
-          ]),
-        );
+      child: Column(
+        children: [
+          Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            '$value',
+            style: AppTextStyles.headlineBold.copyWith(color: cs.surface),
+          ),
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: cs.surface.withValues(alpha: 0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       color: cs.primary,
-      child: Column(children: [
-        Row(children: [
-          card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
-          const SizedBox(width: AppDimensions.spacingMd),
-          card(AdaptiveIcons.favouriteFilled, favorites, l10n.statsFavorites),
-        ]),
-        const SizedBox(height: AppDimensions.spacingMd),
-        Row(children: [
-          card(Icons.local_fire_department, recentlyCooked,
-              l10n.statsRecentlyCooked),
-          const SizedBox(width: AppDimensions.spacingMd),
-          card(Icons.camera_alt, withImages, l10n.statsWithImages),
-        ]),
-      ]),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
+              const SizedBox(width: AppDimensions.spacingMd),
+              card(
+                AdaptiveIcons.favouriteFilled,
+                favorites,
+                l10n.statsFavorites,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Row(
+            children: [
+              card(
+                Icons.local_fire_department,
+                recentlyCooked,
+                l10n.statsRecentlyCooked,
+              ),
+              const SizedBox(width: AppDimensions.spacingMd),
+              card(Icons.camera_alt, withImages, l10n.statsWithImages),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -242,8 +262,9 @@ class _MealTypeChart extends StatelessWidget {
 
           return Column(
             children: top.map((entry) {
-              final barWidth =
-                  maxValue > 0 ? (entry.value / maxValue) * barMaxWidth : 0.0;
+              final barWidth = maxValue > 0
+                  ? (entry.value / maxValue) * barMaxWidth
+                  : 0.0;
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -406,28 +427,37 @@ class _CompletenessSection extends StatelessWidget {
           segmentColors[i],
         ),
     ];
-    return Column(children: [
-      SizedBox(
-        height: AppDimensions.spacingMd + AppDimensions.spacingXs,
-        child: Row(children: [
-          for (final (_, count, color) in segments)
-            if (count > 0)
-              Expanded(
-                  flex: count,
-                  child:
-                      ColoredBox(color: color, child: const SizedBox.expand())),
-        ]),
-      ),
-      const SizedBox(height: AppDimensions.spacingXs),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          for (final (label, count, color) in segments)
-            Text('$label: $count',
-                style: AppTextStyles.labelSmall.copyWith(color: color)),
-        ],
-      ),
-    ]);
+    return Column(
+      children: [
+        SizedBox(
+          height: AppDimensions.spacingMd + AppDimensions.spacingXs,
+          child: Row(
+            children: [
+              for (final (_, count, color) in segments)
+                if (count > 0)
+                  Expanded(
+                    flex: count,
+                    child: ColoredBox(
+                      color: color,
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingXs),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (final (label, count, color) in segments)
+              Text(
+                '$label: $count',
+                style: AppTextStyles.labelSmall.copyWith(color: color),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildQuickFixChips(ColorScheme cs) {
@@ -441,13 +471,18 @@ class _CompletenessSection extends StatelessWidget {
         itemBuilder: (context, index) {
           final recipe = incompleteRecipes[index];
           return ActionChip(
-            label: Text(recipe.title,
-                style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface)),
+            label: Text(
+              recipe.title,
+              style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
+            ),
             backgroundColor: cs.errorContainer,
             side: BorderSide.none,
             shape: const RoundedRectangleBorder(),
-            onPressed: () => Navigator.pushNamed(context, Routes.editRecipe,
-                arguments: recipe),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              Routes.editRecipe,
+              arguments: recipe,
+            ),
           );
         },
       ),

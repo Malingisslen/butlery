@@ -11,8 +11,10 @@ void main() {
   });
 
   test('toString prefixes with class name + message', () {
-    expect(const RepositoryException('boom').toString(),
-        'RepositoryException: boom');
+    expect(
+      const RepositoryException('boom').toString(),
+      'RepositoryException: boom',
+    );
   });
 
   test('exposes message / code / originalError', () {

@@ -74,7 +74,7 @@ class FirestoreRepository {
   /// Accepts an optional [firestore] instance for testing purposes. If not provided,
   /// uses the default FirebaseFirestore.instance for production.
   FirestoreRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Provides direct access to the Firebase Firestore instance for advanced operations.
   /// This getter allows access to the raw Firestore instance for complex operations
@@ -97,7 +97,8 @@ class FirestoreRepository {
 
   /// Generic helpers for document operations.
   Future<DocumentSnapshot<Map<String, dynamic>>> getDocument(
-      DocumentReference<Map<String, dynamic>> ref) {
+    DocumentReference<Map<String, dynamic>> ref,
+  ) {
     return ref.get();
   }
 

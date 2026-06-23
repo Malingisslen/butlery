@@ -585,8 +585,8 @@ class InvitationTarget {
 
       // For groups: search in description from metadata
       if (target.isGroup) {
-        final description =
-            (target.metadata?['description'] as String?).orEmpty();
+        final description = (target.metadata?['description'] as String?)
+            .orEmpty();
         if (description.toLowerCase().contains(query)) {
           return true;
         }
@@ -615,7 +615,8 @@ class InvitationTarget {
   /// [targets] List of mixed invitation targets
   /// Returns filtered list containing only individual user targets.
   static List<InvitationTarget> individualsOnly(
-      List<InvitationTarget> targets) {
+    List<InvitationTarget> targets,
+  ) {
     return filterByType(targets, InvitationTargetType.individual);
   }
 

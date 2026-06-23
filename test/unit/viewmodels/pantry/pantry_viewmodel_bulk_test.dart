@@ -23,13 +23,13 @@ class _MockPantryService extends Mock implements PantryService {}
 class _MockIngredientRepository extends Mock implements IngredientRepository {}
 
 PantryItem _item(String id) => PantryItem(
-      id: id,
-      ingredientName: 'Item $id',
-      quantity: 1,
-      unit: 'st',
-      location: PantryLocation.fridge,
-      addedAt: DateTime(2026, 1, 1),
-    );
+  id: id,
+  ingredientName: 'Item $id',
+  quantity: 1,
+  unit: 'st',
+  location: PantryLocation.fridge,
+  addedAt: DateTime(2026, 1, 1),
+);
 
 void main() {
   setUpAll(() async {
@@ -51,14 +51,15 @@ void main() {
   });
 
   PantryViewModel buildVm(_MockPantryService service) => PantryViewModel(
-        pantryService: service,
-        ingredientRepository: _MockIngredientRepository(),
-      );
+    pantryService: service,
+    ingredientRepository: _MockIngredientRepository(),
+  );
 
   test('bulkRemoveItems deletes only the selected ids', () async {
     final service = _MockPantryService();
-    when(() => service.getAll(any()))
-        .thenAnswer((_) async => [_item('a'), _item('b'), _item('c')]);
+    when(
+      () => service.getAll(any()),
+    ).thenAnswer((_) async => [_item('a'), _item('b'), _item('c')]);
     when(() => service.removeItem(any(), any())).thenAnswer((_) async {});
 
     final vm = buildVm(service);
@@ -67,9 +68,11 @@ void main() {
 
     await vm.bulkRemoveItems({'a', 'c'});
 
-    expect(vm.items.map((i) => i.id), ['b'],
-        reason:
-            'only the two selected rows are gone; the unselected one stays');
+    expect(
+      vm.items.map((i) => i.id),
+      ['b'],
+      reason: 'only the two selected rows are gone; the unselected one stays',
+    );
     verify(() => service.removeItem(any(), 'a')).called(1);
     verify(() => service.removeItem(any(), 'c')).called(1);
     verifyNever(() => service.removeItem(any(), 'b'));
@@ -95,10 +98,12 @@ void main() {
     final service = _MockPantryService();
     final a = _item('a');
     final b = _item('b');
-    when(() => service.restoreItem(any(), a))
-        .thenAnswer((_) async => a.copyWith(id: 'a-new'));
-    when(() => service.restoreItem(any(), b))
-        .thenAnswer((_) async => b.copyWith(id: 'b-new'));
+    when(
+      () => service.restoreItem(any(), a),
+    ).thenAnswer((_) async => a.copyWith(id: 'a-new'));
+    when(
+      () => service.restoreItem(any(), b),
+    ).thenAnswer((_) async => b.copyWith(id: 'b-new'));
 
     // An undeleted row is already present — undo must append, not replace.
     when(() => service.getAll(any())).thenAnswer((_) async => [_item('c')]);
@@ -107,9 +112,13 @@ void main() {
 
     await vm.restoreItems([a, b]);
 
-    expect(vm.items.map((i) => i.id), ['c', 'a-new', 'b-new'],
-        reason: 'undo re-adds the removed rows alongside the surviving one, '
-            'with the re-persisted ids — not the deleted ones');
+    expect(
+      vm.items.map((i) => i.id),
+      ['c', 'a-new', 'b-new'],
+      reason:
+          'undo re-adds the removed rows alongside the surviving one, '
+          'with the re-persisted ids — not the deleted ones',
+    );
     expect(vm.hasError, isFalse);
     vm.dispose();
   });

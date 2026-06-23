@@ -22,8 +22,7 @@ DailyEngagement _day(
   FeatureCounts dau = const FeatureCounts(),
   FeatureCounts wau7d = const FeatureCounts(),
   FeatureCounts wau28d = const FeatureCounts(),
-}) =>
-    DailyEngagement(date: date, dau: dau, wau7d: wau7d, wau28d: wau28d);
+}) => DailyEngagement(date: date, dau: dau, wau7d: wau7d, wau28d: wau28d);
 
 void main() {
   late AppLocalizations l10n;
@@ -36,37 +35,48 @@ void main() {
   test('user count surfaces even with no activity days', () {
     final raw = const EngagementRaw(userCount: 3, days: []);
     expect(
-        (_resolve(MetricKey.engagementUsers, raw, l10n) as ScalarMetric).value,
-        3);
+      (_resolve(MetricKey.engagementUsers, raw, l10n) as ScalarMetric).value,
+      3,
+    );
   });
 
   test('active proxies come from the latest day, max across features', () {
-    final raw = EngagementRaw(userCount: 5, days: [
-      _day('2026-06-19',
+    final raw = EngagementRaw(
+      userCount: 5,
+      days: [
+        _day(
+          '2026-06-19',
           dau: const FeatureCounts(cooked: 2, imported: 4),
           wau7d: const FeatureCounts(shared: 6),
-          wau28d: const FeatureCounts(shopped: 9)),
-      _day('2026-06-18', dau: const FeatureCounts(cooked: 99)),
-    ]);
+          wau28d: const FeatureCounts(shopped: 9),
+        ),
+        _day('2026-06-18', dau: const FeatureCounts(cooked: 99)),
+      ],
+    );
     expect(
-        (_resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric)
-            .value,
-        4);
+      (_resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric)
+          .value,
+      4,
+    );
     expect(
-        (_resolve(MetricKey.engagementActive7d, raw, l10n) as ScalarMetric)
-            .value,
-        6);
+      (_resolve(MetricKey.engagementActive7d, raw, l10n) as ScalarMetric).value,
+      6,
+    );
     expect(
-        (_resolve(MetricKey.engagementActive28d, raw, l10n) as ScalarMetric)
-            .value,
-        9);
+      (_resolve(MetricKey.engagementActive28d, raw, l10n) as ScalarMetric)
+          .value,
+      9,
+    );
   });
 
   test('activeToday carries yesterday as previous for a delta', () {
-    final raw = EngagementRaw(userCount: 5, days: [
-      _day('2026-06-19', dau: const FeatureCounts(cooked: 6)), // today
-      _day('2026-06-18', dau: const FeatureCounts(cooked: 4)), // yesterday
-    ]);
+    final raw = EngagementRaw(
+      userCount: 5,
+      days: [
+        _day('2026-06-19', dau: const FeatureCounts(cooked: 6)), // today
+        _day('2026-06-18', dau: const FeatureCounts(cooked: 4)), // yesterday
+      ],
+    );
     final value =
         _resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric;
     expect(value.value, 6);
@@ -75,9 +85,12 @@ void main() {
   });
 
   test('single day has no previous → no delta', () {
-    final raw = EngagementRaw(userCount: 1, days: [
-      _day('2026-06-19', dau: const FeatureCounts(cooked: 3)),
-    ]);
+    final raw = EngagementRaw(
+      userCount: 1,
+      days: [
+        _day('2026-06-19', dau: const FeatureCounts(cooked: 3)),
+      ],
+    );
     final value =
         _resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric;
     expect(value.previous, isNull);
@@ -87,21 +100,33 @@ void main() {
   test('zero days yields zero active proxies, not a crash', () {
     final raw = const EngagementRaw(userCount: 0, days: []);
     expect(
-        (_resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric)
-            .value,
-        0);
+      (_resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric)
+          .value,
+      0,
+    );
     expect(
-        (_resolve(MetricKey.engagementActive28d, raw, l10n) as ScalarMetric)
-            .value,
-        0);
+      (_resolve(MetricKey.engagementActive28d, raw, l10n) as ScalarMetric)
+          .value,
+      0,
+    );
   });
 
   test('daily matrix is one row per day with 5 feature columns', () {
-    final raw = EngagementRaw(userCount: 1, days: [
-      _day('2026-06-19',
+    final raw = EngagementRaw(
+      userCount: 1,
+      days: [
+        _day(
+          '2026-06-19',
           dau: const FeatureCounts(
-              cooked: 1, imported: 2, shared: 3, mealPlanned: 4, shopped: 5)),
-    ]);
+            cooked: 1,
+            imported: 2,
+            shared: 3,
+            mealPlanned: 4,
+            shopped: 5,
+          ),
+        ),
+      ],
+    );
     final value =
         _resolve(MetricKey.engagementDailyTable, raw, l10n) as MatrixMetric;
     expect(value.rowLabels, ['2026-06-19']);

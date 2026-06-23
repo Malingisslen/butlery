@@ -118,8 +118,9 @@ class SearchResultCard {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.l10n.blockedUsersUnblockTitle),
-        content:
-            Text(context.l10n.blockedUsersUnblockMessage(user.displayName)),
+        content: Text(
+          context.l10n.blockedUsersUnblockMessage(user.displayName),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -141,9 +142,11 @@ class SearchResultCard {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success
-                ? context.l10n.socialUserUnblocked(user.displayName)
-                : context.l10n.socialCouldNotUnblockUser),
+            content: Text(
+              success
+                  ? context.l10n.socialUserUnblocked(user.displayName)
+                  : context.l10n.socialCouldNotUnblockUser,
+            ),
             backgroundColor: success
                 ? context.butleryColors.success
                 : Theme.of(context).colorScheme.error,
@@ -169,16 +172,18 @@ class SearchResultCard {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(context.l10n.socialFriendRequestSent(user.displayName)),
+              content: Text(
+                context.l10n.socialFriendRequestSent(user.displayName),
+              ),
               backgroundColor: context.butleryColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(viewModel.error ??
-                  context.l10n.socialCouldNotSendFriendRequest),
+              content: Text(
+                viewModel.error ?? context.l10n.socialCouldNotSendFriendRequest,
+              ),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -204,8 +209,9 @@ class SearchResultCard {
   ) async {
     // Find the friend request from this user
     final incomingRequests = viewModel.incomingRequests;
-    final request =
-        incomingRequests.where((req) => req.fromUserId == user.uid).firstOrNull;
+    final request = incomingRequests
+        .where((req) => req.fromUserId == user.uid)
+        .firstOrNull;
 
     if (request == null) {
       if (context.mounted) {
@@ -226,16 +232,19 @@ class SearchResultCard {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n
-                  .socialFriendRequestAcceptedFrom(user.displayName)),
+              content: Text(
+                context.l10n.socialFriendRequestAcceptedFrom(user.displayName),
+              ),
               backgroundColor: context.butleryColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(viewModel.error ??
-                  context.l10n.socialCouldNotAcceptFriendRequest),
+              content: Text(
+                viewModel.error ??
+                    context.l10n.socialCouldNotAcceptFriendRequest,
+              ),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

@@ -176,9 +176,9 @@ void main() {
           continue;
         }
 
-        final uncaptured = findUncapturedListens(source)
-            .where((lhs) => !_isSelfCompletingStream(lhs))
-            .toList();
+        final uncaptured = findUncapturedListens(
+          source,
+        ).where((lhs) => !_isSelfCompletingStream(lhs)).toList();
         if (uncaptured.isNotEmpty) {
           offenders.add(
             '${file.path}: discarded .listen() on ${uncaptured.join(", ")} '
@@ -260,9 +260,9 @@ bool declaresUndisposedSubscriptionField(String source) {
   // A direct field/local declaration: `StreamSubscription<T>? _name;|=`.
   // (Generic args optional; `Map<.., StreamSubscription>` does NOT match —
   // there the type is followed by `>`, not a name.)
-  final declaresField =
-      RegExp(r'StreamSubscription\s*(?:<[^>]*>)?\s*\??\s+_?\w+\s*[;=]')
-          .hasMatch(code);
+  final declaresField = RegExp(
+    r'StreamSubscription\s*(?:<[^>]*>)?\s*\??\s+_?\w+\s*[;=]',
+  ).hasMatch(code);
   if (!declaresField) return false;
 
   if (code.contains('.cancel(')) return false;

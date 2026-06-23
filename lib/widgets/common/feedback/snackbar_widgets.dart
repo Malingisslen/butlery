@@ -16,9 +16,11 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeM),
+            Icon(
+              Icons.check_circle,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeM,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -42,9 +44,11 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeM),
+            Icon(
+              Icons.error,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeM,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -77,9 +81,11 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeM),
+            Icon(
+              Icons.error,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeM,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(

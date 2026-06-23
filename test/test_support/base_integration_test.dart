@@ -99,7 +99,8 @@ abstract class BaseIntegrationTest extends BaseTest {
         for (var i = 0; i < steps.length; i++) {
           final step = steps[i];
           debugPrint(
-              'Executing step ${i + 1}/${steps.length}: ${step.description}');
+            'Executing step ${i + 1}/${steps.length}: ${step.description}',
+          );
 
           try {
             await step.execute(tester);
@@ -111,8 +112,11 @@ abstract class BaseIntegrationTest extends BaseTest {
         }
 
         // Verify journey completion
-        expect(successfulSteps, equals(steps.length),
-            reason: 'All journey steps should complete successfully');
+        expect(
+          successfulSteps,
+          equals(steps.length),
+          reason: 'All journey steps should complete successfully',
+        );
       },
       skip: skip,
       timeout: timeout,

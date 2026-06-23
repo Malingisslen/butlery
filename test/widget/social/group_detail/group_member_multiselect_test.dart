@@ -39,20 +39,20 @@ class _StubPermissionService extends Fake implements PermissionService {
 }
 
 FriendCategory _group() => FriendCategory(
-      id: 'g1',
-      ownerId: 'owner-uid',
-      name: 'Familjen',
-      description: 'Vår familjegrupp',
-      friendUserIds: const ['owner-uid', 'other-uid'],
-    );
+  id: 'g1',
+  ownerId: 'owner-uid',
+  name: 'Familjen',
+  description: 'Vår familjegrupp',
+  friendUserIds: const ['owner-uid', 'other-uid'],
+);
 
 UserProfile _profile(String uid, {String name = 'Erik'}) => UserProfile(
-      uid: uid,
-      displayName: name,
-      email: '$uid@example.com',
-      joinedAt: DateTime(2025, 1, 1),
-      lastActiveAt: DateTime(2025, 1, 1),
-    );
+  uid: uid,
+  displayName: name,
+  email: '$uid@example.com',
+  joinedAt: DateTime(2025, 1, 1),
+  lastActiveAt: DateTime(2025, 1, 1),
+);
 
 Widget _wrap(Widget child) {
   return MaterialApp(
@@ -87,44 +87,50 @@ void main() {
   });
 
   group('GroupMemberCard — selection mode (BUT-1038)', () {
-    testWidgets('selection mode shows the select indicator and hides the menu',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMemberCard.build(
-            ctx,
-            _profile('other-uid'),
-            _group(),
-            () {},
-            isSelectionMode: true,
-            isSelected: false,
-            onSelectionToggle: () {},
-            onEnterSelection: () {},
+    testWidgets(
+      'selection mode shows the select indicator and hides the menu',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (ctx) => GroupMemberCard.build(
+                ctx,
+                _profile('other-uid'),
+                _group(),
+                () {},
+                isSelectionMode: true,
+                isSelected: false,
+                onSelectionToggle: () {},
+                onEnterSelection: () {},
+              ),
+            ),
           ),
-        ),
-      ));
-      await tester.pump();
+        );
+        await tester.pump();
 
-      expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.more_vert), findsNothing);
-    });
+        expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.more_vert), findsNothing);
+      },
+    );
 
     testWidgets('tap in selection mode toggles selection', (tester) async {
       var toggled = 0;
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMemberCard.build(
-            ctx,
-            _profile('other-uid'),
-            _group(),
-            () {},
-            isSelectionMode: true,
-            isSelected: false,
-            onSelectionToggle: () => toggled++,
-            onEnterSelection: () {},
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) => GroupMemberCard.build(
+              ctx,
+              _profile('other-uid'),
+              _group(),
+              () {},
+              isSelectionMode: true,
+              isSelected: false,
+              onSelectionToggle: () => toggled++,
+              onEnterSelection: () {},
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
 
       await tester.tap(find.byType(ListTile));
@@ -133,21 +139,24 @@ void main() {
       expect(toggled, 1);
     });
 
-    testWidgets('long-press outside selection mode enters selection',
-        (tester) async {
+    testWidgets('long-press outside selection mode enters selection', (
+      tester,
+    ) async {
       var entered = 0;
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMemberCard.build(
-            ctx,
-            _profile('other-uid'),
-            _group(),
-            () {},
-            onSelectionToggle: () {},
-            onEnterSelection: () => entered++,
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) => GroupMemberCard.build(
+              ctx,
+              _profile('other-uid'),
+              _group(),
+              () {},
+              onSelectionToggle: () {},
+              onEnterSelection: () => entered++,
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
 
       await tester.longPress(find.byType(ListTile));
@@ -157,56 +166,62 @@ void main() {
     });
 
     testWidgets(
-        'a non-removable member (the owner) is NOT selectable in selection mode',
-        (tester) async {
-      // Current user is the owner; the owner's OWN tile is non-removable
-      // (_canRemoveMember bars self + owner). It must keep its avatar and
-      // ignore taps even while the list is in selection mode — otherwise the
-      // owner could be toggled into the set and fed to removeMultipleMembers.
-      var toggled = 0;
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMemberCard.build(
-            ctx,
-            _profile('owner-uid', name: 'Ägaren'),
-            _group(),
-            () {},
-            isSelectionMode: true,
-            isSelected: false,
-            onSelectionToggle: () => toggled++,
-            onEnterSelection: () {},
+      'a non-removable member (the owner) is NOT selectable in selection mode',
+      (tester) async {
+        // Current user is the owner; the owner's OWN tile is non-removable
+        // (_canRemoveMember bars self + owner). It must keep its avatar and
+        // ignore taps even while the list is in selection mode — otherwise the
+        // owner could be toggled into the set and fed to removeMultipleMembers.
+        var toggled = 0;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (ctx) => GroupMemberCard.build(
+                ctx,
+                _profile('owner-uid', name: 'Ägaren'),
+                _group(),
+                () {},
+                isSelectionMode: true,
+                isSelected: false,
+                onSelectionToggle: () => toggled++,
+                onEnterSelection: () {},
+              ),
+            ),
           ),
-        ),
-      ));
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // No select indicator — the avatar is shown instead of the toggle icon.
-      expect(find.byIcon(Icons.circle_outlined), findsNothing);
-      expect(find.byIcon(Icons.check_circle), findsNothing);
+        // No select indicator — the avatar is shown instead of the toggle icon.
+        expect(find.byIcon(Icons.circle_outlined), findsNothing);
+        expect(find.byIcon(Icons.check_circle), findsNothing);
 
-      // Tapping the tile does nothing (onTap is null for non-removable).
-      await tester.tap(find.byType(ListTile));
-      await tester.pump();
-      expect(toggled, 0);
-    });
+        // Tapping the tile does nothing (onTap is null for non-removable).
+        await tester.tap(find.byType(ListTile));
+        await tester.pump();
+        expect(toggled, 0);
+      },
+    );
   });
 
   group('GroupMembersList — multi-select flow (BUT-1038)', () {
-    testWidgets('long-press a member reveals the inline remove-selected bar',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMembersList.build(
-            ctx,
-            members: [_profile('other-uid')],
-            pendingInvitations: const [],
-            group: _group(),
-            onAddMembers: () {},
-            onMemberRemoved: () {},
-            onInvitationCancelled: () {},
+    testWidgets('long-press a member reveals the inline remove-selected bar', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) => GroupMembersList.build(
+              ctx,
+              members: [_profile('other-uid')],
+              pendingInvitations: const [],
+              group: _group(),
+              onAddMembers: () {},
+              onMemberRemoved: () {},
+              onInvitationCancelled: () {},
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
 
       // No action bar before selecting.
@@ -219,21 +234,24 @@ void main() {
       expect(find.text('Ta bort markerade (1)'), findsOneWidget);
     });
 
-    testWidgets('cancelling selection tears down the bar and clears state',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        Builder(
-          builder: (ctx) => GroupMembersList.build(
-            ctx,
-            members: [_profile('other-uid')],
-            pendingInvitations: const [],
-            group: _group(),
-            onAddMembers: () {},
-            onMemberRemoved: () {},
-            onInvitationCancelled: () {},
+    testWidgets('cancelling selection tears down the bar and clears state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (ctx) => GroupMembersList.build(
+              ctx,
+              members: [_profile('other-uid')],
+              pendingInvitations: const [],
+              group: _group(),
+              onAddMembers: () {},
+              onMemberRemoved: () {},
+              onInvitationCancelled: () {},
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
 
       await tester.longPress(find.byType(ListTile));

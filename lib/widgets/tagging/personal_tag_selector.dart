@@ -130,8 +130,10 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               if (widget.showManageButton)
                 TextButton.icon(
                   onPressed: _openTagManager,
-                  icon: const Icon(Icons.settings,
-                      size: AppDimensions.iconSize18),
+                  icon: const Icon(
+                    Icons.settings,
+                    size: AppDimensions.iconSize18,
+                  ),
                   label: Text(context.l10n.personalTagManage),
                   style: TextButton.styleFrom(
                     foregroundColor: cs.primary,
@@ -186,8 +188,9 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
         children: [
           Icon(
             Icons.label_outline,
-            color: cs.onSurfaceVariant
-                .withValues(alpha: AppDimensions.opacityHalf),
+            color: cs.onSurfaceVariant.withValues(
+              alpha: AppDimensions.opacityHalf,
+            ),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -216,8 +219,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color:
-                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
       ),
       child: Row(
         children: [
@@ -297,8 +300,11 @@ class _PersonalTagChip extends StatelessWidget {
         ),
         avatar: isSelected
             ? null
-            : Icon(Icons.label_outline,
-                size: AppDimensions.iconSize14, color: cs.primary),
+            : Icon(
+                Icons.label_outline,
+                size: AppDimensions.iconSize14,
+                color: cs.primary,
+              ),
         showCheckmark: isSelected,
       ),
     );
@@ -350,8 +356,9 @@ class PersonalTagDisplay extends StatelessWidget {
         if (remainingCount > 0)
           Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingS,
-                vertical: AppDimensions.spacingXs),
+              horizontal: AppDimensions.paddingS,
+              vertical: AppDimensions.spacingXs,
+            ),
             decoration: BoxDecoration(
               color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -379,21 +386,26 @@ class _MiniTagChip extends StatelessWidget {
       label: context.l10n.personalTagA11yLabel(tag.name),
       child: Container(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingS,
-            vertical: AppDimensions.spacingXs),
+          horizontal: AppDimensions.paddingS,
+          vertical: AppDimensions.spacingXs,
+        ),
         decoration: BoxDecoration(
           color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color:
-                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.primary.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.label,
-                size: AppDimensions.iconSizeXs, color: cs.primary),
+            Icon(
+              Icons.label,
+              size: AppDimensions.iconSizeXs,
+              color: cs.primary,
+            ),
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
@@ -416,8 +428,9 @@ class _PlaceholderTagChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingS,
-          vertical: AppDimensions.spacingXs),
+        horizontal: AppDimensions.paddingS,
+        vertical: AppDimensions.spacingXs,
+      ),
       decoration: BoxDecoration(
         color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -428,8 +441,11 @@ class _PlaceholderTagChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.label_outline,
-              size: AppDimensions.iconSizeXs, color: cs.primary),
+          Icon(
+            Icons.label_outline,
+            size: AppDimensions.iconSizeXs,
+            color: cs.primary,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           SkeletonComponents.skeletonBox(
             width: 48,
@@ -516,8 +532,9 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
     // once (first subscriber) and survives across logout/login because it
     // listens to a static, class-level signal — not the instance that gets
     // swapped. Torn down with the last subscriber in [_unsubscribe].
-    _instanceReadySubscription ??=
-        PersonalTagService.instanceReady.listen((_) => _onInstanceReady());
+    _instanceReadySubscription ??= PersonalTagService.instanceReady.listen(
+      (_) => _onInstanceReady(),
+    );
 
     // Bind the shared invalidation subscription if this is the first subscriber
     // (or if a prior logout dropped it). The mutation signal re-fetches; the
@@ -636,8 +653,8 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
     final cs = Theme.of(context).colorScheme;
     final displayIds =
         widget.maxDisplay != null && widget.tagIds.length > widget.maxDisplay!
-            ? widget.tagIds.take(widget.maxDisplay!).toList()
-            : widget.tagIds;
+        ? widget.tagIds.take(widget.maxDisplay!).toList()
+        : widget.tagIds;
     final remainingCount = widget.maxDisplay != null
         ? widget.tagIds.length - widget.maxDisplay!
         : 0;
@@ -650,8 +667,9 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
         if (remainingCount > 0)
           Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingS,
-                vertical: AppDimensions.spacingXs),
+              horizontal: AppDimensions.paddingS,
+              vertical: AppDimensions.spacingXs,
+            ),
             decoration: BoxDecoration(
               color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

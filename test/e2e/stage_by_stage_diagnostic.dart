@@ -20,7 +20,8 @@ void main() {
   group('🔬 Stage-by-Stage Bootstrap Diagnostic', () {
     setUpAll(() {
       print(
-          '🔬 DIAGNOSTIC: Isolating bootstrap components to find hanging point');
+        '🔬 DIAGNOSTIC: Isolating bootstrap components to find hanging point',
+      );
     });
 
     tearDown(() async {
@@ -33,11 +34,13 @@ void main() {
       }
     });
 
-    testWidgets('🔍 Module Registration Test - Sequential Registration',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Module Registration Test - Sequential Registration', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TEST: Module Registration Performance');
       print(
-          '   Testing each module individually to identify hanging module...');
+        '   Testing each module individually to identify hanging module...',
+      );
 
       final bootstrap = ApplicationBootstrap();
 
@@ -59,18 +62,21 @@ void main() {
         try {
           bootstrap.registerModule(moduleInfo['module'] as dynamic);
           print(
-              '   ✅ ${moduleInfo['name']} registered in ${stopwatch.elapsedMilliseconds}ms');
+            '   ✅ ${moduleInfo['name']} registered in ${stopwatch.elapsedMilliseconds}ms',
+          );
         } catch (e) {
           print('   ❌ ${moduleInfo['name']} registration failed: $e');
           print(
-              '   🚨 FOUND ISSUE: Module registration hanging on ${moduleInfo['name']}');
+            '   🚨 FOUND ISSUE: Module registration hanging on ${moduleInfo['name']}',
+          );
           break;
         }
       }
     });
 
-    testWidgets('🔍 Stage Registration Test - Sequential Registration',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Stage Registration Test - Sequential Registration', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TEST: Stage Registration Performance');
       print('   Testing each stage individually...');
 
@@ -91,18 +97,21 @@ void main() {
         try {
           bootstrap.registerStage(stageInfo['stage'] as dynamic);
           print(
-              '   ✅ ${stageInfo['name']} registered in ${stopwatch.elapsedMilliseconds}ms');
+            '   ✅ ${stageInfo['name']} registered in ${stopwatch.elapsedMilliseconds}ms',
+          );
         } catch (e) {
           print('   ❌ ${stageInfo['name']} registration failed: $e');
           print(
-              '   🚨 FOUND ISSUE: Stage registration hanging on ${stageInfo['name']}');
+            '   🚨 FOUND ISSUE: Stage registration hanging on ${stageInfo['name']}',
+          );
           break;
         }
       }
     });
 
-    testWidgets('🔍 DI Container Test - Module Configuration',
-        (WidgetTester tester) async {
+    testWidgets('🔍 DI Container Test - Module Configuration', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TEST: DI Container Module Configuration');
       print('   Testing module configuration to identify hanging module...');
 
@@ -116,24 +125,27 @@ void main() {
 
       try {
         // Test with timeout to detect hangs
-        await bootstrap.container
-            .initialize()
-            .timeout(const Duration(seconds: 30));
+        await bootstrap.container.initialize().timeout(
+          const Duration(seconds: 30),
+        );
         print(
-            '   ✅ DI container initialized in ${stopwatch.elapsedMilliseconds}ms');
+          '   ✅ DI container initialized in ${stopwatch.elapsedMilliseconds}ms',
+        );
       } catch (e) {
         print('   ❌ DI container initialization timeout: $e');
         print(
-            '   🚨 FOUND ISSUE: DI container hanging during module configuration');
+          '   🚨 FOUND ISSUE: DI container hanging during module configuration',
+        );
         print(
-            '   💡 Likely cause: One of the module.configure() methods is hanging');
+          '   💡 Likely cause: One of the module.configure() methods is hanging',
+        );
 
         // Try to get more specific info
         print('   🔍 Analyzing container state...');
         try {
-          final healthReport = await bootstrap.container
-              .checkHealth()
-              .timeout(const Duration(seconds: 5));
+          final healthReport = await bootstrap.container.checkHealth().timeout(
+            const Duration(seconds: 5),
+          );
           print('   📊 Container health: ${healthReport.isHealthy}');
         } catch (healthError) {
           print('   ⚠️ Container health check also timed out: $healthError');
@@ -141,8 +153,9 @@ void main() {
       }
     });
 
-    testWidgets('🔍 Individual Stage Execution Test',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Individual Stage Execution Test', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TEST: Individual Stage Execution');
       print('   Testing each stage execution to find hanging stage...');
 
@@ -163,11 +176,13 @@ void main() {
           // Execute stage with its configured timeout
           await stage.execute().timeout(stage.timeout);
           print(
-              '   ✅ ${stage.name} executed in ${stopwatch.elapsedMilliseconds}ms (timeout: ${stage.timeout.inSeconds}s)');
+            '   ✅ ${stage.name} executed in ${stopwatch.elapsedMilliseconds}ms (timeout: ${stage.timeout.inSeconds}s)',
+          );
         } catch (e) {
           print('   ❌ ${stage.name} execution failed: $e');
           print(
-              '   🚨 FOUND ISSUE: Stage ${stage.name} hanging during execution');
+            '   🚨 FOUND ISSUE: Stage ${stage.name} hanging during execution',
+          );
           print('   📊 Stage details:');
           print('      - Timeout: ${stage.timeout}');
           print('      - Priority: ${stage.priority}');
@@ -178,8 +193,9 @@ void main() {
       }
     });
 
-    testWidgets('🔍 Full Bootstrap Sequence with Detailed Logging',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Full Bootstrap Sequence with Detailed Logging', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TEST: Full Bootstrap Sequence Analysis');
       print('   Running complete bootstrap with detailed phase tracking...');
 
@@ -202,7 +218,8 @@ void main() {
 
         bootstrap.registerModules(modules);
         print(
-            '   ✅ Modules registered in ${moduleStopwatch.elapsedMilliseconds}ms');
+          '   ✅ Modules registered in ${moduleStopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   🎭 Phase 2: Stage registration...');
         final stageStopwatch = Stopwatch()..start();
@@ -217,7 +234,8 @@ void main() {
 
         bootstrap.registerStages(stages);
         print(
-            '   ✅ Stages registered in ${stageStopwatch.elapsedMilliseconds}ms');
+          '   ✅ Stages registered in ${stageStopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   🚀 Phase 3: Full initialization...');
         final initStopwatch = Stopwatch()..start();
@@ -229,20 +247,25 @@ void main() {
         ).timeout(const Duration(seconds: 45));
 
         print(
-            '   ✅ Full initialization completed in ${initStopwatch.elapsedMilliseconds}ms');
+          '   ✅ Full initialization completed in ${initStopwatch.elapsedMilliseconds}ms',
+        );
         print(
-            '   🎉 TOTAL BOOTSTRAP TIME: ${overallStopwatch.elapsedMilliseconds}ms');
+          '   🎉 TOTAL BOOTSTRAP TIME: ${overallStopwatch.elapsedMilliseconds}ms',
+        );
 
         if (overallStopwatch.elapsedMilliseconds > 5000) {
           print('   ⚠️ PERFORMANCE ISSUE: Bootstrap took >5 seconds');
         }
       } catch (e) {
         print(
-            '   ❌ Bootstrap sequence failed after ${overallStopwatch.elapsedMilliseconds}ms');
+          '   ❌ Bootstrap sequence failed after ${overallStopwatch.elapsedMilliseconds}ms',
+        );
         print(
-            '   🚨 CONFIRMED HANG LOCATION: During bootstrap._performInitialization()');
+          '   🚨 CONFIRMED HANG LOCATION: During bootstrap._performInitialization()',
+        );
         print(
-            '   💡 This confirms the production issue is in the initialization sequence');
+          '   💡 This confirms the production issue is in the initialization sequence',
+        );
 
         // Emergency diagnostic
         print('   🔍 Emergency state check...');

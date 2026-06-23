@@ -52,7 +52,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick single image from camera (direct, no dialog)
   Future<void> pickImageFromCamera(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromCamera called');
-    final recipeId = state.originalRecipe?.id ??
+    final recipeId =
+        state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
     await imageManager.pickImageFromCamera(context, recipeId: recipeId);
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
@@ -61,7 +62,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick single image from gallery (direct, no dialog)
   Future<void> pickImageFromGallery(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromGallery called');
-    final recipeId = state.originalRecipe?.id ??
+    final recipeId =
+        state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
     await imageManager.pickImageFromGallery(context, recipeId: recipeId);
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
@@ -70,10 +72,13 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick multiple images from gallery (direct, no dialog)
   Future<void> pickMultipleImagesFromGallery(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickMultipleImagesFromGallery called');
-    final recipeId = state.originalRecipe?.id ??
+    final recipeId =
+        state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickMultipleImagesFromGallery(context,
-        recipeId: recipeId);
+    await imageManager.pickMultipleImagesFromGallery(
+      context,
+      recipeId: recipeId,
+    );
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
@@ -219,7 +224,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   Function(String) get addImageUrlFunc => addImageFromUrl;
 
   /// Function getter for removing image at index
-  Function(int) get removeImageAtFunc => (int index) => removeImageAt(index);
+  Function(int) get removeImageAtFunc =>
+      (int index) => removeImageAt(index);
 
   /// Function getter for setting primary image
   Function(String) get setPrimaryImageFunc =>
@@ -230,7 +236,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
       (int index, String value) => updateIngredient(index, value);
 
   /// Function getter for adding ingredient
-  Function() get addIngredientFunc => () => addIngredient();
+  Function() get addIngredientFunc =>
+      () => addIngredient();
 
   /// Function getter for removing ingredient
   Function(int) get removeIngredientFunc =>
@@ -241,7 +248,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
       (int index, String value) => updateInstruction(index, value);
 
   /// Function getter for adding instruction
-  Function() get addInstructionFunc => () => addInstruction();
+  Function() get addInstructionFunc =>
+      () => addInstruction();
 
   /// Function getter for removing instruction
   Function(int) get removeInstructionFunc =>
@@ -252,21 +260,27 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
       (int index, String value) => updateTag(index, value);
 
   /// Function getter for adding tag
-  Function() get addTagFunc => () => addTag();
+  Function() get addTagFunc =>
+      () => addTag();
 
   /// Function getter for removing tag
-  Function(int) get removeTagFunc => (int index) => removeTag(index);
+  Function(int) get removeTagFunc =>
+      (int index) => removeTag(index);
 
   /// Apply portion scaling — updates ingredient controllers and portions in state.
   void scaleIngredientsToPortions(
-      int newPortions, List<String> scaledIngredients) {
+    int newPortions,
+    List<String> scaledIngredients,
+  ) {
     state.setPortions(newPortions);
 
     final controllers = state.ingredientsManager.controllers;
     int scaledIndex = 0;
-    for (int i = 0;
-        i < controllers.length && scaledIndex < scaledIngredients.length;
-        i++) {
+    for (
+      int i = 0;
+      i < controllers.length && scaledIndex < scaledIngredients.length;
+      i++
+    ) {
       if (controllers[i].text.trim().isNotEmpty) {
         state.ingredientsManager.updateAt(i, scaledIngredients[scaledIndex]);
         scaledIndex++;

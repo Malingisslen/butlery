@@ -40,14 +40,16 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     required UnifiedFriendsService friendsService,
   }) : _friendsService = friendsService {
     _searchManager = MemberSearchManager();
-    _selectionManager =
-        MemberSelectionManager(() => _searchManager.filteredFriends);
+    _selectionManager = MemberSelectionManager(
+      () => _searchManager.filteredFriends,
+    );
 
     _searchManager.addListener(_onManagerChanged);
     _selectionManager.addListener(_onManagerChanged);
 
     AppLogger.info(
-        '🔄 Initialiserar AddMembersToGroupViewModel för grupp: $groupId');
+      '🔄 Initialiserar AddMembersToGroupViewModel för grupp: $groupId',
+    );
     _initializeData();
   }
 
@@ -96,11 +98,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         await _loadAvailableFriends();
 
         AppLogger.success(
-            '✅ AddMembersToGroupViewModel initialiserad för "${_group!.name}"');
+          '✅ AddMembersToGroupViewModel initialiserad för "${_group!.name}"',
+        );
       });
     } catch (e) {
       AppLogger.error(
-          '❌ Fel vid initialisering av AddMembersToGroupViewModel', e);
+        '❌ Fel vid initialisering av AddMembersToGroupViewModel',
+        e,
+      );
       setError(AppLocale.current.errorGeneric);
     }
   }
@@ -119,10 +124,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         _friendsService.currentUserId; // ✅ FIXED: Filter out group owner
 
     _availableFriends = allFriends
-        .where((friend) =>
-            !currentMemberIds.contains(friend.uid) &&
-            friend.uid !=
-                currentUserId) // ✅ FIXED: Prevent owner from inviting themselves
+        .where(
+          (friend) =>
+              !currentMemberIds.contains(friend.uid) &&
+              friend.uid != currentUserId,
+        ) // ✅ FIXED: Prevent owner from inviting themselves
         .toList();
 
     // Filter out those who already have pending invitations
@@ -130,9 +136,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       // Check if there is already a pending invitation
       final existingInvitation = _friendsService.invitations
           .getSentInvitations()
-          .where((inv) =>
-              inv.toUserId == friend.uid &&
-              inv.status == GroupInvitationStatus.pending)
+          .where(
+            (inv) =>
+                inv.toUserId == friend.uid &&
+                inv.status == GroupInvitationStatus.pending,
+          )
           .isNotEmpty;
 
       return !existingInvitation;
@@ -145,7 +153,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     _searchManager.setAvailableFriends(_availableFriends);
 
     AppLogger.info(
-        '👥 ${_availableFriends.length} tillgängliga vänner att bjuda in (efter filtrering av väntande inbjudningar)');
+      '👥 ${_availableFriends.length} tillgängliga vänner att bjuda in (efter filtrering av väntande inbjudningar)',
+    );
   }
 
   // Search operations - delegate to search manager
@@ -164,7 +173,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   Future<bool> sendInvitations({String? personalMessage}) async {
     if (!canSendInvitations || _group == null) {
       AppLogger.warning(
-          '⚠️ Kan inte skicka inbjudningar - villkor inte uppfyllda');
+        '⚠️ Kan inte skicka inbjudningar - villkor inte uppfyllda',
+      );
       return false;
     }
 
@@ -176,17 +186,18 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
       final selectedUserIds = _selectionManager.selectedFriendIds.toList();
       AppLogger.info(
-          '📨 Skickar RIKTIGA gruppinbjudningar till ${selectedUserIds.length} vänner');
+        '📨 Skickar RIKTIGA gruppinbjudningar till ${selectedUserIds.length} vänner',
+      );
 
       // ✅ FIXED: Use proper group invitation method that saves to Firebase
       final results = <String, bool>{};
       for (final userId in selectedUserIds) {
-        final success =
-            await _friendsService.invitations.sendGroupInvitationToUser(
-          userId: userId,
-          groupId: groupId,
-          customMessage: personalMessage,
-        );
+        final success = await _friendsService.invitations
+            .sendGroupInvitationToUser(
+              userId: userId,
+              groupId: groupId,
+              customMessage: personalMessage,
+            );
         results[userId] = success;
       }
 
@@ -207,7 +218,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       // Rapportera resultat
       if (successCount > 0) {
         AppLogger.success(
-            '✅ $successCount av ${selectedUserIds.length} gruppinbjudningar skickade');
+          '✅ $successCount av ${selectedUserIds.length} gruppinbjudningar skickade',
+        );
       }
 
       if (failureCount > 0) {
@@ -255,9 +267,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   bool hasExistingInvitation(String userId) {
     final hasInvitation = _friendsService.invitations
         .getSentInvitations()
-        .where((inv) =>
-            inv.toUserId == userId &&
-            inv.status == GroupInvitationStatus.pending)
+        .where(
+          (inv) =>
+              inv.toUserId == userId &&
+              inv.status == GroupInvitationStatus.pending,
+        )
         .isNotEmpty;
     return hasInvitation;
   }

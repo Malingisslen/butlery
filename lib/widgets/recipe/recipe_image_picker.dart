@@ -36,8 +36,9 @@ class RecipeImagePicker {
       if (context.mounted) {
         UtilityComponents.showErrorSnackbar(
           context,
-          context.l10n
-              .errorCouldNotLoad(context.l10n.commonImage.toLowerCase()),
+          context.l10n.errorCouldNotLoad(
+            context.l10n.commonImage.toLowerCase(),
+          ),
         );
       }
     }
@@ -115,11 +116,13 @@ class RecipeImagePicker {
         if (viewModel.canAddMoreImages &&
             (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
           AppLogger.info(
-              '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery');
+            '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery',
+          );
           await viewModel.pickMultipleImagesFromGallery(context);
         } else {
           AppLogger.info(
-              '[$_logTag] Calling viewModel.pickImageFromGallery (single)');
+            '[$_logTag] Calling viewModel.pickImageFromGallery (single)',
+          );
           await viewModel.pickImageFromGallery(context);
         }
         break;

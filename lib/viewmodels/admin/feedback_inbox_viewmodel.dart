@@ -22,7 +22,7 @@ class FeedbackInboxViewModel extends BaseViewModel {
   int _limit = _pageSize;
 
   FeedbackInboxViewModel({FeedbackRepository? repository})
-      : _repository = repository ?? ServiceLocator.get<FeedbackRepository>();
+    : _repository = repository ?? ServiceLocator.get<FeedbackRepository>();
 
   List<FeedbackEntry> get entries => _entries;
   FeedbackStatus? get statusFilter => _statusFilter;
@@ -61,23 +61,24 @@ class FeedbackInboxViewModel extends BaseViewModel {
   void _subscribe() {
     _sub?.cancel();
     setLoading(true);
-    _sub =
-        _repository.watchFeedback(status: _statusFilter, limit: _limit).listen(
-      (list) {
-        if (isDisposed) return;
-        _entries = list;
-        setLoading(false);
-        notifyListeners();
-      },
-      onError: (Object err) {
-        if (isDisposed) return;
-        // Null the subscription so start()'s `_sub != null` guard doesn't
-        // swallow a retry from the error-state action button.
-        _sub?.cancel();
-        _sub = null;
-        setError(err.toString());
-      },
-    );
+    _sub = _repository
+        .watchFeedback(status: _statusFilter, limit: _limit)
+        .listen(
+          (list) {
+            if (isDisposed) return;
+            _entries = list;
+            setLoading(false);
+            notifyListeners();
+          },
+          onError: (Object err) {
+            if (isDisposed) return;
+            // Null the subscription so start()'s `_sub != null` guard doesn't
+            // swallow a retry from the error-state action button.
+            _sub?.cancel();
+            _sub = null;
+            setError(err.toString());
+          },
+        );
   }
 
   @override

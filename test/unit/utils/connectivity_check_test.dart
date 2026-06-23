@@ -31,7 +31,8 @@ void main() {
 
       // Register mock in test service locator
       TestServiceLocator.registerMock<ConnectivityRepository>(
-          mockConnectivityRepo);
+        mockConnectivityRepo,
+      );
 
       // Bridge production ServiceLocator so ConnectivityCheck can resolve mocks
       production.ServiceLocator.initialize(DIContainer());
@@ -43,8 +44,7 @@ void main() {
     });
 
     group('hasInternetConnection', () {
-      test('should return true when google.com resolves successfully',
-          () async {
+      test('should return true when google.com resolves successfully', () async {
         // This is an integration test that depends on actual network connectivity
         // In a real test environment, we would mock InternetAddress.lookup
         final result = await ConnectivityCheck.hasInternetConnection();
@@ -62,13 +62,15 @@ void main() {
     });
 
     group('hasRobustInternetConnection', () {
-      test('should test multiple DNS servers for enhanced reliability',
-          () async {
-        // Integration test for enhanced DNS server diversity
-        final result = await ConnectivityCheck.hasRobustInternetConnection();
+      test(
+        'should test multiple DNS servers for enhanced reliability',
+        () async {
+          // Integration test for enhanced DNS server diversity
+          final result = await ConnectivityCheck.hasRobustInternetConnection();
 
-        expect(result, isA<bool>());
-      });
+          expect(result, isA<bool>());
+        },
+      );
 
       test('should handle multiple DNS server failures gracefully', () async {
         // Validates progressive fallback behavior
@@ -80,8 +82,9 @@ void main() {
     group('hasFirebaseConnectivity with DNS Failover', () {
       test('should return true when repository check succeeds', () async {
         // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await ConnectivityCheck.hasFirebaseConnectivity();
@@ -93,36 +96,45 @@ void main() {
 
       test('should attempt DNS failover when repository check fails', () async {
         // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await ConnectivityCheck.hasFirebaseConnectivity();
 
         // Assert
-        expect(result,
-            isA<bool>()); // May be true or false depending on actual DNS
+        expect(
+          result,
+          isA<bool>(),
+        ); // May be true or false depending on actual DNS
         verify(() => mockConnectivityRepo.checkFirebaseConnection()).called(1);
       });
 
-      test('should handle repository exceptions and attempt DNS failover',
-          () async {
-        // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenThrow(const SocketException('DNS resolution failed'));
+      test(
+        'should handle repository exceptions and attempt DNS failover',
+        () async {
+          // Arrange
+          when(
+            () => mockConnectivityRepo.checkFirebaseConnection(),
+          ).thenThrow(const SocketException('DNS resolution failed'));
 
-        // Act
-        final result = await ConnectivityCheck.hasFirebaseConnectivity();
+          // Act
+          final result = await ConnectivityCheck.hasFirebaseConnectivity();
 
-        // Assert
-        expect(result, isA<bool>()); // Should not throw
-        verify(() => mockConnectivityRepo.checkFirebaseConnection()).called(1);
-      });
+          // Assert
+          expect(result, isA<bool>()); // Should not throw
+          verify(
+            () => mockConnectivityRepo.checkFirebaseConnection(),
+          ).called(1);
+        },
+      );
 
       test('should handle timeout exceptions gracefully', () async {
         // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenThrow(Exception('Timeout'));
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenThrow(Exception('Timeout'));
 
         // Act
         final result = await ConnectivityCheck.hasFirebaseConnectivity();
@@ -150,8 +162,9 @@ void main() {
     group('checkConnectivity with Enhanced Classification', () {
       test('should return full when both internet and firebase work', () async {
         // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await ConnectivityCheck.checkConnectivity();
@@ -166,34 +179,38 @@ void main() {
         );
       });
 
-      test('should return limited when internet works but firebase fails',
-          () async {
-        // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => false);
+      test(
+        'should return limited when internet works but firebase fails',
+        () async {
+          // Arrange
+          when(
+            () => mockConnectivityRepo.checkFirebaseConnection(),
+          ).thenAnswer((_) async => false);
 
-        // Act
-        final result = await ConnectivityCheck.checkConnectivity();
+          // Act
+          final result = await ConnectivityCheck.checkConnectivity();
 
-        // Assert
-        // Mock returns false, but DNS failover may still succeed on machines with
-        // internet. Possible: full (DNS failover success), limited (internet yes,
-        // firebase no), none (no internet).
-        expect(result, isA<ConnectivityResult>());
-        expect(
-          [
-            ConnectivityResult.full,
-            ConnectivityResult.limited,
-            ConnectivityResult.none,
-          ],
-          contains(result),
-        );
-      });
+          // Assert
+          // Mock returns false, but DNS failover may still succeed on machines with
+          // internet. Possible: full (DNS failover success), limited (internet yes,
+          // firebase no), none (no internet).
+          expect(result, isA<ConnectivityResult>());
+          expect(
+            [
+              ConnectivityResult.full,
+              ConnectivityResult.limited,
+              ConnectivityResult.none,
+            ],
+            contains(result),
+          );
+        },
+      );
 
       test('should handle connectivity check exceptions', () async {
         // Arrange
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenThrow(Exception('Service error'));
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenThrow(Exception('Service error'));
 
         // Act
         final result = await ConnectivityCheck.checkConnectivity();
@@ -229,8 +246,9 @@ void main() {
 
       test('should validate Firebase endpoint diversity', () async {
         // Test that Firebase endpoint diversity is properly implemented
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenAnswer((_) async => false);
 
         final result = await ConnectivityCheck.hasFirebaseConnectivity();
         expect(result, isA<bool>());
@@ -240,8 +258,9 @@ void main() {
     group('Integration Tests', () {
       test('should perform end-to-end connectivity validation', () async {
         // Comprehensive integration test
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenAnswer((_) async => true);
 
         // Test all major connectivity methods
         final internetResult = await ConnectivityCheck.hasInternetConnection();
@@ -263,8 +282,9 @@ void main() {
 
       test('should handle complete network failure gracefully', () async {
         // Test behavior when all connectivity methods fail
-        when(() => mockConnectivityRepo.checkFirebaseConnection())
-            .thenThrow(const SocketException('Network unreachable'));
+        when(
+          () => mockConnectivityRepo.checkFirebaseConnection(),
+        ).thenThrow(const SocketException('Network unreachable'));
 
         // All methods should handle failures gracefully
         final firebaseResult =

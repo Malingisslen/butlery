@@ -45,8 +45,9 @@ class PrivacySettingsSection extends StatelessWidget {
               const Divider(height: 1),
               SwitchListTile(
                 title: Text(context.l10n.profileSearchableByEmail),
-                subtitle:
-                    Text(context.l10n.profileSearchableByEmailDescription),
+                subtitle: Text(
+                  context.l10n.profileSearchableByEmailDescription,
+                ),
                 value: viewModel.allowEmailSearch,
                 onChanged: viewModel.updateAllowEmailSearch,
                 secondary: const Icon(Icons.email),
@@ -97,7 +98,7 @@ class _ActivityTypeToggles extends StatelessWidget {
       (ActivityEventType.shared, context.l10n.privacyActivityTypeShared),
       (
         ActivityEventType.startedCooking,
-        context.l10n.privacyActivityTypeStartedCooking
+        context.l10n.privacyActivityTypeStartedCooking,
       ),
       (ActivityEventType.pinged, context.l10n.privacyActivityTypePinged),
     ];

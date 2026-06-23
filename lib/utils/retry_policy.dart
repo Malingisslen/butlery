@@ -82,8 +82,10 @@ Future<T> withRetry<T>(
   RetrySleeper? sleeper,
 }) async {
   assert(maxAttempts >= 1, 'maxAttempts must be at least 1');
-  assert(jitterFraction >= 0 && jitterFraction < 1,
-      'jitterFraction must be in [0, 1)');
+  assert(
+    jitterFraction >= 0 && jitterFraction < 1,
+    'jitterFraction must be in [0, 1)',
+  );
 
   final predicate = isRetryable ?? defaultIsRetryable;
   final rng = random ?? _defaultRng;
@@ -126,14 +128,15 @@ Duration _computeDelay({
   // attempt=2 → initialDelay * 2 (=2s)
   // attempt=3 → initialDelay * 4 (=4s)
   final exponent = math.min(attempt - 1, 16); // Guard against absurd values
-  final baseMicros =
-      (initialDelay.inMicroseconds * math.pow(2, exponent)).round();
+  final baseMicros = (initialDelay.inMicroseconds * math.pow(2, exponent))
+      .round();
   final cappedMicros = math.min(baseMicros, maxDelay.inMicroseconds);
 
   // Symmetric jitter: ±jitterFraction × delay
   final jitterRange = (cappedMicros * jitterFraction).round();
-  final jitterOffset =
-      jitterRange == 0 ? 0 : ((rng() * 2 - 1) * jitterRange).round();
+  final jitterOffset = jitterRange == 0
+      ? 0
+      : ((rng() * 2 - 1) * jitterRange).round();
   final finalMicros = math.max(0, cappedMicros + jitterOffset);
 
   return Duration(microseconds: finalMicros);

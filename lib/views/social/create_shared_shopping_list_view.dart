@@ -82,7 +82,8 @@ class _CreateSharedShoppingListViewState
           // BUT-727: guard accidental dismiss after typing a title/description
           // or selecting friends. Skip the prompt while the create call is in
           // flight — we don't want to interrupt that.
-          final isDirty = !viewModel.isCreating &&
+          final isDirty =
+              !viewModel.isCreating &&
               (viewModel.title.trim().isNotEmpty ||
                   viewModel.description.trim().isNotEmpty ||
                   viewModel.hasFriendsSelected);
@@ -92,8 +93,8 @@ class _CreateSharedShoppingListViewState
               if (didPop) return;
               final shouldLeave =
                   await CommonDialogActions.showUnsavedChangesConfirmation(
-                context: context,
-              );
+                    context: context,
+                  );
               if (shouldLeave == true && context.mounted) {
                 Navigator.of(context).pop();
               }
@@ -125,10 +126,13 @@ class _CreateSharedShoppingListViewState
   }
 
   PreferredSizeWidget _buildAppBar(
-      BuildContext context, CreateSharedListViewModel viewModel) {
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) {
     return AppBar(
       title: Text(
-          '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}'),
+        '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}',
+      ),
       leading: IconButton(
         icon: const Icon(Icons.close),
         // Route through Navigator.maybePop so the same PopScope guard applies
@@ -167,17 +171,17 @@ class _CreateSharedShoppingListViewState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .error
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  color: Theme.of(context).colorScheme.error.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                   border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .error
-                          .withValues(alpha: AppDimensions.opacityMediumLight)),
+                    color: Theme.of(context).colorScheme.error.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
+                  ),
                 ),
                 child: Text(
                   viewModel.error!,
@@ -230,7 +234,9 @@ class _CreateSharedShoppingListViewState
   }
 
   Widget _buildListDetails(
-      BuildContext context, CreateSharedListViewModel viewModel) {
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -267,7 +273,9 @@ class _CreateSharedShoppingListViewState
   }
 
   Widget _buildFriendSelection(
-      BuildContext context, CreateSharedListViewModel viewModel) {
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -294,12 +302,15 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: context.butleryColors.success
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.success.withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: context.butleryColors.success
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: context.butleryColors.success.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,7 +344,9 @@ class _CreateSharedShoppingListViewState
   }
 
   Widget _buildBottomBar(
-      BuildContext context, CreateSharedListViewModel viewModel) {
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) {
     return BottomActionContainer(
       child: Row(
         children: [
@@ -381,7 +394,9 @@ class _CreateSharedShoppingListViewState
 
   // Pure MVVM: Business logic delegeras till ViewModel
   Future<void> _createSharedList(
-      BuildContext context, CreateSharedListViewModel viewModel) async {
+    BuildContext context,
+    CreateSharedListViewModel viewModel,
+  ) async {
     // Store context reference before async operation
     final navigator = Navigator.of(context);
 

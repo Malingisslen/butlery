@@ -62,63 +62,86 @@ void main() {
       // test fails. The "same batch" property is implicit — if the report
       // wrote but the throttle didn't, the `await batch.commit()` couldn't
       // have committed both, so both-present == both-batched.
-      test('writes report doc AND throttle sentinel under same commit',
-          () async {
-        final id = await repository.submitReport(buildReport());
+      test(
+        'writes report doc AND throttle sentinel under same commit',
+        () async {
+          final id = await repository.submitReport(buildReport());
 
-        expect(id, isNotNull, reason: 'submitReport should return new doc id');
+          expect(
+            id,
+            isNotNull,
+            reason: 'submitReport should return new doc id',
+          );
 
-        final reportSnap =
-            await fakeFirestore.collection(FirestoreCollections.reports).get();
-        expect(reportSnap.docs, hasLength(1));
-        final reportDoc = reportSnap.docs.single;
-        expect(reportDoc.id, equals(id));
-        expect(reportDoc.data()['reporterId'], equals(reporterId));
-        expect(reportDoc.data()['contentOwnerId'], equals(ownerId));
-        expect(reportDoc.data()['contentType'], equals('recipe'));
+          final reportSnap = await fakeFirestore
+              .collection(FirestoreCollections.reports)
+              .get();
+          expect(reportSnap.docs, hasLength(1));
+          final reportDoc = reportSnap.docs.single;
+          expect(reportDoc.id, equals(id));
+          expect(reportDoc.data()['reporterId'], equals(reporterId));
+          expect(reportDoc.data()['contentOwnerId'], equals(ownerId));
+          expect(reportDoc.data()['contentType'], equals('recipe'));
 
-        // Throttle sentinel: users/{reporter}/report_throttle/{ownerId}
-        final throttleSnap = await fakeFirestore
-            .collection(FirestoreCollections.users)
-            .doc(reporterId)
-            .collection(FirestoreCollections.userReportThrottle)
-            .doc(ownerId)
-            .get();
-        expect(throttleSnap.exists, isTrue,
-            reason: 'BUT-781 throttle sentinel must be written alongside the '
-                'report — without this, brigade rate limit silently inactive');
-        expect(throttleSnap.data()!.containsKey('lastReportAt'), isTrue,
-            reason: 'throttle doc must carry lastReportAt for the rule check');
-      });
+          // Throttle sentinel: users/{reporter}/report_throttle/{ownerId}
+          final throttleSnap = await fakeFirestore
+              .collection(FirestoreCollections.users)
+              .doc(reporterId)
+              .collection(FirestoreCollections.userReportThrottle)
+              .doc(ownerId)
+              .get();
+          expect(
+            throttleSnap.exists,
+            isTrue,
+            reason:
+                'BUT-781 throttle sentinel must be written alongside the '
+                'report — without this, brigade rate limit silently inactive',
+          );
+          expect(
+            throttleSnap.data()!.containsKey('lastReportAt'),
+            isTrue,
+            reason: 'throttle doc must carry lastReportAt for the rule check',
+          );
+        },
+      );
 
-      test('rejects missing contentOwnerId without writing either doc',
-          () async {
-        final id =
-            await repository.submitReport(buildReport(contentOwnerId: null));
+      test(
+        'rejects missing contentOwnerId without writing either doc',
+        () async {
+          final id = await repository.submitReport(
+            buildReport(contentOwnerId: null),
+          );
 
-        expect(id, isNull);
+          expect(id, isNull);
 
-        final reportSnap =
-            await fakeFirestore.collection(FirestoreCollections.reports).get();
-        expect(reportSnap.docs, isEmpty);
+          final reportSnap = await fakeFirestore
+              .collection(FirestoreCollections.reports)
+              .get();
+          expect(reportSnap.docs, isEmpty);
 
-        final throttleSnap = await fakeFirestore
-            .collection(FirestoreCollections.users)
-            .doc(reporterId)
-            .collection(FirestoreCollections.userReportThrottle)
-            .get();
-        expect(throttleSnap.docs, isEmpty,
-            reason: 'rejected report must not leak a throttle write');
-      });
+          final throttleSnap = await fakeFirestore
+              .collection(FirestoreCollections.users)
+              .doc(reporterId)
+              .collection(FirestoreCollections.userReportThrottle)
+              .get();
+          expect(
+            throttleSnap.docs,
+            isEmpty,
+            reason: 'rejected report must not leak a throttle write',
+          );
+        },
+      );
 
       test('rejects self-report without writing either doc', () async {
-        final id = await repository
-            .submitReport(buildReport(contentOwnerId: reporterId));
+        final id = await repository.submitReport(
+          buildReport(contentOwnerId: reporterId),
+        );
 
         expect(id, isNull);
 
-        final reportSnap =
-            await fakeFirestore.collection(FirestoreCollections.reports).get();
+        final reportSnap = await fakeFirestore
+            .collection(FirestoreCollections.reports)
+            .get();
         expect(reportSnap.docs, isEmpty);
 
         final throttleSnap = await fakeFirestore

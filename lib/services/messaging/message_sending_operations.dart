@@ -50,7 +50,8 @@ class MessageSendingOperations {
         throw AuthenticationException('User must be authenticated');
       }
       AppLogger.debug(
-          '📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
+        '📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})',
+      );
 
       if (content.trim().isEmpty) {
         AppLogger.error('❌ [MessagingService] Empty content');
@@ -67,13 +68,16 @@ class MessageSendingOperations {
         replyToMessageId: replyToMessageId,
       );
       AppLogger.debug(
-          '📤 [MessagingService] Message created with ID: ${message.id}');
+        '📤 [MessagingService] Message created with ID: ${message.id}',
+      );
 
       AppLogger.debug(
-          '📤 [MessagingService] Calling repository.sendMessage...');
+        '📤 [MessagingService] Calling repository.sendMessage...',
+      );
       await messagingRepository.sendMessage(message);
       AppLogger.success(
-          '✅ [MessagingService] Repository.sendMessage completed');
+        '✅ [MessagingService] Repository.sendMessage completed',
+      );
 
       // Clear typing indicator for this user
       AppLogger.debug('📤 [MessagingService] Clearing typing indicator...');
@@ -84,7 +88,8 @@ class MessageSendingOperations {
       await sendMessageNotification(message, conversationId);
 
       AppLogger.success(
-          '✅ [MessagingService] Text message sent successfully: ${message.id}');
+        '✅ [MessagingService] Text message sent successfully: ${message.id}',
+      );
     } catch (e, stackTrace) {
       AppLogger.error('❌ [MessagingService] Failed to send text message', e);
       AppLogger.error('❌ [MessagingService] Stack trace: $stackTrace');
@@ -242,7 +247,9 @@ class MessageSendingOperations {
 
   /// Send notification to other participants in conversation
   Future<void> sendMessageNotification(
-      Message message, String conversationId) async {
+    Message message,
+    String conversationId,
+  ) async {
     try {
       // Don't send notifications to ourselves
       if (message.isFromCurrentUser(authRepository.currentUserId.orEmpty())) {
@@ -250,11 +257,13 @@ class MessageSendingOperations {
       }
 
       // Get conversation to determine recipients
-      final conversation =
-          await messagingRepository.getConversation(conversationId);
+      final conversation = await messagingRepository.getConversation(
+        conversationId,
+      );
       if (conversation == null) {
         AppLogger.warning(
-            'Cannot send notification - conversation not found: $conversationId');
+          'Cannot send notification - conversation not found: $conversationId',
+        );
         return;
       }
 

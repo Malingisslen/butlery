@@ -25,13 +25,16 @@ void main() {
     });
 
     test('<1 hour → "N min sedan"', () {
-      _atNow(() =>
-          expect(TimeAgoFormatter.standard(_minutesAgo(15)), '15 min sedan'));
+      _atNow(
+        () =>
+            expect(TimeAgoFormatter.standard(_minutesAgo(15)), '15 min sedan'),
+      );
     });
 
     test('<1 day → "N tim sedan"', () {
       _atNow(
-          () => expect(TimeAgoFormatter.standard(_hoursAgo(3)), '3 tim sedan'));
+        () => expect(TimeAgoFormatter.standard(_hoursAgo(3)), '3 tim sedan'),
+      );
     });
 
     test('<7 days → "N dagar sedan" / "1 dag sedan"', () {
@@ -42,8 +45,9 @@ void main() {
     });
 
     test('>=7 days → weeks', () {
-      _atNow(() =>
-          expect(TimeAgoFormatter.standard(_daysAgo(14)), '2 veckor sedan'));
+      _atNow(
+        () => expect(TimeAgoFormatter.standard(_daysAgo(14)), '2 veckor sedan'),
+      );
     });
   });
 
@@ -60,8 +64,9 @@ void main() {
     });
 
     test('hours → "N timmar sedan"', () {
-      _atNow(() =>
-          expect(TimeAgoFormatter.verbose(_hoursAgo(3)), '3 timmar sedan'));
+      _atNow(
+        () => expect(TimeAgoFormatter.verbose(_hoursAgo(3)), '3 timmar sedan'),
+      );
     });
 
     test('days (1..7) → "N dagar sedan" (pluralized)', () {

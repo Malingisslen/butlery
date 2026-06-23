@@ -63,7 +63,8 @@ class InvitationLists {
         return ListTile(
           title: Text(target.displayName),
           subtitle: Text(
-              '${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
+            '${target.type.name} • ${target.memberCount ?? 0} medlemmar',
+          ),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -114,11 +115,13 @@ class InvitationLists {
                 style: AppTextStyles.titleBold,
               ),
             ),
-            ...typeTargets.map((target) => ListTile(
-                  title: Text(target.displayName),
-                  subtitle: Text('${target.memberCount ?? 0} medlemmar'),
-                  onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-                )),
+            ...typeTargets.map(
+              (target) => ListTile(
+                title: Text(target.displayName),
+                subtitle: Text('${target.memberCount ?? 0} medlemmar'),
+                onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+              ),
+            ),
             const Divider(),
           ],
         );
@@ -146,7 +149,8 @@ class InvitationLists {
         return ListTile(
           title: Text(target.displayName),
           subtitle: Text(
-              '${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
+            '${target.type.name} • ${target.memberCount ?? 0} medlemmar',
+          ),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -175,8 +179,9 @@ class InvitationLists {
             width: itemWidth,
             child: Card(
               child: Semantics(
-                label:
-                    context.l10n.a11yInvitationTargetCard(target.displayName),
+                label: context.l10n.a11yInvitationTargetCard(
+                  target.displayName,
+                ),
                 button: true,
                 enabled: onTargetTap != null,
                 child: InkWell(
@@ -242,7 +247,8 @@ class InvitationLists {
               onTap: onTargetTap != null ? () => onTargetTap(target) : null,
               child: Padding(
                 padding: const EdgeInsets.all(
-                    (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                  (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -264,9 +270,8 @@ class InvitationLists {
                     Text(
                       '${target.memberCount ?? 0} medlemmar',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

@@ -145,7 +145,9 @@ class _AssistedImportDialogContent extends StatelessWidget {
   }
 
   Widget _buildContent(
-      BuildContext context, AssistedImportViewModel viewModel) {
+    BuildContext context,
+    AssistedImportViewModel viewModel,
+  ) {
     switch (viewModel.currentStep) {
       case AssistedImportStep.selectIngredients:
         return _IngredientSelectionStep(viewModel: viewModel);
@@ -210,8 +212,9 @@ class _InstructionSelectionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final likelyInstructions = viewModel.likelyInstructionIndices
-        .difference(viewModel.selectedIngredientIndices);
+    final likelyInstructions = viewModel.likelyInstructionIndices.difference(
+      viewModel.selectedIngredientIndices,
+    );
 
     return TextLineSelector(
       lines: viewModel.lines,
@@ -312,17 +315,25 @@ class _ReviewEditStep extends StatelessWidget {
             ),
             items: [
               DropdownMenuItem(
-                  value: 'breakfast',
-                  child: Text(context.l10n.importMealBreakfast)),
+                value: 'breakfast',
+                child: Text(context.l10n.importMealBreakfast),
+              ),
               DropdownMenuItem(
-                  value: 'lunch', child: Text(context.l10n.importMealLunch)),
+                value: 'lunch',
+                child: Text(context.l10n.importMealLunch),
+              ),
               DropdownMenuItem(
-                  value: 'dinner', child: Text(context.l10n.importMealDinner)),
+                value: 'dinner',
+                child: Text(context.l10n.importMealDinner),
+              ),
               DropdownMenuItem(
-                  value: 'snack', child: Text(context.l10n.importMealSnack)),
+                value: 'snack',
+                child: Text(context.l10n.importMealSnack),
+              ),
               DropdownMenuItem(
-                  value: 'dessert',
-                  child: Text(context.l10n.importMealDessert)),
+                value: 'dessert',
+                child: Text(context.l10n.importMealDessert),
+              ),
             ],
             onChanged: (value) {
               if (value != null) viewModel.setMealType(value);

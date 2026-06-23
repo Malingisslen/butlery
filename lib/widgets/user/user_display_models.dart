@@ -65,18 +65,17 @@ class UserDisplayData {
     bool? isOnline,
     DateTime? lastSeen,
     Map<String, dynamic>? metadata,
-  }) =>
-      UserDisplayData(
-        id: id ?? this.id,
-        displayName: displayName ?? this.displayName,
-        email: email ?? this.email,
-        imageUrl: imageUrl ?? this.imageUrl,
-        subtitle: subtitle ?? this.subtitle,
-        description: description ?? this.description,
-        isOnline: isOnline ?? this.isOnline,
-        lastSeen: lastSeen ?? this.lastSeen,
-        metadata: metadata ?? this.metadata,
-      );
+  }) => UserDisplayData(
+    id: id ?? this.id,
+    displayName: displayName ?? this.displayName,
+    email: email ?? this.email,
+    imageUrl: imageUrl ?? this.imageUrl,
+    subtitle: subtitle ?? this.subtitle,
+    description: description ?? this.description,
+    isOnline: isOnline ?? this.isOnline,
+    lastSeen: lastSeen ?? this.lastSeen,
+    metadata: metadata ?? this.metadata,
+  );
 }
 
 /// Optimerade Status Helper funktioner
@@ -101,18 +100,27 @@ class UserStatusHelper {
     };
   }
 
-  static Icon getStatusIcon(BuildContext context, UserStatus status,
-      {double? size}) {
+  static Icon getStatusIcon(
+    BuildContext context,
+    UserStatus status, {
+    double? size,
+  }) {
     final iconSize = size ?? AppDimensions.iconSizeM;
     final color = getStatusColor(context, status);
 
     return switch (status) {
       UserStatus.online => Icon(Icons.circle, color: color, size: iconSize),
-      UserStatus.offline =>
-        Icon(Icons.circle_outlined, color: color, size: iconSize),
+      UserStatus.offline => Icon(
+        Icons.circle_outlined,
+        color: color,
+        size: iconSize,
+      ),
       UserStatus.away => Icon(Icons.schedule, color: color, size: iconSize),
-      UserStatus.busy =>
-        Icon(Icons.do_not_disturb, color: color, size: iconSize),
+      UserStatus.busy => Icon(
+        Icons.do_not_disturb,
+        color: color,
+        size: iconSize,
+      ),
     };
   }
 }

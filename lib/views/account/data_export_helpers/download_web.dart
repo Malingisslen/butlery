@@ -10,8 +10,10 @@ import 'package:web/web.dart' as web;
 Future<String?> downloadJsonFile(String content, String fileName) async {
   try {
     final jsArray = utf8.encode(content).toJS;
-    final blob =
-        web.Blob([jsArray].toJS, web.BlobPropertyBag(type: 'application/json'));
+    final blob = web.Blob(
+      [jsArray].toJS,
+      web.BlobPropertyBag(type: 'application/json'),
+    );
     final url = web.URL.createObjectURL(blob);
 
     final anchor = web.HTMLAnchorElement()
@@ -21,8 +23,12 @@ Future<String?> downloadJsonFile(String content, String fileName) async {
     anchor.click();
     anchor.remove();
     // Defer revoke to let browser complete the download stream
-    unawaited(Future.delayed(
-        const Duration(seconds: 10), () => web.URL.revokeObjectURL(url)));
+    unawaited(
+      Future.delayed(
+        const Duration(seconds: 10),
+        () => web.URL.revokeObjectURL(url),
+      ),
+    );
     return fileName;
   } catch (e) {
     throw Exception('Failed to create download: $e');
@@ -34,7 +40,9 @@ Future<String?> downloadCsvFile(String content, String fileName) async {
   try {
     final jsArray = utf8.encode(content).toJS;
     final blob = web.Blob(
-        [jsArray].toJS, web.BlobPropertyBag(type: 'text/csv;charset=utf-8'));
+      [jsArray].toJS,
+      web.BlobPropertyBag(type: 'text/csv;charset=utf-8'),
+    );
     final url = web.URL.createObjectURL(blob);
     final anchor = web.HTMLAnchorElement()
       ..href = url
@@ -42,8 +50,12 @@ Future<String?> downloadCsvFile(String content, String fileName) async {
     web.document.body!.append(anchor);
     anchor.click();
     anchor.remove();
-    unawaited(Future.delayed(
-        const Duration(seconds: 10), () => web.URL.revokeObjectURL(url)));
+    unawaited(
+      Future.delayed(
+        const Duration(seconds: 10),
+        () => web.URL.revokeObjectURL(url),
+      ),
+    );
     return fileName;
   } catch (e) {
     throw Exception('Failed to create CSV download: $e');
@@ -51,8 +63,12 @@ Future<String?> downloadCsvFile(String content, String fileName) async {
 }
 
 /// Web has no native share sheet — triggers download as fallback.
-Future<void> shareJsonFile(String content, String fileName,
-    {String? subject, String? text}) async {
+Future<void> shareJsonFile(
+  String content,
+  String fileName, {
+  String? subject,
+  String? text,
+}) async {
   await downloadJsonFile(content, fileName);
 }
 

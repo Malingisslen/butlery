@@ -26,11 +26,11 @@ class PantryModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        PantryRepository,
-        IngredientMatchService,
-        PantryService,
-        ShoppingCheckoffPantryService,
-      ];
+    PantryRepository,
+    IngredientMatchService,
+    PantryService,
+    ShoppingCheckoffPantryService,
+  ];
 
   // Priority between TaggingModule (5) and ContentModule (10) so the
   // pantry is available to any downstream module that wants to surface

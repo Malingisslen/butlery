@@ -120,9 +120,9 @@ void main() {
       });
 
       test('partial tagging marks result as partial', () {
-        final recipe = RecipeBuilder()
-            .withTitle('Test Recipe')
-            .withIngredients(['unknown_ingredient_xyz']).build();
+        final recipe = RecipeBuilder().withTitle('Test Recipe').withIngredients(
+          ['unknown_ingredient_xyz'],
+        ).build();
 
         // Create lookup with no matches (0 matched, 1 total)
         final lookup = TaggingTestHelper.createLookupWithCoverage(
@@ -203,9 +203,13 @@ void main() {
         expect(needsRetagging.length, 2); // Old and failed
         expect(needsRetagging.any((r) => r.core.title == 'Old Tagged'), isTrue);
         expect(
-            needsRetagging.any((r) => r.core.title == 'Failed Tagged'), isTrue);
-        expect(needsRetagging.any((r) => r.core.title == 'Current Tagged'),
-            isFalse);
+          needsRetagging.any((r) => r.core.title == 'Failed Tagged'),
+          isTrue,
+        );
+        expect(
+          needsRetagging.any((r) => r.core.title == 'Current Tagged'),
+          isFalse,
+        );
       });
 
       test('scheduler can be instantiated with callbacks', () {
@@ -234,9 +238,10 @@ void main() {
         );
 
         final recipe = _withTagResult(
-          RecipeBuilder()
-              .withTitle('Imported Pasta')
-              .withIngredients(['pasta', 'tomat']).build(),
+          RecipeBuilder().withTitle('Imported Pasta').withIngredients([
+            'pasta',
+            'tomat',
+          ]).build(),
           existingTagResult,
         );
 
@@ -271,7 +276,8 @@ void main() {
       test('recipe with no ingredients gets empty tags', () {
         final recipe = RecipeBuilder()
             .withTitle('Empty Recipe')
-            .withIngredients([]).build();
+            .withIngredients([])
+            .build();
 
         // Empty lookup (no matched, no unmatched)
         final lookup = IngredientLookupResult.fromLists(
@@ -293,7 +299,8 @@ void main() {
       test('recipe with Swedish characters generates correct tags', () {
         final recipe = RecipeBuilder()
             .withTitle('Köttbullar med lingonsylt')
-            .withIngredients(['köttfärs', 'lök', 'ägg', 'ströbröd']).build();
+            .withIngredients(['köttfärs', 'lök', 'ägg', 'ströbröd'])
+            .build();
 
         final lookup = TaggingTestHelper.createMeatLookup();
 

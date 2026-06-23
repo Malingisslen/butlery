@@ -133,7 +133,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     // BUT-1201: announce the new bought/un-bought state to screen readers —
     // the visual checkbox change on the row isn't reliably read on toggle.
     final nowBought = _vm.completedItemsList.any((i) => i.id == itemId);
-    SemanticsService.announce(
+    SemanticsService.sendAnnouncement(
+      View.of(context),
       nowBought ? context.l10n.a11yItemBought : context.l10n.a11yItemUnbought,
       TextDirection.ltr,
     );
@@ -192,7 +193,9 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
   }
 
   Widget _buildBody(
-      BuildContext context, CollaborativeShoppingViewModel viewModel) {
+    BuildContext context,
+    CollaborativeShoppingViewModel viewModel,
+  ) {
     return LoadingStateBuilder<dynamic>(
       isLoading: viewModel.isLoading,
       error: viewModel.error,
@@ -243,7 +246,9 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
   }
 
   Widget _buildListContent(
-      BuildContext context, CollaborativeShoppingViewModel viewModel) {
+    BuildContext context,
+    CollaborativeShoppingViewModel viewModel,
+  ) {
     return Column(
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),

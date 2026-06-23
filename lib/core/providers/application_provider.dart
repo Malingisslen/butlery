@@ -166,8 +166,8 @@ class ApplicationProvider extends InheritedWidget {
   /// Get the ApplicationProvider from the widget tree.
   /// Throws an exception if ApplicationProvider is not found in the tree.
   static ApplicationProvider of(BuildContext context) {
-    final provider =
-        context.dependOnInheritedWidgetOfExactType<ApplicationProvider>();
+    final provider = context
+        .dependOnInheritedWidgetOfExactType<ApplicationProvider>();
     if (provider == null) {
       throw Exception(
         'ApplicationProvider not found in widget tree. '
@@ -199,8 +199,9 @@ class ApplicationProvider extends InheritedWidget {
       'is_healthy': healthReport.isHealthy,
       'healthy_count': healthReport.healthyCount,
       'total_count': healthReport.totalCount,
-      'unhealthy_services':
-          healthReport.unhealthyServices.map((s) => s.serviceName).toList(),
+      'unhealthy_services': healthReport.unhealthyServices
+          .map((s) => s.serviceName)
+          .toList(),
       'bootstrap_initialized': bootstrap.isInitialized,
       'container_initialized': container.isInitialized,
     };

@@ -70,12 +70,12 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
     required FirebaseSocialRequestRepository socialRequestRepository,
-  })  : _userService = userService,
-        _recipeService = recipeService,
-        _permissionService = permissionService,
-        _sharedRecipeRepository = sharedRecipeRepository,
-        _sharedMenuRepository = sharedMenuRepository,
-        _socialRequestRepository = socialRequestRepository {
+  }) : _userService = userService,
+       _recipeService = recipeService,
+       _permissionService = permissionService,
+       _sharedRecipeRepository = sharedRecipeRepository,
+       _sharedMenuRepository = sharedMenuRepository,
+       _socialRequestRepository = socialRequestRepository {
     _participantResolver = SocialParticipantResolverModule(
       userService: _userService,
       getSharedRecipes: () => _sharedRecipes,
@@ -141,10 +141,12 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     // (network blip, permission hiccup) must NOT blank the inbox by
     // overwriting last-good data with empty lists. Rethrow so the caller's
     // error handling (initialize/refresh) can populate _error → UI banner.
-    final recipes =
-        await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
-    final menus =
-        await _sharedMenuRepository.getSharedMenusForUser(currentUserId);
+    final recipes = await _sharedRecipeRepository.getSharedRecipesForUser(
+      currentUserId,
+    );
+    final menus = await _sharedMenuRepository.getSharedMenusForUser(
+      currentUserId,
+    );
     _sharedRecipes = recipes;
     _sharedMenus = menus;
   }
@@ -214,8 +216,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   Future<bool> importSharedRecipe(String recipeId) async {
     _resetError();
     try {
-      final sharedRecipe =
-          _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
+      final sharedRecipe = _sharedRecipes
+          .where((r) => r.id == recipeId)
+          .firstOrNull;
       if (sharedRecipe == null) return false;
 
       // Use contentSnapshot which handles V1 (full snapshot) or V2 (minimal from metadata)
@@ -231,7 +234,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         mealType: recipeToImport.mealType,
         portions: recipeToImport.portions,
         timeMinutes: recipeToImport.timeMinutes,
-        personalTagIds: [], // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
+        personalTagIds:
+            [], // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
         rating: recipeToImport.rating,
       );
 
@@ -239,14 +243,17 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         // Mark as imported
         if (_permissionService.isAuthenticated) {
           await _sharedRecipeRepository.markAsImportedOrJoined(
-              recipeId, _permissionService.currentUserId!);
+            recipeId,
+            _permissionService.currentUserId!,
+          );
         } else {
           // BUT-1086: user signed out during the createRecipe await. The
           // recipe IS saved but the share couldn't be flagged as imported.
           // Surface this so UI can show a refresh prompt; the function
           // still returns true because the primary write succeeded.
           AppLogger.warning(
-              '⚠️ Sign-out detected mid-import — share status not updated for $recipeId');
+            '⚠️ Sign-out detected mid-import — share status not updated for $recipeId',
+          );
           _error = AppLocale.current.errorImportPartialReSignIn;
         }
         AppLogger.success('Recipe imported successfully');
@@ -295,7 +302,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
       if (_permissionService.isAuthenticated) {
         await _sharedMenuRepository.markAsImportedOrJoined(
-            menuId, _permissionService.currentUserId!);
+          menuId,
+          _permissionService.currentUserId!,
+        );
       } else {
         // BUT-1086: user signed out during the createRecipe awaits. At least
         // one recipe IS saved but the share couldn't be flagged as imported.
@@ -303,7 +312,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         // knows the menu was only partially imported. Still returns true
         // because the primary writes succeeded.
         AppLogger.warning(
-            '⚠️ Sign-out detected mid-import — share status not updated for menu $menuId');
+          '⚠️ Sign-out detected mid-import — share status not updated for menu $menuId',
+        );
         _error = AppLocale.current.errorImportPartialReSignIn;
       }
       AppLogger.success('Menu imported: $successCount/$totalCount recipes');
@@ -323,7 +333,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         return false;
       }
       await _sharedRecipeRepository.markAsDismissed(
-          recipeId, _permissionService.currentUserId!);
+        recipeId,
+        _permissionService.currentUserId!,
+      );
       AppLogger.info('Recipe dismissed');
       return true;
     } catch (e) {
@@ -341,7 +353,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         return false;
       }
       await _sharedMenuRepository.markAsDismissed(
-          menuId, _permissionService.currentUserId!);
+        menuId,
+        _permissionService.currentUserId!,
+      );
       AppLogger.info('Menu dismissed');
       return true;
     } catch (e) {
@@ -359,7 +373,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         return false;
       }
       await _sharedRecipeRepository.undismiss(
-          recipeId, _permissionService.currentUserId!);
+        recipeId,
+        _permissionService.currentUserId!,
+      );
       AppLogger.info('Recipe restored');
       return true;
     } catch (e) {
@@ -377,7 +393,9 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         return false;
       }
       await _sharedMenuRepository.undismiss(
-          menuId, _permissionService.currentUserId!);
+        menuId,
+        _permissionService.currentUserId!,
+      );
       AppLogger.info('Menu restored');
       return true;
     } catch (e) {
@@ -390,7 +408,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   void createTestSharedRecipe(String recipeId) {
     // This is a no-op for the real implementation
     AppLogger.info(
-        'createTestSharedRecipe called - ignoring in real implementation');
+      'createTestSharedRecipe called - ignoring in real implementation',
+    );
   }
 
   /// Compatibility getters for legacy code
@@ -425,7 +444,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       final shoppingService = _shoppingService;
       if (shoppingService == null) {
         AppLogger.warning(
-            'Shopping service not available - cannot check sharing status');
+          'Shopping service not available - cannot check sharing status',
+        );
         return false;
       }
 
@@ -463,12 +483,11 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required String ownerId,
     required String recipeId,
     required String recipeTitle,
-  }) =>
-      _recipeShareRequestModule.requestRecipeShare(
-        ownerId: ownerId,
-        recipeId: recipeId,
-        recipeTitle: recipeTitle,
-      );
+  }) => _recipeShareRequestModule.requestRecipeShare(
+    ownerId: ownerId,
+    recipeId: recipeId,
+    recipeTitle: recipeTitle,
+  );
 
   Future<bool> acceptRecipeShareRequest(SocialRequest request) =>
       _recipeShareRequestModule.acceptRecipeShareRequest(request);

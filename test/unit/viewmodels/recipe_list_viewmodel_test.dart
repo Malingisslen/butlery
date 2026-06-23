@@ -69,18 +69,22 @@ void main() {
           final query = invocation.positionalArguments[1] as String;
           if (query.isEmpty) return recipes;
           return recipes
-              .where((r) =>
-                  r.title.toLowerCase().contains(query.toLowerCase()) ||
-                  r.description.toLowerCase().contains(query.toLowerCase()))
+              .where(
+                (r) =>
+                    r.title.toLowerCase().contains(query.toLowerCase()) ||
+                    r.description.toLowerCase().contains(query.toLowerCase()),
+              )
               .toList();
         },
       );
 
-      when(() => mockSearchService.sortRecipes(
-            any(),
-            any(),
-            ascending: any(named: 'ascending'),
-          )).thenAnswer((invocation) {
+      when(
+        () => mockSearchService.sortRecipes(
+          any(),
+          any(),
+          ascending: any(named: 'ascending'),
+        ),
+      ).thenAnswer((invocation) {
         final recipes = invocation.positionalArguments[0] as List<Recipe>;
         final criteria = invocation.positionalArguments[1] as SortCriteria;
         final ascending =
@@ -94,8 +98,9 @@ void main() {
               comparison = a.title.compareTo(b.title);
               break;
             case SortCriteria.time:
-              comparison =
-                  (a.timeMinutes ?? 999).compareTo(b.timeMinutes ?? 999);
+              comparison = (a.timeMinutes ?? 999).compareTo(
+                b.timeMinutes ?? 999,
+              );
               break;
             case SortCriteria.rating:
               comparison = (a.rating ?? 0).compareTo(b.rating ?? 0);
@@ -206,9 +211,11 @@ void main() {
         expect(viewModel.searchQuery, equals('pasta'));
         expect(viewModel.recipes, hasLength(2));
         expect(
-            viewModel.recipes
-                .every((r) => r.title.toLowerCase().contains('pasta')),
-            isTrue);
+          viewModel.recipes.every(
+            (r) => r.title.toLowerCase().contains('pasta'),
+          ),
+          isTrue,
+        );
       });
 
       test('should not notify if search query unchanged', () {
@@ -222,8 +229,10 @@ void main() {
         viewModel.updateSearch('test'); // Same query
 
         // Assert
-        expect(notificationCount,
-            equals(firstCount)); // No additional notification
+        expect(
+          notificationCount,
+          equals(firstCount),
+        ); // No additional notification
       });
 
       test('should clear search when query is empty', () {
@@ -272,8 +281,9 @@ void main() {
         mockRecipeService.setRecipeState(recipes: recipes);
 
         // Act - toggle to descending
-        viewModel
-            .updateSort(SortCriteria.title); // Already title, should toggle
+        viewModel.updateSort(
+          SortCriteria.title,
+        ); // Already title, should toggle
 
         // Assert
         expect(viewModel.sortAscending, isFalse);
@@ -402,9 +412,11 @@ void main() {
         expect(viewModel.recipes.any((r) => r.timeMinutes! < 30), isTrue);
         expect(viewModel.recipes.any((r) => r.timeMinutes! > 60), isTrue);
         expect(
-            viewModel.recipes
-                .any((r) => r.timeMinutes! >= 30 && r.timeMinutes! <= 60),
-            isFalse);
+          viewModel.recipes.any(
+            (r) => r.timeMinutes! >= 30 && r.timeMinutes! <= 60,
+          ),
+          isFalse,
+        );
       });
 
       test('should toggle time filter on and off', () {
@@ -553,24 +565,26 @@ void main() {
         expect(viewModel.recipes.every((r) => r.rating == 5.0), isTrue);
       });
 
-      test('should use highest threshold when multiple rating filters active',
-          () {
-        // Arrange
-        final recipes = [
-          RecipeFactory.build(id: 'r1', rating: 3.5),
-          RecipeFactory.build(id: 'r2', rating: 4.5),
-          RecipeFactory.build(id: 'r3', rating: 5.0),
-        ];
-        mockRecipeService.setRecipeState(recipes: recipes);
+      test(
+        'should use highest threshold when multiple rating filters active',
+        () {
+          // Arrange
+          final recipes = [
+            RecipeFactory.build(id: 'r1', rating: 3.5),
+            RecipeFactory.build(id: 'r2', rating: 4.5),
+            RecipeFactory.build(id: 'r3', rating: 5.0),
+          ];
+          mockRecipeService.setRecipeState(recipes: recipes);
 
-        // Act - both high_rated and top_rated
-        viewModel.toggleRatingFilter('high_rated');
-        viewModel.toggleRatingFilter('top_rated');
+          // Act - both high_rated and top_rated
+          viewModel.toggleRatingFilter('high_rated');
+          viewModel.toggleRatingFilter('top_rated');
 
-        // Assert - should use top_rated threshold (5.0)
-        expect(viewModel.recipes, hasLength(1));
-        expect(viewModel.recipes[0].rating, equals(5.0));
-      });
+          // Assert - should use top_rated threshold (5.0)
+          expect(viewModel.recipes, hasLength(1));
+          expect(viewModel.recipes[0].rating, equals(5.0));
+        },
+      );
 
       test('should handle recipes without ratings', () {
         // Arrange
@@ -902,8 +916,7 @@ void main() {
     });
 
     group('Bulk Tag (BUT-1012)', () {
-      test(
-          'bulkApplyPersonalTag returns count of recipes that did not already '
+      test('bulkApplyPersonalTag returns count of recipes that did not already '
           'have the tag and skips ones that did', () async {
         // Arrange — three recipes, one already tagged with 'travel'.
         final recipes = [
@@ -915,8 +928,9 @@ void main() {
         mockRecipeService.notifyListeners();
         // Production swallows updateRecipe failures (per-recipe error must
         // not block the bulk); without a successful stub modified stays 0.
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         viewModel.enterSelectionMode('r1');
         viewModel.toggleSelection('r2');
@@ -932,8 +946,7 @@ void main() {
         expect(modified, equals(2));
       });
 
-      test(
-          'bulkApplyPersonalTag returns 0 when every selected recipe already '
+      test('bulkApplyPersonalTag returns 0 when every selected recipe already '
           'has the tag', () async {
         final recipes = [
           RecipeFactory.build(id: 'r1', personalTagIds: ['weeknight']),
@@ -953,8 +966,7 @@ void main() {
         expect(modified, equals(0));
       });
 
-      test(
-          'bulkApplyPersonalTag returns 0 when selection was entered then '
+      test('bulkApplyPersonalTag returns 0 when selection was entered then '
           'fully deselected (realistic empty-selection path)', () async {
         final recipes = [
           RecipeFactory.build(id: 'r1', personalTagIds: []),
@@ -973,23 +985,25 @@ void main() {
         expect(modified, equals(0));
       });
 
-      test('undoBulkApplyPersonalTag is a no-op when nothing was applied',
-          () async {
-        // Snapshot is empty until bulkApplyPersonalTag captures one.
-        expect(viewModel.undoBulkApplyPersonalTag, returnsNormally);
-        await viewModel.undoBulkApplyPersonalTag();
-      });
-
       test(
-          'undoBulkApplyPersonalTag restores prior personalTagIds + '
+        'undoBulkApplyPersonalTag is a no-op when nothing was applied',
+        () async {
+          // Snapshot is empty until bulkApplyPersonalTag captures one.
+          expect(viewModel.undoBulkApplyPersonalTag, returnsNormally);
+          await viewModel.undoBulkApplyPersonalTag();
+        },
+      );
+
+      test('undoBulkApplyPersonalTag restores prior personalTagIds + '
           'personalTags, and a second undo on the consumed snapshot is a '
           'safe no-op', () async {
         // BUT-1030: wire updateRecipe to mutate mock state so restoration
         // semantics become observable. Without this stub, the production
         // `try/catch (_)` in bulkApplyPersonalTag swallows MissingStubError
         // and the snapshot ends up empty — making the undo a vacuous no-op.
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockRecipeService.updateRecipe(any())).thenAnswer((
+          invocation,
+        ) async {
           final r = invocation.positionalArguments[0] as Recipe;
           mockRecipeService.applyRecipeWriteToState(r);
           return true;
@@ -1032,8 +1046,7 @@ void main() {
     });
 
     group('Seeded Recipes vs Allergen/Dietary Filters (seed-content)', () {
-      test(
-          'seeded starter recipes stay visible under a default allergen filter '
+      test('seeded starter recipes stay visible under a default allergen filter '
           'even though they have no tagResult', () {
         // Seeds ship without allergen analysis (tagResult == null). They must
         // NOT be hidden by a persisted/default allergen filter, or a new user
@@ -1043,36 +1056,49 @@ void main() {
 
         viewModel.toggleAllergenFilter('gluten-free');
 
-        expect(viewModel.recipes, hasLength(RecipeSeeds.allRecipes.length),
-            reason: 'ALL seeded recipes (createdBy == "system") should survive '
-                'allergen filtering despite a missing tagResult — not just some '
-                '(catches a partial-exemption regression).');
+        expect(
+          viewModel.recipes,
+          hasLength(RecipeSeeds.allRecipes.length),
+          reason:
+              'ALL seeded recipes (createdBy == "system") should survive '
+              'allergen filtering despite a missing tagResult — not just some '
+              '(catches a partial-exemption regression).',
+        );
         expect(viewModel.recipes.every((r) => r.createdBy == 'system'), isTrue);
       });
 
-      test('seeded starter recipes stay visible under a default dietary filter',
-          () {
-        mockRecipeService.setRecipeState(recipes: RecipeSeeds.allRecipes);
+      test(
+        'seeded starter recipes stay visible under a default dietary filter',
+        () {
+          mockRecipeService.setRecipeState(recipes: RecipeSeeds.allRecipes);
 
-        viewModel.toggleDietaryFilter('vegetarian');
+          viewModel.toggleDietaryFilter('vegetarian');
 
-        expect(viewModel.recipes, hasLength(RecipeSeeds.allRecipes.length),
-            reason: 'ALL seeded recipes must survive dietary filtering.');
-      });
+          expect(
+            viewModel.recipes,
+            hasLength(RecipeSeeds.allRecipes.length),
+            reason: 'ALL seeded recipes must survive dietary filtering.',
+          );
+        },
+      );
 
       test(
-          'non-seed recipes with no tagResult are STILL excluded by an allergen '
-          'filter (safety preserved)', () {
-        // The seed exemption must not weaken safety for ordinary user recipes:
-        // a user recipe with unknown allergen status is correctly hidden.
-        final userRecipe =
-            RecipeFactory.build(id: 'u1', createdBy: 'test_user');
-        mockRecipeService.setRecipeState(recipes: [userRecipe]);
+        'non-seed recipes with no tagResult are STILL excluded by an allergen '
+        'filter (safety preserved)',
+        () {
+          // The seed exemption must not weaken safety for ordinary user recipes:
+          // a user recipe with unknown allergen status is correctly hidden.
+          final userRecipe = RecipeFactory.build(
+            id: 'u1',
+            createdBy: 'test_user',
+          );
+          mockRecipeService.setRecipeState(recipes: [userRecipe]);
 
-        viewModel.toggleAllergenFilter('gluten-free');
+          viewModel.toggleAllergenFilter('gluten-free');
 
-        expect(viewModel.recipes, isEmpty);
-      });
+          expect(viewModel.recipes, isEmpty);
+        },
+      );
     });
 
     // ---------------------------------------------------------------------------
@@ -1089,52 +1115,52 @@ void main() {
       /// coverage == 1.0, needsRetagging == false, allergenStatus FREE for gluten,
       /// dietaryStatus FREE for vegetarisk.
       TagResult fullyTaggedFree() => TagResult(
-            tags: const {},
-            allergenStatus: const {'gluten': TriState.free},
-            dietaryStatus: const {'vegetarisk': TriState.free},
-            coverage: 1.0,
-            generatedAt: DateTime(2024),
-            generatorVersion: kTagGeneratorVersion,
-            hasCoverageAnomaly: false,
-          );
+        tags: const {},
+        allergenStatus: const {'gluten': TriState.free},
+        dietaryStatus: const {'vegetarisk': TriState.free},
+        coverage: 1.0,
+        generatedAt: DateTime(2024),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
 
       /// Builds a TagResult identical to [fullyTaggedFree] but with partial
       /// coverage (0.6) — the coverage gate must reject this even when status
       /// says free.
       TagResult partialCoverageFree() => TagResult(
-            tags: const {},
-            allergenStatus: const {'gluten': TriState.free},
-            dietaryStatus: const {'vegetarisk': TriState.free},
-            coverage: 0.6,
-            generatedAt: DateTime(2024),
-            generatorVersion: kTagGeneratorVersion,
-            hasCoverageAnomaly: false,
-          );
+        tags: const {},
+        allergenStatus: const {'gluten': TriState.free},
+        dietaryStatus: const {'vegetarisk': TriState.free},
+        coverage: 0.6,
+        generatedAt: DateTime(2024),
+        generatorVersion: kTagGeneratorVersion,
+        hasCoverageAnomaly: false,
+      );
 
       /// Builds a TagResult that needs retagging (generatorVersion == null
       /// satisfies the needsRetagging gate) while still carrying a FREE status —
       /// the needsRetagging gate must reject this before status is consulted.
       TagResult needsRetaggingFree() => TagResult(
-            tags: const {},
-            allergenStatus: const {'gluten': TriState.free},
-            dietaryStatus: const {'vegetarisk': TriState.free},
-            coverage: 1.0,
-            generatedAt: DateTime(2024),
-            generatorVersion: null, // null → needsRetagging == true
-            hasCoverageAnomaly: false,
-          );
+        tags: const {},
+        allergenStatus: const {'gluten': TriState.free},
+        dietaryStatus: const {'vegetarisk': TriState.free},
+        coverage: 1.0,
+        generatedAt: DateTime(2024),
+        generatorVersion: null, // null → needsRetagging == true
+        hasCoverageAnomaly: false,
+      );
 
       // -------------------------------------------------------------------------
       // AC-1: Allergen — coverage < 1.0 → excluded
       // -------------------------------------------------------------------------
-      test(
-          'AC-1: allergen filter EXCLUDES recipe with coverage < 1.0 even when '
+      test('AC-1: allergen filter EXCLUDES recipe with coverage < 1.0 even when '
           'allergenStatus says FREE', () {
         // This test proves that a recipe that looks "gluten-free" but has only
         // 60 % ingredient coverage is kept OUT of the filtered list, because the
         // unmatched 40 % could hide gluten.
-        final partialRecipe = RecipeFactory.build(id: 'partial')
-            .copyWith(tagResult: partialCoverageFree());
+        final partialRecipe = RecipeFactory.build(
+          id: 'partial',
+        ).copyWith(tagResult: partialCoverageFree());
         mockRecipeService.setRecipeState(recipes: [partialRecipe]);
 
         viewModel.toggleAllergenFilter('gluten-free');
@@ -1142,7 +1168,8 @@ void main() {
         expect(
           viewModel.recipes,
           isEmpty,
-          reason: 'A recipe with coverage 0.6 must not pass the allergen-free '
+          reason:
+              'A recipe with coverage 0.6 must not pass the allergen-free '
               'safety gate, even if the known ingredients are all gluten-free.',
         );
       });
@@ -1151,23 +1178,27 @@ void main() {
       // AC-2: Allergen — needsRetagging → excluded
       // -------------------------------------------------------------------------
       test(
-          'AC-2: allergen filter EXCLUDES recipe with needsRetagging == true even '
-          'when allergenStatus says FREE', () {
-        // This test proves that stale tag data (generatorVersion == null) is
-        // rejected at the safety gate before the allergen status is read.
-        final staleRecipe = RecipeFactory.build(id: 'stale')
-            .copyWith(tagResult: needsRetaggingFree());
-        mockRecipeService.setRecipeState(recipes: [staleRecipe]);
+        'AC-2: allergen filter EXCLUDES recipe with needsRetagging == true even '
+        'when allergenStatus says FREE',
+        () {
+          // This test proves that stale tag data (generatorVersion == null) is
+          // rejected at the safety gate before the allergen status is read.
+          final staleRecipe = RecipeFactory.build(
+            id: 'stale',
+          ).copyWith(tagResult: needsRetaggingFree());
+          mockRecipeService.setRecipeState(recipes: [staleRecipe]);
 
-        viewModel.toggleAllergenFilter('gluten-free');
+          viewModel.toggleAllergenFilter('gluten-free');
 
-        expect(
-          viewModel.recipes,
-          isEmpty,
-          reason: 'A recipe with needsRetagging==true must be excluded even if '
-              'its stored allergenStatus claims FREE — the tag data is unreliable.',
-        );
-      });
+          expect(
+            viewModel.recipes,
+            isEmpty,
+            reason:
+                'A recipe with needsRetagging==true must be excluded even if '
+                'its stored allergenStatus claims FREE — the tag data is unreliable.',
+          );
+        },
+      );
 
       // -------------------------------------------------------------------------
       // AC-3a: Allergen — null tagResult + non-seed → excluded (safety gate)
@@ -1176,8 +1207,7 @@ void main() {
       // above; the positive seed-bypass case is also there.  We add them here
       // again as explicit contract assertions for BUT-1335.)
       // -------------------------------------------------------------------------
-      test(
-          'AC-3a: allergen filter EXCLUDES recipe with tagResult == null '
+      test('AC-3a: allergen filter EXCLUDES recipe with tagResult == null '
           '(user recipe — no analysis available)', () {
         // This test proves that a recipe with absolutely no tag data is hidden
         // when a safety-critical allergen filter is active.
@@ -1190,13 +1220,13 @@ void main() {
         expect(
           viewModel.recipes,
           isEmpty,
-          reason: 'A user recipe with null tagResult must be excluded; its '
+          reason:
+              'A user recipe with null tagResult must be excluded; its '
               'allergen status is completely unknown.',
         );
       });
 
-      test(
-          'AC-3b: allergen filter KEEPS a seed recipe with tagResult == null '
+      test('AC-3b: allergen filter KEEPS a seed recipe with tagResult == null '
           '(createdBy == "system" — starter content bypass)', () {
         // This test proves that system-seeded starter recipes survive the
         // allergen filter even without tag analysis, so a new user who picked
@@ -1209,7 +1239,8 @@ void main() {
         expect(
           viewModel.recipes,
           hasLength(1),
-          reason: 'A seed recipe (createdBy=="system") must survive allergen '
+          reason:
+              'A seed recipe (createdBy=="system") must survive allergen '
               'filtering regardless of missing tagResult.',
         );
         expect(viewModel.recipes.single.createdBy, equals('system'));
@@ -1219,13 +1250,13 @@ void main() {
       // AC-1d: Allergen positive case — full coverage + FREE → included
       // (proves the gate is selective, not always-reject)
       // -------------------------------------------------------------------------
-      test(
-          'allergen filter KEEPS a recipe that is fully tagged and FREE from '
+      test('allergen filter KEEPS a recipe that is fully tagged and FREE from '
           'the selected allergen', () {
         // This test proves the gate admits recipes that legitimately satisfy
         // coverage == 1.0 AND needsRetagging == false AND status == FREE.
-        final cleanRecipe = RecipeFactory.build(id: 'clean')
-            .copyWith(tagResult: fullyTaggedFree());
+        final cleanRecipe = RecipeFactory.build(
+          id: 'clean',
+        ).copyWith(tagResult: fullyTaggedFree());
         mockRecipeService.setRecipeState(recipes: [cleanRecipe]);
 
         viewModel.toggleAllergenFilter('gluten-free');
@@ -1233,7 +1264,8 @@ void main() {
         expect(
           viewModel.recipes,
           hasLength(1),
-          reason: 'A recipe with full coverage, no retagging needed, and FREE '
+          reason:
+              'A recipe with full coverage, no retagging needed, and FREE '
               'status must pass the allergen-free filter.',
         );
       });
@@ -1242,27 +1274,31 @@ void main() {
       // AC-4: Dietary — same three safety gates (mirrors allergen)
       // -------------------------------------------------------------------------
       test(
-          'AC-4a: dietary filter EXCLUDES recipe with coverage < 1.0 even when '
-          'dietaryStatus says FREE', () {
-        final partialRecipe = RecipeFactory.build(id: 'dp')
-            .copyWith(tagResult: partialCoverageFree());
-        mockRecipeService.setRecipeState(recipes: [partialRecipe]);
+        'AC-4a: dietary filter EXCLUDES recipe with coverage < 1.0 even when '
+        'dietaryStatus says FREE',
+        () {
+          final partialRecipe = RecipeFactory.build(
+            id: 'dp',
+          ).copyWith(tagResult: partialCoverageFree());
+          mockRecipeService.setRecipeState(recipes: [partialRecipe]);
 
-        viewModel.toggleDietaryFilter('vegetarian');
+          viewModel.toggleDietaryFilter('vegetarian');
 
-        expect(
-          viewModel.recipes,
-          isEmpty,
-          reason: 'The dietary safety gate must mirror the allergen gate: '
-              'coverage < 1.0 excludes even when status says FREE.',
-        );
-      });
+          expect(
+            viewModel.recipes,
+            isEmpty,
+            reason:
+                'The dietary safety gate must mirror the allergen gate: '
+                'coverage < 1.0 excludes even when status says FREE.',
+          );
+        },
+      );
 
-      test(
-          'AC-4b: dietary filter EXCLUDES recipe with needsRetagging == true '
+      test('AC-4b: dietary filter EXCLUDES recipe with needsRetagging == true '
           'even when dietaryStatus says FREE', () {
-        final staleRecipe = RecipeFactory.build(id: 'ds')
-            .copyWith(tagResult: needsRetaggingFree());
+        final staleRecipe = RecipeFactory.build(
+          id: 'ds',
+        ).copyWith(tagResult: needsRetaggingFree());
         mockRecipeService.setRecipeState(recipes: [staleRecipe]);
 
         viewModel.toggleDietaryFilter('vegetarian');
@@ -1270,13 +1306,13 @@ void main() {
         expect(
           viewModel.recipes,
           isEmpty,
-          reason: 'The dietary safety gate must reject stale tags just as the '
+          reason:
+              'The dietary safety gate must reject stale tags just as the '
               'allergen gate does.',
         );
       });
 
-      test(
-          'AC-4c: dietary filter EXCLUDES recipe with tagResult == null '
+      test('AC-4c: dietary filter EXCLUDES recipe with tagResult == null '
           '(user recipe)', () {
         final unanalysed = RecipeFactory.build(id: 'dn', createdBy: 'user');
         mockRecipeService.setRecipeState(recipes: [unanalysed]);
@@ -1286,16 +1322,17 @@ void main() {
         expect(
           viewModel.recipes,
           isEmpty,
-          reason: 'A user recipe with null tagResult is unsafe for dietary '
+          reason:
+              'A user recipe with null tagResult is unsafe for dietary '
               'filtering and must be excluded.',
         );
       });
 
-      test(
-          'AC-4d: dietary filter KEEPS a recipe with full coverage and FREE '
+      test('AC-4d: dietary filter KEEPS a recipe with full coverage and FREE '
           'dietary status', () {
-        final cleanRecipe = RecipeFactory.build(id: 'dc')
-            .copyWith(tagResult: fullyTaggedFree());
+        final cleanRecipe = RecipeFactory.build(
+          id: 'dc',
+        ).copyWith(tagResult: fullyTaggedFree());
         mockRecipeService.setRecipeState(recipes: [cleanRecipe]);
 
         viewModel.toggleDietaryFilter('vegetarian');
@@ -1311,36 +1348,40 @@ void main() {
       // AC-5: untaggedExclusionMessage surfaced / absent
       // -------------------------------------------------------------------------
       test(
-          'AC-5a: untaggedExclusionMessage is non-null when a recipe is hidden '
-          'due to missing/incomplete tag analysis', () {
-        // This test proves that the user receives a visible explanation when
-        // recipes are being excluded because they are still being analysed.
-        final analysed = RecipeFactory.build(id: 'a1')
-            .copyWith(tagResult: fullyTaggedFree());
-        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
-        mockRecipeService.setRecipeState(recipes: [analysed, unanalysed]);
+        'AC-5a: untaggedExclusionMessage is non-null when a recipe is hidden '
+        'due to missing/incomplete tag analysis',
+        () {
+          // This test proves that the user receives a visible explanation when
+          // recipes are being excluded because they are still being analysed.
+          final analysed = RecipeFactory.build(
+            id: 'a1',
+          ).copyWith(tagResult: fullyTaggedFree());
+          final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+          mockRecipeService.setRecipeState(recipes: [analysed, unanalysed]);
 
-        viewModel.toggleAllergenFilter('gluten-free');
+          viewModel.toggleAllergenFilter('gluten-free');
 
-        // The unanalysed recipe is hidden; the message must surface.
-        expect(
-          viewModel.untaggedExclusionMessage,
-          isNotNull,
-          reason: 'untaggedExclusionMessage must be non-null when at least one '
-              'recipe is excluded due to missing tag analysis.',
-        );
-        expect(
-          viewModel.untaggedExclusionMessage,
-          contains('1 recept'),
-          reason: 'The message must name the count of hidden recipes.',
-        );
-      });
+          // The unanalysed recipe is hidden; the message must surface.
+          expect(
+            viewModel.untaggedExclusionMessage,
+            isNotNull,
+            reason:
+                'untaggedExclusionMessage must be non-null when at least one '
+                'recipe is excluded due to missing tag analysis.',
+          );
+          expect(
+            viewModel.untaggedExclusionMessage,
+            contains('1 recept'),
+            reason: 'The message must name the count of hidden recipes.',
+          );
+        },
+      );
 
-      test(
-          'AC-5b: untaggedExclusionMessage is null when all recipes are fully '
+      test('AC-5b: untaggedExclusionMessage is null when all recipes are fully '
           'tagged (nothing hidden for missing analysis)', () {
-        final analysed = RecipeFactory.build(id: 'a1')
-            .copyWith(tagResult: fullyTaggedFree());
+        final analysed = RecipeFactory.build(
+          id: 'a1',
+        ).copyWith(tagResult: fullyTaggedFree());
         mockRecipeService.setRecipeState(recipes: [analysed]);
 
         viewModel.toggleAllergenFilter('gluten-free');
@@ -1348,27 +1389,31 @@ void main() {
         expect(
           viewModel.untaggedExclusionMessage,
           isNull,
-          reason: 'When no recipes are excluded for missing analysis, '
+          reason:
+              'When no recipes are excluded for missing analysis, '
               'untaggedExclusionMessage must be null so no banner is shown.',
         );
       });
 
       test(
-          'AC-5c: untaggedExclusionMessage is null when no tag-based filter is '
-          'active (even if some recipes lack tags)', () {
-        // Proves that the message is gate-driven, not recipe-state-driven:
-        // without an active allergen/dietary filter, nothing is "hidden."
-        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
-        mockRecipeService.setRecipeState(recipes: [unanalysed]);
+        'AC-5c: untaggedExclusionMessage is null when no tag-based filter is '
+        'active (even if some recipes lack tags)',
+        () {
+          // Proves that the message is gate-driven, not recipe-state-driven:
+          // without an active allergen/dietary filter, nothing is "hidden."
+          final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+          mockRecipeService.setRecipeState(recipes: [unanalysed]);
 
-        // No filter activated — hasTagBasedFilters == false.
-        expect(
-          viewModel.untaggedExclusionMessage,
-          isNull,
-          reason: 'The exclusion message must be absent when no tag-based '
-              'filter is active, regardless of recipe tag state.',
-        );
-      });
+          // No filter activated — hasTagBasedFilters == false.
+          expect(
+            viewModel.untaggedExclusionMessage,
+            isNull,
+            reason:
+                'The exclusion message must be absent when no tag-based '
+                'filter is active, regardless of recipe tag state.',
+          );
+        },
+      );
     });
 
     group('Lifecycle', () {

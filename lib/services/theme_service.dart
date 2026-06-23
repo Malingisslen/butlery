@@ -58,7 +58,8 @@ class ThemeService extends ChangeNotifier {
       if (savedMode != null) {
         _themeMode = _parseThemeMode(savedMode);
         AppLogger.info(
-            'ThemeService: Loaded theme mode: $_themeMode (raw=$savedMode)');
+          'ThemeService: Loaded theme mode: $_themeMode (raw=$savedMode)',
+        );
       }
     } catch (e) {
       AppLogger.warning('ThemeService: Failed to load theme preference: $e');
@@ -86,8 +87,9 @@ class ThemeService extends ChangeNotifier {
 
   /// Toggle between light and dark mode (skipping system).
   Future<void> toggleTheme() async {
-    final newMode =
-        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    final newMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
     await setThemeMode(newMode);
   }
 

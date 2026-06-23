@@ -39,10 +39,10 @@ class RecipeDeleteManager {
     required void Function() invalidateCache,
     required void Function() notifyParent,
     required void Function(String) onError,
-  })  : _recipeService = recipeService,
-        _invalidateCache = invalidateCache,
-        _notifyParent = notifyParent,
-        _onError = onError;
+  }) : _recipeService = recipeService,
+       _invalidateCache = invalidateCache,
+       _notifyParent = notifyParent,
+       _onError = onError;
 
   bool get hasPendingDeletes => _pendingDeletes.isNotEmpty;
 
@@ -85,8 +85,9 @@ class RecipeDeleteManager {
   void undoLastDelete() {
     if (_pendingDeletes.isEmpty) return;
 
-    final lastEntry = _pendingDeletes.entries
-        .reduce((a, b) => a.value.createdAt.isAfter(b.value.createdAt) ? a : b);
+    final lastEntry = _pendingDeletes.entries.reduce(
+      (a, b) => a.value.createdAt.isAfter(b.value.createdAt) ? a : b,
+    );
     undoDeleteById(lastEntry.key);
   }
 
@@ -130,7 +131,9 @@ class RecipeDeleteManager {
       if (pending != null) {
         pending.timer.cancel();
         _recipeService.optimisticRestoreAt(
-            pending.recipe, pending.originalIndex);
+          pending.recipe,
+          pending.originalIndex,
+        );
       }
     }
 

@@ -67,12 +67,12 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 /// MaterialApp wrapper with l10n delegates so dialogs can resolve
 /// `context.l10n.commonOk` etc. Defaults to Swedish to match production.
 Widget _wrap(Widget child, {Locale locale = const Locale('sv')}) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: locale,
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: locale,
+  home: Scaffold(body: child),
+);
 
 /// Trigger button that opens the dialog and exposes its resolved future to
 /// the test via [onResult]. Lifted from sibling
@@ -96,18 +96,23 @@ void main() {
   group('showConfirmation', () {
     /// Proves: confirm tap resolves the future to `true` — the contract
     /// callers rely on to actually perform the action.
-    testWidgets('confirm tap → future resolves true (Android path)',
-        (tester) async {
+    testWidgets('confirm tap → future resolves true (Android path)', (
+      tester,
+    ) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showConfirmation(
-          ctx,
-          title: 'Bekräfta',
-          message: 'Säker?',
-          confirmText: 'Ja',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showConfirmation(
+              ctx,
+              title: 'Bekräfta',
+              message: 'Säker?',
+              confirmText: 'Ja',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -117,29 +122,38 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Ja'));
       await tester.pumpAndSettle();
 
-      expect(result, isTrue,
-          reason: 'showConfirmation must return true on primary tap '
-              'or callers silently no-op the action');
+      expect(
+        result,
+        isTrue,
+        reason:
+            'showConfirmation must return true on primary tap '
+            'or callers silently no-op the action',
+      );
     });
 
     /// Proves: cancel tap resolves the future to `false` (NOT null) —
     /// the Android cancel button explicitly pops `false`, so callers
     /// reading the result without `?? false` still get the right thing.
-    testWidgets('cancel tap → future resolves false (Android path)',
-        (tester) async {
+    testWidgets('cancel tap → future resolves false (Android path)', (
+      tester,
+    ) async {
       bool? result;
       var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showConfirmation(
-          ctx,
-          title: 't',
-          message: 'm',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showConfirmation(
+              ctx,
+              title: 't',
+              message: 'm',
+            ),
+            onResult: (v) {
+              result = v;
+              resolved = true;
+            },
+          ),
         ),
-        onResult: (v) {
-          result = v;
-          resolved = true;
-        },
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -147,24 +161,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(resolved, isTrue);
-      expect(result, isFalse,
-          reason: 'Cancel button explicitly pops false at dialog_factory.dart '
-              ':67; flipping to pop() with no args would silently change the '
-              'contract from false to null and break consumers using `?? true`.');
+      expect(
+        result,
+        isFalse,
+        reason:
+            'Cancel button explicitly pops false at dialog_factory.dart '
+            ':67; flipping to pop() with no args would silently change the '
+            'contract from false to null and break consumers using `?? true`.',
+      );
     });
 
     /// Proves: default confirm/cancel labels come from the localized
     /// commonOk / commonCancel. Regression catch for someone replacing
     /// the l10n lookup with a hardcoded string.
     testWidgets('default confirm/cancel labels come from l10n', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showConfirmation(
-          ctx,
-          title: 't',
-          message: 'm',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showConfirmation(
+              ctx,
+              title: 't',
+              message: 'm',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -176,72 +198,93 @@ void main() {
     /// in the theme's `colorScheme.error`, regardless of any
     /// `confirmColor` override. Safety invariant for destructive UIs.
     testWidgets(
-        'isDangerous=true overrides confirmColor → button foregroundColor '
-        'becomes colorScheme.error', (tester) async {
-      late ColorScheme cs;
-      await tester.pumpWidget(_wrap(Builder(builder: (rootCtx) {
-        cs = Theme.of(rootCtx).colorScheme;
-        return _triggerButton<bool?>(
-          openDialog: (ctx) => DialogFactory.showConfirmation(
-            ctx,
-            title: 't',
-            message: 'm',
-            confirmText: 'Kör',
-            confirmColor: Colors.green, // must be IGNORED
-            isDangerous: true,
+      'isDangerous=true overrides confirmColor → button foregroundColor '
+      'becomes colorScheme.error',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (rootCtx) {
+                cs = Theme.of(rootCtx).colorScheme;
+                return _triggerButton<bool?>(
+                  openDialog: (ctx) => DialogFactory.showConfirmation(
+                    ctx,
+                    title: 't',
+                    message: 'm',
+                    confirmText: 'Kör',
+                    confirmColor: Colors.green, // must be IGNORED
+                    isDangerous: true,
+                  ),
+                  onResult: (_) {},
+                );
+              },
+            ),
           ),
-          onResult: (_) {},
         );
-      })));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      final btn = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, 'Kör'),
-      );
-      final fg = btn.style!.foregroundColor!.resolve({});
-      expect(fg, cs.error,
-          reason: 'isDangerous=true must override confirmColor — otherwise '
-              'destructive dialogs lose their visual warning affordance.');
-    });
+        final btn = tester.widget<TextButton>(
+          find.widgetWithText(TextButton, 'Kör'),
+        );
+        final fg = btn.style!.foregroundColor!.resolve({});
+        expect(
+          fg,
+          cs.error,
+          reason:
+              'isDangerous=true must override confirmColor — otherwise '
+              'destructive dialogs lose their visual warning affordance.',
+        );
+      },
+    );
 
     /// Proves: when NOT dangerous, a supplied `confirmColor` is applied
     /// to the confirm button's foregroundColor. Inverse of the test above.
     testWidgets(
-        'non-dangerous + confirmColor → button foregroundColor = confirmColor',
-        (tester) async {
-      const customColor = Color(0xFF112233);
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showConfirmation(
-          ctx,
-          title: 't',
-          message: 'm',
-          confirmText: 'Kör',
-          confirmColor: customColor,
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      'non-dangerous + confirmColor → button foregroundColor = confirmColor',
+      (tester) async {
+        const customColor = Color(0xFF112233);
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<bool?>(
+              openDialog: (ctx) => DialogFactory.showConfirmation(
+                ctx,
+                title: 't',
+                message: 'm',
+                confirmText: 'Kör',
+                confirmColor: customColor,
+              ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      final btn = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, 'Kör'),
-      );
-      final fg = btn.style!.foregroundColor!.resolve({});
-      expect(fg, customColor);
-    });
+        final btn = tester.widget<TextButton>(
+          find.widgetWithText(TextButton, 'Kör'),
+        );
+        final fg = btn.style!.foregroundColor!.resolve({});
+        expect(fg, customColor);
+      },
+    );
 
     /// Proves: title + message both render into the AlertDialog so users
     /// actually see what they're confirming.
     testWidgets('renders title and message verbatim', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showConfirmation(
-          ctx,
-          title: 'Radera konto?',
-          message: 'Detta går inte att ångra.',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showConfirmation(
+              ctx,
+              title: 'Radera konto?',
+              message: 'Detta går inte att ångra.',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -253,16 +296,21 @@ void main() {
   group('showFeedback', () {
     /// Proves: tapping the confirm action resolves with the controller's
     /// current text — what the user actually typed.
-    testWidgets('confirm tap → future resolves with the typed text',
-        (tester) async {
+    testWidgets('confirm tap → future resolves with the typed text', (
+      tester,
+    ) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showFeedback(
-          ctx,
-          title: 'Skriv feedback',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showFeedback(
+              ctx,
+              title: 'Skriv feedback',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -270,9 +318,13 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Skicka'));
       await tester.pumpAndSettle();
 
-      expect(result, 'Det var bra!',
-          reason: 'showFeedback must surface the typed text verbatim — '
-              'returning empty/null would silently drop the user feedback.');
+      expect(
+        result,
+        'Det var bra!',
+        reason:
+            'showFeedback must surface the typed text verbatim — '
+            'returning empty/null would silently drop the user feedback.',
+      );
     });
 
     /// Proves: tapping cancel resolves the future to null — the contract
@@ -280,13 +332,17 @@ void main() {
     testWidgets('cancel tap → future resolves null', (tester) async {
       String? sentinel = 'unchanged';
       var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showFeedback(ctx, title: 't'),
-        onResult: (v) {
-          sentinel = v;
-          resolved = true;
-        },
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showFeedback(ctx, title: 't'),
+            onResult: (v) {
+              sentinel = v;
+              resolved = true;
+            },
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -294,24 +350,32 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(resolved, isTrue);
-      expect(sentinel, isNull,
-          reason: 'cancel button at dialog_factory.dart:108 calls '
-              'Navigator.pop() with no args → resolves to null. Callers '
-              'rely on this to distinguish "no feedback" from "empty feedback."');
+      expect(
+        sentinel,
+        isNull,
+        reason:
+            'cancel button at dialog_factory.dart:108 calls '
+            'Navigator.pop() with no args → resolves to null. Callers '
+            'rely on this to distinguish "no feedback" from "empty feedback."',
+      );
     });
 
     /// Proves: `initialValue` pre-populates the text field so the
     /// user can edit existing feedback rather than retyping.
     testWidgets('initialValue pre-fills the text field', (tester) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showFeedback(
-          ctx,
-          title: 't',
-          initialValue: 'tidigare svar',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showFeedback(
+              ctx,
+              title: 't',
+              initialValue: 'tidigare svar',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -325,12 +389,17 @@ void main() {
     /// Proves: default confirm label falls back to the localized
     /// `commonSend` ("Skicka" in Swedish), default cancel falls back to
     /// `commonCancel`. Catches l10n key drift.
-    testWidgets('default confirm = Skicka, default cancel = Avbryt',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showFeedback(ctx, title: 't'),
-        onResult: (_) {},
-      )));
+    testWidgets('default confirm = Skicka, default cancel = Avbryt', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showFeedback(ctx, title: 't'),
+            onResult: (_) {},
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -344,25 +413,32 @@ void main() {
     /// String value resolves the Future<String?>. Catches a regression
     /// where someone removes the `<T>` and dialogs lose their typed
     /// result channel.
-    testWidgets('typed result round-trips through Navigator.pop',
-        (tester) async {
+    testWidgets('typed result round-trips through Navigator.pop', (
+      tester,
+    ) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showInteractive<String>(
-          ctx,
-          title: 'Välj',
-          content: const Text('content'),
-          actions: [
-            Builder(builder: (dctx) {
-              return TextButton(
-                onPressed: () => Navigator.pop(dctx, 'pickedValue'),
-                child: const Text('Pick'),
-              );
-            }),
-          ],
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showInteractive<String>(
+              ctx,
+              title: 'Välj',
+              content: const Text('content'),
+              actions: [
+                Builder(
+                  builder: (dctx) {
+                    return TextButton(
+                      onPressed: () => Navigator.pop(dctx, 'pickedValue'),
+                      child: const Text('Pick'),
+                    );
+                  },
+                ),
+              ],
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -377,56 +453,74 @@ void main() {
     /// stray empty Text widget. Catches the bug class where a null guard
     /// is replaced with `Text(title ?? '')`.
     testWidgets('title=null → AlertDialog.title is null', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showInteractive<void>(
-          ctx,
-          content: const Text('just content'),
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) => DialogFactory.showInteractive<void>(
+              ctx,
+              content: const Text('just content'),
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
       final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
-      expect(dialog.title, isNull,
-          reason: 'When title is null, the dialog must omit the title slot '
-              'entirely (line 130) — rendering Text("") would push the '
-              'content down by a phantom row of padding.');
+      expect(
+        dialog.title,
+        isNull,
+        reason:
+            'When title is null, the dialog must omit the title slot '
+            'entirely (line 130) — rendering Text("") would push the '
+            'content down by a phantom row of padding.',
+      );
       expect(find.text('just content'), findsOneWidget);
     });
 
     /// Proves: the `content` widget is the one the caller passed in —
     /// not wrapped in a Padding/Container that would swallow gesture
     /// detectors or mess with sizing.
-    testWidgets('content widget is forwarded verbatim into AlertDialog.content',
-        (tester) async {
-      const key = ValueKey('interactive-content');
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showInteractive<void>(
-          ctx,
-          title: 't',
-          content: const SizedBox(key: key, width: 100, height: 100),
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'content widget is forwarded verbatim into AlertDialog.content',
+      (tester) async {
+        const key = ValueKey('interactive-content');
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<void>(
+              openDialog: (ctx) => DialogFactory.showInteractive<void>(
+                ctx,
+                title: 't',
+                content: const SizedBox(key: key, width: 100, height: 100),
+              ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
-      expect((dialog.content as SizedBox).key, key);
-    });
+        final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
+        expect((dialog.content as SizedBox).key, key);
+      },
+    );
 
     /// Proves: `actions: null` is forwarded as null (not coerced to [])
     /// — AlertDialog renders no action row at all.
     testWidgets('actions=null → AlertDialog.actions is null', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showInteractive<void>(
-          ctx,
-          title: 't',
-          content: const Text('c'),
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) => DialogFactory.showInteractive<void>(
+              ctx,
+              title: 't',
+              content: const Text('c'),
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -440,13 +534,17 @@ void main() {
     /// and default button to `commonOk`. Catches the regression where
     /// someone hardcodes the title.
     testWidgets('default title + button labels come from l10n', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showError(
-          ctx,
-          message: 'Något gick snett',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) => DialogFactory.showError(
+              ctx,
+              message: 'Något gick snett',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -460,19 +558,27 @@ void main() {
 
     /// Proves: tapping OK dismisses the dialog AND completes the future
     /// — info dialogs need to unblock awaiting callers.
-    testWidgets('OK tap dismisses the dialog and resolves the await',
-        (tester) async {
+    testWidgets('OK tap dismisses the dialog and resolves the await', (
+      tester,
+    ) async {
       var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) async {
-          await DialogFactory.showError(ctx, message: 'm');
-        },
-        onResult: (_) => resolved = true,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) async {
+              await DialogFactory.showError(ctx, message: 'm');
+            },
+            onResult: (_) => resolved = true,
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      expect(resolved, isFalse,
-          reason: 'await should still be pending while dialog is open');
+      expect(
+        resolved,
+        isFalse,
+        reason: 'await should still be pending while dialog is open',
+      );
 
       await tester.tap(find.widgetWithText(TextButton, 'OK'));
       await tester.pumpAndSettle();
@@ -486,17 +592,22 @@ void main() {
     /// Proves: custom title + buttonText overrides win over the l10n
     /// defaults. The contract is "caller's value first, then l10n
     /// fallback" — flipping the order would silently ignore caller intent.
-    testWidgets('custom title and buttonText override the l10n defaults',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showError(
-          ctx,
-          title: 'Anpassat fel',
-          message: 'msg',
-          buttonText: 'Stäng',
+    testWidgets('custom title and buttonText override the l10n defaults', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) => DialogFactory.showError(
+              ctx,
+              title: 'Anpassat fel',
+              message: 'msg',
+              buttonText: 'Stäng',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -515,10 +626,14 @@ void main() {
     /// Note: cannot use `pumpAndSettle` because the CircularProgressIndicator
     /// animation never settles — use a couple of `pump` cycles instead.
     testWidgets('default message = localized dialogLoading', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) => DialogFactory.showLoading(ctx),
-        onResult: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) => DialogFactory.showLoading(ctx),
+            onResult: (_) {},
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pump(); // start the showDialog future
       await tester.pump(const Duration(milliseconds: 300)); // run dialog open
@@ -529,11 +644,15 @@ void main() {
 
     /// Proves: custom message overrides the default.
     testWidgets('custom message overrides the default', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) =>
-            DialogFactory.showLoading(ctx, message: 'Sparar recept...'),
-        onResult: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<void>(
+            openDialog: (ctx) =>
+                DialogFactory.showLoading(ctx, message: 'Sparar recept...'),
+            onResult: (_) {},
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -547,33 +666,45 @@ void main() {
     /// operation, otherwise the underlying operation continues but the
     /// UI thinks it's done. This is THE critical contract for this dialog.
     testWidgets(
-        'is NOT barrier-dismissible (user cannot tap-outside to cancel)',
-        (tester) async {
-      var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<void>(
-        openDialog: (ctx) async {
-          await DialogFactory.showLoading(ctx, message: 'wait...');
-        },
-        onResult: (_) => resolved = true,
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('wait...'), findsOneWidget);
+      'is NOT barrier-dismissible (user cannot tap-outside to cancel)',
+      (tester) async {
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<void>(
+              openDialog: (ctx) async {
+                await DialogFactory.showLoading(ctx, message: 'wait...');
+              },
+              onResult: (_) => resolved = true,
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('wait...'), findsOneWidget);
 
-      // Tap on the modal barrier — should be ignored.
-      await tester.tapAt(const Offset(5, 5));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        // Tap on the modal barrier — should be ignored.
+        await tester.tapAt(const Offset(5, 5));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(resolved, isFalse,
-          reason: 'showLoading sets barrierDismissible=false at '
+        expect(
+          resolved,
+          isFalse,
+          reason:
+              'showLoading sets barrierDismissible=false at '
               'dialog_factory.dart:190 — flipping it to true (or omitting it, '
               'which defaults to true) would let users dismiss in-flight '
-              'loaders and cause "ghost in-progress" bugs.');
-      expect(find.text('wait...'), findsOneWidget,
-          reason: 'loading dialog should still be visible after barrier tap');
-    });
+              'loaders and cause "ghost in-progress" bugs.',
+        );
+        expect(
+          find.text('wait...'),
+          findsOneWidget,
+          reason: 'loading dialog should still be visible after barrier tap',
+        );
+      },
+    );
   });
 
   group('showDeleteConfirmation', () {
@@ -582,36 +713,46 @@ void main() {
     /// `itemName` and `itemType`. Catches the bug where args are
     /// swapped or one is dropped.
     testWidgets(
-        'interpolates itemName and itemType into the localized delete message',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-          ctx,
-          itemName: 'Pasta carbonara',
-          itemType: 'receptboken',
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      'interpolates itemName and itemType into the localized delete message',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<bool?>(
+              openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
+                ctx,
+                itemName: 'Pasta carbonara',
+                itemType: 'receptboken',
+              ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      // Template: "Är du säker på att du vill ta bort {itemName} från {itemType}?"
-      expect(find.textContaining('Pasta carbonara'), findsOneWidget);
-      expect(find.textContaining('receptboken'), findsOneWidget);
-    });
+        // Template: "Är du säker på att du vill ta bort {itemName} från {itemType}?"
+        expect(find.textContaining('Pasta carbonara'), findsOneWidget);
+        expect(find.textContaining('receptboken'), findsOneWidget);
+      },
+    );
 
     /// Proves: default title falls back to localized
     /// `dialogConfirmDeleteTitle` ("Bekräfta borttagning").
-    testWidgets('default title = localized dialogConfirmDeleteTitle',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-          ctx,
-          itemName: 'X',
-          itemType: 'Y',
+    testWidgets('default title = localized dialogConfirmDeleteTitle', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
+              ctx,
+              itemName: 'X',
+              itemType: 'Y',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -622,74 +763,92 @@ void main() {
     /// Catches the bug where the confirm label is hardcoded or wired to
     /// the wrong l10n key (commonOk would be wrong here — destructive
     /// actions should be labeled with the verb, not "OK").
-    testWidgets('default confirm label = localized commonDelete (not commonOk)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool?>(
-        openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-          ctx,
-          itemName: 'X',
-          itemType: 'Y',
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'default confirm label = localized commonDelete (not commonOk)',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<bool?>(
+              openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
+                ctx,
+                itemName: 'X',
+                itemType: 'Y',
+              ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextButton, 'Ta bort'), findsOneWidget);
-      // Negative: must NOT label the destructive action as "OK" — that
-      // would lose the verb-warning affordance.
-      expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
-    });
+        expect(find.widgetWithText(TextButton, 'Ta bort'), findsOneWidget);
+        // Negative: must NOT label the destructive action as "OK" — that
+        // would lose the verb-warning affordance.
+        expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
+      },
+    );
 
     /// Proves: delete forwards `isDangerous: true` to showConfirmation,
     /// which paints the confirm button's foreground in `colorScheme.error`.
     /// This is what visually distinguishes deletion from generic confirm.
     testWidgets(
-        'confirm button foreground = colorScheme.error (isDangerous=true)',
-        (tester) async {
-      late ColorScheme cs;
-      await tester.pumpWidget(_wrap(Builder(builder: (rootCtx) {
-        cs = Theme.of(rootCtx).colorScheme;
-        return _triggerButton<bool?>(
-          openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-            ctx,
-            itemName: 'X',
-            itemType: 'Y',
+      'confirm button foreground = colorScheme.error (isDangerous=true)',
+      (tester) async {
+        late ColorScheme cs;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (rootCtx) {
+                cs = Theme.of(rootCtx).colorScheme;
+                return _triggerButton<bool?>(
+                  openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
+                    ctx,
+                    itemName: 'X',
+                    itemType: 'Y',
+                  ),
+                  onResult: (_) {},
+                );
+              },
+            ),
           ),
-          onResult: (_) {},
         );
-      })));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      final btn = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, 'Ta bort'),
-      );
-      final fg = btn.style!.foregroundColor!.resolve({});
-      expect(fg, cs.error,
-          reason: 'Delete dialogs must inherit the destructive tint via '
-              'isDangerous=true — visually communicates "this is permanent."');
-    });
+        final btn = tester.widget<TextButton>(
+          find.widgetWithText(TextButton, 'Ta bort'),
+        );
+        final fg = btn.style!.foregroundColor!.resolve({});
+        expect(
+          fg,
+          cs.error,
+          reason:
+              'Delete dialogs must inherit the destructive tint via '
+              'isDangerous=true — visually communicates "this is permanent."',
+        );
+      },
+    );
 
     /// SURFACES PRODUCTION BUG (see library doc): the `itemType` parameter
     /// is a raw String. In English locale, the template renders as
     /// "Are you sure you want to remove Pasta from receptboken?" — the
     /// Swedish word leaks through unlocalized. Documents the bug today;
     /// flip the assertion once the helper accepts a localized itemType.
-    testWidgets(
-        'english locale → itemType leaks Swedish word verbatim '
+    testWidgets('english locale → itemType leaks Swedish word verbatim '
         '(documents hardcoded-string bug, family of BUT-1115)', (tester) async {
-      await tester.pumpWidget(_wrap(
-        _triggerButton<bool?>(
-          openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
-            ctx,
-            itemName: 'Pasta',
-            itemType: 'receptboken',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => DialogFactory.showDeleteConfirmation(
+              ctx,
+              itemName: 'Pasta',
+              itemType: 'receptboken',
+            ),
+            onResult: (_) {},
           ),
-          onResult: (_) {},
+          locale: const Locale('en'),
         ),
-        locale: const Locale('en'),
-      ));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -700,7 +859,8 @@ void main() {
       expect(
         find.textContaining('receptboken'),
         findsOneWidget,
-        reason: 'lib/core/dialogs/dialog_factory.dart:205-226 accepts '
+        reason:
+            'lib/core/dialogs/dialog_factory.dart:205-226 accepts '
             'itemType as a raw String, so callers passing Swedish words '
             'leak into the English locale. Fix: make itemType an enum or '
             'thread a localized string via a named-param API. Same bug '
@@ -713,16 +873,21 @@ void main() {
     /// Proves: typing text and tapping confirm resolves with the typed
     /// value (trimmed). Catches the bug where the helper returns the
     /// controller reference or always returns null.
-    testWidgets('confirm with typed text → future resolves with trimmed text',
-        (tester) async {
+    testWidgets('confirm with typed text → future resolves with trimmed text', (
+      tester,
+    ) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(
-          ctx,
-          title: 'Skriv namn',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showTextInput(
+              ctx,
+              title: 'Skriv namn',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -731,9 +896,13 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'OK'));
       await tester.pumpAndSettle();
 
-      expect(result, 'Anna',
-          reason: 'showTextInput must trim() before resolving — otherwise '
-              'callers get whitespace-padded values and "Anna" != "Anna ".');
+      expect(
+        result,
+        'Anna',
+        reason:
+            'showTextInput must trim() before resolving — otherwise '
+            'callers get whitespace-padded values and "Anna" != "Anna ".',
+      );
     });
 
     /// Proves: confirming with empty (or whitespace-only) text and
@@ -741,29 +910,38 @@ void main() {
     /// Callers commonly use `if (result != null) save(result)` and would
     /// silently save empty values if this returned ''.
     testWidgets(
-        'confirm with empty/whitespace text + required:false → resolves null',
-        (tester) async {
-      String? sentinel = 'unchanged';
-      var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
-        onResult: (v) {
-          sentinel = v;
-          resolved = true;
-        },
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      'confirm with empty/whitespace text + required:false → resolves null',
+      (tester) async {
+        String? sentinel = 'unchanged';
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<String?>(
+              openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
+              onResult: (v) {
+                sentinel = v;
+                resolved = true;
+              },
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(StyledInput), '   ');
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(StyledInput), '   ');
+        await tester.tap(find.widgetWithText(TextButton, 'OK'));
+        await tester.pumpAndSettle();
 
-      expect(resolved, isTrue);
-      expect(sentinel, isNull,
-          reason: 'dialog_factory.dart:266 returns null when trimmed text '
-              'is empty — flipping this to return "" silently saves blanks.');
-    });
+        expect(resolved, isTrue);
+        expect(
+          sentinel,
+          isNull,
+          reason:
+              'dialog_factory.dart:266 returns null when trimmed text '
+              'is empty — flipping this to return "" silently saves blanks.',
+        );
+      },
+    );
 
     /// Proves: `required: true` makes the confirm button a NO-OP when
     /// the trimmed text is empty — the dialog stays open and the user
@@ -771,45 +949,62 @@ void main() {
     /// Critical bug class: if the early-return ever turns into pop(),
     /// required fields silently accept empty input.
     testWidgets(
-        'required:true + empty text → confirm tap is a no-op, dialog stays open',
-        (tester) async {
-      var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(
-          ctx,
-          title: 'Krävs',
-          required: true,
-        ),
-        onResult: (_) => resolved = true,
-      )));
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      'required:true + empty text → confirm tap is a no-op, dialog stays open',
+      (tester) async {
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<String?>(
+              openDialog: (ctx) => DialogFactory.showTextInput(
+                ctx,
+                title: 'Krävs',
+                required: true,
+              ),
+              onResult: (_) => resolved = true,
+            ),
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      // Don't type anything. Tap confirm.
-      await tester.tap(find.widgetWithText(TextButton, 'OK'));
-      await tester.pumpAndSettle();
+        // Don't type anything. Tap confirm.
+        await tester.tap(find.widgetWithText(TextButton, 'OK'));
+        await tester.pumpAndSettle();
 
-      expect(resolved, isFalse,
-          reason: 'required:true must block the empty submit — '
-              'dialog_factory.dart:265 returns early before Navigator.pop.');
-      expect(find.byType(AlertDialog), findsOneWidget,
-          reason: 'dialog must still be visible when required-text is empty');
-    });
+        expect(
+          resolved,
+          isFalse,
+          reason:
+              'required:true must block the empty submit — '
+              'dialog_factory.dart:265 returns early before Navigator.pop.',
+        );
+        expect(
+          find.byType(AlertDialog),
+          findsOneWidget,
+          reason: 'dialog must still be visible when required-text is empty',
+        );
+      },
+    );
 
     /// Proves: required:true does NOT block submission once the user
     /// actually types something. Inverse of the test above — catches
     /// the bug where required:true accidentally blocks ALL submissions.
-    testWidgets('required:true + non-empty text → submits normally',
-        (tester) async {
+    testWidgets('required:true + non-empty text → submits normally', (
+      tester,
+    ) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(
-          ctx,
-          title: 't',
-          required: true,
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showTextInput(
+              ctx,
+              title: 't',
+              required: true,
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -823,17 +1018,22 @@ void main() {
     /// Proves: tapping cancel resolves the future to null even if the
     /// user typed something — cancel discards input. Otherwise typed-then-
     /// cancelled text would leak into "saved" channels.
-    testWidgets('cancel tap → future resolves null even after typing',
-        (tester) async {
+    testWidgets('cancel tap → future resolves null even after typing', (
+      tester,
+    ) async {
       String? sentinel = 'unchanged';
       var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
-        onResult: (v) {
-          sentinel = v;
-          resolved = true;
-        },
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showTextInput(ctx, title: 't'),
+            onResult: (v) {
+              sentinel = v;
+              resolved = true;
+            },
+          ),
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -842,9 +1042,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(resolved, isTrue);
-      expect(sentinel, isNull,
-          reason: 'Cancel must always resolve to null — typed-then-cancelled '
-              'text should be discarded, never leaked to callers.');
+      expect(
+        sentinel,
+        isNull,
+        reason:
+            'Cancel must always resolve to null — typed-then-cancelled '
+            'text should be discarded, never leaked to callers.',
+      );
     });
 
     /// Proves: `initialValue` pre-fills the field so the user can edit
@@ -852,14 +1056,18 @@ void main() {
     /// typing should return the initial value.
     testWidgets('initialValue pre-fills the field', (tester) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => DialogFactory.showTextInput(
-          ctx,
-          title: 't',
-          initialValue: 'Pasta',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => DialogFactory.showTextInput(
+              ctx,
+              title: 't',
+              initialValue: 'Pasta',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 

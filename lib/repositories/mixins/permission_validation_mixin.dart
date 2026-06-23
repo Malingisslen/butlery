@@ -285,8 +285,9 @@ mixin PermissionValidationMixin {
     required List<String> requiredFields,
     required String resourceType,
   }) {
-    final missingFields =
-        requiredFields.where((field) => !data.containsKey(field)).toList();
+    final missingFields = requiredFields
+        .where((field) => !data.containsKey(field))
+        .toList();
 
     if (missingFields.isNotEmpty) {
       throw SecurityViolationException(
@@ -398,14 +399,16 @@ mixin PermissionValidationMixin {
     Map<String, dynamic>? metadata,
   }) async {
     // ALWAYS log to console for development visibility
-    final message = 'Permission ${granted ? 'GRANTED' : 'DENIED'}: '
+    final message =
+        'Permission ${granted ? 'GRANTED' : 'DENIED'}: '
         'User=$userId, Resource=$resource, Operation=$operation';
 
     if (granted) {
       AppLogger.info(message + (details != null ? ', Details=$details' : ''));
     } else {
       AppLogger.warning(
-          message + (details != null ? ', Details=$details' : ''));
+        message + (details != null ? ', Details=$details' : ''),
+      );
     }
 
     // OPTIONALLY persist to Firestore for GDPR compliance (Article 30)
@@ -426,18 +429,19 @@ mixin PermissionValidationMixin {
         // Note: We don't await this to avoid blocking application operations
         auditRepository
             .logPermissionCheck(
-          userId: userId,
-          operation: operation,
-          resourceType: resourceType,
-          resourceId: resourceId,
-          granted: granted,
-          metadata: auditMetadata.isNotEmpty ? auditMetadata : null,
-        )
+              userId: userId,
+              operation: operation,
+              resourceType: resourceType,
+              resourceId: resourceId,
+              granted: granted,
+              metadata: auditMetadata.isNotEmpty ? auditMetadata : null,
+            )
             .catchError((error) {
-          // Audit logging failures are logged but never block operations
-          AppLogger.error(
-              '⚠️ Failed to persist audit log (non-blocking): $error');
-        });
+              // Audit logging failures are logged but never block operations
+              AppLogger.error(
+                '⚠️ Failed to persist audit log (non-blocking): $error',
+              );
+            });
       } catch (e) {
         // Catch parsing errors - audit logging must never break operations
         AppLogger.error('⚠️ Failed to parse audit log data (non-blocking): $e');

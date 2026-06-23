@@ -40,7 +40,8 @@ class RealtimeCacheManager {
       if (cachedData != null) {
         final recipe = Recipe.fromJson(cachedData);
         AppLogger.debug(
-            '✅ Real-time recipe loaded from cache: ${recipe.title}');
+          '✅ Real-time recipe loaded from cache: ${recipe.title}',
+        );
         return recipe;
       }
       return null;
@@ -61,7 +62,8 @@ class RealtimeCacheManager {
       final existingData = await cacheHelper.loadJson(recipeId);
       if (existingData == null) {
         AppLogger.warning(
-            'No cached recipe found for real-time update: $recipeId');
+          'No cached recipe found for real-time update: $recipeId',
+        );
         return;
       }
 
@@ -72,7 +74,8 @@ class RealtimeCacheManager {
       // Save updated data back to cache
       await cacheHelper.saveJson(recipeId, updatedData);
       AppLogger.debug(
-          '✅ Cache updated with real-time edit for recipe $recipeId');
+        '✅ Cache updated with real-time edit for recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.error('❌ Error updating cache with real-time edit: $e');
     }
@@ -80,7 +83,9 @@ class RealtimeCacheManager {
 
   /// Apply edit data to cached recipe data
   static void _applyEditToData(
-      Map<String, dynamic> recipeData, Map<String, dynamic> editData) {
+    Map<String, dynamic> recipeData,
+    Map<String, dynamic> editData,
+  ) {
     // Update basic fields
     for (final entry in editData.entries) {
       final key = entry.key;
@@ -135,7 +140,8 @@ class RealtimeCacheManager {
   }) async {
     try {
       AppLogger.info(
-          '🔄 Preloading ${recipeIds.length} recipes for real-time editing');
+        '🔄 Preloading ${recipeIds.length} recipes for real-time editing',
+      );
 
       final futures = recipeIds.map((recipeId) async {
         // Check if already cached
@@ -186,8 +192,9 @@ class RealtimeCacheManager {
       final cacheTimestamp = cachedData['editedAt'];
       if (cacheTimestamp == null) return true;
 
-      final cacheTime =
-          SerializationUtils.parseRequiredDateTimeValue(cacheTimestamp);
+      final cacheTime = SerializationUtils.parseRequiredDateTimeValue(
+        cacheTimestamp,
+      );
 
       return lastFirestoreUpdate.isAfter(cacheTime);
     } catch (e) {
@@ -224,7 +231,7 @@ class RealtimeCacheManager {
   /// Dispose of all real-time resources
   static Future<void> dispose({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     required Future<bool> Function(String) stopRealtimeEditing,
@@ -256,15 +263,16 @@ class RealtimeCacheManager {
   /// Cleanup active editing sessions
   static Future<void> _cleanupActiveSessions({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Future<bool> Function(String) stopRealtimeEditing,
   }) async {
     AppLogger.info(
-        '🛑 Stopping ${activeEditingSessions.length} active real-time sessions');
+      '🛑 Stopping ${activeEditingSessions.length} active real-time sessions',
+    );
 
-    final futures = activeEditingSessions.keys
-        .toList()
-        .map((recipeId) => stopRealtimeEditing(recipeId));
+    final futures = activeEditingSessions.keys.toList().map(
+      (recipeId) => stopRealtimeEditing(recipeId),
+    );
 
     await Future.wait(futures);
     activeEditingSessions.clear();
@@ -275,7 +283,8 @@ class RealtimeCacheManager {
     Map<String, Timer> conflictResolutionTimers,
   ) async {
     AppLogger.info(
-        '⏰ Cancelling ${conflictResolutionTimers.length} conflict timers');
+      '⏰ Cancelling ${conflictResolutionTimers.length} conflict timers',
+    );
 
     for (final timer in conflictResolutionTimers.values) {
       timer.cancel();
@@ -287,8 +296,10 @@ class RealtimeCacheManager {
   static Future<void> _cleanupPendingEdits(
     Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
   ) async {
-    final totalPendingEdits = pendingRealtimeEdits.values
-        .fold<int>(0, (total, edits) => total + edits.length);
+    final totalPendingEdits = pendingRealtimeEdits.values.fold<int>(
+      0,
+      (total, edits) => total + edits.length,
+    );
 
     AppLogger.info('📝 Clearing $totalPendingEdits pending real-time edits');
     pendingRealtimeEdits.clear();
@@ -298,7 +309,7 @@ class RealtimeCacheManager {
   static Future<void> cleanupRecipeResources({
     required String recipeId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     required JsonCacheHelper cacheHelper,
@@ -329,12 +340,14 @@ class RealtimeCacheManager {
   /// Check memory usage of real-time operations
   static Map<String, dynamic> getMemoryUsage({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
   }) {
-    final totalPendingEdits = pendingRealtimeEdits.values
-        .fold<int>(0, (total, edits) => total + edits.length);
+    final totalPendingEdits = pendingRealtimeEdits.values.fold<int>(
+      0,
+      (total, edits) => total + edits.length,
+    );
 
     return {
       'active_sessions': activeEditingSessions.length,
@@ -369,7 +382,7 @@ class RealtimeCacheManager {
   /// Cleanup memory when thresholds are exceeded
   static Future<void> cleanupExcessMemory({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     int maxActiveSessions = 10,
@@ -387,7 +400,8 @@ class RealtimeCacheManager {
       if (estimatedMemory > 1024) {
         // If over 1MB
         AppLogger.warning(
-            '⚠️ High memory usage detected: ${estimatedMemory}KB');
+          '⚠️ High memory usage detected: ${estimatedMemory}KB',
+        );
 
         // Cleanup oldest pending edits
         await _cleanupOldestPendingEdits(pendingRealtimeEdits, maxPendingEdits);
@@ -404,8 +418,10 @@ class RealtimeCacheManager {
     Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     int maxPendingEdits,
   ) async {
-    final totalEdits = pendingRealtimeEdits.values
-        .fold<int>(0, (total, edits) => total + edits.length);
+    final totalEdits = pendingRealtimeEdits.values.fold<int>(
+      0,
+      (total, edits) => total + edits.length,
+    );
 
     if (totalEdits <= maxPendingEdits) return;
 

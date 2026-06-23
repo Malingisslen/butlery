@@ -24,9 +24,9 @@ class EmojiAvatar extends StatelessWidget {
   const EmojiAvatar.group({
     super.key,
     required this.emoji,
-  })  : size = 48,
-        backgroundColor = null,
-        fontSize = 24;
+  }) : size = 48,
+       backgroundColor = null,
+       fontSize = 24;
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +37,19 @@ class EmojiAvatar extends StatelessWidget {
       width: avatarSize,
       height: avatarSize,
       decoration: BoxDecoration(
-        color: backgroundColor ??
-            Theme.of(context)
-                .colorScheme
-                .primary
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            backgroundColor ??
+            Theme.of(context).colorScheme.primary.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Center(
         child: Text(
           emoji,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontSize: textSize,
-              ),
+            fontSize: textSize,
+          ),
         ),
       ),
     );

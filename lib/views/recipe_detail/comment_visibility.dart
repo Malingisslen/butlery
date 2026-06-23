@@ -52,8 +52,10 @@ List<String> commentVisibilityAudience(Recipe recipe, String currentUserId) {
     names.putIfAbsent(ownerId, () => ownerName!);
   }
 
-  final resolved =
-      audienceIds.where(names.containsKey).map((id) => names[id]!).toList();
+  final resolved = audienceIds
+      .where(names.containsKey)
+      .map((id) => names[id]!)
+      .toList();
   return (resolved: resolved, total: audienceIds.length);
 }
 

@@ -202,9 +202,10 @@ void main() {
         final updated = original.copyWith(name: 'Updated');
 
         expect(
-            updated.updatedAt.isAfter(beforeUpdate) ||
-                updated.updatedAt.isAtSameMomentAs(beforeUpdate),
-            isTrue);
+          updated.updatedAt.isAfter(beforeUpdate) ||
+              updated.updatedAt.isAtSameMomentAs(beforeUpdate),
+          isTrue,
+        );
       });
     });
 
@@ -289,10 +290,11 @@ void main() {
         });
 
         test(
-            'should pass when name has leading/trailing whitespace that trims valid',
-            () {
-          expect(PersonalTagGroup.validateName('  Valid Group  '), isNull);
-        });
+          'should pass when name has leading/trailing whitespace that trims valid',
+          () {
+            expect(PersonalTagGroup.validateName('  Valid Group  '), isNull);
+          },
+        );
 
         test('should evaluate length after trimming', () {
           final name49 = 'a' * 49;

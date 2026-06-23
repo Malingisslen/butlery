@@ -18,8 +18,9 @@ void main() {
       await BaseUnitTest.setupUnit();
     });
 
-    testWidgets('exposes the required semantic label to screen readers',
-        (tester) async {
+    testWidgets('exposes the required semantic label to screen readers', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: AppIconButton(
@@ -36,8 +37,9 @@ void main() {
       expect(find.bySemanticsLabel('Dela recept'), findsOneWidget);
     });
 
-    testWidgets('meets 48dp minimum touch target via Material IconButton',
-        (tester) async {
+    testWidgets('meets 48dp minimum touch target via Material IconButton', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Center(

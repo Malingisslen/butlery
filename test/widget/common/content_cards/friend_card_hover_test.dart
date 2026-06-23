@@ -20,17 +20,17 @@ import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: child),
-    );
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 UserProfile _user() {
   final now = DateTime(2026, 5, 1, 12);
@@ -46,9 +46,11 @@ UserProfile _user() {
 void main() {
   group('FriendCard mounts HoverableCard (BUT-1358)', () {
     testWidgets('renders a HoverableCard ancestor', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), onTap: () {}),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), onTap: () {}),
+        ),
+      );
 
       expect(
         find.descendant(
@@ -59,15 +61,20 @@ void main() {
       );
     });
 
-    testWidgets('rest decoration uses surface fill + outline design tokens',
-        (tester) async {
+    testWidgets('rest decoration uses surface fill + outline design tokens', (
+      tester,
+    ) async {
       late ColorScheme cs;
-      await tester.pumpWidget(_wrap(
-        Builder(builder: (context) {
-          cs = Theme.of(context).colorScheme;
-          return FriendCard(user: _user(), onTap: () {});
-        }),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return FriendCard(user: _user(), onTap: () {});
+            },
+          ),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -77,11 +84,17 @@ void main() {
       );
 
       final rest = hoverable.restDecoration as BoxDecoration;
-      expect(rest.color, cs.surface,
-          reason: 'Friend card fill must use the surface token.');
+      expect(
+        rest.color,
+        cs.surface,
+        reason: 'Friend card fill must use the surface token.',
+      );
       final border = rest.border as Border;
-      expect(border.top.color, cs.outline,
-          reason: 'Friend card border must use the outline token.');
+      expect(
+        border.top.color,
+        cs.outline,
+        reason: 'Friend card border must use the outline token.',
+      );
       expect(border.top.width, AppDimensions.borderWidthThin);
       expect(
         rest.borderRadius,
@@ -89,11 +102,14 @@ void main() {
       );
     });
 
-    testWidgets('hover variant keeps border + corners, only deepens shadow',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FriendCard(user: _user(), onTap: () {}),
-      ));
+    testWidgets('hover variant keeps border + corners, only deepens shadow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendCard(user: _user(), onTap: () {}),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -108,10 +124,16 @@ void main() {
       expect(hover.border, equals(rest.border));
       expect(hover.borderRadius, equals(rest.borderRadius));
       expect(hover.color, equals(rest.color));
-      expect(hover.boxShadow, isNotNull,
-          reason: 'Hover should add the reserved elevation shadow.');
-      expect(rest.boxShadow, isNull,
-          reason: 'Rest stays flat — no shadow, identical to the old card.');
+      expect(
+        hover.boxShadow,
+        isNotNull,
+        reason: 'Hover should add the reserved elevation shadow.',
+      );
+      expect(
+        rest.boxShadow,
+        isNull,
+        reason: 'Rest stays flat — no shadow, identical to the old card.',
+      );
     });
 
     testWidgets('non-tappable card defers the cursor', (tester) async {
@@ -128,12 +150,18 @@ void main() {
       }
 
       await tester.pumpWidget(_wrap(FriendCard(user: _user(), onTap: () {})));
-      expect(cursorOf(), SystemMouseCursors.click,
-          reason: 'A card with an onTap must show the click cursor.');
+      expect(
+        cursorOf(),
+        SystemMouseCursors.click,
+        reason: 'A card with an onTap must show the click cursor.',
+      );
 
       await tester.pumpWidget(_wrap(FriendCard(user: _user())));
-      expect(cursorOf(), MouseCursor.defer,
-          reason: 'A card with no onTap should not imply clickability.');
+      expect(
+        cursorOf(),
+        MouseCursor.defer,
+        reason: 'A card with no onTap should not imply clickability.',
+      );
     });
   });
 }

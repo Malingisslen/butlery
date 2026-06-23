@@ -69,12 +69,12 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     bool copyOnWriteTriggered = false,
     String? originalOwnerStaticCopyId,
     int activeCollaboratorCount = 0,
-  })  : _recipeSnapshot = recipeSnapshot,
-        _isOriginalReference = isOriginalReference,
-        _copyOnWriteTriggered = copyOnWriteTriggered,
-        _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
-        _activeCollaboratorCount = activeCollaboratorCount,
-        super(sharedAt: sharedAt ?? clock.now());
+  }) : _recipeSnapshot = recipeSnapshot,
+       _isOriginalReference = isOriginalReference,
+       _copyOnWriteTriggered = copyOnWriteTriggered,
+       _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
+       _activeCollaboratorCount = activeCollaboratorCount,
+       super(sharedAt: sharedAt ?? clock.now());
 
   factory SharedRecipe.create({
     required String originalRecipeId,
@@ -87,7 +87,8 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     bool allowCollaboration = false,
     required Recipe recipeSnapshot,
   }) {
-    final determinedScope = scope ??
+    final determinedScope =
+        scope ??
         (sharedToUserIds.length == 1
             ? ShareScope.individual
             : ShareScope.multiple);
@@ -248,8 +249,9 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   /// For V2 shares without snapshot, caller must fetch full recipe first.
   Recipe? createImportRecipe({required String newOwnerId}) {
     if (_recipeSnapshot == null) return null;
-    final attributionText =
-        AppLocale.current.sharedRecipeAttributionText(sharedByDisplayName);
+    final attributionText = AppLocale.current.sharedRecipeAttributionText(
+      sharedByDisplayName,
+    );
     // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
     return _recipeSnapshot.copyWith(
       sourceUrl: attributionText,
@@ -298,8 +300,9 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     try {
       final commonFields =
           BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
-      final cowFields =
-          CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
+      final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(
+        data,
+      );
 
       // V1 backward compatibility: parse full snapshot if present
       final recipeData = data['recipeSnapshot'] as Map<String, dynamic>?;
@@ -315,37 +318,68 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         recipe = Recipe(
           core: RecipeCore(
             id: utils.SerializationUtils.safeString(recipeData, 'id'),
-            title: utils.SerializationUtils.safeString(recipeData, 'title',
-                defaultValue: 'Untitled Recipe'),
-            description:
-                utils.SerializationUtils.safeString(recipeData, 'description'),
+            title: utils.SerializationUtils.safeString(
+              recipeData,
+              'title',
+              defaultValue: 'Untitled Recipe',
+            ),
+            description: utils.SerializationUtils.safeString(
+              recipeData,
+              'description',
+            ),
             ingredients: utils.SerializationUtils.safeStringList(
-                recipeData, 'ingredients'),
+              recipeData,
+              'ingredients',
+            ),
             instructions: utils.SerializationUtils.safeStringList(
-                recipeData, 'instructions'),
+              recipeData,
+              'instructions',
+            ),
             imageUrls: utils.SerializationUtils.safeStringList(
-                recipeData, 'imageUrls'),
+              recipeData,
+              'imageUrls',
+            ),
             mealType: utils.SerializationUtils.safeString(
-                recipeData, 'mealType',
-                defaultValue: 'Middag'),
+              recipeData,
+              'mealType',
+              defaultValue: 'Middag',
+            ),
             portions: utils.SerializationUtils.safeNullableInt(
-                recipeData, 'portions'),
+              recipeData,
+              'portions',
+            ),
             timeMinutes: utils.SerializationUtils.safeNullableInt(
-                recipeData, 'timeMinutes'),
+              recipeData,
+              'timeMinutes',
+            ),
             rating: utils.SerializationUtils.safeNullableDouble(
-                recipeData, 'rating'),
+              recipeData,
+              'rating',
+            ),
             personalTagIds: utils.SerializationUtils.safeStringList(
-                recipeData, 'personalTagIds'),
+              recipeData,
+              'personalTagIds',
+            ),
             sourceUrl: utils.SerializationUtils.safeNullableString(
-                recipeData, 'sourceUrl'),
-            createdAt: utils.SerializationUtils.safeDateTime(
-                    recipeData, 'createdAt') ??
+              recipeData,
+              'sourceUrl',
+            ),
+            createdAt:
+                utils.SerializationUtils.safeDateTime(
+                  recipeData,
+                  'createdAt',
+                ) ??
                 clock.now(),
-            updatedAt: utils.SerializationUtils.safeDateTime(
-                    recipeData, 'updatedAt') ??
+            updatedAt:
+                utils.SerializationUtils.safeDateTime(
+                  recipeData,
+                  'updatedAt',
+                ) ??
                 clock.now(),
             lastCookedAt: utils.SerializationUtils.safeDateTime(
-                recipeData, 'lastCookedAt'),
+              recipeData,
+              'lastCookedAt',
+            ),
           ),
           type: RecipeType.shared,
         );
@@ -358,16 +392,27 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         recipeDescription = recipe.description;
       } else {
         // V2 format: denormalized fields only
-        recipeTitle = utils.SerializationUtils.safeString(data, 'recipeTitle',
-            defaultValue: 'Untitled Recipe');
-        recipeImageUrl =
-            utils.SerializationUtils.safeNullableString(data, 'recipeImageUrl');
-        recipePortions =
-            utils.SerializationUtils.safeNullableInt(data, 'recipePortions');
-        recipeTimeMinutes =
-            utils.SerializationUtils.safeNullableInt(data, 'recipeTimeMinutes');
+        recipeTitle = utils.SerializationUtils.safeString(
+          data,
+          'recipeTitle',
+          defaultValue: 'Untitled Recipe',
+        );
+        recipeImageUrl = utils.SerializationUtils.safeNullableString(
+          data,
+          'recipeImageUrl',
+        );
+        recipePortions = utils.SerializationUtils.safeNullableInt(
+          data,
+          'recipePortions',
+        );
+        recipeTimeMinutes = utils.SerializationUtils.safeNullableInt(
+          data,
+          'recipeTimeMinutes',
+        );
         recipeDescription = utils.SerializationUtils.safeNullableString(
-            data, 'recipeDescription');
+          data,
+          'recipeDescription',
+        );
       }
 
       return SharedRecipe(
@@ -379,8 +424,10 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         viewCount: commonFields['viewCount'] as int,
         engagementCount: commonFields['engagementCount'] as int,
         dismissalCount: commonFields['dismissalCount'] as int,
-        originalRecipeId:
-            utils.SerializationUtils.safeString(data, 'originalRecipeId'),
+        originalRecipeId: utils.SerializationUtils.safeString(
+          data,
+          'originalRecipeId',
+        ),
         // V2 denormalized fields
         recipeTitle: recipeTitle,
         recipeImageUrl: recipeImageUrl,
@@ -396,11 +443,16 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
           ShareScope.individual,
           (e) => e.name,
         ),
-        allowImport: utils.SerializationUtils.safeBool(data, 'allowImport',
-            defaultValue: true),
+        allowImport: utils.SerializationUtils.safeBool(
+          data,
+          'allowImport',
+          defaultValue: true,
+        ),
         allowCollaboration: utils.SerializationUtils.safeBool(
-            data, 'allowCollaboration',
-            defaultValue: false),
+          data,
+          'allowCollaboration',
+          defaultValue: false,
+        ),
         isOriginalReference: cowFields['isOriginalReference'] as bool,
         copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
         originalOwnerStaticCopyId:
@@ -447,18 +499,23 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     if (snapshotData != null) {
       recipe = Recipe.fromJson(snapshotData);
       recipeTitle = recipe.title;
-      recipeImageUrl =
-          recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null;
+      recipeImageUrl = recipe.imageUrls.isNotEmpty
+          ? recipe.imageUrls.first
+          : null;
       recipePortions = recipe.portions;
       recipeTimeMinutes = recipe.timeMinutes;
       recipeDescription = recipe.description;
     } else {
       recipeTitle = json['recipeTitle']?.toString() ?? 'Untitled Recipe';
       recipeImageUrl = json['recipeImageUrl']?.toString();
-      recipePortions =
-          utils.SerializationUtils.safeNullableInt(json, 'recipePortions');
-      recipeTimeMinutes =
-          utils.SerializationUtils.safeNullableInt(json, 'recipeTimeMinutes');
+      recipePortions = utils.SerializationUtils.safeNullableInt(
+        json,
+        'recipePortions',
+      );
+      recipeTimeMinutes = utils.SerializationUtils.safeNullableInt(
+        json,
+        'recipeTimeMinutes',
+      );
       recipeDescription = json['recipeDescription']?.toString();
     }
 
@@ -482,10 +539,15 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         (s) => s.name == json['scope'],
         orElse: () => ShareScope.individual,
       ),
-      allowImport: utils.SerializationUtils.safeBool(json, 'allowImport',
-          defaultValue: true),
-      allowCollaboration:
-          utils.SerializationUtils.safeBool(json, 'allowCollaboration'),
+      allowImport: utils.SerializationUtils.safeBool(
+        json,
+        'allowImport',
+        defaultValue: true,
+      ),
+      allowCollaboration: utils.SerializationUtils.safeBool(
+        json,
+        'allowCollaboration',
+      ),
       isOriginalReference: cowFields['isOriginalReference'] as bool,
       copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
       originalOwnerStaticCopyId:

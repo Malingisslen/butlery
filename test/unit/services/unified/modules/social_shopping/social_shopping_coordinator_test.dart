@@ -128,7 +128,7 @@ class _FakeServiceAdapter extends ShoppingListServiceAdapter {
   _FakeServiceAdapter() : super(shoppingService: _NoopShoppingService());
 
   final List<({String listId, String userId, String userDisplayName})>
-      addMemberCalls = [];
+  addMemberCalls = [];
   bool addMemberResult = true;
 
   @override
@@ -359,10 +359,12 @@ void main() {
       /// All-done branch — every item bought. The summary mentions the
       /// total count, NOT the unbought count (which would be 0).
       test('all bought → "Alla N artiklar klara"', () {
-        final list = _personalList(items: [
-          _item(name: 'a', bought: true),
-          _item(name: 'b', bought: true),
-        ]);
+        final list = _personalList(
+          items: [
+            _item(name: 'a', bought: true),
+            _item(name: 'b', bought: true),
+          ],
+        );
         final summary = coordinator.getShoppingListSummary(list);
         expect(summary, contains('2'));
         expect(summary.toLowerCase(), contains('klara'));
@@ -371,11 +373,13 @@ void main() {
       /// Nothing-bought branch — distinct from mid-progress because it
       /// goes through `shoppingListSummaryToBuy` not `Remaining`.
       test('none bought → "N artiklar att köpa"', () {
-        final list = _personalList(items: [
-          _item(name: 'a', bought: false),
-          _item(name: 'b', bought: false),
-          _item(name: 'c', bought: false),
-        ]);
+        final list = _personalList(
+          items: [
+            _item(name: 'a', bought: false),
+            _item(name: 'b', bought: false),
+            _item(name: 'c', bought: false),
+          ],
+        );
         final summary = coordinator.getShoppingListSummary(list);
         expect(summary, contains('3'));
         expect(summary.toLowerCase(), contains('köpa'));
@@ -385,11 +389,13 @@ void main() {
       /// state in normal use; an off-by-one on `remainingItems` would
       /// render "2 av 3" when the user has 1 left.
       test('mid-progress → "remaining of total"', () {
-        final list = _personalList(items: [
-          _item(name: 'a', bought: true),
-          _item(name: 'b', bought: false),
-          _item(name: 'c', bought: false),
-        ]);
+        final list = _personalList(
+          items: [
+            _item(name: 'a', bought: true),
+            _item(name: 'b', bought: false),
+            _item(name: 'c', bought: false),
+          ],
+        );
         final summary = coordinator.getShoppingListSummary(list);
         // remaining = 2, total = 3
         expect(summary, contains('2'));
@@ -497,7 +503,11 @@ void main() {
       test('maps snapshot fields and originalContentId to shoppingListId', () {
         final snapshot = _personalList(
           name: 'Veckans inköp',
-          items: [_item(name: 'a'), _item(name: 'b'), _item(name: 'c')],
+          items: [
+            _item(name: 'a'),
+            _item(name: 'b'),
+            _item(name: 'c'),
+          ],
         );
 
         final shared = coordinator.createSharedContentModel(
@@ -509,11 +519,17 @@ void main() {
         );
 
         expect(shared.listName, 'Veckans inköp');
-        expect(shared.itemCount, 3,
-            reason: 'itemCount must reflect items.length, not 0 or hardcoded');
-        expect(shared.shoppingListId, 'orig-123',
-            reason:
-                'originalContentId must propagate so join can resolve back to the live list');
+        expect(
+          shared.itemCount,
+          3,
+          reason: 'itemCount must reflect items.length, not 0 or hardcoded',
+        );
+        expect(
+          shared.shoppingListId,
+          'orig-123',
+          reason:
+              'originalContentId must propagate so join can resolve back to the live list',
+        );
         expect(shared.sharedByUserId, 'sender');
         expect(shared.sharedByDisplayName, 'Anna');
       });
@@ -563,36 +579,45 @@ void main() {
       /// Direct collaboration: the imported list is COLLABORATIVE (not
       /// personal) and owned by the original sender, with the joining
       /// user as editor. allowGuestEditing is FALSE.
-      test('produces collaborative list owned by sender with joiner as editor',
-          () {
-        final shared = _sharedList(
-          sharedByUserId: 'sender-uid',
-          sharedByDisplayName: 'Sender',
-        );
+      test(
+        'produces collaborative list owned by sender with joiner as editor',
+        () {
+          final shared = _sharedList(
+            sharedByUserId: 'sender-uid',
+            sharedByDisplayName: 'Sender',
+          );
 
-        final imported = coordinator.createImportedContent(
-          sharedContent: shared,
-          newOwnerId: 'me-uid',
-        );
+          final imported = coordinator.createImportedContent(
+            sharedContent: shared,
+            newOwnerId: 'me-uid',
+          );
 
-        expect(imported.type, ListType.collaborative);
-        expect(imported.ownerId, 'sender-uid');
-        // Owner auto-promoted to admin by the collaborative factory; the
-        // joining user gets `edit`. Both should be present.
-        expect(imported.memberPermissions['sender-uid'],
-            SharedListPermission.admin);
-        expect(imported.memberPermissions['me-uid'], SharedListPermission.edit);
-        expect(imported.allowGuestEditing, isFalse,
+          expect(imported.type, ListType.collaborative);
+          expect(imported.ownerId, 'sender-uid');
+          // Owner auto-promoted to admin by the collaborative factory; the
+          // joining user gets `edit`. Both should be present.
+          expect(
+            imported.memberPermissions['sender-uid'],
+            SharedListPermission.admin,
+          );
+          expect(
+            imported.memberPermissions['me-uid'],
+            SharedListPermission.edit,
+          );
+          expect(
+            imported.allowGuestEditing,
+            isFalse,
             reason:
-                'Shopping list import locks guest editing — pins the false default');
-      });
+                'Shopping list import locks guest editing — pins the false default',
+          );
+        },
+      );
 
       /// Issue #015 contract: items start EMPTY because they're stored
       /// in a subcollection now and must be loaded separately. A bug
       /// that populated items inline would create duplicate items on
       /// the live list and the subcollection.
-      test('items always start empty (Issue #015 — load from subcollection)',
-          () {
+      test('items always start empty (Issue #015 — load from subcollection)', () {
         final shared = _sharedList(itemCount: 42);
 
         final imported = coordinator.createImportedContent(
@@ -600,9 +625,12 @@ void main() {
           newOwnerId: 'me-uid',
         );
 
-        expect(imported.items, isEmpty,
-            reason:
-                'itemCount may be 42 but items list MUST be empty — caller loads from repo');
+        expect(
+          imported.items,
+          isEmpty,
+          reason:
+              'itemCount may be 42 but items list MUST be empty — caller loads from repo',
+        );
       });
 
       /// newTitle override wins; null falls back to sharedContent.listName.
@@ -640,13 +668,16 @@ void main() {
           itemCount: 9,
         );
 
-        final reconstructed = coordinator.getOriginalContentFromShared(shared)
-            as UnifiedShoppingList;
+        final reconstructed =
+            coordinator.getOriginalContentFromShared(shared)
+                as UnifiedShoppingList;
 
         expect(reconstructed.type, ListType.collaborative);
         expect(reconstructed.ownerId, 'sender');
-        expect(reconstructed.memberPermissions['sender'],
-            SharedListPermission.admin);
+        expect(
+          reconstructed.memberPermissions['sender'],
+          SharedListPermission.admin,
+        );
         expect(reconstructed.items, isEmpty);
         expect(reconstructed.name, 'V');
       });
@@ -682,8 +713,11 @@ void main() {
           staticCopyId: 'static-x',
         );
 
-        expect(identical(out, shared), isTrue,
-            reason: 'shopping lists use direct collaboration — must be no-op');
+        expect(
+          identical(out, shared),
+          isTrue,
+          reason: 'shopping lists use direct collaboration — must be no-op',
+        );
       });
     });
 
@@ -696,7 +730,9 @@ void main() {
       /// id would create orphan documents.
       test('always returns null (no static copy for shopping)', () async {
         final out = await coordinator.createStaticCopyForOwner(
-            _personalList(), 'owner-uid');
+          _personalList(),
+          'owner-uid',
+        );
         expect(out, isNull);
       });
     });
@@ -721,7 +757,8 @@ void main() {
         expect(
           () => adapter.saveShoppingList(list),
           throwsA(isA<UnsupportedError>()),
-          reason: 'BUT-1105: save-through-adapter must fail loud; '
+          reason:
+              'BUT-1105: save-through-adapter must fail loud; '
               'shopping uses direct collaboration',
         );
       });
@@ -731,27 +768,29 @@ void main() {
       /// rather than swallowing it. The coordinator is constructed with a
       /// real-throwing callback here to mirror production wiring.
       test(
-          'saveImportedContent propagates UnsupportedError from saveShoppingList',
-          () {
-        final throwingCoordinator = SocialShoppingCoordinator(
-          getCurrentUserId: () => 'me-uid',
-          getCurrentUserDisplayName: () => 'Anna',
-          setError: (_) {},
-          notifyListeners: () {},
-          getShoppingList: (_) async => null,
-          // Wired with the failing adapter path: calling saveShoppingList throws.
-          saveShoppingList: (list) =>
-              _FakeServiceAdapter().saveShoppingList(list),
-          serviceAdapter: _FakeServiceAdapter(),
-        );
+        'saveImportedContent propagates UnsupportedError from saveShoppingList',
+        () {
+          final throwingCoordinator = SocialShoppingCoordinator(
+            getCurrentUserId: () => 'me-uid',
+            getCurrentUserDisplayName: () => 'Anna',
+            setError: (_) {},
+            notifyListeners: () {},
+            getShoppingList: (_) async => null,
+            // Wired with the failing adapter path: calling saveShoppingList throws.
+            saveShoppingList: (list) =>
+                _FakeServiceAdapter().saveShoppingList(list),
+            serviceAdapter: _FakeServiceAdapter(),
+          );
 
-        expect(
-          () => throwingCoordinator.saveImportedContent(_personalList()),
-          throwsA(isA<UnsupportedError>()),
-          reason: 'saveImportedContent must not swallow — fail-loud '
-              'surfaces wiring bugs immediately',
-        );
-      });
+          expect(
+            () => throwingCoordinator.saveImportedContent(_personalList()),
+            throwsA(isA<UnsupportedError>()),
+            reason:
+                'saveImportedContent must not swallow — fail-loud '
+                'surfaces wiring bugs immediately',
+          );
+        },
+      );
     });
 
     // ---------------------------------------------------------------------
@@ -765,7 +804,8 @@ void main() {
         when(() => mockRepo.read('shared-xyz')).thenAnswer((_) async => null);
 
         final out = await coordinator.importSharedContent(
-            sharedContentId: 'shared-xyz');
+          sharedContentId: 'shared-xyz',
+        );
 
         expect(out, isNull);
         verify(() => mockRepo.read('shared-xyz')).called(1);
@@ -781,8 +821,9 @@ void main() {
       /// silently show the wrong inbox.
       test('forwards userId and returns repo response', () async {
         final lists = [_sharedList(id: 'a'), _sharedList(id: 'b')];
-        when(() => mockRepo.getSharedContentForUser(any()))
-            .thenAnswer((_) async => lists);
+        when(
+          () => mockRepo.getSharedContentForUser(any()),
+        ).thenAnswer((_) async => lists);
 
         final out = await coordinator.getSharedShoppingListsForUser('uid-1');
 
@@ -795,14 +836,18 @@ void main() {
       /// BUT-1094 fix (commit fee1147ae): error is now ALSO surfaced via
       /// setError so the UI can show a banner.
       test('repo throw → empty list + setError (BUT-1094 fix)', () async {
-        when(() => mockRepo.getSharedContentForUser(any()))
-            .thenThrow(Exception('permission-denied'));
+        when(
+          () => mockRepo.getSharedContentForUser(any()),
+        ).thenThrow(Exception('permission-denied'));
 
         final out = await coordinator.getSharedShoppingListsForUser('uid-1');
 
         expect(out, isEmpty);
-        expect(lastError, isNotNull,
-            reason: 'BUT-1094 fix: setError now populated on swallow');
+        expect(
+          lastError,
+          isNotNull,
+          reason: 'BUT-1094 fix: setError now populated on swallow',
+        );
       });
     });
 
@@ -824,30 +869,37 @@ void main() {
       /// Happy path: forwards uid and returns response.
       test('authenticated → forwards uid to repo', () async {
         final lists = [_sharedList(id: 'j1')];
-        when(() => mockRepo.getJoinedShoppingListsForUser(any()))
-            .thenAnswer((_) async => lists);
+        when(
+          () => mockRepo.getJoinedShoppingListsForUser(any()),
+        ).thenAnswer((_) async => lists);
 
         final out = await coordinator.getJoinedShoppingLists();
 
         expect(out, hasLength(1));
-        verify(() => mockRepo.getJoinedShoppingListsForUser('me-uid'))
-            .called(1);
+        verify(
+          () => mockRepo.getJoinedShoppingListsForUser('me-uid'),
+        ).called(1);
       });
 
       /// Error path: swallows to empty list AND sets error (CORRECT
       /// behaviour — compare to getSharedShoppingListsForUser which
       /// does NOT set error, the BUT-1094 inconsistency in the same file).
       test('repo throw → empty list AND setError is called', () async {
-        when(() => mockRepo.getJoinedShoppingListsForUser(any()))
-            .thenThrow(Exception('boom'));
+        when(
+          () => mockRepo.getJoinedShoppingListsForUser(any()),
+        ).thenThrow(Exception('boom'));
 
         final out = await coordinator.getJoinedShoppingLists();
 
         expect(out, isEmpty);
-        expect(lastError, isNotNull,
-            reason: 'getJoinedShoppingLists DOES set error (contrast '
-                'with getSharedShoppingListsForUser which does NOT — '
-                'see BUT-1094 family note in header)');
+        expect(
+          lastError,
+          isNotNull,
+          reason:
+              'getJoinedShoppingLists DOES set error (contrast '
+              'with getSharedShoppingListsForUser which does NOT — '
+              'see BUT-1094 family note in header)',
+        );
       });
     });
 
@@ -861,7 +913,8 @@ void main() {
         currentUserId = null;
 
         final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1');
+          sharedShoppingListId: 'shared-1',
+        );
 
         expect(out, isNull);
         verifyNever(() => mockRepo.read(any()));
@@ -869,17 +922,21 @@ void main() {
 
       /// Not-found (null read) → null without crash. The downstream
       /// `markAsJoined` and `addMember` must NOT be called.
-      test('shared list not found → null, no markAsJoined, no addMember',
-          () async {
-        when(() => mockRepo.read('does-not-exist'))
-            .thenAnswer((_) async => null);
+      test(
+        'shared list not found → null, no markAsJoined, no addMember',
+        () async {
+          when(
+            () => mockRepo.read('does-not-exist'),
+          ).thenAnswer((_) async => null);
 
-        final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'does-not-exist');
+          final out = await coordinator.joinSharedShoppingList(
+            sharedShoppingListId: 'does-not-exist',
+          );
 
-        expect(out, isNull);
-        verifyNever(() => mockRepo.markAsJoined(any(), any()));
-      });
+          expect(out, isNull);
+          verifyNever(() => mockRepo.markAsJoined(any(), any()));
+        },
+      );
 
       /// **ANTI-REGRESSION FOR BUT-1090**: a repo throw from `read()`
       /// is CAUGHT — returns null and sets the error. The buggy shape
@@ -887,17 +944,25 @@ void main() {
       /// throw escape) is NOT present here. If a future refactor
       /// removes the try-catch around the read, this test breaks.
       test('repo throw on read → null AND error set (NOT rethrown)', () async {
-        when(() => mockRepo.read('shared-1'))
-            .thenThrow(Exception('permission-denied'));
+        when(
+          () => mockRepo.read('shared-1'),
+        ).thenThrow(Exception('permission-denied'));
 
         final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1');
+          sharedShoppingListId: 'shared-1',
+        );
 
-        expect(out, isNull,
-            reason: 'try-catch correctly swallows — opposite of BUT-1090');
-        expect(lastError, isNotNull,
-            reason:
-                'this path DOES set error (contrast getSharedShoppingListsForUser)');
+        expect(
+          out,
+          isNull,
+          reason: 'try-catch correctly swallows — opposite of BUT-1090',
+        );
+        expect(
+          lastError,
+          isNotNull,
+          reason:
+              'this path DOES set error (contrast getSharedShoppingListsForUser)',
+        );
       });
 
       /// **HAPPY PATH (BUT-1095 seam coverage)**: read() returns a shared
@@ -906,46 +971,68 @@ void main() {
       /// the resolved listId + currentUserId. Before the adapter seam this
       /// branch fetched UnifiedShoppingService inline, so it was dead in
       /// coverage (every join test stubbed read() to null/throw).
-      test('found with shoppingListId → markAsJoined + addMember on adapter',
-          () async {
-        when(() => mockRepo.read('shared-1')).thenAnswer(
-            (_) async => _sharedList(id: 'shared-1', shoppingListId: 'live-7'));
-        when(() => mockRepo.markAsJoined('shared-1', 'me-uid'))
-            .thenAnswer((_) async {});
+      test(
+        'found with shoppingListId → markAsJoined + addMember on adapter',
+        () async {
+          when(() => mockRepo.read('shared-1')).thenAnswer(
+            (_) async => _sharedList(id: 'shared-1', shoppingListId: 'live-7'),
+          );
+          when(
+            () => mockRepo.markAsJoined('shared-1', 'me-uid'),
+          ).thenAnswer((_) async {});
 
-        final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1');
+          final out = await coordinator.joinSharedShoppingList(
+            sharedShoppingListId: 'shared-1',
+          );
 
-        expect(out, 'shared-1');
-        verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-        expect(fakeAdapter.addMemberCalls, hasLength(1));
-        expect(fakeAdapter.addMemberCalls.single.listId, 'live-7',
-            reason: 'must resolve the live list id from shoppingListId');
-        expect(fakeAdapter.addMemberCalls.single.userId, 'me-uid',
-            reason: 'joining user is the current user');
-        expect(notifyCount, greaterThanOrEqualTo(1),
-            reason: 'success path notifies state change');
-      });
+          expect(out, 'shared-1');
+          verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
+          expect(fakeAdapter.addMemberCalls, hasLength(1));
+          expect(
+            fakeAdapter.addMemberCalls.single.listId,
+            'live-7',
+            reason: 'must resolve the live list id from shoppingListId',
+          );
+          expect(
+            fakeAdapter.addMemberCalls.single.userId,
+            'me-uid',
+            reason: 'joining user is the current user',
+          );
+          expect(
+            notifyCount,
+            greaterThanOrEqualTo(1),
+            reason: 'success path notifies state change',
+          );
+        },
+      );
 
       /// Pre-migration data: shoppingListId is null. markAsJoined still runs
       /// (analytics), but addMember MUST be skipped — there is no live list
       /// to attach to. A regression that fired addMember with a null/garbage
       /// id would corrupt membership on the wrong list.
-      test('found but null shoppingListId → markAsJoined, NO addMember',
-          () async {
-        when(() => mockRepo.read('shared-1')).thenAnswer(
-            (_) async => _sharedList(id: 'shared-1', shoppingListId: null));
-        when(() => mockRepo.markAsJoined('shared-1', 'me-uid'))
-            .thenAnswer((_) async {});
+      test(
+        'found but null shoppingListId → markAsJoined, NO addMember',
+        () async {
+          when(() => mockRepo.read('shared-1')).thenAnswer(
+            (_) async => _sharedList(id: 'shared-1', shoppingListId: null),
+          );
+          when(
+            () => mockRepo.markAsJoined('shared-1', 'me-uid'),
+          ).thenAnswer((_) async {});
 
-        final out = await coordinator.joinSharedShoppingList(
-            sharedShoppingListId: 'shared-1');
+          final out = await coordinator.joinSharedShoppingList(
+            sharedShoppingListId: 'shared-1',
+          );
 
-        expect(out, 'shared-1');
-        verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-        expect(fakeAdapter.addMemberCalls, isEmpty,
-            reason: 'no live list to attach to when shoppingListId is null');
-      });
+          expect(out, 'shared-1');
+          verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
+          expect(
+            fakeAdapter.addMemberCalls,
+            isEmpty,
+            reason: 'no live list to attach to when shoppingListId is null',
+          );
+        },
+      );
     });
 
     // ---------------------------------------------------------------------
@@ -971,12 +1058,15 @@ void main() {
       /// hasEngaged → imported, hasDismissed → dismissed). A swap here
       /// would silently inflate "imported" counts.
       test('caches all three flags and exposes via is* getters', () async {
-        when(() => mockRepo.hasViewed('list-1', 'me-uid'))
-            .thenAnswer((_) async => true);
-        when(() => mockRepo.hasEngaged('list-1', 'me-uid'))
-            .thenAnswer((_) async => false);
-        when(() => mockRepo.hasDismissed('list-1', 'me-uid'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepo.hasViewed('list-1', 'me-uid'),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepo.hasEngaged('list-1', 'me-uid'),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockRepo.hasDismissed('list-1', 'me-uid'),
+        ).thenAnswer((_) async => true);
 
         await coordinator.loadStatusForShoppingList('list-1', 'me-uid');
 
@@ -988,17 +1078,23 @@ void main() {
       /// Repo throw → caches NOT populated; subsequent reads stay false.
       /// Pinning the swallow so a regression doesn't crash the inbox.
       /// BUT-1094 family: no setError call on this path either.
-      test('repo throw → cache stays empty, no rethrow, no error set',
-          () async {
-        when(() => mockRepo.hasViewed(any(), any()))
-            .thenThrow(Exception('boom'));
+      test(
+        'repo throw → cache stays empty, no rethrow, no error set',
+        () async {
+          when(
+            () => mockRepo.hasViewed(any(), any()),
+          ).thenThrow(Exception('boom'));
 
-        await coordinator.loadStatusForShoppingList('list-1', 'me-uid');
+          await coordinator.loadStatusForShoppingList('list-1', 'me-uid');
 
-        expect(coordinator.isShoppingListViewed('list-1'), isFalse);
-        expect(lastError, isNull,
-            reason: 'BUT-1094 family: status load swallows without setError');
-      });
+          expect(coordinator.isShoppingListViewed('list-1'), isFalse);
+          expect(
+            lastError,
+            isNull,
+            reason: 'BUT-1094 family: status load swallows without setError',
+          );
+        },
+      );
     });
 
     // ---------------------------------------------------------------------
@@ -1009,12 +1105,15 @@ void main() {
       /// list would leave the rest uncached, silently making them appear
       /// "unviewed" forever in the UI.
       test('caches status for every list in the input', () async {
-        when(() => mockRepo.hasViewed(any(), any()))
-            .thenAnswer((_) async => true);
-        when(() => mockRepo.hasEngaged(any(), any()))
-            .thenAnswer((_) async => false);
-        when(() => mockRepo.hasDismissed(any(), any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepo.hasViewed(any(), any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockRepo.hasEngaged(any(), any()),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockRepo.hasDismissed(any(), any()),
+        ).thenAnswer((_) async => false);
 
         final lists = [
           _sharedList(id: 'l1'),
@@ -1045,17 +1144,20 @@ void main() {
     // ---------------------------------------------------------------------
     group('Base coordinator delegations', () {
       /// dismiss → markAsDismissed + notify + true on success.
-      test('dismissSharedShoppingList → repo.markAsDismissed, notifies, true',
-          () async {
-        when(() => mockRepo.markAsDismissed('s1', 'me-uid'))
-            .thenAnswer((_) async {});
+      test(
+        'dismissSharedShoppingList → repo.markAsDismissed, notifies, true',
+        () async {
+          when(
+            () => mockRepo.markAsDismissed('s1', 'me-uid'),
+          ).thenAnswer((_) async {});
 
-        final out = await coordinator.dismissSharedShoppingList('s1');
+          final out = await coordinator.dismissSharedShoppingList('s1');
 
-        expect(out, isTrue);
-        expect(notifyCount, greaterThanOrEqualTo(1));
-        verify(() => mockRepo.markAsDismissed('s1', 'me-uid')).called(1);
-      });
+          expect(out, isTrue);
+          expect(notifyCount, greaterThanOrEqualTo(1));
+          verify(() => mockRepo.markAsDismissed('s1', 'me-uid')).called(1);
+        },
+      );
 
       /// dismiss unauthenticated → false short-circuit, no repo call.
       test('dismissSharedShoppingList unauthenticated → false', () async {
@@ -1067,8 +1169,9 @@ void main() {
 
       /// markAsViewed delegates to base → repo.markAsViewed.
       test('markShoppingListAsViewed → repo.markAsViewed, true', () async {
-        when(() => mockRepo.markAsViewed('s1', 'me-uid'))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepo.markAsViewed('s1', 'me-uid'),
+        ).thenAnswer((_) async {});
 
         final out = await coordinator.markShoppingListAsViewed('s1');
 
@@ -1089,8 +1192,9 @@ void main() {
       /// getUnreadCount delegates to repo. Bug-family note: failure on
       /// this path returns 0 silently (BUT-1094 family, base class).
       test('getUnreadShoppingListCount → forwards to repo', () async {
-        when(() => mockRepo.getUnreadCountForUser('me-uid'))
-            .thenAnswer((_) async => 7);
+        when(
+          () => mockRepo.getUnreadCountForUser('me-uid'),
+        ).thenAnswer((_) async => 7);
 
         final out = await coordinator.getUnreadShoppingListCount();
 
@@ -1099,17 +1203,23 @@ void main() {
 
       /// getUnreadCount on throw → 0 AND setError populated (BUT-1094 fix
       /// at base_social_coordinator.dart:425, commit fee1147ae).
-      test('getUnreadShoppingListCount on throw → 0 + setError (BUT-1094 fix)',
-          () async {
-        when(() => mockRepo.getUnreadCountForUser(any()))
-            .thenThrow(Exception('boom'));
+      test(
+        'getUnreadShoppingListCount on throw → 0 + setError (BUT-1094 fix)',
+        () async {
+          when(
+            () => mockRepo.getUnreadCountForUser(any()),
+          ).thenThrow(Exception('boom'));
 
-        final out = await coordinator.getUnreadShoppingListCount();
+          final out = await coordinator.getUnreadShoppingListCount();
 
-        expect(out, 0);
-        expect(lastError, isNotNull,
-            reason: 'BUT-1094 fix: base getUnreadCount now calls setError');
-      });
+          expect(out, 0);
+          expect(
+            lastError,
+            isNotNull,
+            reason: 'BUT-1094 fix: base getUnreadCount now calls setError',
+          );
+        },
+      );
     });
   });
 }

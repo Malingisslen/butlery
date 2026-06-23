@@ -106,51 +106,70 @@ void main() {
     /// `scheduleAutoSave` calls into exactly ONE persisted write.
     /// A regression that fires per-keystroke would write N times to
     /// SharedPreferences (and in production, Firestore).
-    test('coalesces rapid reschedules into a single write', () async {
-      final manager = RecipeFormAutoSaveManager();
-      addTearDown(manager.dispose);
+    test(
+      'coalesces rapid reschedules into a single write',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
+        addTearDown(manager.dispose);
 
-      // Five rapid reschedules, each well under the 3s window.
-      for (var i = 0; i < 5; i++) {
-        manager.scheduleAutoSave(_formWith(
-          title: 'edit #$i',
-          ingredients: const ['salt'],
-        ));
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-      }
+        // Five rapid reschedules, each well under the 3s window.
+        for (var i = 0; i < 5; i++) {
+          manager.scheduleAutoSave(
+            _formWith(
+              title: 'edit #$i',
+              ingredients: const ['salt'],
+            ),
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        }
 
-      // Less than 3s total elapsed; nothing should be written yet.
-      var prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNull,
-          reason: 'debounce should not have fired yet');
+        // Less than 3s total elapsed; nothing should be written yet.
+        var prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString(_draftsKey),
+          isNull,
+          reason: 'debounce should not have fired yet',
+        );
 
-      await _settle(const Duration(seconds: 3));
+        await _settle(const Duration(seconds: 3));
 
-      prefs = await SharedPreferences.getInstance();
-      final metadata = prefs.getString(_draftsKey);
-      expect(metadata, isNotNull, reason: 'exactly one write expected');
-      final decoded = jsonDecode(metadata!) as List;
-      expect(decoded.length, 1,
-          reason: 'reschedules must coalesce, not duplicate drafts');
-    }, timeout: const Timeout(Duration(seconds: 15)));
+        prefs = await SharedPreferences.getInstance();
+        final metadata = prefs.getString(_draftsKey);
+        expect(metadata, isNotNull, reason: 'exactly one write expected');
+        final decoded = jsonDecode(metadata!) as List;
+        expect(
+          decoded.length,
+          1,
+          reason: 'reschedules must coalesce, not duplicate drafts',
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 15)),
+    );
 
     /// Proves: `isQuickSave: true` shortens the debounce window to 1s.
     /// A regression that swapped the constants would fire at 3s
     /// instead — or never (off-by-one).
-    test('quickSave fires faster than the default delay', () async {
-      final manager = RecipeFormAutoSaveManager();
-      addTearDown(manager.dispose);
+    test(
+      'quickSave fires faster than the default delay',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
+        addTearDown(manager.dispose);
 
-      manager.scheduleAutoSave(
-        _formWith(title: 't', ingredients: const ['a']),
-        isQuickSave: true,
-      );
+        manager.scheduleAutoSave(
+          _formWith(title: 't', ingredients: const ['a']),
+          isQuickSave: true,
+        );
 
-      await _settle(const Duration(seconds: 1));
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNotNull,
-          reason: 'quickSave (1s) should fire well before the 3s default');
-    }, timeout: const Timeout(Duration(seconds: 10)));
+        await _settle(const Duration(seconds: 1));
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString(_draftsKey),
+          isNotNull,
+          reason: 'quickSave (1s) should fire well before the 3s default',
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 10)),
+    );
   });
 
   group('shouldAutoSave gate', () {
@@ -165,10 +184,16 @@ void main() {
       await manager.saveNow(_formWith(title: 'lonely'));
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNull,
-          reason: 'single-field forms must not be persisted');
-      expect(manager.currentDraftId, isNull,
-          reason: 'no draft id should be assigned when gate fails');
+      expect(
+        prefs.getString(_draftsKey),
+        isNull,
+        reason: 'single-field forms must not be persisted',
+      );
+      expect(
+        manager.currentDraftId,
+        isNull,
+        reason: 'no draft id should be assigned when gate fails',
+      );
     });
 
     /// Proves: >= 2 filled fields persists.
@@ -196,14 +221,19 @@ void main() {
       await manager.initialize(isTemplate: true);
 
       // Title only — changeScore = 2; below the 5-point threshold.
-      await manager.saveNow(_formWith(
-        title: 'tiny edit',
-        ingredients: const ['salt'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'tiny edit',
+          ingredients: const ['salt'],
+        ),
+      );
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNull,
-          reason: 'template minor edits must not pollute the draft list');
+      expect(
+        prefs.getString(_draftsKey),
+        isNull,
+        reason: 'template minor edits must not pollute the draft list',
+      );
     });
 
     /// Proves: once the template has crossed the significance threshold
@@ -214,15 +244,20 @@ void main() {
       addTearDown(manager.dispose);
       await manager.initialize(isTemplate: true);
 
-      await manager.saveNow(_formWith(
-        title: 'My Customized Recipe',
-        description: 'Tweaked to my taste',
-        ingredients: const ['onion'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'My Customized Recipe',
+          description: 'Tweaked to my taste',
+          ingredients: const ['onion'],
+        ),
+      );
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNotNull,
-          reason: 'template should promote and persist past threshold');
+      expect(
+        prefs.getString(_draftsKey),
+        isNotNull,
+        reason: 'template should promote and persist past threshold',
+      );
     });
 
     /// Proves: once promoted to non-template, a SECOND minor edit
@@ -233,24 +268,31 @@ void main() {
       await manager.initialize(isTemplate: true);
 
       // First save crosses threshold and promotes.
-      await manager.saveNow(_formWith(
-        title: 'Big',
-        description: 'edit',
-        ingredients: const ['onion'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'Big',
+          description: 'edit',
+          ingredients: const ['onion'],
+        ),
+      );
 
       // Reset prefs so we can detect the SECOND save.
       SharedPreferences.setMockInitialValues({});
 
       // Second save: just two fields (below template threshold).
-      await manager.saveNow(_formWith(
-        title: 'follow',
-        ingredients: const ['x'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'follow',
+          ingredients: const ['x'],
+        ),
+      );
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNotNull,
-          reason: 'after promotion, template gate should be off');
+      expect(
+        prefs.getString(_draftsKey),
+        isNotNull,
+        reason: 'after promotion, template gate should be off',
+      );
     });
   });
 
@@ -272,14 +314,20 @@ void main() {
         _formWith(title: 'a updated', ingredients: const ['x', 'y']),
       );
 
-      expect(manager.currentDraftId, firstId,
-          reason: 'second save must reuse the existing draft id');
+      expect(
+        manager.currentDraftId,
+        firstId,
+        reason: 'second save must reuse the existing draft id',
+      );
 
       final prefs = await SharedPreferences.getInstance();
       final metadata =
           jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
-      expect(metadata.length, 1,
-          reason: 'reusing id must not produce a second metadata entry');
+      expect(
+        metadata.length,
+        1,
+        reason: 'reusing id must not produce a second metadata entry',
+      );
     });
   });
 
@@ -331,11 +379,13 @@ void main() {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
 
-      await manager.saveNow(_formWith(
-        title: 'a',
-        description: 'b',
-        ingredients: const ['x', 'y'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'a',
+          description: 'b',
+          ingredients: const ['x', 'y'],
+        ),
+      );
 
       final prefs = await SharedPreferences.getInstance();
       final meta = jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
@@ -386,8 +436,11 @@ void main() {
 
       await withClock(Clock.fixed(base), () async {
         final drafts = await manager.getAvailableDrafts();
-        expect(drafts.map((d) => d.draftId).toList(), ['fresh', 'hourOld'],
-            reason: 'ancient must be filtered, newest first');
+        expect(
+          drafts.map((d) => d.draftId).toList(),
+          ['fresh', 'hourOld'],
+          reason: 'ancient must be filtered, newest first',
+        );
       });
     });
   });
@@ -401,23 +454,34 @@ void main() {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
 
-      await manager.saveNow(_formWith(
-        title: 'ephemeral',
-        ingredients: const ['x'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'ephemeral',
+          ingredients: const ['x'],
+        ),
+      );
       final id = manager.currentDraftId!;
 
       var prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('$_draftPrefix$id'), isNotNull,
-          reason: 'precondition: payload exists');
-      expect(prefs.getString(_draftsKey), isNotNull,
-          reason: 'precondition: metadata exists');
+      expect(
+        prefs.getString('$_draftPrefix$id'),
+        isNotNull,
+        reason: 'precondition: payload exists',
+      );
+      expect(
+        prefs.getString(_draftsKey),
+        isNotNull,
+        reason: 'precondition: metadata exists',
+      );
 
       await manager.deleteDraft(id);
 
       prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('$_draftPrefix$id'), isNull,
-          reason: 'payload key must be removed');
+      expect(
+        prefs.getString('$_draftPrefix$id'),
+        isNull,
+        reason: 'payload key must be removed',
+      );
       final remainingMeta =
           jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
       expect(remainingMeta, isEmpty, reason: 'metadata entry must be removed');
@@ -434,72 +498,98 @@ void main() {
     /// true)`. The guard inside `scheduleAutoSave` should observe
     /// `_isAutoSaving` and return early, leaving `_autoSaveTimer`
     /// null (cancelled but not rescheduled).
-    test('skipIfBusy=true does not stack a new timer', () async {
-      final manager = RecipeFormAutoSaveManager();
-      addTearDown(manager.dispose);
+    test(
+      'skipIfBusy=true does not stack a new timer',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
+        addTearDown(manager.dispose);
 
-      // Start an in-flight save (do NOT await).
-      final inflight = manager.saveNow(_formWith(
-        title: 'first',
-        ingredients: const ['x'],
-      ));
+        // Start an in-flight save (do NOT await).
+        final inflight = manager.saveNow(
+          _formWith(
+            title: 'first',
+            ingredients: const ['x'],
+          ),
+        );
 
-      // While in flight, schedule another with skipIfBusy.
-      manager.scheduleAutoSave(
-        _formWith(title: 'second', ingredients: const ['y']),
-        skipIfBusy: true,
-      );
+        // While in flight, schedule another with skipIfBusy.
+        manager.scheduleAutoSave(
+          _formWith(title: 'second', ingredients: const ['y']),
+          skipIfBusy: true,
+        );
 
-      // currentDraftId should already be set by saveNow's sync prelude
-      // before the await; isAutoSaving should be true.
-      expect(manager.isAutoSaving, isTrue,
-          reason: 'precondition: save is in flight');
+        // currentDraftId should already be set by saveNow's sync prelude
+        // before the await; isAutoSaving should be true.
+        expect(
+          manager.isAutoSaving,
+          isTrue,
+          reason: 'precondition: save is in flight',
+        );
 
-      await inflight;
+        await inflight;
 
-      // Give time for any sneakily-scheduled timer to fire.
-      await _settle(const Duration(seconds: 3));
+        // Give time for any sneakily-scheduled timer to fire.
+        await _settle(const Duration(seconds: 3));
 
-      // Exactly one metadata entry — 'second' was skipped.
-      final prefs = await SharedPreferences.getInstance();
-      final meta = jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
-      expect(meta.length, 1,
-          reason: 'skipIfBusy=true must drop the new schedule entirely');
-    }, timeout: const Timeout(Duration(seconds: 15)));
+        // Exactly one metadata entry — 'second' was skipped.
+        final prefs = await SharedPreferences.getInstance();
+        final meta = jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
+        expect(
+          meta.length,
+          1,
+          reason: 'skipIfBusy=true must drop the new schedule entirely',
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 15)),
+    );
   });
 
   group('saveNow', () {
     /// Proves: `saveNow` writes synchronously regardless of the debounce.
     /// Used when the app is backgrounded — losing data here is the
     /// worst-case for the feature.
-    test('cancels debounce and writes immediately', () async {
-      final manager = RecipeFormAutoSaveManager();
-      addTearDown(manager.dispose);
+    test(
+      'cancels debounce and writes immediately',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
+        addTearDown(manager.dispose);
 
-      // Schedule a debounced save we'll preempt with saveNow.
-      manager.scheduleAutoSave(
-        _formWith(title: 'stale', ingredients: const ['x']),
-      );
+        // Schedule a debounced save we'll preempt with saveNow.
+        manager.scheduleAutoSave(
+          _formWith(title: 'stale', ingredients: const ['x']),
+        );
 
-      await manager.saveNow(_formWith(
-        title: 'fresh-final',
-        ingredients: const ['x', 'y'],
-      ));
+        await manager.saveNow(
+          _formWith(
+            title: 'fresh-final',
+            ingredients: const ['x', 'y'],
+          ),
+        );
 
-      final prefs = await SharedPreferences.getInstance();
-      final id = manager.currentDraftId!;
-      final saved = jsonDecode(prefs.getString('$_draftPrefix$id')!)
-          as Map<String, dynamic>;
-      expect(saved['title'], 'fresh-final',
-          reason: 'saveNow must persist the payload it was called with');
+        final prefs = await SharedPreferences.getInstance();
+        final id = manager.currentDraftId!;
+        final saved =
+            jsonDecode(prefs.getString('$_draftPrefix$id')!)
+                as Map<String, dynamic>;
+        expect(
+          saved['title'],
+          'fresh-final',
+          reason: 'saveNow must persist the payload it was called with',
+        );
 
-      // Give the cancelled debounce a chance to fire — it must not.
-      await _settle(const Duration(seconds: 3));
-      final reloaded = jsonDecode(prefs.getString('$_draftPrefix$id')!)
-          as Map<String, dynamic>;
-      expect(reloaded['title'], 'fresh-final',
-          reason: 'cancelled debounce must not overwrite saveNow payload');
-    }, timeout: const Timeout(Duration(seconds: 15)));
+        // Give the cancelled debounce a chance to fire — it must not.
+        await _settle(const Duration(seconds: 3));
+        final reloaded =
+            jsonDecode(prefs.getString('$_draftPrefix$id')!)
+                as Map<String, dynamic>;
+        expect(
+          reloaded['title'],
+          'fresh-final',
+          reason: 'cancelled debounce must not overwrite saveNow payload',
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 15)),
+    );
 
     /// Proves: `saveNow` with insufficient content does NOT persist
     /// (the `_shouldAutoSave` gate still applies on the forced path).
@@ -510,8 +600,11 @@ void main() {
       await manager.saveNow(_formWith(title: 'only one field'));
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNull,
-          reason: 'saveNow does not bypass the significance gate');
+      expect(
+        prefs.getString(_draftsKey),
+        isNull,
+        reason: 'saveNow does not bypass the significance gate',
+      );
     });
   });
 
@@ -520,21 +613,25 @@ void main() {
     /// does not crash (no `notifyListeners` after dispose). The
     /// `_isDisposed` guard inside `_performAutoSave` is what we're
     /// protecting.
-    test('dispose with pending timer is safe and cancels the write', () async {
-      final manager = RecipeFormAutoSaveManager();
+    test(
+      'dispose with pending timer is safe and cancels the write',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
 
-      manager.scheduleAutoSave(
-        _formWith(title: 'pending', ingredients: const ['x']),
-      );
-      // Dispose BEFORE the debounce fires.
-      manager.dispose();
-      // Wait past the original fire window.
-      await _settle(const Duration(seconds: 3));
+        manager.scheduleAutoSave(
+          _formWith(title: 'pending', ingredients: const ['x']),
+        );
+        // Dispose BEFORE the debounce fires.
+        manager.dispose();
+        // Wait past the original fire window.
+        await _settle(const Duration(seconds: 3));
 
-      // Nothing should be written because the timer was cancelled.
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(_draftsKey), isNull);
-    }, timeout: const Timeout(Duration(seconds: 15)));
+        // Nothing should be written because the timer was cancelled.
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(_draftsKey), isNull);
+      },
+      timeout: const Timeout(Duration(seconds: 15)),
+    );
 
     /// Proves: when dispose runs while `_performAutoSave` is awaiting
     /// SharedPreferences, the post-await `notifyListeners` path is
@@ -542,10 +639,12 @@ void main() {
     /// NOT throw.
     test('dispose during in-flight saveNow does not crash', () async {
       final manager = RecipeFormAutoSaveManager();
-      final saveFuture = manager.saveNow(_formWith(
-        title: 'in flight',
-        ingredients: const ['x'],
-      ));
+      final saveFuture = manager.saveNow(
+        _formWith(
+          title: 'in flight',
+          ingredients: const ['x'],
+        ),
+      );
       // Dispose immediately, before the SharedPreferences future
       // has a chance to complete.
       manager.dispose();
@@ -574,12 +673,18 @@ void main() {
 
       // Read getter under a later fixed clock.
       withClock(Clock.fixed(t0.add(const Duration(seconds: 5))), () {
-        expect(manager.hasRecentAutoSave, isTrue,
-            reason: '5s after save: should still be flagged recent');
+        expect(
+          manager.hasRecentAutoSave,
+          isTrue,
+          reason: '5s after save: should still be flagged recent',
+        );
       });
       withClock(Clock.fixed(t0.add(const Duration(seconds: 11))), () {
-        expect(manager.hasRecentAutoSave, isFalse,
-            reason: '11s after save: window must have closed');
+        expect(
+          manager.hasRecentAutoSave,
+          isFalse,
+          reason: '11s after save: window must have closed',
+        );
       });
     });
 
@@ -628,10 +733,16 @@ void main() {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('${_draftPrefix}old'), isNull,
-          reason: 'stale payload key must be removed');
-      expect(prefs.getString('${_draftPrefix}new'), isNotNull,
-          reason: 'recent payload key must survive cleanup');
+      expect(
+        prefs.getString('${_draftPrefix}old'),
+        isNull,
+        reason: 'stale payload key must be removed',
+      );
+      expect(
+        prefs.getString('${_draftPrefix}new'),
+        isNotNull,
+        reason: 'recent payload key must survive cleanup',
+      );
       final remaining =
           jsonDecode(prefs.getString(_draftsKey)!) as List<dynamic>;
       expect(remaining.length, 1);
@@ -669,13 +780,17 @@ void main() {
 
       // Save with a clock past base so the new save's lastModifiedAt is
       // the newest in the list (sort = newest first → d0 evicted).
-      await withClock(Clock.fixed(base.add(const Duration(hours: 1))),
-          () async {
-        await manager.saveNow(_formWith(
-          title: 'newest',
-          ingredients: const ['onion'],
-        ));
-      });
+      await withClock(
+        Clock.fixed(base.add(const Duration(hours: 1))),
+        () async {
+          await manager.saveNow(
+            _formWith(
+              title: 'newest',
+              ingredients: const ['onion'],
+            ),
+          );
+        },
+      );
 
       final prefs = await SharedPreferences.getInstance();
       final metadata =
@@ -685,8 +800,11 @@ void main() {
       // The oldest seed ("d0") must have been evicted.
       final ids = metadata.map((m) => (m as Map)['draftId'] as String).toList();
       expect(ids, isNot(contains('d0')));
-      expect(prefs.getString('${_draftPrefix}d0'), isNull,
-          reason: 'evicted payload key must be deleted, not orphaned');
+      expect(
+        prefs.getString('${_draftPrefix}d0'),
+        isNull,
+        reason: 'evicted payload key must be deleted, not orphaned',
+      );
     });
   });
 
@@ -768,12 +886,17 @@ void main() {
       addTearDown(manager.dispose);
 
       // Step 1: schedule a normal debounce — pending timer is now active.
-      manager.scheduleAutoSave(_formWith(
-        title: 'queued edit',
-        ingredients: const ['x'],
-      ));
-      expect(manager.hasPendingAutoSaveTimer, isTrue,
-          reason: 'precondition: debounce timer should be active');
+      manager.scheduleAutoSave(
+        _formWith(
+          title: 'queued edit',
+          ingredients: const ['x'],
+        ),
+      );
+      expect(
+        manager.hasPendingAutoSaveTimer,
+        isTrue,
+        reason: 'precondition: debounce timer should be active',
+      );
 
       // Step 2: simulate a save going in flight (e.g. saveNow racing the
       // debounce).
@@ -789,8 +912,11 @@ void main() {
       // Post-fix invariant: the original queued timer must still be
       // active. Pre-fix, this would be false because the cancel ran
       // before the guard.
-      expect(manager.hasPendingAutoSaveTimer, isTrue,
-          reason: 'BUT-1136: guard-first order must preserve queued timer');
+      expect(
+        manager.hasPendingAutoSaveTimer,
+        isTrue,
+        reason: 'BUT-1136: guard-first order must preserve queued timer',
+      );
     });
 
     /// Companion: when NOT busy, skipIfBusy=true still proceeds with the
@@ -806,8 +932,11 @@ void main() {
         skipIfBusy: true,
       );
 
-      expect(manager.hasPendingAutoSaveTimer, isTrue,
-          reason: 'no in-flight save → normal scheduling proceeds');
+      expect(
+        manager.hasPendingAutoSaveTimer,
+        isTrue,
+        reason: 'no in-flight save → normal scheduling proceeds',
+      );
     });
   });
 
@@ -816,29 +945,39 @@ void main() {
     /// firing an unawaited delete) and nulls the in-memory pointer after the
     /// delete completes. Contract: awaiting the call leaves currentDraftId
     /// null.
-    test('after awaiting, currentDraftId is null and payload is gone',
-        () async {
-      final manager = RecipeFormAutoSaveManager();
-      addTearDown(manager.dispose);
+    test(
+      'after awaiting, currentDraftId is null and payload is gone',
+      () async {
+        final manager = RecipeFormAutoSaveManager();
+        addTearDown(manager.dispose);
 
-      await manager.saveNow(_formWith(
-        title: 'a',
-        ingredients: const ['x'],
-      ));
-      final draftId = manager.currentDraftId;
-      expect(draftId, isNotNull);
+        await manager.saveNow(
+          _formWith(
+            title: 'a',
+            ingredients: const ['x'],
+          ),
+        );
+        final draftId = manager.currentDraftId;
+        expect(draftId, isNotNull);
 
-      await manager.clearCurrentDraft();
+        await manager.clearCurrentDraft();
 
-      expect(manager.currentDraftId, isNull,
-          reason: 'pointer must be cleared after awaiting');
+        expect(
+          manager.currentDraftId,
+          isNull,
+          reason: 'pointer must be cleared after awaiting',
+        );
 
-      // Verify the per-draft payload key is also gone — confirms the delete
-      // actually ran (not just the pointer nulled).
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('$_draftPrefix$draftId'), isNull,
-          reason: 'payload must be deleted, not orphaned');
-    });
+        // Verify the per-draft payload key is also gone — confirms the delete
+        // actually ran (not just the pointer nulled).
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('$_draftPrefix$draftId'),
+          isNull,
+          reason: 'payload must be deleted, not orphaned',
+        );
+      },
+    );
 
     /// BUT-1138 race-pin: `clearCurrentDraft(); saveNow(...)` chained
     /// back-to-back. Before the fix, the synchronous-null + unawaited
@@ -854,10 +993,12 @@ void main() {
       addTearDown(manager.dispose);
 
       // First save establishes a draft id.
-      await manager.saveNow(_formWith(
-        title: 'first',
-        ingredients: const ['x'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'first',
+          ingredients: const ['x'],
+        ),
+      );
       final firstId = manager.currentDraftId;
       expect(firstId, isNotNull);
 
@@ -869,32 +1010,49 @@ void main() {
       // the same millisecond, which is not what BUT-1138 pins.
       await manager.clearCurrentDraft();
       await Future<void>.delayed(const Duration(milliseconds: 2));
-      await manager.saveNow(_formWith(
-        title: 'second',
-        ingredients: const ['y'],
-      ));
+      await manager.saveNow(
+        _formWith(
+          title: 'second',
+          ingredients: const ['y'],
+        ),
+      );
 
       final secondId = manager.currentDraftId;
       expect(secondId, isNotNull, reason: 'second save must mint a fresh id');
-      expect(secondId, isNot(firstId),
-          reason: 'second save must NOT reuse the cleared id');
+      expect(
+        secondId,
+        isNot(firstId),
+        reason: 'second save must NOT reuse the cleared id',
+      );
 
       // Metadata index: exactly one entry, the new draft. No ghost of the
       // cleared draft (would be present if the delete lost the race).
       final prefs = await SharedPreferences.getInstance();
       final metaJson = prefs.getString(_draftsKey);
-      expect(metaJson, isNotNull,
-          reason: 'second save must have written metadata');
+      expect(
+        metaJson,
+        isNotNull,
+        reason: 'second save must have written metadata',
+      );
       final entries = jsonDecode(metaJson!) as List;
-      expect(entries.length, 1,
-          reason: 'cleared draft must not coexist with the new draft');
-      expect(entries.first['draftId'], secondId,
-          reason: 'the surviving entry must be the new draft');
+      expect(
+        entries.length,
+        1,
+        reason: 'cleared draft must not coexist with the new draft',
+      );
+      expect(
+        entries.first['draftId'],
+        secondId,
+        reason: 'the surviving entry must be the new draft',
+      );
 
       // And the OLD draft's payload key is gone — confirms the await
       // completed before the new write started.
-      expect(prefs.getString('$_draftPrefix$firstId'), isNull,
-          reason: 'cleared draft payload must be gone');
+      expect(
+        prefs.getString('$_draftPrefix$firstId'),
+        isNull,
+        reason: 'cleared draft payload must be gone',
+      );
     });
   });
 }

@@ -92,8 +92,9 @@ void main() {
     });
 
     test('should load font scale from persistence on init', () async {
-      when(() => mockPersistence.getInt('butlery_cooking_font_scale'))
-          .thenAnswer((_) async => 2); // index 2 = 1.5
+      when(
+        () => mockPersistence.getInt('butlery_cooking_font_scale'),
+      ).thenAnswer((_) async => 2); // index 2 = 1.5
 
       final vm = CookingModeViewModel(recipe: testRecipe);
 
@@ -105,17 +106,19 @@ void main() {
       vm.dispose();
     });
 
-    test('should default to fontScale 1.0 when persistence returns null',
-        () async {
-      when(() => mockPersistence.getInt(any())).thenAnswer((_) async => null);
+    test(
+      'should default to fontScale 1.0 when persistence returns null',
+      () async {
+        when(() => mockPersistence.getInt(any())).thenAnswer((_) async => null);
 
-      final vm = CookingModeViewModel(recipe: testRecipe);
-      await Future.delayed(Duration.zero);
+        final vm = CookingModeViewModel(recipe: testRecipe);
+        await Future.delayed(Duration.zero);
 
-      expect(vm.fontScale, 1.0);
+        expect(vm.fontScale, 1.0);
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
   });
 
   group('CookingModeViewModel - Step Navigation', () {
@@ -264,8 +267,7 @@ void main() {
       vm.dispose();
     });
 
-    test(
-        'scales via persisted structured amounts (BUT-444) — '
+    test('scales via persisted structured amounts (BUT-444) — '
         'string-unscalable line still scales', () {
       // The v1 string path mangles "ca 2,5 dl ..." (quantity coerced to 1.0,
       // "ca" dropped → '2 dl vispgrädde' at factor 2). Only the structured
@@ -298,9 +300,13 @@ void main() {
 
       vm.updatePortions(8); // factor 2.0
 
-      expect(vm.scaledIngredients.single, '5 dl vispgrädde',
-          reason: 'seeing "2 dl vispgrädde" here means cooking mode fell '
-              'back to the string path');
+      expect(
+        vm.scaledIngredients.single,
+        '5 dl vispgrädde',
+        reason:
+            'seeing "2 dl vispgrädde" here means cooking mode fell '
+            'back to the string path',
+      );
 
       vm.dispose();
     });
@@ -321,31 +327,34 @@ void main() {
   });
 
   group('CookingModeViewModel - Font Scale Cycling', () {
-    test('should cycle through font scale options: 1.0 -> 1.25 -> 1.5 -> 1.0',
-        () {
-      final vm = CookingModeViewModel(recipe: testRecipe);
+    test(
+      'should cycle through font scale options: 1.0 -> 1.25 -> 1.5 -> 1.0',
+      () {
+        final vm = CookingModeViewModel(recipe: testRecipe);
 
-      expect(vm.fontScale, 1.0);
+        expect(vm.fontScale, 1.0);
 
-      vm.cycleFontScale();
-      expect(vm.fontScale, 1.25);
+        vm.cycleFontScale();
+        expect(vm.fontScale, 1.25);
 
-      vm.cycleFontScale();
-      expect(vm.fontScale, 1.5);
+        vm.cycleFontScale();
+        expect(vm.fontScale, 1.5);
 
-      vm.cycleFontScale();
-      expect(vm.fontScale, 1.0); // wraps around
+        vm.cycleFontScale();
+        expect(vm.fontScale, 1.0); // wraps around
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('should persist font scale index to PersistenceService', () {
       final vm = CookingModeViewModel(recipe: testRecipe);
 
       vm.cycleFontScale(); // 1.0 -> 1.25 (index 1)
 
-      verify(() => mockPersistence.setInt('butlery_cooking_font_scale', 1))
-          .called(1);
+      verify(
+        () => mockPersistence.setInt('butlery_cooking_font_scale', 1),
+      ).called(1);
 
       vm.dispose();
     });
@@ -413,28 +422,36 @@ void main() {
       mockAnalytics = _MockAnalyticsService();
       mockTracker = _MockRecipeEventsTracker();
       when(() => mockAnalytics.recipe).thenReturn(mockTracker);
-      when(() => mockTracker.logCookingSessionStarted(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-          )).thenAnswer((_) async {});
-      when(() => mockTracker.logCookingStepAdvanced(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            fromStep: any(named: 'fromStep'),
-            toStep: any(named: 'toStep'),
-          )).thenAnswer((_) async {});
-      when(() => mockTracker.logCookingSessionCompleted(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            durationSec: any(named: 'durationSec'),
-            stepsViewed: any(named: 'stepsViewed'),
-          )).thenAnswer((_) async {});
-      when(() => mockTracker.logCookingSessionAbandoned(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            durationSec: any(named: 'durationSec'),
-            lastStep: any(named: 'lastStep'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockTracker.logCookingSessionStarted(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockTracker.logCookingStepAdvanced(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          fromStep: any(named: 'fromStep'),
+          toStep: any(named: 'toStep'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockTracker.logCookingSessionCompleted(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          durationSec: any(named: 'durationSec'),
+          stepsViewed: any(named: 'stepsViewed'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockTracker.logCookingSessionAbandoned(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          durationSec: any(named: 'durationSec'),
+          lastStep: any(named: 'lastStep'),
+        ),
+      ).thenAnswer((_) async {});
 
       final getIt = GetIt.instance;
       if (getIt.isRegistered<AnalyticsService>()) {
@@ -450,23 +467,30 @@ void main() {
       }
     });
 
-    test('onEnter fires cooking_session_started with recipe id + uuid',
-        () async {
-      final vm = CookingModeViewModel(recipe: testRecipe);
+    test(
+      'onEnter fires cooking_session_started with recipe id + uuid',
+      () async {
+        final vm = CookingModeViewModel(recipe: testRecipe);
 
-      await vm.onEnter();
+        await vm.onEnter();
 
-      final captured = verify(() => mockTracker.logCookingSessionStarted(
+        final captured = verify(
+          () => mockTracker.logCookingSessionStarted(
             recipeId: captureAny(named: 'recipeId'),
             sessionId: captureAny(named: 'sessionId'),
-          )).captured;
-      expect(captured[0], 'recipe-1');
-      expect(captured[1], isA<String>());
-      expect((captured[1] as String).length, 36,
-          reason: 'sessionId is a v4 UUID — 36 chars with dashes.');
+          ),
+        ).captured;
+        expect(captured[0], 'recipe-1');
+        expect(captured[1], isA<String>());
+        expect(
+          (captured[1] as String).length,
+          36,
+          reason: 'sessionId is a v4 UUID — 36 chars with dashes.',
+        );
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('onEnter twice does not regenerate sessionId', () async {
       final vm = CookingModeViewModel(recipe: testRecipe);
@@ -476,166 +500,207 @@ void main() {
 
       // Only one started event; the second onEnter is a no-op because the
       // session is already active.
-      verify(() => mockTracker.logCookingSessionStarted(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-          )).called(1);
+      verify(
+        () => mockTracker.logCookingSessionStarted(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+        ),
+      ).called(1);
 
       vm.dispose();
     });
 
-    test('nextStep emits cooking_step_advanced with from/to + sessionId',
-        () async {
-      final vm = CookingModeViewModel(recipe: testRecipe);
-      await vm.onEnter();
+    test(
+      'nextStep emits cooking_step_advanced with from/to + sessionId',
+      () async {
+        final vm = CookingModeViewModel(recipe: testRecipe);
+        await vm.onEnter();
 
-      vm.nextStep();
+        vm.nextStep();
 
-      final captured = verify(() => mockTracker.logCookingStepAdvanced(
+        final captured = verify(
+          () => mockTracker.logCookingStepAdvanced(
             recipeId: captureAny(named: 'recipeId'),
             sessionId: captureAny(named: 'sessionId'),
             fromStep: captureAny(named: 'fromStep'),
             toStep: captureAny(named: 'toStep'),
-          )).captured;
-      expect(captured[0], 'recipe-1');
-      expect(captured[2], 0);
-      expect(captured[3], 1);
+          ),
+        ).captured;
+        expect(captured[0], 'recipe-1');
+        expect(captured[2], 0);
+        expect(captured[3], 1);
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('step events do not fire before onEnter (no session)', () async {
       final vm = CookingModeViewModel(recipe: testRecipe);
 
       vm.nextStep();
 
-      verifyNever(() => mockTracker.logCookingStepAdvanced(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            fromStep: any(named: 'fromStep'),
-            toStep: any(named: 'toStep'),
-          ));
+      verifyNever(
+        () => mockTracker.logCookingStepAdvanced(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          fromStep: any(named: 'fromStep'),
+          toStep: any(named: 'toStep'),
+        ),
+      );
 
       vm.dispose();
     });
 
-    test('onExit at last step fires session_completed with steps_viewed',
-        () async {
-      // Two fixed-clock blocks: onEnter at T=0 captures startedAt; onExit
-      // 90s later computes duration_sec = 90. Hoisting `vm` out of both
-      // closures keeps the same instance across the timeline.
-      late CookingModeViewModel vm;
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+    test(
+      'onExit at last step fires session_completed with steps_viewed',
+      () async {
+        // Two fixed-clock blocks: onEnter at T=0 captures startedAt; onExit
+        // 90s later computes duration_sec = 90. Hoisting `vm` out of both
+        // closures keeps the same instance across the timeline.
+        late CookingModeViewModel vm;
+        await withClock(
+          Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
           () async {
-        vm = CookingModeViewModel(recipe: testRecipe);
-        await vm.onEnter();
-        vm.nextStep(); // step 1
-        vm.nextStep(); // step 2 (last — totalSteps - 1 = 2)
-      });
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 30)),
+            vm = CookingModeViewModel(recipe: testRecipe);
+            await vm.onEnter();
+            vm.nextStep(); // step 1
+            vm.nextStep(); // step 2 (last — totalSteps - 1 = 2)
+          },
+        );
+        await withClock(
+          Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 30)),
           () async {
-        await vm.onExit();
-      });
+            await vm.onExit();
+          },
+        );
 
-      final captured = verify(() => mockTracker.logCookingSessionCompleted(
+        final captured = verify(
+          () => mockTracker.logCookingSessionCompleted(
             recipeId: captureAny(named: 'recipeId'),
             sessionId: captureAny(named: 'sessionId'),
             durationSec: captureAny(named: 'durationSec'),
             stepsViewed: captureAny(named: 'stepsViewed'),
-          )).captured;
-      expect(captured[0], 'recipe-1');
-      expect(captured[2], 90, reason: '90s between fixed clocks.');
-      expect(captured[3], 3, reason: 'Reached steps 0, 1, 2 — all 3 viewed.');
+          ),
+        ).captured;
+        expect(captured[0], 'recipe-1');
+        expect(captured[2], 90, reason: '90s between fixed clocks.');
+        expect(captured[3], 3, reason: 'Reached steps 0, 1, 2 — all 3 viewed.');
 
-      verifyNever(() => mockTracker.logCookingSessionAbandoned(
+        verifyNever(
+          () => mockTracker.logCookingSessionAbandoned(
             recipeId: any(named: 'recipeId'),
             sessionId: any(named: 'sessionId'),
             durationSec: any(named: 'durationSec'),
             lastStep: any(named: 'lastStep'),
-          ));
+          ),
+        );
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('onExit mid-recipe fires session_abandoned with last_step', () async {
       late CookingModeViewModel vm;
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
-          () async {
-        vm = CookingModeViewModel(recipe: testRecipe);
-        await vm.onEnter();
-        vm.nextStep(); // step 1
-      });
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 45)),
-          () async {
-        await vm.onExit();
-      });
+      await withClock(
+        Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+        () async {
+          vm = CookingModeViewModel(recipe: testRecipe);
+          await vm.onEnter();
+          vm.nextStep(); // step 1
+        },
+      );
+      await withClock(
+        Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 45)),
+        () async {
+          await vm.onExit();
+        },
+      );
 
-      final captured = verify(() => mockTracker.logCookingSessionAbandoned(
-            recipeId: captureAny(named: 'recipeId'),
-            sessionId: captureAny(named: 'sessionId'),
-            durationSec: captureAny(named: 'durationSec'),
-            lastStep: captureAny(named: 'lastStep'),
-          )).captured;
+      final captured = verify(
+        () => mockTracker.logCookingSessionAbandoned(
+          recipeId: captureAny(named: 'recipeId'),
+          sessionId: captureAny(named: 'sessionId'),
+          durationSec: captureAny(named: 'durationSec'),
+          lastStep: captureAny(named: 'lastStep'),
+        ),
+      ).captured;
       expect(captured[0], 'recipe-1');
       expect(captured[2], 45);
       expect(captured[3], 1, reason: 'Abandoned at step 1, not last (2).');
 
-      verifyNever(() => mockTracker.logCookingSessionCompleted(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            durationSec: any(named: 'durationSec'),
-            stepsViewed: any(named: 'stepsViewed'),
-          ));
+      verifyNever(
+        () => mockTracker.logCookingSessionCompleted(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          durationSec: any(named: 'durationSec'),
+          stepsViewed: any(named: 'stepsViewed'),
+        ),
+      );
 
       vm.dispose();
     });
 
-    test('onExit without prior onEnter is a no-op (no session emitted)',
-        () async {
-      final vm = CookingModeViewModel(recipe: testRecipe);
+    test(
+      'onExit without prior onEnter is a no-op (no session emitted)',
+      () async {
+        final vm = CookingModeViewModel(recipe: testRecipe);
 
-      await vm.onExit();
+        await vm.onExit();
 
-      verifyNever(() => mockTracker.logCookingSessionCompleted(
+        verifyNever(
+          () => mockTracker.logCookingSessionCompleted(
             recipeId: any(named: 'recipeId'),
             sessionId: any(named: 'sessionId'),
             durationSec: any(named: 'durationSec'),
             stepsViewed: any(named: 'stepsViewed'),
-          ));
-      verifyNever(() => mockTracker.logCookingSessionAbandoned(
+          ),
+        );
+        verifyNever(
+          () => mockTracker.logCookingSessionAbandoned(
             recipeId: any(named: 'recipeId'),
             sessionId: any(named: 'sessionId'),
             durationSec: any(named: 'durationSec'),
             lastStep: any(named: 'lastStep'),
-          ));
+          ),
+        );
 
-      vm.dispose();
-    });
+        vm.dispose();
+      },
+    );
 
     test('revisiting a step does not double-count steps_viewed', () async {
       late CookingModeViewModel vm;
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
-          () async {
-        vm = CookingModeViewModel(recipe: testRecipe);
-        await vm.onEnter();
-        vm.nextStep(); // step 1
-        vm.previousStep(); // back to 0 (already in set)
-        vm.nextStep(); // step 1 again (already in set)
-        vm.nextStep(); // step 2 (last)
-      });
-      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 0)),
-          () async {
-        await vm.onExit();
-      });
+      await withClock(
+        Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+        () async {
+          vm = CookingModeViewModel(recipe: testRecipe);
+          await vm.onEnter();
+          vm.nextStep(); // step 1
+          vm.previousStep(); // back to 0 (already in set)
+          vm.nextStep(); // step 1 again (already in set)
+          vm.nextStep(); // step 2 (last)
+        },
+      );
+      await withClock(
+        Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 0)),
+        () async {
+          await vm.onExit();
+        },
+      );
 
-      final captured = verify(() => mockTracker.logCookingSessionCompleted(
-            recipeId: any(named: 'recipeId'),
-            sessionId: any(named: 'sessionId'),
-            durationSec: any(named: 'durationSec'),
-            stepsViewed: captureAny(named: 'stepsViewed'),
-          )).captured;
-      expect(captured.single, 3,
-          reason: 'Steps 0, 1, 2 visited — set semantics dedupe revisits.');
+      final captured = verify(
+        () => mockTracker.logCookingSessionCompleted(
+          recipeId: any(named: 'recipeId'),
+          sessionId: any(named: 'sessionId'),
+          durationSec: any(named: 'durationSec'),
+          stepsViewed: captureAny(named: 'stepsViewed'),
+        ),
+      ).captured;
+      expect(
+        captured.single,
+        3,
+        reason: 'Steps 0, 1, 2 visited — set semantics dedupe revisits.',
+      );
 
       vm.dispose();
     });

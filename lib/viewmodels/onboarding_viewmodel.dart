@@ -45,9 +45,9 @@ class OnboardingViewModel extends BaseViewModel {
   OnboardingViewModel({
     OnboardingProgressService? progressService,
     String? userId,
-  })  : _currentPage = 0,
-        _progressService = progressService,
-        _userId = userId;
+  }) : _currentPage = 0,
+       _progressService = progressService,
+       _userId = userId;
 
   int _currentPage;
   final Set<String> _selectedAllergens = {};
@@ -212,11 +212,11 @@ class OnboardingViewModel extends BaseViewModel {
       // Save preferences and mark onboarding complete in a single write
       final prefs =
           (_selectedAllergens.isNotEmpty || _selectedDietaryPrefs.isNotEmpty)
-              ? UserAllergenPreferences(
-                  trackedAllergens: _selectedAllergens,
-                  trackedDietary: _selectedDietaryPrefs,
-                )
-              : null;
+          ? UserAllergenPreferences(
+              trackedAllergens: _selectedAllergens,
+              trackedDietary: _selectedDietaryPrefs,
+            )
+          : null;
       final isSkip = _currentPage < _lastPageIndex;
       // BUT-33: bound the critical completion write — a hung call must surface
       // an error rather than hang the onboarding spinner forever. A timeout
@@ -232,11 +232,13 @@ class OnboardingViewModel extends BaseViewModel {
       // BUT-675: stamp `completed: true` on the progress doc so AuthWrapper
       // routes home (not back into onboarding) on the next cold start.
       if (_progressService != null && _userId != null) {
-        unawaited(_progressService.markStepComplete(
-          userId: _userId,
-          step: OnboardingStep.firstRecipe,
-          isFinalStep: true,
-        ));
+        unawaited(
+          _progressService.markStepComplete(
+            userId: _userId,
+            step: OnboardingStep.firstRecipe,
+            isFinalStep: true,
+          ),
+        );
       }
 
       // BUT-926: await seeding so the spinner stays up until the user has

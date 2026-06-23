@@ -83,14 +83,16 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
           opacity: _fadeAnimation.value,
           child: Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingS,
-                vertical: AppDimensions.spacingXs),
+              horizontal: AppDimensions.paddingS,
+              vertical: AppDimensions.spacingXs,
+            ),
             decoration: BoxDecoration(
               color: color.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(
-                color:
-                    color.withValues(alpha: AppDimensions.opacityMediumLight),
+                color: color.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
                 width: 1,
               ),
             ),

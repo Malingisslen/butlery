@@ -99,8 +99,11 @@ class _OfflineIndicatorState extends State<OfflineIndicator> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off,
-                color: textColor, size: AppDimensions.iconSizeM),
+            Icon(
+              Icons.wifi_off,
+              color: textColor,
+              size: AppDimensions.iconSizeM,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               widget.message ?? context.l10n.indicatorOfflineMode,
@@ -162,8 +165,9 @@ class OfflineStatusIcon extends StatelessWidget {
         }
 
         return Padding(
-          padding:
-              const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+          padding: const EdgeInsetsDirectional.only(
+            end: AppDimensions.spacingS,
+          ),
           child: Icon(
             Icons.cloud_off,
             color: context.butleryColors.warning,

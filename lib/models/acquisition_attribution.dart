@@ -32,11 +32,11 @@ class AcquisitionAttribution {
   /// Build the Firestore payload for first-write. `firstSeenAt` is written
   /// as `serverTimestamp()` so dedupe logic doesn't depend on client clocks.
   Map<String, dynamic> toFirestore() => <String, dynamic>{
-        'source': source,
-        'medium': medium,
-        'campaign': campaign,
-        'firstSeenAt': FieldValue.serverTimestamp(),
-      };
+    'source': source,
+    'medium': medium,
+    'campaign': campaign,
+    'firstSeenAt': FieldValue.serverTimestamp(),
+  };
 
   factory AcquisitionAttribution.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,

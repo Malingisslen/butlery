@@ -43,8 +43,9 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
       try {
         content = await rootBundle.loadString(assetPath);
       } catch (_) {
-        content = await rootBundle
-            .loadString('assets/legal/community_guidelines_sv.md');
+        content = await rootBundle.loadString(
+          'assets/legal/community_guidelines_sv.md',
+        );
       }
 
       if (mounted) {
@@ -55,7 +56,9 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
       }
     } catch (e) {
       app_logger.AppLogger.error(
-          '[CommunityGuidelinesView] Failed to load community guidelines', e);
+        '[CommunityGuidelinesView] Failed to load community guidelines',
+        e,
+      );
 
       if (mounted) {
         setState(() {
@@ -103,8 +106,11 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: 64, color: Theme.of(context).colorScheme.error),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: AppDimensions.spacingLg),
@@ -129,8 +135,8 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
             child: SelectableText(
               _content!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                  ),
+                height: 1.6,
+              ),
             ),
           ),
         ),

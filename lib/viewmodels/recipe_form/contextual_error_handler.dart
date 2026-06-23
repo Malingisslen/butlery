@@ -35,13 +35,16 @@ class ContextualErrorHandler {
 
       final contextualMessage = ContextualErrorEngine.generateMessage(context);
       AppLogger.debug(
-          'CONTEXTUAL_ERROR: Generated error for ${actionContext.name}: $errorType');
+        'CONTEXTUAL_ERROR: Generated error for ${actionContext.name}: $errorType',
+      );
       return contextualMessage;
     } catch (e) {
       // Fallback to basic error if contextual generation fails
       AppLogger.error('Failed to generate contextual error: $e');
-      return AppStrings.actionSpecificError(actionContext.localizedDescription,
-          technicalDetails ?? AppLocale.current.errorGenericOccurred);
+      return AppStrings.actionSpecificError(
+        actionContext.localizedDescription,
+        technicalDetails ?? AppLocale.current.errorGenericOccurred,
+      );
     }
   }
 
@@ -62,12 +65,15 @@ class ContextualErrorHandler {
       );
 
       AppLogger.info(
-          'NETWORK_ERROR: Generated network-aware error for $operation with $connectivityType connectivity');
+        'NETWORK_ERROR: Generated network-aware error for $operation with $connectivityType connectivity',
+      );
       return message;
     } catch (e) {
       AppLogger.error('Failed to generate network-aware error: $e');
-      return AppStrings.actionSpecificError(operation,
-          technicalDetails ?? AppLocale.current.errorNetworkFallback);
+      return AppStrings.actionSpecificError(
+        operation,
+        technicalDetails ?? AppLocale.current.errorNetworkFallback,
+      );
     }
   }
 
@@ -86,7 +92,8 @@ class ContextualErrorHandler {
     );
 
     AppLogger.info(
-        'PERMISSION_ERROR: Generated permission error for $action on $resource');
+      'PERMISSION_ERROR: Generated permission error for $action on $resource',
+    );
     return message;
   }
 
@@ -125,7 +132,8 @@ class ContextualErrorHandler {
 
   /// Convert connectivity result to readable type name.
   static String _getConnectivityTypeName(
-      ConnectivityResult connectivityResult) {
+    ConnectivityResult connectivityResult,
+  ) {
     switch (connectivityResult) {
       case ConnectivityResult.none:
         return 'none';

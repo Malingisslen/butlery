@@ -51,8 +51,10 @@ void main() {
         email: testUserEmail,
         displayName: 'Test User',
       );
-      mockAuth =
-          auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
+      mockAuth = auth_mocks.MockFirebaseAuth(
+        mockUser: mockUser,
+        signedIn: true,
+      );
     });
 
     tearDown(() async {
@@ -109,47 +111,49 @@ void main() {
         expect(persistedTags['dietaryStatus'], isA<Map>());
       });
 
-      test('recipe with partial coverage persists unknown ingredients',
-          () async {
-        final recipe = RecipeBuilder()
-            .withId('partial-recipe-1')
-            .withTitle('Mystery Stew')
-            .withIngredients(['known1', 'unknown1', 'unknown2', 'unknown3'])
-            .withTimeMinutes(45)
-            .withCreatedBy(testUserId)
-            .build();
+      test(
+        'recipe with partial coverage persists unknown ingredients',
+        () async {
+          final recipe = RecipeBuilder()
+              .withId('partial-recipe-1')
+              .withTitle('Mystery Stew')
+              .withIngredients(['known1', 'unknown1', 'unknown2', 'unknown3'])
+              .withTimeMinutes(45)
+              .withCreatedBy(testUserId)
+              .build();
 
-        final lookup = TaggingTestHelper.createLookupWithCoverage(
-          matchedCount: 1,
-          totalCount: 4,
-        );
+          final lookup = TaggingTestHelper.createLookupWithCoverage(
+            matchedCount: 1,
+            totalCount: 4,
+          );
 
-        final tagResult = tagGenerator.generate(
-          ingredients: lookup,
-          recipe: recipe,
-        );
+          final tagResult = tagGenerator.generate(
+            ingredients: lookup,
+            recipe: recipe,
+          );
 
-        final recipeWithTags = _withTagResult(recipe, tagResult);
+          final recipeWithTags = _withTagResult(recipe, tagResult);
 
-        await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc(recipe.id)
-            .set(recipeWithTags.toFirestore());
+          await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc(recipe.id)
+              .set(recipeWithTags.toFirestore());
 
-        // Verify unknown ingredients persisted
-        final doc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc(recipe.id)
-            .get();
+          // Verify unknown ingredients persisted
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc(recipe.id)
+              .get();
 
-        final restored = Recipe.fromFirestore(doc);
-        expect(restored.core.tagResult!.coverage, closeTo(0.25, 0.01));
-        expect(restored.core.tagResult!.unknownIngredients.length, 3);
-      });
+          final restored = Recipe.fromFirestore(doc);
+          expect(restored.core.tagResult!.coverage, closeTo(0.25, 0.01));
+          expect(restored.core.tagResult!.unknownIngredients.length, 3);
+        },
+      );
 
       test('recipe with isPartial flag persists timeout state', () async {
         final recipe = RecipeBuilder()
@@ -251,8 +255,10 @@ void main() {
             .get();
 
         final restored = Recipe.fromFirestore(doc);
-        expect(restored.core.tagResult!.dietaryStatus['vegetarisk'],
-            TriState.free);
+        expect(
+          restored.core.tagResult!.dietaryStatus['vegetarisk'],
+          TriState.free,
+        );
         expect(restored.title, 'Veggie Dish');
       });
 
@@ -310,8 +316,10 @@ void main() {
             .get();
 
         final restored = Recipe.fromFirestore(doc);
-        expect(restored.core.tagResult!.allergenStatus['gluten'],
-            TriState.contains);
+        expect(
+          restored.core.tagResult!.allergenStatus['gluten'],
+          TriState.contains,
+        );
       });
 
       test('coverage changes when ingredients become known', () async {
@@ -470,11 +478,13 @@ void main() {
         // Batch delete
         final batch = fakeFirestore.batch();
         for (final id in recipeIds) {
-          batch.delete(fakeFirestore
-              .collection('users')
-              .doc(testUserId)
-              .collection('recipes')
-              .doc(id));
+          batch.delete(
+            fakeFirestore
+                .collection('users')
+                .doc(testUserId)
+                .collection('recipes')
+                .doc(id),
+          );
         }
         await batch.commit();
 
@@ -489,42 +499,44 @@ void main() {
     });
 
     group('Schema Compatibility', () {
-      test('recipe with missing tagResult fields deserializes safely',
-          () async {
-        // Simulate old schema data with minimal tagResult
-        await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc('legacy-recipe-1')
-            .set({
-          'core': {
-            'id': 'legacy-recipe-1',
-            'title': 'Legacy Recipe',
-            'createdBy': testUserId,
-            'tagResult': {
-              'tags': ['old-tag'],
-              'coverage': 0.5,
-              'generatorVersion': '0.5.0',
-              // Missing: allergenStatus, dietaryStatus, decisions
-            },
-          },
-          'type': 0, // RecipeType.personal.index
-        });
+      test(
+        'recipe with missing tagResult fields deserializes safely',
+        () async {
+          // Simulate old schema data with minimal tagResult
+          await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('legacy-recipe-1')
+              .set({
+                'core': {
+                  'id': 'legacy-recipe-1',
+                  'title': 'Legacy Recipe',
+                  'createdBy': testUserId,
+                  'tagResult': {
+                    'tags': ['old-tag'],
+                    'coverage': 0.5,
+                    'generatorVersion': '0.5.0',
+                    // Missing: allergenStatus, dietaryStatus, decisions
+                  },
+                },
+                'type': 0, // RecipeType.personal.index
+              });
 
-        // Should deserialize without error
-        final doc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc('legacy-recipe-1')
-            .get();
+          // Should deserialize without error
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('legacy-recipe-1')
+              .get();
 
-        final recipe = Recipe.fromFirestore(doc);
-        expect(recipe.core.tagResult, isNotNull);
-        expect(recipe.core.tagResult!.coverage, 0.5);
-        expect(recipe.core.tagResult!.needsRetagging, isTrue);
-      });
+          final recipe = Recipe.fromFirestore(doc);
+          expect(recipe.core.tagResult, isNotNull);
+          expect(recipe.core.tagResult!.coverage, 0.5);
+          expect(recipe.core.tagResult!.needsRetagging, isTrue);
+        },
+      );
 
       test('recipe with null tagResult handles gracefully', () async {
         await fakeFirestore
@@ -533,14 +545,14 @@ void main() {
             .collection('recipes')
             .doc('no-tags-recipe')
             .set({
-          'core': {
-            'id': 'no-tags-recipe',
-            'title': 'Untagged Recipe',
-            'createdBy': testUserId,
-            // No tagResult field at all
-          },
-          'type': 0, // RecipeType.personal.index
-        });
+              'core': {
+                'id': 'no-tags-recipe',
+                'title': 'Untagged Recipe',
+                'createdBy': testUserId,
+                // No tagResult field at all
+              },
+              'type': 0, // RecipeType.personal.index
+            });
 
         final doc = await fakeFirestore
             .collection('users')
@@ -561,22 +573,22 @@ void main() {
             .collection('recipes')
             .doc('old-version-recipe')
             .set({
-          'core': {
-            'id': 'old-version-recipe',
-            'title': 'Old Version Recipe',
-            'createdBy': testUserId,
-            'tagResult': {
-              'tags': ['pasta'],
-              'allergenStatus': {'gluten': 'contains'},
-              'dietaryStatus': {},
-              'coverage': 1.0,
-              'unknownIngredients': [],
-              'generatedAt': DateTime.now().toIso8601String(),
-              'generatorVersion': '0.9.0', // Old version
-            },
-          },
-          'type': 0, // RecipeType.personal.index
-        });
+              'core': {
+                'id': 'old-version-recipe',
+                'title': 'Old Version Recipe',
+                'createdBy': testUserId,
+                'tagResult': {
+                  'tags': ['pasta'],
+                  'allergenStatus': {'gluten': 'contains'},
+                  'dietaryStatus': {},
+                  'coverage': 1.0,
+                  'unknownIngredients': [],
+                  'generatedAt': DateTime.now().toIso8601String(),
+                  'generatorVersion': '0.9.0', // Old version
+                },
+              },
+              'type': 0, // RecipeType.personal.index
+            });
 
         final doc = await fakeFirestore
             .collection('users')
@@ -629,8 +641,10 @@ void main() {
             .get();
 
         final restored = Recipe.fromFirestore(doc);
-        expect(restored.core.tagResult!.allergenStatus['gluten'],
-            TriState.contains);
+        expect(
+          restored.core.tagResult!.allergenStatus['gluten'],
+          TriState.contains,
+        );
       });
 
       test('dietary status persists through roundtrip', () async {
@@ -669,8 +683,10 @@ void main() {
             .get();
 
         final restored = Recipe.fromFirestore(doc);
-        expect(restored.core.tagResult!.dietaryStatus['vegetarisk'],
-            TriState.contains);
+        expect(
+          restored.core.tagResult!.dietaryStatus['vegetarisk'],
+          TriState.contains,
+        );
       });
     });
   });

@@ -42,7 +42,7 @@ class PersonalTagViewModel extends ChangeNotifier
   StreamSubscription<PersonalTagsWithGroups>? _tagsWithGroupsSubscription;
 
   PersonalTagViewModel({PersonalTagService? service})
-      : _service = service ?? ServiceLocator.get<PersonalTagService>();
+    : _service = service ?? ServiceLocator.get<PersonalTagService>();
 
   // Getters
   List<PersonalTag> get tags => List.unmodifiable(_tags);
@@ -292,8 +292,9 @@ class PersonalTagViewModel extends ChangeNotifier
   /// tags is counted by each merge); the tags-merged count is deterministic and
   /// accurate without threading recipe-id sets through the BUT-1186 chunking.
   Future<int> mergeTagsInto(String targetId, List<String> sourceIds) async {
-    final sources =
-        sourceIds.where((id) => id.isNotEmpty && id != targetId).toSet();
+    final sources = sourceIds
+        .where((id) => id.isNotEmpty && id != targetId)
+        .toSet();
     var merged = 0;
     for (final fromId in sources) {
       await _service.mergeTags(fromId, targetId);
@@ -570,8 +571,9 @@ class PersonalTagViewModel extends ChangeNotifier
       }
 
       // Use service-level evaluation for proper lookup + userId
-      final sourcesMap =
-          await _service.evaluateRulesWithSourcesForRecipes(recipes);
+      final sourcesMap = await _service.evaluateRulesWithSourcesForRecipes(
+        recipes,
+      );
 
       // Build per-rule match counts from the sources map
       // sourcesMap: recipeId → (tagId → [ruleId, ...])
@@ -620,8 +622,9 @@ class PersonalTagViewModel extends ChangeNotifier
       final tagVersion = await _service.getCurrentTagVersion();
 
       // Evaluate rules with source tracking for all recipes
-      final matchingSources =
-          await _service.evaluateRulesWithSourcesForRecipes(recipes);
+      final matchingSources = await _service.evaluateRulesWithSourcesForRecipes(
+        recipes,
+      );
       if (matchingSources.isEmpty) {
         onProgress?.call(recipes.length, recipes.length);
         return BatchApplyResult(
@@ -723,8 +726,9 @@ class PersonalTagViewModel extends ChangeNotifier
 
   /// Gets all tags with zero recipe usage.
   List<PersonalTag> get unusedTags {
-    return _unusedTagsCache ??=
-        _tags.where((t) => getUsageCount(t.name) == 0).toList();
+    return _unusedTagsCache ??= _tags
+        .where((t) => getUsageCount(t.name) == 0)
+        .toList();
   }
 
   void _invalidateUnusedTagsCache() => _unusedTagsCache = null;

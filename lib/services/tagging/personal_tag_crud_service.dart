@@ -43,8 +43,8 @@ class PersonalTagCrudService extends BaseService {
   PersonalTagCrudService({
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
-  })  : _tagRepository = tagRepository,
-        _groupRepository = groupRepository;
+  }) : _tagRepository = tagRepository,
+       _groupRepository = groupRepository;
 
   @override
   String get serviceName => 'PersonalTagCrudService';
@@ -246,11 +246,11 @@ class PersonalTagCrudService extends BaseService {
           final batch = _tagRepository.newWriteBatch();
           for (final tagId in chunk) {
             if (recipeRepo != null) {
-              totalCascaded +=
-                  await recipeRepo.addRemovePersonalTagFromRecipesToBatch(
-                batch,
-                tagId,
-              );
+              totalCascaded += await recipeRepo
+                  .addRemovePersonalTagFromRecipesToBatch(
+                    batch,
+                    tagId,
+                  );
             }
             _tagRepository.addDeleteToBatch(batch, tagId);
           }
@@ -466,8 +466,10 @@ class PersonalTagCrudService extends BaseService {
           throw ArgumentError(nameValidation);
         }
 
-        if (await _groupRepository.nameExists(group.name,
-            excludeId: group.id)) {
+        if (await _groupRepository.nameExists(
+          group.name,
+          excludeId: group.id,
+        )) {
           throw ArgumentError(
             AppLocale.current.errorGroupNameExistsWithName(group.name),
           );
@@ -490,8 +492,10 @@ class PersonalTagCrudService extends BaseService {
       () async {
         final batch = _tagRepository.newWriteBatch();
 
-        final clearedCount =
-            await _tagRepository.addClearGroupToBatch(batch, groupId);
+        final clearedCount = await _tagRepository.addClearGroupToBatch(
+          batch,
+          groupId,
+        );
 
         _groupRepository.addDeleteToBatch(batch, groupId);
 

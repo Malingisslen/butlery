@@ -80,7 +80,8 @@ void main() {
       expect(
         validBuckets,
         contains(actual),
-        reason: 'case ${c.id} produced out-of-schema bucket "$actual" '
+        reason:
+            'case ${c.id} produced out-of-schema bucket "$actual" '
             'for input <${_describe(input)}>',
       );
 
@@ -105,13 +106,16 @@ void main() {
 
     _writeArtifactSummary('adversarial', results);
 
-    final actualPassing =
-        results.where((r) => r.passed).map((r) => r.id).toSet();
+    final actualPassing = results
+        .where((r) => r.passed)
+        .map((r) => r.id)
+        .toSet();
 
     expect(
       actualPassing,
       _expectedPassing,
-      reason: 'Pass-set drift detected.\n'
+      reason:
+          'Pass-set drift detected.\n'
           'Regressed (were passing, now fail): '
           '${_expectedPassing.difference(actualPassing)}\n'
           'Newly passing (update _expectedPassing): '

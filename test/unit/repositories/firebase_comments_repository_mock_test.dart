@@ -58,11 +58,13 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: content,
-            )).thenAnswer((_) async => expectedComment);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: content,
+          ),
+        ).thenAnswer((_) async => expectedComment);
 
         // Act
         final comment = await mockRepository.addComment(
@@ -79,11 +81,13 @@ void main() {
         expect(comment.parentCommentId, isNull);
 
         // Verify the method was called
-        verify(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: content,
-            )).called(1);
+        verify(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: content,
+          ),
+        ).called(1);
       });
 
       test('should add reply comment to parent comment', () async {
@@ -104,12 +108,14 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: replyContent,
-              parentCommentId: parentCommentId,
-            )).thenAnswer((_) async => expectedReply);
+        when(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: replyContent,
+            parentCommentId: parentCommentId,
+          ),
+        ).thenAnswer((_) async => expectedReply);
 
         // Act
         final reply = await mockRepository.addComment(
@@ -126,12 +132,14 @@ void main() {
         expect(reply.text, equals(replyContent));
 
         // Verify the method was called
-        verify(() => mockRepository.addComment(
-              recipeId: recipeId,
-              userId: userId,
-              content: replyContent,
-              parentCommentId: parentCommentId,
-            )).called(1);
+        verify(
+          () => mockRepository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: replyContent,
+            parentCommentId: parentCommentId,
+          ),
+        ).called(1);
       });
     });
 
@@ -160,8 +168,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getCommentsForRecipe(recipeId))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockRepository.getCommentsForRecipe(recipeId),
+        ).thenAnswer((_) async => comments);
 
         // Act
         final result = await mockRepository.getCommentsForRecipe(recipeId);
@@ -202,8 +211,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getReplies(parentId))
-            .thenAnswer((_) async => replies);
+        when(
+          () => mockRepository.getReplies(parentId),
+        ).thenAnswer((_) async => replies);
 
         // Act
         final result = await mockRepository.getReplies(parentId);
@@ -232,8 +242,9 @@ void main() {
         ];
 
         // Stub the repository method (override default empty stream)
-        when(() => mockRepository.getCommentsStream(recipeId))
-            .thenAnswer((_) => Stream.value(comments));
+        when(
+          () => mockRepository.getCommentsStream(recipeId),
+        ).thenAnswer((_) => Stream.value(comments));
 
         // Act
         final stream = mockRepository.getCommentsStream(recipeId);
@@ -255,15 +266,17 @@ void main() {
         const updatedContent = 'Updated comment with more details';
 
         // Stub the repository method
-        when(() => mockRepository.updateComment(commentId, updatedContent))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateComment(commentId, updatedContent),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateComment(commentId, updatedContent);
 
         // Assert
-        verify(() => mockRepository.updateComment(commentId, updatedContent))
-            .called(1);
+        verify(
+          () => mockRepository.updateComment(commentId, updatedContent),
+        ).called(1);
       });
     });
 
@@ -273,8 +286,9 @@ void main() {
         const commentId = 'comment_to_delete';
 
         // Stub the repository method
-        when(() => mockRepository.deleteComment(commentId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteComment(commentId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteComment(commentId);
@@ -291,15 +305,17 @@ void main() {
         const userId = 'test_user_123';
 
         // Stub the repository method
-        when(() => mockRepository.toggleCommentLike(commentId, userId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.toggleCommentLike(commentId, userId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.toggleCommentLike(commentId, userId);
 
         // Assert
-        verify(() => mockRepository.toggleCommentLike(commentId, userId))
-            .called(1);
+        verify(
+          () => mockRepository.toggleCommentLike(commentId, userId),
+        ).called(1);
       });
 
       test('should get comment like count', () async {
@@ -308,8 +324,9 @@ void main() {
         const expectedLikeCount = 5;
 
         // Stub the repository method
-        when(() => mockRepository.getCommentLikeCount(commentId))
-            .thenAnswer((_) async => expectedLikeCount);
+        when(
+          () => mockRepository.getCommentLikeCount(commentId),
+        ).thenAnswer((_) async => expectedLikeCount);
 
         // Act
         final likeCount = await mockRepository.getCommentLikeCount(commentId);
@@ -325,17 +342,21 @@ void main() {
         const userId = 'test_user_123';
 
         // Stub the repository method
-        when(() => mockRepository.hasUserLikedComment(commentId, userId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.hasUserLikedComment(commentId, userId),
+        ).thenAnswer((_) async => true);
 
         // Act
-        final hasLiked =
-            await mockRepository.hasUserLikedComment(commentId, userId);
+        final hasLiked = await mockRepository.hasUserLikedComment(
+          commentId,
+          userId,
+        );
 
         // Assert
         expect(hasLiked, isTrue);
-        verify(() => mockRepository.hasUserLikedComment(commentId, userId))
-            .called(1);
+        verify(
+          () => mockRepository.hasUserLikedComment(commentId, userId),
+        ).called(1);
       });
     });
 
@@ -352,8 +373,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.getCommentStatistics(recipeId))
-            .thenAnswer((_) async => expectedStats);
+        when(
+          () => mockRepository.getCommentStatistics(recipeId),
+        ).thenAnswer((_) async => expectedStats);
 
         // Act
         final stats = await mockRepository.getCommentStatistics(recipeId);
@@ -379,8 +401,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.getCommentStatistics(recipeId))
-            .thenAnswer((_) async => expectedStats);
+        when(
+          () => mockRepository.getCommentStatistics(recipeId),
+        ).thenAnswer((_) async => expectedStats);
 
         // Act
         final stats = await mockRepository.getCommentStatistics(recipeId);

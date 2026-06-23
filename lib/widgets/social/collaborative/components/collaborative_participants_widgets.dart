@@ -28,20 +28,19 @@ class CollaborativeParticipantsWidgets {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
-                2,
-                (index) => Container(
-                      width: avatarSize,
-                      height: avatarSize,
-                      margin:
-                          EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withValues(alpha: AppDimensions.opacityVeryLight),
-                        shape: BoxShape.circle,
-                      ),
-                    )),
+              2,
+              (index) => Container(
+                width: avatarSize,
+                height: avatarSize,
+                margin: EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
           );
         }
 
@@ -111,8 +110,9 @@ class CollaborativeParticipantsWidgets {
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color:
-                      cs.primary.withValues(alpha: AppDimensions.opacityLight),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityLight,
+                  ),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: cs.primary,
@@ -152,18 +152,21 @@ class CollaborativeParticipantsWidgets {
 
       switch (contentType) {
         case 'recipe':
-          participants =
-              await socialRecipeService.getRecipeParticipants(contentId);
+          participants = await socialRecipeService.getRecipeParticipants(
+            contentId,
+          );
           break;
 
         case 'menu':
-          participants =
-              await socialRecipeService.getMenuParticipants(contentId);
+          participants = await socialRecipeService.getMenuParticipants(
+            contentId,
+          );
           break;
 
         case 'shopping_list':
-          participants =
-              await socialRecipeService.getShoppingListParticipants(contentId);
+          participants = await socialRecipeService.getShoppingListParticipants(
+            contentId,
+          );
           break;
 
         default:

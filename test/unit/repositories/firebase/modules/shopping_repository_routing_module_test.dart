@@ -26,7 +26,12 @@ class _PermissionCall {
   final bool granted;
   final String? details;
   _PermissionCall(
-      this.userId, this.resource, this.operation, this.granted, this.details);
+    this.userId,
+    this.resource,
+    this.operation,
+    this.granted,
+    this.details,
+  );
 }
 
 class _RequiredFieldsCall {
@@ -48,27 +53,31 @@ ShoppingRepositoryRoutingModule _routing(
     authRepository: FakeAuthRepository(),
     sharedListsRef: firestore.collection(_sharedPath),
     requireCurrentUserId: () => currentUid ?? _userId,
-    validateRequiredFields: ({
-      required Map<String, dynamic> data,
-      required List<String> requiredFields,
-      required String resourceType,
-    }) {
-      validationCalls
-          ?.add(_RequiredFieldsCall(data, requiredFields, resourceType));
-      if (requiredFieldsThrows) {
-        throw SecurityViolationException('missing required field');
-      }
-    },
-    logPermissionCheck: ({
-      required String userId,
-      required String resource,
-      required String operation,
-      required bool granted,
-      String? details,
-    }) {
-      permissionCalls
-          ?.add(_PermissionCall(userId, resource, operation, granted, details));
-    },
+    validateRequiredFields:
+        ({
+          required Map<String, dynamic> data,
+          required List<String> requiredFields,
+          required String resourceType,
+        }) {
+          validationCalls?.add(
+            _RequiredFieldsCall(data, requiredFields, resourceType),
+          );
+          if (requiredFieldsThrows) {
+            throw SecurityViolationException('missing required field');
+          }
+        },
+    logPermissionCheck:
+        ({
+          required String userId,
+          required String resource,
+          required String operation,
+          required bool granted,
+          String? details,
+        }) {
+          permissionCalls?.add(
+            _PermissionCall(userId, resource, operation, granted, details),
+          );
+        },
     fromFirestore: (doc) => throw UnimplementedError('not used in tests'),
   );
 }
@@ -88,8 +97,11 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final permissionCalls = <_PermissionCall>[];
       final validationCalls = <_RequiredFieldsCall>[];
-      final module = _routing(firestore,
-          permissionCalls: permissionCalls, validationCalls: validationCalls);
+      final module = _routing(
+        firestore,
+        permissionCalls: permissionCalls,
+        validationCalls: validationCalls,
+      );
 
       final input = _collabList(name: 'Helgens handla');
       final saved = await module.createCollaborativeList(input);
@@ -133,22 +145,27 @@ void main() {
       expect(call.details, contains('List: X'));
     });
 
-    test('propagates required-fields violations — no write, no perm log',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final permissionCalls = <_PermissionCall>[];
-      final module = _routing(firestore,
-          permissionCalls: permissionCalls, requiredFieldsThrows: true);
+    test(
+      'propagates required-fields violations — no write, no perm log',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final permissionCalls = <_PermissionCall>[];
+        final module = _routing(
+          firestore,
+          permissionCalls: permissionCalls,
+          requiredFieldsThrows: true,
+        );
 
-      await expectLater(
-        () => module.createCollaborativeList(_collabList()),
-        throwsA(isA<SecurityViolationException>()),
-      );
+        await expectLater(
+          () => module.createCollaborativeList(_collabList()),
+          throwsA(isA<SecurityViolationException>()),
+        );
 
-      final col = await firestore.collection(_sharedPath).get();
-      expect(col.docs, isEmpty);
-      expect(permissionCalls, isEmpty);
-    });
+        final col = await firestore.collection(_sharedPath).get();
+        expect(col.docs, isEmpty);
+        expect(permissionCalls, isEmpty);
+      },
+    );
   });
 
   group('updateCollaborativeList', () {

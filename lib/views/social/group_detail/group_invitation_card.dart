@@ -18,10 +18,9 @@ class GroupInvitationCard {
   ) {
     return RepaintBoundary(
       child: Card(
-        color: Theme.of(context)
-            .colorScheme
-            .tertiaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight),
+        color: Theme.of(context).colorScheme.tertiaryContainer.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        ),
         child: ListTile(
           leading: Stack(
             children: [
@@ -30,10 +29,9 @@ class GroupInvitationCard {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: Theme.of(context).colorScheme.primary.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -76,9 +74,11 @@ class GroupInvitationCard {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                  '${context.l10n.groupInvitationSentDate}: ${invitation.timeAgoText}'),
+                '${context.l10n.groupInvitationSentDate}: ${invitation.timeAgoText}',
+              ),
               Text(
-                  '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}'),
+                '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}',
+              ),
             ],
           ),
           trailing: PopupMenuButton<String>(
@@ -105,8 +105,8 @@ class GroupInvitationCard {
                     Text(
                       context.l10n.groupCancelInvitation,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ],
                 ),
@@ -180,7 +180,8 @@ class GroupInvitationCard {
           SnackBar(
             content: Text(
               context.l10n.errorOccurredWithDetails(
-                  '${groupInvitationService.invitations.error}'),
+                '${groupInvitationService.invitations.error}',
+              ),
             ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),

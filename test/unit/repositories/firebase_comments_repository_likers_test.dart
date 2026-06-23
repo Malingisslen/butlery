@@ -74,16 +74,18 @@ void main() {
       expect(likers, ['newest', 'middle', 'oldest']);
     });
 
-    test('respects an explicit limit, keeping the most-recent likers',
-        () async {
-      await seedLike('c1', 'oldest', DateTime(2026, 1, 1));
-      await seedLike('c1', 'newest', DateTime(2026, 1, 3));
-      await seedLike('c1', 'middle', DateTime(2026, 1, 2));
+    test(
+      'respects an explicit limit, keeping the most-recent likers',
+      () async {
+        await seedLike('c1', 'oldest', DateTime(2026, 1, 1));
+        await seedLike('c1', 'newest', DateTime(2026, 1, 3));
+        await seedLike('c1', 'middle', DateTime(2026, 1, 2));
 
-      final likers = await repository.getCommentLikers('c1', limit: 2);
+        final likers = await repository.getCommentLikers('c1', limit: 2);
 
-      expect(likers, ['newest', 'middle']);
-    });
+        expect(likers, ['newest', 'middle']);
+      },
+    );
 
     test('default limit (100) returns all when under the cap', () async {
       for (var i = 0; i < 5; i++) {

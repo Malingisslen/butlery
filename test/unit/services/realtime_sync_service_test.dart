@@ -104,8 +104,9 @@ void main() {
     repo = _buildRepo(fake);
     mockAuth = _MockAuthRepository();
     authStateController = StreamController<User?>.broadcast();
-    when(() => mockAuth.authStateChanges())
-        .thenAnswer((_) => authStateController.stream);
+    when(
+      () => mockAuth.authStateChanges(),
+    ).thenAnswer((_) => authStateController.stream);
     when(() => mockAuth.currentUserId).thenReturn('user_owner');
 
     service = RealtimeSyncService(
@@ -124,43 +125,47 @@ void main() {
     /// immediately yields a permissionDenied SyncError. A regression here
     /// (e.g. returning an empty stream, or accidentally hitting Firestore
     /// before the auth check) would silently let unauthed reads through.
-    test('emits permissionDenied SyncError when user is not logged in',
-        () async {
-      when(() => mockAuth.currentUserId).thenReturn(null);
+    test(
+      'emits permissionDenied SyncError when user is not logged in',
+      () async {
+        when(() => mockAuth.currentUserId).thenReturn(null);
 
-      final stream = service.watchResource<RealtimeRecipe>('any-id');
+        final stream = service.watchResource<RealtimeRecipe>('any-id');
 
-      await expectLater(
-        stream,
-        emitsError(
-          isA<SyncError>().having(
-            (e) => e.type,
-            'type',
-            SyncErrorType.permissionDenied,
+        await expectLater(
+          stream,
+          emitsError(
+            isA<SyncError>().having(
+              (e) => e.type,
+              'type',
+              SyncErrorType.permissionDenied,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     /// Proves: a successful snapshot is parsed, typed, AND cached. If the
     /// production code forgot to call `_cachedResources[id] = resource`,
     /// the cache assertion catches it — and tests downstream of `updateResource`
     /// would silently corrupt without it.
-    test('parses snapshot, caches the resource, and emits the typed value',
-        () async {
-      final seeded = _buildResource(id: 'res_1', ownerId: 'user_owner');
-      await _seed(fake, seeded);
+    test(
+      'parses snapshot, caches the resource, and emits the typed value',
+      () async {
+        final seeded = _buildResource(id: 'res_1', ownerId: 'user_owner');
+        await _seed(fake, seeded);
 
-      final stream = service.watchResource<RealtimeRecipe>('res_1');
-      final first = await stream.first;
+        final stream = service.watchResource<RealtimeRecipe>('res_1');
+        final first = await stream.first;
 
-      expect(first, isA<RealtimeRecipe>());
-      expect(first.id, 'res_1');
-      expect(first.ownerId, 'user_owner');
-      // Cache assertion — proves the side effect, not just the return value.
-      expect(service.getCachedResource<RealtimeRecipe>('res_1'), isNotNull);
-      expect(service.getCachedResource<RealtimeRecipe>('res_1')!.id, 'res_1');
-    });
+        expect(first, isA<RealtimeRecipe>());
+        expect(first.id, 'res_1');
+        expect(first.ownerId, 'user_owner');
+        // Cache assertion — proves the side effect, not just the return value.
+        expect(service.getCachedResource<RealtimeRecipe>('res_1'), isNotNull);
+        expect(service.getCachedResource<RealtimeRecipe>('res_1')!.id, 'res_1');
+      },
+    );
 
     /// Missing-doc errors propagate to BOTH the stream subscriber (so a
     /// `StreamBuilder` sees `ConnectionState.error` and rebuilds with a
@@ -169,35 +174,45 @@ void main() {
     /// still get it). Fixed by BUT-1069: `.handleError` (which swallowed)
     /// replaced by a transformer that records side-channel + re-emits via
     /// sink.addError.
-    test('missing document propagates to main stream AND errorStream',
-        () async {
-      final captured = <SyncError>[];
-      final sub = service.errorStream.listen(captured.add);
-      final mainStreamErrors = <Object>[];
+    test(
+      'missing document propagates to main stream AND errorStream',
+      () async {
+        final captured = <SyncError>[];
+        final sub = service.errorStream.listen(captured.add);
+        final mainStreamErrors = <Object>[];
 
-      final streamSub = service
-          .watchResource<RealtimeRecipe>('does-not-exist')
-          .listen((_) {}, onError: mainStreamErrors.add);
+        final streamSub = service
+            .watchResource<RealtimeRecipe>('does-not-exist')
+            .listen((_) {}, onError: mainStreamErrors.add);
 
-      for (var i = 0; i < 10 && captured.isEmpty; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
+        for (var i = 0; i < 10 && captured.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
 
-      await streamSub.cancel();
-      await sub.cancel();
+        await streamSub.cancel();
+        await sub.cancel();
 
-      expect(captured, isNotEmpty,
-          reason: 'Missing doc should surface via errorStream side-channel');
-      expect(captured.first.type, SyncErrorType.firestoreError);
-      expect(captured.first.resourceId, 'does-not-exist');
-      expect(service.lastError, isNotNull);
+        expect(
+          captured,
+          isNotEmpty,
+          reason: 'Missing doc should surface via errorStream side-channel',
+        );
+        expect(captured.first.type, SyncErrorType.firestoreError);
+        expect(captured.first.resourceId, 'does-not-exist');
+        expect(service.lastError, isNotNull);
 
-      expect(mainStreamErrors, isNotEmpty,
-          reason: 'Missing doc must also propagate to stream subscriber');
-      expect(mainStreamErrors.first, isA<SyncError>());
-      expect((mainStreamErrors.first as SyncError).type,
-          SyncErrorType.documentNotFound);
-    });
+        expect(
+          mainStreamErrors,
+          isNotEmpty,
+          reason: 'Missing doc must also propagate to stream subscriber',
+        );
+        expect(mainStreamErrors.first, isA<SyncError>());
+        expect(
+          (mainStreamErrors.first as SyncError).type,
+          SyncErrorType.documentNotFound,
+        );
+      },
+    );
 
     /// A malformed `participants` map (wrong inner value type) trips the
     /// parser's cast failure path and is translated into a `firestoreError`
@@ -209,47 +224,57 @@ void main() {
     /// back to clock.now, missing strings to empty, etc.), so this test
     /// targets one of the few payload shapes that actually trips a cast
     /// (`permissionString as String?` when the value is an int).
-    test('malformed payload surfaces as firestoreError on both channels',
-        () async {
-      await fake.collection('realtime_resources').doc('bad').set({
-        'type': 'recipe',
-        'ownerId': 'someone',
-        'ownerDisplayName': 'Someone',
-        'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
-        'lastEditedAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
-        'lastEditedBy': 'someone',
-        'lastEditedByDisplayName': 'Someone',
-        // The cast `permissionString as String?` will throw when the value
-        // is an int.
-        'participants': {'someone': 42},
-      });
+    test(
+      'malformed payload surfaces as firestoreError on both channels',
+      () async {
+        await fake.collection('realtime_resources').doc('bad').set({
+          'type': 'recipe',
+          'ownerId': 'someone',
+          'ownerDisplayName': 'Someone',
+          'createdAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+          'lastEditedAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+          'lastEditedBy': 'someone',
+          'lastEditedByDisplayName': 'Someone',
+          // The cast `permissionString as String?` will throw when the value
+          // is an int.
+          'participants': {'someone': 42},
+        });
 
-      final captured = <SyncError>[];
-      final errSub = service.errorStream.listen(captured.add);
-      final mainStreamErrors = <Object>[];
+        final captured = <SyncError>[];
+        final errSub = service.errorStream.listen(captured.add);
+        final mainStreamErrors = <Object>[];
 
-      final streamSub = service
-          .watchResource<RealtimeRecipe>('bad')
-          .listen((_) {}, onError: mainStreamErrors.add);
+        final streamSub = service
+            .watchResource<RealtimeRecipe>('bad')
+            .listen((_) {}, onError: mainStreamErrors.add);
 
-      for (var i = 0; i < 10 && captured.isEmpty; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
+        for (var i = 0; i < 10 && captured.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
 
-      await streamSub.cancel();
-      await errSub.cancel();
+        await streamSub.cancel();
+        await errSub.cancel();
 
-      expect(captured, isNotEmpty,
-          reason: 'A cast failure must reach errorStream');
-      expect(captured.first.type, SyncErrorType.firestoreError);
-      expect(captured.first.resourceId, 'bad');
+        expect(
+          captured,
+          isNotEmpty,
+          reason: 'A cast failure must reach errorStream',
+        );
+        expect(captured.first.type, SyncErrorType.firestoreError);
+        expect(captured.first.resourceId, 'bad');
 
-      expect(mainStreamErrors, isNotEmpty,
-          reason: 'Cast failure must also propagate to stream subscriber');
-      expect(mainStreamErrors.first, isA<SyncError>());
-      expect((mainStreamErrors.first as SyncError).type,
-          SyncErrorType.firestoreError);
-    });
+        expect(
+          mainStreamErrors,
+          isNotEmpty,
+          reason: 'Cast failure must also propagate to stream subscriber',
+        );
+        expect(mainStreamErrors.first, isA<SyncError>());
+        expect(
+          (mainStreamErrors.first as SyncError).type,
+          SyncErrorType.firestoreError,
+        );
+      },
+    );
   });
 
   group('updateResource', () {
@@ -276,37 +301,40 @@ void main() {
     /// authenticated users overwrite resources they only have viewer access
     /// on. This was the BUT-369 class of bug for the shopping repo.
     test(
-        'throws permissionDenied when authed user lacks edit permission on the resource',
-        () async {
-      when(() => mockAuth.currentUserId).thenReturn('viewer_user');
-      final resource = _buildResource(
-        id: 'r2',
-        ownerId: 'owner_user',
-        participants: {
-          'owner_user': ResourcePermission.owner,
-          'viewer_user': ResourcePermission.viewer,
-        },
-      );
+      'throws permissionDenied when authed user lacks edit permission on the resource',
+      () async {
+        when(() => mockAuth.currentUserId).thenReturn('viewer_user');
+        final resource = _buildResource(
+          id: 'r2',
+          ownerId: 'owner_user',
+          participants: {
+            'owner_user': ResourcePermission.owner,
+            'viewer_user': ResourcePermission.viewer,
+          },
+        );
 
-      // Ensure the doc exists so we'd actually try to write if not for the
-      // permission check.
-      await _seed(fake, resource);
+        // Ensure the doc exists so we'd actually try to write if not for the
+        // permission check.
+        await _seed(fake, resource);
 
-      late SyncError captured;
-      try {
-        await service.updateResource(resource);
-        fail('Expected SyncError');
-      } on SyncError catch (e) {
-        captured = e;
-      }
-      expect(captured.type, SyncErrorType.permissionDenied);
+        late SyncError captured;
+        try {
+          await service.updateResource(resource);
+          fail('Expected SyncError');
+        } on SyncError catch (e) {
+          captured = e;
+        }
+        expect(captured.type, SyncErrorType.permissionDenied);
 
-      // Side-effect proof: the doc on disk has the seeded editCount (1) —
-      // i.e. the rejected update did NOT reach Firestore.
-      final snapshot =
-          await fake.collection('realtime_resources').doc('r2').get();
-      expect(snapshot.data()!['editCount'], 1);
-    });
+        // Side-effect proof: the doc on disk has the seeded editCount (1) —
+        // i.e. the rejected update did NOT reach Firestore.
+        final snapshot = await fake
+            .collection('realtime_resources')
+            .doc('r2')
+            .get();
+        expect(snapshot.data()!['editCount'], 1);
+      },
+    );
 
     /// Proves: an owner-authored write actually persists. This is the
     /// happy-path partner to the permission-denied test above — together they
@@ -342,91 +370,101 @@ void main() {
     /// `getCachedResource` hand out an edit that never reached Firestore,
     /// silently diverging cache from disk and corrupting any read-modify-write
     /// keyed off the cache.
-    test('cache reflects the remote winner after a conflict the local lost',
-        () async {
-      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        // Seed an initial doc and warm the conflict-tracking window by doing a
-        // first owner write (this calls recordLocalUpdate internally).
-        final initial = _buildResource(
-          id: 'conf1',
-          ownerId: 'user_owner',
-          editCount: 1,
-          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
-        );
-        await _seed(fake, initial);
-        await service.updateResource(initial);
+    test(
+      'cache reflects the remote winner after a conflict the local lost',
+      () async {
+        await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+          // Seed an initial doc and warm the conflict-tracking window by doing a
+          // first owner write (this calls recordLocalUpdate internally).
+          final initial = _buildResource(
+            id: 'conf1',
+            ownerId: 'user_owner',
+            editCount: 1,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+          );
+          await _seed(fake, initial);
+          await service.updateResource(initial);
 
-        // A collaborator overwrites the doc with a HIGHER editCount and a
-        // timestamp strictly after our recorded local update — so the next
-        // write enters conflict resolution and the remote wins.
-        final collaborator = _buildResource(
-          id: 'conf1',
-          ownerId: 'user_owner',
-          editCount: 9,
-          lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
-        );
-        await _seed(fake, collaborator);
+          // A collaborator overwrites the doc with a HIGHER editCount and a
+          // timestamp strictly after our recorded local update — so the next
+          // write enters conflict resolution and the remote wins.
+          final collaborator = _buildResource(
+            id: 'conf1',
+            ownerId: 'user_owner',
+            editCount: 9,
+            lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+          );
+          await _seed(fake, collaborator);
 
-        // Our losing local edit: same id, LOWER editCount than the remote.
-        final losingLocal = _buildResource(
-          id: 'conf1',
-          ownerId: 'user_owner',
-          editCount: 2,
-          lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
-        );
+          // Our losing local edit: same id, LOWER editCount than the remote.
+          final losingLocal = _buildResource(
+            id: 'conf1',
+            ownerId: 'user_owner',
+            editCount: 2,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+          );
 
-        await service.updateResource(losingLocal);
+          await service.updateResource(losingLocal);
 
-        // Disk holds the remote winner (editCount 9), unchanged by our loss.
-        final snap =
-            await fake.collection('realtime_resources').doc('conf1').get();
-        expect(snap.data()!['editCount'], 9,
-            reason: 'remote won → Firestore keeps the collaborator version');
+          // Disk holds the remote winner (editCount 9), unchanged by our loss.
+          final snap = await fake
+              .collection('realtime_resources')
+              .doc('conf1')
+              .get();
+          expect(
+            snap.data()!['editCount'],
+            9,
+            reason: 'remote won → Firestore keeps the collaborator version',
+          );
 
-        // Cache must match the persisted winner, not our discarded edit (2).
-        expect(
-          service.getCachedResource<RealtimeRecipe>('conf1')!.editCount,
-          9,
-          reason: 'cache must mirror the persisted remote winner, '
-              'not the local edit that lost the conflict',
-        );
-      });
-    });
+          // Cache must match the persisted winner, not our discarded edit (2).
+          expect(
+            service.getCachedResource<RealtimeRecipe>('conf1')!.editCount,
+            9,
+            reason:
+                'cache must mirror the persisted remote winner, '
+                'not the local edit that lost the conflict',
+          );
+        });
+      },
+    );
 
     /// Proves: errors are surfaced through the errorStream pipeline (not
     /// just rethrown). UI subscribers to errorStream rely on this — a
     /// regression that rethrew but didn't push to the stream would leave
     /// banner/toast UIs silent on failures.
-    test('failed update emits a SyncError on errorStream and stores lastError',
-        () async {
-      when(() => mockAuth.currentUserId).thenReturn(null);
-      final resource = _buildResource(id: 'r4', ownerId: 'someone_else');
+    test(
+      'failed update emits a SyncError on errorStream and stores lastError',
+      () async {
+        when(() => mockAuth.currentUserId).thenReturn(null);
+        final resource = _buildResource(id: 'r4', ownerId: 'someone_else');
 
-      // permissionDenied path → handleError NOT invoked because the early
-      // auth check throws BEFORE the try block (verified by reading the
-      // source: `if (_currentUserId == null) throw ...` precedes the try).
-      // So instead we drive the post-auth permission path which DOES go
-      // through _handleError.
-      when(() => mockAuth.currentUserId).thenReturn('not_authorized');
-      final captured = <SyncError>[];
-      final sub = service.errorStream.listen(captured.add);
+        // permissionDenied path → handleError NOT invoked because the early
+        // auth check throws BEFORE the try block (verified by reading the
+        // source: `if (_currentUserId == null) throw ...` precedes the try).
+        // So instead we drive the post-auth permission path which DOES go
+        // through _handleError.
+        when(() => mockAuth.currentUserId).thenReturn('not_authorized');
+        final captured = <SyncError>[];
+        final sub = service.errorStream.listen(captured.add);
 
-      await expectLater(
-        service.updateResource(resource),
-        throwsA(isA<SyncError>()),
-      );
+        await expectLater(
+          service.updateResource(resource),
+          throwsA(isA<SyncError>()),
+        );
 
-      // Give the stream a microtask to drain.
-      await Future<void>.delayed(Duration.zero);
+        // Give the stream a microtask to drain.
+        await Future<void>.delayed(Duration.zero);
 
-      expect(captured, isNotEmpty);
-      expect(captured.first.type, SyncErrorType.permissionDenied);
-      expect(captured.first.resourceId, 'r4');
-      expect(service.lastError, isNotNull);
-      expect(service.lastError!.type, SyncErrorType.permissionDenied);
+        expect(captured, isNotEmpty);
+        expect(captured.first.type, SyncErrorType.permissionDenied);
+        expect(captured.first.resourceId, 'r4');
+        expect(service.lastError, isNotNull);
+        expect(service.lastError!.type, SyncErrorType.permissionDenied);
 
-      await sub.cancel();
-    });
+        await sub.cancel();
+      },
+    );
   });
 
   group('recoverLocalVersion (BUT-1163 conflict recovery)', () {
@@ -434,53 +472,69 @@ void main() {
     /// conflict is recovered, it must be written back with an editCount that
     /// BEATS the current remote — not the stale (losing) editCount it carried.
     /// Otherwise the next concurrent edit would silently discard it again.
-    test('writes the local content back with editCount = remote.editCount + 1',
-        () async {
-      // Remote currently sits at editCount 9 (it won the conflict).
-      final remote = _buildResource(
-        id: 'rec1',
-        ownerId: 'user_owner',
-        editCount: 9,
-        lastEditedAt: DateTime(2026, 3, 1),
-      );
-      await _seed(fake, remote);
+    test(
+      'writes the local content back with editCount = remote.editCount + 1',
+      () async {
+        // Remote currently sits at editCount 9 (it won the conflict).
+        final remote = _buildResource(
+          id: 'rec1',
+          ownerId: 'user_owner',
+          editCount: 9,
+          lastEditedAt: DateTime(2026, 3, 1),
+        );
+        await _seed(fake, remote);
 
-      // The local snapshot the user is recovering carries the LOSING count (4).
-      final losingLocal = _buildResource(
-        id: 'rec1',
-        ownerId: 'user_owner',
-        editCount: 4,
-        lastEditedAt: DateTime(2026, 2, 1),
-      );
+        // The local snapshot the user is recovering carries the LOSING count (4).
+        final losingLocal = _buildResource(
+          id: 'rec1',
+          ownerId: 'user_owner',
+          editCount: 4,
+          lastEditedAt: DateTime(2026, 2, 1),
+        );
 
-      await service.recoverLocalVersion(losingLocal);
+        await service.recoverLocalVersion(losingLocal);
 
-      final snap =
-          await fake.collection('realtime_resources').doc('rec1').get();
-      expect(snap.data()!['editCount'], 10,
-          reason: 'recovered version must outrank the remote that beat it '
-              '(9 + 1), not re-persist its own stale 4');
-    });
+        final snap = await fake
+            .collection('realtime_resources')
+            .doc('rec1')
+            .get();
+        expect(
+          snap.data()!['editCount'],
+          10,
+          reason:
+              'recovered version must outrank the remote that beat it '
+              '(9 + 1), not re-persist its own stale 4',
+        );
+      },
+    );
 
     /// Proves the fallback path: if the remote can't be read, the recovery
     /// still bumps the local snapshot's own counter rather than regressing it.
-    test('bumps the local counter when no remote exists to compare against',
-        () async {
-      final local = _buildResource(
-        id: 'rec2',
-        ownerId: 'user_owner',
-        editCount: 3,
-      );
-      // No seed → getLatestResource throws documentNotFound, caught internally.
+    test(
+      'bumps the local counter when no remote exists to compare against',
+      () async {
+        final local = _buildResource(
+          id: 'rec2',
+          ownerId: 'user_owner',
+          editCount: 3,
+        );
+        // No seed → getLatestResource throws documentNotFound, caught internally.
 
-      await service.recoverLocalVersion(local);
+        await service.recoverLocalVersion(local);
 
-      final snap =
-          await fake.collection('realtime_resources').doc('rec2').get();
-      expect(snap.data()!['editCount'], 4,
-          reason: 'no remote to beat → bump the local snapshot (3 + 1), '
-              'never write back the un-incremented 3');
-    });
+        final snap = await fake
+            .collection('realtime_resources')
+            .doc('rec2')
+            .get();
+        expect(
+          snap.data()!['editCount'],
+          4,
+          reason:
+              'no remote to beat → bump the local snapshot (3 + 1), '
+              'never write back the un-incremented 3',
+        );
+      },
+    );
 
     /// BUT-1263: recovery must stamp authorship AND time, not just bump the
     /// counter. `recoverLocalVersion` sets `lastEditedBy: _currentUserId` and
@@ -492,51 +546,60 @@ void main() {
     /// must record the recovering user as editor and the clock's instant as the
     /// edit time — so the resolver's timestamp tiebreaker and the audit trail
     /// both reflect who actually recovered it and when.
-    test('stamps lastEditedBy = current user and lastEditedAt = clock.now()',
-        () async {
-      final fixedNow = DateTime(2026, 5, 10, 9, 30, 15);
+    test(
+      'stamps lastEditedBy = current user and lastEditedAt = clock.now()',
+      () async {
+        final fixedNow = DateTime(2026, 5, 10, 9, 30, 15);
 
-      await withClock(Clock.fixed(fixedNow), () async {
-        // The recovering user differs from the snapshot's original author so
-        // the authorship bump is observable (not a coincidental match).
-        when(() => mockAuth.currentUserId).thenReturn('recovering_user');
+        await withClock(Clock.fixed(fixedNow), () async {
+          // The recovering user differs from the snapshot's original author so
+          // the authorship bump is observable (not a coincidental match).
+          when(() => mockAuth.currentUserId).thenReturn('recovering_user');
 
-        // Local snapshot authored by someone else, carrying a stale edit time.
-        final local = RealtimeRecipe(
-          id: 'rec_stamp',
-          ownerId: 'user_owner',
-          ownerDisplayName: 'Owner user_owner',
-          participants: const {
-            'user_owner': ResourcePermission.owner,
-            'recovering_user': ResourcePermission.editor,
-          },
-          createdAt: DateTime(2026, 1, 1, 10),
-          lastEditedAt: DateTime(2026, 2, 1, 8),
-          lastEditedBy: 'original_author',
-          lastEditedByDisplayName: 'Original Author',
-          editCount: 4,
-          recipe: RecipeFactory.build(id: 'rec_stamp', title: 'R-rec_stamp'),
-        );
-        // No seed → fall back to local's own counter, but the stamps are what
-        // this test asserts, independent of the editCount path.
+          // Local snapshot authored by someone else, carrying a stale edit time.
+          final local = RealtimeRecipe(
+            id: 'rec_stamp',
+            ownerId: 'user_owner',
+            ownerDisplayName: 'Owner user_owner',
+            participants: const {
+              'user_owner': ResourcePermission.owner,
+              'recovering_user': ResourcePermission.editor,
+            },
+            createdAt: DateTime(2026, 1, 1, 10),
+            lastEditedAt: DateTime(2026, 2, 1, 8),
+            lastEditedBy: 'original_author',
+            lastEditedByDisplayName: 'Original Author',
+            editCount: 4,
+            recipe: RecipeFactory.build(id: 'rec_stamp', title: 'R-rec_stamp'),
+          );
+          // No seed → fall back to local's own counter, but the stamps are what
+          // this test asserts, independent of the editCount path.
 
-        await service.recoverLocalVersion(local);
+          await service.recoverLocalVersion(local);
 
-        final snap =
-            await fake.collection('realtime_resources').doc('rec_stamp').get();
-        final data = snap.data()!;
+          final snap = await fake
+              .collection('realtime_resources')
+              .doc('rec_stamp')
+              .get();
+          final data = snap.data()!;
 
-        expect(data['lastEditedBy'], 'recovering_user',
-            reason: 'recovery must record the user who recovered it, '
-                'not the snapshot\'s original author');
-        expect(
-          (data['lastEditedAt'] as Timestamp).toDate(),
-          fixedNow,
-          reason: 'recovery must stamp the current clock instant, '
-              'not re-persist the snapshot\'s stale lastEditedAt',
-        );
-      });
-    });
+          expect(
+            data['lastEditedBy'],
+            'recovering_user',
+            reason:
+                'recovery must record the user who recovered it, '
+                'not the snapshot\'s original author',
+          );
+          expect(
+            (data['lastEditedAt'] as Timestamp).toDate(),
+            fixedNow,
+            reason:
+                'recovery must stamp the current clock instant, '
+                'not re-persist the snapshot\'s stale lastEditedAt',
+          );
+        });
+      },
+    );
 
     /// BUT-1264: covers the guard's FALSE branch. The bump is based on
     /// `max(local.editCount, remote.editCount) + 1` via
@@ -546,33 +609,41 @@ void main() {
     /// below the local count, so the guard is false and the bump must come from
     /// LOCAL's own count — proving recovery never regresses a local edit that
     /// already outranks (or ties) the remote.
-    test('uses local.editCount + 1 when remote.editCount <= local.editCount',
-        () async {
-      // Remote sits BEHIND the local snapshot (5 <= 7).
-      final remote = _buildResource(
-        id: 'rec3',
-        ownerId: 'user_owner',
-        editCount: 5,
-        lastEditedAt: DateTime(2026, 2, 1),
-      );
-      await _seed(fake, remote);
+    test(
+      'uses local.editCount + 1 when remote.editCount <= local.editCount',
+      () async {
+        // Remote sits BEHIND the local snapshot (5 <= 7).
+        final remote = _buildResource(
+          id: 'rec3',
+          ownerId: 'user_owner',
+          editCount: 5,
+          lastEditedAt: DateTime(2026, 2, 1),
+        );
+        await _seed(fake, remote);
 
-      // Local carries the HIGHER count.
-      final local = _buildResource(
-        id: 'rec3',
-        ownerId: 'user_owner',
-        editCount: 7,
-        lastEditedAt: DateTime(2026, 3, 1),
-      );
+        // Local carries the HIGHER count.
+        final local = _buildResource(
+          id: 'rec3',
+          ownerId: 'user_owner',
+          editCount: 7,
+          lastEditedAt: DateTime(2026, 3, 1),
+        );
 
-      await service.recoverLocalVersion(local);
+        await service.recoverLocalVersion(local);
 
-      final snap =
-          await fake.collection('realtime_resources').doc('rec3').get();
-      expect(snap.data()!['editCount'], 8,
-          reason: 'guard false (remote 5 <= local 7) → bump local (7 + 1), '
-              'never drop down to the lagging remote count');
-    });
+        final snap = await fake
+            .collection('realtime_resources')
+            .doc('rec3')
+            .get();
+        expect(
+          snap.data()!['editCount'],
+          8,
+          reason:
+              'guard false (remote 5 <= local 7) → bump local (7 + 1), '
+              'never drop down to the lagging remote count',
+        );
+      },
+    );
   });
 
   group('deleteResource', () {
@@ -645,19 +716,20 @@ void main() {
     /// documentNotFound, not a generic Firestore exception. Catches a
     /// regression that lets the raw `cast Map` failure in the parser leak.
     test(
-        'throws documentNotFound when the resource was deleted before this client',
-        () async {
-      await expectLater(
-        service.deleteResource('ghost', RealtimeResourceType.recipe),
-        throwsA(
-          isA<SyncError>().having(
-            (e) => e.type,
-            'type',
-            SyncErrorType.documentNotFound,
+      'throws documentNotFound when the resource was deleted before this client',
+      () async {
+        await expectLater(
+          service.deleteResource('ghost', RealtimeResourceType.recipe),
+          throwsA(
+            isA<SyncError>().having(
+              (e) => e.type,
+              'type',
+              SyncErrorType.documentNotFound,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 
   // BUT-1267: the service-level resolveConflict<T>(local, remote) was dead
@@ -684,63 +756,75 @@ void main() {
     /// remoteWon` lands on the live subscriber — proving the resolver-to-UI
     /// pipe is intact, not just the resolver's return value.
     test(
-        'delivers exactly one remoteWon ConflictEvent to a pre-subscribed listener',
-        () async {
-      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
-        final events = <ConflictEvent>[];
-        // Subscribe BEFORE the conflicting write — this is the contract the
-        // banner relies on (the subscriber is live when the conflict resolves).
-        final sub = service.conflictStream.listen(events.add);
+      'delivers exactly one remoteWon ConflictEvent to a pre-subscribed listener',
+      () async {
+        await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+          final events = <ConflictEvent>[];
+          // Subscribe BEFORE the conflicting write — this is the contract the
+          // banner relies on (the subscriber is live when the conflict resolves).
+          final sub = service.conflictStream.listen(events.add);
 
-        // Warm the conflict-tracking window with a first owner write so the
-        // next write enters the conflict-resolution branch.
-        final initial = _buildResource(
-          id: 'cs1',
-          ownerId: 'user_owner',
-          editCount: 1,
-          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
-        );
-        await _seed(fake, initial);
-        await service.updateResource(initial);
+          // Warm the conflict-tracking window with a first owner write so the
+          // next write enters the conflict-resolution branch.
+          final initial = _buildResource(
+            id: 'cs1',
+            ownerId: 'user_owner',
+            editCount: 1,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+          );
+          await _seed(fake, initial);
+          await service.updateResource(initial);
 
-        // A collaborator overwrites the doc with a HIGHER editCount and a
-        // timestamp strictly after our recorded local update, so the resolver
-        // picks the remote (the local edit loses).
-        final collaborator = _buildResource(
-          id: 'cs1',
-          ownerId: 'user_owner',
-          editCount: 9,
-          lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
-        );
-        await _seed(fake, collaborator);
+          // A collaborator overwrites the doc with a HIGHER editCount and a
+          // timestamp strictly after our recorded local update, so the resolver
+          // picks the remote (the local edit loses).
+          final collaborator = _buildResource(
+            id: 'cs1',
+            ownerId: 'user_owner',
+            editCount: 9,
+            lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+          );
+          await _seed(fake, collaborator);
 
-        // Our losing local edit: lower editCount than the live remote.
-        final losingLocal = _buildResource(
-          id: 'cs1',
-          ownerId: 'user_owner',
-          editCount: 2,
-          lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
-        );
+          // Our losing local edit: lower editCount than the live remote.
+          final losingLocal = _buildResource(
+            id: 'cs1',
+            ownerId: 'user_owner',
+            editCount: 2,
+            lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+          );
 
-        await service.updateResource(losingLocal);
+          await service.updateResource(losingLocal);
 
-        // Let the broadcast event drain to the live subscriber.
-        await Future<void>.delayed(Duration.zero);
-        await sub.cancel();
+          // Let the broadcast event drain to the live subscriber.
+          await Future<void>.delayed(Duration.zero);
+          await sub.cancel();
 
-        expect(events, hasLength(1),
-            reason: 'exactly one conflict resolved → exactly one event '
-                'on the live conflictStream subscriber');
-        expect(
-            events.single.chosenStrategy, ConflictResolutionStrategy.remoteWon,
-            reason: 'remote had the higher editCount, so the resolver must '
-                'report the local edit lost (remoteWon)');
-        expect(events.single.docId, 'cs1');
-        expect(events.single.remoteValue.editCount, 9,
-            reason: 'the winning remote (editCount 9) rides on the event so '
-                'the banner can show what overwrote the local edit');
-      });
-    });
+          expect(
+            events,
+            hasLength(1),
+            reason:
+                'exactly one conflict resolved → exactly one event '
+                'on the live conflictStream subscriber',
+          );
+          expect(
+            events.single.chosenStrategy,
+            ConflictResolutionStrategy.remoteWon,
+            reason:
+                'remote had the higher editCount, so the resolver must '
+                'report the local edit lost (remoteWon)',
+          );
+          expect(events.single.docId, 'cs1');
+          expect(
+            events.single.remoteValue.editCount,
+            9,
+            reason:
+                'the winning remote (editCount 9) rides on the event so '
+                'the banner can show what overwrote the local edit',
+          );
+        });
+      },
+    );
   });
 
   group('fetchLatestResource', () {
@@ -748,19 +832,24 @@ void main() {
     /// callers depend on this; a regression that rethrew would surface as a
     /// crash on a transient Firestore hiccup.
     test('returns null on missing document instead of throwing', () async {
-      final result =
-          await service.fetchLatestResource<RealtimeRecipe>('missing');
+      final result = await service.fetchLatestResource<RealtimeRecipe>(
+        'missing',
+      );
       expect(result, isNull);
     });
 
     /// Proves: happy-path round-trip is identity-preserving on id/editCount.
     test('returns the parsed resource when the doc exists', () async {
-      final seeded =
-          _buildResource(id: 'fetch_1', ownerId: 'user_owner', editCount: 7);
+      final seeded = _buildResource(
+        id: 'fetch_1',
+        ownerId: 'user_owner',
+        editCount: 7,
+      );
       await _seed(fake, seeded);
 
-      final fetched =
-          await service.fetchLatestResource<RealtimeRecipe>('fetch_1');
+      final fetched = await service.fetchLatestResource<RealtimeRecipe>(
+        'fetch_1',
+      );
       expect(fetched, isNotNull);
       expect(fetched!.id, 'fetch_1');
       expect(fetched.editCount, 7);
@@ -777,7 +866,9 @@ void main() {
       final resource = _buildResource(id: 'err1', ownerId: 'someone');
       try {
         await service.updateResource(resource);
-      } catch (_) {/* expected */}
+      } catch (_) {
+        /* expected */
+      }
       expect(service.lastError, isNotNull);
 
       var notifications = 0;
@@ -817,13 +908,15 @@ void main() {
 
     /// Proves: `refreshAllResources` does NOT throw and DOES notify
     /// listeners — it's the manual-refresh affordance for "stuck" UIs.
-    test('refreshAllResources notifies listeners without side effects',
-        () async {
-      var notifications = 0;
-      service.addListener(() => notifications++);
-      service.refreshAllResources();
-      expect(notifications, greaterThanOrEqualTo(1));
-    });
+    test(
+      'refreshAllResources notifies listeners without side effects',
+      () async {
+        var notifications = 0;
+        service.addListener(() => notifications++);
+        service.refreshAllResources();
+        expect(notifications, greaterThanOrEqualTo(1));
+      },
+    );
 
     /// Proves: dispose is idempotent on cache — calling dispose() leaves the
     /// service in a state where the cache is empty. A regression that

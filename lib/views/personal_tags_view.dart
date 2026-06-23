@@ -24,11 +24,7 @@ import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Sort order for personal tags.
-enum TagSortOrder {
-  byName,
-  byUsage,
-  byRuleCount;
-}
+enum TagSortOrder { byName, byUsage, byRuleCount }
 
 /// Full-screen view for managing personal tags.
 class PersonalTagsView extends StatefulWidget {
@@ -99,10 +95,14 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   int _computeTagHash(List<PersonalTag> tags) => Object.hashAll(
-      tags.map((t) => Object.hash(t.id, t.name, t.groupId, t.sortOrder)));
+    tags.map((t) => Object.hash(t.id, t.name, t.groupId, t.sortOrder)),
+  );
 
   List<PersonalTag> _sortTags(
-      List<PersonalTag> tags, PersonalTagViewModel vm, String? groupId) {
+    List<PersonalTag> tags,
+    PersonalTagViewModel vm,
+    String? groupId,
+  ) {
     final currentHash = _computeTagHash(vm.tags);
     if (_lastSortOrder != _sortOrder || currentHash != _lastTagHash) {
       _invalidateSortCache();
@@ -117,7 +117,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     switch (_sortOrder) {
       case TagSortOrder.byName:
         sorted.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
       case TagSortOrder.byUsage:
         sorted.sort((a, b) {
           final aCount = vm.getUsageCount(a.name);
@@ -225,8 +226,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           icon: const Icon(Icons.delete_outline),
           tooltip: context.l10n.commonDelete,
           onPressed: count >= 1
-              ? () =>
-                  PersonalTagDialogs.showBulkDeleteDialog(context, selectedTags)
+              ? () => PersonalTagDialogs.showBulkDeleteDialog(
+                  context,
+                  selectedTags,
+                )
               : null,
         ),
       ],
@@ -313,8 +316,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildTagList(BuildContext context, PersonalTagViewModel viewModel) {
     final groups = viewModel.groups;
-    final ungroupedTags =
-        _sortTags(viewModel.getTagsForGroup(null), viewModel, null);
+    final ungroupedTags = _sortTags(
+      viewModel.getTagsForGroup(null),
+      viewModel,
+      null,
+    );
 
     return SafeArea(
       child: Center(
@@ -345,8 +351,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                     PersonalTagGroupSection(
                       key: ValueKey(group.id),
                       group: group,
-                      tags: _sortTags(viewModel.getTagsForGroup(group.id),
-                          viewModel, group.id),
+                      tags: _sortTags(
+                        viewModel.getTagsForGroup(group.id),
+                        viewModel,
+                        group.id,
+                      ),
                       viewModel: viewModel,
                     ),
                   if (viewModel.unusedTags.isNotEmpty)
@@ -360,7 +369,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 ];
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingMd),
+                    vertical: AppDimensions.spacingMd,
+                  ),
                   itemCount: items.length,
                   itemBuilder: (context, index) => items[index],
                 );
@@ -373,7 +383,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   }
 
   Future<void> _confirmDeleteUnusedTags(
-      BuildContext context, PersonalTagViewModel viewModel) async {
+    BuildContext context,
+    PersonalTagViewModel viewModel,
+  ) async {
     final count = viewModel.unusedTags.length;
     final confirmed = await showDialog<bool>(
       context: context,

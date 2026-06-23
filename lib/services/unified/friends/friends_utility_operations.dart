@@ -65,11 +65,14 @@ class FriendsUtilityOperations {
       final friendProfiles = await _batchFetchUserProfiles(friendIds);
 
       AppLogger.success(
-          'Found ${friendProfiles.length} friends for user ${userId.maskedUserId}');
+        'Found ${friendProfiles.length} friends for user ${userId.maskedUserId}',
+      );
       return friendProfiles;
     } catch (e) {
       AppLogger.error(
-          'Failed to get friends of user ${userId.maskedUserId}', e);
+        'Failed to get friends of user ${userId.maskedUserId}',
+        e,
+      );
       return [];
     }
   }
@@ -80,12 +83,14 @@ class FriendsUtilityOperations {
       final userId = getCurrentUserId();
       if (userId == null) {
         AppLogger.warning(
-            'Cannot get recent collaborators: No authenticated user');
+          'Cannot get recent collaborators: No authenticated user',
+        );
         return [];
       }
 
       AppLogger.debug(
-          'Fetching recent collaborators for user: ${userId.maskedUserId}');
+        'Fetching recent collaborators for user: ${userId.maskedUserId}',
+      );
 
       // Find shared content where user is a member (via collectionGroup)
       final memberDocs = await firestore
@@ -109,8 +114,9 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      final collaborators =
-          await _batchFetchUserProfiles(collaboratorIds.take(10).toList());
+      final collaborators = await _batchFetchUserProfiles(
+        collaboratorIds.take(10).toList(),
+      );
 
       AppLogger.success('Found ${collaborators.length} recent collaborators');
       return collaborators;
@@ -126,12 +132,14 @@ class FriendsUtilityOperations {
       final userId = getCurrentUserId();
       if (userId == null) {
         AppLogger.warning(
-            'Cannot get recent shopping collaborators: No authenticated user');
+          'Cannot get recent shopping collaborators: No authenticated user',
+        );
         return [];
       }
 
       AppLogger.debug(
-          'Fetching recent shopping collaborators for user: ${userId.maskedUserId}');
+        'Fetching recent shopping collaborators for user: ${userId.maskedUserId}',
+      );
 
       // Get recent shopping lists where user is a collaborator
       final recentShoppingLists = await firestore
@@ -167,11 +175,13 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      final collaborators =
-          await _batchFetchUserProfiles(collaboratorIds.take(10).toList());
+      final collaborators = await _batchFetchUserProfiles(
+        collaboratorIds.take(10).toList(),
+      );
 
       AppLogger.success(
-          'Found ${collaborators.length} recent shopping collaborators');
+        'Found ${collaborators.length} recent shopping collaborators',
+      );
       return collaborators;
     } catch (e) {
       AppLogger.error('Failed to get recent shopping collaborators', e);
@@ -180,7 +190,8 @@ class FriendsUtilityOperations {
   }
 
   Future<List<UserProfile>> _batchFetchUserProfiles(
-      List<String> userIds) async {
+    List<String> userIds,
+  ) async {
     if (userIds.isEmpty) return [];
 
     final profileMap = <String, UserProfile>{};
@@ -199,11 +210,12 @@ class FriendsUtilityOperations {
               data['displayName'] ?? AppLocale.current.displayUnknownUser,
           email: data['email'] ?? '',
           avatarUrl: data['avatarUrl'],
-          joinedAt: SerializationUtils.parseDateTimeValue(data['joinedAt']) ??
+          joinedAt:
+              SerializationUtils.parseDateTimeValue(data['joinedAt']) ??
               clock.now(),
           lastActiveAt:
               SerializationUtils.parseDateTimeValue(data['lastActiveAt']) ??
-                  clock.now(),
+              clock.now(),
         );
       }
     }

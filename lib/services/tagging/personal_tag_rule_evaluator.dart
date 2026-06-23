@@ -41,8 +41,11 @@ class PersonalTagRuleEvaluator extends BaseService {
         if (tagRulePairs.isEmpty) return <String>{};
 
         final userId = _getCurrentUserId();
-        final matchingTags =
-            await _evaluateRules(recipe, tagRulePairs, userId: userId);
+        final matchingTags = await _evaluateRules(
+          recipe,
+          tagRulePairs,
+          userId: userId,
+        );
 
         return await _enforceExclusiveGroups(matchingTags, allTags, allGroups);
       },
@@ -77,8 +80,11 @@ class PersonalTagRuleEvaluator extends BaseService {
             userId: userId,
           );
           if (matchingTags.isNotEmpty) {
-            final filtered =
-                await _enforceExclusiveGroups(matchingTags, allTags, allGroups);
+            final filtered = await _enforceExclusiveGroups(
+              matchingTags,
+              allTags,
+              allGroups,
+            );
             if (filtered.isNotEmpty) {
               results[recipe.id] = filtered;
             }
@@ -115,7 +121,10 @@ class PersonalTagRuleEvaluator extends BaseService {
         );
 
         final filteredIds = await _enforceExclusiveGroups(
-            sourcesMap.keys.toSet(), allTags, allGroups);
+          sourcesMap.keys.toSet(),
+          allTags,
+          allGroups,
+        );
 
         sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
 
@@ -131,7 +140,7 @@ class PersonalTagRuleEvaluator extends BaseService {
   ///
   /// Returns a map of recipeId -> (tagId -> list of ruleIds).
   Future<Map<String, Map<String, List<String>>>>
-      evaluateRulesWithSourcesForRecipes(
+  evaluateRulesWithSourcesForRecipes(
     List<Recipe> recipes,
     List<TagRulePair> tagRulePairs,
     List<PersonalTag> allTags,
@@ -154,7 +163,10 @@ class PersonalTagRuleEvaluator extends BaseService {
           );
           if (sourcesMap.isNotEmpty) {
             final filteredIds = await _enforceExclusiveGroups(
-                sourcesMap.keys.toSet(), allTags, allGroups);
+              sourcesMap.keys.toSet(),
+              allTags,
+              allGroups,
+            );
             sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
             if (sourcesMap.isNotEmpty) {
               results[recipe.id] = sourcesMap;
@@ -243,8 +255,10 @@ class PersonalTagRuleEvaluator extends BaseService {
 
     if (allTags.isEmpty) return matchingTagIds;
 
-    final exclusiveGroupIds =
-        allGroups.where((g) => g.isExclusive).map((g) => g.id).toSet();
+    final exclusiveGroupIds = allGroups
+        .where((g) => g.isExclusive)
+        .map((g) => g.id)
+        .toSet();
 
     if (exclusiveGroupIds.isEmpty) return matchingTagIds;
 

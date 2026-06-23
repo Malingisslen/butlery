@@ -138,8 +138,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               child: Text(
                 context.l10n.conversationSelectFriendForDM,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: AppDimensions.paddingM),
@@ -206,8 +206,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             Text(
               context.l10n.errorGeneric,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppDimensions.paddingM),
             TextButton.icon(
@@ -237,16 +237,16 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             Text(
               context.l10n.conversationNoFriendsYet,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppDimensions.paddingS),
             Text(
               context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.outline,
-                  ),
+                color: cs.outline,
+              ),
             ),
           ],
         ),
@@ -258,8 +258,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Text(
           context.l10n.conversationNoFriendsMatch,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+            color: cs.onSurfaceVariant,
+          ),
         ),
       );
     }
@@ -314,16 +314,18 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
 
       if (_selectedFriendIds.length == 1) {
         // Create direct conversation with single friend
-        final friend =
-            _friends.firstWhere((f) => f.uid == _selectedFriendIds.first);
+        final friend = _friends.firstWhere(
+          (f) => f.uid == _selectedFriendIds.first,
+        );
         conversationId = await _messagingService.startDirectConversation(
           otherUserId: friend.uid,
           otherUserDisplayName: friend.displayName,
         );
       } else {
         // Create group conversation with multiple friends
-        final selectedFriends =
-            _friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
+        final selectedFriends = _friends
+            .where((f) => _selectedFriendIds.contains(f.uid))
+            .toList();
         final participantIds = _selectedFriendIds.toList();
 
         // Build participant maps for group conversation
@@ -340,7 +342,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           participantDisplayNames: participantDisplayNames,
           participantAvatarUrls: participantAvatarUrls,
           title: context.l10n.conversationGroupChatWith(
-              selectedFriends.map((f) => f.displayName).join(', ')),
+            selectedFriends.map((f) => f.displayName).join(', '),
+          ),
         );
       }
 

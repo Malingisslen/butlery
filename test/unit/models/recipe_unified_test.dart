@@ -296,8 +296,10 @@ void main() {
         // Assert
         expect(cookedToday.lastCookedText, equals('Tillagad idag'));
         expect(cookedYesterday.lastCookedText, equals('Tillagad igår'));
-        expect(cookedLastWeek.lastCookedText,
-            equals('Tillagad för 7 dagar sedan'));
+        expect(
+          cookedLastWeek.lastCookedText,
+          equals('Tillagad för 7 dagar sedan'),
+        );
         expect(neverCooked.lastCookedText, isNull);
       });
     });
@@ -453,8 +455,10 @@ void main() {
         expect(recipe.type, equals(RecipeType.collaborative));
         expect(recipe.socialData, isNotNull);
         expect(recipe.socialData!.memberPermissions, isNotNull);
-        expect(recipe.socialData!.memberPermissions!['user1'],
-            equals(ResourcePermission.editor));
+        expect(
+          recipe.socialData!.memberPermissions!['user1'],
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should create realtime recipe', () {
@@ -540,13 +544,18 @@ void main() {
         final updated = original.copyWith(tagResult: tagResult);
 
         // Assert
-        expect(updated.core.tagResult, isNotNull,
-            reason: 'tagResult should be set via Recipe.copyWith');
+        expect(
+          updated.core.tagResult,
+          isNotNull,
+          reason: 'tagResult should be set via Recipe.copyWith',
+        );
         expect(updated.core.tagResult!.tags, contains('vegetarisk'));
         expect(updated.core.tagResult!.tags, contains('pasta-dish'));
         expect(updated.core.tagResult!.coverage, 0.95);
-        expect(updated.core.tagResult!.allergenStatus['gluten'],
-            TriState.contains);
+        expect(
+          updated.core.tagResult!.allergenStatus['gluten'],
+          TriState.contains,
+        );
       });
 
       test('should replace existing tagResult via Recipe.copyWith', () {
@@ -590,8 +599,11 @@ void main() {
         expect(updated.core.tagResult, isNotNull);
         expect(updated.core.tagResult!.tags, contains('ny-tag'));
         expect(updated.core.tagResult!.tags, contains('vegetarisk'));
-        expect(updated.core.tagResult!.tags, isNot(contains('gammal-tag')),
-            reason: 'Old tagResult should be fully replaced');
+        expect(
+          updated.core.tagResult!.tags,
+          isNot(contains('gammal-tag')),
+          reason: 'Old tagResult should be fully replaced',
+        );
         expect(updated.core.tagResult!.coverage, 1.0);
       });
 
@@ -720,10 +732,14 @@ void main() {
         // Assert
         expect(socialData.ownerId, equals('owner_123'));
         expect(socialData.ownerDisplayName, equals('Test Owner'));
-        expect(socialData.memberPermissions!['user1'],
-            equals(ResourcePermission.editor));
-        expect(socialData.memberPermissions!['user2'],
-            equals(ResourcePermission.viewer));
+        expect(
+          socialData.memberPermissions!['user1'],
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          socialData.memberPermissions!['user2'],
+          equals(ResourcePermission.viewer),
+        );
         expect(socialData.allowGuestViewing, isTrue);
         expect(socialData.allowMemberInvites, isFalse);
       });

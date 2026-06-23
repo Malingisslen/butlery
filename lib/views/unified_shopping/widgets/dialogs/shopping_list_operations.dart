@@ -47,8 +47,9 @@ class ShoppingListOperations {
     final confirmed = await DialogFactory.showConfirmation(
       context,
       title: context.l10n.shoppingClearPurchasedTitle,
-      message:
-          context.l10n.shoppingClearPurchasedMessage(viewModel.boughtItems),
+      message: context.l10n.shoppingClearPurchasedMessage(
+        viewModel.boughtItems,
+      ),
       confirmText: context.l10n.shoppingClear,
       isDangerous: true,
     );
@@ -91,13 +92,17 @@ class ShoppingListOperations {
                 label: context.l10n.shoppingNewName,
                 hint: context.l10n.shoppingNewNameHint,
                 validator: (value) {
-                  final requiredCheck = ValidationUtils.validateRequired(value,
-                      fieldName: context.l10n.commonName);
+                  final requiredCheck = ValidationUtils.validateRequired(
+                    value,
+                    fieldName: context.l10n.commonName,
+                  );
                   if (requiredCheck != null) return requiredCheck;
-                  return ValidationUtils.validateLength(value,
-                      minLength: 2,
-                      maxLength: 50,
-                      fieldName: context.l10n.commonName);
+                  return ValidationUtils.validateLength(
+                    value,
+                    minLength: 2,
+                    maxLength: 50,
+                    fieldName: context.l10n.commonName,
+                  );
                 },
                 maxLength: 50,
               ),
@@ -148,8 +153,10 @@ class ShoppingListOperations {
       title: context.l10n.shoppingDeleteList,
       message: list.items.isEmpty
           ? context.l10n.shoppingDeleteListConfirm(list.name)
-          : context.l10n
-              .shoppingDeleteListWithItemsConfirm(list.name, list.items.length),
+          : context.l10n.shoppingDeleteListWithItemsConfirm(
+              list.name,
+              list.items.length,
+            ),
       confirmText: context.l10n.commonDelete,
       cancelText: context.l10n.commonCancel,
       isDangerous: true,
@@ -205,13 +212,13 @@ class ShoppingListOperations {
         for (final f in result.selectedFriends) f.uid: f.displayName,
       };
 
-      final newListId =
-          await shoppingService.collaborative.convertPersonalToCollaborative(
-        personalListId: list.id,
-        memberIds: memberIds,
-        memberDisplayNames: memberDisplayNames,
-        description: result.description,
-      );
+      final newListId = await shoppingService.collaborative
+          .convertPersonalToCollaborative(
+            personalListId: list.id,
+            memberIds: memberIds,
+            memberDisplayNames: memberDisplayNames,
+            description: result.description,
+          );
 
       if (newListId != null && context.mounted) {
         onSuccess(context.l10n.shoppingConvertedToCollaborative);
@@ -340,9 +347,9 @@ class _ConvertToCollaborativeDialogState
                         ? Text(
                             friend.email,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           )
                         : null,
@@ -391,8 +398,8 @@ class _ConvertToCollaborativeDialogState
                       .toList();
                   final description =
                       _descriptionController.text.trim().isNotEmpty
-                          ? _descriptionController.text.trim()
-                          : null;
+                      ? _descriptionController.text.trim()
+                      : null;
                   Navigator.pop(
                     context,
                     _ConvertToCollaborativeResult(

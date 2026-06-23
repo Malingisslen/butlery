@@ -66,7 +66,8 @@ class RealtimeConflictResolver {
       if (pendingEdits == null || pendingEdits.isEmpty) return;
 
       AppLogger.debug(
-          '🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)');
+        '🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)',
+      );
 
       // Load current recipe state
       final snapshot = await firestore
@@ -76,7 +77,8 @@ class RealtimeConflictResolver {
 
       if (!snapshot.exists) {
         AppLogger.warning(
-            'Recipe $recipeId no longer exists during conflict resolution');
+          'Recipe $recipeId no longer exists during conflict resolution',
+        );
         return;
       }
 
@@ -352,7 +354,8 @@ class RealtimeConflictResolver {
     // Trigger conflict resolution with longer delay
     conflictResolutionTimers[recipeId] = Timer(
       const Duration(
-          milliseconds: 1000), // Longer delay for conflict resolution
+        milliseconds: 1000,
+      ), // Longer delay for conflict resolution
       () => resolveEditConflicts(
         firestore: firestore,
         recipeId: recipeId,
@@ -405,11 +408,14 @@ class RealtimeConflictResolver {
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
   }) {
-    final totalPendingEdits = pendingRealtimeEdits.values
-        .fold<int>(0, (total, edits) => total + edits.length);
+    final totalPendingEdits = pendingRealtimeEdits.values.fold<int>(
+      0,
+      (total, edits) => total + edits.length,
+    );
 
-    final activeConflictTimers =
-        conflictResolutionTimers.values.where((timer) => timer.isActive).length;
+    final activeConflictTimers = conflictResolutionTimers.values
+        .where((timer) => timer.isActive)
+        .length;
 
     final recipesWithConflicts = pendingRealtimeEdits.keys
         .where((recipeId) => (pendingRealtimeEdits[recipeId]?.length ?? 0) > 1)

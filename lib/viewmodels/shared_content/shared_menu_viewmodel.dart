@@ -53,7 +53,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
         socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();
 
     AppLogger.info(
-        'SharedMenuViewModel initialized with copy-on-write support');
+      'SharedMenuViewModel initialized with copy-on-write support',
+    );
   }
   @override
   String get contentTypeName => 'menu';
@@ -66,7 +67,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     }
 
     AppLogger.info(
-        '🔄 Loading shared menus from coordinator for user: ${userId.maskedUserId}');
+      '🔄 Loading shared menus from coordinator for user: ${userId.maskedUserId}',
+    );
 
     // Clear stale cache before loading fresh status from Firestore
     // Bug fix: Prevents dismissed menus from reappearing after navigation
@@ -80,14 +82,17 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     // Filter out dismissed menus, imported menus, and content from blocked users
     final blocked = blockedUsers;
     final visibleMenus = menus
-        .where((menu) =>
-            !_socialMenuCoordinator.isMenuDismissed(menu.id) &&
-            !blocked.contains(menu.sharedByUserId) &&
-            (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
+        .where(
+          (menu) =>
+              !_socialMenuCoordinator.isMenuDismissed(menu.id) &&
+              !blocked.contains(menu.sharedByUserId) &&
+              (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)),
+        )
         .toList();
 
     AppLogger.info(
-        '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
+      '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)',
+    );
     return visibleMenus;
   }
 
@@ -102,8 +107,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
     return content.menuTitle.toLowerCase().contains(query) ||
         content.sharedByDisplayName.toLowerCase().contains(query) ||
-        content.categories
-            .any((category) => category.toLowerCase().contains(query)) ||
+        content.categories.any(
+          (category) => category.toLowerCase().contains(query),
+        ) ||
         (content.shareMessage?.toLowerCase().contains(query) ?? false);
   }
 
@@ -127,9 +133,11 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     if (userId == null) return 0;
 
     return content
-        .where((menu) =>
-            !_socialMenuCoordinator.isMenuViewed(menu.id) &&
-            (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
+        .where(
+          (menu) =>
+              !_socialMenuCoordinator.isMenuViewed(menu.id) &&
+              (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)),
+        )
         .length;
   }
 
@@ -147,9 +155,11 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     if (userId == null) return [];
 
     return content
-        .where((menu) =>
-            !_socialMenuCoordinator.isMenuImported(menu.id) &&
-            menu.sharedByUserId != userId)
+        .where(
+          (menu) =>
+              !_socialMenuCoordinator.isMenuImported(menu.id) &&
+              menu.sharedByUserId != userId,
+        )
         .toList();
   }
 
@@ -166,23 +176,28 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   /// Import shared menu using copy-on-write pattern
   /// For new copy-on-write behavior, this joins as viewer until first edit.
   /// Returns a [MenuJoinResult] indicating if this is a collaborative menu.
-  Future<MenuJoinResult?> importSharedMenu(SharedMenu sharedMenu,
-      {String? newTitle}) async {
+  Future<MenuJoinResult?> importSharedMenu(
+    SharedMenu sharedMenu, {
+    String? newTitle,
+  }) async {
     // Use per-item operating state for individual loading spinner
     setItemOperating(sharedMenu.id, true);
     try {
       AppLogger.info(
-          '🔄 Starting Import menu "${getContentTitle(sharedMenu)}" for menu...');
+        '🔄 Starting Import menu "${getContentTitle(sharedMenu)}" for menu...',
+      );
       final result = await _socialMenuCoordinator.joinSharedMenu(
         sharedMenuId: sharedMenu.id,
         newTitle: newTitle,
       );
       AppLogger.success(
-          '✅ Import menu "${getContentTitle(sharedMenu)}" completed successfully');
+        '✅ Import menu "${getContentTitle(sharedMenu)}" completed successfully',
+      );
       return result;
     } catch (e) {
       AppLogger.error(
-          '❌ Import menu "${getContentTitle(sharedMenu)}" failed: $e');
+        '❌ Import menu "${getContentTitle(sharedMenu)}" failed: $e',
+      );
       return null;
     } finally {
       setItemOperating(sharedMenu.id, false);
@@ -362,8 +377,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
         await Future.wait(
           unviewedMenus.map((menu) async {
-            final success =
-                await _socialMenuCoordinator.markMenuAsViewed(menu.id);
+            final success = await _socialMenuCoordinator.markMenuAsViewed(
+              menu.id,
+            );
             if (success) {
               _socialMenuCoordinator.setViewedStatus(menu.id, true);
             }
@@ -457,7 +473,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       }
     }
 
-    return Map.fromEntries(categoryCount.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value)));
+    return Map.fromEntries(
+      categoryCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)),
+    );
   }
 }

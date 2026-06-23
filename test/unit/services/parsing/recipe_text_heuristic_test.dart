@@ -70,15 +70,15 @@ Mix the dry ingredients. Add eggs and milk. Fry until golden.
       expect(RecipeTextHeuristic.looksLikeRecipe(text), isFalse);
     });
 
-    test('characterization: lenient by design — one unit + one verb passes',
-        () {
+    test('characterization: lenient by design — one unit + one verb passes', () {
       // Pins the DELIBERATE false-positive tolerance: a single standalone unit
       // plus a cooking verb in ordinary prose passes. This is intentional —
       // never block a real recipe — so a future "tighten the gate" change must
       // consciously update this expectation rather than silently regress.
       expect(
         RecipeTextHeuristic.looksLikeRecipe(
-            'I weigh 80 kg and I cook dinner most evenings.'),
+          'I weigh 80 kg and I cook dinner most evenings.',
+        ),
         isTrue,
       );
     });

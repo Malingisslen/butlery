@@ -185,8 +185,10 @@ void main() {
 
       final last = extractor.extractAt(tokens, 2);
       expect(last['bigram.prev=dl|cur=mjölk'], 1.0);
-      expect(last.keys.where((k) => k.startsWith('bigram.cur=mjölk|next=')),
-          isEmpty);
+      expect(
+        last.keys.where((k) => k.startsWith('bigram.cur=mjölk|next=')),
+        isEmpty,
+      );
     });
 
     test('type-level bigram features use coarse token types', () {

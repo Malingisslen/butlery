@@ -14,9 +14,9 @@ class ShoppingRepositoryQueryModule {
   final CollectionReference<Map<String, dynamic>> sharedListsRef;
   final String Function() requireCurrentUserId;
   final CollectionReference<Map<String, dynamic>> Function(String userId)
-      getUserCollection;
+  getUserCollection;
   final UnifiedShoppingList Function(DocumentSnapshot<Map<String, dynamic>> doc)
-      fromFirestore;
+  fromFirestore;
   final Future<UnifiedShoppingList?> Function(String id) readList;
 
   ShoppingRepositoryQueryModule({
@@ -44,10 +44,9 @@ class ShoppingRepositoryQueryModule {
         final list = fromFirestore(listDoc);
 
         // Load items for this list from subcollection
-        final itemsSnapshot = await getUserCollection(uid)
-            .doc(list.id)
-            .collection(FirestoreCollections.items)
-            .get();
+        final itemsSnapshot = await getUserCollection(
+          uid,
+        ).doc(list.id).collection(FirestoreCollections.items).get();
 
         final items = itemsSnapshot.docs
             .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
@@ -57,8 +56,10 @@ class ShoppingRepositoryQueryModule {
         final listWithItems = list.copyWith(items: items);
         personalLists.add(listWithItems);
 
-        AppLogger.info('Loaded list "${list.name}" with ${items.length} items',
-            'ShoppingRepository');
+        AppLogger.info(
+          'Loaded list "${list.name}" with ${items.length} items',
+          'ShoppingRepository',
+        );
       }
 
       // Get shared/collaborative lists where user is a member
@@ -75,24 +76,29 @@ class ShoppingRepositoryQueryModule {
           // Safety check: Skip lists with invalid data
           if (list.name.isEmpty) {
             AppLogger.warning(
-                'Skipping collaborative list with empty name: ${doc.id}');
+              'Skipping collaborative list with empty name: ${doc.id}',
+            );
             continue;
           }
 
           AppLogger.info(
-              'Loaded collaborative list "${list.name}" with ${list.items.length} items (origin: ${list.collaborativeOrigin ?? "direct"})',
-              'ShoppingRepository');
+            'Loaded collaborative list "${list.name}" with ${list.items.length} items (origin: ${list.collaborativeOrigin ?? "direct"})',
+            'ShoppingRepository',
+          );
 
           // Debug log each item to verify they're loading correctly
           for (int i = 0; i < list.items.length && i < 3; i++) {
             final item = list.items[i];
             AppLogger.info(
-                '  Item ${i + 1}: "${item.name}" (bought: ${item.bought})',
-                'ShoppingRepository');
+              '  Item ${i + 1}: "${item.name}" (bought: ${item.bought})',
+              'ShoppingRepository',
+            );
           }
           if (list.items.length > 3) {
-            AppLogger.info('  ... and ${list.items.length - 3} more items',
-                'ShoppingRepository');
+            AppLogger.info(
+              '  ... and ${list.items.length - 3} more items',
+              'ShoppingRepository',
+            );
           }
 
           sharedLists.add(list);
@@ -107,7 +113,8 @@ class ShoppingRepositoryQueryModule {
       allLists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
       AppLogger.success(
-          'Successfully loaded ${allLists.length} shopping lists (${personalLists.length} personal, ${sharedLists.length} collaborative)');
+        'Successfully loaded ${allLists.length} shopping lists (${personalLists.length} personal, ${sharedLists.length} collaborative)',
+      );
       return allLists;
     } catch (e) {
       AppLogger.error('Failed to load shopping lists: $e');
@@ -154,10 +161,12 @@ class ShoppingRepositoryQueryModule {
           .limit(200)
           .snapshots()
           .map((snap) {
-        final lists = snap.docs.map(UnifiedShoppingList.fromFirestore).toList();
-        lists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-        return lists.take(20).toList();
-      });
+            final lists = snap.docs
+                .map(UnifiedShoppingList.fromFirestore)
+                .toList();
+            lists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+            return lists.take(20).toList();
+          });
     } catch (e) {
       return const Stream.empty();
     }

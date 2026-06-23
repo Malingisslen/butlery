@@ -64,7 +64,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     if (context.mounted) {
       if (viewModel.error == null) {
         UtilityComponents.showSuccessSnackbar(
-            context, context.l10n.importRecipesImported);
+          context,
+          context.l10n.importRecipesImported,
+        );
         Navigator.pop(context);
       } else {
         UtilityComponents.showErrorSnackbar(context, viewModel.error!);
@@ -117,8 +119,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       ),
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding:
-                              AppDimensions.responsiveContentPadding(context),
+                          padding: AppDimensions.responsiveContentPadding(
+                            context,
+                          ),
                           child: Column(
                             children: [
                               SearchFilterWidget.searchOnly(
@@ -140,14 +143,16 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                   children: allTags.map((tag) {
                                     return FilterChip(
                                       label: Text(tag),
-                                      selected:
-                                          viewModel.selectedTags.contains(tag),
+                                      selected: viewModel.selectedTags.contains(
+                                        tag,
+                                      ),
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
                                       backgroundColor:
                                           cs.surfaceContainerHighest,
                                       selectedColor: cs.primary.withValues(
-                                          alpha: AppDimensions.opacityLight),
+                                        alpha: AppDimensions.opacityLight,
+                                      ),
                                       checkmarkColor: cs.primary,
                                     );
                                   }).toList(),
@@ -279,8 +284,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final filterParts = <String>[];
 
     if (viewModel.selectedTags.isNotEmpty) {
-      filterParts
-          .add(context.l10n.importTagsCount(viewModel.selectedTags.length));
+      filterParts.add(
+        context.l10n.importTagsCount(viewModel.selectedTags.length),
+      );
     }
 
     if (viewModel.timeFilter != TimeFilter.all) {
@@ -329,8 +335,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         final recipe = recipes[index];
 
         return Padding(
-          padding:
-              const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.spacingXs,
+          ),
           child: ContentCard(
             key: ValueKey(recipe.id),
             item: recipe,
@@ -359,8 +366,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               context,
               label: context.l10n.commonSelectAll,
               icon: Icons.select_all,
-              onPressed:
-                  viewModel.isImporting ? null : viewModel.toggleSelectAll,
+              onPressed: viewModel.isImporting
+                  ? null
+                  : viewModel.toggleSelectAll,
             ),
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -370,8 +378,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               context,
               label: viewModel.hasSelection
                   ? context.l10n.importSelectedCount(viewModel.selectedCount)
-                  : context.l10n
-                      .importAllCount(viewModel.archivedRecipes.length),
+                  : context.l10n.importAllCount(
+                      viewModel.archivedRecipes.length,
+                    ),
               icon: Icons.upload,
               onPressed: viewModel.isImporting
                   ? null

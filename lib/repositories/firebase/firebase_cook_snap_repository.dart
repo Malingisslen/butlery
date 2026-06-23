@@ -43,20 +43,28 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, CookSnap? entity) async {
+    String userId,
+    String resourceId,
+    CookSnap? entity,
+  ) async {
     // Authorisation enforced at rules layer.
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, CookSnap entity) async {
+    String userId,
+    String resourceId,
+    CookSnap entity,
+  ) async {
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     try {
       final snap = await read(resourceId);
       if (snap == null) return false;
@@ -76,7 +84,8 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     if (viewerId.isEmpty) return const [];
 
     final snapshots = await Future.wait(
-        _readQueries(recipeId, viewerId, friendIds, limit).map((q) => q.get()));
+      _readQueries(recipeId, viewerId, friendIds, limit).map((q) => q.get()),
+    );
 
     return _mergeAndRank(snapshots, limit);
   }
@@ -90,15 +99,19 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   }) {
     if (viewerId.isEmpty) return Stream<List<CookSnap>>.value(const []);
 
-    final streams = _readQueries(recipeId, viewerId, friendIds, limit)
-        .map((q) => q.snapshots())
-        .toList();
+    final streams = _readQueries(
+      recipeId,
+      viewerId,
+      friendIds,
+      limit,
+    ).map((q) => q.snapshots()).toList();
 
     // combineLatestList waits for every chunk's first emission before
     // producing output (no partial-state UI flashes), and propagates cancel
     // to every inner subscription.
-    return Rx.combineLatestList(streams)
-        .map((snaps) => _mergeAndRank(snaps, limit));
+    return Rx.combineLatestList(
+      streams,
+    ).map((snaps) => _mergeAndRank(snaps, limit));
   }
 
   /// BUT-1214: the viewer's own snaps are queried WITHOUT a visibility
@@ -113,8 +126,9 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     Set<String> friendIds,
     int limit,
   ) {
-    final friendChunks =
-        ({...friendIds}..remove(viewerId)).chunked(kFirestoreWhereInLimit);
+    final friendChunks = ({
+      ...friendIds,
+    }..remove(viewerId)).chunked(kFirestoreWhereInLimit);
 
     // Every query fetches the full `limit`: the global top-N can come
     // entirely from one chunk (a prolific friend, or the viewer's own
@@ -128,8 +142,12 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     return [
       base.where('userId', isEqualTo: viewerId),
       for (final chunk in friendChunks)
-        base.where('userId', whereIn: chunk).where('visibility',
-            isEqualTo: CookSnapVisibility.sameAsRecipe.name),
+        base
+            .where('userId', whereIn: chunk)
+            .where(
+              'visibility',
+              isEqualTo: CookSnapVisibility.sameAsRecipe.name,
+            ),
     ];
   }
 
@@ -137,11 +155,12 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     List<QuerySnapshot<Map<String, dynamic>>> snapshots,
     int limit,
   ) {
-    final merged = snapshots
-        .expand((s) => s.docs)
-        .map((doc) => fromFirestore(doc))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final merged =
+        snapshots
+            .expand((s) => s.docs)
+            .map((doc) => fromFirestore(doc))
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return merged.take(limit).toList();
   }
 
@@ -216,7 +235,8 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} cook snaps for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} cook snaps for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 }

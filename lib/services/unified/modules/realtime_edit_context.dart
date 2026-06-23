@@ -55,7 +55,7 @@ class RealtimeEditContext {
   /// - Updating Firebase with resolved state
   /// - Handling optimistic update rollback on failure
   final Future<void> Function(String recipeId, Map<String, dynamic> edit)
-      applyEditWithConflictResolution;
+  applyEditWithConflictResolution;
 
   /// Callback to set error messages for user display.
   /// Reports validation failures, permission errors, and operation failures to the UI layer

@@ -60,25 +60,29 @@ void main() {
           .withId(testRecipeId)
           .withTitle('Köttbullar med lingonsylt')
           .withDescription(
-              'Traditionella svenska köttbullar från mormors recept')
+            'Traditionella svenska köttbullar från mormors recept',
+          )
           .withMealType('Middag')
           .withPortions(4)
           .withTimeMinutes(45)
           .withRating(4.5)
-          .withTags(['svensk', 'traditionell', 'kött']).withImageUrls(
-              ['image1.jpg', 'image2.jpg', 'image3.jpg']).withIngredients([
-        '500g köttfärs',
-        '1 dl ströbröd',
-        '1 ägg',
-        '2 msk mjölk',
-        '1 tsk salt',
-        '1 krm peppar'
-      ]).withInstructions([
-        'Blanda köttfärs med ströbröd och ägg',
-        'Tillsätt mjölk, salt och peppar',
-        'Forma små bullar',
-        'Stek i smör tills gyllenbruna'
-      ]).build();
+          .withTags(['svensk', 'traditionell', 'kött'])
+          .withImageUrls(['image1.jpg', 'image2.jpg', 'image3.jpg'])
+          .withIngredients([
+            '500g köttfärs',
+            '1 dl ströbröd',
+            '1 ägg',
+            '2 msk mjölk',
+            '1 tsk salt',
+            '1 krm peppar',
+          ])
+          .withInstructions([
+            'Blanda köttfärs med ströbröd och ägg',
+            'Tillsätt mjölk, salt och peppar',
+            'Forma små bullar',
+            'Stek i smör tills gyllenbruna',
+          ])
+          .build();
 
       // Create updated recipe for state changes
       updatedRecipe = RecipeBuilder()
@@ -103,18 +107,22 @@ void main() {
       );
 
       // Setup analytics mock with proper signatures
-      when(() => mockAnalyticsService.logRecipeDeleted(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isPersonal: any(named: 'isPersonal'),
-            createdAt: any(named: 'createdAt'),
-          )).thenAnswer((_) async => Future.value());
+      when(
+        () => mockAnalyticsService.logRecipeDeleted(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isPersonal: any(named: 'isPersonal'),
+          createdAt: any(named: 'createdAt'),
+        ),
+      ).thenAnswer((_) async => Future.value());
 
-      when(() => mockAnalyticsService.logRecipeCooked(
-            recipeId: any(named: 'recipeId'),
-            mealType: any(named: 'mealType'),
-            isFirstTime: any(named: 'isFirstTime'),
-          )).thenAnswer((_) async => Future.value());
+      when(
+        () => mockAnalyticsService.logRecipeCooked(
+          recipeId: any(named: 'recipeId'),
+          mealType: any(named: 'mealType'),
+          isFirstTime: any(named: 'isFirstTime'),
+        ),
+      ).thenAnswer((_) async => Future.value());
 
       // Register mocks
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
@@ -231,7 +239,8 @@ void main() {
         final recipeEmptyTags = RecipeBuilder()
             .withId('emptytags')
             .withTitle('Recipe with empty tags')
-            .withTags([]).build();
+            .withTags([])
+            .build();
 
         viewModel = RecipeDetailViewModel(
           recipe: recipeEmptyTags,
@@ -248,8 +257,9 @@ void main() {
     group('Recipe Operations', () {
       test('should delete recipe successfully', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(testRecipeId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.deleteRecipe(testRecipeId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await viewModel.deleteRecipe();
@@ -257,18 +267,21 @@ void main() {
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.deleteRecipe(testRecipeId)).called(1);
-        verify(() => mockAnalyticsService.logRecipeDeleted(
-              recipeId: testRecipeId,
-              mealType: 'Middag',
-              isPersonal: any(named: 'isPersonal'),
-              createdAt: any(named: 'createdAt'),
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logRecipeDeleted(
+            recipeId: testRecipeId,
+            mealType: 'Middag',
+            isPersonal: any(named: 'isPersonal'),
+            createdAt: any(named: 'createdAt'),
+          ),
+        ).called(1);
       });
 
       test('should handle deletion failure', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenAnswer((_) async => false);
         mockRecipeService.setRecipeState(error: 'Kunde inte ta bort receptet');
 
         // Act - executeAsync rethrows, so wrap in try/catch
@@ -311,11 +324,13 @@ void main() {
         // Assert
         expect(result, isTrue);
         verify(() => mockCookingService.markAsCooked(testRecipeId)).called(1);
-        verify(() => mockAnalyticsService.logRecipeCooked(
-              recipeId: testRecipeId,
-              mealType: 'Middag',
-              isFirstTime: true,
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logRecipeCooked(
+            recipeId: testRecipeId,
+            mealType: 'Middag',
+            isFirstTime: true,
+          ),
+        ).called(1);
       });
 
       test('should handle mark as cooked failure', () async {
@@ -354,11 +369,13 @@ void main() {
         await viewModel.markAsCooked();
 
         // Assert
-        verify(() => mockAnalyticsService.logRecipeCooked(
-              recipeId: any(named: 'recipeId'),
-              mealType: any(named: 'mealType'),
-              isFirstTime: false, // Should be false since already cooked
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logRecipeCooked(
+            recipeId: any(named: 'recipeId'),
+            mealType: any(named: 'mealType'),
+            isFirstTime: false, // Should be false since already cooked
+          ),
+        ).called(1);
       });
     });
 
@@ -368,11 +385,11 @@ void main() {
         removedTags: {'kött'},
       );
 
-      test(
-          'applies overrides optimistically and persists via the service '
+      test('applies overrides optimistically and persists via the service '
           'when the write succeeds', () async {
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.updateRecipeTagOverrides(overrides);
 
@@ -382,46 +399,53 @@ void main() {
         // ...and the persist went through the service exactly once, carrying
         // those overrides (the View no longer calls the service directly).
         final persisted =
-            verify(() => mockRecipeService.updateRecipe(captureAny()))
-                .captured
-                .single as Recipe;
+            verify(
+                  () => mockRecipeService.updateRecipe(captureAny()),
+                ).captured.single
+                as Recipe;
         expect(persisted.tagOverrides, equals(overrides));
       });
 
-      test('reverts to the previous overrides when the service write fails',
-          () async {
-        const previous = TagOverrides(addedTags: {'original'});
-        final taggedRecipe = RecipeBuilder()
-            .withId(testRecipeId)
-            .withTitle('Tagged Recipe')
-            .withTagOverrides(previous)
-            .build();
-        viewModel = RecipeDetailViewModel(
-          recipe: taggedRecipe,
-          recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          cookingService: mockCookingService,
-        );
+      test(
+        'reverts to the previous overrides when the service write fails',
+        () async {
+          const previous = TagOverrides(addedTags: {'original'});
+          final taggedRecipe = RecipeBuilder()
+              .withId(testRecipeId)
+              .withTitle('Tagged Recipe')
+              .withTagOverrides(previous)
+              .build();
+          viewModel = RecipeDetailViewModel(
+            recipe: taggedRecipe,
+            recipeService: mockRecipeService,
+            analyticsService: mockAnalyticsService,
+            cookingService: mockCookingService,
+          );
 
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => false);
+          when(
+            () => mockRecipeService.updateRecipe(any()),
+          ).thenAnswer((_) async => false);
 
-        // Count notifications: the optimistic apply and the revert must each
-        // fire one, so a no-op method that skipped the optimistic update (and
-        // happened to leave `previous` in place) cannot pass this test.
-        var notifications = 0;
-        viewModel.addListener(() => notifications++);
+          // Count notifications: the optimistic apply and the revert must each
+          // fire one, so a no-op method that skipped the optimistic update (and
+          // happened to leave `previous` in place) cannot pass this test.
+          var notifications = 0;
+          viewModel.addListener(() => notifications++);
 
-        final result = await viewModel.updateRecipeTagOverrides(overrides);
+          final result = await viewModel.updateRecipeTagOverrides(overrides);
 
-        // Failure is surfaced to the caller (the View shows the error snackbar)
-        // and the VM's recipe is rolled back to the pre-edit overrides, so the
-        // UI never shows an edit that wasn't saved.
-        expect(result, isFalse);
-        expect(viewModel.recipe.tagOverrides, equals(previous));
-        expect(notifications, greaterThanOrEqualTo(2),
-            reason: 'optimistic apply + revert each fire notifyListeners');
-      });
+          // Failure is surfaced to the caller (the View shows the error snackbar)
+          // and the VM's recipe is rolled back to the pre-edit overrides, so the
+          // UI never shows an edit that wasn't saved.
+          expect(result, isFalse);
+          expect(viewModel.recipe.tagOverrides, equals(previous));
+          expect(
+            notifications,
+            greaterThanOrEqualTo(2),
+            reason: 'optimistic apply + revert each fire notifyListeners',
+          );
+        },
+      );
     });
 
     group('Recipe State Synchronization', () {
@@ -432,16 +456,20 @@ void main() {
         );
 
         // Act - VM listens on stateStream, not ChangeNotifier
-        mockRecipeService.emitState(RecipeStateData(
-          recipes: [updatedRecipe],
-        ));
+        mockRecipeService.emitState(
+          RecipeStateData(
+            recipes: [updatedRecipe],
+          ),
+        );
 
         // Allow stream listener to process
         await Future.delayed(Duration.zero);
 
         // Assert
-        expect(viewModel.recipe.title,
-            equals('Köttbullar med lingonsylt - Uppdaterad'));
+        expect(
+          viewModel.recipe.title,
+          equals('Köttbullar med lingonsylt - Uppdaterad'),
+        );
         expect(viewModel.recipe.portions, equals(6));
         expect(viewModel.recipe.rating, equals(4.8));
       });
@@ -505,12 +533,14 @@ void main() {
 
         when(() => mockUserService.currentUserProfile).thenReturn(profile);
         when(() => mockUserService.currentUserId).thenReturn(testUserId);
-        when(() => mockBootstrap.emitLifecycle(
-              profile: any(named: 'profile'),
-              lastCookAt: any(named: 'lastCookAt'),
-              cooksLast14Days: any(named: 'cooksLast14Days'),
-              now: any(named: 'now'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockBootstrap.emitLifecycle(
+            profile: any(named: 'profile'),
+            lastCookAt: any(named: 'lastCookAt'),
+            cooksLast14Days: any(named: 'cooksLast14Days'),
+            now: any(named: 'now'),
+          ),
+        ).thenAnswer((_) async {});
 
         TestServiceLocator.registerMock<UserService>(mockUserService);
         TestServiceLocator.registerMock<UserPropertyBootstrap>(mockBootstrap);
@@ -522,50 +552,56 @@ void main() {
       });
 
       RecipeDetailViewModel buildViewModel() => RecipeDetailViewModel(
-            recipe: testRecipe,
-            recipeService: mockRecipeService,
-            analyticsService: mockAnalyticsService,
-            cookingService: mockCookingService,
-            cookEventRepository: mockCookEvents,
-          );
+        recipe: testRecipe,
+        recipeService: mockRecipeService,
+        analyticsService: mockAnalyticsService,
+        cookingService: mockCookingService,
+        cookEventRepository: mockCookEvents,
+      );
 
-      test(
-          'marquee: 3 cooks of the SAME recipe within 14d → '
+      test('marquee: 3 cooks of the SAME recipe within 14d → '
           'cooksLast14Days == 3 → lifecycle habitual (proxy gave 1)', () async {
         // The event log holds 3 events for one recipe — the old
         // personalRecipes.where(...) proxy counted distinct recipes and
         // would have reported 1 here.
-        when(() => mockCookEvents.countSince(any(), any()))
-            .thenAnswer((_) async => 3);
+        when(
+          () => mockCookEvents.countSince(any(), any()),
+        ).thenAnswer((_) async => 3);
 
         viewModel = buildViewModel();
         final ok = await viewModel.markAsCooked();
         expect(ok, isTrue);
 
         // The count is queried for the signed-in user over a 14d window.
-        final countArgs =
-            verify(() => mockCookEvents.countSince(captureAny(), captureAny()))
-                .captured;
+        final countArgs = verify(
+          () => mockCookEvents.countSince(captureAny(), captureAny()),
+        ).captured;
         expect(countArgs[0], testUserId);
         final since = countArgs[1] as DateTime;
         expect(DateTime.now().difference(since).inDays, 14);
 
         // The real count reaches the lifecycle emission unchanged...
-        final captured = verify(() => mockBootstrap.emitLifecycle(
-              profile: captureAny(named: 'profile'),
-              lastCookAt: captureAny(named: 'lastCookAt'),
-              cooksLast14Days: captureAny(named: 'cooksLast14Days'),
-              now: captureAny(named: 'now'),
-            )).captured;
+        final captured = verify(
+          () => mockBootstrap.emitLifecycle(
+            profile: captureAny(named: 'profile'),
+            lastCookAt: captureAny(named: 'lastCookAt'),
+            cooksLast14Days: captureAny(named: 'cooksLast14Days'),
+            now: captureAny(named: 'now'),
+          ),
+        ).captured;
         // Mocktail does not guarantee declaration order for captured named
         // args — extract by type. lastCookAt and now are the same instant
         // in the VM (both `clock.now()` of the cook).
         final cooks = captured.whereType<int>().single;
         final emittedProfile = captured.whereType<UserProfile>().single;
         final cookInstant = captured.whereType<DateTime>().first;
-        expect(cooks, 3,
-            reason: 'the distinct-recipe proxy reported 1 for repeat cooks '
-                'of the same recipe; the event log must report 3');
+        expect(
+          cooks,
+          3,
+          reason:
+              'the distinct-recipe proxy reported 1 for repeat cooks '
+              'of the same recipe; the event log must report 3',
+        );
 
         // ...and classifies as habitual with exactly these inputs.
         final stage = classifyLifecycleStage(
@@ -583,8 +619,9 @@ void main() {
         // before the write stays green with a canned mock count but
         // undercounts by one in production (3rd cook reports 2 →
         // habitual one cook late).
-        when(() => mockCookEvents.countSince(any(), any()))
-            .thenAnswer((_) async => 3);
+        when(
+          () => mockCookEvents.countSince(any(), any()),
+        ).thenAnswer((_) async => 3);
 
         viewModel = buildViewModel();
         await viewModel.markAsCooked();
@@ -596,72 +633,90 @@ void main() {
       });
 
       test('count failure falls back to 1 — cook flow never breaks', () async {
-        when(() => mockCookEvents.countSince(any(), any()))
-            .thenThrow(Exception('aggregate query offline'));
+        when(
+          () => mockCookEvents.countSince(any(), any()),
+        ).thenThrow(Exception('aggregate query offline'));
 
         viewModel = buildViewModel();
         final ok = await viewModel.markAsCooked();
-        expect(ok, isTrue,
-            reason: 'analytics enrichment must never fail '
-                'the user-facing cook action');
+        expect(
+          ok,
+          isTrue,
+          reason:
+              'analytics enrichment must never fail '
+              'the user-facing cook action',
+        );
 
-        verify(() => mockBootstrap.emitLifecycle(
+        verify(
+          () => mockBootstrap.emitLifecycle(
+            profile: any(named: 'profile'),
+            lastCookAt: any(named: 'lastCookAt'),
+            cooksLast14Days: 1,
+            now: any(named: 'now'),
+          ),
+        ).called(1);
+      });
+
+      test(
+        'a zero count is floored to 1 (this cook definitely happened)',
+        () async {
+          when(
+            () => mockCookEvents.countSince(any(), any()),
+          ).thenAnswer((_) async => 0);
+
+          viewModel = buildViewModel();
+          await viewModel.markAsCooked();
+
+          verify(
+            () => mockBootstrap.emitLifecycle(
               profile: any(named: 'profile'),
               lastCookAt: any(named: 'lastCookAt'),
               cooksLast14Days: 1,
               now: any(named: 'now'),
-            )).called(1);
-      });
-
-      test('a zero count is floored to 1 (this cook definitely happened)',
-          () async {
-        when(() => mockCookEvents.countSince(any(), any()))
-            .thenAnswer((_) async => 0);
-
-        viewModel = buildViewModel();
-        await viewModel.markAsCooked();
-
-        verify(() => mockBootstrap.emitLifecycle(
-              profile: any(named: 'profile'),
-              lastCookAt: any(named: 'lastCookAt'),
-              cooksLast14Days: 1,
-              now: any(named: 'now'),
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
     });
 
     group('Analytics Integration', () {
       test('should log cooking event when marked as cooked', () async {
         // Arrange
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await viewModel.markAsCooked();
 
         // Assert
-        verify(() => mockAnalyticsService.logRecipeCooked(
-              recipeId: testRecipeId,
-              mealType: 'Middag',
-              isFirstTime: true,
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logRecipeCooked(
+            recipeId: testRecipeId,
+            mealType: 'Middag',
+            isFirstTime: true,
+          ),
+        ).called(1);
       });
 
       test('should log deletion event when deleted', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await viewModel.deleteRecipe();
 
         // Assert
-        verify(() => mockAnalyticsService.logRecipeDeleted(
-              recipeId: testRecipeId,
-              mealType: 'Middag',
-              isPersonal: any(named: 'isPersonal'),
-              createdAt: any(named: 'createdAt'),
-            )).called(1);
+        verify(
+          () => mockAnalyticsService.logRecipeDeleted(
+            recipeId: testRecipeId,
+            mealType: 'Middag',
+            isPersonal: any(named: 'isPersonal'),
+            createdAt: any(named: 'createdAt'),
+          ),
+        ).called(1);
       });
     });
 
@@ -677,8 +732,9 @@ void main() {
 
       test('should handle service exceptions gracefully', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenThrow(Exception('Network error'));
 
         // Act - executeAsync rethrows, so wrap in try/catch
         bool result = true;
@@ -694,8 +750,9 @@ void main() {
 
       test('should handle update recipe exception', () async {
         // Arrange — VM delegates to RecipeCookingService; throw from there.
-        when(() => mockCookingService.markAsCooked(any()))
-            .thenThrow(Exception('Cook failed'));
+        when(
+          () => mockCookingService.markAsCooked(any()),
+        ).thenThrow(Exception('Cook failed'));
 
         // Act - executeAsync rethrows, so wrap in try/catch
         bool result = true;
@@ -746,8 +803,11 @@ void main() {
         final emptyRecipe = RecipeBuilder()
             .withId('empty')
             .withTitle('Empty Recipe')
-            .withIngredients([]).withInstructions([]).withTags(
-                []).withImageUrls([]).build();
+            .withIngredients([])
+            .withInstructions([])
+            .withTags([])
+            .withImageUrls([])
+            .build();
 
         viewModel = RecipeDetailViewModel(
           recipe: emptyRecipe,
@@ -767,7 +827,8 @@ void main() {
         final singleImageRecipe = RecipeBuilder()
             .withId('single')
             .withTitle('Single Image Recipe')
-            .withImageUrls(['single.jpg']).build();
+            .withImageUrls(['single.jpg'])
+            .build();
 
         viewModel = RecipeDetailViewModel(
           recipe: singleImageRecipe,

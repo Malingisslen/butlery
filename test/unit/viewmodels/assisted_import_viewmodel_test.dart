@@ -85,19 +85,21 @@ Steg 2. Tillsätt kyckling och stek''';
       expect(notifications, greaterThanOrEqualTo(1));
     });
 
-    test('nextStep does not advance from step 2 when no instructions selected',
-        () {
-      // Proves the second gate mirrors the first.
-      final vm = AssistedImportViewModel(extractedText: extractedText);
-      addTearDown(vm.dispose);
-      vm.setIngredientSelection({0});
-      vm.nextStep(); // → step 2
+    test(
+      'nextStep does not advance from step 2 when no instructions selected',
+      () {
+        // Proves the second gate mirrors the first.
+        final vm = AssistedImportViewModel(extractedText: extractedText);
+        addTearDown(vm.dispose);
+        vm.setIngredientSelection({0});
+        vm.nextStep(); // → step 2
 
-      expect(vm.canProceed, isFalse);
-      vm.nextStep();
+        expect(vm.canProceed, isFalse);
+        vm.nextStep();
 
-      expect(vm.currentStep, equals(AssistedImportStep.selectInstructions));
-    });
+        expect(vm.currentStep, equals(AssistedImportStep.selectInstructions));
+      },
+    );
 
     test('nextStep advances to step 3 once instructions are selected', () {
       // Proves the full 3-step advancement sequence.
@@ -248,20 +250,22 @@ Steg 2. Tillsätt kyckling och stek''';
       return vm;
     }
 
-    test('assembles recipe title, ingredients and instructions from selections',
-        () {
-      // Proves the core output of the wizard: the built recipe must carry the
-      // lines the user selected.
-      final vm = advanceToReview();
-      addTearDown(vm.dispose);
+    test(
+      'assembles recipe title, ingredients and instructions from selections',
+      () {
+        // Proves the core output of the wizard: the built recipe must carry the
+        // lines the user selected.
+        final vm = advanceToReview();
+        addTearDown(vm.dispose);
 
-      final recipe = vm.buildRecipe();
+        final recipe = vm.buildRecipe();
 
-      expect(recipe.title, equals('Kycklingrätt'));
-      expect(recipe.ingredients, hasLength(2));
-      expect(recipe.ingredients.first, equals('200 g kycklingfilé'));
-      expect(recipe.instructions, isNotEmpty);
-    });
+        expect(recipe.title, equals('Kycklingrätt'));
+        expect(recipe.ingredients, hasLength(2));
+        expect(recipe.ingredients.first, equals('200 g kycklingfilé'));
+        expect(recipe.instructions, isNotEmpty);
+      },
+    );
 
     test('strips leading "Steg N." prefix from instruction lines', () {
       // Proves the _cleanInstructionLine normalization step. "Steg 1. Stekpanna het"
@@ -363,21 +367,22 @@ Steg 2. Tillsätt kyckling och stek''';
     });
 
     test(
-        'returns null on step 3 when title, ingredients and instructions all present',
-        () {
-      final vm = AssistedImportViewModel(
-        extractedText: extractedText,
-        suggestedTitle: 'Kycklingrätt',
-      );
-      addTearDown(vm.dispose);
-      vm.setIngredientSelection({0});
-      vm.nextStep();
-      vm.setInstructionSelection({3});
-      vm.nextStep(); // → reviewEdit — editable lists built
+      'returns null on step 3 when title, ingredients and instructions all present',
+      () {
+        final vm = AssistedImportViewModel(
+          extractedText: extractedText,
+          suggestedTitle: 'Kycklingrätt',
+        );
+        addTearDown(vm.dispose);
+        vm.setIngredientSelection({0});
+        vm.nextStep();
+        vm.setInstructionSelection({3});
+        vm.nextStep(); // → reviewEdit — editable lists built
 
-      expect(vm.isValidForSave, isTrue);
-      expect(vm.validateCurrentStep(), isNull);
-    });
+        expect(vm.isValidForSave, isTrue);
+        expect(vm.validateCurrentStep(), isNull);
+      },
+    );
   });
 
   // ---------------------------------------------------------------------------

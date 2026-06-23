@@ -45,17 +45,16 @@ UserProfile _profile({
   required bool shareActivityToFeed,
   Map<String, bool> activityFeedEventTypes = const {},
   bool hasSeenActivityFeedHint = false,
-}) =>
-    UserProfile(
-      uid: 'actor-1',
-      displayName: 'Anna Andersson',
-      email: 'anna@butlery.test',
-      joinedAt: DateTime(2026, 1, 1),
-      lastActiveAt: DateTime(2026, 6, 1),
-      shareActivityToFeed: shareActivityToFeed,
-      activityFeedEventTypes: activityFeedEventTypes,
-      hasSeenActivityFeedHint: hasSeenActivityFeedHint,
-    );
+}) => UserProfile(
+  uid: 'actor-1',
+  displayName: 'Anna Andersson',
+  email: 'anna@butlery.test',
+  joinedAt: DateTime(2026, 1, 1),
+  lastActiveAt: DateTime(2026, 6, 1),
+  shareActivityToFeed: shareActivityToFeed,
+  activityFeedEventTypes: activityFeedEventTypes,
+  hasSeenActivityFeedHint: hasSeenActivityFeedHint,
+);
 
 void main() {
   late _RecordingActivityRepo repo;
@@ -88,25 +87,33 @@ void main() {
   });
 
   group('emitEvent privacy enforcement (BUT-906)', () {
-    test('opted-out user (shareActivityToFeed == false) is NOT broadcast',
-        () async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(shareActivityToFeed: false));
+    test(
+      'opted-out user (shareActivityToFeed == false) is NOT broadcast',
+      () async {
+        when(
+          () => userService.currentUserProfile,
+        ).thenReturn(_profile(shareActivityToFeed: false));
 
-      await service.emitEvent(
-        ActivityEventType.cooked,
-        'recipe-1',
-        'Köttbullar',
-      );
+        await service.emitEvent(
+          ActivityEventType.cooked,
+          'recipe-1',
+          'Köttbullar',
+        );
 
-      expect(repo.addedEvents, isEmpty,
-          reason: 'opt-out must suppress the feed write — broadcasting an '
-              'event for a user who disabled it is a privacy leak');
-    });
+        expect(
+          repo.addedEvents,
+          isEmpty,
+          reason:
+              'opt-out must suppress the feed write — broadcasting an '
+              'event for a user who disabled it is a privacy leak',
+        );
+      },
+    );
 
     test('opted-in user (shareActivityToFeed == true) IS broadcast', () async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(shareActivityToFeed: true));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(shareActivityToFeed: true));
 
       await service.emitEvent(
         ActivityEventType.cooked,
@@ -114,8 +121,11 @@ void main() {
         'Köttbullar',
       );
 
-      expect(repo.addedEvents, hasLength(1),
-          reason: 'opt-in is the default broadcasting behaviour');
+      expect(
+        repo.addedEvents,
+        hasLength(1),
+        reason: 'opt-in is the default broadcasting behaviour',
+      );
       final event = repo.addedEvents.single;
       expect(event.actorId, equals('actor-1'));
       expect(event.recipeId, equals('recipe-1'));
@@ -123,30 +133,37 @@ void main() {
       expect(event.type, equals(ActivityEventType.cooked));
     });
 
-    test('null profile (pre-field account) IS broadcast — default preserved',
-        () async {
-      // Accounts created before the field, or a profile not yet loaded,
-      // must keep the previous broadcasting behaviour. The opt-out check is
-      // `== false`, so null falls through to the emit.
-      when(() => userService.currentUserProfile).thenReturn(null);
+    test(
+      'null profile (pre-field account) IS broadcast — default preserved',
+      () async {
+        // Accounts created before the field, or a profile not yet loaded,
+        // must keep the previous broadcasting behaviour. The opt-out check is
+        // `== false`, so null falls through to the emit.
+        when(() => userService.currentUserProfile).thenReturn(null);
 
-      await service.emitEvent(
-        ActivityEventType.shared,
-        'recipe-2',
-        'Pannkakor',
-      );
+        await service.emitEvent(
+          ActivityEventType.shared,
+          'recipe-2',
+          'Pannkakor',
+        );
 
-      expect(repo.addedEvents, hasLength(1),
-          reason: 'a null profile must not be treated as an opt-out — that '
-              'would silently mute every legacy/unloaded account');
-    });
+        expect(
+          repo.addedEvents,
+          hasLength(1),
+          reason:
+              'a null profile must not be treated as an opt-out — that '
+              'would silently mute every legacy/unloaded account',
+        );
+      },
+    );
 
     test('unauthenticated user is not broadcast (no actor)', () async {
       // Guards that the opt-out short-circuit did not accidentally move the
       // auth gate; an event with no actor must never be written.
       permissionService.setPermissionState(currentUserId: null);
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(shareActivityToFeed: true));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(shareActivityToFeed: true));
 
       await service.emitEvent(
         ActivityEventType.cooked,
@@ -154,8 +171,11 @@ void main() {
         'Lasagne',
       );
 
-      expect(repo.addedEvents, isEmpty,
-          reason: 'no current user id → no event, regardless of opt-in');
+      expect(
+        repo.addedEvents,
+        isEmpty,
+        reason: 'no current user id → no event, regardless of opt-in',
+      );
     });
 
     test('repository failure is swallowed — emit never throws', () async {
@@ -164,8 +184,9 @@ void main() {
       final throwingService = ActivityFeedService(
         repository: _ThrowingActivityRepo(),
       );
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(shareActivityToFeed: true));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(shareActivityToFeed: true));
 
       await expectLater(
         throwingService.emitEvent(
@@ -179,48 +200,65 @@ void main() {
   });
 
   group('per-event-type gating (BUT-1220)', () {
-    test('a type explicitly disabled is NOT broadcast even with master on',
-        () async {
-      when(() => userService.currentUserProfile).thenReturn(_profile(
-        shareActivityToFeed: true,
-        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
-      ));
+    test(
+      'a type explicitly disabled is NOT broadcast even with master on',
+      () async {
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(
+            shareActivityToFeed: true,
+            activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+          ),
+        );
 
-      await service.emitEvent(
-        ActivityEventType.cooked,
-        'recipe-1',
-        'Köttbullar',
-      );
+        await service.emitEvent(
+          ActivityEventType.cooked,
+          'recipe-1',
+          'Köttbullar',
+        );
 
-      expect(repo.addedEvents, isEmpty,
-          reason: 'an explicit per-type opt-out must suppress that type even '
-              'while the master toggle is on');
-    });
+        expect(
+          repo.addedEvents,
+          isEmpty,
+          reason:
+              'an explicit per-type opt-out must suppress that type even '
+              'while the master toggle is on',
+        );
+      },
+    );
 
-    test('a type absent from the map IS broadcast (absent = enabled)',
-        () async {
-      // Only `cooked` is disabled; `shared` is absent → must still broadcast.
-      when(() => userService.currentUserProfile).thenReturn(_profile(
-        shareActivityToFeed: true,
-        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
-      ));
+    test(
+      'a type absent from the map IS broadcast (absent = enabled)',
+      () async {
+        // Only `cooked` is disabled; `shared` is absent → must still broadcast.
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(
+            shareActivityToFeed: true,
+            activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+          ),
+        );
 
-      await service.emitEvent(
-        ActivityEventType.shared,
-        'recipe-2',
-        'Pannkakor',
-      );
+        await service.emitEvent(
+          ActivityEventType.shared,
+          'recipe-2',
+          'Pannkakor',
+        );
 
-      expect(repo.addedEvents, hasLength(1),
-          reason: 'an event type with no map entry defaults to enabled');
-      expect(repo.addedEvents.single.type, equals(ActivityEventType.shared));
-    });
+        expect(
+          repo.addedEvents,
+          hasLength(1),
+          reason: 'an event type with no map entry defaults to enabled',
+        );
+        expect(repo.addedEvents.single.type, equals(ActivityEventType.shared));
+      },
+    );
 
     test('master-off suppresses even a per-type-enabled event', () async {
-      when(() => userService.currentUserProfile).thenReturn(_profile(
-        shareActivityToFeed: false,
-        activityFeedEventTypes: {ActivityEventType.cooked.name: true},
-      ));
+      when(() => userService.currentUserProfile).thenReturn(
+        _profile(
+          shareActivityToFeed: false,
+          activityFeedEventTypes: {ActivityEventType.cooked.name: true},
+        ),
+      );
 
       await service.emitEvent(
         ActivityEventType.cooked,
@@ -228,34 +266,45 @@ void main() {
         'Lasagne',
       );
 
-      expect(repo.addedEvents, isEmpty,
-          reason: 'the master toggle overrides per-type opt-ins — off means '
-              'nothing broadcasts');
+      expect(
+        repo.addedEvents,
+        isEmpty,
+        reason:
+            'the master toggle overrides per-type opt-ins — off means '
+            'nothing broadcasts',
+      );
     });
   });
 
   group('one-time first-event hint (BUT-1220)', () {
-    test('first successful broadcast triggers the hint and persists the flag',
-        () async {
-      when(() => userService.currentUserProfile).thenReturn(
-          _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: false));
+    test(
+      'first successful broadcast triggers the hint and persists the flag',
+      () async {
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: false),
+        );
 
-      expect(service.firstEventHint.value, isFalse);
+        expect(service.firstEventHint.value, isFalse);
 
-      await service.emitEvent(
-        ActivityEventType.cooked,
-        'recipe-1',
-        'Köttbullar',
-      );
+        await service.emitEvent(
+          ActivityEventType.cooked,
+          'recipe-1',
+          'Köttbullar',
+        );
 
-      expect(service.firstEventHint.value, isTrue,
-          reason: 'the in-session hint notifier fires on the first broadcast');
-      verify(() => userService.markActivityFeedHintSeen()).called(1);
-    });
+        expect(
+          service.firstEventHint.value,
+          isTrue,
+          reason: 'the in-session hint notifier fires on the first broadcast',
+        );
+        verify(() => userService.markActivityFeedHintSeen()).called(1);
+      },
+    );
 
     test('a user who already saw the hint does not re-trigger it', () async {
       when(() => userService.currentUserProfile).thenReturn(
-          _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: true));
+        _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: true),
+      );
 
       await service.emitEvent(
         ActivityEventType.cooked,
@@ -263,30 +312,41 @@ void main() {
         'Köttbullar',
       );
 
-      expect(service.firstEventHint.value, isFalse,
-          reason: 'the durable flag suppresses the hint on subsequent runs');
-      verifyNever(() => userService.markActivityFeedHintSeen());
-    });
-
-    test('a suppressed event (per-type off) does NOT trigger the hint',
-        () async {
-      when(() => userService.currentUserProfile).thenReturn(_profile(
-        shareActivityToFeed: true,
-        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
-        hasSeenActivityFeedHint: false,
-      ));
-
-      await service.emitEvent(
-        ActivityEventType.cooked,
-        'recipe-1',
-        'Köttbullar',
+      expect(
+        service.firstEventHint.value,
+        isFalse,
+        reason: 'the durable flag suppresses the hint on subsequent runs',
       );
-
-      expect(service.firstEventHint.value, isFalse,
-          reason: 'the hint must only fire when an event was actually '
-              'broadcast — a gated-out event is not a first broadcast');
       verifyNever(() => userService.markActivityFeedHintSeen());
     });
+
+    test(
+      'a suppressed event (per-type off) does NOT trigger the hint',
+      () async {
+        when(() => userService.currentUserProfile).thenReturn(
+          _profile(
+            shareActivityToFeed: true,
+            activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+            hasSeenActivityFeedHint: false,
+          ),
+        );
+
+        await service.emitEvent(
+          ActivityEventType.cooked,
+          'recipe-1',
+          'Köttbullar',
+        );
+
+        expect(
+          service.firstEventHint.value,
+          isFalse,
+          reason:
+              'the hint must only fire when an event was actually '
+              'broadcast — a gated-out event is not a first broadcast',
+        );
+        verifyNever(() => userService.markActivityFeedHintSeen());
+      },
+    );
   });
 }
 

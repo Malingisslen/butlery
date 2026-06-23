@@ -57,8 +57,9 @@ void main() {
       expect(selectedChip.showCheckmark, isTrue);
     });
 
-    testWidgets('tapping a chip calls onToggle with correct tag ID',
-        (tester) async {
+    testWidgets('tapping a chip calls onToggle with correct tag ID', (
+      tester,
+    ) async {
       String? tappedId;
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -96,8 +97,9 @@ void main() {
       expect(find.byType(FilterChip), findsNWidgets(6));
     });
 
-    testWidgets('exclude section hidden when showExcludeSection is false',
-        (tester) async {
+    testWidgets('exclude section hidden when showExcludeSection is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,
@@ -116,8 +118,9 @@ void main() {
       expect(find.byType(FilterChip), findsNWidgets(3));
     });
 
-    testWidgets('empty state shows create button when onManageTags provided',
-        (tester) async {
+    testWidgets('empty state shows create button when onManageTags provided', (
+      tester,
+    ) async {
       bool manageTapped = false;
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -138,8 +141,9 @@ void main() {
       expect(manageTapped, isTrue);
     });
 
-    testWidgets('empty state shows nothing when onManageTags is null',
-        (tester) async {
+    testWidgets('empty state shows nothing when onManageTags is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,

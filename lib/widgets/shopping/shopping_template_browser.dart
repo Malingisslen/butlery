@@ -143,17 +143,22 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
               horizontal: AppDimensions.paddingM,
               vertical: AppDimensions.paddingS,
             ),
-            leading: Icon(Icons.list_alt,
-                color: cs.primary, size: AppDimensions.iconSizeAction),
+            leading: Icon(
+              Icons.list_alt,
+              color: cs.primary,
+              size: AppDimensions.iconSizeAction,
+            ),
             title: Text(name, style: AppTextStyles.titleMedium),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (description.isNotEmpty)
-                  Text(description,
-                      style: AppTextStyles.bodySmall,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    description,
+                    style: AppTextStyles.bodySmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Row(
                   children: [
@@ -183,8 +188,11 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                   value: 'use',
                   child: Row(
                     children: [
-                      Icon(Icons.check,
-                          size: AppDimensions.iconSizeM, color: cs.primary),
+                      Icon(
+                        Icons.check,
+                        size: AppDimensions.iconSizeM,
+                        color: cs.primary,
+                      ),
                       const SizedBox(width: AppDimensions.spacingM),
                       Text(context.l10n.shoppingTemplateUse),
                     ],
@@ -194,11 +202,16 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline,
-                          size: AppDimensions.iconSizeM, color: cs.error),
+                      Icon(
+                        Icons.delete_outline,
+                        size: AppDimensions.iconSizeM,
+                        color: cs.error,
+                      ),
                       const SizedBox(width: AppDimensions.spacingM),
-                      Text(context.l10n.shoppingTemplateDelete,
-                          style: TextStyle(color: cs.error)),
+                      Text(
+                        context.l10n.shoppingTemplateDelete,
+                        style: TextStyle(color: cs.error),
+                      ),
                     ],
                   ),
                 ),

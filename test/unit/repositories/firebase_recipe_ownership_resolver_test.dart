@@ -72,40 +72,47 @@ void main() {
       await BaseUnitTest.setupUnit();
     });
 
-    test('personal recipe resolves owner from createdBy, empty shared list',
-        () async {
-      final resolver = FirebaseRecipeOwnershipResolver(
-        getRecipe: (id) async => _personalRecipe(createdBy: 'owner-uid'),
-      );
+    test(
+      'personal recipe resolves owner from createdBy, empty shared list',
+      () async {
+        final resolver = FirebaseRecipeOwnershipResolver(
+          getRecipe: (id) async => _personalRecipe(createdBy: 'owner-uid'),
+        );
 
-      final snapshot = await resolver.resolve('recipe-1');
+        final snapshot = await resolver.resolve('recipe-1');
 
-      expect(snapshot, isNotNull);
-      expect(snapshot!.recipeOwnerId, equals('owner-uid'));
-      expect(snapshot.sharedWithUserIds, isEmpty);
-    });
+        expect(snapshot, isNotNull);
+        expect(snapshot!.recipeOwnerId, equals('owner-uid'));
+        expect(snapshot.sharedWithUserIds, isEmpty);
+      },
+    );
 
-    test('collaborative recipe resolves owner + members (excluding owner)',
-        () async {
-      final resolver = FirebaseRecipeOwnershipResolver(
-        getRecipe: (id) async => _collaborativeRecipe(
-          ownerId: 'owner-uid',
-          memberPermissions: {
-            'owner-uid': ResourcePermission.admin,
-            'member-1': ResourcePermission.editor,
-            'member-2': ResourcePermission.viewer,
-          },
-        ),
-      );
+    test(
+      'collaborative recipe resolves owner + members (excluding owner)',
+      () async {
+        final resolver = FirebaseRecipeOwnershipResolver(
+          getRecipe: (id) async => _collaborativeRecipe(
+            ownerId: 'owner-uid',
+            memberPermissions: {
+              'owner-uid': ResourcePermission.admin,
+              'member-1': ResourcePermission.editor,
+              'member-2': ResourcePermission.viewer,
+            },
+          ),
+        );
 
-      final snapshot = await resolver.resolve('recipe-1');
+        final snapshot = await resolver.resolve('recipe-1');
 
-      expect(snapshot, isNotNull);
-      expect(snapshot!.recipeOwnerId, equals('owner-uid'));
-      expect(snapshot.sharedWithUserIds, containsAll(['member-1', 'member-2']));
-      // Owner is in the dedicated field, not the shared list.
-      expect(snapshot.sharedWithUserIds, isNot(contains('owner-uid')));
-    });
+        expect(snapshot, isNotNull);
+        expect(snapshot!.recipeOwnerId, equals('owner-uid'));
+        expect(
+          snapshot.sharedWithUserIds,
+          containsAll(['member-1', 'member-2']),
+        );
+        // Owner is in the dedicated field, not the shared list.
+        expect(snapshot.sharedWithUserIds, isNot(contains('owner-uid')));
+      },
+    );
 
     test('missing recipe returns null', () async {
       final resolver = FirebaseRecipeOwnershipResolver(
@@ -138,21 +145,22 @@ void main() {
     });
 
     test(
-        'collaborative recipe with empty memberPermissions yields empty shares',
-        () async {
-      final resolver = FirebaseRecipeOwnershipResolver(
-        getRecipe: (id) async => _collaborativeRecipe(
-          ownerId: 'owner-uid',
-          memberPermissions: {},
-        ),
-      );
+      'collaborative recipe with empty memberPermissions yields empty shares',
+      () async {
+        final resolver = FirebaseRecipeOwnershipResolver(
+          getRecipe: (id) async => _collaborativeRecipe(
+            ownerId: 'owner-uid',
+            memberPermissions: {},
+          ),
+        );
 
-      final snapshot = await resolver.resolve('recipe-1');
+        final snapshot = await resolver.resolve('recipe-1');
 
-      expect(snapshot, isNotNull);
-      expect(snapshot!.recipeOwnerId, equals('owner-uid'));
-      expect(snapshot.sharedWithUserIds, isEmpty);
-    });
+        expect(snapshot, isNotNull);
+        expect(snapshot!.recipeOwnerId, equals('owner-uid'));
+        expect(snapshot.sharedWithUserIds, isEmpty);
+      },
+    );
   });
 
   group('FirebaseCommentsRepository.addComment with resolver wired', () {
@@ -180,53 +188,55 @@ void main() {
       BaseUnitTest.resetMocks();
     });
 
-    test('populates recipeOwnerId and sharedWithUserIds when resolver wired',
-        () async {
-      // Arrange: collaborative recipe with two members. Recipe.collaborative
-      // auto-generates an id, so capture it for the resolver match.
-      final recipe = _collaborativeRecipe(
-        ownerId: 'owner-uid',
-        memberPermissions: {
-          'owner-uid': ResourcePermission.admin,
-          'member-1': ResourcePermission.editor,
-          'member-2': ResourcePermission.viewer,
-        },
-      );
+    test(
+      'populates recipeOwnerId and sharedWithUserIds when resolver wired',
+      () async {
+        // Arrange: collaborative recipe with two members. Recipe.collaborative
+        // auto-generates an id, so capture it for the resolver match.
+        final recipe = _collaborativeRecipe(
+          ownerId: 'owner-uid',
+          memberPermissions: {
+            'owner-uid': ResourcePermission.admin,
+            'member-1': ResourcePermission.editor,
+            'member-2': ResourcePermission.viewer,
+          },
+        );
 
-      final ownershipResolver = FirebaseRecipeOwnershipResolver(
-        getRecipe: (id) async => id == recipe.id ? recipe : null,
-      );
+        final ownershipResolver = FirebaseRecipeOwnershipResolver(
+          getRecipe: (id) async => id == recipe.id ? recipe : null,
+        );
 
-      repository = FirebaseCommentsRepository(
-        firestore: fakeFirestore,
-        authRepository: mockAuthRepo,
-        timestampProvider: const TestTimestampProvider(),
-        recipeOwnershipResolver: ownershipResolver.resolve,
-      );
+        repository = FirebaseCommentsRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepo,
+          timestampProvider: const TestTimestampProvider(),
+          recipeOwnershipResolver: ownershipResolver.resolve,
+        );
 
-      // Act
-      final result = await repository.addComment(
-        recipeId: recipe.id,
-        userId: 'author-uid',
-        content: 'Looks great!',
-      );
+        // Act
+        final result = await repository.addComment(
+          recipeId: recipe.id,
+          userId: 'author-uid',
+          content: 'Looks great!',
+        );
 
-      // Assert: model fields hydrated
-      expect(result.recipeId, equals(recipe.id));
-      expect(result.authorId, equals('author-uid'));
+        // Assert: model fields hydrated
+        expect(result.recipeId, equals(recipe.id));
+        expect(result.authorId, equals('author-uid'));
 
-      // Assert: raw doc carries denorm fields used by security rules
-      final doc = await fakeFirestore
-          .collection('recipe_comments')
-          .doc(result.id)
-          .get();
-      final data = doc.data() as Map<String, dynamic>;
-      expect(data['recipeOwnerId'], equals('owner-uid'));
-      expect(
-        (data['sharedWithUserIds'] as List).cast<String>(),
-        containsAll(['member-1', 'member-2']),
-      );
-    });
+        // Assert: raw doc carries denorm fields used by security rules
+        final doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(result.id)
+            .get();
+        final data = doc.data() as Map<String, dynamic>;
+        expect(data['recipeOwnerId'], equals('owner-uid'));
+        expect(
+          (data['sharedWithUserIds'] as List).cast<String>(),
+          containsAll(['member-1', 'member-2']),
+        );
+      },
+    );
 
     test('falls back to no recipeOwnerId when resolver returns null', () async {
       // Arrange: resolver returns null (recipe missing / orphan)

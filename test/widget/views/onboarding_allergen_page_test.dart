@@ -72,8 +72,9 @@ void main() {
       expect(viewModel.isAllergenSelected('gluten'), isFalse);
     });
 
-    testWidgets('semantics toggled property tracks selection state',
-        (tester) async {
+    testWidgets('semantics toggled property tracks selection state', (
+      tester,
+    ) async {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 

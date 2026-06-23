@@ -20,7 +20,7 @@ class OpsLogRepository {
   final FirebaseFirestore _firestore;
 
   OpsLogRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// The most recent [limit] job-run events, newest first. Returns an empty
   /// list on error so the tab degrades to an empty state rather than crashing.

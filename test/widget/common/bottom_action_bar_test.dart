@@ -10,17 +10,22 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 void main() {
   testWidgets('renders the supplied child widget', (tester) async {
-    await tester.pumpWidget(_wrap(
-      const BottomActionBar(child: Text('action')),
-    ));
+    await tester.pumpWidget(
+      _wrap(
+        const BottomActionBar(child: Text('action')),
+      ),
+    );
     expect(find.text('action'), findsOneWidget);
   });
 
-  testWidgets('wraps child in a Container with surface background',
-      (tester) async {
-    await tester.pumpWidget(_wrap(
-      const BottomActionBar(child: SizedBox.shrink()),
-    ));
+  testWidgets('wraps child in a Container with surface background', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const BottomActionBar(child: SizedBox.shrink()),
+      ),
+    );
     final container = tester.widget<Container>(
       find
           .ancestor(
@@ -36,9 +41,11 @@ void main() {
   });
 
   testWidgets('border is a 1px top divider', (tester) async {
-    await tester.pumpWidget(_wrap(
-      const BottomActionBar(child: SizedBox.shrink()),
-    ));
+    await tester.pumpWidget(
+      _wrap(
+        const BottomActionBar(child: SizedBox.shrink()),
+      ),
+    );
     final container = tester.widget<Container>(
       find
           .ancestor(
@@ -56,12 +63,14 @@ void main() {
 
   testWidgets('uses theme dividerColor for the top border', (tester) async {
     final theme = ThemeData.light().copyWith(dividerColor: Colors.red);
-    await tester.pumpWidget(MaterialApp(
-      theme: theme,
-      home: const Scaffold(
-        body: BottomActionBar(child: SizedBox.shrink()),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        home: const Scaffold(
+          body: BottomActionBar(child: SizedBox.shrink()),
+        ),
       ),
-    ));
+    );
     final container = tester.widget<Container>(
       find
           .ancestor(
@@ -74,11 +83,14 @@ void main() {
     expect(border.top.color, Colors.red);
   });
 
-  testWidgets('child receives padding (AppDimensions.spacingL)',
-      (tester) async {
-    await tester.pumpWidget(_wrap(
-      const BottomActionBar(child: SizedBox.shrink()),
-    ));
+  testWidgets('child receives padding (AppDimensions.spacingL)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const BottomActionBar(child: SizedBox.shrink()),
+      ),
+    );
     final container = tester.widget<Container>(
       find
           .ancestor(

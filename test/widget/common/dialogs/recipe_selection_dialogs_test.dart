@@ -35,12 +35,12 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sh
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 UserProfile _friend({String name = 'Anna', String uid = 'friend-1'}) {
   return UserProfile(
@@ -82,16 +82,17 @@ void main() {
   // this test file at build time — closest we can get to a "facade contract"
   // test without dragging the full ServiceLocator into the suite.
   group('RecipeSelectionDialogs facade contract', () {
-    test('showRecipeSelector is a static Function with the expected signature',
-        () {
-      final fn = RecipeSelectionDialogs.showRecipeSelector;
-      expect(fn, isA<Function>());
-      // Closure type erases generics — but smoke the static reference.
-      expect(RecipeSelectionDialogs.showRecipeSelector, isNotNull);
-    });
-
     test(
-        'showMenuRecipeSelector is a static Function with the expected '
+      'showRecipeSelector is a static Function with the expected signature',
+      () {
+        final fn = RecipeSelectionDialogs.showRecipeSelector;
+        expect(fn, isA<Function>());
+        // Closure type erases generics — but smoke the static reference.
+        expect(RecipeSelectionDialogs.showRecipeSelector, isNotNull);
+      },
+    );
+
+    test('showMenuRecipeSelector is a static Function with the expected '
         'signature', () {
       final fn = RecipeSelectionDialogs.showMenuRecipeSelector;
       expect(fn, isA<Function>());
@@ -105,22 +106,29 @@ void main() {
       expect(w.friend.uid, 'friend-1');
     });
 
-    test('MenuRecipeSelectionDialog can be constructed with a categoryName',
-        () {
-      final w = const MenuRecipeSelectionDialog(categoryName: 'Lunch');
-      expect(w.categoryName, 'Lunch');
-    });
+    test(
+      'MenuRecipeSelectionDialog can be constructed with a categoryName',
+      () {
+        final w = const MenuRecipeSelectionDialog(categoryName: 'Lunch');
+        expect(w.categoryName, 'Lunch');
+      },
+    );
   });
 
   group('FriendRecipeListItem rendering', () {
-    testWidgets('renders title, mealType, description, time, and portions',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('renders title, mealType, description, time, and portions', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Carbonara'), findsOneWidget);
@@ -131,45 +139,62 @@ void main() {
     });
 
     testWidgets('checkbox value reflects isSelected=true', (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: true,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: true,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       final cb = tester.widget<Checkbox>(find.byType(Checkbox));
       expect(cb.value, isTrue);
     });
 
-    testWidgets('row tap fires onSelectionChanged with the inverted value',
-        (tester) async {
+    testWidgets('row tap fires onSelectionChanged with the inverted value', (
+      tester,
+    ) async {
       bool? lastValue;
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (v) => lastValue = v,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (v) => lastValue = v,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(ListTile));
       await tester.pump();
 
-      expect(lastValue, isTrue,
-          reason: 'tapping an unselected row should propose selection');
+      expect(
+        lastValue,
+        isTrue,
+        reason: 'tapping an unselected row should propose selection',
+      );
     });
 
-    testWidgets('checkbox tap fires onSelectionChanged with the new value',
-        (tester) async {
+    testWidgets('checkbox tap fires onSelectionChanged with the new value', (
+      tester,
+    ) async {
       bool? lastValue;
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (v) => lastValue = v,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (v) => lastValue = v,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(Checkbox));
@@ -178,95 +203,130 @@ void main() {
       expect(lastValue, isTrue);
     });
 
-    testWidgets('isAlreadyShared shows the Swedish "Delad" badge',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: true,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('isAlreadyShared shows the Swedish "Delad" badge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            isAlreadyShared: true,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       // From app_sv.arb → "dialogAlreadyShared": "Delad"
       expect(find.text('Delad'), findsOneWidget);
     });
 
-    testWidgets('isAlreadyShared=false hides the "Delad" badge',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('isAlreadyShared=false hides the "Delad" badge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Delad'), findsNothing);
     });
 
-    testWidgets('empty description suppresses the description Text widget',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(description: ''),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('empty description suppresses the description Text widget', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(description: ''),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Klassisk italiensk pasta'), findsNothing);
     });
 
-    testWidgets('null timeMinutes hides the access_time icon and minute text',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(timeMinutes: null),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('null timeMinutes hides the access_time icon and minute text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(timeMinutes: null),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byIcon(Icons.access_time), findsNothing);
       expect(find.text('30 min'), findsNothing);
     });
 
-    testWidgets('null portions hides the people icon and "port" text',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(portions: null),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('null portions hides the people icon and "port" text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FriendRecipeListItem(
+            recipe: _recipe(portions: null),
+            isSelected: false,
+            isAlreadyShared: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byIcon(Icons.people), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
-    testWidgets('empty imageUrls renders the restaurant_menu placeholder icon',
-        (tester) async {
-      await tester.pumpWidget(_wrap(FriendRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        isAlreadyShared: false,
-        onSelectionChanged: (_) {},
-      )));
-      await tester.pump();
+    testWidgets(
+      'empty imageUrls renders the restaurant_menu placeholder icon',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            FriendRecipeListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              isAlreadyShared: false,
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        );
+        await tester.pump();
 
-      expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-    });
+        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+      },
+    );
   });
 
   group('MenuRecipeListItem rendering', () {
     testWidgets('renders title, mealType, time, and portions', (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        onSelectionChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Carbonara'), findsOneWidget);
@@ -276,25 +336,34 @@ void main() {
     });
 
     testWidgets('checkbox reflects isSelected=true', (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: true,
-        onSelectionChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(),
+            isSelected: true,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       final cb = tester.widget<Checkbox>(find.byType(Checkbox));
       expect(cb.value, isTrue);
     });
 
-    testWidgets('row tap on a selected item proposes deselect (false)',
-        (tester) async {
+    testWidgets('row tap on a selected item proposes deselect (false)', (
+      tester,
+    ) async {
       bool? lastValue;
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: true,
-        onSelectionChanged: (v) => lastValue = v,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(),
+            isSelected: true,
+            onSelectionChanged: (v) => lastValue = v,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(ListTile));
@@ -303,14 +372,19 @@ void main() {
       expect(lastValue, isFalse);
     });
 
-    testWidgets('row tap on an unselected item proposes select (true)',
-        (tester) async {
+    testWidgets('row tap on an unselected item proposes select (true)', (
+      tester,
+    ) async {
       bool? lastValue;
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        onSelectionChanged: (v) => lastValue = v,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            onSelectionChanged: (v) => lastValue = v,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(ListTile));
@@ -321,11 +395,15 @@ void main() {
 
     testWidgets('checkbox tap fires onSelectionChanged', (tester) async {
       bool? lastValue;
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        onSelectionChanged: (v) => lastValue = v,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(),
+            isSelected: false,
+            onSelectionChanged: (v) => lastValue = v,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byType(Checkbox));
@@ -335,23 +413,32 @@ void main() {
     });
 
     testWidgets('empty description hides the description Text', (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(description: ''),
-        isSelected: false,
-        onSelectionChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(description: ''),
+            isSelected: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Klassisk italiensk pasta'), findsNothing);
     });
 
-    testWidgets('null timeMinutes hides the time icon and text',
-        (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(timeMinutes: null),
-        isSelected: false,
-        onSelectionChanged: (_) {},
-      )));
+    testWidgets('null timeMinutes hides the time icon and text', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(timeMinutes: null),
+            isSelected: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byIcon(Icons.access_time), findsNothing);
@@ -359,27 +446,37 @@ void main() {
     });
 
     testWidgets('null portions hides the people icon and text', (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(portions: null),
-        isSelected: false,
-        onSelectionChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          MenuRecipeListItem(
+            recipe: _recipe(portions: null),
+            isSelected: false,
+            onSelectionChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(find.byIcon(Icons.people), findsNothing);
       expect(find.text('4 port'), findsNothing);
     });
 
-    testWidgets('empty imageUrls renders the restaurant_menu placeholder icon',
-        (tester) async {
-      await tester.pumpWidget(_wrap(MenuRecipeListItem(
-        recipe: _recipe(),
-        isSelected: false,
-        onSelectionChanged: (_) {},
-      )));
-      await tester.pump();
+    testWidgets(
+      'empty imageUrls renders the restaurant_menu placeholder icon',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            MenuRecipeListItem(
+              recipe: _recipe(),
+              isSelected: false,
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        );
+        await tester.pump();
 
-      expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-    });
+        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+      },
+    );
   });
 }

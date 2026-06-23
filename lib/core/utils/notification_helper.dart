@@ -43,10 +43,12 @@ class NotificationHelper {
     if (notificationService == null) {
       if (logWarningOnNull) {
         AppLogger.warning(
-            '⚠️ No notification service available for: $operationName');
+          '⚠️ No notification service available for: $operationName',
+        );
       } else {
         AppLogger.debug(
-            '📋 No notification service available for: $operationName');
+          '📋 No notification service available for: $operationName',
+        );
       }
       return false;
     }

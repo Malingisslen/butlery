@@ -85,8 +85,9 @@ void main() {
           .withPortions(4)
           .withTimeMinutes(30)
           .withRating(4.5)
-          .withTags(['test', 'recipe']).withImageUrls(
-              ['image1.jpg', 'image2.jpg']).build();
+          .withTags(['test', 'recipe'])
+          .withImageUrls(['image1.jpg', 'image2.jpg'])
+          .build();
 
       // Configure mock service state
       mockRecipeService.setRecipeState(
@@ -97,13 +98,16 @@ void main() {
 
       // Setup default mock behaviors for personal operations
       when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-          (_) async => RecipeOperationResult.success('Recipe created'));
+        (_) async => RecipeOperationResult.success('Recipe created'),
+      );
 
       when(() => mockPersonalOps.updateUnifiedRecipe(any())).thenAnswer(
-          (_) async => RecipeOperationResult.success('Recipe updated'));
+        (_) async => RecipeOperationResult.success('Recipe updated'),
+      );
 
-      when(() => mockPersonalOps.deleteRecipe(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockPersonalOps.deleteRecipe(any()),
+      ).thenAnswer((_) async => true);
 
       // Register mocks in service locator
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
@@ -115,9 +119,11 @@ void main() {
       final mockImageUploadService = MockImageUploadService();
       TestServiceLocator.registerMock<StorageService>(mockStorageService);
       TestServiceLocator.registerMock<ImagePickerService>(
-          mockImagePickerService);
+        mockImagePickerService,
+      );
       TestServiceLocator.registerMock<ImageUploadService>(
-          mockImageUploadService);
+        mockImageUploadService,
+      );
 
       // Register additional dependencies for RecipeCollaborativeManager
       // These are required by the managers inside RecipeFormViewModel
@@ -125,19 +131,24 @@ void main() {
       final mockConnectivityService = MockConnectivityMonitoringService();
 
       // Setup connectivity service mock behaviors
-      when(() => mockConnectivityService.isConnectedToInternet)
-          .thenReturn(true);
-      when(() => mockConnectivityService.isConnectedToFirebase)
-          .thenReturn(true);
+      when(
+        () => mockConnectivityService.isConnectedToInternet,
+      ).thenReturn(true);
+      when(
+        () => mockConnectivityService.isConnectedToFirebase,
+      ).thenReturn(true);
       when(() => mockConnectivityService.isFullyConnected).thenReturn(true);
-      when(() => mockConnectivityService.connectionStatusText)
-          .thenReturn('Ansluten');
+      when(
+        () => mockConnectivityService.connectionStatusText,
+      ).thenReturn('Ansluten');
       when(() => mockConnectivityService.startMonitoring()).thenReturn(null);
 
       TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-          mockCollaborativeRepo);
+        mockCollaborativeRepo,
+      );
       TestServiceLocator.registerMock<ConnectivityMonitoringService>(
-          mockConnectivityService);
+        mockConnectivityService,
+      );
 
       // Register PermissionService mock for delete operations
       final mockPermissionService = FakePermissionService();
@@ -179,12 +190,15 @@ void main() {
       test('should initialize in creation mode by default', () {
         // Debug initial state
         print(
-            'DEBUG: Initial ingredients count: ${viewModel.ingredientsManager.length}');
+          'DEBUG: Initial ingredients count: ${viewModel.ingredientsManager.length}',
+        );
         print(
-            'DEBUG: Initial instructions count: ${viewModel.instructionsManager.length}');
+          'DEBUG: Initial instructions count: ${viewModel.instructionsManager.length}',
+        );
         print('DEBUG: Initial tags count: ${viewModel.tagsManager.length}');
         print(
-            'DEBUG: Initial ingredients values: ${viewModel.ingredientsManager.values}');
+          'DEBUG: Initial ingredients values: ${viewModel.ingredientsManager.values}',
+        );
 
         // Assert
         expect(viewModel.isEditing, isFalse);
@@ -426,8 +440,9 @@ void main() {
 
         // Act - fill required fields
         viewModel.setTitle('Valid Title');
-        viewModel
-            .setDescription('Valid Description'); // Not required for isValid
+        viewModel.setDescription(
+          'Valid Description',
+        ); // Not required for isValid
 
         // Update the first item in each list (index 0)
         viewModel.updateIngredient(0, 'Valid Ingredient');
@@ -461,26 +476,28 @@ void main() {
         editViewModel.dispose();
       });
 
-      test('should detect a real ingredient edit on a freshly opened recipe',
-          () {
-        // Arrange - edit mode with the auto-added trailing empty row present
-        final editViewModel = RecipeFormViewModel(
-          recipeService: mockRecipeService,
-          initialRecipe: testRecipe,
-        );
+      test(
+        'should detect a real ingredient edit on a freshly opened recipe',
+        () {
+          // Arrange - edit mode with the auto-added trailing empty row present
+          final editViewModel = RecipeFormViewModel(
+            recipeService: mockRecipeService,
+            initialRecipe: testRecipe,
+          );
 
-        // Baseline: no edits yet despite the trailing blank row
-        expect(editViewModel.hasUnsavedChanges, isFalse);
+          // Baseline: no edits yet despite the trailing blank row
+          expect(editViewModel.hasUnsavedChanges, isFalse);
 
-        // Act - change an existing ingredient (not the auto-added blank)
-        editViewModel.updateIngredient(0, 'Completely Different Ingredient');
+          // Act - change an existing ingredient (not the auto-added blank)
+          editViewModel.updateIngredient(0, 'Completely Different Ingredient');
 
-        // Assert - a genuine content change is still detected
-        expect(editViewModel.hasUnsavedChanges, isTrue);
+          // Assert - a genuine content change is still detected
+          expect(editViewModel.hasUnsavedChanges, isTrue);
 
-        // Cleanup
-        editViewModel.dispose();
-      });
+          // Cleanup
+          editViewModel.dispose();
+        },
+      );
 
       test('should validate title is not empty', () {
         // Arrange - add items first
@@ -549,8 +566,9 @@ void main() {
 
       test('should handle save failure', () async {
         // Arrange
-        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-            (_) async => RecipeOperationResult.failure('Save failed'));
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.failure('Save failed'));
 
         // Act
         final result = await viewModel.saveRecipe();
@@ -617,8 +635,9 @@ void main() {
           initialRecipe: testRecipe,
         );
 
-        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-            (_) async => RecipeOperationResult.failure('Fork failed'));
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.failure('Fork failed'));
 
         // Act
         final result = await editViewModel.forkRecipe();
@@ -642,16 +661,18 @@ void main() {
         );
 
         // Setup mock for deleteRecipe in recipeService
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await editViewModel.deleteRecipe();
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.deleteRecipe('recipe-test-user-123-001'))
-            .called(1);
+        verify(
+          () => mockRecipeService.deleteRecipe('recipe-test-user-123-001'),
+        ).called(1);
 
         // Cleanup
         editViewModel.dispose();
@@ -664,8 +685,9 @@ void main() {
           initialRecipe: testRecipe,
         );
 
-        when(() => mockPersonalOps.deleteRecipe(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockPersonalOps.deleteRecipe(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await editViewModel.deleteRecipe();
@@ -789,8 +811,9 @@ void main() {
 
       test('should handle service exceptions', () async {
         // Arrange
-        when(() => mockPersonalOps.addUnifiedRecipe(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenThrow(Exception('Network error'));
 
         // Add items first
         viewModel.addIngredient();
@@ -931,77 +954,90 @@ void main() {
         expect(vm.relatedRecipes, [(id: 'ghost', title: 'ghost')]);
       });
 
-      test('linkRelatedRecipe optimistically adds the id and notifies',
-          () async {
-        final vm = editingVm(const []);
-        addTearDown(vm.dispose);
+      test(
+        'linkRelatedRecipe optimistically adds the id and notifies',
+        () async {
+          final vm = editingVm(const []);
+          addTearDown(vm.dispose);
 
-        when(() =>
-                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
-            .thenAnswer((_) async => true);
+          when(
+            () =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'),
+          ).thenAnswer((_) async => true);
 
-        var notified = 0;
-        vm.addListener(() => notified++);
+          var notified = 0;
+          vm.addListener(() => notified++);
 
-        final ok = await vm.linkRelatedRecipe('r2');
+          final ok = await vm.linkRelatedRecipe('r2');
 
-        expect(ok, isTrue);
-        // The getter reflects the add immediately — the broken version read a
-        // frozen originalRecipe snapshot and stayed empty here.
-        expect(vm.relatedRecipeIds, ['r2']);
-        expect(vm.relatedRecipes, [(id: 'r2', title: 'Pastasås')]);
-        expect(notified, greaterThan(0));
-      });
+          expect(ok, isTrue);
+          // The getter reflects the add immediately — the broken version read a
+          // frozen originalRecipe snapshot and stayed empty here.
+          expect(vm.relatedRecipeIds, ['r2']);
+          expect(vm.relatedRecipes, [(id: 'r2', title: 'Pastasås')]);
+          expect(notified, greaterThan(0));
+        },
+      );
 
-      test('linkRelatedRecipe does not mutate when the service fails',
-          () async {
-        final vm = editingVm(const []);
-        addTearDown(vm.dispose);
+      test(
+        'linkRelatedRecipe does not mutate when the service fails',
+        () async {
+          final vm = editingVm(const []);
+          addTearDown(vm.dispose);
 
-        when(() =>
-                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
-            .thenAnswer((_) async => false);
+          when(
+            () =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'),
+          ).thenAnswer((_) async => false);
 
-        final ok = await vm.linkRelatedRecipe('r2');
+          final ok = await vm.linkRelatedRecipe('r2');
 
-        expect(ok, isFalse);
-        expect(vm.relatedRecipeIds, isEmpty);
-      });
+          expect(ok, isFalse);
+          expect(vm.relatedRecipeIds, isEmpty);
+        },
+      );
 
-      test('linkRelatedRecipe rejects self-links without calling the service',
-          () async {
-        final vm = editingVm(const []);
-        addTearDown(vm.dispose);
+      test(
+        'linkRelatedRecipe rejects self-links without calling the service',
+        () async {
+          final vm = editingVm(const []);
+          addTearDown(vm.dispose);
 
-        final ok = await vm.linkRelatedRecipe('recipe-test-user-123-rel');
+          final ok = await vm.linkRelatedRecipe('recipe-test-user-123-rel');
 
-        expect(ok, isFalse);
-        expect(vm.relatedRecipeIds, isEmpty);
-        verifyNever(() => mockRecipeService.linkRecipes(any(), any()));
-      });
+          expect(ok, isFalse);
+          expect(vm.relatedRecipeIds, isEmpty);
+          verifyNever(() => mockRecipeService.linkRecipes(any(), any()));
+        },
+      );
 
-      test('linkRelatedRecipe is idempotent for an already-linked id',
-          () async {
-        final vm = editingVm(const ['r2']);
-        addTearDown(vm.dispose);
+      test(
+        'linkRelatedRecipe is idempotent for an already-linked id',
+        () async {
+          final vm = editingVm(const ['r2']);
+          addTearDown(vm.dispose);
 
-        when(() =>
-                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
-            .thenAnswer((_) async => true);
+          when(
+            () =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'),
+          ).thenAnswer((_) async => true);
 
-        final ok = await vm.linkRelatedRecipe('r2');
+          final ok = await vm.linkRelatedRecipe('r2');
 
-        expect(ok, isTrue);
-        // No duplicate entry appended.
-        expect(vm.relatedRecipeIds, ['r2']);
-      });
+          expect(ok, isTrue);
+          // No duplicate entry appended.
+          expect(vm.relatedRecipeIds, ['r2']);
+        },
+      );
 
       test('unlinkRelatedRecipe optimistically removes the id', () async {
         final vm = editingVm(const ['r2', 'r3']);
         addTearDown(vm.dispose);
 
-        when(() => mockRecipeService.unlinkRecipes(
-            'recipe-test-user-123-rel', 'r2')).thenAnswer((_) async => true);
+        when(
+          () =>
+              mockRecipeService.unlinkRecipes('recipe-test-user-123-rel', 'r2'),
+        ).thenAnswer((_) async => true);
 
         final ok = await vm.unlinkRelatedRecipe('r2');
 
@@ -1009,19 +1045,25 @@ void main() {
         expect(vm.relatedRecipeIds, ['r3']);
       });
 
-      test('unlinkRelatedRecipe leaves the list unchanged when service fails',
-          () async {
-        final vm = editingVm(const ['r2']);
-        addTearDown(vm.dispose);
+      test(
+        'unlinkRelatedRecipe leaves the list unchanged when service fails',
+        () async {
+          final vm = editingVm(const ['r2']);
+          addTearDown(vm.dispose);
 
-        when(() => mockRecipeService.unlinkRecipes(
-            'recipe-test-user-123-rel', 'r2')).thenAnswer((_) async => false);
+          when(
+            () => mockRecipeService.unlinkRecipes(
+              'recipe-test-user-123-rel',
+              'r2',
+            ),
+          ).thenAnswer((_) async => false);
 
-        final ok = await vm.unlinkRelatedRecipe('r2');
+          final ok = await vm.unlinkRelatedRecipe('r2');
 
-        expect(ok, isFalse);
-        expect(vm.relatedRecipeIds, ['r2']);
-      });
+          expect(ok, isFalse);
+          expect(vm.relatedRecipeIds, ['r2']);
+        },
+      );
     });
   });
 }

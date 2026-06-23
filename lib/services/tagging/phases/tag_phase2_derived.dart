@@ -126,7 +126,8 @@ class TagPhase2Derived {
 
   bool _isRawDish(Phase1Result phase1, String title) {
     // No cooking methods and has raw indicators
-    final noCooking = !phase1.hasTag('ugnsbakad') &&
+    final noCooking =
+        !phase1.hasTag('ugnsbakad') &&
         !phase1.hasTag('stekt') &&
         !phase1.hasTag('kokt') &&
         !phase1.hasTag('grillad') &&

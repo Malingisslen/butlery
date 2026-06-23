@@ -47,18 +47,24 @@ void main() {
 
     // Stub methods NOT overridden in MockUnifiedRecipeService
     when(() => mockService.isInRealtimeEditingSession(any())).thenReturn(true);
-    when(() => mockService.addIngredient(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockService.updateIngredient(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockService.removeIngredient(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockService.addInstruction(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockService.updateInstruction(any(), any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockService.removeInstruction(any(), any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockService.addIngredient(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockService.updateIngredient(any(), any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockService.removeIngredient(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockService.addInstruction(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockService.updateInstruction(any(), any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockService.removeInstruction(any(), any()),
+    ).thenAnswer((_) async => true);
 
     // Inject via constructor (RealtimeRecipeViewModel accepts optional param)
     viewModel = RealtimeRecipeViewModel(mockService);
@@ -152,11 +158,14 @@ void main() {
 
   group('Ingredient Operations (Realtime)', () {
     test('addIngredientRealtime adds via service', () async {
-      final result =
-          await viewModel.addIngredientRealtime(testRecipeId, '2 dl mjol');
+      final result = await viewModel.addIngredientRealtime(
+        testRecipeId,
+        '2 dl mjol',
+      );
       expect(result, isTrue);
-      verify(() => mockService.addIngredient(testRecipeId, '2 dl mjol'))
-          .called(1);
+      verify(
+        () => mockService.addIngredient(testRecipeId, '2 dl mjol'),
+      ).called(1);
     });
 
     test('addIngredientRealtime rejects empty ingredient', () async {
@@ -165,16 +174,22 @@ void main() {
     });
 
     test('addIngredientRealtime rejects when not in session', () async {
-      when(() => mockService.isInRealtimeEditingSession(any()))
-          .thenReturn(false);
-      final result =
-          await viewModel.addIngredientRealtime(testRecipeId, 'flour');
+      when(
+        () => mockService.isInRealtimeEditingSession(any()),
+      ).thenReturn(false);
+      final result = await viewModel.addIngredientRealtime(
+        testRecipeId,
+        'flour',
+      );
       expect(result, isFalse);
     });
 
     test('updateIngredientRealtime updates via service', () async {
       final result = await viewModel.updateIngredientRealtime(
-          testRecipeId, 0, '3 dl mjol');
+        testRecipeId,
+        0,
+        '3 dl mjol',
+      );
       expect(result, isTrue);
     });
 
@@ -186,8 +201,10 @@ void main() {
 
   group('Instruction Operations (Realtime)', () {
     test('addInstructionRealtime adds via service', () async {
-      final result =
-          await viewModel.addInstructionRealtime(testRecipeId, 'Mix well');
+      final result = await viewModel.addInstructionRealtime(
+        testRecipeId,
+        'Mix well',
+      );
       expect(result, isTrue);
     });
 
@@ -198,7 +215,10 @@ void main() {
 
     test('updateInstructionRealtime updates via service', () async {
       final result = await viewModel.updateInstructionRealtime(
-          testRecipeId, 0, 'Step 1 updated');
+        testRecipeId,
+        0,
+        'Step 1 updated',
+      );
       expect(result, isTrue);
     });
 

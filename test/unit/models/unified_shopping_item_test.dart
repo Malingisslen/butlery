@@ -172,28 +172,36 @@ void main() {
         expect(updated.lastModifiedAt, isNotNull);
       });
 
-      test('editing a bought item preserves purchase attribution (regression)',
-          () {
-        // A previously-purchased item.
-        final bought = testItem.copyWith(
-          bought: true,
-          lastModifiedByUserId: 'buyer_1',
-          lastModifiedByDisplayName: 'Buyer One',
-        );
-        expect(bought.purchasedByUserId, equals('buyer_1'));
-        final purchasedAt = bought.purchasedAt;
-        expect(purchasedAt, isNotNull);
+      test(
+        'editing a bought item preserves purchase attribution (regression)',
+        () {
+          // A previously-purchased item.
+          final bought = testItem.copyWith(
+            bought: true,
+            lastModifiedByUserId: 'buyer_1',
+            lastModifiedByDisplayName: 'Buyer One',
+          );
+          expect(bought.purchasedByUserId, equals('buyer_1'));
+          final purchasedAt = bought.purchasedAt;
+          expect(purchasedAt, isNotNull);
 
-        // Editing the name WITHOUT passing `bought` must NOT wipe the buyer
-        // or re-stamp the purchase time (the pre-fix bug nulled all three).
-        final renamed = bought.copyWith(name: 'Lättmjölk');
-        expect(renamed.bought, isTrue);
-        expect(renamed.purchasedByUserId, equals('buyer_1'),
-            reason: 'editing a bought item must keep the buyer');
-        expect(renamed.purchasedByDisplayName, equals('Buyer One'));
-        expect(renamed.purchasedAt, equals(purchasedAt),
-            reason: 'must not re-stamp purchasedAt on a non-purchase edit');
-      });
+          // Editing the name WITHOUT passing `bought` must NOT wipe the buyer
+          // or re-stamp the purchase time (the pre-fix bug nulled all three).
+          final renamed = bought.copyWith(name: 'Lättmjölk');
+          expect(renamed.bought, isTrue);
+          expect(
+            renamed.purchasedByUserId,
+            equals('buyer_1'),
+            reason: 'editing a bought item must keep the buyer',
+          );
+          expect(renamed.purchasedByDisplayName, equals('Buyer One'));
+          expect(
+            renamed.purchasedAt,
+            equals(purchasedAt),
+            reason: 'must not re-stamp purchasedAt on a non-purchase edit',
+          );
+        },
+      );
 
       test('unmarking a bought item clears purchase attribution', () {
         final bought = testItem.copyWith(
@@ -207,8 +215,7 @@ void main() {
         expect(unbought.purchasedAt, isNull);
       });
 
-      test('re-marking an already-bought item keeps the original buyer/time',
-          () {
+      test('re-marking an already-bought item keeps the original buyer/time', () {
         // Guards the `becameBought = bought == true && !this.bought` clause: a
         // no-op re-mark must NOT overwrite the original buyer or re-stamp time.
         final bought = testItem.copyWith(
@@ -523,47 +530,51 @@ void main() {
       test('should validate shopping item constraints', () {
         // Valid item
         expect(
-            ValidationHelper.isValidShoppingItem(
-              id: testItem.id,
-              name: testItem.name,
-              quantity: testItem.amount,
-              unit: testItem.unit,
-              isBought: testItem.bought,
-            ),
-            isTrue);
+          ValidationHelper.isValidShoppingItem(
+            id: testItem.id,
+            name: testItem.name,
+            quantity: testItem.amount,
+            unit: testItem.unit,
+            isBought: testItem.bought,
+          ),
+          isTrue,
+        );
 
         // Invalid - empty ID
         expect(
-            ValidationHelper.isValidShoppingItem(
-              id: '',
-              name: 'Test',
-              quantity: 1,
-              unit: 'kg',
-              isBought: false,
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingItem(
+            id: '',
+            name: 'Test',
+            quantity: 1,
+            unit: 'kg',
+            isBought: false,
+          ),
+          isFalse,
+        );
 
         // Invalid - empty name
         expect(
-            ValidationHelper.isValidShoppingItem(
-              id: 'id',
-              name: '',
-              quantity: 1,
-              unit: 'kg',
-              isBought: false,
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingItem(
+            id: 'id',
+            name: '',
+            quantity: 1,
+            unit: 'kg',
+            isBought: false,
+          ),
+          isFalse,
+        );
 
         // Invalid - negative quantity
         expect(
-            ValidationHelper.isValidShoppingItem(
-              id: 'id',
-              name: 'Test',
-              quantity: -1,
-              unit: 'kg',
-              isBought: false,
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingItem(
+            id: 'id',
+            name: 'Test',
+            quantity: -1,
+            unit: 'kg',
+            isBought: false,
+          ),
+          isFalse,
+        );
       });
 
       test('should handle Swedish characters in names', () {
@@ -636,7 +647,9 @@ void main() {
         expect(item.amount, equals(1.0));
         expect(item.unit, equals('')); // Default empty string
         expect(
-            item.category, equals('other')); // Default ShoppingCategory.other
+          item.category,
+          equals('other'),
+        ); // Default ShoppingCategory.other
         expect(item.bought, isFalse); // Default
         expect(item.note, isNull);
         expect(item.priority, equals(3)); // Default medium priority
@@ -673,27 +686,28 @@ void main() {
 
     group('BUT-238: Assignment (Tar jag / Lämna tillbaka)', () {
       test(
-          'assign() populates the three assignment fields and stamps lastModified',
-          () {
-        final start = UnifiedShoppingItem.collaborative(
-          name: 'Mjölk',
-          amount: 1,
-          addedByUserId: 'alice',
-          addedByDisplayName: 'Alice',
-        );
+        'assign() populates the three assignment fields and stamps lastModified',
+        () {
+          final start = UnifiedShoppingItem.collaborative(
+            name: 'Mjölk',
+            amount: 1,
+            addedByUserId: 'alice',
+            addedByDisplayName: 'Alice',
+          );
 
-        final claimed = start.assign(
-          userId: 'bob',
-          displayName: 'Bob',
-        );
+          final claimed = start.assign(
+            userId: 'bob',
+            displayName: 'Bob',
+          );
 
-        expect(claimed.isAssigned, isTrue);
-        expect(claimed.assignedToUserId, equals('bob'));
-        expect(claimed.assignedToDisplayName, equals('Bob'));
-        expect(claimed.assignedAt, isNotNull);
-        expect(claimed.lastModifiedByUserId, equals('bob'));
-        expect(claimed.lastModifiedByDisplayName, equals('Bob'));
-      });
+          expect(claimed.isAssigned, isTrue);
+          expect(claimed.assignedToUserId, equals('bob'));
+          expect(claimed.assignedToDisplayName, equals('Bob'));
+          expect(claimed.assignedAt, isNotNull);
+          expect(claimed.lastModifiedByUserId, equals('bob'));
+          expect(claimed.lastModifiedByDisplayName, equals('Bob'));
+        },
+      );
 
       test('unassign() clears all three assignment fields', () {
         final claimed = UnifiedShoppingItem.collaborative(
@@ -739,8 +753,10 @@ void main() {
           addedByDisplayName: 'Alice',
         ).assign(userId: 'bob', displayName: 'Bob');
 
-        final bought =
-            claimed.togglePurchased(userId: 'bob', userDisplayName: 'Bob');
+        final bought = claimed.togglePurchased(
+          userId: 'bob',
+          userDisplayName: 'Bob',
+        );
 
         expect(bought.bought, isTrue);
         expect(bought.assignedToUserId, equals('bob'));
@@ -758,7 +774,8 @@ void main() {
           assignedAt: claimedDate,
         );
         final decoded = UnifiedShoppingItem.fromJson(
-            Map<String, dynamic>.from(original.toJson()));
+          Map<String, dynamic>.from(original.toJson()),
+        );
 
         expect(decoded.assignedToUserId, equals('bob'));
         expect(decoded.assignedToDisplayName, equals('Bob'));
@@ -766,17 +783,19 @@ void main() {
       });
 
       test(
-          'JSON round-trip tolerates missing assignment fields (null pass-through)',
-          () {
-        final plain = UnifiedShoppingItem.basic(name: 'Bröd', amount: 1);
-        final decoded = UnifiedShoppingItem.fromJson(
-            Map<String, dynamic>.from(plain.toJson()));
+        'JSON round-trip tolerates missing assignment fields (null pass-through)',
+        () {
+          final plain = UnifiedShoppingItem.basic(name: 'Bröd', amount: 1);
+          final decoded = UnifiedShoppingItem.fromJson(
+            Map<String, dynamic>.from(plain.toJson()),
+          );
 
-        expect(decoded.assignedToUserId, isNull);
-        expect(decoded.assignedToDisplayName, isNull);
-        expect(decoded.assignedAt, isNull);
-        expect(decoded.isAssigned, isFalse);
-      });
+          expect(decoded.assignedToUserId, isNull);
+          expect(decoded.assignedToDisplayName, isNull);
+          expect(decoded.assignedAt, isNull);
+          expect(decoded.isAssigned, isFalse);
+        },
+      );
 
       test('Firestore round-trip preserves assignment Timestamp', () {
         final claimedDate = DateTime.utc(2026, 4, 18, 10, 0);
@@ -792,7 +811,8 @@ void main() {
         expect(firestore['assignedAt'], isA<Timestamp>());
 
         final decoded = UnifiedShoppingItem.fromFirestore(
-            Map<String, dynamic>.from(firestore));
+          Map<String, dynamic>.from(firestore),
+        );
         expect(decoded.assignedToUserId, equals('bob'));
         // Timestamp.toDate() returns local time — compare instant, not wall clock.
         expect(

@@ -18,8 +18,8 @@ class RecipeRelationsService {
   RecipeRelationsService({
     required Recipe? Function(String id) getRecipe,
     required Future<bool> Function(Recipe recipe) updateRecipe,
-  })  : _getRecipe = getRecipe,
-        _updateRecipe = updateRecipe;
+  }) : _getRecipe = getRecipe,
+       _updateRecipe = updateRecipe;
 
   /// Symmetric link: adds [bId] to A's `relatedRecipeIds` and vice versa.
   /// Idempotent — re-linking an already-symmetric pair returns true

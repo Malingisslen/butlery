@@ -129,8 +129,10 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
         final uploaded = await _uploadSelectedImages();
         if (uploaded == null) {
           if (mounted) {
-            widget.onShowMessage(context.l10n.commentImageUploadError,
-                isError: true);
+            widget.onShowMessage(
+              context.l10n.commentImageUploadError,
+              isError: true,
+            );
           }
           return;
         }
@@ -138,8 +140,10 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       } catch (e) {
         AppLogger.error('CommentFormWidget: image upload failed ($e)');
         if (mounted) {
-          widget.onShowMessage(context.l10n.commentImageUploadError,
-              isError: true);
+          widget.onShowMessage(
+            context.l10n.commentImageUploadError,
+            isError: true,
+          );
         }
         return;
       } finally {
@@ -148,8 +152,10 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     }
 
     try {
-      await widget.socialViewModel
-          .postComment(widget.recipeId, imageUrls: imageUrls);
+      await widget.socialViewModel.postComment(
+        widget.recipeId,
+        imageUrls: imageUrls,
+      );
       // Post-success: VM cleared its newCommentText; mirror that on the
       // controller + drop the persisted draft + clear selected images.
       _controller.clear();
@@ -234,8 +240,9 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                       ? context.l10n.commentWriteReply
                       : context.l10n.commentWriteComment,
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
                   ),
                   contentPadding: AppDimensions.paddingAll3,
                 ),
@@ -259,10 +266,12 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                     )
                   : const Icon(Icons.send),
               style: IconButton.styleFrom(
-                backgroundColor:
-                    _canSend ? Theme.of(context).colorScheme.primary : null,
-                foregroundColor:
-                    _canSend ? Theme.of(context).colorScheme.onPrimary : null,
+                backgroundColor: _canSend
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                foregroundColor: _canSend
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : null,
               ),
             ),
           ],

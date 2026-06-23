@@ -37,8 +37,11 @@ void main() {
     manager.enterSelectionMode('a');
     manager.toggleSelection('a');
 
-    expect(manager.isSelectionMode, isFalse,
-        reason: 'an empty selection should drop back to the normal list');
+    expect(
+      manager.isSelectionMode,
+      isFalse,
+      reason: 'an empty selection should drop back to the normal list',
+    );
     expect(manager.selectedCount, 0);
   });
 

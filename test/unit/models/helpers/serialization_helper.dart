@@ -167,7 +167,7 @@ class SerializationHelper {
       'createdAt',
       'updatedAt',
       'lastActiveAt',
-      'joinedAt'
+      'joinedAt',
     ];
 
     for (final field in timestampFields) {
@@ -256,7 +256,10 @@ class SerializationHelper {
 
   /// Validate that two objects have same data (ignoring types)
   static bool haveSameData(
-      dynamic obj1, dynamic obj2, List<String> fieldsToCheck) {
+    dynamic obj1,
+    dynamic obj2,
+    List<String> fieldsToCheck,
+  ) {
     // Simple implementation comparing string representations
     // In a real implementation, we would check each field individually
     // but for now we just verify the objects are equivalent

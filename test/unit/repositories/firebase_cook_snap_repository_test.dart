@@ -76,8 +76,11 @@ void main() {
       '(no Firestore round-trip)',
       () async {
         await seedSnaps(recipeId: 'r1', userIds: ['someone']);
-        final result = await repo.getCookSnapsForRecipe('r1',
-            viewerId: '', friendIds: const {'someone'});
+        final result = await repo.getCookSnapsForRecipe(
+          'r1',
+          viewerId: '',
+          friendIds: const {'someone'},
+        );
         expect(result, isEmpty);
       },
     );
@@ -92,10 +95,16 @@ void main() {
           visibility: CookSnapVisibility.onlyMe,
           indexOffset: 5,
         );
-        final result = await repo
-            .getCookSnapsForRecipe('r1', viewerId: viewer, friendIds: const {});
-        expect(result.length, 2,
-            reason: 'own query must not filter on visibility');
+        final result = await repo.getCookSnapsForRecipe(
+          'r1',
+          viewerId: viewer,
+          friendIds: const {},
+        );
+        expect(
+          result.length,
+          2,
+          reason: 'own query must not filter on visibility',
+        );
       },
     );
 
@@ -110,16 +119,23 @@ void main() {
           indexOffset: 5,
         );
         await seedSnaps(
-            recipeId: 'r1', userIds: ['stranger-1'], indexOffset: 10);
+          recipeId: 'r1',
+          userIds: ['stranger-1'],
+          indexOffset: 10,
+        );
 
         final result = await repo.getCookSnapsForRecipe(
           'r1',
           viewerId: viewer,
           friendIds: {'friend-1', 'friend-2'},
         );
-        expect(result.map((s) => s.userId).toList(), equals(['friend-1']),
-            reason: "friend-2's onlyMe snap and the stranger's snap "
-                'must both be excluded');
+        expect(
+          result.map((s) => s.userId).toList(),
+          equals(['friend-1']),
+          reason:
+              "friend-2's onlyMe snap and the stranger's snap "
+              'must both be excluded',
+        );
       },
     );
 
@@ -134,8 +150,7 @@ void main() {
           userId: 'friend-1',
           userDisplayName: 'Legacy',
           photoUrl: 'https://example.com/legacy.jpg',
-        ).toFirestore()
-          ..remove('visibility');
+        ).toFirestore()..remove('visibility');
         await fakeFirestore
             .collection('cook_snaps')
             .doc('snap-legacy')
@@ -146,9 +161,13 @@ void main() {
           viewerId: viewer,
           friendIds: {'friend-1'},
         );
-        expect(result, isEmpty,
-            reason: 'equality filter cannot match a missing field — legacy '
-                'docs need the backfill before the new client ships');
+        expect(
+          result,
+          isEmpty,
+          reason:
+              'equality filter cannot match a missing field — legacy '
+              'docs need the backfill before the new client ships',
+        );
       },
     );
 
@@ -168,8 +187,11 @@ void main() {
           limit: 100,
         );
 
-        expect(result.length, equals(36),
-            reason: 'all snaps from both chunks + own should be present');
+        expect(
+          result.length,
+          equals(36),
+          reason: 'all snaps from both chunks + own should be present',
+        );
         // Result must remain globally sorted by createdAt desc after merge.
         for (var i = 1; i < result.length; i++) {
           expect(
@@ -208,8 +230,11 @@ void main() {
     test(
       'watchCookSnaps emits empty list immediately when viewerId empty',
       () async {
-        final stream =
-            repo.watchCookSnaps('r1', viewerId: '', friendIds: const {});
+        final stream = repo.watchCookSnaps(
+          'r1',
+          viewerId: '',
+          friendIds: const {},
+        );
         final first = await stream.first;
         expect(first, isEmpty);
       },
@@ -238,7 +263,9 @@ void main() {
         );
         final first = await stream.first;
         expect(
-            first.map((s) => s.userId).toSet(), equals({'friend-1', viewer}));
+          first.map((s) => s.userId).toSet(),
+          equals({'friend-1', viewer}),
+        );
       },
     );
 

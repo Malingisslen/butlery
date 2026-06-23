@@ -57,9 +57,9 @@ class _ItemRepo extends BaseFirebaseRepository<_Item>
 
   @override
   Map<String, dynamic> toFirestore(_Item entity) => {
-        'name': entity.name,
-        'ownerId': entity.ownerId,
-      };
+    'name': entity.name,
+    'ownerId': entity.ownerId,
+  };
 
   @override
   String getId(_Item entity) => entity.id;
@@ -70,17 +70,23 @@ class _ItemRepo extends BaseFirebaseRepository<_Item>
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, _Item? entity) async =>
-      entity != null && entity.ownerId == userId;
+    String userId,
+    String resourceId,
+    _Item? entity,
+  ) async => entity != null && entity.ownerId == userId;
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, _Item entity) async =>
-      entity.ownerId == userId;
+    String userId,
+    String resourceId,
+    _Item entity,
+  ) async => entity.ownerId == userId;
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     try {
       final entity = await read(resourceId);
       return entity?.ownerId == userId;
@@ -111,10 +117,10 @@ Future<void> _seed(
   required String name,
   required String owner,
 }) async {
-  await firestore
-      .collection('items')
-      .doc(id)
-      .set({'name': name, 'ownerId': owner});
+  await firestore.collection('items').doc(id).set({
+    'name': name,
+    'ownerId': owner,
+  });
 }
 
 void main() {
@@ -126,8 +132,10 @@ void main() {
 
       await repo.delete('i1');
 
-      expect((await firestore.collection('items').doc('i1').get()).exists,
-          isFalse);
+      expect(
+        (await firestore.collection('items').doc('i1').get()).exists,
+        isFalse,
+      );
     });
 
     test('throws PermissionDenied when not owner', () async {
@@ -330,17 +338,19 @@ void main() {
       expect((await firestore.collection('items').get()).docs, isEmpty);
     });
 
-    test('deleteBatch throws when caller cannot delete one of the ids',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: 'bob');
-      await _seed(firestore, id: 'i1', name: 'A', owner: 'alice');
+    test(
+      'deleteBatch throws when caller cannot delete one of the ids',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: 'bob');
+        await _seed(firestore, id: 'i1', name: 'A', owner: 'alice');
 
-      // BUT-1003: typed PermissionDeniedException now propagates.
-      await expectLater(
-        () => repo.deleteBatch(['i1']),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
+        // BUT-1003: typed PermissionDeniedException now propagates.
+        await expectLater(
+          () => repo.deleteBatch(['i1']),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
   });
 }

@@ -185,8 +185,9 @@ class RecipeEventsTracker extends BaseTracker {
   /// Log recipe copied
   Future<void> logRecipeCopied({required String recipeId}) async {
     await logEvent(
-        name: AnalyticsEvents.recipeCopied,
-        parameters: {'recipe_id': recipeId});
+      name: AnalyticsEvents.recipeCopied,
+      parameters: {'recipe_id': recipeId},
+    );
   }
 
   /// Log recipe image uploaded

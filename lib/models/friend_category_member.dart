@@ -155,8 +155,10 @@ class CategoryMembership {
       categoryId: categoryId,
       ownerId: SerializationUtils.safeString(data, 'ownerId'),
       categoryName: SerializationUtils.safeString(data, 'categoryName'),
-      categoryEmoji:
-          SerializationUtils.safeNullableString(data, 'categoryEmoji'),
+      categoryEmoji: SerializationUtils.safeNullableString(
+        data,
+        'categoryEmoji',
+      ),
       addedAt: SerializationUtils.safeRequiredDateTime(data, 'addedAt'),
     );
   }

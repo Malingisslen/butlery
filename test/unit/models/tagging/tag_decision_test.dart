@@ -16,8 +16,10 @@ void main() {
         expect(decision.type, 'allergen');
         expect(decision.key, 'gluten');
         expect(decision.result, TriState.contains);
-        expect(decision.reason,
-            'Ingredient with property "contains-gluten" found');
+        expect(
+          decision.reason,
+          'Ingredient with property "contains-gluten" found',
+        );
         expect(decision.triggeringIngredients, ['vetemjöl', 'pasta']);
       });
 

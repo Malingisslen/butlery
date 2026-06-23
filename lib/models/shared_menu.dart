@@ -47,16 +47,16 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     String? originalOwnerStaticCopyId,
     int activeCollaboratorCount = 0,
     this.schemaVersion = 1,
-  })  : _isOriginalReference = isOriginalReference,
-        _copyOnWriteTriggered = copyOnWriteTriggered,
-        _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
-        _activeCollaboratorCount = activeCollaboratorCount,
-        totalRecipeCount = menuSnapshot.values.fold(
-          0,
-          (totalCount, recipes) => totalCount + recipes.length,
-        ),
-        categories = menuSnapshot.keys.toList(),
-        super(sharedAt: sharedAt ?? clock.now());
+  }) : _isOriginalReference = isOriginalReference,
+       _copyOnWriteTriggered = copyOnWriteTriggered,
+       _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
+       _activeCollaboratorCount = activeCollaboratorCount,
+       totalRecipeCount = menuSnapshot.values.fold(
+         0,
+         (totalCount, recipes) => totalCount + recipes.length,
+       ),
+       categories = menuSnapshot.keys.toList(),
+       super(sharedAt: sharedAt ?? clock.now());
 
   factory SharedMenu.create({
     required String sharedByUserId,
@@ -68,7 +68,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool allowCollaboration = false,
     String? realtimeMenuId,
   }) {
-    final title = menuTitle ??
+    final title =
+        menuTitle ??
         AppLocale.current.sharedMenuTitlePattern(sharedByDisplayName);
 
     return SharedMenu(
@@ -253,17 +254,20 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         final recipeData = recipe.core.toFirestore();
 
         if (recipeData['createdAt'] is DateTime) {
-          recipeData['createdAt'] =
-              AppTimestamp.fromDateTime(recipe.createdAt).toFirestore();
+          recipeData['createdAt'] = AppTimestamp.fromDateTime(
+            recipe.createdAt,
+          ).toFirestore();
         }
         if (recipeData['updatedAt'] is DateTime) {
-          recipeData['updatedAt'] =
-              AppTimestamp.fromDateTime(recipe.updatedAt).toFirestore();
+          recipeData['updatedAt'] = AppTimestamp.fromDateTime(
+            recipe.updatedAt,
+          ).toFirestore();
         }
         if (recipeData['lastCookedAt'] is DateTime &&
             recipe.lastCookedAt != null) {
-          recipeData['lastCookedAt'] =
-              AppTimestamp.fromDateTime(recipe.lastCookedAt!).toFirestore();
+          recipeData['lastCookedAt'] = AppTimestamp.fromDateTime(
+            recipe.lastCookedAt!,
+          ).toFirestore();
         }
 
         return recipeData;
@@ -289,8 +293,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
-      final menuData =
-          (data['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final menuData = (data['menuSnapshot'] as Map<String, dynamic>?)
+          .orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
 
       for (final entry in menuData.entries) {
@@ -303,37 +307,64 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             final recipe = Recipe(
               core: RecipeCore(
                 id: utils.SerializationUtils.safeString(recipeMap, 'id'),
-                title: utils.SerializationUtils.safeString(recipeMap, 'title',
-                    defaultValue: 'Untitled Recipe'),
+                title: utils.SerializationUtils.safeString(
+                  recipeMap,
+                  'title',
+                  defaultValue: 'Untitled Recipe',
+                ),
                 description: utils.SerializationUtils.safeString(
-                    recipeMap, 'description'),
+                  recipeMap,
+                  'description',
+                ),
                 ingredients: utils.SerializationUtils.safeStringList(
-                    recipeMap, 'ingredients'),
+                  recipeMap,
+                  'ingredients',
+                ),
                 instructions: utils.SerializationUtils.safeStringList(
-                    recipeMap, 'instructions'),
+                  recipeMap,
+                  'instructions',
+                ),
                 imageUrls: utils.SerializationUtils.safeStringList(
-                    recipeMap, 'imageUrls'),
+                  recipeMap,
+                  'imageUrls',
+                ),
                 mealType: utils.SerializationUtils.safeString(
-                    recipeMap, 'mealType',
-                    defaultValue: 'Middag'),
+                  recipeMap,
+                  'mealType',
+                  defaultValue: 'Middag',
+                ),
                 portions: utils.SerializationUtils.safeNullableInt(
-                    recipeMap, 'portions'),
+                  recipeMap,
+                  'portions',
+                ),
                 timeMinutes: utils.SerializationUtils.safeNullableInt(
-                    recipeMap, 'timeMinutes'),
+                  recipeMap,
+                  'timeMinutes',
+                ),
                 rating: utils.SerializationUtils.safeNullableDouble(
-                    recipeMap, 'rating'),
+                  recipeMap,
+                  'rating',
+                ),
                 personalTagIds: utils.SerializationUtils.safeStringList(
-                    recipeMap, 'personalTagIds'),
+                  recipeMap,
+                  'personalTagIds',
+                ),
                 sourceUrl: utils.SerializationUtils.safeNullableString(
-                    recipeMap, 'sourceUrl'),
+                  recipeMap,
+                  'sourceUrl',
+                ),
                 createdAt: utils.SerializationUtils.safeDateTime(
-                        recipeMap, 'createdAt')
-                    .orNow(),
+                  recipeMap,
+                  'createdAt',
+                ).orNow(),
                 updatedAt: utils.SerializationUtils.safeDateTime(
-                        recipeMap, 'updatedAt')
-                    .orNow(),
+                  recipeMap,
+                  'updatedAt',
+                ).orNow(),
                 lastCookedAt: utils.SerializationUtils.safeDateTime(
-                    recipeMap, 'lastCookedAt'),
+                  recipeMap,
+                  'lastCookedAt',
+                ),
               ),
               type: RecipeType.shared,
             );
@@ -347,8 +378,9 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
       final commonFields =
           BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
-      final cowFields =
-          CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
+      final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(
+        data,
+      );
 
       return SharedMenu(
         id: id,
@@ -359,14 +391,21 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         viewCount: commonFields['viewCount'] as int,
         engagementCount: commonFields['engagementCount'] as int,
         dismissalCount: commonFields['dismissalCount'] as int,
-        menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle',
-            defaultValue: '?'),
+        menuTitle: utils.SerializationUtils.safeString(
+          data,
+          'menuTitle',
+          defaultValue: '?',
+        ),
         menuSnapshot: reconstructedMenu,
         allowCollaboration: utils.SerializationUtils.safeBool(
-            data, 'allowCollaboration',
-            defaultValue: false),
-        realtimeMenuId:
-            utils.SerializationUtils.safeNullableString(data, 'realtimeMenuId'),
+          data,
+          'allowCollaboration',
+          defaultValue: false,
+        ),
+        realtimeMenuId: utils.SerializationUtils.safeNullableString(
+          data,
+          'realtimeMenuId',
+        ),
         isOriginalReference: cowFields['isOriginalReference'] as bool,
         copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
         originalOwnerStaticCopyId:
@@ -382,8 +421,9 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   Map<String, dynamic> toJson() {
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
-      menuData[entry.key] =
-          entry.value.map((recipe) => recipe.toJson()).toList();
+      menuData[entry.key] = entry.value
+          .map((recipe) => recipe.toJson())
+          .toList();
     }
 
     return {

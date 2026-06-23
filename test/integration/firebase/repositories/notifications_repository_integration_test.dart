@@ -33,7 +33,8 @@ void main() {
     setUp(() async {
       // Initialize test isolation
       TestDataIsolator.initializeTest(
-          'notifications_repository_integration_test');
+        'notifications_repository_integration_test',
+      );
 
       // Set up fake Firebase instances
       fakeFirestore = FirestoreSingleton.instance;
@@ -58,7 +59,8 @@ void main() {
     tearDown(() async {
       await mockAuth.signOut();
       await TestDataIsolator.cleanupTest(
-          'notifications_repository_integration_test');
+        'notifications_repository_integration_test',
+      );
     });
 
     group('Notifications with FieldValue operations', () {
@@ -91,8 +93,10 @@ void main() {
         // Verify server timestamp was set
         expect(notification['createdAt'], isA<Timestamp>());
         final timestamp = notification['createdAt'] as Timestamp;
-        expect(timestamp.toDate().difference(DateTime.now()).inMinutes.abs(),
-            lessThan(1));
+        expect(
+          timestamp.toDate().difference(DateTime.now()).inMinutes.abs(),
+          lessThan(1),
+        );
 
         expect(notification['title'], equals(title));
         expect(notification['body'], equals(body));
@@ -104,15 +108,16 @@ void main() {
         const userId = testUserId;
 
         // Create notification with server timestamp
-        final docRef =
-            await fakeFirestore.collection('user_notifications').add({
-          'userId': userId,
-          'type': NotificationType.optional.toString(),
-          'title': 'Test Notification',
-          'body': 'Test Body',
-          'isRead': false,
-          'createdAt': TestFieldValues.serverTimestamp(),
-        });
+        final docRef = await fakeFirestore.collection('user_notifications').add(
+          {
+            'userId': userId,
+            'type': NotificationType.optional.toString(),
+            'title': 'Test Notification',
+            'body': 'Test Body',
+            'isRead': false,
+            'createdAt': TestFieldValues.serverTimestamp(),
+          },
+        );
 
         // Act
         await repository.markAsRead(docRef.id);
@@ -133,41 +138,45 @@ void main() {
         expect(readAt.isBefore(createdAt), isFalse);
       });
 
-      test('should stream notifications with proper timestamp ordering',
-          () async {
-        // Arrange
-        const userId = testUserId;
+      test(
+        'should stream notifications with proper timestamp ordering',
+        () async {
+          // Arrange
+          const userId = testUserId;
 
-        // Create notifications with server timestamps
-        for (int i = 0; i < 3; i++) {
-          await fakeFirestore.collection('user_notifications').add({
-            'userId': userId,
-            'type': NotificationType.optional.toString(),
-            'title': 'Notification $i',
-            'body': 'Body $i',
-            'isRead': false,
-            'createdAt': TestFieldValues.serverTimestamp(),
-          });
+          // Create notifications with server timestamps
+          for (int i = 0; i < 3; i++) {
+            await fakeFirestore.collection('user_notifications').add({
+              'userId': userId,
+              'type': NotificationType.optional.toString(),
+              'title': 'Notification $i',
+              'body': 'Body $i',
+              'isRead': false,
+              'createdAt': TestFieldValues.serverTimestamp(),
+            });
 
-          // Small delay to ensure different timestamps
-          await Future.delayed(const Duration(milliseconds: 50));
-        }
+            // Small delay to ensure different timestamps
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
 
-        // Act
-        final stream = repository.getNotificationsStream(userId);
-        final notifications = await stream.first;
+          // Act
+          final stream = repository.getNotificationsStream(userId);
+          final notifications = await stream.first;
 
-        // Assert
-        expect(notifications.length, equals(3));
+          // Assert
+          expect(notifications.length, equals(3));
 
-        // Verify notifications are ordered by createdAt descending (newest first)
-        for (int i = 0; i < notifications.length - 1; i++) {
-          expect(
-            notifications[i].createdAt.isAfter(notifications[i + 1].createdAt),
-            isTrue,
-          );
-        }
-      });
+          // Verify notifications are ordered by createdAt descending (newest first)
+          for (int i = 0; i < notifications.length - 1; i++) {
+            expect(
+              notifications[i].createdAt.isAfter(
+                notifications[i + 1].createdAt,
+              ),
+              isTrue,
+            );
+          }
+        },
+      );
     });
 
     group('Batch Operations', () {
@@ -213,15 +222,16 @@ void main() {
 
         // Create multiple unread notifications
         for (int i = 0; i < 5; i++) {
-          final docRef =
-              await fakeFirestore.collection('user_notifications').add({
-            'userId': userId,
-            'type': NotificationType.optional.toString(),
-            'title': 'Notification $i',
-            'body': 'Body $i',
-            'isRead': false,
-            'createdAt': TestFieldValues.serverTimestamp(),
-          });
+          final docRef = await fakeFirestore
+              .collection('user_notifications')
+              .add({
+                'userId': userId,
+                'type': NotificationType.optional.toString(),
+                'title': 'Notification $i',
+                'body': 'Body $i',
+                'isRead': false,
+                'createdAt': TestFieldValues.serverTimestamp(),
+              });
           notificationIds.add(docRef.id);
         }
 
@@ -337,8 +347,9 @@ void main() {
         await repository.updateNotificationPreferences(userId, preferences);
 
         // Assert
-        final savedPreferences =
-            await repository.getNotificationPreferences(userId);
+        final savedPreferences = await repository.getNotificationPreferences(
+          userId,
+        );
 
         // Defaults per NotificationPreferences.defaults(): everything on.
         expect(savedPreferences.enabled, isTrue);

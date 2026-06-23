@@ -19,9 +19,9 @@ class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
     required IngredientMatchService matchService,
     required IngredientRepository ingredientRepository,
     required UnifiedRecipeService recipeService,
-  })  : _matchService = matchService,
-        _ingredientRepository = ingredientRepository,
-        _recipeService = recipeService;
+  }) : _matchService = matchService,
+       _ingredientRepository = ingredientRepository,
+       _recipeService = recipeService;
 
   // -- Selected ingredients (chips) --
 
@@ -69,12 +69,15 @@ class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
       return;
     }
     debounce('search', const Duration(milliseconds: 300), () async {
-      final results =
-          await _ingredientRepository.searchIngredients(trimmed, limit: 10);
+      final results = await _ingredientRepository.searchIngredients(
+        trimmed,
+        limit: 10,
+      );
       if (isDisposed) return;
       final selectedIds = _selectedIngredients.map((i) => i.id).toSet();
-      _autocompleteResults =
-          results.where((r) => !selectedIds.contains(r.id)).toList();
+      _autocompleteResults = results
+          .where((r) => !selectedIds.contains(r.id))
+          .toList();
       notifyListeners();
     });
   }
@@ -106,8 +109,8 @@ class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
 
     if (_cachedCollaborativeRecipes == null) {
       try {
-        _cachedCollaborativeRecipes =
-            await _recipeService.social.getCollaborativeRecipes();
+        _cachedCollaborativeRecipes = await _recipeService.social
+            .getCollaborativeRecipes();
       } catch (_) {
         // Transient failure — return personal-only, next search retries
         return personal;
@@ -146,11 +149,13 @@ class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
           allMissingIds.addAll(r.missingIngredientIds);
         }
         // Only resolve IDs we haven't cached yet
-        final idsToResolve =
-            allMissingIds.where((id) => !_resolvedNames.containsKey(id));
+        final idsToResolve = allMissingIds.where(
+          (id) => !_resolvedNames.containsKey(id),
+        );
         if (idsToResolve.isNotEmpty) {
-          final names =
-              await _matchService.resolveIngredientNames(idsToResolve.toList());
+          final names = await _matchService.resolveIngredientNames(
+            idsToResolve.toList(),
+          );
           _resolvedNames.addAll(names);
         }
       },

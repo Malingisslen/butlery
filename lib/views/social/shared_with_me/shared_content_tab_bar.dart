@@ -36,8 +36,11 @@ class SharedContentTabBar {
                 children: [
                   const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text(context.l10n
-                      .sharedTabRecipes(viewModel.recipeViewModel.totalCount)),
+                  Text(
+                    context.l10n.sharedTabRecipes(
+                      viewModel.recipeViewModel.totalCount,
+                    ),
+                  ),
                   if (viewModel.recipeViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
@@ -52,11 +55,16 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_month,
-                      size: AppDimensions.iconSizeM),
+                  const Icon(
+                    Icons.calendar_month,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text(context.l10n
-                      .sharedTabMenus(viewModel.menuViewModel.totalCount)),
+                  Text(
+                    context.l10n.sharedTabMenus(
+                      viewModel.menuViewModel.totalCount,
+                    ),
+                  ),
                   if (viewModel.menuViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
@@ -71,11 +79,16 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.shopping_cart,
-                      size: AppDimensions.iconSizeM),
+                  const Icon(
+                    Icons.shopping_cart,
+                    size: AppDimensions.iconSizeM,
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text(context.l10n.sharedTabShoppingLists(
-                      viewModel.shoppingViewModel.totalCount)),
+                  Text(
+                    context.l10n.sharedTabShoppingLists(
+                      viewModel.shoppingViewModel.totalCount,
+                    ),
+                  ),
                   if (viewModel.shoppingViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(

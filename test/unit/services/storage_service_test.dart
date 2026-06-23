@@ -113,25 +113,31 @@ void main() {
         const expectedUrl =
             'https://storage.googleapis.com/test/users/test_user_123/recipes/recipe_123.jpg';
 
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_123.jpg');
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_123.jpg');
 
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => expectedUrl);
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => expectedUrl);
 
-        when(() => mockRepository.createAndUploadThumbnail(
-                  imageFile: any(named: 'imageFile'),
-                  userId: any(named: 'userId'),
-                  originalPath: any(named: 'originalPath'),
-                ))
-            .thenAnswer(
-                (_) async => 'https://storage.googleapis.com/test/thumb.jpg');
+        when(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).thenAnswer(
+          (_) async => 'https://storage.googleapis.com/test/thumb.jpg',
+        );
 
         // Act
         final result = await storageService.uploadImageFile(
@@ -144,14 +150,18 @@ void main() {
 
         // Assert
         expect(result?.imageUrl, equals(expectedUrl));
-        expect(result?.thumbnailUrl,
-            equals('https://storage.googleapis.com/test/thumb.jpg'));
-        verify(() => mockRepository.uploadImage(
-              imageFile: mockFile,
-              userId: userId,
-              path: 'users/$userId/recipes/recipe_123.jpg',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
+        expect(
+          result?.thumbnailUrl,
+          equals('https://storage.googleapis.com/test/thumb.jpg'),
+        );
+        verify(
+          () => mockRepository.uploadImage(
+            imageFile: mockFile,
+            userId: userId,
+            path: 'users/$userId/recipes/recipe_123.jpg',
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).called(1);
       });
 
       test('should upload multiple images', () async {
@@ -164,12 +174,14 @@ void main() {
           'https://storage.googleapis.com/test/image3.jpg',
         ];
 
-        when(() => mockRepository.uploadMultipleImages(
-              imageFiles: any(named: 'imageFiles'),
-              userId: any(named: 'userId'),
-              basePath: any(named: 'basePath'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => expectedUrls);
+        when(
+          () => mockRepository.uploadMultipleImages(
+            imageFiles: any(named: 'imageFiles'),
+            userId: any(named: 'userId'),
+            basePath: any(named: 'basePath'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => expectedUrls);
 
         // Act
         final result = await storageService.uploadMultipleImages(
@@ -182,12 +194,14 @@ void main() {
 
         // Assert
         expect(result, equals(expectedUrls));
-        verify(() => mockRepository.uploadMultipleImages(
-              imageFiles: files,
-              userId: userId,
-              basePath: 'users/$userId/recipes',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
+        verify(
+          () => mockRepository.uploadMultipleImages(
+            imageFiles: files,
+            userId: userId,
+            basePath: 'users/$userId/recipes',
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).called(1);
       });
 
       test('should upload recipe image', () async {
@@ -195,25 +209,31 @@ void main() {
         const recipeId = 'recipe_123';
         const expectedUrl = 'https://storage.googleapis.com/test/recipe.jpg';
 
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_123.jpg');
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_123.jpg');
 
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => expectedUrl);
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => expectedUrl);
 
-        when(() => mockRepository.createAndUploadThumbnail(
-                  imageFile: any(named: 'imageFile'),
-                  userId: any(named: 'userId'),
-                  originalPath: any(named: 'originalPath'),
-                ))
-            .thenAnswer(
-                (_) async => 'https://storage.googleapis.com/test/thumb.jpg');
+        when(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).thenAnswer(
+          (_) async => 'https://storage.googleapis.com/test/thumb.jpg',
+        );
 
         // Act
         final result = await storageService.uploadRecipeImage(
@@ -231,8 +251,9 @@ void main() {
         // Arrange
         const imageUrl = 'https://storage.googleapis.com/test/image.jpg';
 
-        when(() => mockRepository.deleteImage(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.deleteImage(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await storageService.deleteImage(imageUrl);
@@ -250,8 +271,9 @@ void main() {
           'https://storage.googleapis.com/test/image3.jpg',
         ];
 
-        when(() => mockRepository.deleteMultipleImages(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteMultipleImages(any()),
+        ).thenAnswer((_) async {});
 
         // Act
         await storageService.deleteMultipleImages(imageUrls);
@@ -264,8 +286,9 @@ void main() {
         // Arrange
         const imageUrl = 'https://storage.googleapis.com/test/recipe.jpg';
 
-        when(() => mockRepository.deleteImage(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.deleteImage(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await storageService.deleteRecipeImage(imageUrl);
@@ -315,22 +338,29 @@ void main() {
 
       test('should validate file size', () {
         // Test file within size limit (< 10MB)
-        final smallFile =
-            _createMockFile('/path/small.jpg', sizeBytes: 5 * 1024 * 1024);
+        final smallFile = _createMockFile(
+          '/path/small.jpg',
+          sizeBytes: 5 * 1024 * 1024,
+        );
         when(() => mockRepository.isValidImageFile(smallFile)).thenReturn(true);
         expect(mockRepository.isValidImageFile(smallFile), isTrue);
 
         // Test file exactly at limit (10MB)
-        final limitFile =
-            _createMockFile('/path/limit.jpg', sizeBytes: 10 * 1024 * 1024);
+        final limitFile = _createMockFile(
+          '/path/limit.jpg',
+          sizeBytes: 10 * 1024 * 1024,
+        );
         when(() => mockRepository.isValidImageFile(limitFile)).thenReturn(true);
         expect(mockRepository.isValidImageFile(limitFile), isTrue);
 
         // Test file over size limit (> 10MB)
-        final largeFile =
-            _createMockFile('/path/large.jpg', sizeBytes: 11 * 1024 * 1024);
-        when(() => mockRepository.isValidImageFile(largeFile))
-            .thenReturn(false);
+        final largeFile = _createMockFile(
+          '/path/large.jpg',
+          sizeBytes: 11 * 1024 * 1024,
+        );
+        when(
+          () => mockRepository.isValidImageFile(largeFile),
+        ).thenReturn(false);
         expect(mockRepository.isValidImageFile(largeFile), isFalse);
       });
 
@@ -343,8 +373,10 @@ void main() {
 
       test('should reject oversized file even with valid extension', () {
         // File with valid extension but invalid size
-        final file =
-            _createMockFile('/path/huge.jpg', sizeBytes: 20 * 1024 * 1024);
+        final file = _createMockFile(
+          '/path/huge.jpg',
+          sizeBytes: 20 * 1024 * 1024,
+        );
         when(() => mockRepository.isValidImageFile(file)).thenReturn(false);
         expect(mockRepository.isValidImageFile(file), isFalse);
       });
@@ -360,8 +392,9 @@ void main() {
           formattedSize: '25.0 MB',
         );
 
-        when(() => mockRepository.getUserStorageInfo(any()))
-            .thenAnswer((_) async => expectedInfo);
+        when(
+          () => mockRepository.getUserStorageInfo(any()),
+        ).thenAnswer((_) async => expectedInfo);
 
         // Act
         final info = await storageService.getUserStorageInfo(userId);
@@ -378,8 +411,9 @@ void main() {
         // Arrange
         const userId = 'test_user_456';
 
-        when(() => mockRepository.getUserStorageInfo(any()))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRepository.getUserStorageInfo(any()),
+        ).thenAnswer((_) async => null);
 
         // Act
         final info = await storageService.getUserStorageInfo(userId);
@@ -396,32 +430,40 @@ void main() {
         const userId = 'test_user';
         const expectedFilename = 'recipe_1234567890.jpg';
 
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn(expectedFilename);
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn(expectedFilename);
 
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => 'https://test.com/image.jpg');
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => 'https://test.com/image.jpg');
 
-        when(() => mockRepository.createAndUploadThumbnail(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              originalPath: any(named: 'originalPath'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).thenAnswer((_) async => null);
 
         // Act
         await storageService.uploadImageFile(mockFile, userId);
 
         // Assert
-        verify(() => mockRepository.generateFileName(
-              originalPath: mockFile.path,
-              prefix: 'recipe',
-            )).called(1);
+        verify(
+          () => mockRepository.generateFileName(
+            originalPath: mockFile.path,
+            prefix: 'recipe',
+          ),
+        ).called(1);
       });
     });
 
@@ -433,23 +475,29 @@ void main() {
         const expectedThumbUrl =
             'https://storage.googleapis.com/test/thumb.jpg';
 
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_123.jpg');
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_123.jpg');
 
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => expectedUrl);
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => expectedUrl);
 
-        when(() => mockRepository.createAndUploadThumbnail(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              originalPath: any(named: 'originalPath'),
-            )).thenAnswer((_) async => expectedThumbUrl);
+        when(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).thenAnswer((_) async => expectedThumbUrl);
 
         // Act
         final result = await storageService.uploadImageFile(mockFile, userId);
@@ -457,11 +505,13 @@ void main() {
         // Assert — thumbnail creation is now awaited, not fire-and-forget
         expect(result?.imageUrl, equals(expectedUrl));
         expect(result?.thumbnailUrl, equals(expectedThumbUrl));
-        verify(() => mockRepository.createAndUploadThumbnail(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              originalPath: any(named: 'originalPath'),
-            )).called(1);
+        verify(
+          () => mockRepository.createAndUploadThumbnail(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            originalPath: any(named: 'originalPath'),
+          ),
+        ).called(1);
       });
     });
 
@@ -470,17 +520,21 @@ void main() {
         // Arrange
         const userId = 'test_user_123';
 
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_123.jpg');
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_123.jpg');
 
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => null);
 
         // Act
         final result = await storageService.uploadImageFile(mockFile, userId);
@@ -493,8 +547,9 @@ void main() {
         // Arrange
         const imageUrl = 'https://storage.googleapis.com/test/image.jpg';
 
-        when(() => mockRepository.deleteImage(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.deleteImage(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await storageService.deleteImage(imageUrl);
@@ -537,177 +592,252 @@ void main() {
     // "unknown error."
     group('StorageUploadException propagation (BUT-971/BUT-1027)', () {
       test('uploadImageFile rethrows quota-exceeded', () async {
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_quota.jpg');
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(const StorageUploadException(
-          'quota-exceeded',
-          'storage full',
-        ));
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_quota.jpg');
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenThrow(
+          const StorageUploadException(
+            'quota-exceeded',
+            'storage full',
+          ),
+        );
 
         await expectLater(
           () => storageService.uploadImageFile(mockFile, 'test_user_123'),
-          throwsA(isA<StorageUploadException>()
-              .having((e) => e.code, 'code', 'quota-exceeded')),
+          throwsA(
+            isA<StorageUploadException>().having(
+              (e) => e.code,
+              'code',
+              'quota-exceeded',
+            ),
+          ),
         );
       });
 
       test('uploadImageFile rethrows unauthorized', () async {
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_unauth.jpg');
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(const StorageUploadException(
-          'unauthorized',
-          'not allowed',
-        ));
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_unauth.jpg');
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenThrow(
+          const StorageUploadException(
+            'unauthorized',
+            'not allowed',
+          ),
+        );
 
         await expectLater(
           () => storageService.uploadImageFile(mockFile, 'test_user_123'),
-          throwsA(isA<StorageUploadException>()
-              .having((e) => e.code, 'code', 'unauthorized')),
+          throwsA(
+            isA<StorageUploadException>().having(
+              (e) => e.code,
+              'code',
+              'unauthorized',
+            ),
+          ),
         );
       });
 
       test('uploadImageFile rethrows canceled', () async {
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_cancel.jpg');
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(const StorageUploadException(
-          'canceled',
-          'user cancelled',
-        ));
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('recipe_cancel.jpg');
+        when(
+          () => mockRepository.uploadImage(
+            imageFile: any(named: 'imageFile'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenThrow(
+          const StorageUploadException(
+            'canceled',
+            'user cancelled',
+          ),
+        );
 
         await expectLater(
           () => storageService.uploadImageFile(mockFile, 'test_user_123'),
-          throwsA(isA<StorageUploadException>()
-              .having((e) => e.code, 'code', 'canceled')),
-        );
-      });
-
-      test('uploadImageFile collapses non-StorageUploadException to null',
-          () async {
-        // Non-typed exceptions preserve the legacy nullable-return contract.
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('recipe_oops.jpg');
-        when(() => mockRepository.uploadImage(
-              imageFile: any(named: 'imageFile'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(Exception('something else'));
-
-        final result =
-            await storageService.uploadImageFile(mockFile, 'test_user_123');
-        expect(result, isNull);
-      });
-
-      test('uploadImageBytes rethrows quota-exceeded (BUT-1016 parity)',
-          () async {
-        when(() => mockRepository.compressImageBytes(any())).thenAnswer(
-            (invocation) async =>
-                invocation.positionalArguments.first as Uint8List);
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('avatar_quota.jpg');
-        when(() => mockRepository.uploadImageData(
-              imageData: any(named: 'imageData'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              metadata: any(named: 'metadata'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(const StorageUploadException(
-          'quota-exceeded',
-          'storage full',
-        ));
-
-        await expectLater(
-          () => storageService.uploadImageBytes(
-            Uint8List.fromList([1, 2, 3]),
-            'test_user_123',
-            'avatar.jpg',
+          throwsA(
+            isA<StorageUploadException>().having(
+              (e) => e.code,
+              'code',
+              'canceled',
+            ),
           ),
-          throwsA(isA<StorageUploadException>()
-              .having((e) => e.code, 'code', 'quota-exceeded')),
-        );
-      });
-
-      test('uploadImageBytes rethrows network-request-failed', () async {
-        when(() => mockRepository.compressImageBytes(any())).thenAnswer(
-            (invocation) async =>
-                invocation.positionalArguments.first as Uint8List);
-        when(() => mockRepository.generateFileName(
-              originalPath: any(named: 'originalPath'),
-              prefix: any(named: 'prefix'),
-            )).thenReturn('avatar_net.jpg');
-        when(() => mockRepository.uploadImageData(
-              imageData: any(named: 'imageData'),
-              userId: any(named: 'userId'),
-              path: any(named: 'path'),
-              metadata: any(named: 'metadata'),
-              onProgress: any(named: 'onProgress'),
-            )).thenThrow(const StorageUploadException(
-          'network-request-failed',
-          'offline',
-        ));
-
-        await expectLater(
-          () => storageService.uploadImageBytes(
-            Uint8List.fromList([1, 2, 3]),
-            'test_user_123',
-            'avatar.jpg',
-          ),
-          throwsA(isA<StorageUploadException>()
-              .having((e) => e.code, 'code', 'network-request-failed')),
         );
       });
 
       test(
-          'uploadImageFile pre-flights offline state — throws network-request-failed (BUT-1020)',
-          () async {
-        // Flip MockOfflineService to offline before the call so the new
-        // BUT-1020 pre-flight short-circuits before reaching the repository.
-        final mockOffline =
-            GetIt.instance.get<OfflineService>() as MockOfflineService;
-        when(() => mockOffline.isOnline).thenReturn(false);
+        'uploadImageFile collapses non-StorageUploadException to null',
+        () async {
+          // Non-typed exceptions preserve the legacy nullable-return contract.
+          when(
+            () => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            ),
+          ).thenReturn('recipe_oops.jpg');
+          when(
+            () => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              onProgress: any(named: 'onProgress'),
+            ),
+          ).thenThrow(Exception('something else'));
 
-        try {
-          expect(
-            () => storageService.uploadImageFile(mockFile, 'test_user_123'),
-            throwsA(isA<StorageUploadException>()
-                .having((e) => e.code, 'code', 'network-request-failed')),
+          final result = await storageService.uploadImageFile(
+            mockFile,
+            'test_user_123',
           );
-          // Repository must not have been touched — pre-flight short-circuits.
-          verifyNever(() => mockRepository.uploadImage(
+          expect(result, isNull);
+        },
+      );
+
+      test(
+        'uploadImageBytes rethrows quota-exceeded (BUT-1016 parity)',
+        () async {
+          when(() => mockRepository.compressImageBytes(any())).thenAnswer(
+            (invocation) async =>
+                invocation.positionalArguments.first as Uint8List,
+          );
+          when(
+            () => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            ),
+          ).thenReturn('avatar_quota.jpg');
+          when(
+            () => mockRepository.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              onProgress: any(named: 'onProgress'),
+            ),
+          ).thenThrow(
+            const StorageUploadException(
+              'quota-exceeded',
+              'storage full',
+            ),
+          );
+
+          await expectLater(
+            () => storageService.uploadImageBytes(
+              Uint8List.fromList([1, 2, 3]),
+              'test_user_123',
+              'avatar.jpg',
+            ),
+            throwsA(
+              isA<StorageUploadException>().having(
+                (e) => e.code,
+                'code',
+                'quota-exceeded',
+              ),
+            ),
+          );
+        },
+      );
+
+      test('uploadImageBytes rethrows network-request-failed', () async {
+        when(() => mockRepository.compressImageBytes(any())).thenAnswer(
+          (invocation) async =>
+              invocation.positionalArguments.first as Uint8List,
+        );
+        when(
+          () => mockRepository.generateFileName(
+            originalPath: any(named: 'originalPath'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenReturn('avatar_net.jpg');
+        when(
+          () => mockRepository.uploadImageData(
+            imageData: any(named: 'imageData'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            metadata: any(named: 'metadata'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenThrow(
+          const StorageUploadException(
+            'network-request-failed',
+            'offline',
+          ),
+        );
+
+        await expectLater(
+          () => storageService.uploadImageBytes(
+            Uint8List.fromList([1, 2, 3]),
+            'test_user_123',
+            'avatar.jpg',
+          ),
+          throwsA(
+            isA<StorageUploadException>().having(
+              (e) => e.code,
+              'code',
+              'network-request-failed',
+            ),
+          ),
+        );
+      });
+
+      test(
+        'uploadImageFile pre-flights offline state — throws network-request-failed (BUT-1020)',
+        () async {
+          // Flip MockOfflineService to offline before the call so the new
+          // BUT-1020 pre-flight short-circuits before reaching the repository.
+          final mockOffline =
+              GetIt.instance.get<OfflineService>() as MockOfflineService;
+          when(() => mockOffline.isOnline).thenReturn(false);
+
+          try {
+            expect(
+              () => storageService.uploadImageFile(mockFile, 'test_user_123'),
+              throwsA(
+                isA<StorageUploadException>().having(
+                  (e) => e.code,
+                  'code',
+                  'network-request-failed',
+                ),
+              ),
+            );
+            // Repository must not have been touched — pre-flight short-circuits.
+            verifyNever(
+              () => mockRepository.uploadImage(
                 imageFile: any(named: 'imageFile'),
                 userId: any(named: 'userId'),
                 path: any(named: 'path'),
                 onProgress: any(named: 'onProgress'),
-              ));
-        } finally {
-          when(() => mockOffline.isOnline).thenReturn(true);
-        }
-      });
+              ),
+            );
+          } finally {
+            when(() => mockOffline.isOnline).thenReturn(true);
+          }
+        },
+      );
     });
   });
 }

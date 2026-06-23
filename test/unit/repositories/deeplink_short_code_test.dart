@@ -35,9 +35,12 @@ void main() {
     test('two sequential calls produce different results', () {
       final code1 = generateShortCode();
       final code2 = generateShortCode();
-      expect(code1, isNot(equals(code2)),
-          reason:
-              'With 62^8 possible codes, collision is astronomically unlikely');
+      expect(
+        code1,
+        isNot(equals(code2)),
+        reason:
+            'With 62^8 possible codes, collision is astronomically unlikely',
+      );
     });
 
     test('20 sequential calls produce all unique codes', () {

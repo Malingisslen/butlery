@@ -122,7 +122,9 @@ class _DietaryToggleCard extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: AnimationUtils.getDuration(
-              context, const Duration(milliseconds: 200)),
+            context,
+            const Duration(milliseconds: 200),
+          ),
           decoration: BoxDecoration(
             color: isSelected
                 ? cs.primary.withValues(alpha: AppDimensions.opacityLight)

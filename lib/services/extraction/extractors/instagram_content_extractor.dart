@@ -157,7 +157,8 @@ class InstagramContentExtractor {
 
   /// Extract content using multi-strategy approach (h1 → spans → article text)
   Future<String?> _extractExpandedContent(
-      InAppWebViewController controller) async {
+    InAppWebViewController controller,
+  ) async {
     try {
       final result = await controller.evaluateJavascript(
         source: '''

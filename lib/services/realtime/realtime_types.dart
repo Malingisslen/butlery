@@ -151,20 +151,22 @@ class ConflictDiff {
       final localText = _stringify(local[key]);
       final remoteText = _stringify(remote[key]);
       if (localText == remoteText) continue;
-      diffs.add(ConflictFieldDiff(
-        fieldKey: key,
-        localText: localText,
-        remoteText: remoteText,
-      ));
+      diffs.add(
+        ConflictFieldDiff(
+          fieldKey: key,
+          localText: localText,
+          remoteText: remoteText,
+        ),
+      );
     }
     return ConflictDiff(diffs);
   }
 
   /// Build a diff straight from a [ConflictEvent].
   factory ConflictDiff.fromEvent(ConflictEvent event) => ConflictDiff.fromMaps(
-        event.localValue.toFirestore(),
-        event.remoteValue.toFirestore(),
-      );
+    event.localValue.toFirestore(),
+    event.remoteValue.toFirestore(),
+  );
 
   static String? _stringify(dynamic value) {
     if (value == null) return null;

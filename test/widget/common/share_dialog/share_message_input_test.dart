@@ -22,8 +22,9 @@ Widget _build(TextEditingController controller, {String? initialMessage}) {
 }
 
 void main() {
-  testWidgets('renders a TextField wired to the supplied controller',
-      (tester) async {
+  testWidgets('renders a TextField wired to the supplied controller', (
+    tester,
+  ) async {
     final controller = TextEditingController();
     await tester.pumpWidget(_build(controller));
 
@@ -47,8 +48,9 @@ void main() {
     expect(field.maxLines, 3);
   });
 
-  testWidgets('uses newline as text-input action (multi-line input)',
-      (tester) async {
+  testWidgets('uses newline as text-input action (multi-line input)', (
+    tester,
+  ) async {
     final controller = TextEditingController();
     await tester.pumpWidget(_build(controller));
     final field = tester.widget<TextField>(find.byType(TextField));
@@ -79,8 +81,9 @@ void main() {
     expect(field.decoration!.hintText, isNotEmpty);
   });
 
-  testWidgets('controller starts empty when no initial value supplied',
-      (tester) async {
+  testWidgets('controller starts empty when no initial value supplied', (
+    tester,
+  ) async {
     final controller = TextEditingController();
     await tester.pumpWidget(_build(controller, initialMessage: 'unused'));
     // The build signature accepts initialMessage but doesn't pre-populate

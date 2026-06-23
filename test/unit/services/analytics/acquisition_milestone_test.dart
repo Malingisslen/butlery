@@ -42,12 +42,15 @@ void main() {
       analytics = _MockAnalyticsService();
       repository = _MockAcquisitionRepository();
 
-      when(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
-      when(() => repository.setAcquisitionIfAbsent(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => repository.setAcquisitionIfAbsent(any(), any()),
+      ).thenAnswer((_) async => true);
     });
 
     tearDown(() {
@@ -58,66 +61,80 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test('first UTM arrival writes user properties AND Firestore doc',
-        () async {
-      await AcquisitionMilestone.recordIfFirst(
-        analytics: analytics,
-        repository: repository,
-        userId: 'user-1',
-        utmSource: 'instagram',
-        utmMedium: 'social',
-        utmCampaign: 'spring2026',
-      );
+    test(
+      'first UTM arrival writes user properties AND Firestore doc',
+      () async {
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          userId: 'user-1',
+          utmSource: 'instagram',
+          utmMedium: 'social',
+          utmCampaign: 'spring2026',
+        );
 
-      verify(() => analytics.setUserProperty(
+        verify(
+          () => analytics.setUserProperty(
             name: 'acquisition_source',
             value: 'instagram',
-          )).called(1);
-      verify(() => analytics.setUserProperty(
+          ),
+        ).called(1);
+        verify(
+          () => analytics.setUserProperty(
             name: 'acquisition_medium',
             value: 'social',
-          )).called(1);
-      verify(() => analytics.setUserProperty(
+          ),
+        ).called(1);
+        verify(
+          () => analytics.setUserProperty(
             name: 'acquisition_campaign',
             value: 'spring2026',
-          )).called(1);
-      verify(() => repository.setAcquisitionIfAbsent(
+          ),
+        ).called(1);
+        verify(
+          () => repository.setAcquisitionIfAbsent(
             'user-1',
             any(),
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
-    test('second UTM arrival does NOT overwrite user properties or Firestore',
-        () async {
-      // First arrival.
-      await AcquisitionMilestone.recordIfFirst(
-        analytics: analytics,
-        repository: repository,
-        userId: 'user-1',
-        utmSource: 'instagram',
-        utmMedium: 'social',
-        utmCampaign: 'spring2026',
-      );
+    test(
+      'second UTM arrival does NOT overwrite user properties or Firestore',
+      () async {
+        // First arrival.
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          userId: 'user-1',
+          utmSource: 'instagram',
+          utmMedium: 'social',
+          utmCampaign: 'spring2026',
+        );
 
-      clearInteractions(analytics);
-      clearInteractions(repository);
+        clearInteractions(analytics);
+        clearInteractions(repository);
 
-      // Second arrival, different campaign — must be deduped.
-      await AcquisitionMilestone.recordIfFirst(
-        analytics: analytics,
-        repository: repository,
-        userId: 'user-1',
-        utmSource: 'tiktok',
-        utmMedium: 'social',
-        utmCampaign: 'summer2026',
-      );
+        // Second arrival, different campaign — must be deduped.
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          userId: 'user-1',
+          utmSource: 'tiktok',
+          utmMedium: 'social',
+          utmCampaign: 'summer2026',
+        );
 
-      verifyNever(() => analytics.setUserProperty(
+        verifyNever(
+          () => analytics.setUserProperty(
             name: any(named: 'name'),
             value: any(named: 'value'),
-          ));
-      verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
-    });
+          ),
+        );
+        verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
+      },
+    );
 
     test('empty utmSource → no writes anywhere', () async {
       await AcquisitionMilestone.recordIfFirst(
@@ -129,10 +146,12 @@ void main() {
         utmCampaign: 'x',
       );
 
-      verifyNever(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          ));
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      );
       verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
     });
 
@@ -146,33 +165,38 @@ void main() {
         utmCampaign: 'x',
       );
 
-      verifyNever(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          ));
-      verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
-    });
-
-    test('anonymous user (null uid): user properties set, Firestore deferred',
-        () async {
-      await AcquisitionMilestone.recordIfFirst(
-        analytics: analytics,
-        repository: repository,
-        userId: null,
-        utmSource: 'instagram',
-        utmMedium: 'social',
-        utmCampaign: 'spring2026',
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
       );
-
-      verify(() => analytics.setUserProperty(
-            name: 'acquisition_source',
-            value: 'instagram',
-          )).called(1);
       verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
     });
 
     test(
-        'anonymous-then-authed: anonymous click sets props, '
+      'anonymous user (null uid): user properties set, Firestore deferred',
+      () async {
+        await AcquisitionMilestone.recordIfFirst(
+          analytics: analytics,
+          repository: repository,
+          userId: null,
+          utmSource: 'instagram',
+          utmMedium: 'social',
+          utmCampaign: 'spring2026',
+        );
+
+        verify(
+          () => analytics.setUserProperty(
+            name: 'acquisition_source',
+            value: 'instagram',
+          ),
+        ).called(1);
+        verifyNever(() => repository.setAcquisitionIfAbsent(any(), any()));
+      },
+    );
+
+    test('anonymous-then-authed: anonymous click sets props, '
         'first authed click writes Firestore', () async {
       // Anonymous arrival.
       await AcquisitionMilestone.recordIfFirst(
@@ -198,8 +222,9 @@ void main() {
         utmCampaign: 'spring2026',
       );
 
-      verify(() => repository.setAcquisitionIfAbsent('user-1', any()))
-          .called(1);
+      verify(
+        () => repository.setAcquisitionIfAbsent('user-1', any()),
+      ).called(1);
     });
 
     test('dedupe is per-user — different uid still records', () async {
@@ -218,8 +243,9 @@ void main() {
         utmSource: 'tiktok',
       );
 
-      verify(() => repository.setAcquisitionIfAbsent('user-B', any()))
-          .called(1);
+      verify(
+        () => repository.setAcquisitionIfAbsent('user-B', any()),
+      ).called(1);
     });
 
     test('null repository → only user properties are set', () async {
@@ -230,10 +256,12 @@ void main() {
         utmSource: 'instagram',
       );
 
-      verify(() => analytics.setUserProperty(
-            name: 'acquisition_source',
-            value: 'instagram',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'acquisition_source',
+          value: 'instagram',
+        ),
+      ).called(1);
     });
   });
 }

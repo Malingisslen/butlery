@@ -73,12 +73,14 @@ void main() {
       const menuName = 'Weekly Family Menu';
       const shareMessage = 'Great menu for the week!';
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => true);
 
       final result = await socialManager.shareMenuWithFriends(
         menu: menu,
@@ -89,24 +91,28 @@ void main() {
 
       expect(result, isTrue);
 
-      verify(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: menu,
-            friendUserIds: friendIds,
-            message: shareMessage,
-            customTitle: menuName,
-          )).called(1);
+      verify(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: menu,
+          friendUserIds: friendIds,
+          message: shareMessage,
+          customTitle: menuName,
+        ),
+      ).called(1);
     });
 
     test('should handle sharing failure gracefully', () async {
       final menu = createTestMenu();
       final friendIds = createTestFriendIds();
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => false);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => false);
 
       final result = await socialManager.shareMenuWithFriends(
         menu: menu,
@@ -121,12 +127,14 @@ void main() {
       final menu = createTestMenu();
       final friendIds = createTestFriendIds();
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenThrow(Exception('Network error'));
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       expect(
         () => socialManager.shareMenuWithFriends(
@@ -143,12 +151,14 @@ void main() {
       final friendIds = createTestFriendIds();
       const shareMessage = '  Trimmed message  ';
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => true);
 
       await socialManager.shareMenuWithFriends(
         menu: menu,
@@ -157,24 +167,28 @@ void main() {
         shareMessage: shareMessage,
       );
 
-      verify(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: menu,
-            friendUserIds: friendIds,
-            message: 'Trimmed message',
-            customTitle: 'Test Menu',
-          )).called(1);
+      verify(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: menu,
+          friendUserIds: friendIds,
+          message: 'Trimmed message',
+          customTitle: 'Test Menu',
+        ),
+      ).called(1);
     });
 
     test('should handle null share message', () async {
       final menu = createTestMenu();
       final friendIds = createTestFriendIds();
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => true);
 
       await socialManager.shareMenuWithFriends(
         menu: menu,
@@ -182,12 +196,14 @@ void main() {
         menuName: 'Test Menu',
       );
 
-      verify(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: menu,
-            friendUserIds: friendIds,
-            message: null,
-            customTitle: 'Test Menu',
-          )).called(1);
+      verify(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: menu,
+          friendUserIds: friendIds,
+          message: null,
+          customTitle: 'Test Menu',
+        ),
+      ).called(1);
     });
   });
 
@@ -199,8 +215,9 @@ void main() {
         createSharedMenuData(id: 'menu_3', title: 'Menu 3'),
       ];
 
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => sharedMenus);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => sharedMenus);
 
       final result = await socialManager.getAvailableSharedMenus();
 
@@ -209,8 +226,9 @@ void main() {
     });
 
     test('should return empty list when discovery fails', () async {
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenThrow(Exception('Network error'));
 
       final result = await socialManager.getAvailableSharedMenus();
 
@@ -220,8 +238,9 @@ void main() {
     test('should import shared menu successfully', () async {
       const sharedMenuId = 'shared_menu_123';
 
-      when(() => mockSocialMenuOps.importSharedMenu(sharedMenuId))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.importSharedMenu(sharedMenuId),
+      ).thenAnswer((_) async => true);
 
       final result = await socialManager.importSharedMenu(sharedMenuId);
 
@@ -232,8 +251,9 @@ void main() {
     test('should handle import failure', () async {
       const sharedMenuId = 'shared_menu_123';
 
-      when(() => mockSocialMenuOps.importSharedMenu(sharedMenuId))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockSocialMenuOps.importSharedMenu(sharedMenuId),
+      ).thenAnswer((_) async => false);
 
       final result = await socialManager.importSharedMenu(sharedMenuId);
 
@@ -243,8 +263,9 @@ void main() {
     test('should handle import exception', () async {
       const sharedMenuId = 'shared_menu_123';
 
-      when(() => mockSocialMenuOps.importSharedMenu(sharedMenuId))
-          .thenThrow(Exception('Import failed'));
+      when(
+        () => mockSocialMenuOps.importSharedMenu(sharedMenuId),
+      ).thenThrow(Exception('Import failed'));
 
       expect(
         () => socialManager.importSharedMenu(sharedMenuId),
@@ -255,8 +276,9 @@ void main() {
     test('should mark shared menu as viewed', () async {
       const sharedMenuId = 'shared_menu_123';
 
-      when(() => mockSocialMenuOps.markMenuAsViewed(sharedMenuId))
-          .thenAnswer((_) async {});
+      when(
+        () => mockSocialMenuOps.markMenuAsViewed(sharedMenuId),
+      ).thenAnswer((_) async {});
 
       await socialManager.markSharedMenuAsViewed(sharedMenuId);
 
@@ -266,8 +288,9 @@ void main() {
     test('should handle mark as viewed exception', () async {
       const sharedMenuId = 'shared_menu_123';
 
-      when(() => mockSocialMenuOps.markMenuAsViewed(sharedMenuId))
-          .thenThrow(Exception('Mark viewed failed'));
+      when(
+        () => mockSocialMenuOps.markMenuAsViewed(sharedMenuId),
+      ).thenThrow(Exception('Mark viewed failed'));
 
       // Should not throw - should handle gracefully
       await socialManager.markSharedMenuAsViewed(sharedMenuId);
@@ -280,17 +303,25 @@ void main() {
     test('should load imported menus successfully', () async {
       final importedMenusData = [
         createSharedMenuData(
-            id: 'menu_1', title: 'Imported Menu 1', isImported: true),
+          id: 'menu_1',
+          title: 'Imported Menu 1',
+          isImported: true,
+        ),
         createSharedMenuData(
-            id: 'menu_2', title: 'Imported Menu 2', isImported: true),
+          id: 'menu_2',
+          title: 'Imported Menu 2',
+          isImported: true,
+        ),
         createSharedMenuData(
-            id: 'menu_3',
-            title: 'Not Imported',
-            isImported: false), // Should be filtered out
+          id: 'menu_3',
+          title: 'Not Imported',
+          isImported: false,
+        ), // Should be filtered out
       ];
 
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => importedMenusData);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => importedMenusData);
 
       final result = await socialManager.loadImportedMenus();
 
@@ -304,7 +335,10 @@ void main() {
     test('should handle corrupted imported menu data gracefully', () async {
       final importedMenusData = [
         createSharedMenuData(
-            id: 'menu_1', title: 'Good Menu', isImported: true),
+          id: 'menu_1',
+          title: 'Good Menu',
+          isImported: true,
+        ),
         // Corrupted data missing required fields
         {
           'id': 'menu_2',
@@ -312,11 +346,15 @@ void main() {
           // Missing title, sharedAt, etc.
         },
         createSharedMenuData(
-            id: 'menu_3', title: 'Another Good Menu', isImported: true),
+          id: 'menu_3',
+          title: 'Another Good Menu',
+          isImported: true,
+        ),
       ];
 
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => importedMenusData);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => importedMenusData);
 
       final result = await socialManager.loadImportedMenus();
 
@@ -325,29 +363,35 @@ void main() {
       expect(result[1].name, equals('Another Good Menu'));
     });
 
-    test('should return empty list when loading imported menus fails',
-        () async {
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenThrow(Exception('Network error'));
+    test(
+      'should return empty list when loading imported menus fails',
+      () async {
+        when(
+          () => mockSocialMenuOps.getMenusSharedWithMe(),
+        ).thenThrow(Exception('Network error'));
 
-      final result = await socialManager.loadImportedMenus();
+        final result = await socialManager.loadImportedMenus();
 
-      expect(result, isEmpty);
-    });
+        expect(result, isEmpty);
+      },
+    );
 
     test('should load full imported menu data for a shared menu', () async {
       final menuStructure = createTestMenu();
-      when(() => mockSocialMenuOps.getSharedMenuData('shared_menu_1'))
-          .thenAnswer((_) async => {
-                'id': 'shared_menu_1',
-                'title': 'Veckans meny',
-                'description': 'Trevlig vecka',
-                'menu': menuStructure,
-                'totalRecipes': 3,
-                'sharedByUserId': 'owner_uid',
-                'sharedByDisplayName': 'Friend Anna',
-                'sharedAt': DateTime(2026, 6, 1).toIso8601String(),
-              });
+      when(
+        () => mockSocialMenuOps.getSharedMenuData('shared_menu_1'),
+      ).thenAnswer(
+        (_) async => {
+          'id': 'shared_menu_1',
+          'title': 'Veckans meny',
+          'description': 'Trevlig vecka',
+          'menu': menuStructure,
+          'totalRecipes': 3,
+          'sharedByUserId': 'owner_uid',
+          'sharedByDisplayName': 'Friend Anna',
+          'sharedAt': DateTime(2026, 6, 1).toIso8601String(),
+        },
+      );
 
       final result = await socialManager.loadImportedMenuData('shared_menu_1');
 
@@ -359,13 +403,15 @@ void main() {
       expect(result.originalAuthor, equals('Friend Anna'));
       expect(result.originalAuthorId, equals('owner_uid'));
       expect(result.firebaseId, equals('shared_menu_1'));
-      verify(() => mockSocialMenuOps.getSharedMenuData('shared_menu_1'))
-          .called(1);
+      verify(
+        () => mockSocialMenuOps.getSharedMenuData('shared_menu_1'),
+      ).called(1);
     });
 
     test('should return null when shared menu key is unknown', () async {
-      when(() => mockSocialMenuOps.getSharedMenuData('missing_key'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockSocialMenuOps.getSharedMenuData('missing_key'),
+      ).thenAnswer((_) async => null);
 
       final result = await socialManager.loadImportedMenuData('missing_key');
 
@@ -373,8 +419,9 @@ void main() {
     });
 
     test('should return null when loading imported menu data throws', () async {
-      when(() => mockSocialMenuOps.getSharedMenuData('boom'))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockSocialMenuOps.getSharedMenuData('boom'),
+      ).thenThrow(Exception('Network error'));
 
       final result = await socialManager.loadImportedMenuData('boom');
 
@@ -391,23 +438,27 @@ void main() {
         'lastSharedAt': '2023-12-01T10:00:00Z',
       };
 
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenAnswer((_) async => expectedStats);
+      when(
+        () => mockSocialMenuOps.getSharingStats(),
+      ).thenAnswer((_) async => expectedStats);
 
       final result = await socialManager.getSharingStats();
 
       expect(result, equals(expectedStats));
     });
 
-    test('should return empty stats when getting sharing stats fails',
-        () async {
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenThrow(Exception('Stats error'));
+    test(
+      'should return empty stats when getting sharing stats fails',
+      () async {
+        when(
+          () => mockSocialMenuOps.getSharingStats(),
+        ).thenThrow(Exception('Stats error'));
 
-      final result = await socialManager.getSharingStats();
+        final result = await socialManager.getSharingStats();
 
-      expect(result, isEmpty);
-    });
+        expect(result, isEmpty);
+      },
+    );
 
     test('should get social activity summary successfully', () async {
       final sharingStats = {
@@ -424,10 +475,12 @@ void main() {
         createSharedMenuData(id: 'menu_3', isImported: true),
       ];
 
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenAnswer((_) async => sharingStats);
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => [...sharedMenus, ...importedMenus]);
+      when(
+        () => mockSocialMenuOps.getSharingStats(),
+      ).thenAnswer((_) async => sharingStats);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => [...sharedMenus, ...importedMenus]);
 
       final result = await socialManager.getSocialActivitySummary();
 
@@ -439,10 +492,12 @@ void main() {
     });
 
     test('should handle social activity summary with missing data', () async {
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenAnswer((_) async => {});
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => []);
+      when(
+        () => mockSocialMenuOps.getSharingStats(),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => []);
 
       final result = await socialManager.getSocialActivitySummary();
 
@@ -452,20 +507,24 @@ void main() {
       expect(result['totalSocialInteractions'], equals(0));
     });
 
-    test('should return partial summary when individual operations fail',
-        () async {
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenThrow(Exception('Stats error'));
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => []); // Some operations succeed
+    test(
+      'should return partial summary when individual operations fail',
+      () async {
+        when(
+          () => mockSocialMenuOps.getSharingStats(),
+        ).thenThrow(Exception('Stats error'));
+        when(
+          () => mockSocialMenuOps.getMenusSharedWithMe(),
+        ).thenAnswer((_) async => []); // Some operations succeed
 
-      final result = await socialManager.getSocialActivitySummary();
+        final result = await socialManager.getSocialActivitySummary();
 
-      expect(result['menusShared'], equals(0));
-      expect(result['menusReceived'], equals(0));
-      expect(result['menusImported'], equals(0));
-      expect(result['totalSocialInteractions'], equals(0));
-    });
+        expect(result['menusShared'], equals(0));
+        expect(result['menusReceived'], equals(0));
+        expect(result['menusImported'], equals(0));
+        expect(result['totalSocialInteractions'], equals(0));
+      },
+    );
 
     test('should calculate last activity from various sources', () async {
       final now = DateTime.now();
@@ -484,10 +543,12 @@ void main() {
         },
       ];
 
-      when(() => mockSocialMenuOps.getSharingStats())
-          .thenAnswer((_) async => sharingStats);
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => sharedMenus);
+      when(
+        () => mockSocialMenuOps.getSharingStats(),
+      ).thenAnswer((_) async => sharingStats);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => sharedMenus);
 
       final result = await socialManager.getSocialActivitySummary();
 
@@ -532,9 +593,13 @@ void main() {
           friendUserIds: friendIds,
           menuName: menuName,
         ),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Ingen meny att dela'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Ingen meny att dela'),
+          ),
+        ),
       );
     });
 
@@ -548,9 +613,13 @@ void main() {
           friendUserIds: friendIds,
           menuName: '',
         ),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Fyll i alla obligatoriska fält'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Fyll i alla obligatoriska fält'),
+          ),
+        ),
       );
     });
 
@@ -564,9 +633,13 @@ void main() {
           friendUserIds: friendIds,
           menuName: '   ',
         ),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Fyll i alla obligatoriska fält'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Fyll i alla obligatoriska fält'),
+          ),
+        ),
       );
     });
 
@@ -580,9 +653,13 @@ void main() {
           friendUserIds: [],
           menuName: menuName,
         ),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Välj minst en vän att dela med'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Välj minst en vän att dela med'),
+          ),
+        ),
       );
     });
 
@@ -613,12 +690,14 @@ void main() {
       final largeFriendList = List.generate(100, (index) => 'friend_$index');
       const menuName = 'Test Menu';
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => true);
 
       final result = await socialManager.shareMenuWithFriends(
         menu: menu,
@@ -628,12 +707,14 @@ void main() {
 
       expect(result, isTrue);
 
-      verify(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: menu,
-            friendUserIds: largeFriendList,
-            message: null,
-            customTitle: menuName,
-          )).called(1);
+      verify(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: menu,
+          friendUserIds: largeFriendList,
+          message: null,
+          customTitle: menuName,
+        ),
+      ).called(1);
     });
 
     test('should handle menu with many recipes', () {
@@ -658,11 +739,12 @@ void main() {
     });
 
     test('should handle network timeouts gracefully', () async {
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) => Future.delayed(
-                const Duration(seconds: 10),
-                () => throw Exception('Timeout'),
-              ));
+      when(() => mockSocialMenuOps.getMenusSharedWithMe()).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(seconds: 10),
+          () => throw Exception('Timeout'),
+        ),
+      );
 
       final result = await socialManager.getAvailableSharedMenus();
 
@@ -681,8 +763,9 @@ void main() {
         },
       ];
 
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => malformedMenusData);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => malformedMenusData);
 
       final result = await socialManager.loadImportedMenus();
 
@@ -694,15 +777,18 @@ void main() {
       final menu = createTestMenu();
       final friendIds = createTestFriendIds();
 
-      when(() => mockSocialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            message: any(named: 'message'),
-            customTitle: any(named: 'customTitle'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockSocialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          message: any(named: 'message'),
+          customTitle: any(named: 'customTitle'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockSocialMenuOps.getMenusSharedWithMe())
-          .thenAnswer((_) async => []);
+      when(
+        () => mockSocialMenuOps.getMenusSharedWithMe(),
+      ).thenAnswer((_) async => []);
 
       // Run concurrent operations
       final futures = [

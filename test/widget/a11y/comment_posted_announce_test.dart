@@ -53,8 +53,9 @@ void main() {
     TestServiceLocator.registerMock<AuthService>(authService);
 
     userService = MockUserService();
-    when(() => userService.getUserProfile('test-user-123')).thenAnswer(
-        (_) async => UserProfileFactory.build(uid: 'test-user-123'));
+    when(
+      () => userService.getUserProfile('test-user-123'),
+    ).thenAnswer((_) async => UserProfileFactory.build(uid: 'test-user-123'));
     TestServiceLocator.registerMock<UserService>(userService);
 
     socialVm = MockSocialRecipeViewModel();
@@ -99,8 +100,9 @@ void main() {
   AppLocalizations l10nOf(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.text('post')));
 
-  testWidgets('a successfully posted comment announces a11yCommentPosted',
-      (tester) async {
+  testWidgets('a successfully posted comment announces a11yCommentPosted', (
+    tester,
+  ) async {
     when(() => socialVm.postComment('recipe-1')).thenAnswer((_) async {});
 
     final announces = AnnounceChannel.arm(tester);
@@ -111,23 +113,29 @@ void main() {
     expect(announces.messages, [l10nOf(tester).a11yCommentPosted]);
   });
 
-  testWidgets('a failed post announces nothing (error snackbar only)',
-      (tester) async {
-    when(() => socialVm.postComment('recipe-1'))
-        .thenThrow(Exception('network down'));
+  testWidgets('a failed post announces nothing (error snackbar only)', (
+    tester,
+  ) async {
+    when(
+      () => socialVm.postComment('recipe-1'),
+    ).thenThrow(Exception('network down'));
 
     final announces = AnnounceChannel.arm(tester);
     await pumpHost(tester, commentText: 'Riktigt gott!');
     await tester.tap(find.text('post'));
     await tester.pumpAndSettle();
 
-    expect(announces.count, 0,
-        reason: 'the failure path must not claim the comment was posted');
+    expect(
+      announces.count,
+      0,
+      reason: 'the failure path must not claim the comment was posted',
+    );
     expect(find.text(l10nOf(tester).socialCouldNotPostComment), findsOneWidget);
   });
 
-  testWidgets('an empty comment is guarded before any service call',
-      (tester) async {
+  testWidgets('an empty comment is guarded before any service call', (
+    tester,
+  ) async {
     final announces = AnnounceChannel.arm(tester);
     await pumpHost(tester, commentText: '   ');
     await tester.tap(find.text('post'));

@@ -96,23 +96,35 @@ void main() {
 
       test('recognizes .webp', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('test.webp'), 'image/webp');
+          ImageFormatUtils.mimeTypeFromExtension('test.webp'),
+          'image/webp',
+        );
       });
 
       test('defaults to JPEG', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('test.jpg'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('test.jpg'),
+          'image/jpeg',
+        );
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('test.jpeg'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('test.jpeg'),
+          'image/jpeg',
+        );
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('test.bmp'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('test.bmp'),
+          'image/jpeg',
+        );
       });
 
       test('recognizes .heic and .heif (BUT-662)', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('photo.heic'), 'image/heic');
+          ImageFormatUtils.mimeTypeFromExtension('photo.heic'),
+          'image/heic',
+        );
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('photo.heif'), 'image/heic');
+          ImageFormatUtils.mimeTypeFromExtension('photo.heif'),
+          'image/heic',
+        );
       });
     });
 
@@ -261,24 +273,26 @@ void main() {
       /// `.png` object would be stored with a JPEG content-type (or vice
       /// versa). This cross-checks extensionFor against mimeTypeFromExtension,
       /// the two halves of the round-trip storage relies on.
-      test('suffix round-trips to the matching MIME for every known format',
-          () {
-        const pairs = <ImageFormat, String>{
-          ImageFormat.jpeg: 'image/jpeg',
-          ImageFormat.png: 'image/png',
-          ImageFormat.gif: 'image/gif',
-          ImageFormat.webp: 'image/webp',
-          ImageFormat.heic: 'image/heic',
-        };
-        pairs.forEach((format, mime) {
-          final ext = ImageFormatUtils.extensionFor(format);
-          expect(
-            ImageFormatUtils.mimeTypeFromExtension('file.$ext'),
-            mime,
-            reason: 'a stored .$ext object must resolve back to $mime',
-          );
-        });
-      });
+      test(
+        'suffix round-trips to the matching MIME for every known format',
+        () {
+          const pairs = <ImageFormat, String>{
+            ImageFormat.jpeg: 'image/jpeg',
+            ImageFormat.png: 'image/png',
+            ImageFormat.gif: 'image/gif',
+            ImageFormat.webp: 'image/webp',
+            ImageFormat.heic: 'image/heic',
+          };
+          pairs.forEach((format, mime) {
+            final ext = ImageFormatUtils.extensionFor(format);
+            expect(
+              ImageFormatUtils.mimeTypeFromExtension('file.$ext'),
+              mime,
+              reason: 'a stored .$ext object must resolve back to $mime',
+            );
+          });
+        },
+      );
     });
 
     group('extensionFromBytes (BUT-1161)', () {

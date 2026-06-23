@@ -114,7 +114,8 @@ class PermissionHelper {
     if (!isOwner && resourceType != null) {
       final resourceInfo = resourceId != null ? ' ($resourceId)' : '';
       AppLogger.warning(
-          '⚠️ User $currentUserId does not own $resourceType$resourceInfo');
+        '⚠️ User $currentUserId does not own $resourceType$resourceInfo',
+      );
     }
 
     return isOwner;
@@ -166,8 +167,11 @@ class PermissionHelper {
     if (userId == null) return null;
 
     // Validate resource ID
-    if (!validateResourceId(resourceId, resourceType,
-        operationName: operationName)) {
+    if (!validateResourceId(
+      resourceId,
+      resourceType,
+      operationName: operationName,
+    )) {
       return null;
     }
 

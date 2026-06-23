@@ -96,7 +96,8 @@ class RecipeFormState extends ChangeNotifier {
         notifyListeners();
         // Trigger auto-save for ingredient changes
         _scheduleAutoSave(
-            isQuickSave: true); // Ingredients are important - quick save
+          isQuickSave: true,
+        ); // Ingredients are important - quick save
       },
     );
 
@@ -117,7 +118,8 @@ class RecipeFormState extends ChangeNotifier {
         notifyListeners();
         // Trigger auto-save for instruction changes
         _scheduleAutoSave(
-            isQuickSave: true); // Instructions are important - quick save
+          isQuickSave: true,
+        ); // Instructions are important - quick save
       },
     );
 
@@ -160,10 +162,12 @@ class RecipeFormState extends ChangeNotifier {
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
-    final ingredients =
-        recipe.ingredients.isNotEmpty ? [...recipe.ingredients, ''] : [''];
-    final instructions =
-        recipe.instructions.isNotEmpty ? [...recipe.instructions, ''] : [''];
+    final ingredients = recipe.ingredients.isNotEmpty
+        ? [...recipe.ingredients, '']
+        : [''];
+    final instructions = recipe.instructions.isNotEmpty
+        ? [...recipe.instructions, '']
+        : [''];
     final tags = recipe.personalTagIds?.isNotEmpty == true
         ? [...recipe.personalTagIds!, '']
         : [''];
@@ -260,8 +264,9 @@ class RecipeFormState extends ChangeNotifier {
 
     // Check instructions using manager validator and values (same as serialization)
     final instructionValues = _instructionsManager.values;
-    if (!instructionValues
-        .any((instruction) => instruction.trim().isNotEmpty)) {
+    if (!instructionValues.any(
+      (instruction) => instruction.trim().isNotEmpty,
+    )) {
       return false;
     }
 
@@ -305,10 +310,12 @@ class RecipeFormState extends ChangeNotifier {
     final serializedData = _serializeFormData();
 
     // Cross-validate that our validation sources match serialization sources
-    final serializedIngredients =
-        List<String>.from((serializedData['ingredients'] as List?).orEmpty());
-    final serializedInstructions =
-        List<String>.from((serializedData['instructions'] as List?).orEmpty());
+    final serializedIngredients = List<String>.from(
+      (serializedData['ingredients'] as List?).orEmpty(),
+    );
+    final serializedInstructions = List<String>.from(
+      (serializedData['instructions'] as List?).orEmpty(),
+    );
 
     if (!_listEquals(ingredientValues, serializedIngredients) ||
         !_listEquals(instructionValues, serializedInstructions)) {
@@ -340,14 +347,16 @@ class RecipeFormState extends ChangeNotifier {
   // CRITICAL FIX: Enhanced validation getters with detailed validation state
   /// Get detailed validation status for each form section
   Map<String, bool> get validationStatus => {
-        'title': _title.trim().isNotEmpty,
-        'ingredients': _ingredientsManager.values
-            .any((ingredient) => ingredient.trim().isNotEmpty),
-        'instructions': _instructionsManager.values
-            .any((instruction) => instruction.trim().isNotEmpty),
-        'managersSync': _areManagersSynchronized(),
-        'dataConsistency': _isDataConsistent(),
-      };
+    'title': _title.trim().isNotEmpty,
+    'ingredients': _ingredientsManager.values.any(
+      (ingredient) => ingredient.trim().isNotEmpty,
+    ),
+    'instructions': _instructionsManager.values.any(
+      (instruction) => instruction.trim().isNotEmpty,
+    ),
+    'managersSync': _areManagersSynchronized(),
+    'dataConsistency': _isDataConsistent(),
+  };
 
   /// Check if all FormFieldsManagers are in synchronized state
   bool _areManagersSynchronized() {
@@ -368,12 +377,15 @@ class RecipeFormState extends ChangeNotifier {
   bool _isDataConsistent() {
     try {
       final serializedData = _serializeFormData();
-      final serializedIngredients =
-          List<String>.from((serializedData['ingredients'] as List?).orEmpty());
+      final serializedIngredients = List<String>.from(
+        (serializedData['ingredients'] as List?).orEmpty(),
+      );
       final serializedInstructions = List<String>.from(
-          (serializedData['instructions'] as List?).orEmpty());
-      final serializedTags =
-          List<String>.from((serializedData['tags'] as List?).orEmpty());
+        (serializedData['instructions'] as List?).orEmpty(),
+      );
+      final serializedTags = List<String>.from(
+        (serializedData['tags'] as List?).orEmpty(),
+      );
 
       return _listEquals(_ingredientsManager.values, serializedIngredients) &&
           _listEquals(_instructionsManager.values, serializedInstructions) &&
@@ -450,8 +462,9 @@ class RecipeFormState extends ChangeNotifier {
     final cleanedTags = tagNames.where((t) => t.trim().isNotEmpty).toList();
 
     // Add an empty field at the end for the DynamicListBuilder UI
-    final tagsWithEmpty =
-        cleanedTags.isNotEmpty ? [...cleanedTags, ''] : <String>[''];
+    final tagsWithEmpty = cleanedTags.isNotEmpty
+        ? [...cleanedTags, '']
+        : <String>[''];
     _tagsManager.updateItems(tagsWithEmpty);
     notifyListeners();
     _scheduleAutoSave();
@@ -468,9 +481,9 @@ class RecipeFormState extends ChangeNotifier {
     // RACE CONDITION GUARD: Don't trigger autosave during save operations or when explicitly skipped
     if (!skipAutoSave && !_isSaving && !_isForking) {
       _scheduleAutoSave(
-          isQuickSave: true,
-          skipIfBusy:
-              true); // Images are important - quick save with busy check
+        isQuickSave: true,
+        skipIfBusy: true,
+      ); // Images are important - quick save with busy check
     }
   }
 
@@ -479,9 +492,9 @@ class RecipeFormState extends ChangeNotifier {
       _imageUrls.add(imageUrl);
       notifyListeners();
       _scheduleAutoSave(
-          isQuickSave: true,
-          skipIfBusy:
-              true); // Images are important - quick save with busy check
+        isQuickSave: true,
+        skipIfBusy: true,
+      ); // Images are important - quick save with busy check
     }
   }
 
@@ -598,8 +611,11 @@ class RecipeFormState extends ChangeNotifier {
     }
 
     final formData = _serializeFormData();
-    _autoSaveManager.scheduleAutoSave(formData,
-        isQuickSave: isQuickSave, skipIfBusy: skipIfBusy);
+    _autoSaveManager.scheduleAutoSave(
+      formData,
+      isQuickSave: isQuickSave,
+      skipIfBusy: skipIfBusy,
+    );
   }
 
   /// Immediately flush any pending auto-save (e.g. when app is backgrounded).
@@ -640,8 +656,9 @@ class RecipeFormState extends ChangeNotifier {
       _timeMinutes = draftData['timeMinutes'];
       _rating = draftData['rating'];
       _sourceUrl = draftData['sourceUrl'];
-      _imageUrls =
-          List<String>.from((draftData['imageUrls'] as List?).orEmpty());
+      _imageUrls = List<String>.from(
+        (draftData['imageUrls'] as List?).orEmpty(),
+      );
       _tagOverrides = draftData['tagOverrides'] != null
           ? TagOverrides.fromJson(draftData['tagOverrides'])
           : null;
@@ -680,16 +697,20 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   /// Create Recipe from current form state
-  Recipe createRecipe(
-      {String? recipeId, List<String>? imageUrls, String? thumbnailUrl}) {
+  Recipe createRecipe({
+    String? recipeId,
+    List<String>? imageUrls,
+    String? thumbnailUrl,
+  }) {
     final cleanIngredients = _ingredientsManager.values
         .where((ingredient) => ingredient.trim().isNotEmpty)
         .toList();
     final cleanInstructions = _instructionsManager.values
         .where((instruction) => instruction.trim().isNotEmpty)
         .toList();
-    final cleanTagIds =
-        _tagsManager.values.where((tag) => tag.trim().isNotEmpty).toList();
+    final cleanTagIds = _tagsManager.values
+        .where((tag) => tag.trim().isNotEmpty)
+        .toList();
 
     // Build rich personalTags from IDs for dual-write
     List<RecipePersonalTag>? personalTags;
@@ -717,11 +738,11 @@ class RecipeFormState extends ChangeNotifier {
     // richer import-time parses (CRF/LLM) aren't downgraded to regex output.
     final List<RecipeIngredient>? structuredIngredients =
         cleanIngredients.isEmpty
-            ? null
-            : StructuredIngredientDeriver.deriveAll(
-                cleanIngredients,
-                reuse: _originalRecipe?.core.structuredIngredients,
-              );
+        ? null
+        : StructuredIngredientDeriver.deriveAll(
+            cleanIngredients,
+            reuse: _originalRecipe?.core.structuredIngredients,
+          );
 
     return Recipe(
       core: RecipeCore(

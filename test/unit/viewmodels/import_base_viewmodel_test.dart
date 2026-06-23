@@ -89,14 +89,16 @@ void main() {
     );
 
     // Stub import() WITHOUT named options — matches production call site
-    when(() => mockTextStrategy.import(any()))
-        .thenAnswer((_) async => ImportResult.success(defaultImportedRecipe));
+    when(
+      () => mockTextStrategy.import(any()),
+    ).thenAnswer((_) async => ImportResult.success(defaultImportedRecipe));
 
-    when(() => mockImportManager.saveImportedRecipe(any()))
-        .thenAnswer((_) async => ImportManagerResult.success(
-              RecipeFactory.build(),
-              strategy: 'test',
-            ));
+    when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+      (_) async => ImportManagerResult.success(
+        RecipeFactory.build(),
+        strategy: 'test',
+      ),
+    );
 
     viewModel = TestImportViewModel(importManager: mockImportManager);
     textViewModel = TestTextImportViewModel(importManager: mockImportManager);
@@ -248,8 +250,10 @@ void main() {
       expect(notificationCount, equals(2));
 
       viewModel.clearAll();
-      expect(notificationCount,
-          equals(4)); // clearAll calls notifyListeners after clearing state
+      expect(
+        notificationCount,
+        equals(4),
+      ); // clearAll calls notifyListeners after clearing state
     });
   });
 
@@ -274,8 +278,9 @@ void main() {
     });
 
     test('should handle parse error', () async {
-      when(() => mockTextStrategy.import(any())).thenAnswer(
-          (_) async => ImportResult.failure('Failed to parse recipe'));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.failure('Failed to parse recipe'));
 
       // executeAsync rethrows — catch the exception
       Object? caughtError;
@@ -316,8 +321,9 @@ void main() {
       final recipe = RecipeFactory.build();
       viewModel.setParsedRecipe(recipe);
 
-      when(() => mockImportManager.saveImportedRecipe(any()))
-          .thenAnswer((_) async => ImportManagerResult.failure('Save failed'));
+      when(
+        () => mockImportManager.saveImportedRecipe(any()),
+      ).thenAnswer((_) async => ImportManagerResult.failure('Save failed'));
 
       final success = await viewModel.saveImportedRecipe();
 
@@ -337,14 +343,15 @@ void main() {
     });
 
     test('should handle complete import with validation failure', () async {
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.success(
-                RecipeFactory.build(
-                  title: '',
-                  ingredients: [],
-                  instructions: [],
-                ),
-              ));
+      when(() => mockTextStrategy.import(any())).thenAnswer(
+        (_) async => ImportResult.success(
+          RecipeFactory.build(
+            title: '',
+            ingredients: [],
+            instructions: [],
+          ),
+        ),
+      );
 
       final success = await viewModel.completeImport();
 
@@ -422,7 +429,8 @@ void main() {
       viewModel = TestImportViewModel(importManager: mockImportManager);
 
       when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
-          (_) async => ImportManagerResult.success(recipe, strategy: 'test'));
+        (_) async => ImportManagerResult.success(recipe, strategy: 'test'),
+      );
 
       final success = await viewModel.completeImport();
 
@@ -431,8 +439,9 @@ void main() {
     });
 
     test('should handle complete import workflow errors', () async {
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.failure('Parse failed'));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.failure('Parse failed'));
       textViewModel.updateInputText('Invalid recipe content');
 
       // executeAsync rethrows — catch at test level
@@ -463,7 +472,9 @@ void main() {
 
       expect(viewModel.parsedRecipe?.title, equals('Updated'));
       expect(
-          viewModel.parsedRecipe?.description, equals('Updated description'));
+        viewModel.parsedRecipe?.description,
+        equals('Updated description'),
+      );
       expect(viewModel.parsedRecipe?.portions, equals(4));
       expect(viewModel.parsedRecipe?.timeMinutes, equals(30));
     });
@@ -534,8 +545,9 @@ void main() {
       textViewModel.updateInputText('Recipe content to import');
 
       final recipe = RecipeFactory.build(title: 'Imported Recipe');
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.success(recipe));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.success(recipe));
 
       await textViewModel.performImport();
 
@@ -626,8 +638,7 @@ void main() {
       expect(urlViewModel.hasError, isTrue);
     });
 
-    test(
-        'BUG-32: fetch failure surfaces an error state without leaking an '
+    test('BUG-32: fetch failure surfaces an error state without leaking an '
         'unhandled async error', () async {
       urlViewModel.updateUrl('https://error.com');
 
@@ -656,8 +667,9 @@ void main() {
       await urlViewModel.fetchFromUrl();
 
       final recipe = RecipeFactory.build(title: 'URL Recipe');
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.success(recipe));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.success(recipe));
 
       await urlViewModel.performImport();
 
@@ -669,8 +681,10 @@ void main() {
       await urlViewModel.performImport();
 
       // Swedish locale
-      expect(urlViewModel.error,
-          equals('Inget inneh\u00e5ll kunde h\u00e4mtas fr\u00e5n URL:en'));
+      expect(
+        urlViewModel.error,
+        equals('Inget inneh\u00e5ll kunde h\u00e4mtas fr\u00e5n URL:en'),
+      );
       expect(urlViewModel.hasParsedRecipe, isFalse);
     });
 
@@ -726,8 +740,9 @@ void main() {
 
     test('should handle error recovery in workflow', () async {
       // First attempt: strategy returns failure
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.failure('Parse error'));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.failure('Parse error'));
       textViewModel.updateInputText('Recipe content');
 
       // completeImport -> performImport -> parseTextToRecipe -> executeAsync
@@ -743,8 +758,9 @@ void main() {
 
       // Retry with valid data
       textViewModel.clearError();
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.success(RecipeFactory.build()));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.success(RecipeFactory.build()));
 
       success = await textViewModel.completeImport();
       expect(success, isTrue);
@@ -814,8 +830,9 @@ void main() {
       final recipe = RecipeFactory.build();
       viewModel.setParsedRecipe(recipe);
 
-      when(() => mockImportManager.saveImportedRecipe(any()))
-          .thenThrow(Exception('Database error'));
+      when(
+        () => mockImportManager.saveImportedRecipe(any()),
+      ).thenThrow(Exception('Database error'));
 
       // saveImportedRecipe uses executeAsyncVoid which does NOT rethrow
       final success = await viewModel.saveImportedRecipe();
@@ -827,8 +844,9 @@ void main() {
     });
 
     test('should handle parse exception via failure result', () async {
-      when(() => mockTextStrategy.import(any()))
-          .thenAnswer((_) async => ImportResult.failure('Parse exception'));
+      when(
+        () => mockTextStrategy.import(any()),
+      ).thenAnswer((_) async => ImportResult.failure('Parse exception'));
 
       // executeAsync rethrows
       Object? caught;
@@ -847,40 +865,42 @@ void main() {
     // executeAsync rethrows on failure, so the bug surface is "what state is
     // left when the throw escapes performImport." Contract: recipe preserved,
     // error visible.
-    test('re-parse failure preserves previous recipe + sets error (BUT-924)',
-        () async {
-      final firstRecipe = RecipeFactory.build(title: 'First parse');
+    test(
+      're-parse failure preserves previous recipe + sets error (BUT-924)',
+      () async {
+        final firstRecipe = RecipeFactory.build(title: 'First parse');
 
-      // Successful first parse.
-      when(() => mockTextStrategy.import(any())).thenAnswer(
-        (_) async => ImportResult.success(firstRecipe),
-      );
-      textViewModel.updateInputText('initial');
-      await textViewModel.performImport();
-      expect(textViewModel.parsedRecipe?.title, 'First parse');
-
-      // User edits — simulated by updating the parsed recipe in place.
-      textViewModel.setParsedRecipe(
-        firstRecipe.copyWith(title: 'User-edited title'),
-      );
-
-      // Re-parse fails (Cloud Function error, timeout, etc). performImport
-      // rethrows via executeAsync — caller must catch.
-      when(() => mockTextStrategy.import(any())).thenAnswer(
-        (_) async => ImportResult.failure('Parse exception'),
-      );
-      textViewModel.updateInputText('updated input');
-      try {
+        // Successful first parse.
+        when(() => mockTextStrategy.import(any())).thenAnswer(
+          (_) async => ImportResult.success(firstRecipe),
+        );
+        textViewModel.updateInputText('initial');
         await textViewModel.performImport();
-      } catch (_) {
-        // Expected: executeAsync rethrows.
-      }
+        expect(textViewModel.parsedRecipe?.title, 'First parse');
 
-      // BUT-924 contract: previous parse + user edit survives.
-      expect(textViewModel.hasParsedRecipe, isTrue);
-      expect(textViewModel.parsedRecipe?.title, 'User-edited title');
-      expect(textViewModel.hasError, isTrue);
-    });
+        // User edits — simulated by updating the parsed recipe in place.
+        textViewModel.setParsedRecipe(
+          firstRecipe.copyWith(title: 'User-edited title'),
+        );
+
+        // Re-parse fails (Cloud Function error, timeout, etc). performImport
+        // rethrows via executeAsync — caller must catch.
+        when(() => mockTextStrategy.import(any())).thenAnswer(
+          (_) async => ImportResult.failure('Parse exception'),
+        );
+        textViewModel.updateInputText('updated input');
+        try {
+          await textViewModel.performImport();
+        } catch (_) {
+          // Expected: executeAsync rethrows.
+        }
+
+        // BUT-924 contract: previous parse + user edit survives.
+        expect(textViewModel.hasParsedRecipe, isTrue);
+        expect(textViewModel.parsedRecipe?.title, 'User-edited title');
+        expect(textViewModel.hasError, isTrue);
+      },
+    );
 
     // BUT-924: defensive guard — preserveOrSetParsedRecipe(null) is a no-op
     // covers the future case where parseTextToRecipe returns null instead of
@@ -895,8 +915,9 @@ void main() {
     });
 
     test('should handle URL fetch error', () async {
-      final timeoutViewModel =
-          TestUrlImportViewModel(importManager: mockImportManager);
+      final timeoutViewModel = TestUrlImportViewModel(
+        importManager: mockImportManager,
+      );
 
       timeoutViewModel.updateUrl('https://error.com');
 

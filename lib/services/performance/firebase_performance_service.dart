@@ -37,7 +37,8 @@ class FirebasePerformanceService {
       await instance.setPerformanceCollectionEnabled(enabled);
       _isEnabled = enabled;
       AppLogger.info(
-          '🎯 Firebase Performance monitoring ${enabled ? 'enabled' : 'disabled'}');
+        '🎯 Firebase Performance monitoring ${enabled ? 'enabled' : 'disabled'}',
+      );
     } catch (e) {
       AppLogger.error('Failed to set performance collection: $e');
     }

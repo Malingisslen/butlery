@@ -23,14 +23,14 @@ abstract class NotificationAnalyticsRepository {
 
   /// Fetch delivery docs for [userId] sent since [since].
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      getDeliveriesForUser(
+  getDeliveriesForUser(
     String userId,
     DateTime since,
   );
 
   /// Fetch engagement docs for [userId] recorded since [since].
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      getEngagementsForUser(
+  getEngagementsForUser(
     String userId,
     DateTime since,
   );

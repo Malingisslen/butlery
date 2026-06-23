@@ -14,26 +14,30 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   testWidgets('scalar renders the formatted value', (tester) async {
-    await tester.pumpWidget(createLocalizedTestApp(
-      child: const MetricRenderer(
-        metricKey: MetricKey.recipeTotal,
-        value: ScalarMetric(7),
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const MetricRenderer(
+          metricKey: MetricKey.recipeTotal,
+          value: ScalarMetric(7),
+        ),
       ),
-    ));
+    );
     expect(find.text('7'), findsOneWidget);
   });
 
   testWidgets('breakdown renders a row per entry', (tester) async {
-    await tester.pumpWidget(createLocalizedTestApp(
-      wrapInScrollView: true,
-      child: const MetricRenderer(
-        metricKey: MetricKey.recipeByMethod,
-        value: BreakdownMetric([
-          BreakdownRow('Länk (URL)', 3),
-          BreakdownRow('Manuellt / okänt', 2),
-        ]),
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScrollView: true,
+        child: const MetricRenderer(
+          metricKey: MetricKey.recipeByMethod,
+          value: BreakdownMetric([
+            BreakdownRow('Länk (URL)', 3),
+            BreakdownRow('Manuellt / okänt', 2),
+          ]),
+        ),
       ),
-    ));
+    );
     expect(find.text('Länk (URL)'), findsOneWidget);
     // '3' appears in the table; it may also appear as a bar-chart axis tick, so
     // assert presence (≥1) rather than exact uniqueness.
@@ -41,20 +45,24 @@ void main() {
     expect(find.text('Manuellt / okänt'), findsOneWidget);
   });
 
-  testWidgets('empty breakdown shows the no-data placeholder, no crash',
-      (tester) async {
-    await tester.pumpWidget(createLocalizedTestApp(
-      child: const MetricRenderer(
-        metricKey: MetricKey.recipeByMethod,
-        value: BreakdownMetric([]),
+  testWidgets('empty breakdown shows the no-data placeholder, no crash', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const MetricRenderer(
+          metricKey: MetricKey.recipeByMethod,
+          value: BreakdownMetric([]),
+        ),
       ),
-    ));
+    );
     expect(find.text('Ingen data än'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('every MetricValue kind mounts on empty data without crashing',
-      (tester) async {
+  testWidgets('every MetricValue kind mounts on empty data without crashing', (
+    tester,
+  ) async {
     const empties = <MetricValue>[
       SeriesMetric([]),
       BreakdownMetric([]),
@@ -62,15 +70,20 @@ void main() {
       FunnelMetric([]),
     ];
     for (final value in empties) {
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScrollView: true,
-        child: MetricRenderer(
-          metricKey: MetricKey.recipeByMethod,
-          value: value,
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: MetricRenderer(
+            metricKey: MetricKey.recipeByMethod,
+            value: value,
+          ),
         ),
-      ));
-      expect(tester.takeException(), isNull,
-          reason: '${value.runtimeType} crashed on empty data');
+      );
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: '${value.runtimeType} crashed on empty data',
+      );
     }
   });
 }

@@ -101,29 +101,31 @@ Pannkakor
 void main() {
   group('ParseResult factories', () {
     /// Proves success factory threads recipe + duration + fromCache correctly.
-    test('ParseResult.success wires recipe, success=true, fromCache default',
-        () {
-      final recipe = ParsedRecipe.empty(
-        metadata: ParseMetadata(
-          source: ImportSource.text,
-          parserVersion: '2.0.0',
-          timestamp: DateTime(2026, 1, 1),
-          totalParseTime: Duration.zero,
-          tierResults: const [],
-        ),
-      );
-      final result = ParseResult.success(
-        recipe,
-        totalTime: const Duration(milliseconds: 42),
-      );
+    test(
+      'ParseResult.success wires recipe, success=true, fromCache default',
+      () {
+        final recipe = ParsedRecipe.empty(
+          metadata: ParseMetadata(
+            source: ImportSource.text,
+            parserVersion: '2.0.0',
+            timestamp: DateTime(2026, 1, 1),
+            totalParseTime: Duration.zero,
+            tierResults: const [],
+          ),
+        );
+        final result = ParseResult.success(
+          recipe,
+          totalTime: const Duration(milliseconds: 42),
+        );
 
-      expect(result.success, isTrue);
-      expect(result.recipe, same(recipe));
-      expect(result.fromCache, isFalse);
-      expect(result.error, isNull);
-      expect(result.userMessage, isNull);
-      expect(result.totalTime, const Duration(milliseconds: 42));
-    });
+        expect(result.success, isTrue);
+        expect(result.recipe, same(recipe));
+        expect(result.fromCache, isFalse);
+        expect(result.error, isNull);
+        expect(result.userMessage, isNull);
+        expect(result.totalTime, const Duration(milliseconds: 42));
+      },
+    );
 
     /// Proves success factory honours fromCache=true (analytics depend on it).
     test('ParseResult.success carries fromCache=true when set', () {
@@ -171,28 +173,36 @@ void main() {
     /// Why null byte and not `<script>`: HtmlSanitizer.check() flags
     /// `data:text/html`, null bytes, and >5MB as critical. `<script>`
     /// gets quietly stripped by sanitize() rather than flagged.
-    test('rejects content with critical sanitization issue (null byte)',
-        () async {
-      final service = _buildService();
-      // Embedding a null byte triggers IssueSeverity.critical, which makes
-      // SanitizationResult.hasCriticalIssues=true and isSecure=false.
-      const malicious = '<html><body>recipe text\x00inside</body></html>';
+    test(
+      'rejects content with critical sanitization issue (null byte)',
+      () async {
+        final service = _buildService();
+        // Embedding a null byte triggers IssueSeverity.critical, which makes
+        // SanitizationResult.hasCriticalIssues=true and isSecure=false.
+        const malicious = '<html><body>recipe text\x00inside</body></html>';
 
-      final result = await service.parseFromUrl(
-        url: 'https://example.com/recipe',
-        htmlContent: malicious,
-        useCache: false,
-        useLlm: false,
-      );
+        final result = await service.parseFromUrl(
+          url: 'https://example.com/recipe',
+          htmlContent: malicious,
+          useCache: false,
+          useLlm: false,
+        );
 
-      expect(result.success, isFalse,
-          reason: 'Critical sanitization issue must block parsing');
-      expect(result.recipe, isNull);
-      expect(result.error, contains('security'),
+        expect(
+          result.success,
+          isFalse,
+          reason: 'Critical sanitization issue must block parsing',
+        );
+        expect(result.recipe, isNull);
+        expect(
+          result.error,
+          contains('security'),
           reason:
-              'Error message must surface the security gate (not "could not extract")');
-      expect(result.totalTime, isNotNull);
-    });
+              'Error message must surface the security gate (not "could not extract")',
+        );
+        expect(result.totalTime, isNotNull);
+      },
+    );
 
     /// Proves: the security gate (data:text/html scheme) fires regardless
     /// of `useCache` / `useLlm` flags. Guards against a regression that
@@ -275,25 +285,33 @@ void main() {
     /// ingredient AND at least one instruction (the user-visible payload).
     /// If RuleBased silently dropped one side, the UI would render a
     /// half-empty card — this test fails before that ships.
-    test('valid Swedish recipe → success with ingredients + instructions',
-        () async {
-      final service = _buildService();
+    test(
+      'valid Swedish recipe → success with ingredients + instructions',
+      () async {
+        final service = _buildService();
 
-      final result = await service.parseFromText(
-        text: _validSwedishRecipe,
-        useLlm: false,
-      );
+        final result = await service.parseFromText(
+          text: _validSwedishRecipe,
+          useLlm: false,
+        );
 
-      expect(result.success, isTrue,
-          reason: 'RuleBased tier should parse a structured Swedish recipe');
-      expect(result.recipe, isNotNull);
-      final recipe = result.recipe!;
-      expect(recipe.ingredients.hasValue, isTrue,
-          reason: 'Ingredients must be populated, not just non-null');
-      expect(recipe.ingredients.value!, isNotEmpty);
-      expect(recipe.instructions.hasValue, isTrue);
-      expect(recipe.instructions.value!, isNotEmpty);
-    });
+        expect(
+          result.success,
+          isTrue,
+          reason: 'RuleBased tier should parse a structured Swedish recipe',
+        );
+        expect(result.recipe, isNotNull);
+        final recipe = result.recipe!;
+        expect(
+          recipe.ingredients.hasValue,
+          isTrue,
+          reason: 'Ingredients must be populated, not just non-null',
+        );
+        expect(recipe.ingredients.value!, isNotEmpty);
+        expect(recipe.instructions.hasValue, isTrue);
+        expect(recipe.instructions.value!, isNotEmpty);
+      },
+    );
 
     /// Proves: totalTime is a real (>0) measurement from the Stopwatch,
     /// not Duration.zero from a forgotten elapsed call. Analytics
@@ -307,8 +325,11 @@ void main() {
       );
 
       expect(result.success, isTrue);
-      expect(result.totalTime, greaterThan(Duration.zero),
-          reason: 'Stopwatch must capture real elapsed time');
+      expect(
+        result.totalTime,
+        greaterThan(Duration.zero),
+        reason: 'Stopwatch must capture real elapsed time',
+      );
     });
 
     /// Proves: the success payload's fromCache is false for a fresh parse.
@@ -343,18 +364,20 @@ void main() {
 
     /// Proves: parser version is threaded through to metadata for cache
     /// invalidation correctness.
-    test('metadata.parserVersion is the global parserVersion constant',
-        () async {
-      final service = _buildService();
+    test(
+      'metadata.parserVersion is the global parserVersion constant',
+      () async {
+        final service = _buildService();
 
-      final result = await service.parseFromText(
-        text: _validSwedishRecipe,
-        useLlm: false,
-      );
+        final result = await service.parseFromText(
+          text: _validSwedishRecipe,
+          useLlm: false,
+        );
 
-      expect(result.success, isTrue);
-      expect(result.recipe!.metadata.parserVersion, parserVersion);
-    });
+        expect(result.success, isTrue);
+        expect(result.recipe!.metadata.parserVersion, parserVersion);
+      },
+    );
   });
 
   group('parseFromText — useLlm gate', () {
@@ -373,37 +396,49 @@ void main() {
         useLlm: false,
       );
 
-      expect(stubLlm.structureCallCount, 0,
-          reason: 'useLlm=false must block LLM extraction');
-      expect(stubLlm.parseIngredientCallCount, 0,
-          reason: 'useLlm=false must also block selective ingredient '
-              'enhancement (which routes through the LLM)');
+      expect(
+        stubLlm.structureCallCount,
+        0,
+        reason: 'useLlm=false must block LLM extraction',
+      );
+      expect(
+        stubLlm.parseIngredientCallCount,
+        0,
+        reason:
+            'useLlm=false must also block selective ingredient '
+            'enhancement (which routes through the LLM)',
+      );
     });
 
     /// Proves: even on a successful RuleBased parse, LLM is not called
     /// (early-termination by quality threshold). Without this, every
     /// happy-path parse would burn LLM budget unnecessarily.
-    test('successful RuleBased parse does not invoke LLM (cost guard)',
-        () async {
-      final stubLlm = StubLlmService();
-      final service = _buildService(llmService: stubLlm);
+    test(
+      'successful RuleBased parse does not invoke LLM (cost guard)',
+      () async {
+        final stubLlm = StubLlmService();
+        final service = _buildService(llmService: stubLlm);
 
-      final result = await service.parseFromText(
-        text: _validSwedishRecipe,
-        // useLlm: true (default) — proves the cost-guard works via the
-        // quality threshold, not just the flag.
-      );
+        final result = await service.parseFromText(
+          text: _validSwedishRecipe,
+          // useLlm: true (default) — proves the cost-guard works via the
+          // quality threshold, not just the flag.
+        );
 
-      // If RuleBased succeeded with passing quality, LLM should be
-      // skipped. If RuleBased failed, the LLM stub would have been
-      // called — the test would then fail on callCount > 0 and we'd
-      // know the test fixture needs strengthening.
-      if (result.success) {
-        expect(stubLlm.structureCallCount, 0,
+        // If RuleBased succeeded with passing quality, LLM should be
+        // skipped. If RuleBased failed, the LLM stub would have been
+        // called — the test would then fail on callCount > 0 and we'd
+        // know the test fixture needs strengthening.
+        if (result.success) {
+          expect(
+            stubLlm.structureCallCount,
+            0,
             reason:
-                'Quality threshold should have terminated parsing before LLM');
-      }
-    });
+                'Quality threshold should have terminated parsing before LLM',
+          );
+        }
+      },
+    );
   });
 
   group('parseFromText — user-facing failure messages', () {
@@ -429,10 +464,14 @@ void main() {
       // facing via the wrapping UI. We assert: IF userMessage is set, it
       // is one of the known Swedish strings (not English diagnostics).
       if (result.userMessage != null) {
-        final knownSwedishMessages =
-            TierFailureReason.values.map((r) => r.userMessage).toSet();
-        expect(knownSwedishMessages, contains(result.userMessage),
-            reason: 'userMessage must come from TierFailureReason.userMessage');
+        final knownSwedishMessages = TierFailureReason.values
+            .map((r) => r.userMessage)
+            .toSet();
+        expect(
+          knownSwedishMessages,
+          contains(result.userMessage),
+          reason: 'userMessage must come from TierFailureReason.userMessage',
+        );
       }
     });
   });
@@ -441,50 +480,63 @@ void main() {
     /// Proves: when the first tier returns a quality score that meets the
     /// threshold, the second tier is NEVER called. This is the core
     /// short-circuit contract that avoids unnecessary LLM calls.
-    test('first tier success above threshold short-circuits remaining tiers',
-        () async {
-      final tier1 = successTierAt('T1', 0.90); // quality 0.90 > threshold 0.65
-      final tier2 = failingTier('T2');
+    test(
+      'first tier success above threshold short-circuits remaining tiers',
+      () async {
+        final tier1 = successTierAt(
+          'T1',
+          0.90,
+        ); // quality 0.90 > threshold 0.65
+        final tier2 = failingTier('T2');
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [tier1, tier2],
-      );
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'u',
+          tiers: [tier1, tier2],
+        );
 
-      final result = await service.parseFromText(
-        text: 'anything',
-        useLlm: false,
-      );
+        final result = await service.parseFromText(
+          text: 'anything',
+          useLlm: false,
+        );
 
-      expect(result.success, isTrue);
-      expect(tier1.callCount, 1, reason: 'First tier must execute');
-      expect(tier2.callCount, 0,
-          reason: 'Quality threshold met — second tier must be skipped');
-    });
+        expect(result.success, isTrue);
+        expect(tier1.callCount, 1, reason: 'First tier must execute');
+        expect(
+          tier2.callCount,
+          0,
+          reason: 'Quality threshold met — second tier must be skipped',
+        );
+      },
+    );
 
     /// Proves: when a tier's quality is below the threshold, the pipeline
     /// continues to the next tier rather than returning the mediocre result.
-    test('tier below threshold allows pipeline to continue to next tier',
-        () async {
-      // quality 0.30 — well below defaultQualityThreshold (0.65)
-      final tier1 = successTierAt('T1', 0.30);
-      final tier2 = successTierAt('T2', 0.90);
+    test(
+      'tier below threshold allows pipeline to continue to next tier',
+      () async {
+        // quality 0.30 — well below defaultQualityThreshold (0.65)
+        final tier1 = successTierAt('T1', 0.30);
+        final tier2 = successTierAt('T2', 0.90);
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [tier1, tier2],
-      );
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'u',
+          tiers: [tier1, tier2],
+        );
 
-      final result = await service.parseFromText(
-        text: 'anything',
-        useLlm: false,
-      );
+        final result = await service.parseFromText(
+          text: 'anything',
+          useLlm: false,
+        );
 
-      expect(result.success, isTrue);
-      expect(tier1.callCount, 1, reason: 'First tier must have been tried');
-      expect(tier2.callCount, 1,
-          reason: 'Low quality on T1 must allow T2 to run');
-    });
+        expect(result.success, isTrue);
+        expect(tier1.callCount, 1, reason: 'First tier must have been tried');
+        expect(
+          tier2.callCount,
+          1,
+          reason: 'Low quality on T1 must allow T2 to run',
+        );
+      },
+    );
 
     /// Proves: when all tiers fail, _runTiers returns a null recipe which
     /// the caller converts to ParseResult.failure. No exceptions escape.
@@ -534,8 +586,11 @@ void main() {
       );
 
       expect(result.success, isTrue);
-      expect(skippedTier.callCount, 0,
-          reason: 'Skipped tier must never call parse()');
+      expect(
+        skippedTier.callCount,
+        0,
+        reason: 'Skipped tier must never call parse()',
+      );
       expect(fallback.callCount, 1);
     });
 
@@ -548,46 +603,57 @@ void main() {
     /// `successTierAt`/`buildRecipeWithQuality` quantization produced. With the
     /// old helper this test passed at any threshold ≤ 0.7 and so proved nothing
     /// about the on-threshold boundary it documents.
-    test('tier quality exactly at threshold (0.65) terminates pipeline',
-        () async {
-      // Generic tier name (no discount entry) so the effective threshold
-      // equals defaultQualityThreshold (0.65).
-      final tier1 = successTierAtExactQuality('GenericTier', 0.65);
-      final tier2 = failingTier('ShouldNotRun');
+    test(
+      'tier quality exactly at threshold (0.65) terminates pipeline',
+      () async {
+        // Generic tier name (no discount entry) so the effective threshold
+        // equals defaultQualityThreshold (0.65).
+        final tier1 = successTierAtExactQuality('GenericTier', 0.65);
+        final tier2 = failingTier('ShouldNotRun');
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [tier1, tier2],
-      );
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'u',
+          tiers: [tier1, tier2],
+        );
 
-      await service.parseFromText(text: 'anything', useLlm: false);
+        await service.parseFromText(text: 'anything', useLlm: false);
 
-      expect(tier2.callCount, 0,
-          reason: 'Exactly-at-threshold (>=) tier must short-circuit the '
-              'pipeline');
-    });
+        expect(
+          tier2.callCount,
+          0,
+          reason:
+              'Exactly-at-threshold (>=) tier must short-circuit the '
+              'pipeline',
+        );
+      },
+    );
 
     /// Sibling boundary test pinning the OTHER side of `>=`: a tier just BELOW
     /// the threshold (0.649) must NOT short-circuit — the pipeline continues to
     /// the next tier. Together with the on-threshold test above this actually
     /// pins the comparator at 0.65; a strict `>` (or a drifted threshold) would
     /// break exactly one of the two.
-    test('tier quality just below threshold (0.649) does NOT short-circuit',
-        () async {
-      final tier1 = successTierAtExactQuality('GenericTier', 0.649);
-      final tier2 = successTierAtExactQuality('NextTier', 0.90);
+    test(
+      'tier quality just below threshold (0.649) does NOT short-circuit',
+      () async {
+        final tier1 = successTierAtExactQuality('GenericTier', 0.649);
+        final tier2 = successTierAtExactQuality('NextTier', 0.90);
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        tiers: [tier1, tier2],
-      );
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'u',
+          tiers: [tier1, tier2],
+        );
 
-      await service.parseFromText(text: 'anything', useLlm: false);
+        await service.parseFromText(text: 'anything', useLlm: false);
 
-      expect(tier1.callCount, 1, reason: 'First tier must run');
-      expect(tier2.callCount, 1,
-          reason: 'Below-threshold quality must let the pipeline continue');
-    });
+        expect(tier1.callCount, 1, reason: 'First tier must run');
+        expect(
+          tier2.callCount,
+          1,
+          reason: 'Below-threshold quality must let the pipeline continue',
+        );
+      },
+    );
 
     /// Proves: the LlmTier is excluded when useLlm=false even when the
     /// tier is present in the injected list. Verifies _shouldSkipTier
@@ -616,8 +682,11 @@ void main() {
         useLlm: false,
       );
 
-      expect(stubLlm.structureCallCount, 0,
-          reason: 'useLlm=false gate must prevent LLM calls');
+      expect(
+        stubLlm.structureCallCount,
+        0,
+        reason: 'useLlm=false gate must prevent LLM calls',
+      );
     });
   });
 
@@ -655,10 +724,14 @@ void main() {
 
     /// Proves: securityBlocked ranks above invalidResponse.
     test('securityBlocked beats invalidResponse', () async {
-      final tier1 =
-          failingTier('T1', reason: TierFailureReason.invalidResponse);
-      final tier2 =
-          failingTier('T2', reason: TierFailureReason.securityBlocked);
+      final tier1 = failingTier(
+        'T1',
+        reason: TierFailureReason.invalidResponse,
+      );
+      final tier2 = failingTier(
+        'T2',
+        reason: TierFailureReason.securityBlocked,
+      );
 
       final service = RecipeParserService(
         getCurrentUserId: () => 'u',
@@ -711,9 +784,13 @@ void main() {
         text: 'anything else',
         useLlm: false,
       );
-      expect(result2.userMessage, result.userMessage,
-          reason: 'Consecutive calls with identical input produce identical '
-              'userMessage — no cross-call state bleed');
+      expect(
+        result2.userMessage,
+        result.userMessage,
+        reason:
+            'Consecutive calls with identical input produce identical '
+            'userMessage — no cross-call state bleed',
+      );
     });
   });
 
@@ -722,8 +799,7 @@ void main() {
     /// ServiceLocator is not initialized (the common unit-test scenario).
     /// If the catch block were removed or the ServiceLocator lookup were
     /// not wrapped, all parseFromText/parseFromUrl calls would throw in tests.
-    test(
-        '_emitTierAnalytics failure does not propagate (parse succeeds '
+    test('_emitTierAnalytics failure does not propagate (parse succeeds '
         'with no AnalyticsService registered)', () async {
       // The SchemaOrgTier.tierIdentifier is mapped in _analyticsTierFor,
       // so a tier with that name would trigger a real analytics emit.
@@ -742,8 +818,11 @@ void main() {
         useLlm: false,
       );
 
-      expect(result.success, isTrue,
-          reason: 'Analytics failure must not surface as a parse failure');
+      expect(
+        result.success,
+        isTrue,
+        reason: 'Analytics failure must not surface as a parse failure',
+      );
     });
 
     /// Proves: tiers whose name maps to null in _analyticsTierFor (i.e.
@@ -791,8 +870,11 @@ void main() {
         useLlm: false,
       );
 
-      expect(result.success, isTrue,
-          reason: 'Skipped tier analytics guard must not surface errors');
+      expect(
+        result.success,
+        isTrue,
+        reason: 'Skipped tier analytics guard must not surface errors',
+      );
     });
   });
 
@@ -805,32 +887,35 @@ void main() {
     /// We drive this via a real LlmTier in the pipeline (production factory)
     /// with llmService=null — the LlmTier shouldSkip check fires first, so
     /// the selective path is never entered either.
-    test('selective enhancement short-circuits when llmService is null',
-        () async {
-      // RuleBased tier can fail on 'anything' text, then LlmTier.shouldSkip
-      // fires because llmService==null — no crash from null _llmService.
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'u',
-        llmService: null,
-      );
+    test(
+      'selective enhancement short-circuits when llmService is null',
+      () async {
+        // RuleBased tier can fail on 'anything' text, then LlmTier.shouldSkip
+        // fires because llmService==null — no crash from null _llmService.
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'u',
+          llmService: null,
+        );
 
-      final result = await service.parseFromText(
-        text: 'anything with no structure',
-        useLlm: true, // explicitly requested but no service provided
-      );
+        final result = await service.parseFromText(
+          text: 'anything with no structure',
+          useLlm: true, // explicitly requested but no service provided
+        );
 
-      // Result is failure (no LLM available) — but no throw.
-      expect(result.recipe == null || result.success == false || result.success,
+        // Result is failure (no LLM available) — but no throw.
+        expect(
+          result.recipe == null || result.success == false || result.success,
           isTrue,
-          reason: 'Null llmService must not crash _trySelectiveEnhancement');
-    });
+          reason: 'Null llmService must not crash _trySelectiveEnhancement',
+        );
+      },
+    );
 
     /// Proves: with useLlm=false, the LlmTier in the production tier stack
     /// is skipped via _shouldSkipTier, which means _trySelectiveIngredientEnhancement
     /// is also never reached (it's inside the `if (tier is LlmTier)` block).
     /// The StubLlmService call count must remain zero.
-    test(
-        'useLlm=false prevents selective enhancement path from running '
+    test('useLlm=false prevents selective enhancement path from running '
         '(LLM call count stays 0)', () async {
       final stubLlm = StubLlmService();
       // Use real production tier stack so `tier is LlmTier` check applies.
@@ -844,8 +929,11 @@ void main() {
         useLlm: false,
       );
 
-      expect(stubLlm.parseIngredientCallCount, 0,
-          reason: 'useLlm=false must block the selective enhancement LLM call');
+      expect(
+        stubLlm.parseIngredientCallCount,
+        0,
+        reason: 'useLlm=false must block the selective enhancement LLM call',
+      );
       expect(stubLlm.structureCallCount, 0);
     });
   });
@@ -911,14 +999,14 @@ void main() {
 ''';
 
     ParsedRecipe buildCachedRecipe() => ParsedRecipe.empty(
-          metadata: ParseMetadata(
-            source: ImportSource.url,
-            parserVersion: '2.0.0',
-            timestamp: DateTime(2026, 1, 1),
-            totalParseTime: Duration.zero,
-            tierResults: const [],
-          ),
-        );
+      metadata: ParseMetadata(
+        source: ImportSource.url,
+        parserVersion: '2.0.0',
+        timestamp: DateTime(2026, 1, 1),
+        totalParseTime: Duration.zero,
+        tierResults: const [],
+      ),
+    );
 
     /// Proves: when a cache is injected via the BUT-1063 ctor seam,
     /// `init()` MUST NOT call `ServiceLocator.get<OfflineService>()`. The
@@ -926,78 +1014,104 @@ void main() {
     /// happened, GetIt would throw `Object/factory with type OfflineService
     /// is not registered`. A green test = the seam wins over the locator.
     test(
-        'init() with injected cache skips ServiceLocator OfflineService lookup',
-        () async {
-      final fake = FakeLocalRecipeCache();
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'test-user',
-        cache: fake,
-      );
+      'init() with injected cache skips ServiceLocator OfflineService lookup',
+      () async {
+        final fake = FakeLocalRecipeCache();
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'test-user',
+          cache: fake,
+        );
 
-      await service.init();
+        await service.init();
 
-      expect(fake.initCallCount, 1,
-          reason: 'Injected cache.init() must be invoked exactly once');
-    });
+        expect(
+          fake.initCallCount,
+          1,
+          reason: 'Injected cache.init() must be invoked exactly once',
+        );
+      },
+    );
 
     /// Proves: a populated cache short-circuits the tier pipeline. The
     /// result must carry `fromCache: true` (analytics depends on this) and
     /// the cache `set` must NOT fire on a hit (writing back would double
     /// I/O on every hit).
     test(
-        'cache HIT short-circuits tier pipeline (no tier exec, fromCache=true)',
-        () async {
-      final cached = buildCachedRecipe();
-      final fake = FakeLocalRecipeCache()..storedRecipe = cached;
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'test-user',
-        cache: fake,
-      );
-      await service.init();
+      'cache HIT short-circuits tier pipeline (no tier exec, fromCache=true)',
+      () async {
+        final cached = buildCachedRecipe();
+        final fake = FakeLocalRecipeCache()..storedRecipe = cached;
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'test-user',
+          cache: fake,
+        );
+        await service.init();
 
-      final result = await service.parseFromUrl(
-        url: 'https://example.com/r/1',
-        htmlContent: validSchemaOrgHtml,
-      );
+        final result = await service.parseFromUrl(
+          url: 'https://example.com/r/1',
+          htmlContent: validSchemaOrgHtml,
+        );
 
-      expect(result.success, isTrue);
-      expect(result.fromCache, isTrue,
-          reason: 'A cache hit must surface fromCache=true to the caller');
-      expect(result.recipe, same(cached),
-          reason: 'The cached object must be returned by identity, '
-              'not re-parsed');
-      expect(fake.getCallCount, 1);
-      expect(fake.setCallCount, 0,
-          reason: 'A hit must not write back to the cache');
-    });
+        expect(result.success, isTrue);
+        expect(
+          result.fromCache,
+          isTrue,
+          reason: 'A cache hit must surface fromCache=true to the caller',
+        );
+        expect(
+          result.recipe,
+          same(cached),
+          reason:
+              'The cached object must be returned by identity, '
+              'not re-parsed',
+        );
+        expect(fake.getCallCount, 1);
+        expect(
+          fake.setCallCount,
+          0,
+          reason: 'A hit must not write back to the cache',
+        );
+      },
+    );
 
     /// Proves: cache miss → tier pipeline runs → the parsed result is
     /// written back. Without the write-back, every parse would repeat the
     /// expensive tier chain forever.
-    test('cache MISS triggers tier pipeline + writes parsed result back',
-        () async {
-      final fake = FakeLocalRecipeCache(); // storedRecipe null → miss
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'test-user',
-        cache: fake,
-      );
-      await service.init();
+    test(
+      'cache MISS triggers tier pipeline + writes parsed result back',
+      () async {
+        final fake = FakeLocalRecipeCache(); // storedRecipe null → miss
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'test-user',
+          cache: fake,
+        );
+        await service.init();
 
-      final result = await service.parseFromUrl(
-        url: 'https://example.com/r/1',
-        htmlContent: validSchemaOrgHtml,
-      );
+        final result = await service.parseFromUrl(
+          url: 'https://example.com/r/1',
+          htmlContent: validSchemaOrgHtml,
+        );
 
-      expect(result.success, isTrue,
-          reason: 'SchemaOrg JSON-LD should parse end-to-end');
-      expect(result.fromCache, isFalse,
-          reason: 'Fresh tier parse must report fromCache=false');
-      expect(fake.getCallCount, 1, reason: 'Cache must be consulted first');
-      expect(fake.setCallCount, 1, reason: 'Fresh result must be cached');
-      expect(fake.lastSetRecipe, isNotNull);
-      expect(fake.lastSetRecipe, same(result.recipe),
-          reason: 'The cached recipe must be the same object we returned');
-    });
+        expect(
+          result.success,
+          isTrue,
+          reason: 'SchemaOrg JSON-LD should parse end-to-end',
+        );
+        expect(
+          result.fromCache,
+          isFalse,
+          reason: 'Fresh tier parse must report fromCache=false',
+        );
+        expect(fake.getCallCount, 1, reason: 'Cache must be consulted first');
+        expect(fake.setCallCount, 1, reason: 'Fresh result must be cached');
+        expect(fake.lastSetRecipe, isNotNull);
+        expect(
+          fake.lastSetRecipe,
+          same(result.recipe),
+          reason: 'The cached recipe must be the same object we returned',
+        );
+      },
+    );
 
     /// Proves: when the cache entry was written by an older parser version,
     /// `get` returns null (production `LocalRecipeCache.get` deletes the
@@ -1005,30 +1119,37 @@ void main() {
     /// writes a fresh entry at the current version. Without this guard,
     /// users would be served stale parses across parser upgrades.
     test(
-        'parser-version mismatch invalidates cache entry (re-parse + new write)',
-        () async {
-      final fake = FakeLocalRecipeCache()
-        ..storedRecipe = buildCachedRecipe()
-        ..storedVersion = 'old-v0'; // != service's '2.0.0' → simulated miss
+      'parser-version mismatch invalidates cache entry (re-parse + new write)',
+      () async {
+        final fake = FakeLocalRecipeCache()
+          ..storedRecipe = buildCachedRecipe()
+          ..storedVersion = 'old-v0'; // != service's '2.0.0' → simulated miss
 
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'test-user',
-        cache: fake,
-      );
-      await service.init();
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'test-user',
+          cache: fake,
+        );
+        await service.init();
 
-      final result = await service.parseFromUrl(
-        url: 'https://example.com/r/1',
-        htmlContent: validSchemaOrgHtml,
-      );
+        final result = await service.parseFromUrl(
+          url: 'https://example.com/r/1',
+          htmlContent: validSchemaOrgHtml,
+        );
 
-      expect(result.success, isTrue);
-      expect(result.fromCache, isFalse,
-          reason: 'Stale-version entry must NOT count as a cache hit');
-      expect(fake.getCallCount, 1);
-      expect(fake.setCallCount, 1,
-          reason: 'A fresh entry at the current version must be written');
-    });
+        expect(result.success, isTrue);
+        expect(
+          result.fromCache,
+          isFalse,
+          reason: 'Stale-version entry must NOT count as a cache hit',
+        );
+        expect(fake.getCallCount, 1);
+        expect(
+          fake.setCallCount,
+          1,
+          reason: 'A fresh entry at the current version must be written',
+        );
+      },
+    );
 
     /// Proves: after 3 consecutive cache read failures, the circuit
     /// breaker (failureThreshold=3 at recipe_parser_service.dart:152-155)
@@ -1043,30 +1164,35 @@ void main() {
     /// would trigger `_cacheResult` which records a SUCCESS on the same
     /// shared breaker and resets the failure count. We want pure read
     /// failures here, so we use content that all rule-based tiers reject.
-    test('circuit-breaker opens after 3 cache-read failures, 4th call bypasses',
-        () async {
-      final fake = FakeLocalRecipeCache()..throwOnGet = true;
-      final service = RecipeParserService(
-        getCurrentUserId: () => 'test-user',
-        cache: fake,
-      );
-      await service.init();
-
-      const garbageHtml =
-          '<html><body>nothing structured here at all just prose</body></html>';
-
-      for (var i = 0; i < 4; i++) {
-        await service.parseFromUrl(
-          url: 'https://example.com/r/$i',
-          htmlContent: garbageHtml,
-          useLlm: false,
+    test(
+      'circuit-breaker opens after 3 cache-read failures, 4th call bypasses',
+      () async {
+        final fake = FakeLocalRecipeCache()..throwOnGet = true;
+        final service = RecipeParserService(
+          getCurrentUserId: () => 'test-user',
+          cache: fake,
         );
-      }
+        await service.init();
 
-      expect(fake.getCallCount, 3,
+        const garbageHtml =
+            '<html><body>nothing structured here at all just prose</body></html>';
+
+        for (var i = 0; i < 4; i++) {
+          await service.parseFromUrl(
+            url: 'https://example.com/r/$i',
+            htmlContent: garbageHtml,
+            useLlm: false,
+          );
+        }
+
+        expect(
+          fake.getCallCount,
+          3,
           reason:
               '4th call should short-circuit at _cacheCircuitBreaker.isOpen '
-              'guard — failureThreshold is 3');
-    });
+              'guard — failureThreshold is 3',
+        );
+      },
+    );
   });
 }

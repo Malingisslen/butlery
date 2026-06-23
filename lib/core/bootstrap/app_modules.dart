@@ -27,26 +27,26 @@ import 'package:butlery/core/utils/logger.dart';
 
 /// DI modules in dependency order.
 List<DIModule> buildDiModules() => [
-      CoreModule(),
-      SearchModule(),
-      TaggingModule(),
-      PantryModule(),
-      ContentModule(),
-      SocialModule(),
-      MessagingModule(),
-      CollaborationModule(),
-      PerformanceModule(),
-      UIModule(),
-    ];
+  CoreModule(),
+  SearchModule(),
+  TaggingModule(),
+  PantryModule(),
+  ContentModule(),
+  SocialModule(),
+  MessagingModule(),
+  CollaborationModule(),
+  PerformanceModule(),
+  UIModule(),
+];
 
 /// Bootstrap stages in run order.
 List<BootstrapStage> buildBootstrapStages() => [
-      PlatformStage(),
-      CoreStage(),
-      ContentStage(),
-      SocialStage(),
-      UIStage(),
-    ];
+  PlatformStage(),
+  CoreStage(),
+  ContentStage(),
+  SocialStage(),
+  UIStage(),
+];
 
 /// BUT-431 cold-start: opt the consumer entry point into deferring the two
 /// non-critical init side-effects (perf-monitoring start + Firestore ingredient

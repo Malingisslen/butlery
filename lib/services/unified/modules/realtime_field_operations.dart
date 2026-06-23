@@ -162,8 +162,11 @@ class RealtimeFieldOperations {
   }
 
   /// Validate index for list operations
-  static bool isValidIndex(int index, int listLength,
-      {bool allowAppend = false}) {
+  static bool isValidIndex(
+    int index,
+    int listLength, {
+    bool allowAppend = false,
+  }) {
     if (index < 0) return false;
     if (allowAppend) {
       return index <= listLength; // Allow inserting at end

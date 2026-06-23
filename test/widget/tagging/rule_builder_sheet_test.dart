@@ -103,8 +103,9 @@ Future<PersonalTagRule?> _showSheet(
 void main() {
   group('RuleBuilderSheet', () {
     group('create mode', () {
-      testWidgetsNoOverflow('shows new rule title and create button',
-          (tester) async {
+      testWidgetsNoOverflow('shows new rule title and create button', (
+        tester,
+      ) async {
         await _showSheet(tester);
 
         expect(find.byType(RuleBuilderSheet), findsOneWidget);
@@ -117,25 +118,29 @@ void main() {
         expect(find.byType(Card), findsAtLeastNWidgets(1));
       });
 
-      testWidgetsNoOverflow('save with empty name shows snackbar, does NOT pop',
-          (tester) async {
-        await _showSheet(tester);
+      testWidgetsNoOverflow(
+        'save with empty name shows snackbar, does NOT pop',
+        (tester) async {
+          await _showSheet(tester);
 
-        await tester.tap(find.byType(FilledButton));
-        await tester.pumpAndSettle();
+          await tester.tap(find.byType(FilledButton));
+          await tester.pumpAndSettle();
 
-        expect(find.byType(RuleBuilderSheet), findsOneWidget);
-        expect(find.byType(SnackBar), findsOneWidget);
-      });
+          expect(find.byType(RuleBuilderSheet), findsOneWidget);
+          expect(find.byType(SnackBar), findsOneWidget);
+        },
+      );
     });
 
     group('edit mode', () {
-      testWidgetsNoOverflow('pre-fills name, matchMode, isEnabled',
-          (tester) async {
+      testWidgetsNoOverflow('pre-fills name, matchMode, isEnabled', (
+        tester,
+      ) async {
         await _showSheet(tester, existingRule: _existingRule);
 
-        final nameField =
-            tester.widget<TextField>(find.byType(TextField).first);
+        final nameField = tester.widget<TextField>(
+          find.byType(TextField).first,
+        );
         expect(nameField.controller?.text, 'My Rule');
 
         final segmented = tester.widget<SegmentedButton<MatchMode>>(
@@ -177,17 +182,19 @@ void main() {
       });
 
       testWidgetsNoOverflow(
-          'last condition delete button is disabled (canDelete: false)',
-          (tester) async {
-        await _showSheet(tester);
+        'last condition delete button is disabled (canDelete: false)',
+        (tester) async {
+          await _showSheet(tester);
 
-        expect(find.byIcon(Icons.close), findsNothing);
-      });
+          expect(find.byIcon(Icons.close), findsNothing);
+        },
+      );
     });
 
     group('enabled switch', () {
-      testWidgetsNoOverflow('enabled switch toggles subtitle text',
-          (tester) async {
+      testWidgetsNoOverflow('enabled switch toggles subtitle text', (
+        tester,
+      ) async {
         await _showSheet(tester);
 
         // SwitchListTile may be below the fold — scroll to it

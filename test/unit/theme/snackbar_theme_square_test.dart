@@ -21,10 +21,14 @@ void main() {
 
         expect(theme.shape, isA<RoundedRectangleBorder>());
         final shape = theme.shape! as RoundedRectangleBorder;
-        expect(shape.borderRadius, BorderRadius.zero,
-            reason: 'SQUARE-everywhere design rule ($brightness): new '
-                'snackbars must not silently render rounded corners — that '
-                'was the BUT-1243 bug.');
+        expect(
+          shape.borderRadius,
+          BorderRadius.zero,
+          reason:
+              'SQUARE-everywhere design rule ($brightness): new '
+              'snackbars must not silently render rounded corners — that '
+              'was the BUT-1243 bug.',
+        );
       }
     });
 
@@ -32,18 +36,25 @@ void main() {
       final cs = ColorScheme.fromSeed(seedColor: Colors.green);
       final theme = FeedbackThemes.snackBarTheme(cs);
 
-      expect(theme.behavior, SnackBarBehavior.floating,
-          reason: 'Floating behavior must not regress while fixing shape.');
+      expect(
+        theme.behavior,
+        SnackBarBehavior.floating,
+        reason: 'Floating behavior must not regress while fixing shape.',
+      );
     });
 
     test('background is inverseSurface (forestGreenDark in light scheme)', () {
       final cs = ColorScheme.fromSeed(seedColor: Colors.green);
       final theme = FeedbackThemes.snackBarTheme(cs);
 
-      expect(theme.backgroundColor, cs.inverseSurface,
-          reason: 'Mockup §4.18: toast renders on green-dark background — '
-              'cs.inverseSurface maps to forestGreenDark in the app light '
-              'scheme and stays scheme-correct in dark mode.');
+      expect(
+        theme.backgroundColor,
+        cs.inverseSurface,
+        reason:
+            'Mockup §4.18: toast renders on green-dark background — '
+            'cs.inverseSurface maps to forestGreenDark in the app light '
+            'scheme and stays scheme-correct in dark mode.',
+      );
     });
   });
 }

@@ -155,7 +155,8 @@ class UrlNormalizer {
       return host;
     } catch (e) {
       AppLogger.debug(
-          'UrlNormalizer: Failed to extract domain from "$url": $e');
+        'UrlNormalizer: Failed to extract domain from "$url": $e',
+      );
       return null;
     }
   }

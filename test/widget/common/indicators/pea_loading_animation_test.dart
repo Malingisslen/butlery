@@ -18,11 +18,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      home: MediaQuery(
-        data: const MediaQueryData(disableAnimations: true),
-        child: Scaffold(body: child),
-      ),
-    );
+  home: MediaQuery(
+    data: const MediaQueryData(disableAnimations: true),
+    child: Scaffold(body: child),
+  ),
+);
 
 void main() {
   group('PeaLoadingAnimation — render', () {
@@ -30,29 +30,35 @@ void main() {
       await tester.pumpWidget(_wrap(const PeaLoadingAnimation()));
       await tester.pump();
 
-      final sized = tester.firstWidget<SizedBox>(find.descendant(
-        of: find.byType(PeaLoadingAnimation),
-        matching: find.byType(SizedBox),
-      ));
+      final sized = tester.firstWidget<SizedBox>(
+        find.descendant(
+          of: find.byType(PeaLoadingAnimation),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(sized.width, 80);
       expect(sized.height, 80);
     });
 
-    testWidgets('explicit size sets the outer SizedBox dimensions',
-        (tester) async {
+    testWidgets('explicit size sets the outer SizedBox dimensions', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const PeaLoadingAnimation(size: 120)));
       await tester.pump();
 
-      final sized = tester.firstWidget<SizedBox>(find.descendant(
-        of: find.byType(PeaLoadingAnimation),
-        matching: find.byType(SizedBox),
-      ));
+      final sized = tester.firstWidget<SizedBox>(
+        find.descendant(
+          of: find.byType(PeaLoadingAnimation),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(sized.width, 120);
       expect(sized.height, 120);
     });
 
-    testWidgets('contains an Image.asset for the current frame',
-        (tester) async {
+    testWidgets('contains an Image.asset for the current frame', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const PeaLoadingAnimation()));
       await tester.pump();
 
@@ -69,11 +75,13 @@ void main() {
 
   group('PeaLoadingAnimation — animation lifecycle', () {
     testWidgets('advances frames over time without throwing', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const PeaLoadingAnimation(
-          frameInterval: Duration(milliseconds: 50),
+      await tester.pumpWidget(
+        _wrap(
+          const PeaLoadingAnimation(
+            frameInterval: Duration(milliseconds: 50),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Drive several timer ticks. The widget calls setState in each tick,
@@ -85,13 +93,16 @@ void main() {
       expect(find.byType(PeaLoadingAnimation), findsOneWidget);
     });
 
-    testWidgets('cancels its timer cleanly on dispose (no late setState)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        const PeaLoadingAnimation(
-          frameInterval: Duration(milliseconds: 30),
+    testWidgets('cancels its timer cleanly on dispose (no late setState)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const PeaLoadingAnimation(
+            frameInterval: Duration(milliseconds: 30),
+          ),
         ),
-      ));
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       // Replace the subtree — the State's dispose() must cancel the timer.
@@ -105,42 +116,49 @@ void main() {
   });
 
   group('PeaLoadingOverlay', () {
-    testWidgets('renders a PeaLoadingAnimation child sized via the `size` prop',
-        (tester) async {
-      await tester.pumpWidget(_wrap(const PeaLoadingOverlay(size: 60)));
-      await tester.pump();
+    testWidgets(
+      'renders a PeaLoadingAnimation child sized via the `size` prop',
+      (tester) async {
+        await tester.pumpWidget(_wrap(const PeaLoadingOverlay(size: 60)));
+        await tester.pump();
 
-      expect(find.byType(PeaLoadingAnimation), findsOneWidget);
-      final inner = tester.widget<PeaLoadingAnimation>(
-        find.byType(PeaLoadingAnimation),
-      );
-      expect(inner.size, 60);
-    });
+        expect(find.byType(PeaLoadingAnimation), findsOneWidget);
+        final inner = tester.widget<PeaLoadingAnimation>(
+          find.byType(PeaLoadingAnimation),
+        );
+        expect(inner.size, 60);
+      },
+    );
 
     testWidgets('renders message when provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const PeaLoadingOverlay(message: 'Laddar recept'),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const PeaLoadingOverlay(message: 'Laddar recept'),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Laddar recept'), findsOneWidget);
     });
 
     testWidgets('renders subtitle when provided', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const PeaLoadingOverlay(
-          message: 'Vänta',
-          subtitle: 'Det kan ta en stund',
+      await tester.pumpWidget(
+        _wrap(
+          const PeaLoadingOverlay(
+            message: 'Vänta',
+            subtitle: 'Det kan ta en stund',
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Vänta'), findsOneWidget);
       expect(find.text('Det kan ta en stund'), findsOneWidget);
     });
 
-    testWidgets('omits message and subtitle widgets when not provided',
-        (tester) async {
+    testWidgets('omits message and subtitle widgets when not provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const PeaLoadingOverlay()));
       await tester.pump();
 
@@ -154,25 +172,30 @@ void main() {
       );
     });
 
-    testWidgets('uses surface color with 0.9 alpha as the background tint',
-        (tester) async {
+    testWidgets('uses surface color with 0.9 alpha as the background tint', (
+      tester,
+    ) async {
       const surface = Color(0xFFAABBCC);
       final theme = ThemeData(
         colorScheme: const ColorScheme.light(surface: surface),
       );
-      await tester.pumpWidget(MaterialApp(
-        theme: theme,
-        home: const MediaQuery(
-          data: MediaQueryData(disableAnimations: true),
-          child: Scaffold(body: PeaLoadingOverlay()),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: const MediaQuery(
+            data: MediaQueryData(disableAnimations: true),
+            child: Scaffold(body: PeaLoadingOverlay()),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
-      final box = tester.widget<ColoredBox>(find.descendant(
-        of: find.byType(PeaLoadingOverlay),
-        matching: find.byType(ColoredBox),
-      ));
+      final box = tester.widget<ColoredBox>(
+        find.descendant(
+          of: find.byType(PeaLoadingOverlay),
+          matching: find.byType(ColoredBox),
+        ),
+      );
       // withValues(alpha: 0.9) — match by alpha, not exact RGB equality
       // (the surface color is preserved verbatim by the production widget).
       expect(box.color.r, surface.r);
@@ -182,17 +205,21 @@ void main() {
     });
 
     testWidgets('uses spacingMd between animation and message', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const PeaLoadingOverlay(message: 'Hej'),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const PeaLoadingOverlay(message: 'Hej'),
+        ),
+      );
       await tester.pump();
 
       // The SizedBox spacer with height = spacingMd should be present as a
       // descendant of the overlay's Column.
-      final spacers = tester.widgetList<SizedBox>(find.descendant(
-        of: find.byType(PeaLoadingOverlay),
-        matching: find.byType(SizedBox),
-      ));
+      final spacers = tester.widgetList<SizedBox>(
+        find.descendant(
+          of: find.byType(PeaLoadingOverlay),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(
         spacers.any((s) => s.height == AppDimensions.spacingMd),
         isTrue,
@@ -201,8 +228,9 @@ void main() {
   });
 
   group('PeaLoadingIndicatorSmall', () {
-    testWidgets('default size is 40 and forwards to PeaLoadingAnimation',
-        (tester) async {
+    testWidgets('default size is 40 and forwards to PeaLoadingAnimation', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const PeaLoadingIndicatorSmall()));
       await tester.pump();
 

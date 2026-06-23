@@ -52,32 +52,38 @@ void main() {
       expect(payloads.first.toValue, 'Köttbullar');
     });
 
-    test('three diffed fields produce three payloads (per-field aggregation)',
-        () {
-      final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
-      final correction = makeCorrection(
-        title: const FieldCorrection(originalValue: 'A', correctedValue: 'B'),
-        portions:
-            const FieldCorrection(originalValue: '4', correctedValue: '6'),
-        ingredients: [
-          IngredientCorrection.modified(
-            originalIndex: 0,
-            correctedIndex: 0,
-            originalLine: '3 dl mjolk',
-            correctedLine: '3 dl mjölk',
-            quantityChanged: false,
-            unitChanged: false,
-            nameChanged: true,
+    test(
+      'three diffed fields produce three payloads (per-field aggregation)',
+      () {
+        final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
+        final correction = makeCorrection(
+          title: const FieldCorrection(originalValue: 'A', correctedValue: 'B'),
+          portions: const FieldCorrection(
+            originalValue: '4',
+            correctedValue: '6',
           ),
-        ],
-      );
+          ingredients: [
+            IngredientCorrection.modified(
+              originalIndex: 0,
+              correctedIndex: 0,
+              originalLine: '3 dl mjolk',
+              correctedLine: '3 dl mjölk',
+              quantityChanged: false,
+              unitChanged: false,
+              nameChanged: true,
+            ),
+          ],
+        );
 
-      final payloads = uploader.expandFields(correction);
+        final payloads = uploader.expandFields(correction);
 
-      expect(payloads.map((p) => p.correctedField),
-          containsAll(['title', 'portions', 'ingredients']));
-      expect(payloads, hasLength(3));
-    });
+        expect(
+          payloads.map((p) => p.correctedField),
+          containsAll(['title', 'portions', 'ingredients']),
+        );
+        expect(payloads, hasLength(3));
+      },
+    );
 
     test('whitespace-only diff is dropped before upload', () {
       final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
@@ -91,8 +97,11 @@ void main() {
       // The FieldCorrection.create factory itself wouldn't emit this — but a
       // raw construction can. The uploader is the second line of defence.
       final payloads = uploader.expandFields(correction);
-      expect(payloads, isEmpty,
-          reason: 'whitespace-only diffs carry no quality signal');
+      expect(
+        payloads,
+        isEmpty,
+        reason: 'whitespace-only diffs carry no quality signal',
+      );
     });
 
     test('case-only diff is dropped before upload', () {
@@ -120,8 +129,10 @@ void main() {
 
       final correction = makeCorrection(
         title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
-        portions:
-            const FieldCorrection(originalValue: '4', correctedValue: '6'),
+        portions: const FieldCorrection(
+          originalValue: '4',
+          correctedValue: '6',
+        ),
       );
 
       final n = uploader.upload(correction: correction, salt: 'test-salt');
@@ -249,55 +260,63 @@ void main() {
       expect(out.length, 500);
     });
 
-    test('upload aggregates instructions into one ingredient/instruction doc',
-        () {
-      final calls = <Map<String, dynamic>>[];
-      final uploader = ParseCorrectionUploader(
-        invoker: (_, body) async {
-          calls.add(body);
-        },
-      );
+    test(
+      'upload aggregates instructions into one ingredient/instruction doc',
+      () {
+        final calls = <Map<String, dynamic>>[];
+        final uploader = ParseCorrectionUploader(
+          invoker: (_, body) async {
+            calls.add(body);
+          },
+        );
 
-      final correction = makeCorrection(
-        instructions: [
-          InstructionCorrection.modified(
-            originalIndex: 0,
-            correctedIndex: 0,
-            originalText: 'Step one wrong',
-            correctedText: 'Step one fixed',
-          ),
-          InstructionCorrection.modified(
-            originalIndex: 1,
-            correctedIndex: 1,
-            originalText: 'Step two wrong',
-            correctedText: 'Step two fixed',
-          ),
-        ],
-      );
+        final correction = makeCorrection(
+          instructions: [
+            InstructionCorrection.modified(
+              originalIndex: 0,
+              correctedIndex: 0,
+              originalText: 'Step one wrong',
+              correctedText: 'Step one fixed',
+            ),
+            InstructionCorrection.modified(
+              originalIndex: 1,
+              correctedIndex: 1,
+              originalText: 'Step two wrong',
+              correctedText: 'Step two fixed',
+            ),
+          ],
+        );
 
-      uploader.upload(correction: correction, salt: 's');
+        uploader.upload(correction: correction, salt: 's');
 
-      // Two corrected steps → still ONE per-field doc with newline-joined text.
-      expect(calls, hasLength(1));
-      expect(calls.first['correctedField'], 'instructions');
-      expect(calls.first['fromValue'], contains('Step one wrong'));
-      expect(calls.first['fromValue'], contains('Step two wrong'));
-      expect(calls.first['toValue'], contains('Step one fixed'));
-    });
+        // Two corrected steps → still ONE per-field doc with newline-joined text.
+        expect(calls, hasLength(1));
+        expect(calls.first['correctedField'], 'instructions');
+        expect(calls.first['fromValue'], contains('Step one wrong'));
+        expect(calls.first['fromValue'], contains('Step two wrong'));
+        expect(calls.first['toValue'], contains('Step one fixed'));
+      },
+    );
   });
 
   group('ParseCorrectionUploader.isWhitespaceOrCaseOnly', () {
     test('whitespace collapse', () {
-      expect(ParseCorrectionUploader.isWhitespaceOrCaseOnly('a  b', 'a b'),
-          isTrue);
+      expect(
+        ParseCorrectionUploader.isWhitespaceOrCaseOnly('a  b', 'a b'),
+        isTrue,
+      );
     });
     test('case fold', () {
       expect(
-          ParseCorrectionUploader.isWhitespaceOrCaseOnly('FOO', 'foo'), isTrue);
+        ParseCorrectionUploader.isWhitespaceOrCaseOnly('FOO', 'foo'),
+        isTrue,
+      );
     });
     test('real diff', () {
-      expect(ParseCorrectionUploader.isWhitespaceOrCaseOnly('foo', 'bar'),
-          isFalse);
+      expect(
+        ParseCorrectionUploader.isWhitespaceOrCaseOnly('foo', 'bar'),
+        isFalse,
+      );
     });
   });
 }

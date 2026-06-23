@@ -35,8 +35,9 @@ class CrfWeights {
     final features = data['features'] as Map<String, dynamic>;
     for (final entry in features.entries) {
       final label = _labelFromString(entry.key);
-      final weights = (entry.value as Map<String, dynamic>)
-          .map((k, v) => MapEntry(k, (v as num).toDouble()));
+      final weights = (entry.value as Map<String, dynamic>).map(
+        (k, v) => MapEntry(k, (v as num).toDouble()),
+      );
       featureMap[label] = weights;
     }
 
@@ -44,8 +45,9 @@ class CrfWeights {
     final transitions = data['transitions'] as Map<String, dynamic>;
     for (final entry in transitions.entries) {
       final from = _labelFromString(entry.key);
-      final toWeights = (entry.value as Map<String, dynamic>)
-          .map((k, v) => MapEntry(_labelFromString(k), (v as num).toDouble()));
+      final toWeights = (entry.value as Map<String, dynamic>).map(
+        (k, v) => MapEntry(_labelFromString(k), (v as num).toDouble()),
+      );
       transMap[from] = toWeights;
     }
 
@@ -165,7 +167,8 @@ class CrfViterbiDecoder {
         var bestPrev = 0;
 
         for (var p = 0; p < numLabels; p++) {
-          final score = viterbi[t - 1][p] +
+          final score =
+              viterbi[t - 1][p] +
               _transitionScore(labels[p], labels[s]) +
               emission;
           if (score > bestScore) {

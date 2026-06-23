@@ -32,13 +32,13 @@ class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
 class _FakeResource extends Fake implements RealtimeResource {}
 
 ConflictEvent _event({String docId = 'doc-1'}) => ConflictEvent(
-      collectionPath: 'recipes',
-      docId: docId,
-      localValue: _FakeResource(),
-      remoteValue: _FakeResource(),
-      chosenStrategy: ConflictResolutionStrategy.localWon,
-      occurredAt: DateTime(2026, 5, 28),
-    );
+  collectionPath: 'recipes',
+  docId: docId,
+  localValue: _FakeResource(),
+  remoteValue: _FakeResource(),
+  chosenStrategy: ConflictResolutionStrategy.localWon,
+  occurredAt: DateTime(2026, 5, 28),
+);
 
 void main() {
   late _MockRealtimeSyncService service;
@@ -93,8 +93,9 @@ void main() {
     expect(find.byType(SizedBox), findsWidgets); // SizedBox.shrink placeholder
   });
 
-  testWidgets('shows the localized banner when a conflict event arrives',
-      (tester) async {
+  testWidgets('shows the localized banner when a conflict event arrives', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
     await tester.pump();
 
@@ -111,13 +112,19 @@ void main() {
 
     conflicts.add(_event(docId: 'someone-else'));
     await tester.pumpAndSettle();
-    expect(find.text(message), findsNothing,
-        reason: 'event for a different doc must be filtered out');
+    expect(
+      find.text(message),
+      findsNothing,
+      reason: 'event for a different doc must be filtered out',
+    );
 
     conflicts.add(_event(docId: 'mine'));
     await tester.pumpAndSettle();
-    expect(find.text(message), findsOneWidget,
-        reason: 'event for the matching doc must surface');
+    expect(
+      find.text(message),
+      findsOneWidget,
+      reason: 'event for the matching doc must surface',
+    );
   });
 
   testWidgets('dismiss button hides the banner', (tester) async {
@@ -135,34 +142,38 @@ void main() {
   });
 
   testWidgets(
-      'View action is always shown for an active event (BUT-1163: built-in '
-      'diff view, no callback required)', (tester) async {
-    await tester.pumpWidget(harness());
-    await tester.pump();
+    'View action is always shown for an active event (BUT-1163: built-in '
+    'diff view, no callback required)',
+    (tester) async {
+      await tester.pumpWidget(harness());
+      await tester.pump();
 
-    conflicts.add(_event());
-    await tester.pumpAndSettle();
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
 
-    expect(find.text(message), findsOneWidget);
-    // The banner now self-wires navigation to ConflictDiffView, so the View
-    // action no longer depends on an injected onViewChange callback.
-    expect(find.widgetWithText(TextButton, viewLabel), findsOneWidget);
-  });
+      expect(find.text(message), findsOneWidget);
+      // The banner now self-wires navigation to ConflictDiffView, so the View
+      // action no longer depends on an injected onViewChange callback.
+      expect(find.widgetWithText(TextButton, viewLabel), findsOneWidget);
+    },
+  );
 
-  testWidgets('onViewChange override intercepts the View action when provided',
-      (tester) async {
-    var tapped = 0;
-    await tester.pumpWidget(harness(onViewChange: () => tapped++));
-    await tester.pump();
+  testWidgets(
+    'onViewChange override intercepts the View action when provided',
+    (tester) async {
+      var tapped = 0;
+      await tester.pumpWidget(harness(onViewChange: () => tapped++));
+      await tester.pump();
 
-    conflicts.add(_event());
-    await tester.pumpAndSettle();
+      conflicts.add(_event());
+      await tester.pumpAndSettle();
 
-    final viewButton = find.widgetWithText(TextButton, viewLabel);
-    expect(viewButton, findsOneWidget);
+      final viewButton = find.widgetWithText(TextButton, viewLabel);
+      expect(viewButton, findsOneWidget);
 
-    await tester.tap(viewButton);
-    await tester.pump();
-    expect(tapped, 1);
-  });
+      await tester.tap(viewButton);
+      await tester.pump();
+      expect(tapped, 1);
+    },
+  );
 }

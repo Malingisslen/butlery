@@ -199,8 +199,10 @@ void main() {
       });
 
       test('should filter recipes by multiple tags (AND logic)', () {
-        final results =
-            service.filterByTags(testRecipes, ['italiensk', 'pasta']);
+        final results = service.filterByTags(testRecipes, [
+          'italiensk',
+          'pasta',
+        ]);
 
         expect(results.length, equals(1));
         expect(results.first.title, equals('Pasta Carbonara'));
@@ -269,7 +271,9 @@ void main() {
 
         expect(results.length, equals(3));
         expect(
-            results.every((r) => r.portions! >= 3 && r.portions! <= 5), isTrue);
+          results.every((r) => r.portions! >= 3 && r.portions! <= 5),
+          isTrue,
+        );
       });
     });
 
@@ -314,8 +318,11 @@ void main() {
       });
 
       test('should sort by title descending', () {
-        final sorted = service.sortRecipes(testRecipes, SortCriteria.title,
-            ascending: false);
+        final sorted = service.sortRecipes(
+          testRecipes,
+          SortCriteria.title,
+          ascending: false,
+        );
 
         expect(sorted.first.title, equals('Vegetarisk lasagne'));
         expect(sorted.last.title, equals('Kycklingsallad'));
@@ -329,8 +336,11 @@ void main() {
       });
 
       test('should sort by rating', () {
-        final sorted = service.sortRecipes(testRecipes, SortCriteria.rating,
-            ascending: false);
+        final sorted = service.sortRecipes(
+          testRecipes,
+          SortCriteria.rating,
+          ascending: false,
+        );
 
         expect(sorted.first.rating, equals(4.8));
         expect(sorted.last.rating, equals(3.5));
@@ -381,12 +391,13 @@ void main() {
       test('should limit suggestions to 10', () {
         // Create many recipes with similar ingredients
         final manyRecipes = List.generate(
-            20,
-            (i) => RecipeFactory.build(
-                  title: 'Recipe $i',
-                  ingredients: ['ingredient$i', 'common'],
-                  personalTagIds: ['tag$i', 'common'],
-                ));
+          20,
+          (i) => RecipeFactory.build(
+            title: 'Recipe $i',
+            ingredients: ['ingredient$i', 'common'],
+            personalTagIds: ['tag$i', 'common'],
+          ),
+        );
 
         final suggestions = service.getSearchSuggestions(manyRecipes, 'co');
 
@@ -418,12 +429,13 @@ void main() {
 
       test('should limit popular terms to 20', () {
         final manyRecipes = List.generate(
-            50,
-            (i) => RecipeFactory.build(
-                  mealType: 'type$i',
-                  personalTagIds: ['tag$i', 'tag${i + 1}'],
-                  ingredients: ['ingredient$i'],
-                ));
+          50,
+          (i) => RecipeFactory.build(
+            mealType: 'type$i',
+            personalTagIds: ['tag$i', 'tag${i + 1}'],
+            ingredients: ['ingredient$i'],
+          ),
+        );
 
         final popularTerms = service.getPopularSearchTerms(manyRecipes);
 
@@ -560,7 +572,8 @@ void main() {
         expect(
           results,
           isEmpty,
-          reason: 'Search should match tag names, not raw UUID strings — '
+          reason:
+              'Search should match tag names, not raw UUID strings — '
               'users never type UUIDs in the search box',
         );
       });
@@ -573,8 +586,10 @@ void main() {
       });
 
       test('should generate suggestions from tag names, not UUIDs', () {
-        final suggestions =
-            service.getSearchSuggestions(recipesWithUuidTags, 'gri');
+        final suggestions = service.getSearchSuggestions(
+          recipesWithUuidTags,
+          'gri',
+        );
 
         // Should contain the tag name "grillat", not the UUID
         expect(
@@ -590,8 +605,10 @@ void main() {
       });
 
       test('should generate suggestions from tag names for vegansk', () {
-        final suggestions =
-            service.getSearchSuggestions(recipesWithUuidTags, 've');
+        final suggestions = service.getSearchSuggestions(
+          recipesWithUuidTags,
+          've',
+        );
 
         expect(
           suggestions.any((s) => s.toLowerCase().contains('vegansk')),
@@ -650,8 +667,10 @@ void main() {
         // (recipe might still match on other fields like title/description)
         expect(() => results, returnsNormally);
 
-        final suggestions =
-            service.getSearchSuggestions(recipeWithNullTags, 'so');
+        final suggestions = service.getSearchSuggestions(
+          recipeWithNullTags,
+          'so',
+        );
         expect(() => suggestions, returnsNormally);
 
         final popular = service.getPopularSearchTerms(recipeWithNullTags);

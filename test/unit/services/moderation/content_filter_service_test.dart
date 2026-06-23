@@ -42,9 +42,13 @@ void main() {
     test('empty string passes (required-ness is a separate validator)', () {
       final result = service.ensureClean('', fieldName: 'recipe_title');
 
-      expect(result.isClean, isTrue,
-          reason: 'ensureClean must not double-reject empty input — the '
-              'required-validator owns that error message.');
+      expect(
+        result.isClean,
+        isTrue,
+        reason:
+            'ensureClean must not double-reject empty input — the '
+            'required-validator owns that error message.',
+      );
       expect(result.reason, isNull);
     });
 
@@ -63,8 +67,11 @@ void main() {
 
       expect(result.isClean, isFalse);
       expect(result.reason, equals(AppLocale.current.contentFilterWarning));
-      expect(result.fieldName, equals('recipe_description'),
-          reason: 'fieldName must be preserved on the result for telemetry.');
+      expect(
+        result.fieldName,
+        equals('recipe_description'),
+        reason: 'fieldName must be preserved on the result for telemetry.',
+      );
     });
 
     test('English profanity is rejected with the localized warning', () {
@@ -94,10 +101,14 @@ void main() {
       );
 
       expect(result.isClean, isFalse);
-      expect(result.reason, isNot(contains('super_secret_internal_field')),
-          reason: 'User-facing reason must be generic so the same string '
-              'works in inline errorText AND SnackBar without a field name '
-              'leaking into the UI.');
+      expect(
+        result.reason,
+        isNot(contains('super_secret_internal_field')),
+        reason:
+            'User-facing reason must be generic so the same string '
+            'works in inline errorText AND SnackBar without a field name '
+            'leaking into the UI.',
+      );
     });
 
     test('per-field-type behavior is identical (no fieldName branching)', () {
@@ -121,8 +132,11 @@ void main() {
 
       for (final f in fields) {
         final result = service.ensureClean(dirty, fieldName: f);
-        expect(result.isClean, isFalse,
-            reason: 'expected reject for fieldName=$f');
+        expect(
+          result.isClean,
+          isFalse,
+          reason: 'expected reject for fieldName=$f',
+        );
         expect(result.reason, equals(AppLocale.current.contentFilterWarning));
       }
     });
@@ -136,10 +150,14 @@ void main() {
         fieldName: 'recipe_title',
       );
 
-      expect(result.isClean, isTrue,
-          reason: '"fantastisk" contains "fan" as a substring but is not the '
-              'standalone profanity. Substring match would be a false '
-              'positive that ships into Swedish UGC daily.');
+      expect(
+        result.isClean,
+        isTrue,
+        reason:
+            '"fantastisk" contains "fan" as a substring but is not the '
+            'standalone profanity. Substring match would be a false '
+            'positive that ships into Swedish UGC daily.',
+      );
     });
 
     test('case-insensitive matching', () {
@@ -227,8 +245,11 @@ void main() {
         'falukorv med stuvade makaroner',
       ];
       for (final s in safe) {
-        expect(service.containsProfanity(s), isFalse,
-            reason: 'expected legitimate recipe text to pass: "$s"');
+        expect(
+          service.containsProfanity(s),
+          isFalse,
+          reason: 'expected legitimate recipe text to pass: "$s"',
+        );
       }
     });
   });

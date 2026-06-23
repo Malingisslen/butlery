@@ -23,7 +23,8 @@ class ParsedRecipeCache {
   late final LruMap<String, _CacheEntry> _cache = LruMap(
     maxSize: _maxSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=ParsedRecipeCache key=$key bound=$_maxSize'),
+      'cache_eviction service=ParsedRecipeCache key=$key bound=$_maxSize',
+    ),
   );
 
   /// Store ParsedRecipe keyed by sourceUrl.

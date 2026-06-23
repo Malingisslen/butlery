@@ -117,10 +117,12 @@ void main() {
     when(() => coordinator.isRecipeDismissed(any())).thenReturn(false);
     when(() => coordinator.isRecipeImported(any())).thenReturn(false);
     when(() => coordinator.isRecipeViewed(any())).thenReturn(false);
-    when(() => coordinator.loadStatusForAllRecipes(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => coordinator.loadStatusForRecipe(any(), any()))
-        .thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForAllRecipes(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForRecipe(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   tearDown(() async {
@@ -137,8 +139,9 @@ void main() {
     /// wrapper must surface that as `hasError` rather than crashing the view.
     test('throws when no authenticated user', () async {
       permissionService.setPermissionState(currentUserId: null);
-      when(() => coordinator.getSharedRecipesForUser(any()))
-          .thenAnswer((_) async => []);
+      when(
+        () => coordinator.getSharedRecipesForUser(any()),
+      ).thenAnswer((_) async => []);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -156,8 +159,9 @@ void main() {
     test('filters out dismissed recipes', () async {
       final r1 = _recipe(id: 'visible');
       final r2 = _recipe(id: 'dismissed');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r1, r2]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r1, r2]);
       when(() => coordinator.isRecipeDismissed('dismissed')).thenReturn(true);
 
       final vm = makeVm();
@@ -174,8 +178,9 @@ void main() {
     test('excludes content from blocked users (read at load time)', () async {
       final fromBlocked = _recipe(id: 'r-blocked', sharedBy: 'uid-blocked');
       final fromOk = _recipe(id: 'r-ok', sharedBy: 'uid-friend');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [fromBlocked, fromOk]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [fromBlocked, fromOk]);
 
       final vm = makeVm();
       // Block someone AFTER vm is constructed but BEFORE load.
@@ -189,23 +194,26 @@ void main() {
 
     /// showImported is a UI filter (default false = hide already-imported items
     /// for a cleaner inbox). Toggling it must change visibility on next load.
-    test('showImported=false hides imported; flipping to true reveals them',
-        () async {
-      final imported = _recipe(id: 'imp');
-      final fresh = _recipe(id: 'fresh');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [imported, fresh]);
-      when(() => coordinator.isRecipeImported('imp')).thenReturn(true);
+    test(
+      'showImported=false hides imported; flipping to true reveals them',
+      () async {
+        final imported = _recipe(id: 'imp');
+        final fresh = _recipe(id: 'fresh');
+        when(
+          () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [imported, fresh]);
+        when(() => coordinator.isRecipeImported('imp')).thenReturn(true);
 
-      final vm = makeVm();
-      await vm.loadContent();
-      expect(vm.content.map((r) => r.id), ['fresh']);
+        final vm = makeVm();
+        await vm.loadContent();
+        expect(vm.content.map((r) => r.id), ['fresh']);
 
-      vm.setShowImported(true);
-      await vm.loadContent();
-      expect(vm.content.map((r) => r.id).toSet(), {'imp', 'fresh'});
-      vm.dispose();
-    });
+        vm.setShowImported(true);
+        await vm.loadContent();
+        expect(vm.content.map((r) => r.id).toSet(), {'imp', 'fresh'});
+        vm.dispose();
+      },
+    );
   });
 
   group('dismissSharedRecipe', () {
@@ -214,10 +222,12 @@ void main() {
     /// is a classic partial-write (UI lies to the user).
     test('removes locally only when coordinator confirms success', () async {
       final r = _recipe(id: 'd1');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r]);
-      when(() => coordinator.dismissSharedRecipe('d1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r]);
+      when(
+        () => coordinator.dismissSharedRecipe('d1'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -235,33 +245,39 @@ void main() {
     /// list. Prevents "UI lies, Firestore still has the item" — the case
     /// where another user revoked permission between page load and dismiss.
     /// Fixed by BUT-1068: closure now returns coordinator's bool directly.
-    test('returns false and preserves item when coordinator returns false',
-        () async {
-      final r = _recipe(id: 'd2');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r]);
-      when(() => coordinator.dismissSharedRecipe('d2'))
-          .thenAnswer((_) async => false);
+    test(
+      'returns false and preserves item when coordinator returns false',
+      () async {
+        final r = _recipe(id: 'd2');
+        when(
+          () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [r]);
+        when(
+          () => coordinator.dismissSharedRecipe('d2'),
+        ).thenAnswer((_) async => false);
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      final ok = await vm.dismissSharedRecipe(r);
+        final ok = await vm.dismissSharedRecipe(r);
 
-      expect(ok, isFalse);
-      expect(vm.content.map((r) => r.id), ['d2']);
-      vm.dispose();
-    });
+        expect(ok, isFalse);
+        expect(vm.content.map((r) => r.id), ['d2']);
+        vm.dispose();
+      },
+    );
 
     /// Rollback-on-throw: if the coordinator throws, executeOperation swallows
     /// the exception, sets an error, returns null → dismissSharedRecipe must
     /// return false AND not remove the item.
     test('returns false and preserves item when coordinator throws', () async {
       final r = _recipe(id: 'd3');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r]);
-      when(() => coordinator.dismissSharedRecipe('d3'))
-          .thenThrow(Exception('network'));
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r]);
+      when(
+        () => coordinator.dismissSharedRecipe('d3'),
+      ).thenThrow(Exception('network'));
 
       final vm = makeVm();
       await vm.loadContent();
@@ -281,8 +297,9 @@ void main() {
     /// refresh re-loaded it), we must NOT duplicate it.
     test('adds back to local list on success', () async {
       final r = _recipe(id: 'u1');
-      when(() => coordinator.undismissSharedRecipe('u1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.undismissSharedRecipe('u1'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       // Pre-condition: list is empty.
@@ -295,10 +312,12 @@ void main() {
 
     test('does not duplicate when item already present', () async {
       final r = _recipe(id: 'u2');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r]);
-      when(() => coordinator.undismissSharedRecipe('u2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r]);
+      when(
+        () => coordinator.undismissSharedRecipe('u2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -312,8 +331,9 @@ void main() {
 
     test('does not add to local list when coordinator returns false', () async {
       final r = _recipe(id: 'u3');
-      when(() => coordinator.undismissSharedRecipe('u3'))
-          .thenAnswer((_) async => false);
+      when(
+        () => coordinator.undismissSharedRecipe('u3'),
+      ).thenAnswer((_) async => false);
 
       final vm = makeVm();
       final ok = await vm.undismissSharedRecipe(r);
@@ -328,19 +348,21 @@ void main() {
     /// Already-viewed short-circuit: must NOT call markRecipeAsViewed OR
     /// loadStatusForRecipe — both are Firestore round-trips. Skipping this
     /// check would cost a write per scroll-into-view event.
-    test('short-circuits when recipe is already viewed (no repo writes)',
-        () async {
-      final r = _recipe(id: 'v1');
-      when(() => coordinator.isRecipeViewed('v1')).thenReturn(true);
+    test(
+      'short-circuits when recipe is already viewed (no repo writes)',
+      () async {
+        final r = _recipe(id: 'v1');
+        when(() => coordinator.isRecipeViewed('v1')).thenReturn(true);
 
-      final vm = makeVm();
-      final ok = await vm.markAsViewed(r);
+        final vm = makeVm();
+        final ok = await vm.markAsViewed(r);
 
-      expect(ok, isTrue);
-      verifyNever(() => coordinator.markRecipeAsViewed(any()));
-      verifyNever(() => coordinator.loadStatusForRecipe(any(), any()));
-      vm.dispose();
-    });
+        expect(ok, isTrue);
+        verifyNever(() => coordinator.markRecipeAsViewed(any()));
+        verifyNever(() => coordinator.loadStatusForRecipe(any(), any()));
+        vm.dispose();
+      },
+    );
 
     /// Happy path: not yet viewed → write happens, then status reload runs
     /// (so the cache reflects the new state), then a notification fires for
@@ -348,8 +370,9 @@ void main() {
     test('writes, reloads status, and notifies when not yet viewed', () async {
       final r = _recipe(id: 'v2');
       when(() => coordinator.isRecipeViewed('v2')).thenReturn(false);
-      when(() => coordinator.markRecipeAsViewed('v2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.markRecipeAsViewed('v2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       var notifications = 0;
@@ -359,10 +382,14 @@ void main() {
 
       expect(ok, isTrue);
       verify(() => coordinator.markRecipeAsViewed('v2')).called(1);
-      verify(() => coordinator.loadStatusForRecipe('v2', _kCurrentUid))
-          .called(1);
-      expect(notifications, greaterThanOrEqualTo(1),
-          reason: 'UI must be told to refresh the read badge');
+      verify(
+        () => coordinator.loadStatusForRecipe('v2', _kCurrentUid),
+      ).called(1);
+      expect(
+        notifications,
+        greaterThanOrEqualTo(1),
+        reason: 'UI must be told to refresh the read badge',
+      );
       vm.dispose();
     });
 
@@ -389,27 +416,31 @@ void main() {
     /// branched to the same call site.
     test('delegates to joinSharedRecipe with id + newTitle', () async {
       final r = _recipe(id: 'i1', title: 'pasta');
-      when(() => coordinator.joinSharedRecipe(
-            sharedRecipeId: any(named: 'sharedRecipeId'),
-            newTitle: any(named: 'newTitle'),
-          )).thenAnswer((_) async => 'new-id');
+      when(
+        () => coordinator.joinSharedRecipe(
+          sharedRecipeId: any(named: 'sharedRecipeId'),
+          newTitle: any(named: 'newTitle'),
+        ),
+      ).thenAnswer((_) async => 'new-id');
 
       final vm = makeVm();
       final id = await vm.importSharedRecipe(r, newTitle: 'A');
 
       expect(id, 'new-id');
-      verify(() =>
-              coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'A'))
-          .called(1);
+      verify(
+        () => coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'A'),
+      ).called(1);
       vm.dispose();
     });
 
     test('returns null and sets error when coordinator throws', () async {
       final r = _recipe(id: 'i2');
-      when(() => coordinator.joinSharedRecipe(
-            sharedRecipeId: any(named: 'sharedRecipeId'),
-            newTitle: any(named: 'newTitle'),
-          )).thenThrow(Exception('boom'));
+      when(
+        () => coordinator.joinSharedRecipe(
+          sharedRecipeId: any(named: 'sharedRecipeId'),
+          newTitle: any(named: 'newTitle'),
+        ),
+      ).thenThrow(Exception('boom'));
 
       final vm = makeVm();
       final result = await vm.importSharedRecipe(r);
@@ -428,8 +459,9 @@ void main() {
       final viewed = _recipe(id: 'v');
       final unread = _recipe(id: 'u');
       final imported = _recipe(id: 'i');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [viewed, unread, imported]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [viewed, unread, imported]);
       when(() => coordinator.isRecipeViewed('v')).thenReturn(true);
       when(() => coordinator.isRecipeImported('i')).thenReturn(true);
 
@@ -458,8 +490,9 @@ void main() {
     test('excludes recipes shared by the current user', () async {
       final mine = _recipe(id: 'mine', sharedBy: _kCurrentUid);
       final theirs = _recipe(id: 'theirs', sharedBy: 'uid-other');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [mine, theirs]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [mine, theirs]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -471,8 +504,9 @@ void main() {
     test('excludes already-imported recipes', () async {
       final imported = _recipe(id: 'imp');
       final fresh = _recipe(id: 'fresh');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [imported, fresh]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [imported, fresh]);
       when(() => coordinator.isRecipeImported('imp')).thenReturn(true);
 
       final vm = makeVm();
@@ -494,8 +528,9 @@ void main() {
       final fromAnna1 = _recipe(id: 'a1', sharedBy: 'uid-anna');
       final fromAnna2 = _recipe(id: 'a2', sharedBy: 'uid-anna');
       final fromBo = _recipe(id: 'b1', sharedBy: 'uid-bo');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [fromAnna1, fromBo, fromAnna2]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [fromAnna1, fromBo, fromAnna2]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -505,14 +540,17 @@ void main() {
         ['a1', 'a2'],
       );
       // Negative space: Bo's recipe must not leak into Anna's page.
-      expect(vm.recipesSharedBy('uid-anna').map((r) => r.id),
-          isNot(contains('b1')));
+      expect(
+        vm.recipesSharedBy('uid-anna').map((r) => r.id),
+        isNot(contains('b1')),
+      );
       vm.dispose();
     });
 
     test('returns empty list when the friend has shared nothing', () async {
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [_recipe(id: 'a1', sharedBy: 'uid-anna')]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [_recipe(id: 'a1', sharedBy: 'uid-anna')]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -529,8 +567,9 @@ void main() {
     test('excludes recipes the friend shared but I dismissed', () async {
       final visible = _recipe(id: 'a-keep', sharedBy: 'uid-anna');
       final dismissed = _recipe(id: 'a-gone', sharedBy: 'uid-anna');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [visible, dismissed]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [visible, dismissed]);
       when(() => coordinator.isRecipeDismissed('a-gone')).thenReturn(true);
 
       final vm = makeVm();
@@ -559,18 +598,20 @@ void main() {
       vm.dispose();
     });
 
-    test('non-owner with allowCollaboration but no cow trigger cannot edit',
-        () {
-      final r = _recipe(
-        id: 'r',
-        sharedBy: 'uid-other',
-        allowCollaboration: true,
-        copyOnWriteTriggered: false,
-      );
-      final vm = makeVm();
-      expect(vm.canEditRecipe(r), isFalse);
-      vm.dispose();
-    });
+    test(
+      'non-owner with allowCollaboration but no cow trigger cannot edit',
+      () {
+        final r = _recipe(
+          id: 'r',
+          sharedBy: 'uid-other',
+          allowCollaboration: true,
+          copyOnWriteTriggered: false,
+        );
+        final vm = makeVm();
+        expect(vm.canEditRecipe(r), isFalse);
+        vm.dispose();
+      },
+    );
 
     test('non-owner with both allowCollaboration AND cow trigger can edit', () {
       final r = _recipe(
@@ -600,8 +641,9 @@ void main() {
       final r1 = _recipe(id: 'r1'); // viewed=t, imported=t
       final r2 = _recipe(id: 'r2'); // viewed=t, imported=f
       final r3 = _recipe(id: 'r3'); // viewed=f, imported=t
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r1, r2, r3]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r1, r2, r3]);
       when(() => coordinator.isRecipeViewed('r1')).thenReturn(true);
       when(() => coordinator.isRecipeViewed('r2')).thenReturn(true);
       when(() => coordinator.isRecipeImported('r1')).thenReturn(true);
@@ -616,8 +658,10 @@ void main() {
       expect(result.map((r) => r.id), ['r1']);
 
       // r2 alone is viewed-but-not-imported.
-      final viewedNotImported =
-          vm.getRecipesByStatus(isViewed: true, isImported: false);
+      final viewedNotImported = vm.getRecipesByStatus(
+        isViewed: true,
+        isImported: false,
+      );
       expect(viewedNotImported.map((r) => r.id), ['r2']);
       vm.dispose();
     });
@@ -671,8 +715,9 @@ void main() {
       final r1 = _recipe(id: 'r1', sharedBy: _kCurrentUid);
       final r2 = _recipe(id: 'r2', sharedBy: 'uid-other');
       final r3 = _recipe(id: 'r3', sharedBy: 'uid-other');
-      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
-          .thenAnswer((_) async => [r1, r2, r3]);
+      when(
+        () => coordinator.getSharedRecipesForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [r1, r2, r3]);
       when(() => coordinator.isRecipeViewed('r1')).thenReturn(true);
       when(() => coordinator.isRecipeImported('r2')).thenReturn(true);
 
@@ -699,8 +744,9 @@ void main() {
   group('getSharedRecipeById', () {
     test('returns coordinator result on success', () async {
       final r = _recipe(id: 'deep-link-r');
-      when(() => coordinator.getSharedRecipeById('deep-link-r'))
-          .thenAnswer((_) async => r);
+      when(
+        () => coordinator.getSharedRecipeById('deep-link-r'),
+      ).thenAnswer((_) async => r);
 
       final vm = makeVm();
       final result = await vm.getSharedRecipeById('deep-link-r');
@@ -712,8 +758,9 @@ void main() {
     /// executeOperation contract: returns null on throw and surfaces error
     /// state — the caller must not have to handle exceptions itself.
     test('returns null and sets hasError when coordinator throws', () async {
-      when(() => coordinator.getSharedRecipeById(any()))
-          .thenThrow(Exception('not found'));
+      when(
+        () => coordinator.getSharedRecipeById(any()),
+      ).thenThrow(Exception('not found'));
 
       final vm = makeVm();
       final result = await vm.getSharedRecipeById('missing');
@@ -740,20 +787,20 @@ void main() {
     });
 
     test(
-        'loadMoreContent throws UnsupportedError when supportsPagination=false',
-        () {
-      final vm = makeVm();
-      expect(
-        () => vm.loadMoreContent(),
-        throwsA(isA<UnsupportedError>()),
-      );
-      vm.dispose();
-    });
+      'loadMoreContent throws UnsupportedError when supportsPagination=false',
+      () {
+        final vm = makeVm();
+        expect(
+          () => vm.loadMoreContent(),
+          throwsA(isA<UnsupportedError>()),
+        );
+        vm.dispose();
+      },
+    );
   });
 
   group('BUT-1075 constructor injection', () {
-    test('injected permissionService overrides the locator for currentUserId',
-        () {
+    test('injected permissionService overrides the locator for currentUserId', () {
       // Distinct uid from the bridge-registered one (_kCurrentUid) to prove the
       // ctor param wins over ServiceLocator resolution — a test can supply
       // PermissionService directly instead of relying on the production-locator
@@ -769,9 +816,13 @@ void main() {
         permissionService: injected,
       );
 
-      expect(vm.currentUserId, 'injected-uid',
-          reason: 'currentUserId must resolve from the injected '
-              'PermissionService, not the locator-registered $_kCurrentUid');
+      expect(
+        vm.currentUserId,
+        'injected-uid',
+        reason:
+            'currentUserId must resolve from the injected '
+            'PermissionService, not the locator-registered $_kCurrentUid',
+      );
       vm.dispose();
     });
 
@@ -787,9 +838,13 @@ void main() {
         friendsService: injectedFriends,
       );
 
-      expect(vm.blockedUsers, {'blocked-via-injection'},
-          reason: 'blockedUsers must read the injected UnifiedFriendsService, '
-              'not the locator-registered one (empty set)');
+      expect(
+        vm.blockedUsers,
+        {'blocked-via-injection'},
+        reason:
+            'blockedUsers must read the injected UnifiedFriendsService, '
+            'not the locator-registered one (empty set)',
+      );
       vm.dispose();
     });
   });

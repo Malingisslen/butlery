@@ -31,31 +31,30 @@ void main() {
   });
 
   test(
-      'initialize() swallows platform-channel failure and leaves defaults intact',
-      () async {
-    // In the unit-test harness the platform channel for PackageInfo is
-    // not stubbed → fromPlatform throws → catch block keeps defaults.
-    // We stub the channel to throw explicitly to make this deterministic
-    // even if PackageInfo's behaviour shifts.
-    const channel = MethodChannel('dev.fluttercommunity.plus/package_info');
-    TestWidgetsFlutterBinding.ensureInitialized()
-        .defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (call) async {
-      throw PlatformException(code: 'unavailable');
-    });
+    'initialize() swallows platform-channel failure and leaves defaults intact',
+    () async {
+      // In the unit-test harness the platform channel for PackageInfo is
+      // not stubbed → fromPlatform throws → catch block keeps defaults.
+      // We stub the channel to throw explicitly to make this deterministic
+      // even if PackageInfo's behaviour shifts.
+      const channel = MethodChannel('dev.fluttercommunity.plus/package_info');
+      TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            throw PlatformException(code: 'unavailable');
+          });
 
-    final beforeApp = VersionInfo.appVersion;
-    final beforeBuild = VersionInfo.buildNumber;
+      final beforeApp = VersionInfo.appVersion;
+      final beforeBuild = VersionInfo.buildNumber;
 
-    await VersionInfo.initialize(); // must not throw
+      await VersionInfo.initialize(); // must not throw
 
-    // Defaults preserved when initialize fails.
-    expect(VersionInfo.appVersion, beforeApp);
-    expect(VersionInfo.buildNumber, beforeBuild);
+      // Defaults preserved when initialize fails.
+      expect(VersionInfo.appVersion, beforeApp);
+      expect(VersionInfo.buildNumber, beforeBuild);
 
-    // Cleanup
-    TestWidgetsFlutterBinding.ensureInitialized()
-        .defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
-  });
+      // Cleanup
+      TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+    },
+  );
 }

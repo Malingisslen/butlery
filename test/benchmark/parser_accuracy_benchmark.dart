@@ -104,11 +104,13 @@ class AccuracyMetrics {
     }
 
     if (!result.allMatch) {
-      failures.add(FailureEntry(
-        fixture: fixture,
-        actual: actual,
-        result: result,
-      ));
+      failures.add(
+        FailureEntry(
+          fixture: fixture,
+          actual: actual,
+          result: result,
+        ),
+      );
     }
   }
 
@@ -119,19 +121,25 @@ class AccuracyMetrics {
       ..writeln('')
       ..writeln('OVERALL:')
       ..writeln(
-          '  Exact match: $exactMatches/$total (${_pct(exactMatches, total)})')
+        '  Exact match: $exactMatches/$total (${_pct(exactMatches, total)})',
+      )
       ..writeln('')
       ..writeln('PER-FIELD ACCURACY:')
       ..writeln(
-          '  quantity:       $quantityMatches/$total (${_pct(quantityMatches, total)})')
+        '  quantity:       $quantityMatches/$total (${_pct(quantityMatches, total)})',
+      )
       ..writeln(
-          '  unit:           $unitMatches/$total (${_pct(unitMatches, total)})')
+        '  unit:           $unitMatches/$total (${_pct(unitMatches, total)})',
+      )
       ..writeln(
-          '  normalizedName: $normalizedNameMatches/$total (${_pct(normalizedNameMatches, total)})')
+        '  normalizedName: $normalizedNameMatches/$total (${_pct(normalizedNameMatches, total)})',
+      )
       ..writeln(
-          '  isKnown:        $isKnownMatches/$total (${_pct(isKnownMatches, total)})')
+        '  isKnown:        $isKnownMatches/$total (${_pct(isKnownMatches, total)})',
+      )
       ..writeln(
-          '  category:       $categoryMatches/$total (${_pct(categoryMatches, total)})')
+        '  category:       $categoryMatches/$total (${_pct(categoryMatches, total)})',
+      )
       ..writeln('')
       ..writeln('PER-TAG BREAKDOWN:');
 
@@ -139,7 +147,8 @@ class AccuracyMetrics {
     for (final tag in sortedTags) {
       final m = tagMetrics[tag]!;
       buf.writeln(
-          '  $tag: ${m.exactMatches}/${m.total} exact (${_pct(m.exactMatches, m.total)})');
+        '  $tag: ${m.exactMatches}/${m.total} exact (${_pct(m.exactMatches, m.total)})',
+      );
     }
 
     if (failures.isNotEmpty) {
@@ -150,7 +159,8 @@ class AccuracyMetrics {
         buf
           ..writeln('')
           ..writeln(
-              '  INPUT: "${f.fixture.input}" [${f.fixture.tags.join(", ")}]')
+            '  INPUT: "${f.fixture.input}" [${f.fixture.tags.join(", ")}]',
+          )
           ..writeln('  DESC:  ${f.fixture.description}');
         _writeFieldDiff(buf, f);
       }
@@ -164,25 +174,34 @@ class AccuracyMetrics {
 
   void _writeFieldDiff(StringBuffer buf, FailureEntry f) {
     if (!f.result.quantityMatch) {
-      buf.writeln('    quantity:       expected=${f.fixture.expectedQuantity}, '
-          'actual=${f.actual.quantity}');
+      buf.writeln(
+        '    quantity:       expected=${f.fixture.expectedQuantity}, '
+        'actual=${f.actual.quantity}',
+      );
     }
     if (!f.result.unitMatch) {
-      buf.writeln('    unit:           expected="${f.fixture.expectedUnit}", '
-          'actual="${f.actual.unit}"');
+      buf.writeln(
+        '    unit:           expected="${f.fixture.expectedUnit}", '
+        'actual="${f.actual.unit}"',
+      );
     }
     if (!f.result.normalizedNameMatch) {
       buf.writeln(
-          '    normalizedName: expected="${f.fixture.expectedNormalizedName}", '
-          'actual="${f.actual.normalizedName}"');
+        '    normalizedName: expected="${f.fixture.expectedNormalizedName}", '
+        'actual="${f.actual.normalizedName}"',
+      );
     }
     if (!f.result.isKnownMatch) {
-      buf.writeln('    isKnown:        expected=${f.fixture.expectedIsKnown}, '
-          'actual=${f.actual.isKnown}');
+      buf.writeln(
+        '    isKnown:        expected=${f.fixture.expectedIsKnown}, '
+        'actual=${f.actual.isKnown}',
+      );
     }
     if (!f.result.categoryMatch) {
-      buf.writeln('    category:       expected=${f.fixture.expectedCategory}, '
-          'actual=${f.actual.category}');
+      buf.writeln(
+        '    category:       expected=${f.fixture.expectedCategory}, '
+        'actual=${f.actual.category}',
+      );
     }
   }
 
@@ -267,25 +286,34 @@ void _runFixture(BenchmarkFixture fixture, AccuracyMetrics metrics) {
   if (!result.allMatch) {
     final mismatches = <String>[];
     if (!result.quantityMatch) {
-      mismatches.add('quantity: expected=${fixture.expectedQuantity}, '
-          'actual=${actual.quantity}');
+      mismatches.add(
+        'quantity: expected=${fixture.expectedQuantity}, '
+        'actual=${actual.quantity}',
+      );
     }
     if (!result.unitMatch) {
-      mismatches.add('unit: expected="${fixture.expectedUnit}", '
-          'actual="${actual.unit}"');
+      mismatches.add(
+        'unit: expected="${fixture.expectedUnit}", '
+        'actual="${actual.unit}"',
+      );
     }
     if (!result.normalizedNameMatch) {
-      mismatches
-          .add('normalizedName: expected="${fixture.expectedNormalizedName}", '
-              'actual="${actual.normalizedName}"');
+      mismatches.add(
+        'normalizedName: expected="${fixture.expectedNormalizedName}", '
+        'actual="${actual.normalizedName}"',
+      );
     }
     if (!result.isKnownMatch) {
-      mismatches.add('isKnown: expected=${fixture.expectedIsKnown}, '
-          'actual=${actual.isKnown}');
+      mismatches.add(
+        'isKnown: expected=${fixture.expectedIsKnown}, '
+        'actual=${actual.isKnown}',
+      );
     }
     if (!result.categoryMatch) {
-      mismatches.add('category: expected=${fixture.expectedCategory}, '
-          'actual=${actual.category}');
+      mismatches.add(
+        'category: expected=${fixture.expectedCategory}, '
+        'actual=${actual.category}',
+      );
     }
     fail(
       'Mismatch for "${fixture.input}" (${fixture.description}):\n'
@@ -314,7 +342,8 @@ void main() {
     expect(
       exactPct,
       greaterThanOrEqualTo(80.0),
-      reason: 'Overall exact match rate should be at least 80%. '
+      reason:
+          'Overall exact match rate should be at least 80%. '
           'Got ${exactPct.toStringAsFixed(1)}% '
           '(${metrics.exactMatches}/${metrics.total})',
     );
@@ -323,7 +352,8 @@ void main() {
     expect(
       qtyPct,
       greaterThanOrEqualTo(90.0),
-      reason: 'Quantity accuracy should be at least 90%. '
+      reason:
+          'Quantity accuracy should be at least 90%. '
           'Got ${qtyPct.toStringAsFixed(1)}%',
     );
 
@@ -331,7 +361,8 @@ void main() {
     expect(
       unitPct,
       greaterThanOrEqualTo(90.0),
-      reason: 'Unit accuracy should be at least 90%. '
+      reason:
+          'Unit accuracy should be at least 90%. '
           'Got ${unitPct.toStringAsFixed(1)}%',
     );
 
@@ -339,7 +370,8 @@ void main() {
     expect(
       namePct,
       greaterThanOrEqualTo(85.0),
-      reason: 'NormalizedName accuracy should be at least 85%. '
+      reason:
+          'NormalizedName accuracy should be at least 85%. '
           'Got ${namePct.toStringAsFixed(1)}%',
     );
   });

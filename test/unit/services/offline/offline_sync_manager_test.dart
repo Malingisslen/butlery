@@ -103,8 +103,9 @@ void main() {
     group('Sync Queue Management', () {
       test('should report pending changes count', () async {
         // Arrange
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 2);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 2);
 
         // Act
         final count = await syncManager.queuedChangesCount;
@@ -115,8 +116,9 @@ void main() {
 
       test('should report has queued changes', () async {
         // Arrange
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final hasChanges = await syncManager.hasQueuedChanges;
@@ -127,8 +129,9 @@ void main() {
 
       test('should report no changes when queue is empty', () async {
         // Arrange
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final hasChanges = await syncManager.hasQueuedChanges;
@@ -141,8 +144,9 @@ void main() {
     group('Sync Operations', () {
       test('should skip sync when offline', () async {
         // Arrange — prod checks hasPending before checking isOnline
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await syncManager.syncPendingChanges(isOnline: false);
@@ -153,8 +157,9 @@ void main() {
 
       test('should skip sync when no pending changes', () async {
         // Arrange
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         await syncManager.syncPendingChanges(isOnline: true);
@@ -172,12 +177,15 @@ void main() {
 
       test('should notify on state changes', () async {
         // Arrange
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 1);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => mockSyncQueueDao.getPendingForUser(any()),
+        ).thenAnswer((_) async => []);
 
         // Act
         await syncManager.syncPendingChanges(isOnline: true);
@@ -190,12 +198,15 @@ void main() {
     group('Manual Sync', () {
       test('should return result when syncing is in progress', () async {
         // Arrange - Start a sync to set isSyncing to true
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 1);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async {
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 1);
+        when(() => mockSyncQueueDao.getPendingForUser(any())).thenAnswer((
+          _,
+        ) async {
           // Simulate slow sync
           await Future.delayed(const Duration(milliseconds: 100));
           return [];
@@ -225,8 +236,9 @@ void main() {
 
       test('should return result when no pending changes', () async {
         // Arrange
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await syncManager.syncNow(isOnline: true);
@@ -274,12 +286,15 @@ void main() {
           lastError: null,
         );
 
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 1);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async => [tagEntry]);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => mockSyncQueueDao.getPendingForUser(any()),
+        ).thenAnswer((_) async => [tagEntry]);
         when(() => mockSyncQueueDao.dequeue(any())).thenAnswer((_) async => 1);
 
         // Act
@@ -303,12 +318,15 @@ void main() {
           lastError: null,
         );
 
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 1);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async => [tagEntry]);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => mockSyncQueueDao.getPendingForUser(any()),
+        ).thenAnswer((_) async => [tagEntry]);
         when(() => mockSyncQueueDao.dequeue(any())).thenAnswer((_) async => 1);
 
         // Act
@@ -318,34 +336,41 @@ void main() {
         verify(() => mockSyncQueueDao.dequeue(42)).called(1);
       });
 
-      test('should skip and dequeue tag operation when no callback configured',
-          () async {
-        // Arrange - Use syncManager without callback
-        const recipeId = 'recipe_no_callback';
-        final tagEntry = SyncQueueEntry(
-          id: 99,
-          userId: 'test_user_123',
-          recipeId: recipeId,
-          operation: SyncOperation.tag.name,
-          queuedAt: DateTime.now(),
-          retryCount: 0,
-          lastError: null,
-        );
+      test(
+        'should skip and dequeue tag operation when no callback configured',
+        () async {
+          // Arrange - Use syncManager without callback
+          const recipeId = 'recipe_no_callback';
+          final tagEntry = SyncQueueEntry(
+            id: 99,
+            userId: 'test_user_123',
+            recipeId: recipeId,
+            operation: SyncOperation.tag.name,
+            queuedAt: DateTime.now(),
+            retryCount: 0,
+            lastError: null,
+          );
 
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 1);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async => [tagEntry]);
-        when(() => mockSyncQueueDao.dequeue(any())).thenAnswer((_) async => 1);
+          when(
+            () => mockSyncQueueDao.hasPending(any()),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockSyncQueueDao.countPending(any()),
+          ).thenAnswer((_) async => 1);
+          when(
+            () => mockSyncQueueDao.getPendingForUser(any()),
+          ).thenAnswer((_) async => [tagEntry]);
+          when(
+            () => mockSyncQueueDao.dequeue(any()),
+          ).thenAnswer((_) async => 1);
 
-        // Act - use original syncManager (no tag callback)
-        await syncManager.syncPendingChanges(isOnline: true);
+          // Act - use original syncManager (no tag callback)
+          await syncManager.syncPendingChanges(isOnline: true);
 
-        // Assert - should still dequeue even without callback
-        verify(() => mockSyncQueueDao.dequeue(99)).called(1);
-      });
+          // Assert - should still dequeue even without callback
+          verify(() => mockSyncQueueDao.dequeue(99)).called(1);
+        },
+      );
 
       test('should process multiple tag operations in sequence', () async {
         // Arrange - Two tag operations for different recipes
@@ -379,12 +404,15 @@ void main() {
           },
         );
 
-        when(() => mockSyncQueueDao.hasPending(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockSyncQueueDao.countPending(any()))
-            .thenAnswer((_) async => 2);
-        when(() => mockSyncQueueDao.getPendingForUser(any()))
-            .thenAnswer((_) async => [tagEntry1, tagEntry2]);
+        when(
+          () => mockSyncQueueDao.hasPending(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockSyncQueueDao.countPending(any()),
+        ).thenAnswer((_) async => 2);
+        when(
+          () => mockSyncQueueDao.getPendingForUser(any()),
+        ).thenAnswer((_) async => [tagEntry1, tagEntry2]);
         when(() => mockSyncQueueDao.dequeue(any())).thenAnswer((_) async => 1);
 
         // Act
@@ -401,11 +429,13 @@ void main() {
         const userId = 'test_user';
         const recipeId = 'recipe_to_queue';
 
-        when(() => mockSyncQueueDao.enqueue(
-              userId: any(named: 'userId'),
-              recipeId: any(named: 'recipeId'),
-              operation: any(named: 'operation'),
-            )).thenAnswer((_) async => 1);
+        when(
+          () => mockSyncQueueDao.enqueue(
+            userId: any(named: 'userId'),
+            recipeId: any(named: 'recipeId'),
+            operation: any(named: 'operation'),
+          ),
+        ).thenAnswer((_) async => 1);
 
         // Act
         await syncManagerWithTagCallback.queueTagging(
@@ -414,11 +444,13 @@ void main() {
         );
 
         // Assert
-        verify(() => mockSyncQueueDao.enqueue(
-              userId: userId,
-              recipeId: recipeId,
-              operation: SyncOperation.tag,
-            )).called(1);
+        verify(
+          () => mockSyncQueueDao.enqueue(
+            userId: userId,
+            recipeId: recipeId,
+            operation: SyncOperation.tag,
+          ),
+        ).called(1);
       });
     });
   });

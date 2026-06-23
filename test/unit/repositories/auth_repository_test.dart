@@ -43,10 +43,12 @@ void main() {
         );
         final mockCredential = FakeUserCredential(mockUser);
 
-        when(() => mockFirebaseAuth.signInWithEmailAndPassword(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => mockCredential);
+        when(
+          () => mockFirebaseAuth.signInWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => mockCredential);
 
         // Act
         final result = await repository.login(
@@ -57,29 +59,37 @@ void main() {
         // Assert
         expect(result, isNotNull);
         expect(result.user, mockUser);
-        verify(() => mockFirebaseAuth.signInWithEmailAndPassword(
-              email: 'test@example.com',
-              password: 'password123',
-            )).called(1);
+        verify(
+          () => mockFirebaseAuth.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).called(1);
       });
 
-      test('should throw FirebaseAuthException on invalid credentials',
-          () async {
-        // Arrange
-        when(() => mockFirebaseAuth.signInWithEmailAndPassword(
+      test(
+        'should throw FirebaseAuthException on invalid credentials',
+        () async {
+          // Arrange
+          when(
+            () => mockFirebaseAuth.signInWithEmailAndPassword(
               email: any(named: 'email'),
               password: any(named: 'password'),
-            )).thenThrow(FirebaseAuthException(
-          code: 'wrong-password',
-          message: 'Invalid password',
-        ));
+            ),
+          ).thenThrow(
+            FirebaseAuthException(
+              code: 'wrong-password',
+              message: 'Invalid password',
+            ),
+          );
 
-        // Act & Assert
-        expect(
-          () => repository.login('test@example.com', 'wrongpass'),
-          throwsA(isA<FirebaseAuthException>()),
-        );
-      });
+          // Act & Assert
+          expect(
+            () => repository.login('test@example.com', 'wrongpass'),
+            throwsA(isA<FirebaseAuthException>()),
+          );
+        },
+      );
     });
 
     group('User Creation', () {
@@ -91,10 +101,12 @@ void main() {
         );
         final mockCredential = FakeUserCredential(mockUser);
 
-        when(() => mockFirebaseAuth.createUserWithEmailAndPassword(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => mockCredential);
+        when(
+          () => mockFirebaseAuth.createUserWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => mockCredential);
 
         // Act
         final result = await repository.createUser(
@@ -105,21 +117,27 @@ void main() {
         // Assert
         expect(result, isNotNull);
         expect(result.user?.email, 'newuser@example.com');
-        verify(() => mockFirebaseAuth.createUserWithEmailAndPassword(
-              email: 'newuser@example.com',
-              password: 'password123',
-            )).called(1);
+        verify(
+          () => mockFirebaseAuth.createUserWithEmailAndPassword(
+            email: 'newuser@example.com',
+            password: 'password123',
+          ),
+        ).called(1);
       });
 
       test('should handle email already in use error', () async {
         // Arrange
-        when(() => mockFirebaseAuth.createUserWithEmailAndPassword(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'email-already-in-use',
-              message: 'Email already exists',
-            ));
+        when(
+          () => mockFirebaseAuth.createUserWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'email-already-in-use',
+            message: 'Email already exists',
+          ),
+        );
 
         // Act & Assert
         expect(
@@ -128,7 +146,8 @@ void main() {
             allOf(
               isA<FirebaseAuthException>(),
               predicate<FirebaseAuthException>(
-                  (e) => e.code == 'email-already-in-use'),
+                (e) => e.code == 'email-already-in-use',
+              ),
             ),
           ),
         );
@@ -180,27 +199,35 @@ void main() {
     group('Password Reset', () {
       test('should send password reset email', () async {
         // Arrange
-        when(() => mockFirebaseAuth.sendPasswordResetEmail(
-              email: any(named: 'email'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockFirebaseAuth.sendPasswordResetEmail(
+            email: any(named: 'email'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await repository.sendPasswordResetEmail('test@example.com');
 
         // Assert
-        verify(() => mockFirebaseAuth.sendPasswordResetEmail(
-              email: 'test@example.com',
-            )).called(1);
+        verify(
+          () => mockFirebaseAuth.sendPasswordResetEmail(
+            email: 'test@example.com',
+          ),
+        ).called(1);
       });
 
       test('should handle user not found error', () async {
         // Arrange
-        when(() => mockFirebaseAuth.sendPasswordResetEmail(
-              email: any(named: 'email'),
-            )).thenAnswer((_) async => throw FirebaseAuthException(
-              code: 'user-not-found',
-              message: 'User not found',
-            ));
+        when(
+          () => mockFirebaseAuth.sendPasswordResetEmail(
+            email: any(named: 'email'),
+          ),
+        ).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'User not found',
+          ),
+        );
 
         // Act & Assert
         expect(
@@ -249,11 +276,12 @@ void main() {
           email: 'test@example.com',
         );
         mockFirebaseAuth.setAuthState(currentUser: mockUser);
-        when(() => mockUser.delete())
-            .thenAnswer((_) async => throw FirebaseAuthException(
-                  code: 'requires-recent-login',
-                  message: 'Recent login required',
-                ));
+        when(() => mockUser.delete()).thenAnswer(
+          (_) async => throw FirebaseAuthException(
+            code: 'requires-recent-login',
+            message: 'Recent login required',
+          ),
+        );
 
         // Act & Assert
         expect(
@@ -262,7 +290,8 @@ void main() {
             allOf(
               isA<FirebaseAuthException>(),
               predicate<FirebaseAuthException>(
-                  (e) => e.code == 'requires-recent-login'),
+                (e) => e.code == 'requires-recent-login',
+              ),
             ),
           ),
         );
@@ -352,8 +381,9 @@ void main() {
           null,
         ]);
 
-        when(() => mockFirebaseAuth.authStateChanges())
-            .thenAnswer((_) => authStateStream);
+        when(
+          () => mockFirebaseAuth.authStateChanges(),
+        ).thenAnswer((_) => authStateStream);
 
         // Act & Assert
         await expectLater(
@@ -372,10 +402,12 @@ void main() {
         );
         final mockCredential = FakeUserCredential(mockUser);
 
-        when(() => mockFirebaseAuth.signInWithEmailAndPassword(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => mockCredential);
+        when(
+          () => mockFirebaseAuth.signInWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => mockCredential);
 
         // Act
         await repository.signIn(
@@ -384,10 +416,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockFirebaseAuth.signInWithEmailAndPassword(
-              email: 'test@example.com',
-              password: 'password123',
-            )).called(1);
+        verify(
+          () => mockFirebaseAuth.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).called(1);
       });
     });
   });

@@ -16,16 +16,17 @@ import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
 import 'package:butlery/widgets/common/input/shopping_item_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 void main() {
   group('InputComponents.instructionEditor', () {
-    testWidgets('returns an InstructionEditor with the supplied instructions',
-        (tester) async {
+    testWidgets('returns an InstructionEditor with the supplied instructions', (
+      tester,
+    ) async {
       final widget = InputComponents.instructionEditor(
         initialInstructions: const ['Step 1', 'Step 2'],
         onChanged: (_) {},
@@ -80,8 +81,9 @@ void main() {
   });
 
   group('InputComponents.debouncedCheckbox', () {
-    testWidgets('returns a DebouncedCheckbox with supplied value',
-        (tester) async {
+    testWidgets('returns a DebouncedCheckbox with supplied value', (
+      tester,
+    ) async {
       final widget = InputComponents.debouncedCheckbox(
         value: true,
         onChanged: (_) {},
@@ -108,31 +110,39 @@ void main() {
     });
 
     testWidgets('mounts and renders without throwing', (tester) async {
-      await tester.pumpWidget(_wrap(InputComponents.debouncedCheckbox(
-        value: false,
-        onChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          InputComponents.debouncedCheckbox(
+            value: false,
+            onChanged: (_) {},
+          ),
+        ),
+      );
       expect(find.byType(DebouncedCheckbox), findsOneWidget);
       expect(find.byType(Checkbox), findsOneWidget);
     });
   });
 
   group('InputComponents.showShoppingItemDialog', () {
-    testWidgets('shows an AddUnifiedShoppingItemDialog on call',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () => InputComponents.showShoppingItemDialog(context),
-              child: const Text('Open dialog'),
+    testWidgets('shows an AddUnifiedShoppingItemDialog on call', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () =>
+                    InputComponents.showShoppingItemDialog(context),
+                child: const Text('Open dialog'),
+              ),
             ),
           ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Open dialog'));
       await tester.pumpAndSettle();
@@ -140,24 +150,29 @@ void main() {
       expect(find.byType(AddUnifiedShoppingItemDialog), findsOneWidget);
     });
 
-    testWidgets('returns null when dialog dismissed via barrier',
-        (tester) async {
+    testWidgets('returns null when dialog dismissed via barrier', (
+      tester,
+    ) async {
       Object? result = const Object();
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () async {
-                result = await InputComponents.showShoppingItemDialog(context);
-              },
-              child: const Text('Open'),
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () async {
+                  result = await InputComponents.showShoppingItemDialog(
+                    context,
+                  );
+                },
+                child: const Text('Open'),
+              ),
             ),
           ),
         ),
-      ));
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       expect(find.byType(AddUnifiedShoppingItemDialog), findsOneWidget);

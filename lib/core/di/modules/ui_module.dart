@@ -84,77 +84,76 @@ class UIModule implements DIModule {
 
   @override
   List<Type> get dependencies => [
-        CoreModule,
-        ContentModule,
-        PantryModule,
-        SocialModule,
-        CollaborationModule,
-        MessagingModule,
-      ];
+    CoreModule,
+    ContentModule,
+    PantryModule,
+    SocialModule,
+    CollaborationModule,
+    MessagingModule,
+  ];
 
   @override
   List<Type> get provides => [
-        // Core ViewModels
-        AuthViewModel,
-        UserProfileViewModel,
-        ProfileViewModel,
+    // Core ViewModels
+    AuthViewModel,
+    UserProfileViewModel,
+    ProfileViewModel,
 
-        // Recipe ViewModels
-        RecipeListViewModel,
-        UnifiedRecipeViewModel,
-        SocialRecipeViewModel,
-        RecipeFormViewModel,
+    // Recipe ViewModels
+    RecipeListViewModel,
+    UnifiedRecipeViewModel,
+    SocialRecipeViewModel,
+    RecipeFormViewModel,
 
-        // Menu ViewModels
-        MenuViewModel,
-        RealtimeMenuViewModel,
-        WeeklyMenuPlanViewModel,
+    // Menu ViewModels
+    MenuViewModel,
+    RealtimeMenuViewModel,
+    WeeklyMenuPlanViewModel,
 
-        // Shopping ViewModels
-        UnifiedShoppingViewModel,
-        CreateSharedListViewModel,
-        ShoppingShareViewModel,
-        SharedShoppingListsViewModel,
+    // Shopping ViewModels
+    UnifiedShoppingViewModel,
+    CreateSharedListViewModel,
+    ShoppingShareViewModel,
+    SharedShoppingListsViewModel,
 
-        // Pantry ViewModel
-        PantryViewModel,
+    // Pantry ViewModel
+    PantryViewModel,
 
-        // Ingredient Search ViewModel
-        IngredientSearchViewModel,
+    // Ingredient Search ViewModel
+    IngredientSearchViewModel,
 
-        // Social ViewModels
-        FriendsViewModel,
-        ActivityFeedViewModel,
-        SharedContentCoordinatorViewModel,
-        SharedMenuViewModel,
-        CreateGroupViewModel,
-        GroupInvitationsViewModel,
-        // Import ViewModels
-        TextImportViewModel,
-        UrlImportViewModel,
-        PhotoImportViewModel,
-        ArchiveImportViewModel,
+    // Social ViewModels
+    FriendsViewModel,
+    ActivityFeedViewModel,
+    SharedContentCoordinatorViewModel,
+    SharedMenuViewModel,
+    CreateGroupViewModel,
+    GroupInvitationsViewModel,
+    // Import ViewModels
+    TextImportViewModel,
+    UrlImportViewModel,
+    PhotoImportViewModel,
+    ArchiveImportViewModel,
 
-        // Communication ViewModels
-        ConversationsViewModel,
+    // Communication ViewModels
+    ConversationsViewModel,
 
-        // Other ViewModels
-        CollaborativeStatusViewModel,
-        UniversalShareDialogViewModel,
+    // Other ViewModels
+    CollaborativeStatusViewModel,
+    UniversalShareDialogViewModel,
 
-        // Tagging ViewModels (singleton - maintains Firestore stream)
-        PersonalTagViewModel,
+    // Tagging ViewModels (singleton - maintains Firestore stream)
+    PersonalTagViewModel,
 
-        // Onboarding ViewModel
-        OnboardingViewModel,
+    // Onboarding ViewModel
+    OnboardingViewModel,
 
-        // Settings ViewModels
-        MyReportsViewModel,
-      ];
+    // Settings ViewModels
+    MyReportsViewModel,
+  ];
 
   @override
-  int get priority =>
-      100; // UI has lowest priority, runs after all other modules
+  int get priority => 100; // UI has lowest priority, runs after all other modules
 
   @override
   Future<void> configureUserScope(GetIt container) async {
@@ -303,8 +302,8 @@ class UIModule implements DIModule {
       // Shared Content Coordinator ViewModel - modular architecture
       container.registerFactory<SharedContentCoordinatorViewModel>(
         () => SharedContentCoordinatorViewModel(
-            // ViewModels created internally if not provided
-            ),
+          // ViewModels created internally if not provided
+        ),
       );
 
       // Shared Menu ViewModel - Week 2 Task 1 Completion

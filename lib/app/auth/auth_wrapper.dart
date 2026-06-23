@@ -92,7 +92,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
       final user = _authService.currentUser;
       if (user != null) {
         AppLogger.debug(
-            'AuthWrapper: User authenticated: ${user.uid.maskedUserId}');
+          'AuthWrapper: User authenticated: ${user.uid.maskedUserId}',
+        );
         // Re-process pending deep link when transitioning to authenticated
         if (!_wasAuthenticated) {
           DeepLinkHandler().processPendingDeepLink(context);
@@ -128,7 +129,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (user != null) {
       // Email verification gate for new users (soft — dismissable)
       if (!_verificationDismissed) {
-        final createdAfterGate = user.metadata.creationTime?.isAfter(
+        final createdAfterGate =
+            user.metadata.creationTime?.isAfter(
               _verificationGateDate,
             ) ??
             false;
@@ -169,7 +171,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // when creationTime is null/unknown so returning users still resume
         // correctly.
         final createdAt = user.metadata.creationTime;
-        final isFreshSignup = createdAt != null &&
+        final isFreshSignup =
+            createdAt != null &&
             clock.now().difference(createdAt) < const Duration(seconds: 5);
         if (isFreshSignup) {
           return KeyedSubtree(
@@ -246,7 +249,8 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
       builder: (context, snap) {
         if (!snap.hasData) {
           return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final resolution = snap.data!;
         // Schedule nudge for after first frame so we have a Scaffold context.

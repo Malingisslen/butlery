@@ -145,21 +145,29 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
       title = _extractBySelector(document, config.titleSelectorFallback);
     }
 
-    var ingredientElements =
-        _extractAllBySelector(document, config.ingredientsSelector);
+    var ingredientElements = _extractAllBySelector(
+      document,
+      config.ingredientsSelector,
+    );
     if (ingredientElements.isEmpty &&
         config.ingredientsSelectorFallback != null) {
-      ingredientElements =
-          _extractAllBySelector(document, config.ingredientsSelectorFallback);
+      ingredientElements = _extractAllBySelector(
+        document,
+        config.ingredientsSelectorFallback,
+      );
     }
     final ingredients = await _parseIngredients(ingredientElements, context);
 
-    var instructionElements =
-        _extractAllBySelector(document, config.instructionsSelector);
+    var instructionElements = _extractAllBySelector(
+      document,
+      config.instructionsSelector,
+    );
     if (instructionElements.isEmpty &&
         config.instructionsSelectorFallback != null) {
-      instructionElements =
-          _extractAllBySelector(document, config.instructionsSelectorFallback);
+      instructionElements = _extractAllBySelector(
+        document,
+        config.instructionsSelectorFallback,
+      );
     }
     final instructions = _parseInstructions(instructionElements);
 
@@ -175,8 +183,10 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     final imageUrl = _extractImageBySelector(document, config.imageSelector);
 
     // Extract description
-    final description =
-        _extractBySelector(document, config.descriptionSelector);
+    final description = _extractBySelector(
+      document,
+      config.descriptionSelector,
+    );
 
     // Check minimum requirements
     if (ingredients.value == null || ingredients.value!.isEmpty) {
@@ -318,10 +328,14 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     }
 
     // Try to extract minutes
-    final minMatch =
-        RegExp(r'(\d+)\s*(?:min|m\b)', caseSensitive: false).firstMatch(text);
-    final hourMatch = RegExp(r'(\d+)\s*(?:tim|h\b|hour)', caseSensitive: false)
-        .firstMatch(text);
+    final minMatch = RegExp(
+      r'(\d+)\s*(?:min|m\b)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    final hourMatch = RegExp(
+      r'(\d+)\s*(?:tim|h\b|hour)',
+      caseSensitive: false,
+    ).firstMatch(text);
 
     var totalMinutes = 0;
 

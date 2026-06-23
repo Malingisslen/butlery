@@ -70,11 +70,11 @@ class FirebaseTestSetup {
     String email = 'test@example.com',
     String password = 'testpass123',
   }) async {
-    final credential =
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    final credential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
     return credential.user!;
   }
 

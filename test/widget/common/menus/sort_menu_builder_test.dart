@@ -38,48 +38,53 @@ Widget _menuHost({
 
 void main() {
   group('SortMenuBuilder.buildItems', () {
-    testWidgets('produces exactly 8 entries — one per shipped SortCriteria',
-        (tester) async {
+    testWidgets('produces exactly 8 entries — one per shipped SortCriteria', (
+      tester,
+    ) async {
       late List<PopupMenuItem<SortCriteria>> items;
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              items = SortMenuBuilder.buildItems(
-                context: context,
-                currentSort: SortCriteria.title,
-                sortAscending: true,
-              );
-              return const SizedBox();
-            },
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                items = SortMenuBuilder.buildItems(
+                  context: context,
+                  currentSort: SortCriteria.title,
+                  sortAscending: true,
+                );
+                return const SizedBox();
+              },
+            ),
           ),
         ),
-      ));
+      );
       expect(items.length, 8);
     });
 
     testWidgets('items carry the expected SortCriteria values', (tester) async {
       late List<PopupMenuItem<SortCriteria>> items;
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              items = SortMenuBuilder.buildItems(
-                context: context,
-                currentSort: SortCriteria.title,
-                sortAscending: true,
-              );
-              return const SizedBox();
-            },
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('sv'),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                items = SortMenuBuilder.buildItems(
+                  context: context,
+                  currentSort: SortCriteria.title,
+                  sortAscending: true,
+                );
+                return const SizedBox();
+              },
+            ),
           ),
         ),
-      ));
+      );
 
       final values = items.map((i) => i.value).toList();
       expect(values, [
@@ -97,10 +102,12 @@ void main() {
 
   group('SortMenuBuilder — rendered menu', () {
     testWidgets('opening menu shows all Swedish labels', (tester) async {
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.title,
-        sortAscending: true,
-      ));
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.title,
+          sortAscending: true,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -114,12 +121,15 @@ void main() {
       expect(find.text('Slumpa'), findsOneWidget);
     });
 
-    testWidgets('ascending=true → selected row has arrow_upward',
-        (tester) async {
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.rating,
-        sortAscending: true,
-      ));
+    testWidgets('ascending=true → selected row has arrow_upward', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.rating,
+          sortAscending: true,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -127,12 +137,15 @@ void main() {
       expect(find.byIcon(Icons.arrow_downward), findsNothing);
     });
 
-    testWidgets('ascending=false → selected row has arrow_downward',
-        (tester) async {
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.rating,
-        sortAscending: false,
-      ));
+    testWidgets('ascending=false → selected row has arrow_downward', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.rating,
+          sortAscending: false,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -140,12 +153,15 @@ void main() {
       expect(find.byIcon(Icons.arrow_upward), findsNothing);
     });
 
-    testWidgets('only the selected criterion gets a direction arrow',
-        (tester) async {
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.newest,
-        sortAscending: true,
-      ));
+    testWidgets('only the selected criterion gets a direction arrow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.newest,
+          sortAscending: true,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
@@ -153,14 +169,17 @@ void main() {
       expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
     });
 
-    testWidgets('tapping an item invokes onSelected with that criterion',
-        (tester) async {
+    testWidgets('tapping an item invokes onSelected with that criterion', (
+      tester,
+    ) async {
       SortCriteria? picked;
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.title,
-        sortAscending: true,
-        onSelected: (c) => picked = c,
-      ));
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.title,
+          sortAscending: true,
+          onSelected: (c) => picked = c,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Betyg'));
@@ -170,10 +189,12 @@ void main() {
     });
 
     testWidgets('each row shows its leading icon', (tester) async {
-      await tester.pumpWidget(_menuHost(
-        currentSort: SortCriteria.title,
-        sortAscending: true,
-      ));
+      await tester.pumpWidget(
+        _menuHost(
+          currentSort: SortCriteria.title,
+          sortAscending: true,
+        ),
+      );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 

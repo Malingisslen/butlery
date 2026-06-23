@@ -72,39 +72,51 @@ void main() {
       mockDeviceRepo = _MockDeviceRepo();
 
       // Stub notifications repository
-      when(() => mockNotificationsRepo.getNotificationPreferences(any()))
-          .thenAnswer((_) async => NotificationPreferences.defaults());
-      when(() =>
-              mockNotificationsRepo.updateNotificationPreferences(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockNotificationsRepo.getNotificationPreferences(any()),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => mockNotificationsRepo.updateNotificationPreferences(any(), any()),
+      ).thenAnswer((_) async {});
 
       // Stub history repository
-      when(() => mockHistoryRepo.wasNotificationSent(any()))
-          .thenAnswer((_) async => false);
-      when(() => mockHistoryRepo.recordNotification(
-            notificationId: any(named: 'notificationId'),
-            category: any(named: 'category'),
-            type: any(named: 'type'),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async {});
-      when(() => mockHistoryRepo.markNotificationDelivered(any()))
-          .thenAnswer((_) async {});
-      when(() => mockHistoryRepo.markNotificationOpened(any()))
-          .thenAnswer((_) async {});
-      when(() => mockHistoryRepo.getHistory(any(),
+      when(
+        () => mockHistoryRepo.wasNotificationSent(any()),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockHistoryRepo.recordNotification(
+          notificationId: any(named: 'notificationId'),
+          category: any(named: 'category'),
+          type: any(named: 'type'),
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockHistoryRepo.markNotificationDelivered(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockHistoryRepo.markNotificationOpened(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockHistoryRepo.getHistory(
+          any(),
           limit: any(named: 'limit'),
-          before: any(named: 'before'))).thenAnswer((_) async => []);
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((_) async => []);
 
       // Register notifications repo override so internal modules can find it
       TestServiceLocator.registerMock<NotificationsRepository>(
-          mockNotificationsRepo);
+        mockNotificationsRepo,
+      );
 
       // BUT-1181: NotificationAnalyticsManager resolves its repo via
       // ServiceLocator.get at construction — register a mock so the service
       // builds. The 15 preferences/quiet-hours/utility tests don't drive the
       // analytics write/read paths, so a bare mock is sufficient.
       TestServiceLocator.registerMock<NotificationAnalyticsRepository>(
-          _MockAnalyticsRepo());
+        _MockAnalyticsRepo(),
+      );
 
       service = NotificationService(
         notificationsRepository: mockNotificationsRepo,
@@ -137,8 +149,9 @@ void main() {
       });
 
       test('should handle preferences fetch failure gracefully', () async {
-        when(() => mockNotificationsRepo.getNotificationPreferences(any()))
-            .thenThrow(Exception('DB error'));
+        when(
+          () => mockNotificationsRepo.getNotificationPreferences(any()),
+        ).thenThrow(Exception('DB error'));
 
         // getPreferences uses the preference manager which caches;
         // on error it should return defaults via the manager's fallback

@@ -74,7 +74,8 @@ class DebouncedSyncOperations {
     setSyncTimer(newTimer);
 
     AppLogger.debug(
-        'Scheduled sync for recipe: $recipeId (${pendingSyncIds.length} pending)');
+      'Scheduled sync for recipe: $recipeId (${pendingSyncIds.length} pending)',
+    );
   }
 
   /// Sync all pending recipes to Firebase
@@ -91,7 +92,8 @@ class DebouncedSyncOperations {
     pendingSyncIds.removeAll(recipesToSync);
 
     AppLogger.debug(
-        'Syncing ${recipesToSync.length} pending recipes to Firebase');
+      'Syncing ${recipesToSync.length} pending recipes to Firebase',
+    );
 
     final failedIds = <String>[];
 
@@ -114,7 +116,8 @@ class DebouncedSyncOperations {
       AppLogger.success('Successfully synced ${recipesToSync.length} recipes');
     } else {
       AppLogger.warning(
-          '${failedIds.length}/${recipesToSync.length} recipes failed to sync');
+        '${failedIds.length}/${recipesToSync.length} recipes failed to sync',
+      );
       // Only re-add IDs that truly failed and aren't already re-queued
       for (final id in failedIds) {
         pendingSyncIds.add(id);
@@ -163,7 +166,8 @@ class DebouncedSyncOperations {
       AppLogger.debug('Personal recipe synced: ${recipe.title}');
     } catch (e) {
       AppLogger.error(
-          'Repository sync error for personal recipe ${recipe.id}: $e');
+        'Repository sync error for personal recipe ${recipe.id}: $e',
+      );
       rethrow;
     }
   }
@@ -181,7 +185,8 @@ class DebouncedSyncOperations {
       AppLogger.debug('Collaborative recipe synced: ${recipe.title}');
     } catch (e) {
       AppLogger.error(
-          'Repository sync error for collaborative recipe ${recipe.id}: $e');
+        'Repository sync error for collaborative recipe ${recipe.id}: $e',
+      );
       rethrow;
     }
   }
@@ -196,16 +201,19 @@ class DebouncedSyncOperations {
 
     AppLogger.info('Syncing ${recipeIds.length} recipes immediately');
 
-    final syncFutures = recipeIds.map((recipeId) => _syncRecipeToFirebase(
-          recipeId: recipeId,
-          recipeLoader: recipeLoader,
-          currentUserId: currentUserId,
-        ));
+    final syncFutures = recipeIds.map(
+      (recipeId) => _syncRecipeToFirebase(
+        recipeId: recipeId,
+        recipeLoader: recipeLoader,
+        currentUserId: currentUserId,
+      ),
+    );
 
     try {
       await Future.wait(syncFutures);
       AppLogger.success(
-          '✅ Successfully synced ${recipeIds.length} recipes immediately');
+        '✅ Successfully synced ${recipeIds.length} recipes immediately',
+      );
     } catch (e) {
       AppLogger.error('❌ Error in immediate sync: $e');
       rethrow;
@@ -328,7 +336,8 @@ class DebouncedSyncOperations {
 
     // For other errors, log and continue
     AppLogger.warning(
-        'Non-network sync error for $recipeId, added to retry queue');
+      'Non-network sync error for $recipeId, added to retry queue',
+    );
   }
 
   /// Retry failed syncs

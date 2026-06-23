@@ -40,8 +40,10 @@ class FeedbackService extends BaseService {
 
       if (screenshot != null) {
         try {
-          screenshotUrl =
-              await _feedbackRepository.uploadScreenshot(userId, screenshot);
+          screenshotUrl = await _feedbackRepository.uploadScreenshot(
+            userId,
+            screenshot,
+          );
         } catch (e) {
           AppLogger.warning('Screenshot upload failed, submitting without: $e');
         }

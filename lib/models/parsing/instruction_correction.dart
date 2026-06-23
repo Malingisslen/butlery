@@ -104,12 +104,12 @@ class InstructionCorrection {
   }
 
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        if (originalIndex != null) 'originalIndex': originalIndex,
-        if (correctedIndex != null) 'correctedIndex': correctedIndex,
-        if (originalText != null) 'originalText': originalText,
-        if (correctedText != null) 'correctedText': correctedText,
-      };
+    'type': type.name,
+    if (originalIndex != null) 'originalIndex': originalIndex,
+    if (correctedIndex != null) 'correctedIndex': correctedIndex,
+    if (originalText != null) 'originalText': originalText,
+    if (correctedText != null) 'correctedText': correctedText,
+  };
 
   factory InstructionCorrection.fromJson(Map<String, dynamic> json) {
     return InstructionCorrection(
@@ -118,8 +118,10 @@ class InstructionCorrection {
         orElse: () => InstructionCorrectionType.textModified,
       ),
       originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
-      correctedIndex:
-          SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      correctedIndex: SerializationUtils.safeNullableInt(
+        json,
+        'correctedIndex',
+      ),
       originalText: json['originalText']?.toString(),
       correctedText: json['correctedText']?.toString(),
     );

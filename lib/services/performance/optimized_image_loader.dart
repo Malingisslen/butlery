@@ -67,7 +67,8 @@ class ImageMemoryCacheManager {
 
     if (currentSizeMB > _maxCacheSizeMB) {
       AppLogger.warning(
-          'Image cache memory pressure: ${currentSizeMB.toStringAsFixed(2)}MB');
+        'Image cache memory pressure: ${currentSizeMB.toStringAsFixed(2)}MB',
+      );
       _clearLeastRecentlyUsed();
     }
   }
@@ -282,7 +283,9 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           AnimatedOpacity(
             opacity: _isLoadingFull ? 1.0 : 0.0,
             duration: AnimationUtils.getDuration(
-                context, const Duration(milliseconds: 200)),
+              context,
+              const Duration(milliseconds: 200),
+            ),
             child: _buildThumbnailLayer(),
           ),
 
@@ -299,7 +302,9 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           AnimatedOpacity(
             opacity: _isLoadingFull ? 1.0 : 0.0,
             duration: AnimationUtils.getDuration(
-                context, const Duration(milliseconds: 200)),
+              context,
+              const Duration(milliseconds: 200),
+            ),
             child: widget.placeholder!,
           ),
       ],
@@ -364,10 +369,12 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
       imageUrl: optimizedUrl,
       cacheKey: FirebaseUrlUtils.stableCacheKey(optimizedUrl),
       fit: widget.fit,
-      memCacheWidth:
-          cacheSize.width == double.infinity ? 800 : cacheSize.width.toInt(),
-      memCacheHeight:
-          cacheSize.height == double.infinity ? 600 : cacheSize.height.toInt(),
+      memCacheWidth: cacheSize.width == double.infinity
+          ? 800
+          : cacheSize.width.toInt(),
+      memCacheHeight: cacheSize.height == double.infinity
+          ? 600
+          : cacheSize.height.toInt(),
       fadeInDuration: Duration.zero, // We handle fade ourselves
       progressIndicatorBuilder: (context, url, progress) {
         if (!_isLoadingFull) {

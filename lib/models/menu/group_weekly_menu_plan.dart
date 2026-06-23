@@ -53,8 +53,11 @@ class GroupMenuParticipant {
       userId: SerializationUtils.safeString(data, 'userId'),
       permission: SerializationUtils.safeEnumByName(
         SharedListPermission.values,
-        SerializationUtils.safeString(data, 'permission',
-            defaultValue: SharedListPermission.view.name),
+        SerializationUtils.safeString(
+          data,
+          'permission',
+          defaultValue: SharedListPermission.view.name,
+        ),
         SharedListPermission.view,
       ),
       addedAt: SerializationUtils.safeRequiredDateTime(data, 'addedAt'),
@@ -134,7 +137,8 @@ class GroupWeeklyMenuPlan {
   }) {
     final weekStart = IsoWeekUtils.weekStartOf(date);
     final now = clock.now();
-    final participants = initialParticipants ??
+    final participants =
+        initialParticipants ??
         [
           GroupMenuParticipant(
             userId: creatorId,
@@ -179,8 +183,8 @@ class GroupWeeklyMenuPlan {
   /// Serialized alongside the structured `participants` list so Firestore
   /// rules can do per-user permission lookup via map key access.
   Map<String, String> get memberPermissions => {
-        for (final p in participants) p.userId: p.permission.name,
-      };
+    for (final p in participants) p.userId: p.permission.name,
+  };
 
   /// First entry at [day]/[slot], or null. Use for lunch/middag (single-recipe slots).
   WeeklyMenuPlanEntry? entryAt(DayOfWeek day, MealSlot slot) {
@@ -258,10 +262,14 @@ class GroupWeeklyMenuPlan {
         GroupMenuParticipant.fromMap,
       ),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
-      lastModifiedAt:
-          SerializationUtils.safeRequiredDateTime(data, 'lastModifiedAt'),
-      lastModifiedBy:
-          SerializationUtils.safeNullableString(data, 'lastModifiedBy'),
+      lastModifiedAt: SerializationUtils.safeRequiredDateTime(
+        data,
+        'lastModifiedAt',
+      ),
+      lastModifiedBy: SerializationUtils.safeNullableString(
+        data,
+        'lastModifiedBy',
+      ),
     );
   }
 }

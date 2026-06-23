@@ -81,14 +81,15 @@ class SocialSharingViewModel extends ChangeNotifier
     required SocialShoppingCoordinator shoppingCoordinator,
     required UnifiedMenuService menuService,
     required UnifiedShoppingService shoppingService,
-  })  : _friendsService = friendsService,
-        _recipeCoordinator = recipeCoordinator,
-        _menuCoordinator = menuCoordinator,
-        _shoppingCoordinator = shoppingCoordinator,
-        _menuService = menuService,
-        _shoppingService = shoppingService {
+  }) : _friendsService = friendsService,
+       _recipeCoordinator = recipeCoordinator,
+       _menuCoordinator = menuCoordinator,
+       _shoppingCoordinator = shoppingCoordinator,
+       _menuService = menuService,
+       _shoppingService = shoppingService {
     AppLogger.info(
-        'SocialSharingViewModel initialized for unified social sharing');
+      'SocialSharingViewModel initialized for unified social sharing',
+    );
     _initialize();
   }
 
@@ -200,7 +201,8 @@ class SocialSharingViewModel extends ChangeNotifier
     if (_shareMessage != message) {
       _shareMessage = message;
       AppLogger.info(
-          '💬 Share message updated: "${message.isEmpty ? 'EMPTY' : message}"');
+        '💬 Share message updated: "${message.isEmpty ? 'EMPTY' : message}"',
+      );
       notifyListeners();
     }
   }
@@ -211,8 +213,10 @@ class SocialSharingViewModel extends ChangeNotifier
   }
 
   /// Get suggested message for content type
-  String getSuggestedMessage(ShareableContentType contentType,
-      {String? contentTitle}) {
+  String getSuggestedMessage(
+    ShareableContentType contentType, {
+    String? contentTitle,
+  }) {
     switch (contentType) {
       case ShareableContentType.recipe:
         if (contentTitle != null) {
@@ -228,8 +232,9 @@ class SocialSharingViewModel extends ChangeNotifier
 
       case ShareableContentType.shoppingList:
         if (contentTitle != null) {
-          return AppLocale.current
-              .shareMessageShoppingListWithTitle(contentTitle);
+          return AppLocale.current.shareMessageShoppingListWithTitle(
+            contentTitle,
+          );
         }
         return AppLocale.current.shareMessageShoppingListDefault;
     }
@@ -252,7 +257,8 @@ class SocialSharingViewModel extends ChangeNotifier
     final friendIds = _selectedFriendIds.toList();
 
     AppLogger.info(
-        '🚀 Starting content sharing: $contentType $contentId to ${friendIds.length} friends');
+      '🚀 Starting content sharing: $contentType $contentId to ${friendIds.length} friends',
+    );
 
     _setSharing(true);
     clearError(); // From StateNotifierMixin
@@ -276,7 +282,8 @@ class SocialSharingViewModel extends ChangeNotifier
 
       if (result.success) {
         AppLogger.success(
-            '✅ Content shared successfully: ${result.invitationId}');
+          '✅ Content shared successfully: ${result.invitationId}',
+        );
         // Clear selections after successful sharing
         clearFriendSelection();
         clearShareMessage();
@@ -299,7 +306,10 @@ class SocialSharingViewModel extends ChangeNotifier
 
   /// Share recipe with friends
   Future<SharingResult> _shareRecipe(
-      String id, List<String> friendIds, String message) async {
+    String id,
+    List<String> friendIds,
+    String message,
+  ) async {
     AppLogger.info('📖 Sharing recipe $id with ${friendIds.length} friends');
     return await _shareWithCoordinator(
       () async => await _recipeCoordinator.createRecipeInvitation(
@@ -314,7 +324,10 @@ class SocialSharingViewModel extends ChangeNotifier
 
   /// Share menu with friends
   Future<SharingResult> _shareMenu(
-      String id, List<String> friendIds, String message) async {
+    String id,
+    List<String> friendIds,
+    String message,
+  ) async {
     AppLogger.info('📋 Sharing menu $id with ${friendIds.length} friends');
     if (_menuService.getMenuById(id) == null) {
       return SharingResult.failure('Menu not found: $id');
@@ -332,9 +345,13 @@ class SocialSharingViewModel extends ChangeNotifier
 
   /// Share shopping list with friends
   Future<SharingResult> _shareShoppingList(
-      String id, List<String> friendIds, String message) async {
+    String id,
+    List<String> friendIds,
+    String message,
+  ) async {
     AppLogger.info(
-        '🛒 Sharing shopping list $id with ${friendIds.length} friends');
+      '🛒 Sharing shopping list $id with ${friendIds.length} friends',
+    );
     if (_shoppingService.lists.where((list) => list.id == id).firstOrNull ==
         null) {
       return SharingResult.failure('Shopping list not found: $id');
@@ -402,18 +419,22 @@ class SocialSharingViewModel extends ChangeNotifier
 
     if (_selectedFriendIds.length == 1) {
       final friend = selectedFriends.first;
-      return AppLocale.current
-          .selectionFriendSelectedWithName(friend.displayName);
+      return AppLocale.current.selectionFriendSelectedWithName(
+        friend.displayName,
+      );
     }
 
     if (_selectedFriendIds.length <= 3) {
       final names = selectedFriends.map((f) => f.displayName).join(', ');
-      return AppLocale.current
-          .selectionFriendsSelectedWithNames(_selectedFriendIds.length, names);
+      return AppLocale.current.selectionFriendsSelectedWithNames(
+        _selectedFriendIds.length,
+        names,
+      );
     }
 
-    return AppLocale.current
-        .selectionFriendsSelectedCount(_selectedFriendIds.length);
+    return AppLocale.current.selectionFriendsSelectedCount(
+      _selectedFriendIds.length,
+    );
   }
 
   /// Set sharing state (operation-specific)
@@ -453,12 +474,15 @@ class SocialSharingViewModel extends ChangeNotifier
     }
 
     // Set suggested message
-    final suggestedMessage =
-        getSuggestedMessage(contentType, contentTitle: contentTitle);
+    final suggestedMessage = getSuggestedMessage(
+      contentType,
+      contentTitle: contentTitle,
+    );
     updateShareMessage(suggestedMessage);
 
     AppLogger.info(
-        '🎯 Prepared for sharing $contentType${contentTitle != null ? ' "$contentTitle"' : ''}');
+      '🎯 Prepared for sharing $contentType${contentTitle != null ? ' "$contentTitle"' : ''}',
+    );
   }
 
   @override

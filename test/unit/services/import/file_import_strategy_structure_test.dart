@@ -57,9 +57,9 @@ class TestPlatformFile extends MockPlatformFile {
     required String name,
     Uint8List? bytes,
     String? path,
-  })  : _name = name,
-        _bytes = bytes,
-        _path = path;
+  }) : _name = name,
+       _bytes = bytes,
+       _path = path;
 
   @override
   String get name => _name;
@@ -138,10 +138,16 @@ void main() {
         // Act & Assert
         // Strategy always returns false - it requires FilePicker UI
         for (final input in inputs) {
-          expect(strategy.canHandle(input), isFalse,
-              reason: 'Should not handle string input: $input');
-          expect(strategy.validateInput(input), isFalse,
-              reason: 'Should not validate string input: $input');
+          expect(
+            strategy.canHandle(input),
+            isFalse,
+            reason: 'Should not handle string input: $input',
+          );
+          expect(
+            strategy.validateInput(input),
+            isFalse,
+            reason: 'Should not validate string input: $input',
+          );
         }
       });
 
@@ -158,8 +164,11 @@ void main() {
         // Act & Assert
         // FileImportStrategy only works with FilePicker UI
         for (final input in allInputs) {
-          expect(strategy.canHandle(input), isFalse,
-              reason: 'Should not handle any text input: $input');
+          expect(
+            strategy.canHandle(input),
+            isFalse,
+            reason: 'Should not handle any text input: $input',
+          );
         }
       });
 
@@ -180,8 +189,11 @@ void main() {
         // Act & Assert
         // FileImportStrategy doesn't validate strings - uses FilePicker
         for (final file in allFiles) {
-          expect(strategy.validateInput(file), isFalse,
-              reason: 'Should not validate any string: $file');
+          expect(
+            strategy.validateInput(file),
+            isFalse,
+            reason: 'Should not validate any string: $file',
+          );
         }
       });
     });
@@ -242,11 +254,11 @@ void main() {
       test('should handle CSV with different delimiters', () async {
         // Arrange
         // const semicolonCsv = '''Title;Ingredients;Instructions
-// Recipe;Item1, Item2;Step1, Step2
-// ''';
+        // Recipe;Item1, Item2;Step1, Step2
+        // ''';
         // const tabCsv = '''Title	Ingredients	Instructions
-// Recipe	Item1, Item2	Step1, Step2
-// ''';
+        // Recipe	Item1, Item2	Step1, Step2
+        // ''';
 
         // Test different delimiter detection
         // FileImportStrategy uses FilePicker, not string paths
@@ -300,8 +312,8 @@ void main() {
       test('should convert numeric strings to numbers', () async {
         // Arrange
         // const csvWithNumbers = '''Title,Servings,PrepTime,CookTime
-// Recipe,"4","15","30"
-// ''';
+        // Recipe,"4","15","30"
+        // ''';
 
         // These should be parsed as integers
         const input = 'file://numbers.csv';
@@ -319,8 +331,8 @@ void main() {
       test('should handle Swedish number formats', () async {
         // Arrange
         // const swedishNumbers = '''Namn,Portioner,Tid
-// Recept,"4,5","30,5"
-// ''';
+        // Recept,"4,5","30,5"
+        // ''';
         // Swedish uses comma as decimal separator
 
         const input = 'file://swedish_numbers.csv';
@@ -336,10 +348,10 @@ void main() {
       test('should parse ingredient lists from cells', () async {
         // Arrange
         // const csvWithLists = '''Title,Ingredients
-// "Recipe","500g flour
-// 2 eggs
-// 1 cup milk"
-// ''';
+        // "Recipe","500g flour
+        // 2 eggs
+        // 1 cup milk"
+        // ''';
 
         const input = 'file://lists.csv';
 
@@ -358,10 +370,10 @@ void main() {
       test('should import multiple recipes from single file', () async {
         // Arrange
         // const multiRecipeCsv = '''Title,Ingredients,Instructions
-// Recipe 1,Ingredients 1,Instructions 1
-// Recipe 2,Ingredients 2,Instructions 2
-// Recipe 3,Ingredients 3,Instructions 3
-// ''';
+        // Recipe 1,Ingredients 1,Instructions 1
+        // Recipe 2,Ingredients 2,Instructions 2
+        // Recipe 3,Ingredients 3,Instructions 3
+        // ''';
 
         // Act
         final results = await strategy.importMultiple();
@@ -390,12 +402,12 @@ void main() {
       test('should skip invalid rows and continue', () async {
         // Arrange
         // const mixedCsv = '''Title,Ingredients,Instructions
-// Valid Recipe,Ingredients,Instructions
-// ,Missing title,Instructions
-// Another Valid,Ingredients,Instructions
-// Invalid,,
-// Final Recipe,Ingredients,Instructions
-// ''';
+        // Valid Recipe,Ingredients,Instructions
+        // ,Missing title,Instructions
+        // Another Valid,Ingredients,Instructions
+        // Invalid,,
+        // Final Recipe,Ingredients,Instructions
+        // ''';
 
         // Act
         final results = await strategy.importMultiple();
@@ -410,8 +422,8 @@ void main() {
       test('should handle missing required columns', () async {
         // Arrange
         // const missingColumns = '''Name,Items
-// Recipe,Some items
-// ''';
+        // Recipe,Some items
+        // ''';
         // Missing Instructions column
 
         const input = 'file://incomplete.csv';
@@ -450,11 +462,12 @@ void main() {
         // Assert - FilePicker not initialized in tests
         expect(result.isSuccess, isFalse);
         expect(
-            result.errorMessage,
-            anyOf(
-              contains('empty'),
-              isNotEmpty,
-            ));
+          result.errorMessage,
+          anyOf(
+            contains('empty'),
+            isNotEmpty,
+          ),
+        );
       });
 
       test('should provide meaningful error messages', () async {
@@ -475,9 +488,9 @@ void main() {
       test('should preserve Swedish characters in all fields', () async {
         // Arrange
         // const swedishContent = '''Namn,Ingredienser,Instruktioner,Taggar
-// Köttbullar med gräddsås,"500g köttfärs, 2 dl grädde","Forma köttbullar, stek och servera","Svensk mat, Middag"
-// Räksmörgås,"Räkor, majonnäs, ägg","Lägg på bröd","Lunch, Fisk"
-// ''';
+        // Köttbullar med gräddsås,"500g köttfärs, 2 dl grädde","Forma köttbullar, stek och servera","Svensk mat, Middag"
+        // Räksmörgås,"Räkor, majonnäs, ägg","Lägg på bröd","Lunch, Fisk"
+        // ''';
 
         const input = 'file://swedish.csv';
 
@@ -514,8 +527,8 @@ void main() {
       test('should parse Swedish measurement units', () async {
         // Arrange
         // const swedishMeasurements = '''Namn,Ingredienser
-// Recept,"2 dl mjölk, 1 msk socker, 1 tsk salt, 1 krm peppar"
-// ''';
+        // Recept,"2 dl mjölk, 1 msk socker, 1 tsk salt, 1 krm peppar"
+        // ''';
 
         const input = 'file://measurements.csv';
 
@@ -538,7 +551,7 @@ void main() {
         // Arrange
         // UTF-8 BOM bytes
         // final bomBytes = Uint8List.fromList([0xEF, 0xBB, 0xBF, ...'''Title,Ingredients
-// Recipe,Items'''.codeUnits]);
+        // Recipe,Items'''.codeUnits]);
 
         const input = 'file://with_bom.csv';
 
@@ -566,8 +579,8 @@ void main() {
         // Arrange
         // final longIngredients = List.generate(100, (i) => 'Ingredient $i').join(', ');
         // final longCsv = '''Title,Ingredients,Instructions
-// "Long Recipe","$longIngredients","Many steps..."
-// ''';
+        // "Long Recipe","$longIngredients","Many steps..."
+        // ''';
 
         const input = 'file://long_content.csv';
 
@@ -581,9 +594,9 @@ void main() {
       test('should handle special characters in cell values', () async {
         // Arrange
         // const specialChars = r'''Title,Ingredients,Instructions
-// "Recipe ""with quotes""","Item, with comma","Step with
-// newline"
-// ''';
+        // "Recipe ""with quotes""","Item, with comma","Step with
+        // newline"
+        // ''';
 
         const input = 'file://special.csv';
 

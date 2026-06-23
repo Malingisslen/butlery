@@ -25,8 +25,11 @@ class TestViewModel extends BaseViewModel {
     String? errorPrefix,
     bool clearErrorOnStart = true,
   }) {
-    return executeAsync(operation,
-        errorPrefix: errorPrefix, clearErrorOnStart: clearErrorOnStart);
+    return executeAsync(
+      operation,
+      errorPrefix: errorPrefix,
+      clearErrorOnStart: clearErrorOnStart,
+    );
   }
 
   Future<bool> testExecuteAsyncVoid(
@@ -34,8 +37,11 @@ class TestViewModel extends BaseViewModel {
     String? errorPrefix,
     bool clearErrorOnStart = true,
   }) {
-    return executeAsyncVoid(operation,
-        errorPrefix: errorPrefix, clearErrorOnStart: clearErrorOnStart);
+    return executeAsyncVoid(
+      operation,
+      errorPrefix: errorPrefix,
+      clearErrorOnStart: clearErrorOnStart,
+    );
   }
 
   Map<String, dynamic> getDebugState() => debugState;
@@ -255,23 +261,25 @@ void main() {
         expect(viewModel.hasError, isFalse);
       });
 
-      test('should not clear error initially when clearErrorOnStart is false',
-          () async {
-        viewModel.testSetError('Previous error');
+      test(
+        'should not clear error initially when clearErrorOnStart is false',
+        () async {
+          viewModel.testSetError('Previous error');
 
-        // executeAsync rethrows after setting error state
-        try {
-          await viewModel.testExecuteAsync(
-            () async {
-              throw Exception('New error');
-            },
-            clearErrorOnStart: false,
-          );
-        } catch (_) {}
+          // executeAsync rethrows after setting error state
+          try {
+            await viewModel.testExecuteAsync(
+              () async {
+                throw Exception('New error');
+              },
+              clearErrorOnStart: false,
+            );
+          } catch (_) {}
 
-        // Error should be updated
-        expect(viewModel.hasError, isTrue);
-      });
+          // Error should be updated
+          expect(viewModel.hasError, isTrue);
+        },
+      );
 
       test('should throw when disposed', () async {
         viewModel.dispose();
@@ -535,8 +543,10 @@ void main() {
 
       // Invalid email
       viewModel.updateEmail('invalid');
-      expect(viewModel.getValidationError('email'),
-          equals('Ogiltig e-postadress'));
+      expect(
+        viewModel.getValidationError('email'),
+        equals('Ogiltig e-postadress'),
+      );
 
       // Valid email
       viewModel.updateEmail('test@example.com');
@@ -547,12 +557,16 @@ void main() {
       // Empty password
       viewModel.updatePassword('');
       expect(
-          viewModel.getValidationError('password'), equals('Lösenord krävs'));
+        viewModel.getValidationError('password'),
+        equals('Lösenord krävs'),
+      );
 
       // Too short password
       viewModel.updatePassword('12345');
-      expect(viewModel.getValidationError('password'),
-          equals('Lösenordet måste vara minst 6 tecken'));
+      expect(
+        viewModel.getValidationError('password'),
+        equals('Lösenordet måste vara minst 6 tecken'),
+      );
 
       // Valid password
       viewModel.updatePassword('123456');

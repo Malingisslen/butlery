@@ -11,8 +11,10 @@ import 'package:butlery/models/metadata/view_metadata.dart';
 void main() {
   test('toFirestore stamps timestamp from clock.now()', () {
     withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () {
-      final v =
-          ViewMetadata(userId: 'alice', viewedAt: DateTime.utc(2026, 1, 1));
+      final v = ViewMetadata(
+        userId: 'alice',
+        viewedAt: DateTime.utc(2026, 1, 1),
+      );
       final payload = v.toFirestore();
       expect(payload['userId'], 'alice');
       expect(payload['timestamp'], DateTime.utc(2026, 1, 1));
@@ -33,10 +35,14 @@ void main() {
 
   group('equality + hash', () {
     test('same userId + viewedAt → equal', () {
-      final a =
-          ViewMetadata(userId: 'alice', viewedAt: DateTime.utc(2026, 1, 1));
-      final b =
-          ViewMetadata(userId: 'alice', viewedAt: DateTime.utc(2026, 1, 1));
+      final a = ViewMetadata(
+        userId: 'alice',
+        viewedAt: DateTime.utc(2026, 1, 1),
+      );
+      final b = ViewMetadata(
+        userId: 'alice',
+        viewedAt: DateTime.utc(2026, 1, 1),
+      );
       expect(a, b);
       expect(a.hashCode, b.hashCode);
     });
@@ -56,8 +62,10 @@ void main() {
     });
 
     test('identical short-circuit', () {
-      final v =
-          ViewMetadata(userId: 'alice', viewedAt: DateTime.utc(2026, 1, 1));
+      final v = ViewMetadata(
+        userId: 'alice',
+        viewedAt: DateTime.utc(2026, 1, 1),
+      );
       expect(v == v, isTrue);
     });
   });

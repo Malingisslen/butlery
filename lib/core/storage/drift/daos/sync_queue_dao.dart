@@ -70,9 +70,9 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   /// Increment retry count and record error
   Future<void> recordFailure(int id, String errorMessage) async {
     // Get current entry to increment retry count
-    final entry = await (select(syncQueueEntries)
-          ..where((e) => e.id.equals(id)))
-        .getSingleOrNull();
+    final entry = await (select(
+      syncQueueEntries,
+    )..where((e) => e.id.equals(id))).getSingleOrNull();
 
     if (entry != null) {
       await (update(syncQueueEntries)..where((e) => e.id.equals(id))).write(
@@ -86,18 +86,22 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Get operations that have failed too many times
   Future<List<SyncQueueEntry>> getFailedOperations(
-      String userId, int maxRetries) {
-    return (select(syncQueueEntries)
-          ..where((e) =>
+    String userId,
+    int maxRetries,
+  ) {
+    return (select(syncQueueEntries)..where(
+          (e) =>
               e.userId.equals(userId) &
-              e.retryCount.isBiggerThanValue(maxRetries)))
+              e.retryCount.isBiggerThanValue(maxRetries),
+        ))
         .get();
   }
 
   /// Clear all pending operations for a user
   Future<void> clearForUser(String userId) {
-    return (delete(syncQueueEntries)..where((e) => e.userId.equals(userId)))
-        .go();
+    return (delete(
+      syncQueueEntries,
+    )..where((e) => e.userId.equals(userId))).go();
   }
 
   /// Watch pending count for a user (reactive)

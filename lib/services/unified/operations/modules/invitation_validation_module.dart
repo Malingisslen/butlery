@@ -10,9 +10,10 @@ class InvitationValidationModule {
 
   /// Validate email format
   bool isValidEmail(String email) {
-    return RegExp(r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
-            unicode: true)
-        .hasMatch(email);
+    return RegExp(
+      r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+      unicode: true,
+    ).hasMatch(email);
   }
 
   /// Validate phone number format
@@ -22,13 +23,17 @@ class InvitationValidationModule {
 
   /// Check for duplicate invitation by email
   bool hasDuplicateInvitationByEmail(
-      List<GroupInvitation> invitations, String email) {
+    List<GroupInvitation> invitations,
+    String email,
+  ) {
     return invitations.any((i) => i.toUserId == email);
   }
 
   /// Check for duplicate invitation by phone number
   bool hasDuplicateInvitationByPhone(
-      List<GroupInvitation> invitations, String phoneNumber) {
+    List<GroupInvitation> invitations,
+    String phoneNumber,
+  ) {
     return invitations.any((i) => i.toUserId == phoneNumber);
   }
 

@@ -175,7 +175,8 @@ class ShoppingDialogs {
           ServiceLocator.get<UniversalShareDialogViewModel>();
       if (context.mounted) {
         AppLogger.info(
-            'Showing share dialog for list: ${viewModel.activeList!.name}');
+          'Showing share dialog for list: ${viewModel.activeList!.name}',
+        );
         await showDialog(
           context: context,
           builder: (context) => UniversalShareDialog.shoppingList(
@@ -191,9 +192,11 @@ class ShoppingDialogs {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.shoppingCouldNotShowShareDialog(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            )),
+            content: Text(
+              context.l10n.shoppingCouldNotShowShareDialog(
+                SnackBarUtils.userFriendlyMessage(context, e),
+              ),
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),
@@ -229,7 +232,8 @@ class ShoppingDialogs {
         }
       } catch (e) {
         AppLogger.warning(
-            'Could not load user profiles for sharing dialog: $e');
+          'Could not load user profiles for sharing dialog: $e',
+        );
         if (activeList.ownerDisplayName.isNotEmpty) {
           userDisplayNames[activeList.ownerId] = activeList.ownerDisplayName;
         }

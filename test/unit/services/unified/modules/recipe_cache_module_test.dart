@@ -237,8 +237,7 @@ void main() {
     // the single notify. These tests pin both halves of that contract through
     // the test seam that drives the exact private path the sync stream invokes.
     group('BUT-1256 direct-callback single-notify', () {
-      test(
-          'web update path: direct callback fires, cache updates immediately, '
+      test('web update path: direct callback fires, cache updates immediately, '
           'module does NOT notify (callback owns the signal)', () async {
         final updated = <Recipe>[];
         final webModule = RecipeCacheModule(
@@ -262,31 +261,41 @@ void main() {
         expect(loaded, isNotNull);
         expect(loaded!.title, equals('Soppa'));
         // Module must NOT double-notify: the callback owns the listener signal.
-        expect(notifyListenersCalled, equals(0),
-            reason:
-                'web path: notify is owned by the direct callback, not the module');
+        expect(
+          notifyListenersCalled,
+          equals(0),
+          reason:
+              'web path: notify is owned by the direct callback, not the module',
+        );
 
         await webModule.dispose();
       });
 
       test(
-          'native update path: no callback wired, module notifies exactly once '
-          'and the cache updates immediately', () async {
-        // The default `module` from setUp has no onRecipeUpdated callback.
-        notifyListenersCalled = 0;
+        'native update path: no callback wired, module notifies exactly once '
+        'and the cache updates immediately',
+        () async {
+          // The default `module` from setUp has no onRecipeUpdated callback.
+          notifyListenersCalled = 0;
 
-        final recipe = RecipeFactory.build(id: 'native-update', title: 'Gröt');
-        await module.debugApplyRecipeUpdate(recipe);
+          final recipe = RecipeFactory.build(
+            id: 'native-update',
+            title: 'Gröt',
+          );
+          await module.debugApplyRecipeUpdate(recipe);
 
-        final loaded = await module.loadRecipeFromCache('native-update');
-        expect(loaded, isNotNull);
-        expect(loaded!.title, equals('Gröt'));
-        expect(notifyListenersCalled, equals(1),
-            reason: 'native path: the module owns the single listener signal');
-      });
+          final loaded = await module.loadRecipeFromCache('native-update');
+          expect(loaded, isNotNull);
+          expect(loaded!.title, equals('Gröt'));
+          expect(
+            notifyListenersCalled,
+            equals(1),
+            reason: 'native path: the module owns the single listener signal',
+          );
+        },
+      );
 
-      test(
-          'web removal path: direct callback fires, cache drops the recipe, '
+      test('web removal path: direct callback fires, cache drops the recipe, '
           'module does NOT notify', () async {
         final removed = <String>[];
         final webModule = RecipeCacheModule(
@@ -298,7 +307,8 @@ void main() {
           onRecipeRemoved: removed.add,
         );
         await webModule.saveRecipeToCache(
-            RecipeFactory.build(id: 'web-remove', title: 'Sallad'));
+          RecipeFactory.build(id: 'web-remove', title: 'Sallad'),
+        );
         notifyListenersCalled = 0;
 
         // The seam awaits the cache delete, so the removal has fully settled
@@ -308,27 +318,35 @@ void main() {
         expect(removed, equals(['web-remove']));
         final loaded = await webModule.loadRecipeFromCache('web-remove');
         expect(loaded, isNull);
-        expect(notifyListenersCalled, equals(0),
-            reason: 'web path: removal notify is owned by the direct callback');
+        expect(
+          notifyListenersCalled,
+          equals(0),
+          reason: 'web path: removal notify is owned by the direct callback',
+        );
 
         await webModule.dispose();
       });
 
       test(
-          'native removal path: no callback wired, module notifies exactly once',
-          () async {
-        await module.saveRecipeToCache(
-            RecipeFactory.build(id: 'native-remove', title: 'Paj'));
-        notifyListenersCalled = 0;
+        'native removal path: no callback wired, module notifies exactly once',
+        () async {
+          await module.saveRecipeToCache(
+            RecipeFactory.build(id: 'native-remove', title: 'Paj'),
+          );
+          notifyListenersCalled = 0;
 
-        await module.debugApplyRecipeRemoval('native-remove');
+          await module.debugApplyRecipeRemoval('native-remove');
 
-        final loaded = await module.loadRecipeFromCache('native-remove');
-        expect(loaded, isNull);
-        expect(notifyListenersCalled, equals(1),
+          final loaded = await module.loadRecipeFromCache('native-remove');
+          expect(loaded, isNull);
+          expect(
+            notifyListenersCalled,
+            equals(1),
             reason:
-                'native path: the module owns the single removal listener signal');
-      });
+                'native path: the module owns the single removal listener signal',
+          );
+        },
+      );
     });
   });
 }

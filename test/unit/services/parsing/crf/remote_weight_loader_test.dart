@@ -16,15 +16,17 @@ void main() {
       expect(result, isNull);
     });
 
-    test('respects check interval (does not re-check within 6 hours)',
-        () async {
-      // First call -- will fail gracefully
-      await loader.tryLoadRemoteWeights(bundledVersion: 1);
+    test(
+      'respects check interval (does not re-check within 6 hours)',
+      () async {
+        // First call -- will fail gracefully
+        await loader.tryLoadRemoteWeights(bundledVersion: 1);
 
-      // Second call within check interval -- should short-circuit
-      final result = await loader.tryLoadRemoteWeights(bundledVersion: 1);
-      expect(result, isNull);
-    });
+        // Second call within check interval -- should short-circuit
+        final result = await loader.tryLoadRemoteWeights(bundledVersion: 1);
+        expect(result, isNull);
+      },
+    );
 
     test('handles concurrent calls safely', () async {
       // Multiple concurrent calls should not throw

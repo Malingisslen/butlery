@@ -143,16 +143,20 @@ void main() {
 
         // Assert
         expect(updated.menuSnapshot['Måndag']!.length, 1);
-        expect(updated.menuSnapshot['Måndag']!.first.title,
-            'Köttbullar med potatismos');
+        expect(
+          updated.menuSnapshot['Måndag']!.first.title,
+          'Köttbullar med potatismos',
+        );
       });
 
       test('should remove recipe from category by index', () {
         // Arrange
         final recipe1 = recipeBuilder.withTitle('Recipe 1').build();
         final recipe2 = recipeBuilder.withTitle('Recipe 2').build();
-        final menu =
-            menuBuilder.withCategory('Tisdag', [recipe1, recipe2]).build();
+        final menu = menuBuilder.withCategory('Tisdag', [
+          recipe1,
+          recipe2,
+        ]).build();
 
         // Act
         final updated = MenuOperations.removeRecipeFromCategory(
@@ -171,8 +175,10 @@ void main() {
       test('should move recipe between categories', () {
         // Arrange
         final recipe = recipeBuilder.asItalianPasta().build();
-        final menu = menuBuilder.withCategory('Måndag', [recipe]).withCategory(
-            'Tisdag', []).build();
+        final menu = menuBuilder
+            .withCategory('Måndag', [recipe])
+            .withCategory('Tisdag', [])
+            .build();
 
         // Act
         final updated = MenuOperations.moveRecipeBetweenCategories(
@@ -324,8 +330,10 @@ void main() {
         expect(copy.keys, equals(menu.menuSnapshot.keys));
         // Verify the copy contains the same recipes
         for (final category in copy.keys) {
-          expect(copy[category]?.length,
-              equals(menu.menuSnapshot[category]?.length));
+          expect(
+            copy[category]?.length,
+            equals(menu.menuSnapshot[category]?.length),
+          );
         }
       });
 
@@ -349,8 +357,10 @@ void main() {
         // Assert
         // Category should now have the new recipes
         expect(result.menuSnapshot['Söndag']?.length, 2);
-        expect(result.menuSnapshot['Söndag']?.first.title,
-            'Köttbullar med potatismos');
+        expect(
+          result.menuSnapshot['Söndag']?.first.title,
+          'Köttbullar med potatismos',
+        );
       });
 
       test('should generate menu statistics', () {
@@ -438,7 +448,9 @@ void main() {
         // Assert
         expect(updated.menuSnapshot['Årets Högtider']!.length, 1);
         expect(
-            updated.menuSnapshot['Årets Högtider']!.first.title, 'Kladdkaka');
+          updated.menuSnapshot['Årets Högtider']!.first.title,
+          'Kladdkaka',
+        );
       });
 
       test('should handle null favorites when updating', () {

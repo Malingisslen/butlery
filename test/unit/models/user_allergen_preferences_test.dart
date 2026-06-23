@@ -68,8 +68,10 @@ void main() {
     test('returns defaults when data is null', () {
       final prefs = UserAllergenPreferences.fromFirestore(null);
 
-      expect(prefs.trackedAllergens,
-          UserAllergenPreferences.defaults.trackedAllergens);
+      expect(
+        prefs.trackedAllergens,
+        UserAllergenPreferences.defaults.trackedAllergens,
+      );
     });
 
     test('does not alter dietary keys', () {

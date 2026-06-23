@@ -53,8 +53,11 @@ void main() {
         modelPath: mp,
         vocabContent: File(vp).readAsStringSync(),
       );
-      expect(initOk, isTrue,
-          reason: 'NER service failed to initialize from $mp');
+      expect(
+        initOk,
+        isTrue,
+        reason: 'NER service failed to initialize from $mp',
+      );
 
       final results = await runCorpus(
         resolveCorpusPath('ner'),
@@ -76,35 +79,38 @@ void main() {
     },
     skip: (modelPath == null || vocabPath == null)
         ? 'NER_MODEL_PATH + NER_VOCAB_PATH env vars not set — and ONNX '
-            'inference cannot run under flutter test anyway (platform-channel '
-            'plugin, BUT-1005). The categorize_ingredient runner produces '
-            'baseline numbers in the meantime.'
+              'inference cannot run under flutter test anyway (platform-channel '
+              'plugin, BUT-1005). The categorize_ingredient runner produces '
+              'baseline numbers in the meantime.'
         : null,
   );
 
-  test('ner skip artifact is emitted when the corpus cannot run (BUT-1005)',
-      () {
-    // The nightly uploads goldens-*.json; a silently-skipped corpus would
-    // simply be missing from the artifact set, indistinguishable from a
-    // broken runner. Emit an explicit skip record instead so "could not
-    // run" is machine-readable. When the env vars ARE set, the real test
-    // above owns the artifact and this test must not clobber it.
-    if (modelPath != null && vocabPath != null) return;
+  test(
+    'ner skip artifact is emitted when the corpus cannot run (BUT-1005)',
+    () {
+      // The nightly uploads goldens-*.json; a silently-skipped corpus would
+      // simply be missing from the artifact set, indistinguishable from a
+      // broken runner. Emit an explicit skip record instead so "could not
+      // run" is machine-readable. When the env vars ARE set, the real test
+      // above owns the artifact and this test must not clobber it.
+      if (modelPath != null && vocabPath != null) return;
 
-    final summary = {
-      'corpus': 'ner',
-      'total': 0,
-      'passed': 0,
-      'failed': 0,
-      'skipped': true,
-      'reason': 'ONNX runtime is a platform-channel plugin — unavailable '
-          'under flutter test. Needs an integration_test lane on a '
-          'device-capable runner (BUT-1005).',
-      'failures': const <Object>[],
-    };
-    File('goldens-ner.json').writeAsStringSync(jsonEncode(summary));
-    expect(File('goldens-ner.json').existsSync(), isTrue);
-  });
+      final summary = {
+        'corpus': 'ner',
+        'total': 0,
+        'passed': 0,
+        'failed': 0,
+        'skipped': true,
+        'reason':
+            'ONNX runtime is a platform-channel plugin — unavailable '
+            'under flutter test. Needs an integration_test lane on a '
+            'device-capable runner (BUT-1005).',
+        'failures': const <Object>[],
+      };
+      File('goldens-ner.json').writeAsStringSync(jsonEncode(summary));
+      expect(File('goldens-ner.json').existsSync(), isTrue);
+    },
+  );
 }
 
 /// Convert per-word BIO labels into entity-span maps matching the

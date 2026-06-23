@@ -24,12 +24,13 @@ void main() {
 
       // Set up method call handler for clipboard
       TestWidgetsFlutterBinding.ensureInitialized();
-      const MethodChannel channel =
-          MethodChannel('plugins.flutter.io/path_provider');
+      const MethodChannel channel = MethodChannel(
+        'plugins.flutter.io/path_provider',
+      );
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        return null;
-      });
+            return null;
+          });
     });
 
     setUp(() {
@@ -447,8 +448,9 @@ void main() {
         };
 
         // Act
-        final formatted =
-            shareService.formatWeekMenuFromCategories(categoriesMenu);
+        final formatted = shareService.formatWeekMenuFromCategories(
+          categoriesMenu,
+        );
 
         // Assert
         expect(formatted, contains('【FRUKOST】'));
@@ -465,8 +467,9 @@ void main() {
         };
 
         // Act
-        final formatted =
-            shareService.formatWeekMenuFromCategories(categoriesMenu);
+        final formatted = shareService.formatWeekMenuFromCategories(
+          categoriesMenu,
+        );
 
         // Assert
         expect(formatted, contains('4 recept i 3 kategorier'));
@@ -487,14 +490,14 @@ void main() {
         // Arrange
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          SystemChannels.platform,
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              return null;
-            }
-            return null;
-          },
-        );
+              SystemChannels.platform,
+              (MethodCall methodCall) async {
+                if (methodCall.method == 'Clipboard.setData') {
+                  return null;
+                }
+                return null;
+              },
+            );
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -507,16 +510,16 @@ void main() {
         // Arrange
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          SystemChannels.platform,
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              // Don't check the arguments here to avoid decoding issues
-              // Just return success
-              return null;
-            }
-            return null;
-          },
-        );
+              SystemChannels.platform,
+              (MethodCall methodCall) async {
+                if (methodCall.method == 'Clipboard.setData') {
+                  // Don't check the arguments here to avoid decoding issues
+                  // Just return success
+                  return null;
+                }
+                return null;
+              },
+            );
 
         // Act & Assert
         await expectLater(
@@ -532,15 +535,15 @@ void main() {
         // Arrange
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          SystemChannels.platform,
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              // Don't check arguments to avoid decoding issues
-              return null;
-            }
-            return null;
-          },
-        );
+              SystemChannels.platform,
+              (MethodCall methodCall) async {
+                if (methodCall.method == 'Clipboard.setData') {
+                  // Don't check arguments to avoid decoding issues
+                  return null;
+                }
+                return null;
+              },
+            );
 
         // Act
         final shoppingText = shareService.formatShoppingList(testShoppingItems);
@@ -554,15 +557,17 @@ void main() {
         // Arrange
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          SystemChannels.platform,
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              throw PlatformException(
-                  code: 'ERROR', message: 'Clipboard error');
-            }
-            return null;
-          },
-        );
+              SystemChannels.platform,
+              (MethodCall methodCall) async {
+                if (methodCall.method == 'Clipboard.setData') {
+                  throw PlatformException(
+                    code: 'ERROR',
+                    message: 'Clipboard error',
+                  );
+                }
+                return null;
+              },
+            );
 
         // Act & Assert - Should throw either PlatformException or FormatException
         // The platform channel might wrap the exception differently
@@ -622,12 +627,13 @@ void main() {
 
         // Assert - Should include appropriate emojis
         expect(
-            formatted,
-            anyOf(
-              contains('🍽️'), // Meal emoji
-              contains('🥘'), // Food emoji
-              contains('🍴'), // Utensils emoji
-            ));
+          formatted,
+          anyOf(
+            contains('🍽️'), // Meal emoji
+            contains('🥘'), // Food emoji
+            contains('🍴'), // Utensils emoji
+          ),
+        );
       });
     });
 
@@ -646,7 +652,9 @@ void main() {
         // Assert
         expect(socialFormat.length, lessThan(1000)); // Compact format
         expect(
-            socialFormat, contains('🍴')); // Contains emojis for visual appeal
+          socialFormat,
+          contains('🍴'),
+        ); // Contains emojis for visual appeal
         // Note: Current implementation doesn't add hashtags to tags
       });
 
@@ -719,15 +727,40 @@ void main() {
         // Arrange
         final itemsWithStatus = [
           UnifiedShoppingItem(
-              id: '1', name: 'Item1', amount: 1, unit: 'st', bought: true),
+            id: '1',
+            name: 'Item1',
+            amount: 1,
+            unit: 'st',
+            bought: true,
+          ),
           UnifiedShoppingItem(
-              id: '2', name: 'Item2', amount: 1, unit: 'st', bought: true),
+            id: '2',
+            name: 'Item2',
+            amount: 1,
+            unit: 'st',
+            bought: true,
+          ),
           UnifiedShoppingItem(
-              id: '3', name: 'Item3', amount: 1, unit: 'st', bought: false),
+            id: '3',
+            name: 'Item3',
+            amount: 1,
+            unit: 'st',
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '4', name: 'Item4', amount: 1, unit: 'st', bought: false),
+            id: '4',
+            name: 'Item4',
+            amount: 1,
+            unit: 'st',
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '5', name: 'Item5', amount: 1, unit: 'st', bought: false),
+            id: '5',
+            name: 'Item5',
+            amount: 1,
+            unit: 'st',
+            bought: false,
+          ),
         ];
 
         // Act
@@ -866,10 +899,14 @@ void main() {
 
         // Assert
         expect(formatted, contains('Null test'));
-        expect(() => shareService.formatRecipeCompact(nullRecipe),
-            returnsNormally);
-        expect(() => shareService.formatRecipeMarkdown(nullRecipe),
-            returnsNormally);
+        expect(
+          () => shareService.formatRecipeCompact(nullRecipe),
+          returnsNormally,
+        );
+        expect(
+          () => shareService.formatRecipeMarkdown(nullRecipe),
+          returnsNormally,
+        );
       });
 
       test('should handle very long content', () {
@@ -882,12 +919,18 @@ void main() {
         );
 
         // Act & Assert
-        expect(() => shareService.formatRecipeComplete(longRecipe),
-            returnsNormally);
-        expect(() => shareService.formatRecipeCompact(longRecipe),
-            returnsNormally);
-        expect(() => shareService.formatRecipeMarkdown(longRecipe),
-            returnsNormally);
+        expect(
+          () => shareService.formatRecipeComplete(longRecipe),
+          returnsNormally,
+        );
+        expect(
+          () => shareService.formatRecipeCompact(longRecipe),
+          returnsNormally,
+        );
+        expect(
+          () => shareService.formatRecipeMarkdown(longRecipe),
+          returnsNormally,
+        );
       });
 
       test('should handle special characters in content', () {
@@ -924,8 +967,11 @@ void main() {
         stopwatch.stop();
 
         // Assert
-        expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: 'Formatting should be fast even for large recipes');
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+          reason: 'Formatting should be fast even for large recipes',
+        );
       });
 
       test('should format large shopping list quickly', () {
@@ -948,8 +994,11 @@ void main() {
         stopwatch.stop();
 
         // Assert
-        expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: 'Shopping list formatting should be fast');
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+          reason: 'Shopping list formatting should be fast',
+        );
       });
     });
   });

@@ -63,7 +63,8 @@ void main() {
 
     tearDown(() async {
       await TestDataIsolator.cleanupTest(
-          'messaging_repository_integration_test');
+        'messaging_repository_integration_test',
+      );
       await TestServiceLocator.reset();
     });
 
@@ -97,7 +98,9 @@ void main() {
         expect(snapshot.docs, isNotEmpty);
         final messageData = snapshot.docs.first.data();
         expect(
-            messageData['createdAt'], anyOf(isA<DateTime>(), isA<Timestamp>()));
+          messageData['createdAt'],
+          anyOf(isA<DateTime>(), isA<Timestamp>()),
+        );
         expect(messageData['content'], equals('Hello!'));
       });
 
@@ -137,8 +140,9 @@ void main() {
             .doc(conversationId)
             .get();
 
-        final participants =
-            List<String>.from(doc.data()!['participantIds'] ?? []);
+        final participants = List<String>.from(
+          doc.data()!['participantIds'] ?? [],
+        );
         expect(participants, contains(newParticipantId));
         expect(participants.length, equals(3));
       });
@@ -173,8 +177,9 @@ void main() {
             .doc(conversationId)
             .get();
 
-        final participants =
-            List<String>.from(doc.data()!['participantIds'] ?? []);
+        final participants = List<String>.from(
+          doc.data()!['participantIds'] ?? [],
+        );
         expect(participants, isNot(contains('user_789')));
         expect(participants.length, equals(2));
       });
@@ -190,17 +195,20 @@ void main() {
 
         // Send multiple messages
         for (int i = 0; i < 3; i++) {
-          await repository.sendMessage(Message.text(
-            conversationId: conversationId,
-            senderId: testUserId,
-            senderDisplayName: 'Test User',
-            content: 'Message $i',
-          ));
+          await repository.sendMessage(
+            Message.text(
+              conversationId: conversationId,
+              senderId: testUserId,
+              senderDisplayName: 'Test User',
+              content: 'Message $i',
+            ),
+          );
         }
 
         // Act
-        final unreadCount =
-            await repository.getUnreadMessageCount(friendUserId);
+        final unreadCount = await repository.getUnreadMessageCount(
+          friendUserId,
+        );
 
         // Assert - FakeFirebaseFirestore may not fully support increment
         // but we can verify the structure is correct
@@ -223,30 +231,34 @@ void main() {
         final messagesReceived = <List<Message>>[];
         final subscription = repository
             .getConversationMessages(
-          conversationId: conversationId,
-        )
+              conversationId: conversationId,
+            )
             .listen((messages) {
-          messagesReceived.add(messages);
-        });
+              messagesReceived.add(messages);
+            });
 
         // Act - Send messages with delays
         await Future.delayed(const Duration(milliseconds: 100));
 
-        await repository.sendMessage(Message.text(
-          conversationId: conversationId,
-          senderId: testUserId,
-          senderDisplayName: 'Test User',
-          content: 'First message',
-        ));
+        await repository.sendMessage(
+          Message.text(
+            conversationId: conversationId,
+            senderId: testUserId,
+            senderDisplayName: 'Test User',
+            content: 'First message',
+          ),
+        );
 
         await Future.delayed(const Duration(milliseconds: 100));
 
-        await repository.sendMessage(Message.text(
-          conversationId: conversationId,
-          senderId: friendUserId,
-          senderDisplayName: 'Friend User',
-          content: 'Second message',
-        ));
+        await repository.sendMessage(
+          Message.text(
+            conversationId: conversationId,
+            senderId: friendUserId,
+            senderDisplayName: 'Friend User',
+            content: 'Second message',
+          ),
+        );
 
         await Future.delayed(const Duration(milliseconds: 100));
 
@@ -265,10 +277,11 @@ void main() {
         // Arrange
         final conversationsReceived = <List<Conversation>>[];
 
-        final subscription =
-            repository.getUserConversations(testUserId).listen((conversations) {
-          conversationsReceived.add(conversations);
-        });
+        final subscription = repository.getUserConversations(testUserId).listen(
+          (conversations) {
+            conversationsReceived.add(conversations);
+          },
+        );
 
         await Future.delayed(const Duration(milliseconds: 100));
 
@@ -368,10 +381,14 @@ void main() {
             .get();
 
         expect(doc.data()!['title'], equals('Updated Title'));
-        expect(doc.data()!['metadata']['description'],
-            equals('A test conversation'));
         expect(
-            doc.data()!['metadata']['category'], equals('recipe_discussion'));
+          doc.data()!['metadata']['description'],
+          equals('A test conversation'),
+        );
+        expect(
+          doc.data()!['metadata']['category'],
+          equals('recipe_discussion'),
+        );
       });
     });
 
@@ -385,26 +402,32 @@ void main() {
           user2DisplayName: 'Friend User',
         );
 
-        await repository.sendMessage(Message.text(
-          conversationId: conversationId,
-          senderId: testUserId,
-          senderDisplayName: 'Test User',
-          content: 'Let\'s cook pasta tonight',
-        ));
+        await repository.sendMessage(
+          Message.text(
+            conversationId: conversationId,
+            senderId: testUserId,
+            senderDisplayName: 'Test User',
+            content: 'Let\'s cook pasta tonight',
+          ),
+        );
 
-        await repository.sendMessage(Message.text(
-          conversationId: conversationId,
-          senderId: friendUserId,
-          senderDisplayName: 'Friend User',
-          content: 'I prefer pizza',
-        ));
+        await repository.sendMessage(
+          Message.text(
+            conversationId: conversationId,
+            senderId: friendUserId,
+            senderDisplayName: 'Friend User',
+            content: 'I prefer pizza',
+          ),
+        );
 
-        await repository.sendMessage(Message.text(
-          conversationId: conversationId,
-          senderId: testUserId,
-          senderDisplayName: 'Test User',
-          content: 'How about pasta with pizza toppings?',
-        ));
+        await repository.sendMessage(
+          Message.text(
+            conversationId: conversationId,
+            senderId: testUserId,
+            senderDisplayName: 'Test User',
+            content: 'How about pasta with pizza toppings?',
+          ),
+        );
 
         // Act
         final results = await repository.searchMessages(
@@ -414,8 +437,10 @@ void main() {
 
         // Assert
         expect(results.length, equals(2));
-        expect(results.every((m) => m.content.toLowerCase().contains('pasta')),
-            isTrue);
+        expect(
+          results.every((m) => m.content.toLowerCase().contains('pasta')),
+          isTrue,
+        );
       });
 
       test('should paginate messages correctly', () async {
@@ -429,12 +454,14 @@ void main() {
 
         // Create 10 messages
         for (int i = 0; i < 10; i++) {
-          await repository.sendMessage(Message.text(
-            conversationId: conversationId,
-            senderId: i.isEven ? testUserId : friendUserId,
-            senderDisplayName: i.isEven ? 'Test User' : 'Friend User',
-            content: 'Message $i',
-          ));
+          await repository.sendMessage(
+            Message.text(
+              conversationId: conversationId,
+              senderId: i.isEven ? testUserId : friendUserId,
+              senderDisplayName: i.isEven ? 'Test User' : 'Friend User',
+              content: 'Message $i',
+            ),
+          );
           await Future.delayed(const Duration(milliseconds: 10));
         }
 

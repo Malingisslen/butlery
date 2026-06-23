@@ -22,7 +22,7 @@ class PortionScaler extends StatefulWidget {
   final List<RecipeIngredient>? structuredIngredients;
 
   final Function(int newPortions, List<String> scaledIngredients)
-      onPortionChanged;
+  onPortionChanged;
   final int minPortions;
   final int maxPortions;
 
@@ -55,8 +55,9 @@ class _PortionScalerState extends State<PortionScaler>
     super.initState();
     _currentPortions = widget.originalPortions;
     _scaledIngredients = List.from(widget.originalIngredients);
-    _hasAmericanUnits =
-        PortionScalerLogic.detectAmericanUnits(widget.originalIngredients);
+    _hasAmericanUnits = PortionScalerLogic.detectAmericanUnits(
+      widget.originalIngredients,
+    );
 
     _animationController = AnimationController(
       duration: AppDimensions.animationDurationFast,

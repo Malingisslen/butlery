@@ -59,8 +59,8 @@ class TokenBucket {
   DateTime _lastRefill;
 
   TokenBucket(this.config)
-      : _tokens = config.maxTokens.toDouble(),
-        _lastRefill = clock.now();
+    : _tokens = config.maxTokens.toDouble(),
+      _lastRefill = clock.now();
 
   /// Try to consume tokens, returns true if successful
   bool tryConsume(int tokens) {
@@ -275,7 +275,8 @@ class RateLimiter {
     if (bucket.tryConsume(tokens)) {
       final remaining = bucket.currentTokens.floor();
       AppLogger.debug(
-          '✅ Rate limit OK: ${operation.name} ($remaining tokens remaining)');
+        '✅ Rate limit OK: ${operation.name} ($remaining tokens remaining)',
+      );
 
       return RateLimitResult.allowed(remaining);
     }
@@ -386,8 +387,9 @@ class RateLimitException implements Exception {
 
   @override
   String toString() {
-    final retry =
-        retryAfter != null ? ' (retry after ${retryAfter!.inSeconds}s)' : '';
+    final retry = retryAfter != null
+        ? ' (retry after ${retryAfter!.inSeconds}s)'
+        : '';
     return 'RateLimitException: $message$retry';
   }
 }

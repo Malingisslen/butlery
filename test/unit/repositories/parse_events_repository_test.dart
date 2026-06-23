@@ -38,14 +38,16 @@ void main() {
     await _seed(db, 'b', 'koket.se', true, DateTime.utc(2026, 6, 3));
     await _seed(db, 'c', 'ica.se', false, DateTime.utc(2026, 6, 2));
 
-    final page =
-        await ParseEventsRepository(firestore: db).getByDomain('koket.se');
+    final page = await ParseEventsRepository(
+      firestore: db,
+    ).getByDomain('koket.se');
 
     expect(page.events.length, 2);
     // Timestamp.toDate() is local — compare the instant.
     expect(
-        page.events.first.timestamp!.isAtSameMomentAs(DateTime.utc(2026, 6, 3)),
-        isTrue); // newest first
+      page.events.first.timestamp!.isAtSameMomentAs(DateTime.utc(2026, 6, 3)),
+      isTrue,
+    ); // newest first
     expect(page.events.every((e) => e.domain == 'koket.se'), isTrue);
     expect(page.truncated, isFalse);
   });
@@ -55,8 +57,9 @@ void main() {
     await _seed(db, 'a', 'koket.se', false, DateTime.utc(2026, 6, 1));
     await _seed(db, 'b', 'koket.se', true, DateTime.utc(2026, 6, 3));
 
-    final page = await ParseEventsRepository(firestore: db)
-        .getByDomain('koket.se', failuresOnly: true);
+    final page = await ParseEventsRepository(
+      firestore: db,
+    ).getByDomain('koket.se', failuresOnly: true);
 
     expect(page.events.length, 1);
     expect(page.events.single.success, isFalse);
@@ -66,8 +69,9 @@ void main() {
     final db = FakeFirebaseFirestore();
     await _seed(db, 'a', 'ica.se', false, DateTime.utc(2026, 6, 1));
 
-    final page =
-        await ParseEventsRepository(firestore: db).getByDomain('koket.se');
+    final page = await ParseEventsRepository(
+      firestore: db,
+    ).getByDomain('koket.se');
     expect(page.events, isEmpty);
     expect(page.truncated, isFalse);
   });

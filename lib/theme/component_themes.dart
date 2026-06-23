@@ -28,8 +28,8 @@ class ComponentThemes {
   static IconButtonThemeData iconButtonTheme(ColorScheme cs) =>
       ButtonThemes.iconButtonTheme(cs);
   static FloatingActionButtonThemeData floatingActionButtonTheme(
-          ColorScheme cs) =>
-      ButtonThemes.floatingActionButtonTheme(cs);
+    ColorScheme cs,
+  ) => ButtonThemes.floatingActionButtonTheme(cs);
 
   // Inputs
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) =>
@@ -43,8 +43,8 @@ class ComponentThemes {
   static AppBarTheme appBarTheme(ColorScheme cs) =>
       NavigationThemes.appBarTheme(cs);
   static BottomNavigationBarThemeData bottomNavigationBarTheme(
-          ColorScheme cs) =>
-      NavigationThemes.bottomNavigationBarTheme(cs);
+    ColorScheme cs,
+  ) => NavigationThemes.bottomNavigationBarTheme(cs);
   static TabBarThemeData tabBarTheme(ColorScheme cs) =>
       NavigationThemes.tabBarTheme(cs);
   static DialogThemeData dialogTheme(ColorScheme cs) =>

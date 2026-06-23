@@ -62,25 +62,31 @@ void main() {
         final rating = _createRating('recipe-1', 'user-123', 4.5);
 
         // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', rating);
+        final canCreate = await repository.validateCreatePermission(
+          'user-123',
+          rating,
+        );
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should reject user from creating rating for another user',
-          () async {
-        // Arrange
-        final rating = _createRating('recipe-1', 'other-user', 4.5);
+      test(
+        'should reject user from creating rating for another user',
+        () async {
+          // Arrange
+          final rating = _createRating('recipe-1', 'other-user', 4.5);
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', rating);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'user-123',
+            rating,
+          );
 
-        // Assert
-        expect(canCreate, isFalse);
-      });
+          // Assert
+          expect(canCreate, isFalse);
+        },
+      );
 
       test('should allow all users to read ratings (public)', () async {
         // Arrange
@@ -88,7 +94,10 @@ void main() {
 
         // Act
         final canRead = await repository.validateReadPermission(
-            'anyone', 'rating-id', rating);
+          'anyone',
+          'rating-id',
+          rating,
+        );
 
         // Assert
         expect(canRead, isTrue);
@@ -100,7 +109,10 @@ void main() {
 
         // Act
         final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'rating-id', rating);
+          'user-123',
+          'rating-id',
+          rating,
+        );
 
         // Assert
         expect(canUpdate, isTrue);
@@ -112,7 +124,10 @@ void main() {
 
         // Act
         final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'rating-id', rating);
+          'user-123',
+          'rating-id',
+          rating,
+        );
 
         // Assert
         expect(canUpdate, isFalse);
@@ -125,8 +140,10 @@ void main() {
         await _seedRating(fakeFirestore, ratingId, rating);
 
         // Act
-        final canDelete =
-            await repository.validateDeletePermission('user-123', ratingId);
+        final canDelete = await repository.validateDeletePermission(
+          'user-123',
+          ratingId,
+        );
 
         // Assert
         expect(canDelete, isTrue);
@@ -135,13 +152,19 @@ void main() {
       test('should reject user from deleting another user\'s rating', () async {
         // Arrange
         const ratingId = 'recipe-1_other-user';
-        final rating =
-            _createRating('recipe-1', 'other-user', 4.5, id: ratingId);
+        final rating = _createRating(
+          'recipe-1',
+          'other-user',
+          4.5,
+          id: ratingId,
+        );
         await _seedRating(fakeFirestore, ratingId, rating);
 
         // Act
-        final canDelete =
-            await repository.validateDeletePermission('user-123', ratingId);
+        final canDelete = await repository.validateDeletePermission(
+          'user-123',
+          ratingId,
+        );
 
         // Assert
         expect(canDelete, isFalse);
@@ -242,16 +265,23 @@ void main() {
           );
         });
 
-        final data = (await fakeFirestore
-                .collection('recipe_ratings')
-                .doc(ratingId)
-                .get())
-            .data()!;
+        final data =
+            (await fakeFirestore
+                    .collection('recipe_ratings')
+                    .doc(ratingId)
+                    .get())
+                .data()!;
 
-        expect((data['createdAt'] as Timestamp).toDate(), equals(firstRatedAt),
-            reason: 'createdAt must stay anchored to the first rating');
-        expect((data['updatedAt'] as Timestamp).toDate(), equals(secondRatedAt),
-            reason: 'updatedAt must advance to the latest rating');
+        expect(
+          (data['createdAt'] as Timestamp).toDate().toUtc(),
+          equals(firstRatedAt),
+          reason: 'createdAt must stay anchored to the first rating',
+        );
+        expect(
+          (data['updatedAt'] as Timestamp).toDate().toUtc(),
+          equals(secondRatedAt),
+          reason: 'updatedAt must advance to the latest rating',
+        );
         expect(data['rating'], equals(5.0));
         expect(data['review'], equals('Changed my mind'));
       });
@@ -262,8 +292,12 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         const ratingId = '${recipeId}_user-123';
-        final existingRating =
-            _createRating(recipeId, 'user-123', 3.0, id: ratingId);
+        final existingRating = _createRating(
+          recipeId,
+          'user-123',
+          3.0,
+          id: ratingId,
+        );
         await _seedRating(fakeFirestore, ratingId, existingRating);
 
         // Act
@@ -288,8 +322,12 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         const ratingId = '${recipeId}_user-123';
-        final existingRating =
-            _createRating(recipeId, 'user-123', 3.0, id: ratingId);
+        final existingRating = _createRating(
+          recipeId,
+          'user-123',
+          3.0,
+          id: ratingId,
+        );
         await _seedRating(fakeFirestore, ratingId, existingRating);
 
         // Act & Assert
@@ -307,8 +345,12 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         const ratingId = '${recipeId}_other-user';
-        final existingRating =
-            _createRating(recipeId, 'other-user', 3.0, id: ratingId);
+        final existingRating = _createRating(
+          recipeId,
+          'other-user',
+          3.0,
+          id: ratingId,
+        );
         await _seedRating(fakeFirestore, ratingId, existingRating);
 
         // Act & Assert
@@ -382,8 +424,13 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         const ratingId = '${recipeId}_user-123';
-        final rating = _createRating(recipeId, 'user-123', 4.5,
-            id: ratingId, review: 'Excellent!');
+        final rating = _createRating(
+          recipeId,
+          'user-123',
+          4.5,
+          id: ratingId,
+          review: 'Excellent!',
+        );
         await _seedRating(fakeFirestore, ratingId, rating);
 
         // Act
@@ -410,28 +457,49 @@ void main() {
       test('should retrieve all ratings for a recipe', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        final rating1 =
-            _createRating(recipeId, 'user-1', 5.0, id: '${recipeId}_user-1');
-        final rating2 =
-            _createRating(recipeId, 'user-2', 4.0, id: '${recipeId}_user-2');
-        final rating3 =
-            _createRating(recipeId, 'user-3', 3.5, id: '${recipeId}_user-3');
-        final otherRecipeRating =
-            _createRating('recipe-2', 'user-4', 4.0, id: 'recipe-2_user-4');
+        final rating1 = _createRating(
+          recipeId,
+          'user-1',
+          5.0,
+          id: '${recipeId}_user-1',
+        );
+        final rating2 = _createRating(
+          recipeId,
+          'user-2',
+          4.0,
+          id: '${recipeId}_user-2',
+        );
+        final rating3 = _createRating(
+          recipeId,
+          'user-3',
+          3.5,
+          id: '${recipeId}_user-3',
+        );
+        final otherRecipeRating = _createRating(
+          'recipe-2',
+          'user-4',
+          4.0,
+          id: 'recipe-2_user-4',
+        );
 
         await _seedRating(fakeFirestore, rating1.id, rating1);
         await _seedRating(fakeFirestore, rating2.id, rating2);
         await _seedRating(fakeFirestore, rating3.id, rating3);
         await _seedRating(
-            fakeFirestore, otherRecipeRating.id, otherRecipeRating);
+          fakeFirestore,
+          otherRecipeRating.id,
+          otherRecipeRating,
+        );
 
         // Act
         final results = await repository.getRecipeRatings(recipeId);
 
         // Assert
         expect(results.length, equals(3));
-        expect(results.map((r) => r.userId),
-            containsAll(['user-1', 'user-2', 'user-3']));
+        expect(
+          results.map((r) => r.userId),
+          containsAll(['user-1', 'user-2', 'user-3']),
+        );
         expect(results.map((r) => r.userId), isNot(contains('user-4')));
       });
 
@@ -448,16 +516,31 @@ void main() {
       test('should calculate statistics correctly', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        await _seedRating(fakeFirestore, '${recipeId}_user-1',
-            _createRating(recipeId, 'user-1', 5.0, id: '${recipeId}_user-1'));
-        await _seedRating(fakeFirestore, '${recipeId}_user-2',
-            _createRating(recipeId, 'user-2', 4.0, id: '${recipeId}_user-2'));
-        await _seedRating(fakeFirestore, '${recipeId}_user-3',
-            _createRating(recipeId, 'user-3', 4.0, id: '${recipeId}_user-3'));
-        await _seedRating(fakeFirestore, '${recipeId}_user-4',
-            _createRating(recipeId, 'user-4', 3.0, id: '${recipeId}_user-4'));
-        await _seedRating(fakeFirestore, '${recipeId}_user-5',
-            _createRating(recipeId, 'user-5', 2.0, id: '${recipeId}_user-5'));
+        await _seedRating(
+          fakeFirestore,
+          '${recipeId}_user-1',
+          _createRating(recipeId, 'user-1', 5.0, id: '${recipeId}_user-1'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          '${recipeId}_user-2',
+          _createRating(recipeId, 'user-2', 4.0, id: '${recipeId}_user-2'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          '${recipeId}_user-3',
+          _createRating(recipeId, 'user-3', 4.0, id: '${recipeId}_user-3'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          '${recipeId}_user-4',
+          _createRating(recipeId, 'user-4', 3.0, id: '${recipeId}_user-4'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          '${recipeId}_user-5',
+          _createRating(recipeId, 'user-5', 2.0, id: '${recipeId}_user-5'),
+        );
 
         // Act
         final stats = await repository.getRatingStatistics(recipeId);
@@ -473,18 +556,22 @@ void main() {
         expect(stats.ratingDistribution[1], equals(0));
       });
 
-      test('should return zero statistics for recipe with no ratings',
-          () async {
-        // Act
-        final stats = await repository.getRatingStatistics('recipe-1');
+      test(
+        'should return zero statistics for recipe with no ratings',
+        () async {
+          // Act
+          final stats = await repository.getRatingStatistics('recipe-1');
 
-        // Assert
-        expect(stats.recipeId, equals('recipe-1'));
-        expect(stats.totalRatings, equals(0));
-        expect(stats.averageRating, equals(0.0));
-        expect(stats.ratingDistribution.values.every((value) => value == 0),
-            isTrue);
-      });
+          // Assert
+          expect(stats.recipeId, equals('recipe-1'));
+          expect(stats.totalRatings, equals(0));
+          expect(stats.averageRating, equals(0.0));
+          expect(
+            stats.ratingDistribution.values.every((value) => value == 0),
+            isTrue,
+          );
+        },
+      );
 
       test('should include last rated timestamp', () async {
         // Arrange
@@ -520,22 +607,39 @@ void main() {
     group('Bulk Rating Statistics', () {
       test('should calculate statistics for multiple recipes', () async {
         // Arrange
-        await _seedRating(fakeFirestore, 'recipe-1_user-1',
-            _createRating('recipe-1', 'user-1', 5.0, id: 'recipe-1_user-1'));
-        await _seedRating(fakeFirestore, 'recipe-1_user-2',
-            _createRating('recipe-1', 'user-2', 4.0, id: 'recipe-1_user-2'));
-        await _seedRating(fakeFirestore, 'recipe-2_user-1',
-            _createRating('recipe-2', 'user-1', 3.0, id: 'recipe-2_user-1'));
-        await _seedRating(fakeFirestore, 'recipe-3_user-1',
-            _createRating('recipe-3', 'user-1', 5.0, id: 'recipe-3_user-1'));
+        await _seedRating(
+          fakeFirestore,
+          'recipe-1_user-1',
+          _createRating('recipe-1', 'user-1', 5.0, id: 'recipe-1_user-1'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-1_user-2',
+          _createRating('recipe-1', 'user-2', 4.0, id: 'recipe-1_user-2'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-2_user-1',
+          _createRating('recipe-2', 'user-1', 3.0, id: 'recipe-2_user-1'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-3_user-1',
+          _createRating('recipe-3', 'user-1', 5.0, id: 'recipe-3_user-1'),
+        );
 
         // Act
-        final bulkStats = await repository
-            .getBulkRatingStatistics(['recipe-1', 'recipe-2', 'recipe-3']);
+        final bulkStats = await repository.getBulkRatingStatistics([
+          'recipe-1',
+          'recipe-2',
+          'recipe-3',
+        ]);
 
         // Assert
         expect(
-            bulkStats.keys, containsAll(['recipe-1', 'recipe-2', 'recipe-3']));
+          bulkStats.keys,
+          containsAll(['recipe-1', 'recipe-2', 'recipe-3']),
+        );
         expect(bulkStats['recipe-1']!.totalRatings, equals(2));
         expect(bulkStats['recipe-1']!.averageRating, equals(4.5));
         expect(bulkStats['recipe-2']!.totalRatings, equals(1));
@@ -546,12 +650,18 @@ void main() {
 
       test('should handle recipes with no ratings in bulk query', () async {
         // Arrange
-        await _seedRating(fakeFirestore, 'recipe-1_user-1',
-            _createRating('recipe-1', 'user-1', 4.0, id: 'recipe-1_user-1'));
+        await _seedRating(
+          fakeFirestore,
+          'recipe-1_user-1',
+          _createRating('recipe-1', 'user-1', 4.0, id: 'recipe-1_user-1'),
+        );
 
         // Act
-        final bulkStats = await repository
-            .getBulkRatingStatistics(['recipe-1', 'recipe-2', 'recipe-3']);
+        final bulkStats = await repository.getBulkRatingStatistics([
+          'recipe-1',
+          'recipe-2',
+          'recipe-3',
+        ]);
 
         // Assert
         expect(bulkStats['recipe-1']!.totalRatings, equals(1));
@@ -564,8 +674,11 @@ void main() {
         final recipeIds = List.generate(15, (i) => 'recipe-$i');
         for (int i = 0; i < 15; i++) {
           final ratingId = 'recipe-${i}_user-1';
-          await _seedRating(fakeFirestore, ratingId,
-              _createRating('recipe-$i', 'user-1', 4.0, id: ratingId));
+          await _seedRating(
+            fakeFirestore,
+            ratingId,
+            _createRating('recipe-$i', 'user-1', 4.0, id: ratingId),
+          );
         }
 
         // Act
@@ -574,38 +687,42 @@ void main() {
         // Assert
         expect(bulkStats.length, equals(15));
         expect(
-            bulkStats.values.every((stats) => stats.totalRatings == 1), isTrue);
+          bulkStats.values.every((stats) => stats.totalRatings == 1),
+          isTrue,
+        );
       });
     });
 
     group('Rating Statistics Stream', () {
-      test('should stream aggregate stats from recipe_social_stats doc',
-          () async {
-        // Arrange — Cloud Functions own writes to recipe_social_stats; the
-        // stream must read the denormalized doc, not aggregate per-rating
-        // snapshots (BUT-430).
-        const recipeId = 'recipe-1';
-        await fakeFirestore
-            .collection('recipe_social_stats')
-            .doc(recipeId)
-            .set({
-          'ratingCount': 3,
-          'averageRating': 4.0,
-          'ratingDistribution': {1: 0, 2: 0, 3: 1, 4: 1, 5: 1},
-          'lastRatedAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
-        });
+      test(
+        'should stream aggregate stats from recipe_social_stats doc',
+        () async {
+          // Arrange — Cloud Functions own writes to recipe_social_stats; the
+          // stream must read the denormalized doc, not aggregate per-rating
+          // snapshots (BUT-430).
+          const recipeId = 'recipe-1';
+          await fakeFirestore
+              .collection('recipe_social_stats')
+              .doc(recipeId)
+              .set({
+                'ratingCount': 3,
+                'averageRating': 4.0,
+                'ratingDistribution': {1: 0, 2: 0, 3: 1, 4: 1, 5: 1},
+                'lastRatedAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+              });
 
-        // Act
-        final stream = repository.getRatingStatisticsStream(recipeId);
-        final stats = await stream.first;
+          // Act
+          final stream = repository.getRatingStatisticsStream(recipeId);
+          final stats = await stream.first;
 
-        // Assert
-        expect(stats.recipeId, equals(recipeId));
-        expect(stats.totalRatings, equals(3));
-        expect(stats.averageRating, equals(4.0));
-        expect(stats.ratingDistribution[5], equals(1));
-        expect(stats.lastRatedAt, equals(DateTime(2026, 1, 1)));
-      });
+          // Assert
+          expect(stats.recipeId, equals(recipeId));
+          expect(stats.totalRatings, equals(3));
+          expect(stats.averageRating, equals(4.0));
+          expect(stats.ratingDistribution[5], equals(1));
+          expect(stats.lastRatedAt, equals(DateTime(2026, 1, 1)));
+        },
+      );
 
       test('should emit empty stats when stats doc missing', () async {
         // Arrange — no doc in recipe_social_stats means no ratings yet.
@@ -626,22 +743,36 @@ void main() {
       test('should retrieve all ratings by a user', () async {
         // Arrange
         const userId = 'user-123';
-        await _seedRating(fakeFirestore, 'recipe-1_$userId',
-            _createRating('recipe-1', userId, 5.0, id: 'recipe-1_$userId'));
-        await _seedRating(fakeFirestore, 'recipe-2_$userId',
-            _createRating('recipe-2', userId, 4.0, id: 'recipe-2_$userId'));
-        await _seedRating(fakeFirestore, 'recipe-3_$userId',
-            _createRating('recipe-3', userId, 3.5, id: 'recipe-3_$userId'));
-        await _seedRating(fakeFirestore, 'recipe-4_other',
-            _createRating('recipe-4', 'other-user', 4.0, id: 'recipe-4_other'));
+        await _seedRating(
+          fakeFirestore,
+          'recipe-1_$userId',
+          _createRating('recipe-1', userId, 5.0, id: 'recipe-1_$userId'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-2_$userId',
+          _createRating('recipe-2', userId, 4.0, id: 'recipe-2_$userId'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-3_$userId',
+          _createRating('recipe-3', userId, 3.5, id: 'recipe-3_$userId'),
+        );
+        await _seedRating(
+          fakeFirestore,
+          'recipe-4_other',
+          _createRating('recipe-4', 'other-user', 4.0, id: 'recipe-4_other'),
+        );
 
         // Act
         final results = await repository.getUserRatings(userId);
 
         // Assert
         expect(results.length, equals(3));
-        expect(results.map((r) => r.recipeId),
-            containsAll(['recipe-1', 'recipe-2', 'recipe-3']));
+        expect(
+          results.map((r) => r.recipeId),
+          containsAll(['recipe-1', 'recipe-2', 'recipe-3']),
+        );
         expect(results.every((r) => r.userId == userId), isTrue);
       });
 

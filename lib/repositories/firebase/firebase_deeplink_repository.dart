@@ -81,7 +81,8 @@ class FirebaseDeepLinkRepository
 
   @override
   Map<String, dynamic> fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     return doc.data() ?? {};
   }
 
@@ -92,7 +93,9 @@ class FirebaseDeepLinkRepository
   String getId(Map<String, dynamic> entity) => entity['id'] ?? '';
   @override
   Future<bool> validateCreatePermission(
-      String userId, Map<String, dynamic> entity) async {
+    String userId,
+    Map<String, dynamic> entity,
+  ) async {
     // Users can create their own deeplinks
     // Check if createdBy field matches current user (if present)
     final createdBy = entity['createdBy'];
@@ -104,7 +107,10 @@ class FirebaseDeepLinkRepository
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, Map<String, dynamic>? entity) async {
+    String userId,
+    String resourceId,
+    Map<String, dynamic>? entity,
+  ) async {
     // Deeplinks are publicly readable (for sharing functionality)
     // Anyone with the short code can resolve it
     return true;
@@ -112,7 +118,10 @@ class FirebaseDeepLinkRepository
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, Map<String, dynamic> entity) async {
+    String userId,
+    String resourceId,
+    Map<String, dynamic> entity,
+  ) async {
     // Only the creator can update their deeplink
     final createdBy = entity['createdBy'];
     return createdBy == userId;
@@ -120,7 +129,9 @@ class FirebaseDeepLinkRepository
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only the creator can delete their deeplink
     try {
       final doc = await collection.doc(resourceId).get();
@@ -136,7 +147,9 @@ class FirebaseDeepLinkRepository
 
   @override
   Future<String> createShortUrl(
-      String longUrl, Map<String, dynamic> metadata) async {
+    String longUrl,
+    Map<String, dynamic> metadata,
+  ) async {
     try {
       // Generate a unique short code
       final shortCode = _generateShortCode();
@@ -188,9 +201,9 @@ class FirebaseDeepLinkRepository
           .doc(shortUrl)
           .collection(FirestoreCollections.clicks)
           .add({
-        'timestamp': timestampProvider.serverTimestamp(),
-        'userId': currentUserId,
-      });
+            'timestamp': timestampProvider.serverTimestamp(),
+            'userId': currentUserId,
+          });
     } catch (e) {
       AppLogger.error('Failed to track URL click', e);
     }
@@ -198,7 +211,9 @@ class FirebaseDeepLinkRepository
 
   @override
   Future<void> storeDeepLinkMetadata(
-      String linkId, Map<String, dynamic> metadata) async {
+    String linkId,
+    Map<String, dynamic> metadata,
+  ) async {
     try {
       await collection.doc(linkId).set({
         'id': linkId,

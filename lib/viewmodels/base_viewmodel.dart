@@ -254,11 +254,11 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Essential for development debugging and production issue investigation.
   @protected
   Map<String, dynamic> get debugState => {
-        'isLoading': _isLoading,
-        'hasError': hasError,
-        'error': _error,
-        'isDisposed': _isDisposed,
-      };
+    'isLoading': _isLoading,
+    'hasError': hasError,
+    'error': _error,
+    'isDisposed': _isDisposed,
+  };
 
   /// Prints comprehensive debug information with conditional debug mode execution.
   /// [prefix] Optional prefix for debug output identification

@@ -128,11 +128,15 @@ void main() {
         expect(lastSavedRecipe!.createdBy, equals(currentUserId));
         // Check creator is in memberPermissions
         expect(
-            lastSavedRecipe!.socialData?.memberPermissions
-                ?.containsKey(currentUserId),
-            isTrue);
-        expect(lastSavedRecipe!.socialData?.memberPermissions?[currentUserId],
-            equals(ResourcePermission.admin));
+          lastSavedRecipe!.socialData?.memberPermissions?.containsKey(
+            currentUserId,
+          ),
+          isTrue,
+        );
+        expect(
+          lastSavedRecipe!.socialData?.memberPermissions?[currentUserId],
+          equals(ResourcePermission.admin),
+        );
       });
 
       test('should include optional metadata', () async {
@@ -166,35 +170,40 @@ void main() {
     });
 
     group('Member Initialization', () {
-      test('should add initial members with default viewer permission',
-          () async {
-        // Arrange
-        const title = 'Recipe with Members';
-        final ingredients = ['Ingredient'];
-        final instructions = ['Instruction'];
-        final initialMembers = ['user-2', 'user-3', 'user-4'];
+      test(
+        'should add initial members with default viewer permission',
+        () async {
+          // Arrange
+          const title = 'Recipe with Members';
+          final ingredients = ['Ingredient'];
+          final instructions = ['Instruction'];
+          final initialMembers = ['user-2', 'user-3', 'user-4'];
 
-        // Act
-        final recipeId = await creationService.createCollaborativeRecipe(
-          title: title,
-          ingredients: ingredients,
-          instructions: instructions,
-          initialMembers: initialMembers,
-        );
+          // Act
+          final recipeId = await creationService.createCollaborativeRecipe(
+            title: title,
+            ingredients: ingredients,
+            instructions: instructions,
+            initialMembers: initialMembers,
+          );
 
-        // Assert
-        expect(recipeId, isNotNull);
-        final memberPermissions =
-            lastSavedRecipe!.socialData?.memberPermissions;
-        expect(memberPermissions?.length, equals(4)); // Creator + 3 members
-        expect(memberPermissions?.containsKey(currentUserId), isTrue);
+          // Assert
+          expect(recipeId, isNotNull);
+          final memberPermissions =
+              lastSavedRecipe!.socialData?.memberPermissions;
+          expect(memberPermissions?.length, equals(4)); // Creator + 3 members
+          expect(memberPermissions?.containsKey(currentUserId), isTrue);
 
-        // Check all initial members are in permissions (default is editor)
-        for (final member in initialMembers) {
-          expect(memberPermissions?.containsKey(member), isTrue);
-          expect(memberPermissions?[member], equals(ResourcePermission.editor));
-        }
-      });
+          // Check all initial members are in permissions (default is editor)
+          for (final member in initialMembers) {
+            expect(memberPermissions?.containsKey(member), isTrue);
+            expect(
+              memberPermissions?[member],
+              equals(ResourcePermission.editor),
+            );
+          }
+        },
+      );
 
       test('should apply custom permissions to initial members', () async {
         // Arrange
@@ -220,10 +229,14 @@ void main() {
         expect(recipeId, isNotNull);
         final memberPermissions =
             lastSavedRecipe!.socialData?.memberPermissions;
-        expect(memberPermissions?['editor-user'],
-            equals(ResourcePermission.editor));
-        expect(memberPermissions?['viewer-user'],
-            equals(ResourcePermission.viewer));
+        expect(
+          memberPermissions?['editor-user'],
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          memberPermissions?['viewer-user'],
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should prevent duplicate members', () async {
@@ -278,34 +291,39 @@ void main() {
     });
 
     group('Permission Assignment', () {
-      test('should allow setting admin permission for initial members',
-          () async {
-        // Arrange
-        const title = 'Admin Permission Test';
-        final ingredients = ['Ingredient'];
-        final instructions = ['Instruction'];
-        final initialMembers = ['user-2'];
-        final initialPermissions = {
-          'user-2': ResourcePermission.admin, // Set admin permission
-        };
+      test(
+        'should allow setting admin permission for initial members',
+        () async {
+          // Arrange
+          const title = 'Admin Permission Test';
+          final ingredients = ['Ingredient'];
+          final instructions = ['Instruction'];
+          final initialMembers = ['user-2'];
+          final initialPermissions = {
+            'user-2': ResourcePermission.admin, // Set admin permission
+          };
 
-        // Act
-        final recipeId = await creationService.createCollaborativeRecipe(
-          title: title,
-          ingredients: ingredients,
-          instructions: instructions,
-          initialMembers: initialMembers,
-          initialPermissions: initialPermissions,
-        );
+          // Act
+          final recipeId = await creationService.createCollaborativeRecipe(
+            title: title,
+            ingredients: ingredients,
+            instructions: instructions,
+            initialMembers: initialMembers,
+            initialPermissions: initialPermissions,
+          );
 
-        // Assert
-        expect(recipeId, isNotNull);
-        // Service allows any permission to be set
-        final memberPermissions =
-            lastSavedRecipe!.socialData?.memberPermissions;
-        expect(memberPermissions?['user-2'], equals(ResourcePermission.admin));
-        expect(errorMessage, isNull);
-      });
+          // Assert
+          expect(recipeId, isNotNull);
+          // Service allows any permission to be set
+          final memberPermissions =
+              lastSavedRecipe!.socialData?.memberPermissions;
+          expect(
+            memberPermissions?['user-2'],
+            equals(ResourcePermission.admin),
+          );
+          expect(errorMessage, isNull);
+        },
+      );
 
       test('should handle mixed permission assignments', () async {
         // Arrange
@@ -333,11 +351,15 @@ void main() {
         final memberPermissions =
             lastSavedRecipe!.socialData?.memberPermissions;
         expect(memberPermissions?['user-1'], equals(ResourcePermission.editor));
-        expect(memberPermissions?['user-2'],
-            equals(ResourcePermission.editor)); // Default
+        expect(
+          memberPermissions?['user-2'],
+          equals(ResourcePermission.editor),
+        ); // Default
         expect(memberPermissions?['user-3'], equals(ResourcePermission.viewer));
-        expect(memberPermissions?['user-4'],
-            equals(ResourcePermission.editor)); // Default
+        expect(
+          memberPermissions?['user-4'],
+          equals(ResourcePermission.editor),
+        ); // Default
       });
     });
 
@@ -413,7 +435,9 @@ void main() {
 
         // Assert
         expect(
-            recipeId, isNotNull); // Service doesn't validate negative portions
+          recipeId,
+          isNotNull,
+        ); // Service doesn't validate negative portions
         // The service accepts any value for portions
       });
 
@@ -599,13 +623,17 @@ void main() {
         // Assert
         expect(lastSavedRecipe!.createdAt, isNotNull);
         expect(
-            lastSavedRecipe!.createdAt
-                .isAfter(beforeCreation.subtract(const Duration(seconds: 1))),
-            isTrue);
+          lastSavedRecipe!.createdAt.isAfter(
+            beforeCreation.subtract(const Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            lastSavedRecipe!.createdAt
-                .isBefore(afterCreation.add(const Duration(seconds: 1))),
-            isTrue);
+          lastSavedRecipe!.createdAt.isBefore(
+            afterCreation.add(const Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
       });
 
       test('should set collaborative flag', () async {

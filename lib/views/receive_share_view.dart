@@ -109,7 +109,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       '/franSocialaMedier',
       arguments: {
         'text': widget.content,
-        'sourceUrl': _detectionResult.extractedUrl ??
+        'sourceUrl':
+            _detectionResult.extractedUrl ??
             context.l10n.importImportedFrom(_getSourceDescription()),
       },
     );
@@ -185,7 +186,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
             _analytics.logExtractionError(
               url: _detectionResult.extractedUrl!,
-              platform: _detectionResult.platform ??
+              platform:
+                  _detectionResult.platform ??
                   content_detector.SourcePlatform.unknown,
               error: errorMessage,
               errorType: result.metadata['reason'] as String?,
@@ -209,7 +211,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         // Log unexpected error
         _analytics.logExtractionError(
           url: _detectionResult.extractedUrl!,
-          platform: _detectionResult.platform ??
+          platform:
+              _detectionResult.platform ??
               content_detector.SourcePlatform.unknown,
           error: e.toString(),
           errorType: 'exception',
@@ -263,13 +266,16 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
     if (_isExtracting) {
       return LoadingScaffold(
         title: context.l10n.importRecipeTitle,
-        loadingMessage:
-            context.l10n.importFetchingFromPlatform(_getPlatformName()),
+        loadingMessage: context.l10n.importFetchingFromPlatform(
+          _getPlatformName(),
+        ),
       );
     }
 
     return BaseScaffold(
-        title: context.l10n.importRecipeTitle, body: _buildContentView());
+      title: context.l10n.importRecipeTitle,
+      body: _buildContentView(),
+    );
   }
 
   /// Build content view with detection header, preview, and action buttons.
@@ -381,35 +387,38 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         return Column(
           children: [
             if (_extractionError != null) ...[
-              Builder(builder: (context) {
-                final cs = Theme.of(context).colorScheme;
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  decoration: BoxDecoration(
-                    color: cs.error
-                        .withValues(alpha: AppDimensions.opacityVeryLight),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusM,
+              Builder(
+                builder: (context) {
+                  final cs = Theme.of(context).colorScheme;
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    decoration: BoxDecoration(
+                      color: cs.error.withValues(
+                        alpha: AppDimensions.opacityVeryLight,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
+                      ),
+                      border: Border.all(color: cs.error),
                     ),
-                    border: Border.all(color: cs.error),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: cs.error),
-                      const SizedBox(width: AppDimensions.spacingS),
-                      Expanded(
-                        child: Text(
-                          _extractionError!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.error,
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: cs.error),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Expanded(
+                          child: Text(
+                            _extractionError!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.error,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: AppDimensions.spacingL),
             ],
             ElevatedButton.icon(
@@ -421,7 +430,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                     : context.l10n.importFetchAutomatically,
               ),
               style: ComponentThemes.primaryButtonStyle(
-                  Theme.of(context).colorScheme),
+                Theme.of(context).colorScheme,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(context.l10n.commonOr, style: AppTextStyles.bodySmall),
@@ -431,7 +441,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               icon: const Icon(Icons.content_paste),
               label: Text(context.l10n.importCopyManually),
               style: ComponentThemes.outlinedButtonStyle(
-                  Theme.of(context).colorScheme),
+                Theme.of(context).colorScheme,
+              ),
             ),
           ],
         );
@@ -451,7 +462,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               icon: const Icon(Icons.download),
               label: Text(context.l10n.importFetchFromWebsite),
               style: ComponentThemes.primaryButtonStyle(
-                  Theme.of(context).colorScheme),
+                Theme.of(context).colorScheme,
+              ),
             ),
           ],
         );
@@ -460,43 +472,49 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         // Ren recepttext - perfekt!
         return Column(
           children: [
-            Builder(builder: (context) {
-              final cs = Theme.of(context).colorScheme;
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: context.butleryColors.success
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+            Builder(
+              builder: (context) {
+                final cs = Theme.of(context).colorScheme;
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    color: context.butleryColors.success.withValues(
+                      alpha: AppDimensions.opacityVeryLight,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
+                    border: Border.all(color: cs.outlineVariant),
                   ),
-                  border: Border.all(color: cs.outlineVariant),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle,
-                        color: context.butleryColors.success),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Expanded(
-                      child: Text(
-                        context.l10n.importRecipeTextCanImport,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: context.butleryColors.success,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: context.butleryColors.success,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Expanded(
+                        child: Text(
+                          context.l10n.importRecipeTextCanImport,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: context.butleryColors.success,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }),
+                    ],
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
               label: Text(context.l10n.importContinueWithImport),
               style: ComponentThemes.primaryButtonStyle(
-                  Theme.of(context).colorScheme),
+                Theme.of(context).colorScheme,
+              ),
             ),
           ],
         );
@@ -516,7 +534,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               icon: const Icon(Icons.edit),
               label: Text(context.l10n.importTryAnyway),
               style: ComponentThemes.outlinedButtonStyle(
-                  Theme.of(context).colorScheme),
+                Theme.of(context).colorScheme,
+              ),
             ),
           ],
         );

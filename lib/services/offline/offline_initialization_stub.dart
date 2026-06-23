@@ -22,8 +22,8 @@ class OfflineInitialization {
   OfflineInitialization({
     VoidCallback? onConnectivityChanged,
     VoidCallback? onReconnected,
-  })  : _onConnectivityChanged = onConnectivityChanged,
-        _onReconnected = onReconnected;
+  }) : _onConnectivityChanged = onConnectivityChanged,
+       _onReconnected = onReconnected;
 
   bool get isOnline => _isOnline;
   bool get isInitialized => _isInitialized;
@@ -33,7 +33,8 @@ class OfflineInitialization {
     if (_isInitialized) return;
 
     AppLogger.info(
-        '🌐 Web platform detected - using stub offline storage (no SQLite)');
+      '🌐 Web platform detected - using stub offline storage (no SQLite)',
+    );
 
     try {
       await _initConnectivityMonitoring();

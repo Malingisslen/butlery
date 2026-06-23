@@ -45,7 +45,8 @@ class SeasonalHeroHeader extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: '$title, $ingredientsLine, '
+      label:
+          '$title, $ingredientsLine, '
           '${l10n.seasonalHeroRecipeCount(matchCount)}',
       child: InkWell(
         onTap: onTap,

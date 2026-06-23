@@ -25,13 +25,14 @@ class ImageUploadValidator {
     '.jpeg',
     '.png',
     '.gif',
-    '.webp'
+    '.webp',
   ];
 
   /// Check if it's safe to save recipe without losing pending uploads
   /// HIGH PRIORITY FIX: Prevent data corruption from race conditions
   UploadSafetyResult checkUploadSafety(
-      Map<String, ImageUploadStatus> imageStates) {
+    Map<String, ImageUploadStatus> imageStates,
+  ) {
     final List<String> pendingImagePaths = [];
     final List<String> failedImagePaths = [];
 
@@ -57,7 +58,8 @@ class ImageUploadValidator {
     final isSafe = pendingImagePaths.isEmpty && failedImagePaths.isEmpty;
 
     AppLogger.info(
-        'Upload safety check: Safe=$isSafe, Pending=${pendingImagePaths.length}, Failed=${failedImagePaths.length}');
+      'Upload safety check: Safe=$isSafe, Pending=${pendingImagePaths.length}, Failed=${failedImagePaths.length}',
+    );
 
     return UploadSafetyResult(
       isSafe: isSafe,
@@ -77,7 +79,8 @@ class ImageUploadValidator {
     final startTime = clock.now();
 
     AppLogger.info(
-        'Waiting for uploads to complete (timeout: ${timeoutDuration.inSeconds}s)');
+      'Waiting for uploads to complete (timeout: ${timeoutDuration.inSeconds}s)',
+    );
 
     while (true) {
       if (isCancelled?.call() == true) {
@@ -106,7 +109,8 @@ class ImageUploadValidator {
   /// Get list of keys for images that should be removed (not completed)
   /// Used when user chooses to save without pending/failed images
   List<String> getPendingAndFailedImageKeys(
-      Map<String, ImageUploadStatus> imageStates) {
+    Map<String, ImageUploadStatus> imageStates,
+  ) {
     final toRemove = <String>[];
 
     // Find all non-completed images
@@ -154,7 +158,8 @@ class ImageUploadValidator {
 
       if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
         AppLogger.warning(
-            'Image content does not match any supported format (magic bytes)');
+          'Image content does not match any supported format (magic bytes)',
+        );
         return false;
       }
 
@@ -184,7 +189,8 @@ class ImageUploadValidator {
 
   /// Get validation summary for debugging
   Map<String, dynamic> getValidationSummary(
-      Map<String, ImageUploadStatus> imageStates) {
+    Map<String, ImageUploadStatus> imageStates,
+  ) {
     final safetyResult = checkUploadSafety(imageStates);
 
     return {

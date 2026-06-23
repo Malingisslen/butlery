@@ -28,7 +28,8 @@ enum OnboardingStep {
   welcome('welcome', 1),
   allergens('allergens', 2),
   dietary('dietary', 3),
-  firstRecipe('first_recipe', 4);
+  firstRecipe('first_recipe', 4)
+  ;
 
   final String wireName;
   final int pageIndex;
@@ -87,8 +88,8 @@ class OnboardingProgressService {
   OnboardingProgressService({
     required FirebaseFirestore firestore,
     AnalyticsService? analytics,
-  })  : _firestore = firestore,
-        _analytics = analytics;
+  }) : _firestore = firestore,
+       _analytics = analytics;
 
   DocumentReference<Map<String, dynamic>> _progressDoc(String userId) {
     return _firestore
@@ -149,7 +150,8 @@ class OnboardingProgressService {
     } catch (e) {
       // Resume-state is best-effort; never block onboarding on a write failure.
       AppLogger.warning(
-          'OnboardingProgressService.markStepComplete failed: $e');
+        'OnboardingProgressService.markStepComplete failed: $e',
+      );
     }
   }
 

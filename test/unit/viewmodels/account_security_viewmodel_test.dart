@@ -136,10 +136,12 @@ void main() {
     group('changePassword - successful operation', () {
       // Behavior: completes password change when all inputs valid and auth succeeds
       test('should return true when password change succeeds', () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changePassword(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changePassword(any()),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.changePassword(
           currentPassword: 'current123',
@@ -154,10 +156,12 @@ void main() {
 
       // Behavior: calls reauthenticate then changePassword in sequence
       test('should reauthenticate before changing password', () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changePassword(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changePassword(any()),
+        ).thenAnswer((_) async => true);
 
         await viewModel.changePassword(
           currentPassword: 'current123',
@@ -165,10 +169,12 @@ void main() {
           confirmPassword: 'newPassword123',
         );
 
-        verify(() => mockAuthService.reauthenticateWithPassword('current123'))
-            .called(1);
-        verify(() => mockAuthService.changePassword('newPassword123'))
-            .called(1);
+        verify(
+          () => mockAuthService.reauthenticateWithPassword('current123'),
+        ).called(1);
+        verify(
+          () => mockAuthService.changePassword('newPassword123'),
+        ).called(1);
       });
     });
 
@@ -180,8 +186,9 @@ void main() {
           currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
           error: 'Wrong password',
         );
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.changePassword(
           currentPassword: 'wrongPassword',
@@ -195,43 +202,50 @@ void main() {
       });
 
       // Behavior: does not attempt password change if reauthentication fails
-      test('should not call changePassword when reauthentication fails',
-          () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => false);
+      test(
+        'should not call changePassword when reauthentication fails',
+        () async {
+          when(
+            () => mockAuthService.reauthenticateWithPassword(any()),
+          ).thenAnswer((_) async => false);
 
-        await viewModel.changePassword(
-          currentPassword: 'wrongPassword',
-          newPassword: 'newPassword123',
-          confirmPassword: 'newPassword123',
-        );
+          await viewModel.changePassword(
+            currentPassword: 'wrongPassword',
+            newPassword: 'newPassword123',
+            confirmPassword: 'newPassword123',
+          );
 
-        verifyNever(() => mockAuthService.changePassword(any()));
-      });
+          verifyNever(() => mockAuthService.changePassword(any()));
+        },
+      );
 
       // Behavior: returns false with error when changePassword itself fails
-      test('should return false when changePassword service call fails',
-          () async {
-        mockAuthService.setAuthState(
-          isAuthenticated: true,
-          currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
-          error: 'Password update failed',
-        );
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changePassword(any()))
-            .thenAnswer((_) async => false);
+      test(
+        'should return false when changePassword service call fails',
+        () async {
+          mockAuthService.setAuthState(
+            isAuthenticated: true,
+            currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
+            error: 'Password update failed',
+          );
+          when(
+            () => mockAuthService.reauthenticateWithPassword(any()),
+          ).thenAnswer((_) async => true);
+          when(
+            () => mockAuthService.changePassword(any()),
+          ).thenAnswer((_) async => false);
 
-        final result = await viewModel.changePassword(
-          currentPassword: 'current123',
-          newPassword: 'newPassword123',
-          confirmPassword: 'newPassword123',
-        );
+          final result = await viewModel.changePassword(
+            currentPassword: 'current123',
+            newPassword: 'newPassword123',
+            confirmPassword: 'newPassword123',
+          );
 
-        expect(result, isFalse);
-        expect(viewModel.hasError, isTrue);
-        expect(viewModel.isLoading, isFalse);
-      });
+          expect(result, isFalse);
+          expect(viewModel.hasError, isTrue);
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
     });
 
     group('changeEmail - validation', () {
@@ -283,10 +297,12 @@ void main() {
     group('changeEmail - successful operation', () {
       // Behavior: completes email change when inputs valid and auth succeeds
       test('should return true when email change succeeds', () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changeEmail(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changeEmail(any()),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.changeEmail(
           currentPassword: 'current123',
@@ -300,18 +316,21 @@ void main() {
 
       // Behavior: calls reauthenticate then changeEmail in sequence
       test('should reauthenticate before changing email', () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changeEmail(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changeEmail(any()),
+        ).thenAnswer((_) async => true);
 
         await viewModel.changeEmail(
           currentPassword: 'current123',
           newEmail: 'new@example.com',
         );
 
-        verify(() => mockAuthService.reauthenticateWithPassword('current123'))
-            .called(1);
+        verify(
+          () => mockAuthService.reauthenticateWithPassword('current123'),
+        ).called(1);
         verify(() => mockAuthService.changeEmail('new@example.com')).called(1);
       });
     });
@@ -324,8 +343,9 @@ void main() {
           currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
           error: 'Wrong password',
         );
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.changeEmail(
           currentPassword: 'wrongPassword',
@@ -339,8 +359,9 @@ void main() {
 
       // Behavior: does not attempt email change if reauthentication fails
       test('should not call changeEmail when reauthentication fails', () async {
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => false);
 
         await viewModel.changeEmail(
           currentPassword: 'wrongPassword',
@@ -357,10 +378,12 @@ void main() {
           currentUser: MockFactory.createMockUser(uid: 'test-user-123'),
           error: 'Email update failed',
         );
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changeEmail(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changeEmail(any()),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.changeEmail(
           currentPassword: 'current123',
@@ -381,10 +404,12 @@ void main() {
           loadingStates.add(viewModel.isLoading);
         });
 
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changePassword(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changePassword(any()),
+        ).thenAnswer((_) async => true);
 
         await viewModel.changePassword(
           currentPassword: 'current123',
@@ -392,10 +417,16 @@ void main() {
           confirmPassword: 'newPassword123',
         );
 
-        expect(loadingStates, contains(true),
-            reason: 'Loading should be true during async operation');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Loading should be false after completion');
+        expect(
+          loadingStates,
+          contains(true),
+          reason: 'Loading should be true during async operation',
+        );
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason: 'Loading should be false after completion',
+        );
       });
 
       // Behavior: sets loading during email change operation
@@ -405,20 +436,28 @@ void main() {
           loadingStates.add(viewModel.isLoading);
         });
 
-        when(() => mockAuthService.reauthenticateWithPassword(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockAuthService.changeEmail(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockAuthService.changeEmail(any()),
+        ).thenAnswer((_) async => true);
 
         await viewModel.changeEmail(
           currentPassword: 'current123',
           newEmail: 'new@example.com',
         );
 
-        expect(loadingStates, contains(true),
-            reason: 'Loading should be true during async operation');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Loading should be false after completion');
+        expect(
+          loadingStates,
+          contains(true),
+          reason: 'Loading should be true during async operation',
+        );
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason: 'Loading should be false after completion',
+        );
       });
     });
   });

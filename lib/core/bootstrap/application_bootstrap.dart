@@ -199,7 +199,8 @@ class ApplicationBootstrap {
       if (_stagesByType.containsKey(stage.runtimeType)) {
         if (kDebugMode) {
           AppLogger.debug(
-              '🔄 Stage ${stage.name} already registered (hot restart detected)');
+            '🔄 Stage ${stage.name} already registered (hot restart detected)',
+          );
         }
         return;
       }
@@ -351,7 +352,8 @@ class ApplicationBootstrap {
     if (_stages.isEmpty) {
       if (kDebugMode) {
         AppLogger.warning(
-            '⚠️ No bootstrap stages registered, skipping stage execution');
+          '⚠️ No bootstrap stages registered, skipping stage execution',
+        );
       }
       return;
     }
@@ -388,7 +390,8 @@ class ApplicationBootstrap {
         if (stage.isOptional) {
           if (kDebugMode) {
             AppLogger.warning(
-                '⚠️ Optional stage ${stage.name} validation failed, continuing');
+              '⚠️ Optional stage ${stage.name} validation failed, continuing',
+            );
           }
         } else {
           throw BootstrapException(
@@ -424,7 +427,8 @@ class ApplicationBootstrap {
       // you might want more sophisticated module availability checking
       if (kDebugMode) {
         AppLogger.debug(
-            '🔍 Validating required module for stage ${stage.name}: $moduleType');
+          '🔍 Validating required module for stage ${stage.name}: $moduleType',
+        );
       }
     }
   }
@@ -458,7 +462,8 @@ class ApplicationBootstrap {
 
       if (kDebugMode) {
         AppLogger.success(
-            '✅ Final validation passed - ${healthReport.healthyCount} services healthy');
+          '✅ Final validation passed - ${healthReport.healthyCount} services healthy',
+        );
       }
     } catch (e) {
       throw BootstrapException(
@@ -486,10 +491,10 @@ class ApplicationBootstrap {
 
   /// Get current initialization status for debugging.
   Map<String, dynamic> get status => {
-        'initialized': _isInitialized,
-        'initializing': _initializationInProgress,
-        'modules_count': _diContainer.modules.length,
-        'stages_count': _stages.length,
-        'di_initialized': _diContainer.isInitialized,
-      };
+    'initialized': _isInitialized,
+    'initializing': _initializationInProgress,
+    'modules_count': _diContainer.modules.length,
+    'stages_count': _stages.length,
+    'di_initialized': _diContainer.isInitialized,
+  };
 }

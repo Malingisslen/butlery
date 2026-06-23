@@ -29,8 +29,8 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   RealtimeRecipeService({
     required RealtimeSyncService syncService,
     required PermissionService permissionService,
-  })  : _syncService = syncService,
-        _permissionService = permissionService;
+  }) : _syncService = syncService,
+       _permissionService = permissionService;
 
   /// Is recipe operation in progress?
   bool get isProcessing => _isProcessing;
@@ -359,10 +359,10 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       operationName: 'uppdatera behörighet',
       updateFunction: (recipe) =>
           RecipeParticipants.updateParticipantPermission(
-        recipe,
-        userId: userId,
-        newPermission: newPermission,
-      ),
+            recipe,
+            userId: userId,
+            newPermission: newPermission,
+          ),
     );
   }
 
@@ -415,8 +415,9 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.info('🔄 $operationName för recept: $resourceId');
 
       // Get current recipe from cache or Firebase
-      final currentRecipe =
-          _syncService.getCachedResource<RealtimeRecipe>(resourceId);
+      final currentRecipe = _syncService.getCachedResource<RealtimeRecipe>(
+        resourceId,
+      );
 
       if (currentRecipe == null) {
         throw RecipeOperationError(
@@ -443,9 +444,12 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
     } catch (e) {
-      _handleError(operation,
-          AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
-          resourceId: resourceId, originalError: e);
+      _handleError(
+        operation,
+        AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
+        resourceId: resourceId,
+        originalError: e,
+      );
       rethrow;
     } finally {
       _setProcessing(false);
@@ -467,7 +471,9 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     try {
       // Delegate to RealtimeSyncService (SRP)
       await _syncService.deleteResource(
-          resourceId, RealtimeResourceType.recipe);
+        resourceId,
+        RealtimeResourceType.recipe,
+      );
 
       AppLogger.success('✅ Realtidsrecept borttaget: $resourceId');
     } catch (e) {

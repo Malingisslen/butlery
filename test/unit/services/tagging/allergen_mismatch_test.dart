@@ -15,12 +15,12 @@ import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 
 TagResult _tags(Map<String, TriState> allergens) => TagResult(
-      tags: const {},
-      allergenStatus: allergens,
-      dietaryStatus: const {},
-      coverage: 1.0,
-      generatedAt: DateTime(2026, 6, 4),
-    );
+  tags: const {},
+  allergenStatus: allergens,
+  dietaryStatus: const {},
+  coverage: 1.0,
+  generatedAt: DateTime(2026, 6, 4),
+);
 
 Recipe _recipe(Map<String, TriState>? allergens) {
   final base = RecipeFactory.build();
@@ -95,29 +95,38 @@ void main() {
   // BUT-1200: the batch trigger for the photo-import multi-recipe save path —
   // one banner covers the whole saved selection rather than firing per recipe.
   group('AllergenMismatch.anyUnconfigured', () {
-    test('true when at least one recipe in the batch has an untracked CONTAINS',
-        () {
-      final batch = [
-        _recipe({'gluten': TriState.free}),
-        _recipe({'mjolk': TriState.contains}),
-      ];
+    test(
+      'true when at least one recipe in the batch has an untracked CONTAINS',
+      () {
+        final batch = [
+          _recipe({'gluten': TriState.free}),
+          _recipe({'mjolk': TriState.contains}),
+        ];
 
-      expect(AllergenMismatch.anyUnconfigured(batch, _prefs(const {})), isTrue);
-    });
+        expect(
+          AllergenMismatch.anyUnconfigured(batch, _prefs(const {})),
+          isTrue,
+        );
+      },
+    );
 
-    test('false when every contained allergen in the batch is already tracked',
-        () {
-      final batch = [
-        _recipe({'gluten': TriState.contains}),
-        _recipe({'mjolk': TriState.contains}),
-      ];
+    test(
+      'false when every contained allergen in the batch is already tracked',
+      () {
+        final batch = [
+          _recipe({'gluten': TriState.contains}),
+          _recipe({'mjolk': TriState.contains}),
+        ];
 
-      expect(
-        AllergenMismatch.anyUnconfigured(
-            batch, _prefs(const {'gluten', 'mjolk'})),
-        isFalse,
-      );
-    });
+        expect(
+          AllergenMismatch.anyUnconfigured(
+            batch,
+            _prefs(const {'gluten', 'mjolk'}),
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('false for an empty batch', () {
       expect(

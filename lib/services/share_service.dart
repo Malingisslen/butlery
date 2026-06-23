@@ -112,11 +112,13 @@ class ShareService extends BaseService {
     final metadata = <String>[];
     if (recipe.timeMinutes != null) {
       metadata.add(
-          '$_timeEmoji ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}');
+        '$_timeEmoji ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
+      );
     }
     if (recipe.portions != null) {
       metadata.add(
-          '$_servingsEmoji ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}');
+        '$_servingsEmoji ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
+      );
     }
     if (recipe.rating != null && recipe.rating! > 0) {
       metadata.add(_starEmoji * recipe.rating!.round());
@@ -170,19 +172,23 @@ class ShareService extends BaseService {
     // Metadata
     if (recipe.timeMinutes != null) {
       buffer.writeln(
-          '${AppLocale.current.shareTimeLabelBold} ${recipe.timeMinutes} $_minutesLabel');
+        '${AppLocale.current.shareTimeLabelBold} ${recipe.timeMinutes} $_minutesLabel',
+      );
     }
     if (recipe.portions != null) {
       buffer.writeln(
-          '${AppLocale.current.sharePortionsLabelBold} ${recipe.portions}');
+        '${AppLocale.current.sharePortionsLabelBold} ${recipe.portions}',
+      );
     }
     if (recipe.rating != null && recipe.rating! > 0) {
       buffer.writeln(
-          '${AppLocale.current.shareRatingLabelBold} ${_starEmoji * recipe.rating!.round()}');
+        '${AppLocale.current.shareRatingLabelBold} ${_starEmoji * recipe.rating!.round()}',
+      );
     }
     if (recipe.mealType.isNotEmpty) {
       buffer.writeln(
-          '${AppLocale.current.shareTypeLabelBold} ${recipe.mealType}');
+        '${AppLocale.current.shareTypeLabelBold} ${recipe.mealType}',
+      );
     }
     buffer.writeln();
 
@@ -273,8 +279,9 @@ class ShareService extends BaseService {
     // Group by category if categories exist
     final groupedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final category = item.category.isEmpty
+          ? ShoppingCategory.other
+          : item.category;
       groupedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -333,8 +340,9 @@ class ShareService extends BaseService {
     // Jan 1 2024 is a Monday
     for (int i = 1; i <= 7; i++) {
       final date = DateTime(2024, 1, i);
-      final localizedDay =
-          DateFormat.EEEE(AppLocale.current.localeName).format(date);
+      final localizedDay = DateFormat.EEEE(
+        AppLocale.current.localeName,
+      ).format(date);
       final displayDay =
           localizedDay[0].toUpperCase() + localizedDay.substring(1);
       // Map keys are Swedish weekday names
@@ -360,10 +368,12 @@ class ShareService extends BaseService {
       () async {
         final text = getSmartFormat(recipe);
         final textWithLink = await _appendDeepLink(text, recipe.id);
-        await SharePlus.instance.share(ShareParams(
-          text: textWithLink,
-          subject: recipe.title,
-        ));
+        await SharePlus.instance.share(
+          ShareParams(
+            text: textWithLink,
+            subject: recipe.title,
+          ),
+        );
         await _trackShareAnalytics(
           recipeId: recipe.id,
           method: 'system_share_sheet',
@@ -388,10 +398,12 @@ class ShareService extends BaseService {
         };
 
         final textWithLink = await _appendDeepLink(text, recipe.id);
-        await SharePlus.instance.share(ShareParams(
-          text: textWithLink,
-          subject: recipe.title,
-        ));
+        await SharePlus.instance.share(
+          ShareParams(
+            text: textWithLink,
+            subject: recipe.title,
+          ),
+        );
         await _trackShareAnalytics(
           recipeId: recipe.id,
           method: 'system_share_sheet',
@@ -433,8 +445,9 @@ class ShareService extends BaseService {
         recipeId: recipeId,
         fromUserId: userId,
       );
-      final url = await DeepLinkService.generateShortUrl(longUrl)
-          .timeout(const Duration(seconds: 3), onTimeout: () => longUrl);
+      final url = await DeepLinkService.generateShortUrl(
+        longUrl,
+      ).timeout(const Duration(seconds: 3), onTimeout: () => longUrl);
       return '$text\n\n$url';
     } catch (e) {
       AppLogger.warning('Failed to append deep link: $e');
@@ -446,10 +459,12 @@ class ShareService extends BaseService {
     await executeServiceOperation(
       () async {
         final text = formatShoppingList(items);
-        await SharePlus.instance.share(ShareParams(
-          text: text,
-          subject: AppLocale.current.shareShoppingListTitleSimple,
-        ));
+        await SharePlus.instance.share(
+          ShareParams(
+            text: text,
+            subject: AppLocale.current.shareShoppingListTitleSimple,
+          ),
+        );
       },
       operationName: 'Share shopping list',
       requiresAuth: false,
@@ -461,10 +476,12 @@ class ShareService extends BaseService {
     Map<String, List<Recipe>> menu,
   ) async {
     final text = formatWeekMenuFromCategories(menu);
-    await SharePlus.instance.share(ShareParams(
-      text: text,
-      subject: AppLocale.current.shareWeekMenuTitle,
-    ));
+    await SharePlus.instance.share(
+      ShareParams(
+        text: text,
+        subject: AppLocale.current.shareWeekMenuTitle,
+      ),
+    );
   }
 
   String getFormattedRecipe(Recipe recipe, {RecipeShareFormat? format}) {
@@ -504,11 +521,13 @@ class ShareService extends BaseService {
           final meta = <String>[];
           if (recipe.timeMinutes != null) {
             meta.add(
-                '⏱ ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}');
+              '⏱ ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}',
+            );
           }
           if (recipe.portions != null) {
             meta.add(
-                '🍴 ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}');
+              '🍴 ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}',
+            );
           }
           if (recipe.rating != null && recipe.rating! > 0) {
             final stars = List.filled(recipe.rating!.round(), '⭐').join();
@@ -525,12 +544,17 @@ class ShareService extends BaseService {
 
     // Summary
     final totalRecipes = menu.values.fold(0, (sum, list) => sum + list.length);
-    final totalCategories =
-        menu.keys.where((key) => menu[key]!.isNotEmpty).length;
+    final totalCategories = menu.keys
+        .where((key) => menu[key]!.isNotEmpty)
+        .length;
 
     buffer.writeln(AppLocale.current.shareSummaryLabel);
-    buffer.writeln(AppLocale.current
-        .shareSummaryRecipesInCategories(totalRecipes, totalCategories));
+    buffer.writeln(
+      AppLocale.current.shareSummaryRecipesInCategories(
+        totalRecipes,
+        totalCategories,
+      ),
+    );
 
     return buffer.toString();
   }

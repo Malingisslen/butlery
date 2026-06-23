@@ -26,19 +26,21 @@ void main() {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(NotificationStrategy.recipeShared);
       registerFallbackValue(ResourcePermission.viewer);
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
     });
 
     setUp(() async {
@@ -115,14 +117,17 @@ void main() {
 
     group('Member Addition', () {
       test('should add new member successfully', () async {
-        when(() => mockParentService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final success = await memberManager.addMember(
           recipeId: 'collab_1',
@@ -132,22 +137,28 @@ void main() {
         );
 
         expect(success, isTrue);
-        final captured =
-            verify(() => mockParentService.updateRecipe(captureAny())).captured;
+        final captured = verify(
+          () => mockParentService.updateRecipe(captureAny()),
+        ).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_999'],
-            equals(ResourcePermission.editor));
+        expect(
+          updatedRecipe.socialData?.memberPermissions?['user_999'],
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should use default viewer permission when not specified', () async {
-        when(() => mockParentService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final success = await memberManager.addMember(
           recipeId: 'collab_1',
@@ -156,11 +167,14 @@ void main() {
         );
 
         expect(success, isTrue);
-        final captured =
-            verify(() => mockParentService.updateRecipe(captureAny())).captured;
+        final captured = verify(
+          () => mockParentService.updateRecipe(captureAny()),
+        ).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_999'],
-            equals(ResourcePermission.viewer));
+        expect(
+          updatedRecipe.socialData?.memberPermissions?['user_999'],
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should fail when recipe not found', () async {
@@ -210,14 +224,17 @@ void main() {
 
     group('Member Removal', () {
       test('should remove member successfully', () async {
-        when(() => mockParentService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final success = await memberManager.removeMember(
           recipeId: 'collab_1',
@@ -225,13 +242,14 @@ void main() {
         );
 
         expect(success, isTrue);
-        final captured =
-            verify(() => mockParentService.updateRecipe(captureAny())).captured;
+        final captured = verify(
+          () => mockParentService.updateRecipe(captureAny()),
+        ).captured;
         final updatedRecipe = captured.first as Recipe;
         expect(
-            updatedRecipe.socialData?.memberPermissions
-                ?.containsKey('user_456'),
-            isFalse);
+          updatedRecipe.socialData?.memberPermissions?.containsKey('user_456'),
+          isFalse,
+        );
       });
 
       test('should prevent owner from being removed', () async {
@@ -270,14 +288,17 @@ void main() {
 
     group('Permission Updates', () {
       test('should update member permission successfully', () async {
-        when(() => mockParentService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final success = await memberManager.updateMemberPermission(
           recipeId: 'collab_1',
@@ -286,11 +307,14 @@ void main() {
         );
 
         expect(success, isTrue);
-        final captured =
-            verify(() => mockParentService.updateRecipe(captureAny())).captured;
+        final captured = verify(
+          () => mockParentService.updateRecipe(captureAny()),
+        ).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_789'],
-            equals(ResourcePermission.editor));
+        expect(
+          updatedRecipe.socialData?.memberPermissions?['user_789'],
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should prevent changing owner permission', () async {

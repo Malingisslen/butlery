@@ -155,17 +155,14 @@ Duration? _toDuration(double value, String unit) {
     'tmr' ||
     'timar' ||
     'timme' ||
-    'timmar' =>
-      (value * Duration.microsecondsPerHour).round(),
+    'timmar' => (value * Duration.microsecondsPerHour).round(),
     'min' ||
     'minut' ||
-    'minuter' =>
-      (value * Duration.microsecondsPerMinute).round(),
+    'minuter' => (value * Duration.microsecondsPerMinute).round(),
     's' ||
     'sek' ||
     'sekund' ||
-    'sekunder' =>
-      (value * Duration.microsecondsPerSecond).round(),
+    'sekunder' => (value * Duration.microsecondsPerSecond).round(),
     _ => null,
   };
   if (micros == null) return null;

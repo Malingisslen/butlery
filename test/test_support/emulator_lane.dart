@@ -55,8 +55,8 @@ const bool useEmulatorLane = bool.fromEnvironment('USE_EMULATOR');
 const Object? emulatorOnlySkip = useEmulatorLane
     ? null
     : 'Requires Firebase emulator — '
-        'run with `flutter test --dart-define=USE_EMULATOR=true` '
-        '(CI emulator tier picks this up automatically).';
+          'run with `flutter test --dart-define=USE_EMULATOR=true` '
+          '(CI emulator tier picks this up automatically).';
 
 FirebaseFirestore? _lane;
 bool _firebaseInitialized = false;

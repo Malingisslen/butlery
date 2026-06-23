@@ -108,8 +108,10 @@ void main() {
       test('should initialize with required dependencies', () {
         // Assert
         expect(membershipService, isNotNull);
-        expect(membershipService.serviceName,
-            equals('SocialRecipeMembershipService'));
+        expect(
+          membershipService.serviceName,
+          equals('SocialRecipeMembershipService'),
+        );
       });
     });
 
@@ -410,8 +412,9 @@ void main() {
         testRecipesMap['recipe-no-members'] = recipeWithoutMembers;
 
         // Act
-        final members =
-            await membershipService.getRecipeMembers('recipe-no-members');
+        final members = await membershipService.getRecipeMembers(
+          'recipe-no-members',
+        );
 
         // Assert
         expect(members, isEmpty);
@@ -527,7 +530,10 @@ void main() {
 
         // Act
         await membershipService.addMemberToRecipe(
-            recipeId, newUserId, permission);
+          recipeId,
+          newUserId,
+          permission,
+        );
 
         // Assert
         expect(notifyCount, greaterThan(initialNotifyCount));
@@ -542,7 +548,10 @@ void main() {
 
         // Act
         await membershipService.addMemberToRecipe(
-            recipeId, newUserId, permission);
+          recipeId,
+          newUserId,
+          permission,
+        );
 
         // Assert
         expect(notifyCount, equals(initialNotifyCount));

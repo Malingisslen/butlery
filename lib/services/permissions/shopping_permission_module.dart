@@ -104,7 +104,8 @@ class ShoppingPermissionModule {
         final userPermission = list.memberPermissions[currentUserId];
 
         // Only admin and edit permissions allow editing
-        final canEdit = userPermission == SharedListPermission.admin ||
+        final canEdit =
+            userPermission == SharedListPermission.admin ||
             userPermission == SharedListPermission.edit;
 
         return canEdit;
@@ -119,8 +120,10 @@ class ShoppingPermissionModule {
   }
 
   /// Add retry logic for permission checking with service refresh
-  Future<bool> canEditShoppingListWithRetry(String listId,
-      {int maxRetries = 3}) async {
+  Future<bool> canEditShoppingListWithRetry(
+    String listId, {
+    int maxRetries = 3,
+  }) async {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       final result = canEditShoppingList(listId);
       if (result) {

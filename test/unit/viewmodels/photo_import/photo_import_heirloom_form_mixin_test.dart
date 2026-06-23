@@ -29,14 +29,16 @@ void main() {
   });
 
   group('PhotoImportHeirloomFormMixin', () {
-    test('writerName truncates at 100 chars to mirror HeirloomMetadata limit',
-        () {
-      host.heirloomWriterName = 'a' * 150;
-      expect(host.heirloomWriterName.length, 100);
-      // A boundary value at exactly 100 is kept intact (no off-by-one trim).
-      host.heirloomWriterName = 'b' * 100;
-      expect(host.heirloomWriterName, 'b' * 100);
-    });
+    test(
+      'writerName truncates at 100 chars to mirror HeirloomMetadata limit',
+      () {
+        host.heirloomWriterName = 'a' * 150;
+        expect(host.heirloomWriterName.length, 100);
+        // A boundary value at exactly 100 is kept intact (no off-by-one trim).
+        host.heirloomWriterName = 'b' * 100;
+        expect(host.heirloomWriterName, 'b' * 100);
+      },
+    );
 
     test('note truncates at 200 chars to mirror HeirloomMetadata limit', () {
       host.heirloomNote = 'x' * 300;
@@ -57,8 +59,11 @@ void main() {
       host.heirloomWriterName = 'Farmor';
       host.heirloomYear = 1962;
       host.heirloomNote = 'från receptboken';
-      expect(notifyCount, afterFirstWrites,
-          reason: 'identical re-sets should not fire notifyListeners');
+      expect(
+        notifyCount,
+        afterFirstWrites,
+        reason: 'identical re-sets should not fire notifyListeners',
+      );
     });
 
     test('clearHeirloomForm resets every field to its empty default', () {
@@ -105,20 +110,22 @@ void main() {
       });
     });
 
-    test('setters no-op after dispose so a late callback cannot mutate state',
-        () {
-      host.heirloomWriterName = 'Farmor';
-      host.dispose();
+    test(
+      'setters no-op after dispose so a late callback cannot mutate state',
+      () {
+        host.heirloomWriterName = 'Farmor';
+        host.dispose();
 
-      host.heirloomWriterName = 'someone else';
-      host.isHeirloom = true;
-      host.heirloomYear = 2000;
-      host.heirloomNote = 'late';
+        host.heirloomWriterName = 'someone else';
+        host.isHeirloom = true;
+        host.heirloomYear = 2000;
+        host.heirloomNote = 'late';
 
-      expect(host.heirloomWriterName, 'Farmor');
-      expect(host.isHeirloom, isFalse);
-      expect(host.heirloomYear, isNull);
-      expect(host.heirloomNote, isEmpty);
-    });
+        expect(host.heirloomWriterName, 'Farmor');
+        expect(host.isHeirloom, isFalse);
+        expect(host.heirloomYear, isNull);
+        expect(host.heirloomNote, isEmpty);
+      },
+    );
   });
 }

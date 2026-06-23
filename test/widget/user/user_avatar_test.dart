@@ -8,8 +8,9 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 void main() {
   group('UserAvatar Widget Tests', () {
     group('Basic Rendering', () {
-      testWidgets('renders with initials when no image URL',
-          (WidgetTester tester) async {
+      testWidgets('renders with initials when no image URL', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -26,8 +27,9 @@ void main() {
         expect(container, findsWidgets);
       });
 
-      testWidgets('renders with image when URL provided',
-          (WidgetTester tester) async {
+      testWidgets('renders with image when URL provided', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -44,8 +46,9 @@ void main() {
         expect(find.text('EE'), findsOneWidget);
       });
 
-      testWidgets('handles single word names correctly',
-          (WidgetTester tester) async {
+      testWidgets('handles single word names correctly', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -71,8 +74,9 @@ void main() {
         expect(find.text('A'), findsOneWidget);
       });
 
-      testWidgets('handles empty name with fallback',
-          (WidgetTester tester) async {
+      testWidgets('handles empty name with fallback', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -85,8 +89,9 @@ void main() {
         expect(find.byIcon(Icons.person), findsOneWidget);
       });
 
-      testWidgets('handles names with extra spaces',
-          (WidgetTester tester) async {
+      testWidgets('handles names with extra spaces', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -142,8 +147,9 @@ void main() {
         expect(find.text('TU'), findsOneWidget);
       });
 
-      testWidgets('renders extra large size correctly',
-          (WidgetTester tester) async {
+      testWidgets('renders extra large size correctly', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -183,8 +189,9 @@ void main() {
         );
       });
 
-      testWidgets('shows offline status indicator',
-          (WidgetTester tester) async {
+      testWidgets('shows offline status indicator', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -208,8 +215,9 @@ void main() {
         );
       });
 
-      testWidgets('does not show status when disabled',
-          (WidgetTester tester) async {
+      testWidgets('does not show status when disabled', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -233,8 +241,9 @@ void main() {
     });
 
     group('Interactivity', () {
-      testWidgets('handles tap when onTap provided',
-          (WidgetTester tester) async {
+      testWidgets('handles tap when onTap provided', (
+        WidgetTester tester,
+      ) async {
         bool tapped = false;
 
         await tester.pumpWidget(
@@ -256,8 +265,9 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('no InkWell when onTap not provided',
-          (WidgetTester tester) async {
+      testWidgets('no InkWell when onTap not provided', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -272,8 +282,9 @@ void main() {
     });
 
     group('Custom Styling', () {
-      testWidgets('applies custom background color',
-          (WidgetTester tester) async {
+      testWidgets('applies custom background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -319,8 +330,9 @@ void main() {
     });
 
     group('Swedish Character Support', () {
-      testWidgets('handles Swedish characters in names',
-          (WidgetTester tester) async {
+      testWidgets('handles Swedish characters in names', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -333,8 +345,9 @@ void main() {
         expect(find.text('ÅÖ'), findsOneWidget);
       });
 
-      testWidgets('handles mixed case Swedish names',
-          (WidgetTester tester) async {
+      testWidgets('handles mixed case Swedish names', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -363,8 +376,9 @@ void main() {
         expect(find.text('AE'), findsOneWidget);
       });
 
-      testWidgets('handles names with special characters',
-          (WidgetTester tester) async {
+      testWidgets('handles names with special characters', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -377,8 +391,9 @@ void main() {
         expect(find.text('JO'), findsOneWidget);
       });
 
-      testWidgets('handles empty image URL same as null',
-          (WidgetTester tester) async {
+      testWidgets('handles empty image URL same as null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -394,8 +409,9 @@ void main() {
         expect(find.byType(CachedNetworkImage), findsNothing);
       });
 
-      testWidgets('renders square avatar container (Butlery design language)',
-          (WidgetTester tester) async {
+      testWidgets('renders square avatar container (Butlery design language)', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const UserAvatar(
@@ -422,8 +438,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('provides semantic label for screen readers',
-          (WidgetTester tester) async {
+      testWidgets('provides semantic label for screen readers', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UserAvatar(

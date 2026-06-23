@@ -95,8 +95,8 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   FirebaseAnalyticsRepository({
     FirebaseAnalytics? analytics,
     String? saltOverride,
-  })  : _analytics = analytics ?? FirebaseAnalytics.instance,
-        _saltManager = AnalyticsSaltManager(override: saltOverride);
+  }) : _analytics = analytics ?? FirebaseAnalytics.instance,
+       _saltManager = AnalyticsSaltManager(override: saltOverride);
 
   @override
   void setSessionId(String? sessionId) {
@@ -382,7 +382,9 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     );
 
     await setUserProperty(
-        name: AnalyticsUserProperties.hasMarkedCooked, value: 'true');
+      name: AnalyticsUserProperties.hasMarkedCooked,
+      value: 'true',
+    );
   }
 
   @override
@@ -459,7 +461,9 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       }
 
       await setUserProperty(
-          name: AnalyticsUserProperties.userType, value: userType);
+        name: AnalyticsUserProperties.userType,
+        value: userType,
+      );
       await setUserProperty(
         name: AnalyticsUserProperties.recipeCountRange,
         value: AnalyticsBuckets.recipeCountRange(recipeCount),
@@ -580,8 +584,9 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
       if (_piiDropKeys.contains(key)) {
         if (key == 'search_query' && value is String) {
-          result['search_query_len_bucket'] =
-              AnalyticsBuckets.lengthBucket(value.length);
+          result['search_query_len_bucket'] = AnalyticsBuckets.lengthBucket(
+            value.length,
+          );
         }
         continue;
       }

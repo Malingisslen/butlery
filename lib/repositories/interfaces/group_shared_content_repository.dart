@@ -20,7 +20,7 @@ abstract class GroupSharedContentRepository {
 
   /// Realtime variant of [getSharedContent].
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      streamSharedContent({
+  streamSharedContent({
     required List<String> memberIds,
     required String contentType,
     int limit = 20,

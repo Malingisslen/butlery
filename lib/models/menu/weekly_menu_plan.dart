@@ -12,7 +12,8 @@ import 'package:uuid/uuid.dart';
 enum MealSlot {
   lunch,
   middag,
-  ovrigt;
+  ovrigt
+  ;
 
   /// Whether multiple recipes per day are allowed in this slot.
   /// Lunch and middag are single-recipe; övrigt is the catch-all bucket.
@@ -42,7 +43,8 @@ enum DayOfWeek {
   thu,
   fri,
   sat,
-  sun;
+  sun
+  ;
 
   /// Maps to `DateTime.weekday` (1=Mon..7=Sun).
   int get isoWeekday => index + 1;
@@ -131,14 +133,19 @@ class WeeklyMenuPlanEntry {
 
   factory WeeklyMenuPlanEntry.fromMap(Map<String, dynamic> data) {
     return WeeklyMenuPlanEntry(
-      id: SerializationUtils.safeString(data, 'id',
-          defaultValue: const Uuid().v4()),
+      id: SerializationUtils.safeString(
+        data,
+        'id',
+        defaultValue: const Uuid().v4(),
+      ),
       day: DayOfWeek.fromName(SerializationUtils.safeString(data, 'day')),
       slot: MealSlot.fromName(SerializationUtils.safeString(data, 'slot')),
       recipeId: SerializationUtils.safeString(data, 'recipeId'),
       recipeTitle: SerializationUtils.safeString(data, 'recipeTitle'),
-      recipeImageUrl:
-          SerializationUtils.safeNullableString(data, 'recipeImageUrl'),
+      recipeImageUrl: SerializationUtils.safeNullableString(
+        data,
+        'recipeImageUrl',
+      ),
     );
   }
 

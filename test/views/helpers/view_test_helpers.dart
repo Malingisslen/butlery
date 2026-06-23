@@ -276,15 +276,21 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// and provides clear error messages for Swedish localization issues.
   static void expectSwedishText(WidgetTester tester, String expectedText) {
     final finder = findBySwedishText(expectedText);
-    expect(finder, findsOneWidget,
-        reason: 'Swedish text "$expectedText" not found in widget tree');
+    expect(
+      finder,
+      findsOneWidget,
+      reason: 'Swedish text "$expectedText" not found in widget tree',
+    );
   }
 
   /// Expect Swedish text to be absent from the widget tree.
   static void expectNoSwedishText(WidgetTester tester, String text) {
     final finder = findBySwedishText(text);
-    expect(finder, findsNothing,
-        reason: 'Swedish text "$text" unexpectedly found in widget tree');
+    expect(
+      finder,
+      findsNothing,
+      reason: 'Swedish text "$text" unexpectedly found in widget tree',
+    );
   }
 
   /// Expect multiple Swedish text elements.
@@ -374,7 +380,8 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// LoadingIndicator-only would force wholesale migration before this
   /// helper becomes usable on migrated views.
   static void expectLoadingState(WidgetTester tester) {
-    final hasLoading = tester.any(find.byType(LoadingIndicator)) ||
+    final hasLoading =
+        tester.any(find.byType(LoadingIndicator)) ||
         tester.any(find.byType(CircularProgressIndicator));
     expect(hasLoading, isTrue, reason: 'Loading state not displayed');
   }
@@ -402,8 +409,11 @@ class ViewTestHelpers extends BaseWidgetTest {
       }
     }
 
-    expect(foundErrorIndicator, isTrue,
-        reason: 'Error state indicators not found');
+    expect(
+      foundErrorIndicator,
+      isTrue,
+      reason: 'Error state indicators not found',
+    );
   }
 
   /// Expect content state to be displayed (no loading, no error).
@@ -411,10 +421,16 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// BUT-891: checks for both `LoadingIndicator` AND raw CPI to catch
   /// content-state in either rendering path.
   static void expectContentState(WidgetTester tester) {
-    expect(find.byType(LoadingIndicator), findsNothing,
-        reason: 'LoadingIndicator still visible in content state');
-    expect(find.byType(CircularProgressIndicator), findsNothing,
-        reason: 'Loading indicator still visible in content state');
+    expect(
+      find.byType(LoadingIndicator),
+      findsNothing,
+      reason: 'LoadingIndicator still visible in content state',
+    );
+    expect(
+      find.byType(CircularProgressIndicator),
+      findsNothing,
+      reason: 'Loading indicator still visible in content state',
+    );
 
     // Should not find common error indicators
     expect(find.byIcon(Icons.error), findsNothing);
@@ -426,13 +442,18 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// Expect form field to be present with Swedish label.
   static void expectFormField(WidgetTester tester, String label) {
     final fieldFinder = find.widgetWithText(TextFormField, label);
-    expect(fieldFinder, findsOneWidget,
-        reason: 'Form field with label "$label" not found');
+    expect(
+      fieldFinder,
+      findsOneWidget,
+      reason: 'Form field with label "$label" not found',
+    );
   }
 
   /// Expect form validation error with Swedish message.
   static void expectFormValidationError(
-      WidgetTester tester, String errorMessage) {
+    WidgetTester tester,
+    String errorMessage,
+  ) {
     expectSwedishText(tester, errorMessage);
   }
 
@@ -539,9 +560,13 @@ class ViewTestHelpers extends BaseWidgetTest {
     Duration renderTime, {
     Duration threshold = const Duration(milliseconds: 500),
   }) {
-    expect(renderTime.inMilliseconds, lessThan(threshold.inMilliseconds),
-        reason: 'View rendering took ${renderTime.inMilliseconds}ms, '
-            'exceeds threshold of ${threshold.inMilliseconds}ms');
+    expect(
+      renderTime.inMilliseconds,
+      lessThan(threshold.inMilliseconds),
+      reason:
+          'View rendering took ${renderTime.inMilliseconds}ms, '
+          'exceeds threshold of ${threshold.inMilliseconds}ms',
+    );
   }
 }
 

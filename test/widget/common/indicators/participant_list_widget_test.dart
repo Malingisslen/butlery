@@ -13,16 +13,16 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/widgets/common/indicators/participant_list_widget.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(
-        body: MediaQuery(
-          data: const MediaQueryData(disableAnimations: true),
-          child: child,
-        ),
-      ),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(
+    body: MediaQuery(
+      data: const MediaQueryData(disableAnimations: true),
+      child: child,
+    ),
+  ),
+);
 
 ParticipantActivity _activity({
   required String userId,
@@ -39,12 +39,17 @@ ParticipantActivity _activity({
 
 void main() {
   group('ParticipantListWidget — empty', () {
-    testWidgets('collapses to SizedBox.shrink when activities is empty',
-        (tester) async {
-      await tester.pumpWidget(_wrap(const ParticipantListWidget(
-        activities: [],
-        currentUserId: 'me',
-      )));
+    testWidgets('collapses to SizedBox.shrink when activities is empty', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ParticipantListWidget(
+            activities: [],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       // No header icon / chips / text rendered.
@@ -66,15 +71,20 @@ void main() {
   });
 
   group('ParticipantListWidget — populated', () {
-    testWidgets('renders header with people icon + Swedish participant count',
-        (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: false),
-        ],
-        currentUserId: 'me',
-      )));
+    testWidgets('renders header with people icon + Swedish participant count', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
+              _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: false),
+            ],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       expect(
@@ -88,31 +98,42 @@ void main() {
       expect(find.text('Deltagare (2)'), findsOneWidget);
     });
 
-    testWidgets('online-indicator pill shows count of online participants only',
-        (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert', isOnline: true),
-          _activity(userId: 'u3', name: 'Cecilia', isOnline: false),
-        ],
-        currentUserId: 'me',
-      )));
-      await tester.pump();
+    testWidgets(
+      'online-indicator pill shows count of online participants only',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            ParticipantListWidget(
+              activities: [
+                _activity(userId: 'me', name: 'Anna', isOnline: true),
+                _activity(userId: 'u2', name: 'Bert', isOnline: true),
+                _activity(userId: 'u3', name: 'Cecilia', isOnline: false),
+              ],
+              currentUserId: 'me',
+            ),
+          ),
+        );
+        await tester.pump();
 
-      // Swedish l10n: participantsOnlineCount = "{count} online"
-      expect(find.text('2 online'), findsOneWidget);
-    });
+        // Swedish l10n: participantsOnlineCount = "{count} online"
+        expect(find.text('2 online'), findsOneWidget);
+      },
+    );
 
-    testWidgets('current user chip shows "Du" label instead of display name',
-        (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: true),
-        ],
-        currentUserId: 'me',
-      )));
+    testWidgets('current user chip shows "Du" label instead of display name', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
+              _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: true),
+            ],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       // commonYou = "Du" — current user's display name should be replaced.
@@ -122,15 +143,20 @@ void main() {
       expect(find.text('Bert Bertsson'), findsOneWidget);
     });
 
-    testWidgets('per-participant online/offline status label is localized',
-        (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert', isOnline: false),
-        ],
-        currentUserId: 'me',
-      )));
+    testWidgets('per-participant online/offline status label is localized', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna', isOnline: true),
+              _activity(userId: 'u2', name: 'Bert', isOnline: false),
+            ],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       // userStatusOnline = "Online", userStatusOffline = "Offline".
@@ -144,14 +170,18 @@ void main() {
     });
 
     testWidgets('renders one chip row per activity', (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert', isOnline: false),
-          _activity(userId: 'u3', name: 'Cecilia', isOnline: true),
-        ],
-        currentUserId: 'me',
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna', isOnline: true),
+              _activity(userId: 'u2', name: 'Bert', isOnline: false),
+              _activity(userId: 'u3', name: 'Cecilia', isOnline: true),
+            ],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       // Wrap renders the chips; assert all non-current names appear.
@@ -160,15 +190,20 @@ void main() {
       expect(find.text('Du'), findsOneWidget);
     });
 
-    testWidgets('chip avatar shows initials derived from display name',
-        (tester) async {
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
-          _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: false),
-        ],
-        currentUserId: 'me',
-      )));
+    testWidgets('chip avatar shows initials derived from display name', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna Andersson', isOnline: true),
+              _activity(userId: 'u2', name: 'Bert Bertsson', isOnline: false),
+            ],
+            currentUserId: 'me',
+          ),
+        ),
+      );
       await tester.pump();
 
       // UserAvatarWidgets.getInitials('Anna Andersson') → "AA"
@@ -177,25 +212,31 @@ void main() {
       expect(find.text('BB'), findsOneWidget);
     });
 
-    testWidgets('canManageParticipants prop is accepted (default false)',
-        (tester) async {
+    testWidgets('canManageParticipants prop is accepted (default false)', (
+      tester,
+    ) async {
       // Production-shape prop: stored on the widget; render path doesn't
       // currently branch on it, so we just verify it round-trips without
       // throwing and the widget still renders. If management UI is added
       // later, expand this test to assert visible affordances.
-      await tester.pumpWidget(_wrap(ParticipantListWidget(
-        activities: [
-          _activity(userId: 'me', name: 'Anna', isOnline: true),
-        ],
-        currentUserId: 'me',
-        canManageParticipants: true,
-        onRemoveParticipant: (_) {},
-        onChangePermission: (_) {},
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ParticipantListWidget(
+            activities: [
+              _activity(userId: 'me', name: 'Anna', isOnline: true),
+            ],
+            currentUserId: 'me',
+            canManageParticipants: true,
+            onRemoveParticipant: (_) {},
+            onChangePermission: (_) {},
+          ),
+        ),
+      );
       await tester.pump();
 
-      final w = tester
-          .widget<ParticipantListWidget>(find.byType(ParticipantListWidget));
+      final w = tester.widget<ParticipantListWidget>(
+        find.byType(ParticipantListWidget),
+      );
       expect(w.canManageParticipants, isTrue);
       expect(w.onRemoveParticipant, isNotNull);
       expect(w.onChangePermission, isNotNull);

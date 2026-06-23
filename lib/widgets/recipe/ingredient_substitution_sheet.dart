@@ -167,11 +167,13 @@ class _IngredientSubstitutionSheetState
               Container(
                 padding: AppDimensions.paddingSymmetric4x2,
                 decoration: BoxDecoration(
-                  color: cs.primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
                   border: Border.all(
-                    color: cs.primary
-                        .withValues(alpha: AppDimensions.opacityMediumLight),
+                    color: cs.primary.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
                   ),
                 ),
                 child: Text(

@@ -25,10 +25,12 @@ void main() {
   void withFakeTime(void Function(FakeAsync async) body) {
     fakeAsync((async) {
       withClock(
-        Clock(() => DateTime.fromMillisecondsSinceEpoch(
-              DateTime(2026, 1, 1).millisecondsSinceEpoch +
-                  async.elapsed.inMilliseconds,
-            )),
+        Clock(
+          () => DateTime.fromMillisecondsSinceEpoch(
+            DateTime(2026, 1, 1).millisecondsSinceEpoch +
+                async.elapsed.inMilliseconds,
+          ),
+        ),
         () => body(async),
       );
     });
@@ -53,11 +55,11 @@ void main() {
   });
 
   SessionTimeoutService buildService() => SessionTimeoutService(
-        authService: authService,
-        analyticsService: analyticsService,
-        timeoutDuration: const Duration(minutes: 10),
-        warningOffset: const Duration(minutes: 5),
-      );
+    authService: authService,
+    analyticsService: analyticsService,
+    timeoutDuration: const Duration(minutes: 10),
+    warningOffset: const Duration(minutes: 5),
+  );
 
   group('SessionTimeoutService warning callback (BUG-31)', () {
     test('warning fires the registered callback exactly once', () {
@@ -75,23 +77,27 @@ void main() {
       });
     });
 
-    test('missing callback does not throw and does not block the warning state',
-        () {
-      withFakeTime((async) {
-        final service = buildService();
-        // Intentionally do NOT register a warning callback.
-        service.initialize();
+    test(
+      'missing callback does not throw and does not block the warning state',
+      () {
+        withFakeTime((async) {
+          final service = buildService();
+          // Intentionally do NOT register a warning callback.
+          service.initialize();
 
-        // Reaching the warning point must not crash even with no callback.
-        expect(
-          () => async.elapse(const Duration(minutes: 5, seconds: 1)),
-          returnsNormally,
-        );
-        expect(service.shouldShowWarning, isTrue,
-            reason:
-                'warning state still advances so logout is not silent-only');
-      });
-    });
+          // Reaching the warning point must not crash even with no callback.
+          expect(
+            () => async.elapse(const Duration(minutes: 5, seconds: 1)),
+            returnsNormally,
+          );
+          expect(
+            service.shouldShowWarning,
+            isTrue,
+            reason: 'warning state still advances so logout is not silent-only',
+          );
+        });
+      },
+    );
 
     test('late-registered callback receives the pending warning (replay)', () {
       withFakeTime((async) {
@@ -108,9 +114,11 @@ void main() {
         var warningCount = 0;
         service.registerWarningCallback(() => warningCount++);
 
-        expect(warningCount, 1,
-            reason:
-                'pending warning must replay to a late-registered callback');
+        expect(
+          warningCount,
+          1,
+          reason: 'pending warning must replay to a late-registered callback',
+        );
       });
     });
 
@@ -126,8 +134,11 @@ void main() {
         service.recordActivity();
         async.elapse(const Duration(minutes: 4));
 
-        expect(warningCount, 0,
-            reason: 'activity reset should push the warning past this point');
+        expect(
+          warningCount,
+          0,
+          reason: 'activity reset should push the warning past this point',
+        );
         expect(service.shouldShowWarning, isFalse);
       });
     });
@@ -143,8 +154,11 @@ void main() {
         var warningCount = 0;
         service.registerWarningCallback(() => warningCount++);
 
-        expect(warningCount, 0,
-            reason: 'a timed-out session must not replay a stale warning');
+        expect(
+          warningCount,
+          0,
+          reason: 'a timed-out session must not replay a stale warning',
+        );
       });
     });
   });

@@ -149,11 +149,13 @@ void main() {
           'qualityScore': 0.8,
         });
 
-        await withClock(Clock.fixed(base.add(const Duration(hours: 2))),
-            () async {
-          final reloaded = await repo.getConfig('example.com');
-          expect(reloaded.titleSelector, equals('h1.second'));
-        });
+        await withClock(
+          Clock.fixed(base.add(const Duration(hours: 2))),
+          () async {
+            final reloaded = await repo.getConfig('example.com');
+            expect(reloaded.titleSelector, equals('h1.second'));
+          },
+        );
       });
     });
 
@@ -174,12 +176,14 @@ void main() {
         expect(config!.domain, equals('example.com'));
       });
 
-      test('returns null for unknown domain with no built-in default',
-          () async {
-        final config = await repo.getConfigIfExists('totally-unknown.xyz');
+      test(
+        'returns null for unknown domain with no built-in default',
+        () async {
+          final config = await repo.getConfigIfExists('totally-unknown.xyz');
 
-        expect(config, isNull);
-      });
+          expect(config, isNull);
+        },
+      );
 
       test('falls back to built-in default when Firestore missing', () async {
         // ica.se is in the built-in default list inside the repo.
@@ -191,35 +195,43 @@ void main() {
     });
 
     group('getSupportedConfigs', () {
-      test('returns supported docs from Firestore sorted by qualityScore',
-          () async {
-        await firestore.collection('site_configs').doc('high.com').set({
-          'domain': 'high.com',
-          'titleSelector': 'h1',
-          'isSupported': true,
-          'qualityScore': 0.9,
-        });
-        await firestore.collection('site_configs').doc('low.com').set({
-          'domain': 'low.com',
-          'titleSelector': 'h1',
-          'isSupported': true,
-          'qualityScore': 0.5,
-        });
-        await firestore.collection('site_configs').doc('unsupported.com').set({
-          'domain': 'unsupported.com',
-          'titleSelector': 'h1',
-          'isSupported': false,
-          'qualityScore': 0.95,
-        });
+      test(
+        'returns supported docs from Firestore sorted by qualityScore',
+        () async {
+          await firestore.collection('site_configs').doc('high.com').set({
+            'domain': 'high.com',
+            'titleSelector': 'h1',
+            'isSupported': true,
+            'qualityScore': 0.9,
+          });
+          await firestore.collection('site_configs').doc('low.com').set({
+            'domain': 'low.com',
+            'titleSelector': 'h1',
+            'isSupported': true,
+            'qualityScore': 0.5,
+          });
+          await firestore.collection('site_configs').doc('unsupported.com').set(
+            {
+              'domain': 'unsupported.com',
+              'titleSelector': 'h1',
+              'isSupported': false,
+              'qualityScore': 0.95,
+            },
+          );
 
-        final configs = await repo.getSupportedConfigs();
+          final configs = await repo.getSupportedConfigs();
 
-        // Order matters — the contract is desc-by-qualityScore.
-        expect(configs.map((c) => c.domain).toList(),
-            equals(['high.com', 'low.com']));
-        expect(
-            configs.map((c) => c.domain), isNot(contains('unsupported.com')));
-      });
+          // Order matters — the contract is desc-by-qualityScore.
+          expect(
+            configs.map((c) => c.domain).toList(),
+            equals(['high.com', 'low.com']),
+          );
+          expect(
+            configs.map((c) => c.domain),
+            isNot(contains('unsupported.com')),
+          );
+        },
+      );
     });
 
     group('isHighQualityDomain', () {
@@ -248,28 +260,30 @@ void main() {
         await expectLater(repo.ensureDefaultConfigs(), completes);
       });
 
-      test('clearCache empties the cache (next call hits Firestore again)',
-          () async {
-        await firestore.collection('site_configs').doc('example.com').set({
-          'domain': 'example.com',
-          'titleSelector': 'h1.original',
-          'isSupported': true,
-          'qualityScore': 0.8,
-        });
+      test(
+        'clearCache empties the cache (next call hits Firestore again)',
+        () async {
+          await firestore.collection('site_configs').doc('example.com').set({
+            'domain': 'example.com',
+            'titleSelector': 'h1.original',
+            'isSupported': true,
+            'qualityScore': 0.8,
+          });
 
-        await repo.getConfig('example.com');
-        await firestore.collection('site_configs').doc('example.com').set({
-          'domain': 'example.com',
-          'titleSelector': 'h1.updated',
-          'isSupported': true,
-          'qualityScore': 0.8,
-        });
+          await repo.getConfig('example.com');
+          await firestore.collection('site_configs').doc('example.com').set({
+            'domain': 'example.com',
+            'titleSelector': 'h1.updated',
+            'isSupported': true,
+            'qualityScore': 0.8,
+          });
 
-        repo.clearCache();
-        final reloaded = await repo.getConfig('example.com');
+          repo.clearCache();
+          final reloaded = await repo.getConfig('example.com');
 
-        expect(reloaded.titleSelector, equals('h1.updated'));
-      });
+          expect(reloaded.titleSelector, equals('h1.updated'));
+        },
+      );
     });
   });
 }

@@ -60,21 +60,25 @@ void main() {
         final afterCreation = DateTime.now();
 
         expect(
-            category.createdAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
+          category.createdAt.isAfter(
+            beforeCreation.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            category.createdAt
-                .isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          category.createdAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
         expect(
-            category.updatedAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
+          category.updatedAt.isAfter(
+            beforeCreation.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            category.updatedAt
-                .isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          category.updatedAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
       });
     });
 
@@ -102,8 +106,10 @@ void main() {
           friendUserIds: ['friend_1', 'friend_2', 'friend_3'],
         );
 
-        expect(category.friendUserIds,
-            equals(['friend_1', 'friend_2', 'friend_3']));
+        expect(
+          category.friendUserIds,
+          equals(['friend_1', 'friend_2', 'friend_3']),
+        );
         expect(category.friendCount, equals(3));
       });
     });
@@ -125,8 +131,10 @@ void main() {
         await Future.delayed(Duration(milliseconds: 10));
         final updated = category.addFriend('friend_3');
 
-        expect(updated.friendUserIds,
-            equals(['friend_1', 'friend_2', 'friend_3']));
+        expect(
+          updated.friendUserIds,
+          equals(['friend_1', 'friend_2', 'friend_3']),
+        );
         expect(updated.friendCount, equals(3));
         expect(updated.updatedAt.isAfter(category.updatedAt), isTrue);
         expect(updated.id, equals(category.id)); // Same ID
@@ -574,8 +582,9 @@ void main() {
       });
 
       test('should create default categories for user', () {
-        final categories =
-            DefaultFriendCategories.createDefaultsForUser('user_123');
+        final categories = DefaultFriendCategories.createDefaultsForUser(
+          'user_123',
+        );
 
         expect(categories.length, equals(5));
 

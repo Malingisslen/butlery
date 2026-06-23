@@ -6,8 +6,11 @@ abstract final class IsoWeekUtils {
   /// Returns the Monday 00:00 local-time start of the ISO week containing [date].
   static DateTime weekStartOf(DateTime date) {
     final daysFromMonday = date.weekday - DateTime.monday;
-    final monday = DateTime(date.year, date.month, date.day)
-        .subtract(Duration(days: daysFromMonday));
+    final monday = DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).subtract(Duration(days: daysFromMonday));
     return monday;
   }
 
@@ -30,7 +33,8 @@ abstract final class IsoWeekUtils {
       // Verify week 53 actually exists this ISO year.
       final jan1Weekday = DateTime(date.year, 1, 1).weekday;
       final isLeap = _isLeapYear(date.year);
-      final hasWeek53 = jan1Weekday == DateTime.thursday ||
+      final hasWeek53 =
+          jan1Weekday == DateTime.thursday ||
           (isLeap && jan1Weekday == DateTime.wednesday);
       if (!hasWeek53) return 1;
     }

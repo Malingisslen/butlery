@@ -27,67 +27,61 @@ class RealtimeContentOperations {
     required RealtimeEditContext context,
     required String recipeId,
     required Map<String, dynamic> changes,
-  }) =>
-      RealtimeFieldOperations.makeRealtimeEdit(
-        context: context,
-        recipeId: recipeId,
-        changes: changes,
-      );
+  }) => RealtimeFieldOperations.makeRealtimeEdit(
+    context: context,
+    recipeId: recipeId,
+    changes: changes,
+  );
 
   static Future<bool> updateTitleRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required String newTitle,
-  }) =>
-      RealtimeFieldOperations.updateTitleRealtime(
-        context: context,
-        recipeId: recipeId,
-        newTitle: newTitle,
-      );
+  }) => RealtimeFieldOperations.updateTitleRealtime(
+    context: context,
+    recipeId: recipeId,
+    newTitle: newTitle,
+  );
 
   static Future<bool> updateDescriptionRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required String newDescription,
-  }) =>
-      RealtimeFieldOperations.updateDescriptionRealtime(
-        context: context,
-        recipeId: recipeId,
-        newDescription: newDescription,
-      );
+  }) => RealtimeFieldOperations.updateDescriptionRealtime(
+    context: context,
+    recipeId: recipeId,
+    newDescription: newDescription,
+  );
 
   static Future<bool> updatePortionsRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int newPortions,
-  }) =>
-      RealtimeFieldOperations.updatePortionsRealtime(
-        context: context,
-        recipeId: recipeId,
-        newPortions: newPortions,
-      );
+  }) => RealtimeFieldOperations.updatePortionsRealtime(
+    context: context,
+    recipeId: recipeId,
+    newPortions: newPortions,
+  );
 
   static Future<bool> updateTimeRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int newTimeMinutes,
-  }) =>
-      RealtimeFieldOperations.updateTimeRealtime(
-        context: context,
-        recipeId: recipeId,
-        newTimeMinutes: newTimeMinutes,
-      );
+  }) => RealtimeFieldOperations.updateTimeRealtime(
+    context: context,
+    recipeId: recipeId,
+    newTimeMinutes: newTimeMinutes,
+  );
 
   static Future<bool> applyBatchEdits({
     required RealtimeEditContext context,
     required String recipeId,
     required List<Map<String, dynamic>> edits,
-  }) =>
-      RealtimeFieldOperations.applyBatchEdits(
-        context: context,
-        recipeId: recipeId,
-        edits: edits,
-      );
+  }) => RealtimeFieldOperations.applyBatchEdits(
+    context: context,
+    recipeId: recipeId,
+    edits: edits,
+  );
 
   // INGREDIENT OPERATIONS (delegate to RealtimeIngredientOperations)
 
@@ -96,50 +90,46 @@ class RealtimeContentOperations {
     required String recipeId,
     required String ingredient,
     required int? index,
-  }) =>
-      RealtimeIngredientOperations.addIngredientRealtime(
-        context: context,
-        recipeId: recipeId,
-        ingredient: ingredient,
-        index: index,
-      );
+  }) => RealtimeIngredientOperations.addIngredientRealtime(
+    context: context,
+    recipeId: recipeId,
+    ingredient: ingredient,
+    index: index,
+  );
 
   static Future<bool> updateIngredientRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int index,
     required String newIngredient,
-  }) =>
-      RealtimeIngredientOperations.updateIngredientRealtime(
-        context: context,
-        recipeId: recipeId,
-        index: index,
-        newIngredient: newIngredient,
-      );
+  }) => RealtimeIngredientOperations.updateIngredientRealtime(
+    context: context,
+    recipeId: recipeId,
+    index: index,
+    newIngredient: newIngredient,
+  );
 
   static Future<bool> removeIngredientRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int index,
-  }) =>
-      RealtimeIngredientOperations.removeIngredientRealtime(
-        context: context,
-        recipeId: recipeId,
-        index: index,
-      );
+  }) => RealtimeIngredientOperations.removeIngredientRealtime(
+    context: context,
+    recipeId: recipeId,
+    index: index,
+  );
 
   static Future<bool> reorderIngredientsRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int fromIndex,
     required int toIndex,
-  }) =>
-      RealtimeIngredientOperations.reorderIngredientsRealtime(
-        context: context,
-        recipeId: recipeId,
-        fromIndex: fromIndex,
-        toIndex: toIndex,
-      );
+  }) => RealtimeIngredientOperations.reorderIngredientsRealtime(
+    context: context,
+    recipeId: recipeId,
+    fromIndex: fromIndex,
+    toIndex: toIndex,
+  );
 
   // INSTRUCTION OPERATIONS (delegate to RealtimeInstructionOperations)
 
@@ -148,48 +138,44 @@ class RealtimeContentOperations {
     required String recipeId,
     required String instruction,
     required int? index,
-  }) =>
-      RealtimeInstructionOperations.addInstructionRealtime(
-        context: context,
-        recipeId: recipeId,
-        instruction: instruction,
-        index: index,
-      );
+  }) => RealtimeInstructionOperations.addInstructionRealtime(
+    context: context,
+    recipeId: recipeId,
+    instruction: instruction,
+    index: index,
+  );
 
   static Future<bool> updateInstructionRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int index,
     required String newInstruction,
-  }) =>
-      RealtimeInstructionOperations.updateInstructionRealtime(
-        context: context,
-        recipeId: recipeId,
-        index: index,
-        newInstruction: newInstruction,
-      );
+  }) => RealtimeInstructionOperations.updateInstructionRealtime(
+    context: context,
+    recipeId: recipeId,
+    index: index,
+    newInstruction: newInstruction,
+  );
 
   static Future<bool> removeInstructionRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int index,
-  }) =>
-      RealtimeInstructionOperations.removeInstructionRealtime(
-        context: context,
-        recipeId: recipeId,
-        index: index,
-      );
+  }) => RealtimeInstructionOperations.removeInstructionRealtime(
+    context: context,
+    recipeId: recipeId,
+    index: index,
+  );
 
   static Future<bool> reorderInstructionsRealtime({
     required RealtimeEditContext context,
     required String recipeId,
     required int fromIndex,
     required int toIndex,
-  }) =>
-      RealtimeInstructionOperations.reorderInstructionsRealtime(
-        context: context,
-        recipeId: recipeId,
-        fromIndex: fromIndex,
-        toIndex: toIndex,
-      );
+  }) => RealtimeInstructionOperations.reorderInstructionsRealtime(
+    context: context,
+    recipeId: recipeId,
+    fromIndex: fromIndex,
+    toIndex: toIndex,
+  );
 }

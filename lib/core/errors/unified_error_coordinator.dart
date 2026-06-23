@@ -19,7 +19,7 @@ enum ErrorSeverity {
   low, // Info/warnings that don't block functionality
   medium, // Issues that may impact user experience
   high, // Errors that block primary functionality
-  critical // System-level errors requiring immediate attention
+  critical, // System-level errors requiring immediate attention
 }
 
 /// Error source identification for targeted error handling
@@ -123,7 +123,7 @@ class UnifiedErrorInfo {
       availableActions: [
         ErrorRecoveryAction.retry,
         ErrorRecoveryAction.refresh,
-        ErrorRecoveryAction.ignore
+        ErrorRecoveryAction.ignore,
       ],
       context: {'operation': operation},
       componentId: componentId,
@@ -206,7 +206,8 @@ class UnifiedErrorCoordinator {
     if (_disposed) return;
 
     AppLogger.error(
-        '🚨 ERROR_COORDINATOR: ${error.source.name} error from ${error.componentId}: ${error.message}');
+      '🚨 ERROR_COORDINATOR: ${error.source.name} error from ${error.componentId}: ${error.message}',
+    );
 
     // Add to history
     _errorHistory.add(error);
@@ -264,7 +265,8 @@ class UnifiedErrorCoordinator {
     }
 
     AppLogger.info(
-        '📱 ERROR_DISPLAY: Showing ${error.severity.name} error: ${error.message}');
+      '📱 ERROR_DISPLAY: Showing ${error.severity.name} error: ${error.message}',
+    );
   }
 
   /// Clear current error
@@ -272,7 +274,8 @@ class UnifiedErrorCoordinator {
     if (_disposed || _currentError == null) return;
 
     AppLogger.info(
-        '✅ ERROR_COORDINATOR: Clearing current error: ${_currentError!.id}');
+      '✅ ERROR_COORDINATOR: Clearing current error: ${_currentError!.id}',
+    );
 
     _currentError = null;
     _isShowingError = false;
@@ -293,16 +296,20 @@ class UnifiedErrorCoordinator {
     }
 
     AppLogger.debug(
-        '🧹 ERROR_COORDINATOR: Cleared errors for component: $componentId');
+      '🧹 ERROR_COORDINATOR: Cleared errors for component: $componentId',
+    );
   }
 
   /// Handle error recovery action
   Future<bool> handleRecoveryAction(
-      ErrorRecoveryAction action, UnifiedErrorInfo error) async {
+    ErrorRecoveryAction action,
+    UnifiedErrorInfo error,
+  ) async {
     if (_disposed) return false;
 
     AppLogger.info(
-        '🔧 ERROR_RECOVERY: Handling ${action.name} for ${error.source.name} error');
+      '🔧 ERROR_RECOVERY: Handling ${action.name} for ${error.source.name} error',
+    );
 
     try {
       switch (action) {
@@ -363,7 +370,8 @@ class UnifiedErrorCoordinator {
   Future<bool> _handleEscalateAction(UnifiedErrorInfo error) async {
     // Log detailed error information for analysis
     AppLogger.error(
-        '🆘 ERROR_ESCALATION: Critical error escalated: ${error.technicalDetails}');
+      '🆘 ERROR_ESCALATION: Critical error escalated: ${error.technicalDetails}',
+    );
 
     clearCurrentError();
     return true;
@@ -415,7 +423,9 @@ mixin ErrorCoordinatorMixin {
 
   /// Initialize error coordinator integration
   void initializeErrorCoordinator(
-      UnifiedErrorCoordinator coordinator, String componentId) {
+    UnifiedErrorCoordinator coordinator,
+    String componentId,
+  ) {
     _errorCoordinator = coordinator;
     _componentId = componentId;
   }

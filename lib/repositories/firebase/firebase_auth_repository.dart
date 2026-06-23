@@ -11,7 +11,7 @@ class FirebaseAuthRepository implements AuthRepository {
   bool _ignoreInitialNull = false;
 
   FirebaseAuthRepository({FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance {
+    : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance {
     _initializeAuthStateProtection();
   }
 
@@ -21,16 +21,17 @@ class FirebaseAuthRepository implements AuthRepository {
 
     if (_cachedUser != null) {
       AppLogger.info(
-          'Auth protection enabled for user: ${_cachedUser!.uid.maskedUserId}',
-          'AuthRepository');
+        'Auth protection enabled for user: ${_cachedUser!.uid.maskedUserId}',
+        'AuthRepository',
+      );
     }
   }
 
   /// Stream of authentication state changes, deduplicated by UID.
   @override
-  Stream<User?> authStateChanges() => _firebaseAuth
-      .authStateChanges()
-      .distinct((prev, next) => prev?.uid == next?.uid);
+  Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges().distinct(
+    (prev, next) => prev?.uid == next?.uid,
+  );
 
   @override
   User? get currentUser {
@@ -39,8 +40,9 @@ class FirebaseAuthRepository implements AuthRepository {
     // Critical Firebase initialization race condition guard
     if (_ignoreInitialNull && firebaseUser == null && _cachedUser != null) {
       AppLogger.info(
-          'BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.uid}',
-          'AuthRepository');
+        'BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.uid}',
+        'AuthRepository',
+      );
       _ignoreInitialNull = false;
       return _cachedUser;
     }
@@ -81,8 +83,9 @@ class FirebaseAuthRepository implements AuthRepository {
     _cachedUser = credential.user;
     _ignoreInitialNull = false;
     AppLogger.success(
-        'Login successful - cached user updated: ${_cachedUser!.uid}',
-        'AuthRepository');
+      'Login successful - cached user updated: ${_cachedUser!.uid}',
+      'AuthRepository',
+    );
 
     return credential;
   }
@@ -97,8 +100,9 @@ class FirebaseAuthRepository implements AuthRepository {
     _cachedUser = credential.user;
     _ignoreInitialNull = false;
     AppLogger.success(
-        'Registration successful - cached user updated: ${_cachedUser!.uid}',
-        'AuthRepository');
+      'Registration successful - cached user updated: ${_cachedUser!.uid}',
+      'AuthRepository',
+    );
 
     return credential;
   }
@@ -126,7 +130,9 @@ class FirebaseAuthRepository implements AuthRepository {
     _cachedUser = null;
     _ignoreInitialNull = false;
     AppLogger.success(
-        'Account deleted - cached user cleared', 'AuthRepository');
+      'Account deleted - cached user cleared',
+      'AuthRepository',
+    );
   }
 
   @override
@@ -144,7 +150,9 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     await user.reauthenticateWithCredential(credential);
     AppLogger.success(
-        'Re-authentication successful for: ${user.email}', 'AuthRepository');
+      'Re-authentication successful for: ${user.email}',
+      'AuthRepository',
+    );
   }
 
   @override
@@ -177,7 +185,9 @@ class FirebaseAuthRepository implements AuthRepository {
     if (user == null) throw Exception('No authenticated user');
     await user.verifyBeforeUpdateEmail(newEmail);
     AppLogger.success(
-        'Verification email sent to: $newEmail', 'AuthRepository');
+      'Verification email sent to: $newEmail',
+      'AuthRepository',
+    );
   }
 
   @override

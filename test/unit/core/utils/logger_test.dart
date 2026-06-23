@@ -26,38 +26,51 @@ void main() {
     /// the surrounding zone's `onError` handler never sees them. Pre-fix,
     /// the Future from `Crashlytics.instance.log()` would reject across an
     /// async gap and escape the sync try/catch.
-    test('error() in a zone without Firebase does not escape async errors',
-        () async {
-      final zoneErrors = <Object>[];
+    test(
+      'error() in a zone without Firebase does not escape async errors',
+      () async {
+        final zoneErrors = <Object>[];
 
-      await runZonedGuarded(() async {
-        AppLogger.error('A test error', Exception('boom'));
-        // Yield twice so any escaped microtask gets a chance to surface.
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
-      }, (error, _) {
-        zoneErrors.add(error);
-      });
+        await runZonedGuarded(
+          () async {
+            AppLogger.error('A test error', Exception('boom'));
+            // Yield twice so any escaped microtask gets a chance to surface.
+            await Future<void>.delayed(Duration.zero);
+            await Future<void>.delayed(Duration.zero);
+          },
+          (error, _) {
+            zoneErrors.add(error);
+          },
+        );
 
-      expect(zoneErrors, isEmpty,
+        expect(
+          zoneErrors,
+          isEmpty,
           reason:
               'BUT-1059 contract: Crashlytics async failures must be absorbed; '
-              'no error should reach the zone-error handler.');
-    });
+              'no error should reach the zone-error handler.',
+        );
+      },
+    );
 
-    test('error() with null error object also absorbs Crashlytics failures',
-        () async {
-      final zoneErrors = <Object>[];
+    test(
+      'error() with null error object also absorbs Crashlytics failures',
+      () async {
+        final zoneErrors = <Object>[];
 
-      await runZonedGuarded(() async {
-        AppLogger.error('Just a message, no error object');
-        await Future<void>.delayed(Duration.zero);
-      }, (error, _) {
-        zoneErrors.add(error);
-      });
+        await runZonedGuarded(
+          () async {
+            AppLogger.error('Just a message, no error object');
+            await Future<void>.delayed(Duration.zero);
+          },
+          (error, _) {
+            zoneErrors.add(error);
+          },
+        );
 
-      expect(zoneErrors, isEmpty);
-    });
+        expect(zoneErrors, isEmpty);
+      },
+    );
   });
 
   group('sanitizeForCrashlyticsForTesting — PII redaction', () {
@@ -88,11 +101,16 @@ void main() {
       final input19 = 'short token: abcdefghij123456789';
       final output = AppLogger.sanitizeForCrashlyticsForTesting(input19);
 
-      expect(output, equals(input19),
-          reason: '19 chars is below the 20-char floor; must pass through');
+      expect(
+        output,
+        equals(input19),
+        reason: '19 chars is below the 20-char floor; must pass through',
+      );
       // Sanity: 20-char companion does redact, confirming boundary placement.
-      expect(AppLogger.sanitizeForCrashlyticsForTesting(input),
-          equals('short token: abcd***'));
+      expect(
+        AppLogger.sanitizeForCrashlyticsForTesting(input),
+        equals('short token: abcd***'),
+      );
     });
 
     /// Boundary: 29 chars is above the regex ceiling → must NOT redact.
@@ -102,8 +120,11 @@ void main() {
       final input29 = 'long: abcdefghijklmnopqrstuvwxyz123';
       final output = AppLogger.sanitizeForCrashlyticsForTesting(input29);
 
-      expect(output, equals(input29),
-          reason: '29 chars is above the 28-char ceiling; must pass through');
+      expect(
+        output,
+        equals(input29),
+        reason: '29 chars is above the 28-char ceiling; must pass through',
+      );
     });
 
     /// Multiple tokens in a single message must ALL be redacted, not just

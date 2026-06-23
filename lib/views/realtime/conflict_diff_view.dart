@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Renders a field-level local-vs-remote diff for a single [ConflictEvent].
 class ConflictDiffView extends StatefulWidget {
@@ -141,10 +142,9 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
             child: FilledButton(
               onPressed: _saving ? null : _keepMyVersion,
               child: _saving
-                  ? const SizedBox(
-                      width: AppDimensions.iconSizeS,
-                      height: AppDimensions.iconSizeS,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? const LoadingIndicator(
+                      size: AppDimensions.iconSizeS,
+                      strokeWidth: 2,
                     )
                   : Text(context.l10n.conflictDiffKeepMine),
             ),
@@ -188,8 +188,9 @@ class _DiffFieldCard extends StatelessWidget {
             label: context.l10n.conflictDiffLocalLabel,
             text: field.localText,
             accent: butlery.success,
-            background: butlery.success
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            background: butlery.success.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             textColor: cs.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -197,8 +198,9 @@ class _DiffFieldCard extends StatelessWidget {
             label: context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
             accent: butlery.warning,
-            background: butlery.warning
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            background: butlery.warning.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             textColor: cs.onSurface,
           ),
         ],

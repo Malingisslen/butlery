@@ -307,60 +307,65 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
 
         // Loading overlay
         if (_isLoading)
-          Builder(builder: (context) {
-            final cs = Theme.of(context).colorScheme;
-            return Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: cs.surfaceContainerHighest
-                      .withValues(alpha: AppDimensions.opacityVeryDark),
-                ),
-                child: Center(
-                  child: LoadingIndicator(
-                    size: 24,
-                    strokeWidth: 2,
-                    color: cs.primary,
+          Builder(
+            builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cs.surfaceContainerHighest.withValues(
+                      alpha: AppDimensions.opacityVeryDark,
+                    ),
+                  ),
+                  child: Center(
+                    child: LoadingIndicator(
+                      size: 24,
+                      strokeWidth: 2,
+                      color: cs.primary,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
 
         // Remove button (if image exists)
         if (widget.imageUrl != null &&
             widget.imageUrl!.isNotEmpty &&
             widget.onImageRemoved != null)
-          Builder(builder: (context) {
-            final cs = Theme.of(context).colorScheme;
-            return Positioned(
-              top: -4,
-              right: -4,
-              child: Semantics(
-                label: context.l10n.a11yRemoveProfileImage,
-                button: true,
-                child: GestureDetector(
-                  onTap: widget.onImageRemoved,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: cs.error,
-                      border: Border.all(
-                        color: cs.surfaceContainerHighest,
-                        width: 2,
+          Builder(
+            builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return Positioned(
+                top: -4,
+                right: -4,
+                child: Semantics(
+                  label: context.l10n.a11yRemoveProfileImage,
+                  button: true,
+                  child: GestureDetector(
+                    onTap: widget.onImageRemoved,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.error,
+                        border: Border.all(
+                          color: cs.surfaceContainerHighest,
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      Icons.close,
-                      size: AppDimensions.iconSizeS,
-                      color: cs.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.close,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.surfaceContainerHighest,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
       ],
     );
   }
@@ -373,7 +378,8 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
 
     try {
       await Future.delayed(
-          const Duration(milliseconds: 100)); // Brief delay for UX
+        const Duration(milliseconds: 100),
+      ); // Brief delay for UX
       widget.onImageSelected(imagePath);
     } finally {
       if (mounted) {

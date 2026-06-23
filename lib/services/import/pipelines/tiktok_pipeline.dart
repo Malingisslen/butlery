@@ -127,9 +127,9 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   TikTokPipeline({
     required LlmEnhancementService llmService,
     http.Client? client,
-  })  : _llmService = llmService,
-        _client = client ?? http.Client(),
-        _ownsClient = client == null;
+  }) : _llmService = llmService,
+       _client = client ?? http.Client(),
+       _ownsClient = client == null;
 
   @override
   bool canHandle(String input) {
@@ -314,7 +314,9 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         'https://www.tiktok.com/oembed?url=${Uri.encodeComponent(url)}',
       );
 
-      final response = await _client.get(oembedUrl).timeout(
+      final response = await _client
+          .get(oembedUrl)
+          .timeout(
             const Duration(seconds: 10),
           );
 
@@ -425,8 +427,10 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
     // Look for common title patterns
     final patterns = [
       RegExp(r'^([^!?.]+[!?.])', multiLine: true), // First sentence
-      RegExp(r'#([A-Za-zÅÄÖåäö]+recept)',
-          caseSensitive: false), // Recipe hashtag
+      RegExp(
+        r'#([A-Za-zÅÄÖåäö]+recept)',
+        caseSensitive: false,
+      ), // Recipe hashtag
       RegExp(r'recept på\s+([^!?.]+)', caseSensitive: false), // "recept på X"
     ];
 
@@ -457,42 +461,42 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   ImportResult _convertToLegacyResult(ImportResultV2 resultV2) {
     return switch (resultV2) {
       final ImportSuccess success => ImportResult.success(
-          success.recipe,
-          metadata: {
-            'pipeline': success.pipeline,
-            'tier': success.tier,
-            'method': success.method,
-            'usedLlm': success.usedLlm,
-            ...?success.metadata,
-          },
-        ),
+        success.recipe,
+        metadata: {
+          'pipeline': success.pipeline,
+          'tier': success.tier,
+          'method': success.method,
+          'usedLlm': success.usedLlm,
+          ...?success.metadata,
+        },
+      ),
       final ImportNeedsAssistance assistance => ImportResult.assistance(
-          extractedText: assistance.extractedText,
-          suggestedTitle: assistance.suggestedTitle,
-          metadata: assistance.partialData,
-        ),
+        extractedText: assistance.extractedText,
+        suggestedTitle: assistance.suggestedTitle,
+        metadata: assistance.partialData,
+      ),
       final ImportNeedsScreenshot screenshot => ImportResult.failure(
-          screenshot.message,
-          metadata: {
-            'platform': screenshot.platform,
-            'url': screenshot.url,
-            'thumbnailUrl': screenshot.thumbnailUrl,
-            'needsScreenshot': true,
-          },
-        ),
+        screenshot.message,
+        metadata: {
+          'platform': screenshot.platform,
+          'url': screenshot.url,
+          'thumbnailUrl': screenshot.thumbnailUrl,
+          'needsScreenshot': true,
+        },
+      ),
       final ImportPartial partial => ImportResult.assistance(
-          extractedText: partial.extractedText.orEmpty(),
-          suggestedTitle: partial.title,
-          metadata: partial.partialData,
-        ),
+        extractedText: partial.extractedText.orEmpty(),
+        suggestedTitle: partial.title,
+        metadata: partial.partialData,
+      ),
       final ImportFailure failure => ImportResult.failure(
-          failure.message,
-          metadata: {
-            'errorCode': failure.errorCode.name,
-            'pipeline': failure.pipeline,
-            'tier': failure.tier,
-          },
-        ),
+        failure.message,
+        metadata: {
+          'errorCode': failure.errorCode.name,
+          'pipeline': failure.pipeline,
+          'tier': failure.tier,
+        },
+      ),
     };
   }
 

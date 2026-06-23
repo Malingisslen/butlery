@@ -122,21 +122,23 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed>
   }
 
   void _subscribeToPings() {
-    _pingSub = _pingService.watchGroup(widget.groupId).listen(
-      (pings) {
-        if (!mounted) return;
-        setState(() {
-          _pings = pings.where((p) => !p.acknowledged).toList();
-          _profileById = _buildProfileMap();
-          _loading = false;
-        });
-      },
-      onError: (Object e, StackTrace st) {
-        AppLogger.warning('ActivityPingsFeed: ping stream error: $e');
-        if (!mounted) return;
-        setState(() => _loading = false);
-      },
-    );
+    _pingSub = _pingService
+        .watchGroup(widget.groupId)
+        .listen(
+          (pings) {
+            if (!mounted) return;
+            setState(() {
+              _pings = pings.where((p) => !p.acknowledged).toList();
+              _profileById = _buildProfileMap();
+              _loading = false;
+            });
+          },
+          onError: (Object e, StackTrace st) {
+            AppLogger.warning('ActivityPingsFeed: ping stream error: $e');
+            if (!mounted) return;
+            setState(() => _loading = false);
+          },
+        );
   }
 
   Future<void> _refreshActivity() async {
@@ -167,8 +169,9 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed>
   List<String> _resolveGroupMemberIds() {
     final friends = _friendsService;
     if (friends == null) return const [];
-    final group =
-        friends.categoriesList.firstWhereOrNull((c) => c.id == widget.groupId);
+    final group = friends.categoriesList.firstWhereOrNull(
+      (c) => c.id == widget.groupId,
+    );
     if (group == null) return const [];
     final ids = group.allMemberIds.toSet();
     final myId = friends.currentUserId;
@@ -304,7 +307,8 @@ class _FeedRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final profile = profiles[item.actorId()];
-    final actorName = profile?.displayName ??
+    final actorName =
+        profile?.displayName ??
         switch (item) {
           _PingItem() => '?',
           _ActivityItem(:final activity) => activity.actorDisplayName,
@@ -338,8 +342,9 @@ class _FeedRow extends StatelessWidget {
                   primary,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: cs.onSurface,
-                    fontWeight:
-                        item is _PingItem ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: item is _PingItem
+                        ? FontWeight.w600
+                        : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -387,29 +392,29 @@ class _FeedRow extends StatelessWidget {
   ) {
     return switch (item) {
       _PingItem(:final ping) => switch (ping.type) {
-          PingType.nudge => l10n.pingNudgeFrom(actorName),
-          PingType.timerAlert => l10n.pingTimerAlertFrom(actorName),
-          PingType.helpMe => l10n.pingHelpMeFrom(actorName),
-          // Newer client wrote a type we don't understand — render the
-          // generic nudge copy rather than silently misattributing semantics.
-          PingType.unknown => l10n.pingNudgeFrom(actorName),
-        },
+        PingType.nudge => l10n.pingNudgeFrom(actorName),
+        PingType.timerAlert => l10n.pingTimerAlertFrom(actorName),
+        PingType.helpMe => l10n.pingHelpMeFrom(actorName),
+        // Newer client wrote a type we don't understand — render the
+        // generic nudge copy rather than silently misattributing semantics.
+        PingType.unknown => l10n.pingNudgeFrom(actorName),
+      },
       _ActivityItem(:final activity) => switch (activity.type) {
-          ActivityEventType.addedIngredient => l10n.activityAddedIngredient(
-              actorName,
-              (activity.extraData['ingredient'] as String?).orEmpty(),
-            ),
-          ActivityEventType.startedCooking => l10n.activityStartedCooking(
-              actorName,
-              activity.recipeTitle,
-            ),
-          ActivityEventType.cooked =>
-            '$actorName ${l10n.feedActionCooked} ${activity.recipeTitle}',
-          ActivityEventType.shared =>
-            '$actorName ${l10n.feedActionShared} ${activity.recipeTitle}',
-          // Should render via the _PingItem path — fall-through safety net.
-          ActivityEventType.pinged => l10n.pingNudgeFrom(actorName),
-        },
+        ActivityEventType.addedIngredient => l10n.activityAddedIngredient(
+          actorName,
+          (activity.extraData['ingredient'] as String?).orEmpty(),
+        ),
+        ActivityEventType.startedCooking => l10n.activityStartedCooking(
+          actorName,
+          activity.recipeTitle,
+        ),
+        ActivityEventType.cooked =>
+          '$actorName ${l10n.feedActionCooked} ${activity.recipeTitle}',
+        ActivityEventType.shared =>
+          '$actorName ${l10n.feedActionShared} ${activity.recipeTitle}',
+        // Should render via the _PingItem path — fall-through safety net.
+        ActivityEventType.pinged => l10n.pingNudgeFrom(actorName),
+      },
     };
   }
 

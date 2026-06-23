@@ -29,8 +29,9 @@ void main() {
   });
 
   group('BUT-697 image widget Semantics labels', () {
-    testWidgets('image_gallery_widget — gallery add tile exposes label',
-        (tester) async {
+    testWidgets('image_gallery_widget — gallery add tile exposes label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -42,13 +43,16 @@ void main() {
         ),
       );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet')),
-          findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet')),
+        findsOneWidget,
+      );
       handle.dispose();
     });
 
-    testWidgets('avatar_image_widget — editable avatar exposes edit label',
-        (tester) async {
+    testWidgets('avatar_image_widget — editable avatar exposes edit label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -59,13 +63,16 @@ void main() {
         ),
       );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Profilbild, tryck för att ändra')),
-          findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(r'^Profilbild, tryck för att ändra')),
+        findsOneWidget,
+      );
       handle.dispose();
     });
 
-    testWidgets('avatar_image_widget — readonly avatar exposes basic label',
-        (tester) async {
+    testWidgets('avatar_image_widget — readonly avatar exposes basic label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -78,12 +85,15 @@ void main() {
 
       // Read-only label is exactly "Profilbild"; ensure no edit hint slipped in.
       expect(
-          find.bySemanticsLabel(RegExp(r'^Profilbild(?!,)')), findsOneWidget);
+        find.bySemanticsLabel(RegExp(r'^Profilbild(?!,)')),
+        findsOneWidget,
+      );
       handle.dispose();
     });
 
-    testWidgets('image_picker_widget — picker open target exposes label',
-        (tester) async {
+    testWidgets('image_picker_widget — picker open target exposes label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -99,95 +109,104 @@ void main() {
     });
 
     testWidgets(
-        'image_picker_widget — remove preview target exposes indexed label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: ImagePickerWidget.picker(
-            selectedImages: const ['https://example.com/a.jpg'],
-            onImagesSelected: (_) {},
+      'image_picker_widget — remove preview target exposes indexed label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ImagePickerWidget.picker(
+              selectedImages: const ['https://example.com/a.jpg'],
+              onImagesSelected: (_) {},
+            ),
           ),
-        ),
-      );
+        );
 
-      // The remove button exposes its localized label, but its GridView-item
-      // Stack also holds the image's placeholder LoadingIndicator, whose
-      // "Laddar" liveRegion label merges into the same semantics node and
-      // sorts ahead of it. So we match the label as exposed (substring) rather
-      // than as the leading text — the wrapper-label-leads convention used by
-      // the other cases assumes only descendant merges, not a sibling
-      // placeholder. (Unmasked when LoadingIndicator gained its liveRegion.)
-      expect(find.bySemanticsLabel(RegExp(r'Ta bort vald bild 1')),
-          findsOneWidget);
-      handle.dispose();
-    });
+        // The remove button exposes its localized label, but its GridView-item
+        // Stack also holds the image's placeholder LoadingIndicator, whose
+        // "Laddar" liveRegion label merges into the same semantics node and
+        // sorts ahead of it. So we match the label as exposed (substring) rather
+        // than as the leading text — the wrapper-label-leads convention used by
+        // the other cases assumes only descendant merges, not a sibling
+        // placeholder. (Unmasked when LoadingIndicator gained its liveRegion.)
+        expect(
+          find.bySemanticsLabel(RegExp(r'Ta bort vald bild 1')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'upload_progress_widgets — bulk action button exposes label pass-through',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: UploadProgressWidgets.buildBulkActionButton(
-            icon: Icons.refresh,
-            label: 'Försök igen alla',
-            onTap: () {},
-            color: Colors.blue,
+      'upload_progress_widgets — bulk action button exposes label pass-through',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: UploadProgressWidgets.buildBulkActionButton(
+              icon: Icons.refresh,
+              label: 'Försök igen alla',
+              onTap: () {},
+              color: Colors.blue,
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(
-          find.bySemanticsLabel(RegExp(r'^Försök igen alla')), findsOneWidget);
-      handle.dispose();
-    });
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Försök igen alla')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'upload_progress_widgets — upload action button exposes label pass-through',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: UploadProgressWidgets.buildUploadActionButton(
-            icon: Icons.refresh,
-            label: 'Försök igen',
-            onTap: () {},
-            color: Colors.blue,
+      'upload_progress_widgets — upload action button exposes label pass-through',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: UploadProgressWidgets.buildUploadActionButton(
+              icon: Icons.refresh,
+              label: 'Försök igen',
+              onTap: () {},
+              color: Colors.blue,
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Försök igen')), findsOneWidget);
-      handle.dispose();
-    });
+        expect(find.bySemanticsLabel(RegExp(r'^Försök igen')), findsOneWidget);
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'edit_actions_panel — every action button forwards tooltip as label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: const Stack(
-            children: [
-              EditActionsPanel(
-                canAddImage: true,
-                canSetPrimary: true,
-              ),
-            ],
+      'edit_actions_panel — every action button forwards tooltip as label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const Stack(
+              children: [
+                EditActionsPanel(
+                  canAddImage: true,
+                  canSetPrimary: true,
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
 
-      // Three buttons rendered: Add, Set primary, Remove.
-      expect(find.bySemanticsLabel(RegExp(r'Lägg till bild')), findsWidgets);
-      expect(find.bySemanticsLabel(RegExp(r'Ange som primär')), findsWidgets);
-      expect(find.bySemanticsLabel(RegExp(r'Ta bort bild')), findsWidgets);
-      handle.dispose();
-    });
+        // Three buttons rendered: Add, Set primary, Remove.
+        expect(find.bySemanticsLabel(RegExp(r'Lägg till bild')), findsWidgets);
+        expect(find.bySemanticsLabel(RegExp(r'Ange som primär')), findsWidgets);
+        expect(find.bySemanticsLabel(RegExp(r'Ta bort bild')), findsWidgets);
+        handle.dispose();
+      },
+    );
 
-    testWidgets('empty_image_state — idle empty state exposes add label',
-        (tester) async {
+    testWidgets('empty_image_state — idle empty state exposes add label', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -200,42 +219,43 @@ void main() {
       );
 
       expect(
-          find.bySemanticsLabel(
-              RegExp(r'^Lägg till bild, tryck för att välja')),
-          findsOneWidget);
+        find.bySemanticsLabel(RegExp(r'^Lägg till bild, tryck för att välja')),
+        findsOneWidget,
+      );
       handle.dispose();
     });
 
     testWidgets(
-        'upload_progress_widgets — overlay retry button surfaces retry label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      const failedStatus = ImageUploadStatus(
-        state: ImageUploadState.failed,
-        error: 'network failure',
-      );
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: SizedBox(
-            width: 600,
-            height: 400,
-            child: Stack(
-              children: [
-                UploadProgressWidgets.buildUploadProgressOverlay(
-                  status: failedStatus,
-                  imageUrl: 'https://example.com/x.jpg',
-                  borderRadius: BorderRadius.zero,
-                  onRetryUpload: (_) {},
-                  onCancelUpload: (_) {},
-                ),
-              ],
+      'upload_progress_widgets — overlay retry button surfaces retry label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        const failedStatus = ImageUploadStatus(
+          state: ImageUploadState.failed,
+          error: 'network failure',
+        );
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 600,
+              height: 400,
+              child: Stack(
+                children: [
+                  UploadProgressWidgets.buildUploadProgressOverlay(
+                    status: failedStatus,
+                    imageUrl: 'https://example.com/x.jpg',
+                    borderRadius: BorderRadius.zero,
+                    onRetryUpload: (_) {},
+                    onCancelUpload: (_) {},
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.bySemanticsLabel(RegExp(r'Försök igen')), findsWidgets);
-      handle.dispose();
-    });
+        expect(find.bySemanticsLabel(RegExp(r'Försök igen')), findsWidgets);
+        handle.dispose();
+      },
+    );
   });
 }

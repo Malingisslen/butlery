@@ -115,7 +115,9 @@ Incomplete Recipe,"Some ingredients"''';
         expect(result.recipe!.title, equals('Incomplete Recipe'));
         // Should have placeholder for missing instructions
         expect(
-            result.recipe!.instructions, equals(['No instructions provided']));
+          result.recipe!.instructions,
+          equals(['No instructions provided']),
+        );
       });
 
       test('should parse ingredients with different delimiters', () async {
@@ -234,8 +236,10 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
         final bytes = excel.encode()!;
 
         // Act
-        final result =
-            await strategy.importFromContent(Uint8List.fromList(bytes), 'xlsx');
+        final result = await strategy.importFromContent(
+          Uint8List.fromList(bytes),
+          'xlsx',
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -339,7 +343,9 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
         expect(result.recipe!.title, equals('Sparse Recipe'));
         // Should have placeholder for missing ingredients
         expect(
-            result.recipe!.ingredients, equals(['No ingredients specified']));
+          result.recipe!.ingredients,
+          equals(['No ingredients specified']),
+        );
         expect(result.recipe!.instructions, hasLength(1));
       });
 

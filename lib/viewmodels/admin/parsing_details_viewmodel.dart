@@ -23,8 +23,8 @@ class ParsingDetailsViewModel extends BaseViewModel {
   int _totalCorrections = 0;
 
   ParsingDetailsViewModel({ParsingCorrectionRepository? repository})
-      : _repository =
-            repository ?? ServiceLocator.get<ParsingCorrectionRepository>();
+    : _repository =
+          repository ?? ServiceLocator.get<ParsingCorrectionRepository>();
 
   /// Domains with corrections, most-corrected first.
   List<ParsingDomainStat> get stats => _stats;
@@ -49,15 +49,19 @@ class ParsingDetailsViewModel extends BaseViewModel {
             // Issue label is computed from at most the 100 most-recent
             // correction docs (getByDomain's default cap). Fine pre-launch;
             // revisit if a single domain accumulates >100 corrections.
-            final corrections =
-                await _repository.getByDomain(entry.key, limit: 100);
+            final corrections = await _repository.getByDomain(
+              entry.key,
+              limit: 100,
+            );
             issue = _dominantIssue(corrections);
           }
-          stats.add(ParsingDomainStat(
-            domain: entry.key,
-            corrections: entry.value,
-            topIssue: issue,
-          ));
+          stats.add(
+            ParsingDomainStat(
+              domain: entry.key,
+              corrections: entry.value,
+              topIssue: issue,
+            ),
+          );
         }
         if (entries.length > _maxDetailDomains) {
           AppLogger.info(
@@ -94,9 +98,11 @@ class ParsingDetailsViewModel extends BaseViewModel {
     if (counts.isEmpty) return ParsingIssue.none;
     // Highest count wins; ties broken by enum order for determinism.
     return counts.entries
-        .reduce((a, b) => a.value != b.value
-            ? (a.value > b.value ? a : b)
-            : (a.key.index <= b.key.index ? a : b))
+        .reduce(
+          (a, b) => a.value != b.value
+              ? (a.value > b.value ? a : b)
+              : (a.key.index <= b.key.index ? a : b),
+        )
         .key;
   }
 }

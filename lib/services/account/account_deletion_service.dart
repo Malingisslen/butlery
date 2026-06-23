@@ -44,10 +44,10 @@ class AccountDeletionService extends BaseService {
     required FirebaseFunctions functions,
     SearchRepository? searchRepository,
     OfflineService? offlineService,
-  })  : _authService = authService,
-        _functions = functions,
-        _searchRepository = searchRepository,
-        _offlineService = offlineService;
+  }) : _authService = authService,
+       _functions = functions,
+       _searchRepository = searchRepository,
+       _offlineService = offlineService;
 
   /// Delete this user's account.
   ///
@@ -93,7 +93,8 @@ class AccountDeletionService extends BaseService {
         await _offlineService.clearUserData(uid);
       } catch (e) {
         app_logger.AppLogger.warning(
-            '[$_logTag] Offline cache cleanup failed: $e');
+          '[$_logTag] Offline cache cleanup failed: $e',
+        );
         // Non-fatal — proceeds to CF call.
       }
     }
@@ -124,17 +125,20 @@ class AccountDeletionService extends BaseService {
       await ServiceLocator.get<notif.NotificationService>().resetForLogout();
     } catch (e) {
       app_logger.AppLogger.warning(
-          '[$_logTag] Failed to reset notification service: $e');
+        '[$_logTag] Failed to reset notification service: $e',
+      );
     }
     try {
       await _authService.signOut();
     } catch (e) {
       app_logger.AppLogger.warning(
-          '[$_logTag] Sign-out after deletion failed: $e');
+        '[$_logTag] Sign-out after deletion failed: $e',
+      );
     }
 
     app_logger.AppLogger.info(
-        '[$_logTag] Account deletion completed: success=${result['success']}');
+      '[$_logTag] Account deletion completed: success=${result['success']}',
+    );
     return result;
   }
 
@@ -147,7 +151,9 @@ class AccountDeletionService extends BaseService {
       (result['deletedCollections'] as List).add('search_index_user');
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] search index user removal failed', e);
+        '[$_logTag] search index user removal failed',
+        e,
+      );
       (result['failedCollections'] as List).add('search_index_user');
     }
   }
@@ -160,7 +166,9 @@ class AccountDeletionService extends BaseService {
     Map<String, dynamic> result,
   ) {
     app_logger.AppLogger.error(
-        '[$_logTag] CF rejected request: ${e.code} — ${e.message}', e);
+      '[$_logTag] CF rejected request: ${e.code} — ${e.message}',
+      e,
+    );
     final details = e.details;
     final code = details is Map ? details['code'] : null;
     if (e.code == 'failed-precondition' && code == 'requires-recent-login') {
@@ -172,7 +180,9 @@ class AccountDeletionService extends BaseService {
   }
 
   void _mergeCfResult(
-      Map<dynamic, dynamic>? data, Map<String, dynamic> result) {
+    Map<dynamic, dynamic>? data,
+    Map<String, dynamic> result,
+  ) {
     if (data == null) return;
     if (data['success'] is bool) {
       result['success'] = data['success'];
@@ -182,12 +192,14 @@ class AccountDeletionService extends BaseService {
     // whose runtime type didn't match the `List<String>` addAll target — the
     // iterable check fired at addAll time, swallowing the CF response.
     if (data['deletedCollections'] is List) {
-      (result['deletedCollections'] as List<String>)
-          .addAll((data['deletedCollections'] as List).whereType<String>());
+      (result['deletedCollections'] as List<String>).addAll(
+        (data['deletedCollections'] as List).whereType<String>(),
+      );
     }
     if (data['failedCollections'] is List) {
-      (result['failedCollections'] as List<String>)
-          .addAll((data['failedCollections'] as List).whereType<String>());
+      (result['failedCollections'] as List<String>).addAll(
+        (data['failedCollections'] as List).whereType<String>(),
+      );
     }
     if (data['errors'] is List) {
       (result['errors'] as List<String>).addAll(

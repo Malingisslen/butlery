@@ -41,12 +41,9 @@ void main() {
     await _seedRecipe(db, 'u2', 'r4', 'textPaste');
     await _seedRecipe(db, 'u2', 'r5', null); // manual (no artefact)
     await _seedRecipe(db, 'u2', 'r7', 'legacyUnknown'); // unknown → manual
-    await db
-        .collection('users')
-        .doc('u2')
-        .collection('recipes')
-        .doc('r6')
-        .set({'title': 'no core'}); // manual (no core)
+    await db.collection('users').doc('u2').collection('recipes').doc('r6').set({
+      'title': 'no core',
+    }); // manual (no core)
 
     final stats = await RecipeStatsRepository(firestore: db).getRecipeStats();
 
@@ -61,9 +58,9 @@ void main() {
   });
 
   test('empty database yields zero total, no crash', () async {
-    final stats =
-        await RecipeStatsRepository(firestore: FakeFirebaseFirestore())
-            .getRecipeStats();
+    final stats = await RecipeStatsRepository(
+      firestore: FakeFirebaseFirestore(),
+    ).getRecipeStats();
     expect(stats.total, 0);
     expect(stats.imported, 0);
   });

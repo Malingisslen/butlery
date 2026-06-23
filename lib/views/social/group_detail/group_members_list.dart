@@ -176,8 +176,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           if (members.isNotEmpty)
             const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            context.l10n
-                .groupPendingInvitationsCount(pendingInvitations.length),
+            context.l10n.groupPendingInvitationsCount(
+              pendingInvitations.length,
+            ),
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.tertiary,
             ),

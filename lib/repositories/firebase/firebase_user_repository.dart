@@ -70,8 +70,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     super.auditRepository,
     super.timestampProvider,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
   @override
   String get collectionName => FirestoreCollections.publicProfiles;
 
@@ -94,7 +94,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, UserProfile entity) async {
+    String userId,
+    UserProfile entity,
+  ) async {
     // Users can only create their own profile
     // This prevents users from creating fake profiles for other users
     return userId == entity.uid;
@@ -102,7 +104,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, UserProfile? entity) async {
+    String userId,
+    String resourceId,
+    UserProfile? entity,
+  ) async {
     // Anyone authenticated can read public profiles (for social features)
     // This enables friend search, recipe sharing, and social discovery
     // Privacy is controlled via the isSearchable flag within the profile
@@ -111,7 +116,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, UserProfile entity) async {
+    String userId,
+    String resourceId,
+    UserProfile entity,
+  ) async {
     // Users can only update their own profile
     // This prevents unauthorized profile modifications
     return userId == entity.uid && userId == resourceId;
@@ -119,7 +127,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Users can only delete their own profile
     // This supports GDPR Article 17 (Right to Erasure)
     return userId == resourceId;
@@ -155,8 +165,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     data['displayNameLower'] = profile.displayName.toLowerCase();
     await Future.wait([
       collection.doc(profile.uid).set(data, SetOptions(merge: true)),
-      _settingsDoc(profile.uid)
-          .set(profile.toPrivateSettings(), SetOptions(merge: true)),
+      _settingsDoc(
+        profile.uid,
+      ).set(profile.toPrivateSettings(), SetOptions(merge: true)),
     ]);
 
     logPermissionCheck(
@@ -183,13 +194,15 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           final s = settingsDoc.data()!;
           return profile.copyWith(
             fcmToken: s['fcmToken'] as String?,
-            fcmTokenUpdatedAt:
-                SerializationUtils.parseDateTimeValue(s['fcmTokenUpdatedAt']),
+            fcmTokenUpdatedAt: SerializationUtils.parseDateTimeValue(
+              s['fcmTokenUpdatedAt'],
+            ),
             notificationsEnabled: s['notificationsEnabled'] as bool? ?? true,
             preferredLocale: s['preferredLocale'] as String?,
             allergenPreferences: s['allergenPreferences'] != null
                 ? UserAllergenPreferences.fromFirestore(
-                    s['allergenPreferences'] as Map<String, dynamic>)
+                    s['allergenPreferences'] as Map<String, dynamic>,
+                  )
                 : null,
             hasCompletedOnboarding:
                 s['hasCompletedOnboarding'] as bool? ?? false,
@@ -203,7 +216,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         }
       } catch (e) {
         AppLogger.warning(
-            'Failed to load private settings for ${userId.maskedUserId}: $e');
+          'Failed to load private settings for ${userId.maskedUserId}: $e',
+        );
       }
     }
     return profile;
@@ -217,8 +231,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     final results = <UserProfile>[];
 
     for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
-      final query =
-          await collection.where(FieldPath.documentId, whereIn: batch).get();
+      final query = await collection
+          .where(FieldPath.documentId, whereIn: batch)
+          .get();
       for (final doc in query.docs) {
         results.add(fromFirestore(doc));
       }
@@ -299,7 +314,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     bool usedFallback = false;
     try {
       AppLogger.debug(
-          'searchProfiles: Attempting indexed search for query: $normalizedQuery');
+        'searchProfiles: Attempting indexed search for query: $normalizedQuery',
+      );
 
       // Server-side isHidden filter avoids paying read cost on suspended
       // profiles AND keeps the result count honest \u2014 a client-side drop
@@ -324,12 +340,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       }
 
       AppLogger.info(
-          'searchProfiles: Indexed search successful: found ${results.length} results');
+        'searchProfiles: Indexed search successful: found ${results.length} results',
+      );
     } catch (e) {
       // If indexed search fails (likely missing composite index), use fallback
       usedFallback = true;
       AppLogger.warning(
-          'searchProfiles: Indexed search failed, using fallback: $e');
+        'searchProfiles: Indexed search failed, using fallback: $e',
+      );
 
       try {
         final slowQuery = await collection
@@ -350,10 +368,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         }
 
         AppLogger.info(
-            'searchProfiles: Fallback search successful: found ${results.length} results');
+          'searchProfiles: Fallback search successful: found ${results.length} results',
+        );
       } catch (fallbackError) {
         AppLogger.error(
-            'searchProfiles: Fallback search also failed: $fallbackError');
+          'searchProfiles: Fallback search also failed: $fallbackError',
+        );
 
         // If both indexed and fallback fail, try most basic query
         try {
@@ -375,15 +395,18 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             } catch (docError) {
               // Skip malformed documents
               AppLogger.warning(
-                  'searchProfiles: Skipping malformed document ${doc.id}: $docError');
+                'searchProfiles: Skipping malformed document ${doc.id}: $docError',
+              );
             }
           }
 
           AppLogger.info(
-              'searchProfiles: Basic search completed: found ${results.length} results');
+            'searchProfiles: Basic search completed: found ${results.length} results',
+          );
         } catch (basicError) {
           AppLogger.error(
-              'searchProfiles: All search methods failed: $basicError');
+            'searchProfiles: All search methods failed: $basicError',
+          );
         }
       }
     }
@@ -406,7 +429,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             }
           } catch (docError) {
             AppLogger.warning(
-                'searchProfiles: Skipping malformed email search document ${doc.id}: $docError');
+              'searchProfiles: Skipping malformed email search document ${doc.id}: $docError',
+            );
           }
         }
       } catch (emailError) {
@@ -424,7 +448,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     });
 
     AppLogger.info(
-        'searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback');
+      'searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback',
+    );
 
     return results;
   }
@@ -575,7 +600,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   /// Update allergen preferences for a user
   @override
   Future<void> updateAllergenPreferences(
-      String userId, UserAllergenPreferences preferences) async {
+    String userId,
+    UserAllergenPreferences preferences,
+  ) async {
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
       currentUserId: currentUser,

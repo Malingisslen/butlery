@@ -60,12 +60,12 @@ void main() {
   });
 
   Widget buildView({VoidCallback? onDismiss}) => createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: EmailVerificationView(
-          email: _testEmail,
-          onDismiss: onDismiss,
-        ),
-      );
+    wrapInScaffold: false,
+    child: EmailVerificationView(
+      email: _testEmail,
+      onDismiss: onDismiss,
+    ),
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   // Test 1: unverified state renders the gate screen.
@@ -77,8 +77,9 @@ void main() {
   // Would fail if: the Column children were removed or the email Text widget
   //   was dropped.
   // ────────────────────────────────────────────────────────────────────────────
-  testWidgets('shows title and email address in unverified state',
-      (tester) async {
+  testWidgets('shows title and email address in unverified state', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildView());
     // One pump to process initState; don't pumpAndSettle because the view
     // has a 5-second polling Timer that would run forever.
@@ -86,20 +87,33 @@ void main() {
 
     final l10n = AppLocalizationsSv();
 
-    expect(find.text(l10n.emailVerificationTitle), findsOneWidget,
-        reason: 'Title must appear to tell the user what is happening.');
+    expect(
+      find.text(l10n.emailVerificationTitle),
+      findsOneWidget,
+      reason: 'Title must appear to tell the user what is happening.',
+    );
 
-    expect(find.textContaining(_testEmail), findsOneWidget,
-        reason: 'The destination email must be shown so the user knows where '
-            'to look for the verification link.');
+    expect(
+      find.textContaining(_testEmail),
+      findsOneWidget,
+      reason:
+          'The destination email must be shown so the user knows where '
+          'to look for the verification link.',
+    );
 
     // Resend button is visible and not in "sending" (loading) state yet.
-    expect(find.text(l10n.emailVerificationResend), findsOneWidget,
-        reason: 'Resend button must be present in the initial state.');
+    expect(
+      find.text(l10n.emailVerificationResend),
+      findsOneWidget,
+      reason: 'Resend button must be present in the initial state.',
+    );
 
     // Dismiss link is present.
-    expect(find.text(l10n.emailVerificationContinue), findsOneWidget,
-        reason: '"Fortsätt ändå" link must let the user skip verification.');
+    expect(
+      find.text(l10n.emailVerificationContinue),
+      findsOneWidget,
+      reason: '"Fortsätt ändå" link must let the user skip verification.',
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -113,8 +127,9 @@ void main() {
   //   line, or if the button were replaced with a Navigator.pop() that bypasses
   //   the callback.
   // ────────────────────────────────────────────────────────────────────────────
-  testWidgets('tapping dismiss link invokes the onDismiss callback',
-      (tester) async {
+  testWidgets('tapping dismiss link invokes the onDismiss callback', (
+    tester,
+  ) async {
     var dismissCount = 0;
 
     await tester.pumpWidget(buildView(onDismiss: () => dismissCount++));
@@ -124,8 +139,12 @@ void main() {
     await tester.tap(find.text(l10n.emailVerificationContinue));
     await tester.pump();
 
-    expect(dismissCount, 1,
-        reason: 'Tapping the continue-anyway button must call onDismiss '
-            'exactly once so the caller can decide what to show next.');
+    expect(
+      dismissCount,
+      1,
+      reason:
+          'Tapping the continue-anyway button must call onDismiss '
+          'exactly once so the caller can decide what to show next.',
+    );
   });
 }

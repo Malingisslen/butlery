@@ -56,8 +56,11 @@ class SeasonalAccentService {
   ButleryColors _spring(ButleryColors base) {
     return base.copyWith(
       navAccent: _shift(base.navAccent, hue: 28, sat: -0.08),
-      recipeCardBottomBorder:
-          _shift(base.recipeCardBottomBorder, hue: 26, sat: -0.06),
+      recipeCardBottomBorder: _shift(
+        base.recipeCardBottomBorder,
+        hue: 26,
+        sat: -0.06,
+      ),
       categoryMeatFish: _shift(base.categoryMeatFish, hue: 28, sat: -0.08),
     );
   }
@@ -67,10 +70,17 @@ class SeasonalAccentService {
   ButleryColors _autumn(ButleryColors base) {
     return base.copyWith(
       navAccent: _shift(base.navAccent, hue: -10, sat: 0.06, light: -0.02),
-      recipeCardBottomBorder:
-          _shift(base.recipeCardBottomBorder, hue: -8, sat: 0.05),
-      categoryMeatFish:
-          _shift(base.categoryMeatFish, hue: -10, sat: 0.06, light: -0.02),
+      recipeCardBottomBorder: _shift(
+        base.recipeCardBottomBorder,
+        hue: -8,
+        sat: 0.05,
+      ),
+      categoryMeatFish: _shift(
+        base.categoryMeatFish,
+        hue: -10,
+        sat: 0.06,
+        light: -0.02,
+      ),
     );
   }
 
@@ -79,11 +89,17 @@ class SeasonalAccentService {
   ButleryColors _winter(ButleryColors base) {
     return base.copyWith(
       navAccent: _shift(base.navAccent, sat: -0.14, light: 0.03),
-      recipeCardBottomBorder:
-          _shift(base.recipeCardBottomBorder, sat: -0.14, light: 0.03),
+      recipeCardBottomBorder: _shift(
+        base.recipeCardBottomBorder,
+        sat: -0.14,
+        light: 0.03,
+      ),
       categoryMeatFish: _shift(base.categoryMeatFish, sat: -0.14, light: 0.03),
-      sharedRecipeBackground:
-          _shift(base.sharedRecipeBackground, hue: 30, sat: 0.02),
+      sharedRecipeBackground: _shift(
+        base.sharedRecipeBackground,
+        hue: 30,
+        sat: 0.02,
+      ),
     );
   }
 

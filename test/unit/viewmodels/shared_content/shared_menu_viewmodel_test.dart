@@ -134,10 +134,12 @@ void main() {
     when(() => coordinator.isMenuViewed(any())).thenReturn(false);
     when(() => coordinator.clearStatusCache()).thenReturn(null);
     when(() => coordinator.setViewedStatus(any(), any())).thenReturn(null);
-    when(() => coordinator.loadStatusForAllMenus(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => coordinator.loadStatusForMenu(any(), any()))
-        .thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForAllMenus(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForMenu(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   tearDown(() async {
@@ -170,8 +172,9 @@ void main() {
     /// session can't bleed into the new load. The fix that put it in lives
     /// in production lines 67-69 — pinning the order prevents regression.
     test('clears status cache BEFORE fetching menus', () async {
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => []);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => []);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -188,14 +191,16 @@ void main() {
     /// always return false → dismissed menus reappear, imported menus stay).
     test('loads status for all menus before filtering', () async {
       final menus = [_menu(id: 'a'), _menu(id: 'b')];
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => menus);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => menus);
 
       final vm = makeVm();
       await vm.loadContent();
 
-      verify(() => coordinator.loadStatusForAllMenus(menus, _kCurrentUid))
-          .called(1);
+      verify(
+        () => coordinator.loadStatusForAllMenus(menus, _kCurrentUid),
+      ).called(1);
       vm.dispose();
     });
 
@@ -204,8 +209,9 @@ void main() {
     test('filters out dismissed menus', () async {
       final visible = _menu(id: 'visible');
       final dismissed = _menu(id: 'dismissed');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [visible, dismissed]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [visible, dismissed]);
       when(() => coordinator.isMenuDismissed('dismissed')).thenReturn(true);
 
       final vm = makeVm();
@@ -221,8 +227,9 @@ void main() {
     test('excludes content from blocked users (read at load time)', () async {
       final fromBlocked = _menu(id: 'b', sharedBy: 'uid-blocked');
       final fromOk = _menu(id: 'ok', sharedBy: 'uid-friend');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [fromBlocked, fromOk]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [fromBlocked, fromOk]);
 
       final vm = makeVm();
       // Block AFTER vm exists, BEFORE load — proves load-time read.
@@ -235,23 +242,26 @@ void main() {
     });
 
     /// showImported=false hides imported menus; flipping to true reveals them.
-    test('showImported=false hides imported; flipping to true reveals them',
-        () async {
-      final imported = _menu(id: 'imp');
-      final fresh = _menu(id: 'fresh');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [imported, fresh]);
-      when(() => coordinator.isMenuImported('imp')).thenReturn(true);
+    test(
+      'showImported=false hides imported; flipping to true reveals them',
+      () async {
+        final imported = _menu(id: 'imp');
+        final fresh = _menu(id: 'fresh');
+        when(
+          () => coordinator.getSharedMenusForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [imported, fresh]);
+        when(() => coordinator.isMenuImported('imp')).thenReturn(true);
 
-      final vm = makeVm();
-      await vm.loadContent();
-      expect(vm.content.map((m) => m.id), ['fresh']);
+        final vm = makeVm();
+        await vm.loadContent();
+        expect(vm.content.map((m) => m.id), ['fresh']);
 
-      vm.setShowImported(true);
-      await vm.loadContent();
-      expect(vm.content.map((m) => m.id).toSet(), {'imp', 'fresh'});
-      vm.dispose();
-    });
+        vm.setShowImported(true);
+        await vm.loadContent();
+        expect(vm.content.map((m) => m.id).toSet(), {'imp', 'fresh'});
+        vm.dispose();
+      },
+    );
   });
 
   group('dismissSharedMenu', () {
@@ -262,10 +272,12 @@ void main() {
     /// future "simplification" to always-return-true is caught.
     test('coordinator true → returns true AND removes locally', () async {
       final m = _menu(id: 'd1');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m]);
-      when(() => coordinator.dismissSharedMenu('d1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m]);
+      when(
+        () => coordinator.dismissSharedMenu('d1'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -283,10 +295,12 @@ void main() {
     /// this pin, a regression to "always true" silently lies to the UI.
     test('coordinator false → returns false AND preserves item', () async {
       final m = _menu(id: 'd2');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m]);
-      when(() => coordinator.dismissSharedMenu('d2'))
-          .thenAnswer((_) async => false);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m]);
+      when(
+        () => coordinator.dismissSharedMenu('d2'),
+      ).thenAnswer((_) async => false);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -300,31 +314,36 @@ void main() {
 
     /// Coordinator throws → executeOperation swallows, returns null →
     /// dismissSharedMenu returns false AND preserves item AND sets hasError.
-    test('coordinator throws → returns false, preserves item, sets hasError',
-        () async {
-      final m = _menu(id: 'd3');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m]);
-      when(() => coordinator.dismissSharedMenu('d3'))
-          .thenThrow(Exception('network'));
+    test(
+      'coordinator throws → returns false, preserves item, sets hasError',
+      () async {
+        final m = _menu(id: 'd3');
+        when(
+          () => coordinator.getSharedMenusForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [m]);
+        when(
+          () => coordinator.dismissSharedMenu('d3'),
+        ).thenThrow(Exception('network'));
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      final ok = await vm.dismissSharedMenu(m);
+        final ok = await vm.dismissSharedMenu(m);
 
-      expect(ok, isFalse);
-      expect(vm.content.map((x) => x.id), ['d3']);
-      expect(vm.hasError, isTrue);
-      vm.dispose();
-    });
+        expect(ok, isFalse);
+        expect(vm.content.map((x) => x.id), ['d3']);
+        expect(vm.hasError, isTrue);
+        vm.dispose();
+      },
+    );
   });
 
   group('undismissSharedMenu', () {
     test('coordinator true → returns true AND adds back to list', () async {
       final m = _menu(id: 'u1');
-      when(() => coordinator.restoreSharedMenu('u1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.restoreSharedMenu('u1'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       final ok = await vm.undismissSharedMenu(m);
@@ -339,10 +358,12 @@ void main() {
     /// produces duplicate list entries → duplicate UI tiles.
     test('does not duplicate when item already present', () async {
       final m = _menu(id: 'u2');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m]);
-      when(() => coordinator.restoreSharedMenu('u2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m]);
+      when(
+        () => coordinator.restoreSharedMenu('u2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -354,19 +375,22 @@ void main() {
       vm.dispose();
     });
 
-    test('coordinator false → returns false AND does not add to list',
-        () async {
-      final m = _menu(id: 'u3');
-      when(() => coordinator.restoreSharedMenu('u3'))
-          .thenAnswer((_) async => false);
+    test(
+      'coordinator false → returns false AND does not add to list',
+      () async {
+        final m = _menu(id: 'u3');
+        when(
+          () => coordinator.restoreSharedMenu('u3'),
+        ).thenAnswer((_) async => false);
 
-      final vm = makeVm();
-      final ok = await vm.undismissSharedMenu(m);
+        final vm = makeVm();
+        final ok = await vm.undismissSharedMenu(m);
 
-      expect(ok, isFalse);
-      expect(vm.content, isEmpty);
-      vm.dispose();
-    });
+        expect(ok, isFalse);
+        expect(vm.content, isEmpty);
+        vm.dispose();
+      },
+    );
   });
 
   group('markAsViewed', () {
@@ -391,8 +415,9 @@ void main() {
     test('writes, reloads status, notifies on first view', () async {
       final m = _menu(id: 'v2');
       when(() => coordinator.isMenuViewed('v2')).thenReturn(false);
-      when(() => coordinator.markMenuAsViewed('v2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.markMenuAsViewed('v2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       var notifications = 0;
@@ -405,8 +430,11 @@ void main() {
         () => coordinator.markMenuAsViewed('v2'),
         () => coordinator.loadStatusForMenu('v2', _kCurrentUid),
       ]);
-      expect(notifications, greaterThanOrEqualTo(1),
-          reason: 'UI must be notified so the read badge re-renders');
+      expect(
+        notifications,
+        greaterThanOrEqualTo(1),
+        reason: 'UI must be notified so the read badge re-renders',
+      );
       vm.dispose();
     });
 
@@ -415,21 +443,24 @@ void main() {
     /// the cache reload is skipped. The overall result remains true.
     /// Pinning this contract: result=true even with no userId, AND no
     /// loadStatusForMenu call.
-    test('unauthenticated → still returns true but skips cache reload',
-        () async {
-      final m = _menu(id: 'v3');
-      when(() => coordinator.isMenuViewed('v3')).thenReturn(false);
-      when(() => coordinator.markMenuAsViewed('v3'))
-          .thenAnswer((_) async => true);
-      permissionService.setPermissionState(currentUserId: null);
+    test(
+      'unauthenticated → still returns true but skips cache reload',
+      () async {
+        final m = _menu(id: 'v3');
+        when(() => coordinator.isMenuViewed('v3')).thenReturn(false);
+        when(
+          () => coordinator.markMenuAsViewed('v3'),
+        ).thenAnswer((_) async => true);
+        permissionService.setPermissionState(currentUserId: null);
 
-      final vm = makeVm();
-      final ok = await vm.markAsViewed(m);
+        final vm = makeVm();
+        final ok = await vm.markAsViewed(m);
 
-      expect(ok, isTrue);
-      verifyNever(() => coordinator.loadStatusForMenu(any(), any()));
-      vm.dispose();
-    });
+        expect(ok, isTrue);
+        verifyNever(() => coordinator.loadStatusForMenu(any(), any()));
+        vm.dispose();
+      },
+    );
   });
 
   group('importSharedMenu', () {
@@ -438,49 +469,64 @@ void main() {
     test('forwards id + newTitle to coordinator.joinSharedMenu', () async {
       final m = _menu(id: 'i1');
       final result = MenuJoinResult(menuId: 'new', isCollaborative: false);
-      when(() => coordinator.joinSharedMenu(
-            sharedMenuId: any(named: 'sharedMenuId'),
-            newTitle: any(named: 'newTitle'),
-          )).thenAnswer((_) async => result);
+      when(
+        () => coordinator.joinSharedMenu(
+          sharedMenuId: any(named: 'sharedMenuId'),
+          newTitle: any(named: 'newTitle'),
+        ),
+      ).thenAnswer((_) async => result);
 
       final vm = makeVm();
       final out = await vm.importSharedMenu(m, newTitle: 'Min meny');
 
       expect(out, same(result));
-      verify(() => coordinator.joinSharedMenu(
-          sharedMenuId: 'i1', newTitle: 'Min meny')).called(1);
+      verify(
+        () => coordinator.joinSharedMenu(
+          sharedMenuId: 'i1',
+          newTitle: 'Min meny',
+        ),
+      ).called(1);
       vm.dispose();
     });
 
     /// Per-item operating-state contract: the spinner toggles ON before the
     /// coordinator call and OFF after — even on throw. Without `finally`,
     /// a thrown import would leave the spinner spinning forever.
-    test('clears per-item operating state even when coordinator throws',
-        () async {
-      final m = _menu(id: 'i2');
-      when(() => coordinator.joinSharedMenu(
+    test(
+      'clears per-item operating state even when coordinator throws',
+      () async {
+        final m = _menu(id: 'i2');
+        when(
+          () => coordinator.joinSharedMenu(
             sharedMenuId: any(named: 'sharedMenuId'),
             newTitle: any(named: 'newTitle'),
-          )).thenThrow(Exception('boom'));
+          ),
+        ).thenThrow(Exception('boom'));
 
-      final vm = makeVm();
-      final out = await vm.importSharedMenu(m);
+        final vm = makeVm();
+        final out = await vm.importSharedMenu(m);
 
-      expect(out, isNull);
-      expect(vm.isItemOperating('i2'), isFalse,
-          reason: 'finally-block must clear per-item state on failure');
-      vm.dispose();
-    });
+        expect(out, isNull);
+        expect(
+          vm.isItemOperating('i2'),
+          isFalse,
+          reason: 'finally-block must clear per-item state on failure',
+        );
+        vm.dispose();
+      },
+    );
 
     /// Happy path: per-item operating state also cleared on success.
     test('clears per-item operating state on success', () async {
       final m = _menu(id: 'i3');
-      when(() => coordinator.joinSharedMenu(
-                sharedMenuId: any(named: 'sharedMenuId'),
-                newTitle: any(named: 'newTitle'),
-              ))
-          .thenAnswer(
-              (_) async => MenuJoinResult(menuId: 'x', isCollaborative: true));
+      when(
+        () => coordinator.joinSharedMenu(
+          sharedMenuId: any(named: 'sharedMenuId'),
+          newTitle: any(named: 'newTitle'),
+        ),
+      ).thenAnswer(
+        (_) async => MenuJoinResult(menuId: 'x', isCollaborative: true),
+      );
 
       final vm = makeVm();
       await vm.importSharedMenu(m);
@@ -494,32 +540,37 @@ void main() {
     /// Bulk view: only unviewed menus go to the coordinator. Bug shape:
     /// dropping the `!isMenuViewed` guard would re-write every already-viewed
     /// menu (Firestore write cost amplification).
-    test('only writes for unviewed menus + sets viewed-status on success',
-        () async {
-      final viewed = _menu(id: 'v');
-      final unread1 = _menu(id: 'u1');
-      final unread2 = _menu(id: 'u2');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [viewed, unread1, unread2]);
-      when(() => coordinator.isMenuViewed('v')).thenReturn(true);
-      when(() => coordinator.markMenuAsViewed('u1'))
-          .thenAnswer((_) async => true);
-      when(() => coordinator.markMenuAsViewed('u2'))
-          .thenAnswer((_) async => false);
+    test(
+      'only writes for unviewed menus + sets viewed-status on success',
+      () async {
+        final viewed = _menu(id: 'v');
+        final unread1 = _menu(id: 'u1');
+        final unread2 = _menu(id: 'u2');
+        when(
+          () => coordinator.getSharedMenusForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [viewed, unread1, unread2]);
+        when(() => coordinator.isMenuViewed('v')).thenReturn(true);
+        when(
+          () => coordinator.markMenuAsViewed('u1'),
+        ).thenAnswer((_) async => true);
+        when(
+          () => coordinator.markMenuAsViewed('u2'),
+        ).thenAnswer((_) async => false);
 
-      final vm = makeVm();
-      await vm.loadContent();
-      await vm.markAllAsViewed();
+        final vm = makeVm();
+        await vm.loadContent();
+        await vm.markAllAsViewed();
 
-      verifyNever(() => coordinator.markMenuAsViewed('v'));
-      verify(() => coordinator.markMenuAsViewed('u1')).called(1);
-      verify(() => coordinator.markMenuAsViewed('u2')).called(1);
+        verifyNever(() => coordinator.markMenuAsViewed('v'));
+        verify(() => coordinator.markMenuAsViewed('u1')).called(1);
+        verify(() => coordinator.markMenuAsViewed('u2')).called(1);
 
-      // setViewedStatus only fires for the successful one (per prod 342-344).
-      verify(() => coordinator.setViewedStatus('u1', true)).called(1);
-      verifyNever(() => coordinator.setViewedStatus('u2', any()));
-      vm.dispose();
-    });
+        // setViewedStatus only fires for the successful one (per prod 342-344).
+        verify(() => coordinator.setViewedStatus('u1', true)).called(1);
+        verifyNever(() => coordinator.setViewedStatus('u2', any()));
+        vm.dispose();
+      },
+    );
 
     test('no-op when unauthenticated', () async {
       permissionService.setPermissionState(currentUserId: null);
@@ -547,18 +598,20 @@ void main() {
     /// `isCollaborative => copyOnWriteTriggered`. allowCollaboration is NOT
     /// part of it. Non-owner with allowCollaboration=true but no cow-trigger
     /// → isCollaborative=false → MUST NOT edit.
-    test('non-owner with allowCollaboration but no cow-trigger cannot edit',
-        () {
-      final m = _menu(
-        id: 'm',
-        sharedBy: 'uid-other',
-        allowCollaboration: true,
-        copyOnWriteTriggered: false,
-      );
-      final vm = makeVm();
-      expect(vm.canEditMenu(m), isFalse);
-      vm.dispose();
-    });
+    test(
+      'non-owner with allowCollaboration but no cow-trigger cannot edit',
+      () {
+        final m = _menu(
+          id: 'm',
+          sharedBy: 'uid-other',
+          allowCollaboration: true,
+          copyOnWriteTriggered: false,
+        );
+        final vm = makeVm();
+        expect(vm.canEditMenu(m), isFalse);
+        vm.dispose();
+      },
+    );
 
     /// Discriminating case that pins the REAL mixin contract: copyOnWrite
     /// triggered alone makes isCollaborative true even when allowCollaboration
@@ -567,8 +620,7 @@ void main() {
     /// AND cow" definition agree with the true "cow only" one. This would
     /// catch a future change to canEditMenu that wrongly ANDed in
     /// allowCollaboration.
-    test(
-        'non-owner with cow-trigger but allowCollaboration=false CAN edit '
+    test('non-owner with cow-trigger but allowCollaboration=false CAN edit '
         '(isCollaborative == copyOnWriteTriggered)', () {
       final m = _menu(
         id: 'm',
@@ -576,8 +628,11 @@ void main() {
         allowCollaboration: false,
         copyOnWriteTriggered: true,
       );
-      expect(m.isCollaborative, isTrue,
-          reason: 'mixin: isCollaborative => copyOnWriteTriggered');
+      expect(
+        m.isCollaborative,
+        isTrue,
+        reason: 'mixin: isCollaborative => copyOnWriteTriggered',
+      );
       final vm = makeVm();
       expect(vm.canEditMenu(m), isTrue);
       vm.dispose();
@@ -612,8 +667,9 @@ void main() {
       final m1 = _menu(id: 'm1'); // viewed=t, imported=t
       final m2 = _menu(id: 'm2'); // viewed=t, imported=f
       final m3 = _menu(id: 'm3'); // viewed=f, imported=t
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m1, m2, m3]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m1, m2, m3]);
       when(() => coordinator.isMenuViewed('m1')).thenReturn(true);
       when(() => coordinator.isMenuViewed('m2')).thenReturn(true);
       when(() => coordinator.isMenuImported('m1')).thenReturn(true);
@@ -626,8 +682,10 @@ void main() {
       final both = vm.getMenusByStatus(isViewed: true, isImported: true);
       expect(both.map((m) => m.id), ['m1']);
 
-      final viewedNotImported =
-          vm.getMenusByStatus(isViewed: true, isImported: false);
+      final viewedNotImported = vm.getMenusByStatus(
+        isViewed: true,
+        isImported: false,
+      );
       expect(viewedNotImported.map((m) => m.id), ['m2']);
       vm.dispose();
     });
@@ -641,44 +699,53 @@ void main() {
   });
 
   group('getMenusByCollaborationStatus', () {
-    test('collaborativeOnly returns only menus with isCollaborative=true',
-        () async {
-      final cowMenu = _menu(
-        id: 'cow',
-        allowCollaboration: true,
-        copyOnWriteTriggered: true,
-      );
-      final stillStatic = _menu(
-        id: 'static',
-        allowCollaboration: true,
-        copyOnWriteTriggered: false,
-      );
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [cowMenu, stillStatic]);
+    test(
+      'collaborativeOnly returns only menus with isCollaborative=true',
+      () async {
+        final cowMenu = _menu(
+          id: 'cow',
+          allowCollaboration: true,
+          copyOnWriteTriggered: true,
+        );
+        final stillStatic = _menu(
+          id: 'static',
+          allowCollaboration: true,
+          copyOnWriteTriggered: false,
+        );
+        when(
+          () => coordinator.getSharedMenusForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [cowMenu, stillStatic]);
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      final result = vm.getMenusByCollaborationStatus(collaborativeOnly: true);
-      expect(result.map((m) => m.id), ['cow']);
-      vm.dispose();
-    });
+        final result = vm.getMenusByCollaborationStatus(
+          collaborativeOnly: true,
+        );
+        expect(result.map((m) => m.id), ['cow']);
+        vm.dispose();
+      },
+    );
 
-    test('originalReferenceOnly returns menus that have not yet forked',
-        () async {
-      final original = _menu(id: 'orig', isOriginalReference: true);
-      final forked = _menu(id: 'forked', isOriginalReference: false);
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [original, forked]);
+    test(
+      'originalReferenceOnly returns menus that have not yet forked',
+      () async {
+        final original = _menu(id: 'orig', isOriginalReference: true);
+        final forked = _menu(id: 'forked', isOriginalReference: false);
+        when(
+          () => coordinator.getSharedMenusForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [original, forked]);
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      final result =
-          vm.getMenusByCollaborationStatus(originalReferenceOnly: true);
-      expect(result.map((m) => m.id), ['orig']);
-      vm.dispose();
-    });
+        final result = vm.getMenusByCollaborationStatus(
+          originalReferenceOnly: true,
+        );
+        expect(result.map((m) => m.id), ['orig']);
+        vm.dispose();
+      },
+    );
   });
 
   group('getMenuCategories', () {
@@ -697,33 +764,42 @@ void main() {
 
     test('single category returns the category name verbatim', () {
       final vm = makeVm();
-      final m = _menu(id: 's', snapshot: {
-        'Middag': [_recipe('r')]
-      });
+      final m = _menu(
+        id: 's',
+        snapshot: {
+          'Middag': [_recipe('r')],
+        },
+      );
       expect(vm.getMenuCategories(m), 'Middag');
       vm.dispose();
     });
 
     test('≤3 categories joined with comma', () {
       final vm = makeVm();
-      final m = _menu(id: 't', snapshot: {
-        'Middag': [_recipe('a')],
-        'Lunch': [_recipe('b')],
-        'Frukost': [_recipe('c')],
-      });
+      final m = _menu(
+        id: 't',
+        snapshot: {
+          'Middag': [_recipe('a')],
+          'Lunch': [_recipe('b')],
+          'Frukost': [_recipe('c')],
+        },
+      );
       expect(vm.getMenuCategories(m), 'Middag, Lunch, Frukost');
       vm.dispose();
     });
 
     test('>3 categories: first two + localized "N more" label', () {
       final vm = makeVm();
-      final m = _menu(id: 'big', snapshot: {
-        'Middag': [_recipe('a')],
-        'Lunch': [_recipe('b')],
-        'Frukost': [_recipe('c')],
-        'Snack': [_recipe('d')],
-        'Dryck': [_recipe('e')],
-      });
+      final m = _menu(
+        id: 'big',
+        snapshot: {
+          'Middag': [_recipe('a')],
+          'Lunch': [_recipe('b')],
+          'Frukost': [_recipe('c')],
+          'Snack': [_recipe('d')],
+          'Dryck': [_recipe('e')],
+        },
+      );
       // 5 cats → "Middag, Lunch " + AppLocale.current.labelAndNMore(3).
       // In the test locale (sv), labelAndNMore(3) == "och 3 till".
       expect(vm.getMenuCategories(m), 'Middag, Lunch och 3 till');
@@ -739,8 +815,9 @@ void main() {
       final viewed = _menu(id: 'v');
       final unread = _menu(id: 'u');
       final imported = _menu(id: 'i');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [viewed, unread, imported]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [viewed, unread, imported]);
       when(() => coordinator.isMenuViewed('v')).thenReturn(true);
       when(() => coordinator.isMenuImported('i')).thenReturn(true);
 
@@ -768,8 +845,9 @@ void main() {
     test('excludes menus shared by current user', () async {
       final mine = _menu(id: 'mine', sharedBy: _kCurrentUid);
       final theirs = _menu(id: 'theirs', sharedBy: 'uid-other');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [mine, theirs]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [mine, theirs]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -781,8 +859,9 @@ void main() {
     test('excludes already-imported menus', () async {
       final imp = _menu(id: 'imp');
       final fresh = _menu(id: 'fresh');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [imp, fresh]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [imp, fresh]);
       when(() => coordinator.isMenuImported('imp')).thenReturn(true);
 
       final vm = makeVm();
@@ -798,14 +877,21 @@ void main() {
     /// Sums per-menu totalRecipeCount. Bug shape: starting accumulator at
     /// 1 instead of 0 (classic fold off-by-one).
     test('sums totalRecipeCount across all menus', () async {
-      final m1 = _menu(id: 'a', snapshot: {
-        'Middag': [_recipe('r1'), _recipe('r2')]
-      });
-      final m2 = _menu(id: 'b', snapshot: {
-        'Lunch': [_recipe('r3')]
-      });
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m1, m2]);
+      final m1 = _menu(
+        id: 'a',
+        snapshot: {
+          'Middag': [_recipe('r1'), _recipe('r2')],
+        },
+      );
+      final m2 = _menu(
+        id: 'b',
+        snapshot: {
+          'Lunch': [_recipe('r3')],
+        },
+      );
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m1, m2]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -833,9 +919,13 @@ void main() {
 
     test('matches category from menuSnapshot', () {
       final vm = makeVm();
-      final m = _menu(id: '1', title: 'X', snapshot: {
-        'Vegetariskt': [_recipe('a')]
-      });
+      final m = _menu(
+        id: '1',
+        title: 'X',
+        snapshot: {
+          'Vegetariskt': [_recipe('a')],
+        },
+      );
       expect(vm.contentMatchesSearch(m, 'vegetariskt'), isTrue);
       vm.dispose();
     });
@@ -859,9 +949,13 @@ void main() {
 
   group('getEngagementStats', () {
     test('reflects current cached counts', () async {
-      final m1 = _menu(id: 'm1', sharedBy: _kCurrentUid, snapshot: {
-        'Middag': [_recipe('a'), _recipe('b')]
-      });
+      final m1 = _menu(
+        id: 'm1',
+        sharedBy: _kCurrentUid,
+        snapshot: {
+          'Middag': [_recipe('a'), _recipe('b')],
+        },
+      );
       final m2 = _menu(
         id: 'm2',
         sharedBy: 'uid-other',
@@ -869,8 +963,9 @@ void main() {
         copyOnWriteTriggered: true,
       );
       final m3 = _menu(id: 'm3', sharedBy: 'uid-other');
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m1, m2, m3]);
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m1, m2, m3]);
       when(() => coordinator.isMenuViewed('m1')).thenReturn(true);
       when(() => coordinator.isMenuImported('m2')).thenReturn(true);
 
@@ -902,19 +997,29 @@ void main() {
     /// a.value`). Bug shape: swap the operands → ascending order, breaks
     /// any UI that takes the "top N categories."
     test('aggregates and sorts descending by count', () async {
-      final m1 = _menu(id: 'a', snapshot: {
-        'Middag': [_recipe('r1')],
-        'Lunch': [_recipe('r2')],
-      });
-      final m2 = _menu(id: 'b', snapshot: {
-        'Middag': [_recipe('r3')],
-      });
-      final m3 = _menu(id: 'c', snapshot: {
-        'Middag': [_recipe('r4')],
-        'Frukost': [_recipe('r5')],
-      });
-      when(() => coordinator.getSharedMenusForUser(_kCurrentUid))
-          .thenAnswer((_) async => [m1, m2, m3]);
+      final m1 = _menu(
+        id: 'a',
+        snapshot: {
+          'Middag': [_recipe('r1')],
+          'Lunch': [_recipe('r2')],
+        },
+      );
+      final m2 = _menu(
+        id: 'b',
+        snapshot: {
+          'Middag': [_recipe('r3')],
+        },
+      );
+      final m3 = _menu(
+        id: 'c',
+        snapshot: {
+          'Middag': [_recipe('r4')],
+          'Frukost': [_recipe('r5')],
+        },
+      );
+      when(
+        () => coordinator.getSharedMenusForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [m1, m2, m3]);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -931,8 +1036,9 @@ void main() {
   group('getSharedMenuById', () {
     test('returns coordinator result on success', () async {
       final m = _menu(id: 'deep-link');
-      when(() => coordinator.getSharedMenuById('deep-link'))
-          .thenAnswer((_) async => m);
+      when(
+        () => coordinator.getSharedMenuById('deep-link'),
+      ).thenAnswer((_) async => m);
 
       final vm = makeVm();
       final result = await vm.getSharedMenuById('deep-link');
@@ -942,8 +1048,9 @@ void main() {
     });
 
     test('returns null and sets hasError when coordinator throws', () async {
-      when(() => coordinator.getSharedMenuById(any()))
-          .thenThrow(Exception('not found'));
+      when(
+        () => coordinator.getSharedMenuById(any()),
+      ).thenThrow(Exception('not found'));
 
       final vm = makeVm();
       final result = await vm.getSharedMenuById('missing');
@@ -984,8 +1091,11 @@ void main() {
   group('startCollaborativeEditing', () {
     test('forwards menu id to coordinator and returns the new id', () async {
       final m = _menu(id: 'cow-target');
-      when(() => coordinator.startCollaborativeMenuEditing(
-          sharedMenuId: 'cow-target')).thenAnswer((_) async => 'new-menu-id');
+      when(
+        () => coordinator.startCollaborativeMenuEditing(
+          sharedMenuId: 'cow-target',
+        ),
+      ).thenAnswer((_) async => 'new-menu-id');
 
       final vm = makeVm();
       final result = await vm.startCollaborativeEditing(m);
@@ -996,9 +1106,11 @@ void main() {
 
     test('returns null and sets error when coordinator throws', () async {
       final m = _menu(id: 'fail');
-      when(() => coordinator.startCollaborativeMenuEditing(
-              sharedMenuId: any(named: 'sharedMenuId')))
-          .thenThrow(Exception('boom'));
+      when(
+        () => coordinator.startCollaborativeMenuEditing(
+          sharedMenuId: any(named: 'sharedMenuId'),
+        ),
+      ).thenThrow(Exception('boom'));
 
       final vm = makeVm();
       final result = await vm.startCollaborativeEditing(m);
@@ -1030,14 +1142,15 @@ void main() {
     });
 
     test(
-        'loadMoreContent throws UnsupportedError when supportsPagination=false',
-        () {
-      final vm = makeVm();
-      expect(
-        () => vm.loadMoreContent(),
-        throwsA(isA<UnsupportedError>()),
-      );
-      vm.dispose();
-    });
+      'loadMoreContent throws UnsupportedError when supportsPagination=false',
+      () {
+        final vm = makeVm();
+        expect(
+          () => vm.loadMoreContent(),
+          throwsA(isA<UnsupportedError>()),
+        );
+        vm.dispose();
+      },
+    );
   });
 }

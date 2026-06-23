@@ -90,23 +90,22 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .error
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
+              color: Theme.of(context).colorScheme.error.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .error
-                      .withValues(alpha: AppDimensions.opacityMediumLight)),
+                color: Theme.of(context).colorScheme.error.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
+              ),
             ),
             child: Text(
               categoriesService.error ??
                   context.l10n.errorCouldNotLoad(context.l10n.friendCategories),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           );
         }
@@ -115,24 +114,24 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .error
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
+              color: Theme.of(context).colorScheme.error.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .error
-                      .withValues(alpha: AppDimensions.opacityMediumLight)),
+                color: Theme.of(context).colorScheme.error.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
+              ),
             ),
             child: Text(
               friendsVM.error ??
-                  context.l10n
-                      .errorCouldNotLoad(context.l10n.friendFriendsLabel),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
+                  context.l10n.errorCouldNotLoad(
+                    context.l10n.friendFriendsLabel,
                   ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           );
         }
@@ -198,7 +197,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   }
 
   Widget _buildCategorySection(
-      List<FriendCategory> categories, UnifiedFriendsService service) {
+    List<FriendCategory> categories,
+    UnifiedFriendsService service,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -255,14 +256,17 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withValues(alpha: AppDimensions.opacityVeryDark)
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest.withValues(
+                              alpha: AppDimensions.opacityVeryDark,
+                            )
                           : Theme.of(context).colorScheme.primary.withValues(
-                              alpha: AppDimensions.opacityVeryLight),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadius8),
+                              alpha: AppDimensions.opacityVeryLight,
+                            ),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadius8,
+                      ),
                     ),
                     child: Text(
                       '${category.friendCount}',
@@ -274,10 +278,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 ],
               ),
               onSelected: (selected) => _toggleCategory(category, service),
-              selectedColor: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: AppDimensions.opacityLight),
+              selectedColor: Theme.of(context).colorScheme.primary.withValues(
+                alpha: AppDimensions.opacityLight,
+              ),
               checkmarkColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               side: BorderSide(
@@ -346,10 +349,12 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                       return Card(
                         elevation: 0,
                         margin: const EdgeInsets.symmetric(
-                            vertical: AppDimensions.spacingXs),
+                          vertical: AppDimensions.spacingXs,
+                        ),
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary.withValues(
-                                alpha: AppDimensions.opacityVeryLight)
+                                alpha: AppDimensions.opacityVeryLight,
+                              )
                             : null,
                         child: CheckboxListTile(
                           value: isSelected,
@@ -368,9 +373,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                             vertical: AppDimensions.spacingXs,
                           ),
                           activeColor: Theme.of(context).colorScheme.primary,
-                          checkColor: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          checkColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                         ),
                       );
                     },
@@ -385,16 +390,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primary
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: Theme.of(context)
-              .colorScheme
-              .primary
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: Theme.of(context).colorScheme.primary.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Row(
@@ -463,14 +466,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             _selectedCategories.add(category.id);
             _selectedFriends.addAll(category.friendUserIds);
             AppLogger.info(
-                'Category "${category.name}" selected (${category.friendCount} friends)');
+              'Category "${category.name}" selected (${category.friendCount} friends)',
+            );
           } else {
             _selectedCategories.clear();
             _selectedFriends.clear();
             _selectedCategories.add(category.id);
             _selectedFriends.addAll(category.friendUserIds);
             AppLogger.info(
-                'Category "${category.name}" selected (replaced previous selection)');
+              'Category "${category.name}" selected (replaced previous selection)',
+            );
           }
         }
       });

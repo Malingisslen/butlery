@@ -16,9 +16,9 @@ class CategoryPreferences {
     this.itemCategoryOverrides = const {},
     List<String>? defaultCategoryOrder,
     DateTime? updatedAt,
-  })  : defaultCategoryOrder =
-            defaultCategoryOrder ?? ShoppingCategory.defaultStoreOrder,
-        updatedAt = updatedAt ?? clock.now();
+  }) : defaultCategoryOrder =
+           defaultCategoryOrder ?? ShoppingCategory.defaultStoreOrder,
+       updatedAt = updatedAt ?? clock.now();
 
   CategoryPreferences copyWith({
     Map<String, String>? itemCategoryOverrides,

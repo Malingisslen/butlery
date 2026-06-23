@@ -70,7 +70,8 @@ class _IngredientSearchContent extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-              maxWidth: AppDimensions.responsiveMaxContentWidth(context)),
+            maxWidth: AppDimensions.responsiveMaxContentWidth(context),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingLg,
@@ -95,8 +96,9 @@ class _IngredientSearchContent extends StatelessWidget {
                 ActionButtons.primaryButton(
                   context,
                   label: l10n.ingredientSearchButton,
-                  onPressed:
-                      vm.selectedIngredients.isEmpty ? null : vm.performSearch,
+                  onPressed: vm.selectedIngredients.isEmpty
+                      ? null
+                      : vm.performSearch,
                 ),
 
                 const SizedBox(height: AppDimensions.spacingLg),
@@ -205,7 +207,8 @@ class _IngredientSearchContent extends StatelessWidget {
                 if (result.recipe.isCollaborative)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
-                        end: AppDimensions.spacingSm),
+                      end: AppDimensions.spacingSm,
+                    ),
                     child: Text(
                       l10n.ingredientSearchSharedBadge,
                       style: AppTextStyles.labelSmall.copyWith(

@@ -119,21 +119,25 @@ void main() {
 
   // BUT-692: scrubUrlParams must also strip path-embedded tracker IDs.
   group('scrubUrlParams - path-embedded tokens', () {
-    test('BUT-534: strips query, preserves fragment (recipe section anchors)',
-        () {
-      final out = scrubUrlParams(
-          'https://example.com/recipe?utm_source=x&token=secret#ingredienser');
-      expect(out, isNot(contains('utm_source')));
-      expect(out, isNot(contains('token')));
-      // Fragment is preserved — anchors like #ingredienser are useful for
-      // section-targeted recipe links and aren't sent to servers anyway.
-      expect(out, contains('#ingredienser'));
-      expect(out, contains('example.com/recipe'));
-    });
+    test(
+      'BUT-534: strips query, preserves fragment (recipe section anchors)',
+      () {
+        final out = scrubUrlParams(
+          'https://example.com/recipe?utm_source=x&token=secret#ingredienser',
+        );
+        expect(out, isNot(contains('utm_source')));
+        expect(out, isNot(contains('token')));
+        // Fragment is preserved — anchors like #ingredienser are useful for
+        // section-targeted recipe links and aren't sent to servers anyway.
+        expect(out, contains('#ingredienser'));
+        expect(out, contains('example.com/recipe'));
+      },
+    );
 
     test('redacts mixed-case + digit path token (Algolia object-ID shape)', () {
-      final out =
-          scrubUrlParams('https://example.com/r/7Br2c3DmEIeu61HVcgWa9/title');
+      final out = scrubUrlParams(
+        'https://example.com/r/7Br2c3DmEIeu61HVcgWa9/title',
+      );
       expect(out, isNot(contains('7Br2c3DmEIeu61HVcgWa9')));
       expect(out, contains(':redacted'));
       expect(out, contains('/title'));
@@ -141,28 +145,32 @@ void main() {
 
     test('redacts UUID path segment (RFC 4122 layout)', () {
       final out = scrubUrlParams(
-          'https://example.com/share/f47ac10b-58cc-4372-a567-0e02b2c3d479/view');
+        'https://example.com/share/f47ac10b-58cc-4372-a567-0e02b2c3d479/view',
+      );
       expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
       expect(out, contains(':redacted'));
     });
 
     test('redacts JWT-shaped token in path', () {
       final out = scrubUrlParams(
-          'https://example.com/auth/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx');
+        'https://example.com/auth/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx',
+      );
       expect(out, isNot(contains('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx')));
       expect(out, contains(':redacted'));
     });
 
     test('redacts 32-char hex hash path segment', () {
       final out = scrubUrlParams(
-          'https://example.com/tracking/a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5/x');
+        'https://example.com/tracking/a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5/x',
+      );
       expect(out, isNot(contains('a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5')));
       expect(out, contains(':redacted'));
     });
 
     test('keeps Swedish recipe slug intact', () {
       final out = scrubUrlParams(
-          'https://recept.se/recept/gulasch-med-svamp-och-russin');
+        'https://recept.se/recept/gulasch-med-svamp-och-russin',
+      );
       expect(out, contains('gulasch-med-svamp-och-russin'));
       expect(out, isNot(contains(':redacted')));
     });
@@ -172,7 +180,8 @@ void main() {
       // longest unsplit run is 9 chars ("italienska") so under the
       // 16-char threshold.
       final out = scrubUrlParams(
-          'https://example.com/super-premium-italienska-tomater');
+        'https://example.com/super-premium-italienska-tomater',
+      );
       expect(out, contains('super-premium-italienska-tomater'));
       expect(out, isNot(contains(':redacted')));
     });
@@ -190,9 +199,10 @@ void main() {
     });
 
     test('handles multiple opaque segments in same path', () {
-      final out =
-          scrubUrlParams('https://example.com/r/7Br2c3DmEIeu61HVcgWa9/and/'
-              'f47ac10b-58cc-4372-a567-0e02b2c3d479/end');
+      final out = scrubUrlParams(
+        'https://example.com/r/7Br2c3DmEIeu61HVcgWa9/and/'
+        'f47ac10b-58cc-4372-a567-0e02b2c3d479/end',
+      );
       expect(out, isNot(contains('7Br2c3DmEIeu61HVcgWa9')));
       expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
       expect(out, contains('/and/'));
@@ -211,58 +221,67 @@ void main() {
     });
 
     test('keeps slug-shaped fragment with hyphens intact', () {
-      final out =
-          scrubUrlParams('https://example.com/recipe#super-premium-italienska');
+      final out = scrubUrlParams(
+        'https://example.com/recipe#super-premium-italienska',
+      );
       expect(out, contains('#super-premium-italienska'));
       expect(out, isNot(contains(':redacted')));
     });
 
     test('redacts UUID-shaped fragment wholesale', () {
       final out = scrubUrlParams(
-          'https://example.com/share#f47ac10b-58cc-4372-a567-0e02b2c3d479');
+        'https://example.com/share#f47ac10b-58cc-4372-a567-0e02b2c3d479',
+      );
       expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
       expect(out, contains('#:redacted'));
     });
 
     test('redacts JWT-shaped value inside keyed fragment', () {
       final out = scrubUrlParams(
-          'https://example.com/auth#token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
+        'https://example.com/auth#token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+      );
       expect(out, isNot(contains('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9')));
       expect(out, contains('token=:redacted'));
     });
 
     test('redacts long alphanumeric run in unkeyed fragment', () {
-      final out =
-          scrubUrlParams('https://example.com#abcdefghijklmnopqrstuvwxyz');
+      final out = scrubUrlParams(
+        'https://example.com#abcdefghijklmnopqrstuvwxyz',
+      );
       expect(out, isNot(contains('abcdefghijklmnopqrstuvwxyz')));
       expect(out, contains(':redacted'));
     });
 
     test('redacts 32-char hex hash fragment', () {
       final out = scrubUrlParams(
-          'https://example.com/r#a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5');
+        'https://example.com/r#a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5',
+      );
       expect(out, isNot(contains('a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5')));
       expect(out, contains(':redacted'));
     });
 
-    test('mixed keyed fragment redacts opaque values, preserves slug values',
-        () {
-      // Production heuristic does not decompose by `&`/`=`; it scans the
-      // whole fragment for 16+ char alphanumeric runs. Slug values stay
-      // intact (under threshold), opaque values redact in-place.
-      final out = scrubUrlParams(
-          'https://example.com#section=ingredienser&token=eyJhbGciOiJIUzI1NiJ9');
-      expect(out, contains('section=ingredienser'));
-      expect(out, isNot(contains('eyJhbGciOiJIUzI1NiJ9')));
-      expect(out, contains('token=:redacted'));
-    });
+    test(
+      'mixed keyed fragment redacts opaque values, preserves slug values',
+      () {
+        // Production heuristic does not decompose by `&`/`=`; it scans the
+        // whole fragment for 16+ char alphanumeric runs. Slug values stay
+        // intact (under threshold), opaque values redact in-place.
+        final out = scrubUrlParams(
+          'https://example.com#section=ingredienser&token=eyJhbGciOiJIUzI1NiJ9',
+        );
+        expect(out, contains('section=ingredienser'));
+        expect(out, isNot(contains('eyJhbGciOiJIUzI1NiJ9')));
+        expect(out, contains('token=:redacted'));
+      },
+    );
 
     test('parity-pin: percent-encoded fragment redacts after decode', () {
       // Dart's `Uri.fragment` getter returns the decoded form, so
       // `%3D` arrives as `=` to the heuristic. The TS port mirrors this
       // via `decodeURIComponent` so both ports redact the same input.
       final out = scrubUrlParams(
-          'https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra');
+        'https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra',
+      );
       expect(out, isNot(contains('eyJhbGciOiJIUzI1NiJ9_extra')));
       expect(out, contains(':redacted'));
     });

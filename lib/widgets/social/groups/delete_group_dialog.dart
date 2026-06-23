@@ -75,12 +75,12 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
 
   @override
   Widget? get dialogIcon => Builder(
-        builder: (context) => Icon(
-          Icons.warning_amber_rounded,
-          color: context.butleryColors.warning,
-          size: AppDimensions.iconSizeXxl,
-        ),
-      );
+    builder: (context) => Icon(
+      Icons.warning_amber_rounded,
+      color: context.butleryColors.warning,
+      size: AppDimensions.iconSizeXxl,
+    ),
+  );
 
   @override
   String dialogTitleText(BuildContext context) => context.l10n.groupDeleteGroup;

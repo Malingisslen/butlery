@@ -142,7 +142,8 @@ class RetryHelper {
         final actualDelay = Duration(milliseconds: delayMs);
 
         AppLogger.info(
-            'Retrying operation (attempt $attempt/$maxRetries) after ${actualDelay.inSeconds}s delay');
+          'Retrying operation (attempt $attempt/$maxRetries) after ${actualDelay.inSeconds}s delay',
+        );
 
         await Future.delayed(actualDelay);
       }
@@ -319,7 +320,8 @@ class RetryHelper {
         }
 
         AppLogger.info(
-            'Retrying operation (attempt $attempt/$maxRetries) after ${delay.inSeconds}s delay');
+          'Retrying operation (attempt $attempt/$maxRetries) after ${delay.inSeconds}s delay',
+        );
         await Future.delayed(delay);
       }
     }

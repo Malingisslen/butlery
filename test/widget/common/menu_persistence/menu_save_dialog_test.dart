@@ -34,12 +34,12 @@ class _FakeFriend {
 
 /// Wraps a child in MaterialApp with sv locale + l10n delegates.
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 /// AlertDialog + nested scroll viewports want generous logical pixels in
 /// flutter_test or the intrinsic pass throws. Matches the helper from
@@ -90,8 +90,9 @@ MenuViewModel _vm({
 
 void main() {
   group('SaveMenuDialog', () {
-    testWidgets('renders title, summary line, and the three core fields',
-        (tester) async {
+    testWidgets('renders title, summary line, and the three core fields', (
+      tester,
+    ) async {
       _useLargeSurface(tester);
       final vm = _vm(totalRecipes: 7, categories: 3);
 
@@ -113,8 +114,9 @@ void main() {
       expect(find.text('Dela med vänner'), findsOneWidget);
     });
 
-    testWidgets('share section is hidden until the switch is toggled on',
-        (tester) async {
+    testWidgets('share section is hidden until the switch is toggled on', (
+      tester,
+    ) async {
       _useLargeSurface(tester);
       final vm = _vm();
 
@@ -135,180 +137,203 @@ void main() {
     });
 
     testWidgets(
-        'empty availableFriends list shows the localized "no friends" copy',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
+      'empty availableFriends list shows the localized "no friends" copy',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
 
-      await tester.pumpWidget(_wrap(_trigger(vm: vm, friends: const [])));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_wrap(_trigger(vm: vm, friends: const [])));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(Switch));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Inga vänner tillgängliga'), findsOneWidget);
-    });
-
-    testWidgets(
-        'non-empty availableFriends renders one CheckboxListTile per friend',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
-      final friends = [
-        _FakeFriend('u1', 'Anna'),
-        _FakeFriend('u2', 'Bertil'),
-      ];
-
-      await tester.pumpWidget(_wrap(_trigger(vm: vm, friends: friends)));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(CheckboxListTile), findsNWidgets(2));
-      expect(find.text('Anna'), findsOneWidget);
-      expect(find.text('Bertil'), findsOneWidget);
-    });
+        expect(find.text('Inga vänner tillgängliga'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'submitting an empty name triggers the localized required-field error',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
+      'non-empty availableFriends renders one CheckboxListTile per friend',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
+        final friends = [
+          _FakeFriend('u1', 'Anna'),
+          _FakeFriend('u2', 'Bertil'),
+        ];
 
-      await tester.pumpWidget(_wrap(_trigger(vm: vm)));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_wrap(_trigger(vm: vm, friends: friends)));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      // Tap the Spara button without filling the name.
-      await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(Switch));
+        await tester.pumpAndSettle();
 
-      // FormValidators.required wraps the fieldName in
-      // validationFieldCannotBeEmpty → "{fieldName} får inte vara tom". The
-      // dialog passes menuNameRequired ("Menynamn krävs") as the fieldName,
-      // so the rendered error is the composed string below.
-      expect(find.text('Menynamn krävs får inte vara tom'), findsOneWidget);
-      // saveMenuWithNameAndComment must NOT have been called.
-      verifyNever(() => vm.saveMenuWithNameAndComment(
+        expect(find.byType(CheckboxListTile), findsNWidgets(2));
+        expect(find.text('Anna'), findsOneWidget);
+        expect(find.text('Bertil'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'submitting an empty name triggers the localized required-field error',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
+
+        await tester.pumpWidget(_wrap(_trigger(vm: vm)));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+
+        // Tap the Spara button without filling the name.
+        await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
+        await tester.pumpAndSettle();
+
+        // FormValidators.required wraps the fieldName in
+        // validationFieldCannotBeEmpty → "{fieldName} får inte vara tom". The
+        // dialog passes menuNameRequired ("Menynamn krävs") as the fieldName,
+        // so the rendered error is the composed string below.
+        expect(find.text('Menynamn krävs får inte vara tom'), findsOneWidget);
+        // saveMenuWithNameAndComment must NOT have been called.
+        verifyNever(
+          () => vm.saveMenuWithNameAndComment(
             any(),
             any(),
             shareWithFriends: any(named: 'shareWithFriends'),
             selectedFriendIds: any(named: 'selectedFriendIds'),
             shareMessage: any(named: 'shareMessage'),
-          ));
-    });
+          ),
+        );
+      },
+    );
 
     testWidgets(
-        'valid submit forwards name, comment, and share state to the viewmodel',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
-      when(() => vm.saveMenuWithNameAndComment(
+      'valid submit forwards name, comment, and share state to the viewmodel',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
+        when(
+          () => vm.saveMenuWithNameAndComment(
             any(),
             any(),
             shareWithFriends: any(named: 'shareWithFriends'),
             selectedFriendIds: any(named: 'selectedFriendIds'),
             shareMessage: any(named: 'shareMessage'),
-          )).thenAnswer((_) async => true);
+          ),
+        ).thenAnswer((_) async => true);
 
-      await tester.pumpWidget(_wrap(_trigger(vm: vm)));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_wrap(_trigger(vm: vm)));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      // Fill name + comment. Two TextFormFields visible (no share section).
-      final fields = find.byType(TextFormField);
-      expect(fields, findsNWidgets(2));
-      await tester.enterText(fields.at(0), 'Min veckomeny');
-      await tester.enterText(fields.at(1), 'God och billig');
+        // Fill name + comment. Two TextFormFields visible (no share section).
+        final fields = find.byType(TextFormField);
+        expect(fields, findsNWidgets(2));
+        await tester.enterText(fields.at(0), 'Min veckomeny');
+        await tester.enterText(fields.at(1), 'God och billig');
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
-      await tester.pump(); // start save
-      await tester.pump(); // resolve future
+        await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
+        await tester.pump(); // start save
+        await tester.pump(); // resolve future
 
-      final captured = verify(() => vm.saveMenuWithNameAndComment(
+        final captured = verify(
+          () => vm.saveMenuWithNameAndComment(
             captureAny(),
             captureAny(),
             shareWithFriends: captureAny(named: 'shareWithFriends'),
             selectedFriendIds: captureAny(named: 'selectedFriendIds'),
             shareMessage: captureAny(named: 'shareMessage'),
-          )).captured;
+          ),
+        ).captured;
 
-      expect(captured[0], 'Min veckomeny');
-      expect(captured[1], 'God och billig');
-      expect(captured[2], false); // shareWithFriends default
-      expect(captured[3], <String>[]); // no selected friend ids
-      // Default share message is menuShareDefaultMessage, set in build().
-      expect(captured[4], 'Kolla min veckomeny!');
-    });
+        expect(captured[0], 'Min veckomeny');
+        expect(captured[1], 'God och billig');
+        expect(captured[2], false); // shareWithFriends default
+        expect(captured[3], <String>[]); // no selected friend ids
+        // Default share message is menuShareDefaultMessage, set in build().
+        expect(captured[4], 'Kolla min veckomeny!');
+      },
+    );
 
     testWidgets(
-        'checking a friend includes their uid in the selectedFriendIds arg',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
-      when(() => vm.saveMenuWithNameAndComment(
+      'checking a friend includes their uid in the selectedFriendIds arg',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
+        when(
+          () => vm.saveMenuWithNameAndComment(
             any(),
             any(),
             shareWithFriends: any(named: 'shareWithFriends'),
             selectedFriendIds: any(named: 'selectedFriendIds'),
             shareMessage: any(named: 'shareMessage'),
-          )).thenAnswer((_) async => true);
+          ),
+        ).thenAnswer((_) async => true);
 
-      await tester.pumpWidget(_wrap(_trigger(
-        vm: vm,
-        friends: [_FakeFriend('u1', 'Anna'), _FakeFriend('u2', 'Bertil')],
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrap(
+            _trigger(
+              vm: vm,
+              friends: [_FakeFriend('u1', 'Anna'), _FakeFriend('u2', 'Bertil')],
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      // Fill name (required), then toggle share + check Bertil.
-      await tester.enterText(find.byType(TextFormField).at(0), 'Veckomeny');
-      await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+        // Fill name (required), then toggle share + check Bertil.
+        await tester.enterText(find.byType(TextFormField).at(0), 'Veckomeny');
+        await tester.tap(find.byType(Switch));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Bertil'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Bertil'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
-      await tester.pump();
-      await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
+        await tester.pump();
+        await tester.pump();
 
-      final captured = verify(() => vm.saveMenuWithNameAndComment(
+        final captured = verify(
+          () => vm.saveMenuWithNameAndComment(
             captureAny(),
             captureAny(),
             shareWithFriends: captureAny(named: 'shareWithFriends'),
             selectedFriendIds: captureAny(named: 'selectedFriendIds'),
             shareMessage: captureAny(named: 'shareMessage'),
-          )).captured;
-      expect(captured[2], true);
-      expect(captured[3], ['u2']);
-    });
+          ),
+        ).captured;
+        expect(captured[2], true);
+        expect(captured[3], ['u2']);
+      },
+    );
 
-    testWidgets('cancel button pops the dialog without invoking the viewmodel',
-        (tester) async {
-      _useLargeSurface(tester);
-      final vm = _vm();
+    testWidgets(
+      'cancel button pops the dialog without invoking the viewmodel',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
 
-      await tester.pumpWidget(_wrap(_trigger(vm: vm)));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_wrap(_trigger(vm: vm)));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(SaveMenuDialog), findsOneWidget);
+        expect(find.byType(SaveMenuDialog), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(TextButton, 'Avbryt'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(SaveMenuDialog), findsNothing);
-      verifyNever(() => vm.saveMenuWithNameAndComment(
+        expect(find.byType(SaveMenuDialog), findsNothing);
+        verifyNever(
+          () => vm.saveMenuWithNameAndComment(
             any(),
             any(),
             shareWithFriends: any(named: 'shareWithFriends'),
             selectedFriendIds: any(named: 'selectedFriendIds'),
             shareMessage: any(named: 'shareMessage'),
-          ));
-    });
+          ),
+        );
+      },
+    );
   });
 }

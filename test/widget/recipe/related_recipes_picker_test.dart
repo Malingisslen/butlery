@@ -125,17 +125,19 @@ void main() {
 
       String? linkedId;
 
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesEditor(
-          currentRecipeId: 'r-current',
-          relatedRecipes: const [],
-          onLink: (id) async {
-            linkedId = id;
-            return true;
-          },
-          onUnlink: (_) async => true,
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r-current',
+            relatedRecipes: const [],
+            onLink: (id) async {
+              linkedId = id;
+              return true;
+            },
+            onUnlink: (_) async => true,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // The link button is present (covered by related_recipes_test.dart but
@@ -163,9 +165,13 @@ void main() {
       // Confirm button appears after at least one recipe is selected.
       // Label is "Lägg till (1)" from l10n.commonAdd + " (1)".
       final confirmBtn = find.text('Lägg till (1)');
-      expect(confirmBtn, findsOneWidget,
-          reason: 'The confirm button must appear after a recipe is selected. '
-              'If this is missing, _selectedIds was not updated.');
+      expect(
+        confirmBtn,
+        findsOneWidget,
+        reason:
+            'The confirm button must appear after a recipe is selected. '
+            'If this is missing, _selectedIds was not updated.',
+      );
 
       // Tap confirm — _confirm pops the dialog with the selected Recipe list.
       await tester.tap(confirmBtn);
@@ -173,10 +179,14 @@ void main() {
       await tester.pump(); // _openPicker receives result, calls onLink
 
       // Assert onLink fired with the correct id.
-      expect(linkedId, 'r-pasta',
-          reason: 'onLink must be called with the id of the confirmed recipe. '
-              'A broken _confirm or a disconnected onPressed would leave '
-              'linkedId null.');
+      expect(
+        linkedId,
+        'r-pasta',
+        reason:
+            'onLink must be called with the id of the confirmed recipe. '
+            'A broken _confirm or a disconnected onPressed would leave '
+            'linkedId null.',
+      );
     },
   );
 
@@ -209,17 +219,19 @@ void main() {
 
       final List<String> linkedIds = [];
 
-      await tester.pumpWidget(_wrap(
-        RelatedRecipesEditor(
-          currentRecipeId: 'r-current',
-          relatedRecipes: const [],
-          onLink: (id) async {
-            linkedIds.add(id);
-            return true;
-          },
-          onUnlink: (_) async => true,
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r-current',
+            relatedRecipes: const [],
+            onLink: (id) async {
+              linkedIds.add(id);
+              return true;
+            },
+            onUnlink: (_) async => true,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Open the picker.
@@ -236,9 +248,13 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(linkedIds, ['r-pasta'],
-          reason: 'Only the selected recipe id must reach onLink. "r-tacos" '
-              'was never selected so it must be absent.');
+      expect(
+        linkedIds,
+        ['r-pasta'],
+        reason:
+            'Only the selected recipe id must reach onLink. "r-tacos" '
+            'was never selected so it must be absent.',
+      );
     },
   );
 }

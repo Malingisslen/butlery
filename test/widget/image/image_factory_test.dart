@@ -50,8 +50,9 @@ void main() {
         expect(find.byType(AvatarImageWidget), findsOneWidget);
       });
 
-      testWidgets('shows online indicator when showStatus is true',
-          (tester) async {
+      testWidgets('shows online indicator when showStatus is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ImageFactory.avatar(
@@ -282,8 +283,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('provides semantic wrapper for recipe images',
-          (tester) async {
+      testWidgets('provides semantic wrapper for recipe images', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Semantics(
@@ -299,8 +301,9 @@ void main() {
           ),
         );
 
-        final semantics =
-            tester.getSemantics(find.bySemanticsLabel('Receptbild'));
+        final semantics = tester.getSemantics(
+          find.bySemanticsLabel('Receptbild'),
+        );
         expect(semantics.label, contains('Receptbild'));
       });
     });

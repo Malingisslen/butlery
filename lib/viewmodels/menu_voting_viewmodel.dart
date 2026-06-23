@@ -16,7 +16,7 @@ class MenuVotingViewModel extends BaseViewModel {
   StreamSubscription<List<MenuSlotVote>>? _votesSubscription;
 
   MenuVotingViewModel({required this.menuId})
-      : _votingService = ServiceLocator.get<MenuVotingService>();
+    : _votingService = ServiceLocator.get<MenuVotingService>();
 
   List<MenuSlotVote> get activeVotes =>
       _votes.where((v) => v.isActive).toList();
@@ -40,8 +40,9 @@ class MenuVotingViewModel extends BaseViewModel {
   /// Subscribe to vote updates for this menu.
   void subscribe() {
     _votesSubscription?.cancel();
-    _votesSubscription =
-        _votingService.watchVotesForMenu(menuId).listen((votes) {
+    _votesSubscription = _votingService.watchVotesForMenu(menuId).listen((
+      votes,
+    ) {
       if (isDisposed) return;
       _votes = votes;
       notifyListeners();

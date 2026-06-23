@@ -62,12 +62,11 @@ void main() {
     test('skips documents with unknown category names', () async {
       await seedCategory('validCategory_dietaryStems', {'x': 'y'});
       await seedCategory('dietaryStems', {'vegansk': 'vegan'});
-      await fakeFirestore
-          .collection('menu_lexicon')
-          .doc('unknownCategory')
-          .set({
-        'entries': {'a': 'b'},
-      });
+      await fakeFirestore.collection('menu_lexicon').doc('unknownCategory').set(
+        {
+          'entries': {'a': 'b'},
+        },
+      );
 
       final result = await repository.loadOverrides();
 
@@ -107,12 +106,11 @@ void main() {
       expect(first[LexiconCategory.dietaryStems], {'vegansk': 'vegan'});
 
       // Mutate Firestore — should NOT be visible due to cache
-      await fakeFirestore
-          .collection('menu_lexicon')
-          .doc('dietaryStems')
-          .update({
-        'entries': {'lchf': 'lchf'}
-      });
+      await fakeFirestore.collection('menu_lexicon').doc('dietaryStems').update(
+        {
+          'entries': {'lchf': 'lchf'},
+        },
+      );
 
       final second = await repository.loadOverrides();
       expect(second[LexiconCategory.dietaryStems], {'vegansk': 'vegan'});

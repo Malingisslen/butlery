@@ -11,7 +11,7 @@ class OpsLogViewModel extends BaseViewModel {
   List<OpsEvent> _events = const [];
 
   OpsLogViewModel({OpsLogRepository? repository})
-      : _repository = repository ?? ServiceLocator.get<OpsLogRepository>();
+    : _repository = repository ?? ServiceLocator.get<OpsLogRepository>();
 
   /// Events, newest first.
   List<OpsEvent> get events => _events;

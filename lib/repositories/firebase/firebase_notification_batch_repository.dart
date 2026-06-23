@@ -36,23 +36,29 @@ class FirebaseNotificationBatchRepository
 
   @override
   Future<bool> validateCreatePermission(
-          String userId, NotificationBatch entity) async =>
-      entity.userId == userId;
+    String userId,
+    NotificationBatch entity,
+  ) async => entity.userId == userId;
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, NotificationBatch? entity) async =>
-      entity?.userId == userId;
+    String userId,
+    String resourceId,
+    NotificationBatch? entity,
+  ) async => entity?.userId == userId;
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, NotificationBatch entity) async =>
-      entity.userId == userId;
+    String userId,
+    String resourceId,
+    NotificationBatch entity,
+  ) async => entity.userId == userId;
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      true; // Batch cleanup is allowed for authenticated users
+    String userId,
+    String resourceId,
+  ) async => true; // Batch cleanup is allowed for authenticated users
 
   String get _userId => requireCurrentUserId();
 
@@ -145,7 +151,8 @@ class FirebaseNotificationBatchRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} notification_batches for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} notification_batches for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 }

@@ -117,87 +117,107 @@ void main() {
     /// Unauth callers must not be able to submit reports — otherwise
     /// rules-bypass attempts could pollute the moderation queue from
     /// anonymous clients.
-    test('returns false when not authenticated and never calls the repository',
-        () async {
-      fakeAuth.setAuthState(userId: null);
+    test(
+      'returns false when not authenticated and never calls the repository',
+      () async {
+        fakeAuth.setAuthState(userId: null);
 
-      final ok = await service.submitReport(
-        contentType: ContentType.recipe,
-        contentId: 'r1',
-        reason: 'spam',
-        contentOwnerId: ownerUid,
-      );
-
-      expect(ok, isFalse);
-      verifyNever(() => mockReportRepo.submitReport(any()));
-    });
-
-    /// reporterId on the persisted ContentReport MUST be the authenticated
-    /// user, never something the caller could spoof. This guards the audit
-    /// trail — moderators rely on reporterId to ban abusers.
-    test('stamps reporterId from auth (not from caller-controlled input)',
-        () async {
-      fakeAuth.setAuthState(userId: 'auth-user-real');
-      when(() => mockReportRepo.submitReport(any()))
-          .thenAnswer((_) async => 'new-doc-id');
-
-      final ok = await service.submitReport(
-        contentType: ContentType.comment,
-        contentId: 'c1',
-        reason: 'harassment',
-        contentOwnerId: ownerUid,
-        description: 'detailed note',
-      );
-
-      expect(ok, isTrue);
-      final captured =
-          verify(() => mockReportRepo.submitReport(captureAny())).captured;
-      expect(captured, hasLength(1));
-      final report = captured.single as ContentReport;
-      expect(report.reporterId, equals('auth-user-real'),
-          reason: 'reporterId must come from AuthRepository.currentUserId, '
-              'never from a parameter the UI could pass.');
-      expect(report.contentType, equals(ContentType.comment));
-      expect(report.contentId, equals('c1'));
-      expect(report.contentOwnerId, equals(ownerUid));
-      expect(report.reason, equals('harassment'));
-      expect(report.description, equals('detailed note'));
-    });
-
-    /// The persisted createdAt must come from `clock.now()` so tests can
-    /// pin time and so the same value the user "saw" is what moderators
-    /// see (no per-component drift between client + server stamps).
-    test('createdAt uses clock.now() and guidelineVersion is stamped',
-        () async {
-      fakeAuth.setAuthState(userId: reporterUid);
-      when(() => mockReportRepo.submitReport(any()))
-          .thenAnswer((_) async => 'doc-id');
-
-      final pinned = DateTime(2026, 1, 1, 9, 30);
-      await withClock(Clock.fixed(pinned), () async {
-        await service.submitReport(
+        final ok = await service.submitReport(
           contentType: ContentType.recipe,
           contentId: 'r1',
           reason: 'spam',
           contentOwnerId: ownerUid,
         );
-      });
 
-      final report = verify(() => mockReportRepo.submitReport(captureAny()))
-          .captured
-          .single as ContentReport;
-      expect(report.createdAt, equals(pinned));
-      expect(report.guidelineVersion, equals(kCurrentGuidelineVersion),
-          reason: 'Reports must cite the guideline version in force at '
-              'submit-time so historical moderation decisions stay auditable.');
-    });
+        expect(ok, isFalse);
+        verifyNever(() => mockReportRepo.submitReport(any()));
+      },
+    );
+
+    /// reporterId on the persisted ContentReport MUST be the authenticated
+    /// user, never something the caller could spoof. This guards the audit
+    /// trail — moderators rely on reporterId to ban abusers.
+    test(
+      'stamps reporterId from auth (not from caller-controlled input)',
+      () async {
+        fakeAuth.setAuthState(userId: 'auth-user-real');
+        when(
+          () => mockReportRepo.submitReport(any()),
+        ).thenAnswer((_) async => 'new-doc-id');
+
+        final ok = await service.submitReport(
+          contentType: ContentType.comment,
+          contentId: 'c1',
+          reason: 'harassment',
+          contentOwnerId: ownerUid,
+          description: 'detailed note',
+        );
+
+        expect(ok, isTrue);
+        final captured = verify(
+          () => mockReportRepo.submitReport(captureAny()),
+        ).captured;
+        expect(captured, hasLength(1));
+        final report = captured.single as ContentReport;
+        expect(
+          report.reporterId,
+          equals('auth-user-real'),
+          reason:
+              'reporterId must come from AuthRepository.currentUserId, '
+              'never from a parameter the UI could pass.',
+        );
+        expect(report.contentType, equals(ContentType.comment));
+        expect(report.contentId, equals('c1'));
+        expect(report.contentOwnerId, equals(ownerUid));
+        expect(report.reason, equals('harassment'));
+        expect(report.description, equals('detailed note'));
+      },
+    );
+
+    /// The persisted createdAt must come from `clock.now()` so tests can
+    /// pin time and so the same value the user "saw" is what moderators
+    /// see (no per-component drift between client + server stamps).
+    test(
+      'createdAt uses clock.now() and guidelineVersion is stamped',
+      () async {
+        fakeAuth.setAuthState(userId: reporterUid);
+        when(
+          () => mockReportRepo.submitReport(any()),
+        ).thenAnswer((_) async => 'doc-id');
+
+        final pinned = DateTime(2026, 1, 1, 9, 30);
+        await withClock(Clock.fixed(pinned), () async {
+          await service.submitReport(
+            contentType: ContentType.recipe,
+            contentId: 'r1',
+            reason: 'spam',
+            contentOwnerId: ownerUid,
+          );
+        });
+
+        final report =
+            verify(
+                  () => mockReportRepo.submitReport(captureAny()),
+                ).captured.single
+                as ContentReport;
+        expect(report.createdAt, equals(pinned));
+        expect(
+          report.guidelineVersion,
+          equals(kCurrentGuidelineVersion),
+          reason:
+              'Reports must cite the guideline version in force at '
+              'submit-time so historical moderation decisions stay auditable.',
+        );
+      },
+    );
 
     /// If the repository returns null (write failed, rules denied, throttle
     /// triggered), the service must report failure — never claim success.
     test('returns false when repository returns null docId', () async {
       fakeAuth.setAuthState(userId: reporterUid);
-      when(() => mockReportRepo.submitReport(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockReportRepo.submitReport(any()),
+      ).thenAnswer((_) async => null);
 
       final ok = await service.submitReport(
         contentType: ContentType.recipe,
@@ -214,8 +234,9 @@ void main() {
     /// string in their dashboards.
     test('omits description as null when caller did not pass one', () async {
       fakeAuth.setAuthState(userId: reporterUid);
-      when(() => mockReportRepo.submitReport(any()))
-          .thenAnswer((_) async => 'd');
+      when(
+        () => mockReportRepo.submitReport(any()),
+      ).thenAnswer((_) async => 'd');
 
       await service.submitReport(
         contentType: ContentType.recipe,
@@ -224,9 +245,11 @@ void main() {
         contentOwnerId: ownerUid,
       );
 
-      final report = verify(() => mockReportRepo.submitReport(captureAny()))
-          .captured
-          .single as ContentReport;
+      final report =
+          verify(
+                () => mockReportRepo.submitReport(captureAny()),
+              ).captured.single
+              as ContentReport;
       expect(report.description, isNull);
     });
   });
@@ -237,22 +260,25 @@ void main() {
   group('getMyReports', () {
     /// Unauth callers must receive an empty list rather than crash or,
     /// worse, somehow surface another user's reports.
-    test('returns empty list when not authenticated (no repository call)',
-        () async {
-      fakeAuth.setAuthState(userId: null);
+    test(
+      'returns empty list when not authenticated (no repository call)',
+      () async {
+        fakeAuth.setAuthState(userId: null);
 
-      final reports = await service.getMyReports();
+        final reports = await service.getMyReports();
 
-      expect(reports, isEmpty);
-      verifyNever(() => mockReportRepo.getUserReports(any()));
-    });
+        expect(reports, isEmpty);
+        verifyNever(() => mockReportRepo.getUserReports(any()));
+      },
+    );
 
     /// The userId passed to the repository must be the authenticated user.
     /// Privacy boundary: a user can only retrieve THEIR OWN reports.
     test('queries the repository with the authenticated userId only', () async {
       fakeAuth.setAuthState(userId: 'me-1');
-      when(() => mockReportRepo.getUserReports('me-1'))
-          .thenAnswer((_) async => [sampleReport(reporter: 'me-1')]);
+      when(
+        () => mockReportRepo.getUserReports('me-1'),
+      ).thenAnswer((_) async => [sampleReport(reporter: 'me-1')]);
 
       final reports = await service.getMyReports();
 
@@ -336,19 +362,30 @@ void main() {
     test('excludes closed reports from the stream', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await seedReport(
-          'a', reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27)));
-      await seedReport('b',
-          reportDoc(status: 'in_review', createdAt: DateTime(2026, 5, 26)));
+        'a',
+        reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27)),
+      );
       await seedReport(
-          'c', reportDoc(status: 'actioned', createdAt: DateTime(2026, 5, 25)));
+        'b',
+        reportDoc(status: 'in_review', createdAt: DateTime(2026, 5, 26)),
+      );
       await seedReport(
-          'd', reportDoc(status: 'closed', createdAt: DateTime(2026, 5, 24)));
+        'c',
+        reportDoc(status: 'actioned', createdAt: DateTime(2026, 5, 25)),
+      );
+      await seedReport(
+        'd',
+        reportDoc(status: 'closed', createdAt: DateTime(2026, 5, 24)),
+      );
 
       final reports = await service.watchOpenReports().first;
 
       final ids = reports.map((r) => r.id).toList();
-      expect(ids, isNot(contains('d')),
-          reason: 'closed reports must be filtered out of the moderation feed');
+      expect(
+        ids,
+        isNot(contains('d')),
+        reason: 'closed reports must be filtered out of the moderation feed',
+      );
       expect(ids, containsAll(<String>['a', 'b', 'c']));
     });
 
@@ -358,16 +395,24 @@ void main() {
     test('orders results newest-first by createdAt', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await seedReport(
-          'oldest', reportDoc(status: 'new', createdAt: DateTime(2026, 1, 1)));
-      await seedReport('newest',
-          reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27, 12)));
-      await seedReport('middle',
-          reportDoc(status: 'in_review', createdAt: DateTime(2026, 3, 15)));
+        'oldest',
+        reportDoc(status: 'new', createdAt: DateTime(2026, 1, 1)),
+      );
+      await seedReport(
+        'newest',
+        reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27, 12)),
+      );
+      await seedReport(
+        'middle',
+        reportDoc(status: 'in_review', createdAt: DateTime(2026, 3, 15)),
+      );
 
       final reports = await service.watchOpenReports().first;
 
-      expect(reports.map((r) => r.id).toList(),
-          equals(<String>['newest', 'middle', 'oldest']));
+      expect(
+        reports.map((r) => r.id).toList(),
+        equals(<String>['newest', 'middle', 'oldest']),
+      );
     });
 
     /// A single malformed doc (legacy contentType, missing field) must not
@@ -376,18 +421,25 @@ void main() {
     test('tolerantly skips reports whose contentType is unknown', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await seedReport(
-          'good', reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27)));
+        'good',
+        reportDoc(status: 'new', createdAt: DateTime(2026, 5, 27)),
+      );
       await seedReport(
-          'legacy',
-          reportDoc(
-              status: 'new',
-              createdAt: DateTime(2026, 5, 26),
-              contentType: 'rating')); // retired type — fromWire returns null
+        'legacy',
+        reportDoc(
+          status: 'new',
+          createdAt: DateTime(2026, 5, 26),
+          contentType: 'rating',
+        ),
+      ); // retired type — fromWire returns null
 
       final reports = await service.watchOpenReports().first;
 
-      expect(reports.map((r) => r.id).toList(), equals(<String>['good']),
-          reason: 'legacy contentTypes must be skipped, not crash the stream');
+      expect(
+        reports.map((r) => r.id).toList(),
+        equals(<String>['good']),
+        reason: 'legacy contentTypes must be skipped, not crash the stream',
+      );
     });
   });
 
@@ -400,38 +452,47 @@ void main() {
           .collection(FirestoreCollections.reports)
           .doc(report.id)
           .set({
-        'reporterId': report.reporterId,
-        'contentType': report.contentType.wireName,
-        'contentId': report.contentId,
-        if (report.contentOwnerId != null)
-          'contentOwnerId': report.contentOwnerId,
-        'reason': report.reason,
-        'status': report.status.wireName,
-        'createdAt': Timestamp.fromDate(report.createdAt),
-      });
+            'reporterId': report.reporterId,
+            'contentType': report.contentType.wireName,
+            'contentId': report.contentId,
+            if (report.contentOwnerId != null)
+              'contentOwnerId': report.contentOwnerId,
+            'reason': report.reason,
+            'status': report.status.wireName,
+            'createdAt': Timestamp.fromDate(report.createdAt),
+          });
     }
 
     /// new → in_review writes the next-stage status and preserves the
     /// rest of the doc (single-field update — no field clobber).
-    test('new → in_review writes status=in_review and preserves other fields',
-        () async {
-      fakeAuth.setAuthState(userId: adminUid);
-      final report = sampleReport(id: 'r-new', status: ReportStatus.newReport);
-      await seedReportDoc(report);
+    test(
+      'new → in_review writes status=in_review and preserves other fields',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        final report = sampleReport(
+          id: 'r-new',
+          status: ReportStatus.newReport,
+        );
+        await seedReportDoc(report);
 
-      final ok = await service.advanceReportStatus(report);
+        final ok = await service.advanceReportStatus(report);
 
-      expect(ok, isTrue);
-      final after = await fakeFirestore
-          .collection(FirestoreCollections.reports)
-          .doc('r-new')
-          .get();
-      expect(after.data()?['status'], equals('in_review'));
-      expect(after.data()?['reporterId'], equals(reporterUid),
-          reason: 'advance must NOT overwrite reporterId — audit trail relies '
-              'on the original reporter id being preserved.');
-      expect(after.data()?['contentId'], equals('content-abc'));
-    });
+        expect(ok, isTrue);
+        final after = await fakeFirestore
+            .collection(FirestoreCollections.reports)
+            .doc('r-new')
+            .get();
+        expect(after.data()?['status'], equals('in_review'));
+        expect(
+          after.data()?['reporterId'],
+          equals(reporterUid),
+          reason:
+              'advance must NOT overwrite reporterId — audit trail relies '
+              'on the original reporter id being preserved.',
+        );
+        expect(after.data()?['contentId'], equals('content-abc'));
+      },
+    );
 
     test('in_review → actioned writes status=actioned', () async {
       fakeAuth.setAuthState(userId: adminUid);
@@ -479,8 +540,11 @@ void main() {
           .collection(FirestoreCollections.reports)
           .doc('r-closed')
           .get();
-      expect(after.data()?['status'], equals('closed'),
-          reason: 'doc must remain unchanged when service refuses to advance');
+      expect(
+        after.data()?['status'],
+        equals('closed'),
+        reason: 'doc must remain unchanged when service refuses to advance',
+      );
     });
 
     /// Unauth must not be able to advance status — the moderation API is
@@ -488,8 +552,10 @@ void main() {
     /// enforces this; the test pins the behaviour at the service surface.
     test('returns false when unauthenticated (no write)', () async {
       fakeAuth.setAuthState(userId: null);
-      final report =
-          sampleReport(id: 'r-unauth', status: ReportStatus.newReport);
+      final report = sampleReport(
+        id: 'r-unauth',
+        status: ReportStatus.newReport,
+      );
       await seedReportDoc(report);
 
       final ok = await service.advanceReportStatus(report);
@@ -499,9 +565,13 @@ void main() {
           .collection(FirestoreCollections.reports)
           .doc('r-unauth')
           .get();
-      expect(after.data()?['status'], equals('new'),
-          reason: 'unauth advance must NOT write — rules would deny but the '
-              'service should short-circuit before the network round-trip.');
+      expect(
+        after.data()?['status'],
+        equals('new'),
+        reason:
+            'unauth advance must NOT write — rules would deny but the '
+            'service should short-circuit before the network round-trip.',
+      );
     });
   });
 
@@ -526,8 +596,11 @@ void main() {
           .collection(FirestoreCollections.reports)
           .doc('rc')
           .get();
-      expect(after.data()?['sentinel'], equals('untouched'),
-          reason: 'no write should have happened on no-op close');
+      expect(
+        after.data()?['sentinel'],
+        equals('untouched'),
+        reason: 'no write should have happened on no-op close',
+      );
     });
 
     /// Open report → write status=closed.
@@ -547,8 +620,11 @@ void main() {
           .doc('ro')
           .get();
       expect(after.data()?['status'], equals('closed'));
-      expect(after.data()?['reporterId'], equals(reporterUid),
-          reason: 'partial update must not clobber other fields');
+      expect(
+        after.data()?['reporterId'],
+        equals(reporterUid),
+        reason: 'partial update must not clobber other fields',
+      );
     });
   });
 
@@ -565,10 +641,12 @@ void main() {
           .doc('recipe-1')
           .set({'title': 'will-be-deleted'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.recipe,
-        contentId: 'recipe-1',
-      ));
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.recipe,
+          contentId: 'recipe-1',
+        ),
+      );
 
       expect(ok, isTrue);
       final after = await fakeFirestore
@@ -587,10 +665,12 @@ void main() {
           .doc('c-1')
           .set({'text': 'abuse'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.comment,
-        contentId: 'c-1',
-      ));
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.comment,
+          contentId: 'c-1',
+        ),
+      );
 
       expect(ok, isTrue);
       final after = await fakeFirestore
@@ -607,19 +687,22 @@ void main() {
           .doc('m-1')
           .set({'body': 'abuse'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.message,
-        contentId: 'm-1',
-      ));
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.message,
+          contentId: 'm-1',
+        ),
+      );
 
       expect(ok, isTrue);
       expect(
-          (await fakeFirestore
-                  .collection(FirestoreCollections.messages)
-                  .doc('m-1')
-                  .get())
-              .exists,
-          isFalse);
+        (await fakeFirestore
+                .collection(FirestoreCollections.messages)
+                .doc('m-1')
+                .get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('cookSnap deletes /cook_snaps/{contentId}', () async {
@@ -629,38 +712,44 @@ void main() {
           .doc('s-1')
           .set({'caption': 'abuse'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.cookSnap,
-        contentId: 's-1',
-      ));
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.cookSnap,
+          contentId: 's-1',
+        ),
+      );
 
       expect(ok, isTrue);
       expect(
-          (await fakeFirestore
-                  .collection(FirestoreCollections.cookSnaps)
-                  .doc('s-1')
-                  .get())
-              .exists,
-          isFalse);
+        (await fakeFirestore
+                .collection(FirestoreCollections.cookSnaps)
+                .doc('s-1')
+                .get())
+            .exists,
+        isFalse,
+      );
     });
 
-    test('group deletes /users/{ownerId}/friend_categories/{contentId}',
-        () async {
-      fakeAuth.setAuthState(userId: adminUid);
-      await fakeFirestore
-          .collection(FirestoreCollections.users)
-          .doc(ownerUid)
-          .collection(FirestoreCollections.userFriendCategories)
-          .doc('g-1')
-          .set({'name': 'abuse'});
+    test(
+      'group deletes /users/{ownerId}/friend_categories/{contentId}',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await fakeFirestore
+            .collection(FirestoreCollections.users)
+            .doc(ownerUid)
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('g-1')
+            .set({'name': 'abuse'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.group,
-        contentId: 'g-1',
-      ));
+        final ok = await service.deleteReportedContent(
+          sampleReport(
+            type: ContentType.group,
+            contentId: 'g-1',
+          ),
+        );
 
-      expect(ok, isTrue);
-      expect(
+        expect(ok, isTrue);
+        expect(
           (await fakeFirestore
                   .collection(FirestoreCollections.users)
                   .doc(ownerUid)
@@ -668,65 +757,86 @@ void main() {
                   .doc('g-1')
                   .get())
               .exists,
-          isFalse);
-    });
+          isFalse,
+        );
+      },
+    );
 
     /// recipe without ownerId cannot resolve a path safely → service must
     /// refuse rather than delete a wrong recipe at /users//recipes/{id}.
-    test('recipe without contentOwnerId returns false (refuses dispatch)',
-        () async {
-      fakeAuth.setAuthState(userId: adminUid);
+    test(
+      'recipe without contentOwnerId returns false (refuses dispatch)',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.recipe,
-        contentId: 'recipe-1',
-        owner: null,
-      ));
+        final ok = await service.deleteReportedContent(
+          sampleReport(
+            type: ContentType.recipe,
+            contentId: 'recipe-1',
+            owner: null,
+          ),
+        );
 
-      expect(ok, isFalse);
-    });
+        expect(ok, isFalse);
+      },
+    );
 
-    test('group without contentOwnerId returns false (refuses dispatch)',
-        () async {
-      fakeAuth.setAuthState(userId: adminUid);
+    test(
+      'group without contentOwnerId returns false (refuses dispatch)',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.group,
-        contentId: 'g-1',
-        owner: null,
-      ));
+        final ok = await service.deleteReportedContent(
+          sampleReport(
+            type: ContentType.group,
+            contentId: 'g-1',
+            owner: null,
+          ),
+        );
 
-      expect(ok, isFalse);
-    });
+        expect(ok, isFalse);
+      },
+    );
 
     /// profile must NOT be hard-deleted via this path — production routes
     /// it through suspendReportedProfile (reversible hide). If somebody
     /// adds a case for ContentType.profile here that hard-deletes the
     /// public_profile doc, this test breaks.
-    test('profile reports return false (must go through suspend path)',
-        () async {
-      fakeAuth.setAuthState(userId: adminUid);
-      await fakeFirestore
-          .collection(FirestoreCollections.publicProfiles)
-          .doc(ownerUid)
-          .set({'displayName': 'still-here'});
+    test(
+      'profile reports return false (must go through suspend path)',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await fakeFirestore
+            .collection(FirestoreCollections.publicProfiles)
+            .doc(ownerUid)
+            .set({'displayName': 'still-here'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.profile,
-        contentId: ownerUid,
-      ));
+        final ok = await service.deleteReportedContent(
+          sampleReport(
+            type: ContentType.profile,
+            contentId: ownerUid,
+          ),
+        );
 
-      expect(ok, isFalse,
-          reason: 'profile deletes must be refused — suspendReportedProfile '
+        expect(
+          ok,
+          isFalse,
+          reason:
+              'profile deletes must be refused — suspendReportedProfile '
               'is the only legitimate primitive (reversible hide preserves '
-              'auth + friendships).');
-      final profile = await fakeFirestore
-          .collection(FirestoreCollections.publicProfiles)
-          .doc(ownerUid)
-          .get();
-      expect(profile.exists, isTrue,
-          reason: 'profile doc must remain — service refused the dispatch');
-    });
+              'auth + friendships).',
+        );
+        final profile = await fakeFirestore
+            .collection(FirestoreCollections.publicProfiles)
+            .doc(ownerUid)
+            .get();
+        expect(
+          profile.exists,
+          isTrue,
+          reason: 'profile doc must remain — service refused the dispatch',
+        );
+      },
+    );
 
     /// Unauth callers cannot delete reported content even if rules would
     /// also reject. Service-layer short-circuit is the cheap path.
@@ -737,18 +847,23 @@ void main() {
           .doc('c-keep')
           .set({'text': 'should-survive'});
 
-      final ok = await service.deleteReportedContent(sampleReport(
-        type: ContentType.comment,
-        contentId: 'c-keep',
-      ));
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.comment,
+          contentId: 'c-keep',
+        ),
+      );
 
       expect(ok, isFalse);
       final after = await fakeFirestore
           .collection(FirestoreCollections.recipeComments)
           .doc('c-keep')
           .get();
-      expect(after.exists, isTrue,
-          reason: 'unauth attempt must not delete the doc');
+      expect(
+        after.exists,
+        isTrue,
+        reason: 'unauth attempt must not delete the doc',
+      );
     });
   });
 
@@ -767,26 +882,33 @@ void main() {
           .doc(ownerUid)
           .set({'displayName': 'Anna', 'isHidden': false});
 
-      await service.suspendReportedProfile(sampleReport(
-        type: ContentType.profile,
-        contentId: ownerUid,
-      ));
+      await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.profile,
+          contentId: ownerUid,
+        ),
+      );
 
       final after = await fakeFirestore
           .collection(FirestoreCollections.publicProfiles)
           .doc(ownerUid)
           .get();
       expect(after.data()?['isHidden'], isTrue);
-      expect(after.data()?['displayName'], equals('Anna'),
-          reason: 'must be a partial update — preserves the displayName');
+      expect(
+        after.data()?['displayName'],
+        equals('Anna'),
+        reason: 'must be a partial update — preserves the displayName',
+      );
     });
 
     test('refuses non-profile contentType', () async {
       fakeAuth.setAuthState(userId: adminUid);
 
-      final ok = await service.suspendReportedProfile(sampleReport(
-        type: ContentType.recipe,
-      ));
+      final ok = await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.recipe,
+        ),
+      );
 
       expect(ok, isFalse);
     });
@@ -794,14 +916,18 @@ void main() {
     test('refuses when contentOwnerId is missing', () async {
       fakeAuth.setAuthState(userId: adminUid);
 
-      final okNull = await service.suspendReportedProfile(sampleReport(
-        type: ContentType.profile,
-        owner: null,
-      ));
-      final okEmpty = await service.suspendReportedProfile(sampleReport(
-        type: ContentType.profile,
-        owner: '',
-      ));
+      final okNull = await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.profile,
+          owner: null,
+        ),
+      );
+      final okEmpty = await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.profile,
+          owner: '',
+        ),
+      );
 
       expect(okNull, isFalse);
       expect(okEmpty, isFalse);

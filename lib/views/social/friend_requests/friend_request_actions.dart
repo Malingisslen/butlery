@@ -93,8 +93,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         return true;
       },
       confirmationTitle: context.l10n.socialRejectFriendRequestConfirm,
-      confirmationMessage:
-          context.l10n.socialRejectFriendRequestMessage(senderName),
+      confirmationMessage: context.l10n.socialRejectFriendRequestMessage(
+        senderName,
+      ),
       confirmActionText: context.l10n.socialReject,
       confirmationIcon: Icons.person_remove,
       isDangerous: true,
@@ -129,8 +130,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         return true;
       },
       confirmationTitle: context.l10n.socialCancelFriendRequestConfirm,
-      confirmationMessage:
-          context.l10n.socialCancelFriendRequestMessage(recipientName),
+      confirmationMessage: context.l10n.socialCancelFriendRequestMessage(
+        recipientName,
+      ),
       confirmActionText: context.l10n.socialCancelRequest,
       confirmationIcon: Icons.cancel,
       successMessage: context.l10n.socialFriendRequestCancelled(recipientName),
@@ -158,15 +160,18 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch accept
         showLoadingDialog(
-            context, context.l10n.socialAcceptingRequests(requestIds.length));
+          context,
+          context.l10n.socialAcceptingRequests(requestIds.length),
+        );
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
       confirmationTitle: context.l10n.socialAcceptAllSelectedConfirm,
-      confirmationMessage:
-          context.l10n.socialAcceptAllSelectedMessage(requestIds.length),
+      confirmationMessage: context.l10n.socialAcceptAllSelectedMessage(
+        requestIds.length,
+      ),
       confirmActionText: context.l10n.socialAcceptAll,
       confirmationIcon: Icons.check_circle,
       successMessage: context.l10n.socialRequestsAccepted(requestIds.length),
@@ -195,15 +200,18 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch reject
         showLoadingDialog(
-            context, context.l10n.socialRejectingRequests(requestIds.length));
+          context,
+          context.l10n.socialRejectingRequests(requestIds.length),
+        );
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
       confirmationTitle: context.l10n.socialRejectAllSelectedConfirm,
-      confirmationMessage:
-          context.l10n.socialRejectAllSelectedMessage(requestIds.length),
+      confirmationMessage: context.l10n.socialRejectAllSelectedMessage(
+        requestIds.length,
+      ),
       confirmActionText: context.l10n.socialRejectAll,
       confirmationIcon: Icons.person_remove,
       isDangerous: true,
@@ -233,15 +241,18 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch cancel
         showLoadingDialog(
-            context, context.l10n.socialCancellingRequests(requestIds.length));
+          context,
+          context.l10n.socialCancellingRequests(requestIds.length),
+        );
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
       confirmationTitle: context.l10n.socialCancelSelectedRequestsConfirm,
-      confirmationMessage:
-          context.l10n.socialCancelSelectedRequestsMessage(requestIds.length),
+      confirmationMessage: context.l10n.socialCancelSelectedRequestsMessage(
+        requestIds.length,
+      ),
       confirmActionText: context.l10n.socialCancelAll,
       confirmationIcon: Icons.cancel,
       isDangerous: true,

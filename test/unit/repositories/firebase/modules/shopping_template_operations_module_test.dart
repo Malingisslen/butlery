@@ -33,8 +33,12 @@ class _OwnershipCall {
   final String resourceOwnerId;
   final String resourceType;
   final String resourceId;
-  _OwnershipCall(this.currentUserId, this.resourceOwnerId, this.resourceType,
-      this.resourceId);
+  _OwnershipCall(
+    this.currentUserId,
+    this.resourceOwnerId,
+    this.resourceType,
+    this.resourceId,
+  );
 }
 
 class _CreateListCall {
@@ -88,23 +92,31 @@ ShoppingTemplateOperationsModule _module(
     templatesRef: firestore.collection(_templatesPath),
     requireCurrentUserId: () => _userId,
     readList: readList ?? ((_) async => null),
-    createList: createList ??
+    createList:
+        createList ??
         ((entity) async {
           createListCalls?.add(_CreateListCall(entity));
           return entity;
         }),
-    validateOwnership: ({
-      required String currentUserId,
-      required String resourceOwnerId,
-      required String resourceType,
-      required String resourceId,
-    }) async {
-      ownershipCalls?.add(_OwnershipCall(
-          currentUserId, resourceOwnerId, resourceType, resourceId));
-      if (ownershipThrows) {
-        throw PermissionDeniedException('denied');
-      }
-    },
+    validateOwnership:
+        ({
+          required String currentUserId,
+          required String resourceOwnerId,
+          required String resourceType,
+          required String resourceId,
+        }) async {
+          ownershipCalls?.add(
+            _OwnershipCall(
+              currentUserId,
+              resourceOwnerId,
+              resourceType,
+              resourceId,
+            ),
+          );
+          if (ownershipThrows) {
+            throw PermissionDeniedException('denied');
+          }
+        },
     timestampProvider: const TestTimestampProvider(),
   );
 }
@@ -118,8 +130,9 @@ void main() {
     test('throws ResourceNotFoundException when source list missing', () async {
       final firestore = FakeFirebaseFirestore();
       await expectLater(
-        () => _module(firestore)
-            .saveAsTemplate(listId: 'missing', templateName: 'T'),
+        () => _module(
+          firestore,
+        ).saveAsTemplate(listId: 'missing', templateName: 'T'),
         throwsA(isA<ResourceNotFoundException>()),
       );
     });
@@ -127,11 +140,15 @@ void main() {
     test('writes template doc with items from the source list', () async {
       final firestore = FakeFirebaseFirestore();
       final source = _list(items: [_item('Mjölk'), _item('Bröd')]);
-      final templateId = await _module(firestore, readList: (_) async => source)
-          .saveAsTemplate(listId: source.id, templateName: '  Veckomall  ');
+      final templateId = await _module(
+        firestore,
+        readList: (_) async => source,
+      ).saveAsTemplate(listId: source.id, templateName: '  Veckomall  ');
 
-      final doc =
-          await firestore.collection(_templatesPath).doc(templateId).get();
+      final doc = await firestore
+          .collection(_templatesPath)
+          .doc(templateId)
+          .get();
       expect(doc.exists, isTrue);
       final data = doc.data()!;
       expect(data['name'], 'Veckomall'); // trimmed
@@ -146,9 +163,11 @@ void main() {
       final source = _list(ownerId: 'bob');
       final calls = <_OwnershipCall>[];
 
-      await _module(firestore,
-              readList: (_) async => source, ownershipCalls: calls)
-          .saveAsTemplate(listId: source.id, templateName: 'T');
+      await _module(
+        firestore,
+        readList: (_) async => source,
+        ownershipCalls: calls,
+      ).saveAsTemplate(listId: source.id, templateName: 'T');
 
       expect(calls.single.currentUserId, _userId);
       expect(calls.single.resourceOwnerId, 'bob');
@@ -159,9 +178,11 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final source = _list();
       await expectLater(
-        () => _module(firestore,
-                readList: (_) async => source, ownershipThrows: true)
-            .saveAsTemplate(listId: source.id, templateName: 'T'),
+        () => _module(
+          firestore,
+          readList: (_) async => source,
+          ownershipThrows: true,
+        ).saveAsTemplate(listId: source.id, templateName: 'T'),
         throwsA(isA<PermissionDeniedException>()),
       );
       expect((await firestore.collection(_templatesPath).get()).docs, isEmpty);
@@ -291,8 +312,9 @@ void main() {
         'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 3)),
       });
 
-      final hits =
-          await _module(firestore).getPublicTemplates(searchQuery: 'HANDLA');
+      final hits = await _module(
+        firestore,
+      ).getPublicTemplates(searchQuery: 'HANDLA');
       expect(hits.map((t) => t['id']).toSet(), {'t1', 't2'});
     });
 
@@ -322,68 +344,79 @@ void main() {
     test('throws ResourceNotFoundException when template missing', () async {
       final firestore = FakeFirebaseFirestore();
       await expectLater(
-        () => _module(firestore)
-            .createListFromTemplate(templateId: 'missing', listName: 'X'),
+        () => _module(
+          firestore,
+        ).createListFromTemplate(templateId: 'missing', listName: 'X'),
         throwsA(isA<ResourceNotFoundException>()),
       );
     });
 
-    test('throws PermissionDeniedException for private template owned by other',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection(_templatesPath).doc('t1').set({
-        'ownerId': 'bob',
-        'isPublic': false,
-        'items': <Map<String, dynamic>>[],
-      });
+    test(
+      'throws PermissionDeniedException for private template owned by other',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection(_templatesPath).doc('t1').set({
+          'ownerId': 'bob',
+          'isPublic': false,
+          'items': <Map<String, dynamic>>[],
+        });
 
-      await expectLater(
-        () => _module(firestore)
-            .createListFromTemplate(templateId: 't1', listName: 'Mine'),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
-
-    test('creates a new list via createList callback for public template',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection(_templatesPath).doc('t1').set({
-        'ownerId': 'bob',
-        'isPublic': true,
-        'items': [
-          _item('Mjölk').toFirestore(),
-          _item('Bröd').toFirestore(),
-        ],
-      });
-
-      final calls = <_CreateListCall>[];
-      final newId = await _module(firestore, createListCalls: calls)
-          .createListFromTemplate(
-        templateId: 't1',
-        listName: '  Min nya lista  ',
-      );
-
-      expect(newId, isNotEmpty);
-      expect(calls.single.entity.name, 'Min nya lista'); // trimmed
-      expect(calls.single.entity.ownerId, _userId);
-      expect(calls.single.entity.items.map((i) => i.name).toSet(),
-          {'Mjölk', 'Bröd'});
-    });
+        await expectLater(
+          () => _module(
+            firestore,
+          ).createListFromTemplate(templateId: 't1', listName: 'Mine'),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
 
     test(
-        'private template owned by current user is allowed (no public flag needed)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection(_templatesPath).doc('t1').set({
-        'ownerId': _userId,
-        'isPublic': false,
-        'items': <Map<String, dynamic>>[],
-      });
+      'creates a new list via createList callback for public template',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection(_templatesPath).doc('t1').set({
+          'ownerId': 'bob',
+          'isPublic': true,
+          'items': [
+            _item('Mjölk').toFirestore(),
+            _item('Bröd').toFirestore(),
+          ],
+        });
 
-      final calls = <_CreateListCall>[];
-      await _module(firestore, createListCalls: calls)
-          .createListFromTemplate(templateId: 't1', listName: 'Lista');
-      expect(calls, hasLength(1));
-    });
+        final calls = <_CreateListCall>[];
+        final newId = await _module(firestore, createListCalls: calls)
+            .createListFromTemplate(
+              templateId: 't1',
+              listName: '  Min nya lista  ',
+            );
+
+        expect(newId, isNotEmpty);
+        expect(calls.single.entity.name, 'Min nya lista'); // trimmed
+        expect(calls.single.entity.ownerId, _userId);
+        expect(calls.single.entity.items.map((i) => i.name).toSet(), {
+          'Mjölk',
+          'Bröd',
+        });
+      },
+    );
+
+    test(
+      'private template owned by current user is allowed (no public flag needed)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection(_templatesPath).doc('t1').set({
+          'ownerId': _userId,
+          'isPublic': false,
+          'items': <Map<String, dynamic>>[],
+        });
+
+        final calls = <_CreateListCall>[];
+        await _module(
+          firestore,
+          createListCalls: calls,
+        ).createListFromTemplate(templateId: 't1', listName: 'Lista');
+        expect(calls, hasLength(1));
+      },
+    );
   });
 }

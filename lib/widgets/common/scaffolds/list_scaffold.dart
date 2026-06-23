@@ -71,7 +71,8 @@ class ListScaffold<T> extends StatelessWidget {
       showBackButton: showBackButton,
       actions: actions,
       body: body,
-      floatingActionButton: floatingActionButton ??
+      floatingActionButton:
+          floatingActionButton ??
           (onAdd != null
               ? FloatingActionButton(
                   onPressed: onAdd,

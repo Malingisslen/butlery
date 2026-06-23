@@ -86,8 +86,9 @@ void main() {
       }
       GetIt.instance.registerSingleton<notif.NotificationService>(notifService);
 
-      when(() => functions.httpsCallable(any(), options: any(named: 'options')))
-          .thenReturn(callable);
+      when(
+        () => functions.httpsCallable(any(), options: any(named: 'options')),
+      ).thenReturn(callable);
     });
 
     tearDown(() async {
@@ -107,8 +108,9 @@ void main() {
         'errors': <String>[],
         'auditLogId': 'audit-123',
       });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => callResult);
+      when(
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async => callResult);
 
       final service = AccountDeletionService(
         authService: auth,
@@ -131,35 +133,36 @@ void main() {
     /// translates this to `result['requiresReauth'] = true` so the UI can
     /// prompt for re-authentication. NO client `user.delete()` retry —
     /// that was the auth-context-race we eliminated.
-    test('requires-recent-login from CF → result["requiresReauth"]=true',
-        () async {
-      when(() => callable.call<Map<dynamic, dynamic>>(any())).thenThrow(
-        FirebaseFunctionsException(
-          code: 'failed-precondition',
-          message: 'Recent sign-in required.',
-          details: const {'code': 'requires-recent-login'},
-        ),
-      );
+    test(
+      'requires-recent-login from CF → result["requiresReauth"]=true',
+      () async {
+        when(() => callable.call<Map<dynamic, dynamic>>(any())).thenThrow(
+          FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'Recent sign-in required.',
+            details: const {'code': 'requires-recent-login'},
+          ),
+        );
 
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-      );
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+        );
 
-      final result = await service.deleteUserAccount(reason: 'user_request');
+        final result = await service.deleteUserAccount(reason: 'user_request');
 
-      expect(result['success'], isFalse);
-      expect(result['requiresReauth'], isTrue);
-      // Critically: we do NOT call signOut on a failed deletion — the user
-      // is still authenticated, just needs a fresh credential.
-      verifyNever(() => auth.signOut());
-    });
+        expect(result['success'], isFalse);
+        expect(result['requiresReauth'], isTrue);
+        // Critically: we do NOT call signOut on a failed deletion — the user
+        // is still authenticated, just needs a fresh credential.
+        verifyNever(() => auth.signOut());
+      },
+    );
 
     /// Test 3: search-index pre-cleanup runs before the CF call. The
     /// post-deletion search-SDK call would fail (user is gone), so it must
     /// happen pre-CF or never.
-    test(
-        'runs search-index cleanup before CF call when SearchRepository '
+    test('runs search-index cleanup before CF call when SearchRepository '
         'registered', () async {
       final search = _MockSearchRepo();
       when(() => search.removeUser(any())).thenAnswer((_) async {});
@@ -171,8 +174,9 @@ void main() {
         'errors': <String>[],
         'auditLogId': null,
       });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => callResult);
+      when(
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async => callResult);
 
       final service = AccountDeletionService(
         authService: auth,
@@ -194,34 +198,37 @@ void main() {
 
     /// Test 4: offline-cache cleanup runs before CF. Local SQLite/Drift state
     /// can't be cleaned post-deletion from the same session.
-    test('clears offline cache before CF call when OfflineService injected',
-        () async {
-      final offline = _MockOfflineService();
-      when(() => offline.clearUserData(any())).thenAnswer((_) async {});
+    test(
+      'clears offline cache before CF call when OfflineService injected',
+      () async {
+        final offline = _MockOfflineService();
+        when(() => offline.clearUserData(any())).thenAnswer((_) async {});
 
-      callResult = _FakeCallableResult({
-        'success': true,
-        'deletedCollections': <String>[],
-        'failedCollections': <String>[],
-        'errors': <String>[],
-        'auditLogId': null,
-      });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => callResult);
+        callResult = _FakeCallableResult({
+          'success': true,
+          'deletedCollections': <String>[],
+          'failedCollections': <String>[],
+          'errors': <String>[],
+          'auditLogId': null,
+        });
+        when(
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ).thenAnswer((_) async => callResult);
 
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-        offlineService: offline,
-      );
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+          offlineService: offline,
+        );
 
-      await service.deleteUserAccount(reason: 'r');
+        await service.deleteUserAccount(reason: 'r');
 
-      verifyInOrder([
-        () => offline.clearUserData('uid-alice'),
-        () => callable.call<Map<dynamic, dynamic>>(any()),
-      ]);
-    });
+        verifyInOrder([
+          () => offline.clearUserData('uid-alice'),
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ]);
+      },
+    );
 
     /// Test 5: no authenticated user → bails before calling CF. The CF would
     /// reject anonymous calls anyway, but the wrapper short-circuits to give
@@ -245,38 +252,40 @@ void main() {
     /// returns success=false, failedCollections non-empty. Wrapper still
     /// signs the user out (their auth is gone server-side; staying signed
     /// in locally would be inconsistent).
-    test('failed cascade still signs out (auth is gone server-side anyway)',
-        () async {
-      callResult = _FakeCallableResult({
-        'success': false,
-        'deletedCollections': ['recipes'],
-        'failedCollections': ['messages', 'residual_data_detected'],
-        'errors': ['messages: timeout'],
-        'auditLogId': 'audit-failed',
-      });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => callResult);
+    test(
+      'failed cascade still signs out (auth is gone server-side anyway)',
+      () async {
+        callResult = _FakeCallableResult({
+          'success': false,
+          'deletedCollections': ['recipes'],
+          'failedCollections': ['messages', 'residual_data_detected'],
+          'errors': ['messages: timeout'],
+          'auditLogId': 'audit-failed',
+        });
+        when(
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ).thenAnswer((_) async => callResult);
 
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-      );
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+        );
 
-      final result = await service.deleteUserAccount(reason: 'r');
+        final result = await service.deleteUserAccount(reason: 'r');
 
-      expect(result['success'], isFalse);
-      expect(result['failedCollections'], contains('messages'));
-      expect(result['failedCollections'], contains('residual_data_detected'));
-      verify(() => auth.signOut()).called(1);
-    });
+        expect(result['success'], isFalse);
+        expect(result['failedCollections'], contains('messages'));
+        expect(result['failedCollections'], contains('residual_data_detected'));
+        verify(() => auth.signOut()).called(1);
+      },
+    );
 
     // ── BUT-1334 additions ────────────────────────────────────────────────────
 
     /// Criterion 1 (BUT-1334): no authenticated user produces exactly the
     /// error string `'No authenticated user'` and the errors list contains
     /// only that one entry.  Proves the guard clause exits before any CF call.
-    test(
-        'BUT-1334/crit-1: no-auth errors list is exactly '
+    test('BUT-1334/crit-1: no-auth errors list is exactly '
         '[\'No authenticated user\']', () async {
       when(() => auth.currentUserId).thenReturn(null);
 
@@ -288,8 +297,11 @@ void main() {
       final result = await service.deleteUserAccount(reason: 'test');
 
       final errors = result['errors'] as List;
-      expect(errors, hasLength(1),
-          reason: 'only one error entry expected for no-auth path');
+      expect(
+        errors,
+        hasLength(1),
+        reason: 'only one error entry expected for no-auth path',
+      );
       expect(errors.first, equals('No authenticated user'));
       verifyNever(() => callable.call<Map<dynamic, dynamic>>(any()));
     });
@@ -298,67 +310,75 @@ void main() {
     /// re-auth trigger branch in `_handleCfException`) → `requiresReauth`
     /// is set true.  This branch is distinct from `failed-precondition +
     /// requires-recent-login` and was previously untested.
-    test('BUT-1334/crit-2: CF unauthenticated exception → requiresReauth=true',
-        () async {
-      when(() => callable.call<Map<dynamic, dynamic>>(any())).thenThrow(
-        FirebaseFunctionsException(
-          code: 'unauthenticated',
-          message: 'Token expired.',
-          details: null,
-        ),
-      );
+    test(
+      'BUT-1334/crit-2: CF unauthenticated exception → requiresReauth=true',
+      () async {
+        when(() => callable.call<Map<dynamic, dynamic>>(any())).thenThrow(
+          FirebaseFunctionsException(
+            code: 'unauthenticated',
+            message: 'Token expired.',
+            details: null,
+          ),
+        );
 
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-      );
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+        );
 
-      final result = await service.deleteUserAccount(reason: 'test');
+        final result = await service.deleteUserAccount(reason: 'test');
 
-      expect(result['success'], isFalse);
-      expect(result['requiresReauth'], isTrue,
+        expect(result['success'], isFalse);
+        expect(
+          result['requiresReauth'],
+          isTrue,
           reason:
               'unauthenticated CF exception must set requiresReauth so the UI '
-              'can prompt for re-login');
-      verifyNever(() => auth.signOut());
-    });
+              'can prompt for re-login',
+        );
+        verifyNever(() => auth.signOut());
+      },
+    );
 
     /// Criterion 3 (BUT-1334): BOTH search-index cleanup and offline-cache
     /// cleanup run BEFORE the CF callable.  `verifyInOrder` asserts the
     /// three-step ordering: search → offline → CF.
-    test('BUT-1334/crit-3: search AND offline cleanup both run before CF call',
-        () async {
-      final search = _MockSearchRepo();
-      final offline = _MockOfflineService();
-      when(() => search.removeUser(any())).thenAnswer((_) async {});
-      when(() => offline.clearUserData(any())).thenAnswer((_) async {});
+    test(
+      'BUT-1334/crit-3: search AND offline cleanup both run before CF call',
+      () async {
+        final search = _MockSearchRepo();
+        final offline = _MockOfflineService();
+        when(() => search.removeUser(any())).thenAnswer((_) async {});
+        when(() => offline.clearUserData(any())).thenAnswer((_) async {});
 
-      final successResult = _FakeCallableResult({
-        'success': true,
-        'deletedCollections': <String>[],
-        'failedCollections': <String>[],
-        'errors': <String>[],
-        'auditLogId': null,
-      });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => successResult);
+        final successResult = _FakeCallableResult({
+          'success': true,
+          'deletedCollections': <String>[],
+          'failedCollections': <String>[],
+          'errors': <String>[],
+          'auditLogId': null,
+        });
+        when(
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ).thenAnswer((_) async => successResult);
 
-      final service = AccountDeletionService(
-        authService: auth,
-        functions: functions,
-        searchRepository: search,
-        offlineService: offline,
-      );
+        final service = AccountDeletionService(
+          authService: auth,
+          functions: functions,
+          searchRepository: search,
+          offlineService: offline,
+        );
 
-      await service.deleteUserAccount(reason: 'test');
+        await service.deleteUserAccount(reason: 'test');
 
-      // Three-step ordering: search cleanup, then offline cleanup, then CF.
-      verifyInOrder([
-        () => search.removeUser('uid-alice'),
-        () => offline.clearUserData('uid-alice'),
-        () => callable.call<Map<dynamic, dynamic>>(any()),
-      ]);
-    });
+        // Three-step ordering: search cleanup, then offline cleanup, then CF.
+        verifyInOrder([
+          () => search.removeUser('uid-alice'),
+          () => offline.clearUserData('uid-alice'),
+          () => callable.call<Map<dynamic, dynamic>>(any()),
+        ]);
+      },
+    );
   });
 
   // ── BUT-1334 Criterion 4: post-CF success cascade ─────────────────────────
@@ -407,8 +427,9 @@ void main() {
       }
       GetIt.instance.registerSingleton<notif.NotificationService>(notifService);
 
-      when(() => functions.httpsCallable(any(), options: any(named: 'options')))
-          .thenReturn(callable);
+      when(
+        () => functions.httpsCallable(any(), options: any(named: 'options')),
+      ).thenReturn(callable);
     });
 
     tearDown(() {
@@ -420,8 +441,7 @@ void main() {
     /// This test proves that a successful CF response triggers both
     /// `NotificationService.resetForLogout()` and `AuthService.signOut()`.
     /// It would fail if either post-CF cleanup step were removed or skipped.
-    test(
-        'CF success triggers NotificationService.resetForLogout '
+    test('CF success triggers NotificationService.resetForLogout '
         'then AuthService.signOut', () async {
       final successResult = _FakeCallableResult({
         'success': true,
@@ -430,8 +450,9 @@ void main() {
         'errors': <String>[],
         'auditLogId': 'audit-ok',
       });
-      when(() => callable.call<Map<dynamic, dynamic>>(any()))
-          .thenAnswer((_) async => successResult);
+      when(
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async => successResult);
 
       final service = AccountDeletionService(
         authService: auth,
@@ -440,8 +461,11 @@ void main() {
 
       final result = await service.deleteUserAccount(reason: 'user_request');
 
-      expect(result['success'], isTrue,
-          reason: 'CF result must propagate to caller');
+      expect(
+        result['success'],
+        isTrue,
+        reason: 'CF result must propagate to caller',
+      );
       verify(() => notifService.resetForLogout()).called(1);
       verify(() => auth.signOut()).called(1);
     });

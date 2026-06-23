@@ -225,12 +225,12 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
     required String deleteText,
     required String cancelText,
   }) : super(
-          title: '$deleteText $itemType?',
-          titleIcon: Icons.delete,
-          primaryActionText: deleteText,
-          secondaryActionText: cancelText,
-          isDangerous: true,
-        );
+         title: '$deleteText $itemType?',
+         titleIcon: Icons.delete,
+         primaryActionText: deleteText,
+         secondaryActionText: cancelText,
+         isDangerous: true,
+       );
 
   @override
   Widget buildContent(BuildContext context) {
@@ -253,7 +253,8 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
         ),
         if (warningMessage != null) ...[
           const SizedBox(
-              height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
@@ -262,12 +263,13 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           ),
         ],
         const SizedBox(
-            height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+          height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        ),
         Text(
           context.l10n.deleteActionIrreversible,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
+            fontStyle: FontStyle.italic,
+          ),
         ),
       ],
     );

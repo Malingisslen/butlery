@@ -87,7 +87,10 @@ class MenuVotingService extends BaseService {
 
   /// Add an alternative recipe to an open vote.
   Future<bool> addAlternative(
-      String menuId, String voteId, VoteOption option) async {
+    String menuId,
+    String voteId,
+    VoteOption option,
+  ) async {
     final result = await executeServiceOperation(
       () async {
         final vote = await _repository.getVote(menuId, voteId);

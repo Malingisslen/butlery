@@ -8,7 +8,7 @@ class SystemEventsTracker extends BaseTracker {
   final BaseService? _parentService;
 
   SystemEventsTracker({required super.repository, BaseService? parentService})
-      : _parentService = parentService;
+    : _parentService = parentService;
 
   /// Log error occurred (exempt from consent - error tracking)
   Future<void> logErrorOccurred({

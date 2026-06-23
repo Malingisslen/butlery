@@ -50,7 +50,8 @@ class RealtimeEditorTracker {
       final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
       await collaborativeRepo.updatePresenceHeartbeat(recipeId, currentUserId);
       AppLogger.debug(
-          'Updated presence for user $currentUserId in recipe $recipeId');
+        'Updated presence for user $currentUserId in recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.error('❌ Error updating editor presence: $e');
       // Don't rethrow for presence updates - they're not critical
@@ -84,7 +85,8 @@ class RealtimeEditorTracker {
       final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
       final editors = await collaborativeRepo.getActiveEditors(recipeId);
       AppLogger.debug(
-          'Retrieved ${editors.length} active editors for recipe $recipeId');
+        'Retrieved ${editors.length} active editors for recipe $recipeId',
+      );
       return editors;
     } catch (e) {
       AppLogger.error('❌ Error getting active editors: $e');
@@ -123,10 +125,13 @@ class RealtimeEditorTracker {
   }) async {
     try {
       final collaborativeRepo = GetIt.instance<CollaborativeRecipeRepository>();
-      final isActive =
-          await collaborativeRepo.isUserActivelyEditing(recipeId, userId);
+      final isActive = await collaborativeRepo.isUserActivelyEditing(
+        recipeId,
+        userId,
+      );
       AppLogger.debug(
-          'User ${userId.maskedUserId} actively editing recipe $recipeId: $isActive');
+        'User ${userId.maskedUserId} actively editing recipe $recipeId: $isActive',
+      );
       return isActive;
     } catch (e) {
       AppLogger.error('❌ Error checking if user is actively editing: $e');

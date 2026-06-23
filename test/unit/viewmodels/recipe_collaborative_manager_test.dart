@@ -56,11 +56,13 @@ void main() {
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(UserProfileFactory.build());
       registerFallbackValue(ResourcePermission.editor);
-      registerFallbackValue(RealtimeRecipe.fromRecipe(
-        recipe: RecipeFactory.build(),
-        ownerId: testUserId,
-        ownerDisplayName: testUserDisplayName,
-      ));
+      registerFallbackValue(
+        RealtimeRecipe.fromRecipe(
+          recipe: RecipeFactory.build(),
+          ownerId: testUserId,
+          ownerDisplayName: testUserDisplayName,
+        ),
+      );
     });
 
     setUp(() async {
@@ -86,7 +88,9 @@ void main() {
       // Create test data
       testRecipe = RecipeFactory.build(id: testRecipeId, title: 'Test Recipe');
       testParticipant = UserProfileFactory.build(
-          uid: testParticipantId, displayName: testParticipantName);
+        uid: testParticipantId,
+        displayName: testParticipantName,
+      );
       testRealtimeRecipe = RealtimeRecipe.fromRecipe(
         recipe: testRecipe,
         ownerId: testUserId,
@@ -105,28 +109,37 @@ void main() {
       mockPermissionService.setProfile(testParticipant);
 
       // Configure repository defaults
-      when(() => mockRepository.createRealtimeRecipe(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepository.updateRealtimeRecipe(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepository.getRealtimeRecipeStream(any()))
-          .thenAnswer((_) => Stream.value(testRealtimeRecipe));
-      when(() => mockRepository.getParticipantsStream(any()))
-          .thenAnswer((_) => Stream.value([testLiveEditor]));
-      when(() => mockRepository.updateUserPresence(any(), any(), any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepository.clearUserPresence(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepository.createRealtimeRecipe(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.updateRealtimeRecipe(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.getRealtimeRecipeStream(any()),
+      ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+      when(
+        () => mockRepository.getParticipantsStream(any()),
+      ).thenAnswer((_) => Stream.value([testLiveEditor]));
+      when(
+        () => mockRepository.updateUserPresence(any(), any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepository.clearUserPresence(any(), any()),
+      ).thenAnswer((_) async {});
 
       // Configure connectivity service defaults
-      when(() => mockConnectivityService.isConnectedToFirebase)
-          .thenReturn(true);
-      when(() => mockConnectivityService.connectionStatusText)
-          .thenReturn('Ansluten');
+      when(
+        () => mockConnectivityService.isConnectedToFirebase,
+      ).thenReturn(true);
+      when(
+        () => mockConnectivityService.connectionStatusText,
+      ).thenReturn('Ansluten');
       when(() => mockConnectivityService.startMonitoring()).thenReturn(null);
       when(() => mockConnectivityService.addListener(any())).thenReturn(null);
-      when(() => mockConnectivityService.removeListener(any()))
-          .thenReturn(null);
+      when(
+        () => mockConnectivityService.removeListener(any()),
+      ).thenReturn(null);
 
       // Create manager with constructor dependency injection (ultrathink approach)
       manager = RecipeCollaborativeManager(
@@ -222,31 +235,35 @@ void main() {
       });
 
       test(
-          'should throw exception when enabling collaborative mode without user',
-          () async {
-        // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        mockPermissionService.reset();
+        'should throw exception when enabling collaborative mode without user',
+        () async {
+          // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
+          mockPermissionService.reset();
 
-        // Act & Assert
-        await expectLater(
-          manager.enableCollaborativeMode(testRecipe),
-          throwsA(isA<Exception>()),
-        );
-      });
+          // Act & Assert
+          await expectLater(
+            manager.enableCollaborativeMode(testRecipe),
+            throwsA(isA<Exception>()),
+          );
+        },
+      );
 
-      test('should handle Firebase error during collaborative mode enable',
-          () async {
-        // Arrange
-        when(() => mockRepository.createRealtimeRecipe(any()))
-            .thenThrow(Exception('Firebase error'));
+      test(
+        'should handle Firebase error during collaborative mode enable',
+        () async {
+          // Arrange
+          when(
+            () => mockRepository.createRealtimeRecipe(any()),
+          ).thenThrow(Exception('Firebase error'));
 
-        // Act & Assert
-        await expectLater(
-          manager.enableCollaborativeMode(testRecipe),
-          throwsA(isA<Exception>()),
-        );
-        expect(manager.isCollaborative, isFalse);
-      });
+          // Act & Assert
+          await expectLater(
+            manager.enableCollaborativeMode(testRecipe),
+            throwsA(isA<Exception>()),
+          );
+          expect(manager.isCollaborative, isFalse);
+        },
+      );
 
       test('should leave collaborative mode successfully', () async {
         // Arrange
@@ -273,17 +290,20 @@ void main() {
         verifyNever(() => mockRepository.clearUserPresence(any(), any()));
       });
 
-      test('should handle errors during collaborative mode leave gracefully',
-          () async {
-        // Arrange
-        await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.clearUserPresence(any(), any()))
-            .thenThrow(Exception('Firebase error'));
+      test(
+        'should handle errors during collaborative mode leave gracefully',
+        () async {
+          // Arrange
+          await manager.enableCollaborativeMode(testRecipe);
+          when(
+            () => mockRepository.clearUserPresence(any(), any()),
+          ).thenThrow(Exception('Firebase error'));
 
-        // Act & Assert - should not throw
-        await expectLater(manager.leaveCollaborativeMode(), completes);
-        expect(manager.isCollaborative, isFalse);
-      });
+          // Act & Assert - should not throw
+          await expectLater(manager.leaveCollaborativeMode(), completes);
+          expect(manager.isCollaborative, isFalse);
+        },
+      );
 
       test('should reconnect to Firebase successfully', () async {
         // Arrange
@@ -294,8 +314,9 @@ void main() {
 
         // Assert - Should setup listeners again
         // Note: startMonitoring is called during connectivity setup
-        verify(() => mockConnectivityService.startMonitoring())
-            .called(2); // Enable + reconnect
+        verify(
+          () => mockConnectivityService.startMonitoring(),
+        ).called(2); // Enable + reconnect
       });
 
       test('should not reconnect if not in collaborative mode', () async {
@@ -309,8 +330,9 @@ void main() {
       test('should handle reconnection errors gracefully', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.getRealtimeRecipeStream(any()))
-            .thenThrow(Exception('Connection error'));
+        when(
+          () => mockRepository.getRealtimeRecipeStream(any()),
+        ).thenThrow(Exception('Connection error'));
 
         // Act & Assert - should not throw
         await expectLater(manager.reconnectToFirebase(), completes);
@@ -324,7 +346,10 @@ void main() {
 
         // Act
         await manager.inviteUserToCollaboration(
-            testParticipantId, testParticipantName, ResourcePermission.editor);
+          testParticipantId,
+          testParticipantName,
+          ResourcePermission.editor,
+        );
 
         // Assert
         verify(() => mockRepository.updateRealtimeRecipe(any())).called(1);
@@ -333,7 +358,10 @@ void main() {
       test('should not invite user if not in collaborative mode', () async {
         // Act
         await manager.inviteUserToCollaboration(
-            testParticipantId, testParticipantName, ResourcePermission.editor);
+          testParticipantId,
+          testParticipantName,
+          ResourcePermission.editor,
+        );
 
         // Assert
         verifyNever(() => mockRepository.updateRealtimeRecipe(any()));
@@ -342,13 +370,17 @@ void main() {
       test('should handle Firebase error during user invitation', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.updateRealtimeRecipe(any()))
-            .thenThrow(Exception('Firebase error'));
+        when(
+          () => mockRepository.updateRealtimeRecipe(any()),
+        ).thenThrow(Exception('Firebase error'));
 
         // Act & Assert
         await expectLater(
-          manager.inviteUserToCollaboration(testParticipantId,
-              testParticipantName, ResourcePermission.editor),
+          manager.inviteUserToCollaboration(
+            testParticipantId,
+            testParticipantName,
+            ResourcePermission.editor,
+          ),
           throwsA(isA<Exception>()),
         );
       });
@@ -357,14 +389,18 @@ void main() {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
         await manager.inviteUserToCollaboration(
-            testParticipantId, testParticipantName, ResourcePermission.editor);
+          testParticipantId,
+          testParticipantName,
+          ResourcePermission.editor,
+        );
 
         // Act
         await manager.removeUserFromCollaboration(testParticipantId);
 
         // Assert
-        verify(() => mockRepository.updateRealtimeRecipe(any()))
-            .called(2); // Once for invite, once for remove
+        verify(
+          () => mockRepository.updateRealtimeRecipe(any()),
+        ).called(2); // Once for invite, once for remove
       });
 
       test('should not remove user if not in collaborative mode', () async {
@@ -378,8 +414,9 @@ void main() {
       test('should handle Firebase error during user removal', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.updateRealtimeRecipe(any()))
-            .thenThrow(Exception('Firebase error'));
+        when(
+          () => mockRepository.updateRealtimeRecipe(any()),
+        ).thenThrow(Exception('Firebase error'));
 
         // Act & Assert
         await expectLater(
@@ -399,11 +436,16 @@ void main() {
         // emission at subscription), so re-emission won't happen — assert
         // against the synchronous side effect that the invite produced.
         await manager.inviteUserToCollaboration(
-            testParticipantId, testParticipantName, ResourcePermission.editor);
+          testParticipantId,
+          testParticipantName,
+          ResourcePermission.editor,
+        );
 
         expect(manager.realtimeRecipe, isNotNull);
         expect(
-            manager.realtimeRecipe!.participants, contains(testParticipantId));
+          manager.realtimeRecipe!.participants,
+          contains(testParticipantId),
+        );
       });
 
       test('should handle profile loading errors gracefully', () async {
@@ -416,7 +458,10 @@ void main() {
 
         // Act
         await manager.inviteUserToCollaboration(
-            testParticipantId, testParticipantName, ResourcePermission.editor);
+          testParticipantId,
+          testParticipantName,
+          ResourcePermission.editor,
+        );
 
         // Assert - should not crash
         await Future.delayed(const Duration(milliseconds: 100));
@@ -428,8 +473,10 @@ void main() {
       test('should update recipe in Firebase with debouncing', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        final updatedRecipe =
-            RecipeFactory.build(id: testRecipeId, title: 'Updated Recipe');
+        final updatedRecipe = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Updated Recipe',
+        );
 
         // Act
         await manager.updateRecipeInFirebase(updatedRecipe);
@@ -443,8 +490,10 @@ void main() {
 
       test('should not update recipe if not in collaborative mode', () async {
         // Arrange
-        final updatedRecipe =
-            RecipeFactory.build(id: testRecipeId, title: 'Updated Recipe');
+        final updatedRecipe = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Updated Recipe',
+        );
 
         // Act
         await manager.updateRecipeInFirebase(updatedRecipe);
@@ -457,10 +506,13 @@ void main() {
       test('should handle Firebase update errors gracefully', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.updateRealtimeRecipe(any()))
-            .thenThrow(Exception('Firebase error'));
-        final updatedRecipe =
-            RecipeFactory.build(id: testRecipeId, title: 'Updated Recipe');
+        when(
+          () => mockRepository.updateRealtimeRecipe(any()),
+        ).thenThrow(Exception('Firebase error'));
+        final updatedRecipe = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Updated Recipe',
+        );
 
         // Act
         await manager.updateRecipeInFirebase(updatedRecipe);
@@ -469,19 +521,27 @@ void main() {
         // Assert
         expect(manager.isConnectedToFirebase, isFalse);
         // Production uses AppLocale.current.errorNetwork
-        expect(manager.connectionStatusText,
-            equals('Nätverksfel. Kontrollera din internetanslutning.'));
+        expect(
+          manager.connectionStatusText,
+          equals('Nätverksfel. Kontrollera din internetanslutning.'),
+        );
       });
 
       test('should debounce multiple rapid updates', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        final recipe1 =
-            RecipeFactory.build(id: testRecipeId, title: 'Recipe 1');
-        final recipe2 =
-            RecipeFactory.build(id: testRecipeId, title: 'Recipe 2');
-        final recipe3 =
-            RecipeFactory.build(id: testRecipeId, title: 'Recipe 3');
+        final recipe1 = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Recipe 1',
+        );
+        final recipe2 = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Recipe 2',
+        );
+        final recipe3 = RecipeFactory.build(
+          id: testRecipeId,
+          title: 'Recipe 3',
+        );
 
         // Act - Multiple rapid updates
         await manager.updateRecipeInFirebase(recipe1);
@@ -500,13 +560,16 @@ void main() {
         await manager.enableCollaborativeMode(testRecipe);
         final updatedRealtimeRecipe = testRealtimeRecipe.copyWith(
           recipe: RecipeFactory.build(
-              id: testRecipeId, title: 'Firebase Updated Recipe'),
+            id: testRecipeId,
+            title: 'Firebase Updated Recipe',
+          ),
         );
 
         // Act - Simulate Firebase update
         final streamController = StreamController<RealtimeRecipe?>();
-        when(() => mockRepository.getRealtimeRecipeStream(any()))
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockRepository.getRealtimeRecipeStream(any()),
+        ).thenAnswer((_) => streamController.stream);
 
         // Setup listeners again to get the new stream
         await manager.leaveCollaborativeMode();
@@ -517,8 +580,10 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         // Assert
-        expect(manager.realtimeRecipe?.recipe.title,
-            equals('Firebase Updated Recipe'));
+        expect(
+          manager.realtimeRecipe?.recipe.title,
+          equals('Firebase Updated Recipe'),
+        );
 
         streamController.close();
       });
@@ -529,8 +594,9 @@ void main() {
 
         // Act - Simulate stream error
         final streamController = StreamController<RealtimeRecipe?>();
-        when(() => mockRepository.getRealtimeRecipeStream(any()))
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockRepository.getRealtimeRecipeStream(any()),
+        ).thenAnswer((_) => streamController.stream);
 
         await manager.leaveCollaborativeMode();
         await manager.enableCollaborativeMode(testRecipe);
@@ -541,8 +607,10 @@ void main() {
         // Assert
         expect(manager.isConnectedToFirebase, isFalse);
         // Production uses AppLocale.current.errorNetwork
-        expect(manager.connectionStatusText,
-            equals('Nätverksfel. Kontrollera din internetanslutning.'));
+        expect(
+          manager.connectionStatusText,
+          equals('Nätverksfel. Kontrollera din internetanslutning.'),
+        );
 
         streamController.close();
       });
@@ -556,8 +624,9 @@ void main() {
 
         // Act - Simulate participants stream update
         final streamController = StreamController<List<LiveEditor>>();
-        when(() => mockRepository.getParticipantsStream(any()))
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockRepository.getParticipantsStream(any()),
+        ).thenAnswer((_) => streamController.stream);
 
         await manager.leaveCollaborativeMode();
         await manager.enableCollaborativeMode(testRecipe);
@@ -578,8 +647,9 @@ void main() {
 
         // Act - Simulate participants stream error
         final streamController = StreamController<List<LiveEditor>>();
-        when(() => mockRepository.getParticipantsStream(any()))
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockRepository.getParticipantsStream(any()),
+        ).thenAnswer((_) => streamController.stream);
 
         await manager.leaveCollaborativeMode();
         await manager.enableCollaborativeMode(testRecipe);
@@ -622,14 +692,16 @@ void main() {
 
         // Assert - No presence updates should occur
         verifyNever(
-            () => mockRepository.updateUserPresence(any(), any(), any()));
+          () => mockRepository.updateUserPresence(any(), any(), any()),
+        );
       });
 
       test('should handle presence update errors gracefully', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.updateUserPresence(any(), any(), any()))
-            .thenThrow(Exception('Presence error'));
+        when(
+          () => mockRepository.updateUserPresence(any(), any(), any()),
+        ).thenThrow(Exception('Presence error'));
 
         // Act & Assert - should not crash
         await Future.delayed(const Duration(milliseconds: 100));
@@ -644,15 +716,17 @@ void main() {
         await manager.leaveCollaborativeMode();
 
         // Assert
-        verify(() => mockRepository.clearUserPresence(any(), testUserId))
-            .called(1);
+        verify(
+          () => mockRepository.clearUserPresence(any(), testUserId),
+        ).called(1);
       });
 
       test('should handle presence clearing errors gracefully', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.clearUserPresence(any(), any()))
-            .thenThrow(Exception('Clear error'));
+        when(
+          () => mockRepository.clearUserPresence(any(), any()),
+        ).thenThrow(Exception('Clear error'));
 
         // Act & Assert - should not throw
         await expectLater(manager.leaveCollaborativeMode(), completes);
@@ -673,16 +747,18 @@ void main() {
       test('should handle connectivity changes', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockConnectivityService.isConnectedToFirebase)
-            .thenReturn(false);
-        when(() => mockConnectivityService.connectionStatusText)
-            .thenReturn('Frånkopplad');
+        when(
+          () => mockConnectivityService.isConnectedToFirebase,
+        ).thenReturn(false);
+        when(
+          () => mockConnectivityService.connectionStatusText,
+        ).thenReturn('Frånkopplad');
 
         // Capture the connectivity listener
         late VoidCallback connectivityListener;
-        final captured =
-            verify(() => mockConnectivityService.addListener(captureAny()))
-                .captured;
+        final captured = verify(
+          () => mockConnectivityService.addListener(captureAny()),
+        ).captured;
         for (final listener in captured) {
           connectivityListener = listener;
         }
@@ -711,27 +787,40 @@ void main() {
       test('should handle null realtime recipe gracefully', () {
         // Act & Assert - All methods should handle null realtime recipe
         expect(
-            () => manager.updateRecipeInFirebase(testRecipe), returnsNormally);
+          () => manager.updateRecipeInFirebase(testRecipe),
+          returnsNormally,
+        );
         expect(
-            () => manager.inviteUserToCollaboration(
-                'user', 'name', ResourcePermission.editor),
-            returnsNormally);
+          () => manager.inviteUserToCollaboration(
+            'user',
+            'name',
+            ResourcePermission.editor,
+          ),
+          returnsNormally,
+        );
         expect(
-            () => manager.removeUserFromCollaboration('user'), returnsNormally);
+          () => manager.removeUserFromCollaboration('user'),
+          returnsNormally,
+        );
       });
 
       test('should handle repository errors in all operations', () async {
         // Arrange
-        when(() => mockRepository.createRealtimeRecipe(any()))
-            .thenThrow(Exception('Repository error'));
-        when(() => mockRepository.updateRealtimeRecipe(any()))
-            .thenThrow(Exception('Repository error'));
-        when(() => mockRepository.updateUserPresence(any(), any(), any()))
-            .thenThrow(Exception('Repository error'));
+        when(
+          () => mockRepository.createRealtimeRecipe(any()),
+        ).thenThrow(Exception('Repository error'));
+        when(
+          () => mockRepository.updateRealtimeRecipe(any()),
+        ).thenThrow(Exception('Repository error'));
+        when(
+          () => mockRepository.updateUserPresence(any(), any(), any()),
+        ).thenThrow(Exception('Repository error'));
 
         // Act & Assert - All should handle errors gracefully
-        await expectLater(manager.enableCollaborativeMode(testRecipe),
-            throwsA(isA<Exception>()));
+        await expectLater(
+          manager.enableCollaborativeMode(testRecipe),
+          throwsA(isA<Exception>()),
+        );
       });
 
       test('should handle multiple rapid state changes', () async {
@@ -760,16 +849,19 @@ void main() {
         // Assert - dispose() cleans up resources but doesn't reset collaborative state
         // Note: dispose() calls cleanup methods but doesn't call leaveCollaborativeMode()
         // The collaborative flag remains true, but resources are cleaned up
-        expect(manager.isCollaborative,
-            isTrue); // State preserved, resources cleaned
+        expect(
+          manager.isCollaborative,
+          isTrue,
+        ); // State preserved, resources cleaned
       });
 
       test('should handle stream controller disposal correctly', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
         final streamController = StreamController<RealtimeRecipe?>();
-        when(() => mockRepository.getRealtimeRecipeStream(any()))
-            .thenAnswer((_) => streamController.stream);
+        when(
+          () => mockRepository.getRealtimeRecipeStream(any()),
+        ).thenAnswer((_) => streamController.stream);
 
         await manager.leaveCollaborativeMode();
         await manager.enableCollaborativeMode(testRecipe);
@@ -797,8 +889,9 @@ void main() {
         manager.dispose();
 
         // Assert
-        verify(() => mockRepository.clearUserPresence(any(), testUserId))
-            .called(1);
+        verify(
+          () => mockRepository.clearUserPresence(any(), testUserId),
+        ).called(1);
         verify(() => mockConnectivityService.removeListener(any())).called(1);
       });
 
@@ -837,8 +930,9 @@ void main() {
         await Future.delayed(const Duration(seconds: 1));
 
         // Assert - Presence cleanup was called, initial presence may or may not be called due to timer
-        verify(() => mockRepository.clearUserPresence(any(), any()))
-            .called(1); // Cleanup called
+        verify(
+          () => mockRepository.clearUserPresence(any(), any()),
+        ).called(1); // Cleanup called
 
         // Note: updateUserPresence might be called 0 or 1 times depending on timer timing
         // The important thing is that timers are cleaned up and no calls happen after disposal
@@ -847,8 +941,9 @@ void main() {
       test('should handle async disposal cleanup errors gracefully', () async {
         // Arrange
         await manager.enableCollaborativeMode(testRecipe);
-        when(() => mockRepository.clearUserPresence(any(), any()))
-            .thenThrow(Exception('Cleanup error'));
+        when(
+          () => mockRepository.clearUserPresence(any(), any()),
+        ).thenThrow(Exception('Cleanup error'));
 
         // Act & Assert - should not throw
         expect(() => manager.dispose(), returnsNormally);

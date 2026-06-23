@@ -137,12 +137,14 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   late final UserService? _userService = ServiceLocator.tryGet<UserService>();
 
   UnifiedShoppingViewModel({ConnectivityMonitoringService? connectivity})
-      : _connectivity = connectivity ??
-            ServiceLocator.tryGet<ConnectivityMonitoringService>() {
+    : _connectivity =
+          connectivity ??
+          ServiceLocator.tryGet<ConnectivityMonitoringService>() {
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
-    _shoppingServiceSubscription =
-        _shoppingService.stateStream.listen((_) => _onServiceUpdate());
+    _shoppingServiceSubscription = _shoppingService.stateStream.listen(
+      (_) => _onServiceUpdate(),
+    );
     // Rebuild the view (and thus the offline banner) whenever connectivity flips.
     _connectivity?.addListener(_onConnectivityChanged);
   }
@@ -266,7 +268,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   /// Adds bulk items to specific shopping list using batch operations
   Future<bool> addItemsToList(
-      String listId, List<UnifiedShoppingItem> items) async {
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
     await setActiveList(listId);
     return await _shoppingService.addItemsBatch(items);
   }
@@ -287,7 +291,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
     // Permission check before modifying list
     AppLogger.info(
-        'Starting addItem for "${name.trim()}" to list: ${activeList?.name}');
+      'Starting addItem for "${name.trim()}" to list: ${activeList?.name}',
+    );
 
     if (!canEditActiveList) {
       AppLogger.error('PERMISSION DENIED - User cannot edit active list');
@@ -376,8 +381,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       // preference, so an unconditional call here is correct (and a no-op when
       // un-checking or when the preference is off).
       if (wasBought != null) {
-        final toggled =
-            activeList!.items.where((i) => i.id == itemId).firstOrNull;
+        final toggled = activeList!.items
+            .where((i) => i.id == itemId)
+            .firstOrNull;
         final userId = currentUserId;
         if (toggled != null && userId != null) {
           unawaited(
@@ -514,7 +520,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   /// Bulk add items from recipe ingredients
   Future<bool> addItemsFromRecipe(
-      List<Map<String, dynamic>> ingredientData) async {
+    List<Map<String, dynamic>> ingredientData,
+  ) async {
     return await executeAsync(() async {
       return _itemOpsManager.addItemsFromRecipe(
         ingredientData,
@@ -528,8 +535,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   /// Effective category order for the active list
   List<String> get categoryOrder {
-    return _shoppingService.categoryPreferences
-        .getEffectiveCategoryOrder(activeList?.id);
+    return _shoppingService.categoryPreferences.getEffectiveCategoryOrder(
+      activeList?.id,
+    );
   }
 
   /// Move an item to a different category (updates item + saves user override)
@@ -543,8 +551,10 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     if (result) {
       final item = items.where((i) => i.id == itemId).firstOrNull;
       if (item != null) {
-        _shoppingService.categoryPreferences
-            .setItemCategory(item.name, newCategory);
+        _shoppingService.categoryPreferences.setItemCategory(
+          item.name,
+          newCategory,
+        );
       }
     }
     return result;
@@ -553,8 +563,10 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Save category order for the active list
   Future<void> saveCategoryOrder(List<String> order) async {
     if (activeList == null) return;
-    await _shoppingService.categoryPreferences
-        .saveListCategoryOrder(activeList!.id, order);
+    await _shoppingService.categoryPreferences.saveListCategoryOrder(
+      activeList!.id,
+      order,
+    );
     notifyListeners();
   }
 
@@ -567,16 +579,18 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Reset active list's category order to user default
   Future<void> resetListCategoryOrder() async {
     if (activeList == null) return;
-    await _shoppingService.categoryPreferences
-        .resetListCategoryOrder(activeList!.id);
+    await _shoppingService.categoryPreferences.resetListCategoryOrder(
+      activeList!.id,
+    );
     notifyListeners();
   }
 
   /// Load list-specific category order (call when switching lists)
   Future<void> loadCategoryOrderForActiveList() async {
     if (activeList == null) return;
-    await _shoppingService.categoryPreferences
-        .loadListCategoryOrder(activeList!.id);
+    await _shoppingService.categoryPreferences.loadListCategoryOrder(
+      activeList!.id,
+    );
     notifyListeners();
   }
 
@@ -595,7 +609,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) {
       AppLogger.warning(
-          'canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId');
+        'canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId',
+      );
       return false;
     }
 
@@ -603,7 +618,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     final canEdit = permissionService.canEditShoppingList(activeList!.id);
 
     AppLogger.info(
-        'Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit');
+      'Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit',
+    );
 
     return canEdit;
   }
@@ -612,8 +628,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
 
-    return ServiceLocator.get<PermissionService>()
-        .canManageShoppingList(activeList!.id);
+    return ServiceLocator.get<PermissionService>().canManageShoppingList(
+      activeList!.id,
+    );
   }
 
   /// Get members of the active list

@@ -90,7 +90,10 @@ class ConnectionMonitor {
   }
 
   void _processConnectionChange(
-      bool wasOnline, bool isNowOnline, bool isConnected) {
+    bool wasOnline,
+    bool isNowOnline,
+    bool isConnected,
+  ) {
     if (wasOnline != isNowOnline) {
       _lastConnectionChange = clock.now();
 

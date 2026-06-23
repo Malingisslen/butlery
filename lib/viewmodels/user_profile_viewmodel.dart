@@ -42,7 +42,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     this._imagePickerService, {
     ImageUploadService? uploadService,
   }) : _uploadService =
-            uploadService ?? ServiceLocator.get<ImageUploadService>() {
+           uploadService ?? ServiceLocator.get<ImageUploadService>() {
     _loadCurrentProfile();
     _userService.addListener(_onUserServiceChanged);
   }
@@ -125,8 +125,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// so a deliberate "on" is distinguishable from the absent-key default; this
   /// keeps the map readable and avoids surprising re-enables after a toggle off.
   void updateActivityEventType(ActivityEventType type, bool enabled) {
-    final current =
-        Map<String, bool>.from(_editedProfile?.activityFeedEventTypes ?? {});
+    final current = Map<String, bool>.from(
+      _editedProfile?.activityFeedEventTypes ?? {},
+    );
     current[type.name] = enabled;
     _editedProfile = _editedProfile?.copyWith(activityFeedEventTypes: current);
     notifyListeners();
@@ -243,8 +244,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     // Check if display name is available
     if (_hasDisplayNameChanged()) {
-      final isAvailable =
-          await _userService.isDisplayNameAvailable(displayName);
+      final isAvailable = await _userService.isDisplayNameAvailable(
+        displayName,
+      );
       if (!isAvailable) {
         _displayNameError = AppLocale.current.errorNameAlreadyTaken;
         notifyListeners();
@@ -276,12 +278,15 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             _originalProfile = updatedProfile;
             _editedProfile = updatedProfile;
             AppLogger.success(
-                'Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}');
+              'Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}',
+            );
             notifyListeners();
             return true;
           } else {
-            throw Exception(_userService.error ??
-                AppLocale.current.errorCouldNotUpdate('profil'));
+            throw Exception(
+              _userService.error ??
+                  AppLocale.current.errorCouldNotUpdate('profil'),
+            );
           }
         }, operationName: 'Save profile') ??
         false;
@@ -300,8 +305,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     return await safeExecute(
           () async {
-            final isAvailable =
-                await _userService.isDisplayNameAvailable(displayName);
+            final isAvailable = await _userService.isDisplayNameAvailable(
+              displayName,
+            );
 
             if (!isAvailable) {
               _displayNameError = AppLocale.current.errorNameAlreadyTaken;
@@ -359,8 +365,10 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _displayNameError = AppLocale.current.errorDisplayNameMinLength;
     } else if (name.length > 50) {
       _displayNameError = AppLocale.current.errorDescriptionTooLong;
-    } else if (!RegExp(r'^[\p{L}\p{N}\s\-_.]+$', unicode: true)
-        .hasMatch(name)) {
+    } else if (!RegExp(
+      r'^[\p{L}\p{N}\s\-_.]+$',
+      unicode: true,
+    ).hasMatch(name)) {
       _displayNameError = AppLocale.current.errorFillRequiredFieldsCorrectly;
     } else {
       _displayNameError = null;

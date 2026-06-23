@@ -79,8 +79,11 @@ Future<void> main() async {
     runApp(const ButleryApp());
   } catch (e, stackTrace) {
     // Show error app with E2E-specific message
-    runApp(_E2EStagingErrorApp(
-        'E2E Staging initialization failed: $e\n\nStack trace:\n$stackTrace'));
+    runApp(
+      _E2EStagingErrorApp(
+        'E2E Staging initialization failed: $e\n\nStack trace:\n$stackTrace',
+      ),
+    );
   }
 }
 
@@ -151,81 +154,85 @@ class _E2EStagingErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'E2E Staging Error',
-      home: Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        final butlery =
-            Theme.of(context).extension<ButleryColors>() ?? ButleryColors.light;
-        return Scaffold(
-          backgroundColor: butlery.infoContainer,
-          appBar: AppBar(
-            title: const Text('E2E Staging Error'),
-            backgroundColor: butlery.info,
-            foregroundColor: cs.surfaceContainerHighest,
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.cloud_off_outlined,
-                  size: AppDimensions.iconSizeXxl,
-                  color: butlery.info,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'E2E Staging Initialization Failed',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+      home: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          final butlery =
+              Theme.of(context).extension<ButleryColors>() ??
+              ButleryColors.light;
+          return Scaffold(
+            backgroundColor: butlery.infoContainer,
+            appBar: AppBar(
+              title: const Text('E2E Staging Error'),
+              backgroundColor: butlery.info,
+              foregroundColor: cs.surfaceContainerHighest,
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.cloud_off_outlined,
+                    size: AppDimensions.iconSizeXxl,
                     color: butlery.info,
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'The E2E Staging application failed to start. This likely indicates:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  '• Missing staging Firebase project configuration\n'
-                  '• Invalid staging environment variables\n'
-                  '• Network connectivity issues\n'
-                  '• Firebase App Check configuration problems',
-                  style: TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Check your .env.staging file and Firebase project settings.',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppDimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: cs.surface,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusM),
-                        border: Border.all(color: cs.outlineVariant),
-                      ),
-                      child: Text(
-                        message,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
+                  const SizedBox(height: 16),
+                  Text(
+                    'E2E Staging Initialization Failed',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: butlery.info,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'The E2E Staging application failed to start. This likely indicates:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    '• Missing staging Firebase project configuration\n'
+                    '• Invalid staging environment variables\n'
+                    '• Network connectivity issues\n'
+                    '• Firebase App Check configuration problems',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Check your .env.staging file and Firebase project settings.',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusM,
+                          ),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: Text(
+                          message,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 }

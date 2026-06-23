@@ -101,14 +101,15 @@ void main() {
 
         // Assert
         expect(
-            stats['distribution'],
-            equals({
-              1: 1,
-              2: 0,
-              3: 1,
-              4: 1,
-              5: 2,
-            }));
+          stats['distribution'],
+          equals({
+            1: 1,
+            2: 0,
+            3: 1,
+            4: 1,
+            5: 2,
+          }),
+        );
       });
 
       test('should extract reviews from ratings', () {
@@ -142,16 +143,20 @@ void main() {
         final stats = RatingStatistics.calculateRatingStatistics(ratings);
 
         // Assert
-        expect(stats['review_percentage'],
-            equals(50)); // 2 reviews out of 4 ratings
+        expect(
+          stats['review_percentage'],
+          equals(50),
+        ); // 2 reviews out of 4 ratings
       });
 
       test('should sort reviews by date (most recent first)', () {
         // Arrange
-        final oldDate =
-            Timestamp.fromDate(DateTime.now().subtract(Duration(days: 7)));
-        final midDate =
-            Timestamp.fromDate(DateTime.now().subtract(Duration(days: 3)));
+        final oldDate = Timestamp.fromDate(
+          DateTime.now().subtract(Duration(days: 7)),
+        );
+        final midDate = Timestamp.fromDate(
+          DateTime.now().subtract(Duration(days: 3)),
+        );
         final newDate = Timestamp.now();
 
         final ratings = [
@@ -173,13 +178,15 @@ void main() {
       test('should get recent reviews (max 5)', () {
         // Arrange
         final ratings = List.generate(
-            10,
-            (i) => {
-                  'rating': 4.0,
-                  'review': 'Review $i',
-                  'createdAt': Timestamp.fromDate(
-                      DateTime.now().subtract(Duration(days: 10 - i))),
-                });
+          10,
+          (i) => {
+            'rating': 4.0,
+            'review': 'Review $i',
+            'createdAt': Timestamp.fromDate(
+              DateTime.now().subtract(Duration(days: 10 - i)),
+            ),
+          },
+        );
 
         // Act
         final stats = RatingStatistics.calculateRatingStatistics(ratings);
@@ -203,7 +210,9 @@ void main() {
 
         // Assert
         expect(
-            stats['average'], equals(4.3)); // (4.3+4.7+3.8)/3 = 4.26... → 4.3
+          stats['average'],
+          equals(4.3),
+        ); // (4.3+4.7+3.8)/3 = 4.26... → 4.3
       });
     });
 
@@ -263,31 +272,31 @@ void main() {
             .collection('recipe_social_stats')
             .doc('recipe_1')
             .set({
-          'recipeId': 'recipe_1',
-          'averageRating': 4.8,
-          'ratingCount': 50,
-          'lastUpdated': Timestamp.now(),
-        });
+              'recipeId': 'recipe_1',
+              'averageRating': 4.8,
+              'ratingCount': 50,
+              'lastUpdated': Timestamp.now(),
+            });
 
         await fakeFirestore
             .collection('recipe_social_stats')
             .doc('recipe_2')
             .set({
-          'recipeId': 'recipe_2',
-          'averageRating': 4.2,
-          'ratingCount': 30,
-          'lastUpdated': Timestamp.now(),
-        });
+              'recipeId': 'recipe_2',
+              'averageRating': 4.2,
+              'ratingCount': 30,
+              'lastUpdated': Timestamp.now(),
+            });
 
         await fakeFirestore
             .collection('recipe_social_stats')
             .doc('recipe_3')
             .set({
-          'recipeId': 'recipe_3',
-          'averageRating': 4.9,
-          'ratingCount': 10,
-          'lastUpdated': Timestamp.now(),
-        });
+              'recipeId': 'recipe_3',
+              'averageRating': 4.9,
+              'ratingCount': 10,
+              'lastUpdated': Timestamp.now(),
+            });
 
         final recipe1 = RecipeBuilder().withId('recipe_1').build();
         final recipe2 = RecipeBuilder().withId('recipe_2').build();
@@ -303,10 +312,14 @@ void main() {
 
         // Assert
         expect(topRated.length, equals(2));
-        expect((topRated[0]['recipe'] as Recipe).id,
-            equals('recipe_3')); // Highest average
-        expect((topRated[1]['recipe'] as Recipe).id,
-            equals('recipe_1')); // Second highest
+        expect(
+          (topRated[0]['recipe'] as Recipe).id,
+          equals('recipe_3'),
+        ); // Highest average
+        expect(
+          (topRated[1]['recipe'] as Recipe).id,
+          equals('recipe_1'),
+        ); // Second highest
       });
 
       test('should filter by minimum rating count', () async {
@@ -315,21 +328,21 @@ void main() {
             .collection('recipe_social_stats')
             .doc('recipe_1')
             .set({
-          'recipeId': 'recipe_1',
-          'averageRating': 5.0,
-          'ratingCount': 2, // Below minimum
-          'lastUpdated': Timestamp.now(),
-        });
+              'recipeId': 'recipe_1',
+              'averageRating': 5.0,
+              'ratingCount': 2, // Below minimum
+              'lastUpdated': Timestamp.now(),
+            });
 
         await fakeFirestore
             .collection('recipe_social_stats')
             .doc('recipe_2')
             .set({
-          'recipeId': 'recipe_2',
-          'averageRating': 4.5, // Above default minRating of 4.0
-          'ratingCount': 20, // Above minimum
-          'lastUpdated': Timestamp.now(),
-        });
+              'recipeId': 'recipe_2',
+              'averageRating': 4.5, // Above default minRating of 4.0
+              'ratingCount': 20, // Above minimum
+              'lastUpdated': Timestamp.now(),
+            });
 
         final recipe1 = RecipeBuilder().withId('recipe_1').build();
         final recipe2 = RecipeBuilder().withId('recipe_2').build();
@@ -356,11 +369,11 @@ void main() {
               .collection('recipe_social_stats')
               .doc('recipe_$i')
               .set({
-            'recipeId': 'recipe_$i',
-            'averageRating': 4.0 + (i * 0.1),
-            'ratingCount': 15,
-            'lastUpdated': Timestamp.now(),
-          });
+                'recipeId': 'recipe_$i',
+                'averageRating': 4.0 + (i * 0.1),
+                'ratingCount': 15,
+                'lastUpdated': Timestamp.now(),
+              });
           recipes.add(RecipeBuilder().withId('recipe_$i').build());
         }
 
@@ -399,8 +412,9 @@ void main() {
             'recipeId': 'recipe_1',
             'userId': 'user_$i',
             'rating': 3.0,
-            'createdAt':
-                Timestamp.fromDate(now.subtract(Duration(days: 30 + i))),
+            'createdAt': Timestamp.fromDate(
+              now.subtract(Duration(days: 30 + i)),
+            ),
           });
         }
 
@@ -431,8 +445,9 @@ void main() {
       test('should handle Firestore errors gracefully', () async {
         // Arrange - Create a mock Firestore that throws errors
         final mockFirestore = _ThrowingFirestore();
-        when(() => mockFirestore.collection(any()))
-            .thenThrow(Exception('Firestore error'));
+        when(
+          () => mockFirestore.collection(any()),
+        ).thenThrow(Exception('Firestore error'));
 
         // Act
         final stats = await RatingStatistics.getRecipeStatistics(

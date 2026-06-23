@@ -73,9 +73,9 @@ class ComplianceExportManager {
   ComplianceExportManager({
     FirebaseDataExportRepository? dataExportRepository,
     FirebaseFunctions? functions,
-  })  : _exportRepo = dataExportRepository,
-        _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
+  }) : _exportRepo = dataExportRepository,
+       _functions =
+           functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
@@ -102,11 +102,13 @@ class ComplianceExportManager {
       while (true) {
         if (pages >= _maxAuditLogPages) {
           app_logger.AppLogger.warning(
-              '[$_logTag] Audit-log export hit page cap; further entries omitted');
+            '[$_logTag] Audit-log export hit page cap; further entries omitted',
+          );
           break;
         }
         final result = await callable.call<Map<dynamic, dynamic>>(
-            cursor != null ? <String, dynamic>{'before': cursor} : null);
+          cursor != null ? <String, dynamic>{'before': cursor} : null,
+        );
         final data = Map<String, dynamic>.from(result.data);
         final rows =
             (data['rows'] as List?)?.cast<Map<dynamic, dynamic>>() ?? const [];
@@ -136,10 +138,12 @@ class ComplianceExportManager {
         'gdpr_article':
             'Article 15 - Right of Access; Article 30 - Records of Processing',
         'summary': {
-          'total_granted':
-              auditLogs.where((log) => log['granted'] == true).length,
-          'total_denied':
-              auditLogs.where((log) => log['granted'] == false).length,
+          'total_granted': auditLogs
+              .where((log) => log['granted'] == true)
+              .length,
+          'total_denied': auditLogs
+              .where((log) => log['granted'] == false)
+              .length,
           'operations': _summarizeOperations(auditLogs),
           'resource_types': _summarizeResourceTypes(auditLogs),
         },
@@ -147,10 +151,11 @@ class ComplianceExportManager {
     } on FirebaseFunctionsException catch (e, st) {
       // BUT-842: AppLogger.error already routes to Crashlytics as non-fatal.
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export audit logs (code=${e.code})',
-          e,
-          _logTag,
-          st);
+        '[$_logTag] Failed to export audit logs (code=${e.code})',
+        e,
+        _logTag,
+        st,
+      );
       if (_transientFunctionsErrorCodes.contains(e.code)) {
         // Transient — let the rest of the bundle ship; user can retry.
         return {
@@ -169,7 +174,11 @@ class ComplianceExportManager {
       );
     } catch (e, st) {
       app_logger.AppLogger.error(
-          '[$_logTag] Unexpected error exporting audit logs', e, _logTag, st);
+        '[$_logTag] Unexpected error exporting audit logs',
+        e,
+        _logTag,
+        st,
+      );
       throw ComplianceExportException(
         'Audit-log export failed: $e',
         cause: e,
@@ -189,7 +198,8 @@ class ComplianceExportManager {
 
   /// Summarize resource types from audit logs
   Map<String, int> _summarizeResourceTypes(
-      List<Map<String, dynamic>> auditLogs) {
+    List<Map<String, dynamic>> auditLogs,
+  ) {
     final resourceCounts = <String, int>{};
     for (final log in auditLogs) {
       final resourceType = log['resource_type'] as String;
@@ -202,8 +212,9 @@ class ComplianceExportManager {
   Future<Map<String, dynamic>> exportConsentRecords(String userId) async {
     try {
       final consentRecords = <Map<String, dynamic>>[];
-      final consentLimit =
-          ExportPaginationHelper.getLimitForType('consent_records');
+      final consentLimit = ExportPaginationHelper.getLimitForType(
+        'consent_records',
+      );
 
       final history = await _exports.exportConsentHistory(
         userId,
@@ -240,7 +251,11 @@ class ComplianceExportManager {
       // compliance surface and an "error: …" stub in the bundle is worse
       // than a clean abort + retry.
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export consent records', e, _logTag, st);
+        '[$_logTag] Failed to export consent records',
+        e,
+        _logTag,
+        st,
+      );
       throw ComplianceExportException(
         'Consent-record export failed: $e',
         cause: e,

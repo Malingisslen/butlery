@@ -40,13 +40,16 @@ class _TypingIndicatorState extends State<TypingIndicator>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation =
+        Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     if (widget.typingUserNames.isNotEmpty) {
       _animationController.forward();
@@ -100,8 +103,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color:
-                    cs.secondary.withValues(alpha: AppDimensions.opacityLight),
+                color: cs.secondary.withValues(
+                  alpha: AppDimensions.opacityLight,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -123,8 +127,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
               ),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 boxShadow: AppShadows.subtle,
               ),
               child: Row(
@@ -180,8 +185,10 @@ class _TypingIndicatorState extends State<TypingIndicator>
       animation: _animationController,
       builder: (context, child) {
         // Create a staggered animation for each dot
-        final progress =
-            (_animationController.value * 3 - index).clamp(0.0, 1.0);
+        final progress = (_animationController.value * 3 - index).clamp(
+          0.0,
+          1.0,
+        );
         final opacity = (Curves.easeInOut.transform(progress) * 0.8 + 0.2);
 
         return Container(

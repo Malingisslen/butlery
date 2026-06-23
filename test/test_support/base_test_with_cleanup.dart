@@ -196,12 +196,17 @@ void testWithCleanup(
   bool skip = false,
   Timeout? timeout,
 }) {
-  test(description, () async {
-    await BaseTestWithCleanup.setupTestWithCleanup();
-    try {
-      await body();
-    } finally {
-      await BaseTestWithCleanup.tearDownTestWithCleanup();
-    }
-  }, skip: skip, timeout: timeout);
+  test(
+    description,
+    () async {
+      await BaseTestWithCleanup.setupTestWithCleanup();
+      try {
+        await body();
+      } finally {
+        await BaseTestWithCleanup.tearDownTestWithCleanup();
+      }
+    },
+    skip: skip,
+    timeout: timeout,
+  );
 }

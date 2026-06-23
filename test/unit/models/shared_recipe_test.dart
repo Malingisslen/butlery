@@ -197,8 +197,10 @@ void main() {
 
     test('non-owner triggerCopyOnWrite flips flags + sets id + count=1', () {
       final s = _shared();
-      final after =
-          s.triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 'snap-1');
+      final after = s.triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 'snap-1',
+      );
       expect(after.copyOnWriteTriggered, isTrue);
       expect(after.isOriginalReference, isFalse);
       expect(after.originalOwnerStaticCopyId, 'snap-1');
@@ -207,16 +209,22 @@ void main() {
 
     test('owner triggerCopyOnWrite is a no-op', () {
       final s = _shared();
-      final same =
-          s.triggerCopyOnWrite(editingUserId: 'alice', staticCopyId: 's');
+      final same = s.triggerCopyOnWrite(
+        editingUserId: 'alice',
+        staticCopyId: 's',
+      );
       expect(identical(same, s), isTrue);
     });
 
     test('already-triggered triggerCopyOnWrite is idempotent', () {
-      final s = _shared()
-          .triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 's1');
-      final twice =
-          s.triggerCopyOnWrite(editingUserId: 'carol', staticCopyId: 's2');
+      final s = _shared().triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 's1',
+      );
+      final twice = s.triggerCopyOnWrite(
+        editingUserId: 'carol',
+        staticCopyId: 's2',
+      );
       expect(identical(twice, s), isTrue);
     });
 
@@ -224,10 +232,14 @@ void main() {
       final s = _shared();
       expect(identical(s.addActiveCollaborator('bob'), s), isTrue);
 
-      final triggered =
-          s.triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 's');
+      final triggered = s.triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 's',
+      );
       expect(
-          triggered.addActiveCollaborator('carol').activeCollaboratorCount, 2);
+        triggered.addActiveCollaborator('carol').activeCollaboratorCount,
+        2,
+      );
     });
   });
 
@@ -237,21 +249,27 @@ void main() {
     });
 
     test('editor when allowCollaboration=true', () {
-      expect(_shared(allowCollaboration: true).permission,
-          ResourcePermission.editor);
+      expect(
+        _shared(allowCollaboration: true).permission,
+        ResourcePermission.editor,
+      );
     });
   });
 
   group('getEditModeFor', () {
     test('owner gets EditMode.owner regardless of other flags', () {
       expect(_shared().getEditModeFor('alice'), EditMode.owner);
-      expect(_shared(allowCollaboration: true).getEditModeFor('alice'),
-          EditMode.owner);
+      expect(
+        _shared(allowCollaboration: true).getEditModeFor('alice'),
+        EditMode.owner,
+      );
     });
 
     test('non-owner with collaboration → collaborative', () {
-      expect(_shared(allowCollaboration: true).getEditModeFor('bob'),
-          EditMode.collaborative);
+      expect(
+        _shared(allowCollaboration: true).getEditModeFor('bob'),
+        EditMode.collaborative,
+      );
     });
 
     test('non-owner without collaboration → readOnlyWithFork', () {
@@ -260,8 +278,10 @@ void main() {
 
     test('after CoW trigger + active collaborators → collaborative', () {
       final s = _shared(); // allowCollaboration=false
-      final triggered =
-          s.triggerCopyOnWrite(editingUserId: 'bob', staticCopyId: 's');
+      final triggered = s.triggerCopyOnWrite(
+        editingUserId: 'bob',
+        staticCopyId: 's',
+      );
       expect(triggered.getEditModeFor('bob'), EditMode.collaborative);
     });
   });
@@ -283,17 +303,19 @@ void main() {
       expect(_shared().createImportRecipe(newOwnerId: 'bob'), isNull);
     });
 
-    test('createImportRecipe sets sourceUrl attribution + clears personal tags',
-        () {
-      final original = _recipe();
-      final s = _shared(snapshot: original);
-      final imported = s.createImportRecipe(newOwnerId: 'bob')!;
-      // Attribution writes into sourceUrl
-      expect(imported.sourceUrl, isNotNull);
-      expect(imported.sourceUrl, contains('Alice'));
-      // personalTagIds wiped (UUIDs meaningless to recipient)
-      expect(imported.personalTagIds, isEmpty);
-    });
+    test(
+      'createImportRecipe sets sourceUrl attribution + clears personal tags',
+      () {
+        final original = _recipe();
+        final s = _shared(snapshot: original);
+        final imported = s.createImportRecipe(newOwnerId: 'bob')!;
+        // Attribution writes into sourceUrl
+        expect(imported.sourceUrl, isNotNull);
+        expect(imported.sourceUrl, contains('Alice'));
+        // personalTagIds wiped (UUIDs meaningless to recipient)
+        expect(imported.personalTagIds, isEmpty);
+      },
+    );
   });
 
   group('copyWith', () {
@@ -319,8 +341,10 @@ void main() {
     });
 
     test('allowCollaboration override sticks', () {
-      expect(_shared().copyWith(allowCollaboration: true).allowCollaboration,
-          isTrue);
+      expect(
+        _shared().copyWith(allowCollaboration: true).allowCollaboration,
+        isTrue,
+      );
     });
   });
 

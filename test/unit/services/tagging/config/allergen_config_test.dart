@@ -104,8 +104,11 @@ void main() {
         ];
 
         for (final entry in entries) {
-          expect(entry.triggerProperties, ['prop1', 'prop2'],
-              reason: 'Failed for: ${entry.triggerProperty}');
+          expect(
+            entry.triggerProperties,
+            ['prop1', 'prop2'],
+            reason: 'Failed for: ${entry.triggerProperty}',
+          );
           expect(entry.isCombined, isTrue);
         }
       });
@@ -145,8 +148,11 @@ void main() {
     group('freeTag', () {
       test('EU allergens have free tags', () {
         for (final allergen in AllergenConfig.euAllergens) {
-          expect(allergen.freeTag, isNotNull,
-              reason: 'EU allergen ${allergen.key} should have freeTag');
+          expect(
+            allergen.freeTag,
+            isNotNull,
+            reason: 'EU allergen ${allergen.key} should have freeTag',
+          );
         }
       });
 
@@ -156,12 +162,21 @@ void main() {
         final flask = AllergenConfig.getByKey('fläsk')!;
         final notkott = AllergenConfig.getByKey('nötkött')!;
 
-        expect(kott.freeTag, equals('köttfri'),
-            reason: 'kött should have köttfri tag for consistency');
-        expect(flask.freeTag, equals('fläskfri'),
-            reason: 'fläsk should have fläskfri tag');
-        expect(notkott.freeTag, equals('nötkötsfri'),
-            reason: 'nötkött should have nötkötsfri tag');
+        expect(
+          kott.freeTag,
+          equals('köttfri'),
+          reason: 'kött should have köttfri tag for consistency',
+        );
+        expect(
+          flask.freeTag,
+          equals('fläskfri'),
+          reason: 'fläsk should have fläskfri tag',
+        );
+        expect(
+          notkott.freeTag,
+          equals('nötkötsfri'),
+          reason: 'nötkött should have nötkötsfri tag',
+        );
       });
     });
   });

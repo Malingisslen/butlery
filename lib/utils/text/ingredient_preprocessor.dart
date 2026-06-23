@@ -178,14 +178,15 @@ class IngredientPreprocessor {
 
   /// Normalize ranges to maximum value ("3-5" → "5"), preserving min/max.
   static ({String text, bool modified, double? min, double? max})
-      _normalizeRanges(String text) {
+  _normalizeRanges(String text) {
     var modified = false;
     var result = text;
     double? rangeMin;
     double? rangeMax;
 
     final pattern1 = RegExp(
-        r'(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)\s*-\s*(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)');
+      r'(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)\s*-\s*(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)',
+    );
 
     if (pattern1.hasMatch(result)) {
       result = result.replaceAllMapped(pattern1, (match) {
@@ -269,7 +270,7 @@ class IngredientPreprocessor {
   /// Extracts first non-substitution parenthetical as preparation hint,
   /// and detects Swedish substitution phrases as substitute ingredients.
   static ({String text, bool modified, String? hint, List<String> substitutes})
-      _removeParentheses(String text) {
+  _removeParentheses(String text) {
     final pattern = RegExp(r'\s*\(([^)]*)\)\s*');
     String? hint;
     final substitutes = <String>[];

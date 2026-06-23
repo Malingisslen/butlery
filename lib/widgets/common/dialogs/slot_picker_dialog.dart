@@ -165,8 +165,9 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadius2,
+                  ),
                 ),
               ),
               _buildHeader(cs),
@@ -281,8 +282,10 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     final isSelected =
         widget.multiSelect && _selected.contains((day: day, slot: slot));
     return Semantics(
-      label:
-          context.l10n.a11ySlotPickerCell(day.displayLabel, slot.displayLabel),
+      label: context.l10n.a11ySlotPickerCell(
+        day.displayLabel,
+        slot.displayLabel,
+      ),
       button: true,
       selected: widget.multiSelect ? isSelected : null,
       child: InkWell(
@@ -294,19 +297,20 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
             // Square per design language.
             borderRadius: BorderRadius.zero,
             border: Border.all(
-              color:
-                  (isSelected || isOccupied) ? cs.primary : cs.outlineVariant,
+              color: (isSelected || isOccupied)
+                  ? cs.primary
+                  : cs.outlineVariant,
               width: isSelected
                   ? 2
                   : isOccupied
-                      ? 1.5
-                      : 1,
+                  ? 1.5
+                  : 1,
             ),
             color: isSelected
                 ? cs.primaryContainer.withValues(alpha: 0.6)
                 : isOccupied
-                    ? cs.primaryContainer.withValues(alpha: 0.3)
-                    : cs.surface,
+                ? cs.primaryContainer.withValues(alpha: 0.3)
+                : cs.surface,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -343,10 +347,12 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                         style: AppTextStyles.labelSmall,
                       )
                     : widget.multiSelect
-                        ? const SizedBox.shrink()
-                        : Icon(Icons.add,
-                            size: AppDimensions.iconSize18,
-                            color: cs.onSurfaceVariant),
+                    ? const SizedBox.shrink()
+                    : Icon(
+                        Icons.add,
+                        size: AppDimensions.iconSize18,
+                        color: cs.onSurfaceVariant,
+                      ),
               ),
             ],
           ),

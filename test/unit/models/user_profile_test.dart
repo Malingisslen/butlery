@@ -111,9 +111,13 @@ void main() {
         );
 
         expect(
-            profile.cookingSkillLevel, equals(CookingSkillLevel.intermediate));
-        expect(profile.cuisineAffinities,
-            equals(['italiensk', 'svensk', 'japansk']));
+          profile.cookingSkillLevel,
+          equals(CookingSkillLevel.intermediate),
+        );
+        expect(
+          profile.cuisineAffinities,
+          equals(['italiensk', 'svensk', 'japansk']),
+        );
         expect(profile.bio, equals('Matlagare med passion'));
       });
 
@@ -188,7 +192,9 @@ void main() {
           bio: 'Test bio',
         );
         expect(
-            withFields.cookingSkillLevel, equals(CookingSkillLevel.beginner));
+          withFields.cookingSkillLevel,
+          equals(CookingSkillLevel.beginner),
+        );
 
         // Set back to null
         final cleared = withFields.copyWith(
@@ -225,7 +231,9 @@ void main() {
         // Assert
         expect(testProfile.matchesSearchTerm('Anna'), isTrue);
         expect(
-            testProfile.matchesSearchTerm('anna'), isTrue); // Case insensitive
+          testProfile.matchesSearchTerm('anna'),
+          isTrue,
+        ); // Case insensitive
         expect(testProfile.matchesSearchTerm('Andersson'), isTrue);
         expect(testProfile.matchesSearchTerm('John'), isFalse);
       });
@@ -264,8 +272,9 @@ void main() {
         expect(singleLetter.initials, equals('A'));
 
         // Three words (uses first two)
-        final threeName =
-            testProfile.copyWith(displayName: 'Anna Maria Andersson');
+        final threeName = testProfile.copyWith(
+          displayName: 'Anna Maria Andersson',
+        );
         expect(threeName.initials, equals('AM'));
 
         // Empty name
@@ -425,14 +434,18 @@ void main() {
         expect(json['isSearchable'], equals(testProfile.isSearchable));
         expect(json['allowEmailSearch'], equals(testProfile.allowEmailSearch));
         expect(
-            json['publicRecipeCount'], equals(testProfile.publicRecipeCount));
+          json['publicRecipeCount'],
+          equals(testProfile.publicRecipeCount),
+        );
         expect(json['friendsCount'], equals(testProfile.friendsCount));
         expect(json['joinedAt'], isA<String>());
         expect(json['lastActiveAt'], isA<String>());
         expect(json['fcmToken'], equals(testProfile.fcmToken));
         expect(json['fcmTokenUpdatedAt'], isA<String>());
-        expect(json['notificationsEnabled'],
-            equals(testProfile.notificationsEnabled));
+        expect(
+          json['notificationsEnabled'],
+          equals(testProfile.notificationsEnabled),
+        );
       });
 
       test('should deserialize from JSON correctly', () {
@@ -447,11 +460,15 @@ void main() {
         expect(profile.isSearchable, equals(validJson['isSearchable']));
         expect(profile.allowEmailSearch, equals(validJson['allowEmailSearch']));
         expect(
-            profile.publicRecipeCount, equals(validJson['publicRecipeCount']));
+          profile.publicRecipeCount,
+          equals(validJson['publicRecipeCount']),
+        );
         expect(profile.friendsCount, equals(validJson['friendsCount']));
         expect(profile.fcmToken, equals(validJson['fcmToken']));
-        expect(profile.notificationsEnabled,
-            equals(validJson['notificationsEnabled']));
+        expect(
+          profile.notificationsEnabled,
+          equals(validJson['notificationsEnabled']),
+        );
       });
 
       test('should round-trip JSON serialization', () {
@@ -506,8 +523,10 @@ void main() {
       test('round-trips through JSON for both values', () {
         for (final value in [true, false]) {
           final profile = testProfile.copyWith(showOnlineStatus: value);
-          expect(UserProfile.fromJson(profile.toJson()).showOnlineStatus,
-              equals(value));
+          expect(
+            UserProfile.fromJson(profile.toJson()).showOnlineStatus,
+            equals(value),
+          );
         }
       });
 
@@ -523,10 +542,11 @@ void main() {
 
       test('toFirestore includes the flag', () {
         expect(
-            testProfile
-                .copyWith(showOnlineStatus: false)
-                .toFirestore()['showOnlineStatus'],
-            isFalse);
+          testProfile
+              .copyWith(showOnlineStatus: false)
+              .toFirestore()['showOnlineStatus'],
+          isFalse,
+        );
       });
 
       test('backward-compat: absent key deserializes to true', () {
@@ -551,15 +571,19 @@ void main() {
         final updated = testProfile.copyWith(shareActivityToFeed: false);
         expect(updated.shareActivityToFeed, isFalse);
         expect(updated.uid, equals(testProfile.uid)); // unchanged
-        expect(updated.showOnlineStatus,
-            equals(testProfile.showOnlineStatus)); // unchanged
+        expect(
+          updated.showOnlineStatus,
+          equals(testProfile.showOnlineStatus),
+        ); // unchanged
       });
 
       test('round-trips through JSON for both values', () {
         for (final value in [true, false]) {
           final profile = testProfile.copyWith(shareActivityToFeed: value);
-          expect(UserProfile.fromJson(profile.toJson()).shareActivityToFeed,
-              equals(value));
+          expect(
+            UserProfile.fromJson(profile.toJson()).shareActivityToFeed,
+            equals(value),
+          );
         }
       });
 
@@ -569,8 +593,10 @@ void main() {
         for (final value in [true, false]) {
           final profile = testProfile.copyWith(shareActivityToFeed: value);
           expect(
-            UserProfile.fromMap('user_123', profile.toFirestore())
-                .shareActivityToFeed,
+            UserProfile.fromMap(
+              'user_123',
+              profile.toFirestore(),
+            ).shareActivityToFeed,
             equals(value),
           );
         }
@@ -598,8 +624,10 @@ void main() {
           'joinedAt': AppTimestamp.fromDateTime(testDate).toFirestore(),
           'lastActiveAt': AppTimestamp.fromDateTime(testDate).toFirestore(),
         };
-        expect(UserProfile.fromMap('u', firestoreData).shareActivityToFeed,
-            isTrue);
+        expect(
+          UserProfile.fromMap('u', firestoreData).shareActivityToFeed,
+          isTrue,
+        );
       });
     });
 
@@ -625,12 +653,14 @@ void main() {
         final profile = testProfile.copyWith(
           activityFeedEventTypes: const {
             'cooked': false,
-            'startedCooking': true
+            'startedCooking': true,
           },
         );
         final decoded = UserProfile.fromJson(profile.toJson());
-        expect(decoded.activityFeedEventTypes,
-            equals({'cooked': false, 'startedCooking': true}));
+        expect(
+          decoded.activityFeedEventTypes,
+          equals({'cooked': false, 'startedCooking': true}),
+        );
       });
 
       test('round-trips the map through the Firestore map', () {
@@ -685,12 +715,13 @@ void main() {
 
       test('round-trips through JSON', () {
         final seen = testProfile.copyWith(hasSeenActivityFeedHint: true);
-        expect(UserProfile.fromJson(seen.toJson()).hasSeenActivityFeedHint,
-            isTrue);
+        expect(
+          UserProfile.fromJson(seen.toJson()).hasSeenActivityFeedHint,
+          isTrue,
+        );
       });
 
-      test('is persisted to the private settings sub-doc, not the public doc',
-          () {
+      test('is persisted to the private settings sub-doc, not the public doc', () {
         // BUT-1220: the durable once-only guard must live where only the owner
         // can read it. It is written via toPrivateSettings (private settings
         // sub-doc), NOT toFirestore (the public profile doc that friends read).
@@ -699,8 +730,10 @@ void main() {
         final seen = testProfile.copyWith(hasSeenActivityFeedHint: true);
         expect(seen.toPrivateSettings()['hasSeenActivityFeedHint'], isTrue);
         expect(
-            seen.toFirestore().containsKey('hasSeenActivityFeedHint'), isFalse,
-            reason: 'the hint flag must not leak into the public profile doc');
+          seen.toFirestore().containsKey('hasSeenActivityFeedHint'),
+          isFalse,
+          reason: 'the hint flag must not leak into the public profile doc',
+        );
       });
 
       test('backward-compat: absent key deserializes to false', () {
@@ -729,8 +762,7 @@ void main() {
         expect(firestore.containsKey('uid'), isFalse);
       });
 
-      test(
-          'toFirestoreEditable excludes the three server-owned fields and '
+      test('toFirestoreEditable excludes the three server-owned fields and '
           'keeps every owner-editable public field (BUT-1285)', () {
         // Intent: toFirestoreEditable() is the merge-write surface for a
         // stale-safe profile save. It must drop exactly friendsCount (owned by
@@ -751,15 +783,27 @@ void main() {
 
         // The three server-owned keys are absent entirely (so merge:true leaves
         // the server values untouched — not present in affectedKeys()).
-        expect(editable.containsKey('friendsCount'), isFalse,
-            reason: 'friendsCount is mutated by other users — must not be '
-                'written by an owner profile edit');
-        expect(editable.containsKey('isHidden'), isFalse,
-            reason: 'isHidden is moderator-owned — a stale false trips the '
-                'rules diff() guard and rejects the whole save');
-        expect(editable.containsKey('hiddenAt'), isFalse,
-            reason: 'hiddenAt is moderator-owned — a stale null would clear a '
-                'live moderation timestamp on every owner edit');
+        expect(
+          editable.containsKey('friendsCount'),
+          isFalse,
+          reason:
+              'friendsCount is mutated by other users — must not be '
+              'written by an owner profile edit',
+        );
+        expect(
+          editable.containsKey('isHidden'),
+          isFalse,
+          reason:
+              'isHidden is moderator-owned — a stale false trips the '
+              'rules diff() guard and rejects the whole save',
+        );
+        expect(
+          editable.containsKey('hiddenAt'),
+          isFalse,
+          reason:
+              'hiddenAt is moderator-owned — a stale null would clear a '
+              'live moderation timestamp on every owner edit',
+        );
 
         // Owner-editable fields all survive — this is not a blanket strip.
         expect(editable['displayName'], equals(hidden.displayName));
@@ -769,32 +813,37 @@ void main() {
         expect(editable['allowEmailSearch'], equals(hidden.allowEmailSearch));
       });
 
-      test('should include cooking identity in correct serialization targets',
-          () {
-        final profile = testProfile.copyWith(
-          cookingSkillLevel: CookingSkillLevel.intermediate,
-          cuisineAffinities: ['italiensk', 'svensk'],
-          bio: 'Min matbio',
-        );
+      test(
+        'should include cooking identity in correct serialization targets',
+        () {
+          final profile = testProfile.copyWith(
+            cookingSkillLevel: CookingSkillLevel.intermediate,
+            cuisineAffinities: ['italiensk', 'svensk'],
+            bio: 'Min matbio',
+          );
 
-        // Firestore (public) should contain skill + cuisines
-        final firestore = profile.toFirestore();
-        expect(firestore['cookingSkillLevel'], equals('intermediate'));
-        expect(firestore['cuisineAffinities'], equals(['italiensk', 'svensk']));
-        expect(firestore.containsKey('bio'), isFalse);
+          // Firestore (public) should contain skill + cuisines
+          final firestore = profile.toFirestore();
+          expect(firestore['cookingSkillLevel'], equals('intermediate'));
+          expect(
+            firestore['cuisineAffinities'],
+            equals(['italiensk', 'svensk']),
+          );
+          expect(firestore.containsKey('bio'), isFalse);
 
-        // Private settings should contain bio
-        final privateSettings = profile.toPrivateSettings();
-        expect(privateSettings['bio'], equals('Min matbio'));
-        expect(privateSettings.containsKey('cookingSkillLevel'), isFalse);
-        expect(privateSettings.containsKey('cuisineAffinities'), isFalse);
+          // Private settings should contain bio
+          final privateSettings = profile.toPrivateSettings();
+          expect(privateSettings['bio'], equals('Min matbio'));
+          expect(privateSettings.containsKey('cookingSkillLevel'), isFalse);
+          expect(privateSettings.containsKey('cuisineAffinities'), isFalse);
 
-        // JSON should contain all three
-        final json = profile.toJson();
-        expect(json['cookingSkillLevel'], equals('intermediate'));
-        expect(json['cuisineAffinities'], equals(['italiensk', 'svensk']));
-        expect(json['bio'], equals('Min matbio'));
-      });
+          // JSON should contain all three
+          final json = profile.toJson();
+          expect(json['cookingSkillLevel'], equals('intermediate'));
+          expect(json['cuisineAffinities'], equals(['italiensk', 'svensk']));
+          expect(json['bio'], equals('Min matbio'));
+        },
+      );
 
       test('should deserialize from Firestore map', () {
         // Arrange
@@ -809,8 +858,9 @@ void main() {
           'lastActiveAt': AppTimestamp.fromDateTime(testDate).toFirestore(),
           'isOnline': false,
           'fcmToken': 'firestore_token',
-          'fcmTokenUpdatedAt':
-              AppTimestamp.fromDateTime(testDate).toFirestore(),
+          'fcmTokenUpdatedAt': AppTimestamp.fromDateTime(
+            testDate,
+          ).toFirestore(),
           'notificationsEnabled': true,
         };
 
@@ -897,8 +947,10 @@ void main() {
 
         // Assert
         expect(deserialized.displayName, equals("O'Connor-Smith & Co."));
-        expect(deserialized.initials,
-            equals('O&')); // Takes first char of first two words
+        expect(
+          deserialized.initials,
+          equals('O&'),
+        ); // Takes first char of first two words
       });
 
       test('should handle edge case counts', () {
@@ -956,9 +1008,13 @@ void main() {
         final deserialized = UserProfile.fromJson(json);
 
         expect(
-            deserialized.cookingSkillLevel, equals(CookingSkillLevel.beginner));
-        expect(deserialized.cuisineAffinities,
-            equals(['thailändsk', 'indisk', 'japansk']));
+          deserialized.cookingSkillLevel,
+          equals(CookingSkillLevel.beginner),
+        );
+        expect(
+          deserialized.cuisineAffinities,
+          equals(['thailändsk', 'indisk', 'japansk']),
+        );
         expect(deserialized.bio, equals('Gillar att experimentera'));
       });
 
@@ -980,31 +1036,33 @@ void main() {
         expect(profile.bio, equals('Erfaren kock'));
       });
 
-      test('should handle empty cuisineAffinities list distinctly from missing',
-          () {
-        // With explicit empty list
-        final dataWithEmpty = {
-          'uid': 'test',
-          'displayName': 'Test',
-          'email': 'test@test.com',
-          'joinedAt': '2024-01-01T00:00:00Z',
-          'lastActiveAt': '2024-01-01T00:00:00Z',
-          'cuisineAffinities': <String>[],
-        };
-        final withEmpty = UserProfile.fromJson(dataWithEmpty);
-        expect(withEmpty.cuisineAffinities, equals([]));
+      test(
+        'should handle empty cuisineAffinities list distinctly from missing',
+        () {
+          // With explicit empty list
+          final dataWithEmpty = {
+            'uid': 'test',
+            'displayName': 'Test',
+            'email': 'test@test.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+            'cuisineAffinities': <String>[],
+          };
+          final withEmpty = UserProfile.fromJson(dataWithEmpty);
+          expect(withEmpty.cuisineAffinities, equals([]));
 
-        // Without key at all
-        final dataWithout = {
-          'uid': 'test',
-          'displayName': 'Test',
-          'email': 'test@test.com',
-          'joinedAt': '2024-01-01T00:00:00Z',
-          'lastActiveAt': '2024-01-01T00:00:00Z',
-        };
-        final without = UserProfile.fromJson(dataWithout);
-        expect(without.cuisineAffinities, isNull);
-      });
+          // Without key at all
+          final dataWithout = {
+            'uid': 'test',
+            'displayName': 'Test',
+            'email': 'test@test.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          };
+          final without = UserProfile.fromJson(dataWithout);
+          expect(without.cuisineAffinities, isNull);
+        },
+      );
     });
 
     group('birthYear (GDPR Art 8 age gate)', () {

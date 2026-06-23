@@ -26,12 +26,12 @@ void main() {
     final baseDate = DateTime(2024, 6, 1);
 
     UserProfile makeProfile() => UserProfile(
-          uid: 'uid-1',
-          displayName: 'Test User',
-          email: 'test@example.com',
-          joinedAt: baseDate,
-          lastActiveAt: baseDate,
-        );
+      uid: 'uid-1',
+      displayName: 'Test User',
+      email: 'test@example.com',
+      joinedAt: baseDate,
+      lastActiveAt: baseDate,
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makeProfile().schemaVersion, 1);
@@ -63,25 +63,27 @@ void main() {
   // ---------------------------------------------------------------------------
   group('RecipeCore schemaVersion', () {
     RecipeCore makeCore() => RecipeCore(
-          title: 'Pasta',
-          description: 'Simple pasta',
-          ingredients: ['pasta', 'salt'],
-          instructions: ['Boil water', 'Cook pasta'],
-          mealType: 'Middag',
-        );
+      title: 'Pasta',
+      description: 'Simple pasta',
+      ingredients: ['pasta', 'salt'],
+      instructions: ['Boil water', 'Cook pasta'],
+      mealType: 'Middag',
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makeCore().schemaVersion, 1);
     });
 
-    test('(b) round-trip toFirestore map → fromMap preserves schemaVersion',
-        () {
-      final core = makeCore();
-      final map = core.toFirestore();
-      // fromMap uses the id from the Firestore doc ID
-      final restored = RecipeCore.fromMap(core.id, map);
-      expect(restored.schemaVersion, 1);
-    });
+    test(
+      '(b) round-trip toFirestore map → fromMap preserves schemaVersion',
+      () {
+        final core = makeCore();
+        final map = core.toFirestore();
+        // fromMap uses the id from the Firestore doc ID
+        final restored = RecipeCore.fromMap(core.id, map);
+        expect(restored.schemaVersion, 1);
+      },
+    );
 
     test('(c) fromMap on legacy map missing schemaVersion defaults to 1', () {
       final legacyMap = <String, dynamic>{
@@ -105,13 +107,13 @@ void main() {
     final now = DateTime(2024, 6, 3, 12);
 
     WeeklyMenuPlan makePlan() => WeeklyMenuPlan(
-          id: 'uid-1_2024-W23',
-          userId: 'uid-1',
-          weekStartDate: weekStart,
-          entries: const [],
-          createdAt: now,
-          updatedAt: now,
-        );
+      id: 'uid-1_2024-W23',
+      userId: 'uid-1',
+      weekStartDate: weekStart,
+      entries: const [],
+      createdAt: now,
+      updatedAt: now,
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makePlan().schemaVersion, 1);
@@ -143,22 +145,24 @@ void main() {
   // ---------------------------------------------------------------------------
   group('UnifiedShoppingList schemaVersion', () {
     UnifiedShoppingList makeList() => UnifiedShoppingList(
-          name: 'Veckohandling',
-          ownerId: 'uid-1',
-          ownerDisplayName: 'Test User',
-        );
+      name: 'Veckohandling',
+      ownerId: 'uid-1',
+      ownerDisplayName: 'Test User',
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makeList().schemaVersion, 1);
     });
 
-    test('(b) round-trip toFirestore map → fromMap preserves schemaVersion',
-        () {
-      final list = makeList();
-      final map = list.toFirestore();
-      final restored = UnifiedShoppingList.fromMap(list.id, map);
-      expect(restored.schemaVersion, 1);
-    });
+    test(
+      '(b) round-trip toFirestore map → fromMap preserves schemaVersion',
+      () {
+        final list = makeList();
+        final map = list.toFirestore();
+        final restored = UnifiedShoppingList.fromMap(list.id, map);
+        expect(restored.schemaVersion, 1);
+      },
+    );
 
     test('(c) fromMap on legacy map missing schemaVersion defaults to 1', () {
       final legacyMap = <String, dynamic>{
@@ -186,11 +190,11 @@ void main() {
     final now = DateTime(2024, 6, 1);
 
     PersonalTag makeTag() => PersonalTag(
-          id: 'tag-1',
-          name: 'Familjerecept',
-          createdAt: now,
-          updatedAt: now,
-        );
+      id: 'tag-1',
+      name: 'Familjerecept',
+      createdAt: now,
+      updatedAt: now,
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makeTag().schemaVersion, 1);
@@ -223,13 +227,13 @@ void main() {
     final now = DateTime(2024, 6, 1);
 
     SharedMenu makeMenu() => SharedMenu(
-          id: 'menu-1',
-          sharedByUserId: 'uid-1',
-          sharedByDisplayName: 'Test User',
-          sharedAt: now,
-          menuTitle: 'Veckans meny',
-          menuSnapshot: const {},
-        );
+      id: 'menu-1',
+      sharedByUserId: 'uid-1',
+      sharedByDisplayName: 'Test User',
+      sharedAt: now,
+      menuTitle: 'Veckans meny',
+      menuSnapshot: const {},
+    );
 
     test('(a) defaults to 1 when not specified', () {
       expect(makeMenu().schemaVersion, 1);

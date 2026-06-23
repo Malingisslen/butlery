@@ -44,10 +44,12 @@ class MenuConstraintParser {
       if (working.contains(marker)) {
         skipFrukost = true;
         working = working.replaceAll(marker, ' ');
-        understood.add(const TraceEntry(
-          label: 'ingen frukost',
-          category: TraceCategory.mealType,
-        ));
+        understood.add(
+          const TraceEntry(
+            label: 'ingen frukost',
+            category: TraceCategory.mealType,
+          ),
+        );
       }
     }
 
@@ -57,18 +59,22 @@ class MenuConstraintParser {
       if (working.contains(entry.key)) {
         final parts = entry.value.split('|');
         if (parts.length == 3) {
-          dayPins.add(DayPin(
-            weekdayIndex: int.tryParse(parts[0]) ?? 5,
-            mealType: parts[2],
-            constraint: RecipeConstraint(
-              count: 1,
-              requiredTags: {parts[1]},
+          dayPins.add(
+            DayPin(
+              weekdayIndex: int.tryParse(parts[0]) ?? 5,
+              mealType: parts[2],
+              constraint: RecipeConstraint(
+                count: 1,
+                requiredTags: {parts[1]},
+              ),
             ),
-          ));
-          understood.add(TraceEntry(
-            label: entry.key,
-            category: TraceCategory.day,
-          ));
+          );
+          understood.add(
+            TraceEntry(
+              label: entry.key,
+              category: TraceCategory.day,
+            ),
+          );
           working = working.replaceAll(entry.key, ' ');
         }
       }
@@ -76,16 +82,30 @@ class MenuConstraintParser {
 
     working = extractDayFormatPins(working, lexicon, dayPins, understood);
     working = extractGlobalDietary(
-        working, lexicon, globalDietaryRequire, understood);
+      working,
+      lexicon,
+      globalDietaryRequire,
+      understood,
+    );
     working = extractAllergenNegations(
-        working, lexicon, globalAllergenAvoid, globalExcludedTags, understood);
+      working,
+      lexicon,
+      globalAllergenAvoid,
+      globalExcludedTags,
+      understood,
+    );
 
     final clauses = _splitClauses(working);
 
     final slotRequests = <SlotRequest>[];
     for (final clause in clauses) {
-      final slot =
-          parseClause(clause, lexicon, understood, notUnderstood, warnings);
+      final slot = parseClause(
+        clause,
+        lexicon,
+        understood,
+        notUnderstood,
+        warnings,
+      );
       if (slot != null) {
         if (skipFrukost && slot.mealType == 'frukost') continue;
         slotRequests.add(slot);

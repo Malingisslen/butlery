@@ -89,8 +89,8 @@ class FirebasePantryRepository
   @override
   Stream<List<PantryItem>> watchAll(String userId) {
     return _col(userId).snapshots().map(
-          (snapshot) => snapshot.docs.map(PantryItem.fromFirestore).toList(),
-        );
+      (snapshot) => snapshot.docs.map(PantryItem.fromFirestore).toList(),
+    );
   }
 
   @override
@@ -99,15 +99,16 @@ class FirebasePantryRepository
     String ingredientId,
   ) async {
     try {
-      final snapshot = await _col(userId)
-          .where('ingredientId', isEqualTo: ingredientId)
-          .limit(1)
-          .get();
+      final snapshot = await _col(
+        userId,
+      ).where('ingredientId', isEqualTo: ingredientId).limit(1).get();
       if (snapshot.docs.isEmpty) return null;
       return PantryItem.fromFirestore(snapshot.docs.first);
     } catch (e, stack) {
       AppLogger.error(
-          'Failed to lookup pantry item by ingredientId: $e', stack);
+        'Failed to lookup pantry item by ingredientId: $e',
+        stack,
+      );
       rethrow;
     }
   }
@@ -116,9 +117,9 @@ class FirebasePantryRepository
   Future<List<PantryItem>> getExpiringSoon(String userId, int days) async {
     try {
       final cutoff = clock.now().add(Duration(days: days));
-      final snapshot = await _col(userId)
-          .where('expiryDate', isLessThan: Timestamp.fromDate(cutoff))
-          .get();
+      final snapshot = await _col(
+        userId,
+      ).where('expiryDate', isLessThan: Timestamp.fromDate(cutoff)).get();
       return snapshot.docs.map(PantryItem.fromFirestore).toList();
     } catch (e, stack) {
       AppLogger.error('Failed to get expiring items: $e', stack);
@@ -163,7 +164,8 @@ class FirebasePantryRepository
         if (snapshot.docs.length < chunkSize) break;
       }
       AppLogger.info(
-          'All pantry items deleted for user: ${userId.maskedUserId}');
+        'All pantry items deleted for user: ${userId.maskedUserId}',
+      );
     } catch (e, stack) {
       AppLogger.error('Failed to delete all pantry items: $e', stack);
       rethrow;

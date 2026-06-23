@@ -38,8 +38,10 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
 
   Future<bool> _isMenuParticipant(String menuId) async {
     final userId = requireCurrentUserId();
-    final menuDoc =
-        await firestore.collection('realtime_menus').doc(menuId).get();
+    final menuDoc = await firestore
+        .collection('realtime_menus')
+        .doc(menuId)
+        .get();
     if (!menuDoc.exists) return false;
     final participantIds = menuDoc.data()?['participantIds'] as List?;
     return participantIds?.contains(userId) ?? false;
@@ -47,23 +49,29 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
 
   @override
   Future<bool> validateCreatePermission(
-          String userId, MenuSlotVote entity) async =>
-      _isMenuParticipant(entity.menuId);
+    String userId,
+    MenuSlotVote entity,
+  ) async => _isMenuParticipant(entity.menuId);
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, MenuSlotVote? entity) async =>
-      true; // Reads validated at query level
+    String userId,
+    String resourceId,
+    MenuSlotVote? entity,
+  ) async => true; // Reads validated at query level
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, MenuSlotVote entity) async =>
-      _isMenuParticipant(entity.menuId);
+    String userId,
+    String resourceId,
+    MenuSlotVote entity,
+  ) async => _isMenuParticipant(entity.menuId);
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      true; // Deletion handled by vote creator check
+    String userId,
+    String resourceId,
+  ) async => true; // Deletion handled by vote creator check
 
   // --- CRUD operations ---
 
@@ -86,7 +94,11 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
 
   @override
   Future<void> castVote(
-      String menuId, String voteId, String userId, String optionId) async {
+    String menuId,
+    String voteId,
+    String userId,
+    String optionId,
+  ) async {
     await _votesRef(menuId).doc(voteId).update({
       'votes.$userId': optionId,
     });
@@ -94,7 +106,10 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
 
   @override
   Future<void> resolveVote(
-      String menuId, String voteId, String winningOptionId) async {
+    String menuId,
+    String voteId,
+    String winningOptionId,
+  ) async {
     await firestore.runTransaction((transaction) async {
       final voteRef = _votesRef(menuId).doc(voteId);
       final snapshot = await transaction.get(voteRef);
@@ -114,15 +129,22 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
     // limit a future feature change or adversarial write could blow up
     // snapshot payload on every change. 200 is well clear of any realistic
     // group size.
-    return _votesRef(menuId).limit(200).snapshots().map((snapshot) => snapshot
-        .docs
-        .map((doc) => MenuSlotVote.fromMap(doc.id, doc.data()))
-        .toList());
+    return _votesRef(menuId)
+        .limit(200)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => MenuSlotVote.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 
   @override
   Future<void> addAlternative(
-      String menuId, String voteId, VoteOption option) async {
+    String menuId,
+    String voteId,
+    VoteOption option,
+  ) async {
     await _votesRef(menuId).doc(voteId).update({
       'alternatives': FieldValue.arrayUnion([option.toFirestore()]),
     });

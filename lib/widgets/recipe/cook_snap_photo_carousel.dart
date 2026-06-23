@@ -170,8 +170,9 @@ class _CookSnapPhotoViewer extends StatefulWidget {
 }
 
 class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
-  late final PageController _controller =
-      PageController(initialPage: widget.initialIndex);
+  late final PageController _controller = PageController(
+    initialPage: widget.initialIndex,
+  );
 
   @override
   void dispose() {
@@ -203,8 +204,11 @@ class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
                       child: LoadingIndicator(size: 24, strokeWidth: 2),
                     ),
                     errorWidget: (_, __, ___) => const Center(
-                      child: Icon(Icons.broken_image,
-                          color: Colors.white, size: 48),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 48,
+                      ),
                     ),
                   ),
                 ),

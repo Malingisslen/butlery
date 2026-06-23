@@ -82,27 +82,32 @@ void main() {
           .withTitle('Shared Soup')
           .withCreatedBy(ownerId)
           .asCollaborative()
-          .withSocialData(RecipeSocialData(
-            ownerId: ownerId,
-            ownerDisplayName: 'Owner',
-            memberPermissions: members ??
-                {
-                  ownerId: ResourcePermission.owner,
-                  'editor_user': ResourcePermission.editor,
-                },
-          ))
+          .withSocialData(
+            RecipeSocialData(
+              ownerId: ownerId,
+              ownerDisplayName: 'Owner',
+              memberPermissions:
+                  members ??
+                  {
+                    ownerId: ResourcePermission.owner,
+                    'editor_user': ResourcePermission.editor,
+                  },
+            ),
+          )
           .build();
     }
 
     setUpAll(() {
       registerFallbackValue(<String>[]);
-      registerFallbackValue(UserProfile(
-        uid: 'test',
-        email: 't@example.com',
-        displayName: 'T',
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        UserProfile(
+          uid: 'test',
+          email: 't@example.com',
+          displayName: 'T',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
       // Fallback for Recipe arg passed to repo.update
       registerFallbackValue(RecipeBuilder().withId('_fallback').build());
     });
@@ -170,40 +175,49 @@ void main() {
       /// Proves: happy path forwards the recipe's content + members to
       /// createCollaborativeRecipe and then deletes the original personal
       /// recipe. Catches bugs where args are swapped or deletion is skipped.
-      test('captures correct args and deletes original personal recipe',
-          () async {
-        mockParentService.setCollaborativeState(shouldSucceed: true);
-        when(() => mockParentService.deleteRecipe('recipe_personal'))
-            .thenAnswer((_) async => true);
+      test(
+        'captures correct args and deletes original personal recipe',
+        () async {
+          mockParentService.setCollaborativeState(shouldSucceed: true);
+          when(
+            () => mockParentService.deleteRecipe('recipe_personal'),
+          ).thenAnswer((_) async => true);
 
-        final result = await module.enableCollaborativeEditing(
-          'recipe_personal',
-          ['friend_a', 'friend_b'],
-        );
+          final result = await module.enableCollaborativeEditing(
+            'recipe_personal',
+            ['friend_a', 'friend_b'],
+          );
 
-        expect(result, isTrue);
-        expect(mockParentService.createCollaborativeRecipeCalls, hasLength(1));
-        final call = mockParentService.createCollaborativeRecipeCalls.first;
-        expect(call['title'], 'My Personal Recipe');
-        expect(call['memberIds'], ['friend_a', 'friend_b']);
-        verify(() => mockParentService.deleteRecipe('recipe_personal'))
-            .called(1);
-      });
+          expect(result, isTrue);
+          expect(
+            mockParentService.createCollaborativeRecipeCalls,
+            hasLength(1),
+          );
+          final call = mockParentService.createCollaborativeRecipeCalls.first;
+          expect(call['title'], 'My Personal Recipe');
+          expect(call['memberIds'], ['friend_a', 'friend_b']);
+          verify(
+            () => mockParentService.deleteRecipe('recipe_personal'),
+          ).called(1);
+        },
+      );
 
       /// Proves: re-enabling on an already-collaborative recipe must NOT
       /// create a duplicate collaborative recipe. Catches the bug class
       /// "idempotency check happens after the create call".
-      test('already-collaborative short-circuits with no create call',
-          () async {
-        final result = await module.enableCollaborativeEditing(
-          'recipe_collab',
-          ['friend_a'],
-        );
+      test(
+        'already-collaborative short-circuits with no create call',
+        () async {
+          final result = await module.enableCollaborativeEditing(
+            'recipe_collab',
+            ['friend_a'],
+          );
 
-        expect(result, isTrue);
-        expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
-        verifyNever(() => mockParentService.deleteRecipe(any()));
-      });
+          expect(result, isTrue);
+          expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
+          verifyNever(() => mockParentService.deleteRecipe(any()));
+        },
+      );
 
       /// SECURITY: only the recipe owner may enable collaboration. A bug
       /// here means any user with read access could convert someone else's
@@ -227,32 +241,40 @@ void main() {
       /// Empty memberIds must reject — creating a collaborative recipe
       /// with no members is a degenerate state.
       test('rejects empty member list', () async {
-        final result =
-            await module.enableCollaborativeEditing('recipe_personal', []);
+        final result = await module.enableCollaborativeEditing(
+          'recipe_personal',
+          [],
+        );
         expect(result, isFalse);
         expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
       });
 
       /// Recipe-not-found returns false without surprising side effects.
       test('returns false when recipe id is unknown', () async {
-        final result = await module
-            .enableCollaborativeEditing('does_not_exist', ['friend_a']);
+        final result = await module.enableCollaborativeEditing(
+          'does_not_exist',
+          ['friend_a'],
+        );
         expect(result, isFalse);
         expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
       });
 
       /// CRITICAL: if createCollaborativeRecipe returns null (failure),
       /// the personal recipe MUST NOT be deleted. Otherwise data loss.
-      test('does not delete personal recipe when create returns null',
-          () async {
-        mockParentService.setCollaborativeState(shouldSucceed: false);
+      test(
+        'does not delete personal recipe when create returns null',
+        () async {
+          mockParentService.setCollaborativeState(shouldSucceed: false);
 
-        final result = await module
-            .enableCollaborativeEditing('recipe_personal', ['friend_a']);
+          final result = await module.enableCollaborativeEditing(
+            'recipe_personal',
+            ['friend_a'],
+          );
 
-        expect(result, isFalse);
-        verifyNever(() => mockParentService.deleteRecipe(any()));
-      });
+          expect(result, isFalse);
+          verifyNever(() => mockParentService.deleteRecipe(any()));
+        },
+      );
     });
 
     // ------------------------------------------------------------------
@@ -268,8 +290,9 @@ void main() {
           currentUserId: 'editor_user',
         );
 
-        final result =
-            await module.disableCollaborativeEditing('recipe_collab');
+        final result = await module.disableCollaborativeEditing(
+          'recipe_collab',
+        );
 
         expect(result, isFalse);
         verifyNever(() => mockParentService.deleteRecipe(any()));
@@ -278,9 +301,11 @@ void main() {
       /// If createPersonalRecipe returns null, the collaborative recipe
       /// must remain — otherwise members lose access to data with no
       /// surviving copy.
-      test('does not delete collaborative recipe when create returns null',
-          () async {
-        when(() => mockParentService.createPersonalRecipe(
+      test(
+        'does not delete collaborative recipe when create returns null',
+        () async {
+          when(
+            () => mockParentService.createPersonalRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -292,19 +317,23 @@ void main() {
               rating: any(named: 'rating'),
               personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
-            )).thenAnswer((_) async => null);
+            ),
+          ).thenAnswer((_) async => null);
 
-        final result =
-            await module.disableCollaborativeEditing('recipe_collab');
+          final result = await module.disableCollaborativeEditing(
+            'recipe_collab',
+          );
 
-        expect(result, isFalse);
-        verifyNever(() => mockParentService.deleteRecipe(any()));
-      });
+          expect(result, isFalse);
+          verifyNever(() => mockParentService.deleteRecipe(any()));
+        },
+      );
 
       /// Non-collaborative recipe → returns true as no-op (idempotent).
       test('returns true (no-op) when already personal', () async {
-        final result =
-            await module.disableCollaborativeEditing('recipe_personal');
+        final result = await module.disableCollaborativeEditing(
+          'recipe_personal',
+        );
         expect(result, isTrue);
       });
     });
@@ -319,12 +348,14 @@ void main() {
         expect(module.canEnableCollaboration('missing'), isFalse);
       });
 
-      test('canDisableCollaboration true only for owned collaborative recipe',
-          () {
-        expect(module.canDisableCollaboration('recipe_collab'), isTrue);
-        expect(module.canDisableCollaboration('recipe_personal'), isFalse);
-        expect(module.canDisableCollaboration('missing'), isFalse);
-      });
+      test(
+        'canDisableCollaboration true only for owned collaborative recipe',
+        () {
+          expect(module.canDisableCollaboration('recipe_collab'), isTrue);
+          expect(module.canDisableCollaboration('recipe_personal'), isFalse);
+          expect(module.canDisableCollaboration('missing'), isFalse);
+        },
+      );
 
       test('non-owner sees false on both gates', () {
         fakePermissionService.setPermissionState(
@@ -348,16 +379,18 @@ void main() {
           currentUserId: 'editor_user',
         );
 
-        final result =
-            await module.addCollaborators('recipe_collab', ['new_user']);
+        final result = await module.addCollaborators('recipe_collab', [
+          'new_user',
+        ]);
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
       });
 
       test('rejects when recipe is not collaborative', () async {
-        final result =
-            await module.addCollaborators('recipe_personal', ['friend_a']);
+        final result = await module.addCollaborators('recipe_personal', [
+          'friend_a',
+        ]);
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
       });
@@ -372,43 +405,55 @@ void main() {
       /// from the repository before writing. The local recipe list could
       /// be stale (concurrent edit). Pins the contract that the write is
       /// based on the persisted state. Sibling axis of BUT-1108.
-      test('uses fresh repo.read for the merge, not stale local recipe',
-          () async {
-        // Local list has the "old" members. Fresh repo read returns a
-        // different membership (simulating a concurrent change someone
-        // else just persisted). The final update must include the FRESH
-        // members + the new one, not the local stale members.
-        final freshCollab = collabWith(
-          id: 'recipe_collab',
-          ownerId: 'user_owner',
-          members: {
-            'user_owner': ResourcePermission.owner,
-            'editor_user': ResourcePermission.editor,
-            'concurrent_add': ResourcePermission.editor, // came in via race
-          },
-        );
+      test(
+        'uses fresh repo.read for the merge, not stale local recipe',
+        () async {
+          // Local list has the "old" members. Fresh repo read returns a
+          // different membership (simulating a concurrent change someone
+          // else just persisted). The final update must include the FRESH
+          // members + the new one, not the local stale members.
+          final freshCollab = collabWith(
+            id: 'recipe_collab',
+            ownerId: 'user_owner',
+            members: {
+              'user_owner': ResourcePermission.owner,
+              'editor_user': ResourcePermission.editor,
+              'concurrent_add': ResourcePermission.editor, // came in via race
+            },
+          );
 
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => freshCollab);
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+          when(
+            () => mockRecipeRepository.read('recipe_collab'),
+          ).thenAnswer((_) async => freshCollab);
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async => true);
 
-        final result =
-            await module.addCollaborators('recipe_collab', ['brand_new']);
+          final result = await module.addCollaborators('recipe_collab', [
+            'brand_new',
+          ]);
 
-        expect(result, isTrue);
-        final captured = verify(() => mockRecipeRepository.update(captureAny()))
-            .captured
-            .single as Recipe;
-        final perms = captured.socialData!.memberPermissions!;
-        expect(
+          expect(result, isTrue);
+          final captured =
+              verify(
+                    () => mockRecipeRepository.update(captureAny()),
+                  ).captured.single
+                  as Recipe;
+          final perms = captured.socialData!.memberPermissions!;
+          expect(
             perms.keys,
-            containsAll(
-                ['user_owner', 'editor_user', 'concurrent_add', 'brand_new']));
-        expect(perms['brand_new'], ResourcePermission.editor);
-        // Crucially: the concurrent add was preserved (proves fresh read)
-        expect(perms['concurrent_add'], ResourcePermission.editor);
-      });
+            containsAll([
+              'user_owner',
+              'editor_user',
+              'concurrent_add',
+              'brand_new',
+            ]),
+          );
+          expect(perms['brand_new'], ResourcePermission.editor);
+          // Crucially: the concurrent add was preserved (proves fresh read)
+          expect(perms['concurrent_add'], ResourcePermission.editor);
+        },
+      );
 
       /// Already-members must be filtered out — adding a redundant entry
       /// could silently downgrade a higher permission to editor.
@@ -423,13 +468,15 @@ void main() {
             'editor_user': ResourcePermission.editor,
           },
         );
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => freshCollab);
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => freshCollab);
 
         // Branch: when ALL provided ids are already members, the module
         // short-circuits as a warning and DOES NOT call update.
-        final result =
-            await module.addCollaborators('recipe_collab', ['editor_user']);
+        final result = await module.addCollaborators('recipe_collab', [
+          'editor_user',
+        ]);
 
         expect(result, isTrue);
         verifyNever(() => mockRecipeRepository.update(any()));
@@ -446,8 +493,9 @@ void main() {
           currentUserId: 'editor_user',
         );
 
-        final result =
-            await module.removeCollaborators('recipe_collab', ['editor_user']);
+        final result = await module.removeCollaborators('recipe_collab', [
+          'editor_user',
+        ]);
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
@@ -457,12 +505,15 @@ void main() {
       /// Removing the owner would orphan the recipe (no admin left).
       test('refuses to remove the owner', () async {
         when(() => mockRecipeRepository.read(any())).thenAnswer(
-            (_) async => collaborativeRecipe); // shouldn't even get called
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+          (_) async => collaborativeRecipe,
+        ); // shouldn't even get called
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
-        final result =
-            await module.removeCollaborators('recipe_collab', ['user_owner']);
+        final result = await module.removeCollaborators('recipe_collab', [
+          'user_owner',
+        ]);
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
@@ -479,23 +530,32 @@ void main() {
             'goodbye': ResourcePermission.viewer,
           },
         );
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => fresh);
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => fresh);
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
-        final result =
-            await module.removeCollaborators('recipe_collab', ['goodbye']);
+        final result = await module.removeCollaborators('recipe_collab', [
+          'goodbye',
+        ]);
 
         expect(result, isTrue);
-        final captured = verify(() => mockRecipeRepository.update(captureAny()))
-            .captured
-            .single as Recipe;
-        expect(captured.socialData!.memberPermissions!.keys,
-            isNot(contains('goodbye')));
+        final captured =
+            verify(
+                  () => mockRecipeRepository.update(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(
+          captured.socialData!.memberPermissions!.keys,
+          isNot(contains('goodbye')),
+        );
         // Owner and other editor preserved
-        expect(captured.socialData!.memberPermissions!.keys,
-            containsAll(['user_owner', 'editor_user']));
+        expect(
+          captured.socialData!.memberPermissions!.keys,
+          containsAll(['user_owner', 'editor_user']),
+        );
       });
     });
 
@@ -509,8 +569,9 @@ void main() {
           currentUserId: 'editor_user',
         );
 
-        final result = await module
-            .updateMemberPermissions('recipe_collab', {'editor_user': 'admin'});
+        final result = await module.updateMemberPermissions('recipe_collab', {
+          'editor_user': 'admin',
+        });
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
@@ -519,8 +580,9 @@ void main() {
       /// SECURITY: an invalid permission string must short-circuit BEFORE
       /// any repo write. Otherwise a typo silently downgrades to viewer.
       test('rejects invalid permission string before any repo write', () async {
-        final result = await module.updateMemberPermissions(
-            'recipe_collab', {'editor_user': 'super-admin'});
+        final result = await module.updateMemberPermissions('recipe_collab', {
+          'editor_user': 'super-admin',
+        });
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.read(any()));
@@ -531,35 +593,46 @@ void main() {
       /// to ResourcePermission.owner inside the module. This is dangerous
       /// and worth pinning — if anyone changes this mapping silently, the
       /// test fails, forcing review.
-      test("'admin' permission string is mapped to ResourcePermission.owner",
-          () async {
-        final fresh = collabWith(
-          id: 'recipe_collab',
-          ownerId: 'user_owner',
-          members: {
-            'user_owner': ResourcePermission.owner,
-            'editor_user': ResourcePermission.editor,
-          },
-        );
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => fresh);
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+      test(
+        "'admin' permission string is mapped to ResourcePermission.owner",
+        () async {
+          final fresh = collabWith(
+            id: 'recipe_collab',
+            ownerId: 'user_owner',
+            members: {
+              'user_owner': ResourcePermission.owner,
+              'editor_user': ResourcePermission.editor,
+            },
+          );
+          when(
+            () => mockRecipeRepository.read('recipe_collab'),
+          ).thenAnswer((_) async => fresh);
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async => true);
 
-        final result = await module
-            .updateMemberPermissions('recipe_collab', {'editor_user': 'admin'});
+          final result = await module.updateMemberPermissions('recipe_collab', {
+            'editor_user': 'admin',
+          });
 
-        expect(result, isTrue);
-        final captured = verify(() => mockRecipeRepository.update(captureAny()))
-            .captured
-            .single as Recipe;
-        expect(captured.socialData!.memberPermissions!['editor_user'],
-            ResourcePermission.owner);
-      });
+          expect(result, isTrue);
+          final captured =
+              verify(
+                    () => mockRecipeRepository.update(captureAny()),
+                  ).captured.single
+                  as Recipe;
+          expect(
+            captured.socialData!.memberPermissions!['editor_user'],
+            ResourcePermission.owner,
+          );
+        },
+      );
 
       test('rejects empty permission map', () async {
-        final result =
-            await module.updateMemberPermissions('recipe_collab', {});
+        final result = await module.updateMemberPermissions(
+          'recipe_collab',
+          {},
+        );
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
       });
@@ -575,8 +648,10 @@ void main() {
           currentUserId: 'editor_user',
         );
 
-        final result =
-            await module.transferOwnership('recipe_collab', 'editor_user');
+        final result = await module.transferOwnership(
+          'recipe_collab',
+          'editor_user',
+        );
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.update(any()));
@@ -586,58 +661,77 @@ void main() {
       /// current owner could "transfer" to an arbitrary uid and lose all
       /// admin access while granting it to someone never invited.
       test('refuses to transfer to a non-member', () async {
-        final result =
-            await module.transferOwnership('recipe_collab', 'rando_uid');
+        final result = await module.transferOwnership(
+          'recipe_collab',
+          'rando_uid',
+        );
 
         expect(result, isFalse);
         verifyNever(() => mockRecipeRepository.read(any()));
         verifyNever(() => mockRecipeRepository.update(any()));
       });
 
-      test('returns true (no-op) when newOwnerId equals current ownerId',
-          () async {
-        final result =
-            await module.transferOwnership('recipe_collab', 'user_owner');
+      test(
+        'returns true (no-op) when newOwnerId equals current ownerId',
+        () async {
+          final result = await module.transferOwnership(
+            'recipe_collab',
+            'user_owner',
+          );
 
-        expect(result, isTrue);
-        verifyNever(() => mockRecipeRepository.update(any()));
-      });
+          expect(result, isTrue);
+          verifyNever(() => mockRecipeRepository.update(any()));
+        },
+      );
 
       /// ATOMICITY contract: ownerId + memberPermissions are written in a
       /// SINGLE update call (not two). Catches a refactor that splits the
       /// transfer into "set new owner" then "demote old owner" — a window
       /// where both/neither holds owner permission.
       test(
-          'demotes old owner to editor, promotes new owner, single repo.update',
-          () async {
-        final fresh = collabWith(
-          id: 'recipe_collab',
-          ownerId: 'user_owner',
-          members: {
-            'user_owner': ResourcePermission.owner,
-            'editor_user': ResourcePermission.editor,
-          },
-        );
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => fresh);
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+        'demotes old owner to editor, promotes new owner, single repo.update',
+        () async {
+          final fresh = collabWith(
+            id: 'recipe_collab',
+            ownerId: 'user_owner',
+            members: {
+              'user_owner': ResourcePermission.owner,
+              'editor_user': ResourcePermission.editor,
+            },
+          );
+          when(
+            () => mockRecipeRepository.read('recipe_collab'),
+          ).thenAnswer((_) async => fresh);
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async => true);
 
-        final result =
-            await module.transferOwnership('recipe_collab', 'editor_user');
+          final result = await module.transferOwnership(
+            'recipe_collab',
+            'editor_user',
+          );
 
-        expect(result, isTrue);
-        final captured =
-            verify(() => mockRecipeRepository.update(captureAny())).captured;
-        expect(captured.length, 1,
-            reason: 'transfer must be a single atomic update');
-        final updatedRecipe = captured.single as Recipe;
-        expect(updatedRecipe.socialData!.ownerId, 'editor_user');
-        expect(updatedRecipe.socialData!.memberPermissions!['editor_user'],
-            ResourcePermission.owner);
-        expect(updatedRecipe.socialData!.memberPermissions!['user_owner'],
-            ResourcePermission.editor);
-      });
+          expect(result, isTrue);
+          final captured = verify(
+            () => mockRecipeRepository.update(captureAny()),
+          ).captured;
+          expect(
+            captured.length,
+            1,
+            reason: 'transfer must be a single atomic update',
+          );
+          final updatedRecipe = captured.single as Recipe;
+          expect(updatedRecipe.socialData!.ownerId, 'editor_user');
+          expect(
+            updatedRecipe.socialData!.memberPermissions!['editor_user'],
+            ResourcePermission.owner,
+          );
+          expect(
+            updatedRecipe.socialData!.memberPermissions!['user_owner'],
+            ResourcePermission.editor,
+          );
+        },
+      );
     });
 
     // ------------------------------------------------------------------
@@ -678,21 +772,29 @@ void main() {
             'editor_user': ResourcePermission.editor,
           },
         );
-        when(() => mockRecipeRepository.read('recipe_collab'))
-            .thenAnswer((_) async => fresh);
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => fresh);
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
         final result = await module.leaveCollaboration('recipe_collab');
 
         expect(result, isTrue);
-        final captured = verify(() => mockRecipeRepository.update(captureAny()))
-            .captured
-            .single as Recipe;
-        expect(captured.socialData!.memberPermissions!.keys,
-            isNot(contains('editor_user')));
-        expect(captured.socialData!.memberPermissions!.keys,
-            contains('user_owner'));
+        final captured =
+            verify(
+                  () => mockRecipeRepository.update(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(
+          captured.socialData!.memberPermissions!.keys,
+          isNot(contains('editor_user')),
+        );
+        expect(
+          captured.socialData!.memberPermissions!.keys,
+          contains('user_owner'),
+        );
       });
     });
 
@@ -722,15 +824,17 @@ void main() {
         expect(status['hasRealtimeService'], isTrue);
       });
 
-      test('status returns userRole=editor when current user is editor member',
-          () {
-        mockParentService.setRecipeState(
-          currentUserId: 'editor_user',
-          recipes: [collaborativeRecipe],
-        );
-        final status = module.getCollaborationStatus('recipe_collab');
-        expect(status['userRole'], 'editor');
-      });
+      test(
+        'status returns userRole=editor when current user is editor member',
+        () {
+          mockParentService.setRecipeState(
+            currentUserId: 'editor_user',
+            recipes: [collaborativeRecipe],
+          );
+          final status = module.getCollaborationStatus('recipe_collab');
+          expect(status['userRole'], 'editor');
+        },
+      );
 
       test('status returns userRole=none for missing/unauthenticated', () {
         mockParentService.setRecipeState(
@@ -770,7 +874,9 @@ void main() {
         // collaborativeRecipe seeded with 2 members; +18 = 20 → OK; +19 → too many
         expect(module.isWithinCollaborationLimits('recipe_collab', 18), isTrue);
         expect(
-            module.isWithinCollaborationLimits('recipe_collab', 19), isFalse);
+          module.isWithinCollaborationLimits('recipe_collab', 19),
+          isFalse,
+        );
       });
 
       test('isWithinCollaborationLimits returns false for unknown recipe', () {

@@ -23,7 +23,7 @@ class RealtimeEventHandler {
     required Future<void> Function(Recipe) saveToCache,
     required void Function() notifyListeners,
     required Future<void> Function(String, String?, Map<String, dynamic>)
-        sendRealtimeEditNotification,
+    sendRealtimeEditNotification,
   }) {
     try {
       if (!snapshot.exists) {
@@ -51,11 +51,14 @@ class RealtimeEventHandler {
 
       // Process external edit
       AppLogger.debug(
-          'Processing external edit for recipe $recipeId by $editedBy');
+        'Processing external edit for recipe $recipeId by $editedBy',
+      );
 
       // Update local cache
-      final recipe =
-          Recipe.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>);
+      final recipe = Recipe.fromMap(
+        snapshot.id,
+        snapshot.data()! as Map<String, dynamic>,
+      );
       saveToCache(recipe);
 
       // Notify listeners of the change
@@ -77,7 +80,7 @@ class RealtimeEventHandler {
     required Future<void> Function(Recipe) saveToCache,
     required void Function() notifyListeners,
     required Future<void> Function(String, String?, Map<String, dynamic>)
-        sendRealtimeEditNotification,
+    sendRealtimeEditNotification,
   }) {
     try {
       // Validate edit data
@@ -89,7 +92,8 @@ class RealtimeEventHandler {
       // Check edit type for appropriate processing
       final editType = data['editType'] as String?;
       AppLogger.debug(
-          'Processing external edit of type: $editType for recipe $recipeId');
+        'Processing external edit of type: $editType for recipe $recipeId',
+      );
 
       // Create recipe from data for caching
       try {
@@ -214,7 +218,8 @@ class RealtimeEventHandler {
       final editDetails = extractEditDetails(data);
 
       AppLogger.debug(
-          '🔔 Real-time edit notification sent for recipe $recipeId by $editedBy: $editDetails');
+        '🔔 Real-time edit notification sent for recipe $recipeId by $editedBy: $editDetails',
+      );
 
       // Note: Actual notification integration is handled by RealtimeNotificationModule
       // in the RealtimeRecipeModule. This static method is mainly used for logging.

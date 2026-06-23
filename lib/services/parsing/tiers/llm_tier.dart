@@ -128,7 +128,8 @@ class LlmTier extends ParsingTier with QualityScoring {
       // P0-2: Validate response for suspicious patterns
       if (!_validateForSuspiciousPatterns(extractedRecipe)) {
         AppLogger.warning(
-            '$tierName: P0-2 validation failed - suspicious patterns');
+          '$tierName: P0-2 validation failed - suspicious patterns',
+        );
         return TierResult(
           tierName: tierName,
           recipe: null,
@@ -508,9 +509,11 @@ class LlmTier extends ParsingTier with QualityScoring {
     ParsingContext context,
     List<String> validationErrors,
   ) {
-    final hasValidTitle = !validationErrors.contains('title_length') &&
+    final hasValidTitle =
+        !validationErrors.contains('title_length') &&
         !validationErrors.contains('title_contains_url');
-    final hasValidIngredients = !validationErrors.contains('no_ingredients') &&
+    final hasValidIngredients =
+        !validationErrors.contains('no_ingredients') &&
         !validationErrors.contains('ingredient_name_length') &&
         !validationErrors.contains('ingredient_amount_range');
 
@@ -519,7 +522,7 @@ class LlmTier extends ParsingTier with QualityScoring {
 
     final hasValidInstructions =
         !validationErrors.contains('no_instructions') &&
-            !validationErrors.contains('instruction_length');
+        !validationErrors.contains('instruction_length');
     final hasValidPortions = !validationErrors.contains('portions_range');
     final hasValidTime = !validationErrors.contains('time_range');
 

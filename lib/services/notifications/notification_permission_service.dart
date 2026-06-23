@@ -48,10 +48,11 @@ class _DefaultAndroidSdkVersionProvider implements AndroidSdkVersionProvider {
 typedef RationaleDialogPresenter = Future<bool> Function(BuildContext context);
 
 /// Settings-snackbar presenter — two-arg signature for the same reason.
-typedef SettingsSnackbarPresenter = void Function(
-  BuildContext context,
-  VoidCallback onOpenSettings,
-);
+typedef SettingsSnackbarPresenter =
+    void Function(
+      BuildContext context,
+      VoidCallback onOpenSettings,
+    );
 
 /// API 33 is the floor where `POST_NOTIFICATIONS` becomes a runtime
 /// permission. Below this, `flutter_local_notifications` and FCM post without
@@ -64,11 +65,11 @@ class NotificationPermissionService extends BaseService {
     AndroidSdkVersionProvider? sdkVersionProvider,
     RationaleDialogPresenter? rationalePresenter,
     SettingsSnackbarPresenter? settingsSnackbarPresenter,
-  })  : _gateway = gateway ?? const DefaultPermissionGateway(),
-        _sdkVersionProvider =
-            sdkVersionProvider ?? const _DefaultAndroidSdkVersionProvider(),
-        _rationalePresenter = rationalePresenter,
-        _settingsSnackbarPresenter = settingsSnackbarPresenter;
+  }) : _gateway = gateway ?? const DefaultPermissionGateway(),
+       _sdkVersionProvider =
+           sdkVersionProvider ?? const _DefaultAndroidSdkVersionProvider(),
+       _rationalePresenter = rationalePresenter,
+       _settingsSnackbarPresenter = settingsSnackbarPresenter;
 
   @override
   String get serviceName => 'NotificationPermissionService';
@@ -109,7 +110,7 @@ class NotificationPermissionService extends BaseService {
       settingsSnackbarPresenter: _settingsSnackbarPresenter == null
           ? null
           : (ctx, _, __, onOpenSettings) =>
-              _settingsSnackbarPresenter(ctx, onOpenSettings),
+                _settingsSnackbarPresenter(ctx, onOpenSettings),
     );
   }
 }

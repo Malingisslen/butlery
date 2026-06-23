@@ -32,14 +32,16 @@ void main() {
     late RecipeComment testComment;
 
     setUpAll(() async {
-      registerFallbackValue(RecipeComment(
-        id: 'test',
-        recipeId: 'test',
-        authorId: 'test',
-        authorDisplayName: 'Test',
-        text: 'Test',
-        createdAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        RecipeComment(
+          id: 'test',
+          recipeId: 'test',
+          authorId: 'test',
+          authorDisplayName: 'Test',
+          text: 'Test',
+          createdAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -49,20 +51,24 @@ void main() {
       mockAnalyticsService = _MockAnalyticsService();
 
       // Stub analytics so createComment doesn't throw
-      when(() => mockAnalyticsService.logCommentCreated(
-            recipeId: any(named: 'recipeId'),
-            commentLength: any(named: 'commentLength'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalyticsService.logCommentCreated(
+          recipeId: any(named: 'recipeId'),
+          commentLength: any(named: 'commentLength'),
+        ),
+      ).thenAnswer((_) async {});
 
       // Comment creation also reaches into `.social.logFirstCommentIfMilestone`
       // (BUT-593). Stub the tracker so the milestone path is a no-op in this
       // suite — milestone behavior itself is covered in
       // social_events_tracker_milestone_test.dart.
       final mockSocialTracker = _MockSocialEventsTracker();
-      when(() => mockSocialTracker.logFirstCommentIfMilestone(
-            userId: any(named: 'userId'),
-            joinedAt: any(named: 'joinedAt'),
-          )).thenAnswer((_) async => false);
+      when(
+        () => mockSocialTracker.logFirstCommentIfMilestone(
+          userId: any(named: 'userId'),
+          joinedAt: any(named: 'joinedAt'),
+        ),
+      ).thenAnswer((_) async => false);
       when(() => mockAnalyticsService.social).thenReturn(mockSocialTracker);
 
       // Pass both deps explicitly — avoids ServiceLocator entirely
@@ -89,12 +95,14 @@ void main() {
 
     group('Comment Creation', () {
       test('should create comment successfully with valid data', () async {
-        when(() => mockCommentsRepository.addComment(
-              recipeId: 'recipe_1',
-              userId: 'user_456',
-              content: 'Great recipe!',
-              parentCommentId: null,
-            )).thenAnswer((_) async => testComment);
+        when(
+          () => mockCommentsRepository.addComment(
+            recipeId: 'recipe_1',
+            userId: 'user_456',
+            content: 'Great recipe!',
+            parentCommentId: null,
+          ),
+        ).thenAnswer((_) async => testComment);
 
         final commentId = await operations.createComment(
           recipeId: 'recipe_1',
@@ -104,12 +112,14 @@ void main() {
         );
 
         expect(commentId, equals('comment_1'));
-        verify(() => mockCommentsRepository.addComment(
-              recipeId: 'recipe_1',
-              userId: 'user_456',
-              content: 'Great recipe!',
-              parentCommentId: null,
-            )).called(1);
+        verify(
+          () => mockCommentsRepository.addComment(
+            recipeId: 'recipe_1',
+            userId: 'user_456',
+            content: 'Great recipe!',
+            parentCommentId: null,
+          ),
+        ).called(1);
       });
 
       test('should throw with empty content', () async {
@@ -122,12 +132,14 @@ void main() {
           ),
           throwsArgumentError,
         );
-        verifyNever(() => mockCommentsRepository.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            ));
+        verifyNever(
+          () => mockCommentsRepository.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+          ),
+        );
       });
 
       test('should create reply with parent comment ID', () async {
@@ -141,12 +153,14 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        when(() => mockCommentsRepository.addComment(
-              recipeId: 'recipe_1',
-              userId: 'user_789',
-              content: 'I agree!',
-              parentCommentId: 'comment_1',
-            )).thenAnswer((_) async => replyComment);
+        when(
+          () => mockCommentsRepository.addComment(
+            recipeId: 'recipe_1',
+            userId: 'user_789',
+            content: 'I agree!',
+            parentCommentId: 'comment_1',
+          ),
+        ).thenAnswer((_) async => replyComment);
 
         final replyId = await operations.createComment(
           recipeId: 'recipe_1',
@@ -157,12 +171,14 @@ void main() {
         );
 
         expect(replyId, equals('reply_1'));
-        verify(() => mockCommentsRepository.addComment(
-              recipeId: 'recipe_1',
-              userId: 'user_789',
-              content: 'I agree!',
-              parentCommentId: 'comment_1',
-            )).called(1);
+        verify(
+          () => mockCommentsRepository.addComment(
+            recipeId: 'recipe_1',
+            userId: 'user_789',
+            content: 'I agree!',
+            parentCommentId: 'comment_1',
+          ),
+        ).called(1);
       });
     });
 
@@ -179,8 +195,9 @@ void main() {
           createdAt: DateTime.now().subtract(const Duration(hours: 1)),
         );
 
-        when(() => mockCommentsRepository.getCommentsForRecipe('recipe_1'))
-            .thenAnswer((_) async => [olderComment, testComment]);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('recipe_1'),
+        ).thenAnswer((_) async => [olderComment, testComment]);
 
         final result = await operations.getComments(
           recipeId: 'recipe_1',
@@ -212,8 +229,9 @@ void main() {
           createdAt: now,
         );
 
-        when(() => mockCommentsRepository.getCommentsForRecipe('recipe_1'))
-            .thenAnswer((_) async => [newComment, oldComment]);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('recipe_1'),
+        ).thenAnswer((_) async => [newComment, oldComment]);
 
         final result = await operations.getComments(
           recipeId: 'recipe_1',
@@ -237,8 +255,9 @@ void main() {
           ),
         );
 
-        when(() => mockCommentsRepository.getCommentsForRecipe('recipe_1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('recipe_1'),
+        ).thenAnswer((_) async => comments);
 
         final result = await operations.getComments(
           recipeId: 'recipe_1',
@@ -253,8 +272,12 @@ void main() {
 
     group('Comment Editing', () {
       test('should edit comment successfully', () async {
-        when(() => mockCommentsRepository.updateComment(
-            'comment_1', 'Updated comment!')).thenAnswer((_) async {});
+        when(
+          () => mockCommentsRepository.updateComment(
+            'comment_1',
+            'Updated comment!',
+          ),
+        ).thenAnswer((_) async {});
 
         final success = await operations.editComment(
           commentId: 'comment_1',
@@ -263,27 +286,39 @@ void main() {
         );
 
         expect(success, isTrue);
-        verify(() => mockCommentsRepository.updateComment(
-            'comment_1', 'Updated comment!')).called(1);
+        verify(
+          () => mockCommentsRepository.updateComment(
+            'comment_1',
+            'Updated comment!',
+          ),
+        ).called(1);
       });
 
-      test('should not validate author (current implementation limitation)',
-          () async {
-        when(() => mockCommentsRepository.updateComment(
-            'comment_1', 'Updated comment!')).thenAnswer((_) async {});
-
-        final success = await operations.editComment(
-          commentId: 'comment_1',
-          newContent: 'Updated comment!',
-          currentUserId: 'user_789', // Not the author — still succeeds
-        );
-
-        expect(success, isTrue);
-        verify(() => mockCommentsRepository.updateComment(
+      test(
+        'should not validate author (current implementation limitation)',
+        () async {
+          when(
+            () => mockCommentsRepository.updateComment(
               'comment_1',
               'Updated comment!',
-            )).called(1);
-      });
+            ),
+          ).thenAnswer((_) async {});
+
+          final success = await operations.editComment(
+            commentId: 'comment_1',
+            newContent: 'Updated comment!',
+            currentUserId: 'user_789', // Not the author — still succeeds
+          );
+
+          expect(success, isTrue);
+          verify(
+            () => mockCommentsRepository.updateComment(
+              'comment_1',
+              'Updated comment!',
+            ),
+          ).called(1);
+        },
+      );
 
       test('should fail with empty content', () async {
         final success = await operations.editComment(
@@ -293,10 +328,12 @@ void main() {
         );
 
         expect(success, isFalse);
-        verifyNever(() => mockCommentsRepository.updateComment(
-              any(),
-              any(),
-            ));
+        verifyNever(
+          () => mockCommentsRepository.updateComment(
+            any(),
+            any(),
+          ),
+        );
       });
     });
 
@@ -304,8 +341,9 @@ void main() {
 
     group('Comment Deletion', () {
       test('should delete comment successfully', () async {
-        when(() => mockCommentsRepository.deleteComment('comment_1'))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCommentsRepository.deleteComment('comment_1'),
+        ).thenAnswer((_) async {});
 
         final success = await operations.deleteComment(
           commentId: 'comment_1',
@@ -314,33 +352,39 @@ void main() {
         );
 
         expect(success, isTrue);
-        verify(() => mockCommentsRepository.deleteComment('comment_1'))
-            .called(1);
+        verify(
+          () => mockCommentsRepository.deleteComment('comment_1'),
+        ).called(1);
       });
 
-      test('should not validate permission (current implementation limitation)',
-          () async {
-        when(() => mockCommentsRepository.deleteComment('comment_1'))
-            .thenAnswer((_) async {});
+      test(
+        'should not validate permission (current implementation limitation)',
+        () async {
+          when(
+            () => mockCommentsRepository.deleteComment('comment_1'),
+          ).thenAnswer((_) async {});
 
-        final success = await operations.deleteComment(
-          commentId: 'comment_1',
-          currentUserId: 'user_789',
-          canDeleteValidator: (commentId) => false, // Validator is ignored
-        );
+          final success = await operations.deleteComment(
+            commentId: 'comment_1',
+            currentUserId: 'user_789',
+            canDeleteValidator: (commentId) => false, // Validator is ignored
+          );
 
-        expect(success, isTrue);
-        verify(() => mockCommentsRepository.deleteComment('comment_1'))
-            .called(1);
-      });
+          expect(success, isTrue);
+          verify(
+            () => mockCommentsRepository.deleteComment('comment_1'),
+          ).called(1);
+        },
+      );
     });
 
     // ---- Queries ----
 
     group('Comment Queries', () {
       test('should return comment for getCommentById when found', () async {
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => testComment);
+        when(
+          () => mockCommentsRepository.read('comment_1'),
+        ).thenAnswer((_) async => testComment);
 
         final comment = await operations.getCommentById(commentId: 'comment_1');
 
@@ -349,27 +393,32 @@ void main() {
       });
 
       test('should return null for getCommentById when not found', () async {
-        when(() => mockCommentsRepository.read('unknown'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockCommentsRepository.read('unknown'),
+        ).thenAnswer((_) async => null);
 
         final comment = await operations.getCommentById(commentId: 'unknown');
 
         expect(comment, isNull);
       });
 
-      test('should return true for commentExists when comment exists',
-          () async {
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => testComment);
+      test(
+        'should return true for commentExists when comment exists',
+        () async {
+          when(
+            () => mockCommentsRepository.read('comment_1'),
+          ).thenAnswer((_) async => testComment);
 
-        final exists = await operations.commentExists(commentId: 'comment_1');
+          final exists = await operations.commentExists(commentId: 'comment_1');
 
-        expect(exists, isTrue);
-      });
+          expect(exists, isTrue);
+        },
+      );
 
       test('should return false for commentExists when not found', () async {
-        when(() => mockCommentsRepository.read('unknown'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockCommentsRepository.read('unknown'),
+        ).thenAnswer((_) async => null);
 
         final exists = await operations.commentExists(commentId: 'unknown');
 
@@ -377,8 +426,9 @@ void main() {
       });
 
       test('should get comment count', () async {
-        when(() => mockCommentsRepository.getCommentsForRecipe('recipe_1'))
-            .thenAnswer((_) async => [testComment]);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('recipe_1'),
+        ).thenAnswer((_) async => [testComment]);
 
         final count = await operations.getCommentCount(recipeId: 'recipe_1');
 

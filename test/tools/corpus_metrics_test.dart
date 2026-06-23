@@ -10,13 +10,12 @@ GoldIngredient _ing(
   String name, {
   String? quantity,
   String? unit,
-}) =>
-    GoldIngredient(
-      name: name,
-      originalLine: [quantity, unit, name].where((e) => e != null).join(' '),
-      quantity: quantity,
-      unit: unit,
-    );
+}) => GoldIngredient(
+  name: name,
+  originalLine: [quantity, unit, name].where((e) => e != null).join(' '),
+  quantity: quantity,
+  unit: unit,
+);
 
 GoldRecipe _recipe({
   String title = 'Köttbullar',
@@ -24,15 +23,14 @@ GoldRecipe _recipe({
   int? timeMinutes,
   List<GoldIngredient> ingredients = const [],
   List<String> instructions = const [],
-}) =>
-    GoldRecipe(
-      verified: true,
-      title: title,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      ingredients: ingredients,
-      instructions: instructions,
-    );
+}) => GoldRecipe(
+  verified: true,
+  title: title,
+  portions: portions,
+  timeMinutes: timeMinutes,
+  ingredients: ingredients,
+  instructions: instructions,
+);
 
 void main() {
   group('normalizeText / tokenize', () {
@@ -136,27 +134,29 @@ void main() {
       expect(score.instructions.f1, 1.0);
     });
 
-    test('right names but wrong quantities: name-F1 perfect, full-F1 drops',
-        () {
-      // This gap is the whole point of tracking two ingredient metrics — it
-      // localizes failure to the CRF quantity/unit head, not item detection.
-      final gold = _recipe(
-        ingredients: [
-          _ing('nötfärs', quantity: '500', unit: 'g'),
-          _ing('lök', quantity: '1', unit: 'st'),
-        ],
-      );
-      final predicted = _recipe(
-        ingredients: [
-          _ing('nötfärs', quantity: '5', unit: 'dl'),
-          _ing('lök'),
-        ],
-      );
-      final score = scoreRecipe(gold, predicted);
+    test(
+      'right names but wrong quantities: name-F1 perfect, full-F1 drops',
+      () {
+        // This gap is the whole point of tracking two ingredient metrics — it
+        // localizes failure to the CRF quantity/unit head, not item detection.
+        final gold = _recipe(
+          ingredients: [
+            _ing('nötfärs', quantity: '500', unit: 'g'),
+            _ing('lök', quantity: '1', unit: 'st'),
+          ],
+        );
+        final predicted = _recipe(
+          ingredients: [
+            _ing('nötfärs', quantity: '5', unit: 'dl'),
+            _ing('lök'),
+          ],
+        );
+        final score = scoreRecipe(gold, predicted);
 
-      expect(score.ingredientNames.f1, 1.0);
-      expect(score.ingredientsFull.f1, lessThan(1.0));
-    });
+        expect(score.ingredientNames.f1, 1.0);
+        expect(score.ingredientsFull.f1, lessThan(1.0));
+      },
+    );
 
     test('scalar fields are null when the facit does not assert them', () {
       // Gold left portions/time unspecified → eval must not penalize the

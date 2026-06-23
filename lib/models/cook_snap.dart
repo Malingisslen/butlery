@@ -15,7 +15,8 @@ enum CookSnapVisibility {
 
   /// Author-only: filtered from every other viewer in the read path AND
   /// denied by Firestore rules.
-  onlyMe;
+  onlyMe
+  ;
 
   /// Missing/unknown wire values resolve to [sameAsRecipe] so legacy docs
   /// (written before the field existed) keep their inherited behaviour.
@@ -73,12 +74,12 @@ class CookSnap {
     this.caption,
     this.visibility = CookSnapVisibility.sameAsRecipe,
     DateTime? createdAt,
-  })  : assert(
-          photoUrl != null || (photoUrls != null && photoUrls.isNotEmpty),
-          'A CookSnap requires at least one photo (photoUrl or photoUrls).',
-        ),
-        photoUrls = _capPhotos(photoUrls ?? <String>[photoUrl!]),
-        createdAt = createdAt ?? clock.now();
+  }) : assert(
+         photoUrl != null || (photoUrls != null && photoUrls.isNotEmpty),
+         'A CookSnap requires at least one photo (photoUrl or photoUrls).',
+       ),
+       photoUrls = _capPhotos(photoUrls ?? <String>[photoUrl!]),
+       createdAt = createdAt ?? clock.now();
 
   /// Maximum caption length.
   static const int maxCaptionLength = 200;
@@ -126,9 +127,10 @@ class CookSnap {
   /// doc) so the constructor's non-empty invariant holds — a missing photo is
   /// a degenerate doc, not a crash.
   static List<String> _photosFromMap(Map<String, dynamic> data) {
-    final urls = SerializationUtils.safeStringList(data, 'photoUrls')
-        .where((u) => u.trim().isNotEmpty)
-        .toList();
+    final urls = SerializationUtils.safeStringList(
+      data,
+      'photoUrls',
+    ).where((u) => u.trim().isNotEmpty).toList();
     if (urls.isNotEmpty) return urls;
     final legacy = SerializationUtils.safeString(data, 'photoUrl');
     return <String>[legacy];
@@ -172,8 +174,10 @@ class CookSnap {
         'userDisplayName',
         defaultValue: '?',
       ),
-      userAvatarUrl:
-          SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
+      userAvatarUrl: SerializationUtils.safeNullableString(
+        data,
+        'userAvatarUrl',
+      ),
       // BUT-949: prefer the album list; fall back to the legacy singular
       // `photoUrl` so pre-album docs read into a one-element album.
       photoUrls: _photosFromMap(data),

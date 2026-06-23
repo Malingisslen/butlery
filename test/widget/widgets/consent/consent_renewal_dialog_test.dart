@@ -35,13 +35,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-          find.text('Vi har uppdaterat våra användarvillkor'), findsOneWidget);
+        find.text('Vi har uppdaterat våra användarvillkor'),
+        findsOneWidget,
+      );
       expect(find.text('Granska samtycken'), findsOneWidget);
       expect(find.text('Senare'), findsOneWidget);
     });
 
-    testWidgets('"Senare" dismisses the dialog without navigation',
-        (tester) async {
+    testWidgets('"Senare" dismisses the dialog without navigation', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(

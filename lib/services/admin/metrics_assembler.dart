@@ -72,10 +72,11 @@ class MetricsAssembler {
     MetricCategory.importHealth: 'import_health',
   };
 
-  MetricsAssembler(List<CategoryFetcher> fetchers,
-      {DailySnapshotRepository? snapshots})
-      : _fetchers = {for (final f in fetchers) f.category: f},
-        _snapshots = snapshots;
+  MetricsAssembler(
+    List<CategoryFetcher> fetchers, {
+    DailySnapshotRepository? snapshots,
+  }) : _fetchers = {for (final f in fetchers) f.category: f},
+       _snapshots = snapshots;
 
   /// Resolve [keys] for display. Fetches each needed category (cached unless
   /// [force]), assembles the snapshot, runs the pure resolvers.
@@ -132,10 +133,10 @@ class MetricsAssembler {
 
   /// Build the snapshot from cached slices. Grows one field per migrated tab.
   InsightsData _assemble() => InsightsData(
-        recipes: _cache[MetricCategory.recipes] as RecipeStats?,
-        importConfigs: _cache[MetricCategory.importHealth] as List<SiteConfig>?,
-        engagement: _cache[MetricCategory.engagement] as EngagementRaw?,
-        recipeSnapshot: _snapshotCache['recipes'],
-        importSnapshot: _snapshotCache['import_health'],
-      );
+    recipes: _cache[MetricCategory.recipes] as RecipeStats?,
+    importConfigs: _cache[MetricCategory.importHealth] as List<SiteConfig>?,
+    engagement: _cache[MetricCategory.engagement] as EngagementRaw?,
+    recipeSnapshot: _snapshotCache['recipes'],
+    importSnapshot: _snapshotCache['import_health'],
+  );
 }

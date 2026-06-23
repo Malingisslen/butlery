@@ -139,7 +139,9 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
 
   @override
   Future<void> addItemsBatch(
-      String listId, List<UnifiedShoppingItem> items) async {
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
     if (throwOnAddItemsBatch != null) throw throwOnAddItemsBatch!;
     batchedItems.add(items);
   }
@@ -243,10 +245,12 @@ void main() {
     // production ServiceLocator bridge is what `ServiceLocator.get<T>()`
     // inside the service hits.
     TestServiceLocator.registerMock<CategoryPreferencesRepository>(
-        fakePrefsRepo);
+      fakePrefsRepo,
+    );
     TestServiceLocator.registerMock<PermissionService>(fakePermissionService);
     TestServiceLocator.registerMock<IngredientLookupService>(
-        _MockIngredientLookupService());
+      _MockIngredientLookupService(),
+    );
 
     // Stub the OfflineService → AppDatabase → CacheDao chain used by the
     // lazy `cacheHelper` getter. We never exercise initialize() in most tests
@@ -312,33 +316,35 @@ void main() {
     /// `_error` value must NOT downgrade us to ShoppingStateError. This is
     /// the "cached data is still better than nothing" contract; flipping the
     /// `&& _lists.isEmpty` condition would regress it.
-    test('emits ShoppingStateError only when lists are empty AND error is set',
-        () async {
-      // Seed one list via the collab stream so `_lists` is non-empty.
-      final personal = UnifiedShoppingList.personal(
-        name: 'X',
-        ownerId: 'u',
-        ownerDisplayName: 'U',
-      );
-      // We can't easily set `_error` directly without invoking a code path —
-      // but we can prove the inverse: with no lists, no error, we get Data,
-      // not Error. The branch is symmetrical.
-      service.notifyListeners();
-      expect(service.currentState, isA<ShoppingStateData>());
-      // And with a list, still Data.
-      fakeRepo.emitCollab([
-        UnifiedShoppingList.collaborative(
-          name: 'C',
+    test(
+      'emits ShoppingStateError only when lists are empty AND error is set',
+      () async {
+        // Seed one list via the collab stream so `_lists` is non-empty.
+        final personal = UnifiedShoppingList.personal(
+          name: 'X',
           ownerId: 'u',
           ownerDisplayName: 'U',
-          memberPermissions: const {},
-        )
-      ]);
-      await Future<void>.delayed(Duration.zero);
-      expect(service.currentState, isA<ShoppingStateData>());
-      // Sanity ref so the test name lines up with the asserted branch.
-      expect(personal.name, 'X');
-    });
+        );
+        // We can't easily set `_error` directly without invoking a code path —
+        // but we can prove the inverse: with no lists, no error, we get Data,
+        // not Error. The branch is symmetrical.
+        service.notifyListeners();
+        expect(service.currentState, isA<ShoppingStateData>());
+        // And with a list, still Data.
+        fakeRepo.emitCollab([
+          UnifiedShoppingList.collaborative(
+            name: 'C',
+            ownerId: 'u',
+            ownerDisplayName: 'U',
+            memberPermissions: const {},
+          ),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+        expect(service.currentState, isA<ShoppingStateData>());
+        // Sanity ref so the test name lines up with the asserted branch.
+        expect(personal.name, 'X');
+      },
+    );
 
     /// Proves: cached lists + error → `currentState` is `ShoppingStateData`,
     /// not `ShoppingStateError`. This is the positive-assertion form of the
@@ -351,27 +357,32 @@ void main() {
     /// `if (_error != null && _lists.isEmpty)`), this test will turn red while
     /// the inverse-branch test above stays green.
     test(
-        'cached lists + error emits ShoppingStateData (data wins over stale error)',
-        () async {
-      // Establish a non-empty local list so `_lists` is non-empty.
-      final listId = await service.createPersonalList('Cached List');
-      expect(listId, isNotNull);
-      expect(service.lists, hasLength(1));
+      'cached lists + error emits ShoppingStateData (data wins over stale error)',
+      () async {
+        // Establish a non-empty local list so `_lists` is non-empty.
+        final listId = await service.createPersonalList('Cached List');
+        expect(listId, isNotNull);
+        expect(service.lists, hasLength(1));
 
-      // Inject an error via the test seam — simulates a background refresh
-      // failing after lists were already loaded.
-      service.setError('refresh failed');
+        // Inject an error via the test seam — simulates a background refresh
+        // failing after lists were already loaded.
+        service.setError('refresh failed');
 
-      // With lists present, state must still be Data (error exposed as the
-      // `.error` field on `ShoppingStateData`, not as `ShoppingStateError`).
-      final state = service.currentState;
-      expect(state, isA<ShoppingStateData>(),
-          reason: 'Data wins over stale error when _lists is non-empty. '
-              'Got: $state');
-      final data = state as ShoppingStateData;
-      expect(data.lists, hasLength(1));
-      expect(data.error, 'refresh failed');
-    });
+        // With lists present, state must still be Data (error exposed as the
+        // `.error` field on `ShoppingStateData`, not as `ShoppingStateError`).
+        final state = service.currentState;
+        expect(
+          state,
+          isA<ShoppingStateData>(),
+          reason:
+              'Data wins over stale error when _lists is non-empty. '
+              'Got: $state',
+        );
+        final data = state as ShoppingStateData;
+        expect(data.lists, hasLength(1));
+        expect(data.error, 'refresh failed');
+      },
+    );
 
     /// Proves the ShoppingStateError branch is reachable from PRODUCTION, not
     /// only via the @visibleForTesting setError seam. A collaborative-stream
@@ -379,8 +390,7 @@ void main() {
     /// UI shows an error state — not an empty ShoppingStateData that renders a
     /// misleading "no lists" screen. Before the fix the onError handler only
     /// logged and never set _error, so this branch was dead in production.
-    test(
-        'collaborative stream error with no cached lists emits '
+    test('collaborative stream error with no cached lists emits '
         'ShoppingStateError', () async {
       await service.initialize();
       expect(service.lists, isEmpty);
@@ -389,9 +399,13 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       final state = service.currentState;
-      expect(state, isA<ShoppingStateError>(),
-          reason: 'A cold collab-stream failure must surface as an error '
-              'state, not an empty data state. Got: $state');
+      expect(
+        state,
+        isA<ShoppingStateError>(),
+        reason:
+            'A cold collab-stream failure must surface as an error '
+            'state, not an empty data state. Got: $state',
+      );
       expect(service.hasError, isTrue);
     });
   });
@@ -629,31 +643,33 @@ void main() {
     /// Proves: repo failure path — returns false and does NOT touch local
     /// state. A bug where local state was mutated even on failure would
     /// leak optimistic ghost-edits.
-    test('returns false and leaves local state untouched on repo failure',
-        () async {
-      await service.initialize();
-      final original = UnifiedShoppingItem(name: 'Bröd', amount: 1);
-      final list = UnifiedShoppingList.collaborative(
-        name: 'Shared',
-        ownerId: 'u',
-        ownerDisplayName: 'U',
-        memberPermissions: const {},
-        items: [original],
-      );
-      fakeRepo.emitCollab([list]);
-      await Future<void>.delayed(Duration.zero);
+    test(
+      'returns false and leaves local state untouched on repo failure',
+      () async {
+        await service.initialize();
+        final original = UnifiedShoppingItem(name: 'Bröd', amount: 1);
+        final list = UnifiedShoppingList.collaborative(
+          name: 'Shared',
+          ownerId: 'u',
+          ownerDisplayName: 'U',
+          memberPermissions: const {},
+          items: [original],
+        );
+        fakeRepo.emitCollab([list]);
+        await Future<void>.delayed(Duration.zero);
 
-      fakeRepo.throwOnUpdateItem = Exception('permission denied');
-      final updated = original.copyWith(bought: true);
-      final ok = await service.updateCollaborativeItem(list.id, updated);
-      expect(ok, isFalse);
+        fakeRepo.throwOnUpdateItem = Exception('permission denied');
+        final updated = original.copyWith(bought: true);
+        final ok = await service.updateCollaborativeItem(list.id, updated);
+        expect(ok, isFalse);
 
-      final localItem = service.lists
-          .firstWhere((l) => l.id == list.id)
-          .items
-          .firstWhere((i) => i.id == original.id);
-      expect(localItem.bought, isFalse);
-    });
+        final localItem = service.lists
+            .firstWhere((l) => l.id == list.id)
+            .items
+            .firstWhere((i) => i.id == original.id);
+        expect(localItem.bought, isFalse);
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -665,51 +681,53 @@ void main() {
     /// `_lists` — personal lists must survive. A bug where the listener
     /// cleared all lists would make personal lists vanish whenever a
     /// collaborator sneezed.
-    test('emission replaces collaborative lists but keeps personal lists',
-        () async {
-      await service.initialize();
-      // Create a personal list.
-      final personalId = await service.createPersonalList('Personal A');
-      expect(personalId, isNotNull);
-      expect(service.personalLists, hasLength(1));
+    test(
+      'emission replaces collaborative lists but keeps personal lists',
+      () async {
+        await service.initialize();
+        // Create a personal list.
+        final personalId = await service.createPersonalList('Personal A');
+        expect(personalId, isNotNull);
+        expect(service.personalLists, hasLength(1));
 
-      // Emit a collaborative list via the stream.
-      final collab1 = UnifiedShoppingList.collaborative(
-        name: 'Collab 1',
-        ownerId: 'u',
-        ownerDisplayName: 'U',
-        memberPermissions: const {},
-      );
-      fakeRepo.emitCollab([collab1]);
-      await Future<void>.delayed(Duration.zero);
+        // Emit a collaborative list via the stream.
+        final collab1 = UnifiedShoppingList.collaborative(
+          name: 'Collab 1',
+          ownerId: 'u',
+          ownerDisplayName: 'U',
+          memberPermissions: const {},
+        );
+        fakeRepo.emitCollab([collab1]);
+        await Future<void>.delayed(Duration.zero);
 
-      expect(service.personalLists, hasLength(1));
-      expect(service.collaborativeLists, hasLength(1));
+        expect(service.personalLists, hasLength(1));
+        expect(service.collaborativeLists, hasLength(1));
 
-      // Replace with a different set of collab lists.
-      final collab2a = UnifiedShoppingList.collaborative(
-        name: 'C2A',
-        ownerId: 'u',
-        ownerDisplayName: 'U',
-        memberPermissions: const {},
-      );
-      final collab2b = UnifiedShoppingList.collaborative(
-        name: 'C2B',
-        ownerId: 'u',
-        ownerDisplayName: 'U',
-        memberPermissions: const {},
-      );
-      fakeRepo.emitCollab([collab2a, collab2b]);
-      await Future<void>.delayed(Duration.zero);
+        // Replace with a different set of collab lists.
+        final collab2a = UnifiedShoppingList.collaborative(
+          name: 'C2A',
+          ownerId: 'u',
+          ownerDisplayName: 'U',
+          memberPermissions: const {},
+        );
+        final collab2b = UnifiedShoppingList.collaborative(
+          name: 'C2B',
+          ownerId: 'u',
+          ownerDisplayName: 'U',
+          memberPermissions: const {},
+        );
+        fakeRepo.emitCollab([collab2a, collab2b]);
+        await Future<void>.delayed(Duration.zero);
 
-      // Personal still there, collab replaced (not appended).
-      expect(service.personalLists, hasLength(1));
-      expect(service.collaborativeLists, hasLength(2));
-      expect(
-        service.collaborativeLists.map((l) => l.name).toSet(),
-        {'C2A', 'C2B'},
-      );
-    });
+        // Personal still there, collab replaced (not appended).
+        expect(service.personalLists, hasLength(1));
+        expect(service.collaborativeLists, hasLength(2));
+        expect(
+          service.collaborativeLists.map((l) => l.name).toSet(),
+          {'C2A', 'C2B'},
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------

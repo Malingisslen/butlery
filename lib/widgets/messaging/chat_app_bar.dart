@@ -113,8 +113,9 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             if (conversation != null && conversation!.participantIds.length > 2)
               Text(
-                context.l10n
-                    .chatParticipantCount(conversation!.participantIds.length),
+                context.l10n.chatParticipantCount(
+                  conversation!.participantIds.length,
+                ),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
                 ),

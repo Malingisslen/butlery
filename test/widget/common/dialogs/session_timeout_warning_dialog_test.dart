@@ -16,12 +16,12 @@ import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.da
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialog can resolve `context.l10n.*` keys.
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 /// Builds a trigger button whose tap opens the dialog. The result is reported
 /// back through [onResult] for assertion. The dialog runs an active periodic
@@ -69,8 +69,9 @@ Future<void> _drainTimers(WidgetTester tester, int seconds) async {
 
 void main() {
   group('SessionTimeoutWarningDialog rendering', () {
-    testWidgets('renders title, message, and the M:SS countdown initially',
-        (tester) async {
+    testWidgets('renders title, message, and the M:SS countdown initially', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_triggerButton(remainingSeconds: 65)));
       await _openDialog(tester);
 
@@ -92,20 +93,23 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     });
 
-    testWidgets('zero-pads seconds below 10 (e.g. 90s -> "1:30", 9s -> "0:09")',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton(remainingSeconds: 9)));
-      await _openDialog(tester);
+    testWidgets(
+      'zero-pads seconds below 10 (e.g. 90s -> "1:30", 9s -> "0:09")',
+      (tester) async {
+        await tester.pumpWidget(_wrap(_triggerButton(remainingSeconds: 9)));
+        await _openDialog(tester);
 
-      expect(find.text('0:09'), findsOneWidget);
+        expect(find.text('0:09'), findsOneWidget);
 
-      await tester.tap(find.text('Logga ut nu'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-    });
+        await tester.tap(find.text('Logga ut nu'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      },
+    );
 
-    testWidgets('renders both action buttons with localized labels',
-        (tester) async {
+    testWidgets('renders both action buttons with localized labels', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_triggerButton(remainingSeconds: 60)));
       await _openDialog(tester);
 
@@ -139,17 +143,22 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     });
 
-    testWidgets('auto-pops with false when the countdown reaches zero',
-        (tester) async {
+    testWidgets('auto-pops with false when the countdown reaches zero', (
+      tester,
+    ) async {
       bool? result;
       var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton(
-        remainingSeconds: 2,
-        onResult: (v) {
-          result = v;
-          resolved = true;
-        },
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton(
+            remainingSeconds: 2,
+            onResult: (v) {
+              result = v;
+              resolved = true;
+            },
+          ),
+        ),
+      );
       await _openDialog(tester);
 
       // 2 ticks bring _remainingSeconds from 2 -> 1 -> 0 (auto-pop on the 2nd tick).
@@ -164,72 +173,87 @@ void main() {
 
   group('action button callbacks', () {
     testWidgets(
-        'tapping "Logga ut nu" fires onLogoutNow and resolves the future with false',
-        (tester) async {
-      var logoutCalled = false;
-      var extendCalled = false;
-      bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton(
-        remainingSeconds: 120,
-        onLogoutNow: () => logoutCalled = true,
-        onExtendSession: () => extendCalled = true,
-        onResult: (v) => result = v,
-      )));
-      await _openDialog(tester);
+      'tapping "Logga ut nu" fires onLogoutNow and resolves the future with false',
+      (tester) async {
+        var logoutCalled = false;
+        var extendCalled = false;
+        bool? result;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton(
+              remainingSeconds: 120,
+              onLogoutNow: () => logoutCalled = true,
+              onExtendSession: () => extendCalled = true,
+              onResult: (v) => result = v,
+            ),
+          ),
+        );
+        await _openDialog(tester);
 
-      await tester.tap(find.text('Logga ut nu'));
-      // Close animation; no settle (no other timers exist after _handleLogoutNow
-      // cancels the periodic one).
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Logga ut nu'));
+        // Close animation; no settle (no other timers exist after _handleLogoutNow
+        // cancels the periodic one).
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(logoutCalled, isTrue);
-      expect(extendCalled, isFalse);
-      expect(result, isFalse);
-    });
-
-    testWidgets(
-        'tapping "Fortsätt session" fires onExtendSession and resolves with true',
-        (tester) async {
-      var logoutCalled = false;
-      var extendCalled = false;
-      bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton(
-        remainingSeconds: 120,
-        onLogoutNow: () => logoutCalled = true,
-        onExtendSession: () => extendCalled = true,
-        onResult: (v) => result = v,
-      )));
-      await _openDialog(tester);
-
-      await tester.tap(find.text('Fortsätt session'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      expect(extendCalled, isTrue);
-      expect(logoutCalled, isFalse);
-      expect(result, isTrue);
-    });
+        expect(logoutCalled, isTrue);
+        expect(extendCalled, isFalse);
+        expect(result, isFalse);
+      },
+    );
 
     testWidgets(
-        'tapping an action cancels the timer (no further ticks after pop)',
-        (tester) async {
-      bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton(
-        remainingSeconds: 60,
-        onResult: (v) => result = v,
-      )));
-      await _openDialog(tester);
+      'tapping "Fortsätt session" fires onExtendSession and resolves with true',
+      (tester) async {
+        var logoutCalled = false;
+        var extendCalled = false;
+        bool? result;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton(
+              remainingSeconds: 120,
+              onLogoutNow: () => logoutCalled = true,
+              onExtendSession: () => extendCalled = true,
+              onResult: (v) => result = v,
+            ),
+          ),
+        );
+        await _openDialog(tester);
 
-      await tester.tap(find.text('Fortsätt session'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Fortsätt session'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      // Pumping more seconds must not throw "pending timers" — the periodic
-      // timer was cancelled by _handleExtendSession.
-      await tester.pump(const Duration(seconds: 5));
+        expect(extendCalled, isTrue);
+        expect(logoutCalled, isFalse);
+        expect(result, isTrue);
+      },
+    );
 
-      expect(result, isTrue);
-    });
+    testWidgets(
+      'tapping an action cancels the timer (no further ticks after pop)',
+      (tester) async {
+        bool? result;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton(
+              remainingSeconds: 60,
+              onResult: (v) => result = v,
+            ),
+          ),
+        );
+        await _openDialog(tester);
+
+        await tester.tap(find.text('Fortsätt session'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Pumping more seconds must not throw "pending timers" — the periodic
+        // timer was cancelled by _handleExtendSession.
+        await tester.pump(const Duration(seconds: 5));
+
+        expect(result, isTrue);
+      },
+    );
   });
 }

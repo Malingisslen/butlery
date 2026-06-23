@@ -13,7 +13,7 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 /// presenting the batch-preview screen and reading the user's selection back.
 class FileImportViewModel extends BaseViewModel {
   FileImportViewModel({FileImportStrategy? strategy})
-      : _strategy = strategy ?? FileImportStrategy();
+    : _strategy = strategy ?? FileImportStrategy();
 
   final FileImportStrategy _strategy;
 
@@ -97,8 +97,10 @@ class FileImportViewModel extends BaseViewModel {
     }
 
     if (isDisposed) return;
-    _statusMessage =
-        AppLocale.current.importComplete(_importedCount, _failedCount);
+    _statusMessage = AppLocale.current.importComplete(
+      _importedCount,
+      _failedCount,
+    );
     setLoading(false);
   }
 }

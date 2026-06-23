@@ -40,8 +40,11 @@ void main() {
 
         // Act & Assert
         for (final name in validNames) {
-          expect(validator.isValidRecipeName(name), isTrue,
-              reason: 'Should be valid: "$name"');
+          expect(
+            validator.isValidRecipeName(name),
+            isTrue,
+            reason: 'Should be valid: "$name"',
+          );
         }
       });
 
@@ -59,8 +62,11 @@ void main() {
 
         // Act & Assert
         for (final name in invalidNames) {
-          expect(validator.isValidRecipeName(name), isFalse,
-              reason: 'Should be invalid: "$name"');
+          expect(
+            validator.isValidRecipeName(name),
+            isFalse,
+            reason: 'Should be invalid: "$name"',
+          );
         }
       });
 
@@ -75,8 +81,11 @@ void main() {
 
         // Act & Assert
         for (final testCase in namesWithSpaces) {
-          expect(validator.isValidRecipeName(testCase.$1), equals(testCase.$2),
-              reason: 'Name "${testCase.$1}" should be ${testCase.$2}');
+          expect(
+            validator.isValidRecipeName(testCase.$1),
+            equals(testCase.$2),
+            reason: 'Name "${testCase.$1}" should be ${testCase.$2}',
+          );
         }
       });
     });
@@ -94,8 +103,11 @@ void main() {
 
         // Act & Assert
         for (final ingredients in validIngredients) {
-          expect(validator.isValidIngredients(ingredients), isTrue,
-              reason: 'Should be valid: $ingredients');
+          expect(
+            validator.isValidIngredients(ingredients),
+            isTrue,
+            reason: 'Should be valid: $ingredients',
+          );
         }
       });
 
@@ -110,8 +122,11 @@ void main() {
 
         // Act & Assert
         for (final ingredients in invalidIngredients) {
-          expect(validator.isValidIngredients(ingredients), isFalse,
-              reason: 'Should be invalid: $ingredients');
+          expect(
+            validator.isValidIngredients(ingredients),
+            isFalse,
+            reason: 'Should be invalid: $ingredients',
+          );
         }
       });
 
@@ -145,8 +160,11 @@ void main() {
 
         // Act & Assert
         for (final instructions in validInstructions) {
-          expect(validator.isValidInstructions(instructions), isTrue,
-              reason: 'Should be valid: $instructions');
+          expect(
+            validator.isValidInstructions(instructions),
+            isTrue,
+            reason: 'Should be valid: $instructions',
+          );
         }
       });
 
@@ -161,8 +179,11 @@ void main() {
 
         // Act & Assert
         for (final instructions in invalidInstructions) {
-          expect(validator.isValidInstructions(instructions), isFalse,
-              reason: 'Should be invalid: $instructions');
+          expect(
+            validator.isValidInstructions(instructions),
+            isFalse,
+            reason: 'Should be invalid: $instructions',
+          );
         }
       });
 
@@ -192,7 +213,7 @@ void main() {
           ('Tabs\there\ttoo', 'Tabs here too'),
           (
             '\r\nWindows\r\nlinebreaks\r\n',
-            'Windows\nlinebreaks'
+            'Windows\nlinebreaks',
           ), // \r\n normalized
           ('   ', ''), // Only spaces should become empty
         ];
@@ -200,9 +221,12 @@ void main() {
         // Act & Assert
         for (final testCase in inputs) {
           final normalized = validator.normalizeText(testCase.$1);
-          expect(normalized, equals(testCase.$2),
-              reason:
-                  'Input "${testCase.$1}" should normalize to "${testCase.$2}"');
+          expect(
+            normalized,
+            equals(testCase.$2),
+            reason:
+                'Input "${testCase.$1}" should normalize to "${testCase.$2}"',
+          );
         }
       });
 
@@ -244,8 +268,10 @@ void main() {
       test('should handle edge cases', () {
         // Arrange & Act & Assert
         expect(validator.normalizeText(''), equals(''));
-        expect(validator.normalizeText('NoChangesNeeded'),
-            equals('NoChangesNeeded'));
+        expect(
+          validator.normalizeText('NoChangesNeeded'),
+          equals('NoChangesNeeded'),
+        );
         expect(validator.normalizeText('123'), equals('123'));
         expect(validator.normalizeText('!@#\$%^&*()'), equals('!@#\$%^&*()'));
       });
@@ -266,8 +292,11 @@ void main() {
         // Act & Assert
         for (final testCase in testCases) {
           final number = validator.extractNumber(testCase.$1);
-          expect(number, equals(testCase.$2),
-              reason: 'Should extract ${testCase.$2} from "${testCase.$1}"');
+          expect(
+            number,
+            equals(testCase.$2),
+            reason: 'Should extract ${testCase.$2} from "${testCase.$1}"',
+          );
         }
       });
 
@@ -283,8 +312,11 @@ void main() {
 
         // Act & Assert
         for (final text in noNumberTexts) {
-          expect(validator.extractNumber(text), isNull,
-              reason: 'Should not find number in "$text"');
+          expect(
+            validator.extractNumber(text),
+            isNull,
+            reason: 'Should not find number in "$text"',
+          );
         }
       });
 
@@ -302,8 +334,11 @@ void main() {
 
         // Act & Assert
         for (final text in swedishNumbers) {
-          expect(validator.extractNumber(text), isNull,
-              reason: 'Does not extract Swedish word numbers from "$text"');
+          expect(
+            validator.extractNumber(text),
+            isNull,
+            reason: 'Does not extract Swedish word numbers from "$text"',
+          );
         }
       });
     });
@@ -322,8 +357,11 @@ void main() {
         // Act & Assert
         for (final testCase in testCases) {
           final rating = validator.extractRating(testCase.$1);
-          expect(rating, equals(testCase.$2),
-              reason: 'Should extract ${testCase.$2} from "${testCase.$1}"');
+          expect(
+            rating,
+            equals(testCase.$2),
+            reason: 'Should extract ${testCase.$2} from "${testCase.$1}"',
+          );
         }
       });
 
@@ -340,10 +378,16 @@ void main() {
       test('should validate rating range', () {
         // Prod extracts the first valid number, ignores signs
         // "6/5" → extracts 6, which is > 5 → null
-        expect(validator.extractRating('6/5'), isNull,
-            reason: 'Should reject 6/5');
-        expect(validator.extractRating('10 av 5'), isNull,
-            reason: 'Should reject 10/5');
+        expect(
+          validator.extractRating('6/5'),
+          isNull,
+          reason: 'Should reject 6/5',
+        );
+        expect(
+          validator.extractRating('10 av 5'),
+          isNull,
+          reason: 'Should reject 10/5',
+        );
         // "-1 av 5" → prod extracts "1" (ignores minus) → valid
         // "0 av 5" → extracts 0 → may be below threshold
         // These are edge cases where prod behavior is acceptable
@@ -361,8 +405,11 @@ void main() {
 
         // Act & Assert
         for (final text in noRatingTexts) {
-          expect(validator.extractRating(text), isNull,
-              reason: 'Should not find rating in "$text"');
+          expect(
+            validator.extractRating(text),
+            isNull,
+            reason: 'Should not find rating in "$text"',
+          );
         }
       });
 
@@ -378,8 +425,11 @@ void main() {
         // Act & Assert
         for (final testCase in decimalRatings) {
           final rating = validator.extractRating(testCase.$1);
-          expect(rating, equals(testCase.$2),
-              reason: 'Should extract ${testCase.$2} from "${testCase.$1}"');
+          expect(
+            rating,
+            equals(testCase.$2),
+            reason: 'Should extract ${testCase.$2} from "${testCase.$1}"',
+          );
         }
       });
     });

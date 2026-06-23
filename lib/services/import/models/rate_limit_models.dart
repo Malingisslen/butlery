@@ -241,22 +241,26 @@ class UsageLimits {
   factory UsageLimits.fromFirestore(Map<String, dynamic> data) {
     return UsageLimits(
       importsThisMinute: data['importsThisMinute'] as int? ?? 0,
-      minuteWindowStart:
-          SerializationUtils.parseDateTimeValue(data['minuteWindowStart']),
+      minuteWindowStart: SerializationUtils.parseDateTimeValue(
+        data['minuteWindowStart'],
+      ),
       importsThisHour: data['importsThisHour'] as int? ?? 0,
-      hourWindowStart:
-          SerializationUtils.parseDateTimeValue(data['hourWindowStart']),
+      hourWindowStart: SerializationUtils.parseDateTimeValue(
+        data['hourWindowStart'],
+      ),
       importsToday: data['importsToday'] as int? ?? 0,
-      dayWindowStart:
-          SerializationUtils.parseDateTimeValue(data['dayWindowStart']),
+      dayWindowStart: SerializationUtils.parseDateTimeValue(
+        data['dayWindowStart'],
+      ),
       llmEnhancementsToday: data['llmEnhancementsToday'] as int? ?? 0,
       llmExtractionsToday: data['llmExtractionsToday'] as int? ?? 0,
       llmVisionToday: data['llmVisionToday'] as int? ?? 0,
       llmCostToday: (data['llmCostToday'] as num?)?.toDouble() ?? 0.0,
       llmCostThisMonth: (data['llmCostThisMonth'] as num?)?.toDouble() ?? 0.0,
       llmOperationsThisMonth: data['llmOperationsThisMonth'] as int? ?? 0,
-      monthWindowStart:
-          SerializationUtils.parseDateTimeValue(data['monthWindowStart']),
+      monthWindowStart: SerializationUtils.parseDateTimeValue(
+        data['monthWindowStart'],
+      ),
     );
   }
 

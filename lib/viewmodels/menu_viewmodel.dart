@@ -47,11 +47,11 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
     AnalyticsService? analyticsService,
-  })  : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-        _menuService = menuService ?? ServiceLocator.get<MenuService>(),
-        _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+  }) : _recipeService =
+           recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+       _menuService = menuService ?? ServiceLocator.get<MenuService>(),
+       _analyticsService =
+           analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Initialize focused modules
     _stateManager = MenuStateManager();
     _generator = MenuGenerator(
@@ -82,8 +82,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _stateManager.addListener(_onStateChanged);
 
     // Listen to recipe service changes
-    _recipeServiceSubscription =
-        _recipeService.stateStream.listen((_) => _onRecipesChanged());
+    _recipeServiceSubscription = _recipeService.stateStream.listen(
+      (_) => _onRecipesChanged(),
+    );
 
     // Load all menus at startup
     _loadAllMenus();
@@ -139,8 +140,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     final startTime = clock.now();
 
     try {
-      final generatedMenu =
-          await _generator.generateMenuFromPrompt(prompt.trim());
+      final generatedMenu = await _generator.generateMenuFromPrompt(
+        prompt.trim(),
+      );
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
 
@@ -162,7 +164,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorImportFailed, e);
+        AppLocale.current.errorImportFailed,
+        e,
+      );
 
       // Track menu generation failure — log generic code, not full exception
       await _analyticsService.logMenuGenerationFailed(
@@ -196,7 +200,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotUpdate(section), e);
+        AppLocale.current.errorCouldNotUpdate(section),
+        e,
+      );
     } finally {
       _stateManager.setGenerating(false);
     }
@@ -217,8 +223,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     final result = _generator.swapSingleRecipe(recipe, category, menu);
     if (result.recipe == null) {
-      _stateManager.setError(result.exhaustedMessage ??
-          AppLocale.current.errorNoMoreRecipesForSwap);
+      _stateManager.setError(
+        result.exhaustedMessage ?? AppLocale.current.errorNoMoreRecipesForSwap,
+      );
       return result;
     }
 
@@ -365,7 +372,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return true;
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotSaveRecipe, e);
+        AppLocale.current.errorCouldNotSaveRecipe,
+        e,
+      );
       return false;
     }
   }
@@ -402,8 +411,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
 
       // Try loading from imported menus
-      final importedMenuData =
-          await _socialManager.loadImportedMenuData(menuKey);
+      final importedMenuData = await _socialManager.loadImportedMenuData(
+        menuKey,
+      );
       if (importedMenuData != null) {
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
@@ -416,7 +426,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return false;
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotLoad('meny'), e);
+        AppLocale.current.errorCouldNotLoad('meny'),
+        e,
+      );
       return false;
     }
   }
@@ -439,7 +451,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return success;
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotDelete('meny'), e);
+        AppLocale.current.errorCouldNotDelete('meny'),
+        e,
+      );
       return false;
     }
   }
@@ -454,7 +468,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return await _storage.markMenuAsModified(menuKey);
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotUpdate('meny'), e);
+        AppLocale.current.errorCouldNotUpdate('meny'),
+        e,
+      );
       return false;
     }
   }
@@ -475,7 +491,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return await _socialManager.getAvailableSharedMenus();
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotLoad('delade menyer'), e);
+        AppLocale.current.errorCouldNotLoad('delade menyer'),
+        e,
+      );
       return <Map<String, dynamic>>[];
     }
   }
@@ -501,7 +519,9 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return success;
     } catch (e) {
       _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotImportRecipes, e);
+        AppLocale.current.errorCouldNotImportRecipes,
+        e,
+      );
       return false;
     }
   }
@@ -566,7 +586,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _stateManager.setSavedMenus(allMenus);
 
       AppLogger.success(
-          '✅ Alla menyer laddade: ${localMenus.length} lokala, ${importedMenus.length} importerade');
+        '✅ Alla menyer laddade: ${localMenus.length} lokala, ${importedMenus.length} importerade',
+      );
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av menyer: $e');
     }

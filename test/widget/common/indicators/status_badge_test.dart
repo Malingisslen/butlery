@@ -13,8 +13,9 @@ void main() {
     });
 
     group('Default Constructor', () {
-      testWidgets('should render with required text',
-          (WidgetTester tester) async {
+      testWidgets('should render with required text', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -27,8 +28,9 @@ void main() {
         expect(find.byType(StatusBadge), findsOneWidget);
       });
 
-      testWidgets('should use theme primary color by default',
-          (WidgetTester tester) async {
+      testWidgets('should use theme primary color by default', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -47,8 +49,9 @@ void main() {
         expect(decoration.color, equals(Colors.blue));
       });
 
-      testWidgets('should use theme onPrimary color for text by default',
-          (WidgetTester tester) async {
+      testWidgets('should use theme onPrimary color for text by default', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -67,8 +70,9 @@ void main() {
         expect(text.style?.color, equals(Colors.white));
       });
 
-      testWidgets('should apply custom background color',
-          (WidgetTester tester) async {
+      testWidgets('should apply custom background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -85,8 +89,9 @@ void main() {
         expect(decoration.color, equals(Colors.red));
       });
 
-      testWidgets('should apply custom text color',
-          (WidgetTester tester) async {
+      testWidgets('should apply custom text color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -102,8 +107,9 @@ void main() {
         expect(text.style?.color, equals(Colors.yellow));
       });
 
-      testWidgets('should apply both custom colors',
-          (WidgetTester tester) async {
+      testWidgets('should apply both custom colors', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -126,8 +132,9 @@ void main() {
     });
 
     group('Primary Constructor', () {
-      testWidgets('should render with primary constructor',
-          (WidgetTester tester) async {
+      testWidgets('should render with primary constructor', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -140,8 +147,9 @@ void main() {
         expect(find.byType(StatusBadge), findsOneWidget);
       });
 
-      testWidgets('should use theme primary color',
-          (WidgetTester tester) async {
+      testWidgets('should use theme primary color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -160,8 +168,9 @@ void main() {
         expect(decoration.color, equals(Colors.green));
       });
 
-      testWidgets('should use theme onPrimary color for text',
-          (WidgetTester tester) async {
+      testWidgets('should use theme onPrimary color for text', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -194,15 +203,18 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         expect(
           container.padding,
-          equals(const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
-            vertical: AppDimensions.spacingXs,
-          )),
+          equals(
+            const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingS,
+              vertical: AppDimensions.spacingXs,
+            ),
+          ),
         );
       });
 
-      testWidgets('has square corners per Butlery design language',
-          (WidgetTester tester) async {
+      testWidgets('has square corners per Butlery design language', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -217,8 +229,9 @@ void main() {
         expect(decoration.borderRadius, equals(BorderRadius.zero));
       });
 
-      testWidgets('renders text using the widget badge style',
-          (WidgetTester tester) async {
+      testWidgets('renders text using the widget badge style', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -248,8 +261,9 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish text correctly',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish text correctly', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -261,8 +275,9 @@ void main() {
         expect(find.text('DELAD MENY'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish status "NYA"',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish status "NYA"', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -274,8 +289,9 @@ void main() {
         expect(find.text('NYA'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish status "AKTIV"',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish status "AKTIV"', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -287,8 +303,9 @@ void main() {
         expect(find.text('AKTIV'), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters',
-          (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -330,8 +347,9 @@ void main() {
         expect(find.text('DARK'), findsOneWidget);
       });
 
-      testWidgets('should use dark theme primary color',
-          (WidgetTester tester) async {
+      testWidgets('should use dark theme primary color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -380,8 +398,9 @@ void main() {
         expect(find.text(longText), findsOneWidget);
       });
 
-      testWidgets('should handle special characters',
-          (WidgetTester tester) async {
+      testWidgets('should handle special characters', (
+        WidgetTester tester,
+      ) async {
         const specialText = 'STATUS!@#\$%^&*()';
 
         await tester.pumpWidget(

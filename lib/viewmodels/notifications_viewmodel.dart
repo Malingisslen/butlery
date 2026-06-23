@@ -21,14 +21,15 @@ class NotificationsViewModel extends BaseViewModel {
   bool get isEmpty => _entries.isEmpty && !isLoading;
 
   NotificationsViewModel({NotificationService? notificationService})
-      : _notificationService =
-            notificationService ?? ServiceLocator.get<NotificationService>();
+    : _notificationService =
+          notificationService ?? ServiceLocator.get<NotificationService>();
 
   /// Loads the first page of notification history.
   Future<void> loadHistory() async {
     await executeAsyncVoid(() async {
-      final results =
-          await _notificationService.getNotificationHistory(limit: 20);
+      final results = await _notificationService.getNotificationHistory(
+        limit: 20,
+      );
       _entries = results;
       _hasMore = results.length == 20;
     });
@@ -87,8 +88,9 @@ class NotificationsViewModel extends BaseViewModel {
 
   /// Marks a notification as opened with optimistic local update.
   void markAsOpened(String notificationId) {
-    final index =
-        _entries.indexWhere((e) => e.notificationId == notificationId);
+    final index = _entries.indexWhere(
+      (e) => e.notificationId == notificationId,
+    );
     if (index == -1) return;
 
     _entries[index] = _entries[index].copyWith(
@@ -100,8 +102,9 @@ class NotificationsViewModel extends BaseViewModel {
     unawaited(
       _notificationService
           .markHistoryNotificationOpened(notificationId)
-          .catchError((e) =>
-              AppLogger.warning('Failed to mark notification opened: $e')),
+          .catchError(
+            (e) => AppLogger.warning('Failed to mark notification opened: $e'),
+          ),
     );
   }
 
@@ -119,9 +122,9 @@ class NotificationsViewModel extends BaseViewModel {
       _notificationService
           .deleteHistoryNotifications(entryIds.toList())
           .catchError((e) {
-        AppLogger.warning('Failed to dismiss notifications: $e');
-        return 0;
-      }),
+            AppLogger.warning('Failed to dismiss notifications: $e');
+            return 0;
+          }),
     );
     return removed;
   }

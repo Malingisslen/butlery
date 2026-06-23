@@ -53,10 +53,13 @@ class RealtimeGroupMenuModule {
   }) {
     return watchPlan(groupId: groupId, date: date).listen(
       onUpdate,
-      onError: onError ??
+      onError:
+          onError ??
           (error) {
             AppLogger.error(
-                'Group menu plan subscription error ($groupId)', error);
+              'Group menu plan subscription error ($groupId)',
+              error,
+            );
           },
     );
   }

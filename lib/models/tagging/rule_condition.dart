@@ -41,7 +41,8 @@ class RuleCondition {
     return RuleCondition(
       type: type,
       operator: ConditionOperatorExtension.fromFirestore(
-          data['operator']?.toString()),
+        data['operator']?.toString(),
+      ),
       value: type.isNumeric
           ? SerializationUtils.safeDouble(data, 'value', defaultValue: 0)
           : SerializationUtils.safeString(data, 'value', defaultValue: ''),
@@ -153,8 +154,9 @@ class RuleCondition {
 
   bool _evaluateKeyword(Recipe recipe) {
     final title = caseSensitive ? recipe.title : recipe.title.toLowerCase();
-    final description =
-        caseSensitive ? recipe.description : recipe.description.toLowerCase();
+    final description = caseSensitive
+        ? recipe.description
+        : recipe.description.toLowerCase();
     final searchVal = caseSensitive ? stringValue : stringValue.toLowerCase();
 
     return _matchTextOperator(title, searchVal) ||
@@ -184,8 +186,9 @@ class RuleCondition {
       case ConditionOperator.notEquals:
         return !tagResult.tags.any((tag) => tag.toLowerCase() == cuisineValue);
       case ConditionOperator.contains:
-        return tagResult.tags
-            .any((tag) => tag.toLowerCase().contains(cuisineValue));
+        return tagResult.tags.any(
+          (tag) => tag.toLowerCase().contains(cuisineValue),
+        );
       default:
         return tagResult.tags.any((tag) => tag.toLowerCase() == cuisineValue);
     }
@@ -213,7 +216,9 @@ class RuleCondition {
   bool _evaluateTime(Recipe recipe) {
     final timeMinutes = recipe.core.timeMinutes ?? 0;
     return _matchNumericOperator(
-        timeMinutes.toDouble(), numericValue.toDouble());
+      timeMinutes.toDouble(),
+      numericValue.toDouble(),
+    );
   }
 
   bool _evaluateRating(Recipe recipe) {
@@ -232,22 +237,27 @@ class RuleCondition {
     }
 
     return _matchNumericOperator(
-        daysSinceCreated.toDouble(), numericValue.toDouble());
+      daysSinceCreated.toDouble(),
+      numericValue.toDouble(),
+    );
   }
 
   /// Evaluates days since last cooked. Never-cooked recipes use max int.
   bool _evaluateCookedRecency(Recipe recipe) {
     final lastCooked = recipe.core.lastCookedAt;
     // Never cooked = treat as infinitely old for greaterThan comparisons
-    final daysSinceCooked =
-        lastCooked == null ? 999999 : clock.now().difference(lastCooked).inDays;
+    final daysSinceCooked = lastCooked == null
+        ? 999999
+        : clock.now().difference(lastCooked).inDays;
 
     if (operator == ConditionOperator.withinDays) {
       return daysSinceCooked <= numericValue;
     }
 
     return _matchNumericOperator(
-        daysSinceCooked.toDouble(), numericValue.toDouble());
+      daysSinceCooked.toDouble(),
+      numericValue.toDouble(),
+    );
   }
 
   /// Evaluates ownership condition.
@@ -257,7 +267,8 @@ class RuleCondition {
 
     // Get ownership info from recipe and its socialData
     final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-    final isCollaborative = recipe.type == RecipeType.collaborative ||
+    final isCollaborative =
+        recipe.type == RecipeType.collaborative ||
         recipe.type == RecipeType.realtime;
     final isPublic = recipe.isPublic;
 

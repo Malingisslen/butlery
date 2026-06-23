@@ -58,28 +58,31 @@ void main() {
     await cleanUp(tester, service);
   });
 
-  testWidgets('paused timers still appear; the strip reflects running + paused',
-      (tester) async {
-    final service = StepTimerService();
-    service.startTimer(id: 'step-0', duration: const Duration(minutes: 10));
-    service.startTimer(id: 'step-1', duration: const Duration(minutes: 3));
-    service.pauseTimer('step-1');
+  testWidgets(
+    'paused timers still appear; the strip reflects running + paused',
+    (tester) async {
+      final service = StepTimerService();
+      service.startTimer(id: 'step-0', duration: const Duration(minutes: 10));
+      service.startTimer(id: 'step-1', duration: const Duration(minutes: 3));
+      service.pauseTimer('step-1');
 
-    await tester.pumpWidget(harness(service, onTapTimer: (_) {}));
-    await tester.pump();
+      await tester.pumpWidget(harness(service, onTapTimer: (_) {}));
+      await tester.pump();
 
-    // Both the running and the paused timer keep their chip — pausing must not
-    // drop a timer the cook is mid-way through.
-    expect(find.text('10:00'), findsOneWidget);
-    expect(find.text('03:00'), findsOneWidget);
-    // The paused chip swaps the timer glyph for a pause glyph.
-    expect(find.byIcon(Icons.pause), findsOneWidget);
+      // Both the running and the paused timer keep their chip — pausing must not
+      // drop a timer the cook is mid-way through.
+      expect(find.text('10:00'), findsOneWidget);
+      expect(find.text('03:00'), findsOneWidget);
+      // The paused chip swaps the timer glyph for a pause glyph.
+      expect(find.byIcon(Icons.pause), findsOneWidget);
 
-    await cleanUp(tester, service);
-  });
+      await cleanUp(tester, service);
+    },
+  );
 
-  testWidgets('idle and expired timers are filtered out of the strip',
-      (tester) async {
+  testWidgets('idle and expired timers are filtered out of the strip', (
+    tester,
+  ) async {
     final service = StepTimerService();
     // step-0 runs; step-1 expires (drive past its 1s duration); the legacy
     // default timer is reset to idle. Only step-0 should show a chip.
@@ -96,8 +99,11 @@ void main() {
     await tester.pump();
 
     expect(service.isRunningFor('step-0'), isTrue);
-    expect(service.isRunningFor('step-1'), isFalse,
-        reason: 'step-1 must have expired after its 1s duration');
+    expect(
+      service.isRunningFor('step-1'),
+      isFalse,
+      reason: 'step-1 must have expired after its 1s duration',
+    );
     // Exactly one live chip remains — the running step-0. The expired step-1 and
     // the idle default timer contribute no chip, so only one timer glyph shows.
     expect(find.byIcon(Icons.timer_outlined), findsOneWidget);

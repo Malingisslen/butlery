@@ -33,8 +33,8 @@ class WeeklyMenuPlanService extends BaseService {
   WeeklyMenuPlanService({
     required WeeklyMenuPlanRepository repository,
     required UserService userService,
-  })  : _repository = repository,
-        _userService = userService;
+  }) : _repository = repository,
+       _userService = userService;
 
   @override
   String get serviceName => 'WeeklyMenuPlanService';
@@ -113,23 +113,28 @@ class WeeklyMenuPlanService extends BaseService {
           userId: userId,
           weekStart: normalizedTo,
         );
-        var dest = destFetched ??
+        var dest =
+            destFetched ??
             WeeklyMenuPlan.empty(userId: userId, date: normalizedTo);
 
         final newEntries = <WeeklyMenuPlanEntry>[];
         for (final src in source.entries) {
-          final duplicate = dest.entries.any((e) =>
-              e.day == src.day &&
-              e.slot == src.slot &&
-              e.recipeId == src.recipeId);
+          final duplicate = dest.entries.any(
+            (e) =>
+                e.day == src.day &&
+                e.slot == src.slot &&
+                e.recipeId == src.recipeId,
+          );
           if (duplicate) continue;
-          newEntries.add(WeeklyMenuPlanEntry.create(
-            day: src.day,
-            slot: src.slot,
-            recipeId: src.recipeId,
-            recipeTitle: src.recipeTitle,
-            recipeImageUrl: src.recipeImageUrl,
-          ));
+          newEntries.add(
+            WeeklyMenuPlanEntry.create(
+              day: src.day,
+              slot: src.slot,
+              recipeId: src.recipeId,
+              recipeTitle: src.recipeTitle,
+              recipeImageUrl: src.recipeImageUrl,
+            ),
+          );
         }
         if (newEntries.isEmpty) return 0;
 
@@ -237,10 +242,12 @@ class WeeklyMenuPlanService extends BaseService {
 
     // Anchor index: 0 = Mon. For current week, start from today's weekday;
     // otherwise start from Monday.
-    final anchorIndex =
-        anchorIsToday ? DayOfWeek.fromDateTime(evaluationTime).index : 0;
+    final anchorIndex = anchorIsToday
+        ? DayOfWeek.fromDateTime(evaluationTime).index
+        : 0;
 
-    final base = existing ??
+    final base =
+        existing ??
         WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);
     final mutableEntries = List<WeeklyMenuPlanEntry>.from(base.entries);
     final overflow = <Recipe>[];
@@ -254,11 +261,13 @@ class WeeklyMenuPlanService extends BaseService {
       final recipes = generated[slotKey];
       if (recipes == null) continue;
       final match = recipes
-          .where((r) =>
-              !pinnedRecipeIds.contains(r.id) &&
-              (pin.constraint.requiredTags.isEmpty ||
-                  (r.tagResult?.hasAllTags(pin.constraint.requiredTags) ??
-                      false)))
+          .where(
+            (r) =>
+                !pinnedRecipeIds.contains(r.id) &&
+                (pin.constraint.requiredTags.isEmpty ||
+                    (r.tagResult?.hasAllTags(pin.constraint.requiredTags) ??
+                        false)),
+          )
           .firstOrNull;
       if (match == null) continue;
       // weekdayIndex is 1-based (Mon=1), DayOfWeek is 0-based index.
@@ -290,11 +299,13 @@ class WeeklyMenuPlanService extends BaseService {
             overflow.add(recipe);
             continue;
           }
-          mutableEntries.add(_entryFor(
-            day: DayOfWeek.values[dayCursor],
-            slot: slot,
-            recipe: recipe,
-          ));
+          mutableEntries.add(
+            _entryFor(
+              day: DayOfWeek.values[dayCursor],
+              slot: slot,
+              recipe: recipe,
+            ),
+          );
           dayCursor += 1;
         }
       } else {
@@ -304,8 +315,9 @@ class WeeklyMenuPlanService extends BaseService {
           DayOfWeek? targetDay;
           for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
             final candidate = DayOfWeek.values[i];
-            final occupied =
-                mutableEntries.any((e) => e.day == candidate && e.slot == slot);
+            final occupied = mutableEntries.any(
+              (e) => e.day == candidate && e.slot == slot,
+            );
             if (!occupied) {
               targetDay = candidate;
               break;
@@ -315,11 +327,13 @@ class WeeklyMenuPlanService extends BaseService {
             overflow.add(recipe);
             continue;
           }
-          mutableEntries.add(_entryFor(
-            day: targetDay,
-            slot: slot,
-            recipe: recipe,
-          ));
+          mutableEntries.add(
+            _entryFor(
+              day: targetDay,
+              slot: slot,
+              recipe: recipe,
+            ),
+          );
         }
       }
     }

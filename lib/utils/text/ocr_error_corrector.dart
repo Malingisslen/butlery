@@ -67,7 +67,8 @@ class OcrErrorCorrector {
   }
 
   static final _numericPattern = RegExp(
-      r'^[\d,./\-\u00BD\u00BC\u00BE\u2153\u2154\u215B\u215C\u215D\u215E]+$');
+    r'^[\d,./\-\u00BD\u00BC\u00BE\u2153\u2154\u215B\u215C\u215D\u215E]+$',
+  );
 
   static String _correctWord(String word) {
     if (word.isEmpty) return word;

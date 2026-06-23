@@ -23,33 +23,35 @@ import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: child),
-    );
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 UnifiedShoppingList _list() => UnifiedShoppingList(
-      id: 'list1',
-      name: 'Veckans inköp',
-      ownerId: 'u1',
-      ownerDisplayName: 'Anna',
-      items: const <UnifiedShoppingItem>[],
-      type: ListType.personal,
-    );
+  id: 'list1',
+  name: 'Veckans inköp',
+  ownerId: 'u1',
+  ownerDisplayName: 'Anna',
+  items: const <UnifiedShoppingItem>[],
+  type: ListType.personal,
+);
 
 void main() {
   group('ShoppingListCard mounts HoverableCard (BUT-1358)', () {
     testWidgets('renders a HoverableCard ancestor', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ShoppingListCard(shoppingList: _list(), onTap: () {}),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          ShoppingListCard(shoppingList: _list(), onTap: () {}),
+        ),
+      );
 
       expect(
         find.descendant(
@@ -60,15 +62,20 @@ void main() {
       );
     });
 
-    testWidgets('rest decoration uses surface fill + square corners + shadow',
-        (tester) async {
+    testWidgets('rest decoration uses surface fill + square corners + shadow', (
+      tester,
+    ) async {
       late ColorScheme cs;
-      await tester.pumpWidget(_wrap(
-        Builder(builder: (context) {
-          cs = Theme.of(context).colorScheme;
-          return ShoppingListCard(shoppingList: _list(), onTap: () {});
-        }),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return ShoppingListCard(shoppingList: _list(), onTap: () {});
+            },
+          ),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -78,21 +85,30 @@ void main() {
       );
 
       final rest = hoverable.restDecoration as BoxDecoration;
-      expect(rest.color, cs.surface,
-          reason: 'Shopping list card fill must use the surface token.');
+      expect(
+        rest.color,
+        cs.surface,
+        reason: 'Shopping list card fill must use the surface token.',
+      );
       expect(
         rest.borderRadius,
         BorderRadius.circular(AppDimensions.borderRadiusM),
       );
-      expect(rest.boxShadow, isNotNull,
-          reason: 'Rest reproduces the old Material elevation as a shadow.');
+      expect(
+        rest.boxShadow,
+        isNotNull,
+        reason: 'Rest reproduces the old Material elevation as a shadow.',
+      );
     });
 
-    testWidgets('hover variant keeps fill + corners, only deepens shadow',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        ShoppingListCard(shoppingList: _list(), onTap: () {}),
-      ));
+    testWidgets('hover variant keeps fill + corners, only deepens shadow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          ShoppingListCard(shoppingList: _list(), onTap: () {}),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -107,8 +123,11 @@ void main() {
       expect(hover.color, equals(rest.color));
       expect(hover.borderRadius, equals(rest.borderRadius));
       expect(hover.boxShadow, isNotNull);
-      expect(hover.boxShadow, isNot(equals(rest.boxShadow)),
-          reason: 'Hover must deepen the shadow beyond the rest elevation.');
+      expect(
+        hover.boxShadow,
+        isNot(equals(rest.boxShadow)),
+        reason: 'Hover must deepen the shadow beyond the rest elevation.',
+      );
     });
 
     testWidgets('non-tappable card defers the cursor', (tester) async {
@@ -124,17 +143,27 @@ void main() {
         return mouseRegion.cursor;
       }
 
-      await tester.pumpWidget(_wrap(
-        ShoppingListCard(shoppingList: _list(), onTap: () {}),
-      ));
-      expect(cursorOf(), SystemMouseCursors.click,
-          reason: 'A card with an onTap must show the click cursor.');
+      await tester.pumpWidget(
+        _wrap(
+          ShoppingListCard(shoppingList: _list(), onTap: () {}),
+        ),
+      );
+      expect(
+        cursorOf(),
+        SystemMouseCursors.click,
+        reason: 'A card with an onTap must show the click cursor.',
+      );
 
-      await tester.pumpWidget(_wrap(
-        ShoppingListCard(shoppingList: _list()),
-      ));
-      expect(cursorOf(), MouseCursor.defer,
-          reason: 'A card with no onTap should not imply clickability.');
+      await tester.pumpWidget(
+        _wrap(
+          ShoppingListCard(shoppingList: _list()),
+        ),
+      );
+      expect(
+        cursorOf(),
+        MouseCursor.defer,
+        reason: 'A card with no onTap should not imply clickability.',
+      );
     });
   });
 }

@@ -38,10 +38,10 @@ class NotificationBatchManager {
     required NotificationBatchRepository repository,
     Future<void> Function(NotificationBatch)? sendBatchCallback,
     Clock? clock,
-  })  : _userId = userId,
-        _repository = repository,
-        _sendBatchCallback = sendBatchCallback,
-        _clock = clock ?? const Clock();
+  }) : _userId = userId,
+       _repository = repository,
+       _sendBatchCallback = sendBatchCallback,
+       _clock = clock ?? const Clock();
 
   /// Add notification to appropriate batch queue
   /// This is the main entry point for batchable notifications
@@ -55,12 +55,14 @@ class NotificationBatchManager {
   }) async {
     try {
       AppLogger.debug(
-          '🔔 Adding notification to batch for ${targetUserIds.length} users');
+        '🔔 Adding notification to batch for ${targetUserIds.length} users',
+      );
 
       // Check if notification should be batched at all
       if (strategy.type != NotificationType.batchable) {
         AppLogger.debug(
-            '📋 Strategy is not batchable, skipping batch processing');
+          '📋 Strategy is not batchable, skipping batch processing',
+        );
         return false;
       }
 
@@ -70,7 +72,8 @@ class NotificationBatchManager {
         // Check rate limiting first
         if (_isRateLimited(targetUserId, strategy.category)) {
           AppLogger.warning(
-              '⚠️ Rate limit exceeded for user $targetUserId in ${strategy.category.name}');
+            '⚠️ Rate limit exceeded for user $targetUserId in ${strategy.category.name}',
+          );
           continue;
         }
 
@@ -105,7 +108,8 @@ class NotificationBatchManager {
 
       if (anyBatched) {
         AppLogger.success(
-            '✅ Successfully batched notification for ${targetUserIds.length} users');
+          '✅ Successfully batched notification for ${targetUserIds.length} users',
+        );
       }
 
       return anyBatched;
@@ -127,8 +131,9 @@ class NotificationBatchManager {
       'active_batch_timers': _batchTimers.length,
       'batch_keys': _batchTimers.keys.toList(),
       'is_processing': _isBatchProcessing,
-      'rate_limit_tracking':
-          _rateLimitingTracker.map((key, value) => MapEntry(key, value.length)),
+      'rate_limit_tracking': _rateLimitingTracker.map(
+        (key, value) => MapEntry(key, value.length),
+      ),
     };
   }
 
@@ -142,8 +147,9 @@ class NotificationBatchManager {
     final recentNotifications = _rateLimitingTracker[key] ?? [];
 
     // Remove old entries outside the window
-    recentNotifications
-        .removeWhere((timestamp) => now.difference(timestamp) > window);
+    recentNotifications.removeWhere(
+      (timestamp) => now.difference(timestamp) > window,
+    );
 
     // Check limits based on category
     int maxNotifications;
@@ -175,7 +181,8 @@ class NotificationBatchManager {
 
     if (isLimited) {
       AppLogger.warning(
-          '⚠️ Rate limit exceeded: ${recentNotifications.length}/$maxNotifications for $key');
+        '⚠️ Rate limit exceeded: ${recentNotifications.length}/$maxNotifications for $key',
+      );
     }
 
     return isLimited;
@@ -183,7 +190,9 @@ class NotificationBatchManager {
 
   /// Track notification for rate limiting
   void _trackNotificationForRateLimit(
-      String userId, NotificationCategory category) {
+    String userId,
+    NotificationCategory category,
+  ) {
     final key = '${userId}_${category.name}';
     final now = _clock.now();
 
@@ -191,8 +200,9 @@ class NotificationBatchManager {
 
     // Keep only recent entries to prevent memory bloat
     const window = Duration(minutes: 15);
-    _rateLimitingTracker[key]!
-        .removeWhere((timestamp) => now.difference(timestamp) > window);
+    _rateLimitingTracker[key]!.removeWhere(
+      (timestamp) => now.difference(timestamp) > window,
+    );
   }
 
   /// Detect potential spam patterns
@@ -207,18 +217,22 @@ class NotificationBatchManager {
     }
 
     // Check for rapid succession (all within 1 minute)
-    final timestamps = notifications
-        .map((n) =>
-            DateTime.tryParse((n.data['timestamp'] as String?).orEmpty()))
-        .whereType<DateTime>()
-        .toList()
-      ..sort();
+    final timestamps =
+        notifications
+            .map(
+              (n) =>
+                  DateTime.tryParse((n.data['timestamp'] as String?).orEmpty()),
+            )
+            .whereType<DateTime>()
+            .toList()
+          ..sort();
 
     if (timestamps.isNotEmpty) {
       final timeSpan = timestamps.last.difference(timestamps.first);
       if (timeSpan.inMinutes < 1 && notifications.length > 8) {
         AppLogger.warning(
-            '⚠️ Detected potential spam pattern: rapid succession');
+          '⚠️ Detected potential spam pattern: rapid succession',
+        );
         return true;
       }
     }
@@ -253,7 +267,8 @@ class NotificationBatchManager {
       }
 
       AppLogger.success(
-          '✅ Processed $processedCount batches, $errorCount errors');
+        '✅ Processed $processedCount batches, $errorCount errors',
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to process pending batches', e);
     } finally {
@@ -263,7 +278,9 @@ class NotificationBatchManager {
 
   /// Schedule batch processing with timer
   void _scheduleBatchProcessing(
-      String batchKey, NotificationStrategy strategy) {
+    String batchKey,
+    NotificationStrategy strategy,
+  ) {
     // Don't create duplicate timers
     if (_batchTimers.containsKey(batchKey)) {
       AppLogger.debug('📋 Batch timer already exists for: $batchKey');
@@ -278,7 +295,8 @@ class NotificationBatchManager {
     });
 
     AppLogger.debug(
-        '⏰ Scheduled batch processing for $batchKey in ${batchWindow.inMinutes} minutes');
+      '⏰ Scheduled batch processing for $batchKey in ${batchWindow.inMinutes} minutes',
+    );
   }
 
   /// Process a specific batch of notifications
@@ -304,8 +322,9 @@ class NotificationBatchManager {
       }
 
       // Build combined notification from batch
-      final combinedNotification =
-          _buildBatchedNotification(batch.notifications);
+      final combinedNotification = _buildBatchedNotification(
+        batch.notifications,
+      );
 
       // Create updated batch with combined notification
       final processedBatch = NotificationBatch(
@@ -321,7 +340,8 @@ class NotificationBatchManager {
         await _sendBatchCallback!(processedBatch);
       } else {
         AppLogger.info(
-            '📋 [DEV] Would send batched notification to ${batch.userId}: ${combinedNotification.title}');
+          '📋 [DEV] Would send batched notification to ${batch.userId}: ${combinedNotification.title}',
+        );
       }
 
       // Remove the processed batch
@@ -329,7 +349,8 @@ class NotificationBatchManager {
       _cleanupBatchTimer(batchKey);
 
       AppLogger.success(
-          '✅ Processed batch with ${batch.notifications.length} notifications');
+        '✅ Processed batch with ${batch.notifications.length} notifications',
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to process batch: $batchKey', e);
       _cleanupBatchTimer(batchKey);
@@ -339,7 +360,8 @@ class NotificationBatchManager {
 
   /// Build combined notification from multiple templates
   NotificationTemplate _buildBatchedNotification(
-      List<NotificationTemplate> notifications) {
+    List<NotificationTemplate> notifications,
+  ) {
     if (notifications.isEmpty) {
       throw ArgumentError('Cannot batch empty notification list');
     }
@@ -355,8 +377,9 @@ class NotificationBatchManager {
     final categoryName = categoryString.contains('.')
         ? categoryString.split('.').last
         : categoryString;
-    final category = NotificationCategory.values
-        .firstWhereOrNull((c) => c.name == categoryName);
+    final category = NotificationCategory.values.firstWhereOrNull(
+      (c) => c.name == categoryName,
+    );
 
     String title;
     String body;
@@ -394,8 +417,10 @@ class NotificationBatchManager {
       ...firstNotification.data,
       'batched': true,
       'count': notifications.length,
-      'batch_categories':
-          notifications.map((n) => n.data['category']).toSet().toList(),
+      'batch_categories': notifications
+          .map((n) => n.data['category'])
+          .toSet()
+          .toList(),
       'batch_types': notifications.map((n) => n.data['type']).toSet().toList(),
     };
 
@@ -447,8 +472,9 @@ class NotificationBatchManager {
 
       _rateLimitingTracker.forEach((key, timestamps) {
         final initialSize = timestamps.length;
-        timestamps
-            .removeWhere((timestamp) => now.difference(timestamp) > window);
+        timestamps.removeWhere(
+          (timestamp) => now.difference(timestamp) > window,
+        );
         removedEntries += initialSize - timestamps.length;
       });
 
@@ -466,7 +492,8 @@ class NotificationBatchManager {
   /// Dispose resources and cleanup
   void dispose() {
     AppLogger.info(
-        '🔔 Disposing NotificationBatchManager for user ${_userId.maskedUserId}');
+      '🔔 Disposing NotificationBatchManager for user ${_userId.maskedUserId}',
+    );
 
     // Cancel all batch timers
     for (final timer in _batchTimers.values) {

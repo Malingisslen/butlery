@@ -36,8 +36,9 @@ class SearchService extends BaseService {
     if (tags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
-      return tags
-          .every((tag) => (recipe.personalTagIds?.contains(tag)).orFalse());
+      return tags.every(
+        (tag) => (recipe.personalTagIds?.contains(tag)).orFalse(),
+      );
     }).toList();
   }
 
@@ -46,7 +47,9 @@ class SearchService extends BaseService {
   /// Uses OR logic for exclusion - if the recipe has ANY of the
   /// excluded tags it is removed from the result.
   List<Recipe> filterByExcludedTags(
-      List<Recipe> recipes, List<String> excludedTags) {
+    List<Recipe> recipes,
+    List<String> excludedTags,
+  ) {
     if (excludedTags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
@@ -327,9 +330,13 @@ class SearchService extends BaseService {
 
   /// Checks if target contains all query words (Swedish-normalized).
   static bool _normalizedContains(
-      String target, String normalizedQuery, List<String> queryWords) {
-    final normalizedTarget =
-        SwedishCharacterNormalizer.normalize(target.toLowerCase());
+    String target,
+    String normalizedQuery,
+    List<String> queryWords,
+  ) {
+    final normalizedTarget = SwedishCharacterNormalizer.normalize(
+      target.toLowerCase(),
+    );
     if (queryWords.length == 1) {
       return normalizedTarget.contains(normalizedQuery);
     }

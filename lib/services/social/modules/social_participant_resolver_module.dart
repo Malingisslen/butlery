@@ -35,8 +35,9 @@ class SocialParticipantResolverModule {
   /// Returns UserProfile objects created from denormalized data in member subcollection.
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
     try {
-      final recipe =
-          getSharedRecipes().where((r) => r.id == recipeId).firstOrNull;
+      final recipe = getSharedRecipes()
+          .where((r) => r.id == recipeId)
+          .firstOrNull;
       if (recipe == null) return [];
 
       // Fast path: use denormalized member info from subcollection
@@ -80,24 +81,28 @@ class SocialParticipantResolverModule {
     final participants = <UserProfile>[];
 
     // Add owner as first participant
-    participants.add(UserProfile(
-      uid: ownerId,
-      displayName: ownerDisplayName,
-      email: '',
-      joinedAt: clock.now(),
-      lastActiveAt: clock.now(),
-    ));
+    participants.add(
+      UserProfile(
+        uid: ownerId,
+        displayName: ownerDisplayName,
+        email: '',
+        joinedAt: clock.now(),
+        lastActiveAt: clock.now(),
+      ),
+    );
 
     // Add members from denormalized data (no additional fetches needed)
     for (final member in members) {
-      participants.add(UserProfile(
-        uid: member.userId,
-        displayName: member.displayName,
-        avatarUrl: member.avatarUrl,
-        email: '',
-        joinedAt: member.addedAt,
-        lastActiveAt: member.addedAt,
-      ));
+      participants.add(
+        UserProfile(
+          uid: member.userId,
+          displayName: member.displayName,
+          avatarUrl: member.avatarUrl,
+          email: '',
+          joinedAt: member.addedAt,
+          lastActiveAt: member.addedAt,
+        ),
+      );
     }
 
     return participants;
@@ -110,7 +115,8 @@ class SocialParticipantResolverModule {
       final shoppingService = getShoppingService();
       if (shoppingService == null) {
         AppLogger.warning(
-            'Shopping service not available for participant resolution');
+          'Shopping service not available for participant resolution',
+        );
         return [];
       }
 

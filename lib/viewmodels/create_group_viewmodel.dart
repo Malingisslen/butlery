@@ -130,7 +130,7 @@ class CreateGroupViewModel extends ChangeNotifier
   CreateGroupViewModel({
     UnifiedFriendsService? friendsService,
   }) : _friendsService =
-            friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
+           friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
 
   /// Current group name for display and validation coordination.
   /// Provides access to current group name input enabling form display,
@@ -332,8 +332,9 @@ class CreateGroupViewModel extends ChangeNotifier
         );
 
         if (categoryId == null) {
-          throw Exception(_friendsService.error ??
-              AppLocale.current.errorCouldNotCreateGroup);
+          throw Exception(
+            _friendsService.error ?? AppLocale.current.errorCouldNotCreateGroup,
+          );
         }
 
         // Step 2: Verify created group and retrieve group data
@@ -355,8 +356,9 @@ class CreateGroupViewModel extends ChangeNotifier
               if (friend.email.isNotEmpty && friend.email.contains('@')) {
                 await _friendsService.invitations.sendEmailInvitation(
                   email: friend.email,
-                  customMessage: AppLocale.current
-                      .groupInvitationMessage(createdGroup.name),
+                  customMessage: AppLocale.current.groupInvitationMessage(
+                    createdGroup.name,
+                  ),
                 );
               }
             }

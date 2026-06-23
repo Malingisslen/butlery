@@ -10,7 +10,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Handles the app bar with notification badges and refresh functionality.
 class SharedContentAppBar {
   static Widget build(
-      BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+  ) {
     // BUT-706: stays a Material SliverAppBar for now. A CupertinoSliverNavigationBar
     // (iOS large-title) is possible here but is a visual/UX decision, not a
     // mechanical swap — deferred (see BUT-1362).
@@ -27,8 +29,9 @@ class SharedContentAppBar {
         // Notification badge med unread count
         if (viewModel.totalUnreadCount > 0)
           Container(
-            margin:
-                const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+            margin: const EdgeInsetsDirectional.only(
+              end: AppDimensions.spacingS,
+            ),
             child: Stack(
               children: [
                 IconButton(

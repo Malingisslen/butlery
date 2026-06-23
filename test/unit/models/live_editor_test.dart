@@ -199,8 +199,9 @@ void main() {
       });
 
       test('should calculate time since last seen', () {
-        final lastSeen =
-            DateTime.now().subtract(Duration(hours: 2, minutes: 30));
+        final lastSeen = DateTime.now().subtract(
+          Duration(hours: 2, minutes: 30),
+        );
         final editor = LiveEditor(
           userId: 'user_123',
           displayName: 'Anna',
@@ -247,13 +248,15 @@ void main() {
 
         expect(updated.lastSeen.isAfter(oldLastSeen), isTrue);
         expect(
-            updated.lastSeen.isAfter(before) ||
-                updated.lastSeen.isAtSameMomentAs(before),
-            isTrue);
+          updated.lastSeen.isAfter(before) ||
+              updated.lastSeen.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            updated.lastSeen.isBefore(after) ||
-                updated.lastSeen.isAtSameMomentAs(after),
-            isTrue);
+          updated.lastSeen.isBefore(after) ||
+              updated.lastSeen.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
 
@@ -272,18 +275,20 @@ void main() {
         expect(editor.isEditingField('title'), isFalse);
       });
 
-      test('should return false for inactive editor even with matching field',
-          () {
-        final editor = LiveEditor(
-          userId: 'user_123',
-          displayName: 'Anna',
-          lastSeen: DateTime.now(),
-          currentField: 'description',
-          isActive: false,
-        );
+      test(
+        'should return false for inactive editor even with matching field',
+        () {
+          final editor = LiveEditor(
+            userId: 'user_123',
+            displayName: 'Anna',
+            lastSeen: DateTime.now(),
+            currentField: 'description',
+            isActive: false,
+          );
 
-        expect(editor.isEditingField('description'), isFalse);
-      });
+          expect(editor.isEditingField('description'), isFalse);
+        },
+      );
 
       test('should handle null current field', () {
         final editor = LiveEditor(
@@ -306,8 +311,10 @@ void main() {
           isActive: true,
         );
 
-        expect(editor.isEditingField('instructions[0].steps[2].description'),
-            isTrue);
+        expect(
+          editor.isEditingField('instructions[0].steps[2].description'),
+          isTrue,
+        );
       });
     });
 

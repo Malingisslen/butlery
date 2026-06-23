@@ -37,22 +37,27 @@ void main() {
       ...List<int>.filled(32, 0xDD),
     ]);
 
-    test('returns original bytes unchanged for non-HEIC input (JPEG)',
-        () async {
-      var compressCalls = 0;
-      final converter = HeicConverter(
-        compress: (bytes, {required quality}) async {
-          compressCalls++;
-          return null;
-        },
-      );
+    test(
+      'returns original bytes unchanged for non-HEIC input (JPEG)',
+      () async {
+        var compressCalls = 0;
+        final converter = HeicConverter(
+          compress: (bytes, {required quality}) async {
+            compressCalls++;
+            return null;
+          },
+        );
 
-      final result = await converter.convertToJpegIfHeic(jpegBytes);
+        final result = await converter.convertToJpegIfHeic(jpegBytes);
 
-      expect(result, same(jpegBytes));
-      expect(compressCalls, 0,
-          reason: 'compress must not be invoked for non-HEIC input');
-    });
+        expect(result, same(jpegBytes));
+        expect(
+          compressCalls,
+          0,
+          reason: 'compress must not be invoked for non-HEIC input',
+        );
+      },
+    );
 
     test('returns original bytes unchanged for non-HEIC input (PNG)', () async {
       final converter = HeicConverter(
@@ -64,32 +69,34 @@ void main() {
       expect(result, same(pngBytes));
     });
 
-    test('HEIC input → calls compress at quality 90 → returns new bytes',
-        () async {
-      final convertedBytes = Uint8List.fromList([
-        0xFF,
-        0xD8,
-        0xFF,
-        0xE0,
-        ...List<int>.filled(8, 0xEE),
-      ]);
-      Uint8List? capturedInput;
-      int? capturedQuality;
+    test(
+      'HEIC input → calls compress at quality 90 → returns new bytes',
+      () async {
+        final convertedBytes = Uint8List.fromList([
+          0xFF,
+          0xD8,
+          0xFF,
+          0xE0,
+          ...List<int>.filled(8, 0xEE),
+        ]);
+        Uint8List? capturedInput;
+        int? capturedQuality;
 
-      final converter = HeicConverter(
-        compress: (bytes, {required quality}) async {
-          capturedInput = bytes;
-          capturedQuality = quality;
-          return convertedBytes;
-        },
-      );
+        final converter = HeicConverter(
+          compress: (bytes, {required quality}) async {
+            capturedInput = bytes;
+            capturedQuality = quality;
+            return convertedBytes;
+          },
+        );
 
-      final result = await converter.convertToJpegIfHeic(heicBytes);
+        final result = await converter.convertToJpegIfHeic(heicBytes);
 
-      expect(result, same(convertedBytes));
-      expect(capturedInput, same(heicBytes));
-      expect(capturedQuality, 90);
-    });
+        expect(result, same(convertedBytes));
+        expect(capturedInput, same(heicBytes));
+        expect(capturedQuality, 90);
+      },
+    );
 
     test('returns null when compress returns null (does not throw)', () async {
       final converter = HeicConverter(
@@ -125,20 +132,25 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns original bytes for unknown format (not HEIC, not converted)',
-        () async {
-      final unknownBytes = Uint8List.fromList(
-        List<int>.generate(32, (i) => (i * 13 + 5) % 256),
-      );
+    test(
+      'returns original bytes for unknown format (not HEIC, not converted)',
+      () async {
+        final unknownBytes = Uint8List.fromList(
+          List<int>.generate(32, (i) => (i * 13 + 5) % 256),
+        );
 
-      final converter = HeicConverter(
-        compress: (bytes, {required quality}) async => Uint8List(0),
-      );
+        final converter = HeicConverter(
+          compress: (bytes, {required quality}) async => Uint8List(0),
+        );
 
-      final result = await converter.convertToJpegIfHeic(unknownBytes);
+        final result = await converter.convertToJpegIfHeic(unknownBytes);
 
-      expect(result, same(unknownBytes),
-          reason: 'unknown ≠ HEIC, must not invoke compress');
-    });
+        expect(
+          result,
+          same(unknownBytes),
+          reason: 'unknown ≠ HEIC, must not invoke compress',
+        );
+      },
+    );
   });
 }

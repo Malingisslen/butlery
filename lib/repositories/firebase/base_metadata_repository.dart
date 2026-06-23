@@ -21,9 +21,9 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _auditRepository = auditRepository;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _authRepository = authRepository,
+       _auditRepository = auditRepository;
 
   @protected
   FirebaseFirestore get firestore => _firestore;
@@ -100,8 +100,9 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       await getMetadataCollection(resourceId).doc(userId).set({
         'userId': userId,
         'timestamp': FieldValue.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         ...?additionalData,
       });
 

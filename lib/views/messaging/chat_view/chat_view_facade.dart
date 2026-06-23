@@ -44,8 +44,9 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
   @override
   void initState() {
     super.initState();
-    _messagingEnabled = ServiceLocator.get<FeatureFlagService>()
-        .isEnabled(FeatureFlags.enableMessaging);
+    _messagingEnabled = ServiceLocator.get<FeatureFlagService>().isEnabled(
+      FeatureFlags.enableMessaging,
+    );
 
     PresenceService? presenceService;
     try {
@@ -127,9 +128,8 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
                     child: Text(
                       context.l10n.chatCannotMessageNonFriend,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   )

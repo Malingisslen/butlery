@@ -33,10 +33,12 @@ void main() {
       await TestServiceLocator.initialize();
 
       mockAnalytics = _MockFirebaseAnalytics();
-      when(() => mockAnalytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
       repository = FirebaseAnalyticsRepository(
         analytics: mockAnalytics,
@@ -54,32 +56,40 @@ void main() {
       test('emits language=sv for Swedish locale', () async {
         await repository.setLanguageUserProperty(const Locale('sv'));
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'language',
-              value: 'sv',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'language',
+            value: 'sv',
+          ),
+        ).called(1);
       });
 
       test('emits language=en for English locale', () async {
         await repository.setLanguageUserProperty(const Locale('en'));
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'language',
-              value: 'en',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'language',
+            value: 'en',
+          ),
+        ).called(1);
       });
 
       test('strips region from sv_FI (cardinality control)', () async {
         await repository.setLanguageUserProperty(const Locale('sv', 'FI'));
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'language',
-              value: 'sv',
-            )).called(1);
-        verifyNever(() => mockAnalytics.setUserProperty(
-              name: 'language',
-              value: 'sv_FI',
-            ));
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'language',
+            value: 'sv',
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAnalytics.setUserProperty(
+            name: 'language',
+            value: 'sv_FI',
+          ),
+        );
       });
     });
 
@@ -88,63 +98,77 @@ void main() {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
         await repository.setPlatformUserProperty();
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'platform',
-              value: 'android',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'platform',
+            value: 'android',
+          ),
+        ).called(1);
       });
 
       test('emits platform=ios on iOS', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         await repository.setPlatformUserProperty();
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'platform',
-              value: 'ios',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'platform',
+            value: 'ios',
+          ),
+        ).called(1);
       });
 
       test('emits platform=macos on macOS', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
         await repository.setPlatformUserProperty();
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'platform',
-              value: 'macos',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'platform',
+            value: 'macos',
+          ),
+        ).called(1);
       });
 
       test('emits platform=windows on Windows', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.windows;
         await repository.setPlatformUserProperty();
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'platform',
-              value: 'windows',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'platform',
+            value: 'windows',
+          ),
+        ).called(1);
       });
 
       test('emits platform=linux on Linux', () async {
         debugDefaultTargetPlatformOverride = TargetPlatform.linux;
         await repository.setPlatformUserProperty();
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'platform',
-              value: 'linux',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'platform',
+            value: 'linux',
+          ),
+        ).called(1);
       });
     });
 
     group('setLifecycleStage (BUT-639)', () {
-      test('new_ stage emits as "new" (trailing underscore stripped)',
-          () async {
-        await repository.setLifecycleStage(LifecycleStage.new_);
+      test(
+        'new_ stage emits as "new" (trailing underscore stripped)',
+        () async {
+          await repository.setLifecycleStage(LifecycleStage.new_);
 
-        verify(() => mockAnalytics.setUserProperty(
+          verify(
+            () => mockAnalytics.setUserProperty(
               name: 'lifecycle_stage',
               value: 'new',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('all other stages emit their bare enum name', () async {
         await repository.setLifecycleStage(LifecycleStage.activated);
@@ -152,22 +176,30 @@ void main() {
         await repository.setLifecycleStage(LifecycleStage.dormant);
         await repository.setLifecycleStage(LifecycleStage.churned);
 
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'lifecycle_stage',
-              value: 'activated',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'lifecycle_stage',
-              value: 'habitual',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'lifecycle_stage',
-              value: 'dormant',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'lifecycle_stage',
-              value: 'churned',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'lifecycle_stage',
+            value: 'activated',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'lifecycle_stage',
+            value: 'habitual',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'lifecycle_stage',
+            value: 'dormant',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'lifecycle_stage',
+            value: 'churned',
+          ),
+        ).called(1);
       });
     });
   });

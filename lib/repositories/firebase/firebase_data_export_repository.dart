@@ -32,7 +32,8 @@ enum ExportResourceType {
   categoryPreferences('category_preferences'),
   listCategoryOrders('list_category_orders'),
   users('users'),
-  publicProfiles('public_profiles');
+  publicProfiles('public_profiles')
+  ;
 
   const ExportResourceType(this.tag);
   final String tag;
@@ -97,21 +98,31 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
       throw UnsupportedError('FirebaseDataExportRepository is read-only');
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, Object? entity) async =>
+    String userId,
+    String resourceId,
+    Object? entity,
+  ) async =>
       throw UnsupportedError('FirebaseDataExportRepository is read-only');
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, Object entity) async =>
+    String userId,
+    String resourceId,
+    Object entity,
+  ) async =>
       throw UnsupportedError('FirebaseDataExportRepository is read-only');
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
+    String userId,
+    String resourceId,
+  ) async =>
       throw UnsupportedError('FirebaseDataExportRepository is read-only');
 
   /// Guard helper: confirm the authenticated caller is exporting their
   /// own data. Every public method funnels through this.
   Future<void> _guardSelfExport(
-      String userId, ExportResourceType resource) async {
+    String userId,
+    ExportResourceType resource,
+  ) async {
     await validateOwnership(
       currentUserId: requireCurrentUserId(),
       resourceOwnerId: userId,
@@ -159,31 +170,29 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportPersonalMenus(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.menus),
-        userId,
-        ExportResourceType.menus,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.menus),
+    userId,
+    ExportResourceType.menus,
+    limit: maxDocuments,
+  );
 
   /// Top-level `menus` where `sharedByUserId == userId` — menus the user
   /// has shared with others.
   Future<List<Map<String, dynamic>>> exportSharedMenusByOwner(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.menus)
-            .where('sharedByUserId', isEqualTo: userId),
-        userId,
-        ExportResourceType.menus,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.menus)
+        .where('sharedByUserId', isEqualTo: userId),
+    userId,
+    ExportResourceType.menus,
+    limit: maxDocuments,
+  );
 
   /// `users/{uid}/shopping_lists` with each list's nested `items` subcoll.
   /// Returns `{id, data, items: [{id, data}]}` shapes.
@@ -236,61 +245,57 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportFriendsSubcollection(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userFriends),
-        userId,
-        ExportResourceType.friends,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userFriends),
+    userId,
+    ExportResourceType.friends,
+    limit: maxDocuments,
+  );
 
   /// `users/{uid}/friend_categories` subcollection.
   Future<List<Map<String, dynamic>>> exportFriendCategories(
     String userId, {
     int maxDocuments = 100,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userFriendCategories),
-        userId,
-        ExportResourceType.friendCategories,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userFriendCategories),
+    userId,
+    ExportResourceType.friendCategories,
+    limit: maxDocuments,
+  );
 
   /// Top-level `social_requests` where `fromUserId == userId`
   /// (sent friend / group requests).
   Future<List<Map<String, dynamic>>> exportSocialRequestsSent(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.socialRequests)
-            .where('fromUserId', isEqualTo: userId),
-        userId,
-        ExportResourceType.socialRequests,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.socialRequests)
+        .where('fromUserId', isEqualTo: userId),
+    userId,
+    ExportResourceType.socialRequests,
+    limit: maxDocuments,
+  );
 
   /// Top-level `social_requests` where `toUserId == userId`
   /// (received friend / group requests).
   Future<List<Map<String, dynamic>>> exportSocialRequestsReceived(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.socialRequests)
-            .where('toUserId', isEqualTo: userId),
-        userId,
-        ExportResourceType.socialRequests,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.socialRequests)
+        .where('toUserId', isEqualTo: userId),
+    userId,
+    ExportResourceType.socialRequests,
+    limit: maxDocuments,
+  );
 
   /// `conversations` where `participantIds arrayContains userId`,
   /// each carrying its `messages` subcollection (limited).
@@ -337,46 +342,43 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportSharedRecipesReceived(
     String userId, {
     int maxDocuments = 1000,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.sharedContent)
-            .where('contentType', isEqualTo: 'recipe')
-            .where('sharedWithUserIds', arrayContains: userId),
-        userId,
-        ExportResourceType.sharedContent,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.sharedContent)
+        .where('contentType', isEqualTo: 'recipe')
+        .where('sharedWithUserIds', arrayContains: userId),
+    userId,
+    ExportResourceType.sharedContent,
+    limit: maxDocuments,
+  );
 
   /// Top-level `menus` where `sharedToUserIds arrayContains userId` —
   /// menus shared TO the user.
   Future<List<Map<String, dynamic>>> exportSharedMenusReceived(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.menus)
-            .where('sharedToUserIds', arrayContains: userId),
-        userId,
-        ExportResourceType.menus,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.menus)
+        .where('sharedToUserIds', arrayContains: userId),
+    userId,
+    ExportResourceType.menus,
+    limit: maxDocuments,
+  );
 
   /// Outgoing blocks (`blocks` where `blockerId == userId`).
   Future<List<Map<String, dynamic>>> exportOutgoingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.blocks)
-            .where('blockerId', isEqualTo: userId),
-        userId,
-        ExportResourceType.blocks,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.blocks)
+        .where('blockerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.blocks,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   /// Incoming blocks (`blocks` where `blockedId == userId`).
   ///
@@ -389,32 +391,30 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportIncomingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.blocks)
-            .where('blockedId', isEqualTo: userId),
-        userId,
-        ExportResourceType.blocks,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.blocks)
+        .where('blockedId', isEqualTo: userId),
+    userId,
+    ExportResourceType.blocks,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   /// `users/{uid}/conversation_memberships` subcollection.
   Future<List<Map<String, dynamic>>> exportConversationMemberships(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userConversationMemberships),
-        userId,
-        ExportResourceType.conversationMemberships,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userConversationMemberships),
+    userId,
+    ExportResourceType.conversationMemberships,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   // ── compliance_export_manager residuals ──
 
@@ -422,28 +422,27 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportConsentHistory(
     String userId, {
     int maxDocuments = 100,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userConsent)
-            .orderBy('timestamp', descending: true),
-        userId,
-        ExportResourceType.userConsent,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userConsent)
+        .orderBy('timestamp', descending: true),
+    userId,
+    ExportResourceType.userConsent,
+    limit: maxDocuments,
+  );
 
   /// `users/{uid}/consent/current` single-doc fetch.
   Future<Map<String, dynamic>?> exportCurrentConsent(String userId) => _readDoc(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userConsent)
-            .doc('current'),
-        userId,
-        ExportResourceType.userConsent,
-      );
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userConsent)
+        .doc('current'),
+    userId,
+    ExportResourceType.userConsent,
+  );
 
   // ── preferences_export_manager residuals ──
 
@@ -463,16 +462,15 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportUserNotifications(
     String userId, {
     int maxDocuments = 500,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.userNotifications)
-            .where('userId', isEqualTo: userId)
-            .orderBy('createdAt', descending: true),
-        userId,
-        ExportResourceType.userNotifications,
-        limit: maxDocuments,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.userNotifications)
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true),
+    userId,
+    ExportResourceType.userNotifications,
+    limit: maxDocuments,
+  );
 
   /// `user_notification_preferences/{userId}` single-doc fetch.
   Future<Map<String, dynamic>?> exportNotificationPreferences(String userId) =>
@@ -496,64 +494,61 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportFcmTokensSubcollection(
     String userId, {
     int maxDocuments = 50,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection('fcm_tokens'),
-        userId,
-        ExportResourceType.userFcmTokens,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection('fcm_tokens'),
+    userId,
+    ExportResourceType.userFcmTokens,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   /// `users/{uid}/category_preferences` subcollection.
   Future<List<Map<String, dynamic>>> exportCategoryPreferences(
     String userId, {
     int maxDocuments = 200,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.categoryPreferences),
-        userId,
-        ExportResourceType.categoryPreferences,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.categoryPreferences),
+    userId,
+    ExportResourceType.categoryPreferences,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   /// `users/{uid}/list_category_orders` subcollection.
   Future<List<Map<String, dynamic>>> exportListCategoryOrders(
     String userId, {
     int maxDocuments = 200,
-  }) =>
-      _queryList(
-        firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.listCategoryOrders),
-        userId,
-        ExportResourceType.listCategoryOrders,
-        limit: maxDocuments,
-        includeIds: false,
-      );
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.listCategoryOrders),
+    userId,
+    ExportResourceType.listCategoryOrders,
+    limit: maxDocuments,
+    includeIds: false,
+  );
 
   // ── data_export_service profile residuals ──
 
   /// `users/{uid}` private profile single-doc fetch. Returns null when the
   /// doc is missing (via [_readDoc]'s `doc.exists` short-circuit).
   Future<Map<String, dynamic>?> exportPrivateProfile(String userId) => _readDoc(
-        firestore.collection(FirestoreCollections.users).doc(userId),
-        userId,
-        ExportResourceType.users,
-      );
+    firestore.collection(FirestoreCollections.users).doc(userId),
+    userId,
+    ExportResourceType.users,
+  );
 
   /// `public_profiles/{uid}` single-doc fetch.
   Future<Map<String, dynamic>?> exportPublicProfile(String userId) => _readDoc(
-        firestore.collection(FirestoreCollections.publicProfiles).doc(userId),
-        userId,
-        ExportResourceType.publicProfiles,
-      );
+    firestore.collection(FirestoreCollections.publicProfiles).doc(userId),
+    userId,
+    ExportResourceType.publicProfiles,
+  );
 }

@@ -180,8 +180,11 @@ void main() {
           defaultHasPermission: false,
         );
 
-        expect(manager.canEdit, isFalse,
-            reason: 'view-only member must not be allowed to claim');
+        expect(
+          manager.canEdit,
+          isFalse,
+          reason: 'view-only member must not be allowed to claim',
+        );
       });
 
       test('editor member can claim — canEdit returns true', () {

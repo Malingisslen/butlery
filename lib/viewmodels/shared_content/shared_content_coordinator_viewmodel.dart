@@ -62,7 +62,8 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     SocialSharingViewModel? socialSharingViewModel,
   }) {
     AppLogger.info(
-        '🎯 SharedContentCoordinatorViewModel: Starting initialization of orchestration layer');
+      '🎯 SharedContentCoordinatorViewModel: Starting initialization of orchestration layer',
+    );
     _initializeViewModels(
       recipeViewModel: recipeViewModel,
       menuViewModel: menuViewModel,
@@ -71,7 +72,8 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
       socialSharingViewModel: socialSharingViewModel,
     );
     AppLogger.success(
-        '✅ SharedContentCoordinatorViewModel: Orchestration layer initialized');
+      '✅ SharedContentCoordinatorViewModel: Orchestration layer initialized',
+    );
   }
 
   /// Access to recipe ViewModel
@@ -127,10 +129,10 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
   /// All shared content across all types
   Map<String, dynamic> get allSharedContent => {
-        'recipes': _recipeViewModel.filteredContent,
-        'menus': _menuViewModel.filteredContent,
-        'shoppingLists': _shoppingViewModel.filteredContent,
-      };
+    'recipes': _recipeViewModel.filteredContent,
+    'menus': _menuViewModel.filteredContent,
+    'shoppingLists': _shoppingViewModel.filteredContent,
+  };
 
   /// Total unread count across all content types
   int get totalUnreadCount =>
@@ -152,17 +154,17 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
   /// Content counts by type
   Map<ContentTab, int> get contentCounts => {
-        ContentTab.recipes: _recipeViewModel.totalCount,
-        ContentTab.menus: _menuViewModel.totalCount,
-        ContentTab.shoppingLists: _shoppingViewModel.totalCount,
-      };
+    ContentTab.recipes: _recipeViewModel.totalCount,
+    ContentTab.menus: _menuViewModel.totalCount,
+    ContentTab.shoppingLists: _shoppingViewModel.totalCount,
+  };
 
   /// Unread counts by type
   Map<ContentTab, int> get unreadCounts => {
-        ContentTab.recipes: _recipeViewModel.unreadCount,
-        ContentTab.menus: _menuViewModel.unreadCount,
-        ContentTab.shoppingLists: _shoppingViewModel.unreadCount,
-      };
+    ContentTab.recipes: _recipeViewModel.unreadCount,
+    ContentTab.menus: _menuViewModel.unreadCount,
+    ContentTab.shoppingLists: _shoppingViewModel.unreadCount,
+  };
   void _initializeViewModels({
     SharedRecipeViewModel? recipeViewModel,
     SharedMenuViewModel? menuViewModel,
@@ -176,7 +178,8 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     _shoppingViewModel = shoppingViewModel ?? SharedShoppingViewModel();
 
     // Initialize search ViewModel with content ViewModels
-    _searchViewModel = searchViewModel ??
+    _searchViewModel =
+        searchViewModel ??
         SharedContentSearchViewModel(
           recipeViewModel: _recipeViewModel,
           menuViewModel: _menuViewModel,
@@ -184,7 +187,8 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
         );
 
     // Initialize social sharing ViewModel
-    _socialSharingViewModel = socialSharingViewModel ??
+    _socialSharingViewModel =
+        socialSharingViewModel ??
         SocialSharingViewModel(
           friendsService: ServiceLocator.get<UnifiedFriendsService>(),
           recipeCoordinator: ServiceLocator.get<SocialRecipeCoordinator>(),
@@ -223,12 +227,14 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
       _isInitialized = true;
       AppLogger.success(
-          '✅ SharedContentCoordinatorViewModel initialization completed');
+        '✅ SharedContentCoordinatorViewModel initialization completed',
+      );
       AppLogger.info('📊 Loaded content counts: ${contentCounts.toString()}');
     } catch (e) {
       _setGlobalError('Initialization failed: $e');
       AppLogger.error(
-          '❌ SharedContentCoordinatorViewModel initialization failed: $e');
+        '❌ SharedContentCoordinatorViewModel initialization failed: $e',
+      );
     } finally {
       _setInitializing(false);
       _setGlobalLoading(false);
@@ -340,26 +346,52 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   }
 
   /// Share recipe with friends
-  Future<bool> shareRecipe(String recipeId,
-          {List<String>? friendIds, String? message}) async =>
-      _shareContent(recipeId, ShareableContentType.recipe,
-          _getRecipeTitle(recipeId), friendIds, message);
+  Future<bool> shareRecipe(
+    String recipeId, {
+    List<String>? friendIds,
+    String? message,
+  }) async => _shareContent(
+    recipeId,
+    ShareableContentType.recipe,
+    _getRecipeTitle(recipeId),
+    friendIds,
+    message,
+  );
 
   /// Share menu with friends
-  Future<bool> shareMenu(String menuId,
-          {List<String>? friendIds, String? message}) async =>
-      _shareContent(menuId, ShareableContentType.menu, _getMenuTitle(menuId),
-          friendIds, message);
+  Future<bool> shareMenu(
+    String menuId, {
+    List<String>? friendIds,
+    String? message,
+  }) async => _shareContent(
+    menuId,
+    ShareableContentType.menu,
+    _getMenuTitle(menuId),
+    friendIds,
+    message,
+  );
 
   /// Share shopping list with friends
-  Future<bool> shareShoppingList(String listId,
-          {List<String>? friendIds, String? message}) async =>
-      _shareContent(listId, ShareableContentType.shoppingList,
-          _getShoppingListTitle(listId), friendIds, message);
+  Future<bool> shareShoppingList(
+    String listId, {
+    List<String>? friendIds,
+    String? message,
+  }) async => _shareContent(
+    listId,
+    ShareableContentType.shoppingList,
+    _getShoppingListTitle(listId),
+    friendIds,
+    message,
+  );
 
   /// Generic content sharing helper
-  Future<bool> _shareContent(String contentId, ShareableContentType contentType,
-      String? contentTitle, List<String>? friendIds, String? message) async {
+  Future<bool> _shareContent(
+    String contentId,
+    ShareableContentType contentType,
+    String? contentTitle,
+    List<String>? friendIds,
+    String? message,
+  ) async {
     _socialSharingViewModel.prepareForSharing(
       contentType: contentType,
       contentTitle: contentTitle,
@@ -456,7 +488,8 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     _socialSharingViewModel.dispose();
 
     AppLogger.info(
-        'SharedContentCoordinatorViewModel disposed with all specialized ViewModels');
+      'SharedContentCoordinatorViewModel disposed with all specialized ViewModels',
+    );
     super.dispose();
   }
 }

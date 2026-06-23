@@ -155,7 +155,8 @@ class _ShoppingListSelectionDialogState
                           key: _formKey,
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                top: AppDimensions.spacingS),
+                              top: AppDimensions.spacingS,
+                            ),
                             child: StyledInput(
                               controller: _newListNameController,
                               label: context.l10n.shoppingListName,
@@ -195,7 +196,8 @@ class _ShoppingListSelectionDialogState
                       final list = _availableLists[index];
                       return Card(
                         margin: const EdgeInsets.only(
-                            bottom: AppDimensions.spacingS),
+                          bottom: AppDimensions.spacingS,
+                        ),
                         child: ListTile(
                           leading: Icon(
                             _selectedListId == list.id
@@ -209,9 +211,9 @@ class _ShoppingListSelectionDialogState
                           subtitle: Text(
                             '${list.totalItems} ${context.l10n.dialogItems} • ${list.type == ListType.collaborative ? context.l10n.dialogShared : context.l10n.dialogPrivate}',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                           onTap: () => _handleSelectExisting(list.id),
@@ -224,10 +226,12 @@ class _ShoppingListSelectionDialogState
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -261,8 +265,9 @@ class _ShoppingListSelectionDialogState
           label: _isCreatingNew
               ? context.l10n.dialogCreateList
               : context.l10n.commonAdd,
-          onPressed:
-              _isCreatingNew || _selectedListId != null ? _handleConfirm : null,
+          onPressed: _isCreatingNew || _selectedListId != null
+              ? _handleConfirm
+              : null,
         ),
       ],
     );

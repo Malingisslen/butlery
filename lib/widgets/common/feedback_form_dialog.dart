@@ -68,8 +68,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Category dropdown
-              Text(context.l10n.feedbackCategoryLabel,
-                  style: AppTextStyles.labelLarge),
+              Text(
+                context.l10n.feedbackCategoryLabel,
+                style: AppTextStyles.labelLarge,
+              ),
               const SizedBox(height: AppDimensions.spacingSm),
               DropdownButtonFormField<FeedbackCategory>(
                 initialValue: _category,
@@ -100,8 +102,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Description
-              Text(context.l10n.feedbackDescriptionLabel,
-                  style: AppTextStyles.labelLarge),
+              Text(
+                context.l10n.feedbackDescriptionLabel,
+                style: AppTextStyles.labelLarge,
+              ),
               const SizedBox(height: AppDimensions.spacingSm),
               TextField(
                 controller: _descriptionController,
@@ -119,8 +123,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Email (optional)
-              Text(context.l10n.feedbackEmailLabel,
-                  style: AppTextStyles.labelLarge),
+              Text(
+                context.l10n.feedbackEmailLabel,
+                style: AppTextStyles.labelLarge,
+              ),
               const SizedBox(height: AppDimensions.spacingSm),
               TextField(
                 controller: _emailController,
@@ -141,8 +147,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(context.l10n.feedbackScreenshotLabel,
-                        style: AppTextStyles.labelLarge),
+                    Text(
+                      context.l10n.feedbackScreenshotLabel,
+                      style: AppTextStyles.labelLarge,
+                    ),
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () => setState(() => _screenshot = null),
@@ -184,8 +192,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                           strokeWidth: 2,
                           color: cs.onPrimary,
                         )
-                      : Text(context.l10n.feedbackSendButton,
-                          style: AppTextStyles.labelLarge),
+                      : Text(
+                          context.l10n.feedbackSendButton,
+                          style: AppTextStyles.labelLarge,
+                        ),
                 ),
               ),
             ],

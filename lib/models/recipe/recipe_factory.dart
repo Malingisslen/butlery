@@ -248,7 +248,8 @@ class RecipeFactory {
   }) {
     if (personalRecipe.type != RecipeType.personal) {
       throw ArgumentError(
-          'Only personal recipes can be converted to collaborative');
+        'Only personal recipes can be converted to collaborative',
+      );
     }
 
     return Recipe(
@@ -276,7 +277,8 @@ class RecipeFactory {
   }) {
     if (collaborativeRecipe.type != RecipeType.collaborative) {
       throw ArgumentError(
-          'Only collaborative recipes can be converted to realtime');
+        'Only collaborative recipes can be converted to realtime',
+      );
     }
 
     return Recipe(

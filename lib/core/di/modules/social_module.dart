@@ -76,38 +76,38 @@ class SocialModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        UserRepository,
-        UserService,
-        FriendsRepository,
-        FirebaseSocialRequestRepository,
-        UnifiedFriendsService,
-        CommentsRepository,
-        RatingsRepository,
-        SocialRecipeService,
-        DeepLinkRepository,
-        DeepLinkService,
-        ConnectivityRepository,
-        ConnectivityMonitoringService,
-        SocialMenuOperations,
-        GroupSharedContentRepository,
-        GroupSharedContentService,
-        // Social coordinators for shared content (Issue #014)
-        SocialRecipeCoordinator,
-        SocialMenuCoordinator,
-        SocialShoppingCoordinator,
-        CookSnapRepository,
-        CookSnapService,
-        ActivityEventRepository,
-        ActivityFeedService,
-        // BUT-407: group-scoped nudge primitive.
-        PingService,
-        FirebaseReportRepository,
-        ReportService,
-        ContentFilterService,
-        FirebaseBlockRepository,
-        BlockedUserFilter,
-        HouseholdService,
-      ];
+    UserRepository,
+    UserService,
+    FriendsRepository,
+    FirebaseSocialRequestRepository,
+    UnifiedFriendsService,
+    CommentsRepository,
+    RatingsRepository,
+    SocialRecipeService,
+    DeepLinkRepository,
+    DeepLinkService,
+    ConnectivityRepository,
+    ConnectivityMonitoringService,
+    SocialMenuOperations,
+    GroupSharedContentRepository,
+    GroupSharedContentService,
+    // Social coordinators for shared content (Issue #014)
+    SocialRecipeCoordinator,
+    SocialMenuCoordinator,
+    SocialShoppingCoordinator,
+    CookSnapRepository,
+    CookSnapService,
+    ActivityEventRepository,
+    ActivityFeedService,
+    // BUT-407: group-scoped nudge primitive.
+    PingService,
+    FirebaseReportRepository,
+    ReportService,
+    ContentFilterService,
+    FirebaseBlockRepository,
+    BlockedUserFilter,
+    HouseholdService,
+  ];
 
   @override
   int get priority => 20;
@@ -177,7 +177,8 @@ class SocialModule implements DIModule {
         saveMenu: (Map<String, List<Recipe>> menu) async {
           try {
             final userId = authRepo.currentUserId;
-            final displayName = userService.currentUserProfile?.displayName ??
+            final displayName =
+                userService.currentUserProfile?.displayName ??
                 AppLocale.current.displayUnknownUser;
             if (userId == null) return null;
             final sharedMenu = SharedMenu.create(
@@ -218,7 +219,8 @@ class SocialModule implements DIModule {
             shoppingService.lists.where((l) => l.id == id).firstOrNull,
         saveShoppingList: (list) async {
           AppLogger.warning(
-              'SocialShoppingCoordinator.saveShoppingList called unexpectedly');
+            'SocialShoppingCoordinator.saveShoppingList called unexpectedly',
+          );
           return null;
         },
         cacheHelper: app<JsonCacheHelper>(),
@@ -254,12 +256,14 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<FriendsRepository>(
         () => FirebaseFriendsRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       container.registerLazySingleton<FirebaseBlockRepository>(
         () => FirebaseBlockRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       // BUT-544: shared block-aware filter for comment + chat read paths.
@@ -306,23 +310,27 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<RatingsRepository>(
         () => FirebaseRatingsRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       // Phase 1 shared content repositories (Issue #014)
       container.registerLazySingleton<FirebaseSharedRecipeRepository>(
         () => FirebaseSharedRecipeRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       container.registerLazySingleton<FirebaseSharedMenuRepository>(
         () => FirebaseSharedMenuRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       container.registerLazySingleton<FirebaseSharedShoppingRepository>(
         () => FirebaseSharedShoppingRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       // Recipe-share requests reuse the unified social_requests collection.
@@ -330,7 +338,8 @@ class SocialModule implements DIModule {
       // + accept flow (idempotent recipeShareRequest writes).
       container.registerLazySingleton<FirebaseSocialRequestRepository>(
         () => FirebaseSocialRequestRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       // CookSnap repository and service
@@ -391,7 +400,8 @@ class SocialModule implements DIModule {
       // Deep link repository and service
       container.registerLazySingleton<DeepLinkRepository>(
         () => FirebaseDeepLinkRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       container.registerLazySingleton<DeepLinkService>(
@@ -403,7 +413,8 @@ class SocialModule implements DIModule {
       // Connectivity repository and monitoring service
       container.registerLazySingleton<ConnectivityRepository>(
         () => FirebaseConnectivityRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+        ),
       );
 
       container.registerLazySingleton<ConnectivityMonitoringService>(

@@ -20,14 +20,16 @@ void main() {
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(NotificationStrategy.recipeComment);
-      registerFallbackValue(RecipeComment(
-        id: 'test',
-        recipeId: 'test',
-        authorId: 'test',
-        authorDisplayName: 'Test',
-        text: 'Test',
-        createdAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        RecipeComment(
+          id: 'test',
+          recipeId: 'test',
+          authorId: 'test',
+          authorDisplayName: 'Test',
+          text: 'Test',
+          createdAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -93,12 +95,14 @@ void main() {
     group('Comment Notifications', () {
       test('should send notifications to recipe members', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await CommentNotifications.sendCommentNotifications(
@@ -108,36 +112,39 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: [
-                'user_123',
-                'user_789',
-                'user_999'
-              ], // All members except commenter
-              strategy: NotificationStrategy.recipeComment,
-              variables: {
-                'commenterName': 'Test Commenter',
-                'recipeName': 'Test Recipe',
-                'commentPreview':
-                    'Great recipe! @user_999 you should try this.',
-              },
-              additionalData: {
-                'recipeId': 'recipe_1',
-                'commentId': 'comment_1',
-                'action': 'comment_added',
-                'commenterId': 'user_456',
-              },
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: [
+              'user_123',
+              'user_789',
+              'user_999',
+            ], // All members except commenter
+            strategy: NotificationStrategy.recipeComment,
+            variables: {
+              'commenterName': 'Test Commenter',
+              'recipeName': 'Test Recipe',
+              'commentPreview': 'Great recipe! @user_999 you should try this.',
+            },
+            additionalData: {
+              'recipeId': 'recipe_1',
+              'commentId': 'comment_1',
+              'action': 'comment_added',
+              'commenterId': 'user_456',
+            },
+          ),
+        ).called(1);
       });
 
       test('should include mentioned users in notifications', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await CommentNotifications.sendCommentNotifications(
@@ -148,16 +155,22 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(
-                named: 'targetUserIds',
-                that: containsAll(
-                    ['user_123', 'user_789', 'user_999', 'user_external']),
-              ),
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(
+              named: 'targetUserIds',
+              that: containsAll([
+                'user_123',
+                'user_789',
+                'user_999',
+                'user_external',
+              ]),
+            ),
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).called(1);
       });
 
       test('should not send notifications when no service available', () async {
@@ -169,22 +182,26 @@ void main() {
         );
 
         // Assert
-        verifyNever(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            ));
+        verifyNever(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        );
       });
 
       test('should handle notification errors gracefully', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenThrow(Exception('Notification error'));
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenThrow(Exception('Notification error'));
 
         // Act & Assert (should not throw)
         await CommentNotifications.sendCommentNotifications(
@@ -198,12 +215,14 @@ void main() {
     group('Reply Notifications', () {
       test('should send notification to parent comment author', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await CommentNotifications.sendReplyNotifications(
@@ -214,24 +233,26 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: ['user_456'], // Parent comment author
-              strategy: NotificationStrategy.recipeComment,
-              variables: {
-                'replierName': 'Reply User',
-                'recipeName': 'Test Recipe',
-                'replyPreview': 'I agree with you!',
-                'originalCommentPreview':
-                    'Great recipe! @user_999 you should try this.',
-              },
-              additionalData: {
-                'recipeId': 'recipe_1',
-                'commentId': 'reply_1',
-                'parentCommentId': 'comment_1',
-                'action': 'comment_reply',
-                'replierId': 'user_789',
-              },
-            )).called(1);
+        verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: ['user_456'], // Parent comment author
+            strategy: NotificationStrategy.recipeComment,
+            variables: {
+              'replierName': 'Reply User',
+              'recipeName': 'Test Recipe',
+              'replyPreview': 'I agree with you!',
+              'originalCommentPreview':
+                  'Great recipe! @user_999 you should try this.',
+            },
+            additionalData: {
+              'recipeId': 'recipe_1',
+              'commentId': 'reply_1',
+              'parentCommentId': 'comment_1',
+              'action': 'comment_reply',
+              'replierId': 'user_789',
+            },
+          ),
+        ).called(1);
       });
 
       test('should not notify when replying to own comment', () async {
@@ -255,24 +276,28 @@ void main() {
         );
 
         // Assert
-        verifyNever(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            ));
+        verifyNever(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        );
       });
     });
 
     group('Mention Notifications', () {
       test('should send notifications for mentions', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final mentions = ['user_111', 'user_222'];
 
@@ -287,23 +312,27 @@ void main() {
         // Assert — mocktail any() can't be nested inside a Map literal; match
         // the variables map by predicate instead (asserts the static fields,
         // tolerates whatever the implementation generates for commentPreview).
-        verify(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: mentions,
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(
-                named: 'variables',
-                that: predicate<Map<String, dynamic>>((v) =>
+        verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: mentions,
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(
+              named: 'variables',
+              that: predicate<Map<String, dynamic>>(
+                (v) =>
                     v['mentionerName'] == 'Test Commenter' &&
                     v['recipeName'] == 'Test Recipe' &&
-                    v.containsKey('commentPreview')),
+                    v.containsKey('commentPreview'),
               ),
-              additionalData: {
-                'recipeId': 'recipe_1',
-                'commentId': 'comment_1',
-                'action': 'comment_mention',
-                'mentionerId': 'user_456',
-              },
-            )).called(1);
+            ),
+            additionalData: {
+              'recipeId': 'recipe_1',
+              'commentId': 'comment_1',
+              'action': 'comment_mention',
+              'mentionerId': 'user_456',
+            },
+          ),
+        ).called(1);
       });
 
       test('should not notify user who mentions themselves', () async {
@@ -327,35 +356,40 @@ void main() {
 
         // Assert
         // No notification should be sent when list is empty
-        verifyNever(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            ));
+        verifyNever(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        );
       });
     });
 
     group('Notification Batching', () {
       test('should batch multiple comment notifications', () async {
         // Arrange
-        when(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).thenAnswer((_) async {});
 
         final comments = List.generate(
-            3,
-            (i) => RecipeComment(
-                  id: 'comment_$i',
-                  recipeId: 'recipe_1',
-                  authorId: 'user_${456 + i}',
-                  authorDisplayName: 'User $i',
-                  text: 'Comment $i',
-                  createdAt: DateTime.now().add(Duration(minutes: i)),
-                ));
+          3,
+          (i) => RecipeComment(
+            id: 'comment_$i',
+            recipeId: 'recipe_1',
+            authorId: 'user_${456 + i}',
+            authorDisplayName: 'User $i',
+            text: 'Comment $i',
+            createdAt: DateTime.now().add(Duration(minutes: i)),
+          ),
+        );
 
         // Act
         for (final comment in comments) {
@@ -367,12 +401,14 @@ void main() {
         }
 
         // Assert
-        verify(() => mockNotificationService.sendBatchableNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: NotificationStrategy.recipeComment,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-            )).called(3);
+        verify(
+          () => mockNotificationService.sendBatchableNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: NotificationStrategy.recipeComment,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+          ),
+        ).called(3);
       });
     });
   });

@@ -34,14 +34,16 @@ class TestDataIsolator {
     FirestoreSingleton.setCurrentTest(testName);
 
     debugPrint(
-        'Initialized test isolation for: $testName with prefix: $prefix');
+      'Initialized test isolation for: $testName with prefix: $prefix',
+    );
   }
 
   /// Get isolated collection name for current test
   static String isolateCollection(String baseCollection) {
     if (_currentTestName == null) {
       debugPrint(
-          'Warning: No test isolation active, using base collection name');
+        'Warning: No test isolation active, using base collection name',
+      );
       return baseCollection;
     }
 
@@ -175,9 +177,12 @@ extension FirestoreIsolationExtensions on FirebaseFirestore {
 
   /// Get isolated document reference
   DocumentReference<Map<String, dynamic>> isolatedDoc(
-      String collectionPath, String docId) {
-    return collection(TestDataIsolator.isolateCollection(collectionPath))
-        .doc(TestDataIsolator.isolateDocumentId(docId));
+    String collectionPath,
+    String docId,
+  ) {
+    return collection(
+      TestDataIsolator.isolateCollection(collectionPath),
+    ).doc(TestDataIsolator.isolateDocumentId(docId));
   }
 }
 
@@ -211,14 +216,19 @@ void isolatedTest(
   bool skip = false,
   Timeout? timeout,
 }) {
-  test(description, () async {
-    TestDataIsolator.initializeTest(description);
-    try {
-      await body();
-    } finally {
-      await TestDataIsolator.cleanupTest(description);
-    }
-  }, skip: skip, timeout: timeout);
+  test(
+    description,
+    () async {
+      TestDataIsolator.initializeTest(description);
+      try {
+        await body();
+      } finally {
+        await TestDataIsolator.cleanupTest(description);
+      }
+    },
+    skip: skip,
+    timeout: timeout,
+  );
 }
 
 /// Helper class for creating isolated test data
@@ -235,7 +245,8 @@ class IsolatedTestData {
 
     if (testName == null || prefix == null) {
       throw StateError(
-          'No test isolation active. Call TestDataIsolator.initializeTest first.');
+        'No test isolation active. Call TestDataIsolator.initializeTest first.',
+      );
     }
 
     return IsolatedTestData._(testName, prefix);

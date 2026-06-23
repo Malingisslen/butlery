@@ -22,18 +22,24 @@ class RecipeSerialization {
     return Recipe(
       core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>? ?? json),
       type: SerializationUtils.safeEnumByIndex(
-          json['type'], RecipeType.values, RecipeType.personal),
+        json['type'],
+        RecipeType.values,
+        RecipeType.personal,
+      ),
       socialData: json['socialData'] != null
           ? RecipeSocialData.fromJson(
-              json['socialData'] as Map<String, dynamic>)
+              json['socialData'] as Map<String, dynamic>,
+            )
           : null,
       realtimeData: json['realtimeData'] != null
           ? RecipeRealtimeData.fromJson(
-              json['realtimeData'] as Map<String, dynamic>)
+              json['realtimeData'] as Map<String, dynamic>,
+            )
           : null,
       offlineData: json['offlineData'] != null
           ? RecipeOfflineData.fromJson(
-              json['offlineData'] as Map<String, dynamic>)
+              json['offlineData'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -57,14 +63,19 @@ class RecipeSerialization {
     return Recipe(
       core: RecipeCore.fromMap(id, coreData),
       type: SerializationUtils.safeEnumByIndex(
-          data['type'], RecipeType.values, RecipeType.personal),
+        data['type'],
+        RecipeType.values,
+        RecipeType.personal,
+      ),
       socialData: data['socialData'] != null
           ? RecipeSocialData.fromJson(
-              data['socialData'] as Map<String, dynamic>)
+              data['socialData'] as Map<String, dynamic>,
+            )
           : null,
       realtimeData: data['realtimeData'] != null
           ? RecipeRealtimeData.fromJson(
-              data['realtimeData'] as Map<String, dynamic>)
+              data['realtimeData'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -130,7 +141,7 @@ class RecipeSerialization {
       'description',
       'ingredients',
       'instructions',
-      'mealType'
+      'mealType',
     ];
     for (final field in coreRequiredFields) {
       if (!core.containsKey(field)) return false;
@@ -161,8 +172,9 @@ class RecipeSerialization {
 
     // Sanitize core data if needed
     if (sanitized['core'] is Map<String, dynamic>) {
-      sanitized['core'] =
-          _sanitizeCoreData(sanitized['core'] as Map<String, dynamic>);
+      sanitized['core'] = _sanitizeCoreData(
+        sanitized['core'] as Map<String, dynamic>,
+      );
     }
 
     return sanitized;
@@ -175,8 +187,9 @@ class RecipeSerialization {
     // Ensure required string fields are strings
     sanitized['title'] = (sanitized['title']?.toString()).orEmpty();
     sanitized['description'] = (sanitized['description']?.toString()).orEmpty();
-    sanitized['mealType'] =
-        (sanitized['mealType']?.toString()).orDefault('Middag');
+    sanitized['mealType'] = (sanitized['mealType']?.toString()).orDefault(
+      'Middag',
+    );
 
     // Ensure list fields are lists
     if (sanitized['ingredients'] is! List) {
@@ -315,10 +328,12 @@ class RecipeSerialization {
       core: RecipeCore(
         title: (compressed['t']?.toString()).orEmpty(),
         description: (compressed['d']?.toString()).orEmpty(),
-        ingredients:
-            compressed['i'] is List ? List<String>.from(compressed['i']) : [],
-        instructions:
-            compressed['s'] is List ? List<String>.from(compressed['s']) : [],
+        ingredients: compressed['i'] is List
+            ? List<String>.from(compressed['i'])
+            : [],
+        instructions: compressed['s'] is List
+            ? List<String>.from(compressed['s'])
+            : [],
         mealType: (compressed['m']?.toString()).orDefault('Middag'),
         portions: compressed['p'] as int?,
         timeMinutes: compressed['tm'] as int?,
@@ -333,7 +348,10 @@ class RecipeSerialization {
         sourceUrl: compressed['src']?.toString(),
       ),
       type: SerializationUtils.safeEnumByIndex(
-          compressed['ty'], RecipeType.values, RecipeType.personal),
+        compressed['ty'],
+        RecipeType.values,
+        RecipeType.personal,
+      ),
     );
   }
 }

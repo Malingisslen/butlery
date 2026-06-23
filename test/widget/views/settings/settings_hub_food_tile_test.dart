@@ -45,8 +45,9 @@ void main() {
       reportService = _MockReportService();
       // Non-admin: the moderation tile collapses to SizedBox.shrink, and no
       // real Firestore stream is opened.
-      when(() => reportService.watchIsAdmin())
-          .thenAnswer((_) => Stream<bool>.value(false));
+      when(
+        () => reportService.watchIsAdmin(),
+      ).thenAnswer((_) => Stream<bool>.value(false));
 
       final container = DIContainer();
       container.container.registerSingleton<ReportService>(reportService);
@@ -64,44 +65,56 @@ void main() {
     });
 
     testWidgets(
-        'food tile renders the relabelled title + explanatory subtitle (sv)',
-        (tester) async {
+      'food tile renders the relabelled title + explanatory subtitle (sv)',
+      (tester) async {
+        final sv = AppLocalizationsSv();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false, // SettingsHubView supplies its own Scaffold.
+            child: const SettingsHubView(),
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          find.text(sv.allergenSettingsTitle),
+          findsOneWidget,
+          reason: 'Food entry must show the relabelled title.',
+        );
+        expect(
+          find.text(sv.allergenSettingsHubSubtitle),
+          findsOneWidget,
+          reason: 'Food entry must wire the new explanatory subtitle.',
+        );
+
+        // The subtitle belongs to the SAME ListTile as the title — proves the
+        // subtitle is attached to the food tile, not floating elsewhere.
+        final foodTile = find.ancestor(
+          of: find.text(sv.allergenSettingsTitle),
+          matching: find.byType(ListTile),
+        );
+        expect(
+          find.descendant(
+            of: foodTile,
+            matching: find.text(sv.allergenSettingsHubSubtitle),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('a subtitle-less tile renders no subtitle (null-guard holds)', (
+      tester,
+    ) async {
       final sv = AppLocalizationsSv();
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false, // SettingsHubView supplies its own Scaffold.
-        child: const SettingsHubView(),
-      ));
-      await tester.pump();
-
-      expect(find.text(sv.allergenSettingsTitle), findsOneWidget,
-          reason: 'Food entry must show the relabelled title.');
-      expect(find.text(sv.allergenSettingsHubSubtitle), findsOneWidget,
-          reason: 'Food entry must wire the new explanatory subtitle.');
-
-      // The subtitle belongs to the SAME ListTile as the title — proves the
-      // subtitle is attached to the food tile, not floating elsewhere.
-      final foodTile = find.ancestor(
-        of: find.text(sv.allergenSettingsTitle),
-        matching: find.byType(ListTile),
-      );
-      expect(
-        find.descendant(
-          of: foodTile,
-          matching: find.text(sv.allergenSettingsHubSubtitle),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const SettingsHubView(),
         ),
-        findsOneWidget,
       );
-    });
-
-    testWidgets('a subtitle-less tile renders no subtitle (null-guard holds)',
-        (tester) async {
-      final sv = AppLocalizationsSv();
-
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const SettingsHubView(),
-      ));
       await tester.pump();
 
       // "Personliga taggar" tile passes no subtitle to _SettingsTile.
@@ -112,26 +125,39 @@ void main() {
       expect(tagTile, findsOneWidget);
 
       final tile = tester.widget<ListTile>(tagTile);
-      expect(tile.subtitle, isNull,
-          reason: 'Tiles given no subtitle must not render one — the '
-              '`subtitle != null` guard must hold.');
+      expect(
+        tile.subtitle,
+        isNull,
+        reason:
+            'Tiles given no subtitle must not render one — the '
+            '`subtitle != null` guard must hold.',
+      );
     });
 
     testWidgets('food title + subtitle localise to English', (tester) async {
       final en = AppLocalizationsEn();
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        locale: const Locale('en'),
-        wrapInScaffold: false,
-        child: const SettingsHubView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          locale: const Locale('en'),
+          wrapInScaffold: false,
+          child: const SettingsHubView(),
+        ),
+      );
       await tester.pump();
 
-      expect(find.text(en.allergenSettingsTitle), findsOneWidget,
-          reason: 'English table must carry the relabelled title.');
-      expect(find.text(en.allergenSettingsHubSubtitle), findsOneWidget,
-          reason: 'English table must carry the new subtitle key — guards '
-              'against a key added to one locale table but not the other.');
+      expect(
+        find.text(en.allergenSettingsTitle),
+        findsOneWidget,
+        reason: 'English table must carry the relabelled title.',
+      );
+      expect(
+        find.text(en.allergenSettingsHubSubtitle),
+        findsOneWidget,
+        reason:
+            'English table must carry the new subtitle key — guards '
+            'against a key added to one locale table but not the other.',
+      );
     });
   });
 }

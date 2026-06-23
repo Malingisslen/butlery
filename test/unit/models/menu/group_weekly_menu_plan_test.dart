@@ -37,13 +37,15 @@ void main() {
     final weekStart = IsoWeekUtils.weekStartOf(weekDate);
 
     group('docIdFor', () {
-      test(
-          'should produce deterministic `{groupId}_{YYYY}-W{WW}` ids so the '
+      test('should produce deterministic `{groupId}_{YYYY}-W{WW}` ids so the '
           'same (group, week) always hits the same Firestore document', () {
         final a = GroupWeeklyMenuPlan.docIdFor(groupId, weekDate);
         final b = GroupWeeklyMenuPlan.docIdFor(groupId, weekDate);
-        expect(a, equals(b),
-            reason: 'upsert relies on stable doc IDs — must be pure');
+        expect(
+          a,
+          equals(b),
+          reason: 'upsert relies on stable doc IDs — must be pure',
+        );
         expect(a, matches(RegExp(r'^fam-abc_\d{4}-W\d{2}$')));
       });
 
@@ -55,7 +57,9 @@ void main() {
 
       test('should differ across weeks for the same group', () {
         final earlier = GroupWeeklyMenuPlan.docIdFor(
-            groupId, DateTime(2026, 4, 6)); // previous week
+          groupId,
+          DateTime(2026, 4, 6),
+        ); // previous week
         final later = GroupWeeklyMenuPlan.docIdFor(groupId, weekDate);
         expect(earlier, isNot(equals(later)));
       });
@@ -132,22 +136,24 @@ void main() {
         expect(plan.canAdmin('viewer-uid'), isFalse);
       });
 
-      test('memberPermissions denormalisation mirrors the participants list',
-          () {
-        final perms = plan.memberPermissions;
-        expect(
+      test(
+        'memberPermissions denormalisation mirrors the participants list',
+        () {
+          final perms = plan.memberPermissions;
+          expect(
             perms,
             equals({
               'admin-uid': 'admin',
               'editor-uid': 'edit',
               'viewer-uid': 'view',
-            }));
-      });
+            }),
+          );
+        },
+      );
     });
 
     group('Firestore round-trip', () {
-      test(
-          'should preserve every field across toFirestore / fromMap '
+      test('should preserve every field across toFirestore / fromMap '
           '(entries, participants, permissions, audit fields)', () {
         final addedAt = DateTime(2026, 4, 1, 12);
         final created = DateTime(2026, 4, 18, 9);
@@ -165,10 +171,16 @@ void main() {
           weekStartDate: weekStart,
           entries: [entry],
           participants: [
-            _p('admin-uid',
-                permission: SharedListPermission.admin, addedAt: addedAt),
-            _p('editor-uid',
-                permission: SharedListPermission.edit, addedAt: addedAt),
+            _p(
+              'admin-uid',
+              permission: SharedListPermission.admin,
+              addedAt: addedAt,
+            ),
+            _p(
+              'editor-uid',
+              permission: SharedListPermission.edit,
+              addedAt: addedAt,
+            ),
           ],
           createdAt: created,
           lastModifiedAt: modified,
@@ -178,10 +190,14 @@ void main() {
         final serialized = original.toFirestore();
 
         // Denormalised fields must be present for rules to function.
-        expect(serialized['participantUserIds'],
-            equals(['admin-uid', 'editor-uid']));
-        expect(serialized['memberPermissions'],
-            equals({'admin-uid': 'admin', 'editor-uid': 'edit'}));
+        expect(
+          serialized['participantUserIds'],
+          equals(['admin-uid', 'editor-uid']),
+        );
+        expect(
+          serialized['memberPermissions'],
+          equals({'admin-uid': 'admin', 'editor-uid': 'edit'}),
+        );
 
         final decoded = GroupWeeklyMenuPlan.fromMap(original.id, serialized);
 
@@ -200,8 +216,7 @@ void main() {
         expect(decoded.lastModifiedBy, 'admin-uid');
       });
 
-      test(
-          'should tolerate a missing `participants` field by decoding to an '
+      test('should tolerate a missing `participants` field by decoding to an '
           'empty list (partial/legacy data never crashes the reader)', () {
         final decoded = GroupWeeklyMenuPlan.fromMap(
           'some-group_2026-W15',
@@ -244,34 +259,43 @@ void main() {
         expect(updated.entries.single.recipeTitle, 'Tacos');
         expect(updated.lastModifiedBy, 'user-a');
         expect(
-            updated.lastModifiedAt.isAtSameMomentAs(base.lastModifiedAt) ||
-                updated.lastModifiedAt.isAfter(base.lastModifiedAt),
-            isTrue,
-            reason: 'lastModifiedAt should advance (or stay within ms)');
+          updated.lastModifiedAt.isAtSameMomentAs(base.lastModifiedAt) ||
+              updated.lastModifiedAt.isAfter(base.lastModifiedAt),
+          isTrue,
+          reason: 'lastModifiedAt should advance (or stay within ms)',
+        );
       });
 
       test('updates participants list without touching entries', () {
-        final base = GroupWeeklyMenuPlan.empty(
-          groupId: groupId,
-          creatorId: 'user-a',
-          date: weekDate,
-        ).copyWith(entries: [
-          WeeklyMenuPlanEntry.create(
-            day: DayOfWeek.mon,
-            slot: MealSlot.middag,
-            recipeId: 'r',
-            recipeTitle: 'Sushi',
-          ),
-        ]);
+        final base =
+            GroupWeeklyMenuPlan.empty(
+              groupId: groupId,
+              creatorId: 'user-a',
+              date: weekDate,
+            ).copyWith(
+              entries: [
+                WeeklyMenuPlanEntry.create(
+                  day: DayOfWeek.mon,
+                  slot: MealSlot.middag,
+                  recipeId: 'r',
+                  recipeTitle: 'Sushi',
+                ),
+              ],
+            );
 
-        final updated = base.copyWith(participants: [
-          _p('user-a', permission: SharedListPermission.admin),
-          _p('user-b', permission: SharedListPermission.edit),
-        ]);
+        final updated = base.copyWith(
+          participants: [
+            _p('user-a', permission: SharedListPermission.admin),
+            _p('user-b', permission: SharedListPermission.edit),
+          ],
+        );
 
         expect(updated.participants, hasLength(2));
-        expect(updated.entries, equals(base.entries),
-            reason: 'entries untouched when only participants changes');
+        expect(
+          updated.entries,
+          equals(base.entries),
+          reason: 'entries untouched when only participants changes',
+        );
       });
     });
   });

@@ -128,12 +128,11 @@ class ModelIntegrityResult {
   factory ModelIntegrityResult.mismatch({
     required String actual,
     required String expected,
-  }) =>
-      ModelIntegrityResult._(
-        ok: false,
-        actualHash: actual,
-        expectedHash: expected,
-      );
+  }) => ModelIntegrityResult._(
+    ok: false,
+    actualHash: actual,
+    expectedHash: expected,
+  );
 
   factory ModelIntegrityResult.unverified(String hash) =>
       ModelIntegrityResult._(

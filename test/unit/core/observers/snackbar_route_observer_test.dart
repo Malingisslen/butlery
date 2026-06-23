@@ -109,7 +109,9 @@ void main() {
       // Show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Test message'), duration: Duration(seconds: 10)),
+          content: Text('Test message'),
+          duration: Duration(seconds: 10),
+        ),
       );
 
       await tester.pump();

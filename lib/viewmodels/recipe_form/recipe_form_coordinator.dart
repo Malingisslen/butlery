@@ -44,11 +44,11 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     required RecipeCollaborativeManager collaborativeManager,
     required RecipePermissionManager permissionManager,
     required VoidCallback parentNotify,
-  })  : _state = state,
-        _imageManager = imageManager,
-        _collaborativeManager = collaborativeManager,
-        _permissionManager = permissionManager,
-        _parentNotify = parentNotify;
+  }) : _state = state,
+       _imageManager = imageManager,
+       _collaborativeManager = collaborativeManager,
+       _permissionManager = permissionManager,
+       _parentNotify = parentNotify;
 
   /// Establishes comprehensive manager listener coordination for reactive state management.
   /// Sets up listener connections to all focused managers ensuring automatic UI notification
@@ -85,8 +85,10 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     }
 
     // Only sync valid URLs for persistence, not local file paths
-    _state.setImageUrls(_imageManager.validImageUrls,
-        skipAutoSave: _state.isAutoSaving);
+    _state.setImageUrls(
+      _imageManager.validImageUrls,
+      skipAutoSave: _state.isAutoSaving,
+    );
     syncToCollaborative(isCollaborative: isCollaborative);
   }
 

@@ -24,9 +24,9 @@ class CircularIconBadge extends StatelessWidget {
   const CircularIconBadge.add({
     super.key,
     this.size,
-  })  : icon = Icons.add,
-        backgroundColor = null,
-        iconColor = null;
+  }) : icon = Icons.add,
+       backgroundColor = null,
+       iconColor = null;
 
   @override
   Widget build(BuildContext context) {

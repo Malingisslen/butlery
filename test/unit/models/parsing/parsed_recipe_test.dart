@@ -12,9 +12,9 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 
 ParseMetadata _meta() => ParseMetadata.cacheHit(
-      source: ImportSource.url,
-      parserVersion: '1.0.0',
-    );
+  source: ImportSource.url,
+  parserVersion: '1.0.0',
+);
 
 ParsedRecipe _completeRecipe() {
   return ParsedRecipe(
@@ -128,7 +128,9 @@ void main() {
 
     test('ingredientStructureRatio 0 when ingredients absent', () {
       expect(
-          ParsedRecipe.empty(metadata: _meta()).ingredientStructureRatio, 0.0);
+        ParsedRecipe.empty(metadata: _meta()).ingredientStructureRatio,
+        0.0,
+      );
     });
   });
 
@@ -141,7 +143,9 @@ void main() {
       expect(copied.title.value, 'New Title');
       expect(copied.portions.value, original.portions.value);
       expect(
-          copied.ingredients.value!.length, original.ingredients.value!.length);
+        copied.ingredients.value!.length,
+        original.ingredients.value!.length,
+      );
     });
   });
 
@@ -159,8 +163,7 @@ void main() {
     /// must be index-aligned with the raw `ingredients` strings (entry.raw ==
     /// ingredients[i]) — misaligned data is silently discarded by the
     /// Recipe.structuredIngredients facade, so alignment IS the contract.
-    test(
-        'structuredIngredients key is index-aligned with ingredients and '
+    test('structuredIngredients key is index-aligned with ingredients and '
         'carries amount/unit/name', () {
       final map = _completeRecipe().toRecipeData();
 
@@ -169,8 +172,11 @@ void main() {
 
       expect(structured.length, raw.length);
       for (var i = 0; i < structured.length; i++) {
-        expect((structured[i] as Map)['raw'], raw[i],
-            reason: 'entry $i must align with its raw ingredient line');
+        expect(
+          (structured[i] as Map)['raw'],
+          raw[i],
+          reason: 'entry $i must align with its raw ingredient line',
+        );
       }
       expect((structured[0] as Map)['amount'], 2);
       expect((structured[0] as Map)['name'], 'tomato');
@@ -211,8 +217,10 @@ void main() {
       final restored = ParsedRecipe.fromJson(json);
 
       expect(restored.title.value, original.title.value);
-      expect(restored.ingredients.value!.length,
-          original.ingredients.value!.length);
+      expect(
+        restored.ingredients.value!.length,
+        original.ingredients.value!.length,
+      );
       expect(restored.portions.value, 4);
       expect(restored.totalTime.value, const Duration(minutes: 30));
       expect(restored.imageUrl, original.imageUrl);

@@ -73,7 +73,9 @@ class ProfileAvatarSection extends StatelessWidget {
                       : () {
                           viewModel.removeAvatar();
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.profileAvatarRemoved);
+                            context,
+                            context.l10n.profileAvatarRemoved,
+                          );
                         },
                 ),
             ],
@@ -117,15 +119,14 @@ class ProfileDisplayNameField extends StatelessWidget {
           suffixIcon: viewModel.displayNameError != null
               ? Icon(Icons.error, color: Theme.of(context).colorScheme.error)
               : controller.text.isNotEmpty && viewModel.displayNameError == null
-                  ? Icon(Icons.check_circle,
-                      color: context.butleryColors.success)
-                  : null,
+              ? Icon(Icons.check_circle, color: context.butleryColors.success)
+              : null,
           // BUT-517: required + content-filter chain on displayName.
           validator: FormValidators.combine([
             (value) => ValidationUtils.validateRequired(
-                  value,
-                  fieldName: context.l10n.profileDisplayName,
-                ),
+              value,
+              fieldName: context.l10n.profileDisplayName,
+            ),
             FormValidators.contentFilter(context.l10n.profileDisplayName),
           ]),
           onChanged: onChanged,

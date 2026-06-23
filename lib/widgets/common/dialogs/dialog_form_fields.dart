@@ -80,10 +80,12 @@ class DialogFormFields {
           // chain without explicitly opting out of length-checking).
           (value) {
             if (value == null || value.isEmpty) return null;
-            return ValidationUtils.validateLength(value,
-                minLength: minLength,
-                maxLength: maxLengthLimit,
-                fieldName: labelText);
+            return ValidationUtils.validateLength(
+              value,
+              minLength: minLength,
+              maxLength: maxLengthLimit,
+              fieldName: labelText,
+            );
           },
           FormValidators.contentFilter(labelText),
         ]),
@@ -227,15 +229,17 @@ class DialogFormFields {
         }
 
         if (required) {
-          final requiredResult =
-              FormValidators.required(effectiveLabelText)(value);
+          final requiredResult = FormValidators.required(effectiveLabelText)(
+            value,
+          );
           if (requiredResult != null) return requiredResult;
         }
 
         if (value != null && value.trim().isNotEmpty) {
           // Basic URL validation
           final urlPattern = RegExp(
-              r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$');
+            r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
+          );
           if (!urlPattern.hasMatch(value.trim())) {
             return context.l10n.dialogInvalidUrl;
           }
@@ -316,7 +320,8 @@ class DialogFormFields {
 
         if (required) {
           final requiredResult = FormValidators.required(
-              labelText ?? context.l10n.dialogPhoneLabel)(value);
+            labelText ?? context.l10n.dialogPhoneLabel,
+          )(value);
           if (requiredResult != null) return requiredResult;
         }
 
@@ -359,11 +364,12 @@ class DialogFormFields {
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
           border: const OutlineInputBorder(),
         ),
-        validator: validator ??
+        validator:
+            validator ??
             (required
                 ? (value) => value == null
-                    ? context.l10n.dialogFieldRequired(labelText)
-                    : null
+                      ? context.l10n.dialogFieldRequired(labelText)
+                      : null
                 : null),
       ),
     );

@@ -41,8 +41,7 @@ void main() {
       expect(payload['granted'], isTrue);
     });
 
-    test('omits computed expireAt — server enforces retention by timestamp',
-        () {
+    test('omits computed expireAt — server enforces retention by timestamp', () {
       // BUT-808: model deliberately has no expireAt field. The CF queries
       // on `timestamp` directly. Assert we don't accidentally re-introduce it.
       final payload = _log().toFirestore();
@@ -50,8 +49,10 @@ void main() {
     });
 
     test('preserves null resourceId for bulk operations like readAll', () {
-      final payload =
-          _log(resourceId: null, operation: 'readAll').toFirestore();
+      final payload = _log(
+        resourceId: null,
+        operation: 'readAll',
+      ).toFirestore();
       expect(payload['resourceId'], isNull);
       expect(payload['operation'], 'readAll');
     });
@@ -91,9 +92,12 @@ void main() {
 
     test('safe defaults for missing fields', () async {
       final firestore = FakeFirebaseFirestore();
-      await firestore.collection('audit_logs').doc('l1').set(
-        <String, dynamic>{},
-      );
+      await firestore
+          .collection('audit_logs')
+          .doc('l1')
+          .set(
+            <String, dynamic>{},
+          );
       final doc = await firestore.collection('audit_logs').doc('l1').get();
       final log = AuditLog.fromFirestore(doc);
 

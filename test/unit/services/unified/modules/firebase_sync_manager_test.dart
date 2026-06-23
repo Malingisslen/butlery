@@ -48,12 +48,14 @@ void main() {
     test('returns map with personal and collaborative subscriptions', () async {
       // Arrange: personal sync returns a stream subscription
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       // Act
       final subs = await FirebaseSyncManager.startFirebaseSync(
@@ -66,8 +68,10 @@ void main() {
 
       // Assert
       expect(subs, containsPair('personal_recipes', isA<StreamSubscription>()));
-      expect(subs,
-          containsPair('collaborative_recipes', isA<StreamSubscription>()));
+      expect(
+        subs,
+        containsPair('collaborative_recipes', isA<StreamSubscription>()),
+      );
       expect(subs.length, equals(2));
 
       // Cleanup
@@ -79,14 +83,17 @@ void main() {
       final updatedRecipes = <Recipe>[];
       final controller = StreamController<List<RecipeChange>>();
 
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenAnswer((invocation) {
-        final callback = invocation.positionalArguments[1] as void Function(
-            List<RecipeChange>);
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenAnswer((invocation) {
+        final callback =
+            invocation.positionalArguments[1]
+                as void Function(List<RecipeChange>);
         return controller.stream.listen((changes) => callback(changes));
       });
 
@@ -115,14 +122,17 @@ void main() {
       final removedIds = <String>[];
       final controller = StreamController<List<RecipeChange>>();
 
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenAnswer((invocation) {
-        final callback = invocation.positionalArguments[1] as void Function(
-            List<RecipeChange>);
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenAnswer((invocation) {
+        final callback =
+            invocation.positionalArguments[1]
+                as void Function(List<RecipeChange>);
         return controller.stream.listen((changes) => callback(changes));
       });
 
@@ -149,12 +159,14 @@ void main() {
   group('stopFirebaseSync', () {
     test('cancels all subscriptions and clears map', () async {
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       final subs = await FirebaseSyncManager.startFirebaseSync(
         currentUserId: 'user-1',
@@ -176,12 +188,14 @@ void main() {
   group('stopSpecificSync', () {
     test('stops only the named sync stream', () async {
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       final subs = await FirebaseSyncManager.startFirebaseSync(
         currentUserId: 'user-1',
@@ -219,17 +233,21 @@ void main() {
   group('ensureSyncHealth', () {
     test('restarts missing personal sync', () async {
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       // Start with only collaborative (simulate personal dropped)
       final subs = <String, StreamSubscription>{
-        'collaborative_recipes':
-            fakeFirestore.collection('test').snapshots().listen((_) {}),
+        'collaborative_recipes': fakeFirestore
+            .collection('test')
+            .snapshots()
+            .listen((_) {}),
       };
 
       await FirebaseSyncManager.ensureSyncHealth(
@@ -250,12 +268,14 @@ void main() {
 
     test('no-op when all syncs are active', () async {
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       final subs = await FirebaseSyncManager.startFirebaseSync(
         currentUserId: 'user-1',
@@ -350,12 +370,14 @@ void main() {
   group('collaborative sync via Firestore', () {
     test('collaborative sync listens to realtimeRecipes collection', () async {
       final controller = StreamController<List<RecipeChange>>();
-      when(() => mockRecipeRepo.subscribeToUserRecipes(
-            any(),
-            any(),
-            onError: any(named: 'onError'),
-            onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-          )).thenReturn(controller.stream.listen((_) {}));
+      when(
+        () => mockRecipeRepo.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
+        ),
+      ).thenReturn(controller.stream.listen((_) {}));
 
       final subs = await FirebaseSyncManager.startFirebaseSync(
         currentUserId: 'user-1',

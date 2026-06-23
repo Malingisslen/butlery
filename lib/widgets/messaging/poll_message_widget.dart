@@ -63,13 +63,15 @@ class PollMessageWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingSm),
 
           // Options
-          ...poll.options.map((option) => _buildOption(
-                context: context,
-                option: option,
-                totalVotes: totalVotes,
-                textColor: textColor,
-                subtleColor: subtleColor,
-              )),
+          ...poll.options.map(
+            (option) => _buildOption(
+              context: context,
+              option: option,
+              totalVotes: totalVotes,
+              textColor: textColor,
+              subtleColor: subtleColor,
+            ),
+          ),
 
           // Vote count + status
           const SizedBox(height: AppDimensions.spacingXs),
@@ -146,23 +148,29 @@ class PollMessageWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: hasVoted
                   ? (isFromCurrentUser
-                      ? cs.onPrimary
-                          .withValues(alpha: AppDimensions.opacityLight)
-                      : cs.primary
-                          .withValues(alpha: AppDimensions.opacityVeryLight))
+                        ? cs.onPrimary.withValues(
+                            alpha: AppDimensions.opacityLight,
+                          )
+                        : cs.primary.withValues(
+                            alpha: AppDimensions.opacityVeryLight,
+                          ))
                   : (isFromCurrentUser
-                      ? cs.onPrimary
-                          .withValues(alpha: AppDimensions.opacityVeryLight)
-                      : cs.surface
-                          .withValues(alpha: AppDimensions.opacityHalf)),
+                        ? cs.onPrimary.withValues(
+                            alpha: AppDimensions.opacityVeryLight,
+                          )
+                        : cs.surface.withValues(
+                            alpha: AppDimensions.opacityHalf,
+                          )),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               border: Border.all(
                 color: hasVoted
                     ? (isFromCurrentUser
-                        ? cs.onPrimary
-                            .withValues(alpha: AppDimensions.opacityMediumLight)
-                        : cs.primary.withValues(
-                            alpha: AppDimensions.opacityMediumLight))
+                          ? cs.onPrimary.withValues(
+                              alpha: AppDimensions.opacityMediumLight,
+                            )
+                          : cs.primary.withValues(
+                              alpha: AppDimensions.opacityMediumLight,
+                            ))
                     : Colors.transparent,
               ),
             ),
@@ -213,13 +221,16 @@ class PollMessageWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: hasVoted
                       ? (isFromCurrentUser
-                          ? cs.onPrimary
-                              .withValues(alpha: AppDimensions.opacityVeryLight)
-                          : cs.primary.withValues(
-                              alpha: AppDimensions.opacityExtraVeryLight))
+                            ? cs.onPrimary.withValues(
+                                alpha: AppDimensions.opacityVeryLight,
+                              )
+                            : cs.primary.withValues(
+                                alpha: AppDimensions.opacityExtraVeryLight,
+                              ))
                       : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusS,
+                  ),
                 ),
               ),
             ),
@@ -230,7 +241,8 @@ class PollMessageWidget extends StatelessWidget {
             if (hasVoted)
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingXs),
+                  end: AppDimensions.spacingXs,
+                ),
                 child: Icon(
                   Icons.check_circle,
                   size: 16,
@@ -296,7 +308,8 @@ class PollMessageWidget extends StatelessWidget {
                           imageUrl: option.recipeImageUrl!,
                         )
                       : _RecipeFallbackThumbnail(
-                          isFromCurrent: isFromCurrentUser),
+                          isFromCurrent: isFromCurrentUser,
+                        ),
                 ),
               ),
             ),
@@ -311,12 +324,14 @@ class PollMessageWidget extends StatelessWidget {
                       if (hasVoted)
                         Padding(
                           padding: const EdgeInsetsDirectional.only(
-                              end: AppDimensions.spacingXs),
+                            end: AppDimensions.spacingXs,
+                          ),
                           child: Icon(
                             Icons.check_circle,
                             size: 16,
-                            color:
-                                isFromCurrentUser ? cs.onPrimary : cs.primary,
+                            color: isFromCurrentUser
+                                ? cs.onPrimary
+                                : cs.primary,
                           ),
                         ),
                       Expanded(
@@ -324,8 +339,9 @@ class PollMessageWidget extends StatelessWidget {
                           option.text,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: textColor,
-                            fontWeight:
-                                hasVoted ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: hasVoted
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -335,12 +351,14 @@ class PollMessageWidget extends StatelessWidget {
                   ),
                   if (portions != null)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(top: AppDimensions.spacingXs),
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingXs,
+                      ),
                       child: Text(
                         '$portions ${context.l10n.portionsUnit}',
-                        style: AppTextStyles.labelSmall
-                            .copyWith(color: subtleColor),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: subtleColor,
+                        ),
                       ),
                     ),
                 ],
@@ -357,10 +375,12 @@ class PollMessageWidget extends StatelessWidget {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: cs.surface
-                        .withValues(alpha: AppDimensions.opacityVeryLight),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    color: cs.surface.withValues(
+                      alpha: AppDimensions.opacityVeryLight,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                   ),
                 ),
               ),
@@ -373,14 +393,18 @@ class PollMessageWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: hasVoted
                             ? (isFromCurrentUser
-                                ? cs.onPrimary.withValues(
-                                    alpha: AppDimensions.opacityMediumLight)
-                                : cs.primary.withValues(
-                                    alpha: AppDimensions.opacityVeryLight))
+                                  ? cs.onPrimary.withValues(
+                                      alpha: AppDimensions.opacityMediumLight,
+                                    )
+                                  : cs.primary.withValues(
+                                      alpha: AppDimensions.opacityVeryLight,
+                                    ))
                             : cs.primary.withValues(
-                                alpha: AppDimensions.opacityExtraVeryLight),
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                                alpha: AppDimensions.opacityExtraVeryLight,
+                              ),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusS,
+                        ),
                       ),
                     ),
                   ),

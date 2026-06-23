@@ -29,7 +29,12 @@ class ResultDisplayer {
 
       Future.delayed(AppDimensions.animationDurationCommon, () {
         _showSnackBarDirect(
-            scaffoldMessenger, success, message, successColor, errorColor);
+          scaffoldMessenger,
+          success,
+          message,
+          successColor,
+          errorColor,
+        );
       });
     } else {
       _showSnackBar(context, success, message);
@@ -37,19 +42,32 @@ class ResultDisplayer {
   }
 
   static void _showSnackBar(
-      BuildContext context, bool success, String message) {
+    BuildContext context,
+    bool success,
+    String message,
+  ) {
     try {
       if (!context.mounted) return;
       final scaffoldMessenger = ScaffoldMessenger.of(context);
-      _showSnackBarDirect(scaffoldMessenger, success, message,
-          context.butleryColors.success, Theme.of(context).colorScheme.error);
+      _showSnackBarDirect(
+        scaffoldMessenger,
+        success,
+        message,
+        context.butleryColors.success,
+        Theme.of(context).colorScheme.error,
+      );
     } catch (e) {
       AppLogger.error('Failed to show result', e);
     }
   }
 
-  static void _showSnackBarDirect(ScaffoldMessengerState messenger,
-      bool success, String message, Color successColor, Color errorColor) {
+  static void _showSnackBarDirect(
+    ScaffoldMessengerState messenger,
+    bool success,
+    String message,
+    Color successColor,
+    Color errorColor,
+  ) {
     try {
       messenger.showSnackBar(
         SnackBar(

@@ -101,12 +101,15 @@ class RatingNotifications {
     if (recipeRatingSummaries.isEmpty) return;
 
     final totalNewRatings = recipeRatingSummaries.fold<int>(
-        0, (sum, summary) => sum + (summary['newRatings'] as int));
+      0,
+      (sum, summary) => sum + (summary['newRatings'] as int),
+    );
 
     if (totalNewRatings == 0) return;
 
-    final topRecipe =
-        recipeRatingSummaries.firstWhere((s) => (s['newRatings'] as int) > 0);
+    final topRecipe = recipeRatingSummaries.firstWhere(
+      (s) => (s['newRatings'] as int) > 0,
+    );
     final summary = _generateRatingSummaryText(recipeRatingSummaries, period);
 
     await NotificationHelper.sendImmediateSafely(
@@ -172,7 +175,9 @@ class RatingNotifications {
 
   /// Get rating milestone information
   static Map<String, dynamic>? _getRatingMilestone(
-      int totalRatings, double averageRating) {
+    int totalRatings,
+    double averageRating,
+  ) {
     // Rating count milestones
     if (totalRatings == 5) {
       return {
@@ -218,21 +223,32 @@ class RatingNotifications {
 
   /// Generate rating summary text
   static String _generateRatingSummaryText(
-      List<Map<String, dynamic>> summaries, String period) {
+    List<Map<String, dynamic>> summaries,
+    String period,
+  ) {
     final totalNewRatings = summaries.fold<int>(
-        0, (sum, summary) => sum + (summary['newRatings'] as int));
+      0,
+      (sum, summary) => sum + (summary['newRatings'] as int),
+    );
 
-    final recipesWithRatings =
-        summaries.where((s) => (s['newRatings'] as int) > 0).length;
+    final recipesWithRatings = summaries
+        .where((s) => (s['newRatings'] as int) > 0)
+        .length;
 
     final l = AppLocale.current;
     if (recipesWithRatings == 1) {
       final recipe = summaries.firstWhere((s) => (s['newRatings'] as int) > 0);
       return l.notificationRatingSingle(
-          recipe['recipeName'] as String, recipe['newRatings'] as int, period);
+        recipe['recipeName'] as String,
+        recipe['newRatings'] as int,
+        period,
+      );
     } else {
       return l.notificationRatingMultiple(
-          totalNewRatings, recipesWithRatings, period);
+        totalNewRatings,
+        recipesWithRatings,
+        period,
+      );
     }
   }
 
@@ -284,7 +300,8 @@ class RatingNotifications {
       }
 
       AppLogger.info(
-          '📬 Sent ${ratingsByRecipe.length} batched rating notifications');
+        '📬 Sent ${ratingsByRecipe.length} batched rating notifications',
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to send batched rating notifications', e);
     }
@@ -300,7 +317,7 @@ class RatingNotifications {
     final ratingCount = ratings.length;
     final averageRating =
         ratings.fold<double>(0.0, (sum, r) => sum + (r['rating'] as double)) /
-            ratingCount.toDouble();
+        ratingCount.toDouble();
 
     final message = ratingCount == 2
         ? 'Ditt recept fick 2 nya betyg!'

@@ -32,7 +32,7 @@ on:
           - generate_menu
 
 env:
-  FLUTTER_VERSION: '3.35.1'
+  FLUTTER_VERSION: '3.38.5'
   # Hard cost cap per nightly run. Failure here means a prompt change
   # silently increased token usage; investigate before re-running.
   COST_CAP_USD: '1.00'

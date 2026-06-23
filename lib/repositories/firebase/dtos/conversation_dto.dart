@@ -75,22 +75,28 @@ class ConversationDto {
     return Conversation(
       id: doc.id,
       participantIds: List<String>.from(data['participantIds'] ?? []),
-      participantDisplayNames:
-          Map<String, String>.from(data['participantDisplayNames'] ?? {}),
-      participantAvatarUrls:
-          Map<String, String?>.from(data['participantAvatarUrls'] ?? {}),
+      participantDisplayNames: Map<String, String>.from(
+        data['participantDisplayNames'] ?? {},
+      ),
+      participantAvatarUrls: Map<String, String?>.from(
+        data['participantAvatarUrls'] ?? {},
+      ),
       lastMessage: data['lastMessage'] != null
           ? MessageDto.fromMap(data['lastMessage'] as Map<String, dynamic>)
           : null,
-      lastReadTimestamps: (data['lastReadTimestamps'] as Map<String, dynamic>?)
-              ?.map(
-            (key, value) => MapEntry(key,
-                SerializationUtils.parseDateTimeValue(value) ?? clock.now()),
+      lastReadTimestamps:
+          (data['lastReadTimestamps'] as Map<String, dynamic>?)?.map(
+            (key, value) => MapEntry(
+              key,
+              SerializationUtils.parseDateTimeValue(value) ?? clock.now(),
+            ),
           ) ??
           {},
-      createdAt: SerializationUtils.parseDateTimeValue(data['createdAt']) ??
+      createdAt:
+          SerializationUtils.parseDateTimeValue(data['createdAt']) ??
           clock.now(),
-      updatedAt: SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
+      updatedAt:
+          SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
           clock.now(),
       title: data['title'] as String?,
       isGroup: data['isGroup'] as bool? ?? false,
@@ -98,10 +104,12 @@ class ConversationDto {
       isArchived: perUserSettings?['isArchived'] as bool? ?? false,
       isPinned: perUserSettings?['isPinned'] as bool? ?? false,
       isMuted: perUserSettings?['isMuted'] as bool? ?? false,
-      archivedAt:
-          SerializationUtils.parseDateTimeValue(perUserSettings?['archivedAt']),
-      pinnedAt:
-          SerializationUtils.parseDateTimeValue(perUserSettings?['pinnedAt']),
+      archivedAt: SerializationUtils.parseDateTimeValue(
+        perUserSettings?['archivedAt'],
+      ),
+      pinnedAt: SerializationUtils.parseDateTimeValue(
+        perUserSettings?['pinnedAt'],
+      ),
     );
   }
 

@@ -34,8 +34,9 @@ void main() {
       expect(message, contains('internet'));
     });
 
-    testWidgets('returns network error for connection failures',
-        (tester) async {
+    testWidgets('returns network error for connection failures', (
+      tester,
+    ) async {
       await setupContext(tester);
       final message = SnackBarUtils.userFriendlyMessage(
         testContext,
@@ -44,8 +45,9 @@ void main() {
       expect(message, contains('internet'));
     });
 
-    testWidgets('returns auth error for authentication failures',
-        (tester) async {
+    testWidgets('returns auth error for authentication failures', (
+      tester,
+    ) async {
       await setupContext(tester);
       final message = SnackBarUtils.userFriendlyMessage(
         testContext,
@@ -54,8 +56,9 @@ void main() {
       expect(message, contains('Logga in'));
     });
 
-    testWidgets('returns permission error for unauthorized access',
-        (tester) async {
+    testWidgets('returns permission error for unauthorized access', (
+      tester,
+    ) async {
       await setupContext(tester);
       final message = SnackBarUtils.userFriendlyMessage(
         testContext,
@@ -64,8 +67,9 @@ void main() {
       expect(message, contains('behörighet'));
     });
 
-    testWidgets('returns not found error for missing resources',
-        (tester) async {
+    testWidgets('returns not found error for missing resources', (
+      tester,
+    ) async {
       await setupContext(tester);
       final message = SnackBarUtils.userFriendlyMessage(
         testContext,

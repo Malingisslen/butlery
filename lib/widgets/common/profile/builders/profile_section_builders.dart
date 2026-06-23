@@ -13,8 +13,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Builders for profile section widgets.
 class ProfileSectionBuilders {
   /// Build data backup section.
-  static Widget buildDataBackupSection(BuildContext context,
-      {BuildContext? rootContext}) {
+  static Widget buildDataBackupSection(
+    BuildContext context, {
+    BuildContext? rootContext,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
@@ -73,25 +75,29 @@ class ProfileSectionBuilders {
             child: FilledButton.tonalIcon(
               onPressed: () => AuthActionHandler.handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context)
-                    .colorScheme
-                    .error
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
+                backgroundColor: Theme.of(context).colorScheme.error.withValues(
+                  alpha: AppDimensions.opacityVeryLight,
+                ),
                 foregroundColor: Theme.of(context).colorScheme.error,
-                minimumSize:
-                    const Size(double.infinity, AppDimensions.buttonHeight),
+                minimumSize: const Size(
+                  double.infinity,
+                  AppDimensions.buttonHeight,
+                ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingXl,
                   vertical: AppDimensions.paddingM,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusL,
+                  ),
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: Text(context.l10n.profileLogout,
-                  style: AppTextStyles.labelLarge),
+              label: Text(
+                context.l10n.profileLogout,
+                style: AppTextStyles.labelLarge,
+              ),
             ),
           ),
         ],

@@ -31,24 +31,31 @@ void main() {
       final before = RecipeBuilder().withIngredients(['a', 'b']).build();
       final after = before.copyWith(ingredients: ['a', 'b', 'c']);
 
-      expect(diffRecipeFields(before, after),
-          equals([RecipeDiffField.ingredients]));
+      expect(
+        diffRecipeFields(before, after),
+        equals([RecipeDiffField.ingredients]),
+      );
     });
 
     test('detects instruction reorder as a change (order-sensitive)', () {
-      final before =
-          RecipeBuilder().withInstructions(['step1', 'step2']).build();
+      final before = RecipeBuilder().withInstructions([
+        'step1',
+        'step2',
+      ]).build();
       final after = before.copyWith(instructions: ['step2', 'step1']);
 
-      expect(diffRecipeFields(before, after),
-          equals([RecipeDiffField.instructions]));
+      expect(
+        diffRecipeFields(before, after),
+        equals([RecipeDiffField.instructions]),
+      );
     });
 
     test('detects multi-field change in stable order', () {
       final before = RecipeBuilder()
           .withTitle('Old')
           .withPortions(2)
-          .withIngredients(['a']).build();
+          .withIngredients(['a'])
+          .build();
       final after = before.copyWith(
         title: 'New',
         portions: 4,
@@ -71,12 +78,16 @@ void main() {
       final after = before.copyWith(portions: 4);
 
       expect(
-          diffRecipeFields(before, after), equals([RecipeDiffField.portions]));
+        diffRecipeFields(before, after),
+        equals([RecipeDiffField.portions]),
+      );
     });
 
     test('description and meal type changes are detected', () {
-      final before =
-          RecipeBuilder().withDescription('orig').withMealType('Lunch').build();
+      final before = RecipeBuilder()
+          .withDescription('orig')
+          .withMealType('Lunch')
+          .build();
       final after = before.copyWith(
         description: 'updated',
         mealType: 'Middag',
@@ -93,7 +104,9 @@ void main() {
       final after = before.copyWith(imageUrls: ['https://x/a.jpg']);
 
       expect(
-          diffRecipeFields(before, after), equals([RecipeDiffField.imageUrls]));
+        diffRecipeFields(before, after),
+        equals([RecipeDiffField.imageUrls]),
+      );
     });
   });
 }

@@ -50,12 +50,15 @@ class MinaReceptRecipeCard extends StatelessWidget {
       style: viewModel.isGridView
           ? ContentCardStyle.grid
           : ContentCardStyle.detailed,
-      userAllergenPrefs:
-          allergenPrefs.showOnCards ? allergenPrefs.trackedAllergens : null,
-      userDietaryPrefs:
-          allergenPrefs.showOnCards ? allergenPrefs.trackedDietary : null,
-      matchPercent:
-          viewModel.pantryOnly ? viewModel.pantryMatches[recipe.id] : null,
+      userAllergenPrefs: allergenPrefs.showOnCards
+          ? allergenPrefs.trackedAllergens
+          : null,
+      userDietaryPrefs: allergenPrefs.showOnCards
+          ? allergenPrefs.trackedDietary
+          : null,
+      matchPercent: viewModel.pantryOnly
+          ? viewModel.pantryMatches[recipe.id]
+          : null,
       onFavoriteToggle: viewModel.isSelectionMode
           ? null
           : () => viewModel.toggleFavorite(recipe.id),
@@ -108,18 +111,18 @@ class MinaReceptRecipeCard extends StatelessWidget {
           CustomSemanticsAction(
             label: context.l10n.a11ySwipeEditAction,
           ): () => Navigator.pushNamed(
-                context,
-                Routes.editRecipe,
-                arguments: recipe,
-              ),
+            context,
+            Routes.editRecipe,
+            arguments: recipe,
+          ),
           CustomSemanticsAction(
             label: context.l10n.a11ySwipeDeleteAction,
           ): () async {
             final confirmed =
                 await CommonDialogActions.showRecipeDeleteConfirmation(
-              context: context,
-              recipeName: recipe.title,
-            );
+                  context: context,
+                  recipeName: recipe.title,
+                );
             if (confirmed == true) {
               onDelete(recipe);
             }
@@ -133,9 +136,9 @@ class MinaReceptRecipeCard extends StatelessWidget {
             if (direction == DismissDirection.endToStart) {
               final confirmed =
                   await CommonDialogActions.showRecipeDeleteConfirmation(
-                context: context,
-                recipeName: recipe.title,
-              );
+                    context: context,
+                    recipeName: recipe.title,
+                  );
               if (confirmed == true) {
                 onDelete(recipe);
               }
@@ -190,8 +193,9 @@ class MinaReceptRecipeCard extends StatelessWidget {
     return ExcludeSemantics(
       child: Container(
         alignment: alignment,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingLg,
+        ),
         color: color,
         child: Icon(icon, color: iconColor, size: AppDimensions.iconSize28),
       ),

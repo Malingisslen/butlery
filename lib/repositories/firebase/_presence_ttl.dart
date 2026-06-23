@@ -24,10 +24,12 @@ class PresenceTtl {
     Iterable<Map<String, dynamic>> rows,
   ) {
     final now = clock.now().toUtc();
-    return rows.where((row) {
-      final raw = row['expiresAt'];
-      if (raw is! Timestamp) return true;
-      return raw.toDate().toUtc().isAfter(now);
-    }).toList(growable: false);
+    return rows
+        .where((row) {
+          final raw = row['expiresAt'];
+          if (raw is! Timestamp) return true;
+          return raw.toDate().toUtc().isAfter(now);
+        })
+        .toList(growable: false);
   }
 }

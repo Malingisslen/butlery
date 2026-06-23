@@ -10,13 +10,17 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 class RecipeLegacyValidator {
   final FirebaseFirestore firestore;
   final Future<DocumentSnapshot<Map<String, dynamic>>> Function(
-      String userId, String recipeId) getUserRecipeDoc;
+    String userId,
+    String recipeId,
+  )
+  getUserRecipeDoc;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,
     required String resourceType,
     required String resourceId,
-  }) validateOwnership;
+  })
+  validateOwnership;
 
   RecipeLegacyValidator({
     required this.firestore,
@@ -39,7 +43,8 @@ class RecipeLegacyValidator {
 
     if (isLegacy) {
       AppLogger.info(
-          '🕰️ Legacy recipe detected: ${recipe.id} - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe');
+        '🕰️ Legacy recipe detected: ${recipe.id} - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe',
+      );
     }
 
     return isLegacy;
@@ -94,7 +99,8 @@ class RecipeLegacyValidator {
 
       if (userRecipeDoc.exists) {
         AppLogger.success(
-            '✅ Legacy recipe found in user collection - ownership confirmed');
+          '✅ Legacy recipe found in user collection - ownership confirmed',
+        );
         return true;
       }
     } catch (e) {
@@ -104,7 +110,8 @@ class RecipeLegacyValidator {
     // Strategy 2: For personal recipes, if user can access it, they likely own it
     if (recipe.isPersonal) {
       AppLogger.warning(
-          '🔧 Legacy personal recipe - inferring ownership from access');
+        '🔧 Legacy personal recipe - inferring ownership from access',
+      );
       return true; // If they can load a personal recipe, they likely own it
     }
 
@@ -122,7 +129,8 @@ class RecipeLegacyValidator {
     }
 
     AppLogger.error(
-        '❌ Could not validate ownership for legacy recipe: $recipeId');
+      '❌ Could not validate ownership for legacy recipe: $recipeId',
+    );
     return false;
   }
 
@@ -132,8 +140,9 @@ class RecipeLegacyValidator {
 
     // Check if imageUrls contain user-specific paths
     if (recipe.imageUrls.isNotEmpty) {
-      final hasUserPath =
-          recipe.imageUrls.any((url) => url.contains(currentUserId));
+      final hasUserPath = recipe.imageUrls.any(
+        (url) => url.contains(currentUserId),
+      );
       if (hasUserPath) {
         AppLogger.debug('🔍 Found user ID in image paths');
         return true;
@@ -151,7 +160,9 @@ class RecipeLegacyValidator {
 
   /// Check Firebase document creation metadata for ownership clues.
   Future<bool> _checkCreationMetadata(
-      Recipe recipe, String currentUserId) async {
+    Recipe recipe,
+    String currentUserId,
+  ) async {
     try {
       // This is a future enhancement - checking Firebase document metadata
       // for now, return false as we don't have access to creation metadata
@@ -187,7 +198,8 @@ class RecipeLegacyValidator {
           .add(auditData);
 
       AppLogger.info(
-          '📋 Legacy recipe deletion logged for audit: ${recipe.id}');
+        '📋 Legacy recipe deletion logged for audit: ${recipe.id}',
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to log legacy recipe deletion: $e');
       // Don't fail deletion due to logging issues

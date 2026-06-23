@@ -82,8 +82,10 @@ void main() {
 
       await repo.saveProfile(_profile());
 
-      final publicDoc =
-          await firestore.collection('public_profiles').doc(_alice).get();
+      final publicDoc = await firestore
+          .collection('public_profiles')
+          .doc(_alice)
+          .get();
       expect(publicDoc.exists, isTrue);
       expect(publicDoc.data()?['displayNameLower'], 'alice');
 
@@ -122,11 +124,11 @@ void main() {
           .collection('settings')
           .doc('preferences')
           .set({
-        'fcmToken': 'tok-123',
-        'preferredLocale': 'sv',
-        'notificationsEnabled': false,
-        'hasCompletedOnboarding': true,
-      });
+            'fcmToken': 'tok-123',
+            'preferredLocale': 'sv',
+            'notificationsEnabled': false,
+            'hasCompletedOnboarding': true,
+          });
 
       final got = await repo.fetchProfile(_alice);
       expect(got, isNotNull);
@@ -171,20 +173,27 @@ void main() {
   });
 
   group('updateProfileStats / updateOnlineStatus', () {
-    test('updateProfileStats writes friendsCount + publicRecipeCount',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedProfile(firestore, _profile());
+    test(
+      'updateProfileStats writes friendsCount + publicRecipeCount',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedProfile(firestore, _profile());
 
-      await repo.updateProfileStats(_alice,
-          friendsCount: 5, publicRecipeCount: 12);
+        await repo.updateProfileStats(
+          _alice,
+          friendsCount: 5,
+          publicRecipeCount: 12,
+        );
 
-      final doc =
-          await firestore.collection('public_profiles').doc(_alice).get();
-      expect(doc.data()?['friendsCount'], 5);
-      expect(doc.data()?['publicRecipeCount'], 12);
-    });
+        final doc = await firestore
+            .collection('public_profiles')
+            .doc(_alice)
+            .get();
+        expect(doc.data()?['friendsCount'], 5);
+        expect(doc.data()?['publicRecipeCount'], 12);
+      },
+    );
 
     test('updateProfileStats no-op when both args null', () async {
       final firestore = FakeFirebaseFirestore();
@@ -201,8 +210,10 @@ void main() {
       await _seedProfile(firestore, _profile());
 
       await repo.updateOnlineStatus(_alice, true);
-      final doc =
-          await firestore.collection('public_profiles').doc(_alice).get();
+      final doc = await firestore
+          .collection('public_profiles')
+          .doc(_alice)
+          .get();
       expect(doc.data()?['isOnline'], isTrue);
       expect(doc.data()?['lastActiveAt'], isNotNull);
     });
@@ -311,18 +322,19 @@ void main() {
       expect(await repo.searchProfiles('   '), isEmpty);
     });
 
-    test(
-        'searchProfiles also matches by email when query contains @ and '
+    test('searchProfiles also matches by email when query contains @ and '
         'allowEmailSearch is true', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore, authedUserId: 'me');
       await _seedProfile(
-          firestore,
-          _profile(
-              uid: 'u1',
-              displayName: 'Bertil',
-              email: 'target@x.com',
-              allowEmailSearch: true));
+        firestore,
+        _profile(
+          uid: 'u1',
+          displayName: 'Bertil',
+          email: 'target@x.com',
+          allowEmailSearch: true,
+        ),
+      );
 
       final results = await repo.searchProfiles('target@x.com');
       expect(results.map((p) => p.uid), contains('u1'));
@@ -373,8 +385,10 @@ void main() {
 
       await repo.incrementPublicRecipeCount(_alice);
 
-      final doc =
-          await firestore.collection('public_profiles').doc(_alice).get();
+      final doc = await firestore
+          .collection('public_profiles')
+          .doc(_alice)
+          .get();
       expect(doc.data()?['publicRecipeCount'], 1);
     });
 
@@ -387,8 +401,10 @@ void main() {
 
       await repo.decrementPublicRecipeCount(_alice);
 
-      final doc =
-          await firestore.collection('public_profiles').doc(_alice).get();
+      final doc = await firestore
+          .collection('public_profiles')
+          .doc(_alice)
+          .get();
       expect(doc.data()?['publicRecipeCount'], 1);
     });
   });
@@ -401,9 +417,10 @@ void main() {
 
       expect(await repo.deletePublicProfile(_alice), isTrue);
       expect(
-          (await firestore.collection('public_profiles').doc(_alice).get())
-              .exists,
-          isFalse);
+        (await firestore.collection('public_profiles').doc(_alice).get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('deletePublicProfile rejects when caller is not owner', () async {
@@ -423,8 +440,10 @@ void main() {
       await firestore.collection('users').doc(_alice).set({'uid': _alice});
 
       expect(await repo.deleteUserRootDoc(_alice), isTrue);
-      expect((await firestore.collection('users').doc(_alice).get()).exists,
-          isFalse);
+      expect(
+        (await firestore.collection('users').doc(_alice).get()).exists,
+        isFalse,
+      );
     });
   });
 }

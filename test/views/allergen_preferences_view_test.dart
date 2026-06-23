@@ -172,8 +172,9 @@ void main() {
     mockUserService = MockUserService();
 
     when(() => mockUserService.allergenPreferences).thenReturn(_seedPrefs);
-    when(() => mockUserService.updateAllergenPreferences(any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockUserService.updateAllergenPreferences(any()),
+    ).thenAnswer((_) async => true);
 
     TestServiceLocator.registerMock<UserService>(mockUserService);
     viewModel = AllergenPreferencesViewModel(userService: mockUserService);
@@ -190,8 +191,9 @@ void main() {
   });
 
   group('AllergenPreferencesView', () {
-    testWidgets('allergen chips render from AllergenPreferenceOptions',
-        (tester) async {
+    testWidgets('allergen chips render from AllergenPreferenceOptions', (
+      tester,
+    ) async {
       await tester.pumpWidget(_testApp(viewModel));
       await tester.pumpAndSettle();
 
@@ -201,8 +203,9 @@ void main() {
       }
     });
 
-    testWidgets('dietary chips render (including nötkötsfri, aip-vänlig)',
-        (tester) async {
+    testWidgets('dietary chips render (including nötkötsfri, aip-vänlig)', (
+      tester,
+    ) async {
       await tester.pumpWidget(_testApp(viewModel));
       await tester.pumpAndSettle();
 

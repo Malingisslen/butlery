@@ -89,7 +89,8 @@ class BackupService extends BaseService {
       }
       if (directory == null) {
         return BackupResult.error(
-            AppLocale.current.backupCouldNotFindStorageDir);
+          AppLocale.current.backupCouldNotFindStorageDir,
+        );
       }
 
       final butleryDir = Directory('${directory.path}/Butlery');
@@ -207,8 +208,9 @@ class BackupService extends BaseService {
               timeMinutes: recipe.timeMinutes,
               rating: recipe.rating,
               personalTagIds: recipe.personalTagIds,
-              sourceUrl: AppLocale.current
-                  .backupImportedFromBackup(_formatDate(clock.now())),
+              sourceUrl: AppLocale.current.backupImportedFromBackup(
+                _formatDate(clock.now()),
+              ),
               createdAt: clock.now(),
               updatedAt: clock.now(),
               createdBy: '',
@@ -237,7 +239,8 @@ class BackupService extends BaseService {
           // shape, then to the generic label as a last resort.
           final coreMap = recipeJson['core'];
           final coreTitle = (coreMap is Map) ? coreMap['title'] : null;
-          final label = coreTitle ??
+          final label =
+              coreTitle ??
               recipeJson['title'] ??
               AppLocale.current.backupUnknownRecipe;
           errors.add('$label: $e');
@@ -248,8 +251,10 @@ class BackupService extends BaseService {
         totalRecipes: recipesJson.length,
         successCount: successCount,
         skipCount: skipCount,
-        exportDate:
-            SerializationUtils.safeRequiredDateTime(backupData, 'exported_at'),
+        exportDate: SerializationUtils.safeRequiredDateTime(
+          backupData,
+          'exported_at',
+        ),
         exportEmail: backupData['user_email'],
         errors: errors,
         skippedTitles: skippedTitles,

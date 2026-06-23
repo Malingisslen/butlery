@@ -86,7 +86,9 @@ class ArlaRecipeParser extends RecipeSiteParser {
         var tip = element.text.trim();
         if (tip.isEmpty) continue;
         tip = tip.replaceFirst(
-            RegExp(r'^Tips?\s*:\s*', caseSensitive: false), '');
+          RegExp(r'^Tips?\s*:\s*', caseSensitive: false),
+          '',
+        );
         if (tip.length > 5) tips.add(cleanSwedishText(tip));
       }
     }
@@ -106,19 +108,27 @@ class ArlaRecipeParser extends RecipeSiteParser {
       final text = element.text;
 
       final calories = _matchNutritionInt(
-          text, RegExp(r'(\d+)\s*kcal', caseSensitive: false));
+        text,
+        RegExp(r'(\d+)\s*kcal', caseSensitive: false),
+      );
       if (calories != null) result['calories'] = calories;
 
       final protein = _matchNutritionInt(
-          text, RegExp(r'Protein\s*:?\s*(\d+)', caseSensitive: false));
+        text,
+        RegExp(r'Protein\s*:?\s*(\d+)', caseSensitive: false),
+      );
       if (protein != null) result['protein'] = protein;
 
       final fat = _matchNutritionInt(
-          text, RegExp(r'Fett\s*:?\s*(\d+)', caseSensitive: false));
+        text,
+        RegExp(r'Fett\s*:?\s*(\d+)', caseSensitive: false),
+      );
       if (fat != null) result['fat'] = fat;
 
       final carbs = _matchNutritionInt(
-          text, RegExp(r'Kolhydrater\s*:?\s*(\d+)', caseSensitive: false));
+        text,
+        RegExp(r'Kolhydrater\s*:?\s*(\d+)', caseSensitive: false),
+      );
       if (carbs != null) result['carbohydrates'] = carbs;
 
       if (result.isNotEmpty) break;
@@ -173,8 +183,10 @@ class ArlaRecipeParser extends RecipeSiteParser {
     // Arla sometimes includes "ca" (cirka/approximately) in portions
     final yield_ = recipe['recipeYield'];
     if (yield_ is String) {
-      recipe['recipeYield'] =
-          yield_.replaceAll('ca ', '').replaceAll('cirka ', '').trim();
+      recipe['recipeYield'] = yield_
+          .replaceAll('ca ', '')
+          .replaceAll('cirka ', '')
+          .trim();
     }
 
     // Clean ingredient formatting
@@ -201,9 +213,11 @@ class ArlaRecipeParser extends RecipeSiteParser {
             }
             return inst;
           })
-          .where((inst) => inst is String
-              ? inst.isNotEmpty
-              : inst is Map && inst['text'] != null)
+          .where(
+            (inst) => inst is String
+                ? inst.isNotEmpty
+                : inst is Map && inst['text'] != null,
+          )
           .toList();
     }
 
@@ -341,8 +355,10 @@ class ArlaRecipeParser extends RecipeSiteParser {
 
     // Try finding "Portioner: X" in text
     final bodyText = (doc.body?.text).orEmpty();
-    final portionMatch = RegExp(r'Portioner?:\s*(\d+)', caseSensitive: false)
-        .firstMatch(bodyText);
+    final portionMatch = RegExp(
+      r'Portioner?:\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(bodyText);
     if (portionMatch != null) {
       return portionMatch.group(1);
     }
@@ -411,13 +427,15 @@ class ArlaRecipeParser extends RecipeSiteParser {
 
     // Extract hours
     final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
-    final hours =
-        hoursMatch != null ? int.tryParse(hoursMatch.group(1)!) : null;
+    final hours = hoursMatch != null
+        ? int.tryParse(hoursMatch.group(1)!)
+        : null;
 
     // Extract minutes
     final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
-    final minutes =
-        minutesMatch != null ? int.tryParse(minutesMatch.group(1)!) : null;
+    final minutes = minutesMatch != null
+        ? int.tryParse(minutesMatch.group(1)!)
+        : null;
 
     if (hours == null && minutes == null) {
       return null;

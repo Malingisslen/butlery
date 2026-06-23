@@ -24,9 +24,9 @@ class HttpContentFetcher {
     http.Client? httpClient,
     WebScraper Function()? webScraperFactory,
     Future<List<InternetAddress>> Function(String host)? dnsLookup,
-  })  : _httpClient = httpClient,
-        _webScraperFactory = webScraperFactory,
-        _dnsLookup = dnsLookup ?? InternetAddress.lookup;
+  }) : _httpClient = httpClient,
+       _webScraperFactory = webScraperFactory,
+       _dnsLookup = dnsLookup ?? InternetAddress.lookup;
 
   /// Returns true if the host should be blocked (private/internal addresses).
   static bool isBlockedHost(String host) {
@@ -89,13 +89,15 @@ class HttpContentFetcher {
 
       if (!_allowedSchemes.contains(uri.scheme.toLowerCase())) {
         AppLogger.warning(
-            'HttpContentFetcher: Blocked non-HTTP scheme: ${uri.scheme}');
+          'HttpContentFetcher: Blocked non-HTTP scheme: ${uri.scheme}',
+        );
         return null;
       }
 
       if (isBlockedHost(uri.host)) {
         AppLogger.warning(
-            'HttpContentFetcher: Blocked request to private/internal host: ${uri.host}');
+          'HttpContentFetcher: Blocked request to private/internal host: ${uri.host}',
+        );
         return null;
       }
 
@@ -104,15 +106,18 @@ class HttpContentFetcher {
         final addresses = await _dnsLookup(uri.host);
         for (final addr in addresses) {
           if (isBlockedHost(addr.address)) {
-            AppLogger.warning('HttpContentFetcher: DNS resolved to blocked IP '
-                '${addr.address} for host ${uri.host}');
+            AppLogger.warning(
+              'HttpContentFetcher: DNS resolved to blocked IP '
+              '${addr.address} for host ${uri.host}',
+            );
             return null;
           }
         }
       } catch (e) {
         // DNS resolution failure — block the request (fail-closed)
         AppLogger.warning(
-            'HttpContentFetcher: DNS resolution failed for ${uri.host}: $e');
+          'HttpContentFetcher: DNS resolution failed for ${uri.host}: $e',
+        );
         return null;
       }
 
@@ -135,8 +140,9 @@ class HttpContentFetcher {
           'Sec-Fetch-User': '?1',
         });
 
-        final streamedResponse =
-            await client.send(request).timeout(_fetchTimeout);
+        final streamedResponse = await client
+            .send(request)
+            .timeout(_fetchTimeout);
 
         if (streamedResponse.statusCode != 200) {
           return null;
@@ -170,7 +176,8 @@ class HttpContentFetcher {
       rethrow;
     } catch (e) {
       AppLogger.warning(
-          'HttpContentFetcher: Failed to fetch HTML from $url: $e');
+        'HttpContentFetcher: Failed to fetch HTML from $url: $e',
+      );
       return null;
     }
   }
@@ -243,7 +250,13 @@ class HttpContentFetcher {
 
   /// Normalizes common charset aliases.
   String _normalizeCharset(String charset) {
-    final lower = charset.toLowerCase().replaceAll(RegExp(r'[\s"' ']'), '');
+    final lower = charset.toLowerCase().replaceAll(
+      RegExp(
+        r'[\s"'
+        ']',
+      ),
+      '',
+    );
     switch (lower) {
       case 'utf8':
       case 'utf-8':
@@ -274,7 +287,8 @@ class HttpContentFetcher {
           return utf8.decode(bytes);
         } on FormatException {
           AppLogger.info(
-              'HttpContentFetcher: UTF-8 decode failed, falling back to Latin-1');
+            'HttpContentFetcher: UTF-8 decode failed, falling back to Latin-1',
+          );
           return latin1.decode(bytes);
         }
     }
@@ -300,7 +314,8 @@ class HttpContentFetcher {
       }
     } catch (e) {
       AppLogger.warning(
-          'HttpContentFetcher: WebScraper HTML fetch failed for $url: $e');
+        'HttpContentFetcher: WebScraper HTML fetch failed for $url: $e',
+      );
       return null;
     }
   }
@@ -315,8 +330,10 @@ class HttpContentFetcher {
       final webScraper = _webScraperFactory?.call() ?? WebScraper();
 
       try {
-        final extractionResult =
-            await webScraper.performExtraction(webUrl, platform);
+        final extractionResult = await webScraper.performExtraction(
+          webUrl,
+          platform,
+        );
 
         if (extractionResult.success &&
             extractionResult.extractedText != null) {

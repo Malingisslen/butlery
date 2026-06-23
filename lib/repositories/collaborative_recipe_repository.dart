@@ -75,9 +75,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _auditRepository = auditRepository;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _authRepository = authRepository,
+       _auditRepository = auditRepository;
 
   String? get _currentUserId => _authRepository.currentUserId;
 
@@ -129,7 +129,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> watchRealtimeRecipe(
-      String id) {
+    String id,
+  ) {
     return _firestore
         .collection(FirestoreCollections.realtimeRecipes)
         .doc(id)
@@ -146,7 +147,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(
-      String userId) {
+    String userId,
+  ) {
     return _firestore.collection(FirestoreCollections.users).doc(userId).get();
   }
 
@@ -195,7 +197,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(
-      String id) {
+    String id,
+  ) {
     return _firestore
         .collection(FirestoreCollections.realtimeRecipes)
         .doc(id)
@@ -209,11 +212,11 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .doc(id)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.exists) {
-        return RealtimeRecipe.fromFirestore(snapshot);
-      }
-      return null;
-    });
+          if (snapshot.exists) {
+            return RealtimeRecipe.fromFirestore(snapshot);
+          }
+          return null;
+        });
   }
 
   Stream<List<LiveEditor>> getParticipantsStream(String id) {
@@ -224,14 +227,17 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => LiveEditor.fromFirestore(doc.data()))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => LiveEditor.fromFirestore(doc.data()))
+              .toList();
+        });
   }
 
   Future<void> updateUserPresence(
-      String recipeId, String userId, String displayName) async {
+    String recipeId,
+    String userId,
+    String displayName,
+  ) async {
     final currentUserId = _requireCurrentUserId();
 
     // Users can only update their own presence
@@ -247,11 +253,11 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .collection(FirestoreCollections.presence)
         .doc(userId)
         .set({
-      'userId': userId,
-      'displayName': displayName,
-      'lastSeen': DateTime.now().millisecondsSinceEpoch,
-      'isActive': true,
-    }, SetOptions(merge: true));
+          'userId': userId,
+          'displayName': displayName,
+          'lastSeen': DateTime.now().millisecondsSinceEpoch,
+          'isActive': true,
+        }, SetOptions(merge: true));
   }
 
   /// Update presence heartbeat (lightweight update for active users)
@@ -271,9 +277,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .collection(FirestoreCollections.presence)
         .doc(userId)
         .set({
-      'lastSeen': DateTime.now().millisecondsSinceEpoch,
-      'isActive': true,
-    }, SetOptions(merge: true));
+          'lastSeen': DateTime.now().millisecondsSinceEpoch,
+          'isActive': true,
+        }, SetOptions(merge: true));
   }
 
   Future<void> clearUserPresence(String recipeId, String userId) async {
@@ -337,7 +343,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
       }
 
       final now = DateTime.now().millisecondsSinceEpoch;
-      final isCurrentlyActive = lastSeenMillis != null &&
+      final isCurrentlyActive =
+          lastSeenMillis != null &&
           (now - lastSeenMillis) < 60000; // Within 1 minute
 
       return {
@@ -438,7 +445,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(_firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} realtime_recipes for user ${userId.maskedUserId}');
+      'Deleted ${snapshot.docs.length} realtime_recipes for user ${userId.maskedUserId}',
+    );
     return snapshot.docs.length;
   }
 }

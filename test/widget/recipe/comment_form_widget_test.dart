@@ -36,12 +36,12 @@ class _FakeSocialRecipeViewModel extends Mock
 const _kDraftPrefix = 'comment_draft_v1_';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 void main() {
   late _FakeSocialRecipeViewModel vm;
@@ -80,22 +80,27 @@ void main() {
   });
 
   CommentFormWidget buildWidget(String recipeId) => CommentFormWidget(
-        socialViewModel: vm,
-        recipeId: recipeId,
-        onShowMessage: (_, {bool isError = false}) {},
-      );
+    socialViewModel: vm,
+    recipeId: recipeId,
+    onShowMessage: (_, {bool isError = false}) {},
+  );
 
-  testWidgets('load on mount: seeds TextField from prefs and syncs VM',
-      (tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'${_kDraftPrefix}r1': 'half-written'});
+  testWidgets('load on mount: seeds TextField from prefs and syncs VM', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      '${_kDraftPrefix}r1': 'half-written',
+    });
 
     await tester.pumpWidget(_wrap(buildWidget('r1')));
     // _loadDraft is async (SharedPreferences.getInstance) — let it settle.
     await tester.pumpAndSettle();
 
-    expect(find.text('half-written'), findsOneWidget,
-        reason: 'mounted draft must populate the TextField');
+    expect(
+      find.text('half-written'),
+      findsOneWidget,
+      reason: 'mounted draft must populate the TextField',
+    );
     verify(() => vm.updateNewCommentText('half-written')).called(1);
   });
 
@@ -109,17 +114,22 @@ void main() {
     await tester.pumpAndSettle();
 
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('${_kDraftPrefix}r1'), 'fresh',
-        reason: 'onChanged must persist the draft under the recipe key');
+    expect(
+      prefs.getString('${_kDraftPrefix}r1'),
+      'fresh',
+      reason: 'onChanged must persist the draft under the recipe key',
+    );
   });
 
   testWidgets('clear on post-success: draft key is removed', (tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'${_kDraftPrefix}r1': 'about to send'});
+    SharedPreferences.setMockInitialValues({
+      '${_kDraftPrefix}r1': 'about to send',
+    });
     // Send button is enabled only when newCommentText is non-empty + not posting.
     when(() => vm.newCommentText).thenReturn('about to send');
-    when(() => vm.postComment('r1', imageUrls: any(named: 'imageUrls')))
-        .thenAnswer((_) async {});
+    when(
+      () => vm.postComment('r1', imageUrls: any(named: 'imageUrls')),
+    ).thenAnswer((_) async {});
 
     await tester.pumpWidget(_wrap(buildWidget('r1')));
     await tester.pumpAndSettle();
@@ -127,30 +137,42 @@ void main() {
     await tester.tap(find.byIcon(Icons.send));
     await tester.pumpAndSettle();
 
-    verify(() => vm.postComment('r1', imageUrls: any(named: 'imageUrls')))
-        .called(1);
+    verify(
+      () => vm.postComment('r1', imageUrls: any(named: 'imageUrls')),
+    ).called(1);
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('${_kDraftPrefix}r1'), isNull,
-        reason: 'successful post must clear the persisted draft');
+    expect(
+      prefs.getString('${_kDraftPrefix}r1'),
+      isNull,
+      reason: 'successful post must clear the persisted draft',
+    );
   });
 
-  testWidgets('per-recipe isolation: r2 ignores r1 draft and leaves it intact',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({'${_kDraftPrefix}r1': 'r1 only'});
+  testWidgets(
+    'per-recipe isolation: r2 ignores r1 draft and leaves it intact',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({'${_kDraftPrefix}r1': 'r1 only'});
 
-    await tester.pumpWidget(_wrap(buildWidget('r2')));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_wrap(buildWidget('r2')));
+      await tester.pumpAndSettle();
 
-    // r2's field stays empty — it must not read r1's draft.
-    expect(find.text('r1 only'), findsNothing,
-        reason: 'a different recipe must not load another recipe\'s draft');
-    verifyNever(() => vm.updateNewCommentText('r1 only'));
+      // r2's field stays empty — it must not read r1's draft.
+      expect(
+        find.text('r1 only'),
+        findsNothing,
+        reason: 'a different recipe must not load another recipe\'s draft',
+      );
+      verifyNever(() => vm.updateNewCommentText('r1 only'));
 
-    // r1's draft is untouched by mounting r2.
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('${_kDraftPrefix}r1'), 'r1 only',
-        reason: 'mounting r2 must not disturb r1\'s persisted draft');
-  });
+      // r1's draft is untouched by mounting r2.
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString('${_kDraftPrefix}r1'),
+        'r1 only',
+        reason: 'mounting r2 must not disturb r1\'s persisted draft',
+      );
+    },
+  );
 
   // BUT-1049: image-attachment behaviour. These prove the upload→post contract,
   // NOT visual appearance.
@@ -160,11 +182,13 @@ void main() {
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
       when(() => vm.newCommentText).thenReturn('with photo');
-      when(() => vm.postComment(any(), imageUrls: any(named: 'imageUrls')))
-          .thenAnswer((_) async {});
+      when(
+        () => vm.postComment(any(), imageUrls: any(named: 'imageUrls')),
+      ).thenAnswer((_) async {});
 
       tempImage = File(
-          '${Directory.systemTemp.path}/comment_test_${DateTime.now().microsecondsSinceEpoch}.jpg');
+        '${Directory.systemTemp.path}/comment_test_${DateTime.now().microsecondsSinceEpoch}.jpg',
+      );
       await tempImage.writeAsBytes(const [0xFF, 0xD8, 0xFF, 0xD9]);
     });
 
@@ -173,70 +197,96 @@ void main() {
     });
 
     testWidgets(
-        'upload failure: comment is NOT posted and an error is surfaced',
-        (tester) async {
-      final picker = ServiceLocator.get<ImagePickerService>();
-      final storage = ServiceLocator.get<StorageService>();
-      when(() => picker.pickMultipleImages(maxImages: any(named: 'maxImages')))
-          .thenAnswer((_) async => [tempImage]);
-      // Upload returns null → the composer must abort the post.
-      when(() => storage.uploadCommentImage(any(),
-          onProgress: any(named: 'onProgress'))).thenAnswer((_) async => null);
+      'upload failure: comment is NOT posted and an error is surfaced',
+      (tester) async {
+        final picker = ServiceLocator.get<ImagePickerService>();
+        final storage = ServiceLocator.get<StorageService>();
+        when(
+          () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
+        ).thenAnswer((_) async => [tempImage]);
+        // Upload returns null → the composer must abort the post.
+        when(
+          () => storage.uploadCommentImage(
+            any(),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer((_) async => null);
 
-      var errorShown = false;
-      await tester.pumpWidget(_wrap(CommentFormWidget(
-        socialViewModel: vm,
-        recipeId: 'r1',
-        onShowMessage: (_, {bool isError = false}) {
-          if (isError) errorShown = true;
-        },
-      )));
-      await tester.pumpAndSettle();
+        var errorShown = false;
+        await tester.pumpWidget(
+          _wrap(
+            CommentFormWidget(
+              socialViewModel: vm,
+              recipeId: 'r1',
+              onShowMessage: (_, {bool isError = false}) {
+                if (isError) errorShown = true;
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byIcon(Icons.send));
-      await tester.pumpAndSettle();
-
-      expect(errorShown, isTrue,
-          reason: 'a failed image upload must surface an error');
-      verifyNever(
-          () => vm.postComment(any(), imageUrls: any(named: 'imageUrls')));
-    });
-
-    testWidgets(
-        'cap: attach button disappears once maxImageUrls images are selected',
-        (tester) async {
-      final picker = ServiceLocator.get<ImagePickerService>();
-      when(() => picker.pickMultipleImages(maxImages: any(named: 'maxImages')))
-          .thenAnswer((_) async => [tempImage]);
-
-      await tester.pumpWidget(_wrap(buildWidget('r1')));
-      await tester.pumpAndSettle();
-
-      // Attach is available below the cap; add one image per tap.
-      for (var i = 0; i < RecipeComment.maxImageUrls; i++) {
-        expect(find.byIcon(Icons.add_photo_alternate_outlined), findsOneWidget,
-            reason: 'attach must stay available while below the cap (i=$i)');
         await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
         await tester.pumpAndSettle();
-      }
 
-      // At the cap the composer must stop offering the attach affordance so a
-      // 4th image can't be selected (RecipeComment asserts the cap at build).
-      expect(find.byIcon(Icons.add_photo_alternate_outlined), findsNothing,
-          reason: 'attach must disappear at maxImageUrls selected images');
-    });
+        await tester.tap(find.byIcon(Icons.send));
+        await tester.pumpAndSettle();
+
+        expect(
+          errorShown,
+          isTrue,
+          reason: 'a failed image upload must surface an error',
+        );
+        verifyNever(
+          () => vm.postComment(any(), imageUrls: any(named: 'imageUrls')),
+        );
+      },
+    );
+
+    testWidgets(
+      'cap: attach button disappears once maxImageUrls images are selected',
+      (tester) async {
+        final picker = ServiceLocator.get<ImagePickerService>();
+        when(
+          () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
+        ).thenAnswer((_) async => [tempImage]);
+
+        await tester.pumpWidget(_wrap(buildWidget('r1')));
+        await tester.pumpAndSettle();
+
+        // Attach is available below the cap; add one image per tap.
+        for (var i = 0; i < RecipeComment.maxImageUrls; i++) {
+          expect(
+            find.byIcon(Icons.add_photo_alternate_outlined),
+            findsOneWidget,
+            reason: 'attach must stay available while below the cap (i=$i)',
+          );
+          await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
+          await tester.pumpAndSettle();
+        }
+
+        // At the cap the composer must stop offering the attach affordance so a
+        // 4th image can't be selected (RecipeComment asserts the cap at build).
+        expect(
+          find.byIcon(Icons.add_photo_alternate_outlined),
+          findsNothing,
+          reason: 'attach must disappear at maxImageUrls selected images',
+        );
+      },
+    );
 
     testWidgets('upload success: posts with the uploaded URLs', (tester) async {
       final picker = ServiceLocator.get<ImagePickerService>();
       final storage = ServiceLocator.get<StorageService>();
-      when(() => picker.pickMultipleImages(maxImages: any(named: 'maxImages')))
-          .thenAnswer((_) async => [tempImage]);
-      when(() => storage.uploadCommentImage(any(),
-              onProgress: any(named: 'onProgress')))
-          .thenAnswer((_) async => 'https://example.test/comment_images/x.jpg');
+      when(
+        () => picker.pickMultipleImages(maxImages: any(named: 'maxImages')),
+      ).thenAnswer((_) async => [tempImage]);
+      when(
+        () => storage.uploadCommentImage(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer((_) async => 'https://example.test/comment_images/x.jpg');
 
       await tester.pumpWidget(_wrap(buildWidget('r1')));
       await tester.pumpAndSettle();
@@ -247,8 +297,12 @@ void main() {
       await tester.tap(find.byIcon(Icons.send));
       await tester.pumpAndSettle();
 
-      verify(() => vm.postComment('r1',
-          imageUrls: ['https://example.test/comment_images/x.jpg'])).called(1);
+      verify(
+        () => vm.postComment(
+          'r1',
+          imageUrls: ['https://example.test/comment_images/x.jpg'],
+        ),
+      ).called(1);
     });
   });
 }

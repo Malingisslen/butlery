@@ -110,10 +110,12 @@ class RecipeCard extends StatelessWidget {
           // Only interactive cards get a hover affordance — a card with no tap
           // handler shouldn't imply clickability under the cursor.
           enabled: onTap != null,
-          margin: margin ??
+          margin:
+              margin ??
               const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.borderWidthStandard),
+                horizontal: AppDimensions.spacingMd,
+                vertical: AppDimensions.borderWidthStandard,
+              ),
           restDecoration: restDecoration,
           hoverDecoration: _hoverDecoration(restDecoration),
           child: Material(
@@ -122,13 +124,16 @@ class RecipeCard extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               onTap: onTap != null ? () => onTap!(recipe) : null,
-              onLongPress:
-                  onLongPress != null ? () => onLongPress!(recipe) : null,
+              onLongPress: onLongPress != null
+                  ? () => onLongPress!(recipe)
+                  : null,
               child: Container(
-                padding: padding ??
+                padding:
+                    padding ??
                     const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingModerate,
-                        horizontal: AppDimensions.spacingMd),
+                      vertical: AppDimensions.spacingModerate,
+                      horizontal: AppDimensions.spacingMd,
+                    ),
                 child: _buildCardContent(context),
               ),
             ),
@@ -261,8 +266,11 @@ class RecipeCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                      child: _buildTitle(context,
-                          style: AppTextStyles.titleMedium)),
+                    child: _buildTitle(
+                      context,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                  ),
                   _buildVisibilityIcon(context),
                   if (onFavoriteToggle != null) _buildFavoriteButton(context),
                 ],
@@ -303,8 +311,12 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRecipeImage(BuildContext context,
-      {double? size, double? width, double? height}) {
+  Widget _buildRecipeImage(
+    BuildContext context, {
+    double? size,
+    double? width,
+    double? height,
+  }) {
     final thumbnailOrImage = recipe.displayThumbnailUrl;
     final hasImage = thumbnailOrImage != null;
     final imageSize = size ?? 64.0;
@@ -324,8 +336,9 @@ class RecipeCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 // PERFORMANCE FIX: Use thumbnail config for 64x64 display
                 config: ImageConfig.thumbnail(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusS,
+                  ),
                   heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
               )
@@ -358,17 +371,17 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final (IconData icon, String label) = switch (recipe) {
       Recipe(isCollaborative: true) => (
-          Icons.people_outline,
-          context.l10n.recipeVisibilityCollaborative,
-        ),
+        Icons.people_outline,
+        context.l10n.recipeVisibilityCollaborative,
+      ),
       Recipe(isPublic: true) => (
-          Icons.public,
-          context.l10n.recipeVisibilityPublic,
-        ),
+        Icons.public,
+        context.l10n.recipeVisibilityPublic,
+      ),
       _ => (
-          Icons.lock_outline,
-          context.l10n.recipeVisibilityPrivate,
-        ),
+        Icons.lock_outline,
+        context.l10n.recipeVisibilityPrivate,
+      ),
     };
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingXs),
@@ -380,8 +393,9 @@ class RecipeCard extends StatelessWidget {
           child: Icon(
             icon,
             size: AppDimensions.iconSizeS,
-            color: cs.onSurfaceVariant
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.onSurfaceVariant.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
       ),
@@ -409,8 +423,9 @@ class RecipeCard extends StatelessWidget {
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          tooltip:
-              isFav ? context.l10n.favoritesRemove : context.l10n.favoritesAdd,
+          tooltip: isFav
+              ? context.l10n.favoritesRemove
+              : context.l10n.favoritesAdd,
         ),
       ),
     );
@@ -483,8 +498,9 @@ class RecipeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
           border: Border.all(
-            color:
-                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.primary.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
         child: Text(
@@ -502,8 +518,9 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label:
-          context.l10n.recipeRatingSemantics(recipe.rating!.toStringAsFixed(1)),
+      label: context.l10n.recipeRatingSemantics(
+        recipe.rating!.toStringAsFixed(1),
+      ),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(
@@ -527,14 +544,22 @@ class RecipeCard extends StatelessWidget {
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
       children: _topEffectiveTags
-          .map((tag) =>
-              _buildTag(context, tag, isUserAdded: userAddedTags.contains(tag)))
+          .map(
+            (tag) => _buildTag(
+              context,
+              tag,
+              isUserAdded: userAddedTags.contains(tag),
+            ),
+          )
           .toList(),
     );
   }
 
-  Widget _buildTag(BuildContext context, String tag,
-      {bool isUserAdded = false}) {
+  Widget _buildTag(
+    BuildContext context,
+    String tag, {
+    bool isUserAdded = false,
+  }) {
     final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
     return Container(
@@ -547,8 +572,9 @@ class RecipeCard extends StatelessWidget {
         border: Border.all(
           color: isUserAdded
               ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
-              : cs.outlineVariant
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              : cs.outlineVariant.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
         ),
       ),
       child: Text(
@@ -617,8 +643,9 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildPersonalTagsRow(BuildContext context) {
     final names = _resolvedPersonalTagNames;
-    final displayCount =
-        names.length > maxPersonalTags ? maxPersonalTags : names.length;
+    final displayCount = names.length > maxPersonalTags
+        ? maxPersonalTags
+        : names.length;
     final overflow = names.length - displayCount;
 
     return Wrap(
