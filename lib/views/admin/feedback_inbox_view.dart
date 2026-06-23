@@ -139,7 +139,9 @@ class _StatusFilterBar extends StatelessWidget {
         children: [
           for (final (label, status) in options)
             Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
+              padding: const EdgeInsetsDirectional.only(
+                end: AppDimensions.spacingSm,
+              ),
               child: ChoiceChip(
                 label: Text(label),
                 selected: vm.statusFilter == status,
@@ -320,6 +322,7 @@ class _Screenshot extends StatelessWidget {
   Widget _image(BuildContext context, BoxFit fit) {
     final cs = Theme.of(context).colorScheme;
     return Image.network(
+      // arch-allow: Image.network — admin CORS <img> fallback
       url,
       fit: fit,
       webHtmlElementStrategy: WebHtmlElementStrategy.fallback,

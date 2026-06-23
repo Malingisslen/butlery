@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/parse_event.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Opens the drill-down for a tapped metric row. Dispatches by [kind]; the only
 /// kind today maps an import-domain row to its underlying parse events.
@@ -59,7 +60,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: LoadingIndicator());
             }
             final page = snapshot.data ?? ParseEventsPage.empty;
             return ListView(

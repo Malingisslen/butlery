@@ -59,8 +59,9 @@ void main() {
                 if (secureStore.containsKey(key)) return secureStore[key];
                 // The fallback device-id reader uses `butlery_fallback_device_id`.
                 // Anything we haven't written yet → null (matches real plugin).
-                if (key == 'butlery_fallback_device_id')
+                if (key == 'butlery_fallback_device_id') {
                   return 'test-device-id';
+                }
                 return null;
               case 'write':
                 if (key != null) {

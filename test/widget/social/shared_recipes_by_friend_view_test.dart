@@ -375,8 +375,9 @@ void main() {
             final deco = w.decoration;
             if (deco is BoxDecoration && deco.borderRadius != null) return true;
           }
-          if (w is ClipRRect && w.borderRadius != BorderRadius.zero)
+          if (w is ClipRRect && w.borderRadius != BorderRadius.zero) {
             return true;
+          }
           return false;
         });
         expect(

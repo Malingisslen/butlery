@@ -49,8 +49,8 @@ class PhotoPageStrip extends StatelessWidget {
             footer: viewModel.canAddPage
                 ? Padding(
                     key: const ValueKey('photo-page-add'),
-                    padding: const EdgeInsets.only(
-                      left: AppDimensions.spacingS,
+                    padding: const EdgeInsetsDirectional.only(
+                      start: AppDimensions.spacingS,
                     ),
                     child: _AddPageTile(
                       size: _thumbSize,
@@ -63,7 +63,9 @@ class PhotoPageStrip extends StatelessWidget {
             itemBuilder: (context, index) {
               return Padding(
                 key: ValueKey('photo-page-$index'),
-                padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.spacingS,
+                ),
                 child: _PageThumbnail(
                   bytes: pages[index],
                   pageNumber: index + 1,

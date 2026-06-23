@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -412,11 +413,7 @@ class _UrlResultRow extends StatelessWidget {
   Widget _statusIcon(BuildContext context) {
     switch (result.status) {
       case UrlFetchStatus.loading:
-        return const SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        );
+        return const LoadingIndicator(size: 18, strokeWidth: 2);
       case UrlFetchStatus.success:
         return Icon(
           Icons.check_circle,

@@ -930,8 +930,8 @@ void main() {
             // or may reject non-http(s) schemes
             if (link.contains('butlery.app')) {
               // May parse if domain matches
-              // ignore: unnecessary_null_comparison
               expect(
+                // ignore: unnecessary_null_comparison
                 data == null || data.type != null,
                 isTrue,
                 reason: 'Should handle scheme gracefully in: $link',
@@ -962,8 +962,8 @@ void main() {
             // Either null or a valid parse is acceptable for malformed paths
             if (data != null) {
               // If parsed, should have valid structure
-              // ignore: unnecessary_null_comparison
               expect(
+                // ignore: unnecessary_null_comparison
                 data.id != null || data.type != null,
                 isTrue,
                 reason: 'Should handle empty path gracefully in: $link',

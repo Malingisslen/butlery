@@ -521,7 +521,7 @@ class _OvrigtEntry extends StatelessWidget {
             children: [
               if (selectionMode)
                 Padding(
-                  padding: const EdgeInsets.only(right: 3),
+                  padding: const EdgeInsetsDirectional.only(end: 3),
                   child: Icon(
                     isSelected
                         ? Icons.check_box

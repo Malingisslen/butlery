@@ -502,7 +502,9 @@ void main() {
     //
     // Allowed: `lib/` files in test fixtures (none currently), or any future
     // exemption added inline with a justification comment ending in
-    // `// arch-allow: Image.network` on the SAME line.
+    // `// arch-allow: Image.network` on the SAME line as the call OR the line
+    // immediately after it (the Dart 3.10 "tall" formatter relocates a trailing
+    // comment off a multiline call's opening line — BUT-1365).
     test('no raw `Image.network(` calls in lib/ (use CachedNetworkImage)', () {
       final pattern = RegExp(r'\bImage\.network\(');
       final allowMarker = '// arch-allow: Image.network';
@@ -517,7 +519,10 @@ void main() {
           final raw = lines[i];
           final code = raw.replaceAll(RegExp(r'//.*'), '');
           if (!pattern.hasMatch(code)) continue;
-          if (raw.contains(allowMarker)) continue;
+          final nextLine = i + 1 < lines.length ? lines[i + 1] : '';
+          if (raw.contains(allowMarker) || nextLine.contains(allowMarker)) {
+            continue;
+          }
           violations.add('$relPath:${i + 1}: ${raw.trim()}');
         }
       }
