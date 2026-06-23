@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -79,8 +80,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final allTags = viewModel.availableTags.toList()..sort();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.importFromArchive),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.importFromArchive,
         actions: [
           if (viewModel.hasError)
             IconButton(

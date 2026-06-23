@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -40,8 +41,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
     final viewModel = context.watch<AllergenPreferencesViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.allergenSettingsTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.allergenSettingsTitle,
         actions: [
           if (viewModel.hasChanges)
             TextButton(

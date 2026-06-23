@@ -15,6 +15,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
@@ -108,8 +109,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.importRecipeTitle),
+        appBar: AdaptiveAppBar(
+          title: context.l10n.importRecipeTitle,
           centerTitle: true,
         ),
         body: GestureDetector(

@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 class AccountSecurityView extends StatefulWidget {
@@ -92,7 +93,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.accountSecurityTitle)),
+      appBar: AdaptiveAppBar(title: context.l10n.accountSecurityTitle),
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {

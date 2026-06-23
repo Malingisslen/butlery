@@ -5,6 +5,7 @@ import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -31,8 +32,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.consentManageTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.consentManageTitle,
         centerTitle: true,
       ),
       body: SafeArea(

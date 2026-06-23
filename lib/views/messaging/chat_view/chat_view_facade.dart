@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/views/messaging/chat_view/chat_message_stream.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
 import 'package:butlery/widgets/messaging/typing_indicator.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -80,7 +81,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
   Widget build(BuildContext context) {
     if (!_messagingEnabled) {
       return Scaffold(
-        appBar: AppBar(title: Text(context.l10n.chatTitle)),
+        appBar: AdaptiveAppBar(title: context.l10n.chatTitle),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -66,8 +67,8 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.importFromFile),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.importFromFile,
         centerTitle: true,
       ),
       body: SafeArea(

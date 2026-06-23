@@ -5,6 +5,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
@@ -228,8 +229,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.mfaTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.mfaTitle,
       ),
       body: _isLoading && !_isEnrolling
           ? StateWidget.loading()

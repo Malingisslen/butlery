@@ -7,6 +7,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 
 /// Widget that loads a deferred module and displays the route once loaded
 class DeferredRouteLoader extends StatefulWidget {
@@ -142,10 +143,8 @@ class ModuleLoadErrorScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        title: Builder(
-          builder: (context) => Text(context.l10n.errorTitle),
-        ),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.errorTitle,
         backgroundColor: cs.surface,
       ),
       body: Center(

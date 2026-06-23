@@ -30,6 +30,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -199,8 +200,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         // Loading state (if deleting)
         if (viewModel.isDeleting) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(context.l10n.recipeDeleting),
+            appBar: AdaptiveAppBar(
+              title: context.l10n.recipeDeleting,
               backgroundColor: cs.surface,
             ),
             backgroundColor: cs.surface,

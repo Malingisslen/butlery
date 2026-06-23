@@ -9,6 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
@@ -282,7 +283,7 @@ class _FranSocialaMedierViewContentState
     final viewModel = context.watch<TextImportViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.importFromSocialMedia)),
+      appBar: AdaptiveAppBar(title: context.l10n.importFromSocialMedia),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(

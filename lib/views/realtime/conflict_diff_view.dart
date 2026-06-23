@@ -22,6 +22,7 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 
 /// Renders a field-level local-vs-remote diff for a single [ConflictEvent].
 class ConflictDiffView extends StatefulWidget {
@@ -90,8 +91,8 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        title: Text(context.l10n.conflictDiffTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.conflictDiffTitle,
       ),
       body: SafeArea(
         child: _diff.isEmpty ? _buildNoChanges(context) : _buildDiffList(),

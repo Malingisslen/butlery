@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 import 'package:butlery/views/ingredient_search/ingredient_chip_input.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/content_card.dart';
@@ -57,7 +58,7 @@ class _IngredientSearchContent extends StatelessWidget {
     final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ingredientSearchTitle)),
+      appBar: AdaptiveAppBar(title: l10n.ingredientSearchTitle),
       bottomNavigationBar: ButleryBottomNavigation(
         currentIndex: 0,
         items: ButleryAdaptiveNavigation.getNavigationItems(context),

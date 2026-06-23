@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/admin/metrics_tab_viewmodel.dart';
 import 'package:butlery/views/admin/metrics_csv.dart';
 import 'package:butlery/views/admin/widgets/metric_renderer.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
@@ -71,8 +72,8 @@ class _MetricTabContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<MetricsTabViewModel>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title(context.l10n)),
+      appBar: AdaptiveAppBar(
+        title: title(context.l10n),
         actions: [
           IconButton(
             icon: const Icon(Icons.download_outlined),

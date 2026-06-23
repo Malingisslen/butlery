@@ -9,6 +9,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -555,8 +556,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // Show loading state while initial data loads
     if (_viewModel.isLoading && _viewModel.group == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.commonLoading),
+        appBar: AdaptiveAppBar(
+          title: context.l10n.commonLoading,
         ),
         body: Center(
           child: Column(
@@ -574,8 +575,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // Show error state if group not found
     if (_viewModel.group == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.groupNotFound),
+        appBar: AdaptiveAppBar(
+          title: context.l10n.groupNotFound,
         ),
         body: StateWidget.empty(
           title: context.l10n.groupNotFound,

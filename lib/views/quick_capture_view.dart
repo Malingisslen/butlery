@@ -12,6 +12,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
@@ -58,8 +59,8 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
     final vm = context.watch<_QuickCaptureViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.quickCaptureTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.quickCaptureTitle,
       ),
       body: SafeArea(
         child: Center(

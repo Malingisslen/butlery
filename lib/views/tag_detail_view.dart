@@ -20,6 +20,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -124,13 +125,13 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
         if (viewModel.isLoading && tag == null) {
           return Scaffold(
-            appBar: AppBar(
+            appBar: AdaptiveAppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.of(context).maybePop(),
                 tooltip: context.l10n.commonBack,
               ),
-              title: Text(context.l10n.commonLoading),
+              title: context.l10n.commonLoading,
             ),
             body: StateWidget.loading(),
           );
@@ -138,13 +139,13 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
         if (tag == null) {
           return Scaffold(
-            appBar: AppBar(
+            appBar: AdaptiveAppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.of(context).maybePop(),
                 tooltip: context.l10n.commonBack,
               ),
-              title: Text(context.l10n.tagDetailDefaultTitle),
+              title: context.l10n.tagDetailDefaultTitle,
             ),
             body: StateWidget.error(
               message: context.l10n.tagDetailNotFound,
@@ -168,13 +169,13 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, PersonalTag tag) {
     if (_isEditMode) {
-      return AppBar(
+      return AdaptiveAppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: _cancelEditMode,
           tooltip: context.l10n.commonClose,
         ),
-        title: Text(context.l10n.tagDetailEditTitle),
+        title: context.l10n.tagDetailEditTitle,
         actions: [
           TextButton(
             onPressed: () => _saveChanges(context, tag),
@@ -184,13 +185,13 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     }
 
-    return AppBar(
+    return AdaptiveAppBar(
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Navigator.of(context).maybePop(),
         tooltip: context.l10n.commonBack,
       ),
-      title: Text(tag.name),
+      title: tag.name,
       // BUT-964/BUT-1357 exception: this is a detail view, not a list surface,
       // so its primary actions (edit/share/add-rule) intentionally stay in the
       // app bar rather than moving to a FAB. Do NOT add a FAB here.
