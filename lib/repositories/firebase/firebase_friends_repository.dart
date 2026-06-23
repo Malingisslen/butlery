@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_friends_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -32,6 +33,9 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
+    // Injectable so unit tests can supply a mock instead of touching
+    // FirebaseFunctions.instanceFor (which throws with no Firebase app).
+    FirebaseFunctions? functions,
   }) : super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        ) {
@@ -44,6 +48,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       firestore: firestore,
       authRepository: this.authRepository,
       timestampProvider: timestampProvider,
+      functions: functions,
     );
     _friendCategoryRepo = FriendCategoryRepository(
       firestore: firestore,

@@ -43,6 +43,7 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 // ViewModel imports
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import '../mocks/widget_mocks.dart';
@@ -391,7 +392,7 @@ class TestServiceLocator {
     );
 
     // Recipe List ViewModel
-    getIt.registerFactory(
+    getIt.registerFactory<RecipeListViewModel>(
       () => MockFactory.createRecipeListViewModel(),
     );
 

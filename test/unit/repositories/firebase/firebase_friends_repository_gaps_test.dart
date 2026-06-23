@@ -19,8 +19,10 @@
 /// - `getComprehensiveFriendStatistics` (aggregates across 3 sub-repos)
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -31,12 +33,20 @@ import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+class _MockCallableResult extends Mock
+    implements HttpsCallableResult<Map<String, dynamic>> {}
+
 const _alice = 'user-alice';
 const _bob = 'user-bob';
 
 FirebaseFriendsRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
+  FirebaseFunctions? functions,
 }) {
   final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
@@ -47,6 +57,7 @@ FirebaseFriendsRepository _repo(
   return FirebaseFriendsRepository(
     firestore: firestore,
     authRepository: mockAuth,
+    functions: functions,
   );
 }
 
@@ -240,83 +251,50 @@ void main() {
     );
   });
 
-  group('acceptFriendRequest (atomic transaction)', () {
-    test('creates mutual friend docs, updates request, bumps counts', () async {
+  group('acceptFriendRequest (delegates to server callable, B1)', () {
+    // The mutual-doc writes, status flip and friendsCount bumps moved
+    // server-side into the `acceptFriendRequest` Cloud Function (pre-release
+    // audit B1) — the client can no longer write into another user's friends
+    // subcollection. The client now only invokes the callable with the
+    // requestId and maps success -> true / any thrown error -> false. These
+    // tests verify that delegation; the Firestore side-effects + the missing/
+    // not-recipient/not-pending rejection rules are the function's job and
+    // belong to the functions test suite, not a fake-firestore unit test.
+    test('invokes the acceptFriendRequest callable and returns true', () async {
       final firestore = FakeFirebaseFirestore();
-      // Recipient (bob) accepts.
-      final repo = _repo(firestore, authedUserId: _bob);
+      final functions = _MockFunctions();
+      final callable = _MockCallable();
+      when(
+        () => functions.httpsCallable('acceptFriendRequest'),
+      ).thenReturn(callable);
+      when(
+        () => callable.call<Map<String, dynamic>>(any()),
+      ).thenAnswer((_) async => _MockCallableResult());
+
+      final repo = _repo(firestore, authedUserId: _bob, functions: functions);
       await _seedFriendRequest(firestore);
-      await _seedProfile(firestore, _profile(_alice, displayName: 'Alice'));
-      await _seedProfile(firestore, _profile(_bob, displayName: 'Bob'));
 
       expect(await repo.acceptFriendRequest('req-1'), isTrue);
 
-      // Request status flipped
-      final reqDoc = await firestore
-          .collection('social_requests')
-          .doc('req-1')
-          .get();
-      expect(reqDoc.data()?['status'], 'accepted');
-
-      // Both mutual friend docs created with lowercased displayName
-      final aliceFriendOfBob = await firestore
-          .collection('users')
-          .doc(_alice)
-          .collection('friends')
-          .doc(_bob)
-          .get();
-      final bobFriendOfAlice = await firestore
-          .collection('users')
-          .doc(_bob)
-          .collection('friends')
-          .doc(_alice)
-          .get();
-      expect(aliceFriendOfBob.exists, isTrue);
-      expect(bobFriendOfAlice.exists, isTrue);
-      expect(aliceFriendOfBob.data()?['displayNameLower'], 'bob');
-      expect(bobFriendOfAlice.data()?['displayNameLower'], 'alice');
-
-      // Profiles got friendsCount bumped
-      final aliceProfile = await firestore
-          .collection('public_profiles')
-          .doc(_alice)
-          .get();
-      final bobProfile = await firestore
-          .collection('public_profiles')
-          .doc(_bob)
-          .get();
-      expect(aliceProfile.data()?['friendsCount'], 1);
-      expect(bobProfile.data()?['friendsCount'], 1);
+      final captured = verify(
+        () => callable.call<Map<String, dynamic>>(captureAny()),
+      ).captured;
+      expect(captured.single, {'requestId': 'req-1'});
     });
 
-    test('returns false when request is missing', () async {
+    test('returns false when the callable throws', () async {
       final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      expect(await repo.acceptFriendRequest('ghost'), isFalse);
-    });
+      final functions = _MockFunctions();
+      final callable = _MockCallable();
+      when(
+        () => functions.httpsCallable('acceptFriendRequest'),
+      ).thenReturn(callable);
+      when(
+        () => callable.call<Map<String, dynamic>>(any()),
+      ).thenThrow(Exception('callable rejected'));
 
-    test('returns false when caller is not recipient', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(
-        firestore,
-        authedUserId: _alice,
-      ); // sender, not recipient
+      final repo = _repo(firestore, authedUserId: _bob, functions: functions);
       await _seedFriendRequest(firestore);
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
-
-      expect(await repo.acceptFriendRequest('req-1'), isFalse);
-    });
-
-    test('returns false when request is no longer pending', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      await _seedFriendRequest(
-        firestore,
-        status: SocialRequestStatus.cancelled,
-      );
-      await _seedProfile(firestore, _profile(_alice));
-      await _seedProfile(firestore, _profile(_bob));
 
       expect(await repo.acceptFriendRequest('req-1'), isFalse);
     });

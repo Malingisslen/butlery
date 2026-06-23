@@ -177,6 +177,18 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   @override
   Uint8List? get imageBytes => _hasImage ? _onePixelPng : null;
 
+  @override
+  List<Uint8List> get pageImages => _hasImage ? [_onePixelPng] : const [];
+
+  @override
+  int get pageCount => _hasImage ? 1 : 0;
+
+  @override
+  bool get hasMultiplePages => pageCount > 1;
+
+  @override
+  bool get canAddPage => false;
+
   // HeirloomSection renders whenever hasImage — give it the form surface.
   @override
   bool get isHeirloom => false;

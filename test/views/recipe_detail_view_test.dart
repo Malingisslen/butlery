@@ -137,7 +137,11 @@ void main() {
     recipeService = MockUnifiedRecipeService();
     recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
     when(
-      () => recipeService.toggleFavorite(any(), any()),
+      () => recipeService.toggleFavorite(
+        any(),
+        any(),
+        fallbackRecipe: any(named: 'fallbackRecipe'),
+      ),
     ).thenAnswer((_) async => true);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
 
@@ -264,7 +268,13 @@ void main() {
       final l10n = l10nOf(tester);
       expect(announces.messages, contains(l10n.a11yRecipeFavorited));
       expect(announces.messages, isNot(contains(l10n.a11yRecipeUnfavorited)));
-      verify(() => recipeService.toggleFavorite(recipe.id, true)).called(1);
+      verify(
+        () => recipeService.toggleFavorite(
+          recipe.id,
+          true,
+          fallbackRecipe: any(named: 'fallbackRecipe'),
+        ),
+      ).called(1);
     });
 
     testWidgets('unfavoriting announces a11yRecipeUnfavorited', (tester) async {
@@ -291,7 +301,11 @@ void main() {
       // flip, and the screen reader must hear the truth (still unfavorited),
       // matching the heart the sighted user sees revert.
       when(
-        () => recipeService.toggleFavorite(any(), any()),
+        () => recipeService.toggleFavorite(
+          any(),
+          any(),
+          fallbackRecipe: any(named: 'fallbackRecipe'),
+        ),
       ).thenAnswer((_) async => false);
 
       final announces = AnnounceChannel.arm(tester);

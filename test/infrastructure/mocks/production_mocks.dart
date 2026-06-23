@@ -4602,6 +4602,20 @@ class MockUrlImportViewModel extends Mock implements UrlImportViewModel {
   @override
   String get sourceUrl => _sourceUrl;
   @override
+  bool get isMultiUrl => false;
+  @override
+  List<UrlImportResult> get urlResults => const [];
+  @override
+  bool get hasAnyUrlSuccess => false;
+  @override
+  int get successfulUrlCount => 0;
+  @override
+  bool get isIndexPageCandidate => false;
+  @override
+  List<String> get indexPageLinks => const [];
+  @override
+  String get successfulBatchText => '';
+  @override
   bool get hasError => _error != null;
 
   // All methods left without implementation to allow stubbing with when()
@@ -4669,6 +4683,9 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool get hasMultipleRecipes => _hasMultipleRecipes;
   @override
   List<Recipe> get parsedRecipes => _parsedRecipes;
+
+  @override
+  int get lastSaveFailureCount => 0;
 
   // All methods left without implementation to allow stubbing with when()
 }
