@@ -176,6 +176,69 @@ void main() {
     resetMocktailState();
   });
 
+  group('hasMfaEnabled / getEnrolledFactors / createMfaResolver', () {
+    test('hasMfaEnabled is true when factors are enrolled', () async {
+      when(
+        () => mockMultiFactor.getEnrolledFactors(),
+      ).thenAnswer((_) async => [_phoneHint()]);
+      expect(await sut.hasMfaEnabled(), isTrue);
+    });
+
+    test('hasMfaEnabled is false when none enrolled', () async {
+      when(
+        () => mockMultiFactor.getEnrolledFactors(),
+      ).thenAnswer((_) async => <MultiFactorInfo>[]);
+      expect(await sut.hasMfaEnabled(), isFalse);
+    });
+
+    test('hasMfaEnabled is false when no user is signed in', () async {
+      when(() => mockRepo.currentUser).thenReturn(null);
+      expect(await sut.hasMfaEnabled(), isFalse);
+    });
+
+    test('hasMfaEnabled is false when the lookup throws', () async {
+      when(
+        () => mockMultiFactor.getEnrolledFactors(),
+      ).thenThrow(Exception('network'));
+      expect(await sut.hasMfaEnabled(), isFalse);
+    });
+
+    test('getEnrolledFactors maps SDK factors to MfaFactorInfo', () async {
+      final hint = _phoneHint();
+      when(
+        () => mockMultiFactor.getEnrolledFactors(),
+      ).thenAnswer((_) async => [hint]);
+      final factors = await sut.getEnrolledFactors();
+      expect(factors, hasLength(1));
+      expect(factors.first.displayName, hint.displayName);
+    });
+
+    test('getEnrolledFactors returns [] when no user is signed in', () async {
+      when(() => mockRepo.currentUser).thenReturn(null);
+      expect(await sut.getEnrolledFactors(), isEmpty);
+    });
+
+    test('getEnrolledFactors returns [] when the lookup throws', () async {
+      when(
+        () => mockMultiFactor.getEnrolledFactors(),
+      ).thenThrow(Exception('network'));
+      expect(await sut.getEnrolledFactors(), isEmpty);
+    });
+
+    test('createMfaResolver extracts the phone hint number', () {
+      final hint = _phoneHint();
+      final resolver = _MockMultiFactorResolver();
+      when(() => resolver.hints).thenReturn([hint]);
+      expect(sut.createMfaResolver(resolver).phoneHint, hint.phoneNumber);
+    });
+
+    test('createMfaResolver leaves phoneHint null without a phone factor', () {
+      final resolver = _MockMultiFactorResolver();
+      when(() => resolver.hints).thenReturn([_totpHint()]);
+      expect(sut.createMfaResolver(resolver).phoneHint, isNull);
+    });
+  });
+
   // -------------------------------------------------------------------------
   // Criterion 1a — startMfaEnrollment: codeSent path
   // -------------------------------------------------------------------------
