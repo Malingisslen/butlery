@@ -54,15 +54,16 @@ void main() {
       expect(CertPinConfig.pinsForUrl(''), isEmpty);
     });
 
-    test('isPinnedHost is false when host has only TODO placeholders', () {
-      // Until the ops rotation task populates real fingerprints, every
-      // configured host has an empty pin list — `isPinnedHost` must reflect
-      // that so the wrapper doesn't try to enforce pinning against an empty
-      // list (which would always fail-closed and break Algolia search in
-      // production).
+    test('isPinnedHost is false for every host while hostPins is empty', () {
+      // BUT-814: with no hosts pinned, `isPinnedHost` must report every host
+      // as unpinned so the HTTP wrappers (PinnedHttpClient /
+      // PinningDioInterceptor) fall through to the platform trust store rather
+      // than fail-closing against a missing pin list. Covers both the former
+      // placeholder hosts and an arbitrary host.
       expect(CertPinConfig.isPinnedHost('api.ocr.space'), isFalse);
       expect(
           CertPinConfig.isPinnedHost('butlery-app-dsn.algolia.net'), isFalse);
+      expect(CertPinConfig.isPinnedHost('anything.example.com'), isFalse);
     });
 
     test('hostPins map keys are all lowercased', () {
@@ -142,18 +143,28 @@ void main() {
       });
     });
 
-    test('hostPins covers all three BUT-427 surface categories', () {
-      // Sanity check: the wiring contract is "Algolia + OCR + URL scrape".
-      // If any of these three categories goes missing the wiring is broken.
-      final keys = CertPinConfig.hostPins.keys;
-      expect(keys.any((k) => k.contains('algolia')), isTrue,
-          reason: 'no Algolia host configured');
-      expect(keys.any((k) => k.contains('ocr.space') || k.contains('vision')),
-          isTrue,
-          reason: 'no OCR fallback host configured');
-      expect(keys.any((k) => k.contains('ica.se') || k.contains('koket.se')),
-          isTrue,
-          reason: 'no recipe-site host configured');
+    test('hostPins is intentionally empty (BUT-814 — no third-party pinning)',
+        () {
+      // The original BUT-427 design listed 8 third-party hosts as
+      // wired-but-inactive. Pinning hosts we don't operate is an anti-pattern
+      // (rotation time-bombs), so the map is deliberately empty. If a future
+      // contributor re-adds an UN-pinned host they'll trip the release-mode
+      // guard below — which is the point. Only genuinely controlled hosts,
+      // with real pins, belong here.
+      expect(CertPinConfig.hostPins, isEmpty);
+    });
+
+    test('release mode passes against the REAL host map (no boot-blocker)', () {
+      // Regression guard for BUT-814: with hostPins empty, the boot-time
+      // assertReleaseModeSafety() (lib/main.dart) must NOT throw in a release
+      // build — otherwise the store build fails to start. Calling with no
+      // pinsForTest exercises the real global map.
+      expect(
+        () => CertPinConfig.assertReleaseModeSafety(
+          releaseModeOverrideForTest: true,
+        ),
+        returnsNormally,
+      );
     });
   });
 }

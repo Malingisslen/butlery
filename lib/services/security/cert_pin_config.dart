@@ -29,48 +29,32 @@ import 'package:flutter/foundation.dart';
 class CertPinConfig {
   const CertPinConfig._();
 
-  /// Per-host pin lists. Empty list = wired but inactive (logs warning, falls
-  /// through to platform trust store). Real fingerprints land via the ops
-  /// rotation task — keep the wiring live so the rollout is a values change,
-  /// not a code change.
-  static const Map<String, List<String>> hostPins = <String, List<String>>{
-    // Algolia search API host. The Algolia SDK builds its own internal URLs
-    // for `*.algolianet.com` and `*.algolia.net` — both should be pinned in
-    // the same op when the real fingerprints land.
-    'butlery-app-dsn.algolia.net': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf cert SHA-256 fingerprint
-      // TODO(BUT-427-ops, by 2026-Q3): backup cert SHA-256 fingerprint
-    ],
-    'butlery-app.algolia.net': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-
-    // OCR.space — primary OCR HTTP fallback.
-    'api.ocr.space': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-
-    // Google Vision API — secondary OCR HTTP fallback.
-    'vision.googleapis.com': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-
-    // Recipe URL scraping — pin the public sites we explicitly support.
-    // Sites not listed fall through to platform trust (still safer than no
-    // pinning because most attacks target high-value endpoints).
-    'www.ica.se': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-    'www.koket.se': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-    'www.arla.se': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-    'www.recept.se': <String>[
-      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
-    ],
-  };
+  /// Per-host pin lists, keyed by lowercase host. A host's presence here means
+  /// "enforce pinning against this list"; absence means "fall through to the
+  /// platform trust store". An empty list for a present host would trip
+  /// [assertReleaseModeSafety] in release builds (a listed-but-unpinned host is
+  /// a silent security hole), so only add a host once you have real pins.
+  ///
+  /// **Intentionally empty (BUT-814).** The original BUT-427 design listed 8
+  /// third-party hosts (Algolia, OCR.space, Google Vision, and the ICA / Köket /
+  /// Arla / Recept scrape targets) as wired-but-inactive, to be pinned later by
+  /// an ops rotation task. That plan was wrong: pinning the leaf/intermediate
+  /// certificates of hosts we do NOT operate creates rotation time-bombs —
+  /// when any of them rotates its cert on its own schedule (Let's Encrypt =
+  /// 90 days), the app would refuse the connection and break recipe import /
+  /// OCR with no server-side recovery, only a forced app release. The standard
+  /// guidance (OWASP) is to pin only endpoints you control. Our controlled
+  /// backends (Firebase / Firestore) ride the SDK, not this HTTP layer, so
+  /// there is currently nothing here that is both ours and routed through
+  /// [PinnedHttpClient] / [PinningDioInterceptor]. Both wrappers stay installed
+  /// (empty map → graceful platform-trust fall-through), so adding a genuinely
+  /// controlled host later is a one-entry change, not a re-wire.
+  ///
+  /// To add a controlled host: add `'host': ['<leaf SHA-256>', '<backup>']`
+  /// (colon-separated uppercase hex, openssl default) per
+  /// `docs/operations/cert-pin-rotation.md`. Never add an un-controlled
+  /// third-party host.
+  static const Map<String, List<String>> hostPins = <String, List<String>>{};
 
   /// Returns the pin list for the given URL's host, or an empty list when
   /// no pin is configured. Hostname lookup is case-insensitive (DNS is).
