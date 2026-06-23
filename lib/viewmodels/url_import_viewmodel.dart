@@ -11,6 +11,8 @@ import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/index_page_expander.dart';
 import 'package:butlery/services/import/extracted_content_analyzer.dart';
 import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Per-URL lifecycle state for batch ("multiple URLs") imports.
@@ -39,11 +41,23 @@ class UrlImportResult {
 }
 
 class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
-  UrlImportViewModel(
-      {required super.importManager, IndexPageExpander? indexExpander})
-      : _indexExpander = indexExpander ?? IndexPageExpander();
+  UrlImportViewModel({
+    required super.importManager,
+    IndexPageExpander? indexExpander,
+    ConnectivityMonitoringService? connectivity,
+  })  : _indexExpander = indexExpander ?? IndexPageExpander(),
+        // BUT-610: default-resolve from ServiceLocator so existing callers
+        // need no change; tests inject an offline double. tryGet (not get)
+        // keeps the VM usable when connectivity DI is absent (treated online).
+        _connectivity = connectivity ??
+            ServiceLocator.tryGet<ConnectivityMonitoringService>();
 
   final IndexPageExpander _indexExpander;
+  final ConnectivityMonitoringService? _connectivity;
+
+  /// BUT-610 offline pre-check: unknown/missing connectivity defaults to online
+  /// so the legacy network path is never blocked when DI isn't wired.
+  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   // ---- BUT-947: multiple-URL ("batch") import -----------------------------
 
@@ -166,6 +180,14 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   Future<void> fetchMultipleUrls() async {
     if (isDisposed) return;
 
+    // BUT-610: offline pre-check — fail fast before launching any WebView
+    // scrape. Without this an offline batch spins ~15s per URL on the headless
+    // WebView timeout before showing anything.
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+
     final urls = parseUrls(url);
     if (urls.isEmpty) {
       setError(AppLocale.current.errorPleaseEnterValidUrl);
@@ -260,6 +282,20 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     if (_urlResults.isEmpty) return;
     _urlResults = const [];
     notifyListeners();
+  }
+
+  /// BUT-610: offline pre-check on the single-URL entry point. Wraps the
+  /// mixin's [fetchFromUrl] so an offline fetch fails fast instead of waiting
+  /// ~15s for the headless WebView to time out. Online behaviour is unchanged —
+  /// the call falls straight through to the inherited implementation.
+  @override
+  Future<void> fetchFromUrl() async {
+    if (isDisposed) return;
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+    await super.fetchFromUrl();
   }
 
   /// Single-URL flow: fetch content, then parse it only if the fetch yielded

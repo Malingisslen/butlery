@@ -12,6 +12,8 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
@@ -59,13 +61,23 @@ class PhotoImportViewModel extends ImportBaseViewModel
   // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
 
   /// [draftManager] is a test seam (BUT-910) — production passes nothing.
+  /// BUT-610: [connectivity] default-resolves from ServiceLocator so existing
+  /// callers are unchanged; tests inject an offline double.
   PhotoImportViewModel({
     required super.importManager,
     AutoSaveManager<PhotoImportDraft>? draftManager,
-  }) {
+    ConnectivityMonitoringService? connectivity,
+  }) : _connectivity = connectivity ??
+            ServiceLocator.tryGet<ConnectivityMonitoringService>() {
     initDraftPersistence(manager: draftManager);
     _initializeOCRService();
   }
+
+  final ConnectivityMonitoringService? _connectivity;
+
+  /// BUT-610 offline pre-check: unknown/missing connectivity defaults to online
+  /// so the OCR path is never blocked when DI isn't wired.
+  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   /// Initialize OCR service for universal device compatibility
   Future<void> _initializeOCRService() async {
@@ -236,6 +248,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
       return;
     }
 
+    // BUT-610: same offline pre-check — a retry re-runs the OCR cloud cascade.
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+
     await executeAsyncVoid(() async {
       clearError();
       // Re-OCR the cover image as a fresh single page. A retry follows a failed
@@ -326,6 +344,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
     ImageSource source, {
     bool addAsPage = false,
   }) async {
+    // BUT-610: offline pre-check — OCR runs a multi-provider cloud cascade
+    // (OCR.space → Google Vision → Tesseract) that spins 30–90s on provider
+    // timeouts when offline. Fail fast before opening the picker.
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
     if (addAsPage && !canAddPage) {
       setError(AppLocale.current.importPhotoPagesMaxReached(maxPages));
       return;

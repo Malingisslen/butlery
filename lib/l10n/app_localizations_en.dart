@@ -13926,6 +13926,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'URL saved — will import when you\'re back online';
 
   @override
+  String get importOfflineMessage =>
+      'You\'re offline — connect to the internet and try again.';
+
+  @override
   String get seasonalForgottenFavorites => 'Forgotten Favorites';
 
   @override

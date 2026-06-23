@@ -18,6 +18,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -40,6 +41,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   final UnifiedShoppingService _shoppingService =
       ServiceLocator.get<UnifiedShoppingService>();
   StreamSubscription? _shoppingServiceSubscription;
+
+  /// Real network connectivity source (same one the rest of the app reads via
+  /// SmartImportViewModel). Optional so widget call sites can construct the VM
+  /// without it; default-resolved from the ServiceLocator otherwise. When no
+  /// monitor is available we treat the app as online (matches SmartImport's
+  /// `?? true` fallback) so the offline banner stays hidden by default.
+  final ConnectivityMonitoringService? _connectivity;
   late final ShoppingAnalyticsManager _analyticsManager;
   late final ShoppingItemOperationsManager _itemOpsManager;
 
@@ -77,8 +85,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   @override
   bool get hasError => _shoppingService.hasError;
 
-  /// Online connectivity status
-  bool get isOnline => !hasError && isInitialized;
+  /// Real network connectivity status. Reflects the live internet-connection
+  /// signal so the offline banner appears when the device actually goes
+  /// offline (previously this was `!hasError && isInitialized`, which had no
+  /// relationship to connectivity and stayed permanently true — BUT-610).
+  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   /// Shopping list availability indicator
   bool get hasLists => _shoppingService.hasLists;
@@ -125,15 +136,25 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   late final UserService? _userService = ServiceLocator.tryGet<UserService>();
 
-  UnifiedShoppingViewModel() {
+  UnifiedShoppingViewModel({ConnectivityMonitoringService? connectivity})
+      : _connectivity = connectivity ??
+            ServiceLocator.tryGet<ConnectivityMonitoringService>() {
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
     _shoppingServiceSubscription =
         _shoppingService.stateStream.listen((_) => _onServiceUpdate());
+    // Rebuild the view (and thus the offline banner) whenever connectivity flips.
+    _connectivity?.addListener(_onConnectivityChanged);
   }
 
   /// Handles state updates from shopping service
   void _onServiceUpdate() {
+    notifyListeners();
+  }
+
+  /// Rebuilds the view when the live connectivity signal changes so the offline
+  /// banner appears/disappears as the device goes offline/online.
+  void _onConnectivityChanged() {
     notifyListeners();
   }
 
@@ -619,6 +640,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   @override
   void dispose() {
     _shoppingServiceSubscription?.cancel();
+    _connectivity?.removeListener(_onConnectivityChanged);
     super.dispose();
   }
 

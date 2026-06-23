@@ -9473,6 +9473,10 @@
   "importPendingRetry": "Försök igen",
   "importPendingDismiss": "Avfärda",
   "importSavedForLater": "URL sparad — importeras när du är online igen",
+  "importOfflineMessage": "Du är offline – anslut till internet och försök igen.",
+  "@importOfflineMessage": {
+    "description": "Shown when a recipe import (URL or photo/OCR) is attempted while the device has no internet connection, so the import is aborted immediately instead of waiting for a network timeout."
+  },
   "seasonalForgottenFavorites": "Glömda favoriter",
   "seasonalHeroTitle": "just nu i säsong · {month}",
   "@seasonalHeroTitle": {

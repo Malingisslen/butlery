@@ -23422,6 +23422,12 @@ abstract class AppLocalizations {
   /// **'URL sparad — importeras när du är online igen'**
   String get importSavedForLater;
 
+  /// Shown when a recipe import (URL or photo/OCR) is attempted while the device has no internet connection, so the import is aborted immediately instead of waiting for a network timeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är offline – anslut till internet och försök igen.'**
+  String get importOfflineMessage;
+
   /// No description provided for @seasonalForgottenFavorites.
   ///
   /// In sv, this message translates to:

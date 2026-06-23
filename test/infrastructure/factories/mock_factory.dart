@@ -394,10 +394,16 @@ class MockFactory {
     return service.MockConnectivityService();
   }
 
-  /// Create mock connectivity monitoring service
+  /// Create mock connectivity monitoring service.
+  ///
+  /// BUT-610: defaults to ONLINE so the import offline pre-check doesn't trip
+  /// tests that don't care about connectivity. Offline-path tests override with
+  /// `when(() => mock.isConnectedToInternet).thenReturn(false)`.
   static production.MockConnectivityMonitoringService
       createConnectivityMonitoringService() {
-    return production.MockConnectivityMonitoringService();
+    final mock = production.MockConnectivityMonitoringService();
+    when(() => mock.isConnectedToInternet).thenReturn(true);
+    return mock;
   }
 
   /// Create mock image picker service

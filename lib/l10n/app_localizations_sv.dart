@@ -13959,6 +13959,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'URL sparad — importeras när du är online igen';
 
   @override
+  String get importOfflineMessage =>
+      'Du är offline – anslut till internet och försök igen.';
+
+  @override
   String get seasonalForgottenFavorites => 'Glömda favoriter';
 
   @override

@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -24,6 +25,24 @@ class _MockCheckoffPantryService extends Mock
     implements ShoppingCheckoffPantryService {}
 
 class _MockUserServiceForSeam extends Mock implements UserService {}
+
+/// Fake connectivity source with real ChangeNotifier semantics so the VM's
+/// `addListener` subscription actually fires when connectivity flips. Overrides
+/// `isConnectedToInternet` with a settable flag; never starts the real
+/// timer/stream monitoring, so the injected mock repo is only a constructor stub.
+class _FakeConnectivity extends ConnectivityMonitoringService {
+  _FakeConnectivity(super.repository, {bool online = true}) : _online = online;
+
+  bool _online;
+
+  @override
+  bool get isConnectedToInternet => _online;
+
+  void setOnline(bool value) {
+    _online = value;
+    notifyListeners();
+  }
+}
 
 UserProfile _seamProfile({
   required bool autoAdd,
@@ -453,7 +472,38 @@ void main() {
       expect(viewModel.totalItems, 1);
     });
 
-    test('isOnline is true when initialized and no error', () {
+    test('isOnline reflects the live connectivity signal, not init/error state',
+        () {
+      // BUT-610: isOnline must follow real network connectivity. Inject a
+      // connectivity source and flip it offline -> online, asserting the VM's
+      // isOnline follows AND that crossing the boundary notifies the view (so
+      // the offline banner can appear/disappear).
+      final connectivity = _FakeConnectivity(MockConnectivityRepository());
+      final vm = UnifiedShoppingViewModel(connectivity: connectivity);
+      addTearDown(vm.dispose);
+
+      var notifyCount = 0;
+      vm.addListener(() => notifyCount++);
+
+      expect(vm.isOnline, isTrue, reason: 'starts online');
+
+      connectivity.setOnline(false);
+      expect(vm.isOnline, isFalse, reason: 'follows source going offline');
+      expect(notifyCount, greaterThan(0),
+          reason: 'connectivity change rebuilds the view');
+
+      final afterOffline = notifyCount;
+      connectivity.setOnline(true);
+      expect(vm.isOnline, isTrue, reason: 'follows source coming back online');
+      expect(notifyCount, greaterThan(afterOffline),
+          reason: 'coming back online also notifies');
+    });
+
+    test('isOnline defaults to true when no connectivity source is available',
+        () {
+      // The default-injected VM (used in this suite) has no
+      // ConnectivityMonitoringService registered, so it treats the app as
+      // online — the offline banner stays hidden by default.
       expect(viewModel.isOnline, isTrue);
     });
 

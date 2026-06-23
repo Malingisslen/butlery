@@ -9440,6 +9440,10 @@
   "importPendingRetry": "Retry",
   "importPendingDismiss": "Dismiss",
   "importSavedForLater": "URL saved — will import when you're back online",
+  "importOfflineMessage": "You're offline — connect to the internet and try again.",
+  "@importOfflineMessage": {
+    "description": "Shown when a recipe import (URL or photo/OCR) is attempted while the device has no internet connection, so the import is aborted immediately instead of waiting for a network timeout."
+  },
   "seasonalForgottenFavorites": "Forgotten Favorites",
   "seasonalHeroTitle": "in season now · {month}",
   "@seasonalHeroTitle": {
