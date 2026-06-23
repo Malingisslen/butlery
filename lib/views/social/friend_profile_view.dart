@@ -3,6 +3,7 @@
 // lib/views/social/friend_profile_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -62,12 +63,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          friend.displayName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+      appBar: AdaptiveAppBar(
+        title: friend.displayName,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [

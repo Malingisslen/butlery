@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Fullscreen image viewer for recipe images
@@ -64,20 +65,18 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
     return Scaffold(
       backgroundColor: cs.onSurface,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
+      appBar: AdaptiveAppBar(
         backgroundColor: _showAppBar
             ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
             : Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         title: _showAppBar
-            ? Text(
-                '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: cs.surfaceContainerHighest,
-                    ),
-              )
+            ? '${_currentIndex + 1} / ${widget.imageUrls.length}'
             : null,
+        titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: cs.surfaceContainerHighest,
+            ),
         iconTheme: IconThemeData(color: cs.surfaceContainerHighest),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),

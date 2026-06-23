@@ -1,6 +1,7 @@
 // lib/views/social/group_detail/group_detail_app_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -20,12 +21,8 @@ class GroupDetailAppBar {
     required VoidCallback onRefresh,
     required Function(String action) onMenuAction,
   }) {
-    return AppBar(
-      title: Text(
-        group.name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+    return AdaptiveAppBar(
+      title: group.name,
       actions: [
         if (isLoading)
           const Padding(

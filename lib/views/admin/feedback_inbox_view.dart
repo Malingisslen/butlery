@@ -9,6 +9,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
@@ -52,8 +53,8 @@ class _FeedbackInboxContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<FeedbackInboxViewModel>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.adminFeedbackInboxTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.adminFeedbackInboxTitle,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

@@ -14,6 +14,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -77,12 +78,8 @@ class _SharedRecipesByFriendContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          context.l10n.sharedRecipesByFriendTitle(friendDisplayName),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.sharedRecipesByFriendTitle(friendDisplayName),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),

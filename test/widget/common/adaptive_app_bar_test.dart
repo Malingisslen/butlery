@@ -8,6 +8,7 @@ library;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
@@ -171,6 +172,98 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(seenPrimary, const Color(0xFFFFEEDD));
+
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('null title renders a bar with no title', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: AdaptiveAppBar(title: null),
+        body: SizedBox.shrink(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<AppBar>(find.byType(AppBar)).title, isNull);
+
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('a long title is single-line ellipsized', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    const longTitle = 'A very very very long screen title that would overflow';
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: AdaptiveAppBar(title: longTitle),
+        body: SizedBox.shrink(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final titleText = tester.widget<Text>(find.text(longTitle));
+    expect(titleText.maxLines, 1);
+    expect(titleText.overflow, TextOverflow.ellipsis);
+
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('a bottom forces a Material AppBar even on iOS, height included',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    const bottom = PreferredSize(
+      preferredSize: Size.fromHeight(40),
+      child: SizedBox(height: 40),
+    );
+    const bar = AdaptiveAppBar(title: 'Tabs', bottom: bottom);
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(appBar: bar, body: SizedBox.shrink()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CupertinoNavigationBar), findsNothing,
+        reason: 'no Cupertino slot for a bottom — Material on all platforms');
+    expect(tester.widget<AppBar>(find.byType(AppBar)).bottom, same(bottom));
+    expect(bar.preferredSize.height, kToolbarHeight + 40);
+
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('Material passes iconTheme/actionsIconTheme/systemOverlayStyle',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    const iconTheme = IconThemeData(color: Color(0xFF010203));
+    const actionsIconTheme = IconThemeData(color: Color(0xFF040506));
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: AdaptiveAppBar(
+          title: 'X',
+          iconTheme: iconTheme,
+          actionsIconTheme: actionsIconTheme,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          elevation: 0,
+          scrolledUnderElevation: 4,
+        ),
+        body: SizedBox.shrink(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final appBar = tester.widget<AppBar>(find.byType(AppBar));
+    expect(appBar.iconTheme, iconTheme);
+    expect(appBar.actionsIconTheme, actionsIconTheme);
+    expect(appBar.systemOverlayStyle, SystemUiOverlayStyle.light);
+    expect(appBar.elevation, 0);
+    expect(appBar.scrolledUnderElevation, 4);
 
     debugDefaultTargetPlatformOverride = null;
   });

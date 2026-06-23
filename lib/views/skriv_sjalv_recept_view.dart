@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -312,12 +313,10 @@ class _SkrivSjalvReceptViewContentState
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            viewModel.isEditMode
-                ? context.l10n.recipeEdit
-                : context.l10n.recipeWriteNew,
-          ),
+        appBar: AdaptiveAppBar(
+          title: viewModel.isEditMode
+              ? context.l10n.recipeEdit
+              : context.l10n.recipeWriteNew,
           backgroundColor: Theme.of(context).colorScheme.surface,
           foregroundColor: Theme.of(context).colorScheme.onSurface,
           iconTheme: IconThemeData(

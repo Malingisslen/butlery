@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -458,7 +460,7 @@ class AppRouter {
   static Route<dynamic> _errorRoute([String? message]) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
-        appBar: AppBar(title: const Text('Fel')),
+        appBar: AdaptiveAppBar(title: context.l10n.errorTitle),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

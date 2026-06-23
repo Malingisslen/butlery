@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -59,12 +60,8 @@ class _PublicProfileContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          vm.profile?.displayName ?? context.l10n.publicProfileTitle,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+      appBar: AdaptiveAppBar(
+        title: vm.profile?.displayName ?? context.l10n.publicProfileTitle,
         backgroundColor: cs.primary,
         foregroundColor: cs.onPrimary,
       ),
