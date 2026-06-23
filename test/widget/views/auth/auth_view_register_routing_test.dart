@@ -45,6 +45,7 @@ void main() {
     late MockAuthService mockAuthService;
     late AuthViewModel realViewModel;
     late _ReplaceObserver observer;
+    late WidgetBuilder originalDestination;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -53,6 +54,14 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
       observer = _ReplaceObserver();
+
+      // The real login destination is LayoutScaffolds.mainMenu (an IndexedStack
+      // that inflates every tab's ViewModel + services) — far too heavy to build
+      // in a navigation unit test. Point the production seam at a lightweight
+      // placeholder so we can assert that pushReplacement FIRED without standing
+      // up the whole app shell.
+      originalDestination = AuthView.postLoginDestinationBuilder;
+      AuthView.postLoginDestinationBuilder = (_) => const SizedBox.shrink();
 
       // Real AuthViewModel + mocked service so isLoginMode / register / signIn
       // behave as in production, but no Firebase call leaves the test. The mock
@@ -69,6 +78,7 @@ void main() {
     });
 
     tearDown(() async {
+      AuthView.postLoginDestinationBuilder = originalDestination;
       prod.ServiceLocator.reset();
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
@@ -119,14 +129,10 @@ void main() {
         await tester.ensureVisible(find.text('Logga in').last);
         await tester.pumpAndSettle(_kPumpCap);
         await tester.tap(find.text('Logga in').last);
-        // _handleSubmit awaits signIn (async) then pushReplacement-es. Pump
-        // until the future resolves and the navigation lands.
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 200));
-
-        // Building the real MinaReceptView may surface service-graph exceptions
-        // in the test harness — we only care that the replace happened.
-        tester.takeException();
+        // _handleSubmit awaits signIn (async) then pushReplacement-es. Settle so
+        // the route transition fully completes and disposes its performance-mode
+        // handle; the destination's service-graph errors render as SizedBox.
+        await tester.pumpAndSettle();
 
         expect(
           observer.replaceCount,
@@ -184,9 +190,7 @@ void main() {
         await tester.ensureVisible(find.text('Skapa konto').last);
         await tester.pumpAndSettle(_kPumpCap);
         await tester.tap(find.text('Skapa konto').last);
-        await tester.pump();
-        await tester.pump();
-        tester.takeException();
+        await tester.pumpAndSettle();
 
         // Guard against a vacuous pass: replaceCount would also be 0 if
         // _handleSubmit bailed before register() (e.g. a silent validation

@@ -20,6 +20,13 @@ import 'package:flutter/gestures.dart';
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
 
+  /// The screen a returning user is sent to after a successful LOGIN.
+  /// Overridable in tests so the post-login navigation can be asserted without
+  /// inflating the entire main-menu service graph. Defaults to the real shell.
+  @visibleForTesting
+  static WidgetBuilder postLoginDestinationBuilder = (context) =>
+      LayoutScaffolds.mainMenu(initialIndex: 0);
+
   @override
   State<AuthView> createState() => _AuthViewState();
 }
@@ -635,9 +642,7 @@ class _AuthViewState extends State<AuthView> {
       // MinaReceptView — the bare view has no bottom navigation bar, so logging
       // in used to land on a recipe list with no nav until the user moved tabs.
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => LayoutScaffolds.mainMenu(initialIndex: 0),
-        ),
+        MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
     }
   }
