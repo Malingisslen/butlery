@@ -13635,6 +13635,41 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileFaqSubtitle => 'Hjälp och svar på vanliga frågor';
 
   @override
+  String get faqQ1 => 'Hur importerar jag recept?';
+
+  @override
+  String get faqA1 =>
+      'Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.';
+
+  @override
+  String get faqQ2 => 'Hur delar jag recept med vanner?';
+
+  @override
+  String get faqA2 =>
+      'Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.';
+
+  @override
+  String get faqQ3 => 'Hur anvander jag veckomeny?';
+
+  @override
+  String get faqA3 =>
+      'Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.';
+
+  @override
+  String get faqQ4 => 'Hur skapar jag personliga taggar?';
+
+  @override
+  String get faqA4 =>
+      'Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.';
+
+  @override
+  String get faqQ5 => 'Hur rapporterar jag problem?';
+
+  @override
+  String get faqA5 =>
+      'Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!';
+
+  @override
   String get sharedWithYou => 'Delade med dig';
 
   @override

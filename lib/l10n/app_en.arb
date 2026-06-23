@@ -9266,6 +9266,46 @@
   },
   "profileFaq": "FAQ",
   "profileFaqSubtitle": "Help and answers to common questions",
+  "faqQ1": "How do I import recipes?",
+  "@faqQ1": {
+    "description": "FAQ question 1: how to import recipes"
+  },
+  "faqA1": "You can import recipes in several ways: paste a URL from a recipe site, take a photo of a recipe, or paste recipe text directly. Tap \"Add\" on the home screen and choose a method.",
+  "@faqA1": {
+    "description": "FAQ answer 1: how to import recipes"
+  },
+  "faqQ2": "How do I share recipes with friends?",
+  "@faqQ2": {
+    "description": "FAQ question 2: how to share recipes with friends"
+  },
+  "faqA2": "Open a recipe and tap the share icon. You can send the recipe to friends who use Butlery, or share a link. Your friends can then save the recipe to their own collection.",
+  "@faqA2": {
+    "description": "FAQ answer 2: how to share recipes with friends"
+  },
+  "faqQ3": "How do I use the weekly menu?",
+  "@faqQ3": {
+    "description": "FAQ question 3: how to use the weekly menu"
+  },
+  "faqA3": "Go to the weekly menu via the navigation. There you can plan the week's meals by adding recipes from your collection. Ingredients from the menu can be sent directly to the shopping list.",
+  "@faqA3": {
+    "description": "FAQ answer 3: how to use the weekly menu"
+  },
+  "faqQ4": "How do I create personal tags?",
+  "@faqQ4": {
+    "description": "FAQ question 4: how to create personal tags"
+  },
+  "faqA4": "Go to your profile and select \"My tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.",
+  "@faqA4": {
+    "description": "FAQ answer 4: how to create personal tags"
+  },
+  "faqQ5": "How do I report problems?",
+  "@faqQ5": {
+    "description": "FAQ question 5: how to report problems"
+  },
+  "faqA5": "Tap the \"!\" button shown at the bottom right of every page. There you can describe the problem, choose a category and attach a screenshot. We read all feedback!",
+  "@faqA5": {
+    "description": "FAQ answer 5: how to report problems"
+  },
   "sharedWithYou": "Shared with you",
   "importTag": "Import",
   "tagImportedSuccess": "Tag imported successfully",

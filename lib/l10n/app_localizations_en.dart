@@ -13604,6 +13604,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileFaqSubtitle => 'Help and answers to common questions';
 
   @override
+  String get faqQ1 => 'How do I import recipes?';
+
+  @override
+  String get faqA1 =>
+      'You can import recipes in several ways: paste a URL from a recipe site, take a photo of a recipe, or paste recipe text directly. Tap \"Add\" on the home screen and choose a method.';
+
+  @override
+  String get faqQ2 => 'How do I share recipes with friends?';
+
+  @override
+  String get faqA2 =>
+      'Open a recipe and tap the share icon. You can send the recipe to friends who use Butlery, or share a link. Your friends can then save the recipe to their own collection.';
+
+  @override
+  String get faqQ3 => 'How do I use the weekly menu?';
+
+  @override
+  String get faqA3 =>
+      'Go to the weekly menu via the navigation. There you can plan the week\'s meals by adding recipes from your collection. Ingredients from the menu can be sent directly to the shopping list.';
+
+  @override
+  String get faqQ4 => 'How do I create personal tags?';
+
+  @override
+  String get faqA4 =>
+      'Go to your profile and select \"My tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.';
+
+  @override
+  String get faqQ5 => 'How do I report problems?';
+
+  @override
+  String get faqA5 =>
+      'Tap the \"!\" button shown at the bottom right of every page. There you can describe the problem, choose a category and attach a screenshot. We read all feedback!';
+
+  @override
   String get sharedWithYou => 'Shared with you';
 
   @override
