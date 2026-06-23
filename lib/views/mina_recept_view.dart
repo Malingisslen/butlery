@@ -491,7 +491,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         .toList(growable: false);
     if (groups.isEmpty) return const SizedBox.shrink();
 
-    _sessionsHolder.refresh(module, groups, userId);
+    final offlineService =
+        ServiceLocator.tryGet<offline_service.OfflineService>();
+    _sessionsHolder.refresh(
+      module,
+      groups,
+      userId,
+      // BUT-1360: keep the "X lagar just nu" card showing the last-known
+      // sessions while the device is offline instead of blanking out.
+      isOffline: () => offlineService != null && !offlineService.isOnline,
+    );
     final stream = _sessionsHolder.stream;
     if (stream == null) return const SizedBox.shrink();
 

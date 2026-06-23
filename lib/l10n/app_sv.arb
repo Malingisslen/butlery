@@ -9926,6 +9926,10 @@
   "@noSubstitutionSuggestions": {
     "description": "BUT-202: empty state when the substitution lexicon has no entry for the ingredient."
   },
+  "substitutionsOfflineMessage": "Förslag på alternativ är inte tillgängliga offline.",
+  "@substitutionsOfflineMessage": {
+    "description": "BUT-1360: shown in the cooking-mode substitution sheet when no suggestions are available because the device is offline (the lexicon lookup needs Firestore)."
+  },
   "suggestAlternative": "Föreslå ett alternativ",
   "@suggestAlternative": {
     "description": "BUT-202: disabled CTA in empty state — future feature for user-submitted substitutes."

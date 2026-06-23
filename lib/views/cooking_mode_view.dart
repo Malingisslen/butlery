@@ -8,6 +8,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -367,12 +368,22 @@ class _IngredientsPanel extends StatelessWidget {
         ? const <IngredientSubstitution>[]
         : await service.suggestFor(ingredientLine);
 
+    // BUT-1360: the lexicon lookup needs Firestore, so an empty result while
+    // offline almost always means "couldn't reach the data" rather than "no
+    // substitutes exist". Surface that explicitly. Only consulted when the list
+    // is empty — cached suggestions still render normally offline.
+    final isOffline = suggestions.isEmpty &&
+        ServiceLocator.tryGet<ConnectivityMonitoringService>()
+                ?.isConnectedToInternet ==
+            false;
+
     if (!context.mounted) return;
 
     final chosen = await SubstitutionBottomSheet.show(
       context: context,
       ingredientName: ingredientLine,
       suggestions: suggestions,
+      isOffline: isOffline,
     );
 
     if (chosen == null) return;

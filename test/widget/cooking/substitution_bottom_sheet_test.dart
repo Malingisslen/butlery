@@ -103,5 +103,44 @@ void main() {
       await tester.tap(find.text('Föreslå ett alternativ'));
       await tester.pump();
     });
+
+    // BUT-1360: an empty sheet while offline must explain that suggestions
+    // aren't reachable rather than implying none exist.
+    testWidgets('offline + empty shows the offline message', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const SubstitutionBottomSheet(
+            ingredientName: 'gurkmeja',
+            suggestions: [],
+            isOffline: true,
+          ),
+        ),
+      );
+
+      expect(find.text('Förslag på alternativ är inte tillgängliga offline.'),
+          findsOneWidget);
+      // The generic empty copy and the future-feature CTA are suppressed offline.
+      expect(find.text('Inga förslag just nu'), findsNothing);
+      expect(find.text('Föreslå ett alternativ'), findsNothing);
+    });
+
+    testWidgets('online + empty does NOT show the offline message',
+        (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const SubstitutionBottomSheet(
+            ingredientName: 'gurkmeja',
+            suggestions: [],
+            isOffline: false,
+          ),
+        ),
+      );
+
+      expect(find.text('Förslag på alternativ är inte tillgängliga offline.'),
+          findsNothing);
+      // Online empty state is unchanged: generic copy + disabled CTA still show.
+      expect(find.text('Inga förslag just nu'), findsOneWidget);
+      expect(find.text('Föreslå ett alternativ'), findsOneWidget);
+    });
   });
 }

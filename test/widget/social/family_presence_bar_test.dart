@@ -201,5 +201,52 @@ void main() {
 
       await controller.close();
     });
+
+    testWidgets(
+        'offline: empty RTDB emission retains the last-known online avatars',
+        (tester) async {
+      // BUT-1360: RTDB has no read cache, so dropping offline emits an empty
+      // set and the bar would vanish. While offline we keep the last-known
+      // presence; once back online an empty is trusted again.
+      final members = [profile('erik'), profile('sara')];
+      final controller = StreamController<Set<String>>.broadcast();
+      var offline = false;
+
+      await tester.pumpWidget(
+        wrap(
+          FamilyPresenceBar(
+            memberProfiles: members,
+            onlineUserIdsStream: controller.stream,
+            isOffline: () => offline,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Erik is online — his avatar renders.
+      controller.add({'erik'});
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('ER'), findsOneWidget);
+
+      // Device drops offline; RTDB pushes an empty set.
+      offline = true;
+      controller.add(const <String>{});
+      await tester.pump();
+      await tester.pump();
+      // Bar must NOT vanish — Erik's avatar is retained.
+      expect(find.text('ER'), findsOneWidget,
+          reason: 'offline empty must not blank the presence bar');
+
+      // Reconnect: an empty set is now authoritative → the bar hides.
+      offline = false;
+      controller.add(const <String>{});
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('ER'), findsNothing,
+          reason: 'online empty is trusted — bar collapses');
+
+      await controller.close();
+    });
   });
 }

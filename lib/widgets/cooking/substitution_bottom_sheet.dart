@@ -15,6 +15,11 @@ class SubstitutionBottomSheet extends StatelessWidget {
   final String ingredientName;
   final List<IngredientSubstitution> suggestions;
 
+  /// BUT-1360: when true AND [suggestions] is empty, the empty state explains
+  /// that suggestions are unavailable offline instead of showing the generic
+  /// "no suggestions" copy. Ignored when there are cached suggestions to show.
+  final bool isOffline;
+
   /// Invoked when the user taps "Byt i receptet" on a chosen substitute.
   /// Receives the selected suggestion. The sheet pops itself before the
   /// callback runs, so callers don't need to manage dismissal.
@@ -24,6 +29,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
     super.key,
     required this.ingredientName,
     required this.suggestions,
+    this.isOffline = false,
     this.onReplace,
   });
 
@@ -34,6 +40,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
     required BuildContext context,
     required String ingredientName,
     required List<IngredientSubstitution> suggestions,
+    bool isOffline = false,
   }) {
     return showModalBottomSheet<IngredientSubstitution>(
       context: context,
@@ -45,6 +52,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
       builder: (ctx) => SubstitutionBottomSheet(
         ingredientName: ingredientName,
         suggestions: suggestions,
+        isOffline: isOffline,
         onReplace: (chosen) => Navigator.of(ctx).pop(chosen),
       ),
     );
@@ -70,7 +78,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             if (suggestions.isEmpty)
-              const _EmptyState()
+              _EmptyState(isOffline: isOffline)
             else
               ...suggestions.map(
                 (s) => Padding(
@@ -197,7 +205,12 @@ class _RatioBadge extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  /// BUT-1360: offline → explain unavailability rather than the generic
+  /// "no suggestions" copy, and hide the future-feature CTA (it can't work
+  /// offline either).
+  final bool isOffline;
+
+  const _EmptyState({this.isOffline = false});
 
   @override
   Widget build(BuildContext context) {
@@ -210,33 +223,38 @@ class _EmptyState extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.spacingLg),
           alignment: Alignment.center,
           child: Text(
-            context.l10n.noSubstitutionSuggestions,
+            isOffline
+                ? context.l10n.substitutionsOfflineMessage
+                : context.l10n.noSubstitutionSuggestions,
+            textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               color: context.butleryColors.iconMuted,
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
-        // Disabled — future feature (user-submitted substitutes).
-        SizedBox(
-          height: AppDimensions.minTouchTarget,
-          child: Material(
-            color: cs.surfaceContainer,
-            borderRadius: BorderRadius.zero,
-            child: InkWell(
-              // null onTap = disabled; kept as a visual placeholder.
-              onTap: null,
-              child: Center(
-                child: Text(
-                  context.l10n.suggestAlternative,
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: cs.onSurfaceVariant,
+        if (!isOffline) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          // Disabled — future feature (user-submitted substitutes).
+          SizedBox(
+            height: AppDimensions.minTouchTarget,
+            child: Material(
+              color: cs.surfaceContainer,
+              borderRadius: BorderRadius.zero,
+              child: InkWell(
+                // null onTap = disabled; kept as a visual placeholder.
+                onTap: null,
+                child: Center(
+                  child: Text(
+                    context.l10n.suggestAlternative,
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

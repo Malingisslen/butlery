@@ -14749,6 +14749,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get noSubstitutionSuggestions => 'Inga förslag just nu';
 
   @override
+  String get substitutionsOfflineMessage =>
+      'Förslag på alternativ är inte tillgängliga offline.';
+
+  @override
   String get suggestAlternative => 'Föreslå ett alternativ';
 
   @override

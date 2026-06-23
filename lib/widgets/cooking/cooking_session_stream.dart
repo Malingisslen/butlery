@@ -9,6 +9,7 @@
 
 import 'dart:async';
 
+import 'package:butlery/core/utils/retain_last_nonempty.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 
@@ -28,17 +29,30 @@ class CookingSessionStreamHolder {
   List<String> _groupIds = const [];
   String? _selfUserId;
 
+  /// Reports whether the device is currently offline. Drives the BUT-1360
+  /// graceful-degradation behaviour: while offline, the merged stream retains
+  /// the last non-empty session list rather than emitting empty (RTDB has no
+  /// read cache, so going offline otherwise blanks the "X lagar just nu" card).
+  /// Defaults to always-online — a caller that doesn't supply this gets the
+  /// original behaviour unchanged.
+  bool Function() _isOffline = () => false;
+
   /// Live merged stream, or `null` until [refresh] has been called with a
   /// non-empty group list.
   Stream<List<CookingSession>>? get stream => _stream;
 
   /// Re-subscribe only when the inputs have actually changed. Cheap to
   /// call on every build — identical inputs are a no-op.
+  ///
+  /// [isOffline] is consulted lazily per emission; passing a fresh closure on
+  /// every call is fine — it doesn't trigger re-subscription.
   void refresh(
     CookingSessionModule module,
     List<String> groupIds,
-    String selfUserId,
-  ) {
+    String selfUserId, {
+    bool Function()? isOffline,
+  }) {
+    if (isOffline != null) _isOffline = isOffline;
     if (_selfUserId == selfUserId && _sameGroups(_groupIds, groupIds)) {
       return;
     }
@@ -59,7 +73,15 @@ class CookingSessionStreamHolder {
 
     final controller = StreamController<List<CookingSession>>.broadcast();
     _controller = controller;
-    _stream = controller.stream;
+    // BUT-1360: while offline, retain the last non-empty merged list so the
+    // card doesn't blank out on RTDB's cacheless empty emission. Online, every
+    // emission (including a legitimate empty when a cook stops) passes through.
+    _stream = controller.stream.transform(
+      retainLastNonEmptyWhileOffline<List<CookingSession>>(
+        isEmpty: (sessions) => sessions.isEmpty,
+        isOffline: () => _isOffline(),
+      ),
+    );
 
     void emit() {
       if (controller.isClosed) return;

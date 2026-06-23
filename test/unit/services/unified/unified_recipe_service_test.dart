@@ -358,6 +358,89 @@ void main() {
       });
     });
 
+    // BUT-1360: On web the local cache is stubbed, so the cold-start recipe
+    // load goes through a one-shot `.get()` (fetchUserRecipes). The Firestore
+    // JS SDK won't serve that from a cold cache without `Source.cache`, so an
+    // offline cold-start used to hang forever and leave the loading skeleton
+    // spinning. The `kIsWeb` branch can't execute in the Dart VM, so we prove
+    // the "loading never hangs" contract directly against the extracted,
+    // bounded `loadWebRecipesBounded` via the injectable repository seam:
+    // make the repository hang or throw and assert the call still resolves
+    // (within the timeout, without rethrowing) and leaves a usable state.
+    group('BUT-1360 web cold-start fetch is bounded (never hangs)', () {
+      setUp(() async {
+        await service.initialize();
+        service.clearError();
+        // Shrink the timeout so the hanging case resolves in test time rather
+        // than after the 8s production bound.
+        service.webRecipeFetchTimeout = const Duration(milliseconds: 100);
+      });
+
+      test(
+          'a hanging fetch resolves within the timeout instead of spinning '
+          'forever', () async {
+        // Arrange — a Firebase get that never completes (the offline JS-SDK
+        // cold-cache hang we are defending against).
+        final neverCompletes = Completer<List<Recipe>>();
+        addTearDown(() {
+          if (!neverCompletes.isCompleted) {
+            neverCompletes.completeError('test-tearDown');
+          }
+        });
+        when(() => mockRecipeRepository.fetchUserRecipes(any()))
+            .thenAnswer((_) => neverCompletes.future);
+
+        // Act + Assert — must RESOLVE (not hang). A real timeout would let the
+        // outer `expect(... completes)` pass; an unbounded await would never
+        // complete and the test would time out and fail.
+        await expectLater(
+          service.loadWebRecipesBounded('test_user_123'),
+          completes,
+          reason: 'the bounded web fetch must resolve even when Firebase hangs',
+        );
+
+        // And the loading flag is not stuck true — init already set it false,
+        // and the bounded fetch absorbing the timeout must not flip it back on.
+        expect(service.isLoading, isFalse,
+            reason: 'loading must not be left spinning after a fetch timeout');
+      });
+
+      test('a throwing fetch is absorbed locally (does not rethrow)', () async {
+        // Arrange — a server get that fails outright (e.g. offline / permission
+        // / transient error). Must be swallowed so bootstrap is not aborted.
+        when(() => mockRecipeRepository.fetchUserRecipes(any()))
+            .thenAnswer((_) async => throw Exception('offline'));
+
+        // Act + Assert — resolves cleanly rather than propagating the error.
+        await expectLater(
+          service.loadWebRecipesBounded('test_user_123'),
+          completes,
+          reason: 'a fetch failure must not abort bootstrap',
+        );
+        expect(service.isLoading, isFalse);
+      });
+
+      test(
+          'a fast successful fetch still replaces the recipe list (online '
+          'path unchanged)', () async {
+        // Arrange — the normal online case: the get returns promptly.
+        final fetched = [
+          RecipeFactory.build(id: 'web-1', title: 'Webbrecept 1'),
+          RecipeFactory.build(id: 'web-2', title: 'Webbrecept 2'),
+        ];
+        when(() => mockRecipeRepository.fetchUserRecipes(any()))
+            .thenAnswer((_) async => fetched);
+
+        // Act
+        await service.loadWebRecipesBounded('test_user_123');
+
+        // Assert — list is replaced exactly as before the timeout guard.
+        expect(
+            service.recipes.map((r) => r.id), containsAll(['web-1', 'web-2']));
+        expect(service.isLoading, isFalse);
+      });
+    });
+
     group('Personal Recipe Operations', () {
       setUp(() async {
         await service.initialize();

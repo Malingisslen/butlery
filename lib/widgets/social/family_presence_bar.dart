@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/retain_last_nonempty.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -29,6 +31,7 @@ class FamilyPresenceBar extends StatefulWidget {
     this.groupId,
     this.onlineUserIdsStream,
     this.memberProfiles,
+    this.isOffline,
     super.key,
   });
 
@@ -46,6 +49,13 @@ class FamilyPresenceBar extends StatefulWidget {
   /// depend on [UnifiedFriendsService]. When null, the widget resolves this
   /// list from the friends service at build time.
   final List<UserProfile>? memberProfiles;
+
+  /// Test seam: report whether the device is currently offline. When null, the
+  /// widget resolves this from [OfflineService]. Drives the offline graceful-
+  /// degradation behaviour (BUT-1360): while offline, the bar retains the last
+  /// known set of online members instead of vanishing on an empty RTDB
+  /// emission. While online it is ignored — live updates pass through.
+  final bool Function()? isOffline;
 
   @override
   State<FamilyPresenceBar> createState() => _FamilyPresenceBarState();
@@ -80,13 +90,31 @@ class _FamilyPresenceBarState extends State<FamilyPresenceBar> {
 
   void _rebuildResolution() {
     _resolved = _resolveMembers();
+    final Stream<Set<String>>? source;
     if (widget.onlineUserIdsStream != null) {
-      _onlineIdsStream = widget.onlineUserIdsStream;
+      source = widget.onlineUserIdsStream;
     } else if (_resolved.isEmpty) {
-      _onlineIdsStream = null;
+      source = null;
     } else {
-      _onlineIdsStream = _composePresenceStream(_resolved);
+      source = _composePresenceStream(_resolved);
     }
+    // BUT-1360: keep the bar showing the last-known online set when the device
+    // drops offline (RTDB has no read cache and emits empty), instead of
+    // abruptly vanishing. Online behaviour is unchanged — empties pass through.
+    _onlineIdsStream = source?.transform(
+      retainLastNonEmptyWhileOffline<Set<String>>(
+        isEmpty: (ids) => ids.isEmpty,
+        isOffline: _resolveIsOffline,
+      ),
+    );
+  }
+
+  bool _resolveIsOffline() {
+    final injected = widget.isOffline;
+    if (injected != null) return injected();
+    final offline = ServiceLocator.tryGet<OfflineService>();
+    // Absent service → treat as online so we never spuriously retain.
+    return offline != null && !offline.isOnline;
   }
 
   @override

@@ -14714,6 +14714,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSubstitutionSuggestions => 'No suggestions yet';
 
   @override
+  String get substitutionsOfflineMessage =>
+      'Substitution suggestions aren\'t available offline.';
+
+  @override
   String get suggestAlternative => 'Suggest an alternative';
 
   @override

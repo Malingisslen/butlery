@@ -128,6 +128,50 @@ void main() {
       // was properly detached.
     });
 
+    test('offline: an empty emission retains the last non-empty session list',
+        () async {
+      // BUT-1360: RTDB has no read cache, so going offline emits empty and
+      // would blank the "X lagar just nu" card. While offline we keep showing
+      // the last-known sessions instead of vanishing.
+      var offline = false;
+      holder.refresh(module, ['g1'], 'self', isOffline: () => offline);
+      final events = <List<CookingSession>>[];
+      final sub = holder.stream!.listen(events.add);
+
+      module.controllers['g1']!.add([
+        CookingSession(
+          recipeId: 'r1',
+          recipeTitle: 'X',
+          startedAt: DateTime(2026),
+          userId: 'friend',
+          userName: 'Friend',
+        ),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+
+      // Friend's session shows.
+      expect(events.last.length, 1);
+      expect(events.last.first.userId, 'friend');
+
+      // Device drops offline; RTDB pushes an empty list.
+      offline = true;
+      module.controllers['g1']!.add(const []);
+      await Future<void>.delayed(Duration.zero);
+
+      // Card must NOT blank — it retains the last non-empty list.
+      expect(events.last.length, 1, reason: 'offline empty must be suppressed');
+      expect(events.last.first.userId, 'friend');
+
+      // Back online: an empty is now authoritative (cook stopped) → it passes.
+      offline = false;
+      module.controllers['g1']!.add(const []);
+      await Future<void>.delayed(Duration.zero);
+      expect(events.last, isEmpty,
+          reason: 'online empty is trusted — no stale session');
+
+      await sub.cancel();
+    });
+
     test('self user is filtered out of merged output', () async {
       holder.refresh(module, ['g1'], 'self');
       final events = <List<CookingSession>>[];

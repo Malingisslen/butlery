@@ -24724,6 +24724,12 @@ abstract class AppLocalizations {
   /// **'Inga förslag just nu'**
   String get noSubstitutionSuggestions;
 
+  /// BUT-1360: shown in the cooking-mode substitution sheet when no suggestions are available because the device is offline (the lexicon lookup needs Firestore).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag på alternativ är inte tillgängliga offline.'**
+  String get substitutionsOfflineMessage;
+
   /// BUT-202: disabled CTA in empty state — future feature for user-submitted substitutes.
   ///
   /// In sv, this message translates to:

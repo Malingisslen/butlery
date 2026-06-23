@@ -1,7 +1,7 @@
 // lib/services/unified/unified_recipe_service.dart
 
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -78,6 +78,12 @@ class UnifiedRecipeService
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
   final FirestoreRepository _firestoreRepository;
+
+  // BUT-1360: Upper bound on the web cold-start direct Firebase fetch so a
+  // stalled/offline `.get()` can never leave the loading skeleton spinning.
+  // Overridable in tests to exercise the timeout path without a real-time wait.
+  @visibleForTesting
+  Duration webRecipeFetchTimeout = const Duration(seconds: 8);
 
   // Focused modules
   late final PersonalRecipeModule _personalModule;
@@ -627,13 +633,7 @@ class UnifiedRecipeService
         if (kIsWeb) {
           final userId = _authRepository.currentUserId;
           if (userId != null) {
-            final firebaseRecipes =
-                await _getRecipeRepository().fetchUserRecipes(userId);
-            _recipes.clear();
-            _recipes.addAll(firebaseRecipes);
-            AppLogger.info(
-              '📦 [Web] Loaded ${firebaseRecipes.length} recipes directly from Firebase',
-            );
+            await loadWebRecipesBounded(userId);
           }
         } else {
           // BUT-198: startFirebaseSync returns immediately (listeners + background fetch).
@@ -659,6 +659,47 @@ class UnifiedRecipeService
       _isLoading = false;
       notifyListeners();
       rethrow; // CRITICAL: Propagate failure to bootstrap system
+    }
+  }
+
+  /// BUT-1360: Web-only cold-start recipe load, bounded so loading can never
+  /// hang forever.
+  ///
+  /// On web the local cache is stubbed, so [initialize] loads recipes via a
+  /// one-shot `.get()` (`fetchUserRecipes`). The Firestore JS SDK won't serve
+  /// that `.get()` from a cold cache without `Source.cache`, so an offline
+  /// cold-start would otherwise never resolve and `_isLoading` would stay true
+  /// (the skeleton list spins indefinitely). This bounds the fetch with a
+  /// timeout and absorbs any failure locally: on timeout/error we keep whatever
+  /// recipes are already loaded rather than rethrowing (which would fail
+  /// bootstrap) or spinning. The online path is unchanged — a successful fetch
+  /// resolves well within the timeout and replaces the list exactly as before.
+  ///
+  /// Extracted and made visible for testing because the `kIsWeb` branch in
+  /// [initialize] can't run in the Dart VM; this lets the "loading never hangs"
+  /// contract be unit-proven via the injectable repository seam.
+  @visibleForTesting
+  Future<void> loadWebRecipesBounded(String userId) async {
+    try {
+      final firebaseRecipes = await _getRecipeRepository()
+          .fetchUserRecipes(userId)
+          .timeout(webRecipeFetchTimeout);
+      _recipes.clear();
+      _recipes.addAll(firebaseRecipes);
+      AppLogger.info(
+        '📦 [Web] Loaded ${firebaseRecipes.length} recipes directly from Firebase',
+      );
+    } on TimeoutException {
+      AppLogger.warning(
+        '⏱️ [Web] Recipe fetch timed out after '
+        '${webRecipeFetchTimeout.inSeconds}s — serving '
+        '${_recipes.length} already-loaded recipes; loading will resolve',
+      );
+    } catch (e) {
+      AppLogger.warning(
+        '⚠️ [Web] Recipe fetch failed: $e — serving '
+        '${_recipes.length} already-loaded recipes; loading will resolve',
+      );
     }
   }
 
