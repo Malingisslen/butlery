@@ -93,7 +93,12 @@ void main() {
 
         // Assert
         final coloredBox = tester.widget<ColoredBox>(
-          find.byType(ColoredBox).first,
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
         );
         expect(coloredBox.color, equals(customColor));
       });

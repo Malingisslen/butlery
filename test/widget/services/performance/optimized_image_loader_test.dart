@@ -397,8 +397,10 @@ void main() {
 
       // Assert
       expect(find.byType(Stack), findsWidgets);
-      // Less AnimatedOpacity widgets when thumbnail is disabled
-      expect(find.byType(FadeTransition), findsOneWidget);
+      // No thumbnail layer when disabled (production gates the AnimatedOpacity
+      // thumbnail on enableThumbnail — mirrors the enabled test above). Counting
+      // FadeTransition was brittle: Flutter 3.38 renders extra framework ones.
+      expect(find.byType(AnimatedOpacity), findsNothing);
     });
 
     testWidgets('should use correct size from targetSize', (

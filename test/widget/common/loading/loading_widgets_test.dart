@@ -65,7 +65,15 @@ void main() {
         );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.byType(ColoredBox), findsOneWidget);
+        expect(
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+          findsOneWidget,
+        );
       });
 
       testWidgets('should stack overlay over child when loading', (
@@ -137,7 +145,14 @@ void main() {
           ),
         );
 
-        final coloredBox = tester.widget<ColoredBox>(find.byType(ColoredBox));
+        final coloredBox = tester.widget<ColoredBox>(
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
         expect(coloredBox.color, equals(customColor));
       });
 
@@ -158,7 +173,14 @@ void main() {
           ),
         );
 
-        final coloredBox = tester.widget<ColoredBox>(find.byType(ColoredBox));
+        final coloredBox = tester.widget<ColoredBox>(
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
         expect(
           coloredBox.color,
           equals(
@@ -642,7 +664,15 @@ void main() {
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         // When child is null, only the overlay is shown (no Stack needed)
-        expect(find.byType(ColoredBox), findsOneWidget);
+        expect(
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+          findsOneWidget,
+        );
       });
 
       testWidgets('should handle empty loading message', (
@@ -690,7 +720,14 @@ void main() {
           ),
         );
 
-        final coloredBox = tester.widget<ColoredBox>(find.byType(ColoredBox));
+        final coloredBox = tester.widget<ColoredBox>(
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
         expect(coloredBox.color, equals(Colors.transparent));
       });
     });
