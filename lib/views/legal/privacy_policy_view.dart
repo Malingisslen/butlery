@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
@@ -81,8 +82,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.privacyTitle),
+      appBar: AdaptiveAppBar(
+        title: context.l10n.privacyTitle,
         centerTitle: true,
         actions: [
           IconButton(
