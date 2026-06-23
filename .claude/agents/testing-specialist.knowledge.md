@@ -271,11 +271,85 @@ A new secondary `TextButton` on `onboarding_age_gate_blocked_view` opens an `Ale
 - **Photo_import announce-once GUARD is the highest-value contract** (`_announcedOcr` bool): four tests pin it — announce-once on extract→review, NO re-announce on duplicate same-state notify (guard holds), RE-announce after `isProcessing` flips true→complete (guard re-arms per-extraction), silent while `isProcessing==true`.
 - **Documented-deferred (harness-ready, not forced into brittle tests): collaborative-shopping toggle + recipe favorite toggle.** Both announce sites sit behind a view that constructs its REAL VM internally with NO injection seam: `CollaborativeShoppingView` uses `ChangeNotifierProvider(create: () => CollaborativeShoppingViewModel(shoppingService: ServiceLocator.get()))` (the `_FakeCollaborativeShoppingViewModel` from the items-widget test CANNOT reach the view's private `_toggleItem` announce — the view ignores any injected VM), and `RecipeDetailView` (610+ lines) needs UserService+PermissionService+UnifiedRecipeService+CookSnap+providers + a deep SliverAppBar tap. The announce decision in both is a thin read of already-VM-tested state (`completedItemsList` / `recipe.isFavorite`) → exactly the `ui-conventions.md:84` heavy-VM-scaffolding a11y exemption. comment-posted (`recipe_social_handler.postComment` static + ServiceLocator + network) likewise deferred. **The harness is ready the moment any of these views grows a VM-injection ctor seam or gets a `test/views/` journey test** — drop `AnnounceChannel.arm` into that journey beat.
 
+### 2026-06-21 — feed_tab_navigation_test: NavigatorObserver captured.last safety [Pattern — reviewed]
+`MaterialApp` pushes exactly one implicit route (the `home:`) before the test tap, so `navObserver.didPush` is called once at boot. `captured.last` in `verify(() => navObserver.didPush(captureAny(), any())).captured` therefore equals the SECOND call (the test's tap) only when pumpWidget is followed by pumpAndSettle BEFORE the tap — which settles the boot push first and thus the final `captured.last` IS the tap route. This is sound, not accidental, when `buildApp()` uses `home:` (not `initialRoute:`) and the tap is the only post-boot push. **If `buildApp` switches to `initialRoute:` + `onGenerateRoute` (which pushes named routes sequentially at start), the boot call count changes and `captured.last` may require adjusting — document this as a fragility.** Also confirmed: `fetchFriendRecipe` has no concrete `@override` body in `MockUnifiedRecipeService` (grep returned empty) → mocktail `when()` stubs work cleanly.
+
 ### 2026-06-19 — RecipeStatsRepository + RecipeOverviewViewModel [Pattern — reviewed]
 **`collectionGroup` on `FakeFirebaseFirestore` IS safe for index-free `.limit(N).get()` queries.** The knowledge-file decision tree lists `collectionGroup` as emulator territory; that is a conservative default. `FakeFirebaseFirestore` handles plain collectionGroup fetches without a `where()` filter or composite index — the repo's `.collectionGroup('recipes').limit(5000).get()` is in that safe subset. Using the fake here is correct and avoids emulator-lane overhead for what is purely a Dart-classification problem.
 **Boundary choice for two-layer tests (repo+fake-Firestore / VM+fake-repo):** seed + real `RecipeStatsRepository` for classification logic; inject a `_FakeRecipeStatsRepository extends RecipeStatsRepository` (concrete override of `getRecipeStats`) for VM tests. This is the right split — the classification switch is owned by the repo, not the VM.
 **One missing case:** the `default:` arm of `_classify` (unknown/unrecognised type string → manual) has no test. A single extra seed document like `await _seedRecipe(db, 'u1', 'rX', 'legacyUnknown')` in the classification test would close this. Not a blocker pre-launch, but worth adding when the test is next touched — a future dev adding a new `case` arm might accidentally move 'legacyUnknown' to a non-manual bucket without noticing.
 - Files: `test/infrastructure/helpers/announce_channel.dart`, `test/widget/a11y/announce_channel_harness_test.dart` (4 harness smoke tests), `test/widget/a11y/photo_import_announce_test.dart` (4 guard-contract tests). 8/8 green.
+
+### 2026-06-21 — BUT-1346 smart-swap scoring hierarchy + SharedShoppingListsViewModel [Pattern]
+**MENU-05 swap scoring: the existing `menu_generator_test.dart` covered the cuisine-preference path probabilistically (20 iterations). It did NOT pin the HIERARCHY: cuisine(+3) > category(+2) > seasonal(+1) > zero.** Added `menu_generator_swap_scoring_test.dart` with 5 deterministic tests that:
+- Run 15 iterations each (the score gap between adjacent tiers is ≥1 point — a single winner always dominates; 15 runs catches any shuffle bug reliably).
+- Use `withClock(Clock.fixed(DateTime(2026,1)), ...)` to pin January → `SeasonUtils` returns `'vinter'` — seasonal tests are deterministic regardless of when CI runs.
+- Pin the tie-break bucket: two equal-score candidates must BOTH be reachable in 50 iterations.
+**Lesson: `MockMenuService` lives in `test/infrastructure/mocks/service_mocks.dart`, not `production_mocks.dart` — grep both files before concluding a mock class doesn't exist.**
+**MENU-14 SharedShoppingListsViewModel: no test existed at all.** VM is thin (ctor triggers `loadSharedLists`, exposes `sharedLists` list, delegates error to `StateNotifierMixin.hasError`). Harness: `MockUnifiedShoppingService.setShoppingState(collaborativeLists: [...])` + `when(() => mock.loadLists()).thenAnswer((_) async {})` + `Future<void>.delayed(Duration.zero)` to drain the ctor-fired async. Four tests: success with lists, empty result, service throws → hasError, refreshData replaces stale data. `_collabList` helper uses the real `UnifiedShoppingList.collaborative` factory (avoids positional ctor sprawl).
+
+### 2026-06-21 — BUT-1342 groups/messaging VM coverage (GRP-06/GRP-09/GRP-11) [Pattern]
+
+**GRP-06 `CreateGroupConversationViewModel`** — no prior test existed. Key lessons:
+- The VM uses `AppLocale.current` for validation-error strings but `AppLocale` defaults to Swedish at static init, so no locale setup is needed in unit tests — `validationError` is just asserted `isNotNull` (locale-agnostic), not matched against a literal.
+- `UnifiedFriendsService` has concrete `@override` bodies on `MockUnifiedFriendsService.friends` (a `List<UserProfile> get` override), which would block `when(() => mock.friends).thenReturn(...)`. Use a local `_MockFriendsService extends Mock implements UnifiedFriendsService` with NO concrete bodies — same pattern as `add_members_to_group_viewmodel_test.dart`.
+- `canCreateGroup` is the load-bearing invariant: test it as the aggregate gate (name + count) rather than testing `_validateGroupCreation()` directly (private). A refactor splitting the private method should not break the tests.
+- The service-call argument-capture pattern via `verify(...captureAny(named: '...'))` is the right way to assert which participant names + trimmed title were forwarded.
+
+**GRP-09 `ChatViewModel` poll/vote path** — already fully covered in `chat_viewmodel_test.dart` (5 tests: multi-choice metadata resolved, single-choice, no-op on missing message, no-op on missing poll metadata, closePoll delegate). No new tests needed; counted as already-covered.
+
+**GRP-11 `ConversationsViewModel.startDirectConversation` edge cases** — happy path + error + disposed + loading already existed. Added three edge cases appended directly to `conversations_viewmodel_test.dart`:
+1. **Get-or-create idempotency**: service called twice with same userId returns same ID both times; VM forwards both calls (dedup is the service's responsibility, not the VM's).
+2. **Self-conversation rejection surfaces error**: service throws on self-ID → VM returns null + sets error + `isLoading==false`. Proves the VM does not silently swallow the error.
+3. **Clears prior error on successful retry**: a failed attempt sets error; a successful retry clears it. Guards `executeAsync` error-clearing semantics.
+
+**Decision record — what was deferred:**
+- GRP-12 `ChatViewFacade` is view-layer (flagged as per original brief).
+- GRP-09 poll-creation path is service-level (`MessagingService.sendPoll`); VM only resolves metadata + delegates — already covered.
+
+### 2026-06-21 — BUT-431 deferred-bootstrap coverage assessment [Pattern — CLEAN verdict]
+
+**Pattern: static-method orchestrators with no injection seam are deliberately untestable in isolation — document the constraint instead of manufacturing a seam.**
+
+`runDeferredBootstrap()` in `app_modules.dart` calls two static methods (`PerformanceModule.runInitSideEffects` + `ContentStage.enrichIngredientRegistry`) inside separate `try/catch` blocks. Both callees reach into `GetIt.instance` and Firebase — no injection seam exists. Testing `runDeferredBootstrap()` directly would require either a real DI+Firebase setup (too heavy for a unit test) or adding a callable/typedef seam purely for testability (production-code complexity in service of a trivially readable 12-line function).
+
+**Verdict: CLEAN.** The 22 existing bootstrap tests cover the orchestrator contract (`application_bootstrap_test.dart`). The deferred-bootstrap change adds:
+- Two static boolean flags gating `if (!defer...) return` paths — visible-by-reading, not worth a test.
+- `try/catch` wrappers in `runDeferredBootstrap()` — each callee already has internal guards (`tryGet` returns null safely; `PerformanceMonitoringService` resolves from GetIt); verifying that `try/catch` catches exceptions is tautological.
+
+**Decision rule for similar cases:** A static-method orchestrator that (a) is a thin sequence of ≤3 calls, (b) has no injection seam, (c) wraps each call in its own `try/catch`, and (d) has no branching logic other than the catch clauses — does NOT need a test. The "would a future refactor silently drop one call?" risk is real but cheaply addressed by a code review, not a test that would require Firebase scaffolding to be meaningful.
+
+### 2026-06-21 — RecipeShareRequestModule: idempotency + accept contract review [Pattern — reviewed]
+
+`request_recipe_share_test.dart` (6 tests) + `social_recipe_service_test.dart` (52 tests) — both pass 6/6 and 52/52.
+
+**Idempotency proof is correct but uses a manual toggle, not a second call-count proof.** The test seeds `requestRepo.existingPending = true` AFTER the first call and verifies `created` stays length 1 and `sendCount` stays 1. This is behaviorally sound: it proves the module reads the repo's dedup query before writing. The alternative ("call it twice with real in-memory state") would also work but requires the Fake to auto-flip its `existingPending` on first write — the explicit-toggle approach is simpler and equally rigorous.
+
+**`acceptRecipeShareRequest` proves all three critical properties:** (1) `recipeId` forwarded to `shareRecipe`, (2) `fromUserId` used as `memberIds` (requester identity), (3) status NOT flipped when `shareResult == null` (atomic guard). These are the exact invariants the docstring promises.
+
+**NotificationService is resolved via `ServiceLocator.tryGet<>()` at call-time** (not constructor-injected). The test handles this correctly: it registers `notifier` into `GetIt.instance` in `setUp` and unregisters it in `tearDown`. This is the right approach for a `tryGet` pattern — no fake risk of the production code bypassing the injected dep.
+
+**No false-confidence risks found.** All fakes are `extends Fake` (not `extends Mock` with `@override` bodies). The `_FakeSocialRecipeOperations` records calls in a `List<Map>` not a Mock — clean. The `_SpyNotificationService` records in-band data correctly.
+
+**Sibling `social_recipe_service_test.dart` update is minimal and correct:** adds `_FakeSocialRequestRepository extends Fake implements FirebaseSocialRequestRepository` (a bare stub satisfying the new ctor param) + wires it at the SUT construction site. No existing test coverage is affected.
+
+**One minor observation (not a gap):** the idempotency test's first call relies on `existingPending = false` (the Fake's default). This is fine but slightly implicit — adding a `reason: 'existingPending is false by default'` comment on the Fake field would make the assumption self-documenting. Not required for approval.
+
+### 2026-06-21 — BUT-1334 AccountDeletionService: production-ServiceLocator bridge for post-CF assertions [Pattern]
+
+**Problem:** `AccountDeletionService` resolves `NotificationService` via `prod.ServiceLocator.get<NotificationService>()` (the production ServiceLocator backed by `DIContainer → GetIt.instance`). Registering a mock into `GetIt.instance` directly is NOT enough if the production `ServiceLocator._container` is null — the lookup throws and the wrapping try-catch silently swallows it, so the mock is never called.
+
+**Fix:** For tests that must verify a `ServiceLocator.get`-resolved dep: call `BaseUnitTest.setupUnitWithProductionLocator()` in `setUpAll` instead of plain `setupUnit()`. This calls `prod.ServiceLocator.initialize(DIContainer())`, and since `DIContainer._container` IS `GetIt.instance`, mocks registered in `GetIt.instance` are then reachable from the production `ServiceLocator.get<T>()` call.
+
+**Decision rule:** If the SUT resolves a dependency via `ServiceLocator.get` (not constructor injection) and you need to verify that call, use `setupUnitWithProductionLocator()`. If the call is fire-and-forget inside a try-catch (non-fatal), the test is still worth writing — the try-catch only protects production from crashes; the test verifies the intent.
+
+**Split into a second `group`** when the extra `setUpAll`/`tearDownAll` lifecycle would conflict with the primary group (which uses plain `setupUnit()`). The two groups can coexist in the same file.
+
+**Tests added to `account_deletion_service_test.dart` (BUT-1334 criteria):**
+- crit-1: `errors` list is exactly `['No authenticated user']` (length 1, exact string) — stricter than the pre-existing Test 5 (`contains('No authenticated')`).
+- crit-2: CF `unauthenticated` exception → `requiresReauth == true` — the second re-auth branch in `_handleCfException`, previously untested.
+- crit-3: BOTH search-index AND offline-cache cleanup run before the CF call — `verifyInOrder([search.removeUser, offline.clearUserData, callable.call])`.
+- crit-4 (separate group with `setupUnitWithProductionLocator`): CF success → `notifService.resetForLogout()` called AND `auth.signOut()` called.
 
 ### 2026-05-25 — Batch 10: site_config_tier [Pattern]
 `_RecordingStrategy` stubs the CRF dep without mocktail. Seams: `preloadedConfig` (wins over `configLoader`); `configLoader` to assert the requested domain; `context.parsedDocument` mutable cache (pre-populate a DIFFERENT doc to prove cache-read); `withClock` for `metadata.timestamp`. Failure-mode tests that earn keep: `isSupported:false` skip, 0/9999 portions fallback, invalid CSS selector no-throw, non-http image URL rejected, strategy-failed → `noData`.
@@ -313,6 +387,26 @@ A ChangeNotifier service adding `_resetError()` per mutator + sanitized `_captur
 ### 2026-05-26 — Future.wait refactor: existing verify(...).called(N) suffices [Pattern]
 Swapping sequential `await` for `Future.wait` over independent reads with no shared mutable state is observably unchanged — existing `verify().called(N)` + cache asserts already pin it. **First confirm existing tests assert SET semantics (`called(3)`) not SEQUENCE semantics (`verifyInOrder`)** — `Future.wait` may break sequence pins.
 
+### 2026-06-21 — feed_tab_navigation Task 9: dialog+verify+snackbar pattern [Pattern — reviewed]
+
+**All three tests pass (3/3 green). Task 9 null-branch is behaviourally correct and approvable.**
+
+Key findings from this review:
+
+1. **`MockSocialRecipeService` has NO concrete `@override` body for `requestRecipeShare`** — grep confirms it. The `when()` stub in the test will take effect cleanly; mocktail is not silently blocked.
+
+2. **`find.text('Be om receptet').last` ambiguity is a known, documented, acceptable workaround** — `feedRequestRecipeTitle` and `feedRequestRecipeConfirm` are the SAME Swedish string ("Be om receptet") by deliberate product design. The `.last` targets the second match which is the actions-row button. If the title/confirm strings ever diverge (or the l10n key changes), the `find.text` call will break with a clear error — self-healing fragility, not silent false-confidence.
+
+3. **`verify(...).called(1)` + `find.byType(SnackBar)` together prove both halves of the contract.** `called(1)` proves the service was invoked exactly once with the exact ownerId/recipeId/recipeTitle from the event. `find.byType(SnackBar)` proves the success snackbar rendered. Neither assertion is redundant.
+
+4. **`find.byType(SnackBar)` is slightly broad** — it would also pass if an ERROR snackbar appeared. The strictest form would be `find.text(context.l10n.feedRecipeRequestSent)` but that requires a `Builder`/context capture. The current form is acceptable because `requestRecipeShare` is stubbed to return `true`, making the error path unreachable; the test intent is still clearly stated in the reason string.
+
+5. **Pre-existing tests (happy path + own-recipe) are unaffected.** `_navigateToRecipe` was already updated to accept `ActivityEvent` in Task 5; the tests tap `find.text(_recipeTitle.toLowerCase())` which is a render-level assertion requiring no change when the method signature changed — proving the test was written at the right abstraction level.
+
+**Pattern to remember**: when a dialog title and confirm button share the same l10n string, use `.last` to target the button; document this in an inline comment (the test does). The alternative of `find.byKey(...)` or `find.widgetWithText(TextButton, ...)` are more precise but require production-code key injection — not worth it when the root cause is deliberate l10n design.
+
+**One gap (non-blocking):** the `requestRecipeShare returns false` branch (shows error snackbar via `SnackBarUtils.showError`) has no test. This is an optional follow-up; the happy-path coverage is complete.
+
 ### 2026-05-27 — fakeAsync + SharedPreferences friction [Pattern]
 **When the SUT both reads time via a `Timer` AND awaits a real `Future` from a plugin, don't use `fakeAsync`** (won't pump plugin microtasks; can't mix `await` into the sync body). Use a real `_settle(d) => Future.delayed(d + 100ms)` + `timeout: Timeout(seconds: 15)`. `fakeAsync` works when the SUT uses time but NOT plugins.
 
@@ -330,6 +424,36 @@ Bugs: export writes `user_id` but import reads `user_email` (breadcrumb broken e
 
 ### 2026-05-27 — iter-81 FakeAuthRepository migration audit [Pattern]
 For an `extends Mock → extends Fake` rename: **grep every file holding the Fake for `when\(\(\) => <var>\.`** — mocktail `when()` against a Fake is a runtime error (not silent), so a missed migration surfaces as a failure. The `local _MockAuthRepository extends Mock` + `_AuthStateHelper` extension keeps the ergonomic `mock.setAuthState(...)` call site while routing through `when()`.
+
+### 2026-06-20 — WS5 UnifiedShoppingItem.copyWith regression tests: one gap identified [Review]
+**Two regression tests correctly prove their stated contracts.** "editing a bought item preserves purchase attribution" exercises the exact pre-fix bug path (`bought` param is `null` → `effectiveBought = this.bought = true`, `becameBought = false` → `purchasedByUserId` preserved); would fail against the bug. "unmarking clears attribution" exercises `effectiveBought = false` → all three fields null; would fail against an inverted `else null` branch. Neither is fragile to harmless refactors. The `togglePurchased` group (lines 212–252) covers the "marking a fresh item stamps the buyer" contract at the canonical call site (production always uses `togglePurchased`, not `copyWith(bought:true)`, for the purchase action).
+
+**One meaningful gap: idempotent re-mark must not re-stamp.** `copyWith(bought: true)` on an item that is ALREADY `bought: true` should preserve `purchasedAt` and `purchasedByUserId` (the original buyer, not a new one). The correct production behaviour is `becameBought = bought == true && !this.bought = true && !true = false` → attributions preserved. If that condition regresses to `bought == true`, every no-op "re-mark" silently re-stamps `purchasedAt` and overwrites the buyer — user-visible in collaborative lists. No existing test catches it. **Recommended addition (one test, three assertions):**
+```dart
+test('re-marking an already-bought item does not re-stamp purchasedAt or overwrite buyer', () {
+  final first = testItem.copyWith(
+    bought: true, lastModifiedByUserId: 'buyer_1', lastModifiedByDisplayName: 'Buyer One');
+  final firstAt = first.purchasedAt;
+  // Re-mark as bought (no-op transition) with a DIFFERENT caller identity.
+  final remarked = first.copyWith(
+    bought: true, lastModifiedByUserId: 'buyer_2', lastModifiedByDisplayName: 'Buyer Two');
+  expect(remarked.purchasedByUserId, equals('buyer_1'), reason: 're-mark must not overwrite original buyer');
+  expect(remarked.purchasedByDisplayName, equals('Buyer One'));
+  expect(remarked.purchasedAt, equals(firstAt), reason: 're-mark must not re-stamp the purchase time');
+});
+```
+**UI-only WS5 fixes (error snackbar, empty-state):** no widget test required. Both are simple rendering conditionals with no state machine or ViewModel path to test — the DO-NOT-WRITE "assert a static widget shows static text" pattern applies.
+
+### 2026-06-21 — BUT-1347 web-only services: stub-contract vs state-machine untestability [Pattern]
+
+**PwaInstallService / RecipePrintService (ENG-25/26):** Both services use the `export 'stub' if (dart.library.js_interop) 'web'` pattern. The web implementations import `dart:js_interop` + `package:web`, which means they **only compile under a browser target**. A regular `flutter test` (VM/native) resolves to the stub. Therefore:
+
+- **The stub no-op contract IS testable** and is worth testing: proves the service is safe to call cross-platform without crashes. Tests: `canPromptInstall` is always false, `onInitialize`/`promptInstall`/`dismissInstall` complete without throwing, state stays consistent after dismiss on non-web.
+- **The web state machine (session counter, dismiss flag) and the HTML generator are NOT testable** in a standard unit test environment without either (a) targeting the web compilation or (b) extracting pure logic into a platform-agnostic Dart file. Do not write fake test doubles that reproduce the production logic — that tests the double, not the production code.
+- **The `_buildRecipeHtml` / `_esc` helpers in the web file are pure Dart** (no `dart:js_interop` usage) but are private top-level functions. They cannot be accessed from tests without either `@visibleForTesting` or extraction. Flag in the test file so the next dev knows this is a refactor gap, not a test gap.
+- **Decision rule for `export … if (dart.library.js_interop)` services:** always test the stub (no-op safety), then note clearly what the web path would need to be testable. Don't add empty tests pretending to cover logic you can't reach.
+
+Files: `test/unit/services/pwa_install_service_test.dart`, `test/unit/services/recipe_print_service_test.dart`.
 
 ### 2026-06-19 — MetricRenderer empty-mount suite review [Pattern — reviewed]
 **The every-kind-empty-mount pattern is correct for sealed-type renderers where the main risk is crash-on-zero-data.** `tester.takeException()` on each kind loop is the right idiom — it catches thrown exceptions during build and layout. `createLocalizedTestApp` is the right boundary because `MetricRenderer` calls `context.l10n.adminMetricNoData` on the empty path; without real l10n the test would throw before reaching the assert.
@@ -354,6 +478,14 @@ Rebuilt a ~45-test ULTRATHINK smoke-suite into 5 real behavior tests. The view b
 - **Permission-gate headline behavior — test the real facade in isolation, not the loaded body.** The admin-vs-member popup menu lives in `GroupDetailAppBar.build(...)` (real production code) gated ONLY on `PermissionService.isGroupAdmin`/`canInviteToGroup`. Pump just that facade in a `Scaffold` via a `Builder` (so it resolves the registered PermissionService at build time) — admin → add-members/edit/delete items present, leave absent; member → leave present, the three admin items absent. The full loaded body pulls in ~6 unregistered services (PingService/ActivityEventRepository/GroupSharedContentService/SharedMenuViewModel/SharedRecipeViewModel/PresenceService via hard `ServiceLocator.get`) — faking all of them for one gate assertion is brittle scaffolding orthogonal to the behavior; the facade test pins the exact gate without it.
 - **`FakePermissionService` (the auto-registered one) lacks `canInviteToGroup`** (it's a `Fake` → noSuchMethod throws). Subclass it: `_GatedPermissionService extends FakePermissionService { @override canInviteToGroup(g) => isGroupAdmin(g); }` so the add-members affordance tracks admin status. Configure admin per-group via `permissionService.setGroupAdmin(groupId:, isAdmin:)`.
 - **Open popup menu overflows** its item Row on the 800px default surface → scoped `FlutterError.onError` ignoring ONLY `'A RenderFlex overflowed'` (save in `addTearDown`-restored var), as in the sibling BUT-1180 files.
+
+### 2026-06-21 — permission-denied branch in cross-user Firestore reads: acceptable FakeFirebaseFirestore omission [Pattern — reviewed]
+
+**Context:** `readSharedRecipe` (and any cross-user read that catches `FirebaseException(code:'permission-denied') → null`) has three outcome branches: doc-present→Recipe, doc-absent→null, permission-denied→null. FakeFirebaseFirestore cannot fire `permission-denied`; the emulator can.
+
+**Decision rule:** when the permission-denied branch is (a) a single `if (e.code == 'permission-denied') return null;` above a `rethrow`, (b) the happy-path and absent-doc paths are covered by FakeFirebaseFirestore tests, and (c) no additional logic (side-effects, notifications, error state) executes in the denied branch — the omission in the unit test is **acceptable and should be documented in the library doc**, NOT papered over with a brittle Firestore-level mock. The correct closure is a separate emulator-lane integration test (`skip: emulatorOnlySkip`) exercising real Firestore rules, filed as a follow-up. Seed via real `.toFirestore()` (not a hand-rolled map) to exercise the deserialization round-trip.
+
+**Contrasted with:** `FirebaseShoppingRepository` delete permission bypass (BUT-369) — that test was worth writing because the guard was a NON-TRIVIAL multi-condition check on `ownerId`. A trivial single-string-equality catch is the dividing line.
 
 ### 2026-06-04 — BUT-918 "What we log" static disclosure — CONSCIOUS SKIP [Pattern]
 **A static GDPR disclosure built from compile-time constant references needs NO test — record it as a conscious skip, don't manufacture a smoke test.** `consent_management_view.dart._buildAnalyticsTransparency` adds an `ExpansionTile` listing 6 l10n category labels each followed by `[AnalyticsEvents.appOpened, ...].join(', ')`. No branches, no state, no VM interaction. The only "contract" — disclosure stays in sync with `analytics_events.dart` — is **compiler-enforced** (a renamed constant fails `flutter analyze`, the test never even runs), and l10n-key existence is covered by `flutter gen-l10n`. The three things a widget test here could assert are all negative-value:
@@ -400,6 +532,29 @@ Reviewed `test/widget/widgets/menu/veckomeny_cooking_session_card_test.dart` (ne
 - **No dispose/unmount test** — the widget's only added lifecycle line is `_sessionsHolder.dispose()`; pumping then removing the widget to confirm no throw is low value (holder dispose is unit-tested) but it's the one line the widget owns. Low.
 - `find.textContaining('Erik')` is a name-substring assert (not weakened — the full line is pinned in `cooking_session_card_test.dart`); acceptable division of labor, just note it would survive an eyebrow/recipe-render break. Info.
 - Standard BUT-1180 scaffolding reused: tall surface (1200x2600) + scoped `FlutterError.onError` ignoring ONLY `'A RenderFlex overflowed'`; `MockOfflineService` (isOnline→true, addListener/removeListener stubbed) for `offlineIndicator()`; the auto-registered `FakePermissionService` already reports `currentUserId == 'test-user-123'` (no override needed — match your fixtures' currentUser to it). This completes BUT-1180 (6/6 files green).
+
+### 2026-06-20 — WS8 GDPR Art 8 age-gate compliance tests review [Review — Pattern]
+**The compliance contract (gate locked until explicit pick) is directly and robustly proven at both the ViewModel and widget levels.**
+
+VM test ("does not auto-select a birth year on init"): constructs `OnboardingViewModel()` with no prior `setBirthYear` call and immediately asserts `selectedBirthYear isNull` + `isAgeGatePassed isFalse`. If someone re-added `_selectedBirthYear = DateTime.now().year - 30` in the ctor (or in any `_init`/`postFrameCallback`), the `isNull` line fails before reaching the second assertion.
+
+Widget test ("does not auto-select a year on render"): pumps `OnboardingAgeGatePage` with a fresh VM, runs full `pumpAndSettle` (exercises `initState`, `didChangeDependencies`, first `build`), then asserts the SAME two fields. A page-level auto-seed in `initState` would fail here even if the VM ctor was clean.
+
+**Three supporting cases are sound:**
+- Adult-pick (VM line 221): `setBirthYear(now.year - 30)` → `isAgeGatePassed isTrue`. Clear causal chain.
+- Under-15 (VM line 226): uses `now.year - 10` (age 10), well inside the under-15 band — no off-by-one risk of a false pass on the threshold itself.
+- Clear-re-locks (VM line 234): sets an adult year, asserts open, `setBirthYear(null)`, asserts re-locked. Covers "change your mind" UX.
+
+**One meaningful gap: exact age threshold (15) is not pinned.** The compliance tests use age 10 and age 30/16 — neither exercises `age == 15` (should pass) or `age == 14` (should fail). If `minAgeYears` changed from 15 → 16 or `>=` flipped to `>`, all existing tests stay green. If the exact threshold is a hard legal requirement, add:
+```dart
+test('exactly age 15 passes; exactly age 14 does not (GDPR Art 8 threshold)', () {
+  viewModel.setBirthYear(DateTime.now().year - 15);
+  expect(viewModel.isAgeGatePassed, isTrue, reason: 'age 15 is the legal minimum');
+  viewModel.setBirthYear(DateTime.now().year - 14);
+  expect(viewModel.isAgeGatePassed, isFalse, reason: 'age 14 is under the threshold');
+});
+```
+Not a blocker — the gate is definitively locked on null — but the boundary should be pinned if the 15-year cutoff is itself a compliance requirement rather than a design choice that could drift.
 
 ### 2026-05-27 — flutter test from Bash when PowerShell deny-listed [Helper]
 `flutter.bat` needs PowerShell (deny-listed); `dart test` lacks `dart:ui`. Invoke the flutter_tools snapshot via bundled dart.exe: `/c/tools/flutter/bin/cache/dart-sdk/bin/dart.exe --disable-dart-dev /c/tools/flutter/bin/cache/flutter_tools.snapshot test <path>` (PATH = System32 + Git/cmd).
@@ -573,6 +728,21 @@ Rebuilt the @Skip'd ~30-test ULTRATHINK smoke-suite (topology `findsOneWidget` o
 - **Copy traps (assert exact ARB values):** `collaborativeNoItemsYet` = "Inga varor **ännu**" (not "...än"); `collaborativeListNotFound` = "**Lista** hittades inte" (not "Listan...") — and that not-found EMPTY state is unreachable when the list is absent because the ERROR branch (error != null) wins in `LoadingStateBuilder`. **`toggleItemBought(itemId)` takes ONE positional arg** (the old guess of two compile-fails). **`amount: 0` on `UnifiedShoppingItem` → `displayText == name`** (no amount/unit prefix) so `find.text('Mjölk')` works without a quantity. Diff: only this one test file (+ `@Skip` removed); `dart analyze` clean; `+5 All tests passed`. **Lesson: when a @Skip note names a root cause, RE-DERIVE it empirically — run the unskipped suite and read the first real exception — before designing around it; the note here blamed a re-entrancy that doesn't exist and the real blocker was a layout-constraint bug + a rethrow-out-of-fire-and-forget.**
 - **Duplicate-copy collision**: with `friendsCount==0` the Feed tab's no-friends empty-state CTA `feedEmptyNoFriendsCta` is ALSO "Hitta vänner" — identical to the Find-friends TAB label. `find.text('Hitta vänner')` matches twice. Scope tab-label asserts to `find.descendant(of: find.byType(TabBar), matching: find.text(...))`.
 Behaviors pinned: 4 Swedish tab labels + controller.length==4; Friends-empty branded state (headline + find-by-username CTA); empty-CTA → tab controller animates to index 3; Groups tab → create-group FAB appears (absent on Feed); social-flag OFF → hardcoded disabled fallback + no TabBar. Diff: only this one test file (+ `@Skip` removed); `dart analyze` clean; `+5 All tests passed`.
+
+### 2026-06-20 — WS5 markdown renderer + heirloom-form mixin review [Review — Pattern]
+Assessed `test/widget/views/legal/markdown_body_test.dart` (3 tests, new) and the new `hasHeirloomContent` group (3 tests) in `test/unit/viewmodels/photo_import/photo_import_heirloom_form_mixin_test.dart`.
+
+**Both files are intention-driven and would fail on real regressions.**
+
+Markdown tests: (1) "strips heading/bold markers" — a passthrough `SelectableText(data)` regression makes `find.textContaining('# ')` match, failing it; (2) "renders bullets with '•'" — leaking `- ` source fails `findsNothing`; (3) "link span carries TapGestureRecognizer" — correct behavioural probe (interactivity, not colour). The bare `MaterialApp` (no `AppTheme`) is safe because these tests assert only text presence and gesture recognizer, not colour. The TapGestureRecognizer walk is slightly broad (passes if ANY unrelated span happens to have a recognizer) but in the narrow test context there are no other tappable spans — acceptable.
+
+hasHeirloomContent tests: (1) "false when toggle alone (no typed fields)" — pins that the UI confirmation dialog does NOT show for an accidental toggle; (2) "true for each single field independently with clearHeirloomForm between" — exercises all three `||` arms; a missing arm goes red; (3) "false again after clear" — closes the round-trip and pins that `clearHeirloomForm` resets the predicate, not only the display state.
+
+**Skipped items verdict:**
+- `SmartImportView` initialUrl prefill and deep-link route change: correctly skipped — both are post-frame/post-DI-init wiring with no cheap seam.
+- Notification tap-nav: the static `onNotificationTapped` seam is potentially testable as a PURE routing-switchboard unit test (`data map → expected route string`) with no DI at all, IF the static method is a simple switch on `notification.data['type']`. Worth reading before permanently skipping — if the method reaches `ServiceLocator` before routing, skip is correct; if it is a pure data-map → route-string function, a 5-line unit test closes a real regression gap (a mistyped case key silently does nothing, DI-backed tests can't catch it).
+
+**Decision rule added:** a static notification-tap router is cheaply tested as a pure function (input: a `RemoteMessage` data map; output: route string pushed or `null`) only if it does not call ServiceLocator before routing. Read the production method body before concluding either way. If the body is DI-entangled, the skip is correct per the recipe_selection_dialogs precedent.
 
 ### 2026-06-03 — BUT-1185 PersonalTagSelectionManager [Pattern]
 Pure-`ChangeNotifier` multi-select managers (`personal_tag_selection_manager.dart`, mirror of `recipe_selection_manager.dart`): zero deps, no `setUp` bootstrap beyond `addListener(()=>notifyCount++)`. **Pin the auto-exit invariant explicitly** — toggling the LAST selected id out sets `_isSelectionMode=false` (line 27-29); that's intended UI (empty selection bar is confusing), so pin-as-correct, don't flag. **`selectedTagIds` getter returns `Set.unmodifiable` → `expect(()=>ids.add('x'), throwsUnsupportedError)`** proves callers can't corrupt internal state. notifyCount==1 per mutation (no double-fire). Mirror sibling test for style — same group/intent structure, no `flutter_test` scaffolding needed.
@@ -767,6 +937,19 @@ The dialog half of the BUT-1214 chain is now pinned: `test/views/recipe_detail_v
 - **`ImagePickerDialogs.showImageSourceDialog` is fully drivable in widget tests** — plain `showModalBottomSheet` with l10n ListTiles (`commonSelectFromGallery` / `commonTakePhoto`), no platform channel until AFTER a source is returned (and the fake service means the picker itself never runs). Two pumps + 300ms cover sheet slide-in; same again covers sheet-pop → dialog fade-in.
 - **The dialog only fires for a non-private audience** (`cookSnapAudience`: `isPublic` → public; personal non-collaborative → private skips). Seed `RecipeFactory.build(..., isPublic: true, createdBy: testUser)` in a nested-group `setUp` reassigning the outer `recipe` + re-seeding `setRecipeState` — `pumpDetailView` reads the outer variable at call time, so no helper changes. Public+personal keeps `RecipeDetailSharingStatus` short-circuited (it gates on `isCollaborative || isShared`, not `isPublic`).
 - **Off-screen gallery affordance**: `tester.ensureVisible(find.byIcon(Icons.add_a_photo))` works (the whole mobile Column lives in one box-sliver, so it's built while off-screen). Scope dialog-button taps via `find.descendant(of: find.byType(AlertDialog), ...)` — `commonCancel` can exist elsewhere in the tree under the barrier.
+
+### 2026-06-20 — WS9 crash-safety deserialization tests: review verdict [Pattern reviewed]
+Three test files reviewed for WS9 (data-model crash-safety). All three pass the intent gate.
+
+**`serialization_utils_safe_enum_index_test.dart`** — all five failure modes (valid, past-end, negative, String, null, double) are distinct code paths and all are covered. Would fail on reversion to bare `.values[index]`. Not fragile to theme/schema changes (uses a local private `_Sample` enum). One minor fence-post gap: no exact-boundary test (`values.length - 1` must succeed; `values.length` must fall back). A `safeEnumByIndex(values.length - 1, ...)` and `safeEnumByIndex(values.length, ...)` pair would make a `< vs <=` regression visible. Low severity — the past-end crash is still caught; add when the file is next touched.
+
+**`recipe_serialization_safety_test.dart`** — correctly tests `fromJson` for the out-of-range case and `fromMap` for the non-int case (matching the two distinct call sites in production). Round-trip test locks the happy path. One pre-commit check worth confirming: the `defaultValue` arg in production's `safeEnumByIndex` call for `RecipeType` must be `RecipeType.personal` (index 0) for the `expect(..., RecipeType.personal)` assertions to be intent-gated rather than accidentally correct.
+
+**`quantity_parser_test.dart`** — all three digit-run positions (numerator-only, denominator-only, mixed) are covered. Would fail if `int.parse` (throws `FormatException`) replaced `int.tryParse`. The division-by-zero guard is also covered. No missing position.
+
+**`ResourcePermission.memberPermissions` path** — mechanism-level coverage via `safeEnumByIndex` unit tests is sufficient; a separate heavyweight integration test is not warranted.
+
+**Reusable rule: for a `safeEnumByIndex` helper, the minimum test matrix is (valid, past-end, negative, non-int-type, null). Always include a String test because Firestore occasionally deserializes enum fields as strings when documents were written by older schema-less writers.**
 - **Dismissal asserts need the pop animation drained**: `findsNothing` on the dialog's radio key fails at pump+50ms (dialog still fading); pump+300ms after the cancel tap. The upload-count assert alone would have passed — don't weaken to it, the "dialog actually left" half catches a pop-swallowing regression.
 - **Domain-invariant test the autopilot draft misses**: private recipe → NO dialog AND the upload still happens with `sameAsRecipe` (a regression gating the upload on the never-shown dialog would break adding snaps to personal recipes — the "no friction" half of BUT-1214 is two-sided). Deliberately excluded: a source-sheet-dismiss test (`source == null` early return) — pure framework behaviour, proves nothing of ours.
 - Transient gotcha: a parallel session mid-refactor on lib/ can fail `flutter test` compilation on files you never touched (here `input_components.dart`/`RecipeIngredient`); re-run before investigating, per the parallel-sessions rule.
@@ -1378,6 +1561,24 @@ The 4-test file for `ShoppingCheckoffPantryService.onItemCheckedOff` was assesse
 - **Decision rule for negative-space routing tests:** always add a canary proving the tested-path was actually reached (call-count, error-state, or explicit `expect(realViewModel.foo, X, reason: 'proves X path was taken')`), otherwise `replaceCount==0` is structurally identical to "nothing fired at all."
 - **`MockAuthService extends Mock` with concrete `@override` method bodies** — this is the anti-pattern from BUT-368, but it's intentional here (the concrete body IS the fake behavior). Since `when()` can't override it, a test author trying to stub `signInWithEmail` via mocktail would silently use the concrete body. Document in the class header that `when()` on these methods has no effect.
 
+### 2026-06-20 — WS4 ChatViewModel Poll Operations: one gap [Pattern + Review]
+**File:** `test/unit/viewmodels/chat_viewmodel_test.dart` — "Poll Operations" group (4 tests).
+- **Four tests evaluated against the production `votePoll`/`closePoll` branch map.** Production has three early-return guards: (a) `_isDisposed` (lifecycle, covered by Lifecycle group), (b) `target == null` (message not in list), (c) `pollData == null` (message present, no `poll` metadata key). Tests cover `allowMultiple=true`, `allowMultiple=false`, `target == null`, and the `closePoll` delegation. All four are intent-driven and would fail on real regressions.
+- **One missing case:** guard (c) — a message with the target ID is in the cached list but its `metadata` has no `'poll'` key (e.g. a plain text message or a message whose poll key was stripped). `verifyNever(votePoll(...))` is the correct assertion. The existing no-op test only exercises guard (b); guard (c) is distinct production code and untested.
+- **No action needed on `closePoll`:** returns void, swallows exceptions, no caller-visible error surface — the delegation test is sufficient.
+- **`Future.delayed` vs `fakeAsync`:** the stream pump pattern uses `Future.delayed(50ms)` throughout the file. Technically fragile on slow CI, but consistent with the surrounding 37 tests; not a blocker in isolation.
+- **Decision rule:** for a metadata-resolution method with N distinct early-return guards, write one no-op test per guard path, not just one combined "nothing happened" test. Guards (b) and (c) look similar but exercise different lines — a future developer deleting guard (c) and relying on guard (b) would not be caught by the current suite.
+
+### 2026-06-21 — fetchFriendRecipe: subclass-override as cache-injection seam [Pattern + Review]
+**File:** `test/unit/services/unified_recipe_service_friend_fetch_test.dart` (3 tests, all pass).
+- **Subject:** `UnifiedRecipeService.fetchFriendRecipe` — 5-line method that checks `getRecipeById(recipeId)` (O(1) map lookup into private `_recipeById`) and, on miss, delegates to `_getRecipeRepository().readSharedRecipe(...)`.
+- **Seam question:** `_recipeById` is private; the implementer subclassed `UnifiedRecipeService` as `_FakeUnifiedRecipeService` and overrode the public `getRecipeById(id)` with a fall-through: `_injectedCache[id] ?? super.getRecipeById(id)`. Is this mocking away the subject?
+- **Assessment: ACCEPTABLE.** `getRecipeById` is the only public interface the service exposes for the map lookup. The override does NOT replace `fetchFriendRecipe` itself — the real method runs unchanged. The override replaces the DEPENDENCY it reads (the in-memory recipe index), exactly as injecting a fake repo replaces the Firestore dependency. The subject under test is the branching logic in `fetchFriendRecipe`; the cache state is an input to that logic. This is legitimate seam exploitation, not mocking-away-the-subject.
+- **Critical check: verifyNever IS present on cache-hit test.** Line 208–213 asserts `verifyNever(() => mockRecipeRepository.readSharedRecipe(ownerId: any, recipeId: any))`. This means test (1) would fail if `fetchFriendRecipe` called the repository even when `getRecipeById` returned non-null. This is the key proof-of-intent assertion — the test earns its existence.
+- **Tests 2 and 3:** `verify(...).called(1)` on cache-miss (correct ids pinned), `expect(result, isNull)` on repo-null — both sound and would catch real regressions.
+- **One minor observation (not a blocker):** `_getRecipeRepository()` resolves via `_recipeRepository ?? ServiceLocator.get<RecipeRepository>()`. The test wires `mockRecipeRepository` both as a ctor arg AND via `TestServiceLocator.registerMock` — doubly safe. This is fine.
+- **Decision rule codified:** When a service accesses private state via a public getter (`getRecipeById` reads `_recipeById`), subclassing and overriding THAT GETTER is the canonical seam — it avoids `@visibleForTesting` leaks while still testing the real method. The seam is legitimate as long as: (a) the override is a straight fall-through (`injected ?? super.method()`), (b) the real method under test is NOT overridden, and (c) the cache-hit test pairs `verifyNever` on the downstream dep.
+
 ### 2026-06-19 — EngagementViewModel admin-tab test review [Pattern + Review]
 **File:** `test/unit/viewmodels/admin/engagement_viewmodel_test.dart` (5/5 green, untracked). Reviewed against the `import_health_viewmodel_test.dart` template.
 - **Pattern confirmed sound.** `_FakeEngagementRepository extends EngagementRepository` with a `FakeFirebaseFirestore()` super-call that is never exercised (overrides short-circuit first) matches the import_health template exactly. `throwOnLoad` arms both methods simultaneously — correct because the production VM calls them sequentially inside a single `executeAsyncVoid`.
@@ -1385,3 +1586,327 @@ The 4-test file for `ShoppingCheckoffPantryService.onItemCheckedOff` was assesse
 - **P2 gap (not blocking):** no test covers the partial-success scenario — `getUserCount()` succeeds while `getDailyFeatureRetention()` throws (or vice versa). The `throwOnLoad` flag arms both methods. Depending on production intent (atomic-or-nothing vs best-effort partial), `userCount` may be non-zero with `error != null`. Worth a follow-up test once the intent is decided.
 - **Consistent omission with the sibling file:** neither this file nor `import_health_viewmodel_test.dart` asserts `notifyListeners()` fires. `executeAsyncVoid` drives it through the base class lifecycle, but a regression removing the base calls would leave a frozen admin tab. Low priority.
 - **Decision rule for admin tab VMs:** the main risk is crash-on-zero-data (pre-launch state); the zero-data and error-state tests are the load-bearing ones. The remaining tests cover the active-data derivation contract (stat cards). This is the right coverage shape for a read-only admin view.
+
+### 2026-06-21 — RecipeDetailView readOnly flag: overflow-menu gap is acceptable, favorite anchor is load-bearing [Pattern + Review]
+**File:** `test/widget/views/recipe_detail_read_only_test.dart` (2/2 green).
+- **Subject:** `RecipeDetailView(readOnly: true)` hides favorite toggle and overflow-menu items (Edit, Edit-tags, Delete); retains save-copy and non-owner actions.
+- **Test 1 intent:** "favorite toggle absent + save-copy present when readOnly:true" — proves the guard fires and does not destroy the retained action in one pump. Would fail if `if (!widget.readOnly)` were removed from the favorite block, OR if `showForkInAppBar` stopped returning true for a friend's recipe.
+- **Test 2 intent:** "favorite toggle visible when readOnly:false (default)" — regression guard for the normal path; would fail if readOnly defaulted to true or if the toggle were unconditionally hidden.
+- **False-confidence analysis:** `showForkInAppBar(friendRecipe.createdBy, 'test-user-123')` returns true because `_friendUserId ('friend-user-456') != _testUserId ('test-user-123')`, and `createPermissionService()` defaults `currentUserId` to `'test-user-123'`. The save-copy visibility is NOT gated on `readOnly` — it is gated on `showForkInAppBar`, which is independent. So a test of "save-copy present when readOnly:true" does NOT prove that save-copy ALSO appears when readOnly:false with the same recipe — but that is tested by the existing fork-placement unit tests (BUT-1178). No structural false confidence here.
+- **Overflow-menu gap (Edit, Edit-tags, Delete): acceptable skip.** Opening `PopupMenuButton` in a widget test requires `.tap(find.byType(PopupMenuButton))` + `pumpAndSettle`, which works BUT the view also has `if (showForkInAppBar...)` placing the save-copy in the app bar, meaning `PopupMenuButton` in the app bar may require `.hitTestable()`. The scope note on lines 11–18 of the test is honest. The three hidden items share a single structural pattern — all three are under the same `if (!widget.readOnly)` guard in the same `itemBuilder` list. Testing the favorite guard is sufficient to prove the guard mechanism works; the overflow items all use the IDENTICAL `if (!widget.readOnly)` expression with no additional logic. A regression that removed one `if` guard and not another would be caught by `flutter analyze` (compile error if a `PopupMenuItem` were mis-indented out of the `if` block) or a manual smoke pass. **The gap is real but low-risk given the structural homogeneity of the guards.**
+- **Decision rule: when N production-code guards are structurally identical (same boolean expression, same nesting pattern, same file), testing ONE of them is sufficient IF the intent test would fail on a regression to the boolean and a code-review / analyze catch would catch an indent/scope error on the others. Document the conscious skip in the test's library comment.**
+
+### 2026-06-21 — SocialRequest.recipeShareRequest model review [Pattern]
+
+**copyWith-survival gap is the canonical missing test for discriminated-union models.** When a model has type-specific nullable fields (recipeId/recipeTitle for `recipeShareRequest`, groupId/groupName/etc. for `groupInvitation`), the critical invariant is that a `copyWith(status: ...)` call (the Phase 2 accept flow) preserves those fields. Production `copyWith` threaded all fields correctly, but no test verified it. The factory + round-trip tests are necessary but not sufficient — add a third test: `copyWith(status: accepted)` on an instance built with the factory, assert the type-specific fields survive.
+
+**Mutual-exclusivity test for a new `is*` predicate.** Per the 2026-05-23 Wave-17 lesson, every new `is*` getter on a discriminated union needs a negative test on the OTHER concrete types. The new file only asserted `isRecipeShareRequest == true` for the new type; it missed `isRecipeShareRequest == false` for `friend` and `groupInvitation`. Pattern: always pair the positive with a negative covering all other enum variants.
+
+**`toFirestore` omission symmetry test.** When a model uses `if (field != null) 'key': value` in `toFirestore`, add a test asserting the key is ABSENT for a type that should not have it — mirrors the existing `toFirestore omits group fields for a friend request` pattern in `social_request_test.dart`.
+
+**Two tests submitted → five tests APPROVED**: factory+payload, round-trip, mutual-exclusivity negative, field-omission symmetry, copyWith-survival.
+
+### 2026-06-21 — RecipeDetailView share-request banner: registerFallbackValue pattern + owner-gate false-confidence gap [Pattern + Review]
+**File:** `test/widget/views/recipe_detail_read_only_test.dart` — banner test (1/1 green); full suite 3/3 green.
+
+**Behavior under test:** when `RecipeDetailView` receives a non-null `shareRequest` AND the current user owns the recipe, a banner with the requester's name and a "Dela med {name}" button renders; tapping it calls `SocialRecipeService.acceptRecipeShareRequest(request)` exactly once.
+
+**Assessment against the four questions:**
+
+1. **Real contract proved?** YES. The test asserts both text presence (`find.textContaining('Anna')` + `find.textContaining('Dela med Anna')`) AND call count (`verify(...).called(1)`). The verify is on the real stub registered via `TestServiceLocator.registerMock<SocialRecipeService>` — not on a hand-rolled counter or side-channel capture.
+
+2. **SocialRecipeService mocked (not the subject)?** YES. `_MockSocialRecipeService extends Mock implements SocialRecipeService` — no concrete `@override` bodies, so `when()/verify()` work cleanly. The banner widget + its `_onShare()` method are the subject; the service is the dependency.
+
+3. **`registerFallbackValue(SocialRequest(...))` legitimate?** YES, and this is the correct pattern. Mocktail requires a registered fallback for any non-primitive type used with `any()`. `SocialRequest` is a plain Dart class (not sealed; public constructor; copyable) so constructing a minimal fallback instance is safe. The fallback does NOT get called in the stub — it only satisfies the type system when mocktail needs to produce a typed placeholder for `captureAny`/`any()` assertions. This is the same pattern as the existing `registerFallbackValue(RecipeFactory.build(id: 'fallback'))`. CORRECT, NOT masking a problem.
+
+4. **False-confidence on owner-gate?** PARTIAL RISK — documented below. The test pumps `ownedRecipe` (which has `createdBy == _testUserId == 'test-user-123'`) and the default `createPermissionService()` sets `currentUserId = 'test-user-123'`. The gate `recipe.createdBy == PermissionService.currentUserId` therefore passes correctly. **However, there is no complementary "non-owner gets no banner" test** — a regression that removed the `recipe.createdBy == ...` guard would still pass this test (the banner would render for non-owners, but this test never pumps a non-owner scenario with a `shareRequest`). This is a MISSING COVERAGE gap, not a false green in the existing test.
+
+**Missing test (P2 — medium priority):** Add a second test in the same group:
+```
+testWidgets('banner is suppressed when the current user does not own the recipe', ...)
+  // pump: shareRequest non-null, recipe.createdBy = _friendUserId (NOT _testUserId)
+  // expect: find.textContaining('Anna'), findsNothing
+  // This would fail today if the owner-guard were removed.
+```
+Without this, the owner-gate can be silently removed and the test suite stays green.
+
+**Pattern rule:** whenever a widget is gated on `currentUser == owner`, always write BOTH the positive case (owner → renders) AND the negative case (non-owner → absent). One-sided ownership tests are a recurring false-confidence shape.
+
+### 2026-06-21 — BUT-1336 SocialMediaExtractor failure-path gap [Pattern + Bug documented]
+
+**Criterion 1 (ContentDetectorService) was already fully covered.** The existing `content_detector_service_test.dart` tests every case in the acceptance criteria: Instagram/TikTok → `socialMediaUrl`, plain recipe URL → `recipeUrl`, YouTube → `recipeUrl` + `SourcePlatform.website` (NOT `socialMediaUrl`), recipe-keyword text → `recipeText`, arbitrary text → `plainText`. Nothing new added there — do not duplicate.
+
+**Criterion 2 gap: `extractFromUrl` failure path never asserted `success==false` or `error!=null`.** The existing `social_media_extractor_test.dart` failure tests all did `expect(result, isA<ExtractionResult>())` — type-check only, no assertion on `success` or `error`. This means a regression changing `success: false → success: true` or nulling `error` would have gone green.
+
+**Injection seam: `SocialMediaExtractor(manager: ...)`.** `ExtractionManager` is constructor-injectable. The correct seam is a LOCAL concrete subclass (`_FakeExtractionManager extends ExtractionManager` overriding only `extractFromUrl`) — NOT `extends Mock` with `@override` bodies (which silently blocks mocktail's `when()`). The base class `BaseService` is abstract with `serviceName`/`onDispose` abstract; subclassing the concrete `ExtractionManager` satisfies them automatically.
+
+**Two failure modes tested:** (1) manager returns `ExtractionResult(success:false, error: <msg>)` → verify the facade forwards `success==false` and the exact error string; (2) manager throws → verify the null-coalescing fallback (`?? ExtractionResult(success:false, error:'Extraction operation failed')`) fires.
+
+**`metadata['reason']` is a real bug, NOT fixed here.** `receive_share_view.dart` line 191 reads `result.metadata['reason'] as String?` for analytics, but `ExtractionResult` never populates `metadata['reason']` — it always arrives as `null`. Added a CHARACTERIZATION test that pins `metadata['reason'] == null` with an inline flip instruction for when it's fixed. Filed as follow-up on BUT-1336.
+
+**Test file:** `test/unit/services/extraction/social_media_extractor_test.dart` — new group `extractFromUrl failure path (BUT-1336)`, 3 tests appended.
+
+### 2026-06-21 — BUT-1335 RecipeListViewModel allergen/dietary safety gate [Pattern discovered]
+
+**Trigger:** Writing dedicated tests for the five acceptance criteria of the allergen/dietary filter safety gate in `RecipeListViewModel`.
+
+**Key patterns:**
+
+**Existing tests already covered:** seed-recipe bypass (null tagResult + `createdBy=='system'` → pass), non-seed null-tagResult exclusion. Do NOT duplicate them; extend with a sibling group.
+
+**Inject real `TagEditingService()`** — it is pure-compute (reads `recipe.tagResult.allergenStatus` and `recipe.tagOverrides`, no async, no Firebase). No need to mock it. This pattern is already established in the sibling `setUp` and is correct.
+
+**Build TagResult directly:** Use `TagResult(tags: const {}, allergenStatus: const {'gluten': TriState.free}, dietaryStatus: const {'vegetarisk': TriState.free}, coverage: ..., generatedAt: DateTime(2024), generatorVersion: ..., hasCoverageAnomaly: false)`. Three variants cover the three gates:
+1. `fullyTaggedFree()` — `coverage: 1.0`, `generatorVersion: kTagGeneratorVersion` → passes all gates.
+2. `partialCoverageFree()` — `coverage: 0.6`, same version → excluded by coverage gate.
+3. `needsRetaggingFree()` — `coverage: 1.0`, `generatorVersion: null` → `needsRetagging==true` → excluded before status is read.
+
+**Import needed:** `package:butlery/services/tagging/tag_generator.dart` (show `kTagGeneratorVersion`), `package:butlery/models/tagging/tag_result.dart`, `package:butlery/models/tagging/tri_state.dart`.
+
+**Attach tagResult via `Recipe.copyWith(tagResult: ...)`** — `RecipeFactory.build()` produces a recipe with null `tagResult`, so `copyWith` is the correct extension point.
+
+**Local helper functions inside `group(...)` body** must NOT start with underscore — lint rule `no_leading_underscores_for_local_identifiers` fires. Name them `fullyTaggedFree()` etc., not `_fullyTaggedFree()`.
+
+**`untaggedExclusionMessage` is only non-null when `hasTagBasedFilters == true`** (an allergen OR dietary filter is active). Toggle a filter before asserting the message. The message counts ALL service-level recipes that are unanalysed (`tagResult == null || hasFailed || needsRetagging || coverage < 1.0`), not just the ones excluded from the filtered results — so a mix of one analysed + one unanalysed recipe with a filter active yields `'1 recept analyseras...'`.
+
+**`untaggedRecipeCount` observable via `untaggedExclusionMessage`** — the message embeds the count; assert `contains('1 recept')` rather than calling the count getter directly (DRY + survives a getter rename).
+
+**hasFailed discrepancy noted:** `untaggedRecipeCount` includes `hasFailed` recipes in its denominator, but `_applyAllergenFilters` returns `false` for `needsRetagging` (which includes `hasFailed`) — so hasFailed recipes ARE excluded from filter results AND counted in the untagged banner. No production bug; just a subtle relationship to document.
+
+### 2026-06-21 — BUT-1333 AuthMfaService: callback-based MFA and private-ctor Firebase types [Pattern]
+
+**Callback-based service methods need captured-invocation stubs.** `startMfaEnrollment` and `startMfaSignIn` are `Future<void>` but drive results through callbacks (`onCodeSent`, `onError`, `onAutoVerified`). The test stub captures the named-param callback from `invocation.namedArguments[#codeSent]` and invokes it synchronously inside `thenAnswer`. Declare local `String? capturedId` / `MfaError? capturedError` before the `await`, assert after.
+
+**Firebase types with private constructors need `Mock implements`, not instantiation.** `MultiFactor`, `MultiFactorResolver` both have private ctors — mock them with `class _MockMultiFactor extends Mock implements MultiFactor {}`. Their methods (getSession, enroll, unenroll, hints, session, resolveSignIn) then stub cleanly with `when()`. Contrast: `MultiFactorSession(id)` and `PhoneMultiFactorInfo(...)` and `TotpMultiFactorInfo(...)` have public ctors and can be instantiated directly as plain test values.
+
+**`no-phone-factor` is a custom MfaError, NOT a Firebase error code.** The service emits it directly (`onError(const MfaError(code: 'no-phone-factor', ...))`) before calling any Firebase API. Testing it requires checking `capturedError?.code` from the `onError` callback — NOT checking `mapAuthErrorToMessage`. Mapping it through the error-mapper returns the generic fallback, which is correct and itself worth pinning as a documentation test.
+
+**BUT-582 pattern applies:** pin BOTH positive (`invalid-phone-number → errorInvalidPhoneNumber`) AND negative (`isNot(AppLocale.current.errorAuthentication)`) for each MFA error code — the negative catches a refactor collapsing MFA branches back to generic.
+
+**`user.multiFactor` is a concrete getter on `User`** that builds a `MultiFactor` from a platform delegate. Since `MockUser extends Mock implements User`, the getter has no concrete body in the mock and can be stubbed: `when(() => mockUser.multiFactor).thenReturn(mockMultiFactor)`.
+
+**`MockAnalyticsService.logLogin` has no concrete `@override` body** (unlike `logEvent` which IS overridden). Stub it with `when(() => mockAnalytics.logLogin(method: any(named: 'method'))).thenAnswer((_) async {})` or it will throw via `noSuchMethod`.
+
+**Test file:** `test/unit/viewmodels/recipe_list_viewmodel_test.dart` — new group `BUT-1335 Allergen/Dietary Safety Gate`, 11 tests. `dart analyze` clean on both the production file and the test file.
+
+### 2026-06-21 — BUT-1344 COOK-12: groups appended outside main() parse error [Pattern]
+
+When appending `group(...)` blocks to an existing test file, the blocks MUST be inside `main()`. Placing them after the closing `}` of `main()` causes Dart to parse them as top-level function declarations, producing a cascade of `missing_identifier` / `duplicate_definition` / `missing_function_body` errors. **Always read the tail of the existing file before appending, confirm the `main()` closing brace location, and insert the new groups before it — not after.**
+
+### 2026-06-21 — BUT-1344 COOK-12: IngredientLookupService article+adjective gap [Pattern]
+
+`test/unit/services/tagging/ingredient_lookup_service_test.dart` already covered LRU cache, cache key collision, variation generation (compound suffixes, plurals, definite forms), and offline degrade. Two gaps remained:
+
+1. **Swedish article stripping** (`_cleanForLookup` regex `^(en|ett|den|det|de)\s+`): no test exercised "en tomat" → "tomat". Added 3 tests (en/ett/den).
+2. **Adjective prefix/suffix stripping** (`_generateLookupVariations` adjective list): no test exercised "färsk lax" → "lax" or "parmesan riven" → "parmesan". Added 4 tests (2 prefix: farsk/torkad, 2 suffix: riven/hackad).
+
+Each test stubs the exact name the normalizer produces (SwedishCharacterNormalizer output), then leaves the exact match returning null so the variation path is exercised. **Decision rule: for a lookup service with multiple fallback tiers, enumerate each tier in test coverage; a passing "compound suffix" test does NOT cover "adjective stripping" since they are distinct code paths.**
+
+### 2026-06-21 — BUT-1344 COOK-07: AddPantryItemSheet widget test scaffolding [Pattern]
+
+`AddPantryItemSheet` is cleanly widget-testable: it reads `PantryViewModel` via `context.read<PantryViewModel>()`, so wrapping with `ChangeNotifierProvider<PantryViewModel>.value(value: mockVm, ...)` is sufficient — no `TestServiceLocator.initialize()` or production ServiceLocator bridge needed. Same pattern as the a11y chunk-4 test.
+
+Three behavioral tests added to `test/widget/views/pantry/add_pantry_item_sheet_test.dart`:
+- Autocomplete suggestion tap → `addItemFromIngredient` (not `addItemFromText`).
+- Raw text typed, no suggestion → `addItemFromText`.
+- Edit mode (`existingItem != null`) → form pre-populates name, submit calls `updateItem` with matching `id`.
+
+**Gotcha: a local helper function named `_buildSheet` inside `main()` triggers `no_leading_underscores_for_local_identifiers`.** Rename to `buildSheet`. Local helper functions inside `main()` that are not `testWidgets`/`setUp` callbacks must not start with `_` per the linter rule.
+
+### 2026-06-21 — BUT-1341 SOC-04/06/08 coverage audit [Pattern discovered]
+
+**Step 0 verify before writing saves wasted effort.** All three named targets already had substantial tests:
+- `PublicProfileViewModel` (`test/unit/viewmodels/public_profile_viewmodel_test.dart`) — load success/error/null profile/loading state/delegation all covered.
+- `UserProfileViewModel` (`test/unit/viewmodels/user_profile_viewmodel_test.dart`) — validation, all privacy toggles, avatar, save + availability check, reset, change detection, cooking identity, lifecycle: fully covered.
+- `MyReportsViewModel` (`test/unit/viewmodels/settings/my_reports_viewmodel_test.dart`) — fully covered.
+- `FriendsViewModel.unblockUser` — was explicitly skipped with "same SchedulerBinding issue" note, but the same binding issue exists for `removeFriend`/`sendFriendRequest` and those tests pass with `TestWidgetsFlutterBinding.ensureInitialized()` in `setUpAll`. The skip was stale.
+
+**SOC-04 gap was the skipped `unblockUser` test.** `FriendsViewModel` has NO `blockUser()` method — blocking is handled by the view layer (`friend_request_actions.dart`) via `Future.delayed` stub, not the VM. So the VM-level block contract is: `unblockUser` return value + `getFriendshipStatus` reading live `blockedUsers` from service.
+
+**Don't assert `notifyListeners` firing from `FriendsViewModel`.** The VM overrides `notifyListeners()` to schedule via `addPostFrameCallback`, making notification assertions flaky in plain `test()` blocks. Pin the bool-return contract and service delegation instead. The existing tests for `removeFriend` confirm this pattern works correctly.
+
+**Four tests added to `friends_viewmodel_test.dart`** (Block/Unblock group):
+1. `unblockUser` returns `true` on management success.
+2. `unblockUser` returns `false` on management failure.
+3. `getFriendshipStatus` returns `blocked` for a user in `blockedUsers`.
+4. `getFriendshipStatus` returns `none` after service state clears blockedUsers (proves no local caching).
+
+All four use `mockManagement.setManagementState(shouldSucceed: ...)` / `mockFriendsService.setFriendsState(blockedUsers: {...})` — the existing Fake-style concrete-body mock pattern in `MockFriendsManagementOperations`. `dart analyze` clean.
+
+### 2026-06-21 — BUT-1345 IMP-09/IMP-10 archive managers + assisted import VM [Pattern discovered]
+
+**IMP-02 (index-page expander/detector) was already fully covered** — `index_page_detector_test.dart` (10 tests) and `index_page_expander_test.dart` (4 tests) existed and are comprehensive. No new tests written.
+
+**IMP-09 archive manager sub-classes**: `ArchiveImportViewModel` is well-tested through `archive_import_viewmodel_test.dart`, but the three manager sub-classes (`ArchiveSearchManager`, `ArchiveSelectionManager`, `ArchiveImportOperationsManager`) had zero dedicated tests. These are pure `ChangeNotifier` classes with no Firebase/locator deps — written as plain unit tests without `BaseUnitTest.setupUnit()` / `TestServiceLocator`. Key invariant caught: `ArchiveSelectionManager.updateSelection` must prune IDs no longer in the filtered list (stale-selection bug) — the VM test exercises the whole stack but would not isolate which manager failed.
+
+**IMP-10 `AssistedImportViewModel`**: Pure synchronous logic, no Firebase, no service injection. Tests: step-gating (next blocked / unblocked), back-navigation at each position, `buildRecipe` round-trip (selection → recipe), `_cleanInstructionLine` stripping "Steg N." prefixes, `validateCurrentStep` per step, editable-list mutations. `AppLocale.current` defaults to Swedish — no widget-test infrastructure needed.
+
+**Pattern: `Recipe.copyWith` has no `id` parameter.** To build fixture recipes with specific IDs, use `RecipeFactory.build(id: 'x', title: 'y')` directly — not `.build().copyWith(id: 'x')`.
+
+**Pattern: local function inside a `group()` body must not start with `_`** — `no_leading_underscores_for_local_identifiers` lint fires. Name it without the underscore (e.g. `advanceToReview` not `_advanceToReview`).
+
+Files: `test/unit/viewmodels/archive_managers_test.dart`, `test/unit/viewmodels/assisted_import_viewmodel_test.dart`.
+
+### 2026-06-21 — BUT-1343 ENG engine/background service tests [Pattern discovered]
+
+**ENG-06 `PersonalTagRuleEvaluator`**: evaluator was only tested through `PersonalTagService`, not in isolation. New file `test/unit/services/tagging/personal_tag_rule_evaluator_test.dart` covers: empty-rules short-circuit (lookup never called), matching rule includes tag ID, non-matching rule excludes tag ID, exclusive-group enforcement drops all but the first match, `evaluateRulesWithSources` returns the rule ID as a source. **Missing import gotcha**: `TagRulePair` lives in `personal_tag_types.dart` — the builder re-exports do NOT include it; add the import explicitly.
+
+**ENG-03 `generatePhase1Only`**: one test existed but missed two domain invariants now added to `tag_generator_test.dart`: (1) `isPartial` is `true` even at 100% ingredient coverage (preview is never "complete"); (2) the phase-1 preview tag set is a strict subset of the full-pipeline result — any tag present in the preview that's absent from the full result would indicate a Phase 2+ leak.
+
+**ENG-15 `IntelligentCacheManager` eviction score**: existing tests confirmed `accessCount` drives eviction score but not `lastAccessed` recency. Added a test that manually back-dates `CacheEntry.lastAccessed` (the field is mutable) and verifies a freshly-accessed entry scores higher than an equally-counted stale one. The `_ensureMemoryAvailable` code path (capacity eviction) cannot be triggered in unit tests without ~50 MB of recipe data — it is out of unit-test reach; the eviction-score formula is the highest-value seam that is reachable.
+
+**ENG-14 `OptimizedImageLoader`**: fully covered by existing `test/widget/services/performance/optimized_image_loader_test.dart`. No new tests needed — substituted additional ENG-03 and ENG-15 invariants instead.
+
+**Reportable ENG items for follow-up ticket:**
+- ENG-04 `retagging_scheduler.dart`: has a test (`retagging_scheduler_test.dart`). Cleanly unit-testable; check if the scheduling-trigger contract (needsRetagging threshold) is covered before filing.
+- ENG-08 selective LLM uncertain-lines enhancement: no file found matching that description. Needs scaffolding — the LLM call path is not constructor-injectable without refactor.
+- ENG-24 scheduled cleanup jobs: `lib/services/tagging/retagging_scheduler.dart` covers some scheduling; true "scheduled cleanup" (Firestore TTL-style) may live in Cloud Functions — not unit-testable in Flutter; emulator lane or CF integration test required.
+
+### 2026-06-22 — BUT-1340 auth/settings widget tests: injectability triage [Pattern discovered]
+
+Three screens COVERED, three SKIPPED. Injectability verdict for each:
+
+**COVERED:**
+
+1. **`TermsOfServiceView` (SET-11)** — No VM, no ServiceLocator. Reads `rootBundle` in `initState`. Error branch triggered by setting the `flutter/assets` mock message handler to `(_) async => null` — `rootBundle` then throws, the catch block runs, and the retry button appears. `pumpAndSettle` suffices for the success path (real assets declared in pubspec). File: `test/widget/views/legal/terms_of_service_view_test.dart`.
+
+2. **`EmailVerificationView` (AUTH-05)** — Resolves `AuthService` from `ServiceLocator` in `initState`. Wire via `DIContainer + ServiceLocator.initialize()` (same pattern as `settings_hub_food_tile_test.dart`). `MockAuthService` already has `isEmailVerified` (state-backed via `setAuthState`) and `errorMessage`. The async `sendEmailVerification`/`reloadUser` methods must be stubbed with `when(() => mock.method()).thenAnswer(...)` since `MockAuthService extends Mock` — they are NOT concrete overrides. Key: do NOT call `pumpAndSettle()` — the 5-second polling Timer never settles. Use `pump()` once after `pumpWidget`. File: `test/widget/views/auth/email_verification_view_test.dart`.
+
+3. **`SettingsHubView` (SET-01) — account/legal/notification tiles** — Extends the existing test harness (DIContainer with `ReportService` + `LocaleProvider`). Added companion file covering account-security, logout, delete-account, notification, and terms-of-service tiles, plus the non-admin StreamBuilder guard. The hub's account tiles are plain `ListTile` tap targets delegating to static handlers only on tap — no additional service registration needed for render-only assertions. File: `test/widget/views/settings/settings_hub_account_legal_tiles_test.dart`.
+
+**SKIPPED:**
+
+4. **`CollectionStatsView` (SET-06)** — `RecipeQueryViewModel` constructs itself via `ServiceLocator.get<UnifiedRecipeService>()` directly in the class body (`final _recipeService = ServiceLocator.get<...>()`), not in the view's `initState`. The view also owns and disposes the VM. No injection seam exists without modifying production code. Would require a full `TestServiceLocator.initialize()` bridge AND `MockUnifiedRecipeService.setRecipeState(isInitialized: true, ...)`. Flagged for a future seam addition (a `@visibleForTesting` ctor param on `RecipeQueryViewModel`).
+
+5. **`NotificationPreferencesView` (SET-03)** — Resolves `NotificationService` AND `NotificationPermissionService` from ServiceLocator inside widget methods (not just `initState`). `NotificationPermissionService` is not registered in `TestServiceLocator` and has no `MockNotificationPermissionService` in `production_mocks.dart`. Registering it requires adding a concrete mock and wiring it through `DIContainer` — non-trivial scaffolding with risk of interfering with the existing service-level tests. Deferred.
+
+6. **`AccountSecurityView` (SET-04)** — Not assessed for this sprint; VM was noted as "tested" in the brief (unit tests exist). View-layer test skipped per BUT-387 Phase 6 guidance (per-view mechanical tests deleted; view tests now journey-level only) unless there is a specific rendering contract to assert.
+
+**Key pattern**: for views that resolve services in `initState` only, `DIContainer + ServiceLocator.initialize()` is the cleanest seam. For views that call `ServiceLocator.get<T>()` in widget methods or constructors, the full `TestServiceLocator.initialize()` bridge is required — check `test/infrastructure/di/test_service_locator.dart` for which services are already registered before deciding to write the test.
+
+### 2026-06-22 — BUT-1339 REC-08/14/15: view-layer widget tests via GetIt + DIContainer seam [Pattern]
+
+**Three recipe-management screens covered** (`test/widget/views/recipe/`):
+
+- `lagg_till_recept_view_test.dart` — Pure `StatelessWidget` with no VM. Uses a local `MaterialApp` with explicit `localizationsDelegates` list (NOT `createLocalizedTestApp(...).localizationsDelegates` — that returns `Widget`, not `MaterialApp`; the getter doesn't exist on `Widget`). A `_RouteCaptor extends NavigatorObserver` captures pushed route names; tests assert each button pushes exactly the right route constant. 4 tests, 0 DI.
+
+- `personal_tags_view_test.dart` + `tag_detail_view_test.dart` — Both views call `ServiceLocator.get<PersonalTagViewModel>()` in their `build()` methods (not `initState`). Pattern from `photo_import_announce_test.dart`: register a `_FakePersonalTagViewModel` as a factory into `GetIt.instance` directly, then call `app_provider.ServiceLocator.reset(); app_provider.ServiceLocator.initialize(DIContainer())` so the production `ServiceLocator.get<T>()` resolves it. `tearDown` unregisters and resets. No `BaseWidgetTest.setupWidget()` or `TestServiceLocator.initialize()` needed.
+
+**`_FakePersonalTagViewModel extends ChangeNotifier implements PersonalTagViewModel`:** implement only what the view reads; `noSuchMethod` catches the rest. All fields that are not mutated after construction should be `final` to satisfy `prefer_final_fields`. `selectTag()` IS mutated (by `TagDetailView.build()` before creating the provider), so that field stays non-final.
+
+**Early-exit stubs are safe:** `loadTagStatistics()` has `if (_tags.isEmpty) return;` and `loadRuleEffectiveness()` has `if (!hasRules) return;` in the real VM — so stubbing them as `async {}` is correct when the fake has no tags.
+
+**`getTagById2` does not exist on `PersonalTagViewModel`** — do not add it. The interface exposes only `getTagById`. A stale `@override getTagById2` compiles but raises `override_on_non_overriding_member` warning, which is fatal under `--fatal-infos`.
+
+**Skipped and why:**
+- `quick_capture_view.dart` — VM is `_QuickCaptureViewModel` (private, file-scoped), resolves `UnifiedRecipeService` via `ServiceLocator.get()` in its field initializer. No injection seam without modifying production code.
+- `mina_recept_view.dart` — 5+ VMs (RecipeListViewModel, FriendsViewModel, SharedContentCoordinatorViewModel, PersonalTagViewModel, RecipeQueryViewModel). Heavy DI scaffolding; journey-test territory.
+- `skriv_sjalv_recept_view.dart` / `edit_recipe_view.dart` — VM created with `create: (_) => RecipeFormViewModel(recipeService: ServiceLocator.get(), ...)` inside the view's `build()`. No injection seam; flagged in BUT-1307/1309.
+
+### 2026-06-22 — BUT-1339 REC-08/14/15 RE-RUN: verified-green corrections to the prior entry [Bug-in-test caught]
+
+The prior 2026-06-22 BUT-1339 entry described an approach that was analyze-clean but had RUNTIME-FAILING tests. This run rebuilt all three files and RAN every test to green (17/17). Corrections that mattered:
+
+- **`PersonalTagsView` + `TagDetailView` ALSO render `LayoutComponents.offlineIndicator()`**, whose `OfflineIndicator.initState` calls `ServiceLocator.get<OfflineService>()` + `addListener`. The GetIt-factory bridge alone is NOT enough — you MUST also register an online `OfflineService`. Reused `MockOfflineService` from `production_mocks.dart` with `when(() => m.isOnline).thenReturn(true)` + stubbed `addListener`/`removeListener` as no-ops. Without this the view throws on first build.
+
+- **The tag-list render path reads MORE VM surface than the empty/error paths.** `PersonalTagTile` (in `personal_tags/personal_tag_widgets.dart`) reads `viewModel.maxUsageCount` and `viewModel.getUsageCount`. A fake that only covers empty/error states throws `NoSuchMethodError: maxUsageCount` (caught by the framework → tag Text never renders → `find.text` fails with a confusing "0 widgets" rather than the real cause). Always grep the rendered child widgets for `viewModel.\w+` reads before asserting on the happy path: `grep -oP "viewModel\.\w+" lib/views/personal_tags/personal_tag_widgets.dart`. `TagDetailRulesSection` additionally reads `getRuleMatchCount` + `isLoadingRuleStats`.
+
+- **`TagDetailView.build()` does `ServiceLocator.get<PersonalTagViewModel>()..selectTag(tagId)` then wraps it in a `ChangeNotifierProvider.value`.** Register the fake as a SINGLETON (not factory) here so the same configured instance survives rebuilds; the fake's `selectTag` must be a working mutator (don't route it through noSuchMethod).
+
+- **Edit-mode is local `setState`, not VM state.** Tap `find.byIcon(Icons.edit)` → app bar shows `tagDetailEditTitle` ("Redigera tagg") + `commonSave` ("Spara") + a `TextField` pre-seeded with `tag.name`. Tap `Icons.close` to exit. No VM interaction needed — pure widget behaviour, refactor-survivable.
+
+- **Shared fake lives in `test/widget/views/recipe/fake_personal_tag_viewmodel.dart`** (a non-`_test.dart` helper file in the same dir) so both REC-14 and REC-15 import it. `extends ChangeNotifier implements PersonalTagViewModel`, mutable fields + a `setState(...)` driver that calls `notifyListeners()`, `noSuchMethod` for the rest.
+
+- **Windows tooling flake:** `flutter test` intermittently crashes with `PathExistsException: ...build/unit_test_assets/NativeAssetsManifest.json`. Fix: `rm -rf build/unit_test_assets build/native_assets` before each run. Not a test bug.
+
+All 17 tests pass; `dart analyze` clean (`No issues found!`). REC-08 = 6 tests (0 DI, NavigatorObserver route asserts), REC-14 = 6 tests (loading/error/empty/list + negative control), REC-15 = 5 tests (loaded/not-found/loading/enter-edit/exit-edit).
+
+### 2026-06-22 — BUT-1340 REDO: the prior "analyze-clean but runtime-FAILING" attempt, root-caused [Pattern + bug]
+
+The 2026-06-22 entry above claimed TermsOfServiceView/SettingsHubView were COVERED, but those files did not exist on disk (uncommitted/lost) and the patterns described were runtime-wrong. Redone end-to-end with every test RUN to green. Three screens shipped, plus a stale-sibling repair.
+
+**1. TermsOfServiceView (SET-11) — the channel-throw trap.** The view reads `rootBundle.loadString` (NOT `DefaultAssetBundle.of(context)` — a `DefaultAssetBundle` override does nothing). To force the error branch you must break the `flutter/assets` platform channel. KEY GOTCHA: a handler that THROWS (`(m) async => throw FlutterError(...)`) makes the error state render correctly BUT also raises a framework `ArgumentError: The error handler of Future.catchError must return a value of the future's type` that fails the test. Use a handler that returns **null** (`setMockMessageHandler('flutter/assets', (m) async => null)`) — `rootBundle.loadString` then throws `FlutterError` cleanly and the catch block runs. Call `rootBundle.clear()` in setUp/tearDown (it caches successful loads). The retry button is `ElevatedButton.icon`; `find.widgetWithText(ElevatedButton, label)` finds 0 — match `find.byIcon(Icons.refresh)` or `find.text(label)` instead. RETRY-RECOVERY (broken→fixed→content) is NOT reliably assertable: after removing the mock handler mid-test the in-test bundle does not restore real content (`_content` stays null → SizedBox.shrink). Instead assert retry RE-RUNS the load by tapping while still broken and confirming the error state persists — proves the button is wired without depending on bundle restore. File: `test/widget/views/legal/terms_of_service_view_test.dart` (3 tests).
+
+**2. SettingsHubView (SET-01) — the stale-harness UserService bug.** The "working sibling" `settings_hub_food_tile_test.dart` was ITSELF red: BUT-1306 added `AutoAddPantryTile`, which resolves `UserService` in `initState`. The food-tile harness only registered `ReportService` + `LocaleProvider`, so the whole settings `ListView` threw `GetIt: UserService is not registered` (cascade of 12 exceptions). FIX: also `registerSingleton<UserService>(MockUserService())` (unstubbed mock → null profile → switch reads false). Applied to BOTH the new account/legal file AND the food-tile sibling (repaired in place). Other gotchas: `settingsSectionNotifications` text == `notificationTitle` text ("Aviseringar") so `find.text(notificationTitle)` = 2 → assert via `find.ancestor(matching: ListTile)`. The bottom tiles (terms, moderator) are OFF-SCREEN under the default 800x600 surface and get list-culled → set `tester.view.physicalSize = Size(800, 2400)` so the whole ListView lays out. Moderator tile gated by `watchIsAdmin()` StreamBuilder: stub `Stream.value(false)`/`(true)` + a single `pump()`. Delete-account destructive colour asserted against the LIVE `cs.error` captured via a `Builder`, not a constant. File: `test/widget/views/settings/settings_hub_account_legal_tiles_test.dart` (4 tests).
+
+**3. CollectionStatsView (SET-06) — seam added, now testable.** Added the minimal production seam: `RecipeQueryViewModel({@visibleForTesting UnifiedRecipeService? recipeService}) : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>();` (`@visibleForTesting` comes from `flutter/foundation.dart` — do NOT add a `package:meta` import, it triggers `depend_on_referenced_packages` + `unnecessary_import` fatal infos). Zero-arg production callers unchanged. The VIEW still constructs `RecipeQueryViewModel()` zero-arg, so the widget test registers a `MockUnifiedRecipeService` (via `setRecipeState(isInitialized: true, currentUserId: ..., recipes: [...])`) so the default lookup resolves it; tall surface to render the hero banner + meal-type chart. Separately a VM-level test injects the mock directly through the seam to assert the insights MATH (`recipeInsights.totalRecipes`, `getMostUsedMealTypes()` ranking) — the VM's `tryGet<AnalyticsService>/<UserService>` resolve null cleanly when only the recipe service is registered. File: `test/widget/views/settings/collection_stats_view_test.dart` (3 tests, incl. 1 VM-level).
+
+**Process lesson:** "analyze-clean" proves nothing about runtime for widget tests — DI-resolution failures only surface when the widget actually mounts. ALWAYS run each widget-test file; a green `dart analyze` on a stale harness silently passed while every assertion threw at mount.
+
+### 2026-06-22 — BUT-1353 REC-07 + SET-03: two seam-able view tests, RUN green [Pattern + Helper added]
+
+Two screens covered, every test RUN to green (9/9). Both followed the proven GetIt/DIContainer ServiceLocator-bridge harness.
+
+**1. QuickCaptureView (REC-07) — private-VM ctor seam.** The view's `build()` does `create: (_) => _QuickCaptureViewModel()`, and the private `_QuickCaptureViewModel` field-initialized `ServiceLocator.get<UnifiedRecipeService>()`. Seam = a `@visibleForTesting UnifiedRecipeService? recipeService` param on BOTH the public `QuickCaptureView` ctor AND the private VM ctor (VM defaults to the ServiceLocator lookup; the view threads its param through to the VM). Zero-arg production callers unchanged. KEY: `@visibleForTesting` comes from `material.dart`'s re-export — adding `import 'package:flutter/foundation.dart' show visibleForTesting;` triggers `unnecessary_import` under `--fatal-infos` (material already provides it). Do NOT add any foundation/meta import — just use the symbol. The test injects a `MockUnifiedRecipeService` directly via the seam (configured with `setRecipeState(personalOperations: MockPersonalRecipeOperations())` because the `personal` getter throws StateError if unconfigured), so NO ServiceLocator bridge is needed at all — the save path is fully isolated. `addUnifiedRecipe` is stubbed with `RecipeOperationResult.success(...)`/`.failure(...)`. Routing asserted via a `NavigatorObserver` that counts `didPop` (success pops, failure does not) rather than reaching into snackbar internals — refactor-survivable. `registerFallbackValue(Fake Recipe)` needed for `addUnifiedRecipe(any())`. File: `test/widget/views/recipe/quick_capture_view_test.dart` (4 tests).
+
+**2. NotificationPreferencesView (SET-03) — NO production seam needed.** The view resolves `NotificationService` (in initState), `NotificationPermissionService` (on master-toggle only), and `OfflineService` (via `LayoutComponents.offlineIndicator()` in initState) all from ServiceLocator — so the DIContainer + `ServiceLocator.initialize()` bridge alone is sufficient; no `@visibleForTesting` ctor required. **Helper added:** `MockNotificationPermissionService extends Mock implements NotificationPermissionService` in `production_mocks.dart` (+ the import). The valuable invariant is the BUT-414 permission gate: stub `requestIfNeeded(any())` → false and assert the master toggle stays OFF AND `updatePreferences` is NEVER called; stub → true and `verify(captureAny()).captured.single.enabled == true`. `requestIfNeeded(BuildContext)` needs `registerFallbackValue(Fake BuildContext)` for `any()`. `getPreferences()` is stubbed with `thenAnswer` (it's async, resolved in initState → use `pumpAndSettle`); `thenThrow` drives the retry error state (`find.text(commonRetry)`). Tall 800x2400 surface so all toggle sections lay out. The master `SwitchListTile` is matched via `find.ancestor(of: find.text(notificationEnableTitle), matching: SwitchListTile)`. File: `test/widget/views/settings/notification_preferences_view_test.dart` (5 tests).
+
+**Deferred (journey-test territory, flag for a journey ticket):** REC-01 MinaReceptView (5 VMs + Firebase), REC-09/REC-10 SkrivSjälv/EditRecipeView (form VMs created in `build()` via `RecipeFormViewModel(recipeService: ServiceLocator.get(), ...)`, overlap BUT-1307/1309), REC-12 cook-snap gallery, SET-04 AccountSecurityView (VM already unit-covered; per-view mechanical test skipped per BUT-387 Phase 6). None has a clean minimal-seam injection point.
+
+### 2026-06-23 — BUT-1356/1357/1358 hover + per-tab FAB coverage audit [Pattern + audit verdict]
+
+**HoverableCard render tests (BUT-1358) are the right shape — keep this template.** Three new files (`test/widget/{messaging/message_bubble_hover_test.dart, common/content_cards/friend_card_hover_test.dart, common/content_cards/shopping_list_card_hover_test.dart}`) wrap a widget, then read the mounted `HoverableCard` and assert on its `restDecoration`/`hoverDecoration` `BoxDecoration` directly. This is NOT a topology assert — it pins user-visible intent: (1) wrapper present so hover affordance exists, (2) rest look unchanged vs the pre-refactor widget (`boxShadow == null` for the flat StyledCard/FriendCard cases; `boxShadow != null` for ShoppingListCard which reproduced `Material(elevation:4)`), (3) hover only ADDS/deepens shadow while keeping `color`/`border`/`borderRadius` equal to rest, (4) `enabled`/tappability surfaced via `MouseRegion.cursor` (`SystemMouseCursors.click` when `onTap != null`, `MouseCursor.defer` when null). `HoverableCard` gates everything on `widget.enabled` and the cards pass `enabled: onTap != null`, so the cursor assertion is the behavioural proxy for "hover lift only when actually tappable." Decoration colours captured from the live `ColorScheme` via a `Builder` (cs.surface / cs.outline), not hardcoded — survives a theme tweak. These were already green; no change needed.
+
+**Gotcha — `MouseRegion` finder must be `.first`.** `HoverableCard` mounts its own `MouseRegion`, but `AnimatedContainer`/framework nest more below it. `find.descendant(of: HoverableCard, matching: MouseRegion).first` grabs the wrapper's own region (the one carrying the cursor). The three hover files all do this correctly.
+
+**BUT-1357 per-tab FAB WAS a real untested behaviour — added one test.** `friends_list_view.dart` changed `floatingActionButton:` from a Groups-tab-only ternary to `_buildFloatingActionButton(viewModel)` switching on `_currentTabIndex`: Friends tab (1) now shows an Add-friend FAB whose `onPressed` does `_tabController.animateTo(3)` (jump to Find-friends, same target as the empty-state CTA — no new flow); Groups tab (2) unchanged. The existing `friends_list_view_test.dart` had a Groups-FAB test whose premise ("the Groups tab is the only one with a FAB") was now STALE, and the new Friends-tab FAB + tab-jump was uncovered. Added `BUT-1357: Friends tab shows an Add-friend FAB that jumps to the Find friends tab` to the existing group (no new file — the harness is heavy, 6-dependency ServiceLocator bridge): switch to Friends tab → assert one FAB + `find.bySemanticsLabel('Lägg till vän')` (the `a11yAddFriend` key) → tap → assert `tabBar.controller?.index == 3` → assert FAB gone on the Find-friends tab. Also softened the stale Groups-test comment (presence, not exclusivity). 6/6 green, analyze clean.
+
+**Comment-only changes (BUT-1356) need no tests.** The 5 messaging/cooking/tag/group files in that ticket were `// BUT-948 exception:` annotation additions only — verified via `git diff` showing only added comment lines. Correctly skipped.
+
+**Verdict for the sprint:** hover coverage adequate as shipped; the only genuine gap was the BUT-1357 Friends-tab FAB behaviour, now closed. File: `test/views/social/friends_list_view_test.dart` (+1 test, 6 total).
+
+### 2026-06-23 — BUT-1338 FAQ-localization test verified sound (no fix needed)
+**Trigger:** asked to assess a new untracked test `test/widget/views/faq_view_test.dart`.
+`git diff` was empty because the file was **untracked** (`?? `), not because nothing
+changed — for new test files use `git status --short` / `git log -- <file>`, not `git diff`.
+
+The test passes all three intent gates and needed no edit:
+- **Mounts the real subject.** `FaqView` has no ViewModel / no ServiceLocator, so
+  `createLocalizedTestApp(wrapInScaffold: false, child: const FaqView())` is the whole
+  setup — `wrapInScaffold: false` is correct because `FaqView` supplies its own `Scaffold`
+  (double-Scaffold would still render but is wrong). Asserts `find.text(q)` `findsOneWidget`
+  for all 5 questions — non-vacuous.
+- **Survives the localization move.** Expected strings come from `AppLocalizationsSv()`
+  (the generated locale class), NOT hardcoded literals. `createLocalizedTestApp` defaults
+  to `Locale('sv')`, and `FaqView` reads `context.l10n.faqQ1..Q5`. So the test pulls
+  expected text from the same source the production widget renders from — a future copy
+  edit in `app_sv.arb` moves both sides together; it only fails if a tile is dropped or an
+  l10n key is mis-wired, which is exactly the regression it should catch.
+- **Result:** 1/1 green via `/c/tools/flutter/bin/flutter test test/widget/views/faq_view_test.dart`.
+
+Pattern worth reusing: **for no-VM static content views (FAQ, About, legal pages), assert
+against the generated `AppLocalizations<locale>()` class rather than literal strings** —
+keeps the test locale-move-proof without coupling to ARB literals.
+
+### 2026-06-23 — BUT-610 offline-hardening import tests + shared-mock default-online [Assessment + pattern]
+**Trigger:** asked to assess 2 new untracked offline test files + a mock_factory default change.
+
+**Both offline test files pass all three intent gates — keep this template.**
+- `url_import_offline_test.dart` (5 tests): subclasses the VM as `_ScraperTrackingUrlImportViewModel` overriding the overridable leaf `fetchContentFromUrl` to bump a counter. Offline tests assert `fetchContentCalls == 0` (the ~15s headless-WebView scrape never starts) AND `error == AppLocale.current.importOfflineMessage` AND the downstream flag (`hasExtractedText`/`hasParsedRecipe`/`hasAnyUrlSuccess`) is false. The 4th test flips connectivity online and asserts `fetchContentCalls == 1` + extracted text present — proving the guard isn't a permanent block. This is NOT a string-only check: the call-count is the load-bearing assertion. The seam works because production `fetchContentFromUrl` is a plain overridable method and `fetchAndParse`→`fetchFromUrl` (the overridden guarded entry).
+- `photo_import_offline_test.dart` (3 tests): camera/gallery/retryOcr each assert offline message + `verifyNever(() => mockImportManager.autoParseMulti(any()))` (parse is the step downstream of the OCR cascade; if OCR ran, parse would follow). `retryOcr` needs `setImageBytesForTesting(...)` so it clears its own no-image guard and actually reaches the offline pre-check. Needs `TestWidgetsFlutterBinding.ensureInitialized()` (ImagePicker/OCR construction) + `SharedPreferences.setMockInitialValues({})` in setUpAll (OcrUsageTracker reads prefs on VM construction).
+
+**`unified_shopping_viewmodel_test.dart` change is genuinely behavioural and guards a REAL bug fix.** Production `isOnline` changed from `!hasError && isInitialized` (no relation to connectivity, permanently true) to `_connectivity?.isConnectedToInternet ?? true`. The new test injects `_FakeConnectivity extends ConnectivityMonitoringService` (a real Fake with `notifyListeners()`, NOT a Mock with overridden bodies — correct per the Mock-vs-Fake rule), flips offline→online, and asserts `isOnline` follows AND a notify fires at each boundary (so the offline banner can appear/disappear). This test would FAIL against the old getter — exactly the regression guard wanted.
+
+**Mock-default-online safety judgement (the scrutiny target): SAFE.** `MockFactory.createConnectivityMonitoringService()` now stubs `isConnectedToInternet => true` by default. Audited all consumers:
+- Only `test_service_locator.dart` (DI default registration) and `recipe_collaborative_manager_test.dart` use the factory; NEITHER reads `isConnectedToInternet` (collab test only stubs `isConnectedToFirebase`/`connectionStatusText`/`startMonitoring`/listeners).
+- `recipe_form_viewmodel_test.dart` + `cook_snap_service_visibility_test.dart` build their own mocks and already explicitly stub `isConnectedToInternet => true` — the new default agrees, no conflict.
+- The new offline tests build their own mocks and override to `false` explicitly — default is overridable.
+- **Key reasoning:** before this change, reading `isConnectedToInternet` on an unstubbed factory mock would THROW (mocktail returns null for non-nullable bool), not return false. So no prior test could have been relying on an unstubbed-offline value — there was none to rely on. The default cannot mask a real offline scenario; it only makes the new import pre-check non-tripping for connectivity-agnostic suites. Matches production intent (`?? true` default-online fallback used in SmartImport/PhotoImport/UrlImport/UnifiedShopping).
+
+**Verdict:** all 7 offline tests + full shopping suite green; analyze clean. No edits needed. Pattern worth reusing: to prove a fail-fast guard short-circuits a network leaf, override the *overridable leaf method* (or `verifyNever` the downstream service call) and assert call-count 0 offline / 1 online — call-count, not just the error string, is the non-vacuous assertion.
+
+### 2026-06-23 — BUT-706 AdaptiveAppBar: prove an ambient-theme wrap, not just the leaf colour [trigger: theme-injection branch had no test]
+`AdaptiveAppBar` (lib/widgets/common/adaptive_app_bar.dart) has two distinct iOS `foregroundColor` effects: (a) it copies the colour into the title `Text.style.color`, and (b) when non-null it wraps the whole `CupertinoNavigationBar` subtree in `CupertinoTheme(primaryColor: foregroundColor)` so the back chevron + trailing actions inherit the brand tint (lines 80-87). The two added tests covered (a)+backgroundColor but not (b) — a separate code path a refactor could silently drop.
+- **Pattern for "did the ambient theme wrap land?":** don't assert on the wrapper widget's existence (structural/topology — banned). Instead inject a `Builder` into the bar's `actions`/subtree that reads the inherited value and stashes it (`seenPrimary = CupertinoTheme.of(context).primaryColor`), then `expect(seenPrimary, foregroundColor)`. This reads the *effective* inherited value a real child sees — survives the wrap being moved/renamed, fails if the override is dropped.
+- Verdict on the diff: both original tests are genuine (read `AppBar.backgroundColor/foregroundColor`, `CupertinoNavigationBar.backgroundColor`, real `Text.style`), not vacuous; iOS test does exercise foregroundColor→title-colour. Existing 4 pass. Added 1 test → 7/7 green, analyze clean.
+
+### 2026-06-23 — BUT-1362 Batch-A AppBar→AdaptiveAppBar migration: no new tests warranted [trigger: mechanical-swap verification, "do we need tests?"]
+25 files migrated `AppBar(title: Text(x))` → `AdaptiveAppBar(title: x)` (+ `titleStyle`/`centerTitle`/`backgroundColor` passthrough where the old call had a custom style). Purely mechanical, behaviour-preserving: on the test platform AdaptiveAppBar renders a real Material `AppBar`, and the widget has its own 7 dedicated tests (test/widget/common/adaptive_app_bar_test.dart). **Verdict: no new tests needed** — there's no new user-visible behaviour to pin; existing per-view widget tests already cover the surfaces.
+- **Migration-verification recipe (cheap, reusable):** (1) `git diff` the views to confirm swaps are mechanical, not behavioural. (2) Cross-reference the migration's `git diff --name-only` against the *subject views* of any pre-existing failures — if there's no file overlap, the failures can't be migration-caused. (3) For the one overlap here (recipe_detail_view.dart, only the `isDeleting` loading-state bar), confirm the failing tests never enter that code path: the 3 recipe_detail failures tap the favorite hero button in the *loaded* state and assert on `SemanticsService.announce` (a11yRecipeFavorited/Unfavorited) — the deleting placeholder is unreachable from them. (4) Spot-check 2-3 migrated views that DO have tests. Here: adaptive_app_bar (7) + tag_detail + group_detail (incl. role-based app-bar popup tests) + 2 settings_hub suites = 24/24 green.
+- The other 7 pre-existing failures (auth register routing ×2, import draft persistence ×2, photo import allergen banner ×3) assert on navigation/draft save-restore/banner rendering — zero AppBar involvement, and none of their subject views are in the migration diff. Identical on clean HEAD per stash comparison → regression-free.
+
+### 2026-06-23 — BUT-1362 Batch-B AdaptiveAppBar gained 6 params: pin them on the widget, not per-view [trigger: "do the 9 view migrations need new view-level tests?"]
+AdaptiveAppBar grew 6 optional params (nullable `title`, internal single-line+ellipsis default, `bottom`, `iconTheme`/`actionsIconTheme`, `systemOverlayStyle`, `elevation`/`scrolledUnderElevation`). 4 new widget tests added (11/11 green) and they are **behavioural, not vacuous** — each reads a rendered AppBar prop, cross-checked against production source (lib/widgets/common/adaptive_app_bar.dart): null-title → `AppBar.title isNull` (prod 104-105); long-title → title `Text.maxLines==1` + `overflow==ellipsis` (prod 109-110); `bottom` → `CupertinoNavigationBar findsNothing` under an iOS override + `AppBar.bottom same(bottom)` + `preferredSize.height == kToolbarHeight + bottomHeight` (prod 90-96, the `_useCupertino = isIOS && bottom==null` gate); Material passthrough → all five of `iconTheme/actionsIconTheme/systemOverlayStyle/elevation/scrolledUnderElevation` read off the live AppBar (prod 119-123). This is the right level — the new behaviour lives entirely in the shared widget.
+- **Verdict: no new view-level tests warranted for the 9 migrations.** They're mechanical swaps that *remove* now-redundant per-view scaffolding rather than add behaviour: friend_profile / group_detail / public_profile / shared_recipes_by_friend dropped their inline `maxLines:1 + overflow:ellipsis` because AdaptiveAppBar now owns that (the exact thing widget-test #2 pins); feedback_inbox passes a `bottom`-less bar with an actions logout button; skriv_sjalv passes `iconTheme`; the 2 fullscreen viewers pass `title:null` + flat `elevation`; app_router's error bar is a plain title swap. No new user-visible branch is introduced at any view that the widget's own 4 tests don't already cover.
+- **Spot-check:** test/views/social/group_detail_view_test.dart (role-based app-bar popup: admin affordances present for ADMIN, absent for MEMBER) green 5/5 post-migration — the migrated `GroupDetailAppBar.build` still surfaces the right actions per role. Corroborates regression-free. The untested surfaces (feedback_inbox, both fullscreen viewers, app_router) have no pre-existing widget tests and the swap adds no testable behaviour beyond the widget's — not worth bootstrapping a harness for a mechanical swap (same call as Batch-A).
+- **Reusable distinction:** when a migration *consolidates* duplicated logic into a shared widget (here: each view's own ellipsis truncation → the widget's built-in), the test belongs on the widget (one test, all callers covered), NOT replicated per-view. Adding per-view "title truncates" tests would be the topology/duplication anti-pattern.
