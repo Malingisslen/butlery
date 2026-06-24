@@ -1,0 +1,69 @@
+name: Main CI Health Alert
+
+# Solo-dev safety net (BUT-435 follow-up): main sat red for days unnoticed
+# because bot-authored merge commits don't email a human. When any gating
+# workflow finishes on `main`, re-check the latest result of ALL gating
+# workflows. If any is failing, open (or update) a single tracking issue so a
+# red main is surfaced immediately. When every gate is green again, auto-close
+# it. The tracking issue notifies repo watchers via GitHub's normal channels.
+
+on:
+  workflow_run:
+    workflows:
+      - Run Tests
+      - Build Validation
+      - Architecture & Code Quality Validation
+    types: [completed]
+
+permissions:
+  issues: write
+  actions: read
+
+jobs:
+  health:
+    if: github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const gates = [
+              'Run Tests',
+              'Build Validation',
+              'Architecture & Code Quality Validation',
+            ];
+            const TITLE = '🔴 main CI is failing';
+            const { owner, repo } = context.repo;
+
+            // Latest completed main run per gating workflow (one API page).
+            const runs = (await github.rest.actions.listWorkflowRunsForRepo({
+              owner, repo, branch: 'main', status: 'completed', per_page: 100,
+            })).data.workflow_runs;
+            const latest = gates
+              .map((name) => runs.find((r) => r.name === name))
+              .filter(Boolean);
+            const failing = latest.filter((r) => r.conclusion === 'failure');
+
+            // Find our existing open tracking issue by exact title.
+            const openIssues = (await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', per_page: 100,
+            })).data;
+            const issue = openIssues.find((i) => i.title === TITLE && !i.pull_request);
+
+            if (failing.length > 0) {
+              const list = failing
+                .map((r) => `- ❌ **${r.name}** — ${r.html_url} (\`${r.head_sha.slice(0, 8)}\`)`)
+                .join('\n');
+              const body = `\`main\` CI is red:\n\n${list}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
+              if (issue) {
+                await github.rest.issues.update({ owner, repo, issue_number: issue.number, body });
+              } else {
+                await github.rest.issues.create({ owner, repo, title: TITLE, body });
+              }
+            } else if (issue) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: '✅ All gating workflows are green on `main` — auto-closing.',
+              });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed' });
+            }
