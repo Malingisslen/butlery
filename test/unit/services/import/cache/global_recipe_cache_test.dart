@@ -82,7 +82,7 @@ Future<void> _seedDoc(
   await firestore.collection(_collectionName).doc(docId).set({
     'urlHash': urlHash,
     'contentFingerprint': contentFingerprint,
-    if (domain != null) 'domain': domain,
+    'domain': ?domain,
     'sourceType': sourceType,
     'recipe':
         recipe ??

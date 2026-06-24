@@ -70,7 +70,7 @@ class DialogFormFields {
         // Always compose; customValidator runs first so its error wins on its
         // own concern, and contentFilter is the unconditional final step.
         validator: FormValidators.combine([
-          if (customValidator != null) customValidator,
+          ?customValidator,
           if (required)
             (value) =>
                 ValidationUtils.validateRequired(value, fieldName: labelText),

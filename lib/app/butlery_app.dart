@@ -689,8 +689,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // BUT-521 follow-up: feeds `appRouteTracker.currentRouteName` so the
       // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
       appRouteTracker,
-      if (_sessionActivityObserver != null) _sessionActivityObserver!,
-      if (_analyticsObserver != null) _analyticsObserver!,
+      ?_sessionActivityObserver,
+      ?_analyticsObserver,
     ];
 
     // Wrap MaterialApp with GestureDetector for universal activity tracking (session timeout)

@@ -23,7 +23,7 @@ class SystemEventsTracker extends BaseTracker {
         parameters: {
           'error_code': errorCode,
           'error_type': errorType,
-          if (userAction != null) 'user_action': userAction,
+          'user_action': ?userAction,
           if (stackTrace != null)
             'stack_trace': stackTrace.substring(
               0,
@@ -56,7 +56,7 @@ class SystemEventsTracker extends BaseTracker {
       parameters: {
         'endpoint': endpoint,
         'status_code': statusCode,
-        if (errorMessage != null) 'error_message': errorMessage,
+        'error_message': ?errorMessage,
       },
     );
   }
@@ -72,7 +72,7 @@ class SystemEventsTracker extends BaseTracker {
       parameters: {
         'operation_name': operationName,
         'duration_ms': durationMs,
-        if (thresholdMs != null) 'threshold_ms': thresholdMs,
+        'threshold_ms': ?thresholdMs,
       },
     );
   }

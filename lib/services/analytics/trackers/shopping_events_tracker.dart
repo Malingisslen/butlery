@@ -16,7 +16,7 @@ class ShoppingEventsTracker extends BaseTracker {
       parameters: {
         'list_id': listId,
         'list_type': listType,
-        if (initialItemCount != null) 'initial_item_count': initialItemCount,
+        'initial_item_count': ?initialItemCount,
       },
     );
   }
@@ -28,7 +28,7 @@ class ShoppingEventsTracker extends BaseTracker {
   }) async {
     await logEvent(
       name: AnalyticsEvents.shoppingListItemAdded,
-      parameters: {'list_id': listId, if (source != null) 'source': source},
+      parameters: {'list_id': listId, 'source': ?source},
     );
   }
 
@@ -54,7 +54,7 @@ class ShoppingEventsTracker extends BaseTracker {
       parameters: {
         'list_id': listId,
         'recipient_count': recipientCount,
-        if (shareMethod != null) 'share_method': shareMethod,
+        'share_method': ?shareMethod,
       },
     );
   }
@@ -70,8 +70,7 @@ class ShoppingEventsTracker extends BaseTracker {
       parameters: {
         'list_id': listId,
         'item_count': itemCount,
-        if (timeToCompleteMinutes != null)
-          'time_to_complete_minutes': timeToCompleteMinutes,
+        'time_to_complete_minutes': ?timeToCompleteMinutes,
       },
     );
   }

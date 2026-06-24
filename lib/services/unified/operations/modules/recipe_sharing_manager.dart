@@ -139,7 +139,7 @@ class RecipeSharingManager {
           recipeToShare.socialData?.memberPermissions?.keys.toSet() ??
           <String>{};
       final projected = <String>{
-        if (ownerId != null) ownerId,
+        ?ownerId,
         ...existingMembers,
         ...memberIds,
       };

@@ -58,8 +58,8 @@ Future<void> _seed(
   await _userRecipes(firestore, _userId).doc(id).set({
     'core': {
       'title': title ?? id,
-      if (titleLower != null) 'titleLower': titleLower,
-      if (sourceUrl != null) 'sourceUrl': sourceUrl,
+      'titleLower': ?titleLower,
+      'sourceUrl': ?sourceUrl,
       'personalTagIds': tagIds,
       'updatedAt': Timestamp.fromDate(updatedAt ?? DateTime.utc(2026, 1, 1)),
     },

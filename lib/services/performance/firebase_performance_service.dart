@@ -108,8 +108,8 @@ class FirebasePerformanceService {
       'recipe_load',
       operation,
       attributes: {
-        if (recipeId != null) 'recipe_id': recipeId,
-        if (source != null) 'source': source,
+        'recipe_id': ?recipeId,
+        'source': ?source,
       },
     );
   }
@@ -124,10 +124,10 @@ class FirebasePerformanceService {
       'search_operation',
       operation,
       attributes: {
-        if (searchType != null) 'search_type': searchType,
+        'search_type': ?searchType,
       },
       metrics: {
-        if (resultCount != null) 'result_count': resultCount,
+        'result_count': ?resultCount,
       },
     );
   }
@@ -142,10 +142,10 @@ class FirebasePerformanceService {
       'image_upload',
       operation,
       attributes: {
-        if (imageFormat != null) 'format': imageFormat,
+        'format': ?imageFormat,
       },
       metrics: {
-        if (imageSize != null) 'size_bytes': imageSize,
+        'size_bytes': ?imageSize,
       },
     );
   }
@@ -177,7 +177,7 @@ class FirebasePerformanceService {
         'collection': collection,
       },
       metrics: {
-        if (resultCount != null) 'result_count': resultCount,
+        'result_count': ?resultCount,
       },
     );
   }
@@ -193,7 +193,7 @@ class FirebasePerformanceService {
       operation,
       attributes: {
         'interaction_type': interactionType,
-        if (targetType != null) 'target_type': targetType,
+        'target_type': ?targetType,
       },
     );
   }

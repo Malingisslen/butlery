@@ -357,7 +357,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            if (header != null) header!,
+            ?header,
             if (header == null)
               DrawerHeader(
                 decoration: BoxDecoration(

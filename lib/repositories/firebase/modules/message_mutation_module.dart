@@ -140,7 +140,7 @@ class MessageMutationModule {
           id: conversationId,
           participantIds: [
             message.senderId,
-            if (otherUserId != null) otherUserId,
+            ?otherUserId,
           ],
           participantDisplayNames: {
             message.senderId: message.senderDisplayName,

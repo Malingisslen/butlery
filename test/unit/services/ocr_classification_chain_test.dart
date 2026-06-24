@@ -34,7 +34,7 @@ OCRResult _failureWithClassification(
     method: 'user_recovery',
     error: 'test failure',
     metadata: {
-      if (classification != null) 'failure_classification': classification,
+      'failure_classification': ?classification,
       ...?extra,
     },
   );

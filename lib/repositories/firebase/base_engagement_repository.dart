@@ -75,7 +75,7 @@ abstract class BaseEngagementRepository
       userId,
       additionalData: {
         'action': action,
-        if (targetId != null) 'targetId': targetId,
+        'targetId': ?targetId,
       },
     );
   }

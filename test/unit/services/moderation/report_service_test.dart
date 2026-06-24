@@ -349,7 +349,7 @@ void main() {
         'reporterId': reporterId,
         'contentType': contentType,
         'contentId': contentId,
-        if (contentOwnerId != null) 'contentOwnerId': contentOwnerId,
+        'contentOwnerId': ?contentOwnerId,
         'reason': 'spam',
         'status': status,
         'createdAt': Timestamp.fromDate(createdAt),

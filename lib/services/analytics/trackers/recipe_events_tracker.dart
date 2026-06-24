@@ -162,7 +162,7 @@ class RecipeEventsTracker extends BaseTracker {
       parameters: {
         'recipe_id': recipeId,
         'recipe_type': recipeType,
-        if (source != null) 'source': source,
+        'source': ?source,
       },
     );
   }
@@ -201,7 +201,7 @@ class RecipeEventsTracker extends BaseTracker {
       parameters: {
         'recipe_id': recipeId,
         'image_count': imageCount,
-        if (uploadSource != null) 'upload_source': uploadSource,
+        'upload_source': ?uploadSource,
       },
     );
   }

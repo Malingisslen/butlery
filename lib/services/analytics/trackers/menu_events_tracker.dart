@@ -22,7 +22,7 @@ class MenuEventsTracker extends BaseTracker {
   Future<void> logMenuGenerationStarted({int? promptLength}) async {
     await logEvent(
       name: AnalyticsEvents.menuGenerationStarted,
-      parameters: {if (promptLength != null) 'prompt_length': promptLength},
+      parameters: {'prompt_length': ?promptLength},
     );
   }
 
@@ -35,7 +35,7 @@ class MenuEventsTracker extends BaseTracker {
       name: AnalyticsEvents.menuGenerationFailed,
       parameters: {
         'error_code': errorCode,
-        if (errorMessage != null) 'error_message': errorMessage,
+        'error_message': ?errorMessage,
       },
     );
   }
@@ -96,7 +96,7 @@ class MenuEventsTracker extends BaseTracker {
       parameters: {
         'menu_id': menuId,
         'recipient_count': recipientCount,
-        if (shareMethod != null) 'share_method': shareMethod,
+        'share_method': ?shareMethod,
       },
     );
   }
@@ -105,7 +105,7 @@ class MenuEventsTracker extends BaseTracker {
   Future<void> logMenuDeleted({required String menuId, String? reason}) async {
     await logEvent(
       name: AnalyticsEvents.menuDeleted,
-      parameters: {'menu_id': menuId, if (reason != null) 'reason': reason},
+      parameters: {'menu_id': menuId, 'reason': ?reason},
     );
   }
 }

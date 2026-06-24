@@ -26,7 +26,7 @@ class SocialEventsTracker extends BaseTracker {
       name: AnalyticsEvents.friendRequestSent,
       parameters: {
         'recipient_id': recipientId,
-        if (source != null) 'source': source,
+        'source': ?source,
       },
     );
   }
@@ -60,7 +60,7 @@ class SocialEventsTracker extends BaseTracker {
     await logEvent(
       name: AnalyticsEvents.socialOnboardingStarted,
       parameters: {
-        if (entryPoint != null) 'entry_point': entryPoint,
+        'entry_point': ?entryPoint,
       },
     );
   }
@@ -114,7 +114,7 @@ class SocialEventsTracker extends BaseTracker {
       parameters: {
         'recipe_id': recipeId,
         'rating': rating,
-        if (previousRating != null) 'previous_rating': previousRating,
+        'previous_rating': ?previousRating,
       },
     );
   }

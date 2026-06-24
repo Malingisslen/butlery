@@ -71,14 +71,14 @@ Map<String, dynamic> _formWith({
   List<String>? imageUrls,
 }) {
   return <String, dynamic>{
-    if (title != null) 'title': title,
-    if (description != null) 'description': description,
-    if (portions != null) 'portions': portions,
-    if (timeMinutes != null) 'timeMinutes': timeMinutes,
-    if (ingredients != null) 'ingredients': ingredients,
-    if (instructions != null) 'instructions': instructions,
-    if (tags != null) 'tags': tags,
-    if (imageUrls != null) 'imageUrls': imageUrls,
+    'title': ?title,
+    'description': ?description,
+    'portions': ?portions,
+    'timeMinutes': ?timeMinutes,
+    'ingredients': ?ingredients,
+    'instructions': ?instructions,
+    'tags': ?tags,
+    'imageUrls': ?imageUrls,
   };
 }
 

@@ -164,7 +164,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (actions != null) ...actions!,
-                                    if (trailing != null) trailing!,
+                                    ?trailing,
                                   ],
                                 ),
                               ],

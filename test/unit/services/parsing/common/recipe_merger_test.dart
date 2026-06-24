@@ -29,8 +29,8 @@ void main() {
     return ParsedIngredient(
       name: name,
       originalLine: [
-        if (quantity != null) quantity,
-        if (unit != null) unit,
+        ?quantity,
+        ?unit,
         name,
       ].join(' '),
       confidence: confidence,

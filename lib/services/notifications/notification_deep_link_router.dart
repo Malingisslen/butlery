@@ -130,7 +130,7 @@ class NotificationDeepLinkRouter {
     await callable.call<Map<String, dynamic>>(<String, dynamic>{
       'notificationId': notificationId,
       'notificationType': notificationType,
-      if (route != null) 'route': route,
+      'route': ?route,
     });
   }
 

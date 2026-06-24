@@ -307,17 +307,17 @@ Map<String, dynamic> _allergen({
     'tags': {
       'sv': {
         'contains': containsTagSv,
-        if (freeTagSv != null) 'free': freeTagSv,
+        'free': ?freeTagSv,
       },
       'en': {
         'contains': containsTagEn,
-        if (freeTagEn != null) 'free': freeTagEn,
+        'free': ?freeTagEn,
       },
     },
     'isEuAllergen': isEuAllergen,
-    if (uiGroup != null) 'uiGroup': uiGroup,
+    'uiGroup': ?uiGroup,
     'description': {
-      if (descriptionSv != null) 'sv': descriptionSv,
+      'sv': ?descriptionSv,
     },
     'enabled': true,
     'priority': priority,
@@ -440,7 +440,7 @@ Map<String, dynamic> _dietary({
     'key': key,
     'tags': {'sv': tagSv, 'en': tagEn},
     'excludedProperties': excludedProperties,
-    if (requiredProperties != null) 'requiredProperties': requiredProperties,
+    'requiredProperties': ?requiredProperties,
     'requiresFullCoverage': requiresFullCoverage,
     'description': {'sv': descriptionSv},
     'enabled': true,

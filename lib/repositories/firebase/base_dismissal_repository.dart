@@ -69,7 +69,7 @@ abstract class BaseDismissalRepository
       resourceId,
       userId,
       additionalData: {
-        if (reason != null) 'reason': reason,
+        'reason': ?reason,
       },
     );
   }
@@ -149,7 +149,7 @@ abstract class BaseDismissalRepository
       resourceIds,
       userId,
       additionalData: {
-        if (reason != null) 'reason': reason,
+        'reason': ?reason,
       },
     );
   }

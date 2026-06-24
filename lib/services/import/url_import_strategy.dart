@@ -247,7 +247,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'extraction_method': extractionMethod,
         'data_format': recipeData['@type'] ?? 'Recipe',
         'url': url,
-        if (siteParserDomain != null) 'site_parser': siteParserDomain,
+        'site_parser': ?siteParserDomain,
       },
     );
   }

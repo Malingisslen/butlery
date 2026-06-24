@@ -122,7 +122,7 @@ class FriendCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
           ],
         ),
       ],
@@ -139,7 +139,7 @@ class FriendCard extends StatelessWidget {
         Expanded(
           child: _buildUserName(context),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }

@@ -101,7 +101,7 @@ class _TableHeader extends StatelessWidget {
           Expanded(
             child: Text(title, style: AppTextStyles.metadataEmphasized),
           ),
-          if (action != null) action!,
+          ?action,
         ],
       ),
     );

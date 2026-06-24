@@ -44,7 +44,7 @@ class AdminStatCard extends StatelessWidget {
               Expanded(
                 child: Text(value, style: AppTextStyles.headlineBold),
               ),
-              if (action != null) action!,
+              ?action,
             ],
           ),
           const SizedBox(height: AppDimensions.spacingXs),

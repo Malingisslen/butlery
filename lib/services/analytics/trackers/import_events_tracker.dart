@@ -77,7 +77,7 @@ class ImportEventsTracker extends BaseTracker {
       name: AnalyticsEvents.importCancelled,
       parameters: {
         'source': source,
-        if (sessionId != null) 'session_id': sessionId,
+        'session_id': ?sessionId,
       },
     );
   }

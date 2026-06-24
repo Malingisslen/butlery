@@ -265,8 +265,8 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: AnalyticsEvents.importStarted,
       parameters: {
         'source': source,
-        if (platform != null) 'platform': platform,
-        if (sessionId != null) 'session_id': sessionId,
+        'platform': ?platform,
+        'session_id': ?sessionId,
         'image_format': imageFormat,
       },
     );
@@ -285,9 +285,9 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: AnalyticsEvents.importSuccess,
       parameters: {
         'source': source,
-        if (platform != null) 'platform': platform,
-        if (recipeLength != null) 'recipe_length': recipeLength,
-        if (sessionId != null) 'session_id': sessionId,
+        'platform': ?platform,
+        'recipe_length': ?recipeLength,
+        'session_id': ?sessionId,
         // BUT-662: image_format = original (magic-byte-detected),
         // image_format_sent = what reached OCR after HEIC→JPEG conversion.
         'image_format': imageFormat,
@@ -333,7 +333,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: AnalyticsEvents.manualCopyFallback,
       parameters: {
         'platform': platform,
-        if (reason != null) 'reason': reason,
+        'reason': ?reason,
       },
     );
   }
@@ -377,7 +377,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'recipe_id': recipeId,
         'meal_type': mealType,
         'is_first_time': isFirstTime,
-        if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
+        'days_since_last': ?daysSinceLastCooked,
       },
     );
 

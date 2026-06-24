@@ -137,7 +137,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
 
                 // Bottom widget (e.g., TabBar)
-                if (bottom != null) bottom!,
+                ?bottom,
               ],
             ),
           ),

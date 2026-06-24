@@ -42,15 +42,15 @@ class ParseEventLogger {
         'success': success,
         'fromCache': fromCache,
         'parseTimeMs': parseTimeMs,
-        if (parserVersion != null) 'parserVersion': parserVersion,
-        if (domain != null) 'domain': domain,
-        if (successfulTier != null) 'successfulTier': successfulTier,
-        if (finalQuality != null) 'finalQuality': finalQuality,
-        if (usedLlm != null) 'usedLlm': usedLlm,
-        if (totalCostSek != null) 'totalCostSek': totalCostSek,
-        if (tierAttempts != null) 'tierAttempts': tierAttempts,
+        'parserVersion': ?parserVersion,
+        'domain': ?domain,
+        'successfulTier': ?successfulTier,
+        'finalQuality': ?finalQuality,
+        'usedLlm': ?usedLlm,
+        'totalCostSek': ?totalCostSek,
+        'tierAttempts': ?tierAttempts,
         if (unknownDomain) 'unknownDomain': true,
-        if (promptVersion != null) 'promptVersion': promptVersion,
+        'promptVersion': ?promptVersion,
       };
 
       unawaited(

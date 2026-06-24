@@ -49,11 +49,11 @@ String extractDayFormatPins(
           constraint: RecipeConstraint(
             count: 1,
             requiredTags: {
-              if (formatTag != null) formatTag,
-              if (themeTag != null) themeTag,
+              ?formatTag,
+              ?themeTag,
             },
-            dietaryFree: {if (dietaryTag != null) dietaryTag},
-            requiredCuisines: {if (cuisineTag != null) cuisineTag},
+            dietaryFree: {?dietaryTag},
+            requiredCuisines: {?cuisineTag},
           ),
         ),
       );

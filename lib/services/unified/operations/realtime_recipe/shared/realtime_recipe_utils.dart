@@ -229,7 +229,7 @@ class RealtimeRecipeUtils {
       'userName': userName,
       'action': action,
       'details': details,
-      if (targetUserId != null) 'targetUserId': targetUserId,
+      'targetUserId': ?targetUserId,
     };
   }
 

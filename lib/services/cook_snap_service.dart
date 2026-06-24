@@ -149,7 +149,7 @@ class CookSnapService extends BaseService {
               'photoUrl': snap.photoUrl,
               // BUT-949: full album so the feed can render a carousel.
               'photoUrls': snap.photoUrls,
-              if (validCaption != null) 'caption': validCaption,
+              'caption': ?validCaption,
             },
           );
         } catch (_) {}

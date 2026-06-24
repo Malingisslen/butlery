@@ -421,7 +421,7 @@ mixin PermissionValidationMixin {
 
         // Build metadata with additional context
         final auditMetadata = <String, dynamic>{
-          if (details != null) 'details': details,
+          'details': ?details,
           if (metadata != null) ...metadata,
         };
 
