@@ -10,6 +10,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/hoverable_tap.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Type of badge to display.
@@ -173,12 +174,14 @@ class UnifiedBadge extends StatelessWidget {
             Semantics(
               label: context.l10n.commonRemoveLabel(label),
               button: true,
-              child: GestureDetector(
-                onTap: onRemove,
-                child: Icon(
-                  Icons.close,
-                  size: dimensions.iconSize,
-                  color: textColor.withValues(alpha: 0.7),
+              child: HoverableTap(
+                child: GestureDetector(
+                  onTap: onRemove,
+                  child: Icon(
+                    Icons.close,
+                    size: dimensions.iconSize,
+                    color: textColor.withValues(alpha: 0.7),
+                  ),
                 ),
               ),
             ),
@@ -192,9 +195,11 @@ class UnifiedBadge extends StatelessWidget {
       result = Semantics(
         label: label,
         button: true,
-        child: GestureDetector(
-          onTap: onTap,
-          child: badge,
+        child: HoverableTap(
+          child: GestureDetector(
+            onTap: onTap,
+            child: badge,
+          ),
         ),
       );
     }
