@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:excel/excel.dart';
+import 'package:archive/archive.dart';
 
 // Production imports
 import 'package:butlery/services/import/file_import_strategy.dart';
@@ -211,35 +211,15 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
 
     group('Excel Import Tests', () {
       test('should import recipe from Excel content', () async {
-        // Arrange - Create Excel file in memory
-        final excel = Excel.createExcel();
-        final sheet = excel['Sheet1'];
-
-        // Add headers
-        sheet.appendRow([
-          TextCellValue('Title'),
-          TextCellValue('Ingredients'),
-          TextCellValue('Instructions'),
-          TextCellValue('Servings'),
-          TextCellValue('Time'),
+        // Arrange - Build a minimal .xlsx in memory (our own writer, since the
+        // excel package was dropped in BUT-503 — it pinned archive to 3.x).
+        final bytes = _buildXlsx([
+          ['Title', 'Ingredients', 'Instructions', 'Servings', 'Time'],
+          ['Excel Recipe', 'Ingredient 1;Ingredient 2', 'Step 1;Step 2', 4, 25],
         ]);
-
-        // Add data
-        sheet.appendRow([
-          TextCellValue('Excel Recipe'),
-          TextCellValue('Ingredient 1;Ingredient 2'),
-          TextCellValue('Step 1;Step 2'),
-          IntCellValue(4),
-          IntCellValue(25),
-        ]);
-
-        final bytes = excel.encode()!;
 
         // Act
-        final result = await strategy.importFromContent(
-          Uint8List.fromList(bytes),
-          'xlsx',
-        );
+        final result = await strategy.importFromContent(bytes, 'xlsx');
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -251,28 +231,15 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
 
       test('should import multiple recipes from Excel', () async {
         // Arrange
-        final excel = Excel.createExcel();
-        final sheet = excel['Recipes'];
-
-        sheet.appendRow([
-          TextCellValue('Title'),
-          TextCellValue('Ingredients'),
-        ]);
-
-        for (int i = 1; i <= 5; i++) {
-          sheet.appendRow([
-            TextCellValue('Recipe $i'),
-            TextCellValue('Ingredients for recipe $i'),
-          ]);
-        }
-
-        final bytes = excel.encode()!;
+        final rows = <List<Object?>>[
+          ['Title', 'Ingredients'],
+          for (int i = 1; i <= 5; i++)
+            ['Recipe $i', 'Ingredients for recipe $i'],
+        ];
+        final bytes = _buildXlsx(rows);
 
         // Act
-        final recipes = await strategy.importMultipleFromContent(
-          Uint8List.fromList(bytes),
-          'xlsx',
-        );
+        final recipes = await strategy.importMultipleFromContent(bytes, 'xlsx');
 
         // Assert
         expect(recipes, hasLength(5));
@@ -283,28 +250,13 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
 
       test('should handle Excel with Swedish content', () async {
         // Arrange
-        final excel = Excel.createExcel();
-        final sheet = excel['Recept'];
-
-        sheet.appendRow([
-          TextCellValue('Namn'),
-          TextCellValue('Ingredienser'),
-          TextCellValue('Portioner'),
+        final bytes = _buildXlsx([
+          ['Namn', 'Ingredienser', 'Portioner'],
+          ['Räksmörgås', 'Räkor;Majonnäs;Ägg;Dill', 2],
         ]);
-
-        sheet.appendRow([
-          TextCellValue('Räksmörgås'),
-          TextCellValue('Räkor;Majonnäs;Ägg;Dill'),
-          IntCellValue(2),
-        ]);
-
-        final bytes = excel.encode()!;
 
         // Act
-        final result = await strategy.importFromContent(
-          Uint8List.fromList(bytes),
-          'xlsx',
-        );
+        final result = await strategy.importFromContent(bytes, 'xlsx');
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -314,29 +266,14 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
       });
 
       test('should handle Excel with empty cells', () async {
-        // Arrange
-        final excel = Excel.createExcel();
-        final sheet = excel['Sheet1'];
-
-        sheet.appendRow([
-          TextCellValue('Title'),
-          TextCellValue('Ingredients'),
-          TextCellValue('Instructions'),
+        // Arrange — middle cell is null (skipped in the sheet, like real Excel)
+        final bytes = _buildXlsx([
+          ['Title', 'Ingredients', 'Instructions'],
+          ['Sparse Recipe', null, 'Some instructions'],
         ]);
-
-        sheet.appendRow([
-          TextCellValue('Sparse Recipe'),
-          null, // Empty cell
-          TextCellValue('Some instructions'),
-        ]);
-
-        final bytes = excel.encode()!;
 
         // Act
-        final result = await strategy.importFromContent(
-          Uint8List.fromList(bytes),
-          'xlsx',
-        );
+        final result = await strategy.importFromContent(bytes, 'xlsx');
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -350,15 +287,11 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
       });
 
       test('should handle empty Excel file', () async {
-        // Arrange
-        final excel = Excel.createExcel();
-        final bytes = excel.encode()!;
+        // Arrange — a workbook with no data rows
+        final bytes = _buildXlsx([]);
 
         // Act
-        final result = await strategy.importFromContent(
-          Uint8List.fromList(bytes),
-          'xlsx',
-        );
+        final result = await strategy.importFromContent(bytes, 'xlsx');
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -368,17 +301,14 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
 
       test('should handle .xls extension same as .xlsx', () async {
         // Arrange
-        final excel = Excel.createExcel();
-        final sheet = excel['Sheet1'];
-
-        sheet.appendRow([TextCellValue('Title')]);
-        sheet.appendRow([TextCellValue('Test Recipe')]);
-
-        final bytes = excel.encode()!;
+        final bytes = _buildXlsx([
+          ['Title'],
+          ['Test Recipe'],
+        ]);
 
         // Act
         final result = await strategy.importFromContent(
-          Uint8List.fromList(bytes),
+          bytes,
           'xls', // Using .xls extension
         );
 
@@ -386,6 +316,41 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
         expect(result.isSuccess, isTrue);
         expect(result.recipe!.title, equals('Test Recipe'));
       });
+
+      test(
+        'imports a shared-strings workbook through the full pipeline',
+        () async {
+          // Real Excel/Google Sheets/LibreOffice exports store text via the
+          // shared-strings table (t="s"), not inline strings. This proves such a
+          // workbook flows all the way through FileImportStrategy into a Recipe —
+          // the junction the reader-only test can't pin on its own.
+          // Every cell references the shared-strings table by index — even the
+          // portions "2", since exporters routinely store numbers as text too.
+          final bytes = _buildSharedStringsXlsx(
+            [
+              'Title',
+              'Ingredients',
+              'Servings',
+              'Carbonara',
+              'Pasta;Egg;Bacon',
+              '2',
+            ],
+            [
+              [0, 1, 2], // header row
+              [3, 4, 5], // 'Carbonara', 'Pasta;Egg;Bacon', '2'
+            ],
+          );
+
+          // Act
+          final result = await strategy.importFromContent(bytes, 'xlsx');
+
+          // Assert
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.title, equals('Carbonara'));
+          expect(result.recipe!.ingredients, hasLength(3));
+          expect(result.recipe!.portions, equals(2));
+        },
+      );
     });
 
     group('Data Type Conversion Tests', () {
@@ -632,3 +597,95 @@ Räksmörgås à la André,"Räkor från Östersjön;Crème fraîche"''';
     });
   });
 }
+
+/// Builds a minimal, valid-enough `.xlsx` (a ZIP holding one worksheet XML)
+/// that `XlsxReader` can parse. Strings are written as inline strings and
+/// numbers as plain values, mirroring the cell shapes the reader handles.
+/// `null` cells are skipped entirely — exactly how a real spreadsheet omits
+/// empty cells — and the reader re-aligns columns from each cell's A1 ref.
+Uint8List _buildXlsx(List<List<Object?>> rows) {
+  final buffer = StringBuffer()
+    ..write('<?xml version="1.0" encoding="UTF-8"?>')
+    ..write(
+      '<worksheet xmlns="http://schemas.openxmlformats.org/'
+      'spreadsheetml/2006/main"><sheetData>',
+    );
+
+  for (var r = 0; r < rows.length; r++) {
+    buffer.write('<row r="${r + 1}">');
+    final row = rows[r];
+    for (var c = 0; c < row.length; c++) {
+      final cell = row[c];
+      if (cell == null) continue;
+      final ref = '${_columnLetter(c)}${r + 1}';
+      if (cell is num) {
+        buffer.write('<c r="$ref"><v>$cell</v></c>');
+      } else {
+        buffer.write(
+          '<c r="$ref" t="inlineStr"><is><t>${_escapeXml('$cell')}'
+          '</t></is></c>',
+        );
+      }
+    }
+    buffer.write('</row>');
+  }
+  buffer.write('</sheetData></worksheet>');
+
+  final archive = Archive()
+    ..addFile(
+      ArchiveFile.string('xl/worksheets/sheet1.xml', buffer.toString()),
+    );
+  return Uint8List.fromList(ZipEncoder().encode(archive));
+}
+
+/// Builds a `.xlsx` whose cells reference a shared-strings table (`t="s"`) —
+/// the shape real Excel/Google Sheets/LibreOffice exports actually produce.
+/// [strings] is the shared table; each cell in [rows] is an index into it.
+Uint8List _buildSharedStringsXlsx(List<String> strings, List<List<int>> rows) {
+  final si = strings.map((s) => '<si><t>${_escapeXml(s)}</t></si>').join();
+
+  final sheet = StringBuffer()
+    ..write('<?xml version="1.0" encoding="UTF-8"?>')
+    ..write(
+      '<worksheet xmlns="http://schemas.openxmlformats.org/'
+      'spreadsheetml/2006/main"><sheetData>',
+    );
+  for (var r = 0; r < rows.length; r++) {
+    sheet.write('<row r="${r + 1}">');
+    final row = rows[r];
+    for (var c = 0; c < row.length; c++) {
+      sheet.write(
+        '<c r="${_columnLetter(c)}${r + 1}" t="s"><v>${row[c]}</v></c>',
+      );
+    }
+    sheet.write('</row>');
+  }
+  sheet.write('</sheetData></worksheet>');
+
+  final archive = Archive()
+    ..addFile(
+      ArchiveFile.string(
+        'xl/sharedStrings.xml',
+        '<?xml version="1.0" encoding="UTF-8"?><sst xmlns="http://schemas.'
+            'openxmlformats.org/spreadsheetml/2006/main">$si</sst>',
+      ),
+    )
+    ..addFile(ArchiveFile.string('xl/worksheets/sheet1.xml', sheet.toString()));
+  return Uint8List.fromList(ZipEncoder().encode(archive));
+}
+
+/// 0-based column index → spreadsheet column letters (0→A, 25→Z, 26→AA).
+String _columnLetter(int index) {
+  var n = index;
+  var letters = '';
+  do {
+    letters = String.fromCharCode(65 + n % 26) + letters;
+    n = n ~/ 26 - 1;
+  } while (n >= 0);
+  return letters;
+}
+
+String _escapeXml(String value) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');

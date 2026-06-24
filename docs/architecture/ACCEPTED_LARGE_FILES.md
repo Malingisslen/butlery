@@ -103,7 +103,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_shopping_service.dart` | 513 | Shopping service facade |
 | `realtime_recipe_service.dart` | 513 | Realtime recipe service |
 | `realtime_menu_service.dart` | 509 | Realtime menu service |
-| `file_import_strategy.dart` | 509 | File-based recipe import strategy |
+| `file_import_strategy.dart` | 559 | File-based recipe import strategy |
 | `search_service.dart` | 505 | Recipe/content search service |
 | `social_recipe_operations.dart` | 502 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 629 | Push notification dispatch |

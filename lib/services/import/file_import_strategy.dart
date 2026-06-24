@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:csv/csv.dart';
-import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
+import 'package:butlery/services/import/xlsx_reader.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// File import strategy for CSV and Excel files
@@ -258,37 +258,21 @@ class FileImportStrategy extends ImportStrategy {
 
   Future<Recipe?> _importFromExcel(Uint8List bytes) async {
     try {
-      final excel = Excel.decodeBytes(bytes);
-
-      // Get first sheet
-      // Pick the first sheet that actually has rows. Excel.createExcel()
-      // pre-seeds an empty default sheet, so workbooks where data was
-      // appended to a named sheet would otherwise silently parse zero
-      // recipes.
-      if (excel.tables.values.isEmpty) {
-        throw Exception('Excel file is empty');
-      }
-      final sheet = excel.tables.values.firstWhere(
-        (s) => s.rows.isNotEmpty,
-        orElse: () => excel.tables.values.first,
-      );
-      if (sheet.rows.isEmpty) {
+      // XlsxReader returns the first sheet that actually has rows as plain
+      // string rows — it already skips an empty pre-seeded default sheet, so
+      // the old tables/firstWhere dance is no longer needed.
+      final rows = XlsxReader.readFirstSheet(bytes);
+      if (rows.isEmpty) {
         throw Exception('Excel file is empty');
       }
 
-      // Get headers from first row
-      final headerRow = sheet.rows.first;
-      final headers = headerRow
-          .map((cell) => (cell?.value?.toString().toLowerCase()).orEmpty())
-          .toList();
+      final headers = rows.first.map((cell) => cell.toLowerCase()).toList();
 
-      if (sheet.rows.length < 2) {
+      if (rows.length < 2) {
         throw Exception('Excel file has no data rows');
       }
 
-      // Import first data row
-      final dataRow = sheet.rows[1];
-      return _parseRecipeFromExcelRow(headers, dataRow);
+      return _parseRecipeFromRow(headers, rows[1]);
     } catch (e) {
       AppLogger.error('Excel parsing failed', e);
       return null;
@@ -297,33 +281,17 @@ class FileImportStrategy extends ImportStrategy {
 
   Future<List<Recipe>> _importMultipleFromExcel(Uint8List bytes) async {
     try {
-      final excel = Excel.decodeBytes(bytes);
-
-      // Pick the first sheet that actually has rows. Excel.createExcel()
-      // pre-seeds an empty default sheet, so workbooks where data was
-      // appended to a named sheet would otherwise silently parse zero
-      // recipes.
-      if (excel.tables.values.isEmpty) {
-        throw Exception('Excel file is empty');
-      }
-      final sheet = excel.tables.values.firstWhere(
-        (s) => s.rows.isNotEmpty,
-        orElse: () => excel.tables.values.first,
-      );
-      if (sheet.rows.isEmpty) {
+      final rows = XlsxReader.readFirstSheet(bytes);
+      if (rows.isEmpty) {
         throw Exception('Excel file is empty');
       }
 
-      final headerRow = sheet.rows.first;
-      final headers = headerRow
-          .map((cell) => (cell?.value?.toString().toLowerCase()).orEmpty())
-          .toList();
-
+      final headers = rows.first.map((cell) => cell.toLowerCase()).toList();
       final recipes = <Recipe>[];
 
       // Skip header row and process all data rows
-      for (int i = 1; i < sheet.rows.length; i++) {
-        final recipe = _parseRecipeFromExcelRow(headers, sheet.rows[i]);
+      for (int i = 1; i < rows.length; i++) {
+        final recipe = _parseRecipeFromRow(headers, rows[i]);
         if (recipe != null) {
           recipes.add(recipe);
         }
@@ -347,21 +315,6 @@ class FileImportStrategy extends ImportStrategy {
       return _createRecipeFromData(data);
     } catch (e) {
       AppLogger.error('Failed to parse recipe from row', e);
-      return null;
-    }
-  }
-
-  Recipe? _parseRecipeFromExcelRow(List<String> headers, List<Data?> row) {
-    try {
-      final Map<String, String> data = {};
-
-      for (int i = 0; i < headers.length && i < row.length; i++) {
-        data[headers[i]] = (row[i]?.value?.toString()).orEmpty();
-      }
-
-      return _createRecipeFromData(data);
-    } catch (e) {
-      AppLogger.error('Failed to parse recipe from Excel row', e);
       return null;
     }
   }
@@ -538,11 +491,10 @@ class FileImportStrategy extends ImportStrategy {
     final archive = ZipDecoder().decodeBytes(bytes);
 
     for (final file in archive.files) {
-      if (!file.isFile || file.content == null) continue;
+      if (!file.isFile) continue;
       try {
-        final raw = file.content;
-        if (raw is! List<int>) continue;
-        final decompressed = GZipDecoder().decodeBytes(raw);
+        // archive 4.x: `content` is a non-null Uint8List for file entries.
+        final decompressed = const GZipDecoder().decodeBytes(file.content);
         final json =
             jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
         final recipe = _createRecipeFromPaprikaJson(json);
