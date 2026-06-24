@@ -41,7 +41,7 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.5.5
-  drift: ^2.29.0               # Blocked: 2.32.x needs newer SDK
+  drift: ^2.29.0               # NOT SDK-blocked (Dart 3.10 satisfies current drift). Held at 2.29 by BUT-820: newer drift changed the encryption substrate, so drift + drift_dev + build_runner must move in lockstep only after the sqlcipher→sqlite3 migration lands. Bumping build_runner to 2.8.0+ then also sheds the discontinued build_resolvers/build_runner_core (BUT-554).
   sqlcipher_flutter_libs: ^0.6.8  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
   flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
 
