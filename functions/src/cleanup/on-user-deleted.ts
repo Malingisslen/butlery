@@ -54,7 +54,36 @@ export const onUserDeleted = v1
     }
   });
 
-async function cleanupUserSocialData(userId: string): Promise<void> {
+/** Per-step counts returned by the cleanup core so tests can assert effects. */
+export interface UserSocialCleanupResult {
+  friendsRemoved: number;
+  socialRequestsCleaned: number;
+  groupMembershipsRemoved: number;
+  friendCountsUpdated: number;
+  feedbackCleaned: number;
+  presenceRowsRemoved: number;
+  notificationQueuesPurged: number;
+  legacySharedWithScrubbed: number;
+  contentGuardSubcollectionsPurged: number;
+  shareDisplayNameTombstoned: number;
+  reportsAnonymized: number;
+  recipeCookEventsPurged: number;
+}
+
+/**
+ * Testable core for the user-deletion social cascade.
+ *
+ * The `onUserDeleted` trigger delegates here; exposed for integration tests
+ * that run it against a real Firestore emulator. The cascade reads/writes via
+ * the module-level `db = admin.firestore()`, which — when the test sets
+ * `FIRESTORE_EMULATOR_HOST` before `admin.initializeApp` and requires this
+ * module afterwards — is already emulator-bound. So no Firestore parameter is
+ * needed; this is a pure extraction (formerly the private
+ * `cleanupUserSocialData`) that now returns its `results` summary.
+ */
+export async function cleanupUserSocialData(
+  userId: string
+): Promise<UserSocialCleanupResult> {
   const results = {
     friendsRemoved: 0,
     socialRequestsCleaned: 0,
@@ -170,6 +199,8 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   results.recipeCookEventsPurged = await cleanupRecipeCookEvents(userId);
 
   v1.logger.info(`Cleanup results for ${userId}:`, results);
+
+  return results;
 }
 
 // Swedish locale string — matches the app's UI language. Recipient UIs

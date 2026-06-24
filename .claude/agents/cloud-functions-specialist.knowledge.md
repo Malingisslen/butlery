@@ -1823,3 +1823,62 @@ type* at 2+ sites. A line-split into trimmed non-empty lines that appears in a
 prompt builder and in a CSV parser are different intents that happen to share
 characters — don't extract. Per the ticket's own decision rule this is the
 "different-intent one-liners → do NOT refactor" branch.
+
+### 2026-06-24 — BUT-1354 emulator integration tests for cleanup jobs [Pattern discovered]
+
+Added emulator-bound integration tests for three scheduled/triggered cleanup
+jobs by extracting their handler bodies into plain exported async cores
+(mirroring `acceptFriendRequestWithDeps`). Cores: `cleanupOldRateLimitsCore(db)`
+in `cleanup/cleanup-rate-limits.ts`, `cleanupSharedContentMetadataCore(db)` in
+`cleanup/cleanup-shared-content-metadata.ts`, and (already a delegated private
+fn) `cleanupUserSocialData(userId)` in `cleanup/on-user-deleted.ts` — now
+exported and returning its `results` summary. Each `onSchedule`/trigger wrapper
+is a one-liner that calls the core. Tests:
+`cleanup-rate-limits.integration.test.ts` (7/7), `…shared-content-metadata…`
+(11/11), `on-user-deleted.integration.test.ts` (13/13). All green via
+`firebase emulators:exec --only firestore --project demo-test "npx ts-node …"`.
+
+**Patterns worth remembering**:
+
+- **`onSchedule`/v1-auth-trigger bodies need the `runX(db)` test seam too.**
+  Same lift as analytics CFs: pull the body into an exported async core, leave
+  the wrapper as one delegating line, return a small summary
+  (`{deletedCount, processedUsers}` etc.) so emulator tests can assert both
+  effects AND counts. Byte-for-byte body lift — no logic change.
+
+- **on-user-deleted needs NO injected `db`.** Its cascade + ~14 helpers all
+  close over the module-level `db = admin.firestore()`. Because the integration
+  test sets `FIRESTORE_EMULATOR_HOST` BEFORE `admin.initializeApp` and
+  `require()`s the module AFTERward, that module `db` is already emulator-bound.
+  Threading a `database` param through every helper would be large, risky churn
+  for zero test benefit — exporting the existing delegated fn (made to return
+  its results) is the faithful minimal extraction. The injected-`db` form
+  (rate-limits/shared-metadata) is right when the body already takes `db`
+  locally; the module-db form is right when helpers close over module `db`.
+
+- **Storage delete fails gracefully without a Storage emulator.** The feedback
+  screenshot purge in on-user-deleted calls
+  `admin.storage().bucket().deleteFiles(...)`; with no `storageBucket` configured
+  it throws "Bucket name not specified", but the production try/catch logs a
+  warn and continues. The integration test (firestore-only emulator) exercises
+  this path and confirms the cascade still completes + returns its summary —
+  good evidence the best-effort wrapping works.
+
+- **Parent docs must be seeded for `orderBy("__name__")` user/parent scans.**
+  Both rate-limits (scans `users`) and shared-metadata (scans
+  `shared_recipes`/`shared_menus`/`shared_shopping_lists`) paginate the parent
+  collection. Subcollection-only writes don't make the parent doc "exist" for a
+  collection scan in the emulator, so seed an explicit `parentRef.set({...})`
+  or the scan enumerates nothing and the test silently deletes zero.
+
+- **`run-all-tests.js` already excludes `test:integration:`** — registering the
+  three new `test:integration:cleanup-*` / `test:integration:on-user-deleted`
+  scripts keeps them out of `npm test` automatically (emulator-bound). No edit
+  to the runner needed; confirmed the prefix match.
+
+- **functions/ has no eslint config or lint script.** The `eslint-disable`
+  comments in existing `*.integration.test.ts` are precautionary only. The
+  verification gate is `npm run build` (tsc): `tsconfig.json` `include:["src"]`
+  covers `src/__tests__`, and `noUnusedLocals` + `noImplicitReturns` are on, so
+  the typecheck catches unused imports and missing-return paths in both cores
+  and tests.

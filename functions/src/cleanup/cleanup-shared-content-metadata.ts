@@ -40,11 +40,35 @@ const METADATA_SUBCOLLECTIONS = ["views", "engagements", "dismissals"];
  * Weekly cleanup of expired shared content metadata subcollections.
  *
  * Schedule: 0 4 * * 6 (Saturday at 4 AM UTC)
+ *
+ * The scheduler wrapper just delegates to `cleanupSharedContentMetadataCore`
+ * so the logic can be exercised against a real Firestore emulator in
+ * integration tests. Pure extraction of the former inline body — no logic
+ * change.
  */
 export const cleanupSharedContentMetadata = onSchedule(
   { schedule: "0 4 * * 6", timeZone: "UTC" },
   async () => {
-    const db = admin.firestore();
+    await cleanupSharedContentMetadataCore(admin.firestore());
+  }
+);
+
+/** Summary returned by the testable core so callers/tests can assert effects. */
+export interface CleanupSharedContentMetadataResult {
+  totalDeleted: number;
+}
+
+/**
+ * Testable core for the shared-content-metadata TTL cleanup. Accepts an
+ * injected Firestore so integration tests can point it at the emulator.
+ * Returns a small summary.
+ *
+ * Pure extraction of the prior `onSchedule` body — identical parent
+ * pagination, per-subcollection cutoff query, and batch-delete semantics.
+ */
+export async function cleanupSharedContentMetadataCore(
+  db: admin.firestore.Firestore
+): Promise<CleanupSharedContentMetadataResult> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - DEFAULT_TTL_DAYS);
     const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
@@ -101,8 +125,8 @@ export const cleanupSharedContentMetadata = onSchedule(
       `Shared content metadata cleanup complete: deleted ${totalDeleted} expired entries`
     );
 
-  }
-);
+    return { totalDeleted };
+}
 
 async function cleanupSubcollection(
   db: admin.firestore.Firestore,

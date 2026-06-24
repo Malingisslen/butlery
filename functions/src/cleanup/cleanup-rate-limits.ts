@@ -27,12 +27,36 @@ const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (Cloud Functions timeo
  * - Processes users in chunks of 1000
  * - Uses batched deletes (500 per batch)
  * - Has timeout protection (8 minutes)
+ *
+ * The scheduler wrapper just delegates to `cleanupOldRateLimitsCore` so the
+ * logic can be exercised against a real Firestore emulator in integration
+ * tests (the `onSchedule` callback can't be invoked directly). Behaviour is a
+ * byte-for-byte lift of the former inline body — no logic change.
  */
 export const cleanupOldRateLimits = onSchedule(
   { schedule: "0 3 * * 0", timeZone: "UTC" },
   async () => {
+    await cleanupOldRateLimitsCore(admin.firestore());
+  }
+);
+
+/** Summary returned by the testable core so callers/tests can assert effects. */
+export interface CleanupRateLimitsResult {
+  deletedCount: number;
+  processedUsers: number;
+}
+
+/**
+ * Testable core for the rate-limit cleanup. Accepts an injected Firestore so
+ * integration tests can point it at the emulator. Returns a small summary.
+ *
+ * Pure extraction of the prior `onSchedule` body — identical pagination,
+ * cutoff, batch-delete, and timeout semantics.
+ */
+export async function cleanupOldRateLimitsCore(
+  db: admin.firestore.Firestore
+): Promise<CleanupRateLimitsResult> {
     const startTime = Date.now();
-    const db = admin.firestore();
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 90);  // 90 days ago
 
@@ -137,5 +161,5 @@ export const cleanupOldRateLimits = onSchedule(
       `from ${processedUsers} users in ${(elapsedMs / 1000).toFixed(1)}s`
     );
 
-  }
-);
+    return { deletedCount, processedUsers };
+}
