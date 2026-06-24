@@ -6171,6 +6171,8 @@
   "onboardingDietaryKosherDesc": "Följer kosherregler för mat",
   "onboardingSkippedBanner": "Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?",
   "onboardingSkippedBannerAction": "Öppna inställningar",
+  "onboardingWelcomeBanner": "Välkommen till Butlery! Allt är klart – lägg till ditt första recept så kommer du igång.",
+  "onboardingWelcomeBannerAction": "Lägg till recept",
   "onboardingImportTitle": "Importera ditt första recept",
   "onboardingImportDescription": "Kom igång snabbt genom att importera ett recept från webben eller ett foto.",
   "onboardingImportUrlTitle": "Från en webbadress",

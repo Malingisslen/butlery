@@ -9192,6 +9192,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSkippedBannerAction => 'Open settings';
 
   @override
+  String get onboardingWelcomeBanner =>
+      'Welcome to Butlery! You\'re all set — add your first recipe to get started.';
+
+  @override
+  String get onboardingWelcomeBannerAction => 'Add recipe';
+
+  @override
   String get onboardingImportTitle => 'Import your first recipe';
 
   @override

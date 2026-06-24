@@ -9211,6 +9211,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingSkippedBannerAction => 'Öppna inställningar';
 
   @override
+  String get onboardingWelcomeBanner =>
+      'Välkommen till Butlery! Allt är klart – lägg till ditt första recept så kommer du igång.';
+
+  @override
+  String get onboardingWelcomeBannerAction => 'Lägg till recept';
+
+  @override
   String get onboardingImportTitle => 'Importera ditt första recept';
 
   @override

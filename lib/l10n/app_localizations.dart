@@ -15547,6 +15547,18 @@ abstract class AppLocalizations {
   /// **'Öppna inställningar'**
   String get onboardingSkippedBannerAction;
 
+  /// No description provided for @onboardingWelcomeBanner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välkommen till Butlery! Allt är klart – lägg till ditt första recept så kommer du igång.'**
+  String get onboardingWelcomeBanner;
+
+  /// No description provided for @onboardingWelcomeBannerAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till recept'**
+  String get onboardingWelcomeBannerAction;
+
   /// No description provided for @onboardingImportTitle.
   ///
   /// In sv, this message translates to:

@@ -601,6 +601,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         children: [
           if (viewModel.showOnboardingBanner)
             MinaReceptOnboardingBanner(viewModel: viewModel),
+          if (viewModel.showWelcomeBanner)
+            MinaReceptWelcomeBanner(viewModel: viewModel),
           if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
             MinaReceptDiscoveryShelves(
               queryVm: context.read<RecipeQueryViewModel>(),

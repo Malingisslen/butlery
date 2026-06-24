@@ -155,3 +155,61 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
     );
   }
 }
+
+/// Welcome banner (BUT-1369) — shown once to a user who COMPLETED onboarding,
+/// greeting them and pointing to a first step (add/import a recipe). Dismissible;
+/// the dismiss callback also fires when the CTA is tapped. Mirrors
+/// [MinaReceptOnboardingBanner]; visibility/precedence live in the ViewModel via
+/// decideOnboardingBanner.
+class MinaReceptWelcomeBanner extends StatelessWidget {
+  const MinaReceptWelcomeBanner({super.key, required this.viewModel});
+
+  final RecipeListViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Dismissible(
+      key: const Key('welcome-banner'),
+      direction: DismissDirection.horizontal,
+      onDismissed: (_) => viewModel.dismissWelcomeBanner(),
+      child: Container(
+        margin: AppDimensions.responsiveContentPadding(context),
+        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        decoration: BoxDecoration(
+          color: cs.primaryContainer,
+          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.celebration_outlined, color: cs.primary),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Expanded(
+              child: Text(
+                context.l10n.onboardingWelcomeBanner,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onPrimaryContainer,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                viewModel.dismissWelcomeBanner();
+                Navigator.pushNamed(context, Routes.addRecipe);
+              },
+              child: Text(context.l10n.onboardingWelcomeBannerAction),
+            ),
+            // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
+            IconButton(
+              onPressed: viewModel.dismissWelcomeBanner,
+              icon: const Icon(Icons.close),
+              iconSize: AppDimensions.iconSizeM,
+              tooltip: context.l10n.commonClose,
+              color: cs.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -17,6 +17,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
+import 'package:butlery/viewmodels/onboarding_banner_decision.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_selection_manager.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
@@ -1090,32 +1091,53 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Onboarding skip banner state
+  // Onboarding banner state — two mutually-exclusive one-time banners (skipped
+  // vs welcome); precedence + gating live in decideOnboardingBanner (BUT-1369).
   static const _bannerDismissedKey = 'butlery_onboarding_banner_dismissed';
+  static const _welcomeBannerDismissedKey =
+      'butlery_onboarding_welcome_dismissed';
   bool _showOnboardingBanner = false;
+  bool _showWelcomeBanner = false;
 
   bool get showOnboardingBanner => _showOnboardingBanner;
+  bool get showWelcomeBanner => _showWelcomeBanner;
 
   void dismissOnboardingBanner() {
     _showOnboardingBanner = false;
     notifyListeners();
+    _persistBannerDismissed(_bannerDismissedKey);
+  }
+
+  void dismissWelcomeBanner() {
+    _showWelcomeBanner = false;
+    notifyListeners();
+    _persistBannerDismissed(_welcomeBannerDismissedKey);
+  }
+
+  void _persistBannerDismissed(String key) {
     try {
-      ServiceLocator.get<PersistenceService>().setBool(
-        _bannerDismissedKey,
-        true,
-      );
+      ServiceLocator.get<PersistenceService>().setBool(key, true);
     } catch (_) {}
   }
 
   Future<void> _loadOnboardingBannerState() async {
     try {
       final persistence = ServiceLocator.get<PersistenceService>();
-      final dismissed = await persistence.getBool(_bannerDismissedKey) ?? false;
-      if (dismissed) return;
       final profile = ServiceLocator.get<UserService>().currentUserProfile;
-      _showOnboardingBanner =
-          profile != null && profile.onboardingSkippedAt != null;
-      if (_showOnboardingBanner) notifyListeners();
+      // Profile not yet loaded at ViewModel init — banners stay hidden (this
+      // runs once from init; same observable outcome as the prior guard).
+      if (profile == null) return;
+      final kind = decideOnboardingBanner(
+        skippedBannerDismissed:
+            await persistence.getBool(_bannerDismissedKey) ?? false,
+        welcomeBannerDismissed:
+            await persistence.getBool(_welcomeBannerDismissedKey) ?? false,
+        hasCompletedOnboarding: profile.hasCompletedOnboarding,
+        onboardingSkippedAt: profile.onboardingSkippedAt,
+      );
+      _showOnboardingBanner = kind == OnboardingBannerKind.skipped;
+      _showWelcomeBanner = kind == OnboardingBannerKind.welcome;
+      if (_showOnboardingBanner || _showWelcomeBanner) notifyListeners();
     } catch (_) {}
   }
 

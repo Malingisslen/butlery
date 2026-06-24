@@ -6141,6 +6141,8 @@
   "onboardingDietaryKosherDesc": "Follows kosher food guidelines",
   "onboardingSkippedBanner": "You skipped the introduction. Want to set up allergens and dietary preferences?",
   "onboardingSkippedBannerAction": "Open settings",
+  "onboardingWelcomeBanner": "Welcome to Butlery! You're all set — add your first recipe to get started.",
+  "onboardingWelcomeBannerAction": "Add recipe",
   "onboardingImportTitle": "Import your first recipe",
   "onboardingImportDescription": "Get started quickly by importing a recipe from the web or a photo.",
   "onboardingImportUrlTitle": "From a web address",
