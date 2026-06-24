@@ -103,6 +103,27 @@ multi-select — each carries a `// BUT-948 exception:` code comment):
 When adding a new long-press: if the surface is a selectable list, wire it to multi-select.
 Otherwise, add a `// BUT-948 exception:` comment explaining the contextual/feature intent.
 
+## Dialog focus return (BUT-900)
+
+**Input-focus return after a dialog or bottom sheet closes is automatic — do NOT
+hand-plumb it.** Both `showDialog` and `showModalBottomSheet` build on Flutter's
+`ModalRoute`, which records the primary focus before the route is pushed and
+restores it to the trigger control on pop. This holds for button-close,
+barrier-dismiss, and bottom sheets alike. Adding a `FocusNode` + `requestFocus()`
+to each call site (as an old audit proposed) is plumbing against a non-bug.
+
+The contract is pinned by `test/widget/common/dialogs/dialog_focus_return_test.dart`,
+which asserts `FocusManager.primaryFocus` returns to the trigger across all three
+patterns **and** through the app's own `ConfirmationDialog.show`. Keep new shared
+dialog helpers flowing through `showDialog`/`showModalBottomSheet` (or add a case
+to that test) so the guarantee survives refactors — a custom `Navigator.push`
+route would silently lose it.
+
+The one part code can't prove is the **screen-reader accessibility-focus** layer
+(TalkBack/VoiceOver), which the platform manages on top of input focus. That stays
+a manual screen-reader pass (per the tap-target section's "manual screen-reader
+passes" note) — it is the only open item on dialog a11y focus.
+
 ## Destructive-action confirmation (BUT-954)
 
 Three severity classes decide the friction pattern. Pick by **recoverability**, not by how scary the verb sounds:
