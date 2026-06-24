@@ -1653,3 +1653,173 @@ Flutter AnomalyRepository keys its label map off these literals.
 - **Idempotency**: deterministic doc id = run-day UTC date + `set()`. Re-run
   test asserts writeCount=2 but one distinct output path (case i), the canonical
   idempotency proof for this codebase.
+
+### 2026-06-20 — WS3 validate-limit + on-suggestion-created review [Pattern discovered]
+
+`shared/validate-limit.ts` — `clampLimit(raw, {fallback, max})` imports `HttpsError`
+from `"firebase-functions/v2/https"`. Confirmed correct: the v2 callable dispatcher
+catches any `HttpsError` instance thrown anywhere in the call stack and surfaces it
+as `functions/invalid-argument` to the client. No special wiring needed.
+
+`on-suggestion-created.ts:93-95` — **Medium**: `suggestion.originalName` (raw user
+text) was embedded as a string literal in a `logger.info` message body. Per logging
+conventions, user-supplied free-text must never appear in structured logs (potential
+PII). Fix: replace with `originalNameLength: suggestion.originalName?.length ?? 0`
+in the structured second argument. This is the correct pattern when the operationally
+useful signal is "did we get a non-empty value", not the value itself.
+
+Patterns worth remembering:
+- **`HttpsError` thrown by a helper inside an `onCall` handler propagates
+  correctly** — the v2 dispatcher does not require the `HttpsError` to originate
+  from the top-level handler function. Deep helpers can throw it directly.
+- **`requireAdmin` before `clampLimit` is safe**: a non-admin caller never reaches
+  the limit validation, so exposing a clear `invalid-argument` error to admin callers
+  on malformed input does not change the security posture for non-admins.
+- **Idempotency guard pattern for onDocumentCreated**: stamp a metadata field
+  (`notifiedAt`) on success, check `if (doc.notifiedAt) { return; }` at the start.
+  Works because the trigger retries on uncaught exception; any retry sees the stamp
+  and exits cleanly. The existing pattern in on-suggestion-created is correct.
+- **User-supplied free-text fields (ingredient names, recipe titles) must never
+  appear in logger message strings.** Log length or a hash instead. The structured
+  second arg to `logger.info` should only contain safe identifiers (hashed UIDs,
+  doc IDs, counts, enums).
+
+### 2026-06-20 — B1 acceptFriendRequest review: tx.update vs tx.set(merge) [Pattern discovered]
+
+`functions/src/social/accept-friend-request.ts` reviewed clean except one
+Medium finding: `tx.update(fromProfileRef, {friendsCount: increment(1)})` and
+the matching `tx.update(toProfileRef, ...)` both call `update`, which throws
+`NOT_FOUND` if the `public_profiles` doc does not exist. No data corruption
+results (the transaction aborts without committing anything), but the callable
+returns `HttpsError("internal")` instead of a meaningful error for any user
+whose profile doc was never created. The test seeds both docs unconditionally
+so the emulator suite can't surface this gap.
+
+Fix: replace both `tx.update` calls with `tx.set(..., { merge: true })`. A
+`set` with `merge: true` is an upsert — safe for both absent and existing docs.
+
+**Patterns worth remembering:**
+
+- **`tx.update` vs `tx.set(merge: true)` in transactions**: `tx.update` fails
+  with `NOT_FOUND` on a missing doc; `tx.set(data, { merge: true })` is the
+  safe upsert alternative. For `FieldValue.increment` writes on aggregate docs
+  that MIGHT not exist yet (profile docs created asynchronously on first sign-in,
+  join-era accounts, race conditions), always use `set + merge`.
+
+- **Integration test seeders hide the missing-doc class of bugs.** When every
+  test case calls `seedProfile()` before the function under test, any `tx.update`
+  precondition failure is invisible. Add a test variant that deliberately omits
+  the profile seed whenever the code path touches a doc that could reasonably
+  be absent.
+
+- **Early-return inside a transaction with no writes is valid and correct.**
+  `database.runTransaction(async tx => { ...; return value; })` with zero writes
+  commits an empty transaction (no-op). The SDK does not throw. Verified in B1
+  context: the `status === "accepted" && alreadyFriends` early return on line
+  127-129 is safe.
+
+- **Consent gate is transaction-local.** The `toUserId !== callerUid` check
+  (permission-denied path) occurs BEFORE any writes within the same transaction
+  execution. There is no path where writes precede the gate. Future reviewers
+  should verify this property explicitly whenever the guard and the writes
+  are both inside the same `runTransaction` callback.
+
+### 2026-06-21 — BUT-1167 (AI8) prompt-changelog CI gate [Pattern discovered]
+
+New CI gate failing when an LLM prompt in `gemini-client.ts` changes without a
+matching `PROMPT_CHANGELOG.md` update. Pure core +
+CLI + workflow + hand-rolled test. Files: `functions/src/ci/prompt-changelog-guard.ts`
+(pure `promptChangelogViolation(changedFiles, geminiClientDiff)`),
+`functions/src/ci/prompt-changelog-guard-cli.ts` (git-driven wrapper, exits 1),
+`functions/src/__tests__/prompt-changelog-guard.test.ts` (10 cases),
+`.github/workflows/prompt-changelog-gate.yml` (Node-only, no Flutter).
+
+**New family**: `ci/` — pure CI-gate logic + thin git/process CLI wrappers,
+deployed-irrelevant (excluded from `index.ts`). Test command:
+`npm run test:prompt-changelog-guard` (auto-discovered by
+`scripts/run-all-tests.js` since it's a `test:*` script).
+
+| Path | Concern | Trigger | Test |
+|---|---|---|---|
+| `ci/` | Pure gate logic + git CLI wrapper, not deployed | n/a (run in GitHub Actions) | `test:<name>` |
+
+**Patterns worth remembering**:
+
+- **Token-matching on changed lines is NOT enough for multi-line prompts.**
+  The prompts are big backtick template literals. Editing a prompt's *interior
+  body text* (the most common + most quality-relevant change) produces a diff
+  whose `+`/`-` lines carry NO prompt token — only the surrounding `const
+  RECIPE_EXTRACTION_SYSTEM_PROMPT = \`...` declaration does, and that sits on a
+  context line. My first cut missed this; my own test case (a') caught it. Fix:
+  also scan the **git hunk header's enclosing-declaration context**. For TS,
+  `git diff` appends the enclosing declaration after the closing `@@`, e.g.
+  `@@ -252,7 +252,7 @@ export const RECIPE_EXTRACTION_SYSTEM_PROMPT = \`...`.
+  If a hunk's context names a prompt token AND the hunk changes a line, it's a
+  prompt edit. Verified empirically against a real `sed` body edit before
+  coding the heuristic — don't guess what git emits, generate a sample diff.
+
+- **Two-signal detection avoids both misses and false-positives.** Signal 1:
+  prompt token on a changed line (version bump / constant decl / INJECTION_DEFENSE).
+  Signal 2: changed line inside a prompt-declaration hunk (interior body edit).
+  Context lines and `+++`/`---` file headers never trip it alone, so an edit to
+  a `estimateTokenCount` helper (whose hunk context is the function name, no
+  prompt token) correctly passes — the explicit no-false-positive case.
+
+- **`_SYSTEM_PROMPT` substring beats enumerating constant names.** Matching the
+  shared suffix covers all five current prompts AND any future `*_SYSTEM_PROMPT`
+  without a code change. Same spirit as the BUT-641 route-allowlist drift guard
+  but inverted (here we WANT new constants auto-covered).
+
+- **Diff-base resolution in the workflow.** PR events: `github.event.pull_request.base.sha`.
+  Push events: `github.event.before` (guard against the all-zero first-push
+  SHA → fall back to `HEAD^`). `fetch-depth: 0` is mandatory so the base commit
+  exists locally. The CLI takes `merge-base(base, HEAD)` internally so it only
+  sees this branch's own changes, not unrelated commits on the base.
+
+- **Pure core / git CLI split is the testable shape for CI gates.** The pure
+  function takes `(changedFiles, diff)` and is exhaustively unit-tested with
+  synthetic diffs; the CLI does the git plumbing and exits. End-to-end I also
+  validated the real CLI against a throwaway violating commit (exit 1) and the
+  fixed commit with changelog (exit 0) on a temp branch, then restored main.
+  Don't trust the unit test alone for a gate — prove the git wiring exits
+  correctly too.
+
+- **Convention check paid off: NO jest in this repo.** Task spec asked for a
+  "jest test" but the knowledge file (and every existing suite) uses the
+  hand-rolled `test()` harness via ts-node + `run-all-tests.js` auto-discovery.
+  Wrote the test in-harness instead; flagged the deviation rather than
+  introducing jest. Always reconcile a task's wording against the established
+  test convention before adding a framework.
+
+### 2026-06-22 — BUT-1352 (AI6) recipe-text splitter dedup — PREMISE STALE [Pattern discovered]
+
+Ticket asked to consolidate "duplicated recipe-text splitter logic" in
+`functions/src`. Investigated all `.split(` sites; there is NO genuine
+duplication. Closed as premise-stale, no refactor.
+
+Evidence map (so future passes don't re-chase this):
+- **Only one** recipe-text line-split exists: `llm/structure-recipe.ts:494`
+  `text.split("\n").filter((l) => l.trim().length > 0)` inside
+  `buildIngredientLinesPrompt` — counts already-newline-separated ingredient
+  lines from the Dart client to interpolate the count into the prompt.
+  Single occurrence in the whole LLM pipeline.
+- `llm/ocr-recipe-image.ts` — zero text line-splitting (URLs + JSON only).
+- `llm/gemini-client.ts` — zero text line-splitting; response handling is
+  `JSON.parse` + the BUT-577 brace-counter salvage, not line splitting.
+- `llm/pii-scrubber.ts:285` — `split("/")` on a URL **pathname** for opaque-
+  token redaction. Different delimiter/input/intent.
+- `admin/sync-ingredients.ts:158` — `content.split("\n").filter((l) => l.trim())`
+  looks structurally identical but is the first step of a **CSV parser** in a
+  manual non-deployed `admin/` script, feeding rows into the quote-aware
+  `parseCsvLine`. Sharing a helper would couple the deployed LLM pipeline to a
+  ts-node admin script for a one-liner — a false abstraction.
+- All other `.split` hits are unambiguous different-intent: `/` for Firestore
+  doc paths + Storage object names, `T` for ISO dates, `/\r?\n/` for the CI
+  prompt-changelog diff guard, `;`/`,` for CSV field lists + content-type headers.
+
+**Pattern worth remembering**: "scattered `.split()`" is NOT evidence of
+duplication. A real splitter-dedup needs the *same intent on the same input
+type* at 2+ sites. A line-split into trimmed non-empty lines that appears in a
+prompt builder and in a CSV parser are different intents that happen to share
+characters — don't extract. Per the ticket's own decision rule this is the
+"different-intent one-liners → do NOT refactor" branch.
