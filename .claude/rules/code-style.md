@@ -22,6 +22,7 @@
 
 ## Documentation Files
 - Prefer minimal documentation. Code should be self-documenting.
+- **Default to no new doc file — apply the auto-reachability test.** Before writing a `.md`/`.html`, ask: will a future session read this *on its own* — because a `.claude/rules/` file, an agent `*.knowledge.md`, a `/command`, or a code comment points at it — **or** is it explicitly for Malin? If neither, don't create it. "Felt thorough to write" is not a reason; write-only docs (analysis reports, audit verdicts, status snapshots) rot and get deleted later. Need scratch space for the current task? Keep it in `tasks/` and treat it as disposable, not a durable artifact.
 - Before creating any `.md` file, ask: Is this genuinely necessary? Could it go in an existing file?
 - Prefer updating existing docs over creating new ones
 - Avoid: README files for every directory, V1/V2 versions (update in place), analysis reports that won't be acted upon
