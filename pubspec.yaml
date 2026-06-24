@@ -98,6 +98,7 @@ dependencies:
   http_certificate_pinning: 3.0.1  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
   in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
   fl_chart: ^1.2.0
+  dio: ^5.9.2  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
 
 dev_dependencies:
   flutter_test:
@@ -139,6 +140,11 @@ dev_dependencies:
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
   sembast: ^3.8.5+2
+
+  # Test-only platform interfaces imported directly by unit tests
+  # (depend_on_referenced_packages enforcement).
+  plugin_platform_interface: ^2.1.8
+  firebase_core_platform_interface: ^6.0.3
 
 flutter:
   generate: true
