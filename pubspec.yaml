@@ -32,7 +32,7 @@ dependencies:
   firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
   flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
   timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
-  device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. See BUT-750.
+  device_info_plus: 12.3.0  # PINNED — 12.4.0+ shipped a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. BUT-1367: the 13.1.0 lift is split into its own follow-up because it forces win32 6.x → package_info_plus 10.x (two extra majors); not worth bundling into the connectivity_plus PR.
   freerasp: 8.0.0  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds. 8.0.0 reviewed (BUT-1218): its 5 breaking changes (onAllChecksDone→onAllChecksFinished, installerStore, reasons-list, blocklist, SuspiciousAppDetectionConfig) are all on surfaces we don't use; root/hook/tamper callbacks unchanged.
 
   # ==================== STATE MANAGEMENT ====================
@@ -50,7 +50,7 @@ dependencies:
 
   # ==================== NETWORKING ====================
   http: ^1.6.0
-  connectivity_plus: 7.0.0  # PINNED — 7.1.0+ ships a NWPath.isUltraConstrained call gated on iOS 26.0 (a non-existent SDK), same speculative-API gambit as device_info_plus 12.4.0. Fails iOS Build Validation. See BUT-750.
+  connectivity_plus: ^7.1.0  # BUT-1367: lifting the old 7.0.0 pin — re-check found no NWPath.isUltraConstrained (fake iOS-26 SDK) call in the 7.1.x changelog, so the original pin looks over-cautious. MUST be confirmed green on the iOS lane before merge; revert to 7.0.0 if red.
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.2.2
