@@ -112,6 +112,11 @@ nul
 # Temp analysis files
 *tmp_analyze*
 
+# Transient tooling scratch: Cloud Functions list dump + superpowers SDD state.
+# Local-only artifacts, never project code — MUST NOT be committed.
+*.tmp.json
+/.superpowers/
+
 # Scratch dumps at repo root (Linear paginator output, overnight logs, etc.)
 # Anchored to root so subdirs can still have legitimate `_helper.txt` files.
 /_*.txt
