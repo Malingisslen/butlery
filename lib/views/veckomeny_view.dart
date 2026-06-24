@@ -352,25 +352,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.l10n.menuShoppingListGenerated(
-            result.listName,
-            result.itemCount,
-          ),
-        ),
-        action: SnackBarAction(
-          label: context.l10n.commonShow,
-          // The snackbar can outlive this route — guard the late tap.
-          onPressed: () {
-            if (mounted) {
-              Navigator.pushNamed(context, Routes.shoppingList);
-            }
-          },
-        ),
-      ),
-    );
+    // BUT-900 follow-on: navigate straight to the generated list (mirrors the
+    // lista-mode FAB) instead of a toast-only "VISA" the user can miss — the
+    // list view itself is the confirmation. (mounted already guarded above; only
+    // synchronous checks sit between, so no second guard is needed here.)
+    Navigator.pushNamed(context, Routes.shoppingList);
   }
 
   List<Widget> _buildHeaderActions(

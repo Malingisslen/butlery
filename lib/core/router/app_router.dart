@@ -201,10 +201,15 @@ class AppRouter {
           if (arguments is Map<String, dynamic>) {
             final initialRecipe = arguments['initialRecipe'];
             final isTemplate = arguments['isTemplate'] as bool? ?? false;
+            // Onboarding opens the form mid-wizard and passes false so save pops
+            // back into its flow instead of flinging the user to a recipe detail.
+            final navigateToDetailOnSave =
+                arguments['navigateToDetailOnSave'] as bool? ?? true;
             return _buildRoute(
               SkrivSjalvReceptView(
                 initialRecipe: initialRecipe,
                 isTemplate: isTemplate,
+                navigateToDetailOnSave: navigateToDetailOnSave,
               ),
               settings,
               Routes.getAnimationType(routeName),

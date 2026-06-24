@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
@@ -36,10 +37,16 @@ class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
   final bool isTemplate;
 
+  /// After a successful save, navigate to the new recipe's detail page (default)
+  /// so the user sees what they created. Onboarding passes false to keep its own
+  /// flow — see [RecipeSaveNavigation].
+  final bool navigateToDetailOnSave;
+
   const SkrivSjalvReceptView({
     super.key,
     this.initialRecipe,
     this.isTemplate = false,
+    this.navigateToDetailOnSave = true,
   });
 
   @override
@@ -50,13 +57,17 @@ class SkrivSjalvReceptView extends StatelessWidget {
         initialRecipe: initialRecipe,
         isTemplate: isTemplate,
       ),
-      child: const _SkrivSjalvReceptViewContent(),
+      child: _SkrivSjalvReceptViewContent(
+        navigateToDetailOnSave: navigateToDetailOnSave,
+      ),
     );
   }
 }
 
 class _SkrivSjalvReceptViewContent extends StatefulWidget {
-  const _SkrivSjalvReceptViewContent();
+  const _SkrivSjalvReceptViewContent({required this.navigateToDetailOnSave});
+
+  final bool navigateToDetailOnSave;
 
   @override
   State<_SkrivSjalvReceptViewContent> createState() =>
@@ -212,7 +223,13 @@ class _SkrivSjalvReceptViewContentState
               );
             }
           }
-          if (mounted) Navigator.of(context).pop(savedRecipe);
+          if (mounted) {
+            RecipeSaveNavigation.afterSuccessfulSave(
+              context,
+              savedRecipe,
+              navigateToDetail: widget.navigateToDetailOnSave,
+            );
+          }
         } else {
           // After in-helper retries are exhausted (`withRetry` in the
           // recipe-save path), surface "Försök igen" so the user can try again

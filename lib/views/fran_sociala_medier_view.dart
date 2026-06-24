@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
-import 'package:butlery/views/skriv_sjalv_recept_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -204,14 +204,17 @@ class _FranSocialaMedierViewContentState
           AllergenSetupBanner.show(context);
         }
       }
-      Navigator.push(
+      // BUT-900 follow-on: match the smart-import path — replace this text-import
+      // form with the recipe form (named route) so saving lands on the new
+      // recipe with a clean back-stack, instead of leaving a dead, used-up
+      // import form behind.
+      Navigator.pushReplacementNamed(
         context,
-        MaterialPageRoute(
-          builder: (_) => SkrivSjalvReceptView(
-            initialRecipe: viewModel.parsedRecipe,
-            isTemplate: true,
-          ),
-        ),
+        Routes.manualEntry,
+        arguments: {
+          'initialRecipe': viewModel.parsedRecipe,
+          'isTemplate': true,
+        },
       );
     } else if (context.mounted && viewModel.hasError) {
       // Use UtilityComponents.showErrorSnackbar
@@ -249,7 +252,14 @@ class _FranSocialaMedierViewContentState
         context,
         context.l10n.importComplete(selected.length, 0),
       );
-      if (context.mounted) Navigator.of(context).maybePop();
+      // BUT-900 follow-on: land on the recipe list so the user sees the batch
+      // they just imported, instead of bouncing back to the stale import form.
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          Routes.home,
+          (route) => false,
+        );
+      }
     } else if (viewModel.hasError) {
       UtilityComponents.showErrorSnackbar(context, viewModel.error!);
     }

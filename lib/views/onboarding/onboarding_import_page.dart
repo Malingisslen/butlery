@@ -242,7 +242,11 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
       // 'recipe' was silently dropped, opening the editor blank.
       Navigator.of(context).pushNamed(
         Routes.manualEntry,
-        arguments: {'initialRecipe': result.recipe},
+        arguments: {
+          'initialRecipe': result.recipe,
+          // Keep the wizard flow: save pops back here, not out to a recipe detail.
+          'navigateToDetailOnSave': false,
+        },
       );
     }
   }
