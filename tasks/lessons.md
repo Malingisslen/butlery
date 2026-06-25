@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] Dedup is against CURRENT CODE, not closed-ticket titles — closed-ticket memory only covers "decided-no", not "fixed"
+- **Date**: 2026-06-25
+- **Trigger**: After a `/linear scan`, I justified the dedup tracker keeping ~357 closed tickets as "so the scan won't re-file things you already built." Malin pushed back: *"why would it flag the same thing? if the code was fixed then its not an issue.. if its not an issue it should be refiled?"* She was right — I'd blurred two distinct cases and overstated the tracker's role.
+- **Rule**: A genuinely **fixed** issue vanishes from the current code on its own, so a fresh scan can't re-find it — no closed-ticket memory needed for those. The dedup-against-closed-tickets memory only earns its place for **Canceled / won't-fix / accepted-deviation** items: the code pattern is still present (so a naive scan WILL flag it), but the *decision* to leave it was already made. So: (1) the authoritative dedup is verifying each candidate against the **live code** + checking it isn't a decided-no, NOT matching ticket titles; (2) if the current code genuinely has the issue and it isn't a recorded decision, FILE it even if a same-named ticket was closed — could be a regression; (3) never explain "net-new is scarce" as "because the dedup history is big" — the real cause is **code maturity** (few real issues left). Tracker = cheap first-pass filter + record of decisions, not source of truth.
+- **Example**: BUT-656/653/668/672/661 are *Canceled* (dead paid-tier premise), and their code patterns (e.g. the single hardcoded OCR cap) still sit in the code — a scan re-flags them every time; the tracker's job is remembering we said no, not that they were fixed.
+
 ### [Workflow] Don't offload judgment/labor to the user when they have no context you can't find yourself
 - **Date**: 2026-06-09 (mined from session transcripts, adversarially verified)
 - **Trigger**: 2 distinct sessions — Claude handed self-resolvable decisions and tedious-but-mechanical work back to the user despite having authored every artifact involved. User pushback: *"allt är gjort av dig — jag har inget extra minne eller koll än vad du kan hitta"* and *"är det inte enklast om du rättar facit?"*

@@ -43,6 +43,56 @@ export async function batchUpdateQuery(
 }
 
 /**
+ * Like batchUpdateQuery, but pages the READ with a documentId cursor so the
+ * full result set is never held in memory at once. Use for unbounded fan-out
+ * queries (e.g. cascading an ingredient change to every recipe that uses it),
+ * where a popular match could return thousands of docs and a single `.get()`
+ * would risk an out-of-memory crash.
+ *
+ * Orders by `__name__` (documentId), which is always available and needs no
+ * composite index even alongside an `array-contains`/equality predicate. The
+ * update must not change a field the base query filters on, otherwise the
+ * cursor could skip or revisit docs.
+ *
+ * Each page is at most `pageSize` docs (capped at BATCH_LIMIT so one page = one
+ * write batch). Returns the total number of docs updated.
+ */
+export async function batchUpdateQueryPaginated(
+  baseQuery: admin.firestore.Query,
+  updates: Record<string, unknown>,
+  db: admin.firestore.Firestore,
+  pageSize: number = BATCH_LIMIT
+): Promise<number> {
+  const limit = Math.min(Math.max(1, pageSize), BATCH_LIMIT);
+  const ordered = baseQuery.orderBy(admin.firestore.FieldPath.documentId());
+
+  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let total = 0;
+
+  for (;;) {
+    let page = ordered.limit(limit);
+    if (lastDoc) {
+      page = page.startAfter(lastDoc);
+    }
+    const snapshot = await page.get();
+    if (snapshot.empty) break;
+
+    const batch = db.batch();
+    for (const doc of snapshot.docs) {
+      batch.update(doc.ref, updates);
+    }
+    await batch.commit();
+
+    total += snapshot.size;
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+    if (snapshot.size < limit) break;
+  }
+
+  return total;
+}
+
+/**
  * Batch-update docs matching a query with per-doc update maps.
  */
 export async function batchUpdateDocs(

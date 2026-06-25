@@ -12,7 +12,7 @@ import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
-import { batchUpdateRefs } from "../shared/batch-update";
+import { batchUpdateQueryPaginated } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
@@ -114,33 +114,29 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
     );
 
     const cascadeOperation = async (): Promise<void> => {
-      // Query recipes that use this ingredient
-      const recipesSnapshot = await getDb()
+      const db = getDb();
+      // Paginate the read: a common ingredient can match thousands of recipes,
+      // and loading them all at once risks an out-of-memory crash.
+      const recipesQuery = db
         .collection(Collections.recipes)
         .where(
           "core.ingredientsNormalized",
           "array-contains",
           ingredientNameNormalized
-        )
-        .get();
+        );
 
-      if (recipesSnapshot.empty) {
+      const totalUpdated = await batchUpdateQueryPaginated(
+        recipesQuery,
+        { "core.tagResult.generatorVersion": "stale-properties" },
+        db
+      );
+
+      if (totalUpdated === 0) {
         logger.info(
           `No recipes found using ingredient "${ingredientName}"`
         );
         return;
       }
-
-      logger.info(
-        `Found ${recipesSnapshot.size} recipes using "${ingredientName}"`
-      );
-
-      const db = getDb();
-      const totalUpdated = await batchUpdateRefs(
-        recipesSnapshot.docs.map((doc) => doc.ref),
-        () => ({ "core.tagResult.generatorVersion": "stale-properties" }),
-        db
-      );
 
       logger.info(
         `Marked ${totalUpdated} recipes for retagging due to property change for "${ingredientName}"`
