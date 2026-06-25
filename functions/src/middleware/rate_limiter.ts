@@ -24,6 +24,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
+import { hashUid } from "../shared/hash-uid";
 
 // =============================================================================
 // Types
@@ -298,7 +299,7 @@ async function logRateLimitViolation(
   try {
     await admin.firestore().collection("system_events").add({
       type: "rate_limit_violation",
-      userId,
+      userIdHash: hashUid(userId),
       operationType,
       remainingTokens: result.remainingTokens,
       retryAfterMs: result.retryAfterMs,
@@ -484,7 +485,7 @@ export function withRateLimit<TRequest, TResponse>(
     const globalAllowed = await checkGlobalLimit();
     if (!globalAllowed) {
       logger.warn(
-        `Global LLM limit exceeded for ${operationType} by user ${userId}`
+        `Global LLM limit exceeded for ${operationType} by user ${hashUid(userId)}`
       );
       throw new HttpsError(
         "resource-exhausted",
@@ -503,7 +504,7 @@ export function withRateLimit<TRequest, TResponse>(
       const retryAfterSeconds = Math.ceil((rateLimitResult.retryAfterMs || 60000) / 1000);
 
       logger.warn(
-        `Rate limit exceeded for user ${userId} on ${operationType}. ` +
+        `Rate limit exceeded for user ${hashUid(userId)} on ${operationType}. ` +
         `Remaining: ${rateLimitResult.remainingTokens}, Retry after: ${retryAfterSeconds}s`
       );
 
