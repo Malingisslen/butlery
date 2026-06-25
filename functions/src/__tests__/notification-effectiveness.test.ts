@@ -103,7 +103,11 @@ interface FakeDoc {
 }
 
 interface FakeQuery {
-  get(): Promise<{ docs: FakeDoc[] }>;
+  select: (...fields: string[]) => FakeQuery;
+  orderBy: (field: string) => FakeQuery;
+  limit: (n: number) => FakeQuery;
+  startAfter: (doc: unknown) => FakeQuery;
+  get(): Promise<{ docs: FakeDoc[]; size: number; empty: boolean }>;
 }
 
 interface FakeCol {
@@ -133,9 +137,17 @@ function makeFakeDb(
       } else {
         docs = [];
       }
+      // The pagination chain is a no-op here: each case has far fewer docs
+      // than one page, so the consumer reads everything in a single page and
+      // never advances the cursor. `get()` mirrors a real QuerySnapshot's
+      // `.size`/`.empty` so the pagination loop terminates.
       const fakeQuery: FakeQuery = {
+        select: () => fakeQuery,
+        orderBy: () => fakeQuery,
+        limit: () => fakeQuery,
+        startAfter: () => fakeQuery,
         async get() {
-          return { docs };
+          return { docs, size: docs.length, empty: docs.length === 0 };
         },
       };
       // Chained .where(...) returns the same fake query.

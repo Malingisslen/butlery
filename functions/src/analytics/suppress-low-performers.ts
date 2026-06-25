@@ -34,10 +34,56 @@ export const MIN_SENDS = 50;
 export const CTR_THRESHOLD = 0.05;
 const WINDOW_DAYS = 30;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+// Page size for streaming the 30-day event collections. Each page is folded
+// into per-type counters and discarded, so memory stays bounded no matter how
+// many events the window holds.
+const EVENTS_PAGE_SIZE = 1000;
 
 interface TypeAgg {
   sent: number;
   opened: number;
+}
+
+/**
+ * Streams a timestamped event collection and folds each doc's notificationType
+ * into `agg` via `bump`. Pages with a cursor on the timestamp field (the range
+ * field, so no composite index is needed); the timestamp stays in the
+ * projection because the cursor reads it from each page's last document.
+ */
+async function aggregateByType(
+  db: admin.firestore.Firestore,
+  collection: string,
+  timestampField: string,
+  cutoff: admin.firestore.Timestamp,
+  agg: Record<string, TypeAgg>,
+  bump: (entry: TypeAgg) => void
+): Promise<void> {
+  const base = db
+    .collection(collection)
+    .where(timestampField, ">=", cutoff)
+    .select("notificationType", timestampField)
+    .orderBy(timestampField);
+
+  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+
+  for (;;) {
+    let page = base.limit(EVENTS_PAGE_SIZE);
+    if (lastDoc) {
+      page = page.startAfter(lastDoc);
+    }
+    const snap = await page.get();
+    if (snap.empty) break;
+
+    for (const doc of snap.docs) {
+      const type = doc.data().notificationType as string | undefined;
+      if (!type) continue;
+      if (!agg[type]) agg[type] = { sent: 0, opened: 0 };
+      bump(agg[type]);
+    }
+
+    lastDoc = snap.docs[snap.docs.length - 1];
+    if (snap.size < EVENTS_PAGE_SIZE) break;
+  }
 }
 
 export interface RunDeps {
@@ -66,34 +112,27 @@ export async function runSuppressLowPerformers(deps: RunDeps = {}): Promise<{
     new Date(now.getTime() - WINDOW_DAYS * MS_PER_DAY)
   );
 
-  // Aggregate sends.
-  const sendsSnap = await db
-    .collection("notification_send_events")
-    .where("sentAt", ">=", cutoff)
-    .get();
-
   const agg: Record<string, TypeAgg> = {};
-  for (const doc of sendsSnap.docs) {
-    const d = doc.data();
-    const type = d.notificationType as string | undefined;
-    if (!type) continue;
-    if (!agg[type]) agg[type] = { sent: 0, opened: 0 };
-    agg[type].sent++;
-  }
+
+  // Aggregate sends.
+  await aggregateByType(
+    db,
+    "notification_send_events",
+    "sentAt",
+    cutoff,
+    agg,
+    (entry) => entry.sent++
+  );
 
   // Aggregate opens. Client writes `{userId, notificationType, openedAt}`.
-  const opensSnap = await db
-    .collection("notification_opened_events")
-    .where("openedAt", ">=", cutoff)
-    .get();
-
-  for (const doc of opensSnap.docs) {
-    const d = doc.data();
-    const type = d.notificationType as string | undefined;
-    if (!type) continue;
-    if (!agg[type]) agg[type] = { sent: 0, opened: 0 };
-    agg[type].opened++;
-  }
+  await aggregateByType(
+    db,
+    "notification_opened_events",
+    "openedAt",
+    cutoff,
+    agg,
+    (entry) => entry.opened++
+  );
 
   let flipped = 0;
   let evaluated = 0;

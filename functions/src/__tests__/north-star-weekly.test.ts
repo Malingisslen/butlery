@@ -68,6 +68,21 @@ function makeEventCol(events: FakeEvent[], now: Date) {
       if (op === "<") toMs = v;
       return col;
     },
+    // Pagination chain is no-op here: the test windows hold far fewer than one
+    // page, so production's `fetchWindowAgg` reads everything in a single page
+    // and never advances the cursor.
+    select() {
+      return col;
+    },
+    orderBy() {
+      return col;
+    },
+    limit() {
+      return col;
+    },
+    startAfter() {
+      return col;
+    },
     async get() {
       const docs = events
         .filter((e) => {
@@ -83,7 +98,9 @@ function makeEventCol(events: FakeEvent[], now: Date) {
             },
           }),
         }));
-      return { docs };
+      // Mirror a real QuerySnapshot: production reads `.size`/`.empty` to drive
+      // pagination, so the fake must expose them too.
+      return { docs, size: docs.length, empty: docs.length === 0 };
     },
   };
   return col;

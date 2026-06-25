@@ -34,6 +34,11 @@ import { logAnalyticsEvent } from "../shared/analytics-server";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// Page size for streaming activity_events. The read is aggregated per page
+// (distinct users + cook count) and pages are discarded, so peak memory is
+// one page regardless of how many events fall in the window.
+const EVENTS_PAGE_SIZE = 1000;
+
 export interface NorthStarMetrics {
   wau: number;
   totalCooks: number;
@@ -47,10 +52,10 @@ export interface NorthStarMetrics {
   isoWeek: string;
 }
 
-interface ActivityEventLite {
-  userId: string;
-  eventType: string;
-  timestampMs: number;
+/** Per-window aggregate: distinct active users and cook-event count. */
+interface WindowAgg {
+  users: Set<string>;
+  cooks: number;
 }
 
 export interface RunDeps {
@@ -75,35 +80,63 @@ export function isoWeekLabel(date: Date): string {
 }
 
 /**
- * Fetches activity events for the [from, to) window and normalizes to
- * the lite shape. Accepts both schema variants.
+ * Aggregates activity events for the [from, to) window into distinct active
+ * users and a cook-event count. Accepts both schema variants. Pages the read
+ * with a createdAt cursor so the full window is never held in memory at once;
+ * a `.select()` projection keeps each page's payload to the fields we use.
+ *
+ * `createdAt` is the range field, so ordering by it needs only the automatic
+ * single-field index — no composite. It must stay in the projection because
+ * the cursor reads its value from each page's last document.
  */
-async function fetchEvents(
+async function fetchWindowAgg(
   db: admin.firestore.Firestore,
   from: Date,
   to: Date
-): Promise<ActivityEventLite[]> {
+): Promise<WindowAgg> {
   const fromTs = admin.firestore.Timestamp.fromDate(from);
   const toTs = admin.firestore.Timestamp.fromDate(to);
   // We don't constrain by `eventType` here — wau needs every event. We
   // filter cook-only at aggregation time.
-  const snap = await db
+  const base = db
     .collection("activity_events")
     .where("createdAt", ">=", fromTs)
     .where("createdAt", "<", toTs)
-    .get();
+    .select("userId", "actorId", "eventType", "type", "createdAt")
+    .orderBy("createdAt");
 
-  const out: ActivityEventLite[] = [];
-  for (const doc of snap.docs) {
-    const d = doc.data();
-    const userId = (d.userId as string | undefined) ?? (d.actorId as string | undefined);
-    const eventType =
-      (d.eventType as string | undefined) ?? (d.type as string | undefined) ?? "";
-    const ts = d.createdAt as admin.firestore.Timestamp | undefined;
-    if (!userId || !ts) continue;
-    out.push({ userId, eventType, timestampMs: ts.toMillis() });
+  const users = new Set<string>();
+  let cooks = 0;
+  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+
+  for (;;) {
+    let page = base.limit(EVENTS_PAGE_SIZE);
+    if (lastDoc) {
+      page = page.startAfter(lastDoc);
+    }
+    const snap = await page.get();
+    if (snap.empty) break;
+
+    for (const doc of snap.docs) {
+      const d = doc.data();
+      const userId =
+        (d.userId as string | undefined) ?? (d.actorId as string | undefined);
+      if (!userId) continue;
+      users.add(userId);
+      const eventType =
+        (d.eventType as string | undefined) ??
+        (d.type as string | undefined) ??
+        "";
+      if (eventType === "recipe_cooked" || eventType === "cooked") {
+        cooks++;
+      }
+    }
+
+    lastDoc = snap.docs[snap.docs.length - 1];
+    if (snap.size < EVENTS_PAGE_SIZE) break;
   }
-  return out;
+
+  return { users, cooks };
 }
 
 /**
@@ -133,28 +166,22 @@ export async function runNorthStarWeekly(deps: RunDeps = {}): Promise<NorthStarM
   const w2Start = new Date(now.getTime() - 21 * MS_PER_DAY);
   const w3Start = new Date(now.getTime() - 28 * MS_PER_DAY);
 
-  // Fetch all four weeks in parallel.
-  const [w0, w1, w2, w3] = await Promise.all([
-    fetchEvents(db, w0Start, w0End),
-    fetchEvents(db, w1Start, w0Start),
-    fetchEvents(db, w2Start, w1Start),
-    fetchEvents(db, w3Start, w2Start),
+  // Aggregate all four weeks in parallel. Each call streams its window and
+  // returns only the distinct-user set + cook count, never the raw events.
+  const [a0, a1, a2, a3] = await Promise.all([
+    fetchWindowAgg(db, w0Start, w0End),
+    fetchWindowAgg(db, w1Start, w0Start),
+    fetchWindowAgg(db, w2Start, w1Start),
+    fetchWindowAgg(db, w3Start, w2Start),
   ]);
 
-  const usersW0 = new Set(w0.map((e) => e.userId));
-  const usersW1 = new Set(w1.map((e) => e.userId));
-  const usersW2 = new Set(w2.map((e) => e.userId));
-  const usersW3 = new Set(w3.map((e) => e.userId));
-
-  const wau = usersW0.size;
-  const totalCooks = w0.filter(
-    (e) => e.eventType === "recipe_cooked" || e.eventType === "cooked"
-  ).length;
+  const wau = a0.users.size;
+  const totalCooks = a0.cooks;
   const cooksPerActiveUser = wau === 0 ? 0 : totalCooks / wau;
 
-  const retentionW1 = retentionFraction(usersW0, usersW1);
-  const retentionW2 = retentionFraction(usersW0, usersW2);
-  const retentionW3 = retentionFraction(usersW0, usersW3);
+  const retentionW1 = retentionFraction(a0.users, a1.users);
+  const retentionW2 = retentionFraction(a0.users, a2.users);
+  const retentionW3 = retentionFraction(a0.users, a3.users);
 
   const isoWeek = isoWeekLabel(w0End);
 
