@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] To break down / plan an epic, QUERY ITS CHILDREN FIRST — never plan from the epic's description
+- **Date**: 2026-06-26
+- **Trigger**: Asked to "plan BUT-1332" (break a feature-inventory epic into shippable child tickets), I read the epic *body* — which still narrated all the work as pending — and wrote a plan to create 15 children. The fresh-context plan auditor checked **live Linear** and found BUT-1332 **already had 15 children (BUT-1333–1347), all `Done`** (shipped 2026-06-21→23). My plan would have created 15 exact duplicates of completed work. The audit (cold-eyes, queried state instead of trusting text) is the only reason no duplicates were filed.
+- **Rule**: An epic's description is a **planning snapshot that goes stale the moment its children ship** — it is never authoritative for "what's left." Before planning, decomposing, or "filing the children" of ANY epic/umbrella ticket, the FIRST action is `list_issues parentId=<epic>` and read the children's **statuses**. If children exist, the breakdown is already done — the only residual work is reconciling the stale epic shell (close it / annotate it), not re-deriving children. This is the epic-specific form of the existing Step-0 premise rule (line ~71) and the backlog-classification rule (line ~20): both say *check live state, never the ticket prose* — this case is sharper because the misleading prose is the epic's own body. Reinforces `memory/project_backlog_triage_2026-06-15.md` ("plan from the actual backlog, never from an epic's child-list description").
+- **Example**: BUT-1332's body listed the gaps as a to-do; querying its children showed BUT-1333–1347 all Done. Correct move was to close the epic with a "✅ all children shipped; do not re-derive from the list below" note — zero tickets created.
+
 ### [Workflow] Dedup is against CURRENT CODE, not closed-ticket titles — closed-ticket memory only covers "decided-no", not "fixed"
 - **Date**: 2026-06-25
 - **Trigger**: After a `/linear scan`, I justified the dedup tracker keeping ~357 closed tickets as "so the scan won't re-file things you already built." Malin pushed back: *"why would it flag the same thing? if the code was fixed then its not an issue.. if its not an issue it should be refiled?"* She was right — I'd blurred two distinct cases and overstated the tracker's role.
