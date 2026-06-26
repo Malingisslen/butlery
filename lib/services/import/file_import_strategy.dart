@@ -160,6 +160,11 @@ class FileImportStrategy extends ImportStrategy {
         return await _importMultipleFromCsv(content);
       } else if (extension == 'xlsx' || extension == 'xls') {
         return await _importMultipleFromExcel(content);
+      } else if (extension == 'paprikarecipes') {
+        // BUT-1371: route Paprika through the multi-recipe path so an entire
+        // migrated library imports, not just the first recipe (or — via this
+        // bulk path, which the file-import UI uses — previously none at all).
+        return _parsePaprikaRecipes(content);
       }
 
       throw Exception('Unsupported file format: $extension');
@@ -488,13 +493,21 @@ class FileImportStrategy extends ImportStrategy {
     return '$v';
   }
 
-  ImportResult _importFromPaprika(Uint8List bytes) {
+  /// Parses every recipe in a `.paprikarecipes` archive.
+  ///
+  /// A Paprika export is a zip whose entries are each one gzip-compressed JSON
+  /// recipe, so a real library holds many recipes. We collect them all (BUT-1371:
+  /// the old path returned only the first, silently dropping the rest of the
+  /// user's migrated library). Unparseable or oversized entries are skipped with
+  /// a warning rather than failing the whole import.
+  List<Recipe> _parsePaprikaRecipes(Uint8List bytes) {
     final archive = ZipDecoder().decodeBytes(bytes);
     // Bound decompression so a crafted .paprikarecipes (a zip of gzipped JSON,
-    // possibly shared by a third party) can't OOM the app (BUT-1370). The guard
-    // caps the outer zip entry before it inflates, and the gunzipped output
-    // before we parse it. A bomb entry throws and is skipped like any bad entry.
+    // possibly shared by a third party) can't OOM the app (BUT-1370). One guard
+    // spans the whole archive: it caps each outer zip entry before it inflates
+    // and bounds the total gunzipped JSON we retain across all recipes.
     final guard = DecompressionGuard();
+    final recipes = <Recipe>[];
 
     for (final file in archive.files) {
       if (!file.isFile) continue;
@@ -509,13 +522,29 @@ class FileImportStrategy extends ImportStrategy {
         final json =
             jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
         final recipe = _createRecipeFromPaprikaJson(json);
-        if (recipe != null) return ImportResult.success(recipe);
+        if (recipe != null) recipes.add(recipe);
       } catch (e) {
+        // Per-entry: a corrupt/oversized entry (incl. a DecompressionBomb-
+        // Exception from the guard) is skipped, not fatal. Once the archive
+        // total cap trips, every remaining entry trips it too, so a pathological
+        // archive degrades to "import what fit under the cap" with warnings —
+        // never an OOM, never a silent all-or-nothing drop.
         AppLogger.warning('Skipping Paprika entry ${file.name}: $e');
       }
     }
 
-    return ImportResult.failure('No recipes found in Paprika file');
+    return recipes;
+  }
+
+  /// Single-recipe entry point (used by [importFromContent], whose ImportResult
+  /// carries one recipe). Returns the first parsed recipe; the multi-recipe
+  /// migration path goes through [importMultipleFromContent].
+  ImportResult _importFromPaprika(Uint8List bytes) {
+    final recipes = _parsePaprikaRecipes(bytes);
+    if (recipes.isEmpty) {
+      return ImportResult.failure('No recipes found in Paprika file');
+    }
+    return ImportResult.success(recipes.first);
   }
 
   Recipe? _createRecipeFromPaprikaJson(Map<String, dynamic> json) {
