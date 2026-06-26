@@ -10754,6 +10754,14 @@
   "@a11yPingComposeSend": {
     "description": "Semantics label for the send button in the ping compose sheet."
   },
+  "cookingModeSubstitutionApplied": "Ingredient swapped",
+  "@cookingModeSubstitutionApplied": {
+    "description": "Snackbar confirming an ingredient substitution was saved to the recipe during cooking mode."
+  },
+  "cookingModeSubstitutionFailed": "Couldn't swap ingredient. Please try again.",
+  "@cookingModeSubstitutionFailed": {
+    "description": "Snackbar shown when saving an ingredient substitution failed (e.g. offline); prompts the user to retry."
+  },
   "cookingModeOpenEditToSwap": "Open edit mode to swap",
   "@cookingModeOpenEditToSwap": {
     "description": "Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead."

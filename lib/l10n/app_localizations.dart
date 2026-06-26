@@ -25631,6 +25631,18 @@ abstract class AppLocalizations {
   /// **'Skicka notis'**
   String get a11yPingComposeSend;
 
+  /// Snackbar confirming an ingredient substitution was saved to the recipe during cooking mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens utbytt'**
+  String get cookingModeSubstitutionApplied;
+
+  /// Snackbar shown when saving an ingredient substitution failed (e.g. offline); prompts the user to retry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte byta ingrediens. Försök igen.'**
+  String get cookingModeSubstitutionFailed;
+
   /// Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead.
   ///
   /// In sv, this message translates to:

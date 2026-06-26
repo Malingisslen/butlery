@@ -282,10 +282,12 @@ class _AuthViewState extends State<AuthView> {
                     onPressed: viewModel.isLoading
                         ? null
                         : () => _showPasswordResetDialog(context, viewModel),
+                    // BUT-1380: keep the compact padding but drop the
+                    // shrink-wrapped tap target — Flutter's default `padded`
+                    // size restores the 48dp hit area (WCAG 2.5.5 / Material)
+                    // without changing the visible layout.
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
                       context.l10n.authForgotPassword,

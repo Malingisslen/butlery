@@ -12,6 +12,7 @@ import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -411,11 +412,30 @@ class _IngredientsPanel extends StatelessWidget {
       return;
     }
 
-    await recipeService.updateIngredient(
-      vm.recipe.id,
-      index,
-      chosen.name,
-    );
+    // Persisting the swap can fail (offline / Firestore error). Without
+    // feedback the user believes the substitution was applied mid-cook when it
+    // wasn't, so confirm success and surface failure for a retry.
+    try {
+      await recipeService.updateIngredient(
+        vm.recipe.id,
+        index,
+        chosen.name,
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.cookingModeSubstitutionApplied),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Cooking-mode ingredient substitution failed', e);
+      if (!context.mounted) return;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.cookingModeSubstitutionFailed),
+        ),
+      );
+    }
   }
 
   Widget _buildPortionButton(

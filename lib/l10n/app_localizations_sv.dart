@@ -15354,6 +15354,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yPingComposeSend => 'Skicka notis';
 
   @override
+  String get cookingModeSubstitutionApplied => 'Ingrediens utbytt';
+
+  @override
+  String get cookingModeSubstitutionFailed =>
+      'Kunde inte byta ingrediens. Försök igen.';
+
+  @override
   String get cookingModeOpenEditToSwap => 'Öppna redigering för att byta';
 
   @override

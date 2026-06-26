@@ -15316,6 +15316,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yPingComposeSend => 'Send ping';
 
   @override
+  String get cookingModeSubstitutionApplied => 'Ingredient swapped';
+
+  @override
+  String get cookingModeSubstitutionFailed =>
+      'Couldn\'t swap ingredient. Please try again.';
+
+  @override
   String get cookingModeOpenEditToSwap => 'Open edit mode to swap';
 
   @override
