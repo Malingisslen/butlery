@@ -99,6 +99,14 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 10,
     refillIntervalMs: 60000,
   },
+  // BUT-1378: parse corrections fire on every recipe save. Declared explicitly
+  // (was silently falling through to `default`'s 30/10, contradicting the
+  // call-site's documented 60/min). 60 burst, refilling 60/min ≈ 1/sec.
+  logParseCorrection: {
+    maxTokens: 60,
+    refillRate: 60,
+    refillIntervalMs: 60000,
+  },
   // BUT-449: Web error reporting. Slightly tighter than logParseEvent —
   // a runaway error loop could otherwise flood Cloud Logging cheaply.
   logWebError: {

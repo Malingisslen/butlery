@@ -200,7 +200,8 @@ export const logParseCorrection = onCall(
     const userId = request.auth.uid;
     const data = request.data ?? {};
 
-    // 60/min — corrections fire on save, capped naturally by recipe-save cadence.
+    // Rate limit: 60/min (see logParseCorrection in RATE_LIMIT_CONFIGS) —
+    // corrections fire on save, capped naturally by recipe-save cadence.
     await enforceRateLimit(userId, "logParseCorrection");
 
     const result = validateAndPreparePayload(data);
