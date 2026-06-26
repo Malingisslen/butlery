@@ -82,6 +82,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/monitors/auto-analyze-monitor.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/world-watch-due-check.sh"
           }
         ]
       }

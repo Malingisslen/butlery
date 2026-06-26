@@ -1,0 +1,171 @@
+{
+  "_doc": "World-watch state for the role-org MVP. See docs/architecture/ROLE_ORG_DESIGN.md. Updated by the /world-watch skill; the SessionStart hook only reads lastScan to decide if a scan is due. Cadence days: weekly=7, monthly=30, quarterly=90.",
+  "cadenceDays": {
+    "weekly": 7,
+    "monthly": 30,
+    "quarterly": 90
+  },
+  "roles": [
+    {
+      "role": "Security Architect",
+      "cadence": "weekly",
+      "authority": "auto-ticket",
+      "watch_signals": [
+        "New/updated CVE or GitHub Advisory affecting a pinned dependency (freerasp, http_certificate_pinning, firebase_app_check, dio, http, crypto, flutter_onnxruntime) or any transitive Firebase/Dart pub package",
+        "freeRASP (Talsec) release: changes to root/jailbreak/Frida/hook/tamper detection thresholds, new attack-class coverage, or breaking callback API changes requiring re-review (cf. BUT-1218)",
+        "Firebase/GCP security bulletin or advisory touching Auth, App Check, Firestore/RTDB rules, Storage, or Cloud Functions (e.g. CVE-2025-0838-class fixes forcing a firebase_core bump)",
+        "New OWASP MASVS/MASTG/MASWE control, version bump, or test case that changes our mobile baseline (cert pinning, secure storage, anti-tampering, on-device-model integrity)",
+        "New mobile attack class or technique (Frida/Magisk bypass, emulator/bot evasion, instrumentation, model-extraction against on-device ONNX/CRF, TLS pin bypass) that defeats a current control",
+        "App Store Review Guideline or Google Play policy change with a security/privacy/data-sharing or target-API/permission deadline that gates a release"
+      ],
+      "sources": [
+        {
+          "name": "GitHub Advisory Database — Pub (Dart/Flutter) ecosystem",
+          "url": "https://github.com/advisories.atom?query=ecosystem%3Apub",
+          "type": "advisory"
+        },
+        {
+          "name": "freeRASP Flutter — GitHub Releases (Talsec)",
+          "url": "https://github.com/talsec/Free-RASP-Flutter/releases.atom",
+          "type": "release-notes"
+        },
+        {
+          "name": "Google Cloud / Firebase Security Bulletins",
+          "url": "https://docs.cloud.google.com/support/bulletins",
+          "type": "advisory"
+        },
+        {
+          "name": "OWASP Mobile Application Security (MASVS / MASTG / MASWE)",
+          "url": "https://github.com/OWASP/owasp-mastg/releases.atom",
+          "type": "docs"
+        },
+        {
+          "name": "Apple App Review Guidelines",
+          "url": "https://developer.apple.com/news/upcoming-requirements/",
+          "type": "regulator"
+        },
+        {
+          "name": "Google Play Console — Policy Announcements & Deadlines",
+          "url": "https://support.google.com/googleplay/android-developer/answer/16550159",
+          "type": "regulator"
+        },
+        {
+          "name": "Dart pub security advisories documentation",
+          "url": "https://dart.dev/tools/pub/security-advisories",
+          "type": "docs"
+        }
+      ],
+      "lastScan": null,
+      "snapshot": {}
+    },
+    {
+      "role": "Legal Counsel",
+      "cadence": "monthly",
+      "authority": "escalate-human",
+      "watch_signals": [
+        "App Store Review Guidelines revisions affecting UGC (1.2), age rating, privacy/data disclosure (5.1), AI-data consent, and external-link/payment rules",
+        "Google Play Developer Program Policy announcements: privacy/permissions, UGC moderation, news/magazine self-declaration, account/data deletion, billing & third-party store distribution deadlines",
+        "App Store / Google Play age-rating law and content-restriction mechanism changes (e.g. creator-content age gating, country-specific rating rollouts)",
+        "Konsumentverket / Marknadsföringslagen guidance on misleading marketing, hidden/influencer marketing in social media, environmental claims, and marketing to children",
+        "IMY (Swedish DPA) and EDPB GDPR guidance: DPIA requirements, breach-notification templates, lawful basis, AI/personal-data role allocation, AI Act market-surveillance role",
+        "Consumer & UGC liability: defamation / e-Commerce & DSA hosting-liability obligations for user-submitted recipes, ratings, and comments",
+        "Recipe/data-source licensing & ToS changes for any third-party recipe or ingredient data feeds the app ingests (copyright, attribution, scraping/AI-training terms)",
+        "EU Digital Services Act / consumer-law updates (e.g. omnibus directive, dark-patterns guidance) affecting in-app commerce and notice-and-action duties"
+      ],
+      "sources": [
+        {
+          "name": "Apple App Store Review Guidelines",
+          "url": "https://developer.apple.com/news/upcoming-requirements/",
+          "type": "docs"
+        },
+        {
+          "name": "Apple Developer News & Updates",
+          "url": "https://developer.apple.com/news/rss/news.rss",
+          "type": "release-notes"
+        },
+        {
+          "name": "Google Play Policy Announcements (Play Console Help)",
+          "url": "https://support.google.com/googleplay/android-developer/announcements/13412212",
+          "type": "changelog"
+        },
+        {
+          "name": "Konsumentverket – Marknadsföringslagen för företag",
+          "url": "https://www.konsumentverket.se/marknadsratt-foretag/marknadsforingslagen-for-foretag/",
+          "type": "regulator"
+        },
+        {
+          "name": "IMY – Nyheter och pressmeddelanden",
+          "url": "https://www.imy.se/nyheter/rss/",
+          "type": "regulator"
+        },
+        {
+          "name": "European Data Protection Board (EDPB)",
+          "url": "https://www.edpb.europa.eu/feeds/news_en.rss",
+          "type": "regulator"
+        },
+        {
+          "name": "EU Digital Services Act – official text & guidance",
+          "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2065",
+          "type": "regulator"
+        }
+      ],
+      "lastScan": null,
+      "snapshot": {}
+    },
+    {
+      "role": "Release / App-Store Compliance Manager",
+      "cadence": "weekly",
+      "authority": "auto-ticket",
+      "watch_signals": [
+        "New or revised Apple App Review Guideline sections (e.g. 4.3 low-value/spam, 1.2 age-rating/UGC, 5.1 privacy, 3.x business/IAP) that could trigger rejection of a recipe/pantry app",
+        "Apple Required Reason API / PrivacyInfo.xcprivacy manifest changes — new covered APIs, new SDK signature requirements, or enforcement dates that block app submission",
+        "Apple Developer Program License Agreement (DPLA) updates that must be accepted before the next release",
+        "Google Play Developer Program Policy changes with hard compliance deadlines (the Play policy deadlines timeline) — especially data/permissions, age-restricted content, account deletion, and target-API-level mandates",
+        "Google Play Data Safety form requirement changes — new data types, disclosure rules, or consistency-with-privacy-policy enforcement",
+        "Age-rating system changes (Apple's new age-rating tiers / questionnaire; Google Play / IARC content-rating updates) affecting the app's declared rating",
+        "Privacy-manifest / SDK privacy requirements for bundled third-party SDKs (Firebase, analytics, ONNX runtime deps) that must each ship their own manifest",
+        "App-store-driven privacy/consent UX norms (privacy nutrition labels, tracking-consent prompts, account-deletion entry points) — drifting expectations reviewers now enforce",
+        "Regional distribution rule changes (EU DMA / alternative distribution, Brazil, developer-verification mandates) that alter what must ship per market"
+      ],
+      "sources": [
+        {
+          "name": "Apple Developer News (RSS)",
+          "url": "https://developer.apple.com/news/rss/news.rss",
+          "type": "rss"
+        },
+        {
+          "name": "Apple App Review Guidelines",
+          "url": "https://developer.apple.com/news/upcoming-requirements/",
+          "type": "docs"
+        },
+        {
+          "name": "Apple — Adding a privacy manifest / Required Reason API",
+          "url": "https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk",
+          "type": "docs"
+        },
+        {
+          "name": "Google Play policies hub & deadline timeline",
+          "url": "https://developer.android.com/distribute/play-policies",
+          "type": "docs"
+        },
+        {
+          "name": "Google Play — Data safety section requirements",
+          "url": "https://support.google.com/googleplay/android-developer/answer/10787469",
+          "type": "docs"
+        },
+        {
+          "name": "Google Play Developer Policy Center",
+          "url": "https://play.google.com/about/developer-content-policy/",
+          "type": "docs"
+        },
+        {
+          "name": "Apple Developer software releases (RSS)",
+          "url": "https://developer.apple.com/news/releases/rss/releases.rss",
+          "type": "rss"
+        }
+      ],
+      "lastScan": null,
+      "snapshot": {}
+    }
+  ]
+}
