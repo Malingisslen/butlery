@@ -9829,6 +9829,7 @@
   "pantryAddIngredient": "Lägg till ingrediens",
   "pantryAddSheetTitle": "Lägg till ingrediens",
   "pantryEditSheetTitle": "Redigera ingrediens",
+  "pantryCouldNotSaveItem": "Kunde inte spara i skafferiet. Försök igen.",
   "pantryIngredientLabel": "Ingrediens",
   "pantryIngredientHint": "Sök ingrediens...",
   "pantryQuantityLabel": "Mängd",

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -143,7 +144,15 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       );
     }
 
-    if (mounted) navigator.pop();
+    if (!mounted) return;
+    // The VM swallows save failures into `hasError` (offline / Firestore
+    // write error). Don't dismiss on failure — that silently loses the item;
+    // keep the sheet open with feedback so the user can retry.
+    if (viewModel.hasError) {
+      SnackBarUtils.showError(context, context.l10n.pantryCouldNotSaveItem);
+      return;
+    }
+    navigator.pop();
   }
 
   @override
@@ -307,7 +316,11 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             ActionButtons.primaryButton(
               context,
               label: _isEditing ? l10n.commonSave : l10n.pantryAddAction,
-              onPressed: _submit,
+              // Disable + show progress while saving: the sheet now stays open
+              // on failure, so without this a fast double-tap could fire a
+              // second _submit() over the still-running first.
+              onPressed: viewModel.isLoading ? null : _submit,
+              isLoading: viewModel.isLoading,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             ActionButtons.secondaryButton(

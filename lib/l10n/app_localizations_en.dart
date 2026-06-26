@@ -14605,6 +14605,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryEditSheetTitle => 'Edit ingredient';
 
   @override
+  String get pantryCouldNotSaveItem =>
+      'Couldn\'t save to pantry. Please try again.';
+
+  @override
   String get pantryIngredientLabel => 'Ingredient';
 
   @override

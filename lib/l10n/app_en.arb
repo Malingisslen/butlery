@@ -9783,6 +9783,7 @@
   "pantryAddIngredient": "Add ingredient",
   "pantryAddSheetTitle": "Add ingredient",
   "pantryEditSheetTitle": "Edit ingredient",
+  "pantryCouldNotSaveItem": "Couldn't save to pantry. Please try again.",
   "pantryIngredientLabel": "Ingredient",
   "pantryIngredientHint": "Search ingredient...",
   "pantryQuantityLabel": "Quantity",

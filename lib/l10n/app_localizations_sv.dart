@@ -14638,6 +14638,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryEditSheetTitle => 'Redigera ingrediens';
 
   @override
+  String get pantryCouldNotSaveItem =>
+      'Kunde inte spara i skafferiet. Försök igen.';
+
+  @override
   String get pantryIngredientLabel => 'Ingrediens';
 
   @override

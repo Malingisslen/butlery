@@ -93,6 +93,42 @@ void main() {
     );
   }
 
+  /// Pumps the sheet pushed as a real modal route, so `Navigator.pop()` actually
+  /// removes it from the tree — required for the dismiss-on-success /
+  /// stays-open-on-failure assertions to be load-bearing rather than vacuous.
+  Future<void> pumpRoutedSheet(
+    WidgetTester tester, {
+    PantryItem? existingItem,
+  }) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: ChangeNotifierProvider<PantryViewModel>.value(
+          value: vm,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) =>
+                        ChangeNotifierProvider<PantryViewModel>.value(
+                          value: vm,
+                          child: AddPantryItemSheet(existingItem: existingItem),
+                        ),
+                  ),
+                  child: const Text('open-sheet'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open-sheet'));
+    await tester.pumpAndSettle();
+  }
+
   // ────────────────────────────────────────────────────────────────────────────
   // Test 1: autocomplete pick → addItemFromIngredient
   //
@@ -242,5 +278,77 @@ void main() {
     ).called(1);
     verifyNever(() => vm.addItemFromIngredient(any()));
     verifyNever(() => vm.addItemFromText(any()));
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 4 (BUT-1379): a failed save must NOT silently dismiss the sheet
+  //
+  // Intent: the VM swallows write failures into `hasError` (offline / Firestore
+  // error). The sheet must detect that and keep itself open with an error
+  // message, instead of popping and silently losing the item the user believes
+  // they added.
+  //
+  // Would fail if: _submit() popped unconditionally (the original bug) or didn't
+  //   check viewModel.hasError before dismissing.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('keeps the sheet open and shows an error when the save fails', (
+    tester,
+  ) async {
+    // The save attempt sets the VM into an error state.
+    when(() => vm.hasError).thenReturn(true);
+
+    await pumpRoutedSheet(tester);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Mjölk',
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pumpAndSettle(); // run _submit + surface the snackbar
+
+    // The save WAS attempted...
+    verify(
+      () => vm.addItemFromText(
+        'Mjölk',
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
+
+    // ...but the sheet did not silently dismiss (it's a real modal route here,
+    // so a stray pop would remove it) and it tells the user it failed.
+    expect(find.byType(AddPantryItemSheet), findsOneWidget);
+    expect(
+      find.text('Kunde inte spara i skafferiet. Försök igen.'),
+      findsOneWidget,
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 5 (BUT-1379): a successful save dismisses the sheet
+  //
+  // Guards the other direction of the fix: when the VM reports no error, the
+  // sheet must still pop. A regression that suppressed pop on success (e.g. an
+  // over-eager `return` after the hasError check) would leave the sheet stuck.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('dismisses the sheet on a successful save', (tester) async {
+    // hasError stays false (default stub); addItemFromText completes normally.
+    await pumpRoutedSheet(tester);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Mjölk',
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddPantryItemSheet), findsNothing);
   });
 }

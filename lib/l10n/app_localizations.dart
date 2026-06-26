@@ -24533,6 +24533,12 @@ abstract class AppLocalizations {
   /// **'Redigera ingrediens'**
   String get pantryEditSheetTitle;
 
+  /// No description provided for @pantryCouldNotSaveItem.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara i skafferiet. Försök igen.'**
+  String get pantryCouldNotSaveItem;
+
   /// No description provided for @pantryIngredientLabel.
   ///
   /// In sv, this message translates to:
