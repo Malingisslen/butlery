@@ -55,8 +55,13 @@
           "type": "docs"
         }
       ],
-      "lastScan": null,
-      "snapshot": {}
+      "lastScan": "2026-06-26",
+      "snapshot": {
+        "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "Latest freeRASP Flutter = 8.0.0 (2026-06-01; Android SDK 18.3.0 / iOS SDK 6.14.4). 8.0.0 is a BREAKING release: RaspExecutionStateCallback.onAllChecksDone renamed to onAllChecksFinished; SuspiciousAppInfo.reason (String) -> reasons (List<String>); 'blacklist' -> 'blocklist'; MalwareConfig removed in favor of SuspiciousAppDetectionConfig; new suspicious-permissions detection; fixes for JaCoCo instrumentation, multi-instance detector crashes, Kotlin 2.0.0 classpath. Prior: 7.5.1 (2026-04-01, iOS jailbreak false-positive fixes), 7.3.0 (2025-10-31, time/location-spoofing + unsecure-WiFi detection ",
+        "https://github.com/OWASP/owasp-mastg/releases.atom": "Latest OWASP MASTG releases v1.9.0 and v2.0.0, both dated 2026-06-24. v1.9.0 described as the largest release in project history (Jan-Dec 2025 span, 2000+ commits): complete CWE mapping across all MASVS categories, MASTG v2 graduated from beta (legacy PDF deprecated), 6 new MASWE weaknesses, new MAS-P privacy profile covering MASVS-PRIVACY, many v1->v2 test ports. v2.0.0 is the formal end-of-beta release. Guidance/standard update, not a defect.",
+        "https://developer.apple.com/news/upcoming-requirements/": "Current Apple upcoming-requirements state: SDK minimum since 2026-04-28 (uploads must build with Xcode 26 / iOS 26 SDK family); new age-rating system auto-applied with responses to updated age-rating questions due 2026-01-31 (now past); Required Reason API enforcement ongoing since 2024-05-01 (approved reasons for listed APIs incl. third-party SDKs); EU DSA trader-status enforcement since 2025-02-17; APNs USERTrust RSA root + receipt SHA-256 changes from early 2025. No NEW security/privacy submission gate with a future deadline surfaced as of 2026-06-26."
+      },
+      "_lastScanCoverage": "3/7 sources reachable (rest egress-blocked in build sandbox; retry next cycle)"
     },
     {
       "role": "Legal Counsel",
@@ -109,8 +114,12 @@
           "type": "regulator"
         }
       ],
-      "lastScan": null,
-      "snapshot": {}
+      "lastScan": "2026-06-26",
+      "snapshot": {
+        "https://developer.apple.com/news/upcoming-requirements/": "Apple 'Upcoming Requirements' page (fetched 2026-06-26). Current live/imminent items: new App Store age-rating system — developers must answer updated age-rating questions by Jan 31, 2026 or face submission interruptions (already past). Since Apr 28, 2026 apps must build with Xcode 26 / iOS 26 SDK. EU DSA: since Feb 17, 2025 apps without trader status removed from EU App Store; trader status required for EU updates since Oct 16, 2024. Page does NOT list UGC, AI-data-consent, or external-link/payment requirements in the upcoming list. Baseline established.",
+        "https://developer.apple.com/news/rss/news.rss": "Apple Developer News RSS (fetched 2026-06-26). Recent legally-relevant items: (a) Jun 8, 2026 'Time Allowances' — apps with social-media capabilities (user-generated content redistributed/amplified via social feeds) classified Social Media Time Allowance, min age 13+; age-rating questionnaire updated for social-media capability from Jul 2026, mandatory indication from Sep 2026. (b) Jun 8, 2026 updated DPLA + App Review Guidelines (kid/teen safety guidance revised, Passes privacy reqs). (c) Mar 2 / Jun 3-4, 2026 age-assurance rollouts (Brazil/Australia/Singapore/Utah/Louisiana/Texas via Declare"
+      },
+      "_lastScanCoverage": "2/7 sources reachable (rest egress-blocked in build sandbox; retry next cycle)"
     },
     {
       "role": "Release / App-Store Compliance Manager",
@@ -164,8 +173,14 @@
           "type": "rss"
         }
       ],
-      "lastScan": null,
-      "snapshot": {}
+      "lastScan": "2026-06-26",
+      "snapshot": {
+        "https://developer.apple.com/news/rss/news.rss": "Apple Developer News RSS (fetched 2026-06-26). Most recent relevant items: (1) 2026-06-08 'Updated Apple Developer Program License Agreement and App Review Guidelines' — DPLA 3.1/14.8 developer identity verification, 3.3.3(N) Sensitive Content Analysis, 3.3.11 grouped AI/ML + Foundation Models, 7.9 protection of minors; ARG Introduction revised kid/teen safety, 4.3(a)/(b) clarified with examples, 4.5.3 Live Activities cannot be used for spam/phishing. (2) 2026-06-08 'Introducing Time Allowances' (iOS/iPadOS/macOS 27) — age-rating questionnaire updated starting July 2026; by SEPTEMBER 2026 deve",
+        "https://developer.apple.com/news/upcoming-requirements/": "Apple Upcoming Requirements (fetched 2026-06-26). Active/upcoming hard gates: SDK MINIMUM — effective 2026-04-28, uploads to App Store Connect must be built with Xcode 26+ using an iOS/iPadOS/tvOS/visionOS/watchOS 26 SDK (ALREADY EFFECTIVE). AGE RATING — by 2026-01-31 developers had to answer updated age-rating questions to avoid submission interruptions (PASSED; system migrated to new tiers). Approved-Reason APIs — effective 2024-05-01, must include approved reasons for Required Reason APIs incl. third-party SDKs (already effective; relevant to PrivacyInfo.xcprivacy). EU DSA trader status — a",
+        "https://developer.android.com/distribute/play-policies": "Google Play policy deadline timeline (fetched 2026-06-26). Upcoming: 2026-05-27 Account Transfer policy (must use official Transfer-ownership workflow). SEPTEMBER 2026 Android Developer Verification expansion — Brazil, Indonesia, Singapore, Thailand: apps installed on certified devices in those regions must be registered by a verified developer. 2026-10-28 Contacts Permissions policy — apps not needing broad contacts access must use Android Contact Picker. 2026-10-28 Location Permissions update — Location button as recommended minimum scope for precise location. Recent (Oct 2025) updates: Age-",
+        "https://developer.apple.com/news/releases/rss/releases.rss": "Apple software releases RSS (fetched 2026-06-26). Current stable: Xcode 26.6 (17F113) released 2026-06-25; App Store Connect update same day. Betas: Xcode 27 beta 2 (27A5209h), iOS/iPadOS 27.0 beta 2, macOS/tvOS/visionOS/watchOS 27 beta 2 (2026-06-22). TestFlight 4.2.2 (2026-06-23). Confirms Xcode 26.x is GA, so the 2026-04-28 'build with Xcode 26+/iOS 26 SDK' submission requirement is satisfiable with a stable toolchain. Baseline recorded."
+      },
+      "_lastScanCoverage": "4/7 sources reachable (rest egress-blocked in build sandbox; retry next cycle)"
     }
   ]
 }
