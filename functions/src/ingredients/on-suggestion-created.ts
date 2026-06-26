@@ -60,20 +60,34 @@ export const onSuggestionCreated = onDocumentCreated(
     );
 
     try {
-      // Idempotency guard: skip if already processed
-      if (suggestion.notifiedAt) {
-        logger.info(`Suggestion ${suggestionId} already processed, skipping`);
-        return;
-      }
-
-      // Update document with notification metadata
-      await getDb()
+      // Idempotency: onDocumentCreated is at-least-once, and `suggestion`
+      // here is the creation-time snapshot — on a retry its `notifiedAt` is
+      // still undefined, so the old snapshot-based guard never fired. Claim
+      // the suggestion transactionally instead, using the doc's own
+      // `notifiedAt` as the marker (mirrors onReportCreated's marker claim).
+      // If a future real email send is wired in, a retried delivery will
+      // skip here rather than send a duplicate moderator email.
+      const docRef = getDb()
         .collection("ingredient_suggestions")
-        .doc(suggestionId)
-        .update({
+        .doc(suggestionId);
+
+      const claimed = await getDb().runTransaction(async (tx) => {
+        const snap = await tx.get(docRef);
+        const current = snap.data() as IngredientSuggestion | undefined;
+        if (!current || current.notifiedAt) {
+          return false;
+        }
+        tx.update(docRef, {
           notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
           sourceApp: "butlery-mobile",
         });
+        return true;
+      });
+
+      if (!claimed) {
+        logger.info(`Suggestion ${suggestionId} already processed, skipping`);
+        return;
+      }
 
       // Log for monitoring dashboard
       logger.info(

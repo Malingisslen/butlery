@@ -136,33 +136,33 @@ async function cleanupSubcollection(
 ): Promise<number> {
   const collectionRef = db.collection(`${parentPath}/${subcollection}`);
 
-  const snapshot = await collectionRef
-    .where("timestamp", "<", cutoffTimestamp)
-    .limit(10000)
-    .get();
-
-  if (snapshot.empty) {
-    return 0;
-  }
-
+  // Drain every expired doc, not just the first page. Because each page is
+  // deleted before the next query, the same `timestamp < cutoff` filter
+  // returns fresh expired rows each pass (deleted docs no longer match), so a
+  // subcollection with more than one page of residue is fully cleaned instead
+  // of being silently truncated at the old 10k cap. No startAfter is needed.
   let deletedCount = 0;
-  let batch = db.batch();
-  let batchCount = 0;
 
-  for (const doc of snapshot.docs) {
-    batch.delete(doc.ref);
-    batchCount++;
-    deletedCount++;
+  for (;;) {
+    const snapshot = await collectionRef
+      .where("timestamp", "<", cutoffTimestamp)
+      .limit(BATCH_LIMIT)
+      .get();
 
-    if (batchCount >= BATCH_LIMIT) {
-      await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
+    if (snapshot.empty) {
+      break;
     }
-  }
 
-  if (batchCount > 0) {
+    const batch = db.batch();
+    for (const doc of snapshot.docs) {
+      batch.delete(doc.ref);
+    }
     await batch.commit();
+    deletedCount += snapshot.size;
+
+    if (snapshot.size < BATCH_LIMIT) {
+      break;
+    }
   }
 
   if (deletedCount > 0) {
