@@ -215,6 +215,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/firestore-index-verifier.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/dossier-freshness-stamp.sh"
           }
         ]
       }

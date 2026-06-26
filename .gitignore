@@ -108,6 +108,9 @@ nul
 !scripts/line_classifier/evaluate_model.py
 !scripts/line_classifier/generate_silver_data.py
 !scripts/line_classifier/deploy_model.py
+# Role-org dossier-freshness loop (committed tooling, not one-off scripts)
+!.claude/hooks/dossier_stamp.py
+!tools/gen_role_paths.py
 
 # Temp analysis files
 *tmp_analyze*
