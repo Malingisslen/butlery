@@ -38,6 +38,10 @@ State of record: `docs/org/world-watch/state.json`. Design: `docs/architecture/R
    - `escalate-human` (Legal) → create a Linear issue **labelled for Malin's review**
      (do not assert a legal conclusion — present the change + source + why it may matter).
    - Never assert law/policy without a citation. Never auto-*act*; only flag/ticket/escalate.
+   - **Fallback when Linear issue-creation tools are absent** (some sessions only expose the
+     Linear status-update tools): do NOT fail. Emit the finding as a **ready-to-paste ticket
+     draft** in chat (title + body) and offer to file it as a GitHub issue in
+     `malingisslen/butlery` instead. Still update state so the finding isn't lost.
 6. **Update state.** Write the new `snapshot` and set `lastScan` to today (ISO date) for
    each scanned role — **even if nothing was found** (so it doesn't re-fire). Commit
    `docs/org/world-watch/state.json` with a terse message.
