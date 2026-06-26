@@ -399,15 +399,17 @@ class FloatingActionButtonWidget extends StatelessWidget {
     this.enablePressAnimation = true,
   });
 
-  /// Message FAB for conversations
+  /// Message FAB for conversations. `semanticLabel` is required so the caller
+  /// supplies a localized string (e.g. `context.l10n.messagingNewConversation`)
+  /// — a const default here would lock the screen-reader label to one language.
   const FloatingActionButtonWidget.message({
     super.key,
     required this.onPressed,
+    required this.semanticLabel,
     this.enablePressAnimation = true,
   }) : child = const Icon(Icons.message),
        backgroundColor = null,
-       foregroundColor = null,
-       semanticLabel = 'Nytt meddelande';
+       foregroundColor = null;
 
   @override
   Widget build(BuildContext context) {

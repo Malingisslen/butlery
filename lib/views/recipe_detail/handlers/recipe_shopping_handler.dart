@@ -186,7 +186,7 @@ class RecipeShoppingHandler {
         // Create new shopping list with recipe name
         final newListName =
             selectedListResult['name'] as String? ??
-            '${recipe.title} - Ingredienser';
+            context.l10n.shoppingNewListNameTemplate(recipe.title);
         targetListId = await shoppingService.createPersonalList(newListName);
         targetListName = newListName;
       } else if (selectedListResult['action'] == 'select_existing') {

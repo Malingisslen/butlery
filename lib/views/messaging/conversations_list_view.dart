@@ -116,6 +116,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       ),
       floatingActionButton: FloatingActionButtonWidget.message(
         onPressed: _showNewConversationDialog,
+        semanticLabel: context.l10n.messagingNewConversation,
       ),
     );
   }

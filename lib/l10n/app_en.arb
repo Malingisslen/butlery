@@ -1796,6 +1796,13 @@
   "shoppingLoadingLists": "Loading lists...",
   "shoppingLists": "Shopping lists",
   "shoppingNewList": "New list",
+  "shoppingNewListNameTemplate": "{title} - Ingredients",
+  "@shoppingNewListNameTemplate": {
+    "description": "Default name for a shopping list auto-created from a recipe; {title} is the recipe title.",
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
   "shoppingAddFromMenu": "Add from menu",
   "shoppingNoItemsFromMenu": "No items selected from menu",
   "shoppingPreview": "Preview",

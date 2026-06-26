@@ -4429,6 +4429,12 @@ abstract class AppLocalizations {
   /// **'Ny lista'**
   String get shoppingNewList;
 
+  /// Default name for a shopping list auto-created from a recipe; {title} is the recipe title.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} - Ingredienser'**
+  String shoppingNewListNameTemplate(String title);
+
   /// No description provided for @shoppingAddFromMenu.
   ///
   /// In sv, this message translates to:

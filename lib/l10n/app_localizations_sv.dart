@@ -2666,6 +2666,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingNewList => 'Ny lista';
 
   @override
+  String shoppingNewListNameTemplate(String title) {
+    return '$title - Ingredienser';
+  }
+
+  @override
   String get shoppingAddFromMenu => 'Lägg till från meny';
 
   @override

@@ -1802,6 +1802,13 @@
   "shoppingLoadingLists": "Laddar listor...",
   "shoppingLists": "Inköpslistor",
   "shoppingNewList": "Ny lista",
+  "shoppingNewListNameTemplate": "{title} - Ingredienser",
+  "@shoppingNewListNameTemplate": {
+    "description": "Default name for a shopping list auto-created from a recipe; {title} is the recipe title.",
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
   "shoppingAddFromMenu": "Lägg till från meny",
   "shoppingNoItemsFromMenu": "Inga artiklar valda från menyn",
   "shoppingPreview": "Förhandsgranska",

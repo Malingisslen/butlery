@@ -390,6 +390,7 @@ void main() {
           createLocalizedTestApp(
             child: const FloatingActionButtonWidget.message(
               onPressed: null,
+              semanticLabel: 'Ny konversation',
             ),
           ),
         );
