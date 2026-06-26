@@ -1932,3 +1932,53 @@ Trigger: reviewing test coverage for `lib/services/import/xlsx_reader.dart` + it
 - **Real .xlsx exports (Excel/Sheets/LibreOffice) store text via the shared-strings table (`t="s"`), NOT inline strings (`inlineStr`).** A strategy test that builds inline-string fixtures does NOT prove real-world imports work. The shared-strings path must be covered somewhere or real imports can silently parse blank cells. Covered here by a dedicated `xlsx_reader_test.dart` (reader in isolation).
 - Real gap that recurs in this shape: reader-unit-test proves `t="s"` rows parse; strategy-test proves rows→Recipe; but NO single test drives a shared-strings-shaped workbook through the *full strategy* to a Recipe. The two halves imply it but don't pin the seam. One `t="s"` fixture in the strategy's Excel group asserting `recipe.title` closes it cheaply — recommend this over trusting the implication.
 - `_columnIndex` multi-letter branch (`AA`+, the `index*26` path) is untested when no fixture exceeds column `C`. Low priority for recipe imports (rarely >26 cols) but it's a live untested branch — note it, don't necessarily fill it.
+
+### 2026-06-26 — BUT-1370 DecompressionGuard: declared-total pre-inflation branch is a hidden untested path [Pattern + Gap]
+Trigger: reviewing 6-test suite for `lib/services/import/decompression_guard.dart`.
+- The guard has TWO independent declared-size checks in `_checkDeclared`: (1) `declared > maxEntryBytes` — covered by the "bomb.xml" test, and (2) `_totalBytes + declared > maxTotalBytes` — NOT isolatedly covered.
+- The existing running-total test (`entry('b', 900, 900)` after `entry('a', 900, 900)` with `maxTotalBytes=1500`) exercises branch (2) in production, but its `contentLen==900` means the post-materialisation total check in `accept()` would also catch it if branch (2) were removed. The test doesn't isolate the early-reject.
+- **The missing test intention**: "rejects on declared-total overflow without inflating — a partial bomb disguising its running total is caught pre-materialisation." Fixture: `entry('b', 700, 1)` after `entry('a', 900, 900)` with `maxTotalBytes=1500`; `700` is within the per-entry cap, `900+700=1600>1500`, but `contentLen=1` so if only the post-accept total check existed, `_totalBytes` would only reach 901 and not throw. Assert the throw + `guard.totalBytes == 900` (bomb entry must not count).
+- **E2e "XlsxReader rejects oversized real zip" — not worth it.** `readFirstSheet` uses a private default-cap guard (not injectable), so an e2e bomb test must allocate a real >20 MB array in test setup — slow, flaky on constrained CI runners, and proves nothing the unit tests don't already cover. The seam is clean: `guard.read(file)` is the same call the unit tests exercise. Skip.
+- The 6 existing tests are otherwise well-aimed (contract-based, refactor-proof, would fail on real regressions in each of the three rejection paths). One additional test closes the only meaningful gap.
+
+### 2026-06-26 — BUT-1379 AddPantryItemSheet error-path test: snackbar text is the load-bearing assertion; embedded-body `find.byType` is vacuous; success-pop gap needs route plumbing [Pattern + Gap]
+Trigger: assessing Test 4 in `test/widget/views/pantry/add_pantry_item_sheet_test.dart` (BUT-1379 fix: `_submit()` checks `viewModel.hasError` before calling `navigator.pop()`).
+
+**What Test 4 proves correctly:**
+- `verify(() => vm.addItemFromText('Mjölk', ...)).called(1)` is NON-VACUOUS. It rules out a bug where `_submit()` short-circuits before ever saving (e.g. an early guard for empty name that's accidentally too broad). If the sheet returned early without calling the VM at all, the verify would fail.
+- `expect(find.text('Kunde inte spara i skafferiet. Försök igen.'), findsOneWidget)` is the LOAD-BEARING regression guard. This text is only produced by `SnackBarUtils.showError(context, context.l10n.pantryCouldNotSaveItem)`, which is only called when `viewModel.hasError == true`. If the original bug recurred (`navigator.pop()` called unconditionally, skipping the `hasError` check entirely), the snackbar call would be bypassed and this assertion would fail. This is exactly the right thing to pin.
+
+**What `expect(find.byType(AddPantryItemSheet), findsOneWidget)` does NOT prove:**
+- `AddPantryItemSheet` is embedded in `Scaffold.body` in the test's `buildSheet()` helper — it is NOT pushed as a modal route. When `navigator.pop()` is called on a navigator with only one route (the test's root MaterialApp route), it either does nothing or pops the entire app. In either case, the widget remains in the test's widget tree. This assertion is vacuous in this setup: it would be `findsOneWidget` in BOTH the buggy (unconditional pop) and the fixed (no pop on error) versions. It does not strengthen the test and should not be mistaken for a real "sheet stayed open" assertion.
+- The snackbar text assertion is what actually catches the regression; the `find.byType` assertion is along for the ride.
+
+**The concrete gap — success path does not test `navigator.pop()`:**
+- None of the 4 tests verify that a successful save actually dismisses the sheet. Tests 1-3 only verify WHICH VM method was called, not that the sheet was subsequently dismissed.
+- A regression introducing an accidental early `return` before `navigator.pop()`, or a gating condition that permanently suppresses the pop, would leave users stuck in the open sheet after every successful add — and all 4 tests would remain green.
+- This gap is real. To close it, the test setup must embed the sheet in a PUSHED route (not Scaffold.body) so `navigator.pop()` actually removes it from the widget tree. Pattern:
+
+```dart
+// Route-plumbing helper for success-pop tests
+Widget buildSheetViaRoute() {
+  return createLocalizedTestApp(
+    child: ChangeNotifierProvider<PantryViewModel>.value(
+      value: vm,
+      child: Builder(builder: (ctx) => ElevatedButton(
+        onPressed: () => Navigator.of(ctx).push(
+          MaterialPageRoute(builder: (_) => ChangeNotifierProvider<PantryViewModel>.value(
+            value: vm,
+            child: const Scaffold(body: AddPantryItemSheet()),
+          )),
+        ),
+        child: const Text('open'),
+      )),
+    ),
+  );
+}
+// Then: tap 'open', pumpAndSettle, enter text, tap 'LÄGG TILL', pumpAndSettle
+// expect(find.byType(AddPantryItemSheet), findsNothing)  -- sheet was popped
+```
+
+**Priority call:** the success-pop gap is genuine but of MEDIUM priority. The three success-routing tests (Tests 1-3) already verify the correct VM method is called (the primary domain invariant). A missing pop would be noticed immediately during any manual use of the feature. Adding the route-plumbing success test is recommended as a follow-up (one test, ~15 lines) but does not block the current BUT-1379 fix from being sound.
+
+**Decision rule:** whenever a sheet or dialog test is set up with the subject widget embedded directly in `Scaffold.body` (not via `showModalBottomSheet` / `Navigator.push`), `find.byType(SubjectWidget)` assertions are inherently vacuous for "did it stay open?" contracts — the widget is always in the tree. The only way to prove dismissal is route-based setup where pop() actually removes the widget. Document this limitation in the test and assert the snackbar/error content instead as the real regression guard.
