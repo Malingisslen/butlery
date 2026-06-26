@@ -998,6 +998,23 @@ Reviewing 7 iter-141 test files. All 6 new/extended test files are sound. Two fo
 ### 2026-06-12 — BUT-1241 review: diff doc-header claims against the test list [Pattern discovered]
 When a test file's library doc enumerates the contract ("baseEntriesOverride replaces entries for the original week **but NOT for other weeks**"), diff that claim list against the actual `test(...)` blocks — the unpinned half is where silent-regression risk hides. Found: `MenuPlacementViewModel._loadWeek`'s `normalized == _originalWeekStart` guard had no test; deleting the guard passes all 14 tests yet clobbers a NEIGHBOR week's saved entries with the redo base, which `confirm()` would then persist (data loss). The week-navigation test used no override, so it couldn't catch it. Also good in that suite: mock-the-repo-facing-methods + delegate-pure-methods-to-a-REAL-WeeklyMenuPlanService keeps placement semantics genuine without Firestore scaffolding — reusable for any VM orchestrating a pure-function-heavy service.
 
+### 2026-06-26 — BUT-1371 Paprika multi-recipe import: bomb-guard integration gap added [Bug found + Pattern]
+
+The three original tests for BUT-1371 (`file_import_paprika_test.dart`) proved:
+1. `importMultipleFromContent` collects every recipe (regression for the dropped-bulk-path bug).
+2. A non-gzip entry is skipped, not fatal.
+3. `importFromContent` single-path still returns the first recipe.
+
+All three are sound and would fail on real regressions. However, none of them exercised the `DecompressionGuard` interaction at the `_parsePaprikaRecipes` level.
+
+**Gap found: an entry whose gunzipped JSON exceeds `DecompressionGuard.defaultMaxEntryBytes` was skipped rather than imported, but no test verified this.** `guard.accept(...)` throws `DecompressionBombException`, caught by the per-entry `catch(e)` block — but if someone removed the `guard.accept()` call, dropped the `catch`, or changed the catch to re-throw, the bomb-path would OOM the app and no test would go red.
+
+**Fourth test added:** builds a zip with one oversized gzip entry (payload `defaultMaxEntryBytes + 1` bytes of spaces, a valid GZip of valid UTF-8 that inflates too large) and one valid recipe entry. Asserts `importMultipleFromContent` returns length 1 with title `'Fruktsoppa'` — the oversized entry is skipped, the valid sibling is collected, no exception escapes. The `DecompressionGuard` import was added to the test file.
+
+**Why the empty-archive case is NOT a gap:** a valid empty zip (no entries) → empty loop → `[]` returned safely by `importMultipleFromContent`'s outer `try/catch`. A garbage/non-zip byte sequence → `ZipDecoder` throws → caught by `importMultipleFromContent`'s outer `catch (e) { return []; }`. Both paths are safe due to existing outer catches, and the `DecompressionGuard` unit tests in `decompression_guard_test.dart` already cover the guard in isolation.
+
+**Pattern: when a multi-entry loop has a per-entry try/catch that absorbs a bomb-guard exception, add a test proving the absorb happens rather than re-throwing.** The `DecompressionGuard` unit tests prove the guard THROWS; the integration test proves the CALLER survives. Both layers are needed.
+
 ### 2026-06-13 — BUT-925/1243/1154 sprint review [Pattern discovered]
 - **Theme-component factory test shape confirmed (BUT-1243):** calling `FeedbackThemes.snackBarTheme(cs)` directly and asserting `shape is RoundedRectangleBorder + borderRadius == BorderRadius.zero` is the correct approach for theme-factory contract tests. Passes without widget pump. Pattern already noted in BUT-1241/pantry entry — this confirms it. The background test asserting `cs.inverseSurface` is the right "theme-resolved, not hardcoded" idiom (captures the live scheme, not `Color(0xFF...)`).
 - **`AppColors.neutralMedium` hardcode in production widget creates a matching hardcode in test** — when production resolves a color from `AppColors.xxx` rather than `context.butleryColors.xxx`, the test legitimately mirrors the production constant. This is not a test smell; it's a production design-language smell (BUT-1243 sibling: `low/failed` confidence grey should be a `ButleryColors` slot). Flag in the production widget's `// TODO`, not in the test.
