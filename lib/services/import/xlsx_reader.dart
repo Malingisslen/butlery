@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/import/decompression_guard.dart';
 
 /// Minimal `.xlsx` (Office Open XML spreadsheet) reader.
 ///
@@ -22,7 +23,10 @@ class XlsxReader {
   /// Returns an empty list if the workbook has no data sheet.
   static List<List<String>> readFirstSheet(Uint8List bytes) {
     final archive = ZipDecoder().decodeBytes(bytes);
-    final shared = _sharedStrings(archive);
+    // Bound how much we inflate out of the (user-supplied) workbook so a
+    // crafted .xlsx can't OOM the app via a decompression bomb (BUT-1370).
+    final guard = DecompressionGuard();
+    final shared = _sharedStrings(archive, guard);
 
     // Worksheets live at xl/worksheets/sheetN.xml. Read in name order and use
     // the first one that actually has rows — mirrors the old excel behaviour,
@@ -39,17 +43,20 @@ class XlsxReader {
           ..sort((a, b) => a.name.compareTo(b.name));
 
     for (final sheet in sheets) {
-      final rows = _sheetRows(sheet, shared);
+      final rows = _sheetRows(sheet, shared, guard);
       if (rows.isNotEmpty) return rows;
     }
     return const [];
   }
 
   /// The shared-strings table — string cells reference entries here by index.
-  static List<String> _sharedStrings(Archive archive) {
+  static List<String> _sharedStrings(
+    Archive archive,
+    DecompressionGuard guard,
+  ) {
     final file = archive.findFile('xl/sharedStrings.xml');
     if (file == null) return const [];
-    final doc = XmlDocument.parse(utf8.decode(file.content));
+    final doc = XmlDocument.parse(utf8.decode(guard.read(file)));
     // A <si> is one string; its text is every descendant <t> concatenated,
     // which also covers rich-text runs (<r><t>…</t></r>).
     return doc
@@ -58,8 +65,12 @@ class XlsxReader {
         .toList();
   }
 
-  static List<List<String>> _sheetRows(ArchiveFile file, List<String> shared) {
-    final doc = XmlDocument.parse(utf8.decode(file.content));
+  static List<List<String>> _sheetRows(
+    ArchiveFile file,
+    List<String> shared,
+    DecompressionGuard guard,
+  ) {
+    final doc = XmlDocument.parse(utf8.decode(guard.read(file)));
     final rows = <List<String>>[];
     for (final row in doc.findAllElements('row')) {
       final cells = <String>[];

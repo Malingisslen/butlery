@@ -9,6 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/services/import/xlsx_reader.dart';
+import 'package:butlery/services/import/decompression_guard.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// File import strategy for CSV and Excel files
@@ -489,12 +490,22 @@ class FileImportStrategy extends ImportStrategy {
 
   ImportResult _importFromPaprika(Uint8List bytes) {
     final archive = ZipDecoder().decodeBytes(bytes);
+    // Bound decompression so a crafted .paprikarecipes (a zip of gzipped JSON,
+    // possibly shared by a third party) can't OOM the app (BUT-1370). The guard
+    // caps the outer zip entry before it inflates, and the gunzipped output
+    // before we parse it. A bomb entry throws and is skipped like any bad entry.
+    final guard = DecompressionGuard();
 
     for (final file in archive.files) {
       if (!file.isFile) continue;
       try {
-        // archive 4.x: `content` is a non-null Uint8List for file entries.
-        final decompressed = const GZipDecoder().decodeBytes(file.content);
+        // The outer .gz is transient (count:false) — capped, but only the
+        // gunzipped JSON we keep is charged to the archive total.
+        final gzipped = guard.read(file, count: false);
+        final decompressed = guard.accept(
+          '${file.name} (gunzipped)',
+          const GZipDecoder().decodeBytes(gzipped),
+        );
         final json =
             jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
         final recipe = _createRecipeFromPaprikaJson(json);
