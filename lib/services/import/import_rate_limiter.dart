@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/retry_helper.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -22,6 +23,12 @@ class ImportRateLimiter extends BaseService {
   final FirestoreRepository _firestoreRepo;
   final auth.AuthRepository _authRepo;
 
+  /// BUT-1415: base delay for the recordUsage transient-retry backoff. Injected
+  /// so tests can set it to [Duration.zero] and exercise the retry loop without
+  /// real wall-clock sleeps (the helper's backoff uses real `Future.delayed`).
+  /// Production keeps the helper's default 1s base.
+  final Duration _retryBaseDelay;
+
   /// In-memory cache of current usage (refreshed on each check)
   UsageLimits? _cachedUsage;
   DateTime? _cacheTimestamp;
@@ -32,8 +39,10 @@ class ImportRateLimiter extends BaseService {
   ImportRateLimiter({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
+    Duration retryBaseDelay = const Duration(seconds: 1),
   }) : _firestoreRepo = firestoreRepository,
-       _authRepo = authRepository;
+       _authRepo = authRepository,
+       _retryBaseDelay = retryBaseDelay;
 
   /// Check if an import operation is allowed.
   ///
@@ -100,17 +109,33 @@ class ImportRateLimiter extends BaseService {
       final now = clock.now();
       final docRef = _getRateLimitDoc(userId);
 
-      // Use a transaction to safely update counters
-      await _firestoreRepo.firestore.runTransaction((transaction) async {
-        final doc = await transaction.get(docRef);
-        final currentData = doc.exists ? doc.data()! : <String, dynamic>{};
-        final usage = UsageLimits.fromFirestore(currentData);
+      // BUT-1415: by the time we record usage the Gemini call has ALREADY been
+      // billed at Google. If this transaction fails transiently (unavailable /
+      // aborted / offline / contention) the spend goes permanently untracked
+      // and the daily/monthly cost ceilings can be silently overrun. Give the
+      // write a small bounded retry on transient Firestore codes. Retrying the
+      // whole read-modify-write is safe: a thrown transaction did NOT commit
+      // (Firestore transactions are atomic), so each attempt re-reads the
+      // latest doc and adds this op's cost exactly once — no double-count.
+      await RetryHelper.retryWithBackoff(
+        () => _firestoreRepo.firestore.runTransaction((transaction) async {
+          final doc = await transaction.get(docRef);
+          final currentData = doc.exists ? doc.data()! : <String, dynamic>{};
+          final usage = UsageLimits.fromFirestore(currentData);
 
-        // Calculate updated usage with window resets
-        final updated = _updateUsage(usage, operation, now, llmCost);
+          // Calculate updated usage with window resets
+          final updated = _updateUsage(usage, operation, now, llmCost);
 
-        transaction.set(docRef, updated.toFirestore(), SetOptions(merge: true));
-      });
+          transaction.set(
+            docRef,
+            updated.toFirestore(),
+            SetOptions(merge: true),
+          );
+        }),
+        maxRetries: 3,
+        baseDelay: _retryBaseDelay,
+        shouldRetry: _isTransientFirestoreError,
+      );
 
       // Invalidate cache
       _cachedUsage = null;
@@ -121,8 +146,33 @@ class ImportRateLimiter extends BaseService {
         '${operation.requiresLlm ? ' (LLM: ${operation.llmType?.name})' : ''}',
       );
     } catch (e) {
-      AppLogger.warning('ImportRateLimiter: Error recording usage: $e');
+      // BUT-1415: cost recording failed even after retries. This is a real
+      // cost-tracking gap (the LLM call was already billed), not a benign miss
+      // — log at ERROR with the untracked cost so the ceiling under-count is
+      // visible in monitoring, rather than a swallowed warning.
+      AppLogger.error(
+        'ImportRateLimiter: cost recording FAILED after retries — '
+        '${operation.requiresLlm ? 'LLM ' : ''}usage NOT tracked '
+        '(llmCost: ${llmCost ?? 0}); daily/monthly ceiling may under-count: $e',
+      );
     }
+  }
+
+  /// BUT-1415: transient Firestore failures worth retrying the usage write for.
+  /// A non-Firebase error (e.g. a programming `StateError`) or a permanent code
+  /// (permission-denied, invalid-argument) is NOT retried — those won't recover.
+  static bool _isTransientFirestoreError(dynamic error) {
+    if (error is FirebaseException) {
+      switch (error.code) {
+        case 'unavailable':
+        case 'aborted':
+        case 'deadline-exceeded':
+        case 'cancelled':
+        case 'internal':
+          return true;
+      }
+    }
+    return false;
   }
 
   /// Get current usage statistics (for UI display).

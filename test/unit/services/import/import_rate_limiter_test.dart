@@ -944,6 +944,44 @@ void main() {
         // If we got here, the contract held.
         expect(true, isTrue);
       });
+
+      /// BUT-1415: a transient transaction failure must be RETRIED — the LLM
+      /// call is already billed by the time we record, so silently dropping the
+      /// write overruns the cost ceiling. Two transient throws then success ⇒
+      /// 3 bounded attempts, and the cost is recorded EXACTLY once (retrying the
+      /// read-modify-write is safe: a thrown transaction never committed).
+      test(
+        'recordUsage retries a transient transaction failure then records once '
+        '(BUT-1415)',
+        () async {
+          final flaky = _FlakyFirestore(failFirst: 2);
+          final flakyLimiter = ImportRateLimiter(
+            firestoreRepository: FirestoreRepository(firestore: flaky),
+            authRepository: auth,
+            // Zero backoff so the retry loop runs without real wall-clock sleeps.
+            retryBaseDelay: Duration.zero,
+          );
+
+          await withClock(Clock.fixed(_t0), () async {
+            await flakyLimiter.recordUsage(
+              ImportOperation.withLlm('url', LlmOperationType.fullExtraction),
+              llmCost: 0.02,
+            );
+          });
+
+          expect(
+            flaky.txAttempts,
+            equals(3),
+            reason: '2 transient throws + 1 success = 3 bounded attempts',
+          );
+          final after = await _readUsage(flaky, _uid);
+          expect(
+            after.llmCostToday,
+            closeTo(0.02, 1e-9),
+            reason: 'cost recorded exactly once despite the retries',
+          );
+        },
+      );
     });
   });
 }
@@ -957,4 +995,33 @@ class _ThrowingFirestoreRepository extends FirestoreRepository {
   @override
   FirebaseFirestore get firestore =>
       throw StateError('Simulated Firestore outage');
+}
+
+/// BUT-1415: a fake whose `runTransaction` throws a transient
+/// `FirebaseException` for the first [failFirst] calls, then delegates to the
+/// real fake. Lets us prove `recordUsage` retries transient failures (reads +
+/// writes still go through the real fake store, so the recorded cost is
+/// observable afterwards).
+class _FlakyFirestore extends FakeFirebaseFirestore {
+  _FlakyFirestore({required this.failFirst});
+
+  final int failFirst;
+  int txAttempts = 0;
+
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) {
+    txAttempts++;
+    if (txAttempts <= failFirst) {
+      throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+    }
+    return super.runTransaction(
+      transactionHandler,
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    );
+  }
 }
