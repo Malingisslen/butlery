@@ -41,4 +41,5 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
-- _(none yet)_
+- [ADR-0002](ADR-0002-age-enforcement-mechanism.md) — Age enforcement = signup Cloud Function (authoritative) + Firestore rule (gate); CTO ruled security/correctness > cost (2026-06-27).
+- [ADR-0001](ADR-0001-minimum-age-floor.md) — Butlery's single minimum age is **15**; escalated to Malin (interpretive Swedish-law split, 13 vs 15) → she chose 15 (2026-06-27).
