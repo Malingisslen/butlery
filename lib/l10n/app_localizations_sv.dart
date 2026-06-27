@@ -9118,6 +9118,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.';
 
   @override
+  String get onboardingAgeRejectedTitle => 'Kontot kunde inte skapas';
+
+  @override
+  String get onboardingAgeRejectedBody =>
+      'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.';
+
+  @override
   String get onboardingWelcomeTitle => 'Välkommen till Butlery!';
 
   @override

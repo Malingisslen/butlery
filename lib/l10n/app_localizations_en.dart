@@ -9100,6 +9100,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.';
 
   @override
+  String get onboardingAgeRejectedTitle => 'We couldn\'t create your account';
+
+  @override
+  String get onboardingAgeRejectedBody =>
+      'Butlery is available to those aged 15 and over. We\'re unable to create your account at this time.';
+
+  @override
   String get onboardingWelcomeTitle => 'Welcome to Butlery!';
 
   @override

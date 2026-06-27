@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -268,16 +269,40 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   ) async {
     if (viewModel.isLastPage) {
       await _completeOnboarding(context, viewModel);
-    } else {
-      viewModel.nextPage();
-      _pageController.nextPage(
-        duration: AnimationUtils.getDuration(
-          context,
-          const Duration(milliseconds: 300),
-        ),
-        curve: Curves.easeInOut,
-      );
+      return;
     }
+
+    // BUT-1386 (ADR-0002): the age gate (page 0) is where the server-side check
+    // runs and mints the `ageCompliant` claim. Verify BEFORE advancing so a
+    // user who abandons and resumes in a later session already carries the
+    // claim (resume re-enters PAST the gate, so this never re-fires for them).
+    if (viewModel.isAgeGatePage) {
+      final result = await viewModel.verifyAgeGate();
+      if (!context.mounted) return;
+      switch (result) {
+        case AgeGateAdvanceResult.rejected:
+          // CF deleted the under-15 account server-side: butler rejection +
+          // sign-out + route to start. Do NOT advance.
+          await _handleAgeRejection(context);
+          return;
+        case AgeGateAdvanceResult.error:
+          // Infrastructure failure — keep the user on the gate so they retry.
+          SnackBarUtils.showError(context, context.l10n.errorGeneric);
+          return;
+        case AgeGateAdvanceResult.compliant:
+          break; // fall through to advance
+      }
+    }
+
+    viewModel.nextPage();
+    if (!context.mounted) return;
+    _pageController.nextPage(
+      duration: AnimationUtils.getDuration(
+        context,
+        const Duration(milliseconds: 300),
+      ),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _skipOnboarding(
@@ -318,8 +343,43 @@ class _OnboardingContentState extends State<_OnboardingContent> {
         Routes.home,
         (route) => false,
       );
+    } else if (viewModel.ageRejected) {
+      // BUT-1386 (ADR-0002): the verifySignupAge CF rejected the account as
+      // under-15 and has already deleted the Auth record server-side. Show a
+      // quiet butler-voice rejection, clear the now-invalid local session, and
+      // return the user to the start screen.
+      await _handleAgeRejection(context);
     } else {
       SnackBarUtils.showError(context, context.l10n.errorGeneric);
     }
+  }
+
+  Future<void> _handleAgeRejection(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.l10n.onboardingAgeRejectedTitle),
+        content: Text(ctx.l10n.onboardingAgeRejectedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(ctx.l10n.commonOk),
+          ),
+        ],
+      ),
+    );
+    // The CF already deleted the Auth account; clear local auth state so the
+    // app doesn't linger on a dangling session.
+    try {
+      await ServiceLocator.get<AuthService>().signOut();
+    } catch (_) {
+      // Best-effort — the server-side account is already gone.
+    }
+    if (!context.mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      Routes.auth,
+      (route) => false,
+    );
   }
 }

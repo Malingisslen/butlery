@@ -69,6 +69,10 @@ export { onUserDeleted } from "./cleanup/on-user-deleted";
 // which triggers `onUserDeleted` for cross-user cleanup.
 export { requestAccountDeletion } from "./account/request-account-deletion";
 
+// BUT-1386 (ADR-0002): authoritative server-side age enforcement. Only writer
+// of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.
+export { verifySignupAge } from "./account/verify-signup-age";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 

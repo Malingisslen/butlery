@@ -1,16 +1,25 @@
 /**
- * Firestore rules tests for the age gate (floor = 15).
+ * Firestore rules tests for the BUT-1386 (ADR-0002) server-authoritative
+ * age gate.
  *
- * Basis: ADR-0001 — Sweden's Dataskyddslag 2 kap. 4 § (information-society
- * services with a social component), NOT GDPR Art 8 (whose floor is 13).
+ * WHAT CHANGED vs the old self-declared birthYear contract:
+ *   1. NEW helper `isAgeCompliant()` = authed AND custom claim
+ *      `request.auth.token.ageCompliant == true`. Fails CLOSED — a missing
+ *      or false claim (or a stale token issued before the claim was set)
+ *      denies. The `verifySignupAge` Cloud Function is the sole writer of
+ *      the claim and of `birthYear`.
+ *   2. `birthYear` is now CF-ONLY-written. Clients may no longer create or
+ *      mutate it on either of its two homes:
+ *        - users/{uid}/settings/{settingId}: create requires birthYear ABSENT;
+ *          update requires birthYear UNCHANGED vs existing.
+ *        - users/{uid} profile doc: same create-absent / update-unchanged split;
+ *          delete stays owner-only.
+ *      (The old "create REQUIRES a valid birthYear" contract is GONE.)
+ *   3. The four UGC create paths now also require `&& isAgeCompliant()`:
+ *      recipe_comments, messages, social_requests, recipe_ratings.
  *
- * Rules contract under test (users/{uid}/settings/{settingId}):
- *   - On CREATE of the `preferences` doc, birthYear must be a valid int
- *     in [1900, currentYear-15]. Absence rejects the write. A 14-year-old
- *     (birthYear = currentYear-14) is rejected; exactly 15 is allowed.
- *   - On UPDATE, birthYear may be absent (backfill / legacy flow) OR a
- *     valid int in the same range. Invalid values reject the write.
- *   - Other settings docs (if any appear later) are unaffected.
+ * The rules-unit-testing lib seeds custom claims via the second arg of
+ * `env.authenticatedContext(uid, { ageCompliant: true })`.
  *
  * Prerequisite: Firestore emulator must be running locally
  *   (`firebase emulators:start --only firestore`).
@@ -19,6 +28,7 @@
  */
 
 import * as fs from "fs";
+import * as http from "http";
 import * as path from "path";
 import {
   initializeTestEnvironment,
@@ -26,6 +36,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-age-gate-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -33,7 +44,42 @@ const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
 const USER_UID = "user-a";
 const OTHER_UID = "user-b";
 
+// Per-run path suffix. The emulator persists documents across separate
+// `npm run` invocations (env.cleanup() only closes clients), so a create-allow
+// against a FIXED doc id becomes an UPDATE on the 2nd+ run and can fail for the
+// wrong reason. A fixed literal (NOT Date.now()) keeps the run reproducible; the
+// namespace is also DELETEd in setup() so re-runs start clean either way.
+// (See firestore-rules-tester knowledge file, 2026-06-03 + 2026-06-27 entries.)
+const RUN = "but1386";
+
+// Custom-claim presets. `ageCompliant:true` is the gate; `email_verified:true`
+// additionally satisfies isAccountMatured() (anti-spam cooldown) for the
+// messages + social_requests paths, isolating isAgeCompliant() as the variable.
+const AGE_OK = { ageCompliant: true };
+const AGE_OK_MATURED = { ageCompliant: true, email_verified: true };
+const AGE_FALSE_MATURED = { ageCompliant: false, email_verified: true };
+const MATURED_ONLY = { email_verified: true };
+
 let env: RulesTestEnvironment;
+
+function clearFirestore(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port: 8080,
+        method: "DELETE",
+        path: `/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`,
+      },
+      (res) => {
+        res.on("data", () => undefined);
+        res.on("end", resolve);
+      }
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}
 
 async function setup(): Promise<void> {
   const rules = fs.readFileSync(RULES_PATH, "utf8");
@@ -41,6 +87,7 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  await clearFirestore();
 }
 
 async function teardown(): Promise<void> {
@@ -53,180 +100,91 @@ function test(name: string, fn: TestFn): void {
   tests.push({ name, fn });
 }
 
-// Test 1: create preferences doc without birthYear -> rejected.
-test(
-  "create preferences requires birthYear",
-  async () => {
-    const ctx = env.authenticatedContext(USER_UID);
-    await assertFails(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          hasCompletedOnboarding: true,
-        })
-    );
-  }
-);
+// ----------------------------------------------------------------------------
+// Body builders
+// ----------------------------------------------------------------------------
 
-// Test 2: create preferences doc with valid birthYear -> allowed.
-test(
-  "create preferences with birthYear=currentYear-20 is allowed",
-  async () => {
-    const ctx = env.authenticatedContext(USER_UID);
-    const year = new Date().getFullYear() - 20;
-    await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          hasCompletedOnboarding: true,
-          birthYear: year,
-        })
-    );
-  }
-);
+function commentBody(authorUid: string): Record<string, unknown> {
+  return {
+    recipeId: "recipe-1",
+    authorId: authorUid,
+    text: "ser gott ut!",
+    createdAt: serverTimestamp(),
+  };
+}
 
-// Test 3: create preferences with birthYear=currentYear (age 0) -> rejected.
-test(
-  "create preferences with birthYear=currentYear (age 0) is rejected",
-  async () => {
-    const ctx = env.authenticatedContext(USER_UID);
-    const year = new Date().getFullYear();
-    await assertFails(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          birthYear: year,
-        })
-    );
-  }
-);
+function messageBody(senderUid: string): Record<string, unknown> {
+  return {
+    senderId: senderUid,
+    conversationId: "conv-1",
+    content: "Hej!",
+    sentAt: serverTimestamp(),
+  };
+}
 
-// Test 3a: boundary — exactly 15 (birthYear = currentYear-15) is allowed.
-test(
-  "create preferences with birthYear=currentYear-15 (exactly 15) is allowed",
-  async () => {
-    const ctx = env.authenticatedContext(USER_UID);
-    const year = new Date().getFullYear() - 15;
-    await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          hasCompletedOnboarding: true,
-          birthYear: year,
-        })
-    );
-  }
-);
+function socialRequestBody(
+  fromUid: string,
+  toUid: string
+): Record<string, unknown> {
+  return {
+    type: "friend_request",
+    fromUserId: fromUid,
+    toUserId: toUid,
+    status: "pending",
+    sentAt: serverTimestamp(),
+  };
+}
 
-// Test 3b: boundary — a 14-year-old (birthYear = currentYear-14) is rejected.
-// This is the core BUT-1384 change: the floor moved 13 -> 15, so a 14yo that
-// previously passed the rule must now be denied at create.
-test(
-  "create preferences with birthYear=currentYear-14 (age 14) is rejected",
-  async () => {
-    const ctx = env.authenticatedContext(USER_UID);
-    const year = new Date().getFullYear() - 14;
-    await assertFails(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          birthYear: year,
-        })
-    );
-  }
-);
+function ratingBody(raterUid: string): Record<string, unknown> {
+  return {
+    recipeId: "recipe-1",
+    userId: raterUid,
+    rating: 5,
+    createdAt: serverTimestamp(),
+  };
+}
 
-// Test 4: update existing preferences without birthYear is allowed (legacy backfill).
-test(
-  "update preferences without birthYear is allowed for backfilled users",
-  async () => {
-    await env.withSecurityRulesDisabled(async (admin) => {
-      await admin
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({
-          notificationsEnabled: true,
-          hasCompletedOnboarding: false,
-          // intentionally no birthYear — simulates a pre-gate user
-        });
-    });
-    const ctx = env.authenticatedContext(USER_UID);
-    // Fire a normal settings flip (toggle notifications) — should NOT be
-    // blocked by the birthYear validator.
-    await assertSucceeds(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({ notificationsEnabled: false }, { merge: true })
-    );
-  }
-);
+async function seedDoc(
+  docPath: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(docPath).set(body);
+  });
+}
 
-// Test 5: update with a 14-year-old birthYear -> rejected (boundary at the
-// new 15 floor; a 14yo previously slipped through the old 13 floor on update).
-test(
-  "update with birthYear=currentYear-14 (age 14) is rejected",
-  async () => {
-    await env.withSecurityRulesDisabled(async (admin) => {
-      await admin
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({ notificationsEnabled: true });
-    });
-    const ctx = env.authenticatedContext(USER_UID);
-    await assertFails(
-      ctx
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({ birthYear: new Date().getFullYear() - 14 }, { merge: true })
-    );
-  }
-);
+// ============================================================================
+// SETTINGS — users/{uid}/settings/{settingId} birthYear immutability
+// (7 assertions across 7 tests)
+//
+// birthYear is CF-only-written. Client CREATE must omit it; client UPDATE must
+// leave it exactly as-is (add/change/remove all denied). All OTHER settings
+// edits remain freely writable by the owner.
+// ============================================================================
 
-// Test 5b: update with a valid birthYear at exactly the new floor (15) must be
-// allowed on the update branch — proves the allow path exists and that the
-// floor bound itself is inclusive (currentYear-15 passes, not just lower values).
+// S1: create WITHOUT birthYear -> allowed (owner).
 test(
-  "update with birthYear=currentYear-15 (exactly 15) is allowed",
+  "settings: owner can create preferences WITHOUT birthYear",
   async () => {
-    await env.withSecurityRulesDisabled(async (admin) => {
-      await admin
-        .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set({ notificationsEnabled: true });
-    });
     const ctx = env.authenticatedContext(USER_UID);
     await assertSucceeds(
       ctx
         .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
-        .set(
-          { birthYear: new Date().getFullYear() - 15 },
-          { merge: true }
-        )
+        .doc(`users/${USER_UID}/settings/s-create-ok-${RUN}`)
+        .set({ notificationsEnabled: true, hasCompletedOnboarding: true })
     );
   }
 );
 
-// Test 6: other users cannot write your preferences regardless of birthYear.
+// S2: create WITH birthYear from the client -> DENIED (CF-only field).
 test(
-  "cross-user writes to another user's preferences are rejected",
+  "settings: owner CANNOT create preferences carrying birthYear",
   async () => {
-    const ctx = env.authenticatedContext(OTHER_UID);
+    const ctx = env.authenticatedContext(USER_UID);
     await assertFails(
       ctx
         .firestore()
-        .doc(`users/${USER_UID}/settings/preferences`)
+        .doc(`users/${USER_UID}/settings/s-create-bday-${RUN}`)
         .set({
           notificationsEnabled: true,
           birthYear: new Date().getFullYear() - 30,
@@ -235,8 +193,387 @@ test(
   }
 );
 
+// S3: update OTHER fields while birthYear stays ABSENT -> allowed.
+test(
+  "settings: owner can edit other fields while birthYear stays absent",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-nobday-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      hasCompletedOnboarding: false,
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ notificationsEnabled: false }, { merge: true })
+    );
+  }
+);
+
+// S4: update that ADDS birthYear (absent -> present) -> DENIED.
+test(
+  "settings: owner CANNOT add birthYear via update",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-addbday-${RUN}`;
+    await seedDoc(docPath, { notificationsEnabled: true });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set(
+          { birthYear: new Date().getFullYear() - 20 },
+          { merge: true }
+        )
+    );
+  }
+);
+
+// S5: update that CHANGES an existing (CF-set) birthYear -> DENIED.
+test(
+  "settings: owner CANNOT change an existing CF-set birthYear",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-chgbday-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      birthYear: 1990,
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx.firestore().doc(docPath).set({ birthYear: 1991 }, { merge: true })
+    );
+  }
+);
+
+// S6: update OTHER fields while a CF-set birthYear is PRESERVED -> allowed.
+//     Proves the immutability clause permits unrelated edits when the field is
+//     present and unchanged (not just when it is absent).
+test(
+  "settings: owner can edit other fields while CF-set birthYear is preserved",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-keepbday-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      birthYear: 1990,
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ notificationsEnabled: false }, { merge: true })
+    );
+  }
+);
+
+// S7: a different user cannot write your settings at all (isOwner gate).
+test(
+  "settings: cross-user write to another user's settings is denied",
+  async () => {
+    const ctx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${USER_UID}/settings/s-cross-${RUN}`)
+        .set({ notificationsEnabled: true })
+    );
+  }
+);
+
+// ============================================================================
+// PROFILE DOC — users/{uid} birthYear immutability
+// (6 assertions across 6 tests)
+//
+// Same CF-only-birthYear split as settings, on the profile doc itself.
+// delete stays owner-only.
+// ============================================================================
+
+// P1: create profile WITHOUT birthYear -> allowed (owner).
+test(
+  "profile: owner can create their profile doc WITHOUT birthYear",
+  async () => {
+    const uid = `prof-create-ok-${RUN}`;
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ uid, displayName: "Anna" })
+    );
+  }
+);
+
+// P2: create profile WITH birthYear from the client -> DENIED.
+test(
+  "profile: owner CANNOT create their profile doc carrying birthYear",
+  async () => {
+    const uid = `prof-create-bday-${RUN}`;
+    const ctx = env.authenticatedContext(uid);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ uid, displayName: "Anna", birthYear: 1990 })
+    );
+  }
+);
+
+// P3: update that CHANGES an existing (CF-set) birthYear -> DENIED.
+test(
+  "profile: owner CANNOT change birthYear on their profile doc",
+  async () => {
+    const uid = `prof-upd-chg-${RUN}`;
+    await seedDoc(`users/${uid}`, {
+      uid,
+      displayName: "Anna",
+      birthYear: 1990,
+    });
+    const ctx = env.authenticatedContext(uid);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ birthYear: 1991 }, { merge: true })
+    );
+  }
+);
+
+// P4: update OTHER fields while a CF-set birthYear is PRESERVED -> allowed.
+test(
+  "profile: owner can edit other profile fields while birthYear is preserved",
+  async () => {
+    const uid = `prof-upd-keep-${RUN}`;
+    await seedDoc(`users/${uid}`, {
+      uid,
+      displayName: "Anna",
+      birthYear: 1990,
+    });
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ displayName: "Anna B" }, { merge: true })
+    );
+  }
+);
+
+// P5: owner can delete their own profile doc (delete stays owner-only).
+test(
+  "profile: owner can delete their own profile doc",
+  async () => {
+    const uid = `prof-del-${RUN}`;
+    await seedDoc(`users/${uid}`, { uid, displayName: "Anna", birthYear: 1990 });
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(ctx.firestore().doc(`users/${uid}`).delete());
+  }
+);
+
+// P6: a different user cannot create another user's profile doc (isOwner gate).
+test(
+  "profile: cross-user create of another user's profile doc is denied",
+  async () => {
+    const targetUid = `prof-victim-${RUN}`;
+    const ctx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${targetUid}`)
+        .set({ uid: targetUid, displayName: "Mallory" })
+    );
+  }
+);
+
+// ============================================================================
+// isAgeCompliant() MATRIX on the four UGC create paths
+// (12 assertions across 12 tests)
+//
+// For each collection: ageCompliant:true -> create ALLOWED; no claim -> DENIED;
+// ageCompliant:false -> DENIED. messages + social_requests also require
+// isAccountMatured(), satisfied with email_verified:true so the age claim is
+// the sole variable.
+// ============================================================================
+
+// --- recipe_comments ---
+
+// C1: age-compliant author can create a comment.
+test(
+  "recipe_comments: age-compliant author can create a comment",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_OK);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`recipe_comments/rc-allow-${RUN}`)
+        .set(commentBody(USER_UID))
+    );
+  }
+);
+
+// C2: NO ageCompliant claim -> comment create DENIED (fails closed).
+test(
+  "recipe_comments: author without ageCompliant claim cannot create a comment",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`recipe_comments/rc-noclaim-${RUN}`)
+        .set(commentBody(USER_UID))
+    );
+  }
+);
+
+// C3: ageCompliant:false -> comment create DENIED.
+test(
+  "recipe_comments: author with ageCompliant=false cannot create a comment",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, { ageCompliant: false });
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`recipe_comments/rc-false-${RUN}`)
+        .set(commentBody(USER_UID))
+    );
+  }
+);
+
+// --- messages ---
+
+// M1: age-compliant (and matured) sender can create a message.
+test(
+  "messages: age-compliant matured sender can create a message",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`messages/msg-allow-${RUN}`)
+        .set(messageBody(USER_UID))
+    );
+  }
+);
+
+// M2: matured but NO ageCompliant claim -> message create DENIED.
+test(
+  "messages: matured sender without ageCompliant claim cannot create a message",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`messages/msg-noclaim-${RUN}`)
+        .set(messageBody(USER_UID))
+    );
+  }
+);
+
+// M3: matured with ageCompliant:false -> message create DENIED.
+test(
+  "messages: matured sender with ageCompliant=false cannot create a message",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`messages/msg-false-${RUN}`)
+        .set(messageBody(USER_UID))
+    );
+  }
+);
+
+// --- social_requests ---
+
+// SR1: age-compliant (and matured) user can create a friend request.
+test(
+  "social_requests: age-compliant matured user can create a friend request",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`social_requests/sr-allow-${RUN}`)
+        .set(socialRequestBody(USER_UID, OTHER_UID))
+    );
+  }
+);
+
+// SR2: matured but NO ageCompliant claim -> friend request DENIED.
+test(
+  "social_requests: matured user without ageCompliant claim cannot create a request",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, MATURED_ONLY);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`social_requests/sr-noclaim-${RUN}`)
+        .set(socialRequestBody(USER_UID, OTHER_UID))
+    );
+  }
+);
+
+// SR3: matured with ageCompliant:false -> friend request DENIED.
+test(
+  "social_requests: matured user with ageCompliant=false cannot create a request",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_FALSE_MATURED);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`social_requests/sr-false-${RUN}`)
+        .set(socialRequestBody(USER_UID, OTHER_UID))
+    );
+  }
+);
+
+// --- recipe_ratings ---
+
+// RR1: age-compliant rater can create a rating.
+test(
+  "recipe_ratings: age-compliant rater can create a rating",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, AGE_OK);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`recipe_ratings/recipe-1_${USER_UID}_${RUN}`)
+        .set(ratingBody(USER_UID))
+    );
+  }
+);
+
+// RR2: NO ageCompliant claim -> rating create DENIED.
+test(
+  "recipe_ratings: rater without ageCompliant claim cannot create a rating",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`recipe_ratings/recipe-1_${USER_UID}_noclaim_${RUN}`)
+        .set(ratingBody(USER_UID))
+    );
+  }
+);
+
+// RR3: ageCompliant:false -> rating create DENIED.
+test(
+  "recipe_ratings: rater with ageCompliant=false cannot create a rating",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID, { ageCompliant: false });
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`recipe_ratings/recipe-1_${USER_UID}_false_${RUN}`)
+        .set(ratingBody(USER_UID))
+    );
+  }
+);
+
 async function run(): Promise<void> {
-  console.log("Age-gate rules tests\n");
+  console.log("BUT-1386 (ADR-0002): age-gate rules tests\n");
   console.log("=============================\n");
   await setup();
   let failed = 0;

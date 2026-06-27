@@ -8,6 +8,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
@@ -50,11 +51,15 @@ class _MockImportEventsTracker extends Mock implements ImportEventsTracker {}
 class _MockOnboardingProgressService extends Mock
     implements OnboardingProgressService {}
 
+class _MockAgeVerificationService extends Mock
+    implements AgeVerificationService {}
+
 void main() {
   group('OnboardingViewModel', () {
     late OnboardingViewModel viewModel;
     late _MockUserService mockUserService;
     late _MockAnalyticsService mockAnalyticsService;
+    late _MockAgeVerificationService mockAgeVerificationService;
 
     setUpAll(() {
       registerFallbackValue(UserAllergenPreferences.defaults);
@@ -68,11 +73,21 @@ void main() {
       if (getIt.isRegistered<AnalyticsService>()) {
         getIt.unregister<AnalyticsService>();
       }
+      if (getIt.isRegistered<AgeVerificationService>()) {
+        getIt.unregister<AgeVerificationService>();
+      }
 
       production.ServiceLocator.initialize(DIContainer());
 
       mockUserService = _MockUserService();
       mockAnalyticsService = _MockAnalyticsService();
+      mockAgeVerificationService = _MockAgeVerificationService();
+      // Default: the CF deems the account compliant. Tests that need the
+      // under-15 / error paths override this. The VM only calls verifyAge when
+      // a birth year was selected, so age-agnostic tests never hit it.
+      when(
+        () => mockAgeVerificationService.verifyAge(any()),
+      ).thenAnswer((_) async => true);
 
       // Stub tracker getters so production code can access them if needed
       when(
@@ -95,7 +110,6 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           any(),
           onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-          birthYear: any(named: 'birthYear'),
         ),
       ).thenAnswer((_) async {});
 
@@ -108,6 +122,9 @@ void main() {
 
       getIt.registerSingleton<UserService>(mockUserService);
       getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
+      getIt.registerSingleton<AgeVerificationService>(
+        mockAgeVerificationService,
+      );
 
       viewModel = OnboardingViewModel();
     });
@@ -118,6 +135,9 @@ void main() {
       if (getIt.isRegistered<UserService>()) getIt.unregister<UserService>();
       if (getIt.isRegistered<AnalyticsService>()) {
         getIt.unregister<AnalyticsService>();
+      }
+      if (getIt.isRegistered<AgeVerificationService>()) {
+        getIt.unregister<AgeVerificationService>();
       }
     });
 
@@ -135,7 +155,6 @@ void main() {
             () => mockUserService.completeOnboardingWithPreferences(
               captureAny(),
               onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-              birthYear: any(named: 'birthYear'),
             ),
           ).captured;
           final prefs = captured.first as UserAllergenPreferences;
@@ -152,7 +171,6 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             null,
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-            birthYear: any(named: 'birthYear'),
           ),
         ).called(1);
       });
@@ -232,6 +250,173 @@ void main() {
           );
         },
       );
+
+      // BUT-1386 (ADR-0002): the verifySignupAge CF is the age authority and
+      // the sole writer of birthYear. The PRIMARY mint now happens at the
+      // gate-advance ([verifyAgeGate]) — not at completion — so a session that
+      // RESUMES past the age gate (where _selectedBirthYear is null again)
+      // still has the claim and is never re-checked. Completion keeps only a
+      // belt-and-suspenders re-check for a birth year held this session that
+      // the gate handler somehow never verified.
+      group('BUT-1386 server-side age verification at the gate', () {
+        test(
+          'verifyAgeGate calls the CF for the declared adult year and returns '
+          'compliant, letting the user past the gate',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+
+            final result = await viewModel.verifyAgeGate();
+
+            expect(result, AgeGateAdvanceResult.compliant);
+            verify(
+              () => mockAgeVerificationService.verifyAge(
+                DateTime.now().year - 30,
+              ),
+            ).called(1);
+            expect(viewModel.ageRejected, isFalse);
+          },
+        );
+
+        test(
+          'an under-15 rejection at the gate flags ageRejected and returns '
+          'rejected (the CF already deleted the account)',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            when(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).thenAnswer((_) async => false);
+
+            final result = await viewModel.verifyAgeGate();
+
+            expect(result, AgeGateAdvanceResult.rejected);
+            expect(
+              viewModel.ageRejected,
+              isTrue,
+              reason:
+                  'the view needs the typed rejection signal to show the '
+                  'butler-voice message and route back to start',
+            );
+          },
+        );
+
+        test(
+          'an infrastructure failure at the gate returns error WITHOUT flagging '
+          'ageRejected (retry, not an under-15 rejection) so the gate is '
+          'not passed',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            when(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).thenThrow(Exception('functions/internal'));
+
+            final result = await viewModel.verifyAgeGate();
+
+            expect(result, AgeGateAdvanceResult.error);
+            expect(
+              viewModel.ageRejected,
+              isFalse,
+              reason:
+                  'a transient CF error must surface the generic retry '
+                  'error, not the permanent under-15 rejection path',
+            );
+          },
+        );
+
+        test(
+          'after a compliant gate pass, completion does NOT re-verify — the '
+          'claim was already minted at the gate',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            await viewModel.verifyAgeGate();
+            clearInteractions(mockAgeVerificationService);
+            when(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).thenAnswer((_) async => true);
+
+            final result = await viewModel.completeOnboarding();
+
+            expect(result, isTrue);
+            verifyNever(() => mockAgeVerificationService.verifyAge(any()));
+          },
+        );
+
+        test(
+          'a RESUMED session (re-enters past the gate, no birth year held) '
+          'completes WITHOUT calling the CF — the claim was minted in the '
+          'session that passed the gate',
+          () async {
+            // resolveResumePageIndex would drop the user at a page past the
+            // age gate in a fresh VM where _selectedBirthYear is null.
+            viewModel.setInitialPage(2);
+
+            final result = await viewModel.completeOnboarding();
+
+            expect(result, isTrue);
+            verifyNever(() => mockAgeVerificationService.verifyAge(any()));
+            verify(
+              () => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              ),
+            ).called(1);
+          },
+        );
+
+        test(
+          'belt-and-suspenders: a birth year held this session that the gate '
+          'handler never verified is re-checked once at completion '
+          '(idempotent CF)',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+
+            final result = await viewModel.completeOnboarding();
+
+            expect(result, isTrue);
+            verify(
+              () => mockAgeVerificationService.verifyAge(
+                DateTime.now().year - 30,
+              ),
+            ).called(1);
+            verify(
+              () => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              ),
+            ).called(1);
+          },
+        );
+
+        test(
+          'completion skips the CF entirely when no birth year was declared',
+          () async {
+            await viewModel.completeOnboarding();
+
+            verifyNever(() => mockAgeVerificationService.verifyAge(any()));
+          },
+        );
+
+        test(
+          'an under-15 result via the completion belt flags ageRejected, '
+          'returns false, and never marks onboarding complete',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+            when(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).thenAnswer((_) async => false);
+
+            final result = await viewModel.completeOnboarding();
+
+            expect(result, isFalse);
+            expect(viewModel.ageRejected, isTrue);
+            verifyNever(
+              () => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              ),
+            );
+          },
+        );
+      });
     });
 
     group(
@@ -301,7 +486,6 @@ void main() {
             () => mockUserService.completeOnboardingWithPreferences(
               any(),
               onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-              birthYear: any(named: 'birthYear'),
             ),
           ).thenAnswer((_) => Completer<void>().future);
 
@@ -587,7 +771,6 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           any(),
           onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-          birthYear: any(named: 'birthYear'),
         ),
       ).thenAnswer((_) async {});
       when(() => mockUserService.currentUserId).thenReturn('u1');

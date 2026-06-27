@@ -51,6 +51,7 @@ import 'package:butlery/core/providers/locale_provider.dart';
 
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
@@ -108,6 +109,7 @@ class CoreModule implements DIModule {
       WinbackAttributionService,
       InAppReviewService,
       AccountDeletionService,
+      AgeVerificationService,
       DataExportService,
       ConsentService,
       // Core providers
@@ -305,6 +307,17 @@ class CoreModule implements DIModule {
           offlineService: container.isRegistered<OfflineService>()
               ? container<OfflineService>()
               : null,
+        );
+      });
+
+      // BUT-1386 (ADR-0002): age-verification service wrapping the
+      // `verifySignupAge` callable. The CF is now the authority for the age
+      // gate and the sole writer of birthYear. Region pin matches the CF
+      // deployment (mirrors AccountDeletionService's instanceFor wiring).
+      container.registerLazySingleton<AgeVerificationService>(() {
+        return AgeVerificationService(
+          authService: container<AuthService>(),
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         );
       });
 

@@ -15373,6 +15373,18 @@ abstract class AppLocalizations {
   /// **'Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.'**
   String get onboardingAgeGateParentInfoBody;
 
+  /// No description provided for @onboardingAgeRejectedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot kunde inte skapas'**
+  String get onboardingAgeRejectedTitle;
+
+  /// No description provided for @onboardingAgeRejectedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.'**
+  String get onboardingAgeRejectedBody;
+
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:

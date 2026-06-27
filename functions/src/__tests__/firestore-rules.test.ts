@@ -364,20 +364,23 @@ test(
   }
 );
 
-// U5: owner can write their settings/preferences with a valid birthYear.
-//     (Smoke check that the settings subcollection is wired to the owner.)
+// U5: owner can create their settings/preferences (smoke check that the
+//     settings subcollection is wired to the owner). BUT-1386 (ADR-0002):
+//     birthYear is now CF-ONLY-written, so a client create must OMIT it — the
+//     full birthYear create-absent / update-unchanged immutability matrix lives
+//     in age-gate-rules.test.ts. This test only proves the owner can write the
+//     non-birthYear settings.
 test(
-  "users: owner can create settings/preferences with valid birthYear",
+  "users: owner can create settings/preferences without birthYear",
   async () => {
     const ctx = env.authenticatedContext(OWNER_UID);
-    const validYear = new Date().getFullYear() - 25;
     await assertSucceeds(
       ctx
         .firestore()
-        .doc(`users/${OWNER_UID}/settings/preferences`)
+        .doc(`users/${OWNER_UID}/settings/preferences-${RUN}`)
         .set({
           notificationsEnabled: true,
-          birthYear: validYear,
+          hasCompletedOnboarding: true,
         })
     );
   }

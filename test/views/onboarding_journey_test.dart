@@ -20,6 +20,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
@@ -48,6 +49,9 @@ class _MockSocialEventsTracker extends Mock implements SocialEventsTracker {}
 class _MockImportEventsTracker extends Mock implements ImportEventsTracker {}
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
+
+class _MockAgeVerificationService extends Mock
+    implements AgeVerificationService {}
 
 /// Extracted onboarding body that watches [OnboardingViewModel] directly.
 /// Mirrors the real onboarding wizard (age-gate → welcome → allergens →
@@ -209,6 +213,7 @@ void main() {
   late _MockUserService mockUserService;
   late _MockAnalyticsService mockAnalyticsService;
   late _MockUnifiedRecipeService mockRecipeService;
+  late _MockAgeVerificationService mockAgeVerificationService;
   late OnboardingViewModel viewModel;
   late bool onboardingCompleted;
 
@@ -227,12 +232,21 @@ void main() {
     if (getIt.isRegistered<UnifiedRecipeService>()) {
       getIt.unregister<UnifiedRecipeService>();
     }
+    if (getIt.isRegistered<AgeVerificationService>()) {
+      getIt.unregister<AgeVerificationService>();
+    }
 
     production.ServiceLocator.initialize(DIContainer());
 
     mockUserService = _MockUserService();
     mockAnalyticsService = _MockAnalyticsService();
     mockRecipeService = _MockUnifiedRecipeService();
+    mockAgeVerificationService = _MockAgeVerificationService();
+    // BUT-1386: the journey picks an adult birth year, so the VM calls the
+    // age-verification CF before completing. Default to compliant.
+    when(
+      () => mockAgeVerificationService.verifyAge(any()),
+    ).thenAnswer((_) async => true);
 
     // Stub analytics tracker getters so any nested lookups don't null-crash.
     when(
@@ -260,7 +274,6 @@ void main() {
       () => mockUserService.completeOnboardingWithPreferences(
         any(),
         onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
-        birthYear: any(named: 'birthYear'),
       ),
     ).thenAnswer((_) async {});
 
@@ -282,6 +295,7 @@ void main() {
     getIt.registerSingleton<UserService>(mockUserService);
     getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
     getIt.registerSingleton<UnifiedRecipeService>(mockRecipeService);
+    getIt.registerSingleton<AgeVerificationService>(mockAgeVerificationService);
 
     viewModel = OnboardingViewModel();
     onboardingCompleted = false;
@@ -296,6 +310,9 @@ void main() {
     }
     if (getIt.isRegistered<UnifiedRecipeService>()) {
       getIt.unregister<UnifiedRecipeService>();
+    }
+    if (getIt.isRegistered<AgeVerificationService>()) {
+      getIt.unregister<AgeVerificationService>();
     }
     production.ServiceLocator.reset();
   });
@@ -372,7 +389,6 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             captureAny(),
             onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
-            birthYear: any(named: 'birthYear'),
           ),
         ).captured;
         final prefs = captured[0] as UserAllergenPreferences?;
@@ -431,7 +447,6 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           captureAny(),
           onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
-          birthYear: any(named: 'birthYear'),
         ),
       ).captured;
       expect(

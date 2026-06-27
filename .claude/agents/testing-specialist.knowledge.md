@@ -2018,4 +2018,66 @@ Trigger: verifying birthYear constructor invariant change and `_readBirthYear` d
 
 **Pattern:** when a model constructor invariant tightens, add a test for the previously-valid-now-invalid value through BOTH the constructor path (expect throw) AND the defensive deserializer path (expect null). The generic "out-of-range" deserializer test with an obviously-wrong value (9999) does not prove the migration boundary — add the boundary value explicitly.
 
+### 2026-06-27 — BUT-1386 (ADR-0002) server-side age verification: CF-gates-onboarding + birthYear-no-longer-client-written tests are sound [Assessment + pattern]
+Trigger: reviewing the OnboardingViewModel age-verification tests + UserProfile birthYear-absence test for the move to a `verifySignupAge` Cloud Function as the sole age authority and sole writer of `birthYear`.
+
+**Verdict: all sound, no edits. 99/99 green (onboarding_viewmodel_test + user_profile_test), analyze clean across all 3 touched files incl. onboarding_journey_test.**
+
+The four new VM tests (`BUT-1386 server-side age verification` group) each pin a distinct branch of `completeOnboarding`'s pre-write gate (prod `onboarding_viewmodel.dart:234-249`) and are non-vacuous:
+- **CF-called-before-completing (compliant path):** `verifyAge(year).called(1)` + onboarding write `.called(1)` + `ageRejected isFalse`. Ordering (CF gates the write) isn't pinned *here* but is pinned by implication in the rejection test below.
+- **skips CF when no birthYear declared:** `verifyNever(() => verifyAge(any()))` — proves the `if (_selectedBirthYear != null)` gate. Load-bearing because age-agnostic suites (skip path, analytics tests) must never trip a CF round-trip.
+- **under-15 rejection:** `result isFalse` + `ageRejected isTrue` + `verifyNever` onboarding write. The `verifyNever` write is the load-bearing ORDERING + seeding-block guard: rejection must bail BEFORE seeding/marking complete (the CF already deleted the Auth account). Would fail if a refactor moved the write above the gate.
+- **infra-error path (the user's specific scrutiny target — IS it asserted that an infra error is NOT treated as under-15?):** YES, correctly. Test stubs `verifyAge` → `thenThrow`, asserts `result isFalse` + **`ageRejected isFalse`** + `verifyNever` onboarding write. This is the exact contract: prod's INNER try/catch (lines 240-243) returns false WITHOUT setting `_ageRejected`, vs the under-15 branch (244-248) which sets it. The test would fail if someone collapsed the two paths (e.g. moved `_ageRejected = true` into the catch, or dropped the inner try/catch so a thrown error escaped to the outer catch with the flag still false but the write also skipped for the wrong reason). The typed-rejection-vs-generic-retry distinction is what the view keys off to show butler-rejection vs retry-error — pinning `ageRejected` on both paths is the right seam.
+- **Timeout sub-path note:** prod wraps `verifyAge(...).timeout(_completionTimeout)`; a hung CF throws TimeoutException through the SAME inner catch as the generic-exception test, so it's covered by implication (no separate test needed).
+
+**UserProfile birthYear-absence test (replaced the old "round-trips through settings write"):** correctly inverts the contract. birthYear is now CF-authoritative, so the test asserts it is ABSENT from BOTH `toFirestoreEditable()` AND `toPrivateSettings()`. Non-vacuous + load-bearing because: (a) `toFirestore()` STILL includes birthYear (line 429) and `toFirestoreEditable()` strips it via an explicit `data.remove('birthYear')` (line 364) — so a dropped `remove` would ship the stale client value into the real write surface; (b) `firebase_user_repository.dart:164` writes profiles via `toFirestoreEditable()`, so this is the actual production write path, not a hypothetical one; (c) a stale in-memory birthYear colliding with the CF-set value would get the WHOLE profile write rejected by firestore.rules. `toPrivateSettings()` simply never lists it — the test guards a regression that re-adds it.
+
+**Pattern (reusable for "field X moved from client-written to server-authoritative"):** invert the old round-trip test into an ABSENCE assertion on every client-write surface (`toFirestoreEditable` / `toPrivateSettings` / any merge-write map), and verify the assertion is non-vacuous by confirming the field still exists on the model and still appears in the base `toFirestore()` (so it COULD leak). Cross-check the repository to confirm which map is the real write path. Pair with a VM/service test proving the server call gates the downstream write (`verifyNever` the write on the server-rejection path = the ordering guard). The infra-error-vs-business-rejection distinction must be asserted on BOTH the typed-flag (`ageRejected`) AND the downstream-write-skipped (`verifyNever`) — asserting only the return value (`false` on both) would not distinguish them.
+
 **All 67 tests passed** (66 pre-existing + 1 added for the specific 14yo boundary on both deserialization paths).
+
+### 2026-06-27 — BUT-1386 age-CF moved gate-advance → resume regression guard (Pattern verified)
+
+Re-reviewed the reworked `test/unit/viewmodels/onboarding_viewmodel_test.dart`
+"BUT-1386 server-side age verification at the gate" group after the resume-fix
+relocated the primary age-CF mint from completion to the gate advance
+(`verifyAgeGate`). All 36 tests pass. Verdict: contract-proving, not green-chasing.
+
+Production control flow confirmed against the test claims:
+- `verifyAgeGate()` calls the CF, sets `_ageVerifiedThisSession = true` ONLY on a
+  compliant result, sets `_ageRejected = true` ONLY on an explicit `false`
+  (under-15), and on a THROW returns `error` WITHOUT touching `_ageRejected`.
+- `completeOnboarding()` re-verifies only under the guard
+  `_selectedBirthYear != null && !_ageVerifiedThisSession` (belt-and-suspenders).
+- A resumed session has `_selectedBirthYear == null` (in-memory only;
+  `setInitialPage` touches only `_currentPage`/`_viewedPages`), so the null short-
+  circuits the guard → CF never called → completion still writes.
+
+**Mutation-tested the two load-bearing assertions** (the whole point — confirm
+they'd have failed through the original Critical regression, not just pass):
+1. Removed the `_selectedBirthYear != null` null-guard → resume test went red
+   (the `verifyAge(_selectedBirthYear!)` NPEs, completion returns false, caught
+   by the test's `result == isTrue`).
+2. Dropped the `_ageVerifiedThisSession = true` mint in the gate → "compliant gate
+   pass NOT re-verified" test went red on its `verifyNever(verifyAge)`.
+Both restored after; full suite green. The resume guard pins BOTH halves
+correctly: `verifyNever(verifyAge)` AND `verify(completeOnboardingWithPreferences).called(1)`
+— "no CF call" paired with "completion still succeeds/writes", so a regression
+that re-verifies on resume can't sneak past on the default-true CF stub.
+
+**Reusable pattern for "this guard must NOT fire on resume/restored state":** a
+test that only asserts the happy return value is green-blind when the stubbed
+dependency returns success anyway. Pin the NEGATIVE (`verifyNever` the dependency)
+AND the POSITIVE downstream side effect (`verify(...).called(1)`) in the same
+test. Then prove non-vacuity by mutating the production guard and watching THAT
+test (not some other) go red. The infra-error-vs-under-15 distinction is
+correctly asserted on the typed flag (`ageRejected` is/ isn't set) rather than
+the shared return value — same lesson as the UserProfile entry above.
+
+### 2026-06-27 — BUT-1386 (ADR-0002) server-side age gate review [Pattern discovered]
+Reviewed the age-gate test trio (onboarding VM, UserProfile model, onboarding journey). All three prove intended behavior, not green. Key patterns worth reusing:
+- **CF-as-sole-writer asserted negatively on EVERY client write surface.** The model test pins `birthYear` absent from BOTH `toFirestoreEditable()` and `toPrivateSettings()` with reasons tied to the firestore.rules deny + stale-collision risk. This is the right shape: assert absence on each surface a client actually writes through, not just one.
+- **Three CF outcomes fully covered at the gate** (`verifyAgeGate`): compliant→`AgeGateAdvanceResult.compliant` + `verifyAge` called once + `ageRejected==false`; under-15→`rejected` + `ageRejected==true`; infra throw→`error` + `ageRejected==false` (retry, NOT the permanent rejection). The `ageRejected` flag is the load-bearing discriminator between "quiet butler rejection + route to start" and "generic retry" — both branches pinned.
+- **Resume-bug invariant pinned** (the actual point of moving the mint to the gate): a resumed session (`setInitialPage(2)`, no birth year held) completes WITHOUT calling the CF; the belt-and-suspenders at completion fires ONLY when a year is held this session AND the gate handler didn't verify it. Both the "skip CF" and "belt fires once" paths tested.
+- **Mocks mock the dependency, not the subject.** `AgeVerificationService` is a pure `Mock` (no override bodies, so `when()`/`verify()` work). The VM under test is real. Good.
+- **Gap (Medium, not blocking): the journey test never exercises the gate CF.** `onboarding_journey_test.dart` advances page 0→1 via the `next` button → `nextPage()`, which does NOT call `verifyAgeGate()`. So the journey relies on the completion-time belt for its single `verifyAge` call, and never proves the under-15 / infra-error branches at the journey (widget) level — no "under-15 picks a young year → sees butler rejection → routed back to start" journey case exists. The VM unit tests cover the branches, but the user-visible rejection routing is untested end-to-end. A future journey case (tap a young year, attempt advance, assert rejection UI + back-to-start) would close this. The stub `_OnboardingBody` would need a real `verifyAgeGate()` call wired into its age-gate `next` handler to be faithful to production.

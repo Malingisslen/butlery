@@ -821,3 +821,66 @@ non-admin only — no explicit anonymous-read deny case in the suite for
 parse_events. Consistent with how the sibling metrics/system_events/
 parsing_corrections cases are written (anon-deny only spelled out for analytics).
 Probe covered the anon path, so it's proven, just not pinned as a named suite test.
+
+### 2026-06-27 — BUT-1386 (ADR-0002) server-authoritative age gate (full REWRITE of age-gate file)
+
+The old self-declared-birthYear contract is GONE. Three rule changes, all proven
+on emulator:
+
+1. **NEW helper `isAgeCompliant()`** = `isAuthenticated() && request.auth.token.ageCompliant == true`.
+   Fails CLOSED. Seed the claim via the SECOND arg of `authenticatedContext`:
+   `env.authenticatedContext(uid, { ageCompliant: true })`. The matrix per gated
+   create is THREE cases: claim true → allow; **no claim → deny** (the CEL
+   `request.auth.token.ageCompliant` is *undefined* on a claimless token, which
+   `== true` evaluates false → deny, NOT an error that aborts); `ageCompliant:false`
+   → deny.
+2. **birthYear is now CF-ONLY-written** on BOTH homes (`users/{uid}` profile doc
+   AND `users/{uid}/settings/{settingId}`). Client create rule:
+   `request.resource.data.get('birthYear', null) == null` (must be ABSENT).
+   Client update rule: post-write birthYear `==` existing birthYear (add/change/
+   remove all denied; all OTHER field edits still allowed). Test matrix per home:
+   create-without-allow, create-with-deny, update-add-deny, update-change-deny,
+   update-other-field-while-preserved-allow (this last one is the load-bearing
+   allow — without it a blanket-deny regression passes every deny test).
+3. **Four UGC create paths gained `&& isAgeCompliant()`**: recipe_comments (L1055),
+   messages (L1310), social_requests (L553), recipe_ratings (L1484). For messages
+   + social_requests, ALSO satisfy `isAccountMatured()` with `email_verified:true`
+   in the claim so the age claim is the sole variable.
+
+Test file `age-gate-rules.test.ts` fully rewritten: 25 tests (settings 7 / profile
+6 / UGC matrix 12), all green. Uses a fixed `const RUN = "but1386"` literal (NOT
+Date.now()) PLUS a REST `DELETE /emulator/v1/projects/<id>/databases/(default)/documents`
+namespace clear in setup() — belt-and-suspenders so create-allow doc ids are
+always fresh on local re-runs.
+
+**Cross-file fallout (the part that's easy to miss):** turning an existing
+create-`assertSucceeds` into an age-gated path makes EVERY claimless authed
+create FAIL CLOSED. Grep the whole `__tests__/` dir for the four collections and
+add `{ ageCompliant: true }` to their create contexts (deny tests too, so they
+deny for their INTENDED reason, not silently on age). This run patched:
+- `recipe-comments-rules.test.ts` — 5 create-allow + deny contexts (recipe_comments x4 + recipe_ratings x1). Added `const AGE_OK = { ageCompliant: true }`.
+- `account-maturity-rules.test.ts` — 3 create-allow (AM2/AM3/AM5) for social_requests + messages.
+- `firestore-rules.test.ts` — U5 ("owner can create settings with valid birthYear") encoded the DEAD contract; flipped to "create WITHOUT birthYear" + suffixed its `settings/preferences` id with `RUN` (was a fixed id → re-run-fragile).
+
+**Two latent pre-existing bugs surfaced while wiring account-maturity into the
+suite (it had NO npm script and was NOT in test:rules:all — so it had silently
+rotted):**
+- It seeded `admin.firestore.Timestamp` objects into the rules-unit-testing
+  CLIENT SDK → `invalid-argument` at setup. Fix: use plain `new Date()` (round-trips
+  to a Firestore Timestamp; `isAccountMatured()`'s `createdAt.toMillis()` still works).
+  Reminder: rules-unit-testing contexts (incl. `withSecurityRulesDisabled`) are the
+  CLIENT SDK — never feed them firebase-admin Timestamps.
+- Its create-allow tests used FIXED doc ids (req-2/req-3/msg-2) with no per-RUN
+  suffix and no namespace clear → false FAIL on the 2nd+ run (create→update→deny).
+  Added the same `clearFirestore()` REST-DELETE to its setup.
+Wired `test:rules:account-maturity` into package.json + appended to test:rules:all
++ added account-maturity-rules.test.ts AND recipe-comments-rules.test.ts to both
+path-filter blocks in `firestore-rules.yml`.
+
+**Local test:rules:all is NOT a reliable green/red oracle here, for two reasons
+unrelated to the diff:** (a) the local ensure-emulator hook starts `--only firestore`,
+so `comment-images-storage-rules.test.ts` (needs Storage on 9199) crashes the `&&`
+chain mid-way; (b) running the all-chain twice without clearing accumulates emulator
+state and trips the fixed-id suites (moderation, reports). CI boots a FRESH emulator
+WITH storage per job, so test:rules:all is the CI oracle. Locally, verify the
+AFFECTED suites individually on freshly-cleared namespaces.

@@ -6151,6 +6151,8 @@
   "onboardingAgeGateParentOption": "En vuxen kan skapa ett konto åt dig",
   "onboardingAgeGateParentInfoTitle": "Be en vuxen om hjälp",
   "onboardingAgeGateParentInfoBody": "Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.",
+  "onboardingAgeRejectedTitle": "Kontot kunde inte skapas",
+  "onboardingAgeRejectedBody": "Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.",
   "onboardingWelcomeTitle": "Välkommen till Butlery!",
   "onboardingWelcomeDescription": "Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.",
   "onboardingWelcomeNote": "Du kan alltid ändra dessa i inställningarna senare.",

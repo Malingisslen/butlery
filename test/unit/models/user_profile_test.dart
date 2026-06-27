@@ -1154,25 +1154,37 @@ void main() {
         expect(decoded.birthYear, equals(profile.birthYear));
       });
 
-      test('round-trips through toPrivateSettings + fromMap', () {
-        final currentYear = DateTime.now().year;
-        final profile = UserProfile(
-          uid: 'rt2',
-          displayName: 'RT2',
-          email: 'rt2@example.com',
-          joinedAt: testDate,
-          lastActiveAt: testDate,
-          birthYear: currentYear - 40,
-        );
-        // Merge public + private settings to reproduce how the repository
-        // fans a profile across its two storage documents.
-        final merged = <String, dynamic>{
-          ...profile.toFirestore(),
-          ...profile.toPrivateSettings(),
-        };
-        final decoded = UserProfile.fromMap(profile.uid, merged);
-        expect(decoded.birthYear, equals(profile.birthYear));
-      });
+      test(
+        'BUT-1386 (ADR-0002): birthYear is ABSENT from every client-write map '
+        '(the verifySignupAge CF is the sole writer)',
+        () {
+          final currentYear = DateTime.now().year;
+          final profile = UserProfile(
+            uid: 'rt2',
+            displayName: 'RT2',
+            email: 'rt2@example.com',
+            joinedAt: testDate,
+            lastActiveAt: testDate,
+            birthYear: currentYear - 40,
+          );
+
+          // The owner-editable public merge surface must not carry birthYear —
+          // firestore.rules deny client writes of it, and a stale in-memory
+          // value could otherwise collide with the CF-set value and get the
+          // whole profile write rejected.
+          expect(
+            profile.toFirestoreEditable().containsKey('birthYear'),
+            isFalse,
+            reason: 'birthYear must not appear in the public merge write',
+          );
+          // The private settings write must not carry it either.
+          expect(
+            profile.toPrivateSettings().containsKey('birthYear'),
+            isFalse,
+            reason: 'birthYear must not appear in the settings write',
+          );
+        },
+      );
 
       test('fromJson silently drops invalid birthYear values (defensive)', () {
         final base = {

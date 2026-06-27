@@ -119,6 +119,16 @@ service cloud.firestore {
       );
     }
 
+    // BUT-1386 (ADR-0002): server-authoritative age gate. True only when the
+    // `verifySignupAge` Cloud Function has set the `ageCompliant` custom claim
+    // (≥15). Fails CLOSED — a missing/false claim, or a stale token issued
+    // before the claim was set, evaluates to false and denies. Composed with
+    // (not merged into) isAccountMatured(): maturity is anti-spam, age is legal
+    // eligibility; a write must satisfy both where both apply.
+    function isAgeCompliant() {
+      return isAuthenticated() && request.auth.token.ageCompliant == true;
+    }
+
     // CRIT-8: Validate user-defined ingredient structure (allergen safety-critical)
     // Prevents injection of malicious ingredient properties
     function _isValidUserIngredient(ingredient, ingredientId) {
@@ -224,7 +234,20 @@ service cloud.firestore {
       // (count() aggregation needs collection-level read). Write stays
       // owner-only — admin never mutates user docs.
       allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId);
+
+      // BUT-1386 (ADR-0002): `birthYear` is dual-located (profile doc here +
+      // settings/preferences) and is now written ONLY by the `verifySignupAge`
+      // Cloud Function (Admin SDK bypasses these rules). The client must not
+      // create or mutate it on the profile doc either — the gate's integrity
+      // wants a single trusted writer. Split the former `allow write` so the
+      // birthYear-immutability clause can sit on create + update; delete stays
+      // owner-only.
+      allow create: if isOwner(userId)
+        && request.resource.data.get('birthYear', null) == null;
+      allow update: if isOwner(userId)
+        && request.resource.data.get('birthYear', null)
+           == resource.data.get('birthYear', null);
+      allow delete: if isOwner(userId);
 
       // User's recipes
       match /recipes/{recipeId} {
@@ -412,33 +435,26 @@ service cloud.firestore {
 
       // User settings subcollection — owner-only.
       // The `preferences` doc carries `birthYear` (age floor for Butlery's
-      // social/UGC service). The single enforced floor is 15, grounded in
-      // Sweden's Dataskyddslag 2 kap. 4 § (information-society services with a
-      // social component) — NOT GDPR Art 8 (whose Swedish floor is 13). See
-      // ADR-0001 (the 15 decision + legal basis). Rules enforce 15 here;
-      // ADR-0002's signup Cloud Function will become the authoritative writer
-      // and close the remaining "skip/null birthYear" bypass (BUT-1384 follow-up).
+      // social/UGC service, floor = 15 per ADR-0001 / Dataskyddslag 2 kap. 4 §).
+      // BUT-1386 (ADR-0002): `birthYear` is now written ONLY by the
+      // `verifySignupAge` Cloud Function (Admin SDK, which bypasses these
+      // rules). Clients may write the rest of preferences but may NOT create or
+      // mutate `birthYear` — that closes the old "skip / null-out birthYear"
+      // self-declaration bypass. The CF, not the rule arithmetic, is the
+      // authoritative age check; the `ageCompliant` claim is the gate.
       match /settings/{settingId} {
         allow read: if isOwner(userId);
 
+        // Client create must not carry birthYear at all.
         allow create: if isOwner(userId)
-          && (settingId != 'preferences' || (
-            'birthYear' in request.resource.data.keys()
-            && request.resource.data.birthYear is int
-            && request.resource.data.birthYear >= 1900
-            && request.resource.data.birthYear <= (request.time.year() - 15)
-          ));
+          && request.resource.data.get('birthYear', null) == null;
 
+        // Client update must leave birthYear exactly as the CF set it (or
+        // absent if not yet set). Comparing post-write to existing denies any
+        // add/change/remove of the field while allowing all other settings edits.
         allow update: if isOwner(userId)
-          && (
-            !('birthYear' in request.resource.data.keys())
-            || request.resource.data.birthYear == null
-            || (
-              request.resource.data.birthYear is int
-              && request.resource.data.birthYear >= 1900
-              && request.resource.data.birthYear <= (request.time.year() - 15)
-            )
-          );
+          && request.resource.data.get('birthYear', null)
+             == resource.data.get('birthYear', null);
 
         allow delete: if isOwner(userId);
       }
@@ -540,6 +556,7 @@ service cloud.firestore {
         && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
         && isNotBlockedBy(request.resource.data.toUserId)
         && isAccountMatured()
+        && isAgeCompliant()
         && rateLimitWrite('social_requests', 10);
 
       // Recipient can accept/reject/expire
@@ -1037,6 +1054,7 @@ service cloud.firestore {
       // hold, so spam vectors stay closed.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.authorId
+        && isAgeCompliant()
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000
@@ -1295,6 +1313,7 @@ service cloud.firestore {
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
         && isAccountMatured()
+        && isAgeCompliant()
         && rateLimitWrite('messages', 5);
 
       // Can update your own messages (content only — identity fields are immutable)
@@ -1464,6 +1483,7 @@ service cloud.firestore {
       // still applies; rate limit + auth uid pinning prevent spam).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
+        && isAgeCompliant()
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt'])

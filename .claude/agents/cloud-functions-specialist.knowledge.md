@@ -1882,3 +1882,116 @@ is a one-liner that calls the core. Tests:
   covers `src/__tests__`, and `noUnusedLocals` + `noImplicitReturns` are on, so
   the typecheck catches unused imports and missing-return paths in both cores
   and tests.
+
+### 2026-06-27 — BUT-1386 verifySignupAge DI-core tests [Pattern discovered]
+
+Wrote `functions/src/__tests__/verify-signup-age.test.ts` (7 cases, all green
+via `npx ts-node`) for `account/verify-signup-age.ts`'s
+`runVerifySignupAgeWithDeps(deps, uid, birthYear)` + `enforceIpAuditCap(db, ip)`.
+Mirrors `request-account-deletion.test.ts`: hand-rolled `test()` harness, fake
+`{db, auth}` injected, no emulator. Registered `test:verify-signup-age` in
+package.json so `run-all-tests.js` auto-discovers it (`npm test`).
+
+**Patterns worth remembering:**
+
+- **Assert field ABSENCE, not just presence, for data-minimisation contracts.**
+  This function's whole Legal premise is what it *doesn't* write. The rejection
+  audit row must carry no `uid`/`userIdHash`/`birthYear`/`birthDecade`, and the
+  compliance row must carry no raw `birthYear`. Tests use `!("birthYear" in row)`
+  etc. A presence-only test would pass even if someone later leaked the uid into
+  the rejection row — exactly the regression that matters here.
+
+- **`HttpsError.code` is namespaced `functions/<code>`.** When asserting an
+  `HttpsError` from firebase-functions, `err.code` reads
+  `"functions/resource-exhausted"`, not bare `"resource-exhausted"`. Accept both
+  so the test isn't brittle to the SDK's prefixing. Same trap will hit any future
+  test asserting on an HttpsError code in this repo.
+
+- **Use real `new Date().getFullYear()` for age boundaries, don't hardcode.**
+  The SUT computes `currentYear` from the system clock, so the test derives
+  boundary birth years as `CURRENT_YEAR - MIN_AGE_YEARS` (admit) and
+  `CURRENT_YEAR - (MIN_AGE_YEARS - 1)` (reject). Hardcoding `2011`/`2012` would
+  silently rot as the year ticks over. The function isn't injectable on `now`,
+  so the test mirrors its clock source instead.
+
+- **Idempotency is asserted via call COUNTS on the fake, not just return value.**
+  The retry case returns `compliant:true` whether or not it re-wrote — so the
+  real assertions are `setClaimsCallCount === 0`, `setWrites.length === 0`,
+  `auditRows.length === 0`. Counting side effects on the injected fake is how you
+  prove a no-op, not the response envelope.
+
+- **Rethrow-path test asserts the returned value stayed `undefined`.** For "must
+  not proceed as admitted when deleteUser throws", catch the throw AND assert the
+  pre-initialised `returned` sentinel is still `undefined` — proves the function
+  never reached a `return { compliant: ... }` before throwing. Catching alone
+  wouldn't distinguish "threw" from "returned then a later line threw".
+
+- **Fail-closed test = inject a transaction error, assert it throws.** For
+  `enforceIpAuditCap`, the FinOps contract is "a Firestore error denies, never
+  resolves." Fake `runTransaction` rejects when `txError` is set; the test asserts
+  the cap rethrows as `resource-exhausted`. The function's own `logger.error` line
+  prints during this case — that's expected output, not a failure.
+
+- **Logger ERROR/INFO lines interleave with PASS output.** The rejection-delete
+  and fail-closed cases legitimately emit `logger.error`; the harness has no
+  logger-silencing seam (unlike `ocr-validation.test.ts`). Don't mistake those
+  structured-log lines for test failures — the trailing `N/N passed` is the
+  source of truth.
+
+### 2026-06-27 — BUT-1386 verify-signup-age production-side review [Pattern discovered]
+
+Reviewed the callable + DI core + IP cap before commit. Implementation is sound;
+no Critical, no High. Notes worth keeping for the next account-callable:
+
+- **Region is inherited, not pinned per-function.** `verify-signup-age.ts` sets no
+  `region` in its `onCall` options — it relies on `setGlobalOptions({ region:
+  "europe-west1" })` in `index.ts`. That is the correct house pattern (the client
+  uses `instanceFor(region: 'europe-west1')`, which matches). Do NOT add a
+  per-function region; the global option already covers it, and a per-function
+  override would be redundant noise. Verified the export at `index.ts:74` and the
+  global option at `index.ts:25`.
+
+- **Write-ordering rationale (claim → birthYear → audit) is correct and the
+  fail-window is benign.** If `setCustomUserClaims` succeeds but the birthYear
+  `set()` then fails, the function throws `internal` and the client retries; the
+  retry hits the idempotent no-op branch (`existingClaims.ageCompliant === true`)
+  and returns success WITHOUT ever writing birthYear or the audit row. That is a
+  latent gap (claim set, birthYear never stored, no consent audit) but: (a) the
+  birthYear writes are a single `Promise.all` that rarely partially fails, (b) the
+  gate (claim) is the safety-critical artifact and it IS set, (c) worst case is a
+  compliant user missing their stored birthYear, not a minor getting through. Rated
+  Low, not High — the ordering deliberately favors "never able-to-post without a
+  recorded-age decision" over "never claim-without-birthYear". If this is ever
+  tightened, the fix is to re-check birthYear-doc presence in the idempotent branch,
+  not to reorder.
+
+- **Consent audit retention wiring verified end-to-end.** `writeComplianceAudit`
+  writes `operation: "consent_age_verification"` + `timestamp: serverTimestamp()`.
+  `audit_logs/purge-expired.ts` matches consent via `op.startsWith("consent_")`
+  (CONSENT_OPERATION_PREFIX) → 730-day retention, and queries `where("timestamp",
+  "<", cutoff)`. Field name and prefix both line up — the 730-day claim in the ADR
+  holds. The rejection audit (`operation: "age_verification_rejected"`, no prefix)
+  correctly falls into the 180-day general bucket and carries no identifier.
+
+- **Rejection audit is written BEFORE `deleteUser` and has no dedup.** A bot that
+  passes the per-IP cap (≤5/h) and the per-user bucket could in principle write up
+  to 5 rejection rows/hour/IP. That is exactly the cost-bound the IP cap exists to
+  enforce, so it's working as designed — the rows are intentionally non-identifying
+  and cheap. Not a finding; recording so a future reviewer doesn't re-flag it as a
+  "missing idempotency guard" — these rows are deliberately NOT deduped (each
+  blocked attempt is a distinct event for the security record).
+
+- **IP cap fail-closed is correct for an account gate** (unlike the notification
+  gates which fail-OPEN per the 2026-04-30 entry). The distinction: notification
+  gates fail-open because muting all pushes during an infra blip is worse than a few
+  extra sends; an age/abuse gate fails-closed because admitting an unverified signup
+  during a blip is the worse outcome. Both are right for their domain — don't
+  "harmonize" them.
+
+- **`request.rawRequest?.ip` can be a proxy/load-balancer IP.** The per-IP cap keys
+  on `request.rawRequest?.ip ?? "unknown"`. Behind Google's front-end this is
+  usually the real client IP, but if it ever resolves to a shared egress the cap
+  buckets many users together (false positives) — and the `"unknown"` fallback
+  buckets ALL ip-less callers into one key. Acceptable for a signup-once flow at
+  beta scale; flag if abuse patterns suggest the key needs `X-Forwarded-For`
+  parsing. Low.

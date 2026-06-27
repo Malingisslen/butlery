@@ -6121,6 +6121,8 @@
   "onboardingAgeGateParentOption": "A grown-up can sign up for you",
   "onboardingAgeGateParentInfoTitle": "Ask a grown-up for help",
   "onboardingAgeGateParentInfoBody": "Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.",
+  "onboardingAgeRejectedTitle": "We couldn't create your account",
+  "onboardingAgeRejectedBody": "Butlery is available to those aged 15 and over. We're unable to create your account at this time.",
   "onboardingWelcomeTitle": "Welcome to Butlery!",
   "onboardingWelcomeDescription": "Let us set up your preferences so you get the best experience from the start.",
   "onboardingWelcomeNote": "You can always change these in settings later.",

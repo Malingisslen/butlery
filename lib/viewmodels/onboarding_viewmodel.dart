@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -18,6 +19,23 @@ import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+
+/// Outcome of the server-side age check run when the user advances past the
+/// age-gate page (BUT-1386). The view branches on this to allow advancing,
+/// route the under-15 rejection to start, or surface a retry error.
+enum AgeGateAdvanceResult {
+  /// CF accepted the year: the `ageCompliant` claim is minted and the token
+  /// refreshed server-side. The user may advance past the gate.
+  compliant,
+
+  /// CF rejected the account as under-15 and has ALREADY deleted the Auth
+  /// record. The view shows the butler-voice rejection and routes to start.
+  rejected,
+
+  /// Infrastructure failure (CF unreachable / timeout / internal). The gate is
+  /// NOT passed; the view shows a retry error and keeps the user on page 0.
+  error,
+}
 
 class OnboardingViewModel extends BaseViewModel {
   // Butlery's single minimum age. Basis: Sweden's Dataskyddslag 2 kap. 4 §
@@ -57,6 +75,19 @@ class OnboardingViewModel extends BaseViewModel {
   final Set<String> _selectedDietaryPrefs = {};
   int? _selectedBirthYear;
   bool _started = false;
+  // BUT-1386 (ADR-0002): set when the verifySignupAge CF rejected the account
+  // as under-15 (and has already deleted the Auth record server-side). The
+  // view reads this after a false `completeOnboarding` to show the quiet
+  // butler-voice rejection and route back to start, rather than the generic
+  // retry error used for infrastructure failures.
+  bool _ageRejected = false;
+  // BUT-1386: set once the gate-advance CF call (verifyAgeGate) has confirmed
+  // compliance THIS session, so [completeOnboarding] doesn't redundantly
+  // re-call the CF. Stays false on a resumed session (the claim was already
+  // minted in the session that passed the gate), which is exactly why the
+  // completion belt only fires when a birth year is held this session AND
+  // the gate handler hasn't already verified it.
+  bool _ageVerifiedThisSession = false;
   // BUT-545: tracks whether the onboarding import page actually landed a
   // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
   // when the user advances past the import page without importing.
@@ -73,6 +104,12 @@ class OnboardingViewModel extends BaseViewModel {
       Set.unmodifiable(_selectedDietaryPrefs);
   int? get selectedBirthYear => _selectedBirthYear;
   bool get isCompleting => isLoading;
+
+  /// BUT-1386: true when the last [completeOnboarding] failed because the
+  /// server-side age check rejected the account as under-15. Distinguishes the
+  /// rejection path (show butler rejection + route to start) from a generic
+  /// infrastructure failure (show retry error).
+  bool get ageRejected => _ageRejected;
   // Page order: age-gate (0), welcome (1), allergen (2), dietary (3), import (4)
   static const int _lastPageIndex = 4;
   bool get isLastPage => _currentPage == _lastPageIndex;
@@ -101,6 +138,48 @@ class OnboardingViewModel extends BaseViewModel {
   void setBirthYear(int? year) {
     _selectedBirthYear = year;
     notifyListeners();
+  }
+
+  /// BUT-1386 (ADR-0002): run the server-side age check at the MOMENT the user
+  /// passes the age gate (page 0 advance) — NOT at completion. The CF is the
+  /// sole age authority and the only writer of `birthYear`; on a compliant
+  /// result it mints the `ageCompliant` claim and force-refreshes the token.
+  ///
+  /// Minting here (rather than at completion) is the fix for the resume bug:
+  /// onboarding can span sessions, and `_selectedBirthYear` is in-memory only.
+  /// A user who passes the client gate, abandons, and resumes in a later
+  /// session re-enters PAST the gate with `_selectedBirthYear == null`, so a
+  /// completion-time check would be skipped and the claim never minted. By
+  /// minting at the gate, the claim persists server-side and the resumed
+  /// session already carries it — no re-verification needed.
+  ///
+  /// Returns [AgeGateAdvanceResult]; the view decides navigation from it.
+  Future<AgeGateAdvanceResult> verifyAgeGate() async {
+    final year = _selectedBirthYear;
+    // Defensive: the view keeps "Next" disabled until a year is picked, so this
+    // should never be null here. Treat a missing year as a non-pass.
+    if (year == null) return AgeGateAdvanceResult.error;
+
+    setLoading(true);
+    _ageRejected = false;
+    try {
+      final compliant = await ServiceLocator.get<AgeVerificationService>()
+          .verifyAge(year)
+          .timeout(_completionTimeout);
+      if (isDisposed) return AgeGateAdvanceResult.error;
+      if (!compliant) {
+        AppLogger.info('Age gate rejected the account as under-15');
+        _ageRejected = true;
+        return AgeGateAdvanceResult.rejected;
+      }
+      _ageVerifiedThisSession = true;
+      return AgeGateAdvanceResult.compliant;
+    } catch (e) {
+      AppLogger.error('Age gate verification failed', e);
+      return AgeGateAdvanceResult.error;
+    } finally {
+      setLoading(false);
+    }
   }
 
   /// Called by [OnboardingImportPage] when an import lands successfully so
@@ -208,8 +287,36 @@ class OnboardingViewModel extends BaseViewModel {
   /// Returns true on success.
   Future<bool> completeOnboarding() async {
     setLoading(true);
+    _ageRejected = false;
 
     try {
+      // BUT-1386 (ADR-0002): the PRIMARY age mint happens at the gate
+      // ([verifyAgeGate]), so a resumed session — which re-enters past the gate
+      // with `_selectedBirthYear == null` — already carries the claim and is
+      // not re-checked here. This is a belt-and-suspenders only: if a birth
+      // year is still held this session but the gate handler never verified it
+      // (a path that shouldn't exist — you can't pass page 0 without
+      // verifying), re-run the idempotent CF before the onboarding write.
+      //   - `false` => under-15: the CF has ALREADY deleted the Auth account.
+      //     Flag the rejection and bail BEFORE seeding/marking onboarding done.
+      //   - throws => infrastructure failure: return false for a retry error.
+      if (_selectedBirthYear != null && !_ageVerifiedThisSession) {
+        final bool compliant;
+        try {
+          compliant = await ServiceLocator.get<AgeVerificationService>()
+              .verifyAge(_selectedBirthYear!)
+              .timeout(_completionTimeout);
+        } catch (e) {
+          AppLogger.error('Age verification failed', e);
+          return false;
+        }
+        if (!compliant) {
+          AppLogger.info('Age verification rejected the account (under-15)');
+          _ageRejected = true;
+          return false;
+        }
+      }
+
       final userService = ServiceLocator.get<UserService>();
 
       // Save preferences and mark onboarding complete in a single write
@@ -228,7 +335,6 @@ class OnboardingViewModel extends BaseViewModel {
           .completeOnboardingWithPreferences(
             prefs,
             onboardingSkippedAt: isSkip ? clock.now() : null,
-            birthYear: _selectedBirthYear,
           )
           .timeout(_completionTimeout);
 

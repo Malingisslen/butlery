@@ -357,6 +357,11 @@ class UserProfile with JsonSerializableMixin {
     data.remove('friendsCount');
     data.remove('isHidden');
     data.remove('hiddenAt');
+    // BUT-1386 (ADR-0002): birthYear is written ONLY by the verifySignupAge
+    // Cloud Function; firestore.rules deny any client write of it. Strip it from
+    // every client write surface so a stale in-memory null can't collide with
+    // the CF-set value and get the whole profile write rejected.
+    data.remove('birthYear');
     return data;
   }
 
@@ -375,7 +380,9 @@ class UserProfile with JsonSerializableMixin {
           ? AppTimestamp.fromDateTime(onboardingSkippedAt!).toFirestore()
           : null,
       'bio': bio,
-      'birthYear': birthYear,
+      // BUT-1386 (ADR-0002): birthYear is CF-authoritative (verifySignupAge),
+      // never written from the client. Rules deny client birthYear writes on
+      // both the settings doc and the profile doc.
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,

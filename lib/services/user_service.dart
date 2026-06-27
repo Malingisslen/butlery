@@ -705,14 +705,15 @@ class UserService extends ChangeNotifier
   }
 
   /// Complete onboarding with preferences in a single atomic write.
-  /// [onboardingSkippedAt] records a skip; [birthYear] satisfies Butlery's
-  /// age floor of 15 (ADR-0001, Dataskyddslag 2 kap. 4 §) and must be
-  /// pre-validated by the caller (model constructor re-throws ArgumentError
-  /// outside [1900, currentYear-15]).
+  /// [onboardingSkippedAt] records a skip.
+  ///
+  /// BUT-1386 (ADR-0002): `birthYear` is NO LONGER written here. The
+  /// `verifySignupAge` Cloud Function is the sole authority for the age gate
+  /// and the only writer of birthYear (firestore.rules deny client writes of
+  /// it). The onboarding ViewModel calls that CF before this method.
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,
-    int? birthYear,
   }) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
@@ -724,7 +725,6 @@ class UserService extends ChangeNotifier
           preferences ?? _currentUserProfile!.allergenPreferences,
       hasCompletedOnboarding: true,
       onboardingSkippedAt: onboardingSkippedAt,
-      birthYear: birthYear ?? _currentUserProfile!.birthYear,
     );
     await _repository.saveProfile(updated);
 

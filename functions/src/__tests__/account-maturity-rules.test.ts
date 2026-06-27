@@ -16,6 +16,7 @@
  */
 
 import * as fs from "fs";
+import * as http from "http";
 import * as path from "path";
 import {
   initializeTestEnvironment,
@@ -23,7 +24,13 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import * as admin from "firebase-admin";
+
+// NOTE: seed + body timestamps use plain `Date` (stored as a Firestore
+// Timestamp), NOT `admin.firestore.Timestamp`. The rules-unit-testing contexts
+// expose the CLIENT SDK, which rejects firebase-admin Timestamp objects with
+// `invalid-argument` — that latent setup bug kept this file from running at all
+// until it was wired into `test:rules:all` (BUT-1386). `Date` round-trips to a
+// Timestamp, so `isAccountMatured()`'s `createdAt.toMillis()` still works.
 
 const PROJECT_ID = "butlery-rules-account-maturity";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -35,20 +42,45 @@ const OTHER_USER = "other-user-uid";
 
 let env: RulesTestEnvironment;
 
+// The emulator persists documents across separate `npm run` invocations
+// (env.cleanup() only closes clients). The create-allow tests below use FIXED
+// doc ids (req-2/req-3/msg-2); on a 2nd+ run those already exist, so the create
+// is evaluated as an UPDATE and the social_requests/messages update rules deny a
+// full-body re-set — a false FAIL. Clearing the namespace at setup keeps every
+// create-allow target brand-new. (See firestore-rules-tester knowledge file,
+// 2026-06-03 entry.)
+function clearFirestore(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port: 8080,
+        method: "DELETE",
+        path: `/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`,
+      },
+      (res) => {
+        res.on("data", () => undefined);
+        res.on("end", resolve);
+      },
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}
+
 async function setup(): Promise<void> {
   const rules = fs.readFileSync(RULES_PATH, "utf8");
   env = await initializeTestEnvironment({
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  await clearFirestore();
 
   // Seed the user docs that the rule reads via `get()`. NEW_USER's
   // createdAt is "now" (fails maturity); OLD_USER's is 2h ago (passes).
   await env.withSecurityRulesDisabled(async (ctx) => {
-    const now = admin.firestore.Timestamp.now();
-    const twoHoursAgo = admin.firestore.Timestamp.fromMillis(
-      now.toMillis() - 2 * 60 * 60 * 1000,
-    );
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     await ctx.firestore().doc(`users/${NEW_USER}`).set({
       uid: NEW_USER,
       createdAt: now,
@@ -87,13 +119,21 @@ function test(name: string, fn: TestFn): void {
   tests.push({ name, fn });
 }
 
+// BUT-1386 (ADR-0002): social_requests + messages create now ALSO require
+// `isAgeCompliant()` (custom claim `ageCompliant == true`). Every authed
+// context below carries `ageCompliant: true` so this suite keeps isolating the
+// MATURITY gate (the variable under test), not the new age gate. Without this
+// claim all 3 create-allow assertions here (AM2, AM3, AM5) fail closed — the
+// pre-fix failure count for this file was 3/5.
+const AGE_OK = { ageCompliant: true };
+
 function friendRequestBody(fromUid: string, toUid: string): Record<string, unknown> {
   return {
     type: "friend_request",
     fromUserId: fromUid,
     toUserId: toUid,
     status: "pending",
-    sentAt: admin.firestore.Timestamp.now(),
+    sentAt: new Date(),
   };
 }
 
@@ -102,7 +142,7 @@ function messageBody(senderUid: string): Record<string, unknown> {
     senderId: senderUid,
     conversationId: "conv-1",
     content: "Hej!",
-    sentAt: admin.firestore.Timestamp.now(),
+    sentAt: new Date(),
   };
 }
 
@@ -110,7 +150,10 @@ function messageBody(senderUid: string): Record<string, unknown> {
 test(
   "social_requests: new unverified account is blocked from creating friend requests",
   async () => {
-    const ctx = env.authenticatedContext(NEW_USER, { email_verified: false });
+    const ctx = env.authenticatedContext(NEW_USER, {
+      email_verified: false,
+      ...AGE_OK,
+    });
     await assertFails(
       ctx
         .firestore()
@@ -124,7 +167,10 @@ test(
 test(
   "social_requests: matured unverified account can create friend requests",
   async () => {
-    const ctx = env.authenticatedContext(OLD_USER, { email_verified: false });
+    const ctx = env.authenticatedContext(OLD_USER, {
+      email_verified: false,
+      ...AGE_OK,
+    });
     await assertSucceeds(
       ctx
         .firestore()
@@ -141,6 +187,7 @@ test(
   async () => {
     const ctx = env.authenticatedContext(VERIFIED_USER, {
       email_verified: true,
+      ...AGE_OK,
     });
     await assertSucceeds(
       ctx
@@ -155,7 +202,10 @@ test(
 test(
   "messages: new unverified account is blocked from sending messages",
   async () => {
-    const ctx = env.authenticatedContext(NEW_USER, { email_verified: false });
+    const ctx = env.authenticatedContext(NEW_USER, {
+      email_verified: false,
+      ...AGE_OK,
+    });
     await assertFails(
       ctx.firestore().doc("messages/msg-1").set(messageBody(NEW_USER)),
     );
@@ -166,7 +216,10 @@ test(
 test(
   "messages: matured account can send messages",
   async () => {
-    const ctx = env.authenticatedContext(OLD_USER, { email_verified: false });
+    const ctx = env.authenticatedContext(OLD_USER, {
+      email_verified: false,
+      ...AGE_OK,
+    });
     await assertSucceeds(
       ctx.firestore().doc("messages/msg-2").set(messageBody(OLD_USER)),
     );

@@ -93,6 +93,15 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
   },
 
+  // BUT-1386: signup age-verification callable. A user calls it ~once at
+  // onboarding; a tight per-user bucket plus the per-IP audit cap in the CF
+  // bound a retry storm or a single-account abuse loop.
+  verifySignupAge: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
+
   // Analytics/Logging Operations (moderate limits)
   logParseEvent: {
     maxTokens: 30,
