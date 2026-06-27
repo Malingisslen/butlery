@@ -5,6 +5,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/monitoring/web_error_reporter.dart';
 
 /// Application monitoring service for alerting and observability.
 ///
@@ -24,14 +25,31 @@ class AppMonitoringService {
   final FirebaseCrashlytics _crashlytics;
   final FirebasePerformance _performance;
 
+  /// BUT-1405: web error sink. Crashlytics has no web SDK, so on web a
+  /// deliberately-recorded error/critical is forwarded here instead of dropped.
+  /// Null on native (and in tests), where the Crashlytics path is used.
+  final WebErrorReporter? _webErrorReporter;
+
   final Map<String, Trace> _activeTraces = {};
   final Map<String, int> _metricCounters = {};
 
   AppMonitoringService({
     FirebaseCrashlytics? crashlytics,
     FirebasePerformance? performance,
+    WebErrorReporter? webErrorReporter,
   }) : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance,
-       _performance = performance ?? FirebasePerformance.instance;
+       _performance = performance ?? FirebasePerformance.instance,
+       _webErrorReporter = webErrorReporter;
+
+  /// BUT-1405: which severities are worth forwarding to the web error pipeline
+  /// (the rate-limited `logWebError` callable). Only alert-worthy levels —
+  /// forwarding info/warning would flood it. Extracted as a pure static so the
+  /// policy is unit-testable: the `kIsWeb` branch in [recordError] itself is
+  /// not, since `kIsWeb` is a compile-time constant that is always false under
+  /// the Dart VM test runner.
+  @visibleForTesting
+  static bool shouldReportToWebError(ErrorSeverity severity) =>
+      severity == ErrorSeverity.error || severity == ErrorSeverity.critical;
 
   /// Record a business metric for monitoring dashboards.
   ///
@@ -66,7 +84,22 @@ class AppMonitoringService {
     ErrorSeverity severity = ErrorSeverity.error,
     Map<String, String>? metadata,
   }) {
-    if (kIsWeb) return; // Crashlytics not available on web
+    if (kIsWeb) {
+      // BUT-1405: Crashlytics has no web SDK, but a deliberately-recorded
+      // error/critical must still be observable. Forward alert-worthy levels to
+      // the logWebError pipeline (consent-gated + PII-scrubbed inside
+      // reportError, which never throws). Fire-and-forget, mirroring the native
+      // crashlytics.recordError(...).catchError path below.
+      if (shouldReportToWebError(severity)) {
+        _webErrorReporter?.reportError(
+          error,
+          stackTrace,
+          fatal: severity == ErrorSeverity.critical,
+          context: category,
+        );
+      }
+      return;
+    }
 
     try {
       // Set error metadata

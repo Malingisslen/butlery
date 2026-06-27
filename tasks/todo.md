@@ -1,28 +1,26 @@
 # Sprint Backlog
 
-## Sprint: constrain the feedback create rule — 2026-06-28
+## Sprint: forward web critical errors to WebErrorReporter — 2026-06-28
 
-Single clean Tier-A security fix (input validation on a user-writable collection). Single-port
-(firestore.rules + its rules test). Fresh full backlog re-scan this iteration → 19 genuinely
-A-CLEAN remain (~10 stone-cold); slice NOT drained. Recorded in backlog-scan.json.
+Single clean Tier-A observability fix (Dart-only). No UI.
 
-### Agent A: feedback rule hardening (firestore-rules-tester) — Stakeholders: Customer Support/Ops, Security, DBA
-- [x] **A1. Add keys().hasOnly + required-fields + size caps to feedback create** `[Tier A]` (BUT-1407)
-  - Step 0: CONFIRMED. `firestore.rules:2027-2040` create = `isAuthenticated() && isCreatingOwnDocument()`
-    only — no shape/size limits, so a beta user can write a near-1MB description or a giant
-    recentInteractions array (admin-dashboard read-cost + storage abuse). Client write shape
-    (`feedback_entry.dart toMap`, written verbatim) is EXACTLY 10 keys: id, userId, category,
-    description, email, screenshotUrl, recentInteractions, createdAt, deviceInfo, status. Sibling
-    collections already cap (deep_links/clicks keys().hasOnly, ingredient_suggestions size).
-  - Files: `firestore.rules` (feedback create), `functions/src/__tests__/feedback-rules.test.ts`.
-  - Acceptance: create requires keys().hasOnly([the 10 client keys]) + hasRequiredFields(userId,
-    category, description, createdAt) + description is string ≤5000 + recentInteractions is list ≤50 ·
-    a legit full-payload submission still succeeds · deny tests for extra-field, oversized description,
-    oversized recentInteractions, missing-required · existing allow/deny feedback rules tests stay green.
+### Agent A: web error observability (direct) — Stakeholders: Customer Support/Ops, DevOps/SRE
+- [x] **A1. AppMonitoringService.recordError forwards error/critical to WebErrorReporter on web** `[Tier A]` (BUT-1405)
+  - Step 0: CONFIRMED. `app_monitoring_service.dart:69` recordError early-returns on kIsWeb (no
+    Crashlytics web SDK), so deliberate recordError(severity:critical) business errors are dropped on
+    web — only uncaught FlutterError/PlatformDispatcher errors reach WebErrorReporter (main.dart:237).
+    WebErrorReporter.reportError(error, stack, {fatal, context}) is the sink (consent-gated, PII-scrubbed).
+    It's created ad-hoc in main.dart, not in DI → inject one into AppMonitoringService.
+  - Files: `lib/services/monitoring/app_monitoring_service.dart`, `lib/core/di/modules/performance_module.dart`, test.
+  - Acceptance: recordError on kIsWeb forwards error+critical severities to WebErrorReporter.reportError
+    with fatal = (severity==critical) and context = category (instead of silently returning) · info/warning
+    not forwarded (avoid flooding the rate-limited logWebError) · native path unchanged · DI provides a
+    WebErrorReporter on web only · a unit test pins the severity-forward policy (kIsWeb branch itself is
+    untestable under the VM runner — kIsWeb is a compile-time false there) · analyze clean.
 
 ### Post-Sprint Steps
-- [ ] Emulator rules suite (feedback-rules) green · Phase 2.7 verifier · firestore-rules-tester + firebase-backend-security · commit · push · Done
+- [ ] dart analyze + run the new test · Phase 2.7 verifier · code-reviewer + testing-specialist · commit · push · Done
 
 ---
 
-## Recent shipped (this session): BUT-1425 (2293bf051), BUT-1401 (077212635), BUT-1428 (412efb5ed), BUT-1406+1436 (0b42c9280), BUT-1414 (39bffed2c), BUT-1415 (3c83cbb10), BUT-1397+1394 (fac80964e), BUT-1390/1391/1393 (08e04be29), BUT-1386 (07fa820d0, In Review).
+## Recent shipped (this session): BUT-1407 (ac9ffb80d), BUT-1425 (2293bf051), BUT-1401 (077212635), BUT-1428 (412efb5ed), BUT-1406+1436 (0b42c9280), BUT-1414 (39bffed2c), BUT-1415 (3c83cbb10), BUT-1397+1394 (fac80964e), BUT-1390/1391/1393 (08e04be29), BUT-1386 (07fa820d0, In Review).

@@ -18,6 +18,9 @@ import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/monitoring/app_monitoring_service.dart';
+import 'package:butlery/services/monitoring/web_error_reporter.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/services/cache/permission_cache_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
@@ -90,9 +93,17 @@ class PerformanceModule implements DIModule {
         () => PerformanceMonitoringService(),
       );
 
-      // App monitoring service for alerting integration
+      // App monitoring service for alerting integration.
+      // BUT-1405: on web, inject a WebErrorReporter so deliberately-recorded
+      // error/critical business errors are forwarded to logWebError instead of
+      // dropped (Crashlytics has no web SDK). Native passes null and uses the
+      // Crashlytics path. Lazy → ConsentService is registered by first resolve.
       container.registerLazySingleton<AppMonitoringService>(
-        () => AppMonitoringService(),
+        () => AppMonitoringService(
+          webErrorReporter: kIsWeb
+              ? WebErrorReporter(consentService: container<ConsentService>())
+              : null,
+        ),
       );
     } catch (e) {
       throw DIModuleException(
