@@ -671,28 +671,64 @@ void main() {
       expect(available.length, equals(2));
     });
 
-    test('should include recipes with no tag data even when strict', () {
-      menuGenerator.filterByDietary = true;
+    test(
+      'should EXCLUDE recipes with no tag data when strict (BUT-1394)',
+      () {
+        // BUT-1394: a null tagResult is functionally UNKNOWN. With the
+        // "include unknown in menu" opt-out OFF, an untagged recipe must be
+        // excluded from a single-user menu — the sync filter previously
+        // returned true unconditionally, contradicting the async household path
+        // and slipping untagged recipes past the user's only-proven-safe choice.
+        menuGenerator.filterByDietary = true;
 
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {},
-          trackedDietary: {'vegetarisk'},
-          includeUnknownInMenu: false,
-        ),
-      );
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {'vegetarisk'},
+            includeUnknownInMenu: false,
+          ),
+        );
 
-      // Recipe with no tagResult at all — production includes these (can't know)
-      final noTagRecipe = RecipeFactory.build(id: 'no_tags', title: 'No Tags');
+        final noTagRecipe = RecipeFactory.build(
+          id: 'no_tags',
+          title: 'No Tags',
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [noTagRecipe],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [noTagRecipe],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      expect(available.length, equals(1));
-    });
+        expect(menuGenerator.availableRecipes, isEmpty);
+      },
+    );
+
+    test(
+      'should INCLUDE recipes with no tag data when includeUnknownInMenu is true (BUT-1394)',
+      () {
+        menuGenerator.filterByDietary = true;
+
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {'vegetarisk'},
+            includeUnknownInMenu: true,
+          ),
+        );
+
+        final noTagRecipe = RecipeFactory.build(
+          id: 'no_tags',
+          title: 'No Tags',
+        );
+
+        mockRecipeService.setRecipeState(
+          recipes: [noTagRecipe],
+          isInitialized: true,
+        );
+
+        expect(menuGenerator.availableRecipes.length, equals(1));
+      },
+    );
   });
 
   group('MenuGenerator - Multiple Tracked Allergens in Combination', () {

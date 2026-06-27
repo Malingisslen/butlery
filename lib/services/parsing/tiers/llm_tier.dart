@@ -97,8 +97,16 @@ class LlmTier extends ParsingTier with QualityScoring {
         );
       }
 
-      // Call LLM service with retry logic
-      final response = await RetryHelper.retryNetworkOperation(
+      // Call LLM service with retry logic.
+      // BUT-1397: do NOT use retryNetworkOperation here — its predicate
+      // substring-matches English Firebase codes against error.toString(), but
+      // structureRecipe always throws an LlmException whose toString() is only
+      // the localized message, so every error hit the predicate's `true`
+      // default and was retried 3× (including rate-limit denials and permanent
+      // invalid-argument — a real cost + I/O bug that defeated the circuit
+      // breaker). Inspect the typed exception instead: retry ONLY the two
+      // genuinely transient codes, never a rate-limit or a permanent error.
+      final response = await RetryHelper.retryWithBackoff(
         () => llmService!.structureRecipe(
           text: text,
           mode: mode,
@@ -106,6 +114,10 @@ class LlmTier extends ParsingTier with QualityScoring {
           sourceUrl: context.sourceUrl,
         ),
         maxRetries: 2,
+        shouldRetry: (e) =>
+            e is LlmException &&
+            !e.isRateLimited &&
+            (e.code == 'unavailable' || e.code == 'deadline-exceeded'),
       );
 
       final pv = response.promptVersion;

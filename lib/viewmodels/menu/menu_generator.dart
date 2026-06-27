@@ -167,7 +167,12 @@ class MenuGenerator {
     final includeUnknown = prefs.includeUnknownInMenu;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) return true; // No tag data = include (can't know)
+      // BUT-1394: a null verdict is functionally UNKNOWN. Honour the
+      // "include unknown in menu" opt-out here exactly as the async
+      // household path (_filterByPrefs) does — otherwise a user who asked for
+      // only-proven-safe recipes still gets fully-untagged ones in a
+      // single-user menu (allergen-safety surface).
+      if (tagResult == null) return includeUnknown;
 
       for (final allergen in tracked) {
         final status = tagResult.getAllergenStatus(allergen);
@@ -193,7 +198,12 @@ class MenuGenerator {
     final includeUnknown = prefs.includeUnknownInMenu;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) return true; // No tag data = include (can't know)
+      // BUT-1394: a null verdict is functionally UNKNOWN. Honour the
+      // "include unknown in menu" opt-out here exactly as the async
+      // household path (_filterByPrefs) does — otherwise a user who asked for
+      // only-proven-safe recipes still gets fully-untagged ones in a
+      // single-user menu (allergen-safety surface).
+      if (tagResult == null) return includeUnknown;
 
       for (final diet in tracked) {
         final status = tagResult.getDietaryStatus(diet);

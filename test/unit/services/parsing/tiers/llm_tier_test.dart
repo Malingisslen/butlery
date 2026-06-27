@@ -84,6 +84,51 @@ void main() {
     tier = LlmTier(llmService: mockLlmService);
   });
 
+  group('LlmTier retry policy (BUT-1397)', () {
+    // The retry predicate must inspect the typed LlmException, not its
+    // localized toString(). Rate-limit + permanent errors must NOT be retried
+    // (the old string-match predicate retried every error, hammering a denied
+    // backend); only genuinely transient codes are retried.
+    test(
+      'does NOT retry a rate-limited LlmException — attempted once',
+      () async {
+        mockLlmService.nextError = const LlmException(
+          'overloaded',
+          code: 'resource-exhausted',
+          isRateLimited: true,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isFalse);
+        expect(mockLlmService.callCount, equals(1));
+      },
+    );
+
+    test('does NOT retry a permanent invalid-argument LlmException', () async {
+      mockLlmService.nextError = const LlmException(
+        'bad input',
+        code: 'invalid-argument',
+      );
+
+      await tier.parse(createContext());
+
+      expect(mockLlmService.callCount, equals(1));
+    });
+
+    test('retries a transient unavailable LlmException', () async {
+      mockLlmService.nextError = const LlmException(
+        'backend down',
+        code: 'unavailable',
+      );
+
+      await tier.parse(createContext());
+
+      // maxRetries:2 ⇒ 2 total attempts for a retryable error.
+      expect(mockLlmService.callCount, equals(2));
+    });
+  });
+
   group('LlmTier', () {
     test('returns medium confidence for all fields (not high)', () async {
       mockLlmService.nextResponse = StructureRecipeResponse(
