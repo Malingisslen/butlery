@@ -2,10 +2,11 @@
  * BUT-1354 — emulator-backed integration test for the rate-limit cleanup
  * scheduled function core (`cleanupOldRateLimitsCore`).
  *
- * The job deletes per-user `rate_limits` docs whose `updatedAt` is older than
- * 90 days. The `onSchedule` wrapper can't be invoked directly in a test, so we
- * exercise the extracted core against a REAL Firestore emulator — the
- * pagination, 90-day cutoff comparison, and batched deletes all run for real.
+ * BUT-1390: the job deletes stale buckets from the live top-level
+ * `system_rate_limits` collection (doc id `{uid}_{op}`) whose `updatedAt` is
+ * older than 90 days. The `onSchedule` wrapper can't be invoked directly in a
+ * test, so we exercise the extracted core against a REAL Firestore emulator —
+ * the range query, 90-day cutoff comparison, and batched deletes run for real.
  *
  * The Admin SDK bypasses rules, so seeding is plain writes. Pointing Admin at
  * the emulator only needs `FIRESTORE_EMULATOR_HOST` set BEFORE
@@ -73,60 +74,66 @@ async function run_(): Promise<void> {
     return admin.firestore.Timestamp.fromDate(d);
   };
 
-  // ── Seed: one user with an OLD rate-limit doc (100 days) and a FRESH one
-  //    (1 day). A second user with only a fresh doc acts as a scope control. ──
+  // ── Seed: an OLD bucket (100 days) and a FRESH one (1 day) in the live
+  //    system_rate_limits collection, plus a second fresh bucket as a control
+  //    that must survive the global scan. Doc ids mirror prod (`${uid}_${op}`). ──
   const userA = `rl-userA-${RUN}`;
   const userB = `rl-userB-${RUN}`;
 
-  // Parent user docs must exist for the paginated `users` scan to enumerate
-  // them (orderBy __name__ over the users collection).
-  await db.collection("users").doc(userA).set({ seeded: true });
-  await db.collection("users").doc(userB).set({ seeded: true });
+  const oldRef = db
+    .collection("system_rate_limits")
+    .doc(`${userA}_structureRecipe-${RUN}`);
+  const freshRef = db
+    .collection("system_rate_limits")
+    .doc(`${userA}_ocrRecipeImage-${RUN}`);
+  const controlRef = db
+    .collection("system_rate_limits")
+    .doc(`${userB}_structureRecipe-${RUN}`);
 
-  const oldRef = db.collection("users").doc(userA)
-    .collection("rate_limits").doc(`old-${RUN}`);
-  const freshRef = db.collection("users").doc(userA)
-    .collection("rate_limits").doc(`fresh-${RUN}`);
-  const controlRef = db.collection("users").doc(userB)
-    .collection("rate_limits").doc(`control-${RUN}`);
-
-  await oldRef.set({ updatedAt: daysAgo(100), count: 5 });
-  await freshRef.set({ updatedAt: daysAgo(1), count: 2 });
-  await controlRef.set({ updatedAt: daysAgo(10), count: 1 });
+  await oldRef.set({
+    updatedAt: daysAgo(100),
+    tokens: 5,
+    operationType: "structureRecipe",
+  });
+  await freshRef.set({
+    updatedAt: daysAgo(1),
+    tokens: 2,
+    operationType: "ocrRecipeImage",
+  });
+  await controlRef.set({
+    updatedAt: daysAgo(10),
+    tokens: 1,
+    operationType: "structureRecipe",
+  });
 
   // ── Run the core ──
   const res = await cleanupOldRateLimitsCore(db);
 
   // ── Effect assertions ──
   check(
-    "old rate_limit doc (>90d) is deleted",
+    "stale bucket (>90d) is deleted",
     !(await oldRef.get()).exists,
   );
   check(
-    "fresh rate_limit doc (<90d) is kept",
+    "fresh bucket (<90d) is kept",
     (await freshRef.get()).exists,
   );
   check(
-    "other user's fresh doc is kept (scope control)",
+    "second fresh bucket is kept (global-scan scope control)",
     (await controlRef.get()).exists,
   );
 
-  // ── Return-summary assertions ──
+  // ── Return-summary assertion ──
   check(
     "returns a deletedCount of at least 1",
     typeof res.deletedCount === "number" && res.deletedCount >= 1,
     JSON.stringify(res),
   );
-  check(
-    "returns processedUsers covering both seeded users",
-    typeof res.processedUsers === "number" && res.processedUsers >= 2,
-    JSON.stringify(res),
-  );
 
-  // ── Idempotency: a second run deletes nothing new (old doc already gone) ──
+  // ── Idempotency: a second run deletes nothing new (stale bucket already gone) ──
   const res2 = await cleanupOldRateLimitsCore(db);
   check(
-    "idempotent: fresh doc still present after re-run",
+    "idempotent: fresh bucket still present after re-run",
     (await freshRef.get()).exists,
   );
   check(

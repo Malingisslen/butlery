@@ -52,9 +52,6 @@ class SocialCommentsManager extends ChangeNotifier {
   bool get isPostingComment => _isPostingComment;
   bool get isReplying => _isReplying;
 
-  /// Returns true if the current comment text contains profanity.
-  bool get hasProfanityWarning =>
-      _contentFilter?.containsProfanity(_newCommentText) ?? false;
   String get newCommentText => _newCommentText;
   List<RecipeComment> get comments => _comments;
   List<RecipeComment> get topLevelComments =>
@@ -160,6 +157,23 @@ class SocialCommentsManager extends ChangeNotifier {
     List<String> imageUrls = const [],
   }) async {
     if (_newCommentText.trim().isEmpty) return;
+
+    // BUT-1393: gate comment text through the canonical profanity filter before
+    // publishing (same path as recipe titles, group names, bios, cook-snap
+    // captions). Firestore rules cannot filter content, so this is the only
+    // pre-publish line of defense on a primary harassment surface.
+    final filter = _contentFilter;
+    if (filter != null) {
+      final result = filter.ensureClean(
+        _newCommentText.trim(),
+        fieldName: 'comment',
+      );
+      if (!result.isClean) {
+        _commentsError = result.reason;
+        _safeNotify();
+        return;
+      }
+    }
 
     _isPostingComment = true;
     _safeNotify();

@@ -36,7 +36,6 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "settings",
       "consent",
       "conversation_memberships",
-      "rate_limits",
       "user_shared_menus",
       "user_shared_shopping_lists",
       "ingredients",
@@ -117,6 +116,10 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "shopping_list_invitations" },
   { name: "user_shared_menus" },
   { name: "user_shared_shopping_lists" },
+  // BUT-1390: rate-limit buckets are stored at the top-level system_rate_limits
+  // collection (doc id `${uid}_${operation}`), not under users/, so a full reset
+  // must wipe the whole collection explicitly.
+  { name: "system_rate_limits" },
   { name: "tag_configs" },
 ];
 

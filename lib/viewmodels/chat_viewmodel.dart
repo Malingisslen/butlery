@@ -90,10 +90,6 @@ class ChatViewModel extends ChangeNotifier
   Message? get replyToMessage => _replyToMessage;
   bool get hasReplyTarget => _replyToMessage != null;
 
-  /// Check if text contains profanity. Used by UI to show warning before send.
-  bool containsProfanity(String text) =>
-      _contentFilter?.containsProfanity(text) ?? false;
-
   String get conversationTitle {
     if (_conversation == null) return AppLocale.current.commonLoading;
     if (currentUserId == null) {
@@ -276,6 +272,19 @@ class ChatViewModel extends ChangeNotifier
       _sendError = AppLocale.current.errorMessageCannotBeEmpty;
       _safeNotifyListeners();
       return false;
+    }
+
+    // BUT-1393: profanity gate before send. DMs are a primary harassment
+    // surface (firestore.rules flags them as a spam vector) and rules cannot
+    // filter content, so this client-side gate is the only pre-publish defense.
+    final filter = _contentFilter;
+    if (filter != null) {
+      final result = filter.ensureClean(content.trim(), fieldName: 'message');
+      if (!result.isClean) {
+        _sendError = result.reason;
+        _safeNotifyListeners();
+        return false;
+      }
     }
 
     _isSending = true;

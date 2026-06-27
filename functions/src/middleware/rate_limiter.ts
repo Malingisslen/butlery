@@ -2,13 +2,15 @@
  * Server-Side Rate Limiting Middleware for Cloud Functions
  *
  * Validates rate limits before processing requests to prevent abuse.
- * Works with existing client-side rate limit records in Firestore.
  *
  * Features:
  * - Token bucket algorithm validation
- * - Reads from /users/{userId}/rateLimits/{operation}
+ * - Reads/writes server-side buckets at system_rate_limits/{userId}_{operation}
+ *   (top-level, NOT a user subcollection — so clients can't reset their own
+ *   limits by deleting docs; cleaned up weekly by cleanupOldRateLimits)
  * - Returns HTTP 429 with Retry-After header when exceeded
- * - Graceful fallback on errors (allows request but logs)
+ * - Fails CLOSED on Firestore errors (denies the request — see the
+ *   checkRateLimit catch block, not a graceful allow)
  *
  * Usage:
  * ```typescript

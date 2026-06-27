@@ -578,7 +578,6 @@ export async function deleteUserSubcollections(
   // those and runs automatically after `admin.auth().deleteUser(uid)`.
   const subs = [
     "conversation_memberships",
-    "rate_limits",
     "user_shared_menus",
     "user_shared_shopping_lists",
     "friend_categories",
@@ -591,6 +590,25 @@ export async function deleteUserSubcollections(
     const snap = await userDoc.collection(name).get();
     await batchDeleteAll(db, snap.docs);
   }
+
+  // BUT-1390: rate-limit buckets live at the TOP-LEVEL `system_rate_limits`
+  // collection (doc id `${uid}_${operation}`), not a user subcollection — the
+  // former `users/{uid}/rate_limits` entry above deleted nothing. Erase them
+  // explicitly for GDPR completeness via a documentId prefix range:
+  //   startAt(`${uid}_`) .. endAt(`${uid}_`)
+  // The upper bound's trailing  is a high-codepoint sentinel that is
+  // INVISIBLE in most editors/diff viewers — it is load-bearing: WITHOUT it the
+  // range collapses to the single (nonexistent) id `${uid}_` and erases nothing.
+  // Do not "tidy" it away. The `_` separator additionally prevents matching a
+  // different user whose uid is a prefix of this one. No field filter/index needed.
+  const rlSnap = await db
+    .collection("system_rate_limits")
+    .orderBy(admin.firestore.FieldPath.documentId())
+    .startAt(`${uid}_`)
+    .endAt(`${uid}_`)
+    .get();
+  await batchDeleteAll(db, rlSnap.docs);
+
   return true;
 }
 

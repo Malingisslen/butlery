@@ -6,6 +6,7 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/presence_service.dart';
@@ -458,6 +459,39 @@ void main() {
             replyToMessageId: null,
           ),
         ).called(1);
+      });
+
+      test('should reject a profane message at the gate (BUT-1393)', () async {
+        // Register the real content filter so the profanity gate is active, then
+        // build a fresh VM (ChatViewModel captures ContentFilterService in its
+        // constructor via ServiceLocator).
+        TestServiceLocator.registerMock<ContentFilterService>(
+          ContentFilterService(),
+        );
+        final guardedVm = ChatViewModel(
+          messagingService: mockMessagingService,
+          conversationId: testConversationId,
+          initialConversation: ConversationBuilder.build(
+            id: testConversationId,
+            participantIds: [testUserId, 'user2'],
+          ),
+          presenceService: mockPresenceService,
+        );
+
+        // 'fan' is on the Swedish profanity list (see content_filter_service_test).
+        final result = await guardedVm.sendTextMessage('din jävla fan');
+
+        // Blocked before reaching the messaging service.
+        expect(result, isFalse);
+        expect(guardedVm.sendError, isNotNull);
+        verifyNever(
+          () => mockMessagingService.sendTextMessage(
+            conversationId: any(named: 'conversationId'),
+            content: any(named: 'content'),
+            replyToMessageId: any(named: 'replyToMessageId'),
+          ),
+        );
+        guardedVm.dispose();
       });
 
       test('should reject empty message', () async {

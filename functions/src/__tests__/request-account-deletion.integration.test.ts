@@ -126,6 +126,22 @@ function clearEmulator(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function seedFixtures(): Promise<void> {
+  // --- system_rate_limits: BUT-1390 — top-level buckets (id `${uid}_${op}`)
+  //     erased by deleteUserSubcollections via a documentId prefix range. Seed
+  //     two of the target's buckets + one control owned by OTHER. ---
+  await db
+    .collection("system_rate_limits")
+    .doc(`${TARGET}_structureRecipe`)
+    .set({ tokens: 3, operationType: "structureRecipe" });
+  await db
+    .collection("system_rate_limits")
+    .doc(`${TARGET}_ocrRecipeImage`)
+    .set({ tokens: 1, operationType: "ocrRecipeImage" });
+  await db
+    .collection("system_rate_limits")
+    .doc(`${OTHER}_structureRecipe`)
+    .set({ tokens: 5, operationType: "structureRecipe" });
+
   // --- recipes: own (top-level) + own (subcollection) + control (other) ---
   await db.collection("recipes").doc(`r-own-${RUN}`).set({
     userId: TARGET,
@@ -582,6 +598,32 @@ test("recipe_ratings: another user's rating is retained", async () => {
   assert(
     await exists(`recipe_ratings/rr-control-${RUN}`),
     "control rating owned by OTHER must survive",
+  );
+});
+
+// ===========================================================================
+// SYSTEM_RATE_LIMITS (BUT-1390 — GDPR erasure of top-level rate-limit buckets)
+// ===========================================================================
+
+// All of the target's buckets are erased (prefix-range delete; proves the
+// load-bearing  upper-bound sentinel actually matches `${uid}_*`).
+test("system_rate_limits: all of target's buckets are deleted", async () => {
+  assert(
+    !(await exists(`system_rate_limits/${TARGET}_structureRecipe`)),
+    "target structureRecipe bucket should be gone",
+  );
+  assert(
+    !(await exists(`system_rate_limits/${TARGET}_ocrRecipeImage`)),
+    "target ocrRecipeImage bucket should be gone",
+  );
+});
+
+// Another user's bucket is retained (the `_` separator + sentinel bound the
+// prefix range to exactly this uid).
+test("system_rate_limits: another user's bucket is retained", async () => {
+  assert(
+    await exists(`system_rate_limits/${OTHER}_structureRecipe`),
+    "control bucket owned by OTHER must survive",
   );
 });
 

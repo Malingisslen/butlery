@@ -10,6 +10,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
@@ -247,6 +248,31 @@ void main() {
         viewModel.updateNewCommentText('   ');
         await viewModel.postComment(testRecipeId);
         expect(viewModel.comments, isEmpty);
+      });
+
+      test('rejects a profane comment at the gate (BUT-1393)', () async {
+        // Register the real content filter so the profanity gate is active, then
+        // build a fresh VM — SocialCommentsManager captures ContentFilterService
+        // in its constructor, so it must exist before construction.
+        TestServiceLocator.registerMock<ContentFilterService>(
+          ContentFilterService(),
+        );
+        final vm = SocialRecipeViewModel(
+          friendsService: mockFriendsService,
+          recipeService: mockRecipeService,
+          userService: mockUserService,
+        );
+        // 'fan' is on the Swedish profanity list (see content_filter_service_test).
+        vm.updateNewCommentText('din jävla fan');
+
+        await vm.postComment(testRecipeId);
+
+        // Blocked before any service write: error surfaced, text NOT cleared
+        // (a successful post clears it), posting flag reset.
+        expect(vm.commentsError, isNotNull);
+        expect(vm.newCommentText, equals('din jävla fan'));
+        expect(vm.isPostingComment, isFalse);
+        vm.dispose();
       });
 
       test('should post reply with parent reference then clear', () async {
