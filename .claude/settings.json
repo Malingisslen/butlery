@@ -86,6 +86,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/world-watch-due-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/org-retro-due-check.sh"
           }
         ]
       }
