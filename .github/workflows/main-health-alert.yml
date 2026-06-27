@@ -9,10 +9,23 @@ name: Main CI Health Alert
 
 on:
   workflow_run:
+    # BUT-1425: watch ALL critical gating workflows, not just the original 3.
+    # A workflow that doesn't run on `main` simply never appears in the run list
+    # and is a harmless no-op (filtered out below). Deliberately excluded: this
+    # workflow itself (recursion), Adoption Status Nightly (chore, not a gate),
+    # and Release version bump (tag/manual, not a main-push gate).
     workflows:
       - Run Tests
       - Build Validation
       - Architecture & Code Quality Validation
+      - Firestore Rules
+      - Deploy Firebase
+      - E2E Tests
+      - Dependency Audit
+      - LLM Golden Tests
+      - Model Version Guard
+      - SBOM (CycloneDX)
+      - Prompt Changelog Gate
     types: [completed]
 
 permissions:
@@ -27,10 +40,22 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
+            // BUT-1425: keep this list in sync with the workflow_run trigger
+            // list above. A gate whose workflow never ran on main is filtered
+            // out (find() → undefined), so listing one that doesn't run on main
+            // is safe.
             const gates = [
               'Run Tests',
               'Build Validation',
               'Architecture & Code Quality Validation',
+              'Firestore Rules',
+              'Deploy Firebase',
+              'E2E Tests',
+              'Dependency Audit',
+              'LLM Golden Tests',
+              'Model Version Guard',
+              'SBOM (CycloneDX)',
+              'Prompt Changelog Gate',
             ];
             const TITLE = '🔴 main CI is failing';
             const { owner, repo } = context.repo;
