@@ -12,7 +12,10 @@ import java.io.File
  * BUT-941: receive shared photos (single ACTION_SEND or multi SEND_MULTIPLE)
  * from the OS share sheet and hand the image file paths to Flutter.
  *
- * Scope guard: we ONLY claim SEND/SEND_MULTIPLE intents whose type is image/*.
+ * Scope guard: we ONLY claim SEND/SEND_MULTIPLE intents whose MIME type
+ * starts with "image/" (any image subtype). NOTE: avoid writing the bare
+ * image-slash-star glob here — Kotlin nests block comments, so a literal
+ * slash-star inside this comment opens a nested comment and swallows the file.
  * ACTION_VIEW deep-links and text SEND stay with app_links — the two
  * share-receivers partition the intent space so neither swallows the other.
  *
