@@ -31,22 +31,40 @@ class CircuitBreaker {
   /// Whether we're in half-open state (testing recovery).
   bool _isHalfOpen = false;
 
+  /// BUT-1414: true once a half-open probe has been handed out and is still
+  /// awaiting its outcome. Guarantees the "one request tests recovery" promise:
+  /// while a probe is in flight, further callers are rejected so N queued
+  /// requests don't all hit the recovering backend at once. Cleared by
+  /// recordSuccess / recordFailure / reset.
+  bool _halfOpenProbeInFlight = false;
+
   CircuitBreaker({
     this.failureThreshold = 5,
     this.resetTime = const Duration(minutes: 1),
   });
 
-  /// Whether requests are currently allowed.
+  /// Whether a request is currently allowed.
   ///
-  /// Returns true if circuit is closed or half-open.
-  bool get allowRequest {
+  /// Returns true if the circuit is closed, or if it is open but the reset time
+  /// has elapsed AND no half-open probe is already in flight. This is a METHOD,
+  /// not a getter (BUT-1414): it mutates state (marks a probe in flight), and a
+  /// side-effecting getter is a maintenance trap.
+  ///
+  /// At the reset boundary exactly ONE caller is admitted to test recovery;
+  /// concurrent callers get `false` until that probe resolves via
+  /// recordSuccess / recordFailure. The caller MUST record the outcome (every
+  /// production caller does), or the breaker stays latched in half-open.
+  bool allowRequest() {
     if (!_isOpen) return true;
 
     // Check if enough time has passed to try recovery
     if (_lastFailureTime != null) {
       final elapsed = clock.now().difference(_lastFailureTime!);
       if (elapsed >= resetTime) {
+        // Only the first caller at the boundary gets the probe slot.
+        if (_halfOpenProbeInFlight) return false;
         _isHalfOpen = true;
+        _halfOpenProbeInFlight = true;
         return true;
       }
     }
@@ -70,6 +88,7 @@ class CircuitBreaker {
     _failureCount = 0;
     _isOpen = false;
     _isHalfOpen = false;
+    _halfOpenProbeInFlight = false;
   }
 
   /// Record a failed operation.
@@ -86,6 +105,9 @@ class CircuitBreaker {
     } else if (_failureCount >= failureThreshold) {
       _isOpen = true;
     }
+    // The probe (if any) has resolved — release the half-open slot so the next
+    // boundary can admit a fresh probe.
+    _halfOpenProbeInFlight = false;
   }
 
   /// Reset the circuit breaker to initial state.
@@ -94,6 +116,7 @@ class CircuitBreaker {
     _lastFailureTime = null;
     _isOpen = false;
     _isHalfOpen = false;
+    _halfOpenProbeInFlight = false;
   }
 
   /// Execute an async operation with circuit breaker protection.
@@ -101,7 +124,7 @@ class CircuitBreaker {
   /// Returns the result of [operation] if allowed, or throws
   /// [CircuitBreakerOpenException] if the circuit is open.
   Future<T> execute<T>(Future<T> Function() operation) async {
-    if (!allowRequest) {
+    if (!allowRequest()) {
       throw CircuitBreakerOpenException(
         'Circuit breaker is open. Retry after ${resetTime.inSeconds}s.',
       );
@@ -125,7 +148,7 @@ class CircuitBreaker {
     Future<T> Function() operation,
     T fallback,
   ) async {
-    if (!allowRequest) {
+    if (!allowRequest()) {
       return fallback;
     }
 

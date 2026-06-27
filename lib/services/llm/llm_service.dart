@@ -325,7 +325,7 @@ class LlmService extends BaseService {
     // scenario the breaker was added to protect — Gemini outage causing
     // request pile-up — and reading Firestore for a guaranteed-denied call
     // would defeat the cost protection.
-    if (!_backendBreaker.allowRequest) {
+    if (!_backendBreaker.allowRequest()) {
       AppLogger.warning(
         'LlmService: backend circuit breaker OPEN, short-circuiting',
       );

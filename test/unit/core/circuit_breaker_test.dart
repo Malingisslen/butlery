@@ -15,7 +15,7 @@ void main() {
   group('initial state (Closed)', () {
     test('allowRequest is true, isOpen is false', () {
       final cb = CircuitBreaker();
-      expect(cb.allowRequest, isTrue);
+      expect(cb.allowRequest(), isTrue);
       expect(cb.isOpen, isFalse);
       expect(cb.isHalfOpen, isFalse);
       expect(cb.failureCount, 0);
@@ -37,7 +37,7 @@ void main() {
       cb.recordFailure();
       cb.recordFailure();
       expect(cb.isOpen, isTrue);
-      expect(cb.allowRequest, isFalse);
+      expect(cb.allowRequest(), isFalse);
     });
   });
 
@@ -65,11 +65,11 @@ void main() {
       );
       withClock(Clock(() => start), () {
         cb.recordFailure();
-        expect(cb.allowRequest, isFalse);
+        expect(cb.allowRequest(), isFalse);
       });
       // 31 seconds later → resetTime exceeded → allowRequest flips
       withClock(Clock(() => start.add(const Duration(seconds: 31))), () {
-        expect(cb.allowRequest, isTrue);
+        expect(cb.allowRequest(), isTrue);
         expect(cb.isHalfOpen, isTrue);
       });
     });
@@ -85,7 +85,7 @@ void main() {
 
       // After reset time elapses, allowRequest flips to half-open.
       withClock(Clock(() => start.add(const Duration(seconds: 31))), () {
-        expect(cb.allowRequest, isTrue); // half-open is true now
+        expect(cb.allowRequest(), isTrue); // half-open is true now
         expect(cb.isHalfOpen, isTrue);
         cb.recordSuccess();
       });
@@ -103,13 +103,40 @@ void main() {
       withClock(Clock(() => start), cb.recordFailure);
 
       withClock(Clock(() => start.add(const Duration(seconds: 31))), () {
-        expect(cb.allowRequest, isTrue); // half-open
+        expect(cb.allowRequest(), isTrue); // half-open
         cb.recordFailure();
       });
       // After failed half-open test, stays open.
       expect(cb.isOpen, isTrue);
       expect(cb.isHalfOpen, isFalse);
     });
+
+    test(
+      'half-open admits only ONE probe — concurrent callers (BUT-1414)',
+      () {
+        final start = DateTime.utc(2026, 1, 1);
+        final cb = CircuitBreaker(
+          failureThreshold: 1,
+          resetTime: const Duration(seconds: 30),
+        );
+        withClock(Clock(() => start), cb.recordFailure); // open
+
+        withClock(Clock(() => start.add(const Duration(seconds: 31))), () {
+          // First caller at the reset boundary gets the single probe slot.
+          expect(cb.allowRequest(), isTrue);
+          // A second concurrent caller (probe not yet resolved) is rejected.
+          // Without the in-flight guard both would pass and pile onto the
+          // recovering backend — the exact race BUT-1414 fixes.
+          expect(cb.allowRequest(), isFalse);
+          expect(cb.isHalfOpen, isTrue);
+
+          // Probe resolves with failure → slot released, breaker reopens, and
+          // the next caller is rejected until the following reset window.
+          cb.recordFailure();
+          expect(cb.allowRequest(), isFalse);
+        });
+      },
+    );
   });
 
   group('reset', () {
@@ -121,7 +148,7 @@ void main() {
       expect(cb.failureCount, 0);
       expect(cb.isOpen, isFalse);
       expect(cb.isHalfOpen, isFalse);
-      expect(cb.allowRequest, isTrue);
+      expect(cb.allowRequest(), isTrue);
     });
   });
 

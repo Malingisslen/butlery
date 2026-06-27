@@ -1,30 +1,28 @@
 # Sprint Backlog
 
-## Sprint: recordUsage transient-retry (cost-tracking gap) — 2026-06-27
+## Sprint: circuit-breaker half-open single-probe guard — 2026-06-28
 
-Single focused Tier-A backend reliability fix (late-session, kept tight for quality).
+Single focused Tier-A backend concurrency fix.
 
-### Agent A: import rate limiter (direct) — Stakeholders: FinOps, Data/Integrations
-- [x] **A1. Retry recordUsage transaction on transient Firestore errors + escalate failure log** `[Tier A]` (BUT-1415)
-  - Step 0: CONFIRMED. `recordUsage` (import_rate_limiter.dart:104-126) wraps the counter update in
-    `runTransaction`; on any throw it logs `warning` and returns. The Gemini call is already billed by
-    then, so a transient transaction failure (unavailable/aborted/offline/contention) permanently
-    drops the spend and the daily/monthly ceiling can be silently overrun.
-  - Files: `lib/services/import/import_rate_limiter.dart` (+ retry_helper import); test add.
-  - Acceptance: the transaction is retried (bounded) on transient Firestore codes
-    (unavailable/aborted/deadline-exceeded/cancelled) · non-transient errors are NOT retried (still
-    swallowed) · on ultimate failure it logs at ERROR (not warning) naming the untracked cost · a test
-    proves a transient-then-OK sequence records usage exactly once (no double-count) after retrying ·
-    retrying a read-modify-write is safe (a thrown txn didn't commit).
+### Agent A: circuit breaker (direct) — Stakeholders: Data/Integrations, Performance
+- [x] **A1. Half-open in-flight guard so only ONE probe tests recovery** `[Tier A]` (BUT-1414)
+  - Step 0: CONFIRMED. `circuit_breaker.dart` `allowRequest` is a side-effecting GETTER that sets
+    `_isHalfOpen=true` + returns true with no in-flight counter, so N queued callers all pass at the
+    reset boundary and hit the recovering backend at once. `llm_service.dart:328` gates on it and
+    always records success/failure after (so an in-flight flag will clear). Existing breaker tests
+    each call allowRequest once per half-open then record — no test relies on multi-probe.
+  - Files: `lib/core/circuit_breaker.dart`, `lib/services/llm/llm_service.dart` (call site),
+    `test/unit/core/circuit_breaker_test.dart` (getter→method + new concurrent test).
+  - Acceptance: `allowRequest` is a METHOD (not a side-effecting getter) · in half-open, the first
+    caller gets the single probe slot and a second concurrent caller gets `false` until the probe
+    resolves · the in-flight flag is cleared by recordSuccess / recordFailure / reset · a unit test
+    proves two concurrent half-open calls → only one probes · all existing breaker + llm-service
+    breaker tests still pass.
 
 ### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos lib test` · run import_rate_limiter_test
+- [ ] `dart analyze --fatal-infos lib test` · run circuit_breaker_test + llm_service_circuit_breaker_test
 - [ ] Phase 2.7 verifier · code-reviewer + testing-specialist · commit · push · Done
 
 ---
 
-## Recent shipped (this session)
-- BUT-1397 + BUT-1394 (commit fac80964e) — LLM retry storm + menu allergen-safety filter. Done.
-- BUT-1390/1391/1393 (commit 08e04be29) — rate-limit cost leak + GDPR erasure, ingredients index, UGC profanity. Done.
-- BUT-1386 (commit 07fa820d0, In Review) — server-authoritative age gate.
-- Deferred for fresh context: BUT-1413 (PII scrubber list+slug leaks — cross-port Dart+TS change, needs careful shared-fixture parity).
+## Recent shipped (this session): BUT-1415 (3c83cbb10), BUT-1397+1394 (fac80964e), BUT-1390/1391/1393 (08e04be29), BUT-1386 (07fa820d0, In Review). Deferred for fresh context: BUT-1413 (PII scrubber cross-port), BUT-1416 (Algolia degraded-mode is Tier-B/partly-stale).
