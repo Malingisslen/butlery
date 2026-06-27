@@ -88,6 +88,10 @@ void main() {
         final handle = tester.ensureSemantics();
         final mockVm = _MockPantryViewModel();
         when(() => mockVm.searchResults).thenReturn(const []);
+        // BUT-1379 added an isLoading-gated save button (disable + progress
+        // while a save is in flight). The build path reads viewModel.isLoading,
+        // so the mock must stub it or mocktail returns null -> TypeError.
+        when(() => mockVm.isLoading).thenReturn(false);
 
         await tester.pumpWidget(
           createLocalizedTestApp(
