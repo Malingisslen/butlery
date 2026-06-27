@@ -1,7 +1,14 @@
 # Virtual Role-Org — design & MVP spec
 
-_Status: **design, not yet built** (2026-06-26). Companion to_
-_`docs/architecture/ROLE_RESPONSIBILITY_MAP.md`, which is the dossier source this system operates over._
+_Status: **BUILT & operating** (last updated 2026-06-27). World-watch, the dossier-freshness loop,_
+_Phase-2 stakeholder review, and the measurement layer are all live on `main`, $0/interactive._
+_Companion to `docs/architecture/ROLE_RESPONSIBILITY_MAP.md` (the dossier source this system operates over)._
+
+> **Keep this doc current — nothing automates it.** The dossier-freshness loop tracks the role *map*
+> against code, NOT this design doc against the system's build state. So when you add or change a
+> subsystem (a skill/hook/layer), update the status line above and the relevant section here in the
+> same change. This doc drifted once (the measurement layer shipped before it was documented) — this
+> note is the guard.
 
 ## What this is
 
@@ -138,6 +145,25 @@ is existential, whereas most security bugs are fixable defects; and **cost sits 
 (#5 < #4) — don't ship a wrong result to save money, and don't gold-plate past the cap. Allergen-data
 correctness is Butlery's "the verdict is your product" and is pinned at #1. Aesthetics last — it
 matters, but never at the expense of the above.
+
+## Measurement & tuning (BUILT 2026-06-27)
+
+The role-org grades itself from its own evidence — no metrics pipeline, $0/interactive.
+
+- **Event log** — `docs/org/metrics/events.jsonl` (append-only) + `log_event.py` (stamps `ts`,
+  fails open). Skills/hooks log one line per real action; schema in `docs/org/metrics/README.md`.
+- **Instrumented the two gaps the artifacts can't show** — `/stakeholder-review` logs each review
+  (so clean `approve` outcomes that leave **no ADR** are captured = the rubber-stamp rate), and the
+  `ExitPlanMode` suggest-hook logs each trigger firing (calibration). World-watch/freshness are
+  already covered by `state.json` + markers, so they're documented-optional.
+- **`/org-retro` skill** — reads events + ADRs + `state.json` + markers and scores: Phase-2 value &
+  rubber-stamp rate, trigger calibration, world-watch signal-to-noise + source health, freshness
+  accuracy (did a review catch a *dossier* error?), and cost/review. Plus a manual **false-negative
+  spot-check** (the one thing logs can't show). Modes: `shakedown` (~days) and `full` (~weeks).
+- **Self-clearing reminder** — `org-retro-due-check.sh` (SessionStart) nudges to run `/org-retro`
+  once a window passes (`shakedown` @4d, `full` @28d, from `retro-schedule.json`); survives the
+  ephemeral container unlike a session cron. A retro counts as done when its `{type:retro,mode}`
+  event lands, which clears the nudge. First shakedown surfaces ~2026-07-01.
 
 ## Phase 2+ (future, not built)
 
