@@ -81,14 +81,26 @@ or auto-acts; Malin decides whether to proceed.** $0/interactive like the rest o
 **Pipeline** (`/stakeholder-review <plan|fileset>`):
 
 1. **Router** (`tools/stakeholder_router.py`, reuses `docs/org/role-paths.json` — same ownership
-   map as the freshness loop, so role selection stays honest to the role map). Blast-radius tiers:
-   - `full-panel` — a plan, OR any **high-stakes path** (`firestore.rules`/`storage.rules`,
-     `lib/services/{auth,security,llm,account}`, `lib/services/session_timeout`/`device_integrity`,
-     `functions/src/{account,audit_logs,cleanup,llm}`, payments/subscription), OR ≥3 owning roles.
-     Panel = path owners ∪ a **high-stakes core** (Security, Privacy/GDPR, Legal, Software Architect,
-     Product Manager, FinOps) that always has veto-level standing on big changes.
-   - `single` — 1–2 owning roles, no high-stakes path → just those owners.
+   map as the freshness loop, so role selection stays honest to the role map). Routes by **blast
+   radius, not "is it a plan"** — a plan is reviewed at the tier its *files* warrant, so mid-risk
+   plans get the cheap focused tier instead of always convening the (expensive) full panel:
+   - `full-panel` — **high-stakes paths only** (`firestore.rules`/`storage.rules`,
+     `lib/services/{auth,security,llm,account}`, `session_timeout`/`device_integrity`,
+     `functions/src/{account,audit_logs,cleanup,llm}`, payments/subscription). Panel = path owners
+     ∪ a **high-stakes core** (Security, Privacy/GDPR, Legal, Software Architect, Product Manager,
+     FinOps) with veto-level standing. _Owner-COUNT does not trigger the full panel_ — one theme
+     file is co-owned by several design roles, and that is not a broad blast radius.
+   - `single` — a mid-risk change with no high-stakes path → a **focused review by the direct
+     owner(s) only** (1..N, no core). This is the default for most plans; reserve the full panel
+     for where it pays for itself (≈0.6M tokens, validated 2026-06-27).
    - `skip` — only trivial/doc paths that no role owns → no review.
+
+   **Trigger gating (the money-pit guard).** The `PreToolUse(ExitPlanMode)` hook
+   (`suggest-stakeholder-review.sh`) scans the *finished plan text* for high-stakes signals
+   (security rules, GDPR/personal-data, auth, Cloud Functions, moderation, destructive-data ops,
+   payments, allergens, LLM) and only **then** suggests `/stakeholder-review` — non-blocking, never
+   auto-runs. Routine plans (a CSS tweak, a copy fix) get silence. Each critic is scoped to the
+   plan's blast-radius files (not free repo exploration) to keep token cost proportional.
 2. **Parallel blind critique** — one subagent per seated role, each given ONLY its own dossier
    (mandate + watch-items + world-model) and the plan; **none sees the others' critiques**. Each
    returns: position (`approve` / `approve-with-conditions` / `block`), top risks from its stake,
@@ -108,19 +120,23 @@ When stakeholders conflict and it isn't escalated to Malin, the Chief-Architect 
 by this order — **higher beats lower**. This is the org's politics made explicit and revisable; change
 it here, in the open.
 
-1. **User safety & wellbeing** — physical safety (allergens!), protection of minors, no harm.
-2. **Legal & privacy compliance** — GDPR, AI Act, consumer law, store policy. Non-negotiable where law
-   is clear; *interpretive* calls escalate to Malin rather than being decided by rubric.
+1. **User safety & trust** — physical safety; **allergen-data correctness is the product** and
+   outranks everything (the verdict a user trusts their health to); protection of minors; no harm.
+2. **Legal & privacy** — GDPR, AI Act, consumer law, store policy. **Always escalates to Malin** —
+   legal/privacy is never decided by the rubric (a compliance breach is existential for an EU
+   consumer app, and most calls are interpretive).
 3. **Data integrity & security** — correctness of allergen/tag data, auth, Firestore rules, no data
    loss or leak.
-4. **Correctness & reliability** — does what it claims, handles errors, doesn't regress.
-5. **Cost** — $0-marginal bias; minimize Firebase/LLM spend (CLAUDE.md cost principles).
-6. **Velocity / simplicity** — ship the smaller thing; avoid gold-plating.
+4. **Correctness & accessibility** — does what it claims, handles errors, doesn't regress; meets
+   WCAG 2.1 AA / EAA obligations (accessibility is compliance-adjacent, not polish).
+5. **Cost ceiling** — $0-marginal bias; minimize Firebase/LLM spend (CLAUDE.md cost principles).
+6. **Velocity & simplicity** — ship the smaller thing; avoid gold-plating.
 7. **Aesthetics & polish** — design-system fidelity, delight.
 
-Rationale: allergen safety is the product's core promise, so it outranks everything; legal/privacy
-sits just under because violations are existential but some are interpretive (those go to Malin, not
-the rubric). Cost beats velocity because this is a solo, $0-constrained project. Aesthetics last — it
+Two load-bearing choices (keep these): **legal sits ABOVE security** (#2 > #3) — a compliance breach
+is existential, whereas most security bugs are fixable defects; and **cost sits BELOW correctness**
+(#5 < #4) — don't ship a wrong result to save money, and don't gold-plate past the cap. Allergen-data
+correctness is Butlery's "the verdict is your product" and is pinned at #1. Aesthetics last — it
 matters, but never at the expense of the above.
 
 ## Phase 2+ (future, not built)

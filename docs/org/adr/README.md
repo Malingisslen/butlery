@@ -5,6 +5,11 @@ stakeholder-review system (`/stakeholder-review`) — whether resolved by the
 Chief-Architect priority order or escalated to Malin. The org remembers its own
 arguments so a settled tradeoff isn't silently re-litigated.
 
+**The good outcome is "approve WITH CONDITIONS"** — productive convergence, not a
+unanimous rubber-stamp or a veto. A thin "just do it" plan turning into an
+N-condition safe plan (plus escalations and follow-up tickets) is the value these
+records exist to preserve.
+
 - **Written by** `/stakeholder-review` whenever a panel produces a genuine conflict.
 - **One file per decision:** `ADR-NNNN-<slug>.md` (zero-padded, incrementing).
 - **Append-only:** never edit a decided ADR's substance. To change a decision,

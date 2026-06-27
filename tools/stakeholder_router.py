@@ -95,18 +95,23 @@ def route(paths, is_plan=False):
 
     non_trivial = [p for p in matched if p not in trivial]
 
-    if is_plan:
-        tier = "full-panel"
-    elif not non_trivial:
-        tier = "skip"
-    elif high_stakes_hits or len(owners) >= 3:
+    # Route by BLAST RADIUS, not by "is it a plan" — a plan is reviewed at the tier
+    # its files warrant, so mid-risk plans get the cheap focused tier instead of
+    # always convening the (expensive) full panel. The full panel (owners + the
+    # veto-level high-stakes core) is reserved for HIGH-STAKES PATHS only — NOT raw
+    # owner-count, since one theme file is co-owned by several design roles and that
+    # is not a broad blast radius.
+    if high_stakes_hits:
         tier = "full-panel"
     elif owners:
+        # "single" = focused review by the direct owner(s) only (1..N), no core.
+        tier = "single"
+    elif is_plan or non_trivial:
+        # a plan, or non-trivial code no role owns -> at least one reviewer
+        # (architect + PM decide) rather than silently skipping.
         tier = "single"
     else:
-        # non-trivial paths that no role owns (e.g. new code area) -> seat the
-        # architect + PM to decide ownership rather than silently skipping.
-        tier = "single"
+        tier = "skip"
 
     if tier == "full-panel":
         panel = sorted(set(owners) | set(HIGH_STAKES_CORE))

@@ -54,8 +54,13 @@ in its own dossier. Use this prompt per role:
 > your world-model** — not as a generalist. Be specific to Butlery's code where you can. Do not try to
 > represent other roles.
 >
+> **Cost scope (important):** read your dossier section and the plan's **blast-radius files listed
+> below** — those are what the change touches. Do NOT free-explore the wider repo; reading the
+> relevant source is what makes the critique sharp, but unbounded exploration just inflates token cost.
+>
 > PLAN/CHANGE:
-> {plan text or `git diff` summary + file list}
+> {plan text or `git diff` summary}
+> BLAST-RADIUS FILES (read these, not the whole repo): {router `matched` paths + high_stakes_hits}
 >
 > Return JSON only:
 > `{"role","position":"approve|approve-with-conditions|block","top_risks":[...],"must_haves":[...],"world_model_flag":"<any law/policy/CVE/cost-trend angle, or empty>","cost_effort_note":"<short>","one_line_stance":"<one sentence>"}`
@@ -85,6 +90,12 @@ For **every** conflict (resolved by CTO or escalated to Malin), append a new
 `docs/org/adr/ADR-NNNN-<slug>.md` (next number; see `docs/org/adr/README.md` for the format) and add
 its one-line entry to the ADR index. No conflict → no ADR (clean unanimous approval needs none).
 Resolved-by-Malin ADRs record her choice once she answers.
+
+**The good outcome is "approve WITH CONDITIONS," not a unanimous yes or a veto.** A thin "just do it"
+plan becoming an N-condition safe plan (+ escalations + follow-up tickets) **is** the value of the
+review — that productive convergence is exactly what the ADRs should capture, not just hard
+disagreements. If the panel converged on conditions with no conflict, still record the conditions in
+the report (and an ADR if any condition was contested).
 
 ### 6. Report (advisory)
 Output: tier + panel, the one-line recommendation, the conditions to carry, each conflict + how it was
