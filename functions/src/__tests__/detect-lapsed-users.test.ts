@@ -404,11 +404,19 @@ function makeRunDeps(
     ) => Promise<{ title: string; body: string }>;
     sendPush?: () => Promise<{ sent: boolean; reason: string }>;
     gate?: () => Promise<{ action: string; reason: string }>;
+    resolveContext?: (
+      userId: string,
+      userData: Record<string, unknown>,
+    ) => Promise<{ title: string; body: string; contextKey: string } | null>;
   } = {},
 ) {
   return {
     db: fakeDb as never,
     now,
+    // BUT-934: default the contextual layer OFF so these cases isolate the
+    // variant / RC / gate orchestration. Contextual copy has its own suite
+    // (winback-context.test.ts) plus a dedicated integration case below.
+    resolveContext: (overrides.resolveContext ?? (async () => null)) as never,
     fetchCopy:
       overrides.fetchCopy ??
       (async (thresholdType: string, variant: string) => ({
@@ -600,6 +608,48 @@ const integrationCases: IntCase[] = [
       if (!evt) throw new Error("analytics event not written");
       if (typeof evt.variant !== "string" || !evt.variant.length) {
         throw new Error(`event missing variant: ${JSON.stringify(evt)}`);
+      }
+    },
+  },
+  {
+    name: "BUT-934: contextual copy flows to notification doc + analytics event",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      const db = makeFakeDb(
+        [{ id: "user-ctx", daysInactive: 14 }],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(
+        makeRunDeps(db, now, {
+          resolveContext: async () => ({
+            title: "Butlery",
+            body: "Anna delade ett recept med dig",
+            contextKey: "ctx_friend_share",
+          }),
+        }),
+      );
+
+      let notif: Record<string, unknown> | undefined;
+      let evt: Record<string, unknown> | undefined;
+      for (const [path, data] of store.data.entries()) {
+        if (path.startsWith("users/user-ctx/notifications/")) notif = data;
+        if (path.startsWith("analytics/lapsed_users/events/")) evt = data;
+      }
+      if (!notif) throw new Error("notification doc not written");
+      if (notif.bodyShown !== "Anna delade ett recept med dig") {
+        throw new Error(`unexpected contextual body: ${notif.bodyShown}`);
+      }
+      if (notif.contextKey !== "ctx_friend_share") {
+        throw new Error(`notif missing contextKey: ${JSON.stringify(notif)}`);
+      }
+      if (!evt || evt.contextKey !== "ctx_friend_share") {
+        throw new Error(`event missing contextKey: ${JSON.stringify(evt)}`);
       }
     },
   },

@@ -35,6 +35,10 @@ import {
   fetchWinbackCopy,
   DEFAULT_VARIANTS,
 } from "./winback-variant";
+import {
+  resolveContextualWinbackCopy,
+  type ContextualCopy,
+} from "./winback-context";
 
 const getDb = () => admin.firestore();
 
@@ -63,6 +67,11 @@ export interface RunDeps {
     thresholdType: string,
     variant: string,
   ) => Promise<{ title: string; body: string }>;
+  /** Override contextual-copy resolution (BUT-934). */
+  resolveContext?: (
+    userId: string,
+    userData: admin.firestore.DocumentData,
+  ) => Promise<ContextualCopy | null>;
   /** Override the preference-aware push (test the orchestration in isolation). */
   sendPush?: typeof sendPushToUserRespectingPreferences;
   /** Override the gate decision (test paths that proceed/drop without RC). */
@@ -94,6 +103,13 @@ export async function runDetectLapsedUsers(
   const nowMs = now.toMillis();
   const resolveVariant = deps.resolveVariant ?? resolveWinbackVariant;
   const fetchCopy = deps.fetchCopy ?? fetchWinbackCopy;
+  const resolveContext =
+    deps.resolveContext ??
+    ((userId: string, userData: admin.firestore.DocumentData) =>
+      resolveContextualWinbackCopy(userId, userData, {
+        db,
+        now: nowMs,
+      }));
   const sendPush =
     deps.sendPush ?? sendPushToUserRespectingPreferences;
   const gate = deps.gate ?? evaluateSendGate;
@@ -133,12 +149,35 @@ export async function runDetectLapsedUsers(
       variant: string;
       title: string;
       body: string;
+      /** BUT-934: signal that produced contextual copy, or null if generic. */
+      contextKey: string | null;
     }
     const perUser: PerUser[] = [];
     for (const userDoc of usersSnapshot.docs) {
       const variant = resolveVariant(userDoc.id, threshold.type);
-      const { title, body } = await fetchCopy(threshold.type, variant);
-      perUser.push({ userId: userDoc.id, variant, title, body });
+      // BUT-934: try contextual copy first; fall back to the A/B variant
+      // copy when no signal applies. The variant is still recorded so the
+      // deterministic bucket is preserved; contextKey marks contextual
+      // sends as a separate cohort in analytics.
+      const context = await resolveContext(userDoc.id, userDoc.data());
+      if (context) {
+        perUser.push({
+          userId: userDoc.id,
+          variant,
+          title: context.title,
+          body: context.body,
+          contextKey: context.contextKey,
+        });
+      } else {
+        const { title, body } = await fetchCopy(threshold.type, variant);
+        perUser.push({
+          userId: userDoc.id,
+          variant,
+          title,
+          body,
+          contextKey: null,
+        });
+      }
     }
 
     let batch = db.batch();
@@ -163,6 +202,7 @@ export async function runDetectLapsedUsers(
         detectedAt: now,
         notificationSent: true,
         variant: u.variant,
+        contextKey: u.contextKey,
       });
       batchCount++;
 
@@ -176,6 +216,7 @@ export async function runDetectLapsedUsers(
         message: u.body,
         bodyShown: u.body,
         variant: u.variant,
+        contextKey: u.contextKey,
         createdAt: now,
         read: false,
       });
@@ -290,6 +331,8 @@ export async function runDetectLapsedUsers(
       // Variant distribution for sanity checks. With a uniform hash and
       // 2 variants, expect ~50/50.
       variantBreakdown: countVariants(perUser),
+      // BUT-934: how many sends used each contextual signal vs generic.
+      contextBreakdown: countContexts(perUser),
     });
   }
 
@@ -315,6 +358,17 @@ function countVariants(
   for (const v of DEFAULT_VARIANTS) out[v] = 0;
   for (const u of perUser) {
     out[u.variant] = (out[u.variant] ?? 0) + 1;
+  }
+  return out;
+}
+
+function countContexts(
+  perUser: { contextKey: string | null }[],
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const u of perUser) {
+    const key = u.contextKey ?? "generic";
+    out[key] = (out[key] ?? 0) + 1;
   }
   return out;
 }
