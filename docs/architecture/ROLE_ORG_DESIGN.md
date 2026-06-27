@@ -73,18 +73,72 @@ machinery required.
 impact → tiered Linear output) on the roles where a missed change hurts most, with zero cost and zero
 unattended risk, before any investment in the deliberation/router machinery.
 
-## Phase 2+ (not in MVP)
+## Phase 2 — stakeholder review (BUILT 2026-06-27)
 
-- **Stakeholder review** (the deliberation system): path→role router → parallel blind critique →
-  synthesis → hybrid tiebreak → ADR. Validate on one real plan before generalising.
-- **Dossier freshness loop**: the stale-stamp hook + scheduled re-sweep.
+The deliberation system, built to the constitution above. **Advisory only — it never auto-merges
+or auto-acts; Malin decides whether to proceed.** $0/interactive like the rest of the org.
+
+**Pipeline** (`/stakeholder-review <plan|fileset>`):
+
+1. **Router** (`tools/stakeholder_router.py`, reuses `docs/org/role-paths.json` — same ownership
+   map as the freshness loop, so role selection stays honest to the role map). Blast-radius tiers:
+   - `full-panel` — a plan, OR any **high-stakes path** (`firestore.rules`/`storage.rules`,
+     `lib/services/{auth,security,llm,account}`, `lib/services/session_timeout`/`device_integrity`,
+     `functions/src/{account,audit_logs,cleanup,llm}`, payments/subscription), OR ≥3 owning roles.
+     Panel = path owners ∪ a **high-stakes core** (Security, Privacy/GDPR, Legal, Software Architect,
+     Product Manager, FinOps) that always has veto-level standing on big changes.
+   - `single` — 1–2 owning roles, no high-stakes path → just those owners.
+   - `skip` — only trivial/doc paths that no role owns → no review.
+2. **Parallel blind critique** — one subagent per seated role, each given ONLY its own dossier
+   (mandate + watch-items + world-model) and the plan; **none sees the others' critiques**. Each
+   returns: position (`approve` / `approve-with-conditions` / `block`), top risks from its stake,
+   must-haves, and a cost/effort note. No round-robin chat (it drifts via sycophancy + inflates cost).
+3. **Synthesis** — a synthesizer reconciles the critiques into ONE recommendation, surfacing
+   agreements, conditions, and genuine conflicts.
+4. **Hybrid tiebreak:**
+   - An **unresolved high-stakes conflict** → escalate to Malin (`AskUserQuestion`) with the tradeoff
+     + each role's stake laid out. She decides.
+   - Any other conflict → the **Chief-Architect (CTO) agent** decides by the written priority order below.
+5. **ADR** — every disagreement (resolved or escalated) is recorded as a dated, append-only file under
+   `docs/org/adr/`: the stakes, the decision, who decided. The org remembers its own arguments.
+
+### The priority order (CTO tiebreak rubric)
+
+When stakeholders conflict and it isn't escalated to Malin, the Chief-Architect agent breaks the tie
+by this order — **higher beats lower**. This is the org's politics made explicit and revisable; change
+it here, in the open.
+
+1. **User safety & wellbeing** — physical safety (allergens!), protection of minors, no harm.
+2. **Legal & privacy compliance** — GDPR, AI Act, consumer law, store policy. Non-negotiable where law
+   is clear; *interpretive* calls escalate to Malin rather than being decided by rubric.
+3. **Data integrity & security** — correctness of allergen/tag data, auth, Firestore rules, no data
+   loss or leak.
+4. **Correctness & reliability** — does what it claims, handles errors, doesn't regress.
+5. **Cost** — $0-marginal bias; minimize Firebase/LLM spend (CLAUDE.md cost principles).
+6. **Velocity / simplicity** — ship the smaller thing; avoid gold-plating.
+7. **Aesthetics & polish** — design-system fidelity, delight.
+
+Rationale: allergen safety is the product's core promise, so it outranks everything; legal/privacy
+sits just under because violations are existential but some are interpretive (those go to Malin, not
+the rubric). Cost beats velocity because this is a solo, $0-constrained project. Aesthetics last — it
+matters, but never at the expense of the above.
+
+## Phase 2+ (future, not built)
+
 - **Widen world-watch** from 3 roles to all world-facing roles once the loop is trusted.
-- **ADR format + store** for recorded disagreements.
+- **Scheduled dossier re-sweep** — a periodic pass over stale markers (the per-edit stamping +
+  `/refresh-dossiers` are built; an automatic cadence is not).
 
 ## Open items
 
-- Exact `SessionStart`-hook vs durable-cron choice for the due-check (both interactive/$0; pick on build).
-- Linear label taxonomy for `escalate-human` review tickets.
-- The CTO-agent's written priority order (the tiebreak rubric) — draft when Phase 2 starts.
+- Linear label taxonomy for `escalate-human` review tickets — currently reusing the `need-malin`
+  lane label; revisit if escalations need their own dimension.
 - Source allowlist gaps flagged by verification (2 EU/ETSI URLs need a manual re-confirm on an
-  unblocked network; see the map's source caveat).
+  unblocked network; see the map's source caveat). EDPB RSS retired in its 2026-06-22 redesign →
+  now polled via the news page + IMY secondhand.
+
+## Resolved (was open)
+
+- ~~`SessionStart`-hook vs durable-cron for the due-check~~ → SessionStart hook (`world-watch-due-check.sh`).
+- ~~The CTO-agent's written priority order~~ → drafted above (Phase 2 build, 2026-06-27).
+- ~~Dossier freshness loop~~ → BUILT (stale-stamp hook + `/refresh-dossiers`).

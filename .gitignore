@@ -111,6 +111,8 @@ nul
 # Role-org dossier-freshness loop (committed tooling, not one-off scripts)
 !.claude/hooks/dossier_stamp.py
 !tools/gen_role_paths.py
+# Role-org Phase-2 stakeholder router (committed tooling)
+!tools/stakeholder_router.py
 
 # Temp analysis files
 *tmp_analyze*
