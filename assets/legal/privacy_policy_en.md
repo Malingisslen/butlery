@@ -283,7 +283,9 @@ You can manage data processing consent in: **Profile > Account Management > Mana
 
 ## 12. Children and minors
 
-Butlery is intended for users aged 13 or older. We do not knowingly collect personal data from children under 13.
+Butlery is intended for users aged 15 or older. We do not knowingly collect personal data from children under 15.
+
+The 15-year age limit follows from Swedish data-protection law (the Data Protection Act, ch. 2 § 4), which sets 15 for information-society services with a social component. Butlery has social features (comments, sharing, groups, ratings) and is therefore subject to the 15 limit — stricter than the GDPR general age limit of 13 (Article 8), which applies to ordinary processing without a social component.
 
 If you are a parent/guardian and discover that your child has created an account:
 - Contact us at privacy@butlery.se

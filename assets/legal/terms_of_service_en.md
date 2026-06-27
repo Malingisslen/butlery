@@ -10,7 +10,7 @@ The Service is provided by Butlery ("we", "us", "our").
 
 2. ELIGIBILITY
 
-You must be at least 13 years old to use the Service. By creating an account, you confirm that you meet this age requirement.
+You must be at least 15 years old to use the Service. By creating an account, you confirm that you meet this age requirement.
 
 3. YOUR ACCOUNT
 

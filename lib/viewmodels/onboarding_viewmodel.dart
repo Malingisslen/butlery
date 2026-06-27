@@ -20,8 +20,11 @@ import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 class OnboardingViewModel extends BaseViewModel {
-  // Swedish parental-consent threshold for data processing on social apps
-  // (GDPR Art 8). Under this, sign-up is blocked.
+  // Butlery's single minimum age. Basis: Sweden's Dataskyddslag 2 kap. 4 §
+  // (information-society services with a *social* component) sets 15 — NOT
+  // GDPR Art 8, whose Swedish floor is 13 and which does not mandate 15. Under
+  // this, sign-up is blocked. See ADR-0001; kept in sync with firestore.rules
+  // (settings/preferences) and UserProfile's birthYear invariant.
   static const int minAgeYears = 15;
 
   // BUT-33: upper bound on the onboarding-completion write so a hung Firebase

@@ -22,6 +22,33 @@ We aim to:
 | Provide a fix or mitigation plan | within **7 days** for High/Critical, **30 days** for Medium/Low |
 | Coordinated disclosure window | **90 days** by default, negotiable |
 
+## Incident response: underage user discovered
+
+Butlery's single minimum age is **15** (ADR-0001; Sweden's Dataskyddslag 2 kap. 4 §
+for information-society services with a social component). If we discover — via a
+report, a parent/guardian contact, or moderation — that an account belongs to someone
+under 15, treat it as a data-protection incident and run this sequence:
+
+1. **Suspend** the account immediately (hide the public profile; revoke active sessions)
+   so no further personal data is processed while we act.
+2. **Delete** the account and all associated personal data under **GDPR Article 17**
+   (right to erasure), using the existing server-side deletion cascade
+   (`functions/src/account/account-deletion-cascade.ts` → `request-account-deletion`).
+   This is the same own-data + cross-user cascade used for user-initiated deletion.
+3. **Assess notification duty within 72 hours.** Decide whether the discovery is a
+   personal-data breach under GDPR Art. 33. If so, notify the **IMY**
+   (Integritetsskyddsmyndigheten) within 72 hours of becoming aware, and the affected
+   data subject under Art. 34 where required. Record the assessment even when the
+   conclusion is "no notification required."
+4. **Owner + timeline.** The maintainer (Malin) owns the decision and the IMY contact.
+   Log the discovery time, suspension time, deletion time, and the Art. 33 assessment
+   outcome in the incident record. Target: suspend within hours of discovery, delete
+   and complete the assessment within the 72-hour window.
+
+**COPPA scope.** Butlery does not currently distribute in the US, so COPPA (the US
+under-13 regime) does not yet apply. If/when US distribution begins, extend this runbook
+with COPPA's under-13 verifiable-parental-consent and deletion obligations before launch.
+
 ## Supported versions
 
 Only the latest released build is supported. We do not backport security

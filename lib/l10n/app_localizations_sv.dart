@@ -9081,7 +9081,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingAgeGateSubtitle =>
-      'Vi behöver veta ditt födelseår för att följa svenska regler för sociala appar (GDPR Art 8).';
+      'Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).';
 
   @override
   String get onboardingAgeGateBirthYearLabel => 'Födelseår';
@@ -9101,7 +9101,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingAgeGateTooYoungBody =>
-      'Enligt svensk dataskyddslagstiftning (GDPR Art 8) krävs föräldrasamtycke för att använda sociala funktioner under 15 år. Kom gärna tillbaka när du fyllt 15.';
+      'Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.';
 
   @override
   String get onboardingAgeGateSignOut => 'Logga ut';
@@ -13728,7 +13728,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get legalOpenSourceLicenses => 'Öppen källkod-licenser';
 
   @override
-  String get authAgeConfirmation => 'Jag bekräftar att jag är minst 13 år';
+  String get authAgeConfirmation => 'Jag bekräftar att jag är minst 15 år';
 
   @override
   String get authAgeConfirmationRequired =>

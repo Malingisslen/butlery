@@ -411,9 +411,13 @@ service cloud.firestore {
       }
 
       // User settings subcollection — owner-only.
-      // The `preferences` doc carries `birthYear` (GDPR Art 8 age floor).
-      // The 15-year Swedish threshold is enforced in the sign-up flow; rules
-      // enforce a hard floor of 13 so admins can backfill edge cases.
+      // The `preferences` doc carries `birthYear` (age floor for Butlery's
+      // social/UGC service). The single enforced floor is 15, grounded in
+      // Sweden's Dataskyddslag 2 kap. 4 § (information-society services with a
+      // social component) — NOT GDPR Art 8 (whose Swedish floor is 13). See
+      // ADR-0001 (the 15 decision + legal basis). Rules enforce 15 here;
+      // ADR-0002's signup Cloud Function will become the authoritative writer
+      // and close the remaining "skip/null birthYear" bypass (BUT-1384 follow-up).
       match /settings/{settingId} {
         allow read: if isOwner(userId);
 
@@ -422,7 +426,7 @@ service cloud.firestore {
             'birthYear' in request.resource.data.keys()
             && request.resource.data.birthYear is int
             && request.resource.data.birthYear >= 1900
-            && request.resource.data.birthYear <= (request.time.year() - 13)
+            && request.resource.data.birthYear <= (request.time.year() - 15)
           ));
 
         allow update: if isOwner(userId)
@@ -432,7 +436,7 @@ service cloud.firestore {
             || (
               request.resource.data.birthYear is int
               && request.resource.data.birthYear >= 1900
-              && request.resource.data.birthYear <= (request.time.year() - 13)
+              && request.resource.data.birthYear <= (request.time.year() - 15)
             )
           );
 

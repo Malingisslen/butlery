@@ -1,4 +1,5 @@
-// Widget tests for the onboarding age-gate step (GDPR Art 8).
+// Widget tests for the onboarding age-gate step (floor 15 — ADR-0001 /
+// Dataskyddslag 2 kap. 4 §).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,7 +40,7 @@ void main() {
       );
     });
 
-    testWidgets('does not auto-select a year on render (GDPR Art 8 gate)', (
+    testWidgets('does not auto-select a year on render (age gate)', (
       tester,
     ) async {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
@@ -81,10 +82,10 @@ void main() {
         await tester.pumpWidget(_testApp(viewModel: viewModel));
         await tester.pumpAndSettle();
 
-        // Drive the gate directly via the viewmodel — the dropdown only offers
-        // years >= currentYear-13, but the under-15 case is
-        // currentYear-14 ... currentYear-13. Both are reachable via the picker.
-        final tooYoung = DateTime.now().year - 13; // age 13, under 15
+        // Drive the gate directly via the viewmodel — any year that maps to an
+        // age under the 15 floor (ADR-0001) must fail the gate. age 13 is one
+        // such case and is reachable via the picker.
+        final tooYoung = DateTime.now().year - 13; // age 13, under the 15 floor
         viewModel.setBirthYear(tooYoung);
         await tester.pumpAndSettle();
 

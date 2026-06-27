@@ -10,7 +10,7 @@ Tjänsten tillhandahålls av Butlery ("vi", "oss", "vår").
 
 2. BEHÖRIGHET
 
-Du måste vara minst 13 år gammal för att använda Tjänsten. Genom att skapa ett konto intygar du att du uppfyller detta ålderskrav.
+Du måste vara minst 15 år gammal för att använda Tjänsten. Genom att skapa ett konto intygar du att du uppfyller detta ålderskrav.
 
 3. DITT KONTO
 

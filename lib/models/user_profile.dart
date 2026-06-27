@@ -81,10 +81,10 @@ class UserProfile with JsonSerializableMixin {
   final List<String>? cuisineAffinities;
   final String? bio;
 
-  // Year-only birth year for the GDPR Art 8 age gate. Nullable so pre-gate
-  // users keep working; rules + onboarding require it for new sign-ups. The
-  // 15-year Swedish threshold is enforced at sign-up, not here — model only
-  // enforces a hard floor of 13 so admins can backfill edge cases.
+  // Year-only birth year for Butlery's age gate (floor 15, ADR-0001 —
+  // Dataskyddslag 2 kap. 4 §). Nullable so pre-gate users keep working;
+  // rules + onboarding require it for new sign-ups. The constructor enforces
+  // the same 15 floor, so [copyWith] is safe for any already-validated value.
   final int? birthYear;
 
   // Moderation hide flag. Admin-only writeable (rules-enforced). When true,
@@ -134,9 +134,11 @@ class UserProfile with JsonSerializableMixin {
   }) {
     if (birthYear != null) {
       final currentYear = clock.now().year;
-      if (birthYear! < 1900 || birthYear! > currentYear - 13) {
+      // Floor of 15, per ADR-0001 (Dataskyddslag 2 kap. 4 § — social-ISS),
+      // kept in sync with firestore.rules settings/preferences + OnboardingViewModel.minAgeYears.
+      if (birthYear! < 1900 || birthYear! > currentYear - 15) {
         throw ArgumentError(
-          'birthYear must be between 1900 and ${currentYear - 13} (got $birthYear)',
+          'birthYear must be between 1900 and ${currentYear - 15} (got $birthYear)',
         );
       }
     }
@@ -632,7 +634,9 @@ class UserProfile with JsonSerializableMixin {
     final parsed = raw is int ? raw : int.tryParse(raw.toString());
     if (parsed == null) return null;
     final currentYear = clock.now().year;
-    if (parsed < 1900 || parsed > currentYear - 13) return null;
+    // Upper bound mirrors the constructor invariant (age floor 15, ADR-0001):
+    // never return a value the constructor would reject, or copyWith would throw.
+    if (parsed < 1900 || parsed > currentYear - 15) return null;
     return parsed;
   }
 

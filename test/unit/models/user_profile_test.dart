@@ -1065,8 +1065,8 @@ void main() {
       );
     });
 
-    group('birthYear (GDPR Art 8 age gate)', () {
-      test('accepts a valid birth year that clears the hard 13-year floor', () {
+    group('birthYear (age gate, floor 15 — ADR-0001 / Dataskyddslag 2:4 §)', () {
+      test('accepts a valid birth year that clears the 15-year floor', () {
         final currentYear = DateTime.now().year;
         final profile = UserProfile(
           uid: 'age_ok',
@@ -1079,7 +1079,39 @@ void main() {
         expect(profile.birthYear, equals(currentYear - 20));
       });
 
-      test('rejects a birth year younger than the 13-year hard floor', () {
+      test('accepts exactly 15 (birthYear = currentYear - 15)', () {
+        final currentYear = DateTime.now().year;
+        final profile = UserProfile(
+          uid: 'age_15',
+          displayName: 'Just Fifteen',
+          email: 'f15@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+          birthYear: currentYear - 15,
+        );
+        expect(profile.birthYear, equals(currentYear - 15));
+      });
+
+      test(
+        'rejects a 14-year-old (the BUT-1384 boundary: floor moved 13 -> 15)',
+        () {
+          final currentYear = DateTime.now().year;
+          expect(
+            () => UserProfile(
+              uid: 'fourteen',
+              displayName: 'Fourteen',
+              email: '14@example.com',
+              joinedAt: testDate,
+              lastActiveAt: testDate,
+              // age 14 — passed the old 13 floor, must now throw under the 15 floor.
+              birthYear: currentYear - 14,
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
+
+      test('rejects a birth year well under the 15-year floor', () {
         final currentYear = DateTime.now().year;
         expect(
           () => UserProfile(
@@ -1088,8 +1120,6 @@ void main() {
             email: 'k@example.com',
             joinedAt: testDate,
             lastActiveAt: testDate,
-            // Under 13 — must throw regardless of the 15-year business rule,
-            // because the model is the last line of defense.
             birthYear: currentYear - 5,
           ),
           throwsArgumentError,
@@ -1160,6 +1190,46 @@ void main() {
         final garbage = UserProfile.fromJson({...base, 'birthYear': 'abc'});
         expect(garbage.birthYear, isNull);
       });
+
+      test(
+        'fromJson/fromMap drops a stored 14-year-old birthYear to null '
+        '(BUT-1384: the old 13-year floor accepted this value; the new 15-year '
+        'floor must silently drop it on read rather than throw)',
+        () {
+          final currentYear = DateTime.now().year;
+          final base = {
+            'uid': 'legacy14',
+            'displayName': 'Legacy14',
+            'email': 'l14@example.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          };
+          // fromJson path (used by UserService cache / JSON round-trips)
+          final fromJsonResult = UserProfile.fromJson(
+            {...base, 'birthYear': currentYear - 14},
+          );
+          expect(
+            fromJsonResult.birthYear,
+            isNull,
+            reason:
+                'age-14 birthYear was valid under the old floor (13) — '
+                '_readBirthYear must silently drop it under the new floor (15)',
+          );
+
+          // fromMap path (used by Firestore repository reads)
+          final fromMapResult = UserProfile.fromMap(
+            'legacy14',
+            {
+              'displayName': 'Legacy14',
+              'email': 'l14@example.com',
+              'joinedAt': '2024-01-01T00:00:00Z',
+              'lastActiveAt': '2024-01-01T00:00:00Z',
+              'birthYear': currentYear - 14,
+            },
+          );
+          expect(fromMapResult.birthYear, isNull);
+        },
+      );
 
       test('copyWith replaces birthYear but preserves other fields', () {
         final currentYear = DateTime.now().year;

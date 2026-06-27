@@ -15310,7 +15310,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vi behöver veta ditt födelseår för att följa svenska regler för sociala appar (GDPR Art 8).'**
+  /// **'Vi behöver veta ditt födelseår för att följa svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §).'**
   String get onboardingAgeGateSubtitle;
 
   /// No description provided for @onboardingAgeGateBirthYearLabel.
@@ -15346,7 +15346,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeGateTooYoungBody.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt svensk dataskyddslagstiftning (GDPR Art 8) krävs föräldrasamtycke för att använda sociala funktioner under 15 år. Kom gärna tillbaka när du fyllt 15.'**
+  /// **'Enligt svensk dataskyddslagstiftning för sociala tjänster (dataskyddslagen 2 kap. 4 §) behöver du vara minst 15 år för att ha ett eget konto. Kom gärna tillbaka när du fyllt 15.'**
   String get onboardingAgeGateTooYoungBody;
 
   /// No description provided for @onboardingAgeGateSignOut.
@@ -22976,7 +22976,7 @@ abstract class AppLocalizations {
   /// No description provided for @authAgeConfirmation.
   ///
   /// In sv, this message translates to:
-  /// **'Jag bekräftar att jag är minst 13 år'**
+  /// **'Jag bekräftar att jag är minst 15 år'**
   String get authAgeConfirmation;
 
   /// No description provided for @authAgeConfirmationRequired.

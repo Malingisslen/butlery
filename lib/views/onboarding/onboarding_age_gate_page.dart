@@ -16,12 +16,15 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    // No default is pre-selected: GDPR Art 8 requires a deliberate age
-    // declaration, so the dropdown starts on a "choose a year" hint and the
-    // wizard keeps `Next` disabled until the user picks (see OnboardingViewModel).
+    // No default is pre-selected: the age gate requires a deliberate age
+    // declaration (ADR-0001 / Dataskyddslag 2 kap. 4 §), so the dropdown starts
+    // on a "choose a year" hint and the wizard keeps `Next` disabled until the
+    // user picks (see OnboardingViewModel).
     final currentYear = clock.now().year;
-    // Range: oldest = 100 yrs ago, youngest = 13 (hard floor; 15-year Swedish
-    // threshold is enforced by `isAgeGatePassed` after selection).
+    // Range: oldest = 100 yrs ago, youngest = age 13. The youngest OFFERED year
+    // sits deliberately *below* the 15 floor so a 13- or 14-year-old can declare
+    // their real age and get the polite "too young" screen — the 15 threshold is
+    // enforced by `isAgeGatePassed` after selection, not by the picker bounds.
     final youngestYear = currentYear - 13;
     final oldestYear = currentYear - 100;
     final years = [

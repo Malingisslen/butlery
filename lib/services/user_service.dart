@@ -705,9 +705,10 @@ class UserService extends ChangeNotifier
   }
 
   /// Complete onboarding with preferences in a single atomic write.
-  /// [onboardingSkippedAt] records a skip; [birthYear] satisfies the GDPR
-  /// Art 8 age gate and must be pre-validated by the caller (model constructor
-  /// re-throws ArgumentError outside [1900, currentYear-13]).
+  /// [onboardingSkippedAt] records a skip; [birthYear] satisfies Butlery's
+  /// age floor of 15 (ADR-0001, Dataskyddslag 2 kap. 4 §) and must be
+  /// pre-validated by the caller (model constructor re-throws ArgumentError
+  /// outside [1900, currentYear-15]).
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,

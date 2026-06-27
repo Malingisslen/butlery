@@ -785,6 +785,21 @@ Map row to add:
 - Missing: recipe WITH NO `socialData` field — stranger denied (SR6). Low-risk given CEL default-map analysis, but pinned.
 - Remaining uncovered (Low): uid-as-value-not-key attack; owner update-still-works positive. Rule analysis confirms both are safe without explicit test.
 
+### 2026-06-27 — age-gate floor change (13 → 15) boundary-test pattern (BUT-1384)
+
+The `preferences` birthYear rule under `users/{uid}/settings/{settingId}` now
+enforces a minimum age of 15 (Dataskyddslag, ADR-0001) on both `allow create`
+and `allow update`. Test file: `age-gate-rules.test.ts` (`test:rules:age-gate`).
+
+**Required test triad for any numeric-floor change on a rule:**
+1. Allow at exactly the new floor (currentYear-N) — proves the boundary is inclusive.
+2. Deny at one year above the floor (currentYear-(N-1)) — proves the boundary rejects the old-but-now-illegal value.
+3. Allow on the update branch at the same boundary — without it, a regression that blocks all valid birthYear updates passes the deny-only test.
+
+The update branch has an additional `!('birthYear' in request.resource.data.keys()) || null` backfill clause that must also have an allow test (Test 4). The `null` sub-clause is present but has no named test — Low gap, not a diff-coverage miss when the clause itself is unchanged.
+
+Coverage after this run: 9/9 green. Tests: 3a (create-allow @15), 3b (create-deny @14), 4 (update-allow no-birthYear backfill), 5 (update-deny @14), 5b (update-allow @15, added this run).
+
 ### 2026-06-20 — parse_events admin-read added to admin-dashboard-rules.test.ts
 
 New `match /parse_events/{eventId} { allow read: if isAdmin() }` (admin drill-down

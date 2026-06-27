@@ -2007,3 +2007,15 @@ Trigger: re-reviewing IncomingShareHandler after the prior High gap (auth-gate u
 - **Service no-emit guard is non-vacuous:** `onMedia` only `_mediaController.add`s when the sanitized list `isNotEmpty` (drops non-strings + empty strings first). The `['', null]` payload sanitizes to `[]` so the `expect(emitted, isFalse)` proves the spurious-navigation guard, not just an absent listener.
 - **VM offline test:** `verifyNever(() => mockClient.send(any()))` is the meaningful assertion — the `!isOnline` guard sits at the top of `loadImagesFromPaths` (line ~231) before any OCR, so proving the http client never fired proves the fail-fast actually short-circuits (not just that an error was set after wasted work). `_OfflineConnectivity extends Fake` with a concrete getter is a legit Fake, not the Mock-with-override anti-pattern.
 - **Residual minor gaps (Low, not worth blocking):** (1) the warm-share last-share-wins supersede comment in `_onWarmShare` (a second unrouted share overwrites `_pendingPaths`) is asserted nowhere — but it's a documented degenerate case ("collisions not realistic for an interactive gesture") and low-value to pin. (2) No test drives a warm share that's held purely on the *auth-null* branch (the warm-start held test holds on navigator-not-ready with auth present); the cold-start test covers auth-null, so the `_route` auth gate is proven once — adequate. Verdict: adequate, all 16 green.
+
+### 2026-06-27 — BUT-1384 age-floor 13→15: boundary tests + defensive-deserializer specific coverage [Pattern]
+Trigger: verifying birthYear constructor invariant change and `_readBirthYear` defensive path.
+
+**Three-layer coverage for a threshold change:**
+1. **Constructor boundary (both sides):** `currentYear - 15` (accepts) + `currentYear - 14` (rejects, `throwsArgumentError`). The `-14` test is the load-bearing regression guard — it would have PASSED the old 13-floor and must NOW throw. `currentYear - 15` pins the floor exactly (a `>=`→`>` flip makes it throw).
+2. **Generic defensive deserializer:** `birthYear: 9999` (future year) and `'abc'` (wrong type) both return null from `_readBirthYear` — correct but does NOT cover the migration-specific case.
+3. **Migration-specific defensive deserializer (added):** `currentYear - 14` fed through `fromJson` AND `fromMap` must return null, not throw. Intent: an account stored under the old floor must continue to be readable; the constructor would reject `currentYear - 14` if `_readBirthYear` passed it through. This test would fail if someone changed `parsed > currentYear - 15` back to `parsed > currentYear - 13` in `_readBirthYear`.
+
+**Pattern:** when a model constructor invariant tightens, add a test for the previously-valid-now-invalid value through BOTH the constructor path (expect throw) AND the defensive deserializer path (expect null). The generic "out-of-range" deserializer test with an obviously-wrong value (9999) does not prove the migration boundary — add the boundary value explicitly.
+
+**All 67 tests passed** (66 pre-existing + 1 added for the specific 14yo boundary on both deserialization paths).

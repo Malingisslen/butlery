@@ -234,52 +234,60 @@ void main() {
       );
     });
 
-    group('age gate requires an explicit choice (GDPR Art 8)', () {
-      test('does not auto-select a birth year on init', () {
-        // Compliance: pre-seeding an adult default would let anyone tap Next
-        // without declaring their age. The gate must stay unset until a pick.
-        expect(viewModel.selectedBirthYear, isNull);
-        expect(
-          viewModel.isAgeGatePassed,
-          isFalse,
-          reason: 'an unanswered gate must never count as passed',
-        );
-      });
+    group(
+      'age gate requires an explicit choice (floor 15 — Dataskyddslag 2:4 §)',
+      () {
+        test('does not auto-select a birth year on init', () {
+          // Compliance: pre-seeding an adult default would let anyone tap Next
+          // without declaring their age. The gate must stay unset until a pick.
+          expect(viewModel.selectedBirthYear, isNull);
+          expect(
+            viewModel.isAgeGatePassed,
+            isFalse,
+            reason: 'an unanswered gate must never count as passed',
+          );
+        });
 
-      test('passes only after an adult year is explicitly selected', () {
-        viewModel.setBirthYear(DateTime.now().year - 30);
-        expect(viewModel.isAgeGatePassed, isTrue);
-      });
+        test('passes only after an adult year is explicitly selected', () {
+          viewModel.setBirthYear(DateTime.now().year - 30);
+          expect(viewModel.isAgeGatePassed, isTrue);
+        });
 
-      test('fails when the explicitly selected year is under 15', () {
-        viewModel.setBirthYear(DateTime.now().year - 10);
-        expect(viewModel.selectedBirthYear, isNotNull);
-        expect(
-          viewModel.isAgeGatePassed,
-          isFalse,
-          reason: 'the GDPR age block must engage on a deliberate young pick',
-        );
-      });
+        test('fails when the explicitly selected year is under 15', () {
+          viewModel.setBirthYear(DateTime.now().year - 10);
+          expect(viewModel.selectedBirthYear, isNotNull);
+          expect(
+            viewModel.isAgeGatePassed,
+            isFalse,
+            reason: 'the GDPR age block must engage on a deliberate young pick',
+          );
+        });
 
-      test('clearing the selection re-locks the gate', () {
-        viewModel.setBirthYear(DateTime.now().year - 30);
-        expect(viewModel.isAgeGatePassed, isTrue);
+        test('clearing the selection re-locks the gate', () {
+          viewModel.setBirthYear(DateTime.now().year - 30);
+          expect(viewModel.isAgeGatePassed, isTrue);
 
-        viewModel.setBirthYear(null);
-        expect(viewModel.selectedBirthYear, isNull);
-        expect(viewModel.isAgeGatePassed, isFalse);
-      });
+          viewModel.setBirthYear(null);
+          expect(viewModel.selectedBirthYear, isNull);
+          expect(viewModel.isAgeGatePassed, isFalse);
+        });
 
-      test('pins the 15-year threshold exactly (15 passes, 14 fails)', () {
-        // The Swedish DPA / GDPR Art 8 cutoff is a hard legal boundary, so the
-        // exact edge is pinned: a `>=`→`>` or minAge change must fail here.
-        viewModel.setBirthYear(DateTime.now().year - 15);
-        expect(viewModel.isAgeGatePassed, isTrue, reason: 'age 15 must pass');
+        test('pins the 15-year threshold exactly (15 passes, 14 fails)', () {
+          // The Swedish Dataskyddslag 2:4 § social-service cutoff (15, ADR-0001)
+          // is a hard legal boundary, so the exact edge is pinned: a `>=`→`>` or
+          // minAgeYears change must fail here.
+          viewModel.setBirthYear(DateTime.now().year - 15);
+          expect(viewModel.isAgeGatePassed, isTrue, reason: 'age 15 must pass');
 
-        viewModel.setBirthYear(DateTime.now().year - 14);
-        expect(viewModel.isAgeGatePassed, isFalse, reason: 'age 14 must fail');
-      });
-    });
+          viewModel.setBirthYear(DateTime.now().year - 14);
+          expect(
+            viewModel.isAgeGatePassed,
+            isFalse,
+            reason: 'age 14 must fail',
+          );
+        });
+      },
+    );
 
     group('completion timeout (bug 33)', () {
       test('a hung completion write surfaces an error (returns false) instead '
