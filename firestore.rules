@@ -2025,9 +2025,25 @@ service cloud.firestore {
     // ========================================
 
     match /feedback/{feedbackId} {
-      // Users can submit their own feedback
+      // Users can submit their own feedback.
+      // BUT-1407: constrain shape + size — an unconstrained create let a beta
+      // user write a near-1MB description or a giant recentInteractions array,
+      // inflating admin-dashboard read cost. The allowlist is exactly the keys
+      // FeedbackEntry.toMap writes (the client always sends all 10, optional
+      // ones as null). hasOnly permits a subset, so older minimal writes still
+      // pass; it only blocks UNKNOWN extra fields.
       allow create: if isAuthenticated()
-        && isCreatingOwnDocument();
+        && isCreatingOwnDocument()
+        && request.resource.data.keys().hasOnly([
+          'id', 'userId', 'category', 'description', 'email',
+          'screenshotUrl', 'recentInteractions', 'createdAt',
+          'deviceInfo', 'status',
+        ])
+        && hasRequiredFields(['userId', 'category', 'description', 'createdAt'])
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 5000
+        && request.resource.data.recentInteractions is list
+        && request.resource.data.recentInteractions.size() <= 50;
       // Admins read all feedback for the admin dashboard inbox
       allow read: if isAdmin();
       // Admins may only change the triage `status` field — never rewrite the

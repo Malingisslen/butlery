@@ -144,6 +144,81 @@ test("user cannot create feedback impersonating another user", async () => {
   );
 });
 
+test("BUT-1407: accepts the full client payload (all 10 keys, optional nulls)", async () => {
+  // Mirrors FeedbackEntry.toMap exactly — the real client write must pass.
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertSucceeds(
+    ownerCtx.firestore().collection("feedback").add({
+      id: "client-generated",
+      userId: USER_A_UID,
+      category: "bug",
+      description: "crash on save",
+      email: null,
+      screenshotUrl: null,
+      recentInteractions: [{ event: "tap" }],
+      createdAt: new Date(),
+      deviceInfo: null,
+      status: "new",
+    })
+  );
+});
+
+test("BUT-1407: rejects a create with an unknown extra field", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add({
+      userId: USER_A_UID,
+      category: "bug",
+      description: "hi",
+      recentInteractions: [],
+      createdAt: new Date(),
+      status: "new",
+      isAdmin: true, // smuggled field outside the allowlist
+    })
+  );
+});
+
+test("BUT-1407: rejects an oversized description (> 5000 chars)", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add({
+      userId: USER_A_UID,
+      category: "bug",
+      description: "x".repeat(5001),
+      recentInteractions: [],
+      createdAt: new Date(),
+      status: "new",
+    })
+  );
+});
+
+test("BUT-1407: rejects an oversized recentInteractions array (> 50)", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add({
+      userId: USER_A_UID,
+      category: "bug",
+      description: "hi",
+      recentInteractions: Array.from({ length: 51 }, () => ({ event: "tap" })),
+      createdAt: new Date(),
+      status: "new",
+    })
+  );
+});
+
+test("BUT-1407: rejects a create missing a required field (description)", async () => {
+  const ownerCtx = env.authenticatedContext(USER_A_UID);
+  await assertFails(
+    ownerCtx.firestore().collection("feedback").add({
+      userId: USER_A_UID,
+      category: "bug",
+      recentInteractions: [],
+      createdAt: new Date(),
+      status: "new",
+    })
+  );
+});
+
 test("nobody can delete feedback (not even admin)", async () => {
   await seedFeedback("f6", USER_A_UID);
   const adminCtx = env.authenticatedContext(ADMIN_UID);
