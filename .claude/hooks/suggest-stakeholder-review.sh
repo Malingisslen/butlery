@@ -31,6 +31,9 @@ HITS=$(printf '%s' "$PLAN" | grep -ioE "$SIGNALS" 2>/dev/null | tr 'A-Z' 'a-z' |
 
 MSG="This plan touches high-stakes areas ($HITS). Consider running /stakeholder-review on it before finalizing. The role-org panel routes to the right stakeholders, runs parallel blind critiques (scoped to the plan's blast-radius files), and records disagreements as ADRs. The router picks the tier: a full panel only for high-stakes/broad plans, a SINGLE stakeholder for mid-risk. Non-blocking and advisory; skip it if you judge this routine."
 
+# Log the trigger firing (calibration evidence for /org-retro). Fails open.
+$PYTHON docs/org/metrics/log_event.py "{\"type\":\"trigger\",\"fired\":true,\"signals\":\"$HITS\",\"ran\":null}" 2>/dev/null || true
+
 printf '%s' "$MSG" | $PYTHON -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":sys.stdin.read()}}))' 2>/dev/null || true
 
 exit 0

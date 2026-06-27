@@ -107,3 +107,16 @@ whether to proceed. **Never** edit code, commit the reviewed change, or mark any
 - One critique round only. Do not loop or re-debate. If the panel just agrees, say so plainly —
   cheap unanimous approval is a valid, useful outcome (and a signal the auto-trigger may not be worth it).
 - The blindness + single-round design is the cost/quality lever; don't turn it into a conversation.
+
+## Logging (for /org-retro)
+
+After the review completes, append ONE event (fails open — never block on it):
+
+```
+python3 docs/org/metrics/log_event.py '{"type":"review","plan":"<short label>","tier":"full|single|skip","stakeholders":N,"findings_material":F,"outcome":"approve|approve-with-conditions|escalated","escalated_to_human":false,"adr":"ADR-000N or null","tokens_est":T}'
+```
+
+This is the one signal the ADRs can't give you: it captures the reviews that leave **no ADR** —
+the clean `approve` outcomes — which is exactly the rubber-stamp-rate that tells `/org-retro`
+whether the auto-trigger is firing too eagerly. Log skips and single-stakeholder reviews too.
+
