@@ -1,0 +1,8 @@
+{
+  "_doc": "Drives the SessionStart org-retro-due reminder. A retro counts as DONE once an event of {\"type\":\"retro\",\"mode\":\"<mode>\"} appears in events.jsonl (the /org-retro skill logs that on each run), which clears the reminder. See docs/org/metrics/README.md.",
+  "goLive": "2026-06-27",
+  "retros": [
+    { "mode": "shakedown", "afterDays": 4 },
+    { "mode": "full", "afterDays": 28 }
+  ]
+}
