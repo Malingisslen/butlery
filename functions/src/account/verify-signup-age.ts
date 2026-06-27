@@ -78,6 +78,21 @@ function birthDecade(birthYear: number): string {
   return `${Math.floor(birthYear / 10) * 10}s`;
 }
 
+/**
+ * BUT-1436: sanitized error fields for structured logging — never the raw error
+ * object, which on some Firebase error paths (e.g. an `auth.deleteUser` failure)
+ * can embed the operating account's uid. Keeps logs consistent with the
+ * hashUid-everywhere discipline: only a string code + message reach Cloud
+ * Logging.
+ */
+function errorFields(err: unknown): { errCode?: string; errMessage: string } {
+  const code = (err as { code?: unknown })?.code;
+  return {
+    errCode: typeof code === "string" ? code : undefined,
+    errMessage: err instanceof Error ? err.message : String(err),
+  };
+}
+
 export const verifySignupAge = onCall<VerifySignupAgeRequest>(
   {
     memory: "256MiB",
@@ -166,7 +181,7 @@ export async function runVerifySignupAgeWithDeps(
     } catch (err) {
       logger.error("[verifySignupAge] under-15 auth delete failed", {
         uid_prefix: hashUid(uid),
-        err,
+        ...errorFields(err),
       });
       // Surface so the client does NOT proceed as if admitted.
       throw new HttpsError(
@@ -301,7 +316,7 @@ export async function enforceIpAuditCap(
   } catch (err) {
     if (err instanceof HttpsError) throw err;
     logger.error("[verifySignupAge] IP audit cap check failed — denying", {
-      err,
+      ...errorFields(err),
     });
     throw new HttpsError(
       "resource-exhausted",

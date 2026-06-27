@@ -88,6 +88,7 @@
     "test:rate-limiter-global-limits": "ts-node src/__tests__/rate-limiter-global-limits.test.ts",
     "test:request-account-deletion": "ts-node src/__tests__/request-account-deletion.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",
+    "test:feedback-email-failure": "ts-node src/__tests__/feedback-email-failure.test.ts",
     "test:structure-recipe-empty": "ts-node src/__tests__/structure-recipe-empty.test.ts",
     "test:locale-instruction": "ts-node src/__tests__/locale-instruction.test.ts",
     "test:prompt-ab-bucket": "ts-node src/__tests__/prompt-ab-bucket.test.ts",

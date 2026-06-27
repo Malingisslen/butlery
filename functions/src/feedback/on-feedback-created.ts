@@ -7,6 +7,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions/logger";
+import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 
 // Resend API key for transactional email. Set with:
@@ -96,15 +97,55 @@ async function notifyByEmail(
       body: JSON.stringify({ from, to, subject, html }),
     });
     if (!res.ok) {
-      logger.error(
-        `Feedback email failed: Resend ${res.status} ${await res.text()}`
-      );
+      const detail = `Resend ${res.status} ${await res.text()}`;
+      logger.error(`Feedback email failed: ${detail}`);
+      await recordEmailFailure(feedbackId, detail);
       return;
     }
     logger.info(`Feedback email sent for [${feedbackId}]`);
   } catch (err) {
     // Never let a transport failure surface from a background trigger.
-    logger.error(`Feedback email threw for [${feedbackId}]: ${String(err)}`);
+    const detail = String(err);
+    logger.error(`Feedback email threw for [${feedbackId}]: ${detail}`);
+    await recordEmailFailure(feedbackId, detail);
+  }
+}
+
+/**
+ * BUT-1406: a feedback-email delivery failure (Resend non-2xx or a transport
+ * throw) is otherwise only a single logged error — invisible to Drift/ops_log
+ * and below the GCP error-rate alert threshold, so a beta report can sit unseen
+ * if email is misconfigured or Resend is down. Mirror onReportCreated: write a
+ * durable `system_events` row with a deterministic id (set+merge → idempotent
+ * if the trigger retries). The write is itself failure-safe so it can never
+ * surface an error out of the background trigger. The intentional
+ * "email not configured" skip above stays an info log — it's a deliberate
+ * degradation, not a delivery failure, and a per-feedback event there would be
+ * noise in dev/unconfigured environments.
+ */
+export async function recordEmailFailure(
+  feedbackId: string,
+  reason: string,
+  db: admin.firestore.Firestore = admin.firestore()
+): Promise<void> {
+  try {
+    await db
+      .collection("system_events")
+      .doc(`feedback_email_failed_${feedbackId}`)
+      .set(
+        {
+          type: "feedback_email_failed",
+          severity: "warning",
+          feedbackId,
+          reason,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+  } catch (e) {
+    logger.error(
+      `Failed to record feedback_email_failed for [${feedbackId}]: ${String(e)}`
+    );
   }
 }
 
