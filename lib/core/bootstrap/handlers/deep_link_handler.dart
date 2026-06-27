@@ -98,6 +98,27 @@ class DeepLinkHandler {
     }
   }
 
+  /// Whether a `butlery://` custom-scheme URI should be dropped because its
+  /// host segment is not a recognised routing discriminator.
+  ///
+  /// Custom-scheme links use the host as a router key: `butlery://butlery.app/...`
+  /// for canonical links and `butlery://import?url=...` for the web Share-Target
+  /// import loop. Only UNKNOWN hosts are blocked; non-`butlery` schemes and the
+  /// host-less `butlery:/import` form are left alone (handled by the path
+  /// routing below).
+  ///
+  /// BUT-1411: `import` was missing from the recognised set, so the web
+  /// Share-Target deep link (`butlery://import?url=...`) was silently dropped
+  /// before it could reach the import branch — breaking the primary import
+  /// funnel. Extracted as a static so the guard is unit-testable.
+  @visibleForTesting
+  static bool isBlockedCustomSchemeHost(Uri uri) {
+    if (uri.scheme != 'butlery') return false;
+    if (uri.host.isEmpty) return false;
+    const recognisedHosts = {'butlery.app', 'import'};
+    return !recognisedHosts.contains(uri.host);
+  }
+
   /// Process a deep link URL and navigate to the appropriate view.
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
     try {
@@ -110,10 +131,8 @@ class DeepLinkHandler {
 
       final uri = Uri.parse(deepLinkUrl);
 
-      // Host validation for custom scheme
-      if (uri.scheme == 'butlery' &&
-          uri.host.isNotEmpty &&
-          uri.host != 'butlery.app') {
+      // Host validation for custom scheme — drop only UNRECOGNISED hosts.
+      if (isBlockedCustomSchemeHost(uri)) {
         return;
       }
 
