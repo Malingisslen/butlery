@@ -8,7 +8,7 @@
 # plans where it pays for itself. Never auto-runs, never blocks (that's
 # plan-review-gate.sh's job). Fails open.
 #
-# See docs/architecture/ROLE_ORG_DESIGN.md (Phase 2) and .claude/skills/stakeholder-review.md.
+# See docs/architecture/ROLE_ORG_DESIGN.md (Phase 2) and .claude/commands/stakeholder-review.md.
 
 set -euo pipefail
 
