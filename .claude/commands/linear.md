@@ -1,6 +1,6 @@
 ---
 description: Linear issue tracker integration (scan, ticket, backlog, clean, status)
-argument-hint: <subcommand> [args] — e.g. "scan", "ticket recipe import is clunky", "backlog", "clean", "status"
+argument-hint: <subcommand> [args] — e.g. "scan", "ticket recipe import is clunky", "clean", "status" (to build a ticket interactively, use /sprint-execute --pick)
 ---
 
 Linear issue tracker skill suite. Dispatches to subcommands based on the first argument.
@@ -15,9 +15,10 @@ If the user runs `/linear` with no arguments (empty or blank), display this quic
 /linear scan creative     — Product improvement focus: UX, features, rework
 /linear scan hygiene      — Lint, deps, file size, TODOs only
 /linear ticket <thought>  — Quick-capture an idea or bug
-/linear backlog           — Browse & pick a ticket to implement
 /linear clean             — Hygiene: stale tickets, priority inflation
 /linear status            — Dashboard: counts by state, blind spots
+
+Build a ticket interactively → /sprint-execute --pick  (replaced /linear backlog)
 ```
 
 Do NOT run any analysis or fetch issues. Just print the table above.
@@ -61,13 +62,21 @@ Type labels: `bug`, `security`, `tech-debt`, `performance`, `test-gap`, `depende
 
 Area labels: `recipe`, `tagging`, `import`, `parsing`, `social`, `menu`, `shopping`, `account`, `analytics`, `settings`, `backend`
 
+**Stakeholders (stamped on every ticket — experts assigned from the start):** For each ticket,
+run `python tools/stakeholder_router.py --json <paths the finding touches>` and record the owning
+role(s) in the body as a `## Stakeholders` line (e.g. `Security Architect, Privacy / Data Protection
+Officer (GDPR)`). This is *who reviews the ticket before it's built* — `/sprint-execute` reads it
+(Phase 1.4, including `--pick` interactive mode). Keep it in the body, not a Linear label, so no new label infra
+is needed. A `full-panel` routing result means the ticket touches a high-stakes path — also note
+`(high-stakes)` after the stakeholder line so the backlog reads honestly.
+
 **Priority:** Assign autonomously using:
 - Urgent: Production broken, data loss risk
 - High: Must fix this week
 - Medium: This month, no rush
 - Low: Nice to have, someday
 
-No effort estimates in tickets (unreliable). Effort is judged at query time in `/linear backlog`.
+No effort estimates in tickets (unreliable). Effort is judged at query time in `/sprint-execute --pick`.
 
 ## Subcommands
 
@@ -123,6 +132,14 @@ Run these automated checks in parallel:
 #### Deep Analysis (runs in `scan deep` / `scan ultrathink`)
 
 Launch 4-6 parallel Explore agents, each assigned a focused code area. Agents perform exhaustive code reading looking for bugs, security issues, race conditions, logic errors, data integrity problems, and edge cases. Report findings with exact file paths, line numbers, severity, and suggested fixes.
+
+**Seat a role lens where the area maps to one.** When a code area is owned by a role (per
+`docs/org/role-paths.json`), give that agent the role's dossier section in
+`docs/architecture/ROLE_RESPONSIBILITY_MAP.md` as its reviewing lens — e.g. the agent reading
+`firestore.rules` / `lib/services/auth/**` reviews as the **Security Architect** (and its watch-items),
+the agent on `lib/services/parsing/**` as the **Data / ML Engineer**. This turns the generic
+"think like a staff engineer" framing into a specific, dossier-grounded specialist — the right
+expert finding the right class of issue.
 
 #### Creative Analysis (runs in `scan` and `scan creative`)
 
@@ -186,29 +203,22 @@ Brief assessment: is this a quick win or a major undertaking? What's the user-vi
 Quick capture: turns a raw thought into a structured Linear ticket.
 
 **Steps:**
-1. Parse the user's thought into title + body + labels + priority
+1. Parse the user's thought into title + body + labels + priority + `## Stakeholders` (run the
+   router on the paths the thought implies — cheap, non-interrupting)
 2. Check deduplication
 3. Create ticket in Triage via `create_issue`
-4. One-line confirmation: `Created: "Title" [labels] in Triage`
+4. One-line confirmation: `Created: "Title" [labels] · stakeholders: <roles> in Triage`
 5. No flow interruption — keep working
 
 **Example:** `/linear ticket recipe import flow feels clunky for URLs with auth`
 → `Created: "Improve URL import auth handling" [idea, import] in Triage`
 
-### `backlog`
+### `backlog` (removed — folded into `/sprint-execute --pick`)
 
-Shows current backlog with filter dimensions, then starts implementation.
-
-**Steps:**
-1. Fetch all tickets in Backlog/Todo states via `list_issues`
-2. Display counts grouped by:
-   - **Type:** bug (3), security (1), tech-debt (5), ...
-   - **Area:** parsing (4), recipe (2), social (1), ...
-   - **Effort:** XS (3), S (5), M (2), L (1) — judged at query time
-3. Ask user to pick a filter (e.g. "bugs" or "parsing" or "quick wins")
-4. Show the highest-priority ticket matching that filter
-5. User confirms → start implementation
-6. On completion (analyze + tests pass) → move ticket to Done via `update_issue`
+The old `backlog` subcommand (browse the backlog → pick one ticket → build it) was removed
+2026-06-27 because it overlapped `/sprint-execute`. Its replacement is **`/sprint-execute --pick`**:
+the same grouped browse-and-pick selection, but with the full review → verify → commit → push →
+close ceremony and live high-stakes escalation. If a user types `/linear backlog`, point them there.
 
 ### `clean`
 
@@ -216,7 +226,10 @@ Backlog hygiene.
 
 **Steps:**
 1. Fetch all open tickets via `list_issues`
-2. Flag: tickets in Backlog 90+ days untouched (check updatedAt)
+2. Flag: tickets in Backlog 90+ days untouched (check updatedAt). **Exempt world-watch /
+   escalate-human tickets** — issues filed by `/world-watch` (Security/Release auto-tickets, Legal
+   escalations; recognizable by a source-URL citation + a `## Stakeholders` line) run on their own
+   cadence and a Legal item may legitimately wait on Malin. Don't flag them as stale.
 3. Flag: tickets whose underlying issue has been fixed by other work (verify against actual code)
 4. Flag: priority inflation (>20% of open tickets are High+Urgent)
 5. Suggest: close/cancel stale tickets, adjust priorities
@@ -232,6 +245,11 @@ Dashboard overview.
 3. Show: coverage gaps — which area labels have 0 open tickets (blind spots)
 4. Show: last scan date and focus area (from `.claude/linear-tracker.json`)
 5. Show: stale ticket count (90+ days untouched)
+6. Show: **stakeholder coverage** — which roles own open tickets (from the `## Stakeholders`
+   lines), and which world-watch roles are **overdue for a scan**: read
+   `docs/org/world-watch/state.json` and flag any role where `now − lastScan ≥ cadence`
+   (Security weekly, Release weekly, Legal monthly). This surfaces horizon-scan debt next to
+   backlog debt.
 
 ## Error Handling
 

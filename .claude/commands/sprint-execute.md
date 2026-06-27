@@ -1,6 +1,6 @@
 ---
 description: Pick the next 3–10 tickets from Linear and implement them — self-sufficient, no triage step required
-argument-hint: [N] [--dry-run] [--focus <area>] — N = ticket count (default auto-size 6–10), --dry-run previews without coding, --focus filters by area label
+argument-hint: [N] [--pick] [--dry-run] [--focus <area>] [--no-review] — N = ticket count (default auto-size 6–10), --pick = interactive single/few-ticket selection (replaces the old /linear backlog), --dry-run previews without coding, --focus filters by area label, --no-review disables the always-on stakeholder panel (default: experts ON)
 ---
 
 Self-sufficient sprint command. Selects the next batch of Linear tickets and implements them in one pass. No `/triage` prerequisite — that command was deleted because the scope-approval gate was rubber-stamp ceremony in a solo setup (see `memory/feedback_solo_no_scope_gate.md`).
@@ -9,6 +9,7 @@ Self-sufficient sprint command. Selects the next batch of Linear tickets and imp
 
 1. Verify Linear MCP is connected (test `list_issues`). If not: "Linear MCP not connected. Run `/mcp` to reconnect." and stop.
 2. If `$ARGUMENTS` contains `--dry-run`, run selection and print the plan without implementing.
+3. If `$ARGUMENTS` contains `--pick`, selection is interactive (you choose the ticket(s)) instead of auto-batch — see "Interactive pick mode" in Phase 1.
 
 ## Phase 1 — Selection (replaces old `/triage plan`)
 
@@ -52,6 +53,26 @@ When unsure between A and C, treat it as C (richer plan, In Review). When unsure
 anything, treat it as B (it has a visual surface → needs eyes). Tier D is only for *true*
 external blockers — "I'd rather not" is not Tier D.
 
+### Stakeholder routing (experts always on — do this for every candidate at selection)
+
+Butlery is complex enough that the right specialist is assigned to a ticket **from the start**,
+not bolted on as an after-the-fact review. For every candidate ticket, resolve its likely-touched
+paths (the Step-0 code read + the area labels) and run the role-org router:
+
+```
+python tools/stakeholder_router.py --json <likely paths...>
+```
+
+Record per ticket: its `tier` (`skip` / `single` / `full-panel`), its `panel` (the owning
+role(s), plus the high-stakes core if full-panel), and any `high_stakes_hits`. This is one
+deterministic Python call (no agents) — cheap, and it's what makes "always on" affordable:
+the router bounds depth by blast radius so a doc-only ticket is skipped, a clean backend ticket
+draws one owning specialist, and only genuinely high-stakes tickets convene the full panel.
+
+Carry the panel into `tasks/todo.md` next to each task (`Stakeholders: <roles>`) and into the
+Phase 1.4 review below. The router's tier is also the single risk signal Phase 1.5 uses — there
+is no second hand-rolled formula (Seam unified with `/stakeholder-review`).
+
 ### Selection rules
 - **NEVER select tickets labeled `onboarding-reserved`.** These are reserved as human onboarding capstones (e.g. BUT-677, BUT-722) and must stay untouched by the autonomous loop. Exclude them from selection entirely — don't score them, don't transition them, don't implement them.
 - Default N = auto-size 6–10 based on backlog volume. `$ARGUMENTS` numeric arg overrides.
@@ -64,6 +85,28 @@ external blockers — "I'd rather not" is not Tier D.
 - Skip tickets that appear completed in git but still open in Linear — flag them in the report so they can be closed.
 - Tier D tickets don't count toward N — they're flagged, not worked. If the whole batch would be
   Tier D, say so plainly and pace down instead of forcing blocked work.
+
+### Interactive pick mode (`--pick`) — replaces the old `/linear backlog`
+
+`--pick` hands selection to you instead of auto-selecting a batch. Use it for "I'm here, let's
+knock out one specific thing together." Everything downstream — routing, the Phase 1.4 panel,
+verification, commit, push, close — is identical; only *selection* differs.
+
+1. Run the same gather + score + tier-classify + route as above, but do NOT auto-select.
+2. Present the candidates grouped, the way the old `/linear backlog` did:
+   - **Type:** bug (3), security (1), tech-debt (5), …
+   - **Area:** parsing (4), recipe (2), social (1), …
+   - **Effort:** XS / S / M / L, judged now
+   - **Stakeholders / tier:** each candidate's owning role(s) + router tier, so you can see what
+     review it'll draw *before* you pick.
+3. Ask which to take — a filter ("bugs", "parsing", "quick wins"), a specific BUT-XXX, or the
+   top-scored match. Default to one ticket; you may pick a few.
+4. On your confirmation, proceed through Phase 1.4 onward for the chosen ticket(s). Because you're
+   present, Phase 1.4 escalates a high-stakes conflict to you **live** (`AskUserQuestion`) instead
+   of parking it — the one thing the autonomous loop can't do.
+
+`--pick` composes with `--dry-run` (`--pick --dry-run` lists the grouped candidates and stops) and
+with `--no-review` (disables the panel for the picked ticket).
 
 **Pacing the loop down is gated (mechanical).** Before you may signal "backlog drained / needs
 you" or schedule a long wake delay in a `/loop /sprint-execute` run, you MUST first run a
@@ -130,24 +173,70 @@ Archive any prior sprint below a `---` separator.
 
 **Linear state transition:** for each BUT-XXX in the new plan, transition state to "Todo" (resolve state UUIDs once via `list_issue_statuses`, then `save_issue` per ticket). Skip silently if Linear MCP unavailable.
 
-**Do not pause for user approval of scope.** Per `feedback_solo_no_scope_gate.md`, the rubber-stamp "approve my picks" gate was deleted. Proceed straight to Phase 1.5. (Note: this is different from the per-ticket plan-mode gate in Phase 1.5 — that one fires on risky tickets specifically, not on the sprint as a whole.)
+**Do not pause for user approval of scope.** Per `feedback_solo_no_scope_gate.md`, the rubber-stamp "approve my picks" gate was deleted. Proceed straight to Phase 1.4. (Note: this is different from the per-ticket plan-mode gate in Phase 1.5 — that one fires on risky tickets specifically, not on the sprint as a whole. It's also different from `--pick` mode, where you choosing the ticket IS the point of the mode, not a rubber-stamp.)
+
+## Phase 1.4 — Stakeholder review (experts always ON, default; `--no-review` to disable)
+
+Butlery is now complex enough that the default posture is **careful**: the specialists who own a
+ticket review it *before* it's built, every time, weighing tradeoffs. This phase is **on by
+default**. It turns off ONLY when the user explicitly passes `--no-review` (or says "skip the
+panel" / "no stakeholder review"). The point is that being careful is the baseline, not an
+opt-in. (Mostly $0: a `/loop /sprint-execute` running inside Malin's own session is flat-rate
+Max; the tier router keeps even a metered headless run proportional.)
+
+For each selected ticket, using the `tier` + `panel` computed in Phase 1's routing:
+
+1. **`skip` tier** → no review (trivial/doc-only). Proceed to implement.
+2. **`single` tier** → dispatch ONE blind critique from the owning role, following the
+   `/stakeholder-review` pipeline (step 2 prompt): the agent grounds itself in its dossier section
+   of `docs/architecture/ROLE_RESPONSIBILITY_MAP.md` and critiques the ticket only from its stake.
+   Give it the ticket text + the ticket's blast-radius files only (not free repo exploration).
+3. **`full-panel` tier** → dispatch the full blind panel (path owners ∪ high-stakes core)
+   **concurrently in one message**, each agent blind to the others. Same per-role prompt.
+
+Use cheap/low-effort subagents (these are scoped critiques). Then **synthesize** (stakeholder-review
+steps 3–4):
+
+- **Fold every `must_have` / condition into THIS ticket's acceptance criteria** (Phase 1) and into
+  the implementation brief. After review, the conditions are *binding*, not advisory — the Phase 2.7
+  verifier grades them too.
+- **approve / approve-with-conditions, no conflict** → implement with the conditions baked in.
+- **Unresolved high-stakes conflict** (a `block` from a high-stakes-core role, or anything
+  legal/privacy/interpretive) → the loop CANNOT `AskUserQuestion` (it halts). So do **NOT** implement
+  the contested scope. Park the ticket in **In Review** with the conflict written out (each role's
+  stake), write the ADR (`docs/org/adr/`, per `/stakeholder-review` step 5), and **PushNotification**
+  Malin that a high-stakes decision is waiting. Implement only the uncontested remainder, if any, then
+  continue the loop. This is how "escalate-human" survives in a non-halting loop — it becomes a parked
+  ticket + a notification instead of a live question. **Exception — `--pick` mode:** you're present,
+  so escalate the conflict to you LIVE via `AskUserQuestion` (with each role's stake) instead of
+  parking it. This is the one capability the old `/linear backlog` had that the autonomous loop lacks.
+- **Log the review event** for `/org-retro` (the `log_event.py` call in stakeholder-review's "Logging"
+  section) so the panel's value/rubber-stamp-rate is measurable.
+
+If `--no-review` was passed, skip this phase entirely and note "stakeholder review disabled by
+--no-review" in the final report so the lowered-caution run is visible.
 
 ## Phase 1.5 — Risk-gated plan mode (hybrid)
 
 **Why:** the file-plan in `tasks/todo.md` is durable but easy to drift from mid-iter (iter-46 lesson — wrote plan then jumped scope). For genuinely risky tickets — cross-cutting bugs, security surface, base classes that propagate through inheritance — `EnterPlanMode`'s forcing function (blocks Edit/Write/Bash until approval) prevents the batched-footgun class of error (iter-73 lesson). Mechanical cleanup doesn't benefit from the halt; routing P3/P4 tech-debt through plan mode wastes the autonomous loop. This phase splits the difference.
 
-### Per-ticket risk score
+### Per-ticket risk score (router-driven — one source of truth)
 
-For each ticket in the sprint, compute a binary `requires_plan_mode` flag:
+The Phase 1 router already classified each ticket's blast radius. **Use its tier as the risk
+signal** — do not maintain a second hand-rolled formula (the two drifting apart was the original
+bug). The mapping:
 
 ```
 requires_plan_mode = (
-  priority <= 2  # Urgent or High
-  OR (labels contains 'Bug' AND labels contains any of: backend, security, social, recipe, menu, shopping, account)
-  OR (labels contains 'security')
-  OR (estimated file-touch >= 3 AND ticket spans multiple modules — not a sweep within one dir)
+  tier == "full-panel"                              # high-stakes path or broad blast radius
+  OR (tier == "single" AND priority <= 2)           # Urgent/High on a stakeholder-owned area
+  OR (tier == "single" AND labels contains 'security')
 )
+# tier == "skip", or low-priority mechanical single-owner work → false
 ```
+
+This keeps the plan-expansion gate, the always-on stakeholder panel (Phase 1.4), and
+`/stakeholder-review` all reading the same `tools/stakeholder_router.py` + `docs/org/role-paths.json`.
 
 **Skip the gate explicitly when:**
 - Priority is Low (4) AND labels are pure `tech-debt` / `Improvement` / `test-gap` / `dependency`.
@@ -415,9 +504,12 @@ backlog was largely drained by iter-103→105; Tier B/C is where the volume is n
 
 ## Relationship to /linear
 
-- `/linear scan` — find NEW issues in code, create tickets.
-- `/linear backlog` — pick ONE ticket interactively.
-- `/linear status` — dashboard.
+- `/linear scan` — find NEW issues in code, create tickets (stamps the owning stakeholder on each).
+- `/linear clean` / `/linear status` — backlog hygiene + dashboard.
 - `/sprint-execute` — pick a batch AND implement in one pass (this command).
+- `/sprint-execute --pick` — interactive single/few-ticket build. **This replaces `/linear backlog`**
+  (removed 2026-06-27): same browse-and-pick, but with the full review/verify/close ceremony and
+  live high-stakes escalation.
 
-`/triage` was removed (2026-05-03). Its prioritization logic now lives in Phase 1 above.
+`/triage` was removed (2026-05-03) and `/linear backlog` folded into `--pick` (2026-06-27). Their
+prioritization/selection logic now lives in Phase 1 above.

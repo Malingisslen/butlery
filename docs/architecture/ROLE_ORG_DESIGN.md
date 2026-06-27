@@ -26,7 +26,7 @@ Directed solo (Malin directs; Claude builds), so "the org" is rules + agents + d
 |---|---|
 | **Deliberation** | Parallel **blind critique → synthesis**, capped rounds. No round-robin chatroom (research shows it drifts via sycophancy and inflates cost). |
 | **Authority** | **Hybrid.** The synthesizer reconciles; if it detects an *unresolved high-stakes* conflict it escalates to Malin; otherwise a "CTO/Chief-Architect" agent rules using a written priority order. **Every disagreement is filed as an ADR** regardless of who decided. |
-| **Trigger** | **Blast-radius tiered**, via the path→role router that already exists in the commit-gate hooks: full stakeholder panel on plans + changes to high-stakes paths (`firestore.rules`, `lib/services/{auth,llm,gdpr}`, payments, `functions/src/account`); a single stakeholder on medium changes; skip trivial/doc-only. |
+| **Trigger** | **Experts always ON by default** (Malin's directive 2026-06-27 — see "Default posture" below), **blast-radius tiered** via the path→role router (`tools/stakeholder_router.py`): `/linear` stamps the owning stakeholder on every ticket at creation (interactive build is `/sprint-execute --pick`, which reviews before building); `/sprint-execute` runs the panel on every ticket before building it (Phase 1.4). The router bounds cost — full panel on high-stakes paths (`firestore.rules`, `lib/services/{auth,llm,gdpr}`, payments, `functions/src/account`), a single stakeholder on medium changes, skip trivial/doc-only. Opt-out is explicit per-run (`--no-review`). The `PreToolUse(ExitPlanMode)` hook still *suggests* the panel for ad-hoc plans outside those commands. |
 | **World-watch alerts** | **Tiered by role** — `flag-only` → digest; `auto-ticket` → Linear ticket (hard-deadline/ship-breaking roles); `escalate-human` → Malin (anything interpretive, i.e. all legal/privacy). |
 | **World-watch cadence** | **Volatility-matched** — weekly (high churn: Apple/Play policy, CVEs, Claude Code releases), monthly (law, pricing, most tooling), quarterly (slow drift). Per-role cadence already stored in the dossiers. |
 | **Dossier freshness (vs code)** | **Hooks + periodic re-sweep** — a `PostToolUse` hook stamps a role's dossier stale when its owned paths change; a scheduled pass re-audits only stale ones. |
@@ -41,6 +41,29 @@ carries silent OAuth-token expiry (~1yr, no auto-refresh) and an unwritten fair-
 subscription use. **For a hard $0 constraint, the org never runs unattended.** It runs *inside Malin's
 own sessions* (which happen most days), which is free, needs no secrets, and keeps a human present when
 tickets are filed — removing the unattended-hallucination risk entirely.
+
+### Default posture (updated 2026-06-27): experts always on
+
+Malin's directive: *"I want the right specialist to check the right ticket from the beginning, and the
+experts to always be on unless I explicitly state otherwise. The project is complex enough that we
+always need to be careful and weigh tradeoffs."* This supersedes the earlier opt-in framing (where the
+panel was only *suggested*). The new default:
+
+- **`/linear`** assigns the owning stakeholder to every ticket at creation (`## Stakeholders` line);
+  interactive build moved to `/sprint-execute --pick` (which runs the panel before building).
+- **`/sprint-execute`** routes every candidate at selection and runs the blind panel before building
+  each ticket (Phase 1.4) — conditions fold into the acceptance criteria and become binding.
+- **Opt-out is explicit and per-run** (`--no-review`, or "skip the panel"). Caution is the baseline;
+  lowering it is a deliberate, visible choice logged in the run report.
+
+**Cost reconciliation:** the $0/interactive principle holds for the common case — a `/loop
+/sprint-execute` running inside Malin's own session is flat-rate Max, so "always on" is free there. The
+router's `skip`/`single`/`full-panel` tiers keep even a metered *headless* run proportional (most
+tickets are `single` = one cheap critique; the full panel is reserved for high-stakes paths). **Non-halt
+rule:** in the autonomous loop the panel is advisory and never blocks — an unresolved high-stakes
+conflict parks the ticket in **In Review** with an ADR + a push notification (escalate-human becomes a
+parked ticket, not a live `AskUserQuestion`, which would halt the loop). The interactive `/linear
+backlog` path *can* escalate live.
 
 ## MVP — session-triggered world-watch for Legal · Release-Compliance · Security
 
@@ -102,12 +125,15 @@ or auto-acts; Malin decides whether to proceed.** $0/interactive like the rest o
      for where it pays for itself (≈0.6M tokens, validated 2026-06-27).
    - `skip` — only trivial/doc paths that no role owns → no review.
 
-   **Trigger gating (the money-pit guard).** The `PreToolUse(ExitPlanMode)` hook
+   **Trigger gating (the money-pit guard).** Inside `/linear` and `/sprint-execute` the panel is
+   **on by default** (see "Default posture") — the router runs every time and decides depth. For
+   **ad-hoc plans outside those commands**, the `PreToolUse(ExitPlanMode)` hook
    (`suggest-stakeholder-review.sh`) scans the *finished plan text* for high-stakes signals
    (security rules, GDPR/personal-data, auth, Cloud Functions, moderation, destructive-data ops,
-   payments, allergens, LLM) and only **then** suggests `/stakeholder-review` — non-blocking, never
-   auto-runs. Routine plans (a CSS tweak, a copy fix) get silence. Each critic is scoped to the
-   plan's blast-radius files (not free repo exploration) to keep token cost proportional.
+   payments, allergens, LLM) and **suggests** `/stakeholder-review` — non-blocking. Routine plans
+   (a CSS tweak, a copy fix) get silence either way: the router's `skip` tier and the hook's
+   signal-scan both fall through. Each critic is scoped to the plan's blast-radius files (not free
+   repo exploration) to keep token cost proportional — this is what makes "always on" affordable.
 2. **Parallel blind critique** — one subagent per seated role, each given ONLY its own dossier
    (mandate + watch-items + world-model) and the plan; **none sees the others' critiques**. Each
    returns: position (`approve` / `approve-with-conditions` / `block`), top risks from its stake,
