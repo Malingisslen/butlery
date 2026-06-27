@@ -144,7 +144,8 @@
       "infrastructure/alerting/setup-gcp-alerts.sh",
       "lefthook.yml"
     ],
-    "Data / ML Engineer (parsing integrity)": [
+    "Data / ML Engineer (parsing & tagging integrity)": [
+      "lib/models/tagging/**",
       "lib/services/parsing/**",
       "lib/services/parsing/_expected_model_hashes.dart",
       "lib/services/parsing/crf/**",
@@ -155,6 +156,7 @@
       "lib/services/parsing/ner/**",
       "lib/services/parsing/ner/ner_model_manager.dart",
       "lib/services/parsing/ner/neural_ingredient_parser.dart",
+      "lib/services/tagging/**",
       "scripts/crf/**",
       "scripts/crf/retrain_with_corrections.sh",
       "scripts/crf/train_crf.py",

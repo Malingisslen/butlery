@@ -49,6 +49,17 @@ HIGH_STAKES_PATTERNS = [
     "functions/src/account/**", "functions/src/audit_logs/**",
     "functions/src/cleanup/**",
     "functions/src/__tests__/*-rules.test.ts",
+    # Allergen/dietary verdict — Butlery's #1 safety surface (role #10 owns it).
+    # A wrong "free-from" verdict is a health risk, so any change to the verdict
+    # producers or the TriState safety types convenes the full panel.
+    "lib/services/tagging/phases/**",
+    "lib/services/tagging/allergen_mismatch.dart",
+    "lib/services/tagging/config/allergen_config.dart",
+    "lib/services/tagging/config/dietary_config.dart",
+    "lib/services/tagging/ingredient_lookup_service.dart",
+    "lib/models/tagging/tri_state.dart",
+    "lib/models/tagging/tag_result.dart",
+    "lib/models/tagging/tag_decision.dart",
     # single-star forms: fnmatch's * crosses '/', so these match the substring
     # anywhere in the path (fnmatch has no true ** recursion).
     "*purchase*", "*billing*", "*monetization*",
@@ -135,6 +146,12 @@ def route(paths, is_plan=False):
 
 
 def main():
+    # Role names / paths may contain non-ASCII; force UTF-8 stdout so printing the
+    # panel never crashes on a cp1252 Windows console (where stakeholder-review runs).
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     ap = argparse.ArgumentParser()
     ap.add_argument("paths", nargs="*")
     ap.add_argument("--plan", action="store_true", help="treat input as a plan -> full panel")
