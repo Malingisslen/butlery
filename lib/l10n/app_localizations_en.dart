@@ -5603,6 +5603,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareImportUnreadable => 'Could not read the shared photo(s)';
+
+  @override
   String a11yRemovePhotoPage(int number) {
     return 'Remove page $number';
   }

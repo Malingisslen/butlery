@@ -3650,6 +3650,10 @@
       "max": { "type": "int" }
     }
   },
+  "shareImportUnreadable": "Kunde inte läsa det delade fotot",
+  "@shareImportUnreadable": {
+    "description": "Error shown when none of the photos shared into the app via the OS share sheet could be read/OCR'd (BUT-941)."
+  },
   "a11yRemovePhotoPage": "Ta bort sida {number}",
   "@a11yRemovePhotoPage": {
     "description": "Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).",

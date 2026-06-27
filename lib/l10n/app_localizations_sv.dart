@@ -5611,6 +5611,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get shareImportUnreadable => 'Kunde inte läsa det delade fotot';
+
+  @override
   String a11yRemovePhotoPage(int number) {
     return 'Ta bort sida $number';
   }

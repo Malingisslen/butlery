@@ -85,6 +85,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// than a few cookbook pages; the cap also bounds OCR quota per import.
   static const int maxPages = 5;
 
+  /// BUT-941: per-page byte ceiling for shared photos (matches the 15 MB
+  /// validation `_pickImageAndProcess` applies to picked images).
+  static const int maxPageSizeMb = 15;
+
   Uint8List? get imageBytes => _imageBytes;
 
   String get ocrText => _ocrText;
@@ -203,6 +207,63 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// BUT-903: append a gallery photo as the next page of the same recipe.
   Future<void> addPageFromGallery() async {
     await _pickImageAndProcess(ImageSource.gallery, addAsPage: true);
+  }
+
+  /// BUT-941: non-fatal note from the last [loadImagesFromPaths] run (e.g. the
+  /// over-cap message). Consumed once by the view to show a snackbar so a
+  /// truncated share is never silent.
+  String? _infoMessage;
+  String? consumeInfoMessage() {
+    final msg = _infoMessage;
+    _infoMessage = null;
+    return msg;
+  }
+
+  /// BUT-941: seed the import with photos shared from the OS share sheet.
+  /// Single- and multi-photo share reuse the multi-page OCR pipeline. Each
+  /// page is OCR'd, then the whole set is combined + parsed ONCE (not once
+  /// per page) to bound LLM parse cost on a batch share.
+  ///
+  /// Resilient by design: a corrupt, oversized, or blank page is skipped;
+  /// only a batch where every page failed surfaces an error.
+  Future<void> loadImagesFromPaths(List<String> paths) async {
+    if (isDisposed || paths.isEmpty) return;
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return;
+    }
+
+    final overCap = paths.length > maxPages;
+    final selected = overCap ? paths.sublist(0, maxPages) : paths;
+
+    clearImportData();
+    _pages.clear();
+
+    await executeAsyncVoid(() async {
+      var appended = 0;
+      for (final path in selected) {
+        try {
+          final bytes = await XFile(path).readAsBytes();
+          final sizeInMB = bytes.length / (1024 * 1024);
+          if (sizeInMB > maxPageSizeMb) continue;
+          if (await _ocrAppendOne(bytes, throwOnFailure: false)) {
+            appended++;
+          }
+        } catch (_) {
+          // Skip this page; a single bad attachment must not abort the batch.
+        }
+      }
+      if (appended == 0) {
+        throw Exception(AppLocale.current.shareImportUnreadable);
+      }
+      // One combine + parse over every appended page.
+      await _recombineAndParse();
+      // Flag truncation only on a SUCCESSFUL import — never staple a
+      // "max N pages" note onto the all-failed error banner.
+      if (overCap) {
+        _infoMessage = AppLocale.current.importPhotoPagesMaxReached(maxPages);
+      }
+    }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
   /// BUT-903: drop the page at [index] and recombine. Removing the last page
@@ -381,9 +442,9 @@ class PhotoImportViewModel extends ImportBaseViewModel
       // Read image bytes
       final bytes = await picked.readAsBytes();
 
-      // Validate image size (max 15MB after compression)
+      // Validate image size (max maxPageSizeMb after compression)
       final sizeInMB = bytes.length / (1024 * 1024);
-      if (sizeInMB > 15) {
+      if (sizeInMB > maxPageSizeMb) {
         throw Exception(
           AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
         );
@@ -423,19 +484,37 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// yields no text — a blank page must surface rather than silently extend the
   /// recipe with nothing.
   Future<void> _ocrAndAppendPage(Uint8List imageBytes) async {
+    await _ocrAppendOne(imageBytes, throwOnFailure: true);
+    await _recombineAndParse();
+  }
+
+  /// Shared OCR-and-append for ONE page, used by both the picker path
+  /// ([_ocrAndAppendPage], single image) and the share path
+  /// ([loadImagesFromPaths], batch). Returns true when the page was appended.
+  ///
+  /// [throwOnFailure] true → a blank/failed page throws (and emits the enhanced
+  /// error message, which also drives the quality-field getters), so the single
+  /// picker surfaces it. false → returns false so a batch skips the page and
+  /// keeps going. The caller owns the combine+parse (one per page vs once per
+  /// batch).
+  Future<bool> _ocrAppendOne(
+    Uint8List imageBytes, {
+    required bool throwOnFailure,
+  }) async {
     final ocrResult = await OCRExtractionService.instance.extractText(
       imageBytes,
     );
 
     if (!ocrResult.isSuccessful || ocrResult.text.isEmpty) {
-      // Enhanced error messaging (Phase 2 Enhancement) — also drives the
-      // quality-field getters via its side effects.
-      throw Exception(_buildEnhancedErrorMessage(ocrResult));
+      if (throwOnFailure) {
+        throw Exception(_buildEnhancedErrorMessage(ocrResult));
+      }
+      return false;
     }
 
     _pages.add(_PhotoPage(bytes: imageBytes, text: ocrResult.text));
     _lastConfidence = ocrResult.confidence;
-    await _recombineAndParse();
+    return true;
   }
 
   /// BUT-903: rebuild the combined OCR text from every page in order, keep the

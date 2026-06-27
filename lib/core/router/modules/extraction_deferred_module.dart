@@ -69,7 +69,13 @@ class ExtractionDeferredModule implements DeferredModule {
         );
 
       case Routes.photoImport:
-        return photo_import.PhotoImportView();
+        // BUT-941: a List<String> argument is photo paths shared into the app
+        // via the OS share sheet — seed them as import pages.
+        return photo_import.PhotoImportView(
+          initialImagePaths: settings.arguments is List<String>
+              ? settings.arguments as List<String>
+              : null,
+        );
 
       case Routes.fileImport:
         return file_import.FileImportView();

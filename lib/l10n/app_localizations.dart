@@ -9499,6 +9499,12 @@ abstract class AppLocalizations {
   /// **'Max {max} sidor per recept'**
   String importPhotoPagesMaxReached(int max);
 
+  /// Error shown when none of the photos shared into the app via the OS share sheet could be read/OCR'd (BUT-941).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa det delade fotot'**
+  String get shareImportUnreadable;
+
   /// Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).
   ///
   /// In sv, this message translates to:

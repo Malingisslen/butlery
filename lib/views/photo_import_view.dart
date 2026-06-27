@@ -30,7 +30,12 @@ import 'package:butlery/views/photo_import/photo_page_strip.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
-  const PhotoImportView({super.key});
+  const PhotoImportView({super.key, this.initialImagePaths});
+
+  /// BUT-941: photos shared into the app via the OS share sheet. When present,
+  /// they seed the import pages on open (single- and multi-photo share reuse
+  /// the same multi-page OCR flow as in-app picking).
+  final List<String>? initialImagePaths;
 
   @override
   State<PhotoImportView> createState() => _PhotoImportViewState();
@@ -48,9 +53,30 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     super.initState();
     _viewModel = ServiceLocator.get<PhotoImportViewModel>();
     _viewModel.addListener(_announceOcrCompletion);
+    final shared = widget.initialImagePaths;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _maybeOfferDraftRestore();
+      if (!mounted) return;
+      // BUT-941: a share-launched open seeds the shared photos and skips the
+      // draft-restore prompt (the share is the explicit intent this time).
+      if (shared != null && shared.isNotEmpty) {
+        _seedSharedImages(shared);
+      } else {
+        _maybeOfferDraftRestore();
+      }
     });
+  }
+
+  /// BUT-941: load OS-shared photos into the import pipeline, then surface the
+  /// over-cap note (if any) via a snackbar — never a silent truncation.
+  Future<void> _seedSharedImages(List<String> paths) async {
+    await _viewModel.loadImagesFromPaths(paths);
+    if (!mounted) return;
+    final info = _viewModel.consumeInfoMessage();
+    if (info != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(info)));
+    }
   }
 
   /// BUT-910: when a previous session left an OCR draft behind (nav-away or

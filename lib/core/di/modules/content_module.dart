@@ -43,6 +43,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/incoming_share_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
@@ -263,6 +264,13 @@ class ContentModule implements DIModule {
 
     container.registerLazySingleton<ImportManager>(
       () => ImportManager(container<UnifiedRecipeService>().personal),
+    );
+
+    // BUT-941: native photo-share bridge. No deps; the bootstrap
+    // IncomingShareHandler consumes it to route shared photos into import.
+    container.registerLazySingleton<IncomingShareService>(
+      () => IncomingShareService(),
+      dispose: (s) => s.dispose(),
     );
 
     // RecipeCookingService — owns atomic cook-event logging (event doc +

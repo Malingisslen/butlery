@@ -18,6 +18,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
+import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/constants/routes.dart' as app_routes;
 import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/keyboard/app_shortcuts.dart';
@@ -563,6 +564,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // Initialize deep link handling (platform-aware)
       await DeepLinkHandler().initialize();
 
+      // BUT-941: capture any cold-start photo share + subscribe to warm shares.
+      await IncomingShareHandler().initialize();
+
       // Setup analytics observer
       await _setupModularAnalytics();
 
@@ -832,6 +836,15 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     }
     if (mounted) {
       handler.processPendingDeepLink(context);
+    }
+
+    // BUT-941: route a pending cold-start photo share into photo import.
+    final shareHandler = IncomingShareHandler();
+    if (!shareHandler.isInitialized) {
+      await shareHandler.initialize();
+    }
+    if (mounted) {
+      shareHandler.processPendingShare();
     }
 
     // BUT-641: wire notification tap → deep-link router so taps land on

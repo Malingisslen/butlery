@@ -14,6 +14,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
+import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -97,6 +98,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // Re-process pending deep link when transitioning to authenticated
         if (!_wasAuthenticated) {
           DeepLinkHandler().processPendingDeepLink(context);
+          // BUT-941: a photo shared in before login routes once authed.
+          IncomingShareHandler().processPendingShare();
         }
       } else {
         AppLogger.debug('AuthWrapper: User signed out');
