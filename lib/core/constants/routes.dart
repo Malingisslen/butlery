@@ -118,6 +118,7 @@ class Routes {
     fromSocialMedia,
     importFromArchive,
     smartImport,
+    fileImport,
     recipeDetail,
     editRecipe,
     receiveShare,
@@ -158,6 +159,7 @@ class Routes {
     fromSocialMedia,
     importFromArchive,
     smartImport,
+    fileImport,
     receiveShare,
   };
 
@@ -248,6 +250,7 @@ class Routes {
     fromSocialMedia,
     importFromArchive,
     smartImport,
+    fileImport,
     recipeDetail,
     editRecipe,
     receiveShare,
