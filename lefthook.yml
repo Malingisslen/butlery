@@ -33,7 +33,7 @@ pre-commit:
     # sprint commits skip this step via LEFTHOOK_EXCLUDE=analyze (already run upstream).
     analyze:
       run: timeout -k 30 300 dart analyze --fatal-infos
-      fail_text: "Flutter analyze found issues (or timed out after 5m). Please fix/retry before committing."
+      fail_text: "dart analyze found issues, OR timed out after 5m. If it TIMED OUT, a zombie analyzer deadlocked the commit (see iter-147): kill the stuck process (Windows: taskkill /F /IM dart.exe), stop any running 'Continuous dart analyze' monitor so two analyzers don't contend, then retry. Otherwise, fix the reported issues before committing."
       priority: 2
 
     # BUT-1217: catch CI-only architecture-guard violations in the staged diff
