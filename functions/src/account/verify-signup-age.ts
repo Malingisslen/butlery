@@ -193,28 +193,53 @@ export async function runVerifySignupAgeWithDeps(
     return { compliant: false };
   }
 
-  // Idempotency: if the claim is already set, this is a retry — no-op success.
+  // Idempotency: if the claim is already set, this is a retry.
   const user = await auth.getUser(uid);
   const existingClaims = user.customClaims ?? {};
   if (existingClaims.ageCompliant === true) {
-    logger.info("[verifySignupAge] idempotent no-op (claim already set)", {
+    // BUT-1435: NOT a bare no-op. The write order is claim-first, so an earlier
+    // attempt may have set the claim but then failed before/within the artifact
+    // writes — leaving a compliant user with the gate claim but no stored
+    // birthYear / consent-audit row. Re-assert the artifacts idempotently
+    // (merge-sets + a deterministic-id audit → no duplicates) so a
+    // partial-failure retry converges, then return success.
+    await writeComplianceArtifacts(database, uid, birthYear);
+    logger.info("[verifySignupAge] idempotent retry — artifacts re-ensured", {
       uid_prefix: hashUid(uid),
     });
     return { compliant: true };
   }
 
-  // Authoritative writes. Claim first (the gate), then the stored birthYear
-  // (rules deny client writes of it; this Admin write bypasses rules), then
-  // the audit event. Claim before birthYear so that if anything fails the user
-  // is never left able-to-post without a recorded age.
+  // First successful pass. Claim first (the gate) so that if anything fails the
+  // user is never left able-to-post without a recorded age; then the
+  // idempotent compliance artifacts (a partial failure here is recovered by the
+  // retry branch above).
   await auth.setCustomUserClaims(uid, { ...existingClaims, ageCompliant: true });
+  await writeComplianceArtifacts(database, uid, birthYear);
 
-  // birthYear is dual-located in the client read paths: the profile doc
-  // (users/{uid}, read by `UserProfile.fromMap`) and the settings/preferences
-  // copy (read by the GDPR export). The client no longer writes either (the
-  // field was removed from `toFirestoreEditable` + `toPrivateSettings`); this
-  // CF is now the sole writer of both. Merge so neither write clobbers
-  // sibling fields the client legitimately owns.
+  logger.info("[verifySignupAge] admitted ≥15 + claim set", {
+    uid_prefix: hashUid(uid),
+  });
+  return { compliant: true };
+}
+
+/**
+ * Idempotent compliance artifacts written after the gate claim is set: the
+ * dual-located `birthYear` and the consent-audit row. Safe to re-run on a
+ * retry (BUT-1435) — both birthYear writes are merge-sets, and the audit uses a
+ * deterministic doc id (set+merge), so re-running never clobbers sibling fields
+ * or duplicates the audit row.
+ *
+ * birthYear is dual-located in the client read paths: the profile doc
+ * (users/{uid}, read by `UserProfile.fromMap`) and the settings/preferences
+ * copy (read by the GDPR export). The client no longer writes either; this CF
+ * is the sole writer of both.
+ */
+async function writeComplianceArtifacts(
+  database: admin.firestore.Firestore,
+  uid: string,
+  birthYear: number,
+): Promise<void> {
   await Promise.all([
     database.doc(`users/${uid}`).set({ birthYear }, { merge: true }),
     database
@@ -223,11 +248,6 @@ export async function runVerifySignupAgeWithDeps(
   ]);
 
   await writeComplianceAudit(database, uid, birthYear);
-
-  logger.info("[verifySignupAge] admitted ≥15 + claim set", {
-    uid_prefix: hashUid(uid),
-  });
-  return { compliant: true };
 }
 
 /** Production entry point — wraps the live Firestore + Auth. */
@@ -247,19 +267,31 @@ export async function runVerifySignupAge(
  * `purgeExpiredAuditLogs` retain it for 730 days (GDPR Art 7(1) — demonstrate
  * the age-eligibility condition was met). Stores derived fact only: outcome +
  * coarse decade + hashed uid. No raw birth year, no email.
+ *
+ * BUT-1435: written at a DETERMINISTIC doc id (one consent row per user, the
+ * correct semantics for a consent record) with set+merge, so a retry that
+ * re-asserts artifacts overwrites in place rather than appending a duplicate.
+ * The purge job matches by the `consent_` operation prefix + timestamp, not by
+ * id, so retention is unaffected.
  */
 async function writeComplianceAudit(
   database: admin.firestore.Firestore,
   uid: string,
   birthYear: number,
 ): Promise<void> {
-  await database.collection("audit_logs").add({
-    operation: "consent_age_verification",
-    userIdHash: hashUid(uid),
-    isAgeCompliant: true,
-    birthDecade: birthDecade(birthYear),
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  await database
+    .collection("audit_logs")
+    .doc(`consent_age_verification_${hashUid(uid)}`)
+    .set(
+      {
+        operation: "consent_age_verification",
+        userIdHash: hashUid(uid),
+        isAgeCompliant: true,
+        birthDecade: birthDecade(birthYear),
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
 }
 
 /**

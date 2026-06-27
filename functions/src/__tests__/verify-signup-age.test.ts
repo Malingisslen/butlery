@@ -11,8 +11,9 @@
  *      preserved), birthYear merged into BOTH user paths, exactly ONE
  *      `consent_age_verification` audit row with hashed uid + decade, no raw
  *      birthYear in the row.
- *   2. Idempotent retry — pre-set ageCompliant claim short-circuits: no second
- *      birthYear write, no second audit row.
+ *   2. Idempotent retry — pre-set ageCompliant claim re-ensures the artifacts
+ *      (BUT-1435): claim NOT re-set, birthYear re-merged into both paths, and
+ *      exactly ONE consent audit row (deterministic id → no duplicate).
  *   3. <15 rejected — compliant:false, auth.deleteUser called, ONE
  *      `age_verification_rejected` row with NO uid / userIdHash / birthYear,
  *      and NO claim set.
@@ -77,9 +78,18 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
   return {
     collection(name: string) {
       return {
+        // Rejection audit uses add() (non-dedup, auto-id).
         async add(data: AuditRow) {
           if (name === "audit_logs") state.auditRows.push(data);
           return { id: `synthetic-${state.auditRows.length}` };
+        },
+        // BUT-1435: the consent audit now uses a deterministic doc id + set().
+        doc(_id: string) {
+          return {
+            async set(data: AuditRow, _opts?: { merge?: boolean }) {
+              if (name === "audit_logs") state.auditRows.push(data);
+            },
+          };
         },
       };
     },
@@ -201,24 +211,50 @@ test("≥15 admitted: claim set (preserving existing), dual birthYear merge, one
 });
 
 /**
- * Case 2 — a retry whose token already carries ageCompliant:true is a no-op
- * success: no claim re-write, no second birthYear write, no second audit row.
+ * Case 2 — a retry whose token already carries ageCompliant:true RE-ENSURES the
+ * compliance artifacts idempotently (BUT-1435): it must NOT re-set the claim,
+ * but it MUST (re)write birthYear into both paths and (re)write exactly ONE
+ * consent audit row — so a partial-failure retry (claim set, artifacts missing)
+ * converges. The deterministic-id audit + merge-set birthYear make this safe to
+ * repeat with no duplicates.
  */
-test("idempotent retry: pre-set ageCompliant claim → no birthYear write, no audit row", async () => {
+test("idempotent retry: re-ensures birthYear + one consent row, does NOT re-set claim", async () => {
   const dbState: FakeDbState = { auditRows: [], setWrites: [] };
   const authState = freshAuthState({ ageCompliant: true });
+  const uid = "uid-retry";
 
   const result = await runVerifySignupAgeWithDeps(
     { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
-    "uid-retry",
+    uid,
     1990,
   );
 
   assert(result.compliant === true, "retry of a compliant user must still return compliant:true");
   assert(authState.setClaimsCallCount === 0, "must NOT re-set claims on idempotent retry");
-  assert(dbState.setWrites.length === 0, "must NOT re-write birthYear on idempotent retry");
-  assert(dbState.auditRows.length === 0, "must NOT add a second audit row on idempotent retry");
   assert(authState.deleteUserCallCount === 0, "must NOT delete a compliant user");
+
+  // birthYear re-merged into BOTH read paths (recovers a partial-failure retry).
+  const merges = dbState.setWrites.filter((w) => w.merge && w.data.birthYear === 1990);
+  const paths = merges.map((w) => w.path);
+  assert(paths.includes(`users/${uid}`), "retry must re-merge birthYear into users/{uid}");
+  assert(
+    paths.includes(`users/${uid}/settings/preferences`),
+    "retry must re-merge birthYear into settings/preferences",
+  );
+
+  // Exactly ONE consent row (deterministic id → no duplicate on retry).
+  assert(
+    dbState.auditRows.length === 1,
+    `retry must write exactly one consent row, got ${dbState.auditRows.length}`,
+  );
+  assert(
+    dbState.auditRows[0].operation === "consent_age_verification",
+    "the re-ensured row must be the consent audit",
+  );
+  assert(
+    !("birthYear" in dbState.auditRows[0]),
+    "consent row must still carry no raw birthYear",
+  );
 });
 
 /**
