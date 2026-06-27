@@ -108,9 +108,9 @@
           "type": "regulator"
         },
         {
-          "name": "European Data Protection Board (EDPB)",
-          "url": "https://www.edpb.europa.eu/feeds/news_en.rss",
-          "type": "regulator"
+          "name": "European Data Protection Board (EDPB) — news page (RSS retired 2026-06-22 redesign)",
+          "url": "https://www.edpb.europa.eu/news/news_en",
+          "type": "search-fallback"
         },
         {
           "name": "EU Digital Services Act – official text & guidance",
@@ -125,10 +125,10 @@
         "https://www.imy.se/nyheter/rss/": "IMY (Swedish DPA) news baselined 2026-06-26. Material 2026 items: IMY named Sweden's EU AI Act market-surveillance authority (2026-06-15); IMY report on AI controller/processor role-allocation under GDPR (2026-06-10); EDPB common breach-notification template (2026-06-11). Escalated to Malin as BUT-1383 (AI Act Art. 50 transparency, applies 2026-08-02). Non-material this cycle: Securitas in-vehicle-camera reprimand, Canvas/Instructure breach, Region Gavleborg AI-transcription review (not our domain).",
         "https://support.google.com/googleplay/android-developer/announcements/13412212": "Google Play policy announcements (Legal lens) baselined 2026-06-26. Account-deletion requirement (2023-04), Photo/Video perms (enforced 2025-01-22), News+magazine self-declaration (2025-04), Contacts Permissions (2026-04-15 +30d), Account Transfer (2026-04-15 +30d), EEA/DMA external-payment steering (2024-03), US alt-billing (deadline 2026-01-28). All launch-gated/deferred (cf. BUT-646). No new escalation beyond BUT-1383.",
         "https://www.konsumentverket.se/marknadsratt-foretag/marknadsforingslagen-for-foretag/": "Konsumentverket - Marknadsforingslagen for foretag, baselined 2026-06-27 (page reviewed 2025-12-14). Overview/landing page: marketing must be truthful, non-misleading, substantiated, judged by the average-consumer test, not aggressive. No dated news items here; detail lives under sub-sections + publikationer.konsumentverket.se. No actionable delta. Baseline recorded.",
-        "https://www.edpb.europa.eu/feeds/news_en.rss": "EDPB news feed: BOTH news_en.rss and news_en.xml return 404 as of 2026-06-27 - the feed URL has moved; needs re-confirmation (check edpb.europa.eu/news). Recent EDPB items are reachable via IMY's feed in the meantime (e.g. the common breach-notification template, 2026-06-11, captured under the IMY snapshot). TODO next cycle: find the live EDPB feed URL.",
-        "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2065": "EU Digital Services Act, baselined 2026-06-27. Confirmed Regulation (EU) 2022/2065, OJ L 277 27.10.2022, status 'In force'; only consolidated version listed is the original 27/10/2022 (no amendments/corrigenda reflected). Static reference. No delta."
+        "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2065": "EU Digital Services Act, baselined 2026-06-27. Confirmed Regulation (EU) 2022/2065, OJ L 277 27.10.2022, status 'In force'; only consolidated version listed is the original 27/10/2022 (no amendments/corrigenda reflected). Static reference. No delta.",
+        "https://www.edpb.europa.eu/news/news_en": "EDPB news, baselined 2026-06-27 via the news PAGE (the /feeds/news_en.rss + .xml RSS both 404 since EDPB's 2026-06-22 site redesign — 'EDPB gets a new look'). A handed-off candidate feed URL https://www.edpb.europa.eu/edpb_en was verified and FALSIFIED (it serves the HTML homepage, not a feed; /edpb-publications_en 404s) — not written in. Page is reachable + dated, so it's the working search-fallback; IMY's feed remains the secondhand path. Recent items: One-Stop-Shop case digest on right to object/erasure updated (2026-06-25), EDPB GDPR-consistency form launched (2026-06-24), site redesign (2026-06-22) — all guidance/process, no new obligation; nothing to escalate beyond BUT-1383."
       },
-      "_lastScanCoverage": "6/7 sources reachable as of 2026-06-27 (Konsumentverket + EUR-Lex DSA + the 2 Apple feeds + IMY + Play announcements). EDPB news feed 404s on both .rss and .xml - URL moved, re-confirm next cycle (recent EDPB items mirrored via IMY). No new findings beyond the standing BUT-1383 escalation (AI Act Art. 50)."
+      "_lastScanCoverage": "7/7 sources reachable as of 2026-06-27 — EDPB now polled via its news page (RSS retired in the 2026-06-22 redesign; candidate feed URL verified+falsified, so page-scrape search-fallback + IMY secondhand). No new findings beyond the standing BUT-1383 escalation (AI Act Art. 50)."
     },
     {
       "role": "Release / App-Store Compliance Manager",
