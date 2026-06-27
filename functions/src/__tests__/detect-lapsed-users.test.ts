@@ -252,6 +252,9 @@ interface FakeUserSeed {
   id: string;
   /** Days inactive (positive int). Sets lastActiveAt = now - days. */
   daysInactive: number;
+  /** BUT-1428: seed an existing `lastWinBackSentAt` (ms) to exercise the
+   *  bridge-overwrite gate (a prior, possibly un-attributed, win-back send). */
+  priorWinBackSentAtMs?: number;
 }
 
 interface FakeStore {
@@ -277,6 +280,9 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
     id: s.id,
     data: () => ({
       lastActiveAt: tsFromMillis(nowMs - s.daysInactive * MS_PER_DAY),
+      ...(s.priorWinBackSentAtMs != null
+        ? { lastWinBackSentAt: tsFromMillis(s.priorWinBackSentAtMs) }
+        : {}),
     }),
   }));
 
@@ -441,6 +447,81 @@ interface IntCase {
 }
 
 const integrationCases: IntCase[] = [
+  {
+    name: "BUT-1428: bridge NOT overwritten while an earlier send is still in the attribution window",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const nowMs = now.getTime();
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      // Lapsed at 14d, but pinged only 2 days ago (still un-attributed, in window).
+      const db = makeFakeDb(
+        [
+          {
+            id: "user-pending",
+            daysInactive: 14,
+            priorWinBackSentAtMs: nowMs - 2 * MS_PER_DAY,
+          },
+        ],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      if (store.data.get("users/user-pending") !== undefined) {
+        throw new Error(
+          "bridge fields were overwritten despite a fresh un-attributed send — " +
+            "the earlier send's attribution credit would be lost",
+        );
+      }
+      const gotNotification = [...store.data.keys()].some((k) =>
+        k.startsWith("users/user-pending/notifications/"),
+      );
+      if (!gotNotification) {
+        throw new Error(
+          "user should still receive the notification even when the bridge is preserved",
+        );
+      }
+    },
+  },
+  {
+    name: "BUT-1428: bridge IS overwritten when the earlier send is past the attribution window",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const nowMs = now.getTime();
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      // Lapsed at 14d, last pinged 10 days ago (past the 7d window → safe to overwrite).
+      const db = makeFakeDb(
+        [
+          {
+            id: "user-stale",
+            daysInactive: 14,
+            priorWinBackSentAtMs: nowMs - 10 * MS_PER_DAY,
+          },
+        ],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      const userDoc = store.data.get("users/user-stale");
+      if (!userDoc) {
+        throw new Error("bridge fields should be overwritten for a stale prior send");
+      }
+      if (userDoc.lastWinBackBucket !== "win_back_moderate") {
+        throw new Error(
+          `expected bucket=win_back_moderate, got ${userDoc.lastWinBackBucket}`,
+        );
+      }
+    },
+  },
   {
     name: "user doc receives lastWinBackVariant + bridge fields after run",
     fn: async () => {

@@ -16,10 +16,17 @@
  * variant to FA via `ExperimentAssignment.setExperimentAssignment`
  * (BUT-657). The server cannot set FA user properties directly.
  *
- * Idempotency note: `lastWinBackSentAt` overwrites on every threshold
- * trigger. The same user can legitimately get pinged at mild → moderate
- * → strong as they progress through the dormancy stages, so we DO NOT
- * gate on the field's presence.
+ * Bridge-field gating (BUT-1428): `lastWinBack*` normally overwrites on
+ * every threshold trigger — a user can legitimately progress mild →
+ * moderate → strong through the dormancy stages. BUT while an EARLIER
+ * send is still un-attributed and inside its 7-day attribution window the
+ * overwrite is SKIPPED: clobbering it would let the client's single-
+ * attribution latch credit the conversion to the later variant and bias
+ * the A/B toward whichever stage fired last. The client CLEARS these
+ * fields on attribution, so their presence + freshness means "earlier
+ * send not yet attributed". A stale prior send (past the window) is safe
+ * to overwrite. The user still receives this notification either way;
+ * only the attribution bridge is preserved.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -44,6 +51,12 @@ const getDb = () => admin.firestore();
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+/** BUT-1428: how long an un-attributed win-back send keeps its bridge fields
+ *  protected from a later threshold overwrite. Matches the client-side
+ *  attribution window — a send older than this is assumed never converted and
+ *  is safe to overwrite. */
+const WINBACK_ATTRIBUTION_WINDOW_MS = 7 * MS_PER_DAY;
 
 interface LapsedThreshold {
   days: number;
@@ -151,15 +164,22 @@ export async function runDetectLapsedUsers(
       body: string;
       /** BUT-934: signal that produced contextual copy, or null if generic. */
       contextKey: string | null;
+      /** BUT-1428: the user's existing `lastWinBackSentAt`, if any, so the
+       *  bridge write can avoid clobbering a still-un-attributed earlier send. */
+      existingWinBackSentAt?: admin.firestore.Timestamp;
     }
     const perUser: PerUser[] = [];
     for (const userDoc of usersSnapshot.docs) {
       const variant = resolveVariant(userDoc.id, threshold.type);
+      const data = userDoc.data();
+      const existingWinBackSentAt = data.lastWinBackSentAt as
+        | admin.firestore.Timestamp
+        | undefined;
       // BUT-934: try contextual copy first; fall back to the A/B variant
       // copy when no signal applies. The variant is still recorded so the
       // deterministic bucket is preserved; contextKey marks contextual
       // sends as a separate cohort in analytics.
-      const context = await resolveContext(userDoc.id, userDoc.data());
+      const context = await resolveContext(userDoc.id, data);
       if (context) {
         perUser.push({
           userId: userDoc.id,
@@ -167,6 +187,7 @@ export async function runDetectLapsedUsers(
           title: context.title,
           body: context.body,
           contextKey: context.contextKey,
+          existingWinBackSentAt,
         });
       } else {
         const { title, body } = await fetchCopy(threshold.type, variant);
@@ -176,6 +197,7 @@ export async function runDetectLapsedUsers(
           title,
           body,
           contextKey: null,
+          existingWinBackSentAt,
         });
       }
     }
@@ -225,18 +247,35 @@ export async function runDetectLapsedUsers(
       // Bridge to client-side ExperimentAssignment (BUT-657). The client
       // reads these on session start and stamps `exp_winback_copy` onto
       // the FA user property.
-      const userRef = db.collection("users").doc(u.userId);
-      batch.set(
-        userRef,
-        {
-          lastWinBackVariant: u.variant,
-          lastWinBackBucket: threshold.type,
-          lastWinBackChannel: "push",
-          lastWinBackSentAt: now,
-        },
-        { merge: true },
-      );
-      batchCount++;
+      //
+      // BUT-1428: skip the overwrite while an earlier send is still
+      // un-attributed and inside its window — otherwise the client's
+      // single-attribution latch would credit the conversion to this later
+      // variant and bias the A/B. Presence of `lastWinBackSentAt` means the
+      // client hasn't attributed yet (it clears the fields on attribution).
+      const prevSentAtMs = u.existingWinBackSentAt?.toMillis();
+      const earlierSendStillPending =
+        prevSentAtMs != null &&
+        nowMs - prevSentAtMs < WINBACK_ATTRIBUTION_WINDOW_MS;
+
+      if (earlierSendStillPending) {
+        logger.info("winback_bridge_skipped_pending_attribution", {
+          bucket: threshold.type,
+        });
+      } else {
+        const userRef = db.collection("users").doc(u.userId);
+        batch.set(
+          userRef,
+          {
+            lastWinBackVariant: u.variant,
+            lastWinBackBucket: threshold.type,
+            lastWinBackChannel: "push",
+            lastWinBackSentAt: now,
+          },
+          { merge: true },
+        );
+        batchCount++;
+      }
 
       thresholdCount++;
 
