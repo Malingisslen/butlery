@@ -167,6 +167,95 @@ jobs:
               ;;
           esac
 
+      # ─── POST-DEPLOY SMOKE GATE ───────────────────────────────────────────────
+      #
+      # PURPOSE: catch the "firebase deploy said OK but the function is broken"
+      # class of regression. The CLI exit-0 does NOT guarantee functions are
+      # callable — a bad build or a runtime-config error can leave functions in
+      # a DEPLOY_FAILED state on the backend while the CLI still exits cleanly.
+      #
+      # WHAT WE CHECK:
+      #   1. `firebase functions:list` — queries the Cloud Functions control plane
+      #      and returns the deployed function manifest. We assert that a
+      #      representative set of core functions (spanning all families) appears
+      #      in the output. If any is missing, exit 1 fails the workflow loudly.
+      #
+      # WHY THESE SPECIFIC FUNCTIONS:
+      #   - structureRecipe / ocrRecipeImage  — LLM callables, most expensive cold
+      #     start; if they vanished the core import flow is dead.
+      #   - sendNotification                  — notifications family anchor.
+      #   - onUserDeleted                     — GDPR cascade; critical correctness.
+      #   - verifySignupAge                   — ADR-0002 age-gate; gates UGC paths.
+      #   - requestAccountDeletion            — account family; GDPR Article 17.
+      #   - cleanupExpiredCache               — cleanup scheduler anchor.
+      #   - drainRatingAggregations           — rating aggregation scheduler anchor.
+      #   (Migration function backfillRecipeCommentsDenorm deliberately excluded —
+      #    it is lifecycle-bound and may be removed; checking it would cause false
+      #    fails after planned removal.)
+      #
+      # FAIL-SAFE CONTRACT:
+      #   - The step only runs when functions were in scope (target 'functions' or
+      #     'all'). Rules-only or index-only deploys skip it.
+      #   - `firebase functions:list` itself failing (network error, auth error,
+      #     unexpected CLI error) causes a non-zero exit → workflow fails. This is
+      #     intentional: a check that silently swallows errors would be worse than
+      #     no check at all (fail-safe over fail-open).
+      #   - `set -euo pipefail` ensures any intermediate command failure propagates.
+      #   - GOOGLE_APPLICATION_CREDENTIALS is already set by the Authenticate step;
+      #     no new secrets are needed.
+      #
+      # NO NEW INFRASTRUCTURE: no callables are invoked, no data is written, no
+      # new secrets or resources are required. This purely queries the control plane.
+      # ─────────────────────────────────────────────────────────────────────────────
+      - name: Post-deploy smoke gate (functions presence check)
+        if: env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all'
+        env:
+          # Reuse the ADC credential written by the Authenticate step above.
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+        run: |
+          set -euo pipefail
+          PROJECT=butlery-app-1
+
+          echo "Querying deployed function list for project ${PROJECT}..."
+          # Capture list output; if the command itself fails, set -e exits immediately.
+          FUNCTIONS_LIST="$(firebase functions:list --project "${PROJECT}" --json 2>&1)"
+          echo "$FUNCTIONS_LIST"
+
+          # Core functions that MUST be present after every functions deploy.
+          # These span every major family so a wholesale or partial failure is caught.
+          REQUIRED_FUNCTIONS=(
+            "structureRecipe"
+            "ocrRecipeImage"
+            "sendNotification"
+            "onUserDeleted"
+            "verifySignupAge"
+            "requestAccountDeletion"
+            "cleanupExpiredCache"
+            "drainRatingAggregations"
+          )
+
+          FAILED=0
+          for fn in "${REQUIRED_FUNCTIONS[@]}"; do
+            # The --json output includes function names as "id" or in the "name"
+            # resource path (e.g. "projects/.../functions/structureRecipe"). A simple
+            # substring match on the name token is sufficient and robust against
+            # minor CLI format changes between firebase-tools patch versions.
+            if echo "$FUNCTIONS_LIST" | grep -qF "\"${fn}\""; then
+              echo "  [OK] ${fn} present"
+            else
+              echo "  [FAIL] ${fn} NOT FOUND in deployed function list" >&2
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "" >&2
+            echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing from the deployed function list. Check the output above for details. The deploy may have partially failed on the backend even though the firebase CLI exited 0." >&2
+            exit 1
+          fi
+
+          echo "Post-deploy smoke gate passed — all required functions confirmed present."
+
       - name: Summary
         if: always()
         run: |
