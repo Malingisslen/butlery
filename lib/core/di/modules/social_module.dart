@@ -39,6 +39,8 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/family/household_roster_service.dart';
+import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
@@ -116,6 +118,8 @@ class SocialModule implements DIModule {
     HouseholdRepository,
     DinerProfileRepository,
     FamilyRatingRepository,
+    HouseholdRosterService,
+    FamilyRatingService,
   ];
 
   @override
@@ -157,6 +161,14 @@ class SocialModule implements DIModule {
         authRepository: container<AuthRepository>(),
         householdRepository: container<HouseholdRepository>(),
       ),
+    );
+
+    container.registerLazySingleton<HouseholdRosterService>(
+      () => HouseholdRosterService(),
+    );
+
+    container.registerLazySingleton<FamilyRatingService>(
+      () => FamilyRatingService(),
     );
 
     container.registerLazySingleton<SocialRecipeService>(
