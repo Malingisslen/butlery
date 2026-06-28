@@ -1,5 +1,26 @@
 # Sprint Backlog
 
+## Sprint: direct unit tests for 3 GDPR-export sub-managers — 2026-06-28
+
+Single clean Tier-A test-gap (GDPR Article-15/20 export coverage). Test-only; touches
+test/**/*.dart → code-reviewer commit gate applies (not testing-specialist/firebase, those
+key on lib/). Router said full-panel by path, but this is test-only encoding of the existing
+contract → treat as testing + a GDPR-completeness lens, not a 6-role design panel.
+
+### Agent A: GDPR export coverage (direct) — Stakeholders: testing + Privacy/GDPR lens
+- [ ] **A1. Direct tests for the 3 export sub-managers** `[Tier A]` (BUT-1438)
+  - Step 0: CONFIRMED. activity/social/content managers exist; only compliance_export_manager
+    has a direct test today. All 3 use ctor-injected repo seams → fakeable without emulator.
+  - Files: `test/unit/services/account/export/{activity,social,content}_export_manager_test.dart`.
+  - Acceptance: every public export method of each manager has a test asserting each record-type
+    key is present + records are reshaped (id→typed-id, data passed through) · a dropped record
+    type would fail an assertion · runs in unit lane (mock repos, no emulator) · analyze clean.
+
+### Post-Sprint Steps (BUT-1438)
+- [ ] dart analyze + run the 3 tests · code-reviewer marker · commit · push · Done
+
+---
+
 ## Sprint: fix self-contradicting Technical-Writer §20 in ROLE_RESPONSIBILITY_MAP — 2026-06-28
 
 Single clean Tier-A doc fix. No code, no commit-gate markers (doc-only diff).
