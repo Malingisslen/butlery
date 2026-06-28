@@ -38,7 +38,7 @@ void main(List<String> args) {
         skipped.add('$slug: gold.json missing');
         continue;
       }
-      final gold = _readRecipe(goldFile);
+      final gold = readGoldRecipe(goldFile);
       if (gold == null) {
         skipped.add('$slug: gold.json malformed (parse error)');
         continue;
@@ -52,7 +52,7 @@ void main(List<String> args) {
         skipped.add('$slug: draft.json (prediction) missing');
         continue;
       }
-      final pred = _readRecipe(draftFile);
+      final pred = readGoldRecipe(draftFile);
       if (pred == null) {
         skipped.add('$slug: draft.json malformed (parse error)');
         continue;
@@ -152,19 +152,8 @@ String _reportJson(List<_WebScore> scores, String ts) {
 
 double _mean(List<_WebScore> scores, double Function(RecipeScore) f) =>
     scores.isEmpty
-    ? 0
+    ? 0.0
     : scores.map((s) => f(s.score)).reduce((a, b) => a + b) / scores.length;
-
-GoldRecipe? _readRecipe(File file) {
-  if (!file.existsSync()) return null;
-  try {
-    final json = jsonDecode(file.readAsStringSync());
-    if (json is! Map) return null;
-    return GoldRecipe.fromJson(json.cast<String, dynamic>());
-  } catch (_) {
-    return null;
-  }
-}
 
 String _basename(String p) {
   final cleaned = p.replaceAll('\\', '/');

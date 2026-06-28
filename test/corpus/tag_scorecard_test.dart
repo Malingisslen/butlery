@@ -69,7 +69,7 @@ void main() {
       for (final bookDir in paths.books()) {
         final bookSlug = _basename(bookDir.path);
         for (final entry in paths.recipeEntries(bookSlug)) {
-          final gold = _readRecipe(File(entry.goldPath));
+          final gold = readGoldRecipe(File(entry.goldPath));
           if (gold == null || !gold.verified) {
             skipped++;
             continue;
@@ -158,17 +158,6 @@ Recipe _recipeFromGold(GoldRecipe gold) => Recipe.personal(
   portions: int.tryParse(gold.portions ?? ''),
   timeMinutes: gold.timeMinutes,
 );
-
-GoldRecipe? _readRecipe(File file) {
-  if (!file.existsSync()) return null;
-  try {
-    final json = jsonDecode(file.readAsStringSync());
-    if (json is! Map) return null;
-    return GoldRecipe.fromJson(json.cast<String, dynamic>());
-  } catch (_) {
-    return null;
-  }
-}
 
 String _basename(String p) {
   final cleaned = p.replaceAll('\\', '/');

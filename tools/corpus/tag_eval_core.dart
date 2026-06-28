@@ -207,7 +207,9 @@ File writeTagReportJson(
             'allergenFalseFree': r.score.allergens.falseFree,
             'allergenMissedContains': r.score.allergens.missedContains,
             'dietaryAccuracy': _round(r.score.dietary.accuracy),
-            'tagF1': _round(r.score.tags.f1),
+            // null (not a vacuous 1.0) when the answer key asserted no tags, so
+            // a regression tool never reads an unannotated recipe as passing.
+            'tagF1': r.score.tagsAsserted ? _round(r.score.tags.f1) : null,
             'coverage': _round(r.score.coverage),
             'unmatchedIngredients': r.score.unmatchedIngredients,
           },

@@ -26,6 +26,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
 /// Provenance for a single source cookbook. Never shipped into the app —
 /// kept only so the corpus is auditable and copyright-traceable.
@@ -47,22 +48,22 @@ class BookMeta {
   });
 
   Map<String, dynamic> toJson() => {
-        'slug': slug,
-        'title': title,
-        if (author != null) 'author': author,
-        if (year != null) 'year': year,
-        if (publisher != null) 'publisher': publisher,
-        if (notes != null) 'notes': notes,
-      };
+    'slug': slug,
+    'title': title,
+    if (author != null) 'author': author,
+    if (year != null) 'year': year,
+    if (publisher != null) 'publisher': publisher,
+    if (notes != null) 'notes': notes,
+  };
 
   factory BookMeta.fromJson(Map<String, dynamic> json) => BookMeta(
-        slug: json['slug']?.toString() ?? '',
-        title: json['title']?.toString() ?? '',
-        author: json['author']?.toString(),
-        year: (json['year'] as num?)?.toInt(),
-        publisher: json['publisher']?.toString(),
-        notes: json['notes']?.toString(),
-      );
+    slug: json['slug']?.toString() ?? '',
+    title: json['title']?.toString() ?? '',
+    author: json['author']?.toString(),
+    year: (json['year'] as num?)?.toInt(),
+    publisher: json['publisher']?.toString(),
+    notes: json['notes']?.toString(),
+  );
 }
 
 /// Metadata captured when OCR ran on a page. Lets eval know which provider
@@ -86,20 +87,20 @@ class OcrMeta {
   bool get isFailure => error != null && error!.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
-        'provider': provider,
-        'timestamp': timestampIso,
-        if (confidence != null) 'confidence': confidence,
-        if (engineVersion != null) 'engineVersion': engineVersion,
-        if (error != null) 'error': error,
-      };
+    'provider': provider,
+    'timestamp': timestampIso,
+    if (confidence != null) 'confidence': confidence,
+    if (engineVersion != null) 'engineVersion': engineVersion,
+    if (error != null) 'error': error,
+  };
 
   factory OcrMeta.fromJson(Map<String, dynamic> json) => OcrMeta(
-        provider: json['provider']?.toString() ?? 'unknown',
-        timestampIso: json['timestamp']?.toString() ?? '',
-        confidence: (json['confidence'] as num?)?.toDouble(),
-        engineVersion: json['engineVersion']?.toString(),
-        error: json['error']?.toString(),
-      );
+    provider: json['provider']?.toString() ?? 'unknown',
+    timestampIso: json['timestamp']?.toString() ?? '',
+    confidence: (json['confidence'] as num?)?.toDouble(),
+    engineVersion: json['engineVersion']?.toString(),
+    error: json['error']?.toString(),
+  );
 }
 
 /// A single structured ingredient in the facit. Mirrors the importable subset
@@ -124,13 +125,13 @@ class GoldIngredient {
   });
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'originalLine': originalLine,
-        if (quantity != null) 'quantity': quantity,
-        if (unit != null) 'unit': unit,
-        if (size != null) 'size': size,
-        if (preparation != null) 'preparation': preparation,
-      };
+    'name': name,
+    'originalLine': originalLine,
+    if (quantity != null) 'quantity': quantity,
+    if (unit != null) 'unit': unit,
+    if (size != null) 'size': size,
+    if (preparation != null) 'preparation': preparation,
+  };
 
   /// Accepts both this schema and `ParsedIngredient.toJson()` (same keys),
   /// so the eval adapter can deserialize parser output without a translation
@@ -179,45 +180,60 @@ class GoldRecipe {
   });
 
   GoldRecipe copyWith({bool? verified}) => GoldRecipe(
-        verified: verified ?? this.verified,
-        title: title,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        ingredients: ingredients,
-        instructions: instructions,
-        sourcePages: sourcePages,
-      );
+    verified: verified ?? this.verified,
+    title: title,
+    portions: portions,
+    timeMinutes: timeMinutes,
+    ingredients: ingredients,
+    instructions: instructions,
+    sourcePages: sourcePages,
+  );
 
   Map<String, dynamic> toJson() => {
-        'verified': verified,
-        'title': title,
-        if (portions != null) 'portions': portions,
-        if (timeMinutes != null) 'timeMinutes': timeMinutes,
-        'ingredients': ingredients.map((i) => i.toJson()).toList(),
-        'instructions': instructions,
-        if (sourcePages.isNotEmpty) 'sourcePages': sourcePages,
-      };
+    'verified': verified,
+    'title': title,
+    if (portions != null) 'portions': portions,
+    if (timeMinutes != null) 'timeMinutes': timeMinutes,
+    'ingredients': ingredients.map((i) => i.toJson()).toList(),
+    'instructions': instructions,
+    if (sourcePages.isNotEmpty) 'sourcePages': sourcePages,
+  };
 
   factory GoldRecipe.fromJson(Map<String, dynamic> json) => GoldRecipe(
-        verified: json['verified'] == true,
-        title: json['title']?.toString() ?? '',
-        portions: GoldIngredient._emptyToNull(json['portions']),
-        timeMinutes: (json['timeMinutes'] as num?)?.toInt(),
-        ingredients: (json['ingredients'] as List?)
-                ?.whereType<Map>()
-                .map((m) => GoldIngredient.fromJson(m.cast<String, dynamic>()))
-                .toList() ??
-            const [],
-        instructions: (json['instructions'] as List?)
-                ?.map((e) => e.toString())
-                .toList() ??
-            const [],
-        sourcePages:
-            (json['sourcePages'] as List?)?.map((e) => e.toString()).toList() ??
-                const [],
-      );
+    verified: json['verified'] == true,
+    title: json['title']?.toString() ?? '',
+    portions: GoldIngredient._emptyToNull(json['portions']),
+    timeMinutes: (json['timeMinutes'] as num?)?.toInt(),
+    ingredients:
+        (json['ingredients'] as List?)
+            ?.whereType<Map>()
+            .map((m) => GoldIngredient.fromJson(m.cast<String, dynamic>()))
+            .toList() ??
+        const [],
+    instructions:
+        (json['instructions'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
+    sourcePages:
+        (json['sourcePages'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
+  );
 }
 
 /// Pretty-print helper so hand-edited `gold.json` files stay diff-friendly.
 String encodeJsonPretty(Map<String, dynamic> json) =>
     const JsonEncoder.withIndent('  ').convert(json);
+
+/// Reads a `gold.json` / `draft.json` into a [GoldRecipe], or null if the file
+/// is absent or malformed. Shared by the eval CLIs and prelabel harnesses so
+/// the read+parse contract lives in one place. Callers distinguish "missing"
+/// from "malformed" by checking `file.existsSync()` first when they need to.
+GoldRecipe? readGoldRecipe(File file) {
+  if (!file.existsSync()) return null;
+  try {
+    final json = jsonDecode(file.readAsStringSync());
+    if (json is! Map) return null;
+    return GoldRecipe.fromJson(json.cast<String, dynamic>());
+  } catch (_) {
+    return null;
+  }
+}
