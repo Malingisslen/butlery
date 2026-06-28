@@ -8,8 +8,8 @@
 # Trigger map (keep in sync with each agent's MUST BE USED clause):
 #   *.dart                                          → code-reviewer
 #   lib/**/*.dart                                   → testing-specialist
-#   lib/repositories/, lib/services/{firebase|...},
-#   functions/src/ (excluding __tests__/)           → firebase-backend-security
+#   lib/repositories/, lib/services/{firebase|...}  → firebase-backend-security
+#   functions/src/ (incl. __tests__/)               → cloud-functions-specialist
 #   firestore.rules, functions/src/__tests__/*-rules → firestore-rules-tester
 #
 # Markers live at .claude/state/<name>-done.marker.
@@ -101,20 +101,24 @@ if has_match '^lib/.*\.dart$'; then
   required_agents+=("testing-specialist")
 fi
 
-# firebase-backend-security — repositories/, services with firebase/firestore/
-# auth/user/gdpr in path, or functions/src/ EXCLUDING __tests__/
+# firebase-backend-security — repositories/ + services with firebase/firestore/
+# auth/user/gdpr in path (the Flutter/Dart Firebase surface only). Cloud
+# Functions (functions/src/) now route to cloud-functions-specialist below
+# (BUT-1402).
 fire_security=0
 has_match '^lib/repositories/' && fire_security=1
 has_match '^lib/services/.*(firebase|firestore|auth|user|gdpr)' && fire_security=1
-if printf '%s\n' "$CHANGED_FILES" \
-     | { grep -E '^functions/src/' || true; } \
-     | { grep -Ev '^functions/src/__tests__/' || true; } \
-     | grep -q .; then
-  fire_security=1
-fi
 if [[ $fire_security -eq 1 ]]; then
   required_markers+=("firebase-security-done.marker")
   required_agents+=("firebase-backend-security")
+fi
+
+# cloud-functions-specialist — any functions/src/ change, INCLUDING __tests__/
+# (the ~52 non-rules CF unit tests were previously ungated). Rules tests also
+# trigger firestore-rules-tester below — both reviews apply to them. (BUT-1402)
+if has_match '^functions/src/'; then
+  required_markers+=("cloud-functions-done.marker")
+  required_agents+=("cloud-functions-specialist")
 fi
 
 # firestore-rules-tester — firestore.rules OR functions/src/__tests__/*-rules.test.ts

@@ -93,7 +93,8 @@ The hook blocks `git commit` until a fresh marker exists at `.claude/state/<name
 |---|---|---|
 | Any `*.dart` | `code-reviewer` | `code-review-done.marker` |
 | Any `lib/**/*.dart` | `testing-specialist` | `testing-review-done.marker` |
-| `lib/repositories/`, `lib/services/{firebase\|firestore\|auth\|user\|gdpr}`, `functions/src/` (excl. tests) | `firebase-backend-security` | `firebase-security-done.marker` |
+| `lib/repositories/`, `lib/services/{firebase\|firestore\|auth\|user\|gdpr}` | `firebase-backend-security` | `firebase-security-done.marker` |
+| `functions/src/` (incl. `__tests__/`) | `cloud-functions-specialist` | `cloud-functions-done.marker` |
 | `firestore.rules`, `functions/src/__tests__/*-rules.test.ts` | `firestore-rules-tester` | `rules-tester-done.marker` |
 
 **Marker workflow:** dispatch the named agent against the staged diff → after it reports clean, run `touch .claude/state/<marker>` → retry commit. Hook is silent when no triggers match (doc-only commits, etc.). Per `memory/feedback_agent_timeout.md`, agents stall on >3 files — split commits or run in batches.

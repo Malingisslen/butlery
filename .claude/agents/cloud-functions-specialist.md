@@ -1,6 +1,6 @@
 ---
 name: cloud-functions-specialist
-description: Cloud Functions (TypeScript) specialist. MUST BE USED when modifying files in functions/src/ (excluding __tests__/). Expert in Firebase Functions v2, idempotency, retry semantics, region pinning (europe-west1), cold-start cost, and the Butlery-specific function families (LLM, cleanup, social, notifications).
+description: Cloud Functions (TypeScript) specialist. MUST BE USED when modifying any file in functions/src/ (including __tests__/ — the CF unit tests are commit-gated to this agent per BUT-1402). Expert in Firebase Functions v2, idempotency, retry semantics, region pinning (europe-west1), cold-start cost, and the Butlery-specific function families (LLM, cleanup, social, notifications).
 tools: Read,Write,Edit,Bash,Grep
 model: inherit
 ---
