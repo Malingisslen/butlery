@@ -19,6 +19,7 @@ import 'firestore_singleton.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/services/auth/account_maturity_helper.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -169,6 +170,18 @@ class FakeAuthRepository extends Fake implements AuthRepository {
   // Other AuthRepository methods are intentionally unimplemented; calls
   // throw via Fake.noSuchMethod, surfacing tests that depend on behavior
   // this fake doesn't model.
+}
+
+/// Always-matured [AccountMaturityHelper] for viewmodel tests.
+///
+/// BUT-1417 added a client-side maturity gate to the friend/DM/group-invite
+/// CTAs; injecting this keeps existing viewmodel tests exercising the
+/// post-maturity behavior (the gate is covered directly in
+/// account_maturity_cta_test.dart). Returns true regardless of profile/user.
+class FakeMaturedAccountHelper extends Fake implements AccountMaturityHelper {
+  @override
+  bool isMatured({required dynamic profile, required dynamic firebaseUser}) =>
+      true;
 }
 
 /// Mock implementation of RecipeRepository

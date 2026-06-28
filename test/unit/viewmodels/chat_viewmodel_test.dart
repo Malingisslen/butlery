@@ -277,6 +277,8 @@ void main() {
       );
 
       viewModel = ChatViewModel(
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         messagingService: mockMessagingService,
         conversationId: testConversationId,
         initialConversation: initialConversation,
@@ -328,6 +330,8 @@ void main() {
 
           // Act - create viewModel without initial conversation
           final newViewModel = ChatViewModel(
+            authRepository: FakeAuthRepository(),
+            maturityHelper: FakeMaturedAccountHelper(),
             messagingService: mockMessagingService,
             conversationId: testConversationId,
           );
@@ -353,6 +357,8 @@ void main() {
 
         // Act
         final newViewModel = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: initialConversation,
@@ -397,6 +403,8 @@ void main() {
           },
         );
         final vmWithConversation = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: conversation,
@@ -412,6 +420,8 @@ void main() {
       test('should return loading title when no conversation', () {
         // Arrange - create viewModel without initial conversation
         final vmWithoutConversation = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
@@ -427,6 +437,8 @@ void main() {
         // Arrange
         final groupConversation = ConversationBuilder.buildGroupConversation();
         final vmWithGroup = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: groupConversation,
@@ -469,6 +481,8 @@ void main() {
           ContentFilterService(),
         );
         final guardedVm = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: ConversationBuilder.build(
@@ -963,6 +977,8 @@ void main() {
 
         // Act
         final newViewModel = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: 'invalid_id',
         );
@@ -996,6 +1012,8 @@ void main() {
           },
         );
         final vmWithConversation = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: conversation,
@@ -1011,6 +1029,8 @@ void main() {
       test('should not send messages without conversation', () {
         // Arrange - create viewModel without initial conversation
         final vmWithoutConversation = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
@@ -1042,6 +1062,8 @@ void main() {
         );
 
         final testViewModel = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: testConversation,
@@ -1058,6 +1080,8 @@ void main() {
       test('should cancel subscriptions on dispose', () async {
         // Arrange
         final testViewModel = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
@@ -1076,6 +1100,8 @@ void main() {
       test('should not notify after dispose', () {
         // Arrange
         final testViewModel = ChatViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );

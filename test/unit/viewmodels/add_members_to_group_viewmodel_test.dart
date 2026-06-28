@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/operations/friend_categories_operations
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
 
 // Local pure-Mocks: no concrete @override, so when() works on every method.
@@ -122,6 +123,9 @@ void main() {
     ).thenAnswer((_) async => true);
 
     viewModel = AddMembersToGroupViewModel(
+      userService: MockUserService(),
+      authRepository: FakeAuthRepository(),
+      maturityHelper: FakeMaturedAccountHelper(),
       groupId: testGroupId,
       friendsService: mockFriendsService,
     );
@@ -180,6 +184,9 @@ void main() {
     test('should handle missing group gracefully', () async {
       when(() => mockCategories.getCategoryById(any())).thenReturn(null);
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: 'invalid-group',
         friendsService: mockFriendsService,
       );
@@ -404,6 +411,9 @@ void main() {
     test('should show empty state when no friends', () async {
       when(() => mockManagement.getAllFriends()).thenReturn([]);
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: testGroupId,
         friendsService: mockFriendsService,
       );
@@ -447,6 +457,9 @@ void main() {
     test('should handle null group', () async {
       when(() => mockCategories.getCategoryById(any())).thenReturn(null);
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: 'non-existent',
         friendsService: mockFriendsService,
       );
@@ -460,6 +473,9 @@ void main() {
     test('should handle empty friends list', () async {
       when(() => mockManagement.getAllFriends()).thenReturn([]);
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: testGroupId,
         friendsService: mockFriendsService,
       );
@@ -487,6 +503,9 @@ void main() {
       ).thenReturn(fullGroup);
 
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: testGroupId,
         friendsService: mockFriendsService,
       );
@@ -499,6 +518,9 @@ void main() {
   group('Dispose', () {
     test('should dispose without errors', () async {
       final vm = AddMembersToGroupViewModel(
+        userService: MockUserService(),
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         groupId: testGroupId,
         friendsService: mockFriendsService,
       );

@@ -131,6 +131,8 @@ void main() {
 
       // Create view model with explicit dependencies (avoids production ServiceLocator)
       viewModel = FriendsViewModel(
+        authRepository: FakeAuthRepository(),
+        maturityHelper: FakeMaturedAccountHelper(),
         friendsService: mockFriendsService,
         userService: mockUserService,
         analyticsService: mockAnalyticsService,
@@ -1014,6 +1016,8 @@ void main() {
       test('should clean up resources on dispose', () {
         // Create a separate test ViewModel to avoid interfering with tearDown
         final testViewModel = FriendsViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           friendsService: mockFriendsService,
           userService: mockUserService,
           analyticsService: mockAnalyticsService,
@@ -1034,6 +1038,8 @@ void main() {
       test('should not perform operations after disposal', () async {
         // Create a separate test ViewModel to avoid interfering with tearDown
         final testViewModel = FriendsViewModel(
+          authRepository: FakeAuthRepository(),
+          maturityHelper: FakeMaturedAccountHelper(),
           friendsService: mockFriendsService,
           userService: mockUserService,
           analyticsService: mockAnalyticsService,
