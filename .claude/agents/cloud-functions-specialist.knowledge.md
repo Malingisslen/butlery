@@ -1995,3 +1995,57 @@ no Critical, no High. Notes worth keeping for the next account-callable:
   buckets ALL ip-less callers into one key. Acceptable for a signup-once flow at
   beta scale; flag if abuse patterns suggest the key needs `X-Forwarded-For`
   parsing. Low.
+
+### 2026-06-28 — BUT-1404 audit-log general purge starvation fix [Bug fixed]
+
+`audit_logs/purge-expired.ts` — `purgeAuditCategoryWithDb` for the "general"
+category fetched the oldest 10k docs with `where('timestamp','<',cutoff).limit(10000)`
+then filtered consent rows client-side. As the collection aged, consent rows
+(730d retention) filled that unfiltered 10k window, leaving expired general
+rows (180d) unpurged — GDPR Art 5(1)(c) data-minimisation breach + unbounded
+cost. The `truncated` flag was also computed from the post-filter deleted count
+(never ≥ 10k for general after filtering), so real truncation was invisible.
+
+**Fix (Path A)**: server-side filter via `CONSENT_OPERATIONS` array +
+`where('operation', 'in'/'not-in', CONSENT_OPERATIONS)` before the timestamp
+range and limit. Admin SDK 13.8.0 supports multi-inequality queries (operation
+`in`/`not-in` + timestamp `<`); confirmed by zero TS errors at build.
+
+**Discriminant**: the `operation` field present on every audit_log write. The
+consent set is bounded: 4 values (`consent_age_verification`, `consent_granted`,
+`consent_updated`, `consent_revoked`), all prefixed `consent_`. Firestore
+`not-in` supports up to 10 values; current set is 4. If it exceeds 10, a new
+`retentionTier` field + backfill would be needed (ops-blocked).
+
+**Index added**: composite `(operation ASC, timestamp ASC)` on `audit_logs`
+in `firestore.indexes.json` — required for `in`/`not-in` + range on a
+different field. This IS a genuine composite (range + in/not-in across two
+fields); not an equality-only case.
+
+**truncated flag**: after the fix, `snapshot.docs.length` == number deleted
+(no client-side filtering), so `deleted >= maxDocs` correctly reflects
+server-side truncation.
+
+**Test change**: `makeFakeDb` rewritten to support the new two-`where` chain
+(`operation in/not-in` + `timestamp <` + `limit`). Two new test cases:
+- `generalPurgeNotStarvedByConsentRows` — the starvation scenario: window of
+  10 slots filled by consent rows + 1 expired general doc → general doc IS
+  deleted (would have returned 0 with old code).
+- `consentOperationsArrayIsExhaustive` — pins the 4 known consent op values
+  against `CONSENT_OPERATIONS` so a new consent op without a list update
+  turns red immediately.
+
+**Patterns worth remembering**:
+- **Unfiltered `limit` + client-side filter = starvation.** Whenever a purge
+  fetches a bounded window and post-filters, a long-lived category will
+  crowd out the short-lived one. Always push the category discriminant into
+  the server-side query so `limit` applies to the right set.
+- **`CONSENT_OPERATIONS` exhaustiveness guard belongs in the test, not in
+  code.** The write path is in multiple files; a closed enum in a `.ts` const
+  array + a test that pins the known values is the cheapest guard against
+  list drift. If the list grows past 10, that test also fails (Firestore
+  `not-in` max).
+- **Multi-inequality in Admin SDK 13+ works** — `operation not-in` (treated
+  internally as a range filter) + `timestamp <` on a different field is
+  supported without needing to restructure the query or add a discriminant
+  field at write time.

@@ -503,6 +503,18 @@ Harness cost is real and buys nothing: mocked `ConsentViewModel` + production-Se
 ### 2026-05-27 — friends_internal_operations, batch 14 [Pattern]
 Prod reads `ServiceLocator.get` inside method bodies → `setupUnitWithProductionLocator()` + `registerMock` in the group's inner setUp. `MockUserService` doesn't stub `currentUserProfile` (local `_MockUserService` + `when()`). **`FakeAuthRepository.setAuthState(userId:...)` populates `currentUserId` but NOT `currentUser`** — code reading `currentUser?.uid` sees null; pass a real `User`. Privilege-escalation guard: pass a category with `ownerId ≠ current user`, `verify(addSelfToCategory).called(1)` + `verifyNever(saveCategory(...))`. Enum-to-string is `.toString().split('.').last` — pin for wire-format stability.
 
+### 2026-06-28 — BUT-1417 account-maturity CTA gate tests: review patterns [Pattern — reviewed]
+
+**FriendsViewModel `error` getter chain must be stubbed correctly to avoid shadowing the maturity message.** The `get error` override chains `_friendsService.error ?? _groupCreationError ?? _searchManager.searchError ?? super.error`. The maturity gate writes via `setError()` → `_error` (the mixin field) → only visible as `super.error`. If `_friendsService.error` were NOT stubbed to `null`, the service error would shadow the maturity message and the `expect(vm.error, isNotNull)` assert would pass vacuously on the WRONG error. Lesson: when a test checks `vm.error isNotNull` on a VM with a multi-source `error` getter chain, audit that EVERY upstream source in the chain is stubbed to `null` in the "blocked" test — otherwise the assert can pass even if `setError()` was never called.
+
+**`hasError` on FriendsViewModel does NOT include `super.error`** (lines 163-166 omit it) — so `vm.hasError` is `false` after a maturity gate block, even though `vm.error` is non-null. The test correctly asserts `vm.error isNotNull` rather than `vm.hasError isTrue`. This is a real production-side inconsistency worth noting, but the test is written at the right level and would NOT miss the bug.
+
+**`_fixedHelper(bool result)` is a real `AccountMaturityHelper` instance with a controlled clock, not a mock. This is the correct pattern** — the helper's `isMatured()` logic runs for real, removing any tautology risk. Contrast: if a `MockAccountMaturityHelper` were used with `when(() => mock.isMatured(...)).thenReturn(false)`, the test would pass even if the ViewModel forgot to call `isMatured()` at all.
+
+**`Future.delayed(Duration.zero)` for `_initializeData` pump** (lines 449, 492) is on the DO-NOT-WRITE list for time-dependent async but IS acceptable per 2026-05-01 lesson for fire-and-forget event-loop pumps where no real clock is involved and all stubs return synchronous values. The `_initializeData` stubs here are all synchronous (no real async), so `Duration.zero` is sound.
+
+**ChatViewModel happy-path with `_authRepoWithNoUser()`:** the `_fixedHelper(true)` uses the time-based path (`isMatured` → 2h ≥ 60min), so `emailVerified` from `firebaseUser` is irrelevant (null user → falls to time check → true). The test is consistent.
+
 ### 2026-05-27 — iter-82 epoch-ms draftId collision is fixture not race (BUT-1138) [Pattern]
 **When a test inserts a small `Future.delayed` to disambiguate epoch-derived ids, check whether production has the same temporal granularity** — here `clearCurrentDraft()` awaits a real `SharedPreferences.remove` (>1ms in real Flutter), so the 2ms test wait is fixture-only. **When widening `void → Future<void>`, update stubs `thenAnswer((_){})` → `thenAnswer((_) async {})`** (old form fails at first `await`). Never write tests for "subcollections that might exist someday" — pin the schema as it stands.
 
@@ -829,7 +841,17 @@ Shared draft-persistence primitive (`lib/services/persistence/auto_save_manager.
 - **debounce/flush are tested but NOT exercised by any current surface** (all 3 migrate with `debounce: Duration.zero` eager). Acceptable forward-looking coverage, not impl-coupling: they're published contract of the primitive and BUT-910 (photo import) is the named intended adopter. The generic `<T>` JSON-map round-trip likewise justifies the abstraction existing over a String-only helper — keep it.
 - **FOLLOW-UP GAP (non-blocking, file as ticket): the two import views have NO draft-persistence widget test.** Grepped `test/` for `url_import_draft|text_import_draft|ImportViaUrl|FranSocialaMedier` → zero hits. The comment surface got its end-to-end gate (BUT-1058); the URL + text import surfaces rely on the manager unit tests + manual verification only. A `tester.enterText → prefs key written` + `seed prefs → field restored on mount` widget pair per view would mirror the comment gate. Not a commit blocker (primitive is unit-proven, migration is mechanical, no behaviour change in the diff), but a real coverage gap for those two surfaces' load/save/clear wiring.
 
-### 2026-06-04 — BUT-1203 group-draft codec-extraction gate — SOUND, no blocker [Pattern]
+### 2026-06-28 — BUT-1408 UTC-serialization: DateTime.isUtc vs system-timezone — CI-effectiveness verified [Pattern reviewed]
+
+Reviewed `test/unit/models/feedback_entry_test.dart` — `serializes a local createdAt as a UTC Z string (BUT-1408)` (lines 41-59).
+
+**Key finding: the `endsWith('Z')` assertion is effective on ALL CI machines, including UTC-offset-zero runners.** Dart's `DateTime(y,m,d,h,min)` constructor always produces `isUtc == false`, regardless of the machine's system timezone. `toIso8601String()` appends `Z` if and only if `isUtc == true`. Therefore a revert of `.toUtc()` in `FeedbackEntry.toMap()` always produces a string without `Z`, on any machine. The test catches the regression everywhere.
+
+**The second assertion (line 58)** `expect(iso, local.toUtc().toIso8601String())` is NOT tautological: its expected value derives from the INPUT `local`, not from calling `toMap()` a second time. It adds value by pinning the exact UTC projection (including hour-shift on offset machines) and sub-second precision, which `endsWith('Z')` alone cannot catch.
+
+**Misleading inline comment (line 57):** `// a no-op only when the machine is at UTC` — on a UTC+0 machine, `.toUtc()` is NOT a no-op (it changes `isUtc` from `false` to `true`, producing `Z`). What the comment means is that the numeric hour value is unchanged. This does not affect test correctness but may confuse a future reader into doubting CI coverage.
+
+**Decision rule for DateTime UTC-serialization tests:** Use `DateTime(y,m,d,h)` (no `.utc(...)`) as the input fixture — this guarantees `isUtc==false` on every platform. `endsWith('Z')` catches missing `.toUtc()` universally. Pair with an exact-equality check against `input.toUtc().toIso8601String()` to also pin the UTC projection value and precision.
 Group-creation draft migrated from inline `_load/_save/_clearDraft` JSON triad → `AutoSaveManager<Map<String,dynamic>>`. The NOVEL logic (the all-fields-empty → null/remove-key rule + the JSON shape) was extracted into a PURE codec `lib/widgets/social/groups/group_draft_codec.dart` (`buildGroupDraft`/`encodeGroupDraft`/`decodeGroupDraft`) and gated by 7 unit tests. Verdict: the codec test genuinely proves the migration's behaviour-preservation contract; gating via the pure codec instead of a full-widget pump is the CORRECT call, not a shortcut. Reusable judgements:
 - **When a widget-draft migration introduces NEW persistence logic, extract the novel decision (emptiness rule + wire shape) into a pure function and gate THAT.** The dialog's residual glue (load→setState + friend-id resolution) is mechanical and shape-identical to 3 already-shipped string migrations — re-pumping the full dialog (provider + l10n + friends-service scaffolding) to re-prove it would be the BUT-368 structural-pump anti-pattern, high cost, near-zero marginal coverage. The codec seam is the right seam.
 - **The load-bearing invariant `all-empty ⇒ null ⇒ remove-key` is what survives the refactor and is directly tested** (incl. the absent-fields `{}` defensive case). It flips iff the emptiness rule breaks. Plus a **byte-compat test decoding the EXACT legacy `_saveDraft` JSON blob** (`{"name":...,"emoji":"📚","friendIds":["x"]}`) — this is the migration's real risk (a key-name or shape drift would silently orphan every pre-migration persisted draft, since the SharedPreferences key is kept byte-identical). That test is the single most load-bearing one in the file; keep it.
@@ -2091,9 +2113,54 @@ Reviewed the age-gate test trio (onboarding VM, UserProfile model, onboarding jo
 - **Discriminator guards against passing for the wrong reason.** Chat gate is only reached when `canSendMessages` is true (early-return at line 269). If `canSendMessages` were false the test would still get `result==false` but `sendError` would stay null → `isNotNull` catches it. The shared setUp makes `user2` a friend + sets PermissionService uid, so the gate IS reached. The `sendError isNotNull` / `commentsError isNotNull` assertion is what makes "green for the wrong reason" impossible.
 - **Pattern for future UGC-gate tests:** register real `ContentFilterService` → fresh VM/manager → feed a token from `swedishProfanity`/`englishProfanity` → assert (error surfaced) AND (no service write / text not cleared). The error-surfaced assertion is load-bearing; a bare `result==false` would pass on the empty-text guard too.
 
+### 2026-06-28 — BUT-1440 Fake-default-same-as-expected makes a regression-guard vacuous [Pattern — guard ineffectiveness]
+Trigger: reviewing `exportPantryItems forwards its computed limit to the repo (BUT-1440)` in `test/unit/services/account/export/content_export_manager_test.dart`.
+
+The test captures `capturedMaxDocuments` via `_FakePantryRepository` and asserts `== 1000`. The problem: `_FakePantryRepository.exportAllByUser` defaults `int maxDocuments = 1000`, which is the same value `ExportPaginationHelper.getLimitForType('pantry_items')` returns (confirmed in `export_pagination_helper.dart` line 182). So if the production fix is reverted and the argument is omitted entirely, Dart fills the fake's own default (1000) into `capturedMaxDocuments` and the assertion still passes. **The guard is vacuous against the regression it exists to prevent.**
+
+**Root cause of the ineffectiveness pattern:** when a Fake's parameter default equals the expected captured value, there is no way to distinguish "caller explicitly passed the value" from "caller omitted it and the Dart default filled in." This is structurally invisible to the test.
+
+**Fix — use a sentinel default on the Fake:**
+Change the Fake's default to a value that can never be a valid limit (e.g. `-1`). Then assert `capturedMaxDocuments == 1000` (or `isNot(-1)`) — equality is meaningful only if the caller actually passed 1000, because omitting the arg would capture -1.
+
+```dart
+// In _FakePantryRepository:
+@override
+Future<List<Map<String, dynamic>>> exportAllByUser(
+  String userId, {
+  int maxDocuments = -1,   // sentinel: -1 = arg was omitted by caller
+}) async {
+  capturedMaxDocuments = maxDocuments;
+  return rows;
+}
+
+// Test assertion (now non-vacuous):
+expect(pantryRepo.capturedMaxDocuments, 1000);
+// Reverting the production fix → captures -1 → assertion fails. Correct.
+```
+
+**Decision rule:** whenever writing a "did the caller forward argument X?" test using a Fake that captures via an optional parameter, set the Fake's parameter default to a sentinel value that no valid caller would pass. The captured-value assertion is only load-bearing when the Fake's default differs from every plausible explicit value. This applies to any numeric limit, timeout, or enum capture where the zero/default is a valid production value.
+
+**Affected file/line:** `test/unit/services/account/export/content_export_manager_test.dart`, `_FakePantryRepository.exportAllByUser` default at line 135, assertion at line 463.
+
 ### 2026-06-28 — CircuitBreaker half-open in-flight probe (BUT-1414) [trigger: review of concurrency-guard test]
 - **getter→method conversion was load-bearing, not cosmetic.** `allowRequest` became a METHOD because it now MUTATES state (sets `_halfOpenProbeInFlight = true` when it hands out the single probe slot). A side-effecting getter would be the maintenance trap the production doc-comment (circuit_breaker.dart 49-51) warns against. All call sites + tests had `cb.allowRequest` → `cb.allowRequest()`; purely syntactic at the assertion level (same value asserted), so no existing assertion was weakened.
 - **Sequential simulation IS the right way to test a Dart "concurrency" race.** Single isolate ⇒ the real race is "two callers enter the half-open window before the probe resolves." Test models it as two back-to-back `allowRequest()` calls inside one `withClock(start+31s)` block — first true (gets slot), second false (slot taken). No threads, no fakeAsync needed for the guard itself; `withClock` only pins the reset boundary (`elapsed 31s >= resetTime 30s`).
 - **Non-tautology confirmed:** delete the `if (_halfOpenProbeInFlight) return false;` line (66) and the 2nd `allowRequest()` re-enters the elapsed branch (clock still start+31s) → returns true → `expect(..., isFalse)` (test line 130) fails. Genuinely exercises the guard.
 - **Reopen-after-probe-failure leg is also deterministic:** `recordFailure()` stamps `_lastFailureTime = start+31s` (same injected clock), so the following `allowRequest()` sees `elapsed 0 < 30s` → false. Tests the latch-reopen without a second `withClock`.
+
+### 2026-06-28 — BUT-1413 PII-scrubber cross-port parity review [Pattern discovered]
+
+**Fixture parity is enforced by a BYTE-EQUALITY assertion, not a shared path.** The two fixture copies (`test/unit/services/llm/fixtures/pii-heuristic-vectors.json` and `functions/src/__tests__/fixtures/pii-heuristic-vectors.json`) are confirmed byte-identical. The Dart test `pii_scrubber_heuristic_vectors_test.dart` (line 39) asserts `file.readAsBytesSync() == source.readAsBytesSync()`, so any silent content drift (same vector count, edited input or expected) is a hard failure. This is the right pattern for cross-port fixture parity when the two fixture files must live in sibling directory trees — do NOT rely on documentation alone, and do NOT try to share a single path (the TS and Dart test runners resolve paths from different CWDs).
+
+**The Dart main scrubber test (`pii_scrubber_test.dart`) does NOT load the shared fixture directly.** That is correct: `pii_scrubber_test.dart` exercises the scalar/list/map API of `scrubPayload` and `scrubUrlParams`; the fixture-driven contract (full-string equality on 28 heuristic vectors) lives in the sibling `pii_scrubber_heuristic_vectors_test.dart`. Both files must be run together for full coverage.
+
+**All three BUT-1413 gap tests pass the non-tautology check:**
+- **Gap 1 (list-URL params):** would fail if `_scrubValue`'s `List` branch called `scrubPii(v)` instead of `_scrubStringLeaf(key, v)` — `scrubPii` has no URL query-stripping logic. Confirmed by reading `_scrubValue` at line 317 of `pii_scrubber.dart`.
+- **Gap 2 (slug PII):** `storgatan-14` and `mormor-Anna` are under the 20-char opaque-segment threshold so `_looksOpaquePathSegment` returns false for both. The only code path that fires is `_slugContainsPii`. Delete `|| _slugContainsPii(seg)` at line 165 and both scrubUrlParams slug tests fail. The negative case (`gulasch-med-svamp-russin`) independently catches an over-broad heuristic.
+- **Gap 3 (base64 pass-through):** the `_opaqueKeys` fast path only covers the literal key `'imageBase64'`. The 160-char blob under `'unknownImageField'` reaches `_looksLikeBase64Blob` at line 307. Remove that branch and the blob is passed to `_scrubStringLeaf`, which runs `scrubPii` — the base64 alphabet is unlikely to accidentally contain personnummer patterns, but URL detection fires on any value starting `https://`; a blob starting with a schema prefix would be corrupted. The test uses a pure-alphabet blob so it proves the heuristic gate, not the corruption path.
+
+**TS test harness is a bespoke runner (no Jest/Mocha), not a standard test framework.** `runTests()` prints PASS/FAIL and calls `process.exit(1)` on failure. This means (a) no IDE test discovery, (b) test output requires `npx ts-node` invocation per the file header, and (c) a thrown exception inside `PAYLOAD_CASES[n].run()` is silently caught and reported as FAIL (line 418–420) — the exception message is swallowed. If a bug causes a thrown RangeError rather than a wrong return value, the failure message says only `note: ...failNote`, not the error. This is intentional for defensive robustness but makes debugging harder. **If a TS PAYLOAD_CASE mysteriously fails, add a `console.log(e)` in the catch block temporarily.**
+
+**The TS `scrubPayload` list branch casts the array as `unknown as string`** (lines 273, 296) to satisfy the TypeScript type signature `Record<string, string>`. This is a deliberate lie to the type system. If the production `scrubPayload` type ever narrows from `Record<string, unknown>` to `Record<string, string>`, the cast would be unnecessary — but right now it is the correct workaround for testing a `string | string[]` value under a `string`-typed interface. Flag this if the production TypeScript signature changes.
 - **Probe slot is released by recordSuccess/recordFailure/reset** (lines 91, 110, 119) — a caller that takes the slot but never records an outcome latches the breaker in half-open forever. Acceptable because every production caller records via execute/executeWithFallback; worth a note if a future raw `allowRequest()` caller appears.

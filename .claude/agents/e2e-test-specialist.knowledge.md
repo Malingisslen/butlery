@@ -24,6 +24,7 @@ discovery, real flake-fix, or user correction.
 | Menu → shopping | `menu_to_shopping_journey_test.dart` | Weekly menu → consolidated shopping list |
 | Share recipe | `share_recipe_journey_test.dart` | Recipe → friend → recipient sees it |
 | Account deletion | `account_deletion_journey_test.dart` | Delete account → all user data cascades, sign-out |
+| Deep-link import | `deep_link_import_journey_test.dart` | `butlery://import?url=...` → pushes Routes.smartImport with decoded URL; unknown host pushes nothing |
 | Social subdir | `test/views/social/` | Friend requests, comments, likes |
 | Messaging subdir | `test/views/messaging/` | DM-style flows |
 
@@ -89,3 +90,44 @@ Knowledge file seeded from inventory of `test/views/` and `test/e2e/`.
 Future entries should record real flake fixes, journey-boundary
 clarifications, and new patterns this codebase has discovered — not
 re-derivations of what's already here.
+
+### 2026-06-28 — deep-link routing journey pattern [Pattern discovered]
+
+**Journey:** `butlery://import?url=...` → SmartImport (BUT-1439).
+
+**Key findings:**
+
+1. `DeepLinkHandler` is a singleton (`DeepLinkHandler()` returns `_instance`).
+   Call `handler.reset()` in `setUp` to clear `_pendingDeepLink` / `_isInitialized`
+   state left from prior test runs or `initialize()` calls.
+
+2. `processDeepLink` is an INSTANCE method (not static). Obtain via `DeepLinkHandler()`.
+
+3. Auth gate (`authRepo.currentUser == null` → return early) is a genuine
+   false-green risk: if AuthRepository is not in the ServiceLocator with a
+   non-null `currentUser`, the method silently stores `_pendingDeepLink` and
+   returns without pushing anything. Use:
+   ```dart
+   TestServiceLocator.registerMock<AuthRepository>(
+     MockFactory.createAuthRepository(isAuthenticated: true, userId: 'test-user'),
+   );
+   ```
+   after `TestServiceLocator.initialize()` + `prod_locator.ServiceLocator.initialize(DIContainer())`.
+
+4. `processDeepLink` swallows ALL errors in a bare `catch (e) {}`. Guard against
+   false-greens by asserting the NavigatorObserver spy actually recorded a push
+   whose `settings.name == Routes.smartImport`. An empty `namedPushes` list with
+   a clear `reason:` message exposes silent failures.
+
+5. Use `tester.runAsync(() async { await handler.processDeepLink(...); })` to
+   drive the real async work, then `await tester.pumpAndSettle(Duration(seconds:3))`
+   to let the route settle.
+
+6. Stub `onGenerateRoute` to return a trivial `Scaffold` for every route name.
+   This lets `pushNamed(Routes.smartImport, ...)` succeed without pulling in
+   SmartImportView's full ImportManager / connectivity / clipboard DI graph.
+
+7. Route catalog addition: **Deep-link import** |
+   `deep_link_import_journey_test.dart` | proves `butlery://import?url=...`
+   lands on Routes.smartImport with the decoded URL as arguments; also proves
+   an unknown host (`butlery://evil.example.com/x`) pushes nothing.
