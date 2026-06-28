@@ -13841,6 +13841,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get newAccountSocialBlockedAction => 'Skicka bekräftelse';
 
   @override
+  String get newAccountSocialBlockedDm =>
+      'Bekräfta din e-post för att skicka meddelanden';
+
+  @override
+  String get newAccountSocialBlockedGroup =>
+      'Bekräfta din e-post för att bjuda in till grupp';
+
+  @override
   String get duplicateContentRejected =>
       'Du har precis skickat samma meddelande.';
 

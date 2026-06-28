@@ -7,6 +7,10 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/auth/account_maturity_helper.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/add_members_to_group/member_search_manager.dart';
 import 'package:butlery/viewmodels/add_members_to_group/member_selection_manager.dart';
@@ -20,6 +24,9 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class AddMembersToGroupViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
+  final AccountMaturityHelper _maturityHelper;
+  final UserService _userService;
+  final AuthRepository _authRepository;
 
   late final MemberSearchManager _searchManager;
   late final MemberSelectionManager _selectionManager;
@@ -38,7 +45,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   AddMembersToGroupViewModel({
     required this.groupId,
     required UnifiedFriendsService friendsService,
-  }) : _friendsService = friendsService {
+    AccountMaturityHelper? maturityHelper,
+    UserService? userService,
+    AuthRepository? authRepository,
+  }) : _friendsService = friendsService,
+       _maturityHelper = maturityHelper ?? AccountMaturityHelper(),
+       _userService = userService ?? ServiceLocator.get<UserService>(),
+       _authRepository =
+           authRepository ?? ServiceLocator.get<AuthRepository>() {
     _searchManager = MemberSearchManager();
     _selectionManager = MemberSelectionManager(
       () => _searchManager.filteredFriends,
@@ -81,6 +95,12 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       Map.unmodifiable(_invitationStatus);
 
   /// isLoading, error, hasError provided by StateNotifierMixin
+
+  /// True when the current account has passed the anti-spam maturity gate.
+  bool get isAccountMatured => _maturityHelper.isMatured(
+    profile: _userService.currentUserProfile,
+    firebaseUser: _authRepository.currentUser,
+  );
 
   bool get canSendInvitations => hasSelectedFriends && !_isSendingInvitations;
   bool get showEmptyState =>
@@ -175,6 +195,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       AppLogger.warning(
         '⚠️ Kan inte skicka inbjudningar - villkor inte uppfyllda',
       );
+      return false;
+    }
+
+    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
+    // The server is still the authority; this prevents the opaque
+    // permission-denied that new accounts would otherwise see.
+    if (!isAccountMatured) {
+      _setInvitationError(AppLocale.current.newAccountSocialBlockedGroup);
       return false;
     }
 

@@ -15,6 +15,8 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/auth/account_maturity_helper.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -35,6 +37,8 @@ class FriendsViewModel extends ChangeNotifier
   final UserService _userService;
   final AnalyticsService _analyticsService;
   final PermissionService _permissionService;
+  final AccountMaturityHelper _maturityHelper;
+  final AuthRepository _authRepository;
 
   late final FriendsSearchManager _searchManager;
   late final FriendsProfileCacheManager _profileCacheManager;
@@ -51,12 +55,17 @@ class FriendsViewModel extends ChangeNotifier
     required UserService userService,
     AnalyticsService? analyticsService,
     PermissionService? permissionService,
+    AccountMaturityHelper? maturityHelper,
+    AuthRepository? authRepository,
   }) : _friendsService = friendsService,
        _userService = userService,
        _analyticsService =
            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
        _permissionService =
-           permissionService ?? ServiceLocator.get<PermissionService>() {
+           permissionService ?? ServiceLocator.get<PermissionService>(),
+       _maturityHelper = maturityHelper ?? AccountMaturityHelper(),
+       _authRepository =
+           authRepository ?? ServiceLocator.get<AuthRepository>() {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
@@ -133,19 +142,35 @@ class FriendsViewModel extends ChangeNotifier
       _profileCacheManager.isLoadingUserProfiles ||
       _isCreatingGroup;
 
-  /// Comprehensive error state
+  /// Comprehensive error state.
+  ///
+  /// `super.error` (the BaseViewModel-set message) is appended LAST so an
+  /// explicit `setError(...)` — e.g. the maturity-gate guidance in
+  /// `sendFriendRequest` (BUT-1417) — actually surfaces. Without it this
+  /// override shadowed the mixin's `_error`, so `setError` writes were
+  /// invisible. Placed last to preserve the existing precedence of the
+  /// service/group/search errors; the maturity gate early-returns before any
+  /// of those can be set, so its message still shows.
   @override
   String? get error =>
       _friendsService.error ??
       _groupCreationError ??
-      _searchManager.searchError;
+      _searchManager.searchError ??
+      super.error;
 
-  /// Error presence indicator
+  /// Error presence indicator.
+  ///
+  /// Mirrors the [error] getter: includes `super.hasError` so an explicit
+  /// `setError(...)` (e.g. the BUT-1417 maturity-gate guidance) registers as
+  /// present. Without this, a view that guards on `hasError` before rendering
+  /// an error banner would silently suppress the maturity message even though
+  /// `error` returns it.
   @override
   bool get hasError =>
       _friendsService.hasError ||
       _groupCreationError != null ||
-      _searchManager.searchError != null;
+      _searchManager.searchError != null ||
+      super.hasError;
 
   /// Selected friend IDs
   Set<String> get selectedFriendIds => _selectionManager.selectedFriendIds;
@@ -179,8 +204,24 @@ class FriendsViewModel extends ChangeNotifier
   /// Clears search results and state
   void clearSearch() => _searchManager.clearSearch();
 
+  /// True when the current account has passed the anti-spam maturity gate.
+  /// Unmatured accounts should see guidance instead of a raw permission-denied.
+  bool get isAccountMatured => _maturityHelper.isMatured(
+    profile: _userService.currentUserProfile,
+    firebaseUser: _authRepository.currentUser,
+  );
+
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
+    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
+    // The server is still the authority; this prevents the opaque
+    // permission-denied that new accounts would otherwise see.
+    if (!isAccountMatured) {
+      setError(AppLocale.current.newAccountSocialBlocked);
+      notifyListeners();
+      return false;
+    }
+
     AppLogger.info('🔄 Sending friend request to ${userId.maskedUserId}...');
 
     final success = await _friendsService.management.sendFriendRequest(

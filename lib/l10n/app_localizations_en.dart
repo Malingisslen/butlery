@@ -13809,6 +13809,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newAccountSocialBlockedAction => 'Send verification';
 
   @override
+  String get newAccountSocialBlockedDm => 'Verify your email to send messages';
+
+  @override
+  String get newAccountSocialBlockedGroup =>
+      'Verify your email to invite members to a group';
+
+  @override
   String get duplicateContentRejected => 'You just sent the same message.';
 
   @override

@@ -9410,6 +9410,8 @@
   "myReportsRetry": "Försök igen",
   "newAccountSocialBlocked": "Bekräfta din e-post för att lägga till vänner",
   "newAccountSocialBlockedAction": "Skicka bekräftelse",
+  "newAccountSocialBlockedDm": "Bekräfta din e-post för att skicka meddelanden",
+  "newAccountSocialBlockedGroup": "Bekräfta din e-post för att bjuda in till grupp",
   "duplicateContentRejected": "Du har precis skickat samma meddelande.",
   "contentFilterWarning": "Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.",
   "noResults": "Inga resultat",

@@ -9,6 +9,9 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/auth/account_maturity_helper.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -30,6 +33,9 @@ class ChatViewModel extends ChangeNotifier
   ContentFilterService? _contentFilter;
   UnifiedFriendsService? _friendsService;
   StreamSubscription? _friendsSubscription;
+  final AccountMaturityHelper _maturityHelper;
+  UserService? _userService;
+  AuthRepository? _authRepository;
 
   final String conversationId;
 
@@ -58,9 +64,15 @@ class ChatViewModel extends ChangeNotifier
     required this.conversationId,
     Conversation? initialConversation,
     PresenceService? presenceService,
+    AccountMaturityHelper? maturityHelper,
+    UserService? userService,
+    AuthRepository? authRepository,
   }) : _messagingService = messagingService,
        _presenceService = presenceService,
-       _conversation = initialConversation {
+       _conversation = initialConversation,
+       _maturityHelper = maturityHelper ?? AccountMaturityHelper(),
+       _userService = userService,
+       _authRepository = authRepository {
     try {
       _contentFilter = ServiceLocator.get<ContentFilterService>();
     } catch (_) {
@@ -71,6 +83,8 @@ class ChatViewModel extends ChangeNotifier
     } catch (_) {
       // Friends service not available — allow sending by default
     }
+    _userService ??= ServiceLocator.tryGet<UserService>();
+    _authRepository ??= ServiceLocator.tryGet<AuthRepository>();
     // Start in loading state until messages arrive from stream
     setLoading(true);
     _initializeChat();
@@ -126,6 +140,12 @@ class ChatViewModel extends ChangeNotifier
   /// True when messaging is blocked because users are no longer friends.
   bool get isFriendshipBlocked =>
       !_isFriendWithOther && !(_conversation?.isGroup ?? true);
+
+  /// True when the current account has passed the anti-spam maturity gate.
+  bool get isAccountMatured => _maturityHelper.isMatured(
+    profile: _userService?.currentUserProfile,
+    firebaseUser: _authRepository?.currentUser,
+  );
 
   void _initializeChat() {
     if (_isDisposed) return;
@@ -268,6 +288,15 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return false;
     if (!canSendMessages) return false;
 
+    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
+    // The server is still the authority; this prevents the opaque
+    // permission-denied that new accounts would otherwise see.
+    if (!isAccountMatured) {
+      _sendError = AppLocale.current.newAccountSocialBlockedDm;
+      _safeNotifyListeners();
+      return false;
+    }
+
     if (content.trim().isEmpty) {
       _sendError = AppLocale.current.errorMessageCannotBeEmpty;
       _safeNotifyListeners();
@@ -329,6 +358,13 @@ class ChatViewModel extends ChangeNotifier
   }) async {
     if (_isDisposed) return false;
     if (!canSendMessages) return false;
+
+    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
+    if (!isAccountMatured) {
+      _sendError = AppLocale.current.newAccountSocialBlockedDm;
+      _safeNotifyListeners();
+      return false;
+    }
 
     _isSending = true;
     _sendError = null;
@@ -532,6 +568,13 @@ class ChatViewModel extends ChangeNotifier
   }) async {
     if (_isDisposed || _replyToMessage == null) return false;
     if (!canSendMessages) return false;
+
+    // Client-side mirror of the server isAccountMatured() gate (BUT-659).
+    if (!isAccountMatured) {
+      _sendError = AppLocale.current.newAccountSocialBlockedDm;
+      _safeNotifyListeners();
+      return false;
+    }
 
     _isSending = true;
     _sendError = null;

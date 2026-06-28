@@ -23183,6 +23183,18 @@ abstract class AppLocalizations {
   /// **'Skicka bekräftelse'**
   String get newAccountSocialBlockedAction;
 
+  /// No description provided for @newAccountSocialBlockedDm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta din e-post för att skicka meddelanden'**
+  String get newAccountSocialBlockedDm;
+
+  /// No description provided for @newAccountSocialBlockedGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta din e-post för att bjuda in till grupp'**
+  String get newAccountSocialBlockedGroup;
+
   /// No description provided for @duplicateContentRejected.
   ///
   /// In sv, this message translates to:
