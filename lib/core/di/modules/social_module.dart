@@ -41,6 +41,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
@@ -110,6 +112,7 @@ class SocialModule implements DIModule {
     BlockedUserFilter,
     HouseholdService,
     HouseholdRepository,
+    DinerProfileRepository,
   ];
 
   @override
@@ -136,6 +139,13 @@ class SocialModule implements DIModule {
     container.registerLazySingleton<HouseholdRepository>(
       () => FirebaseHouseholdRepository(
         authRepository: container<AuthRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<DinerProfileRepository>(
+      () => FirebaseDinerProfileRepository(
+        authRepository: container<AuthRepository>(),
+        householdRepository: container<HouseholdRepository>(),
       ),
     );
 
