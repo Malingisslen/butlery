@@ -19,6 +19,27 @@
   "commonYes": "Yes",
   "commonNo": "No",
   "commonRetry": "Retry",
+  "stateSuccessDefault": "Done",
+  "@stateSuccessDefault": {
+    "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
+  },
+  "a11yRequiredFieldSuffix": "{label} (required)",
+  "@a11yRequiredFieldSuffix": {
+    "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceModeTitle": "Maintenance mode",
+  "@maintenanceModeTitle": {
+    "description": "Title on the full-screen maintenance blocker (BUT-1430)"
+  },
+  "maintenanceModeDefaultMessage": "We're making a quick update. Please try again shortly.",
+  "@maintenanceModeDefaultMessage": {
+    "description": "Fallback body on the maintenance blocker when the server provides no message (BUT-1430)"
+  },
   "commonLoading": "Loading...",
   "commonWorking": "Working...",
   "commonDeleting": "Deleting...",

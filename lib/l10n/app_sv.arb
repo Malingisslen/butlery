@@ -19,6 +19,27 @@
   "commonYes": "Ja",
   "commonNo": "Nej",
   "commonRetry": "Försök igen",
+  "stateSuccessDefault": "Klart",
+  "@stateSuccessDefault": {
+    "description": "Default title on the shared success state when no explicit title is passed (BUT-1430)"
+  },
+  "a11yRequiredFieldSuffix": "{label} (obligatorisk)",
+  "@a11yRequiredFieldSuffix": {
+    "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenanceModeTitle": "Underhållsläge",
+  "@maintenanceModeTitle": {
+    "description": "Title on the full-screen maintenance blocker (BUT-1430)"
+  },
+  "maintenanceModeDefaultMessage": "Vi gör en kort uppdatering. Försök igen om en stund.",
+  "@maintenanceModeDefaultMessage": {
+    "description": "Fallback body on the maintenance blocker when the server provides no message (BUT-1430)"
+  },
   "commonLoading": "Laddar...",
   "commonWorking": "Arbetar...",
   "commonDeleting": "Tar bort...",

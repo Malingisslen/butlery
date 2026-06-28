@@ -63,6 +63,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String get stateSuccessDefault => 'Done';
+
+  @override
+  String a11yRequiredFieldSuffix(String label) {
+    return '$label (required)';
+  }
+
+  @override
+  String get maintenanceModeTitle => 'Maintenance mode';
+
+  @override
+  String get maintenanceModeDefaultMessage =>
+      'We\'re making a quick update. Please try again shortly.';
+
+  @override
   String get commonLoading => 'Loading...';
 
   @override

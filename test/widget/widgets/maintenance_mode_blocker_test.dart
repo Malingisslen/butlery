@@ -12,11 +12,22 @@
 /// Config plumbing.
 library;
 
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/widgets/maintenance_mode_blocker.dart';
 import 'package:butlery/widgets/maintenance_mode_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Wraps the gate in a MaterialApp with localization delegates and a pinned
+/// Swedish locale, so the now-localized blocker copy (BUT-1430) renders the
+/// Swedish strings these tests assert.
+Widget _app(Widget home) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: home,
+);
 
 class _StubFlagService implements FeatureFlagService {
   bool maintenanceMode = false;
@@ -77,8 +88,8 @@ void main() {
     ) async {
       final flags = _StubFlagService();
       await tester.pumpWidget(
-        MaterialApp(
-          home: MaintenanceModeGate(
+        _app(
+          MaintenanceModeGate(
             featureFlagServiceOverride: flags,
             child: const Text('home content'),
           ),
@@ -94,8 +105,8 @@ void main() {
         ..maintenanceMode = true
         ..message = 'Stör inte. Vi jobbar.';
       await tester.pumpWidget(
-        MaterialApp(
-          home: MaintenanceModeGate(
+        _app(
+          MaintenanceModeGate(
             featureFlagServiceOverride: flags,
             child: const Text('home content'),
           ),
@@ -114,8 +125,8 @@ void main() {
       (tester) async {
         final flags = _StubFlagService()..maintenanceMode = true;
         await tester.pumpWidget(
-          MaterialApp(
-            home: MaintenanceModeGate(
+          _app(
+            MaintenanceModeGate(
               featureFlagServiceOverride: flags,
               child: const Text('home'),
             ),
@@ -134,8 +145,8 @@ void main() {
     ) async {
       final flags = _StubFlagService()..maintenanceMode = true;
       await tester.pumpWidget(
-        MaterialApp(
-          home: MaintenanceModeGate(
+        _app(
+          MaintenanceModeGate(
             featureFlagServiceOverride: flags,
             child: const Text('home content'),
           ),
@@ -158,8 +169,8 @@ void main() {
     ) async {
       final flags = _StubFlagService();
       await tester.pumpWidget(
-        MaterialApp(
-          home: MaintenanceModeGate(
+        _app(
+          MaintenanceModeGate(
             featureFlagServiceOverride: flags,
             child: const Text('home content'),
           ),

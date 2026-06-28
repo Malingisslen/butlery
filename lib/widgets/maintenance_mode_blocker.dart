@@ -9,15 +9,16 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 class MaintenanceModeBlocker extends StatelessWidget {
-  /// User-facing Swedish copy from Remote Config. Falls back to a generic
-  /// message if the override string is empty.
+  /// User-facing copy from Remote Config. Falls back to a localized generic
+  /// message ([AppLocalizations.maintenanceModeDefaultMessage]) when empty.
   final String message;
 
-  /// Triggered by the "Försök igen" button. Should call
+  /// Triggered by the retry button. Should call
   /// `FeatureFlagService.refresh()` and re-evaluate the maintenance flag.
   final VoidCallback onRetry;
 
@@ -27,13 +28,12 @@ class MaintenanceModeBlocker extends StatelessWidget {
     required this.onRetry,
   });
 
-  static const String _defaultMessage =
-      'Vi gör en kort uppdatering. Försök igen om en stund.';
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final displayMessage = message.trim().isEmpty ? _defaultMessage : message;
+    final displayMessage = message.trim().isEmpty
+        ? context.l10n.maintenanceModeDefaultMessage
+        : message;
 
     return MediaQuery(
       // Clamp text scaling so a user with extreme accessibility settings
@@ -60,7 +60,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
                   Text(
-                    'Underhållsläge',
+                    context.l10n.maintenanceModeTitle,
                     style: AppTextStyles.headlineMedium.copyWith(
                       color: cs.onPrimary,
                     ),
@@ -85,7 +85,7 @@ class MaintenanceModeBlocker extends StatelessWidget {
                       ),
                       minimumSize: const Size(160, 48),
                     ),
-                    child: const Text('Försök igen'),
+                    child: Text(context.l10n.commonRetry),
                   ),
                 ],
               ),

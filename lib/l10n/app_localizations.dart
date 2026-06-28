@@ -206,6 +206,30 @@ abstract class AppLocalizations {
   /// **'Försök igen'**
   String get commonRetry;
 
+  /// Default title on the shared success state when no explicit title is passed (BUT-1430)
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart'**
+  String get stateSuccessDefault;
+
+  /// Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)
+  ///
+  /// In sv, this message translates to:
+  /// **'{label} (obligatorisk)'**
+  String a11yRequiredFieldSuffix(String label);
+
+  /// Title on the full-screen maintenance blocker (BUT-1430)
+  ///
+  /// In sv, this message translates to:
+  /// **'Underhållsläge'**
+  String get maintenanceModeTitle;
+
+  /// Fallback body on the maintenance blocker when the server provides no message (BUT-1430)
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi gör en kort uppdatering. Försök igen om en stund.'**
+  String get maintenanceModeDefaultMessage;
+
   /// No description provided for @commonLoading.
   ///
   /// In sv, this message translates to:

@@ -13,11 +13,23 @@
 // nested EditableText node and labelText, and findBySemanticsLabel
 // reliably resolves both.
 
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
+  home: Scaffold(
+    body: SizedBox(width: 320, child: child),
+  ),
+);
+
+/// Localized wrapper (pinned to Swedish) for the required-field marker test,
+/// which exercises the `context.l10n.a11yRequiredFieldSuffix` path (BUT-1430).
+Widget _wrapLocalized(Widget child) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
   home: Scaffold(
     body: SizedBox(width: 320, child: child),
   ),
@@ -72,6 +84,33 @@ void main() {
 
       expect(find.bySemanticsLabel('Sök bland recept'), findsOneWidget);
     });
+
+    testWidgets(
+      'required field appends a localized required marker (BUT-1430)',
+      (
+        tester,
+      ) async {
+        // Was a hardcoded `'$label (obligatorisk)'`; now localized so English
+        // users hear "(required)" instead of Swedish. Pinned to sv here.
+        await tester.pumpWidget(
+          _wrapLocalized(
+            const StyledFormField(
+              label: 'Epost',
+              isRequired: true,
+              child: TextField(),
+            ),
+          ),
+        );
+
+        // Inspect the Semantics widget StyledFormField declares (mirrors the
+        // textField-wrapper test below) — robust against the child TextField's
+        // own merged semantics node.
+        final labelled = tester
+            .widgetList<Semantics>(find.byType(Semantics))
+            .where((s) => s.properties.label == 'Epost (obligatorisk)');
+        expect(labelled, hasLength(1));
+      },
+    );
 
     testWidgets('exposes textField semantics on the wrapper Semantics widget', (
       tester,

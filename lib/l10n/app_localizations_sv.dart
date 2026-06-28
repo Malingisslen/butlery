@@ -63,6 +63,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonRetry => 'Försök igen';
 
   @override
+  String get stateSuccessDefault => 'Klart';
+
+  @override
+  String a11yRequiredFieldSuffix(String label) {
+    return '$label (obligatorisk)';
+  }
+
+  @override
+  String get maintenanceModeTitle => 'Underhållsläge';
+
+  @override
+  String get maintenanceModeDefaultMessage =>
+      'Vi gör en kort uppdatering. Försök igen om en stund.';
+
+  @override
   String get commonLoading => 'Laddar...';
 
   @override

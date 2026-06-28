@@ -3,6 +3,7 @@
 // UI Redesign: Error states now use red onion illustration
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -44,7 +45,7 @@ class MessageStates {
 
               // Error titel
               Text(
-                title ?? 'Ett fel uppstod',
+                title ?? context.l10n.commonErrorOccurred,
                 style: AppTextStyles.emptyStateTitle.copyWith(
                   color: Theme.of(context).colorScheme.secondary,
                 ),
@@ -107,7 +108,7 @@ class MessageStates {
 
               // Success titel
               Text(
-                title ?? 'Klart!',
+                title ?? context.l10n.stateSuccessDefault,
                 style: AppTextStyles.headlineSmall.copyWith(
                   color: context.butleryColors.success,
                 ),
