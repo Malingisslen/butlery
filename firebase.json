@@ -3,7 +3,7 @@
     "source": "functions",
     "predeploy": [
       "npm --prefix functions ci",
-      "npm --prefix functions audit --audit-level=critical",
+      "npm --prefix functions audit --audit-level=high",
       "npm --prefix functions run build"
     ],
     "runtime": "nodejs22"
