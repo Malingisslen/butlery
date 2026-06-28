@@ -11,6 +11,7 @@ FeedbackEntry _entry({
   String? screenshotUrl,
   List<Map<String, dynamic>> interactions = const [],
   String? deviceInfo,
+  DateTime? createdAt,
 }) {
   return FeedbackEntry(
     id: 'f1',
@@ -20,7 +21,7 @@ FeedbackEntry _entry({
     email: email,
     screenshotUrl: screenshotUrl,
     recentInteractions: interactions,
-    createdAt: DateTime.utc(2026, 1, 1, 10),
+    createdAt: createdAt ?? DateTime.utc(2026, 1, 1, 10),
     deviceInfo: deviceInfo,
   );
 }
@@ -35,6 +36,27 @@ void main() {
     test('serializes createdAt as ISO 8601 string', () {
       final m = _entry().toMap();
       expect(m['createdAt'], '2026-01-01T10:00:00.000Z');
+    });
+
+    test('serializes a local createdAt as a UTC Z string (BUT-1408)', () {
+      // Production writes `clock.now()` (local). The feedback daily-snapshot
+      // reader builds UTC `…Z` boundaries and range-compares lexicographically,
+      // so a zoneless local string is bucketed on the wrong UTC day and
+      // mis-compared at the boundary. The serialized value must be UTC.
+      final local = DateTime(2026, 6, 28, 1, 30); // zone-local (no `Z`)
+      final iso = _entry(createdAt: local).toMap()['createdAt'] as String;
+
+      expect(
+        iso.endsWith('Z'),
+        isTrue,
+        reason:
+            'createdAt must serialize in UTC so snapshot bucketing is '
+            'correct (BUT-1408)',
+      );
+      // Timezone-independent: the stored value is exactly the UTC projection
+      // of the same local instant (only the numeric hour is unchanged when the
+      // machine is at UTC — the `Z` suffix is still added either way).
+      expect(iso, local.toUtc().toIso8601String());
     });
 
     test('preserves nullable email / screenshotUrl / deviceInfo as null', () {

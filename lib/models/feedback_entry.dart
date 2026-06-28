@@ -63,7 +63,12 @@ class FeedbackEntry {
     'email': email,
     'screenshotUrl': screenshotUrl,
     'recentInteractions': recentInteractions,
-    'createdAt': createdAt.toIso8601String(),
+    // Serialize in UTC (always `…Z`) so the feedback daily-snapshot reader
+    // (functions/.../daily-snapshots.ts) buckets each row on the correct UTC
+    // day and its lexicographic range-compare against UTC `…Z` boundaries is
+    // exact. A zoneless local string mis-bucketed UTC+offset users and broke
+    // the `feedback_total` anomaly series (BUT-1408).
+    'createdAt': createdAt.toUtc().toIso8601String(),
     'deviceInfo': deviceInfo,
     'status': status.wireName,
   };
