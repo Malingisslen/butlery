@@ -15,7 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/cook_event.dart';
 
 void main() {
-  test('toFirestore carries only recipeId + cookedAt', () {
+  test('toFirestore carries only recipeId + cookedAt when no attendees', () {
     final e = CookEvent(
       id: 'evt1',
       userId: 'user1',
@@ -26,6 +26,19 @@ void main() {
     expect(json.keys, containsAll(<String>['recipeId', 'cookedAt']));
     expect(json.containsKey('userId'), isFalse);
     expect(json.containsKey('id'), isFalse);
+    // Empty attendance keeps the historical two-field shape.
+    expect(json.containsKey('attendeeMemberIds'), isFalse);
+  });
+
+  test('toFirestore includes attendeeMemberIds only when non-empty', () {
+    final e = CookEvent(
+      id: 'evt1',
+      userId: 'user1',
+      recipeId: 'r1',
+      cookedAt: DateTime.utc(2026, 1, 5),
+      attendeeMemberIds: const ['liam', 'user1'],
+    );
+    expect(e.toFirestore()['attendeeMemberIds'], ['liam', 'user1']);
   });
 
   group('fromFirestore', () {
@@ -74,6 +87,26 @@ void main() {
         'cookedAt': '2026-01-05T00:00:00.000Z',
       });
       expect(e.cookedAt.isAtSameMomentAs(DateTime.utc(2026, 1, 5)), isTrue);
+    });
+
+    test(
+      'defaults attendeeMemberIds to empty when the field is absent',
+      () async {
+        final e = await readEvent(FakeFirebaseFirestore(), 'user1', 'evt4', {
+          'recipeId': 'r1',
+          'cookedAt': DateTime.utc(2026, 1, 5),
+        });
+        expect(e.attendeeMemberIds, isEmpty);
+      },
+    );
+
+    test('round-trips a stored attendeeMemberIds list', () async {
+      final e = await readEvent(FakeFirebaseFirestore(), 'user1', 'evt5', {
+        'recipeId': 'r1',
+        'cookedAt': DateTime.utc(2026, 1, 5),
+        'attendeeMemberIds': ['liam', 'emma'],
+      });
+      expect(e.attendeeMemberIds, ['liam', 'emma']);
     });
   });
 }

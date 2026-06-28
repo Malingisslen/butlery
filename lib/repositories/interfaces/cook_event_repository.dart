@@ -17,7 +17,15 @@ abstract class CookEventRepository extends Repository<CookEvent> {
   /// Returns true on commit, false on auth-missing / write failure
   /// (the boolean contract `RecipeCookingService` builds its retry-safe
   /// session guard on).
-  Future<bool> logCookEvent(String recipeId, DateTime cookedAt);
+  ///
+  /// [attendeeMemberIds] records who was eating (the "who's eating today" pick,
+  /// roster member ids). Defaults to empty — when empty the stored doc keeps its
+  /// original `{recipeId, cookedAt}` shape.
+  Future<bool> logCookEvent(
+    String recipeId,
+    DateTime cookedAt, {
+    List<String> attendeeMemberIds = const [],
+  });
 
   /// Number of cook events for [userId] with `cookedAt >= since`
   /// (boundary inclusive). Owner-only — throws `PermissionDeniedException`

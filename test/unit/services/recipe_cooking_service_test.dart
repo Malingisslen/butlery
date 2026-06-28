@@ -151,5 +151,65 @@ void main() {
 
       expect(captured, equals(fixed));
     });
+
+    test('threads attendeeMemberIds through to logCookEvent', () async {
+      List<String>? captured;
+      when(
+        () => repo.logCookEvent(
+          any(),
+          any(),
+          attendeeMemberIds: any(named: 'attendeeMemberIds'),
+        ),
+      ).thenAnswer((inv) async {
+        captured = inv.namedArguments[#attendeeMemberIds] as List<String>;
+        return true;
+      });
+
+      await withClock(Clock.fixed(DateTime(2026, 4, 20, 18)), () async {
+        await service.markAsCooked(
+          'r1',
+          attendeeMemberIds: const ['liam', 'u1'],
+        );
+      });
+
+      expect(captured, ['liam', 'u1']);
+    });
+
+    test(
+      'session guard suppresses a same-day repeat even when attendees differ',
+      () async {
+        when(
+          () => repo.logCookEvent(
+            any(),
+            any(),
+            attendeeMemberIds: any(named: 'attendeeMemberIds'),
+          ),
+        ).thenAnswer((_) async => true);
+
+        await withClock(Clock.fixed(DateTime(2026, 4, 21, 18)), () async {
+          final first = await service.markAsCooked(
+            'r1',
+            attendeeMemberIds: const ['liam'],
+          );
+          final second = await service.markAsCooked(
+            'r1',
+            attendeeMemberIds: const ['emma'],
+          );
+          expect(first, isTrue);
+          // Dedup key is recipe|day, NOT attendee-aware — a different attendee
+          // set on the same recipe/day must still be one write, or rapid taps
+          // would double-count.
+          expect(second, isFalse);
+        });
+
+        verify(
+          () => repo.logCookEvent(
+            'r1',
+            any(),
+            attendeeMemberIds: any(named: 'attendeeMemberIds'),
+          ),
+        ).called(1);
+      },
+    );
   });
 }

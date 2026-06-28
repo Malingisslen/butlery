@@ -1297,11 +1297,16 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == userId
         && hasRequiredFields(['recipeId', 'cookedAt'])
-        && request.resource.data.keys().hasOnly(['recipeId', 'cookedAt'])
+        && request.resource.data.keys().hasOnly(['recipeId', 'cookedAt', 'attendeeMemberIds'])
         && request.resource.data.recipeId is string
         && request.resource.data.recipeId.size() > 0
         && request.resource.data.recipeId.size() <= 200
-        && request.resource.data.cookedAt is timestamp;
+        && request.resource.data.cookedAt is timestamp
+        // attendeeMemberIds optional (who's-eating pick); when present it must be
+        // a bounded list — a household roster is small, the cap blocks abuse.
+        && (!('attendeeMemberIds' in request.resource.data)
+            || (request.resource.data.attendeeMemberIds is list
+                && request.resource.data.attendeeMemberIds.size() <= 50));
 
       allow update: if false;
 

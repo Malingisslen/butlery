@@ -256,6 +256,64 @@ test("cook_events: non-timestamp cookedAt is rejected", async () => {
   );
 });
 
+// CE14a: owner can create an event WITH an attendeeMemberIds list (who's-eating).
+test("cook_events: create with a valid attendeeMemberIds list is accepted", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-attendees-ok-${RUN}`)
+      .set(validEventBody({ attendeeMemberIds: ["liam", OWNER_UID] }))
+  );
+});
+
+// CE14b: an empty attendeeMemberIds list is still a valid list (boundary —
+// the client omits the field when empty, but [] must not be rejected).
+test("cook_events: create with an empty attendeeMemberIds list is accepted", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-attendees-empty-${RUN}`)
+      .set(validEventBody({ attendeeMemberIds: [] }))
+  );
+});
+
+// CE14c: attendeeMemberIds at the 50-entry cap is accepted (size() <= 50).
+test("cook_events: attendeeMemberIds of exactly 50 entries is accepted", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  const fifty = Array.from({ length: 50 }, (_, i) => `m${i}`);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-attendees-50-${RUN}`)
+      .set(validEventBody({ attendeeMemberIds: fifty }))
+  );
+});
+
+// CE14d: oversized attendeeMemberIds (51) is rejected (size() <= 50).
+test("cook_events: oversized attendeeMemberIds list is rejected", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  const fiftyOne = Array.from({ length: 51 }, (_, i) => `m${i}`);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-attendees-51`)
+      .set(validEventBody({ attendeeMemberIds: fiftyOne }))
+  );
+});
+
+// CE14e: a non-list attendeeMemberIds is rejected (`is list`).
+test("cook_events: non-list attendeeMemberIds is rejected", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${eventsPath(OWNER_UID)}/ce-attendees-str`)
+      .set(validEventBody({ attendeeMemberIds: "liam" }))
+  );
+});
+
 // ============================================================================
 // RECIPE COOK EVENTS — update DENIED (append-only log)
 // ============================================================================

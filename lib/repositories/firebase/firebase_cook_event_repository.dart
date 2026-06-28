@@ -111,7 +111,11 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
   }
 
   @override
-  Future<bool> logCookEvent(String recipeId, DateTime cookedAt) async {
+  Future<bool> logCookEvent(
+    String recipeId,
+    DateTime cookedAt, {
+    List<String> attendeeMemberIds = const [],
+  }) async {
     if (recipeId.isEmpty) return false;
 
     final userId = currentUserId;
@@ -127,6 +131,7 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
         userId: userId,
         recipeId: recipeId,
         cookedAt: cookedAt,
+        attendeeMemberIds: attendeeMemberIds,
       );
 
       final canCreate = await validateCreatePermission(userId, event);

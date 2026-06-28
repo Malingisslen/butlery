@@ -28,7 +28,13 @@ class RecipeCookingService extends BaseService {
   /// Atomically log a cook event + increment cook count / lastCookedAt.
   /// Returns true if the write happened; false when rejected by the
   /// session guard (already cooked today) or an underlying write failure.
-  Future<bool> markAsCooked(String recipeId) async {
+  ///
+  /// [attendeeMemberIds] records who was eating (the "who's eating today" pick);
+  /// defaults to empty, leaving the historical no-attendance behavior intact.
+  Future<bool> markAsCooked(
+    String recipeId, {
+    List<String> attendeeMemberIds = const [],
+  }) async {
     if (recipeId.isEmpty) return false;
 
     final now = clock.now();
@@ -43,7 +49,11 @@ class RecipeCookingService extends BaseService {
       return false;
     }
 
-    final ok = await _cookEventRepository.logCookEvent(recipeId, now);
+    final ok = await _cookEventRepository.logCookEvent(
+      recipeId,
+      now,
+      attendeeMemberIds: attendeeMemberIds,
+    );
     if (ok) {
       _cookedThisSession.add(key);
     }

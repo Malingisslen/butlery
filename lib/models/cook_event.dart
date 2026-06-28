@@ -20,11 +20,18 @@ class CookEvent {
   final String recipeId;
   final DateTime cookedAt;
 
+  /// Roster member ids present at this cook (the "who's eating today" pick) —
+  /// account `userId`s and `DinerProfile.id`s, as resolved by the household
+  /// roster. Empty when no attendance was recorded (the default), which keeps
+  /// the stored doc to `{recipeId, cookedAt}` for backward compatibility.
+  final List<String> attendeeMemberIds;
+
   const CookEvent({
     required this.id,
     required this.userId,
     required this.recipeId,
     required this.cookedAt,
+    this.attendeeMemberIds = const [],
   });
 
   factory CookEvent.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -43,12 +50,19 @@ class CookEvent {
         'cookedAt',
         defaultValue: DateTime.fromMillisecondsSinceEpoch(0),
       ),
+      attendeeMemberIds: SerializationUtils.safeStringList(
+        data,
+        'attendeeMemberIds',
+      ),
     );
   }
 
   /// Document fields only — `userId` lives in the path, `id` is the doc id.
+  /// `attendeeMemberIds` is omitted when empty so historical events and
+  /// no-attendance cooks keep the original two-field shape.
   Map<String, dynamic> toFirestore() => {
     'recipeId': recipeId,
     'cookedAt': Timestamp.fromDate(cookedAt),
+    if (attendeeMemberIds.isNotEmpty) 'attendeeMemberIds': attendeeMemberIds,
   };
 }
