@@ -2049,3 +2049,102 @@ server-side truncation.
   internally as a range filter) + `timestamp <` on a different field is
   supported without needing to restructure the query or add a discriminant
   field at write time.
+
+### 2026-06-28 — BUT-1392 CF tests wired into CI [Pattern discovered]
+
+Added the Cloud Functions unit-test CI gate (`cloud-functions-unit.yml`).
+Findings and patterns for future reference:
+
+**5 test files had no npm script** (run-all-tests.js auto-discovers `test:*`
+so missing scripts = missing coverage with no error):
+- `acquisition-rules.test.ts` — emulator-bound rules test; got `test:rules:acquisition`
+  and was added to `test:rules:all`. NOT added to DI-seam auto-discovery (prefix
+  `test:rules:` is excluded by the runner).
+- `log-parse-event-domain.test.ts` — DI-seam unit; got `test:log-parse-event-domain`.
+- `rate-limiter-refill.test.ts` — DI-seam unit; got `test:rate-limiter-refill`.
+- `validate-limit.test.ts` — DI-seam unit; got `test:validate-limit`.
+- `winback-context.test.ts` — DI-seam unit; got `test:winback-context`.
+
+**Two config gaps in `firestore-rules.yml`**: the path filter lists for both
+`pull_request` and `push` were missing 7 test files that ARE in `test:rules:all`
+(`realtime-menus-rules`, `friend-categories-rules`, `members-collection-group-rules`,
+`friends-accept-rules`, `recipe-ratings-rules`, `accept-friend-request.integration`,
+`on-report-created.integration`) plus `acquisition-rules.test.ts`. All added.
+Also added `functions/src/social/**` path trigger (was missing; `social/` changes
+could affect friends-accept and on-report-created without triggering the rules CI).
+
+**Two pre-existing broken suites excluded from the new CI gate** — MUST NOT be
+included in `cloud-functions-unit.yml` or the gate is red on day 1:
+
+1. `test:app-check-enforcement` — `verifySignupAge` (BUT-1386) and
+   `acceptFriendRequest` (B1 commit) are new `onCall` exports but were never
+   added to the test's `USER_FACING` or `ADMIN_EXEMPT` classification sets.
+   Fix: add both to `USER_FACING` (both are user-callable, not admin-only).
+
+2. `test:request-account-deletion` — `deleteUserSubcollections` in
+   `account/account-deletion-cascade.ts` gained a
+   `.orderBy(FieldPath.documentId()).startAt(...).endAt(...)` chain in BUT-1390
+   (commit 08e04be29). The unit test's `makeFakeDb.makeCollection` fake does not
+   stub `orderBy()`, so the chain blows up and the `user_subcollections` step
+   shows as failed. Fix: add `orderBy() { return this; }` to the query stub in
+   the test file.
+
+Both failures confirmed pre-existing on main (neither file appears in `git diff`).
+Documented in `functions/scripts/run-ci-unit-tests.js` with fix instructions.
+
+**CI job shape** (`cloud-functions-unit.yml`): Node 22, `npm ci` → `npm run build`
+→ `node scripts/run-ci-unit-tests.js`. No Java/emulator needed. Triggers on any
+`functions/src/**` change. 51/51 suites, ~108s locally.
+
+**Distinction between the two runners**:
+- `run-all-tests.js` — developer tool, runs ALL discovered suites including the
+  two broken ones. Intent: "see everything, decide what to fix". 49 suites (53
+  discovered minus the 4 new ones that just got added = 53 total now).
+- `run-ci-unit-tests.js` — CI tool, excludes 2 known-broken suites. 51/51 green.
+  Remove a suite from `CI_EXCLUDE` once it's fixed locally and confirmed green.
+
+Pattern: whenever a new `onCall` export is added, immediately update the
+`USER_FACING` or `ADMIN_EXEMPT` set in `app-check-enforcement.test.ts`. Forgetting
+this is the source of the test:app-check-enforcement failure.
+
+### 2026-06-28 — BUT-1423 post-deploy smoke gate in deploy-firebase.yml [Pattern discovered]
+
+Added a post-deploy presence-check step to `.github/workflows/deploy-firebase.yml`
+(runs after the Deploy step, before the Summary). Fires only when `DEPLOY_TARGET`
+is `functions` or `all`.
+
+**Mechanism**: `firebase functions:list --project butlery-app-1 --json` queries
+the Cloud Functions control plane and returns the deployed function manifest.
+A bash loop checks that 8 representative function names appear as quoted tokens
+in that JSON output. Any missing name exits 1 and fails the workflow with a
+`::error::` annotation.
+
+**Why `firebase functions:list --json` and substring grep**:
+- The `--json` flag gives a stable machine-readable format.
+- `grep -qF '"functionName"'` (fixed-string literal match) is simple, no JSON
+  parser needed, and is robust to minor field-order changes across firebase-tools
+  versions.
+- The function name appears in the `"name"` resource path and/or as an `"id"`
+  field; either occurrence makes the grep succeed.
+
+**8 representative functions chosen** (span all major families, stable long-term):
+`structureRecipe`, `ocrRecipeImage` (LLM callables), `sendNotification`
+(notifications), `onUserDeleted` (GDPR cascade), `verifySignupAge` (age-gate),
+`requestAccountDeletion` (account), `cleanupExpiredCache` (cleanup scheduler),
+`drainRatingAggregations` (rating scheduler). Migration-lifecycle-bound functions
+(e.g. `backfillRecipeCommentsDenorm`) are deliberately excluded — they may be
+removed and a false-fail would block future deploys.
+
+**Fail-safe contract**: the step has NO error suppression. If `firebase
+functions:list` itself errors (auth failure, network blip, CLI bug), `set -euo
+pipefail` propagates the non-zero exit. Better a false-fail (redeploy to
+investigate) than a silent pass over a broken function fleet.
+
+**Auth**: no new secrets. `GOOGLE_APPLICATION_CREDENTIALS` is set by the
+Authenticate step earlier in the same job; the `env:` block in the new step
+passes it through.
+
+**Lesson**: `firebase deploy` exiting 0 does NOT guarantee all functions are
+callable. A bad runtime-config or build artifact can leave individual functions
+in `DEPLOY_FAILED` state on the backend. The only way to detect that in CI is
+a separate control-plane query after deploy.
