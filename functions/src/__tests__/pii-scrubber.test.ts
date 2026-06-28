@@ -11,7 +11,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { scrubPii, scrubUrlParams } from "../llm/pii-scrubber";
+import {
+  scrubPii,
+  scrubUrlParams,
+  scrubPayload,
+  looksLikeBase64Blob,
+} from "../llm/pii-scrubber";
 
 interface Case {
   name: string;
@@ -197,12 +202,43 @@ const URL_CASES: UrlCase[] = [
     expectKept: ["section=ingredienser", "token=:redacted"],
   },
   {
-    name:
-      "BUT-765: parity-pin — percent-encoded fragment redacts after decode",
-    input:
-      "https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra",
+    name: "BUT-765: parity-pin — percent-encoded fragment redacts after decode",
+    input: "https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra",
     expectStripped: ["eyJhbGciOiJIUzI1NiJ9_extra"],
     expectKept: [":redacted"],
+  },
+  // BUT-1413 gap 2: slug-embedded PII in URL path segments.
+  {
+    name: "BUT-1413 gap 2: street+number slug is redacted",
+    // Would FAIL if slugContainsPii is removed — the opaque-segment heuristic
+    // never fires on a 12-char lower-case slug.
+    input: "https://example.com/profile/storgatan-14",
+    expectStripped: ["storgatan-14"],
+    expectKept: [":redacted"],
+  },
+  {
+    name: "BUT-1413 gap 2: person-name slug (mormor-Anna) is redacted",
+    // Would FAIL if slugContainsPii is removed.
+    input: "https://example.com/users/mormor-Anna/recipes",
+    expectStripped: ["mormor-Anna"],
+    expectKept: [":redacted", "/recipes"],
+  },
+  {
+    name: "BUT-1413 gap 2 negative: ordinary food slug is NOT over-redacted",
+    // Would FAIL if slugContainsPii accidentally fired on normal slugs.
+    input: "https://recept.se/recept/gulasch-med-svamp-russin",
+    expectStripped: [":redacted"],
+    expectKept: ["gulasch-med-svamp-russin"],
+  },
+  {
+    // FIX 1 parity: percent-encoded person name in path segment must be caught
+    // on the TS side after decodeURIComponent, matching Dart's auto-decode via
+    // Uri.pathSegments. WOULD FAIL before FIX 1 (segment was passed encoded to
+    // slugContainsPii, which could not detect the space-separated name).
+    name: "FIX 1 parity: percent-encoded person-name path segment is redacted",
+    input: "https://example.com/users/mormor%20Anna/recipes",
+    expectStripped: ["mormor%20Anna"],
+    expectKept: [":redacted", "/recipes"],
   },
 ];
 
@@ -227,6 +263,122 @@ function loadHeuristicVectors(): HeuristicVector[] {
   }
   return parsed.vectors;
 }
+
+// BUT-1413: scrubPayload parity tests (gaps 1 and 3).
+interface PayloadCase {
+  name: string;
+  run: () => boolean; // returns true when the assertion passes
+  failNote: string; // what to print on failure
+}
+
+const PAYLOAD_CASES: PayloadCase[] = [
+  {
+    name: "BUT-1413 gap 1: strips URL query params on every element of a list-valued URL field",
+    // Would FAIL if the list branch only called scrubPii instead of
+    // scrubStringLeaf — scrubPii alone does not strip query params.
+    run: () => {
+      const out = scrubPayload({
+        sourceUrls: [
+          "https://example.com/recipe?token=secret&utm_source=x",
+          "https://other.com/img?id=abc123",
+        ] as unknown as string,
+      });
+      const urls = out["sourceUrls"] as string[];
+      return (
+        !urls[0].includes("token") &&
+        !urls[0].includes("utm_source") &&
+        urls[0].includes("example.com/recipe") &&
+        !urls[1].includes("id=abc123") &&
+        urls[1].includes("other.com/img")
+      );
+    },
+    failNote: "list URL elements still contain query params after scrubPayload",
+  },
+  {
+    name: "BUT-1413 gap 1: strips query params from URL-shaped strings in a generic-keyed list",
+    // Would FAIL if the list branch used scrubPii(v) instead of
+    // scrubStringLeaf(key, v) — the key 'items' doesn't contain 'url' but the
+    // value starts with https:// so it should still get URL treatment.
+    run: () => {
+      const out = scrubPayload({
+        items: [
+          "https://cdn.example.com/photo?sig=opaque_token",
+          "plain text stays plain",
+        ] as unknown as string,
+      });
+      const items = out["items"] as string[];
+      return (
+        !items[0].includes("sig=opaque_token") &&
+        items[0].includes("cdn.example.com/photo") &&
+        items[1] === "plain text stays plain"
+      );
+    },
+    failNote:
+      "URL-shaped string in generic-keyed list still contains query params",
+  },
+  {
+    name: "BUT-1413 gap 3: base64 blob under unknown key passes through verbatim",
+    // Would FAIL if only the explicit OPAQUE_KEYS allowlist is checked and
+    // the value-based heuristic (looksLikeBase64Blob) is removed.
+    // 160 chars of pure base64-alphabet characters.
+    run: () => {
+      const blob =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk" +
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==AAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "AAAAAAAAAAAAA==";
+      const out = scrubPayload({ unknownImageField: blob });
+      return out["unknownImageField"] === blob;
+    },
+    failNote: "base64 blob under unknown key was modified by scrubPayload",
+  },
+  {
+    name: "BUT-1413 gap 3: looksLikeBase64Blob returns false for short strings",
+    run: () => !looksLikeBase64Blob("aGVsbG8="),
+    failNote: "short base64 string incorrectly flagged as blob",
+  },
+  {
+    name: "BUT-1413 gap 3: looksLikeBase64Blob returns false for normal text",
+    run: () =>
+      !looksLikeBase64Blob(
+        "Detta är en vanlig mening som inte ska klassas som en blob."
+      ),
+    failNote: "normal Swedish text incorrectly flagged as base64 blob",
+  },
+  {
+    // FIX 2 guard — direct unit test on looksLikeBase64Blob: a ≥128-char
+    // mostly-lowercase slug whose every character is in the base64 alphabet
+    // must NOT be classified as a blob. WOULD FAIL before FIX 2 because the
+    // entropy-fraction guard did not exist — the slug would be passed through
+    // verbatim, hiding any PII it contained.
+    name: "FIX 2 guard: long mostly-lowercase slug is NOT classified as a base64 blob",
+    run: () => {
+      // 129-char all-base64-alphabet string that is almost entirely lowercase.
+      // ~1.7% upper/digit (only the '1' and '4' in 'storgatan-14') — well
+      // below the 25% entropy threshold.
+      const slug =
+        "storgatan-14-mormor-anna-extra-padding-to-reach-the-minimum-length-threshold-for-blob-detection-aaaaaaaaaaaaaaa-bbb-cccc-ddddd-ee";
+      return !looksLikeBase64Blob(slug);
+    },
+    failNote:
+      "long mostly-lowercase slug was incorrectly classified as a base64 blob — entropy-fraction guard missing",
+  },
+  {
+    // FIX 2 guard — integration: the long slug embedded as a URL path segment
+    // must be scrubbed (via slugContainsPii) rather than silently bypassed.
+    // This mirrors a realistic sourceUrl pointing to a user profile page.
+    name: "FIX 2 guard: long lowercase slug with PII in URL path is scrubbed",
+    run: () => {
+      const slug =
+        "storgatan-14-mormor-anna-extra-padding-to-reach-the-minimum-length-threshold-for-blob-detection-aaaaaaaaaaaaaaa-bbb-cccc-ddddd-ee";
+      const url = `https://example.com/profile/${slug}`;
+      const out = scrubPayload({ sourceUrl: url });
+      const result = out["sourceUrl"] as string;
+      return result !== url && result.includes(":redacted");
+    },
+    failNote:
+      "long lowercase slug with PII in URL path was not redacted — slug-PII detection missing",
+  },
+];
 
 function runTests(): void {
   console.log("BUT-423/692: PII Scrubber Tests\n");
@@ -300,7 +452,27 @@ function runTests(): void {
     }
   }
 
-  const total = CASES.length + URL_CASES.length + heuristicVectors.length;
+  console.log("\nBUT-1413: scrubPayload parity tests (gaps 1 and 3)\n");
+  console.log("-----------------------------------------------------\n");
+
+  for (const tc of PAYLOAD_CASES) {
+    let ok = false;
+    try {
+      ok = tc.run();
+    } catch (e) {
+      ok = false;
+    }
+    if (ok) {
+      console.log(`  PASS  ${tc.name}`);
+    } else {
+      failed++;
+      console.log(`  FAIL  ${tc.name}`);
+      console.log(`        note: ${tc.failNote}`);
+    }
+  }
+
+  const total =
+    CASES.length + URL_CASES.length + heuristicVectors.length + PAYLOAD_CASES.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

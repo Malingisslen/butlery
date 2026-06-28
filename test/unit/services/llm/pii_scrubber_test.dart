@@ -115,6 +115,86 @@ void main() {
       expect(out['enabled'], isTrue);
       expect(out['optional'], isNull);
     });
+
+    // FIX 2 guard: a long mostly-lowercase slug in a URL path must be scrubbed
+    // (via _slugContainsPii) rather than silently bypassed. WOULD FAIL before
+    // FIX 2 if the slug were ever checked against _looksLikeBase64Blob (pre-
+    // FIX 2, a ≥128-char all-base64-alphabet string would pass through verbatim
+    // without the entropy-fraction guard). The TS-side test additionally verifies
+    // looksLikeBase64Blob returns false for the slug directly (it is exported
+    // there); on the Dart side, _looksLikeBase64Blob is private so we test via
+    // the integration path.
+    test(
+      'FIX 2 guard: long lowercase slug with PII in URL path is scrubbed',
+      () {
+        // 129-char all-base64-alphabet string that is almost entirely lowercase.
+        // Contains 'storgatan-14' (address) and 'mormor-anna' (name) embedded.
+        const slug =
+            'storgatan-14-mormor-anna-extra-padding-to-reach-the-minimum-length-threshold-for-blob-detection-aaaaaaaaaaaaaaa-bbb-cccc-ddddd-ee';
+        final url = 'https://example.com/profile/$slug';
+        final out = scrubPayload({'sourceUrl': url});
+        final result = out['sourceUrl'] as String;
+        // The URL must be modified (PII redacted); the slug must not survive intact.
+        expect(result, isNot(equals(url)));
+        expect(result, contains(':redacted'));
+      },
+    );
+
+    // BUT-1413 gap 1: list-valued URL fields must also have query params stripped.
+    test(
+      'strips URL query params on every element of a list-valued URL field',
+      () {
+        // Would FAIL if the list branch only called scrubPii instead of
+        // _scrubStringLeaf — scrubPii alone does not strip query params.
+        final out = scrubPayload({
+          'sourceUrls': [
+            'https://example.com/recipe?token=secret&utm_source=x',
+            'https://other.com/img?id=abc123',
+          ],
+        });
+        final urls = out['sourceUrls'] as List;
+        expect(urls[0], isNot(contains('token')));
+        expect(urls[0], isNot(contains('utm_source')));
+        expect(urls[0], contains('example.com/recipe'));
+        expect(urls[1], isNot(contains('id=abc123')));
+        expect(urls[1], contains('other.com/img'));
+      },
+    );
+
+    // BUT-1413 gap 1: URL-shaped strings in a list under a non-url key are
+    // also cleaned because _scrubStringLeaf checks the value prefix too.
+    test(
+      'strips query params from URL-shaped strings in a generic-keyed list',
+      () {
+        // Would FAIL if the list branch used scrubPii(v) instead of
+        // _scrubStringLeaf(key, v) — the key "items" doesn't contain "url"
+        // but the value starts with https:// so it still gets URL treatment.
+        final out = scrubPayload({
+          'items': [
+            'https://cdn.example.com/photo?sig=opaque_token',
+            'plain text stays plain',
+          ],
+        });
+        final items = out['items'] as List;
+        expect(items[0], isNot(contains('sig=opaque_token')));
+        expect(items[0], contains('cdn.example.com/photo'));
+        expect(items[1], equals('plain text stays plain'));
+      },
+    );
+
+    // BUT-1413 gap 3: base64 blob under an unrecognised key must pass through
+    // verbatim — scrubbing it would corrupt the payload.
+    test('passes base64 blob under unknown key through verbatim', () {
+      // Would FAIL if only the explicit _opaqueKeys allowlist is checked and
+      // the value-based heuristic (_looksLikeBase64Blob) is removed.
+      // The blob is 160 chars of pure base64-alphabet characters.
+      const blob =
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk'
+          'YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==AAAAAAAAAAAAAAAAAAAAAAAAA'
+          'AAAAAAAAAAAAA==';
+      final out = scrubPayload({'unknownImageField': blob});
+      expect(out['unknownImageField'], equals(blob));
+    });
   });
 
   // BUT-692: scrubUrlParams must also strip path-embedded tracker IDs.
@@ -208,6 +288,54 @@ void main() {
       expect(out, contains('/and/'));
       expect(out, contains('/end'));
     });
+  });
+
+  // BUT-1413 gap 2: slug-embedded PII in URL path segments.
+  group('scrubUrlParams - slug PII (BUT-1413 gap 2)', () {
+    test('street+number slug is redacted', () {
+      // Would FAIL if _slugContainsPii is removed — the opaque-segment
+      // heuristic never fires on a 12-char lower-case slug.
+      final out = scrubUrlParams(
+        'https://example.com/profile/storgatan-14',
+      );
+      expect(out, isNot(contains('storgatan-14')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('person-name slug (mormor-Anna) is redacted', () {
+      // Would FAIL if _slugContainsPii is removed.
+      final out = scrubUrlParams(
+        'https://example.com/users/mormor-Anna/recipes',
+      );
+      expect(out, isNot(contains('mormor-Anna')));
+      expect(out, contains(':redacted'));
+      expect(out, contains('/recipes'));
+    });
+
+    test('ordinary food slug is NOT over-redacted', () {
+      // Would FAIL if slugContainsPii accidentally fired on normal slugs.
+      final out = scrubUrlParams(
+        'https://recept.se/recept/gulasch-med-svamp-russin',
+      );
+      expect(out, contains('gulasch-med-svamp-russin'));
+      expect(out, isNot(contains(':redacted')));
+    });
+
+    // FIX 1 parity: Dart already catches this via Uri.pathSegments which
+    // auto-decodes percent-encoding. This test confirms the behaviour is
+    // preserved (and documents parity with the TS fix that adds explicit
+    // decodeURIComponent on the server side).
+    test(
+      'FIX 1 parity: percent-encoded person-name path segment is redacted',
+      () {
+        final out = scrubUrlParams(
+          'https://example.com/users/mormor%20Anna/recipes',
+        );
+        expect(out, isNot(contains('mormor%20Anna')));
+        expect(out, contains(':redacted'));
+        expect(out, contains('/recipes'));
+      },
+    );
   });
 
   // BUT-765: opaque-token redaction inside URL fragments. The BUT-534 test

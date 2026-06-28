@@ -277,13 +277,170 @@ function scrubFragment(fragment: string): string {
  * tokens (`#token=eyJhbGc...`) DO leak even though the HTTP path
  * doesn't carry them. Apply opaque-token redaction to the fragment.
  */
+// ---------------------------------------------------------------------------
+// BUT-1413 gap 2: URL-slug PII heuristic.
+//
+// `scrubUrlParams` previously only replaced *opaque* path segments (≥20
+// chars, URL-safe alphanumeric). Slug-embedded PII like `storgatan-14` or
+// `mormor-anna` slipped through because:
+//   a) segments are short (<20 chars), and
+//   b) the street/name regexes expect space-separated tokens.
+//
+// Fix: replace slug delimiters (`-`, `_`) with spaces and run `scrubPii`;
+// if the result differs the segment contains PII and is replaced with
+// `:redacted`. Ordinary food slugs (all-lowercase dictionary words) never
+// fire the address/name heuristics, so false-positive risk is negligible.
+// ---------------------------------------------------------------------------
+
+/** Returns true when replacing slug delimiters with spaces causes scrubPii
+ *  to produce a different string — i.e. the segment contains street/name PII. */
+function slugContainsPii(segment: string): boolean {
+  const asTokens = segment.replace(/[-_]/g, " ");
+  return scrubPii(asTokens) !== asTokens;
+}
+
+// ---------------------------------------------------------------------------
+// BUT-1413 gap 3: base64-blob value heuristic.
+//
+// Minimum length before treating a string as an opaque base64 blob.
+// A value ≥128 chars whose every character is in the standard base64 /
+// base64url alphabet is passed through verbatim. The explicit OPAQUE_KEYS
+// set is kept as the fast path; this heuristic catches blobs stored under
+// unfamiliar key names.
+// ---------------------------------------------------------------------------
+
+const BASE64_BLOB_MIN_LENGTH = 128;
+const BASE64_ALPHABET = /^[A-Za-z0-9+/\-_=]+$/;
+
+/**
+ * Exported for testing only; not part of the scrubPayload public contract.
+ *
+ * Returns true when `s` looks like a binary blob encoded in base64.
+ * Guards (all three must hold):
+ *   1. Length ≥ BASE64_BLOB_MIN_LENGTH (128) — avoids short coincidental hits.
+ *   2. Every character is in the base64 / base64url alphabet.
+ *   3. At least 25% of characters are uppercase letters or ASCII digits
+ *      [A-Z0-9]. Real base64 of binary data is ~50%+ uppercase/digits;
+ *      natural-language slugs (all-lowercase, hyphens) are near 0%, so a
+ *      long lowercase slug that happens to be pure-base64-alphabet would be
+ *      mis-classified as a blob and its slug-embedded PII would be skipped.
+ *      The entropy fraction prevents that.
+ */
+export function looksLikeBase64Blob(s: string): boolean {
+  if (s.length < BASE64_BLOB_MIN_LENGTH) return false;
+  if (!BASE64_ALPHABET.test(s)) return false;
+  // Entropy fraction guard: count [A-Z0-9] chars.
+  let upperOrDigit = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if ((c >= 65 && c <= 90) || (c >= 48 && c <= 57)) upperOrDigit++;
+  }
+  return upperOrDigit / s.length >= 0.25;
+}
+
+// ---------------------------------------------------------------------------
+// BUT-1413 gap 1 + gap 3: scrubPayload / _scrubStringLeaf.
+//
+// Dart has `scrubPayload` as the public entry point; TS callable functions
+// currently inline their own scrub calls. Adding the same helper here so:
+//   a) both ports expose an identical API surface,
+//   b) the shared list-branch fix (gap 1) lives in one place, and
+//   c) future callables can use scrubPayload instead of ad-hoc inline calls.
+// ---------------------------------------------------------------------------
+
+/** Keys whose values are opaque binary blobs and must NOT be scrubbed.
+ *  BUT-1413 gap 3: kept as the fast path; `looksLikeBase64Blob` handles
+ *  unknown key names. */
+const OPAQUE_KEYS = new Set(["imageBase64"]);
+
+/** Scrub a single string leaf, applying URL scrubbing when appropriate.
+ *
+ *  BUT-1413 gap 1: extracted so both the scalar and list branches in
+ *  `scrubValue` share identical logic and cannot drift.
+ *  "URL-shaped" = key contains "url" OR value starts with http(s)://. */
+function scrubStringLeaf(key: string, value: string): string {
+  const isUrl =
+    key.toLowerCase().includes("url") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://");
+  return isUrl ? scrubPii(scrubUrlParams(value)) : scrubPii(value);
+}
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+function scrubValue(key: string, value: JsonValue): JsonValue {
+  if (OPAQUE_KEYS.has(key)) return value;
+  if (typeof value === "string") {
+    // BUT-1413 gap 3: skip base64 blobs regardless of key name.
+    if (looksLikeBase64Blob(value)) return value;
+    return scrubStringLeaf(key, value);
+  }
+  if (Array.isArray(value)) {
+    // BUT-1413 gap 1: list string elements now go through scrubStringLeaf
+    // so URL items in a list receive query-param stripping identical to the
+    // scalar path above.
+    // Note: nested lists ([[]]) are not part of the callable payload schema
+    // and pass through intentionally — only string leaves and object values
+    // are scrubbed within a list.
+    return value.map((v) => {
+      if (typeof v === "string") {
+        if (looksLikeBase64Blob(v)) return v;
+        return scrubStringLeaf(key, v);
+      }
+      if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+        return scrubPayload(v as Record<string, JsonValue>);
+      }
+      return v;
+    });
+  }
+  if (value !== null && typeof value === "object") {
+    return scrubPayload(value as Record<string, JsonValue>);
+  }
+  return value;
+}
+
+/** Recursively scrub every string value inside a JSON-like payload.
+ *
+ *  Mirrors the Dart `scrubPayload` function. Used to wrap `httpsCallable`
+ *  input maps so that any nested text field is cleaned before leaving the
+ *  device. Non-string leaves (numbers, bools, null) are passed through. */
+export function scrubPayload(
+  payload: Record<string, JsonValue>
+): Record<string, JsonValue> {
+  const out: Record<string, JsonValue> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    out[key] = scrubValue(key, value);
+  }
+  return out;
+}
+
 export function scrubUrlParams(url: string): string {
   try {
     const parsed = new URL(url);
     parsed.search = "";
-    const segments = parsed.pathname
-      .split("/")
-      .map((s) => (looksOpaquePathSegment(s) ? REPLACEMENT_OPAQUE : s));
+    // BUT-1413 gap 2: also replace segments that contain slug-embedded PII.
+    // Decode each segment before the slug check so that percent-encoded names
+    // like `mormor%20Anna` are caught the same way Dart's `Uri.pathSegments`
+    // (which auto-decodes) catches them. `looksOpaquePathSegment` still
+    // operates on the raw (encoded) form — malformed escapes are kept raw via
+    // the catch block so the opaque-detection heuristic is unaffected.
+    const segments = parsed.pathname.split("/").map((s) => {
+      let decoded = s;
+      try {
+        decoded = decodeURIComponent(s);
+      } catch {
+        /* malformed percent-encoding — keep raw */
+      }
+      return looksOpaquePathSegment(s) || slugContainsPii(decoded)
+        ? REPLACEMENT_OPAQUE
+        : s;
+    });
     parsed.pathname = segments.join("/");
     // BUT-765 parity guard: Dart's `Uri.fragment` getter returns the
     // *decoded* form (`%3D` → `=`); JS's `URL.hash` keeps the percent-

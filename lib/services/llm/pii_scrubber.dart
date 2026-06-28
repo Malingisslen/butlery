@@ -156,8 +156,16 @@ String scrubUrlParams(String url) {
   try {
     final parsed = Uri.parse(url);
     if (!parsed.hasScheme) return url;
+    // BUT-1413 gap 2: also redact segments that contain slug-embedded PII
+    // (street addresses, names). `_looksOpaquePathSegment` handles random
+    // tokens (UUIDs, hex hashes); `_slugContainsPii` handles human-readable
+    // PII like `storgatan-14` or `mormor-anna`.
     final scrubbedSegments = parsed.pathSegments
-        .map((seg) => _looksOpaquePathSegment(seg) ? _replacementOpaque : seg)
+        .map(
+          (seg) => (_looksOpaquePathSegment(seg) || _slugContainsPii(seg))
+              ? _replacementOpaque
+              : seg,
+        )
         .toList(growable: false);
     return parsed
         .replace(
@@ -169,6 +177,69 @@ String scrubUrlParams(String url) {
   } catch (_) {
     return url;
   }
+}
+
+// ---------------------------------------------------------------------------
+// BUT-1413 gap 3: base64-blob value heuristic.
+//
+// A string is treated as an opaque binary blob (and passed through verbatim)
+// when it is at least 128 characters long AND consists exclusively of the
+// standard base64 / base64url alphabet (A-Z a-z 0-9 + / - _ =). The 128-char
+// floor is conservative — the longest "normal" text value in an LLM payload
+// is unlikely to be pure-base64, and real image thumbnails are rarely shorter.
+// This supplements `_opaqueKeys` (which is kept as the fast path) so that a
+// blob stored under an unfamiliar key name is still skipped.
+// ---------------------------------------------------------------------------
+
+/// Minimum length before a value is considered a base64 blob.
+const int _base64BlobMinLength = 128;
+
+/// Base64 / base64url alphabet. Padding `=` is included.
+final RegExp _base64Alphabet = RegExp(r'^[A-Za-z0-9+/\-_=]+$');
+
+/// Returns true when [s] looks like a binary blob encoded in base64.
+/// Guards (all three must hold):
+///   1. Length ≥ [_base64BlobMinLength] (128) — avoids short coincidental hits.
+///   2. Every character is in the base64 / base64url alphabet.
+///   3. At least 25% of characters are uppercase letters or ASCII digits
+///      (`[A-Z0-9]`). Real base64 of binary data is ~50%+ uppercase/digits;
+///      natural-language slugs (all-lowercase, hyphens) are near 0%, so a
+///      long lowercase slug that happens to be pure-base64-alphabet would be
+///      mis-classified as a blob and its slug-embedded PII would be skipped.
+///      The entropy fraction prevents that.
+bool _looksLikeBase64Blob(String s) {
+  if (s.length < _base64BlobMinLength) return false;
+  if (!_base64Alphabet.hasMatch(s)) return false;
+  // Entropy fraction guard: count [A-Z0-9] chars.
+  var upperOrDigit = 0;
+  for (final c in s.codeUnits) {
+    if ((c >= 65 && c <= 90) || (c >= 48 && c <= 57)) upperOrDigit++;
+  }
+  return upperOrDigit / s.length >= 0.25;
+}
+
+// ---------------------------------------------------------------------------
+// BUT-1413 gap 2: URL-slug PII heuristic.
+//
+// `scrubUrlParams` already replaces *opaque* path segments (≥20 chars,
+// URL-safe-alphanumeric). It does NOT catch slug-embedded PII like
+// `storgatan-14` or `mormor-anna` because:
+//   a) those segments are short (<20 chars), and
+//   b) the street/name regexes expect space-separated tokens.
+//
+// Fix: before returning a scrubbed URL, scan each path segment for
+// slug-embedded PII by replacing `-`/`_` delimiters with spaces and
+// running `scrubPii`. If the result differs, the segment contained PII
+// and its original form is removed (replaced with `:redacted`).
+// The segment itself stays intact if `scrubPii` is a no-op — no false
+// positives from ordinary slugs like `gulasch-med-svamp-russin`.
+// ---------------------------------------------------------------------------
+
+/// Converts slug delimiters (`-`, `_`) to spaces and applies `scrubPii`;
+/// returns true if any PII was detected.
+bool _slugContainsPii(String segment) {
+  final asTokens = segment.replaceAll(RegExp(r'[-_]'), ' ');
+  return scrubPii(asTokens) != asTokens;
 }
 
 /// BUT-765: redact opaque tokens inside URL fragments while preserving
@@ -215,6 +286,8 @@ bool _looksOpaquePathSegment(String segment) {
 /// Keys whose values are opaque binary blobs and must NOT be scrubbed.
 /// Scrubbing a base64 image would be wasted CPU and could corrupt the blob
 /// if, by pure coincidence, the base64 alphabet produced an `@` neighborhood.
+/// BUT-1413 gap 3: kept as the fast path; `_looksLikeBase64Blob` handles
+/// unknown key names below.
 const Set<String> _opaqueKeys = {'imageBase64'};
 
 /// Recursively scrub every string value inside a JSON-like payload.
@@ -227,22 +300,43 @@ Map<String, dynamic> scrubPayload(Map<String, dynamic> payload) {
   return payload.map((key, value) => MapEntry(key, _scrubValue(key, value)));
 }
 
+/// Scrub a single string leaf, applying URL scrubbing when appropriate.
+///
+/// BUT-1413 gap 1: extracted so both the scalar and list branches in
+/// [_scrubValue] share identical logic and cannot drift.
+/// "URL-shaped" is detected by key name OR by the value starting with
+/// `http://`/`https://` so list items under a generic key are also covered.
+String _scrubStringLeaf(String key, String value) {
+  final isUrl =
+      key.toLowerCase().contains('url') ||
+      value.startsWith('http://') ||
+      value.startsWith('https://');
+  return isUrl ? scrubPii(scrubUrlParams(value)) : scrubPii(value);
+}
+
 dynamic _scrubValue(String key, dynamic value) {
+  // Fast-path: explicit opaque-key allowlist (e.g. imageBase64).
   if (_opaqueKeys.contains(key)) return value;
   if (value is String) {
-    // URLs get query-param stripping in addition to PII scrub; the key name
-    // is the cheapest signal we have for "this field is a URL".
-    if (key.toLowerCase().contains('url')) {
-      return scrubPii(scrubUrlParams(value));
-    }
-    return scrubPii(value);
+    // BUT-1413 gap 3: skip base64 blobs regardless of key name.
+    if (_looksLikeBase64Blob(value)) return value;
+    return _scrubStringLeaf(key, value);
   }
   if (value is Map<String, dynamic>) {
     return scrubPayload(value);
   }
   if (value is List) {
+    // BUT-1413 gap 1: list string elements now go through _scrubStringLeaf
+    // so URL items in a list receive query-param stripping identical to the
+    // scalar path above.
+    // Note: nested lists ([[]]) are not part of the callable payload schema
+    // and pass through intentionally — only string leaves and map values
+    // are scrubbed within a list.
     return value.map((v) {
-      if (v is String) return scrubPii(v);
+      if (v is String) {
+        if (_looksLikeBase64Blob(v)) return v;
+        return _scrubStringLeaf(key, v);
+      }
       if (v is Map<String, dynamic>) return scrubPayload(v);
       return v;
     }).toList();

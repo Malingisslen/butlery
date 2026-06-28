@@ -24,8 +24,8 @@ void main() {
     final fixture = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
     final vectors = (fixture['vectors'] as List).cast<Map<String, dynamic>>();
 
-    test('fixture contains the full 28-vector contract', () {
-      expect(vectors, hasLength(28));
+    test('fixture contains the full 31-vector contract', () {
+      expect(vectors, hasLength(31));
     });
 
     test('fixture is a byte-identical copy of the TS source of truth', () {

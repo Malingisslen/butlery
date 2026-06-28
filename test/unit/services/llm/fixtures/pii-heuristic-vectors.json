@@ -155,6 +155,22 @@
       "name": "RULE A: address followed by a Swedish word starting with the litre unit letter (lägenhet) still redacts — ASCII \b in the unit lookahead must not treat 'l' before 'ä' as the litre unit",
       "input": "Leverans till Storgatan 14 lägenhet 1203 efter klockan fem",
       "expected": "Leverans till [ADDRESS] lägenhet 1203 efter klockan fem"
+    },
+    {
+      "_comment": "BUT-1413 gap 2: slug-tokenisation vectors. These exercise scrubPii on already-tokenised text (delimiters replaced with spaces). scrubUrlParams calls this same code path after splitting on [-_].",
+      "name": "BUT-1413 gap 2: street slug tokenised to spaces is redacted by RULE A",
+      "input": "storgatan 14",
+      "expected": "[ADDRESS]"
+    },
+    {
+      "name": "BUT-1413 gap 2: person-name slug tokenised to spaces is redacted by RULE B",
+      "input": "mormor Anna",
+      "expected": "mormor [NAME]"
+    },
+    {
+      "name": "BUT-1413 gap 2 negative: ordinary food slug tokenised to spaces is NOT redacted",
+      "input": "gulasch med svamp russin",
+      "expected": "gulasch med svamp russin"
     }
   ]
 }
