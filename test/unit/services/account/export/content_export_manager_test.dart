@@ -127,12 +127,21 @@ class _FakeCookEventRepository extends Fake implements CookEventRepository {
 class _FakePantryRepository extends Fake implements PantryRepository {
   _FakePantryRepository(this.rows);
   final List<Map<String, dynamic>> rows;
+  int? capturedMaxDocuments;
 
+  // Sentinel default (NOT the real 1000): Dart fills in the callee's default
+  // when the caller omits a named arg, so if production ever stops passing
+  // `maxDocuments`, capturedMaxDocuments becomes -1 and the forwarding test
+  // fails. A 1000 default here would make that test pass either way (the
+  // computed limit is also 1000) — the exact false-green BUT-1440 guards.
   @override
   Future<List<Map<String, dynamic>>> exportAllByUser(
     String userId, {
-    int maxDocuments = 1000,
-  }) async => rows;
+    int maxDocuments = -1,
+  }) async {
+    capturedMaxDocuments = maxDocuments;
+    return rows;
+  }
 }
 
 class _FakeActivityEventRepository extends Fake
@@ -430,6 +439,35 @@ void main() {
       ]);
       expect(result['total_count'], 1);
     });
+
+    test(
+      'exportPantryItems forwards its computed limit to the repo (BUT-1440)',
+      () async {
+        // Regression guard: pantry was the lone export method that computed
+        // its limit (for the `truncated` flag) but did not pass it to the
+        // repo, so the repo silently fell back to its own default. The two
+        // values coincide today (both 1000) but could diverge.
+        final pantryRepo = _FakePantryRepository(const []);
+        final manager = ContentExportManager(
+          recipeRepository: _FakeRecipeRepository(),
+          dataExportRepository: _FakeDataExportRepository(),
+          personalTagRepository: _FakePersonalTagRepository(const []),
+          personalTagGroupRepository: _FakePersonalTagGroupRepository(const []),
+          cookSnapRepository: _FakeCookSnapRepository(const []),
+          cookEventRepository: _FakeCookEventRepository(const []),
+          pantryRepository: pantryRepo,
+          activityEventRepository: _FakeActivityEventRepository(const []),
+          weeklyMenuPlanRepository: _FakeWeeklyMenuPlanRepository(const []),
+          groupWeeklyMenuPlanRepository: _FakeGroupWeeklyMenuPlanRepository(
+            const [],
+          ),
+        );
+
+        await manager.exportPantryItems('user-uid');
+
+        expect(pantryRepo.capturedMaxDocuments, 1000);
+      },
+    );
 
     test('exportActivityEvents includes activity-event records', () async {
       final manager = _manager(

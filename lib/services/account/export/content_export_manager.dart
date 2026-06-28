@@ -347,7 +347,10 @@ class ContentExportManager {
         'pantry_items',
       );
 
-      final entries = await _pantry.exportAllByUser(userId);
+      final entries = await _pantry.exportAllByUser(
+        userId,
+        maxDocuments: pantryLimit,
+      );
 
       for (final entry in entries) {
         items.add({
