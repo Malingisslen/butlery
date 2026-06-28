@@ -24,6 +24,10 @@ abstract final class FirestoreCollections {
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';
+  // Family-rating feature (household-scoped, shared across household members).
+  static const String households = 'households';
+  static const String dinerProfiles = 'diner_profiles';
+  static const String familyRatings = 'family_ratings';
   static const String menuTemplates = 'menu_templates';
   static const String userNotifications = 'user_notifications';
   static const String userNotificationPreferences =
