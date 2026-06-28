@@ -287,6 +287,8 @@ Butlery is intended for users aged 15 or older. We do not knowingly collect pers
 
 The 15-year age limit follows from Swedish data-protection law (the Data Protection Act, ch. 2 § 4), which sets 15 for information-society services with a social component. Butlery has social features (comments, sharing, groups, ratings) and is therefore subject to the 15 limit — stricter than the GDPR general age limit of 13 (Article 8), which applies to ordinary processing without a social component.
 
+To enforce this age limit, we collect your birth year at signup and keep an age-verification record (evidence that the check was carried out). The birth year is treated as account information and stored on our server. Signups blocked because the person is under 15 are logged anonymously, without any data linking an individual to their age.
+
 If you are a parent/guardian and discover that your child has created an account:
 - Contact us at privacy@butlery.se
 - We will delete the account immediately

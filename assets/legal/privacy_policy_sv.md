@@ -287,6 +287,8 @@ Butlery är avsedd för användare som är 15 år eller äldre. Vi samlar inte m
 
 Åldersgränsen 15 år följer av svensk dataskyddslagstiftning (dataskyddslagen 2 kap. 4 §), som sätter 15 år för informationssamhällets tjänster med ett socialt inslag. Butlery har sociala funktioner (kommentarer, delning, grupper, betyg) och omfattas därför av 15-årsgränsen — striktare än GDPR:s allmänna åldersgräns på 13 år (artikel 8), som gäller vanlig behandling utan socialt inslag.
 
+För att upprätthålla åldersgränsen samlar vi vid registreringen in ditt födelseår och sparar en åldersverifieringspost (ett bevis på att kontrollen har gjorts). Födelseåret behandlas som kontouppgift och lagras på vår server. Registreringar som avvisas för att personen är under 15 år loggas anonymiserat, utan uppgifter som kopplar en enskild person till åldern.
+
 Om du är förälder/vårdnadshavare och upptäcker att ditt barn har skapat ett konto:
 - Kontakta oss via privacy@butlery.se
 - Vi kommer radera kontot omedelbart
