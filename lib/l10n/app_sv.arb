@@ -3905,7 +3905,7 @@
   "@privacyActivityTypePinged": {
     "description": "Per-type toggle label for 'pinged' activity events (BUT-1220)"
   },
-  "privacyActivityFeedHint": "Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.",
+  "privacyActivityFeedHint": "Vänner ser nu din aktivitet i sitt flöde. Detta kan stängas av när som helst.",
   "@privacyActivityFeedHint": {
     "description": "One-time hint shown the first time the user broadcasts an activity event (BUT-1220)"
   },

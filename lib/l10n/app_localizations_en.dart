@@ -5932,7 +5932,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyActivityFeedHint =>
-      'Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.';
+      'Your friends now see your activity in their feed. This can be turned off at any time.';
 
   @override
   String get profileAddAvatar => 'Add avatar';

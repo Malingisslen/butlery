@@ -10060,7 +10060,7 @@ abstract class AppLocalizations {
   /// One-time hint shown the first time the user broadcasts an activity event (BUT-1220)
   ///
   /// In sv, this message translates to:
-  /// **'Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.'**
+  /// **'Vänner ser nu din aktivitet i sitt flöde. Detta kan stängas av när som helst.'**
   String get privacyActivityFeedHint;
 
   /// No description provided for @profileAddAvatar.

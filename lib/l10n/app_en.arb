@@ -3884,6 +3884,10 @@
   "privacyActivityTypeShared": "When I share a recipe",
   "privacyActivityTypeStartedCooking": "When I start cooking",
   "privacyActivityTypePinged": "When I ping a friend",
+  "privacyActivityFeedHint": "Your friends now see your activity in their feed. This can be turned off at any time.",
+  "@privacyActivityFeedHint": {
+    "description": "One-time hint shown the first time the user broadcasts an activity event (BUT-1220)"
+  },
   "profileAddAvatar": "Add avatar",
   "profileAvatarRemoved": "Avatar removed",
   "profileAvatarUploaded": "Avatar uploaded!",
