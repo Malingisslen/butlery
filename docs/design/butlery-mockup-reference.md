@@ -15,11 +15,11 @@ Page background: `#9A8F82` (warm gray-brown).
 |---|---|---|
 | `--green` | `#4A7C59` | Primary brand color, active states, borders, chips, badges |
 | `--green-dark` | `#3D6849` | Page headers, header text, active nav, dark accents |
-| `--green-light` | `#5A8F6A` | Light green accent |
+| `--green-light` | `#6B9B7A` | Light green accent (was `#5A8F6A` in the original mockup; realigned to `forestGreenLight`) |
 | `--green-pale` | `#E8F0EA` | Subtle green backgrounds, recipe image placeholder bg, settings icon bg |
-| `--green-muted` | `#7A9A80` | Inactive nav items, muted hero icon stroke |
+| `--green-muted` | `#526A55` | Inactive nav items, muted hero icon stroke (darkened from `#7A9A80` for WCAG AA ≥4.6:1 on `creamDarker`; matches `greenMuted`) |
 | `--rust` | `#8B5A3C` | Section titles, header accent stripe, card bottom border, add-option bg |
-| `--rust-light` | `#A67B5B` | Recipe card bottom border |
+| `--rust-light` | `#A77B5E` | Recipe card bottom border (was `#A67B5B`; realigned to `rustLight`) |
 | `--leather` | `#6B4A2C` | (defined, not directly used in mockup screens) |
 | `--cream` | `#F8F4E8` | Phone screen background, header text color, button text, bottom sheet bg, dialog bg |
 | `--cream-dark` | `#E8E2D6` | Bottom nav bg, tab border, portion adjuster bg, input border, ingredient row divider |
@@ -32,6 +32,20 @@ Page background: `#9A8F82` (warm gray-brown).
 | `--error` | `#C44536` | Error states, "contains" badges, destructive buttons, ingredient warnings |
 | `--warning` | `#D4A03C` | Rating stars, dairy category header bg |
 | `--success` | `var(--green)` | Success states (aliases green) |
+
+> **Source of truth for implementation:** `lib/theme/app_colors.dart`. Where the
+> original mockup HTML and the code diverge, the code wins — several values above
+> were darkened/renamed for WCAG AA contrast (`--green-muted`, `--green-light`,
+> `--rust-light`) and these rows now reflect `app_colors.dart`, not the original
+> mockup hex.
+>
+> **Cream scale — intentional deviation (do not "fix"):** the code's cream ramp
+> is `cream #F8F4E8` → `creamDark #F0EAD6` → `creamDarker #E8E2D6` and is an
+> [accepted deviation](../../.claude/rules/accepted-deviations.md) — deliberately
+> *not* realigned to the mockup. Note the naming offset: the mockup's
+> `--cream-dark` (`#E8E2D6`) corresponds to the code's `creamDarker`, and the
+> code's `creamDark` (`#F0EAD6`) has no mockup token. The cream rows below are
+> kept at their mockup values for historical reference only — use the code names.
 
 ### Derived/Inline Colors
 
