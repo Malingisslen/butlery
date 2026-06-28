@@ -138,12 +138,16 @@ jobs:
   # widget (~97 files), views (~14), golden (~2) are small enough to run whole
   # on ubuntu without coverage. test/golden holds deterministic structure/JSON
   # checks (service-level LLM mock — no Firebase / network).
+  # evaluation (~1): the CRF ingredient-parser golden eval — deterministic
+  # (JSON weights, no network/Firebase), enforces an all-fields-exact >=85% gate
+  # against a 433-entry golden set, so parser-accuracy regressions fail CI
+  # (BUT-1443). Verified green at wiring time.
   suite-tests:
     name: ${{ matrix.suite }} (ubuntu)
     strategy:
       fail-fast: false
       matrix:
-        suite: [widget, views, golden]
+        suite: [widget, views, golden, evaluation]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
