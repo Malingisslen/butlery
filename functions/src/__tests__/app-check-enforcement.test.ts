@@ -48,6 +48,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
+  "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
+  "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
 ]);
 
 /**

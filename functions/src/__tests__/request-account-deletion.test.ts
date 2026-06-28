@@ -78,6 +78,9 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     const query: {
       get(): Promise<ReturnType<typeof emptySnapshot>>;
       where(): typeof query;
+      orderBy(): typeof query;
+      startAt(): typeof query;
+      endAt(): typeof query;
       count(): { get(): Promise<{ data(): { count: number } }> };
       doc(id: string): unknown;
       add(data: RecordedAuditRow): Promise<{ id: string }>;
@@ -86,6 +89,18 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
         return emptySnapshot();
       },
       where() {
+        return query;
+      },
+      // BUT-1390 added a documentId() range chain to the subcollection
+      // cascade (orderBy(documentId()).startAt(...).endAt(...)); the fake
+      // must return itself for each so the chain resolves to `get()`.
+      orderBy() {
+        return query;
+      },
+      startAt() {
+        return query;
+      },
+      endAt() {
         return query;
       },
       count() {

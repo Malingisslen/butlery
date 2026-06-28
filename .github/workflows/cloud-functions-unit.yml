@@ -1,0 +1,68 @@
+name: Cloud Functions Unit Tests
+
+# BUT-1392: Gates pushes that touch functions/src/ behind the full CF unit-test
+# suite. Tests run WITHOUT the Firebase emulator — all suites are DI-seam
+# (pure TypeScript with injected fakes). Emulator-bound tests (test:rules:* and
+# test:integration:*) are handled by the Firestore Rules workflow.
+#
+# Node version: 22 (matches functions/package.json engines.node and firebase.json
+# functions.runtime = "nodejs22").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "functions/src/**"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - "functions/tsconfig.json"
+      - "functions/scripts/**"
+      - ".github/workflows/cloud-functions-unit.yml"
+  pull_request:
+    paths:
+      - "functions/src/**"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - "functions/tsconfig.json"
+      - "functions/scripts/**"
+      - ".github/workflows/cloud-functions-unit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: CF unit tests (Node 22, no emulator)
+    runs-on: ubuntu-latest
+    # Build + 47 suites measured locally at ~102s. 10 min is generous headroom
+    # for a cold npm ci + tsc on a fresh runner.
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install function deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Build TypeScript
+        working-directory: functions
+        run: npm run build
+
+      # run-ci-unit-tests.js excludes two suites with pre-existing failures on
+      # main (test:app-check-enforcement, test:request-account-deletion). Both
+      # are documented inside the script with the exact fix needed. Remove the
+      # exclusion once each suite is fixed.
+      - name: Run DI-seam unit tests
+        working-directory: functions
+        run: node scripts/run-ci-unit-tests.js
