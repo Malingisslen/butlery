@@ -369,5 +369,86 @@ void main() {
         verify(() => recipeRepo.searchRecipes('pasta')).called(1);
       },
     );
+
+    test(
+      'Algolia FAILED result (swallowed, not thrown) falls back to Firestore '
+      '(BUT-1416)',
+      () async {
+        // The Algolia repo swallows provider errors and returns a flagged
+        // result rather than throwing. Before BUT-1416 this slipped past the
+        // try/catch and the user saw zero recipes; the router must now branch
+        // on `failed` and fall back to Firestore search.
+        final algolia = _MockAlgolia();
+        final proxy = _DelegatingProxy(algolia);
+
+        when(
+          () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+        ).thenReturn(true);
+        when(
+          () => algolia.searchRecipes(
+            any(),
+            filters: any(named: 'filters'),
+            page: any(named: 'page'),
+            hitsPerPage: any(named: 'hitsPerPage'),
+          ),
+        ).thenAnswer(
+          (_) async => const SearchResult<RecipeSearchHit>.failure(),
+        );
+
+        final router = RecipeSearchRouter(
+          recipeRepository: recipeRepo,
+          searchRepository: proxy,
+          analytics: analytics,
+          featureFlags: flags,
+        );
+
+        await router.searchRecipes('pasta');
+
+        verify(() => recipeRepo.searchRecipes('pasta')).called(1);
+      },
+    );
+
+    test(
+      'Algolia empty SUCCESS does NOT fall back (failed=false) (BUT-1416)',
+      () async {
+        // A legitimate zero-hit Algolia result must be returned as-is, never
+        // triggering the Firestore fallback — otherwise every no-match query
+        // would double-search.
+        final algolia = _MockAlgolia();
+        final proxy = _DelegatingProxy(algolia);
+
+        when(
+          () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+        ).thenReturn(true);
+        when(
+          () => algolia.searchRecipes(
+            any(),
+            filters: any(named: 'filters'),
+            page: any(named: 'page'),
+            hitsPerPage: any(named: 'hitsPerPage'),
+          ),
+        ).thenAnswer(
+          (_) async => const SearchResult<RecipeSearchHit>(
+            hits: [],
+            totalHits: 0,
+            page: 0,
+            totalPages: 0,
+            processingTimeMs: 1,
+          ),
+        );
+
+        final router = RecipeSearchRouter(
+          recipeRepository: recipeRepo,
+          searchRepository: proxy,
+          analytics: analytics,
+          featureFlags: flags,
+        );
+
+        final results = await router.searchRecipes('pasta');
+
+        expect(results, isEmpty);
+        verifyNever(() => recipeRepo.searchRecipes(any()));
+      },
+    );
   });
 }

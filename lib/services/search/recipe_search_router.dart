@@ -61,15 +61,12 @@ class RecipeSearchRouter {
     }
 
     if (useAlgolia) {
+      final SearchResult<RecipeSearchHit> hits;
       try {
-        final hits = await _searchRepository.searchRecipes(
+        hits = await _searchRepository.searchRecipes(
           trimmed,
           hitsPerPage: 200,
         );
-        // Convert search hits to Recipe shells. Callers that need the full
-        // Recipe doc still hydrate via the repository on selection — the
-        // hit covers what the list view needs (title/description/image/etc).
-        return hits.hits.map((hit) => hit.toRecipe()).toList();
       } catch (e, st) {
         AppLogger.warning(
           'RecipeSearchRouter: Algolia search failed, falling back to Firestore: $e',
@@ -77,6 +74,25 @@ class RecipeSearchRouter {
         AppLogger.debug('Stack: $st');
         return await _recipeRepository.searchRecipes(trimmed);
       }
+
+      // The Algolia repo swallows provider errors and flags them rather than
+      // throwing, so the catch above only covers errors thrown around the call
+      // itself. Branch on the flag so an outage / SSL-pin mismatch degrades to
+      // Firestore search instead of silently showing zero recipes (BUT-1416).
+      // Kept OUTSIDE the try so a Firestore failure in this fallback isn't
+      // re-caught and the fallback re-invoked a second time.
+      if (hits.failed) {
+        AppLogger.warning(
+          'RecipeSearchRouter: Algolia search degraded, falling back to '
+          'Firestore',
+        );
+        return await _recipeRepository.searchRecipes(trimmed);
+      }
+
+      // Convert search hits to Recipe shells. Callers that need the full
+      // Recipe doc still hydrate via the repository on selection — the hit
+      // covers what the list view needs (title/description/image/etc).
+      return hits.hits.map((hit) => hit.toRecipe()).toList();
     }
 
     return await _recipeRepository.searchRecipes(trimmed);

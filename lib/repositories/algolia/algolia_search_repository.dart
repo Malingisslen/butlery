@@ -209,14 +209,11 @@ class AlgoliaSearchRepository implements SearchRepository {
         queryId: response.queryID,
       );
     } catch (e) {
+      // Flag the failure (vs a legitimate 0-hit search) so callers can fall
+      // back to Firestore / show an offline banner instead of a silent empty
+      // state — e.g. on an SSL-pin mismatch or Algolia outage (BUT-1416).
       AppLogger.error('Algolia recipe search failed', e);
-      return const SearchResult(
-        hits: [],
-        totalHits: 0,
-        page: 0,
-        totalPages: 0,
-        processingTimeMs: 0,
-      );
+      return SearchResult<RecipeSearchHit>.failure(page: page);
     }
   }
 
@@ -257,14 +254,10 @@ class AlgoliaSearchRepository implements SearchRepository {
         queryId: response.queryID,
       );
     } catch (e) {
+      // See searchRecipes: flag provider failure so callers can degrade
+      // gracefully rather than render a misleading empty result (BUT-1416).
       AppLogger.error('Algolia user search failed', e);
-      return const SearchResult(
-        hits: [],
-        totalHits: 0,
-        page: 0,
-        totalPages: 0,
-        processingTimeMs: 0,
-      );
+      return SearchResult<UserSearchHit>.failure(page: page);
     }
   }
 

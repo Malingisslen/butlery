@@ -193,7 +193,7 @@ void main() {
     /// user's search box must not crash because Algolia hiccuped. This is
     /// half of the asymmetric error contract.
     test(
-      'swallows a search failure and returns an empty SearchResult',
+      'swallows a search failure and returns an empty result flagged failed',
       () async {
         final fake = _FakeAlgoliaClient(throwOnSearch: true);
         final repo = repoWith(fake);
@@ -202,8 +202,23 @@ void main() {
 
         expect(result.hits, isEmpty);
         expect(result.totalHits, 0);
+        // BUT-1416: distinguishes provider failure from a legitimate 0-hit
+        // search so callers can fall back instead of showing empty silently.
+        expect(result.failed, isTrue);
       },
     );
+
+    test('a legitimate zero-hit search is NOT flagged failed', () async {
+      // Empty success (no error) must stay failed=false, otherwise callers
+      // would wrongly fall back on every genuine no-match query.
+      final fake = _FakeAlgoliaClient(searchHits: const []);
+      final repo = repoWith(fake);
+
+      final result = await repo.searchRecipes('nonexistent-dish');
+
+      expect(result.hits, isEmpty);
+      expect(result.failed, isFalse);
+    });
 
     /// And the happy path actually maps hits through, proving the fake
     /// round-trips real data (not a vacuously-passing empty default).
@@ -286,6 +301,10 @@ void main() {
 
         expect(result.hits, isEmpty);
         expect(result.totalHits, 0);
+        // Symmetric with the recipe-search swallow test: the user-search read
+        // path also flags provider failure (BUT-1416), ready for a future
+        // user-search router/ViewModel to branch on (no consumer wired yet).
+        expect(result.failed, isTrue);
       },
     );
   });

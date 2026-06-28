@@ -47,6 +47,45 @@ void main() {
       expect(mapped.processingTimeMs, 8);
       expect(mapped.queryId, 'qq');
     });
+
+    test('default constructor leaves failed=false (BUT-1416)', () {
+      const r = SearchResult<String>(
+        hits: [],
+        totalHits: 0,
+        page: 0,
+        totalPages: 0,
+        processingTimeMs: 0,
+      );
+      // A legitimate empty success must not look like a failure.
+      expect(r.failed, isFalse);
+      expect(r.isEmpty, isTrue);
+    });
+
+    test('failure() builds an empty result flagged failed (BUT-1416)', () {
+      const r = SearchResult<String>.failure(page: 2);
+      expect(r.failed, isTrue);
+      expect(r.hits, isEmpty);
+      expect(r.totalHits, 0);
+      expect(r.page, 2);
+      expect(r.isEmpty, isTrue);
+    });
+
+    test('map propagates the failed flag (BUT-1416)', () {
+      // Otherwise a failed Algolia result would look like a clean empty after
+      // the RecipeSearchHit->Recipe map and the fallback would never fire.
+      const failed = SearchResult<int>.failure();
+      final mapped = failed.map<String>((v) => '$v');
+      expect(mapped.failed, isTrue);
+
+      const ok = SearchResult<int>(
+        hits: [1],
+        totalHits: 1,
+        page: 0,
+        totalPages: 1,
+        processingTimeMs: 1,
+      );
+      expect(ok.map<String>((v) => '$v').failed, isFalse);
+    });
   });
 
   group('RecipeSearchHit', () {
