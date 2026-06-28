@@ -224,6 +224,38 @@ service cloud.firestore {
             || request.auth.uid in parentDoc.data.participantIds);
     }
 
+    // ===== Family-rating feature: household-scoped membership =====
+    // A household (households/{hid}) is the shared identity scoping diner
+    // profiles + family ratings. Membership/permission live on the household
+    // doc as denormalised memberUserIds (list) + memberPermissions
+    // ({uid: 'view'|'edit'|'admin'}). Null-safe get() (no exists()+get() double read).
+    function householdDoc(hid) {
+      return get(/databases/$(database)/documents/households/$(hid));
+    }
+    function isHouseholdMember(hid) {
+      let doc = householdDoc(hid);
+      return isAuthenticated()
+        && doc != null
+        && request.auth.uid in doc.data.memberUserIds;
+    }
+    function familyStarsValid(stars) {
+      return stars is int && stars >= 1 && stars <= 5;
+    }
+    function dinerHasAllergenData(data) {
+      return 'allergenPreferences' in data
+        && (data.allergenPreferences.get('trackedAllergens', []).size() > 0
+            || data.allergenPreferences.get('trackedDietary', []).size() > 0);
+    }
+    // Server-side replication of the repository consent guard (the one layer the
+    // inherited createBatch path cannot bypass): a minor must carry guardian
+    // consent; allergen (Art. 9) data requires explicit includesAllergenConsent.
+    function dinerConsentValid(data) {
+      return (data.ageBand == 'adult'
+              || ('guardianConsent' in data && data.guardianConsent != null))
+        && (!dinerHasAllergenData(data)
+            || (data.get('guardianConsent', {}).get('includesAllergenConsent', false) == true));
+    }
+
     // ========================================
     // USER DATA - Private to each user
     // ========================================
@@ -794,6 +826,80 @@ service cloud.firestore {
       allow delete: if isAuthenticated()
         && request.auth.uid in resource.data.memberPermissions
         && resource.data.memberPermissions[request.auth.uid] == 'admin';
+    }
+
+    // ========================================
+    // FAMILY RATING — shared household, diner profiles, family ratings
+    // ========================================
+    // The household is the symmetric shared identity; diner profiles and family
+    // ratings are scoped to it by householdId. Access reads the denormalised
+    // memberUserIds/memberPermissions, so both are kept consistent on write.
+
+    match /households/{householdId} {
+      // Any member reads; only an admin writes/deletes.
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.memberUserIds;
+
+      // Creator seeds themselves as admin; projections must agree with the set
+      // of members (rules trust the projections for every membership lookup).
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.createdBy
+        && request.auth.uid in request.resource.data.memberUserIds
+        && request.resource.data.memberPermissions[request.auth.uid] == 'admin'
+        && request.resource.data.memberUserIds.toSet()
+             == request.resource.data.memberPermissions.keys().toSet()
+        && hasRequiredFields(['name', 'members', 'memberUserIds',
+             'memberPermissions', 'createdBy', 'createdAt', 'updatedAt']);
+
+      // Admin-only update; createdBy/createdAt immutable; projections stay consistent.
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.memberUserIds
+        && resource.data.memberPermissions[request.auth.uid] == 'admin'
+        && cannotModify(['createdBy', 'createdAt'])
+        && request.resource.data.memberUserIds.toSet()
+             == request.resource.data.memberPermissions.keys().toSet();
+
+      // Admin-only delete.
+      allow delete: if isAuthenticated()
+        && request.auth.uid in resource.data.memberUserIds
+        && resource.data.memberPermissions[request.auth.uid] == 'admin';
+    }
+
+    match /diner_profiles/{profileId} {
+      // Any household member may read/create/update/delete profiles in their
+      // household. The consent invariant is replicated server-side, and
+      // householdId is immutable (no re-parenting a child's profile).
+      allow read: if isHouseholdMember(resource.data.householdId);
+
+      allow create: if isHouseholdMember(request.resource.data.householdId)
+        && hasRequiredFields(['householdId', 'name', 'ageBand',
+             'createdBy', 'createdAt', 'updatedAt'])
+        && dinerConsentValid(request.resource.data);
+
+      allow update: if isHouseholdMember(resource.data.householdId)
+        && cannotModify(['householdId', 'createdBy', 'createdAt'])
+        && dinerConsentValid(request.resource.data);
+
+      allow delete: if isHouseholdMember(resource.data.householdId);
+    }
+
+    match /family_ratings/{ratingId} {
+      // Household members read/write. Stars 1-5 enforced server-side (the real
+      // backstop for the createBatch path); recipeId/memberId/householdId/
+      // createdAt immutable; enteredByUid pinned to the writer on create.
+      allow read: if isHouseholdMember(resource.data.householdId);
+
+      allow create: if isHouseholdMember(request.resource.data.householdId)
+        && hasRequiredFields(['recipeId', 'householdId', 'memberId', 'memberType',
+             'stars', 'enteredByUid', 'createdAt', 'lastUpdatedAt'])
+        && familyStarsValid(request.resource.data.stars)
+        && request.resource.data.enteredByUid == request.auth.uid;
+
+      allow update: if isHouseholdMember(resource.data.householdId)
+        && cannotModify(['recipeId', 'memberId', 'householdId', 'createdAt'])
+        && familyStarsValid(request.resource.data.stars);
+
+      allow delete: if isHouseholdMember(resource.data.householdId);
     }
 
     // ========================================

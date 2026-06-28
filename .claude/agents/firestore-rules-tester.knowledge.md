@@ -877,6 +877,69 @@ Wired `test:rules:account-maturity` into package.json + appended to test:rules:a
 + added account-maturity-rules.test.ts AND recipe-comments-rules.test.ts to both
 path-filter blocks in `firestore-rules.yml`.
 
+### 2026-06-28 — family-rating-rules.test.ts created (households / diner_profiles / family_ratings)
+
+New test file `functions/src/__tests__/family-rating-rules.test.ts` (49 tests),
+wired in as `test:rules:family-rating`, appended to `test:rules:all`, and added
+to BOTH path-filter blocks in `firestore-rules.yml`. Project id
+`butlery-rules-family-rating`. All 49 green on emulator first run.
+
+Map rows to add:
+
+| `/households/{householdId}` | `family-rating-rules.test.ts` | `test:rules:family-rating` |
+| `/diner_profiles/{profileId}` | `family-rating-rules.test.ts` | `test:rules:family-rating` |
+| `/family_ratings/{ratingId}` | `family-rating-rules.test.ts` | `test:rules:family-rating` |
+
+**New actor convention — household membership is a DOC-READ gate, not a path
+segment.** `isHouseholdMember(hid)` does `get(households/{hid})` then
+`auth.uid in doc.data.memberUserIds`. So every diner_profiles / family_ratings
+test MUST seed a household via `withSecurityRulesDisabled` first (membership
+resolves from the live doc, not from the request). I used one shared
+`HOUSEHOLD_ID` with four actors: ADMIN_MEMBER (perm 'admin'), EDITOR ('edit'),
+VIEWER ('view'), STRANGER (not in the set). Household *write* is admin-only
+(household-admin = `memberPermissions[uid]=='admin'`, NOT the `/admins` app
+admin — distinct concept, don't confuse them); diner_profiles + family_ratings
+write is ANY member (edit/view perms are irrelevant there — only membership).
+
+**Household create is projection-strict — five deny branches to cover:**
+createdBy==auth, auth in memberUserIds, memberPermissions[auth]=='admin',
+`memberUserIds.toSet() == memberPermissions.keys().toSet()`, hasRequiredFields.
+The inconsistent-projection deny (add a uid to memberUserIds not in
+memberPermissions) is the load-bearing one — it's the invariant every
+membership lookup trusts. Seed the household with the admin SDK in tests that
+need membership (don't re-test create there).
+
+**diner consent invariant (`dinerConsentValid`) — GDPR Art. 9, the highest-value
+branch set.** Two independent clauses ANDed:
+1. minority gate: `ageBand=='adult' || guardianConsent != null`. Coverage:
+   minor-no-consent DENY, minor-with-consent ALLOW, adult-no-consent ALLOW.
+2. allergen gate: `!dinerHasAllergenData(data) || guardianConsent.get('includesAllergenConsent', false)==true`.
+   `dinerHasAllergenData` = allergenPreferences present AND
+   (trackedAllergens.size()>0 OR trackedDietary.size()>0). Coverage:
+   tracked-allergen + consent=false DENY, tracked-allergen + consent=true ALLOW.
+   Note the `.get(...,false)` default makes a MISSING guardianConsent fail the
+   allergen gate too (so allergen data on an adult with no consent map DENIES).
+   The same invariant re-runs on UPDATE — proved with an update that ADDS
+   allergens with no consent map (DENY) plus a clean rename (ALLOW).
+
+**family_ratings — `enteredByUid == request.auth.uid` write-pin on CREATE only
+(not update).** Deny test: a member sets enteredByUid to ANOTHER member's uid →
+DENY. `familyStarsValid` (int 1..5) is enforced on BOTH create and update;
+boundary coverage 0/6 DENY, 1/5 ALLOW on create, out-of-range DENY + in-range
+ALLOW on update. Immutable anchors via `cannotModify(['recipeId','memberId',
+'householdId','createdAt'])` — one deny each, plus a stars-change ALLOW so the
+deny-only update tests can't pass under a blanket deny.
+
+**Emulator log noise on deny tests references TWO line numbers** (e.g.
+`false for 'create' @ L892, false for 'create' @ L2327`): L2327 is the global
+default-deny match — it always appears alongside the specific-rule deny because
+Firestore evaluates both matches. `evaluation error at Lxxx` on a deny test is
+ALSO expected (e.g. a non-member create CEL-errors inside the `get()` of a
+household they can't read) — `assertFails` treats both deny and CEL-error as
+failure-of-the-write, which is the intended outcome. Not a test bug.
+
+No firestore.rules edits — every branch behaved exactly as the rule intends.
+
 **Local test:rules:all is NOT a reliable green/red oracle here, for two reasons
 unrelated to the diff:** (a) the local ensure-emulator hook starts `--only firestore`,
 so `comment-images-storage-rules.test.ts` (needs Storage on 9199) crashes the `&&`
