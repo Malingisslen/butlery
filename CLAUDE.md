@@ -103,7 +103,7 @@ The hook blocks `git commit` until a fresh marker exists at `.claude/state/<name
 
 ## Agent Knowledge Files (self-improvement pattern)
 
-Several agents have a sibling `<agent>.knowledge.md` file holding accumulated patterns across sessions. Agents with knowledge files: `firestore-rules-tester`, `uiux-designer`, `firebase-backend-security`, `testing-specialist`, `performance-optimizer`.
+Several agents have a sibling `<agent>.knowledge.md` file holding accumulated patterns across sessions. Agents with knowledge files: `firestore-rules-tester`, `uiux-designer`, `firebase-backend-security`, `testing-specialist`, `performance-optimizer`, `cloud-functions-specialist`, `e2e-test-specialist`.
 
 **Contract (applies to every knowledge file):**
 - Agent reads it as **Step 0** of every invocation.
