@@ -34,6 +34,32 @@ export const GENERAL_RETENTION_DAYS = 180;
  *  `lib/repositories/firebase/firebase_consent_repository.dart`. */
 export const CONSENT_OPERATION_PREFIX = "consent_";
 
+/**
+ * Exhaustive enumeration of every known `consent_*` operation value written
+ * to `audit_logs`. Used for the server-side `in` / `not-in` Firestore filter
+ * so the limit(maxDocs) window is scoped to the right retention class BEFORE
+ * docs are fetched — fixing the starvation bug (BUT-1404) where the unfiltered
+ * query window fills with long-lived consent rows and leaves expired general
+ * rows unpurged.
+ *
+ * IMPORTANT: Whenever a new `consent_*` operation is introduced in the write
+ * path, add it here AND bump this comment's date so the diff is reviewable.
+ * Sources:
+ *   - account/verify-signup-age.ts  → "consent_age_verification"
+ *   - lib/repositories/firebase/firebase_consent_repository.dart
+ *     → "consent_granted", "consent_updated", "consent_revoked"
+ * Last audited: 2026-06-28.
+ *
+ * Firestore `not-in` supports up to 10 values; if this list exceeds 10,
+ * switch to a `retentionTier` field on new writes + backfill (ops-blocked).
+ */
+export const CONSENT_OPERATIONS: readonly string[] = [
+  "consent_age_verification",
+  "consent_granted",
+  "consent_updated",
+  "consent_revoked",
+] as const;
+
 const BATCH_SIZE = 200;
 const MAX_DOCS_PER_RUN_PER_CATEGORY = 10000;
 
@@ -63,31 +89,41 @@ export async function purgeAuditCategoryWithDb(
 
   const auditLogs = db.collection("audit_logs");
 
-  // Fire two queries: one for the category bucket, one excluding it. We
-  // can't use `>=` / `startsWith` on `operation` while ordering by
-  // timestamp without a composite index per category, so split:
-  //   - "consent": operation in known consent operations
-  //   - "general": operation NOT in consent operations
+  // Server-side filter by retention class so limit(maxDocs) applies only to
+  // the docs we actually intend to delete. This closes the BUT-1404 starvation
+  // bug: the previous implementation fetched the oldest 10k docs unfiltered,
+  // then filtered client-side — over time that window filled with long-lived
+  // consent rows (730d retention) leaving expired general docs (180d) unpurged.
   //
-  // Firestore doesn't have NOT-IN against a prefix; for general-category
-  // we instead query by timestamp < cutoff, then filter consent events
-  // out client-side. Same pattern as `cleanup-old-notifications`. The
-  // resulting batch is small enough (≤ maxDocs) that the in-memory
-  // filter is acceptable.
-  const snapshot = await auditLogs
+  // Requires a composite index on (operation ASC, timestamp ASC) — see
+  // firestore.indexes.json.
+  //
+  // Admin SDK 13+ / Firestore multi-inequality support allows combining `in` /
+  // `not-in` on `operation` with a range (`<`) on `timestamp` in the same
+  // query.
+  const operationFilter =
+    category === "consent"
+      ? auditLogs.where(
+          "operation",
+          "in",
+          CONSENT_OPERATIONS as string[]
+        )
+      : auditLogs.where(
+          "operation",
+          "not-in",
+          CONSENT_OPERATIONS as string[]
+        );
+
+  const snapshot = await operationFilter
     .where("timestamp", "<", cutoff)
     .limit(maxDocs)
     .get();
 
   if (snapshot.empty) return 0;
 
-  const matching = snapshot.docs.filter((doc) => {
-    const op = (doc.data().operation as string | undefined) ?? "";
-    const isConsent = op.startsWith(CONSENT_OPERATION_PREFIX);
-    return category === "consent" ? isConsent : !isConsent;
-  });
-
-  if (matching.length === 0) return 0;
+  // All docs in the snapshot are already in the correct retention class —
+  // no client-side filtering needed.
+  const matching = snapshot.docs;
 
   let deleted = 0;
   let batch = db.batch();

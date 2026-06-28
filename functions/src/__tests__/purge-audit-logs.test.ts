@@ -26,6 +26,7 @@ const {
   CONSENT_RETENTION_DAYS,
   GENERAL_RETENTION_DAYS,
   CONSENT_OPERATION_PREFIX,
+  CONSENT_OPERATIONS,
 } = require("../audit_logs/purge-expired");
 
 interface SeedDoc {
@@ -56,46 +57,93 @@ function makeTimestamp(d: Date): FakeTimestamp {
 }
 
 /** Minimal fake admin.firestore() shape for the calls used by
- *  `purgeAuditCategoryWithDb`. Mirrors the pattern in
- *  `notification-queues-gdpr.test.ts`. */
-function makeFakeDb(store: FakeStore) {
+ *  `purgeAuditCategoryWithDb` after BUT-1404 fix.
+ *
+ *  The production query chain is now:
+ *    collection('audit_logs')
+ *      .where('operation', 'in' | 'not-in', [...])
+ *      .where('timestamp', '<', cutoff)
+ *      .limit(n)
+ *      .get()
+ *
+ *  The fake models both filters in-memory and applies limit() on the result,
+ *  matching what Firestore would return server-side.
+ */
+function makeFakeDb(store: FakeStore, limitOverride?: number) {
+  /** Build a chainable query that accumulates predicate state. */
+  function makeQuery(predicates: {
+    operationFilter?: { op: "in" | "not-in"; values: string[] };
+    timestampCutoffMs?: number;
+    limitN?: number;
+  }) {
+    return {
+      where(field: string, op: string, value: FakeTimestamp | string[]) {
+        if (field === "operation" && (op === "in" || op === "not-in")) {
+          return makeQuery({
+            ...predicates,
+            operationFilter: { op: op as "in" | "not-in", values: value as string[] },
+          });
+        }
+        if (field === "timestamp" && op === "<") {
+          return makeQuery({
+            ...predicates,
+            timestampCutoffMs: (value as FakeTimestamp).toMillis(),
+          });
+        }
+        throw new Error(
+          `makeFakeDb: unexpected where(${field}, ${op}) — not modelled`
+        );
+      },
+      limit(n: number) {
+        return makeQuery({ ...predicates, limitN: limitOverride ?? n });
+      },
+      async get() {
+        let matches = store.docs;
+
+        // Apply operation filter.
+        if (predicates.operationFilter) {
+          const { op, values } = predicates.operationFilter;
+          if (op === "in") {
+            matches = matches.filter((d) => values.includes(d.operation));
+          } else {
+            // "not-in": also excludes docs where field is absent (Firestore
+            // semantics) — our fake always has the field so this is just !includes.
+            matches = matches.filter((d) => !values.includes(d.operation));
+          }
+        }
+
+        // Apply timestamp range filter.
+        if (predicates.timestampCutoffMs !== undefined) {
+          const cutoff = predicates.timestampCutoffMs;
+          matches = matches.filter((d) => d.timestampMs < cutoff);
+        }
+
+        // Apply limit.
+        if (predicates.limitN !== undefined) {
+          matches = matches.slice(0, predicates.limitN);
+        }
+
+        return {
+          empty: matches.length === 0,
+          docs: matches.map((m) => ({
+            data: () => ({ operation: m.operation }),
+            ref: {
+              delete: async () => {
+                store.deleted.add(m.id);
+              },
+            },
+          })),
+        };
+      },
+    };
+  }
+
   return {
     collection(name: string) {
       if (name !== "audit_logs") {
         throw new Error(`unexpected collection access: ${name}`);
       }
-      return {
-        where(field: string, op: string, value: FakeTimestamp) {
-          if (field !== "timestamp" || op !== "<") {
-            throw new Error(
-              `unexpected where: ${field} ${op} (test only models timestamp<cutoff)`
-            );
-          }
-          const cutoff = value.toMillis();
-          return {
-            limit(_n: number) {
-              return {
-                async get() {
-                  const matches = store.docs.filter(
-                    (d) => d.timestampMs < cutoff
-                  );
-                  return {
-                    empty: matches.length === 0,
-                    docs: matches.map((m) => ({
-                      data: () => ({ operation: m.operation }),
-                      ref: {
-                        delete: async () => {
-                          store.deleted.add(m.id);
-                        },
-                      },
-                    })),
-                  };
-                },
-              };
-            },
-          };
-        },
-      };
+      return makeQuery({});
     },
     batch() {
       const ops: Array<() => Promise<void>> = [];
@@ -353,6 +401,82 @@ async function generalBucketIgnoresFreshConsent(): Promise<void> {
   );
 }
 
+/**
+ * BUT-1404 — Starvation regression test.
+ *
+ * Scenario: the window up to the general cutoff (180d) is dominated by
+ * consent rows. Before the fix, limit(maxDocs) fired before any filtering,
+ * so all fetched docs were consent events and the general purge returned 0
+ * even though general docs past their 180d cutoff existed in the collection.
+ *
+ * After the fix the server-side `not-in` filter means limit() is applied
+ * only to non-consent docs, so the stale general rows ARE found.
+ */
+async function generalPurgeNotStarvedByConsentRows(): Promise<void> {
+  // Build a fake DB whose oldest-10 docs are consent events, plus one
+  // general doc past its 180d cutoff. Use limitOverride=10 to simulate a
+  // tight window that the old code would have filled entirely with consent rows.
+  const consentDocs: SeedDoc[] = Array.from({ length: 10 }, (_, i) => ({
+    id: `c-old-${i}`,
+    operation: "consent_updated",
+    // 300 days ago — older than 180d general cutoff but within 730d consent
+    // retention. These must NOT be deleted by the general bucket.
+    timestampMs: daysAgo(300 + i),
+  }));
+  const generalDoc: SeedDoc = {
+    id: "g-stale",
+    operation: "read",
+    timestampMs: daysAgo(200), // past 180d cutoff
+  };
+  const store: FakeStore = {
+    docs: [...consentDocs, generalDoc],
+    deleted: new Set(),
+  };
+
+  const cutoff = cutoffDays(GENERAL_RETENTION_DAYS);
+  // Simulate a window of 10 docs — old code would return only the 10 consent
+  // rows and leave g-stale unpurged. New code filters consent out server-side
+  // so g-stale is fetched and deleted within the same window.
+  const total = await purgeAuditCategoryWithDb(
+    makeFakeDb(store, 10) as never,
+    "general",
+    cutoff as never,
+    { maxDocs: 10 }
+  );
+  const ok =
+    total === 1 &&
+    store.deleted.has("g-stale") &&
+    consentDocs.every((d) => !store.deleted.has(d.id));
+  record(
+    "BUT-1404: general purge finds stale general doc even when window dominated by consent rows",
+    ok,
+    `total=${total} deleted=[${[...store.deleted].join(", ")}] consent_not_deleted=${consentDocs.every((d) => !store.deleted.has(d.id))}`
+  );
+}
+
+/** Verifies CONSENT_OPERATIONS is a strict superset of all consent_* values
+ *  that actually appear in the codebase. If a new consent op is added without
+ *  updating CONSENT_OPERATIONS, the not-in filter lets that op's docs slip
+ *  through to the general purge bucket, violating 730d retention. */
+async function consentOperationsArrayIsExhaustive(): Promise<void> {
+  // All operation values that start with CONSENT_OPERATION_PREFIX and appear
+  // in audit_logs writes — must all be in CONSENT_OPERATIONS.
+  const knownConsentOps = [
+    "consent_age_verification",
+    "consent_granted",
+    "consent_updated",
+    "consent_revoked",
+  ];
+  const ops: string[] = CONSENT_OPERATIONS;
+  const missing = knownConsentOps.filter((op: string) => !ops.includes(op));
+  const all = knownConsentOps.every((op: string) => op.startsWith(CONSENT_OPERATION_PREFIX));
+  record(
+    "CONSENT_OPERATIONS array covers all known consent_* operation values",
+    missing.length === 0 && all,
+    missing.length > 0 ? `missing: ${missing.join(", ")}` : `all ${knownConsentOps.length} covered`
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("BUT-665: audit-log retention purge tests\n");
   console.log("==========================================\n");
@@ -363,6 +487,8 @@ async function runAll(): Promise<void> {
   await idempotencySecondRunIsNoop();
   await batchSizeRespected();
   await generalBucketIgnoresFreshConsent();
+  await generalPurgeNotStarvedByConsentRows();
+  await consentOperationsArrayIsExhaustive();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +
