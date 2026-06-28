@@ -1,25 +1,25 @@
 # Sprint Backlog
 
-## Sprint: route butlery://import deep links to Smart Import — 2026-06-28
+## Sprint: fix self-contradicting Technical-Writer §20 in ROLE_RESPONSIBILITY_MAP — 2026-06-28
 
-Single clean Tier-A bug fix (deep-link guard logic; acquisition funnel). Dart-only.
+Single clean Tier-A doc fix. No code, no commit-gate markers (doc-only diff).
 
-### Agent A: deep-link host guard (direct) — Stakeholders: Growth/ASO, Information Architect
-- [x] **A1. Whitelist `import` in the custom-scheme host guard** `[Tier A]` (BUT-1411)
-  - Step 0: CONFIRMED. The web share target builds `butlery://import?url=<enc>` (deep_link_handler.dart:60,68),
-    Uri.parse → host='import'. The host guard (:114-118) returns early for any butlery:// host except
-    butlery.app — so host='import' is dropped BEFORE the import branch (:140-142), which already handles
-    `host=='import'` but is unreachable. Net: shared-URL deep links (the web Share-Target acquisition
-    loop) are silently dropped. `_handleImportLink` (:312) routes to Routes.smartImport with the url arg.
-  - Files: `lib/core/bootstrap/handlers/deep_link_handler.dart` + new handler test.
-  - Acceptance: the guard recognises `import` (extract a testable static `isBlockedCustomSchemeHost`
-    predicate: blocks unknown butlery:// hosts, allows butlery.app + import + host-less + non-butlery
-    schemes) · butlery://import?url=... now reaches the import branch → Navigator pushNamed smartImport
-    with the url arg (the branch already does this; guard was the sole blocker) · a unit test pins the
-    predicate (import allowed, evil-host blocked, butlery.app allowed) · analyze clean.
+### Agent A: doc-consistency (direct) — Stakeholders: Technical Writer (skip-tier, doc-only)
+- [x] **A1. Remove §20 self-contradiction + correct inventory counts** `[Tier A]` (BUT-1421)
+  - Step 0: CONFIRMED. §20 IS the Technical Writer role, yet its body said "Not yet in
+    ROLE_RESPONSIBILITY_MAP — no dedicated Technical Writer role defined" and its 3rd watch item
+    said the map "enumerates 18 roles" with no doc owner. Both false + self-referential.
+  - Counts re-verified against live repo (ticket's own numbers were partly stale):
+    ops/ = 9 (not 8; cert-rotation doesn't exist, backups+freerasp missing) · security/ = 3 (not 4) ·
+    per-dir CLAUDE.md = root + 5 (not "6 per-directory") · lessons.md = 23 (not 22) ·
+    role index = 28 (not 18) · adoption measured 2026-06-27 (not 06-26).
+  - Files: `docs/architecture/ROLE_RESPONSIBILITY_MAP.md` (§20 body + 3rd watch item).
+  - Acceptance: body no longer claims the role is undefined (now states §20 owns it) · 3rd watch item
+    reflects the role exists + correct 28-role count · every inventory count matches the live repo ·
+    no stale 2026-06-26 date.
 
 ### Post-Sprint Steps
-- [ ] dart analyze + run handler test · Phase 2.7 verifier · code-reviewer + testing-specialist · commit · push · Done
+- [x] Counts verified against repo · commit · push · Done (doc-only; no analyze/tests/markers needed)
 
 ---
 
