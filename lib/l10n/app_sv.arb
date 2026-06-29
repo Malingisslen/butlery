@@ -11056,7 +11056,7 @@
   "familyRatingIntro": "Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.",
   "familyRatingYou": "du",
   "familyRatingSave": "spara betyg",
-  "familyRatingPrivateNote": "Era enskilda betyg är privata för hushållet — ingen annan ser vem som satte vad.",
+  "familyRatingPrivateNote": "Era enskilda betyg är privata — ingen annan ser vem som satte vad. Varje betyg räknas dock med i receptets allmänna snitt.",
   "familyRatingManualButton": "Betygsätt som familj",
   "familyRatingProxyNote": "inmatat av {name} · ändrar inte personens eget betyg",
   "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},

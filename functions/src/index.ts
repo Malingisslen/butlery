@@ -21,6 +21,7 @@ import {
   scheduleRatingAggregation,
   drainRatingAggregationQueue,
 } from "./ratings/rating-aggregation";
+import { updateRecipeRatingStats } from "./ratings/update-recipe-rating-stats";
 
 setGlobalOptions({ region: "europe-west1" });
 
@@ -164,123 +165,6 @@ export {
   guardDuplicateMessage,
 } from "./social/duplicate-content-guard";
 
-const db = admin.firestore();
-
-/**
- * Rating statistics interface matching Dart model
- */
-interface RatingStats {
-  ratingCount: number;
-  averageRating: number;
-  ratingDistribution: { [key: number]: number };
-  lastRatedAt: admin.firestore.Timestamp;
-}
-
-/**
- * Aggregates all ratings for a recipe and updates denormalized stats
- *
- * **Performance Characteristics:**
- * - Single transaction ensures consistency
- * - Processes ALL ratings for the recipe (typically 10-100 ratings)
- * - Runs server-side: no client bandwidth or memory impact
- * - Average execution time: 50-200ms depending on rating count
- *
- * **Trigger Events:**
- * - onCreate: New rating added
- * - onUpdate: Rating value changed
- * - onDelete: Rating removed
- *
- * @param recipeId The ID of the recipe to update
- */
-async function updateRecipeRatingStats(recipeId: string): Promise<void> {
-  logger.info(`Updating rating stats for recipe ${recipeId}`);
-
-  try {
-    // Query all ratings for this recipe
-    const ratingsSnapshot = await db
-      .collection("recipe_ratings")
-      .where("recipeId", "==", recipeId)
-      .get();
-
-    logger.info(
-      `Found ${ratingsSnapshot.size} ratings for recipe ${recipeId}`
-    );
-
-    // Calculate aggregates
-    if (ratingsSnapshot.empty) {
-      // No ratings - clear all rating stats
-      await db.collection("recipe_social_stats").doc(recipeId).set({
-        ratingCount: 0,
-        averageRating: null,
-        ratingDistribution: null,
-        lastRatedAt: null,
-      }, { merge: true });
-
-      logger.info(
-        `Cleared rating stats for recipe ${recipeId} (no ratings)`
-      );
-      return;
-    }
-
-    // Initialize counters
-    let totalRating = 0;
-    let ratingCount = 0;
-    const distribution: { [key: number]: number } = {
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-    };
-    let lastRatedAt: admin.firestore.Timestamp | null = null;
-
-    // Process all ratings
-    ratingsSnapshot.forEach((doc) => {
-      const data = doc.data();
-      const ratingValue = data.rating as number;
-      const ratedAt = data.createdAt as admin.firestore.Timestamp;
-
-      // Validate rating value (1-5)
-      if (ratingValue >= 1 && ratingValue <= 5) {
-        totalRating += ratingValue;
-        ratingCount++;
-        distribution[ratingValue] = (distribution[ratingValue] || 0) + 1;
-
-        // Track most recent rating
-        if (!lastRatedAt || ratedAt.toMillis() > lastRatedAt.toMillis()) {
-          lastRatedAt = ratedAt;
-        }
-      } else {
-        logger.warn(
-          `Invalid rating value ${ratingValue} for recipe ${recipeId}, doc ${doc.id}`
-        );
-      }
-    });
-
-    // Calculate average
-    const averageRating = ratingCount > 0 ? totalRating / ratingCount : 0;
-
-    // Update recipe document with aggregated stats
-    const stats: Partial<RatingStats> = {
-      ratingCount: ratingCount,
-      averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-      ratingDistribution: distribution,
-      lastRatedAt: lastRatedAt || admin.firestore.Timestamp.now(),
-    };
-
-    await db.collection("recipe_social_stats").doc(recipeId).set(stats, { merge: true });
-
-    logger.info(
-      `Updated recipe ${recipeId}: ${ratingCount} ratings, avg ${stats.averageRating}`
-    );
-  } catch (error) {
-    logger.error(
-      `Failed to update rating stats for recipe ${recipeId}:`,
-      error
-    );
-    throw error; // Re-throw to trigger Cloud Functions retry
-  }
-}
 
 /**
  * Trigger: When a new rating is created
@@ -370,6 +254,59 @@ export const onRatingDeleted = onDocumentDeleted(
       `Rating deleted for recipe ${recipeId} (was: ${data.rating})`
     );
 
+    await scheduleRatingAggregation(recipeId);
+  }
+);
+
+// ─── Family-diner ratings feed the same public counter ───────────────────
+//
+// A non-account family diner (memberType `profile`) rating a recipe must count
+// toward the recipe's public average exactly like an account user. These
+// triggers schedule the SAME aggregation; the aggregator folds in profile rows.
+// Gated to `profile` rows so adult/proxy family writes (which don't affect the
+// public counter — adults go via recipe_ratings) don't spend a recompute.
+
+/** True when a family_ratings doc is a non-account diner-profile rating. */
+function isProfileRating(data: admin.firestore.DocumentData | undefined): boolean {
+  return data?.memberType === "profile";
+}
+
+export const onFamilyRatingCreated = onDocumentCreated(
+  "family_ratings/{id}",
+  async (event) => {
+    const data = event.data?.data();
+    if (!data || !isProfileRating(data)) return;
+    const recipeId = data.recipeId as string;
+    if (!recipeId) return;
+    logger.info(`Family-diner rating created for recipe ${recipeId}`);
+    await scheduleRatingAggregation(recipeId);
+  }
+);
+
+export const onFamilyRatingUpdated = onDocumentUpdated(
+  "family_ratings/{id}",
+  async (event) => {
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
+    if (!isProfileRating(after)) return;
+    const recipeId = after.recipeId as string;
+    if (!recipeId) return;
+    // Only recompute when the stars actually changed.
+    if (before.stars !== after.stars) {
+      logger.info(`Family-diner rating updated for recipe ${recipeId}`);
+      await scheduleRatingAggregation(recipeId);
+    }
+  }
+);
+
+export const onFamilyRatingDeleted = onDocumentDeleted(
+  "family_ratings/{id}",
+  async (event) => {
+    const data = event.data?.data();
+    if (!data || !isProfileRating(data)) return;
+    const recipeId = data.recipeId as string;
+    if (!recipeId) return;
+    logger.info(`Family-diner rating deleted for recipe ${recipeId}`);
     await scheduleRatingAggregation(recipeId);
   }
 );

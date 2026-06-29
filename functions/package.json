@@ -38,6 +38,7 @@
     "test:rules:recipe-shared-read": "ts-node src/__tests__/recipe-shared-read-rules.test.ts",
     "test:rules:family-rating": "ts-node src/__tests__/family-rating-rules.test.ts",
     "test:integration:account-deletion": "ts-node src/__tests__/request-account-deletion.integration.test.ts",
+    "test:integration:family-rating-aggregation": "ts-node src/__tests__/family-rating-aggregation.integration.test.ts",
     "test:integration:moderate-upload": "ts-node src/__tests__/moderate-upload.integration.test.ts",
     "test:integration:sync-conversation": "ts-node src/__tests__/sync-conversation-last-message.integration.test.ts",
     "test:integration:accept-friend": "ts-node src/__tests__/accept-friend-request.integration.test.ts",

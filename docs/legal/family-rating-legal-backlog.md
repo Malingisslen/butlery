@@ -39,26 +39,32 @@ reference** (ADR-0001 floors self-accounts at 15). Files:
 
 ---
 
-## P1 — Decisions that unblock further build
+## P1 — Decision now BUILT; needs consent/DPIA coverage before launch
 
-### 3. Public ("alla") community-rating contribution — *Malin's request, needs a DPO ruling*
-Malin wants household verdicts to feed a recipe's **public community average**
-("4 families × 4 diners = 16 ratings"). Where this stands technically:
-- **Adults already contribute, safely:** when an adult rates themselves on their
-  own device, that verdict already mirrors into the public rating (and now
-  un-mirrors on removal). No change needed.
-- **The rest is blocked, and partly impossible-as-designed:** a verdict entered
-  *for* another adult, and **any child's verdict**, cannot become that person's
-  per-user public rating (children have no account; cross-user public writes are
-  forbidden by design to prevent rating fraud). Making "all 16" count would
-  require a **new public metric that aggregates children's verdicts**, which is
-  precisely the children-data-goes-public step a DPO must rule on.
-- **Engineering recommendation:** keep children's verdicts **private**; let only
-  adults' verdicts influence the public number (the current behaviour). If the
-  DPO wants more, it needs its own assessment + a privacy-policy line, and the
-  aggregate must never expose an identifiable child's stars.
-**Unblocks:** if approved, building the public family-aggregate; if not, this is
-already correctly handled and can be closed.
+### 3. Family-diner ratings feed the public "alla" counter — *built; DPO must cover it*
+**Decided by Malin and now built:** a shared/public recipe has ONE general
+average that counts **every rater once** — account users (via `recipe_ratings`)
+**and each non-account family diner, children included** (via `family_ratings`,
+folded in by the `updateRecipeRatingStats` Cloud Function). Each person rates
+once and can update; adults are never double-counted.
+
+Privacy shape (important for the DPO assessment):
+- The cross-household fold runs **server-side under the Admin SDK** and produces
+  an **anonymous aggregate** — **no client ever sees another household's
+  individual verdict**, only the combined average. So "no one sees who gave
+  what" remains true; the on-screen note now says each rating *counts toward the
+  recipe's overall average*.
+- A meal star (1–5) is **ordinary** personal data, not special-category — this
+  is materially less sensitive than the allergen (Art. 9) data, which is **not**
+  aggregated publicly.
+
+**What the DPO/Legal must do (does not block other build, but blocks launch):**
+- Confirm that a child's meal rating contributing to an anonymous public average
+  is acceptable, and on what lawful basis (purpose extension from "private
+  household verdict").
+- **Update the guardian consent text** at child-profile creation to state that
+  the child's meal ratings contribute to recipes' public averages (anonymously).
+- Cover this in the DPIA (item 1) and the privacy policy (item 2).
 
 ### 4. Confirm the retention / dormancy window
 `docs/security/family-data-retention.md` **proposes 24 months** of household

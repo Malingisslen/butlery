@@ -15641,7 +15641,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familyRatingPrivateNote =>
-      'Your individual ratings are private to your household — no one else sees who gave what.';
+      'Your individual ratings are private — no one else sees who gave what. Each rating does, though, count toward the recipe\'s overall average.';
 
   @override
   String get familyRatingManualButton => 'Rate as a family';

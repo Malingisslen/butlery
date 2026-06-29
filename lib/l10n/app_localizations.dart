@@ -26186,7 +26186,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingPrivateNote.
   ///
   /// In sv, this message translates to:
-  /// **'Era enskilda betyg är privata för hushållet — ingen annan ser vem som satte vad.'**
+  /// **'Era enskilda betyg är privata — ingen annan ser vem som satte vad. Varje betyg räknas dock med i receptets allmänna snitt.'**
   String get familyRatingPrivateNote;
 
   /// No description provided for @familyRatingManualButton.

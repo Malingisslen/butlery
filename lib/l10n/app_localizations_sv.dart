@@ -15681,7 +15681,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get familyRatingPrivateNote =>
-      'Era enskilda betyg är privata för hushållet — ingen annan ser vem som satte vad.';
+      'Era enskilda betyg är privata — ingen annan ser vem som satte vad. Varje betyg räknas dock med i receptets allmänna snitt.';
 
   @override
   String get familyRatingManualButton => 'Betygsätt som familj';

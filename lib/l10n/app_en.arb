@@ -11014,7 +11014,7 @@
   "familyRatingIntro": "Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.",
   "familyRatingYou": "you",
   "familyRatingSave": "save ratings",
-  "familyRatingPrivateNote": "Your individual ratings are private to your household — no one else sees who gave what.",
+  "familyRatingPrivateNote": "Your individual ratings are private — no one else sees who gave what. Each rating does, though, count toward the recipe's overall average.",
   "familyRatingManualButton": "Rate as a family",
   "familyRatingProxyNote": "entered by {name} · doesn't change their own rating",
   "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},
