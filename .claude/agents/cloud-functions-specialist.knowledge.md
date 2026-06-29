@@ -2310,3 +2310,54 @@ unless reactivated. Household doc + accounts are NOT deleted.
   and seeds one household per branch. Gap noted in this review: the
   reactivation-clears-schedule and empty-children-clears-stale-schedule branches
   (both have side effects) are not yet asserted.
+
+### 2026-06-29 — BUT-1427 digest decoupled from reEngagement category [Bug fixed]
+
+The weekly activity-digest push (`analytics/send-activity-digest.ts`) was passing
+category `"reEngagement"` to `sendPushToUserRespectingPreferences`, so a user who
+opted out of win-back pings silently lost their digest too — two distinct lifecycle
+channels (retention summary for active users vs. win-back for lapsed users) collapsed
+into one toggle. Fix added a dedicated `"digest"` member to the `NotificationCategory`
+union in `shared/preference-aware-push.ts`, gated default-on, and switched the digest
+scheduler to pass `"digest"`. Reviewed clean — no Critical/High; 6/6 test, tsc clean.
+
+**Patterns worth remembering / confirmed this review:**
+
+- **Default-on for a NEW category must be unconditional `return true` on a missing
+  field — no fallback to a sibling category's stored value.** The `reEngagement`
+  branch falls back to `categorySettings["NotificationCategory.system"]` because that
+  is the pre-existing client-side toggle it maps to. `digest` correctly does NOT
+  borrow any sibling boolean: there is no pre-existing client toggle for it, so any
+  borrowed value would mean "a user who set some *other* category controls digest."
+  A brand-new server-side category whose field predates no client UI must read only
+  its own optional boolean and default-on otherwise. This is the no-silent-mute
+  guarantee: prefs docs written before BUT-1427 have no `digest` field → enabled.
+
+- **Push category gate is independent of `evaluateSendGate`.** The digest scheduler
+  runs `evaluateSendGate({ notificationType: "activity_digest" })` (importance +
+  quiet-hours + RC suppression + send-event) BEFORE the preference-aware push, and
+  that gate keys off `notificationType`, not the push `category` literal. The
+  category change touches only the `isCategoryAllowed` opt-out check inside the
+  helper. `notification-importance.ts` still lists `"activity_digest"` (unchanged) —
+  the two gates are orthogonal and both correctly still fire. Don't conflate the
+  analytics `notificationType` string with the preference `category` literal: they
+  are separate taxonomies that happen to both describe "digest."
+
+- **Adding a union member is safe for other callers only because every other call
+  site passes a string literal, not a variable.** `detect-lapsed-users.ts`,
+  `send-notification.ts`, and `deliver-scheduled-notifications.ts` all pass the
+  literal `"reEngagement"`; widening the union to `"reEngagement" | "digest"` cannot
+  break them (a literal is still assignable). If any caller had passed a
+  `NotificationCategory`-typed variable through a switch, widening the union would
+  have demanded a new branch — `tsc` would have caught it via exhaustiveness only if
+  the switch returned the union type. Here the trailing `return true` makes
+  `isCategoryAllowed` total, so an unhandled future category fails OPEN (sends),
+  which is the right default for a notification gate but worth knowing: a typo'd
+  category silently sends rather than erroring.
+
+- **Per-frequency vs per-channel are two separate opt-outs and must both be checked
+  at the right layer.** `digestFrequency !== "never"` (does the user want digests at
+  all, and how often) is enforced in the scheduler upstream; the `digest` boolean
+  (is the push *channel* allowed right now) is enforced in the helper. Don't try to
+  fold frequency into the category gate — the scheduler already filtered the
+  user set before the push fan-out, and the helper has no frequency context.
