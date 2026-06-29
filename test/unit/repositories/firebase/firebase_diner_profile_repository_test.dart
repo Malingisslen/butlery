@@ -343,6 +343,44 @@ void main() {
       expect(reread!.name, 'Liam B');
     });
 
+    test(
+      'update erases a cleared allergen field (full overwrite, not merge)',
+      () async {
+        // GDPR consent withdrawal: clearing allergenPreferences MUST remove the
+        // special-category data. toFirestore omits the key when null, so a
+        // merge-update would leave the old value behind — the repo writes a full
+        // overwrite to guarantee erasure.
+        final fs = FakeFirebaseFirestore();
+        await _seedHousehold(fs);
+        final repo = _repo(fs, authedUserId: _malin);
+        final created = await repo.create(
+          _kid(
+            consent: _consent(allergens: true),
+            allergens: const UserAllergenPreferences(
+              trackedAllergens: {'gluten'},
+              trackedDietary: {},
+            ),
+          ),
+        );
+        expect((await repo.read(created.id))!.allergenPreferences, isNotNull);
+
+        // Withdraw: clear allergens + flip the allergen-consent flag.
+        await repo.update(
+          created.copyWith(
+            allergenPreferences: null,
+            guardianConsent: created.guardianConsent!.copyWith(
+              includesAllergenConsent: false,
+            ),
+          ),
+        );
+
+        final reread = await repo.read(created.id);
+        expect(reread!.allergenPreferences, isNull);
+        expect(reread.guardianConsent, isNotNull); // base consent stays
+        expect(reread.hasAllergenConsent, isFalse);
+      },
+    );
+
     test('update cannot re-parent a profile to another household', () async {
       final fs = FakeFirebaseFirestore();
       await _seedHousehold(fs);

@@ -69,10 +69,39 @@ class FirebaseDinerProfileRepository
     return super.create(entity);
   }
 
+  /// Updates with a full-document overwrite rather than the inherited
+  /// merge-`update()`. A consent withdrawal clears `allergenPreferences`
+  /// (and flips `guardianConsent.includesAllergenConsent`), and
+  /// [DinerProfile.toFirestore] OMITS those keys when null. Firestore's
+  /// `update()` merges — it would leave the old allergen data in place, so the
+  /// withdrawal would silently fail to erase special-category data (a GDPR
+  /// breach). `set()` replaces the whole document, so an omitted field is gone.
   @override
   Future<void> update(DinerProfile entity) async {
     _assertConsentCompliant(entity);
-    return super.update(entity);
+
+    // The permission check reads the stored doc and the set() writes it without
+    // a surrounding transaction (same read-then-write shape as the base layer —
+    // not a regression). The authoritative, atomic guard against a concurrent
+    // re-parent is the Firestore rule pinning householdId immutable on update
+    // (emulator-proven); this repo check is the client-side first line.
+    final userId = requireCurrentUserId();
+    final canUpdate = await validateUpdatePermission(userId, entity.id, entity);
+    await logPermissionCheck(
+      userId: userId,
+      resource: '$collectionName/${entity.id}',
+      operation: 'update',
+      granted: canUpdate,
+      auditRepository: auditRepository,
+    );
+    if (!canUpdate) {
+      throw PermissionDeniedException(
+        'User $userId does not have permission to update diner profile '
+        '${entity.id}',
+      );
+    }
+
+    await collection.doc(entity.id).set(toFirestore(entity));
   }
 
   /// The base `createBatch` writes directly via `batch.set`, bypassing the
