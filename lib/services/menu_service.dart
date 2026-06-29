@@ -93,8 +93,9 @@ class MenuService extends BaseService {
   ///
   /// Weight = daysSinceLastCooked (capped at 90). Never-cooked recipes get 90.
   /// - Season boost: 1.5x for recipes tagged with the current season.
-  /// - Rating boost (BUT-1319): up to 1.4x for a 5★ recipe, scaled by rating.
-  ///   Unrated (ratingCount 0/null) recipes get 1.0 — never penalized.
+  /// - Rating boost (BUT-1319 + family Phase 4): up to 1.4x for a 5★ recipe,
+  ///   scaled by the family verdict if the household has rated it, else the
+  ///   public/personal rating. Unrated recipes get 1.0 — never penalized.
   /// - Recent-use decay (BUT-1318): 0.15x for recipes used in a recent plan,
   ///   so they rotate out but keep a non-zero chance of being picked.
   static double _recipeWeight(
@@ -129,12 +130,31 @@ class MenuService extends BaseService {
   }
 
   /// Gentle rating boost in [1.0, _maxRatingBoost]. Linear in the average
-  /// rating: 1★ → 1.0, 5★ → 1.4. Unrated recipes (ratingCount 0/null or
-  /// rating null) return 1.0, so they are never penalized relative to a
-  /// 1★ recipe — they just don't get the boost.
+  /// rating: 1★ → 1.0, 5★ → 1.4. Unrated recipes (count 0/null or rating null)
+  /// return 1.0, so they are never penalized relative to a 1★ recipe — they
+  /// just don't get the boost.
+  ///
+  /// Family-rating influence (Phase 4 item 13): the household's own
+  /// `familyAverage` is the truest "did the people who eat this like it" signal,
+  /// so it takes precedence over the public/personal `rating` when present. This
+  /// is the soft v1 — a crowd-pleaser floats up, a household flop sinks but is
+  /// never excluded (veto-strength is a later, configurable step). A
+  /// present-diner subset average (vs the whole-household average) waits on the
+  /// deferred WeeklyMenuPlanEntry attendees.
   static double _ratingMultiplier(Recipe recipe) {
-    final rating = recipe.core.rating;
-    final count = recipe.core.ratingCount ?? 0;
+    final familyAvg = recipe.core.familyAverage;
+    final familyCount = recipe.core.familyRatingCount ?? 0;
+
+    final double? rating;
+    final int count;
+    if (familyAvg != null && familyCount > 0) {
+      rating = familyAvg;
+      count = familyCount;
+    } else {
+      rating = recipe.core.rating;
+      count = recipe.core.ratingCount ?? 0;
+    }
+
     if (rating == null || count <= 0) return 1.0;
     final clamped = rating.clamp(1.0, 5.0);
     final fraction = (clamped - 1.0) / 4.0; // 0.0 at 1★, 1.0 at 5★

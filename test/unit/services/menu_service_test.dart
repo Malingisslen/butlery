@@ -639,6 +639,109 @@ void main() {
       });
     });
 
+    group('Family-rating influence (Phase 4 item 13)', () {
+      Recipe build({
+        required String id,
+        double? rating,
+        int? ratingCount,
+        double? familyAverage,
+        int? familyRatingCount,
+      }) {
+        final base = RecipeFactory.build(id: id, title: id, mealType: 'middag');
+        return Recipe(
+          core: base.core.copyWith(
+            rating: rating,
+            ratingCount: ratingCount,
+            familyAverage: familyAverage,
+            familyRatingCount: familyRatingCount,
+          ),
+          type: base.type,
+        );
+      }
+
+      double weight(Recipe r) =>
+          MenuService.debugRecipeWeight(r, seasonTag: 'no_season');
+
+      test('the family verdict drives the boost over the personal rating', () {
+        // Same recency, no season. Recipe A: household loved it (family 5) but
+        // the owner personally gave 2; B: household disliked it (family 2) but
+        // the owner gave 5. A must outweigh B — the household verdict wins.
+        final loved = build(
+          id: 'loved',
+          rating: 2.0,
+          ratingCount: 40,
+          familyAverage: 5.0,
+          familyRatingCount: 4,
+        );
+        final flopped = build(
+          id: 'flopped',
+          rating: 5.0,
+          ratingCount: 40,
+          familyAverage: 2.0,
+          familyRatingCount: 4,
+        );
+
+        expect(
+          weight(loved),
+          greaterThan(weight(flopped)),
+          reason:
+              'the family average, not the personal rating, drives the nudge',
+        );
+      });
+
+      test('falls back to the personal rating when no family verdict', () {
+        final family = build(
+          id: 'fam',
+          familyAverage: 5.0,
+          familyRatingCount: 3,
+        );
+        final personal = build(id: 'pers', rating: 5.0, ratingCount: 30);
+        // Both reach the 5★ boost via different sources → equal weight.
+        expect(weight(family), closeTo(weight(personal), 1e-9));
+      });
+
+      test('a household flop sinks but is never excluded (soft, not veto)', () {
+        final flop = build(
+          id: 'flop',
+          familyAverage: 1.0,
+          familyRatingCount: 5,
+        );
+        final unrated = build(id: 'unrated');
+        expect(weight(flop), greaterThan(0));
+        // 1★ family maps to multiplier 1.0 — never worse than unrated.
+        expect(weight(flop), closeTo(weight(unrated), 1e-9));
+      });
+
+      test('a family 5★ is capped at the same 1.4x ceiling', () {
+        final fiveStar = build(
+          id: '5',
+          familyAverage: 5.0,
+          familyRatingCount: 6,
+        );
+        final unrated = build(id: 'u');
+        expect(
+          weight(fiveStar) / weight(unrated),
+          closeTo(1.4, 1e-9),
+          reason: 'the family boost must obey the same gentle ceiling',
+        );
+      });
+
+      test('a leftover average with ZERO votes falls back to personal', () {
+        // familyRatingCount 0 (e.g. a withdrawal cleared the votes but a stale
+        // average lingered) must NOT apply a 1★ family penalty — the guard is
+        // count > 0, so it falls through to the 5★ personal rating.
+        final recipe = build(
+          id: 'zero',
+          familyAverage: 1.0,
+          familyRatingCount: 0,
+          rating: 5.0,
+          ratingCount: 30,
+        );
+        final personalFive = build(id: 'p', rating: 5.0, ratingCount: 30);
+        expect(weight(recipe), closeTo(weight(personalFive), 1e-9));
+      });
+    });
+
     group('Recent-week dedup (BUT-1318)', () {
       Recipe simple(String id) =>
           RecipeFactory.build(id: id, title: id, mealType: 'middag');
