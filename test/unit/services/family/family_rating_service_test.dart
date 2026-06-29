@@ -120,6 +120,7 @@ void main() {
         review: any(named: 'review'),
       ),
     ).thenAnswer((_) async => true);
+    when(() => socialOps.removeRating(any())).thenAnswer((_) async => true);
     recipeService = _MockUnifiedRecipeService();
     when(() => recipeService.social).thenReturn(socialOps);
     // Denormalization helper looks the recipe up then patches it. Default to
@@ -362,6 +363,88 @@ void main() {
         completes,
       );
     });
+
+    test('un-rating an adult self-rate retracts the social mirror', () async {
+      await rate(
+        memberId: _malin,
+        type: HouseholdMemberType.user,
+        stars: 4,
+        enteredByUid: _malin,
+      );
+
+      await service.removeRating(recipeId: _recipe, memberId: _malin);
+
+      verify(() => socialOps.removeRating(_recipe)).called(1);
+    });
+
+    test('un-rating a child verdict never touches the social mirror', () async {
+      await rate(
+        memberId: 'liam',
+        type: HouseholdMemberType.profile,
+        stars: 5,
+        enteredByUid: _malin,
+      );
+      // Pin that the verdict actually persisted, so verifyNever proves the
+      // guard skipped the mirror — not that the seed silently failed.
+      expect(
+        await ratingRepo.read(FamilyRating.buildId(_recipe, 'liam')),
+        isNotNull,
+      );
+
+      await service.removeRating(recipeId: _recipe, memberId: 'liam');
+
+      verifyNever(() => socialOps.removeRating(any()));
+    });
+
+    test(
+      'un-rating a PROXY-entered adult verdict never retracts their public '
+      'rating',
+      () async {
+        // Malin entered a verdict FOR Johan at the table (proxy). Removing it
+        // must not touch Johan's own public/social rating — only a genuine
+        // self-rate ever mirrored out.
+        await rate(
+          memberId: _johan,
+          type: HouseholdMemberType.user,
+          stars: 4,
+          enteredByUid: _malin,
+        );
+        expect(
+          await ratingRepo.read(FamilyRating.buildId(_recipe, _johan)),
+          isNotNull,
+        );
+
+        await service.removeRating(recipeId: _recipe, memberId: _johan);
+
+        verifyNever(() => socialOps.removeRating(any()));
+      },
+    );
+
+    test(
+      'un-rating the last verdict clears the recipe family average',
+      () async {
+        when(
+          () => recipeService.getRecipeById(_recipe),
+        ).thenReturn(personalRecipe());
+
+        await rate(
+          memberId: _malin,
+          type: HouseholdMemberType.user,
+          stars: 4,
+          enteredByUid: _malin,
+        );
+        await service.removeRating(recipeId: _recipe, memberId: _malin);
+
+        // Last updateRecipe (from the un-rate denormalization) nulls the pill.
+        final patched =
+            verify(
+                  () => recipeService.updateRecipe(captureAny()),
+                ).captured.last
+                as Recipe;
+        expect(patched.core.familyAverage, isNull);
+        expect(patched.core.familyRatingCount, isNull);
+      },
+    );
   });
 
   group('family-average denormalization (card pill source)', () {

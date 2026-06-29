@@ -166,19 +166,35 @@ class FamilyRatingService extends BaseService {
   /// Remove a member's verdict (un-rate). No-op tolerant — the repository
   /// membership check still applies.
   ///
-  /// NOTE (deferred): the symmetric mirror — retracting an adult self-rater's
-  /// personal/social rating — is intentionally not done here yet. There is no
-  /// family un-rate UI until Phase 3; wiring `social.removeRating` now would be
-  /// speculative and untested. Add it alongside the un-rate entry point so the
-  /// social aggregate isn't left with an orphaned rating.
+  /// Symmetric to [rateAsFamily]: it re-denormalizes the recipe's family
+  /// average (so the card pill drops when the last verdict goes), and retracts
+  /// the adult self-rater's personal/social rating so the public aggregate is
+  /// never left with an orphaned rating the family no longer stands behind.
+  /// Only a genuine self-rate ever mirrored out, so only it un-mirrors; the
+  /// retraction is best-effort (the family entry is already gone).
   Future<void> removeRating({
     required String recipeId,
     required String memberId,
   }) async {
-    await executeServiceOperation(
-      () => _ratings.delete(FamilyRating.buildId(recipeId, memberId)),
-      operationName: 'removeRating',
-    );
+    await executeServiceOperation(() async {
+      final id = FamilyRating.buildId(recipeId, memberId);
+      final existing = await _ratings.read(id);
+      await _ratings.delete(id);
+      if (existing == null) return;
+
+      await _denormalizeFamilyAverage(recipeId, existing.householdId);
+
+      if (_isSelfRating(existing)) {
+        try {
+          await _recipeService.social.removeRating(recipeId);
+        } catch (e) {
+          AppLogger.warning(
+            'FamilyRatingService: social un-mirror failed, family entry '
+            'already removed: $e',
+          );
+        }
+      }
+    }, operationName: 'removeRating');
   }
 
   /// The household's aggregate for one recipe — the value the "familj" pill

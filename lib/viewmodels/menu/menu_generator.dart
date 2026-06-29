@@ -15,6 +15,9 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/family/household_roster_service.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
 
 /// Result of a recipe swap operation, including alternatives info.
@@ -55,6 +58,15 @@ class MenuGenerator {
   /// Whether to use aggregated household allergens instead of single-user.
   bool useHouseholdAllergens = false;
 
+  /// Present-aware allergen filtering (family Phase 4, opt-in). When set, the
+  /// async menu pool is filtered against the UNION of just these present
+  /// diners' allergens (resolved from the family roster — accounts AND diner
+  /// profiles, so a present child's allergens count), instead of the whole
+  /// household. Null = the default whole-household union behaviour. The present
+  /// set is supplied by the caller (e.g. the who's-eating pick); this is the
+  /// generator-side capability the per-night UI will drive.
+  List<String>? presentMemberIds;
+
   /// Optional source of recent weekly plans for cross-week dedup (BUT-1318).
   /// When null (e.g. group flow, tests without the service registered) the
   /// recent-use down-weighting is simply skipped — no Firestore read happens
@@ -94,6 +106,27 @@ class MenuGenerator {
 
     var recipes = _recipeService.recipes;
 
+    // Present-aware filtering takes precedence over the whole-household union
+    // when a NON-EMPTY present set is supplied (opt-in). An empty list ("no one
+    // selected") must NOT disable filtering — it falls through to the
+    // whole-household union, never an unfiltered (unsafe) pool. Also falls
+    // through if the roster/household can't be resolved.
+    final present = presentMemberIds;
+    if (present != null &&
+        present.isNotEmpty &&
+        (filterByAllergens || filterByDietary)) {
+      final prefs = await _presentAllergenPrefs(present);
+      if (prefs != null) {
+        if (filterByAllergens) {
+          recipes = _filterByPrefs(recipes, prefs, allergens: true);
+        }
+        if (filterByDietary) {
+          recipes = _filterByPrefs(recipes, prefs, allergens: false);
+        }
+        return recipes;
+      }
+    }
+
     if (useHouseholdAllergens) {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
       if (householdService != null && householdService.hasHousehold) {
@@ -116,6 +149,49 @@ class MenuGenerator {
       recipes = _filterByDietaryPreferences(recipes);
     }
     return recipes;
+  }
+
+  /// Union of the present diners' allergens/dietary prefs, resolved from the
+  /// family roster (accounts + diner profiles). Returns null when the roster
+  /// can't be resolved (no household, services unavailable) so the caller can
+  /// fall back to the existing filtering. Read-only: uses `getForUser` (never
+  /// creates a household).
+  Future<UserAllergenPreferences?> _presentAllergenPrefs(
+    List<String> presentIds,
+  ) async {
+    final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
+    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
+    final permission = ServiceLocator.tryGet<PermissionService>();
+    if (rosterService == null || householdRepo == null || permission == null) {
+      return null;
+    }
+    final uid = permission.currentUserId;
+    if (uid == null) return null;
+
+    final households = await householdRepo.getForUser(uid);
+    if (households.isEmpty) return null;
+    final roster = await rosterService.getRoster(households.first.id);
+
+    final present = presentIds.toSet();
+    final allergens = <String>{};
+    final dietary = <String>{};
+    // Safety-conservative: exclude untagged (UNKNOWN) recipes if ANY present
+    // diner opts out of unknowns — one cautious diner makes the union cautious.
+    var includeUnknown = true;
+    for (final member in roster) {
+      if (!present.contains(member.memberId)) continue;
+      final prefs = member.allergenPreferences;
+      if (prefs != null) {
+        allergens.addAll(prefs.trackedAllergens);
+        dietary.addAll(prefs.trackedDietary);
+        if (!prefs.includeUnknownInMenu) includeUnknown = false;
+      }
+    }
+    return UserAllergenPreferences(
+      trackedAllergens: allergens,
+      trackedDietary: dietary,
+      includeUnknownInMenu: includeUnknown,
+    );
   }
 
   /// Filter recipes using explicit prefs (for household aggregation).
