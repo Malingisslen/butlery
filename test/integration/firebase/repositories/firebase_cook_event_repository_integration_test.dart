@@ -292,5 +292,93 @@ void main() {
         );
       });
     });
+
+    group('recentAttendeeMemberIds (who-ate "remember last time")', () {
+      test('returns the attendees of the most recent ATTENDED event', () async {
+        await repository.logCookEvent(
+          recipeId,
+          now.subtract(const Duration(days: 2)),
+          attendeeMemberIds: const ['m1'],
+        );
+        await repository.logCookEvent(
+          recipeId,
+          now,
+          attendeeMemberIds: const ['m2', 'm3'],
+        );
+
+        final last = await repository.recentAttendeeMemberIds(testUserId);
+        expect(
+          last,
+          unorderedEquals(['m2', 'm3']),
+          reason: 'the newest event that recorded attendance wins',
+        );
+      });
+
+      test('scans past newer events that recorded no attendance', () async {
+        await repository.logCookEvent(
+          recipeId,
+          now.subtract(const Duration(days: 1)),
+          attendeeMemberIds: const ['m1', 'm2'],
+        );
+        // Newer event, but no one was picked → must not blank out the default.
+        await repository.logCookEvent(recipeId, now);
+
+        final last = await repository.recentAttendeeMemberIds(testUserId);
+        expect(
+          last,
+          unorderedEquals(['m1', 'm2']),
+          reason:
+              'an unattended later cook must be skipped in favour of the '
+              'most recent one that did record who ate',
+        );
+      });
+
+      test('an attended event beyond the scan window is not found', () async {
+        // Documents the intended limitation: only the newest `scanLimit` events
+        // are scanned, so an attended cook buried under enough unattended ones
+        // falls off the window and the picker reverts to everyone. Pins the
+        // boundary for any future "raise the limit / add a server filter".
+        await repository.logCookEvent(
+          recipeId,
+          now.subtract(const Duration(days: 3)),
+          attendeeMemberIds: const ['m1'],
+        );
+        await repository.logCookEvent(
+          recipeId,
+          now.subtract(const Duration(days: 2)),
+        );
+        await repository.logCookEvent(recipeId, now);
+
+        final last = await repository.recentAttendeeMemberIds(
+          testUserId,
+          scanLimit: 2,
+        );
+        expect(
+          last,
+          isEmpty,
+          reason: 'the attended event is 3rd-newest, outside a window of 2',
+        );
+      });
+
+      test('returns empty when no event ever recorded attendance', () async {
+        await repository.logCookEvent(recipeId, now);
+        final last = await repository.recentAttendeeMemberIds(testUserId);
+        expect(
+          last,
+          isEmpty,
+          reason: 'no prior attendance → picker falls back to everyone',
+        );
+      });
+
+      test(
+        'is owner-only: reading another user\'s attendance throws',
+        () async {
+          expect(
+            () => repository.recentAttendeeMemberIds('someone-else'),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
+    });
   });
 }

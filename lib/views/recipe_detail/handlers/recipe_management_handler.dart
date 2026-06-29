@@ -16,6 +16,7 @@ import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/views/family/who_is_eating_sheet.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -135,11 +136,27 @@ class RecipeManagementHandler {
 
     final viewModel = context.read<RecipeDetailViewModel>();
 
+    // Already logged today → keep the neutral message and skip the picker.
+    if (viewModel.wasCookedToday) {
+      SnackBarUtils.showInfo(context, context.l10n.recipeAlreadyCookedToday);
+      return;
+    }
+
+    // Ask who ate. Returns null when dismissed (log nothing), a "skipped"
+    // result for "hoppa över" (log with no attendance), or the picked members.
+    final who = await showWhoIsEatingSheet(
+      context,
+      recipeTitle: viewModel.recipe.title,
+    );
+    if (who == null || !context.mounted) return;
+
     try {
       // markAsCooked returns false when nothing was recorded — most commonly
       // because the recipe was already logged today (per-day dedup). Only show
       // success on a real write; otherwise a neutral "already logged" message.
-      final recorded = await viewModel.markAsCooked();
+      final recorded = await viewModel.markAsCooked(
+        attendeeMemberIds: who.attendeeMemberIds,
+      );
       if (!context.mounted) return;
       if (recorded) {
         SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);

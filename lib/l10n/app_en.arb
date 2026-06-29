@@ -11003,5 +11003,11 @@
   "familyConsentPersonWord": "the person",
   "familyHubSubtitle": "Manage children and guests in the household",
   "a11yColorSwatch": "Avatar colour {index}",
-  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}}
+  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}},
+  "whoAteTitle": "who ate?",
+  "whoAteConfirm": "done — {count} ate",
+  "@whoAteConfirm": {"placeholders": {"count": {"type": "int"}}},
+  "whoAteSkip": "skip",
+  "a11yToggleDiner": "Toggle whether {name} ate",
+  "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}}
 }

@@ -11045,5 +11045,11 @@
   "familyConsentPersonWord": "personen",
   "familyHubSubtitle": "Hantera barn och gäster i hushållet",
   "a11yColorSwatch": "Avatarfärg {index}",
-  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}}
+  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}},
+  "whoAteTitle": "vem åt?",
+  "whoAteConfirm": "klar — {count} åt",
+  "@whoAteConfirm": {"placeholders": {"count": {"type": "int"}}},
+  "whoAteSkip": "hoppa över",
+  "a11yToggleDiner": "Växla om {name} åt",
+  "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}}
 }

@@ -15609,4 +15609,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yColorSwatch(int index) {
     return 'Avatar colour $index';
   }
+
+  @override
+  String get whoAteTitle => 'who ate?';
+
+  @override
+  String whoAteConfirm(int count) {
+    return 'done — $count ate';
+  }
+
+  @override
+  String get whoAteSkip => 'skip';
+
+  @override
+  String a11yToggleDiner(String name) {
+    return 'Toggle whether $name ate';
+  }
 }

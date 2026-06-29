@@ -364,7 +364,7 @@ class RecipeDetailViewModel extends ChangeNotifier
         last.day == now.day;
   }
 
-  Future<bool> markAsCooked() async {
+  Future<bool> markAsCooked({List<String> attendeeMemberIds = const []}) async {
     if (wasCookedToday) return false;
 
     return await executeAsync(() async {
@@ -373,8 +373,12 @@ class RecipeDetailViewModel extends ChangeNotifier
       // One atomic WriteBatch: the cook-event doc + FieldValue.increment(1)
       // on cookCount/lastCookedAt commit together (BUT-838), keyed
       // per-session to swallow rapid double-taps. See RecipeCookingService
-      // for the dedup contract.
-      final success = await _cookingService.markAsCooked(_recipe.id);
+      // for the dedup contract. [attendeeMemberIds] is the who's-eating pick
+      // (empty when skipped) — recorded on the event for the family aggregate.
+      final success = await _cookingService.markAsCooked(
+        _recipe.id,
+        attendeeMemberIds: attendeeMemberIds,
+      );
 
       if (success) {
         // Optimistic local update — mirrors the atomic Firestore change so UI

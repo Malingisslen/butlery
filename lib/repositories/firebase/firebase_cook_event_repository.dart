@@ -188,6 +188,30 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
   }
 
   @override
+  Future<List<String>> recentAttendeeMemberIds(
+    String userId, {
+    int scanLimit = 20,
+  }) async {
+    await _requireSelf(userId, 'recentAttendeeMemberIds');
+
+    // No server-side "has attendees" filter exists (the field is absent on
+    // most events), so scan a small newest-first window and return the first
+    // event that recorded attendance. Rides the automatic single-field index
+    // on cookedAt — no composite.
+    final snapshot = await eventsCollectionForUser(
+      userId,
+    ).orderBy('cookedAt', descending: true).limit(scanLimit).get();
+
+    for (final doc in snapshot.docs) {
+      final event = fromFirestore(doc);
+      if (event.attendeeMemberIds.isNotEmpty) {
+        return List<String>.from(event.attendeeMemberIds);
+      }
+    }
+    return const <String>[];
+  }
+
+  @override
   Future<int> countSince(String userId, DateTime since) async {
     await _requireSelf(userId, 'countSince');
 

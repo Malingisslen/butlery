@@ -27,6 +27,25 @@ abstract class CookEventRepository extends Repository<CookEvent> {
     List<String> attendeeMemberIds = const [],
   });
 
+  /// The attendee set of [userId]'s most recent cook event that recorded
+  /// attendance — the "remember last time" default for the who's-eating picker.
+  ///
+  /// Attendance was added late and is written only when non-empty, so most
+  /// historical events carry no attendee field and there is no server-side
+  /// "has attendees" filter without a new index. This scans the newest
+  /// [scanLimit] events and returns the first non-empty `attendeeMemberIds`;
+  /// it returns an empty list when no recent event recorded attendance (the
+  /// picker then falls back to everyone-selected). A convenience default, not
+  /// a correctness-critical read.
+  ///
+  /// Owner-only — throws `PermissionDeniedException` when [userId] is not the
+  /// authenticated user. Index-backed by the automatic single-field index on
+  /// `cookedAt` (no composite).
+  Future<List<String>> recentAttendeeMemberIds(
+    String userId, {
+    int scanLimit = 20,
+  });
+
   /// Number of cook events for [userId] with `cookedAt >= since`
   /// (boundary inclusive). Owner-only — throws `PermissionDeniedException`
   /// when [userId] is not the authenticated user.

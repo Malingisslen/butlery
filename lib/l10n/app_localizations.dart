@@ -26134,6 +26134,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avatarfärg {index}'**
   String a11yColorSwatch(int index);
+
+  /// No description provided for @whoAteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'vem åt?'**
+  String get whoAteTitle;
+
+  /// No description provided for @whoAteConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'klar — {count} åt'**
+  String whoAteConfirm(int count);
+
+  /// No description provided for @whoAteSkip.
+  ///
+  /// In sv, this message translates to:
+  /// **'hoppa över'**
+  String get whoAteSkip;
+
+  /// No description provided for @a11yToggleDiner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Växla om {name} åt'**
+  String a11yToggleDiner(String name);
 }
 
 class _AppLocalizationsDelegate
