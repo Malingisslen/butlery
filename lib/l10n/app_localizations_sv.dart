@@ -15723,6 +15723,26 @@ class AppLocalizationsSv extends AppLocalizations {
       'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.';
 
   @override
+  String recipeFamilyRatingPill(String rating) {
+    return 'familj $rating';
+  }
+
+  @override
+  String recipeAllaRatingPill(String rating) {
+    return 'alla $rating';
+  }
+
+  @override
+  String a11yFamilyRatingPill(String rating) {
+    return 'Familjebetyg $rating';
+  }
+
+  @override
+  String a11yAllaRatingPill(String rating) {
+    return 'Allas betyg $rating';
+  }
+
+  @override
   String familyRatingProxyEntered(String name) {
     return 'inmatat av $name';
   }

@@ -409,6 +409,63 @@ void main() {
       });
     });
 
+    group('RecipeCore family-rating denormalization (BUT family Phase 3)', () {
+      RecipeCore familyCore() => RecipeCore(
+        title: 'Fläskpannkaka',
+        description: 'Test',
+        ingredients: const ['ägg'],
+        instructions: const ['vispa'],
+        mealType: 'middag',
+        familyAverage: 4.2,
+        familyRatingCount: 4,
+      );
+
+      test(
+        'familyAverage/familyRatingCount survive a Firestore round-trip',
+        () {
+          final restored = RecipeCore.fromMap(
+            'r1',
+            familyCore().toFirestore(),
+          );
+          expect(restored.familyAverage, 4.2);
+          expect(restored.familyRatingCount, 4);
+        },
+      );
+
+      test('familyAverage/familyRatingCount survive a JSON round-trip', () {
+        final restored = RecipeCore.fromJson(familyCore().toJson());
+        expect(restored.familyAverage, 4.2);
+        expect(restored.familyRatingCount, 4);
+      });
+
+      test('absent on a legacy doc → null (lazy-compat, no backfill)', () {
+        final legacy = RecipeCore.fromMap('r1', {
+          'title': 'Gammalt recept',
+          'ingredients': ['x'],
+          'instructions': ['y'],
+          'mealType': 'middag',
+          'createdAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+          'updatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+        });
+        expect(legacy.familyAverage, isNull);
+        expect(legacy.familyRatingCount, isNull);
+      });
+
+      test(
+        'copyWith sets the family fields without bumping updatedAt when '
+        'preserved',
+        () {
+          final original = familyCore();
+          final updated = Recipe(
+            core: original,
+            type: RecipeType.personal,
+          ).copyWith(familyAverage: 5.0, updatedAt: original.updatedAt);
+          expect(updated.core.familyAverage, 5.0);
+          expect(updated.core.updatedAt, original.updatedAt);
+        },
+      );
+    });
+
     group('Recipe Facade Construction', () {
       test('should create personal recipe', () {
         // Arrange & Act

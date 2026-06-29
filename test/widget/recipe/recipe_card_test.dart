@@ -858,5 +858,78 @@ void main() {
         expect(find.byIcon(Icons.public), findsNothing);
       });
     });
+
+    group('Rating pills (family / personal / alla)', () {
+      // RecipeFactory doesn't expose the denormalized family / public fields,
+      // so override them on the core directly.
+      Recipe withCore(
+        Recipe base, {
+        double? familyAverage,
+        int? familyRatingCount,
+        double? averageRating,
+      }) => Recipe(
+        core: base.core.copyWith(
+          familyAverage: familyAverage,
+          familyRatingCount: familyRatingCount,
+          averageRating: averageRating,
+        ),
+        type: base.type,
+        socialData: base.socialData,
+        realtimeData: base.realtimeData,
+        offlineData: base.offlineData,
+      );
+
+      Future<void> pump(WidgetTester tester, Recipe recipe) =>
+          tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScaffold: false,
+              child: Scaffold(body: RecipeCard(recipe: recipe)),
+            ),
+          );
+
+      testWidgets('family verdict supersedes the personal star', (
+        tester,
+      ) async {
+        // rating 4.5 (personal) AND a family average → only the family pill.
+        await pump(
+          tester,
+          withCore(testRecipe, familyAverage: 4.2, familyRatingCount: 3),
+        );
+
+        expect(find.textContaining('familj'), findsOneWidget);
+        expect(
+          find.textContaining('★'),
+          findsNothing,
+          reason: 'the personal star pill must yield to the family verdict',
+        );
+      });
+
+      testWidgets('personal star shows when there is no family verdict', (
+        tester,
+      ) async {
+        await pump(tester, testRecipe); // rating 4.5, no family average
+        expect(find.textContaining('★'), findsOneWidget);
+        expect(find.textContaining('familj'), findsNothing);
+      });
+
+      testWidgets(
+        'the public "alla" pill shows alongside, from averageRating',
+        (
+          tester,
+        ) async {
+          await pump(
+            tester,
+            withCore(
+              testRecipe,
+              familyAverage: 4.2,
+              familyRatingCount: 3,
+              averageRating: 4.5,
+            ),
+          );
+          expect(find.textContaining('familj'), findsOneWidget);
+          expect(find.textContaining('alla'), findsOneWidget);
+        },
+      );
+    });
   });
 }

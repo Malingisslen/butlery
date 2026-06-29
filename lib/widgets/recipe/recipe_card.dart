@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -463,7 +464,16 @@ class RecipeCard extends StatelessWidget {
       parts.add('${recipe.portions} ${context.l10n.recipePortionAbbreviation}');
     }
 
-    final hasRating = recipe.rating != null && recipe.rating! > 0;
+    // Rating pills: the household's private "familj" verdict is the default
+    // (green); it supersedes the personal star (they match for a solo user).
+    // The personal star remains as a fallback when there's no family verdict.
+    // The public "alla" aggregate (rust) shows alongside when present.
+    final familyAvg = recipe.core.familyAverage;
+    final hasFamily =
+        familyAvg != null && (recipe.core.familyRatingCount ?? 0) > 0;
+    final allaAvg = recipe.core.averageRating;
+    final hasAlla = allaAvg != null && allaAvg > 0;
+    final hasPersonal = recipe.rating != null && recipe.rating! > 0;
 
     final hasMatchPercent = matchPercent != null;
 
@@ -482,9 +492,67 @@ class RecipeCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-        if (hasRating) _buildRatingPill(context),
+        if (hasFamily)
+          _buildFamilyPill(context, familyAvg)
+        else if (hasPersonal)
+          _buildRatingPill(context),
+        if (hasAlla) _buildAllaPill(context, allaAvg),
         if (hasMatchPercent) _buildMatchBadge(context, matchPercent!),
       ],
+    );
+  }
+
+  /// Swedish one-decimal with a decimal comma (e.g. 4.2 -> "4,2").
+  String _fmt(double v) => v.toStringAsFixed(1).replaceAll('.', ',');
+
+  /// Green "familj X,X" pill \u2014 the household's private verdict (the default).
+  Widget _buildFamilyPill(BuildContext context, double avg) {
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      label: context.l10n.a11yFamilyRatingPill(_fmt(avg)),
+      child: Container(
+        padding: AppDimensions.paddingSymmetric6x2,
+        decoration: BoxDecoration(color: cs.primary),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.groups_outlined, size: 12, color: cs.onPrimary),
+            const SizedBox(width: 3),
+            Text(
+              context.l10n.recipeFamilyRatingPill(_fmt(avg)),
+              style: AppTextStyles.badge.copyWith(
+                color: cs.onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Rust "alla X,X" pill \u2014 the public aggregate from all users.
+  Widget _buildAllaPill(BuildContext context, double avg) {
+    return Semantics(
+      label: context.l10n.a11yAllaRatingPill(_fmt(avg)),
+      child: Container(
+        padding: AppDimensions.paddingSymmetric6x2,
+        decoration: const BoxDecoration(color: AppColors.rust),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.star, size: 12, color: AppColors.cream),
+            const SizedBox(width: 3),
+            Text(
+              context.l10n.recipeAllaRatingPill(_fmt(avg)),
+              style: AppTextStyles.badge.copyWith(
+                color: AppColors.cream,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

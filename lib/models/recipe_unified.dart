@@ -237,6 +237,16 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes without any ratings.
   Map<int, int>? ratingDistribution;
 
+  /// Household family-rating average (1.0–5.0), denormalized for the card pill
+  /// so the list never reads the per-household rating store per card. Written
+  /// best-effort by `FamilyRatingService` when a family rating is saved on a
+  /// recipe the household owns; null until then. Distinct from [averageRating]
+  /// (the public/"alla" aggregate) — this is the private household verdict.
+  double? familyAverage;
+
+  /// Number of family verdicts behind [familyAverage]. Null when unrated.
+  int? familyRatingCount;
+
   /// Timestamp of the most recent rating.
   /// Used for cache freshness detection and sorting by recently rated.
   /// Updated by Cloud Function on every rating change.
@@ -368,6 +378,8 @@ class RecipeCore with JsonSerializableMixin {
     this.ratingCount,
     this.averageRating,
     this.ratingDistribution,
+    this.familyAverage,
+    this.familyRatingCount,
     this.lastRatedAt,
     this.dataChecksum,
     this.tagResult,
@@ -433,6 +445,8 @@ class RecipeCore with JsonSerializableMixin {
     Object? ratingCount = _sentinel,
     Object? averageRating = _sentinel,
     Object? ratingDistribution = _sentinel,
+    Object? familyAverage = _sentinel,
+    Object? familyRatingCount = _sentinel,
     Object? lastRatedAt = _sentinel,
     Object? dataChecksum = _sentinel,
     Object? tagResult = _sentinel,
@@ -527,6 +541,12 @@ class RecipeCore with JsonSerializableMixin {
       ratingDistribution: ratingDistribution == _sentinel
           ? this.ratingDistribution
           : (ratingDistribution as Map?)?.cast<int, int>(),
+      familyAverage: familyAverage == _sentinel
+          ? this.familyAverage
+          : familyAverage as double?,
+      familyRatingCount: familyRatingCount == _sentinel
+          ? this.familyRatingCount
+          : familyRatingCount as int?,
       lastRatedAt: lastRatedAt == _sentinel
           ? this.lastRatedAt
           : lastRatedAt as DateTime?,
@@ -628,6 +648,8 @@ class RecipeCore with JsonSerializableMixin {
     'ratingCount': ratingCount,
     'averageRating': averageRating,
     'ratingDistribution': ratingDistribution,
+    'familyAverage': familyAverage,
+    'familyRatingCount': familyRatingCount,
     'lastRatedAt': lastRatedAt?.toIso8601String(),
     'dataChecksum': dataChecksum,
     'tagResult': tagResult?.toJson(),
@@ -680,6 +702,8 @@ class RecipeCore with JsonSerializableMixin {
     'ratingCount': ratingCount,
     'averageRating': averageRating,
     'ratingDistribution': ratingDistribution,
+    'familyAverage': familyAverage,
+    'familyRatingCount': familyRatingCount,
     'lastRatedAt': lastRatedAt != null
         ? Timestamp.fromDate(lastRatedAt!)
         : null,
@@ -797,6 +821,11 @@ class RecipeCore with JsonSerializableMixin {
       ratingDistribution: utils.SerializationUtils.safeIntKeyIntMap(
         json,
         'ratingDistribution',
+      ),
+      familyAverage: (json['familyAverage'] as num?)?.toDouble(),
+      familyRatingCount: utils.SerializationUtils.safeNullableInt(
+        json,
+        'familyRatingCount',
       ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(json, 'lastRatedAt'),
       dataChecksum: storedChecksum,
@@ -1041,6 +1070,14 @@ class RecipeCore with JsonSerializableMixin {
       ratingDistribution: utils.SerializationUtils.safeIntKeyIntMap(
         data,
         'ratingDistribution',
+      ),
+      familyAverage: utils.SerializationUtils.safeNullableDouble(
+        data,
+        'familyAverage',
+      ),
+      familyRatingCount: utils.SerializationUtils.safeNullableInt(
+        data,
+        'familyRatingCount',
       ),
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
       dataChecksum: storedChecksum,
@@ -1623,9 +1660,14 @@ class Recipe {
     Object? heirloom = _sentinel,
     Object? personalTagVersion = _sentinel,
     bool? isFavorite,
+    Object? familyAverage = _sentinel,
+    Object? familyRatingCount = _sentinel,
+    DateTime? updatedAt,
   }) {
     return Recipe(
       core: core.copyWith(
+        familyAverage: familyAverage,
+        familyRatingCount: familyRatingCount,
         title: title,
         description: description,
         portions: portions,
@@ -1651,7 +1693,7 @@ class Recipe {
         heirloom: heirloom,
         personalTagVersion: personalTagVersion,
         isFavorite: isFavorite,
-        updatedAt: clock.now(),
+        updatedAt: updatedAt ?? clock.now(),
       ),
       type: type ?? this.type,
       // When converting to personal recipe, clear social data

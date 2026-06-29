@@ -26249,6 +26249,30 @@ abstract class AppLocalizations {
   /// **'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.'**
   String get familyRatingLegend;
 
+  /// No description provided for @recipeFamilyRatingPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'familj {rating}'**
+  String recipeFamilyRatingPill(String rating);
+
+  /// No description provided for @recipeAllaRatingPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'alla {rating}'**
+  String recipeAllaRatingPill(String rating);
+
+  /// No description provided for @a11yFamilyRatingPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjebetyg {rating}'**
+  String a11yFamilyRatingPill(String rating);
+
+  /// No description provided for @a11yAllaRatingPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allas betyg {rating}'**
+  String a11yAllaRatingPill(String rating);
+
   /// No description provided for @familyRatingProxyEntered.
   ///
   /// In sv, this message translates to:

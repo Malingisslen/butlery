@@ -15683,6 +15683,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Green = your household\'s average (private). Rust = all users\' rating. Gold = your own rating.';
 
   @override
+  String recipeFamilyRatingPill(String rating) {
+    return 'family $rating';
+  }
+
+  @override
+  String recipeAllaRatingPill(String rating) {
+    return 'everyone $rating';
+  }
+
+  @override
+  String a11yFamilyRatingPill(String rating) {
+    return 'Family rating $rating';
+  }
+
+  @override
+  String a11yAllaRatingPill(String rating) {
+    return 'Everyone\'s rating $rating';
+  }
+
+  @override
   String familyRatingProxyEntered(String name) {
     return 'entered by $name';
   }

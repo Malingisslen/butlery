@@ -75,6 +75,11 @@ class FamilyRatingService extends BaseService {
       ),
     );
 
+    // Refresh the denormalized family average on the recipe so the card pill
+    // reflects this verdict without a per-card read. Best-effort + owned-only
+    // (see helper) — never fails the rating.
+    await _denormalizeFamilyAverage(recipeId, householdId);
+
     // Adult hybrid: mirror only a genuine self-rating to the personal/social
     // rating. `social.rateRecipe` re-applies the own-recipe block, so a parent
     // rating their own recipe still lands the family entry but not a public one.
@@ -95,6 +100,45 @@ class FamilyRatingService extends BaseService {
     }
 
     return saved;
+  }
+
+  /// Recompute the household's average for [recipeId] and write it onto the
+  /// recipe's denormalized `core.familyAverage`/`familyRatingCount` so list
+  /// cards render the family pill without reading the rating store per card.
+  ///
+  /// Best-effort and owned-only by nature: it patches the recipe via
+  /// `UnifiedRecipeService.updateRecipe`, which only succeeds for a recipe the
+  /// household can write (their own). A community recipe the household cooked
+  /// keeps a null family pill until the deferred aggregate function ships. The
+  /// `updatedAt` is preserved so a rating never reorders "recently updated".
+  Future<void> _denormalizeFamilyAverage(
+    String recipeId,
+    String householdId,
+  ) async {
+    try {
+      // Not in the user's own list → nothing to patch (community recipe, or
+      // a cold cache); the family pill stays null until a later rate/load.
+      final recipe = _recipeService.getRecipeById(recipeId);
+      if (recipe == null) return;
+
+      final ratings = await _ratings.getForRecipe(householdId, recipeId);
+      final summary = FamilyRatingSummary.fromRatings(recipeId, ratings);
+
+      await _recipeService.updateRecipe(
+        recipe.copyWith(
+          familyAverage: summary.hasRatings ? summary.familyAverage : null,
+          familyRatingCount: summary.hasRatings
+              ? summary.familyRatingCount
+              : null,
+          updatedAt: recipe.core.updatedAt,
+        ),
+      );
+    } catch (e) {
+      AppLogger.warning(
+        'FamilyRatingService: family-average denormalization failed '
+        '(rating kept): $e',
+      );
+    }
   }
 
   /// A real account holder entering their own verdict on their own device — the

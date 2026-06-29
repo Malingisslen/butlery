@@ -17,6 +17,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/family_rating.dart';
 import 'package:butlery/models/household.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -66,9 +67,23 @@ void main() {
   late FamilyRatingService service;
   late FirebaseFamilyRatingRepository ratingRepo;
   late _MockSocialRecipeOperations socialOps;
+  late _MockUnifiedRecipeService recipeService;
+
+  Recipe personalRecipe() => Recipe(
+    core: RecipeCore(
+      id: _recipe,
+      title: 'Fläskpannkaka',
+      description: 'Test',
+      ingredients: const ['ägg'],
+      instructions: const ['vispa'],
+      mealType: 'middag',
+    ),
+    type: RecipeType.personal,
+  );
 
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
+    registerFallbackValue(personalRecipe());
   });
 
   tearDownAll(() async {
@@ -105,8 +120,15 @@ void main() {
         review: any(named: 'review'),
       ),
     ).thenAnswer((_) async => true);
-    final recipeService = _MockUnifiedRecipeService();
+    recipeService = _MockUnifiedRecipeService();
     when(() => recipeService.social).thenReturn(socialOps);
+    // Denormalization helper looks the recipe up then patches it. Default to
+    // "not in my list" so existing tests skip the patch cleanly; the denorm
+    // test overrides getRecipeById to exercise the write.
+    when(() => recipeService.getRecipeById(any())).thenReturn(null);
+    when(
+      () => recipeService.updateRecipe(any()),
+    ).thenAnswer((_) async => true);
     TestServiceLocator.registerSingleton<UnifiedRecipeService>(recipeService);
 
     service = FamilyRatingService();
@@ -340,5 +362,93 @@ void main() {
         completes,
       );
     });
+  });
+
+  group('family-average denormalization (card pill source)', () {
+    test(
+      'writes an EQUAL-WEIGHT household average onto the owned recipe',
+      () async {
+        when(
+          () => recipeService.getRecipeById(_recipe),
+        ).thenReturn(personalRecipe());
+
+        // A child profile (5) and an adult user (1). Equal weight → 3.0; a
+        // type-weighted scheme (adults count double) would give 2.33, so this
+        // asymmetry pins "everyone counts equally — a 6-yo == an adult".
+        await rate(
+          memberId: 'liam',
+          type: HouseholdMemberType.profile,
+          stars: 5,
+          enteredByUid: _malin,
+        );
+        await rate(
+          memberId: _malin,
+          type: HouseholdMemberType.user,
+          stars: 1,
+          enteredByUid: _malin,
+        );
+
+        final patched =
+            verify(
+                  () => recipeService.updateRecipe(captureAny()),
+                ).captured.last
+                as Recipe;
+        expect(
+          patched.core.familyAverage,
+          3.0,
+        ); // (5 + 1) / 2, NOT type-weighted
+        expect(patched.core.familyRatingCount, 2);
+      },
+    );
+
+    test(
+      'a denormalization failure is isolated — rating + mirror still land',
+      () async {
+        // updateRecipe blows up, but the family entry is the source of truth:
+        // the rating must persist and the adult self-rate must still mirror.
+        when(
+          () => recipeService.getRecipeById(_recipe),
+        ).thenReturn(personalRecipe());
+        when(
+          () => recipeService.updateRecipe(any()),
+        ).thenThrow(Exception('boom'));
+
+        final saved = await rate(
+          memberId: _malin,
+          type: HouseholdMemberType.user,
+          stars: 4,
+          enteredByUid: _malin,
+        );
+
+        expect(saved, isNotNull, reason: 'rating kept despite denorm failure');
+        final stored = await ratingRepo.read(
+          FamilyRating.buildId(_recipe, _malin),
+        );
+        expect(stored?.stars, 4);
+        verify(
+          () => socialOps.rateRecipe(
+            recipeId: _recipe,
+            rating: 4.0,
+            review: any(named: 'review'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'skips the patch when the recipe is not in the user\'s list',
+      () async {
+        // getRecipeById returns null (setUp default) → community recipe / cold
+        // cache → no denormalization write, rating still lands.
+        final saved = await rate(
+          memberId: 'liam',
+          type: HouseholdMemberType.profile,
+          stars: 5,
+          enteredByUid: _malin,
+        );
+        expect(saved, isNotNull);
+        verifyNever(() => recipeService.updateRecipe(any()));
+      },
+    );
   });
 }
