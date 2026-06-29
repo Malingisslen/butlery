@@ -10,10 +10,11 @@
  *   2. Quiet hours (Stockholm wall-clock, DST-safe via `Intl`)
  *   3. Token availability (no active FCM token → not counted as sent)
  *
- * The category gate for digest is the existing `digestFrequency !== 'never'`
- * check in the scheduler itself; the helper's category param is wired to
- * `reEngagement` because that is the only literal the BUT-438 contract
- * exposes.  We don't run the full scheduler trigger end-to-end (that needs
+ * BUT-1427: the per-frequency gate for digest is the `digestFrequency !==
+ * 'never'` check in the scheduler itself; the helper's category param is now
+ * `digest` (its own dedicated channel toggle, default-on) instead of
+ * `reEngagement`, so opting out of win-back pings no longer silences the
+ * digest.  We don't run the full scheduler trigger end-to-end (that needs
  * the emulator); instead we exercise the same `sendPushToUserRespectingPreferences`
  * surface the scheduler now funnels through, which is the only line that
  * changed.
@@ -120,6 +121,31 @@ const scenarios: Scenario[] = [
     expectSent: true,
     expectReason: "sent",
   },
+  {
+    // BUT-1427: dedicated digest opt-out blocks the push.
+    name: "digest is BLOCKED when the digest category is opted out",
+    prefs: {
+      enabled: true,
+      digestFrequency: "weekly",
+      digest: false,
+    },
+    nowUtcIso: WINTER_AFTERNOON_UTC,
+    expectSent: false,
+    expectReason: "opted_out",
+  },
+  {
+    // BUT-1427: the whole point — digest is decoupled from re-engagement.
+    // A user who silenced win-back pings still gets their weekly digest.
+    name: "digest STILL sends when reEngagement is opted out (decoupled)",
+    prefs: {
+      enabled: true,
+      digestFrequency: "weekly",
+      reEngagement: false,
+    },
+    nowUtcIso: WINTER_AFTERNOON_UTC,
+    expectSent: true,
+    expectReason: "sent",
+  },
 ];
 
 async function runTests(): Promise<void> {
@@ -137,7 +163,7 @@ async function runTests(): Promise<void> {
         title: "Veckans sammanfattning",
         body: "Du hade 3 aktiviteter den här veckan",
       },
-      "reEngagement",
+      "digest",
       { type: "activity_digest" },
       deps
     );

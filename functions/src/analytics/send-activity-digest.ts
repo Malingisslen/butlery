@@ -143,11 +143,11 @@ export const sendWeeklyActivityDigest = onSchedule(
 
           // Send FCM push notifications for this sub-batch (concurrent batches of 10).
           // Routes through the preference-aware helper so the master notification
-          // toggle and Europe/Stockholm quiet hours are honored. The per-category
-          // gate for digest is the existing `digestFrequency !== "never"` check
-          // above; the helper's category param is `reEngagement` because that's
-          // the only typed value the BUT-438 contract exposes — for digest we
-          // rely on master + quiet-hours gates only.
+          // toggle and Europe/Stockholm quiet hours are honored. BUT-1427: the push
+          // is gated on the dedicated `digest` category (default-on) instead of
+          // `reEngagement`, so turning win-back pings off no longer silences the
+          // weekly digest. The per-frequency opt-out is the `digestFrequency !==
+          // "never"` check above.
           for (let i = 0; i < usersToNotifyViaPush.length; i += 10) {
             const pushBatch = usersToNotifyViaPush.slice(i, i + 10);
             await Promise.allSettled(
@@ -175,10 +175,10 @@ export const sendWeeklyActivityDigest = onSchedule(
                 const result = await sendPushToUserRespectingPreferences(
                   entry.userId,
                   { title, body },
-                  "reEngagement",
-                  // Digest is a re-engagement-style ping that just opens the
-                  // app to the notifications inbox — same destination as the
-                  // win-back route. The `notificationType` distinguishes it
+                  "digest",
+                  // BUT-1427: gated on the user's digest preference, not their
+                  // win-back preference. Opens the notifications inbox via the
+                  // same route as win-back; `notificationType` distinguishes it
                   // for analytics attribution.
                   data
                 );

@@ -27,9 +27,15 @@
  * matching the rest of the repo's permissive defaults. Users who have
  * never touched settings are not silently muted.
  *
- * Intentionally NOT migrating the other call sites (digest, etc.) here —
- * out of scope for BUT-438. This helper only fixes the win-back path;
- * other call sites should adopt it in a follow-up sprint.
+ * BUT-1427: the `digest` category was added so the weekly activity-digest
+ * push is gated on its OWN preference instead of riding on `reEngagement`
+ * (two distinct lifecycle channels — a retention summary for active users
+ * vs. a win-back ping for lapsed users — were collapsed into one toggle).
+ * Digest is gated the same default-on way (optional top-level `digest`
+ * boolean; missing → enabled) so adding it cannot silently mute the
+ * channel for existing users. The per-frequency opt-out
+ * (`digestFrequency !== "never"`) is applied by the scheduler before this
+ * helper runs.
  */
 
 import { logger } from "firebase-functions/logger";
@@ -50,7 +56,7 @@ export type PushSkipReason =
   | "rate_capped"; // BUT-651: per-user 24h fatigue cap
 
 /** Notification categories the helper currently knows how to gate. */
-export type NotificationCategory = "reEngagement";
+export type NotificationCategory = "reEngagement" | "digest";
 
 export interface PreferenceAwarePushResult {
   sent: boolean;
@@ -67,6 +73,7 @@ interface QuietHourPoint {
 interface PreferencesShape {
   enabled?: boolean;
   reEngagement?: boolean;
+  digest?: boolean;
   quietHoursStart?: QuietHourPoint | null;
   quietHoursEnd?: QuietHourPoint | null;
   categorySettings?: Record<string, boolean>;
@@ -142,6 +149,15 @@ function isCategoryAllowed(
     const fromCategory = prefs.categorySettings?.["NotificationCategory.system"];
     if (typeof fromCategory === "boolean") return fromCategory;
     return true; // default-on, matching client defaults
+  }
+  if (category === "digest") {
+    // BUT-1427: dedicated digest push-channel toggle, decoupled from
+    // reEngagement. Read an optional top-level `digest` boolean; a missing
+    // field means ENABLED (default-on) so adding this category never mutes
+    // the channel for users whose prefs doc predates it. The per-frequency
+    // gate (digestFrequency) is applied upstream in the scheduler.
+    if (typeof prefs.digest === "boolean") return prefs.digest;
+    return true;
   }
   return true;
 }
