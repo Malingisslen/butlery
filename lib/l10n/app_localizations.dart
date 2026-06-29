@@ -26158,6 +26158,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Växla om {name} åt'**
   String a11yToggleDiner(String name);
+
+  /// No description provided for @familyRatingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'vad tyckte ni?'**
+  String get familyRatingTitle;
+
+  /// No description provided for @familyRatingIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.'**
+  String get familyRatingIntro;
+
+  /// No description provided for @familyRatingYou.
+  ///
+  /// In sv, this message translates to:
+  /// **'du'**
+  String get familyRatingYou;
+
+  /// No description provided for @familyRatingSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'spara betyg'**
+  String get familyRatingSave;
+
+  /// No description provided for @familyRatingPrivateNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Era enskilda betyg är privata för hushållet — ingen annan ser vem som satte vad.'**
+  String get familyRatingPrivateNote;
+
+  /// No description provided for @familyRatingManualButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betygsätt som familj'**
+  String get familyRatingManualButton;
+
+  /// No description provided for @familyRatingProxyNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'inmatat av {name} · ändrar inte personens eget betyg'**
+  String familyRatingProxyNote(String name);
+
+  /// No description provided for @a11yRateStarsForMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ge {name} {count} stjärnor'**
+  String a11yRateStarsForMember(String name, int count);
 }
 
 class _AppLocalizationsDelegate

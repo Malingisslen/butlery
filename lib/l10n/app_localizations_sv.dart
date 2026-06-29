@@ -15665,4 +15665,34 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yToggleDiner(String name) {
     return 'Växla om $name åt';
   }
+
+  @override
+  String get familyRatingTitle => 'vad tyckte ni?';
+
+  @override
+  String get familyRatingIntro =>
+      'Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.';
+
+  @override
+  String get familyRatingYou => 'du';
+
+  @override
+  String get familyRatingSave => 'spara betyg';
+
+  @override
+  String get familyRatingPrivateNote =>
+      'Era enskilda betyg är privata för hushållet — ingen annan ser vem som satte vad.';
+
+  @override
+  String get familyRatingManualButton => 'Betygsätt som familj';
+
+  @override
+  String familyRatingProxyNote(String name) {
+    return 'inmatat av $name · ändrar inte personens eget betyg';
+  }
+
+  @override
+  String a11yRateStarsForMember(String name, int count) {
+    return 'Ge $name $count stjärnor';
+  }
 }

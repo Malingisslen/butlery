@@ -15625,4 +15625,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yToggleDiner(String name) {
     return 'Toggle whether $name ate';
   }
+
+  @override
+  String get familyRatingTitle => 'what did you think?';
+
+  @override
+  String get familyRatingIntro =>
+      'Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.';
+
+  @override
+  String get familyRatingYou => 'you';
+
+  @override
+  String get familyRatingSave => 'save ratings';
+
+  @override
+  String get familyRatingPrivateNote =>
+      'Your individual ratings are private to your household — no one else sees who gave what.';
+
+  @override
+  String get familyRatingManualButton => 'Rate as a family';
+
+  @override
+  String familyRatingProxyNote(String name) {
+    return 'entered by $name · doesn\'t change their own rating';
+  }
+
+  @override
+  String a11yRateStarsForMember(String name, int count) {
+    return 'Give $name $count stars';
+  }
 }

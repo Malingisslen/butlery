@@ -17,6 +17,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
+import 'package:butlery/views/family/family_rating_entry_view.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -160,6 +161,17 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       if (recorded) {
         SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
+        // Auto-chain the family rating entry for the diners who ate. Only when
+        // attendance was actually picked — a solo household ("hoppa över" /
+        // skipped) gets no redundant rating screen.
+        if (!who.skipped && who.attendeeMemberIds.isNotEmpty) {
+          await showFamilyRatingEntry(
+            context,
+            recipeId: viewModel.recipe.id,
+            recipeTitle: viewModel.recipe.title,
+            presentMemberIds: who.attendeeMemberIds,
+          );
+        }
       } else {
         SnackBarUtils.showInfo(context, context.l10n.recipeAlreadyCookedToday);
       }
@@ -167,6 +179,18 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       SnackBarUtils.showError(context, context.l10n.recipeCouldNotMarkAsCooked);
     }
+  }
+
+  /// Open the family rating entry manually (the "Betygsätt som familj" button
+  /// on the recipe detail). No attendance context → rate the whole roster.
+  static Future<void> rateAsFamily(BuildContext context) async {
+    if (!context.mounted) return;
+    final viewModel = context.read<RecipeDetailViewModel>();
+    await showFamilyRatingEntry(
+      context,
+      recipeId: viewModel.recipe.id,
+      recipeTitle: viewModel.recipe.title,
+    );
   }
 
   /// Share recipe via share service

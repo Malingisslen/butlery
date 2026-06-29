@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -203,6 +204,40 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       ),
     );
 
+    // Manual "Betygsätt som familj" entry — the second trigger for family
+    // rating (the first is the auto-chain after "Lagat idag"). Square outlined
+    // button mirroring the cook chip's treatment.
+    metadataWidgets.add(
+      Semantics(
+        button: true,
+        label: context.l10n.familyRatingManualButton,
+        child: OutlinedButton.icon(
+          onPressed: () => RecipeManagementHandler.rateAsFamily(context),
+          icon: const Icon(Icons.groups_outlined, size: 14),
+          label: Text(
+            context.l10n.familyRatingManualButton,
+            style: AppTextStyles.labelSmall,
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: context.butleryColors.starGold,
+            side: BorderSide(
+              color: context.butleryColors.starGold,
+              width: 0.5,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+              vertical: AppDimensions.spacingXxs,
+            ),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+          ),
+        ),
+      ),
+    );
+
     return Wrap(
       spacing: AppDimensions.spacingMd,
       runSpacing: AppDimensions.spacingSm,
@@ -258,27 +293,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   }
 
   Future<void> _markAsCooked(BuildContext context) async {
-    try {
-      // false → nothing recorded (already logged today); don't claim success.
-      final recorded = await widget.viewModel.markAsCooked();
-      if (!context.mounted) return;
-      if (recorded) {
-        SnackBarUtils.showSuccess(
-          context,
-          context.l10n.recipeCookedTodaySuccess,
-        );
-      } else {
-        SnackBarUtils.showInfo(
-          context,
-          context.l10n.recipeAlreadyCookedToday,
-        );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      SnackBarUtils.showError(
-        context,
-        context.l10n.recipeCookedTodayError,
-      );
-    }
+    // Delegate to the shared handler so the "vem åt?" picker and the family
+    // rating chain fire here too — this is the live "Lagat idag" button, and
+    // the handler is the single implementation of the cook flow.
+    await RecipeManagementHandler.markAsCooked(context);
   }
 }
