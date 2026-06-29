@@ -65,6 +65,11 @@ const {
   runAccountDeletionWithDeps,
 } = require("../account/request-account-deletion");
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const {
+  deleteFamilyData,
+} = require("../account/account-deletion-cascade");
+
 // Per-run suffix keeps re-runs from colliding on fixed ids even if the
 // emulator wasn't cleared (defence-in-depth alongside clearEmulator()).
 const RUN = Date.now().toString(36);
@@ -389,6 +394,70 @@ async function seedFixtures(): Promise<void> {
         },
       ],
     });
+
+  // --- family (BUT Phase 5 item 15, §5b) ---
+  // Solo household: TARGET only → whole household + its data must be deleted.
+  await db.collection("households").doc(`hh-solo-${RUN}`).set({
+    name: "Mitt hushåll",
+    members: [{ userId: TARGET, permission: "admin" }],
+    memberUserIds: [TARGET],
+    memberPermissions: { [TARGET]: "admin" },
+    createdBy: TARGET,
+  });
+  await db.collection("diner_profiles").doc(`dp-solo-${RUN}`).set({
+    householdId: `hh-solo-${RUN}`,
+    name: "Emma",
+    createdBy: TARGET,
+  });
+  await db.collection("family_ratings").doc(`fr-solo-${RUN}`).set({
+    householdId: `hh-solo-${RUN}`,
+    recipeId: "r1",
+    memberId: TARGET,
+    enteredByUid: TARGET,
+    stars: 4,
+  });
+
+  // Shared household: TARGET + OTHER → household survives, re-homed to OTHER.
+  await db.collection("households").doc(`hh-shared-${RUN}`).set({
+    name: "Delat hushåll",
+    members: [
+      { userId: TARGET, permission: "admin" },
+      { userId: OTHER, permission: "edit" },
+    ],
+    memberUserIds: [TARGET, OTHER],
+    memberPermissions: { [TARGET]: "admin", [OTHER]: "edit" },
+    createdBy: TARGET,
+  });
+  // Diner created BY TARGET → must re-home to OTHER, not be orphaned/deleted.
+  await db.collection("diner_profiles").doc(`dp-shared-${RUN}`).set({
+    householdId: `hh-shared-${RUN}`,
+    name: "Liam",
+    createdBy: TARGET,
+  });
+  // TARGET's own verdict → deleted.
+  await db.collection("family_ratings").doc(`fr-mine-${RUN}`).set({
+    householdId: `hh-shared-${RUN}`,
+    recipeId: "r2",
+    memberId: TARGET,
+    enteredByUid: TARGET,
+    stars: 5,
+  });
+  // OTHER's own verdict → retained untouched.
+  await db.collection("family_ratings").doc(`fr-other-${RUN}`).set({
+    householdId: `hh-shared-${RUN}`,
+    recipeId: "r2",
+    memberId: OTHER,
+    enteredByUid: OTHER,
+    stars: 3,
+  });
+  // Verdict for the diner, ENTERED BY TARGET → kept but attribution scrubbed.
+  await db.collection("family_ratings").doc(`fr-proxy-${RUN}`).set({
+    householdId: `hh-shared-${RUN}`,
+    recipeId: "r2",
+    memberId: `dp-shared-${RUN}`,
+    enteredByUid: TARGET,
+    stars: 5,
+  });
 
   // --- users/{target} root doc (deleted last) ---
   await db.collection("users").doc(TARGET).set({ displayName: "Target" });
@@ -770,6 +839,107 @@ test("unified_shared_shopping_lists: only the purchased-by-target block is scrub
 // I20: users/{target} root doc deleted.
 test("users: target's root profile doc is deleted", async () => {
   assert(!(await exists(`users/${TARGET}`)), "user root doc should be gone");
+});
+
+// ===========================================================================
+// FAMILY (BUT Phase 5 item 15, §5b)
+// ===========================================================================
+
+// Solo household: the whole thing is torn down.
+test("family (solo): household, diner profile and rating are deleted", async () => {
+  assert(
+    !(await exists(`households/hh-solo-${RUN}`)),
+    "solo household should be gone",
+  );
+  assert(
+    !(await exists(`diner_profiles/dp-solo-${RUN}`)),
+    "solo household's diner profile should be gone",
+  );
+  assert(
+    !(await exists(`family_ratings/fr-solo-${RUN}`)),
+    "solo household's rating should be gone",
+  );
+});
+
+// Shared household survives, re-homed to the remaining member.
+test("family (shared): household survives and is re-homed to the remaining member", async () => {
+  const hh = await dataAt(`households/hh-shared-${RUN}`);
+  const ids = Array.isArray(hh.memberUserIds) ? hh.memberUserIds : [];
+  assert(!ids.includes(TARGET), "target removed from memberUserIds");
+  assert(ids.includes(OTHER), "other member retained");
+  assert(hh.createdBy === OTHER, "createdBy re-homed to the remaining member");
+  const perms = (hh.memberPermissions ?? {}) as Record<string, unknown>;
+  assert(!(TARGET in perms), "target removed from memberPermissions");
+});
+
+test("family (shared): a diner profile created by target is re-homed, never orphaned", async () => {
+  const dp = await dataAt(`diner_profiles/dp-shared-${RUN}`);
+  assert(dp.createdBy === OTHER, "diner profile re-homed to remaining member");
+});
+
+test("family (shared): target's own verdict is deleted, the other member's is retained", async () => {
+  assert(
+    !(await exists(`family_ratings/fr-mine-${RUN}`)),
+    "target's own verdict should be gone",
+  );
+  assert(
+    await exists(`family_ratings/fr-other-${RUN}`),
+    "another member's verdict must NOT be deleted",
+  );
+});
+
+test("family (shared): a verdict target entered for a diner is kept but attribution scrubbed", async () => {
+  const fr = await dataAt(`family_ratings/fr-proxy-${RUN}`);
+  assert(fr.stars === 5, "the diner's verdict value is preserved");
+  assert(
+    fr.enteredByUid === "deleted",
+    `proxy attribution must be scrubbed, got ${fr.enteredByUid}`,
+  );
+});
+
+// Retry-safety: running deleteFamilyData twice must converge on the same
+// correct end state (no orphans, re-home stable) — the household membership
+// scrub is the LAST mutation precisely so an interrupted run re-runs cleanly.
+test("family: deleteFamilyData is idempotent on re-run (retry-safe)", async () => {
+  const u = `rerun-target-${RUN}`;
+  const other = `rerun-other-${RUN}`;
+  const hh = `hh-rerun-${RUN}`;
+  await db.collection("households").doc(hh).set({
+    name: "Rerun",
+    members: [
+      { userId: u, permission: "admin" },
+      { userId: other, permission: "edit" },
+    ],
+    memberUserIds: [u, other],
+    memberPermissions: { [u]: "admin", [other]: "edit" },
+    createdBy: u,
+  });
+  await db.collection("diner_profiles").doc(`dp-rerun-${RUN}`).set({
+    householdId: hh,
+    name: "Nora",
+    createdBy: u,
+  });
+  await db.collection("family_ratings").doc(`fr-rerun-mine-${RUN}`).set({
+    householdId: hh,
+    recipeId: "r9",
+    memberId: u,
+    enteredByUid: u,
+    stars: 4,
+  });
+
+  await deleteFamilyData(db, u);
+  await deleteFamilyData(db, u); // second run must be a safe no-op
+
+  const data = await dataAt(`households/${hh}`);
+  const ids = Array.isArray(data.memberUserIds) ? data.memberUserIds : [];
+  assert(!ids.includes(u) && ids.includes(other), "membership stable after re-run");
+  assert(data.createdBy === other, "createdBy stable after re-run");
+  const dp = await dataAt(`diner_profiles/dp-rerun-${RUN}`);
+  assert(dp.createdBy === other, "diner re-home stable after re-run");
+  assert(
+    !(await exists(`family_ratings/fr-rerun-mine-${RUN}`)),
+    "own verdict stays deleted after re-run",
+  );
 });
 
 // ===========================================================================
