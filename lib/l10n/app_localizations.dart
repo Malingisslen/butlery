@@ -26206,6 +26206,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ge {name} {count} stjärnor'**
   String a11yRateStarsForMember(String name, int count);
+
+  /// No description provided for @familyRatingSectionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'betyg'**
+  String get familyRatingSectionTitle;
+
+  /// No description provided for @familyRatingAverageLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'familjens snitt'**
+  String get familyRatingAverageLabel;
+
+  /// No description provided for @familyRatingCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} betyg'**
+  String familyRatingCount(int count);
+
+  /// No description provided for @familyRatingUpdated.
+  ///
+  /// In sv, this message translates to:
+  /// **'uppdaterad {date}'**
+  String familyRatingUpdated(String date);
+
+  /// No description provided for @familyRatingCommunityLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'community'**
+  String get familyRatingCommunityLabel;
+
+  /// No description provided for @familyRatingYourOwnLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'ditt eget betyg'**
+  String get familyRatingYourOwnLabel;
+
+  /// No description provided for @familyRatingProxyEntered.
+  ///
+  /// In sv, this message translates to:
+  /// **'inmatat av {name}'**
+  String familyRatingProxyEntered(String name);
+
+  /// No description provided for @a11yToggleRatingBreakdown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa eller dölj betygsöversikt'**
+  String get a11yToggleRatingBreakdown;
+
+  /// No description provided for @a11yEditMemberRating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra betyg för {name}'**
+  String a11yEditMemberRating(String name);
 }
 
 class _AppLocalizationsDelegate

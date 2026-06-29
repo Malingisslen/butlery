@@ -15695,4 +15695,39 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yRateStarsForMember(String name, int count) {
     return 'Ge $name $count stjärnor';
   }
+
+  @override
+  String get familyRatingSectionTitle => 'betyg';
+
+  @override
+  String get familyRatingAverageLabel => 'familjens snitt';
+
+  @override
+  String familyRatingCount(int count) {
+    return '$count betyg';
+  }
+
+  @override
+  String familyRatingUpdated(String date) {
+    return 'uppdaterad $date';
+  }
+
+  @override
+  String get familyRatingCommunityLabel => 'community';
+
+  @override
+  String get familyRatingYourOwnLabel => 'ditt eget betyg';
+
+  @override
+  String familyRatingProxyEntered(String name) {
+    return 'inmatat av $name';
+  }
+
+  @override
+  String get a11yToggleRatingBreakdown => 'Visa eller dölj betygsöversikt';
+
+  @override
+  String a11yEditMemberRating(String name) {
+    return 'Ändra betyg för $name';
+  }
 }

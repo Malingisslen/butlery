@@ -11061,5 +11061,18 @@
   "familyRatingProxyNote": "inmatat av {name} · ändrar inte personens eget betyg",
   "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},
   "a11yRateStarsForMember": "Ge {name} {count} stjärnor",
-  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}}
+  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}},
+  "familyRatingSectionTitle": "betyg",
+  "familyRatingAverageLabel": "familjens snitt",
+  "familyRatingCount": "{count} betyg",
+  "@familyRatingCount": {"placeholders": {"count": {"type": "int"}}},
+  "familyRatingUpdated": "uppdaterad {date}",
+  "@familyRatingUpdated": {"placeholders": {"date": {"type": "String"}}},
+  "familyRatingCommunityLabel": "community",
+  "familyRatingYourOwnLabel": "ditt eget betyg",
+  "familyRatingProxyEntered": "inmatat av {name}",
+  "@familyRatingProxyEntered": {"placeholders": {"name": {"type": "String"}}},
+  "a11yToggleRatingBreakdown": "Visa eller dölj betygsöversikt",
+  "a11yEditMemberRating": "Ändra betyg för {name}",
+  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}}
 }

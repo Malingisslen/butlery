@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
+import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -100,6 +101,7 @@ abstract final class RecipeDetailSharedWidgets {
             currentPortions: actions.currentPortions,
             isScaled: actions.currentPortions != (recipe.portions ?? 1),
           ),
+          FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
             selector: (_, svc) => svc.allergenPreferences,
             builder: (context, allergenPrefs, _) {

@@ -11019,5 +11019,18 @@
   "familyRatingProxyNote": "entered by {name} · doesn't change their own rating",
   "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},
   "a11yRateStarsForMember": "Give {name} {count} stars",
-  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}}
+  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}},
+  "familyRatingSectionTitle": "ratings",
+  "familyRatingAverageLabel": "family average",
+  "familyRatingCount": "{count} ratings",
+  "@familyRatingCount": {"placeholders": {"count": {"type": "int"}}},
+  "familyRatingUpdated": "updated {date}",
+  "@familyRatingUpdated": {"placeholders": {"date": {"type": "String"}}},
+  "familyRatingCommunityLabel": "community",
+  "familyRatingYourOwnLabel": "your own rating",
+  "familyRatingProxyEntered": "entered by {name}",
+  "@familyRatingProxyEntered": {"placeholders": {"name": {"type": "String"}}},
+  "a11yToggleRatingBreakdown": "Show or hide rating breakdown",
+  "a11yEditMemberRating": "Edit rating for {name}",
+  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}}
 }
