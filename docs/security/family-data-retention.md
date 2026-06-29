@@ -6,14 +6,15 @@ collections (the household family-rating feature). Mirrors the structure of
 
 ## Status
 
-⚠️ **PROPOSED — pending DPO/Legal confirmation.** This feature is launch-gated
-on the family-rating DPIA (see project memory and the spec's §8 conditions).
-The retention window below is a *defensible proposal* for the DPO to confirm or
-adjust; the **active dormancy sweep is intentionally NOT yet deployed** (no
-guessed-threshold deleter runs against children's data before Legal signs off,
-and there is no production family data pre-launch). The erasure mechanism it
-would reuse already exists and is tested: `deleteFamilyData` in
-`functions/src/account/account-deletion-cascade.ts` (Phase 5 item 15).
+✅ **DPO-CONFIRMED (2026-06-29): 24 months, warn-before-purge.** The dormancy
+sweep is **built and tested**: `purgeDormantFamilyData`
+(`functions/src/family/purge-dormant-family-data.ts`), a weekly scheduled Cloud
+Function (europe-west1) that warns dormant households (in-app notification +
+`familyDataPurgeScheduledAt` grace stamp) and, after the 30-day grace window,
+purges their `diner_profiles` + `family_ratings` (strict batch). Verified by
+`purge-dormant-family-data.integration.test.ts` on the emulator. Account
+**deletion** (right to erasure) is handled separately by `deleteFamilyData` in
+the account-deletion cascade.
 
 Account **deletion** (right to erasure) is already fully handled by that cascade
 — this document covers **storage limitation** (Art. 5(1)(e)): purging family
@@ -84,15 +85,21 @@ This third-party-special-category disclosure to a joint controller is a
 documented condition the DPIA must explicitly cover (it surfaces only
 already-consented stored data; it introduces no new consent collection).
 
-## Sweep design (to implement once the window is DPO-confirmed)
+## Sweep (BUILT — `purgeDormantFamilyData`)
 
-A weekly `onSchedule` Cloud Function (region `europe-west1`, mirroring
-`cleanupOldAuditLogs`):
-1. Find households whose dormancy signal is older than the confirmed window.
-2. For each, run the existing `deleteFamilyData`-style teardown (diner profiles +
-   family ratings + the household doc), reusing the strict/idempotent batch
-   logic already proven by the item-15 integration tests.
-3. Emit one `system_events` observability row per run.
+Weekly `onSchedule` Cloud Function (region `europe-west1`), two-pass so data is
+never purged the instant it becomes eligible:
+1. **Dormancy signal** = newest of the household's `updatedAt`, its diner
+   profiles' `updatedAt`, and its family ratings' `lastUpdatedAt`.
+2. **Warn pass** — a household crossing the 24-month line gets an in-app
+   notification to each member and a `familyDataPurgeScheduledAt = now + 30d`
+   stamp. (In-app is the recorded warning; email is a stronger channel for
+   truly-dormant users — a sensible future enhancement.)
+3. **Purge pass** — once the grace window elapses and the household is still
+   dormant, its `diner_profiles` + `family_ratings` are deleted (strict batch:
+   a failed chunk throws → run recorded failed + retried, never a silent partial
+   purge). The household doc + member accounts are **not** deleted here.
+4. **Reactivation** at any point clears the scheduled purge.
 
-Do not deploy this sweep until the retention window is confirmed — an
-incorrect threshold would erase a real household's children's data.
+Scope note: only the household's family data is purged (storage limitation for
+this feature); account-level lifecycle is separate.

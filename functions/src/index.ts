@@ -146,6 +146,9 @@ export { northStarWeekly } from "./scheduled/north-star-weekly";
 export { pingSweeper } from "./scheduled/ping_sweeper";
 export { onPingCreated } from "./triggers/ping_onCreate";
 
+// Family-rating storage limitation (GDPR Art. 5(1)(e), DPO-confirmed 24mo)
+export { purgeDormantFamilyData } from "./family/purge-dormant-family-data";
+
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
 
