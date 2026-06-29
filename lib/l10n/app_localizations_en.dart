@@ -13736,6 +13736,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'You must accept the terms to create an account';
 
   @override
+  String get a11yTermsOfServiceLink => 'Terms of service';
+
+  @override
+  String get a11yPrivacyPolicyLink => 'Privacy policy';
+
+  @override
   String get reportContent => 'Report';
 
   @override

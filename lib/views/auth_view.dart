@@ -15,7 +15,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:flutter/gestures.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -42,21 +41,15 @@ class _AuthViewState extends State<AuthView> {
   bool _ageConfirmed = false;
   bool _termsAccepted = false;
   late final AuthViewModel _viewModel;
-  late final TapGestureRecognizer _tosRecognizer;
-  late final TapGestureRecognizer _privacyRecognizer;
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<AuthViewModel>();
-    _tosRecognizer = TapGestureRecognizer()..onTap = _navigateToTerms;
-    _privacyRecognizer = TapGestureRecognizer()..onTap = _navigateToPrivacy;
   }
 
   @override
   void dispose() {
-    _tosRecognizer.dispose();
-    _privacyRecognizer.dispose();
     _viewModel.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -305,17 +298,12 @@ class _AuthViewState extends State<AuthView> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Checkbox(
-                        value: _ageConfirmed,
-                        onChanged: viewModel.isLoading
-                            ? null
-                            : (value) => setState(
-                                () => _ageConfirmed = value ?? false,
-                              ),
-                      ),
+                    _buildConsentCheckbox(
+                      value: _ageConfirmed,
+                      onChanged: viewModel.isLoading
+                          ? null
+                          : (value) =>
+                                setState(() => _ageConfirmed = value ?? false),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
@@ -344,48 +332,71 @@ class _AuthViewState extends State<AuthView> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Checkbox(
-                        value: _termsAccepted,
-                        onChanged: viewModel.isLoading
-                            ? null
-                            : (value) => setState(
-                                () => _termsAccepted = value ?? false,
-                              ),
-                      ),
+                    _buildConsentCheckbox(
+                      value: _termsAccepted,
+                      onChanged: viewModel.isLoading
+                          ? null
+                          : (value) => setState(
+                              () => _termsAccepted = value ?? false,
+                            ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.onSurface,
+                      // BUT-1426: the inline ToS / Privacy links were
+                      // TapGestureRecognizer spans — no link role, no
+                      // accessible name, invisible to the a11y audit scanner.
+                      // Each link is now a Semantics(link:)+GestureDetector
+                      // widget; the plain-label words toggle the checkbox,
+                      // mirroring the age-confirm row above.
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Semantics(
+                            button: true,
+                            toggled: _termsAccepted,
+                            child: GestureDetector(
+                              onTap: viewModel.isLoading
+                                  ? null
+                                  : () => setState(
+                                      () => _termsAccepted = !_termsAccepted,
+                                    ),
+                              child: Text(
+                                context.l10n.authTermsAcceptPrefix,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                            ),
                           ),
-                          children: [
-                            TextSpan(text: context.l10n.authTermsAcceptPrefix),
-                            TextSpan(
-                              text: context.l10n.authTermsOfService,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: cs.onPrimaryContainer,
-                                decoration: TextDecoration.underline,
-                                decorationColor: cs.onPrimaryContainer,
+                          Semantics(
+                            link: true,
+                            label: context.l10n.a11yTermsOfServiceLink,
+                            child: GestureDetector(
+                              onTap: _navigateToTerms,
+                              child: Text(
+                                context.l10n.authTermsOfService,
+                                style: _termsLinkStyle(cs),
                               ),
-                              recognizer: _tosRecognizer,
                             ),
-                            TextSpan(text: context.l10n.authTermsAcceptMiddle),
-                            TextSpan(
-                              text: context.l10n.profilePrivacyPolicy,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: cs.onPrimaryContainer,
-                                decoration: TextDecoration.underline,
-                                decorationColor: cs.onPrimaryContainer,
+                          ),
+                          Text(
+                            context.l10n.authTermsAcceptMiddle,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          Semantics(
+                            link: true,
+                            label: context.l10n.a11yPrivacyPolicyLink,
+                            child: GestureDetector(
+                              onTap: _navigateToPrivacy,
+                              child: Text(
+                                context.l10n.profilePrivacyPolicy,
+                                style: _termsLinkStyle(cs),
                               ),
-                              recognizer: _privacyRecognizer,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -528,6 +539,27 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
+
+  /// A consent checkbox with a >=48dp tap target (WCAG 2.5.5 / EAA) while the
+  /// visible box stays compact. BUT-1426: the old SizedBox(24,24) clamped the
+  /// hit area to half the minimum touch target — Checkbox's default
+  /// `materialTapTargetSize.padded` restores 48dp inside this box.
+  Widget _buildConsentCheckbox({
+    required bool value,
+    required ValueChanged<bool?>? onChanged,
+  }) {
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: Checkbox(value: value, onChanged: onChanged),
+    );
+  }
+
+  TextStyle _termsLinkStyle(ColorScheme cs) => AppTextStyles.bodySmall.copyWith(
+    color: cs.onPrimaryContainer,
+    decoration: TextDecoration.underline,
+    decorationColor: cs.onPrimaryContainer,
+  );
 
   void _navigateToTerms() =>
       Navigator.pushNamed(context, Routes.termsOfService);

@@ -23039,6 +23039,18 @@ abstract class AppLocalizations {
   /// **'Du måste acceptera villkoren för att skapa ett konto'**
   String get authTermsAcceptRequired;
 
+  /// No description provided for @a11yTermsOfServiceLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användarvillkor'**
+  String get a11yTermsOfServiceLink;
+
+  /// No description provided for @a11yPrivacyPolicyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritetspolicy'**
+  String get a11yPrivacyPolicyLink;
+
   /// No description provided for @reportContent.
   ///
   /// In sv, this message translates to:

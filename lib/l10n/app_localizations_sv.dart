@@ -13767,6 +13767,12 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du måste acceptera villkoren för att skapa ett konto';
 
   @override
+  String get a11yTermsOfServiceLink => 'Användarvillkor';
+
+  @override
+  String get a11yPrivacyPolicyLink => 'Integritetspolicy';
+
+  @override
   String get reportContent => 'Rapportera';
 
   @override

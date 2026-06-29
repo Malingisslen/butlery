@@ -9357,6 +9357,8 @@
   "authTermsAcceptPrefix": "I accept the ",
   "authTermsAcceptMiddle": " and ",
   "authTermsAcceptRequired": "You must accept the terms to create an account",
+  "a11yTermsOfServiceLink": "Terms of service",
+  "a11yPrivacyPolicyLink": "Privacy policy",
   "reportContent": "Report",
   "reportReasonInappropriate": "Inappropriate content",
   "reportReasonSpam": "Spam",

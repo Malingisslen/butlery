@@ -4,6 +4,12 @@
 // — not a strict CI gate. Run before shipping a sprint that adds tappable
 // widgets to confirm a11y coverage.
 //
+// BUT-1426: also flags inline `TapGestureRecognizer` link spans. These are
+// tappable but were previously invisible to this audit (and to screen readers
+// unless wrapped in a Semantics(link:) node), so an unwrapped one is the same
+// a11y gap as a bare GestureDetector. The same proximity anchor applies — a
+// Semantics( within the preceding window clears it.
+//
 // Usage: dart run tools/audit_unwrapped_tap_targets.dart
 //
 // Exit code: 0 always (audit, not gate). Use --strict to exit 1 on findings.
@@ -37,8 +43,12 @@ const _wrapperAnchors = {
   'RadioListTile(',
 };
 
-/// Tap-target widgets we want to audit.
-final _tapTargetPattern = RegExp(r'\b(InkWell|GestureDetector)\(');
+/// Tap-target widgets we want to audit. BUT-1426 added TapGestureRecognizer
+/// (inline text-link spans) — tappable, but invisible to screen readers
+/// without a Semantics(link:) wrapper.
+final _tapTargetPattern = RegExp(
+  r'\b(InkWell|GestureDetector|TapGestureRecognizer)\(',
+);
 
 /// Files / dirs to skip — generated, test-only, or known-decorative.
 const _skipPatterns = [
@@ -70,22 +80,28 @@ void main(List<String> args) async {
   }
 
   if (findings.isEmpty) {
-    print('OK — no unwrapped InkWell/GestureDetector found '
-        'in lib/views/ + lib/widgets/.');
+    print(
+      'OK — no unwrapped InkWell/GestureDetector found '
+      'in lib/views/ + lib/widgets/.',
+    );
     return;
   }
 
-  print('Found ${findings.length} unwrapped tap target(s) — '
-      'review each manually:');
+  print(
+    'Found ${findings.length} unwrapped tap target(s) — '
+    'review each manually:',
+  );
   print('');
   for (final f in findings) {
     print('${f.file}:${f.line}  ${f.widgetName}');
     print('    ${f.snippet.trim()}');
     print('');
   }
-  print('Note: heuristic. False positives expected for tap targets where the '
-      'parent widget already provides Semantics (custom button widgets, '
-      'list-row decorations).');
+  print(
+    'Note: heuristic. False positives expected for tap targets where the '
+    'parent widget already provides Semantics (custom button widgets, '
+    'list-row decorations).',
+  );
 
   if (strict) exit(1);
 }
@@ -101,11 +117,13 @@ void _auditFile(File file, List<_Finding> findings) {
     final hasAnchor = _wrapperAnchors.any(priorChunk.contains);
     if (hasAnchor) continue;
 
-    findings.add(_Finding(
-      file.path.replaceAll('\\', '/'),
-      i + 1,
-      match.group(1)!,
-      lines[i],
-    ));
+    findings.add(
+      _Finding(
+        file.path.replaceAll('\\', '/'),
+        i + 1,
+        match.group(1)!,
+        lines[i],
+      ),
+    );
   }
 }

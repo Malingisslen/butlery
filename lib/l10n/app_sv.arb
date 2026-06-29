@@ -9386,6 +9386,8 @@
   "authTermsAcceptPrefix": "Jag accepterar ",
   "authTermsAcceptMiddle": " och ",
   "authTermsAcceptRequired": "Du måste acceptera villkoren för att skapa ett konto",
+  "a11yTermsOfServiceLink": "Användarvillkor",
+  "a11yPrivacyPolicyLink": "Integritetspolicy",
   "reportContent": "Rapportera",
   "reportReasonInappropriate": "Olämpligt innehåll",
   "reportReasonSpam": "Spam",
