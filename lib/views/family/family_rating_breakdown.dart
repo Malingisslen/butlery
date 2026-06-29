@@ -80,6 +80,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(height: 8),
             for (final row in vm.rows) _dinerRow(context, row, l10n),
             _comparison(context, l10n),
+            _legend(context, l10n),
           ],
         ],
       ),
@@ -322,6 +323,35 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               label: l10n.familyRatingYourOwnLabel,
               trailing: StarRatingRow(rating: personal, size: 16),
             ),
+        ],
+      ),
+    );
+  }
+
+  /// Colour/term key so the green-vs-rust(-vs-gold) pills are never a guess —
+  /// this is the "explained when you look into a recipe" legend.
+  Widget _legend(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(10),
+      color: AppColors.cream,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline,
+            size: 14,
+            color: AppColors.textLight,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.familyRatingLegend,
+              style: AppTextStyles.captionText.copyWith(
+                color: AppColors.textMedium,
+              ),
+            ),
+          ),
         ],
       ),
     );

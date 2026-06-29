@@ -15673,10 +15673,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get familyRatingCommunityLabel => 'community';
+  String get familyRatingCommunityLabel => 'everyone';
 
   @override
   String get familyRatingYourOwnLabel => 'your own rating';
+
+  @override
+  String get familyRatingLegend =>
+      'Green = your household\'s average (private). Rust = all users\' rating. Gold = your own rating.';
 
   @override
   String familyRatingProxyEntered(String name) {

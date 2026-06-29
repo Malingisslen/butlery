@@ -26234,7 +26234,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingCommunityLabel.
   ///
   /// In sv, this message translates to:
-  /// **'community'**
+  /// **'alla'**
   String get familyRatingCommunityLabel;
 
   /// No description provided for @familyRatingYourOwnLabel.
@@ -26242,6 +26242,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'ditt eget betyg'**
   String get familyRatingYourOwnLabel;
+
+  /// No description provided for @familyRatingLegend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.'**
+  String get familyRatingLegend;
 
   /// No description provided for @familyRatingProxyEntered.
   ///

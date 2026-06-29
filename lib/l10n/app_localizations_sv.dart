@@ -15713,10 +15713,14 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get familyRatingCommunityLabel => 'community';
+  String get familyRatingCommunityLabel => 'alla';
 
   @override
   String get familyRatingYourOwnLabel => 'ditt eget betyg';
+
+  @override
+  String get familyRatingLegend =>
+      'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.';
 
   @override
   String familyRatingProxyEntered(String name) {
