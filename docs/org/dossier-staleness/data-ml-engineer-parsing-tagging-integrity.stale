@@ -1,8 +1,0 @@
-{
-  "role": "Data / ML Engineer (parsing & tagging integrity)",
-  "stale_since": "2026-06-27",
-  "triggers": [
-    "lib/services/parsing/tiers/llm_tier.dart"
-  ],
-  "last_stamped": "2026-06-27"
-}
