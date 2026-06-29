@@ -160,6 +160,18 @@ back button at AppBar.leading had only a `Tooltip`). Fix at the class
 itself (wrap the build output with `Semantics(button: true)`) — this
 covers all callers and is testable as a unit.
 
+### 2026-06-29 — Family consent UX: two-tier GDPR pattern review (Min familj)
+
+**Pattern:** For children's sensitive-data consent the approved pattern is:
+- Tier 1 (Art. 6, guardian, required) = green left-border card, "krävs" badge, green checkbox, only shown when `_isMinor` is true.
+- Tier 2 (Art. 9, allergen health data, optional) = amber/warning left-border card, "valfritt" badge, amber checkbox when checked, prominent "känsliga hälsouppgifter" note ABOVE the checkbox, allergen chips only visible once consent is ON, always rendered regardless of age band.
+- Consent-given info (edit mode) renders BELOW the allergen card, before the save button — the "Samtycke givet" banner + one-tap withdraw link.
+- Withdraw link only shows when `hasAllergenConsent` is true (the guardian-consent banner is always shown in edit mode when `guardianConsent != null`).
+
+**Bug found (2026-06-29):** The allergen card's `_consentHeader` renders the "valfritt" badge with `color: AppColors.textLight` instead of `color: AppColors.warning` (amber). Mockup uses `--text-muted` for the optional pill but the consent card title uses `color:var(--leather)` (warm brown for health), making the allergen section title visually distinct from green. Implementation uses `AppTextStyles.titleSmall` for both consent headers — the allergen card title does not adopt the amber/warning color to match the mockup's `.consent-title.health { color: var(--leather) }`.
+
+**Also noted:** The `CheckboxListTile` for both consent cards renders a full-width hit area that includes the label text — this is correct for touch target ≥48dp.
+
 ### 2026-04-29 — Color literal centralization (BUT-690)
 
 **Pattern:** When `theme_constants.dart` / `brand_colors.dart` carry

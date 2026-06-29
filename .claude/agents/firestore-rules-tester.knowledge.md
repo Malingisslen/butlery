@@ -947,3 +947,25 @@ chain mid-way; (b) running the all-chain twice without clearing accumulates emul
 state and trips the fixed-id suites (moderation, reports). CI boots a FRESH emulator
 WITH storage per job, so test:rules:all is the CI oracle. Locally, verify the
 AFFECTED suites individually on freshly-cleared namespaces.
+
+### 2026-06-28 — optional-list validator pattern (attendeeMemberIds on recipe_cook_events)
+
+New clause added to the `allow create` rule for `recipe_cook_events/{userId}/events/{eventId}`:
+`attendeeMemberIds` is OPTIONAL; when present it must be `is list && size() <= 50`.
+CEL short-circuit form:
+
+```
+&& (!('attendeeMemberIds' in request.resource.data)
+    || (request.resource.data.attendeeMemberIds is list
+        && request.resource.data.attendeeMemberIds.size() <= 50))
+```
+
+Coverage triad for any optional-list field of this shape:
+- CE14a: present + non-empty valid list → ALLOW
+- CE14b: present + empty list `[]` → ALLOW (size 0 <= cap; also proves `[]` is not blocked even if the client never sends it in practice)
+- CE14c: present + exactly at cap (50) → ALLOW (boundary inclusive)
+- CE14d: present + one over cap (51) → DENY
+- CE14e: present + non-list (string) → DENY
+- Implicit (CE4): field absent entirely → ALLOW (the `!('field' in ...)` short-circuit)
+
+The absent case is covered implicitly by the baseline create-allow test that uses `validEventBody()` with no extra fields. If a future diff adds similar optional-list fields to this collection (or any other), reuse this five-test cluster (a–e) plus the baseline implicit-absent proof. Suite 29/29 green on emulator, namespace cleared before run.

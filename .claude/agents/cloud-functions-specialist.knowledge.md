@@ -931,6 +931,56 @@ First inhabitant: `triggers/ping_onCreate.ts` (rate-limit enforcement).
   refresh (was: synchronous + throttled at ~1/sec). The trade-off
   inflection point is roughly the same: ~10k debounced events/min.
 
+### 2026-06-29 — family-diner ratings fold into public counter [Pattern discovered]
+
+`updateRecipeRatingStats` (extracted to
+`functions/src/ratings/update-recipe-rating-stats.ts`, now `(recipeId, db?)`
+with an injectable db) folds TWO sources into one `recipe_social_stats/{recipeId}`
+aggregate: `recipe_ratings` (`rating` + `createdAt`) and `family_ratings` where
+`memberType == "profile"` (`stars` + `lastUpdatedAt ?? createdAt`). Three new
+triggers `onFamilyRating{Created,Updated,Deleted}` on `family_ratings/{id}`,
+gated to `memberType == "profile"`, call the same `scheduleRatingAggregation`
+debounce path as the recipe_ratings triggers.
+
+**Verified clean:**
+- **No double-count** — confirmed against `family_rating_service.dart:147`:
+  only a genuine self-rate (`memberType == user && enteredByUid == memberId`)
+  mirrors to `recipe_ratings`. The aggregator folds only `profile` rows, so an
+  adult's `user`-type family row is never added on top of their recipe_ratings
+  row. The proxy-entered `user` rows are also correctly excluded.
+- **Two-equality family query needs no composite index** — per
+  `accepted-deviations.md`, equality-only `where(recipeId==).where(memberType==)`
+  uses merged single-field indexes. Confirmed: no `orderBy`/range, so no
+  composite. Not a finding.
+- **memberType string match** — `HouseholdMemberType.name` produces exactly
+  `"profile"`/`"user"` (enum in `family_rating.dart:8`); `toFirestore` always
+  writes the field, so the server's raw-string `== "profile"` query is safe.
+  Note the model's `fromName` defaults unknown→`profile` on READ only; doesn't
+  affect the stored string the server queries.
+- **Idempotency** — aggregator re-reads BOTH collections fully on each run and
+  `set(..., {merge:true})`; debounce collapse is correct by construction
+  (claim-by-delete drainer unchanged). Family update trigger gates on
+  `before.stars !== after.stars` mirroring the recipe_ratings `rating` gate.
+- **Drainer wiring** — `aggregate: updateRecipeRatingStats` in `index.ts:328`;
+  drainer calls `aggregate(recipeId)` (one arg), optional `db?` defaults to
+  `admin.firestore()`. Compatible.
+
+**LOW finding (not a bug, behavior change worth recording):** a family diner
+rating a PRIVATE (never-shared) recipe now creates a `recipe_social_stats/{recipeId}`
+doc. That collection is `allow read: if isAuthenticated()` (firestore.rules:2299),
+so any signed-in user who knows/guesses the recipe id can read an ANONYMOUS
+aggregate (count/avg/distribution — no rater identity) for an otherwise-private
+recipe. Pre-change, the doc only existed once a recipe entered the social rating
+flow (`social.rateRecipe`). Acceptable given anonymity + opaque recipe ids, but
+if private-recipe existence/score must stay hidden, gate stats creation on the
+recipe being shared. Flagged, not fixed.
+
+**Test fidelity nit:** the integration test seeds family doc ids as
+`${recipeId}_${memberId}` but production `FamilyRating.buildId` uses
+`$recipeId|$memberId` (pipe). Harmless — neither the query nor the aggregator
+parses the doc id (both key off the `recipeId` field). Worth aligning if the
+test is ever used as a doc-shape reference.
+
 - **`_internal/rating_debounce/{recipeId}` was a 3-segment trap.**
   Spec said "marker doc at `_internal/rating_debounce/{recipeId}`"
   — but `_internal` (collection) → `rating_debounce` (doc) →
@@ -2148,3 +2198,115 @@ passes it through.
 callable. A bad runtime-config or build artifact can leave individual functions
 in `DEPLOY_FAILED` state on the backend. The only way to detect that in CI is
 a separate control-plane query after deploy.
+
+### 2026-06-29 — Phase 5 item 15 family-data deletion: retry-handle ordering hazard [Pattern discovered]
+
+`deleteFamilyData(db, uid)` in `account-deletion-cascade.ts` cascades family
+data per shared household with two branches (sole member → teardown; others
+remain → membership scrub + re-home + proxy scrub). Field names all verified
+against the Dart models (`HouseholdMember.userId`, `FamilyRating.memberId`/
+`enteredByUid`/`householdId`, `DinerProfile.createdBy`). All compound queries
+are equality-only (`householdId==` + `memberId==`/`createdBy==`/`enteredByUid==`)
+→ no composite index needed (accepted-deviations: equality merges on
+single-field indexes).
+
+**The hazard (general, reusable):** in a cascade step that is keyed off a
+**shared/parent handle** rather than off `uid`, you must perform the
+destructive mutation that *destroys the retry handle* LAST — after all
+dependent child cleanup has committed. Otherwise a transient mid-step failure
+strands orphans that a whole-cascade retry can no longer reach.
+
+Two manifestations in this function:
+1. **Remaining-members branch** does `hhDoc.ref.update({ memberUserIds:
+   arrayRemove(uid), ... })` BEFORE re-homing diner profiles and scrubbing
+   proxy attribution. The top-level re-entry query is `households where
+   memberUserIds array-contains uid`. Once the arrayRemove commits, a retry
+   no longer matches the household, so an orphaned child profile
+   (`createdBy == deletedUid`) or un-scrubbed proxy verdict is never fixed —
+   yet `auth.deleteUser` still runs at the end. Fix: reorder so the household
+   membership scrub is the LAST mutation in the branch.
+2. **Sole-member branch** deletes children via `batchDeleteAll` (which is
+   `commitInChunks` with `strict:false` — swallows commit errors) and then
+   `hhDoc.ref.delete()` unconditionally. If a child chunk fails, the error is
+   swallowed and the household doc — the only handle to re-derive `hid` — is
+   deleted anyway. Residual `diner_profiles`/`family_ratings` with that
+   `householdId` are unreachable on retry. Fix: in the teardown, delete child
+   docs with `strict:true` (or otherwise confirm child commits succeeded)
+   before deleting the household doc; a thrown error then marks `family_data`
+   failed and leaves `uid` in `memberUserIds` so the retry re-matches.
+
+**Why this matters here specifically:** every OTHER cascade step queries by
+`where(<field>, "==", uid)`, so residuals are always re-discoverable on retry
+regardless of partial failure. Family data is the first step keyed on a parent
+(`householdId`) whose handle the step itself destroys — breaking the cascade's
+stated invariant ("every step ... safe to re-run if the caller retries after a
+partial failure"). When adding cascade steps, check: *is the retry query keyed
+on uid, or on a parent I'm about to delete/mutate?*
+
+Severity rated High (orphan under retry + GDPR incompleteness; happy path is
+correct, requires a transient mid-step failure). The 5 integration tests cover
+happy-path branches but none injects a mid-step failure + re-run, so the
+ordering regression is untested.
+
+### 2026-06-29 — family-data storage-limitation sweep [Pattern discovered]
+
+`functions/src/family/purge-dormant-family-data.ts` —
+`purgeDormantFamilyData`, weekly `onSchedule` ("30 3 * * 0", UTC, 300s),
+inherits europe-west1 from `setGlobalOptions`. Core
+`runDormantFamilyPurge(db, now)` test seam exercised by emulator integration
+test `__tests__/purge-dormant-family-data.integration.test.ts`
+(`npm run test:integration:family-data-purge`, NOT in `test:rules:all` — needs
+emulator). GDPR Art. 5(1)(e): a household whose family data
+(`diner_profiles` + `family_ratings`) is dormant 24mo is warned, then purged
+unless reactivated. Household doc + accounts are NOT deleted.
+
+**New function family**: `family/` — household-scoped family-rating feature CFs.
+
+| Path | Concern | Trigger | Test |
+|---|---|---|---|
+| `family/` | Household-scoped retention/aggregation; GDPR storage-limitation; idempotent warn→purge | scheduled + (aggregation triggers) | `test:integration:family-data-purge`, `test:integration:family-rating-aggregation` |
+
+**Patterns worth remembering**:
+
+- **Warn-before-purge two-pass is the GDPR-safe shape for any auto-deletion of
+  user data.** Pass 1 stamps `familyDataPurgeScheduledAt = now + grace` + writes
+  an in-app warning; pass 2 only deletes once `now >= scheduledAt`. The purge
+  branch is structurally unreachable on the pass that first detects dormancy
+  (it requires the schedule field to already exist). Reactivation clears the
+  schedule. Never auto-delete user data on first eligibility — always a recorded
+  warning + grace window first.
+
+- **Dormancy = max of parent + all children timestamps, computed by reading the
+  children, not an `orderBy limit(1)` probe.** For SMALL per-parent child counts
+  (a household has a handful of diners/ratings) reading all children to compute
+  the newest timestamp is correct: the docs are needed for the delete anyway, and
+  `orderBy("lastUpdatedAt","desc").limit(1)` would force a composite index per
+  collection for no real saving. Only switch to the indexed probe when per-parent
+  child counts grow large.
+
+- **`.limit(N).get()` on the top-level scan is "bounded but NOT paginating".**
+  This sweep reads `households` with `.limit(200)` and no cursor — so beyond 200
+  households the rest are silently never processed that run, and without an
+  `orderBy` the scanned subset can shift between runs. Not a crash and purge
+  correctness holds for those scanned, but it starves the overflow of any
+  dormancy processing → defeats the storage-limitation guarantee. Flagged
+  Medium (latent; fine at beta scale). Fix = the `__name__`-cursor loop already
+  in `shared/batch-update.ts:batchUpdateQueryPaginated`. Rule: a "bounded"
+  comment is not pagination; if the collection is unbounded, use a cursor loop.
+
+- **`commitInChunks(db, docs, (b,d)=>b.delete(d.ref), { strict: true })` is the
+  right primitive for a must-be-complete delete.** strict:true re-throws on any
+  chunk failure, aborting BEFORE the parent stamp write, so the scheduler retries
+  and you never get a silent partial purge of regulated data. Stamp the parent
+  (`familyDataPurgedAt`) only AFTER the children commit succeeds.
+
+- **System/self in-app warnings**: `warnMembers` writes `user_notifications`
+  with `senderId == recipient uid` (self-notification). Best-effort (per-member
+  try/catch, warn-logged, never blocks the schedule stamp). Watch that the
+  notification-render path doesn't show a confusing "from yourself" sender.
+
+- **Test seam shape holds**: `runX(db, now)` plain async + one-line `onSchedule`
+  delegate, same as the analytics CFs. Integration test injects a fixed `now`
+  and seeds one household per branch. Gap noted in this review: the
+  reactivation-clears-schedule and empty-children-clears-stale-schedule branches
+  (both have side effects) are not yet asserted.
