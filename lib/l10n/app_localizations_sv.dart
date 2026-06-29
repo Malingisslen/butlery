@@ -466,7 +466,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupInvitationMessage(String groupName) {
-    return 'Du har blivit inbjuden till gruppen $groupName!';
+    return 'En inbjudan till gruppen $groupName har anlänt.';
   }
 
   @override
@@ -513,7 +513,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get urlSuggestionKnownSite =>
-      'Känd receptsida — bra chans att importera!';
+      'Känd receptsida — goda chanser att importera.';
 
   @override
   String get urlSuggestionUnknownSite =>
@@ -532,7 +532,8 @@ class AppLocalizationsSv extends AppLocalizations {
       'Sociala medier — import kräver ibland extra steg';
 
   @override
-  String get urlSuggestionOptimal => 'Perfekt — redo att importera!';
+  String get urlSuggestionOptimal =>
+      'Adressen ser bra ut — redo att importera.';
 
   @override
   String errorWithContext(String action, String error) {
@@ -541,22 +542,22 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String successItemCreated(String itemType) {
-    return '$itemType skapades!';
+    return '$itemType har lagts till.';
   }
 
   @override
   String successItemUpdated(String itemType) {
-    return '$itemType uppdaterades!';
+    return '$itemType har uppdaterats.';
   }
 
   @override
   String successItemDeleted(String itemType) {
-    return '$itemType togs bort!';
+    return '$itemType har tagits bort.';
   }
 
   @override
   String successItemAdded(String itemName) {
-    return '$itemName tillagd!';
+    return '$itemName har lagts till.';
   }
 
   @override
@@ -589,7 +590,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get draftStartFresh => 'Börja om';
 
   @override
-  String get draftRestored => 'Utkast återställt!';
+  String get draftRestored => 'Utkastet är återställt.';
 
   @override
   String get draftCouldNotRestore =>
@@ -608,7 +609,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String draftRestoredWithCount(int count) {
-    return 'Utkast återställt! $count fält laddades';
+    return 'Utkastet är återställt — $count fält laddades.';
   }
 
   @override
@@ -893,7 +894,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileDeleteWarningSharedContent => 'Ta bort all delad innehåll';
 
   @override
-  String get profileDeleteIrreversible => 'Denna åtgärd kan INTE ångras!';
+  String get profileDeleteIrreversible => 'Åtgärden är slutgiltig.';
 
   @override
   String get profileDeleteConfirmButton => 'Jag förstår, radera mitt konto';
@@ -976,7 +977,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatSharedRecipe => 'Delat recept';
 
   @override
-  String get chatCheckOutRecipe => 'Kolla in detta recept!';
+  String get chatCheckOutRecipe => 'Ta gärna en titt på det här receptet.';
 
   @override
   String get chatCouldNotShareRecipe => 'Kunde inte dela recept';
@@ -1011,7 +1012,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get chatCheckOutMenu => 'Kolla in min veckomeny!';
+  String get chatCheckOutMenu => 'Ta gärna en titt på min veckomeny.';
 
   @override
   String get chatNoMenuForWeek => 'Ingen meny för den veckan';
@@ -1020,7 +1021,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatSelectShoppingList => 'Välj inköpslista';
 
   @override
-  String get chatCheckOutShoppingList => 'Kolla in min inköpslista!';
+  String get chatCheckOutShoppingList => 'Ta gärna en titt på min inköpslista.';
 
   @override
   String get chatNoShoppingLists => 'Du har inga inköpslistor än';
@@ -1072,7 +1073,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatLoadingImage => 'Laddar bild...';
 
   @override
-  String get chatImageSent => 'Bild skickad!';
+  String get chatImageSent => 'Bilden är skickad.';
 
   @override
   String get chatNoImageSelected => 'Ingen bild vald';
@@ -1138,7 +1139,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCookedToday => 'Lagat idag';
 
   @override
-  String get recipeCookedTodaySuccess => 'Recept markerat som lagat idag!';
+  String get recipeCookedTodaySuccess => 'Receptet är markerat som lagat idag.';
 
   @override
   String get recipeCookedTodayError => 'Kunde inte markera som lagat';
@@ -1297,7 +1298,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuClear => 'Rensa meny';
 
   @override
-  String get menuShared => 'Veckomeny delad!';
+  String get menuShared => 'Veckomenyn är delad.';
 
   @override
   String get menuGeneratingOverlay => 'Genererar din veckomeny...';
@@ -1346,7 +1347,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchClearFilters => 'Rensa filter';
 
   @override
-  String get syncComplete => 'Synkronisering klar!';
+  String get syncComplete => 'Synkroniseringen är klar.';
 
   @override
   String syncFailed(String error) {
@@ -1452,7 +1453,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shoppingItemRemoved(String name) {
-    return '$name borttagen!';
+    return '$name är borttagen.';
   }
 
   @override
@@ -1461,7 +1462,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get shoppingAllUnchecked => 'Alla artiklar avbockade!';
+  String get shoppingAllUnchecked => 'Alla artiklar är avbockade.';
 
   @override
   String get shoppingNoListForRename => 'Ingen lista vald för att byta namn';
@@ -2807,7 +2808,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get profileRestoreCompleted => 'Återställning genomförd!';
+  String get profileRestoreCompleted => 'Återställningen är genomförd.';
 
   @override
   String profileRestoreFailed(String error) {
@@ -2873,7 +2874,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareErrorOccurred => 'Ett fel uppstod';
 
   @override
-  String get shareSucceeded => 'Delning lyckades!';
+  String get shareSucceeded => 'Delningen är klar.';
 
   @override
   String get shareRecipes => 'recept';
@@ -3112,7 +3113,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har inte behörighet att se denna information.';
 
   @override
-  String get invitationTargetsLoaded => 'Målgrupper laddade!';
+  String get invitationTargetsLoaded => 'Målgrupperna är laddade.';
 
   @override
   String get invitationNoSearchResults => 'Inga sökresultat';
@@ -4552,7 +4553,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuNameYourMenu => 'Namnge din meny';
 
   @override
-  String get menuShareDefaultMessage => 'Kolla min veckomeny!';
+  String get menuShareDefaultMessage => 'Ta gärna en titt på min veckomeny.';
 
   @override
   String get messagingEdited => 'redigerad';
@@ -4630,7 +4631,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get messagingFromGroup => 'från gruppen';
 
   @override
-  String get messagingGroupCreated => 'Gruppkonversation skapad!';
+  String get messagingGroupCreated => 'Gruppkonversationen är skapad.';
 
   @override
   String get messagingGroupName => 'Gruppnamn';
@@ -4745,7 +4746,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ditt konto är skyddat med tvåfaktorsautentisering.';
 
   @override
-  String get mfaActivated => 'MFA aktiverat!';
+  String get mfaActivated => 'MFA är aktiverat.';
 
   @override
   String get mfaAddPhoneNumber => 'Lägg till telefonnummer';
@@ -4884,7 +4885,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conversationNoFriendsYet => 'Inga vänner ännu';
 
   @override
-  String get conversationSayHi => 'Säg hej!';
+  String get conversationSayHi => 'Säg hej.';
 
   @override
   String get conversationSelectFriendForDM =>
@@ -5035,7 +5036,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importProceedToPaste => 'Gå vidare till klistra-in';
 
   @override
-  String get importRecipesImported => 'Recept importerade!';
+  String get importRecipesImported => 'Recepten är importerade.';
 
   @override
   String get importSearchArchive => 'Sök i arkiv...';
@@ -5214,7 +5215,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuLoadedSuccess(String name) {
-    return 'Meny \"$name\" laddad!';
+    return 'Menyn \"$name\" är laddad.';
   }
 
   @override
@@ -5228,7 +5229,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuNoSavedMenusDescription =>
-      'Du har inga sparade menyer än. Generera och spara en meny först!';
+      'Inga sparade menyer ännu. En meny genereras och sparas först.';
 
   @override
   String menuRecipesInCategories(int recipeCount, int categoryCount) {
@@ -5262,13 +5263,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeAddTags => 'Lägg till taggar';
 
   @override
-  String get recipeChangesSaved => 'Ändringar sparade!';
+  String get recipeChangesSaved => 'Ändringarna är sparade.';
 
   @override
   String get recipeContinueEditing => 'Fortsätt redigera';
 
   @override
-  String get recipeCopySaved => 'Din kopia av receptet sparades!';
+  String get recipeCopySaved => 'Kopian av receptet är sparad.';
 
   @override
   String get recipeCouldNotSaveChanges => 'Kunde inte spara ändringar';
@@ -5641,10 +5642,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importRecipeTextCanImport =>
-      'Recepttext detekterad! Vi kan importera detta.';
+      'Recepttext är detekterad — den kan importeras.';
 
   @override
-  String get importRecipeTextDetected => 'Recepttext detekterad!';
+  String get importRecipeTextDetected => 'Recepttext är detekterad.';
 
   @override
   String get importRecipeTitle => 'Importera recept';
@@ -5732,7 +5733,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importWebRecipeLinkDetected =>
-      'Receptlänk från webbsida detekterad!';
+      'Receptlänk från webbsida är detekterad.';
 
   @override
   String get importWebsite => 'Webbsida';
@@ -5765,7 +5766,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get groupInvitationsSentSuccess => 'Inbjudningar har skickats!';
+  String get groupInvitationsSentSuccess => 'Inbjudningarna har skickats.';
 
   @override
   String get groupLoadingInfo => 'Laddar gruppinformation...';
@@ -5803,7 +5804,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get groupUpdated => 'Gruppen uppdaterades!';
+  String get groupUpdated => 'Gruppen är uppdaterad.';
 
   @override
   String get groupYouLeftGroup => 'Du har lämnat gruppen';
@@ -5853,7 +5854,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuImportedSuccess(String title) {
-    return 'Meny \"$title\" importerad!';
+    return 'Menyn \"$title\" är importerad.';
   }
 
   @override
@@ -5870,12 +5871,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuSharingComingSoon(String title) {
-    return 'Delning av \"$title\" kommer snart!';
+    return 'Delning av \"$title\" kommer snart.';
   }
 
   @override
   String menuSavedSuccess(String name) {
-    return 'Menyn \"$name\" sparades!';
+    return 'Menyn \"$name\" är sparad.';
   }
 
   @override
@@ -5963,7 +5964,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileAvatarRemoved => 'Avatar borttagen';
 
   @override
-  String get profileAvatarUploaded => 'Avatar uppladdad!';
+  String get profileAvatarUploaded => 'Avataren är uppladdad.';
 
   @override
   String get profileBio => 'Beskrivning';
@@ -6037,7 +6038,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileResetChanges => 'Återställ ändringar';
 
   @override
-  String get profileSaved => 'Profil sparad!';
+  String get profileSaved => 'Profilen är sparad.';
 
   @override
   String get profileSaveProfile => 'Spara profil';
@@ -6112,7 +6113,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeDeleted => 'Recept borttaget';
 
   @override
-  String get recipeMarkedAsCooked => 'Recept markerat som lagat idag!';
+  String get recipeMarkedAsCooked => 'Receptet är markerat som lagat idag.';
 
   @override
   String get recipeAlreadyCookedToday => 'Redan loggad idag';
@@ -6126,7 +6127,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get recipeSaved => 'Recept sparat!';
+  String get recipeSaved => 'Receptet är sparat.';
 
   @override
   String get recipeSavedTaggingFailed =>
@@ -6134,7 +6135,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipeSavedWithTags(int tagCount, int coverage) {
-    return 'Recept sparat! $tagCount taggar ($coverage%)';
+    return 'Receptet är sparat — $tagCount taggar ($coverage%).';
   }
 
   @override
@@ -6145,11 +6146,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeWaitWhileSaving => 'Vänta medan receptet sparas...';
 
   @override
-  String get celebrationFirstRecipeTitle => 'Grattis!';
+  String get celebrationFirstRecipeTitle => 'Första receptet är inlagt.';
 
   @override
   String celebrationFirstRecipeMessage(String recipeTitle) {
-    return 'Du har sparat ditt första recept: $recipeTitle. Välkommen till Butlery!';
+    return 'Receptet $recipeTitle är sparat. Butlery står redo.';
   }
 
   @override
@@ -6216,7 +6217,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialBeFirstToComment =>
-      'Var först med att kommentera detta recept!';
+      'Var först med att kommentera det här receptet.';
 
   @override
   String get socialCommentPosted => 'Kommentar postad';
@@ -6440,7 +6441,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sharedEmptyStateExplanation =>
-      'När du eller dina vänner delar recept och menyer visas de här. Prova att dela ett recept!';
+      'När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.';
 
   @override
   String get sharedShareFirstRecipe => 'Dela ett recept';
@@ -6617,7 +6618,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupInvitationAccepted =>
-      'Inbjudan accepterad! Välkommen till gruppen!';
+      'Inbjudan är accepterad. Välkommen till gruppen.';
 
   @override
   String get groupInvitationDeclined => 'Inbjudan avvisad';
@@ -6722,7 +6723,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte skicka vänförfrågan';
 
   @override
-  String get socialDefaultFriendMessage => 'Hej! Skulle vi kunna bli vänner?';
+  String get socialDefaultFriendMessage => 'Hej. Skulle vi kunna bli vänner?';
 
   @override
   String get socialFindNewFriends => 'Hitta nya vänner';
@@ -6745,14 +6746,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get friendsEmptyFindByUsername => 'Hitta vänner med användarnamn';
 
   @override
-  String get socialInviteSubject => 'Gå med i Butlery!';
+  String get socialInviteSubject => 'En inbjudan till Butlery.';
 
   @override
-  String get socialFriendRequestAccepted => 'Vänskapsförfrågan accepterad!';
+  String get socialFriendRequestAccepted => 'Vänskapsförfrågan är accepterad.';
 
   @override
   String socialFriendRequestAcceptedFrom(String name) {
-    return 'Vänskapsförfrågan från $name accepterad!';
+    return 'Vänskapsförfrågan från $name är accepterad.';
   }
 
   @override
@@ -6760,7 +6761,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialFriendRequestSent(String name) {
-    return 'Vänförfrågan skickad till $name!';
+    return 'Vänförfrågan är skickad till $name.';
   }
 
   @override
@@ -6771,7 +6772,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialNoFriendRequestsDescription =>
-      'Börja söka efter vänner ovan för att utvidga ditt nätverk!';
+      'Sök efter vänner ovan för att utvidga nätverket.';
 
   @override
   String get socialRequestSent => 'Skickad';
@@ -6846,7 +6847,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'E-postdelning kommer snart';
 
   @override
-  String get collaborativeLinkCopied => 'Länk kopierad!';
+  String get collaborativeLinkCopied => 'Länken är kopierad.';
 
   @override
   String get collaborativeManageMembers => 'Hantera medlemmar';
@@ -6950,7 +6951,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get groupCreatedSuccess => 'Grupp skapad!';
+  String get groupCreatedSuccess => 'Gruppen är skapad.';
 
   @override
   String get groupCreateGroup => 'Skapa grupp';
@@ -7904,7 +7905,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authTermsOfService => 'Villkor';
 
   @override
-  String get authResetEmailSent => 'Email skickad! Kontrollera din inkorg.';
+  String get authResetEmailSent =>
+      'E-posten är skickad. Kontrollera din inkorg.';
 
   @override
   String get authResetEmailFailed => 'Kunde inte skicka email';
@@ -8000,7 +8002,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialCreateProfile => 'Skapa Profil';
 
   @override
-  String get socialProfileCreatedRestart => 'Profil skapad! Starta om appen.';
+  String get socialProfileCreatedRestart =>
+      'Profilen är skapad. Starta om appen.';
 
   @override
   String get socialReport => 'Rapportera';
@@ -8021,7 +8024,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialReportOther => 'Annat';
 
   @override
-  String get socialReportSent => 'Rapport skickad. Tack för din feedback!';
+  String get socialReportSent =>
+      'Rapporten är skickad. Tack för din återkoppling.';
 
   @override
   String get socialReportShoppingListReason =>
@@ -8097,7 +8101,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shoppingSharingComingSoon(String option) {
-    return 'Delning via $option kommer snart!';
+    return 'Delning via $option kommer snart.';
   }
 
   @override
@@ -8646,7 +8650,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuNoCommentsYet => 'Inga kommentarer än';
 
   @override
-  String get menuBeFirstToComment => 'Var först med att kommentera denna meny!';
+  String get menuBeFirstToComment =>
+      'Var först med att kommentera den här menyn.';
 
   @override
   String get menuLoadingComments => 'Laddar kommentarer...';
@@ -8655,7 +8660,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuWriteComment => 'Skriv en kommentar om menyn...';
 
   @override
-  String get menuCommentPostedSuccess => 'Kommentar postad!';
+  String get menuCommentPostedSuccess => 'Kommentaren är publicerad.';
 
   @override
   String get menuCommentPostFailed => 'Kunde inte posta kommentaren';
@@ -8687,7 +8692,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuYourRating => 'Ditt betyg';
 
   @override
-  String get menuRatingSaved => 'Betyg sparat!';
+  String get menuRatingSaved => 'Betyget är sparat.';
 
   @override
   String get menuRatingFailed => 'Kunde inte spara betyg';
@@ -8760,7 +8765,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuTemplateSavedSuccess(String name) {
-    return 'Mall \"$name\" sparad!';
+    return 'Mallen \"$name\" är sparad.';
   }
 
   @override
@@ -9140,7 +9145,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.';
 
   @override
-  String get onboardingWelcomeTitle => 'Välkommen till Butlery!';
+  String get onboardingWelcomeTitle => 'Välkommen. Butlery står redo.';
 
   @override
   String get onboardingWelcomeDescription =>
@@ -9242,7 +9247,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingWelcomeBanner =>
-      'Välkommen till Butlery! Allt är klart – lägg till ditt första recept så kommer du igång.';
+      'Välkommen till Butlery. Allt är klart – lägg till ditt första recept så kommer du igång.';
 
   @override
   String get onboardingWelcomeBannerAction => 'Lägg till recept';
@@ -10553,7 +10558,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statusReconnecting => 'Återansluter...';
 
   @override
-  String get statusDone => 'Klar!';
+  String get statusDone => 'Klar.';
 
   @override
   String get displayOnlyYou => 'Bara du';
@@ -10641,7 +10646,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get notificationTitleSuccess => 'Lyckades!';
+  String get notificationTitleSuccess => 'Klart.';
 
   @override
   String get notificationTitleError => 'Fel uppstod';
@@ -11144,7 +11149,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String syncAllSynced(int count) {
-    return 'Alla $count ändringar synkade!';
+    return 'Alla $count ändringar är synkade.';
   }
 
   @override
@@ -12013,7 +12018,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importPhaseCreating => 'Skapar recept...';
 
   @override
-  String get importPhaseComplete => 'Klar!';
+  String get importPhaseComplete => 'Klar.';
 
   @override
   String get importPhaseNeedsHelp => 'Behöver din hjälp';
@@ -12038,12 +12043,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shareMessageRecipeWithTitle(String title) {
-    return 'Kolla in detta recept: \"$title\"! 👩‍🍳';
+    return 'Ta gärna en titt på det här receptet: \"$title\". 👩‍🍳';
   }
 
   @override
   String get shareMessageRecipeDefault =>
-      'Jag hittade ett fantastiskt recept som jag ville dela med dig! 👩‍🍳';
+      'Jag hittade ett recept jag ville dela med dig. 👩‍🍳';
 
   @override
   String shareMessageMenuWithTitle(String title) {
@@ -12052,7 +12057,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareMessageMenuDefault =>
-      'Här är min veckomeny som kanske kan inspirera dig! 📋';
+      'Här är min veckomeny, kanske till inspiration. 📋';
 
   @override
   String shareMessageShoppingListWithTitle(String title) {
@@ -12488,7 +12493,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareDefaultShoppingListMessage =>
-      'Vill dela denna inköpslista med dig!';
+      'Delar gärna den här inköpslistan med dig.';
 
   @override
   String shoppingListAllDone(int count) {
@@ -12921,7 +12926,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String notificationRatingSingle(String recipe, int count, String period) {
-    return 'Ditt recept \"$recipe\" fick $count nya betyg denna $period!';
+    return 'Ditt recept \"$recipe\" fick $count nya betyg denna $period.';
   }
 
   @override
@@ -12930,7 +12935,7 @@ class AppLocalizationsSv extends AppLocalizations {
     int recipeCount,
     String period,
   ) {
-    return 'Dina recept fick totalt $totalRatings nya betyg på $recipeCount recept denna $period!';
+    return 'Dina recept fick totalt $totalRatings nya betyg på $recipeCount recept denna $period.';
   }
 
   @override
@@ -13151,7 +13156,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackDescriptionRequired => 'Ange en beskrivning';
 
   @override
-  String get feedbackThanks => 'Tack för din feedback!';
+  String get feedbackThanks => 'Tack för din återkoppling.';
 
   @override
   String get feedbackSendFailed => 'Kunde inte skicka feedback. Försök igen.';
@@ -13729,7 +13734,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get faqA5 =>
-      'Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all feedback!';
+      'Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all återkoppling.';
 
   @override
   String get sharedWithYou => 'Delade med dig';
@@ -13912,7 +13917,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get emailVerificationContinue => 'Fortsätt ändå';
 
   @override
-  String get emailVerificationSuccess => 'E-post verifierad!';
+  String get emailVerificationSuccess => 'E-posten är verifierad.';
 
   @override
   String get a11yCookingModeFontScale => 'Ändra textstorlek';
@@ -14105,7 +14110,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emptyStateNewUserWithPrefs =>
-      'Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!';
+      'Dina kostpreferenser är redo. Importera ditt första recept, så sköts filtreringen åt dig.';
 
   @override
   String get emptyStateImportAction => 'Importera via länk';
@@ -14140,7 +14145,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get quickCaptureSave => 'Spara';
 
   @override
-  String get quickCaptureSaved => 'Recept sparat!';
+  String get quickCaptureSaved => 'Receptet är sparat.';
 
   @override
   String get quickCaptureEditAction => 'Redigera';
@@ -14314,7 +14319,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statsIncomplete => 'Ofullständiga';
 
   @override
-  String get statsAllComplete => 'Alla recept är kompletta!';
+  String get statsAllComplete => 'Alla recept är kompletta.';
 
   @override
   String get notificationsTitle => 'Aviseringar';
@@ -14364,7 +14369,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapEmptyTitle => 'Ingen har lagat detta än';
 
   @override
-  String get cookSnapEmptySubtitle => 'Bli först!';
+  String get cookSnapEmptySubtitle => 'Var först.';
 
   @override
   String get cookSnapFromCamera => 'Ta foto';
@@ -14839,10 +14844,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get startTimer => 'Starta timer';
 
   @override
-  String get timerExpired => 'Timer klar!';
+  String get timerExpired => 'Timern är klar.';
 
   @override
-  String get timerNotificationTitle => 'Timer klar!';
+  String get timerNotificationTitle => 'Timern är klar.';
 
   @override
   String get timerNotificationBody => 'Din timer har gått ut.';

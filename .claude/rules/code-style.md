@@ -19,6 +19,7 @@
 - No doc comments on simple getters/private methods
 - No section dividers (`// ===== SECTION =====`)
 - All comments in English (UI strings stay Swedish)
+- **Butler voice (UI strings):** Swedish/English UI copy follows `docs/design/butler-voice-guide.md` — no exclamation marks (rule #1), no "Grattis!" (rule #4), speak about the action not to the user. Auto-applies when editing `lib/l10n/*.arb`.
 
 ## Documentation Files
 - Prefer minimal documentation. Code should be self-documenting.

@@ -392,7 +392,7 @@
   "nounGroupContent": "group content",
   "nounFriends": "friends",
   "nounFriendList": "friend list",
-  "groupInvitationMessage": "You have been invited to the group {groupName}!",
+  "groupInvitationMessage": "An invitation to the group {groupName} has arrived.",
   "@groupInvitationMessage": {
     "placeholders": {
       "groupName": {
@@ -458,12 +458,12 @@
   "nounShoppingList": "shopping list",
   "nounShareLink": "share link",
   "validationUrlRequired": "URL is required",
-  "urlSuggestionKnownSite": "Known recipe site — good chance of import!",
+  "urlSuggestionKnownSite": "Known recipe site — good chance of import.",
   "urlSuggestionUnknownSite": "Unknown site — import may be limited",
   "urlSuggestionContainsRecipeKeyword": "URL contains recipe keyword",
   "urlSuggestionTooLong": "URL is unusually long — verify it is correct",
   "urlSuggestionSocialMedia": "Social media — import may require extra steps",
-  "urlSuggestionOptimal": "Perfect — ready to import!",
+  "urlSuggestionOptimal": "Address looks good — ready to import.",
   "errorWithContext": "Error during {action}: {error}",
   "@errorWithContext": {
     "placeholders": {
@@ -475,7 +475,7 @@
       }
     }
   },
-  "successItemCreated": "{itemType} created!",
+  "successItemCreated": "{itemType} has been added.",
   "@successItemCreated": {
     "placeholders": {
       "itemType": {
@@ -483,7 +483,7 @@
       }
     }
   },
-  "successItemUpdated": "{itemType} updated!",
+  "successItemUpdated": "{itemType} has been updated.",
   "@successItemUpdated": {
     "placeholders": {
       "itemType": {
@@ -491,7 +491,7 @@
       }
     }
   },
-  "successItemDeleted": "{itemType} deleted!",
+  "successItemDeleted": "{itemType} has been deleted.",
   "@successItemDeleted": {
     "placeholders": {
       "itemType": {
@@ -499,7 +499,7 @@
       }
     }
   },
-  "successItemAdded": "{itemName} added!",
+  "successItemAdded": "{itemName} has been added.",
   "@successItemAdded": {
     "placeholders": {
       "itemName": {
@@ -522,7 +522,7 @@
   "photoDraftRecoverySubtitle": "You have a photo with extracted text from earlier. Would you like to continue where you left off?",
   "draftRestore": "Restore",
   "draftStartFresh": "Start fresh",
-  "draftRestored": "Draft restored!",
+  "draftRestored": "Draft restored.",
   "draftCouldNotRestore": "Couldn't restore draft. Starting with an empty form.",
   "draftRestoring": "Restoring draft...",
   "draftUnnamedRecipe": "Unnamed recipe",
@@ -534,7 +534,7 @@
       }
     }
   },
-  "draftRestoredWithCount": "Draft restored! {count} fields loaded",
+  "draftRestoredWithCount": "Draft restored — {count} fields loaded.",
   "@draftRestoredWithCount": {
     "placeholders": {
       "count": {
@@ -674,7 +674,7 @@
   "profileDeleteWarningShoppingLists": "Delete all your shopping lists",
   "profileDeleteWarningFriends": "Remove all friends and messages",
   "profileDeleteWarningSharedContent": "Delete all shared content",
-  "profileDeleteIrreversible": "This action CANNOT be undone!",
+  "profileDeleteIrreversible": "This action is irreversible.",
   "profileDeleteConfirmButton": "I understand, delete my account",
   "profileConfirmWithPassword": "Confirm with password",
   "profileEnterPasswordToConfirm": "Enter your password to confirm deletion:",
@@ -713,7 +713,7 @@
   "chatCouldNotCopyMessage": "Couldn't copy the message",
   "chatYourRecipes": "Your recipes",
   "chatSharedRecipe": "Shared recipe",
-  "chatCheckOutRecipe": "Check out this recipe!",
+  "chatCheckOutRecipe": "Do take a look at this recipe.",
   "chatCouldNotShareRecipe": "Couldn't share recipe",
   "chatMenuSharingComingSoon": "Menu sharing coming soon",
   "chatCouldNotShareMenu": "Couldn't share menu",
@@ -733,10 +733,10 @@
       "weekNum": {"type": "int"}
     }
   },
-  "chatCheckOutMenu": "Check out my weekly menu!",
+  "chatCheckOutMenu": "Do take a look at my weekly menu.",
   "chatNoMenuForWeek": "No menu for that week",
   "chatSelectShoppingList": "Choose a shopping list",
-  "chatCheckOutShoppingList": "Check out my shopping list!",
+  "chatCheckOutShoppingList": "Do take a look at my shopping list.",
   "chatNoShoppingLists": "You have no shopping lists yet",
   "chatAttachmentRecipe": "Recipe",
   "chatAttachmentMenu": "Menu",
@@ -759,7 +759,7 @@
   "feedRequestRecipeConfirm": "Request recipe",
   "feedRecipeRequestSent": "Request sent",
   "chatLoadingImage": "Loading image...",
-  "chatImageSent": "Image sent!",
+  "chatImageSent": "Image sent.",
   "chatNoImageSelected": "No image selected",
   "chatCouldNotSharePhoto": "Couldn't share photo",
   "chatDeleteMessage": "Delete",
@@ -790,7 +790,7 @@
   "recipePortionSingular": "serving",
   "recipePortionsPlural": "servings",
   "recipeCookedToday": "Cooked today",
-  "recipeCookedTodaySuccess": "Recipe marked as cooked today!",
+  "recipeCookedTodaySuccess": "Recipe marked as cooked today.",
   "recipeCookedTodayError": "Could not mark as cooked",
   "recipeNoInstructions": "No instructions provided.",
   "recipeTags": "Tags",
@@ -892,7 +892,7 @@
   },
   "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
-  "menuShared": "Weekly menu shared!",
+  "menuShared": "Weekly menu shared.",
   "menuGeneratingOverlay": "Generating your weekly menu...",
   "menuGeneratingSubtitle": "Finding recipes that match your preferences",
   "shoppingCountBadge": "{items} items · {done} done",
@@ -933,7 +933,7 @@
   "searchClearSearch": "Clear search",
   "searchRecentSearches": "Recent searches",
   "searchClearFilters": "Clear filters",
-  "syncComplete": "Sync complete!",
+  "syncComplete": "Sync complete.",
   "syncFailed": "Sync failed: {error}",
   "@syncFailed": {
     "placeholders": {
@@ -988,7 +988,7 @@
   },
   "errorCouldNotOpenLink": "Could not open link",
   "errorInvalidLink": "Invalid link",
-  "shoppingItemRemoved": "{name} removed!",
+  "shoppingItemRemoved": "{name} removed.",
   "@shoppingItemRemoved": {
     "placeholders": {
       "name": {
@@ -1004,7 +1004,7 @@
       }
     }
   },
-  "shoppingAllUnchecked": "All items unchecked!",
+  "shoppingAllUnchecked": "All items unchecked.",
   "shoppingNoListForRename": "No list selected for renaming",
   "shoppingNoListForDelete": "No list selected for deletion",
   "commonBack": "Back",
@@ -1881,7 +1881,7 @@
       }
     }
   },
-  "profileRestoreCompleted": "Restore completed!",
+  "profileRestoreCompleted": "Restore completed.",
   "profileRestoreFailed": "Restore failed: {error}",
   "@profileRestoreFailed": {
     "placeholders": {
@@ -1931,7 +1931,7 @@
   "shareAddFriendsToShare": "You need to add friends to be able to share content. Go to your profile and add friends.",
   "shareAddFriends": "Add friends",
   "shareErrorOccurred": "An error occurred",
-  "shareSucceeded": "Sharing succeeded!",
+  "shareSucceeded": "Sharing complete.",
   "shareRecipes": "recipes",
   "shareMessageOptional": "Message (optional)",
   "shareWriteMessage": "Write a message...",
@@ -2034,7 +2034,7 @@
   "invitationCheckConnection": "Check your internet connection.",
   "invitationNoAccessTitle": "No access",
   "invitationNoAccessSubtitle": "You don't have permission to view this information.",
-  "invitationTargetsLoaded": "Targets loaded!",
+  "invitationTargetsLoaded": "Targets loaded.",
   "invitationNoSearchResults": "No search results",
   "invitationNoResultsFor": "No results for \"{query}\"",
   "@invitationNoResultsFor": {
@@ -3008,7 +3008,7 @@
   "menuNameBeforeShare": "Name your menu before sharing it:",
   "menuNameHint": "E.g. \"My weekly menu w.45\"",
   "menuNameYourMenu": "Name your menu",
-  "menuShareDefaultMessage": "Check out my weekly menu!",
+  "menuShareDefaultMessage": "Do take a look at my weekly menu.",
   "messagingEdited": "edited",
   "messagingImageLoadError": "Image could not be loaded",
   "messagingImageLoadFailed": "Could not load image",
@@ -3052,7 +3052,7 @@
     }
   },
   "messagingFromGroup": "from the group",
-  "messagingGroupCreated": "Group conversation created!",
+  "messagingGroupCreated": "Group conversation created.",
   "messagingGroupName": "Group name",
   "messagingGroupNameHint": "E.g. My family, Work, Best friends...",
   "messagingGroupNameUpdated": "Group name updated",
@@ -3127,7 +3127,7 @@
   "mfaVerify": "Verify",
   "mfaYourPhone": "your phone number",
   "mfaAccountProtected": "Your account is protected with two-factor authentication.",
-  "mfaActivated": "MFA activated!",
+  "mfaActivated": "MFA activated.",
   "mfaAddPhoneNumber": "Add phone number",
   "mfaCouldNotRemove": "Could not remove MFA",
   "mfaDeactivated": "MFA deactivated",
@@ -3203,7 +3203,7 @@
   "conversationNew": "New conversation",
   "conversationNoFriendsMatch": "No friends match your search",
   "conversationNoFriendsYet": "No friends yet",
-  "conversationSayHi": "Say hi!",
+  "conversationSayHi": "Say hello.",
   "conversationSelectFriendForDM": "Or select a friend for direct message:",
   "conversationYouPrefix": "You:",
   "errorDeletingWithDetails": "Error deleting: {error}",
@@ -3299,7 +3299,7 @@
   "importPasteRecipeUrl": "Paste recipe URL",
   "importPreviewAndEdit": "Preview and edit",
   "importProceedToPaste": "Proceed to paste",
-  "importRecipesImported": "Recipes imported!",
+  "importRecipesImported": "Recipes imported.",
   "importSearchArchive": "Search archive...",
   "importSelectFileAndImport": "Select file and import",
   "importSelectingFile": "Selecting file...",
@@ -3414,7 +3414,7 @@
   },
   "menuDeleteFailed": "Could not delete menu",
   "menuDeleteTitle": "Delete menu",
-  "menuLoadedSuccess": "Menu \"{name}\" loaded!",
+  "menuLoadedSuccess": "Menu \"{name}\" loaded.",
   "@menuLoadedSuccess": {
     "placeholders": {
       "name": {
@@ -3425,7 +3425,7 @@
   "menuLoadFailed": "Could not load menu",
   "menuNameLabel": "Menu name",
   "menuNameRequired": "Menu name is required",
-  "menuNoSavedMenusDescription": "You have no saved menus yet. Generate and save a menu first!",
+  "menuNoSavedMenusDescription": "No saved menus yet. A menu is generated and saved first.",
   "menuRecipesInCategories": "{recipeCount} recipes in {categoryCount} categories",
   "@menuRecipesInCategories": {
     "placeholders": {
@@ -3445,9 +3445,9 @@
   "privacyCouldNotLoad": "Could not load the privacy policy. Try again later.",
   "privacyTitle": "Privacy policy",
   "recipeAddTags": "Add tags",
-  "recipeChangesSaved": "Changes saved!",
+  "recipeChangesSaved": "Changes saved.",
   "recipeContinueEditing": "Continue editing",
-  "recipeCopySaved": "Your copy of the recipe was saved!",
+  "recipeCopySaved": "The copy of the recipe has been saved.",
   "recipeCouldNotSaveChanges": "Could not save changes",
   "recipeCouldNotSaveCopy": "Could not save your copy",
   "recipeFromArchive": "From archive",
@@ -3678,8 +3678,8 @@
   },
   "importProcessingImage": "Processing image...",
   "importRecipeLinkDetected": "Recipe link detected",
-  "importRecipeTextCanImport": "Recipe text detected! We can import this.",
-  "importRecipeTextDetected": "Recipe text detected!",
+  "importRecipeTextCanImport": "Recipe text detected — it can be imported.",
+  "importRecipeTextDetected": "Recipe text detected.",
   "importRecipeTitle": "Import recipe",
   "importRemoveImage": "Remove image",
   "importHeirloomClearTitle": "Remove the image?",
@@ -3739,7 +3739,7 @@
   "importUrlFetchFailed": "Failed",
   "importVideoNoText": "Video has no text",
   "importVideoNoTextDescription": "This video has no subtitles we can read.\n\nYou can take a screenshot of the recipe in the video and import it instead.",
-  "importWebRecipeLinkDetected": "Recipe link from website detected!",
+  "importWebRecipeLinkDetected": "Recipe link from website detected.",
   "importWebsite": "Website",
   "groupAddMembers": "Add members",
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
@@ -3762,7 +3762,7 @@
       }
     }
   },
-  "groupInvitationsSentSuccess": "Invitations have been sent!",
+  "groupInvitationsSentSuccess": "Invitations have been sent.",
   "groupLoadingInfo": "Loading group information...",
   "groupNoFriendsAvailable": "No friends available",
   "groupNoMembersToShare": "The group has no members to share with",
@@ -3796,7 +3796,7 @@
       }
     }
   },
-  "groupUpdated": "Group updated!",
+  "groupUpdated": "Group updated.",
   "groupYouLeftGroup": "You have left the group",
   "loadingGeneric": "Loading...",
   "loadingRecipes": "Loading recipes...",
@@ -3847,7 +3847,7 @@
     }
   },
   "menuImported": "Menu imported",
-  "menuImportedSuccess": "Menu \"{title}\" imported!",
+  "menuImportedSuccess": "Menu \"{title}\" imported.",
   "@menuImportedSuccess": {
     "placeholders": {
       "title": {
@@ -3859,7 +3859,7 @@
   "menuNoRecipesInMenu": "No recipes in the menu",
   "menuSharedMenu": "SHARED MENU",
   "menuShareMenu": "Share menu",
-  "menuSharingComingSoon": "Sharing of \"{title}\" coming soon!",
+  "menuSharingComingSoon": "Sharing of \"{title}\" coming soon.",
   "@menuSharingComingSoon": {
     "placeholders": {
       "title": {
@@ -3867,7 +3867,7 @@
       }
     }
   },
-  "menuSavedSuccess": "Menu \"{name}\" saved!",
+  "menuSavedSuccess": "Menu \"{name}\" saved.",
   "@menuSavedSuccess": {
     "placeholders": {
       "name": {
@@ -3911,7 +3911,7 @@
   },
   "profileAddAvatar": "Add avatar",
   "profileAvatarRemoved": "Avatar removed",
-  "profileAvatarUploaded": "Avatar uploaded!",
+  "profileAvatarUploaded": "Avatar uploaded.",
   "profileBio": "Bio",
   "profileBioHint": "Describe yourself as a cook (max 160 characters)",
   "profileNoBio": "No bio yet",
@@ -3942,7 +3942,7 @@
   "profileNewUser": "New user",
   "profilePrivacySettings": "Privacy settings",
   "profileResetChanges": "Reset changes",
-  "profileSaved": "Profile saved!",
+  "profileSaved": "Profile saved.",
   "profileSaveProfile": "Save profile",
   "profileSearchableByEmail": "Searchable by email",
   "profileSearchableByEmailDescription": "Others can find you through your email address",
@@ -3972,7 +3972,7 @@
   "recipeCouldNotOpenEditor": "Could not open editor",
   "recipeCouldNotShare": "Could not share recipe",
   "recipeDeleted": "Recipe deleted",
-  "recipeMarkedAsCooked": "Recipe marked as cooked today!",
+  "recipeMarkedAsCooked": "Recipe marked as cooked today.",
   "recipeAlreadyCookedToday": "Already logged today",
   "recipeShared": "Recipe shared",
   "recipeImportedFrom": "Imported from: {sourceUrl}",
@@ -3983,9 +3983,9 @@
       }
     }
   },
-  "recipeSaved": "Recipe saved!",
+  "recipeSaved": "Recipe saved.",
   "recipeSavedTaggingFailed": "Recipe saved, but tagging failed. Allergen information may be incomplete.",
-  "recipeSavedWithTags": "Recipe saved! {tagCount} tags ({coverage}%)",
+  "recipeSavedWithTags": "Recipe saved — {tagCount} tags ({coverage}%).",
   "@recipeSavedWithTags": {
     "placeholders": {
       "tagCount": {
@@ -3998,8 +3998,8 @@
   },
   "recipeSaveStartedDuringDialog": "A save started during the dialog. Please wait while the recipe is saved...",
   "recipeWaitWhileSaving": "Please wait while the recipe is saved...",
-  "celebrationFirstRecipeTitle": "Congratulations!",
-  "celebrationFirstRecipeMessage": "You saved your first recipe: {recipeTitle}. Welcome to Butlery!",
+  "celebrationFirstRecipeTitle": "The first recipe has been added.",
+  "celebrationFirstRecipeMessage": "{recipeTitle} has been saved. Butlery stands ready.",
   "@celebrationFirstRecipeMessage": {
     "placeholders": {
       "recipeTitle": {
@@ -4057,7 +4057,7 @@
     }
   },
   "socialNoCategories": "No categories",
-  "socialBeFirstToComment": "Be the first to comment on this recipe!",
+  "socialBeFirstToComment": "Be the first to comment on this recipe.",
   "socialCommentPosted": "Comment posted",
   "socialComments": "Comments",
   "socialCommentsCount": "{count, plural, =0{No comments} =1{1 comment} other{{count} comments}}",
@@ -4191,7 +4191,7 @@
   "sharedHideFromList": "Hide from my list",
   "sharedLoadingContent": "Loading shared content...",
   "sharedNoContentYet": "No shared recipes yet",
-  "sharedEmptyStateExplanation": "When you or your friends share recipes and menus, they'll appear here. Try sharing a recipe!",
+  "sharedEmptyStateExplanation": "When you or your friends share recipes and menus, they'll appear here. A recipe can be shared to begin.",
   "sharedShareFirstRecipe": "Share a recipe",
   "socialAddFriends": "Add friends",
   "taggingAnalyzingIngredients": "Analyzing ingredients...",
@@ -4305,7 +4305,7 @@
   "groupViewMembers": "View members",
   "groupEditGroup": "Edit group",
   "groupInformation": "Group information",
-  "groupInvitationAccepted": "Invitation accepted! Welcome to the group!",
+  "groupInvitationAccepted": "Invitation accepted. Welcome to the group.",
   "groupInvitationDeclined": "Invitation declined",
   "groupInvitationFrom": "Invitation from {name}",
   "@groupInvitationFrom": {
@@ -4376,7 +4376,7 @@
   "socialCouldNotAcceptFriendRequest": "Could not accept friend request",
   "socialCouldNotFindFriendRequest": "Could not find friend request",
   "socialCouldNotSendFriendRequest": "Could not send friend request",
-  "socialDefaultFriendMessage": "Hi! Would you like to be friends?",
+  "socialDefaultFriendMessage": "Hello. Would you like to be friends?",
   "socialFindNewFriends": "Find new friends",
   "socialFindNewFriendsDescription": "Use the search field above to find people you want to be friends with. Search by name or username.",
   "socialInviteFriends": "Invite friends",
@@ -4392,9 +4392,9 @@
   "@friendsEmptyFindByUsername": {
     "description": "Secondary CTA on the Friends-tab empty state — jumps to the Find Friends search tab"
   },
-  "socialInviteSubject": "Join Butlery!",
-  "socialFriendRequestAccepted": "Friend request accepted!",
-  "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",
+  "socialInviteSubject": "An invitation to Butlery.",
+  "socialFriendRequestAccepted": "Friend request accepted.",
+  "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted.",
   "@socialFriendRequestAcceptedFrom": {
     "placeholders": {
       "name": {
@@ -4403,7 +4403,7 @@
     }
   },
   "socialFriendRequestDeclined": "Friend request declined",
-  "socialFriendRequestSent": "Friend request sent to {name}!",
+  "socialFriendRequestSent": "Friend request sent to {name}.",
   "@socialFriendRequestSent": {
     "placeholders": {
       "name": {
@@ -4413,7 +4413,7 @@
   },
   "socialIncomingRequests": "Incoming requests",
   "socialNoFriendRequests": "No friend requests",
-  "socialNoFriendRequestsDescription": "Start searching for friends above to expand your network!",
+  "socialNoFriendRequestsDescription": "Search for friends above to expand your network.",
   "socialRequestSent": "Sent",
   "socialSentRequests": "Sent requests",
   "socialWaitingForResponse": "Waiting for response...",
@@ -4459,7 +4459,7 @@
   "collaborativeCopyLinkDescription": "Share via link",
   "collaborativeCouldNotClearCompleted": "Could not clear completed items",
   "collaborativeEmailSharingComingSoon": "Email sharing coming soon",
-  "collaborativeLinkCopied": "Link copied!",
+  "collaborativeLinkCopied": "Link copied.",
   "collaborativeManageMembers": "Manage members",
   "collaborativeMembersComingSoon": "Member management coming soon",
   "collaborativeMessageSharingComingSoon": "Message sharing coming soon",
@@ -4531,7 +4531,7 @@
       }
     }
   },
-  "groupCreatedSuccess": "Group created!",
+  "groupCreatedSuccess": "Group created.",
   "groupCreateGroup": "Create group",
   "groupCreator": "Creator",
   "groupEmoji": "Emoji",
@@ -5326,7 +5326,7 @@
   "authEmail": "Email",
   "authEmailHint": "name@example.com",
   "authTermsOfService": "Terms",
-  "authResetEmailSent": "Email sent! Check your inbox.",
+  "authResetEmailSent": "Email sent. Check your inbox.",
   "authResetEmailFailed": "Could not send email",
   "avatarUnknownUser": "Unknown user",
   "commonNow": "now",
@@ -5358,14 +5358,14 @@
   "shoppingShoppingList": "Shopping list",
   "shoppingTotal": "total",
   "socialCreateProfile": "Create Profile",
-  "socialProfileCreatedRestart": "Profile created! Restart the app.",
+  "socialProfileCreatedRestart": "Profile created. Restart the app.",
   "socialReport": "Report",
   "socialReportContent": "Report content",
   "socialReportCopyright": "Copyright infringement",
   "socialReportInappropriate": "Inappropriate content",
   "socialReportIncorrectInfo": "Incorrect information",
   "socialReportOther": "Other",
-  "socialReportSent": "Report sent. Thank you for your feedback!",
+  "socialReportSent": "Report sent. Thank you for your feedback.",
   "socialReportShoppingListReason": "Why do you want to report this shopping list?",
   "socialReportSpam": "Spam or advertising",
   "commonDaysAgo": "{days} days ago",
@@ -5475,7 +5475,7 @@
       }
     }
   },
-  "shoppingSharingComingSoon": "Sharing via {option} coming soon!",
+  "shoppingSharingComingSoon": "Sharing via {option} coming soon.",
   "@shoppingSharingComingSoon": {
     "placeholders": {
       "option": {
@@ -5909,10 +5909,10 @@
     }
   },
   "menuNoCommentsYet": "No comments yet",
-  "menuBeFirstToComment": "Be the first to comment on this menu!",
+  "menuBeFirstToComment": "Be the first to comment on this menu.",
   "menuLoadingComments": "Loading comments...",
   "menuWriteComment": "Write a comment about the menu...",
-  "menuCommentPostedSuccess": "Comment posted!",
+  "menuCommentPostedSuccess": "Comment posted.",
   "menuCommentPostFailed": "Could not post comment",
   "menuCommentDeleteFailed": "Could not delete comment",
   "menuMustBeLoggedInToComment": "You must be logged in to comment",
@@ -5935,7 +5935,7 @@
   },
   "menuTapToRate": "Tap to rate",
   "menuYourRating": "Your rating",
-  "menuRatingSaved": "Rating saved!",
+  "menuRatingSaved": "Rating saved.",
   "menuRatingFailed": "Could not save rating",
   "menuMustBeLoggedInToRate": "You must be logged in to rate",
   "favoritesAdd": "Add to favorites",
@@ -5957,7 +5957,7 @@
   "menuTemplateNameRequired": "Template name required",
   "menuTemplateDescription": "Description (optional)",
   "menuTemplateDescriptionHint": "E.g. Perfect for weekdays with kids",
-  "menuTemplateSavedSuccess": "Template \"{name}\" saved!",
+  "menuTemplateSavedSuccess": "Template \"{name}\" saved.",
   "@menuTemplateSavedSuccess": {
     "placeholders": {
       "name": {
@@ -6148,7 +6148,7 @@
   "onboardingAgeGateParentInfoBody": "Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.",
   "onboardingAgeRejectedTitle": "We couldn't create your account",
   "onboardingAgeRejectedBody": "Butlery is available to those aged 15 and over. We're unable to create your account at this time.",
-  "onboardingWelcomeTitle": "Welcome to Butlery!",
+  "onboardingWelcomeTitle": "Welcome. Butlery stands ready.",
   "onboardingWelcomeDescription": "Let us set up your preferences so you get the best experience from the start.",
   "onboardingWelcomeNote": "You can always change these in settings later.",
   "onboardingAllergenTitle": "Allergies & intolerances",
@@ -6179,7 +6179,7 @@
   "onboardingDietaryKosherDesc": "Follows kosher food guidelines",
   "onboardingSkippedBanner": "You skipped the introduction. Want to set up allergens and dietary preferences?",
   "onboardingSkippedBannerAction": "Open settings",
-  "onboardingWelcomeBanner": "Welcome to Butlery! You're all set — add your first recipe to get started.",
+  "onboardingWelcomeBanner": "Welcome to Butlery. You're all set — add your first recipe to get started.",
   "onboardingWelcomeBannerAction": "Add recipe",
   "onboardingImportTitle": "Import your first recipe",
   "onboardingImportDescription": "Get started quickly by importing a recipe from the web or a photo.",
@@ -6777,7 +6777,7 @@
   "statusDisconnected": "Disconnected",
   "statusCheckingConnection": "Checking connection...",
   "statusReconnecting": "Reconnecting...",
-  "statusDone": "Done!",
+  "statusDone": "Done.",
   "displayOnlyYou": "Only you",
   "displayUnknownUser": "Unknown user",
   "displayNoConsent": "No consent",
@@ -6804,7 +6804,7 @@
   "validationInvalidIngredientIndex": "Invalid ingredient index: {index}",
   "validationInvalidInstructionIndex": "Invalid instruction index: {index}",
   "validationInvalidImageIndex": "Invalid image index: {index}",
-  "notificationTitleSuccess": "Success!",
+  "notificationTitleSuccess": "Done.",
   "notificationTitleError": "Error occurred",
   "notificationTitleNewRecipeActivity": "New recipe activity",
   "notificationTitleFriendActivity": "Friend activity",
@@ -7123,7 +7123,7 @@
   "syncMustBeOnline": "You must be online to sync",
   "syncNoUserLoggedIn": "No user logged in",
   "syncNoPendingChanges": "No pending changes",
-  "syncAllSynced": "All {count} changes synced!",
+  "syncAllSynced": "All {count} changes synced.",
   "@syncAllSynced": {
     "placeholders": {
       "count": {
@@ -7870,7 +7870,7 @@
   "importPhaseFetching": "Fetching content...",
   "importPhaseAnalyzing": "Analyzing recipe...",
   "importPhaseCreating": "Creating recipe...",
-  "importPhaseComplete": "Done!",
+  "importPhaseComplete": "Done.",
   "importPhaseNeedsHelp": "Needs your help",
   "importPhaseError": "An error occurred",
   "importElapsedSeconds": "{seconds}s",
@@ -7897,7 +7897,7 @@
       }
     }
   },
-  "shareMessageRecipeWithTitle": "Check out this recipe: \"{title}\"! 👩‍🍳",
+  "shareMessageRecipeWithTitle": "Do take a look at this recipe: \"{title}\". 👩‍🍳",
   "@shareMessageRecipeWithTitle": {
     "placeholders": {
       "title": {
@@ -7905,7 +7905,7 @@
       }
     }
   },
-  "shareMessageRecipeDefault": "I found an amazing recipe I wanted to share with you! 👩‍🍳",
+  "shareMessageRecipeDefault": "I found a recipe I wanted to share with you. 👩‍🍳",
   "shareMessageMenuWithTitle": "Here's my weekly menu: \"{title}\" 📋",
   "@shareMessageMenuWithTitle": {
     "placeholders": {
@@ -7914,7 +7914,7 @@
       }
     }
   },
-  "shareMessageMenuDefault": "Here's my weekly menu that might inspire you! 📋",
+  "shareMessageMenuDefault": "Here's my weekly menu, perhaps for inspiration. 📋",
   "shareMessageShoppingListWithTitle": "Want to help me with the shopping list: \"{title}\"? 🛒",
   "@shareMessageShoppingListWithTitle": {
     "placeholders": {
@@ -8261,7 +8261,7 @@
     }
   },
   "errorCouldNotSendInvitations": "Could not send invitations",
-  "shareDefaultShoppingListMessage": "Want to share this shopping list with you!",
+  "shareDefaultShoppingListMessage": "Sharing this shopping list with you.",
   "shoppingListAllDone": "All {count} items done",
   "@shoppingListAllDone": {
     "placeholders": {
@@ -8648,7 +8648,7 @@
       }
     }
   },
-  "notificationRatingSingle": "Your recipe \"{recipe}\" received {count} new ratings this {period}!",
+  "notificationRatingSingle": "Your recipe \"{recipe}\" received {count} new ratings this {period}.",
   "@notificationRatingSingle": {
     "placeholders": {
       "recipe": {
@@ -8662,7 +8662,7 @@
       }
     }
   },
-  "notificationRatingMultiple": "Your recipes received {totalRatings} new ratings across {recipeCount} recipes this {period}!",
+  "notificationRatingMultiple": "Your recipes received {totalRatings} new ratings across {recipeCount} recipes this {period}.",
   "@notificationRatingMultiple": {
     "placeholders": {
       "totalRatings": {
@@ -8858,7 +8858,7 @@
     }
   },
   "feedbackDescriptionRequired": "Enter a description",
-  "feedbackThanks": "Thank you for your feedback!",
+  "feedbackThanks": "Thank you for your feedback.",
   "feedbackSendFailed": "Could not send feedback. Try again.",
   "tooltipRemoveOption": "Remove option",
   "personalTagCouldNotShare": "Could not share tag",
@@ -9342,7 +9342,7 @@
   "@faqQ5": {
     "description": "FAQ question 5: how to report problems"
   },
-  "faqA5": "Tap the \"!\" button shown at the bottom right of every page. There you can describe the problem, choose a category and attach a screenshot. We read all feedback!",
+  "faqA5": "Tap the \"!\" button shown at the bottom right of every page. There you can describe the problem, choose a category and attach a screenshot. We read all feedback.",
   "@faqA5": {
     "description": "FAQ answer 5: how to report problems"
   },
@@ -9428,7 +9428,7 @@
   },
   "emailVerificationResend": "Send again",
   "emailVerificationContinue": "Continue anyway",
-  "emailVerificationSuccess": "Email verified!",
+  "emailVerificationSuccess": "Email verified.",
   "a11yCookingModeFontScale": "Change text size",
   "a11yCookingModeClose": "Close cooking mode",
   "a11yRecipeFavorited": "Recipe added to favorites",
@@ -9512,7 +9512,7 @@
   "dormantRecipesTitle": "Try something you saved",
   "emptyStateNewUserTitle": "Welcome. Butlery stands ready.",
   "emptyStateNewUserDescription": "The first recipe may be imported from a link, or entered by hand.",
-  "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and we'll filter for you!",
+  "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and the filtering will be handled for you.",
   "emptyStateImportAction": "Import by link",
   "emptyStateOtherOptions": "Further options",
   "recipePrint": "Print",
@@ -9538,7 +9538,7 @@
     "description": "Explainer shown under the 'Quick save recipe' button on the add-recipe view."
   },
   "quickCaptureSave": "Save",
-  "quickCaptureSaved": "Recipe saved!",
+  "quickCaptureSaved": "Recipe saved.",
   "quickCaptureEditAction": "Edit",
   "quickCaptureTitleHint": "What's the recipe called?",
   "a11ySwipeEditAction": "Edit recipe",
@@ -9631,7 +9631,7 @@
   "statsWithoutPhoto": "No photo",
   "statsWithoutTime": "No time",
   "statsIncomplete": "Incomplete",
-  "statsAllComplete": "All recipes are complete!",
+  "statsAllComplete": "All recipes are complete.",
 
   "notificationsTitle": "Notifications",
   "notificationsEmpty": "No notifications yet",
@@ -9655,7 +9655,7 @@
   },
   "cookSnapAddTooltip": "Add cooking photo",
   "cookSnapEmptyTitle": "No one has cooked this yet",
-  "cookSnapEmptySubtitle": "Be the first!",
+  "cookSnapEmptySubtitle": "Be the first.",
   "cookSnapFromCamera": "Take photo",
   "cookSnapFromGallery": "Choose from gallery",
   "cookSnapMe": "Me",
@@ -9937,11 +9937,11 @@
   "@startTimer": {
     "description": "BUT-406: label on the long-press sheet CTA that starts a step timer."
   },
-  "timerExpired": "Timer done!",
+  "timerExpired": "Timer done.",
   "@timerExpired": {
     "description": "BUT-406: snackbar/label shown when the step timer hits zero."
   },
-  "timerNotificationTitle": "Timer done!",
+  "timerNotificationTitle": "Timer done.",
   "@timerNotificationTitle": {
     "description": "BUT-1242: title of the OS local notification fired when a backgrounded step timer expires."
   },
