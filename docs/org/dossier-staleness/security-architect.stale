@@ -1,0 +1,24 @@
+{
+  "role": "Security Architect",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "firestore.rules",
+    "functions/src/__tests__/age-gate-rules.test.ts",
+    "functions/src/__tests__/verify-signup-age.test.ts",
+    "functions/src/__tests__/account-maturity-rules.test.ts",
+    "functions/src/__tests__/recipe-comments-rules.test.ts",
+    "functions/src/__tests__/firestore-rules.test.ts",
+    "functions/src/__tests__/cleanup-rate-limits.integration.test.ts",
+    "functions/src/__tests__/request-account-deletion.integration.test.ts",
+    "functions/src/__tests__/detect-lapsed-users.test.ts",
+    "functions/src/__tests__/feedback-rules.test.ts",
+    "functions/src/__tests__/fixtures/pii-heuristic-vectors.json",
+    "functions/src/__tests__/pii-scrubber.test.ts",
+    "functions/src/__tests__/family-rating-rules.test.ts",
+    "functions/src/__tests__/cook-events-rules.test.ts",
+    "docs/security/family-data-retention.md",
+    "functions/src/__tests__/family-rating-aggregation.integration.test.ts",
+    "functions/src/__tests__/purge-dormant-family-data.integration.test.ts"
+  ],
+  "last_stamped": "2026-06-29"
+}

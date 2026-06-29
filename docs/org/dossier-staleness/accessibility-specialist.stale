@@ -1,0 +1,9 @@
+{
+  "role": "Accessibility Specialist",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb"
+  ],
+  "last_stamped": "2026-06-29"
+}

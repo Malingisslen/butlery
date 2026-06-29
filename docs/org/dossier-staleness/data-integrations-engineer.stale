@@ -1,0 +1,14 @@
+{
+  "role": "Data / Integrations Engineer",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "lib/services/parsing/tiers/llm_tier.dart",
+    "lib/services/import/import_rate_limiter.dart",
+    "lib/core/circuit_breaker.dart",
+    "lib/services/llm/llm_service.dart",
+    "lib/repositories/algolia/algolia_search_repository.dart",
+    "lib/services/llm/pii_scrubber.dart",
+    "CLAUDE.md"
+  ],
+  "last_stamped": "2026-06-28"
+}

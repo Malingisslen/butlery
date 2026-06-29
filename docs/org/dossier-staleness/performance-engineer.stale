@@ -1,0 +1,12 @@
+{
+  "role": "Performance Engineer",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "lib/services/parsing/tiers/llm_tier.dart",
+    "lib/repositories/firebase/firebase_household_repository.dart",
+    "lib/repositories/firebase/firebase_diner_profile_repository.dart",
+    "lib/repositories/firebase/firebase_family_rating_repository.dart",
+    "lib/repositories/firebase/firebase_cook_event_repository.dart"
+  ],
+  "last_stamped": "2026-06-29"
+}

@@ -1,0 +1,10 @@
+{
+  "role": "Database Administrator / Data-layer Engineer",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "firestore.rules",
+    "firestore.indexes.json",
+    "functions/src/cleanup/cleanup-rate-limits.ts"
+  ],
+  "last_stamped": "2026-06-28"
+}

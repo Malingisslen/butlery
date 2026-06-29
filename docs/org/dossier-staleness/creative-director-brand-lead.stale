@@ -1,0 +1,13 @@
+{
+  "role": "Creative Director / Brand Lead",
+  "stale_since": "2026-06-28",
+  "triggers": [
+    "docs/design/butlery-mockup-reference.md",
+    "docs/design/previews/min-familj-preview.html",
+    "docs/design/previews/who-is-eating-preview.html",
+    "docs/design/previews/family-rating-entry-preview.html",
+    "docs/design/previews/family-rating-breakdown-preview.html",
+    "docs/design/previews/family-card-pill-preview.html"
+  ],
+  "last_stamped": "2026-06-29"
+}

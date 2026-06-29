@@ -1,0 +1,13 @@
+{
+  "role": "Release / App-Store Compliance Manager",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "android/app/src/main/kotlin/se/butlery/app/MainActivity.kt",
+    ".github/workflows/firestore-rules.yml",
+    ".github/workflows/main-health-alert.yml",
+    ".github/workflows/cloud-functions-unit.yml",
+    ".github/workflows/deploy-firebase.yml",
+    ".github/workflows/test.yml"
+  ],
+  "last_stamped": "2026-06-28"
+}

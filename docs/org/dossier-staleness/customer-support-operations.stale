@@ -1,0 +1,11 @@
+{
+  "role": "Customer Support / Operations",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "firestore.rules",
+    "functions/src/feedback/on-feedback-created.ts",
+    "lib/services/monitoring/app_monitoring_service.dart",
+    "lib/models/feedback_entry.dart"
+  ],
+  "last_stamped": "2026-06-28"
+}

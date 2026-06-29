@@ -1,0 +1,16 @@
+{
+  "role": "Privacy / Data Protection Officer (GDPR)",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "functions/src/account/verify-signup-age.ts",
+    "lib/services/account/age_verification_service.dart",
+    "functions/src/cleanup/cleanup-rate-limits.ts",
+    "functions/src/account/account-deletion-cascade.ts",
+    "lib/services/account/export/content_export_manager.dart",
+    "functions/src/llm/pii-scrubber.ts",
+    "lib/services/account/export/family_export_manager.dart",
+    "lib/services/account/data_export_service.dart",
+    "functions/src/account/request-account-deletion.ts"
+  ],
+  "last_stamped": "2026-06-29"
+}

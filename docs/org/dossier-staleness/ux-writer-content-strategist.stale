@@ -1,0 +1,19 @@
+{
+  "role": "UX Writer / Content Strategist",
+  "stale_since": "2026-06-27",
+  "triggers": [
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb",
+    ".claude/hooks/suggest-stakeholder-review.sh",
+    "docs/design/butlery-mockup-reference.md",
+    ".claude/rules/code-style.md",
+    "CLAUDE.md",
+    ".claude/hooks/require-review-before-commit.sh",
+    "docs/design/previews/min-familj-preview.html",
+    "docs/design/previews/who-is-eating-preview.html",
+    "docs/design/previews/family-rating-entry-preview.html",
+    "docs/design/previews/family-rating-breakdown-preview.html",
+    "docs/design/previews/family-card-pill-preview.html"
+  ],
+  "last_stamped": "2026-06-29"
+}
