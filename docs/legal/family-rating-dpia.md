@@ -72,8 +72,12 @@
 - **Data minimisation:** only coarse **age band** (not date of birth); avatar
   is a colour, not a photo; ratings are a single 1–5 integer; no free-text about
   the child beyond their name.
-- **Storage limitation:** retention proposed at **24 months of household
-  dormancy** then auto-purge — see [`family-data-retention.md`](../security/family-data-retention.md). **[DPO]** confirms the number.
+- **Storage limitation:** **recommended 24 months of household dormancy →
+  notify → auto-purge** unless reactivated. 24 months matches the widely-cited
+  best practice for dormant accounts; the children's-data angle (IMY: especially
+  protected, retention length is itself a justification factor) argues against
+  anything longer and supports a possibly-shorter window for the Art. 9 allergen
+  field. Full research + sources in [`family-data-retention.md`](../security/family-data-retention.md). **[DPO]** confirms the number (24mo whole-record, or a split).
 
 ---
 
