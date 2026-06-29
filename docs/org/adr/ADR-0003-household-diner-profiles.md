@@ -1,7 +1,7 @@
 # ADR-0003: Household diner profiles for under-15s (managed, guardian-consented)
 
 - **Date:** 2026-06-29
-- **Status:** Decided (Malin) — **build complete; launch gated on DPO sign-off** ([DPIA](../../legal/family-rating-dpia.md))
+- **Status:** Decided (Malin) — **build complete; DPO-approved 2026-06-29; launch-cleared** ([DPIA](../../legal/family-rating-dpia.md))
 - **Trigger:** Family-rating feature — to capture per-person meal verdicts and
   allergen-safe meal planning, the household must record people who are too
   young for their own accounts (children under 15) and guests.

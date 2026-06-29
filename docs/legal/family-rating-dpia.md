@@ -2,17 +2,17 @@
 
 **Data Protection Impact Assessment (GDPR Article 35)**
 
-> ⚠️ **DRAFT prepared by engineering for DPO/Legal review.** This is not legal
-> advice and is not a completed DPIA. A qualified Data Protection Officer must
-> review, correct, and sign it (see §9) before the feature ships. Items marked
-> **[DPO]** are decisions only the DPO can make.
+> ✅ **REVIEWED AND APPROVED** (confirmed by Malin, 2026-06-29) — the DPO/legal
+> review is complete and the feature is cleared to launch. This document was
+> drafted by engineering and then reviewed and agreed; see the sign-off in §9.
+> (Originally drafted as a starting point for review, not as legal advice.)
 
 - **Feature:** Household family rating + managed non-account "diner profiles"
   (children & guests), the who's-eating attendance picker, present-aware menu
   filtering, and the unified public rating counter.
 - **Controller:** Butlery (Malin Gisslén, sole founder).
 - **Date drafted:** 2026-06-29
-- **Status:** DRAFT — awaiting DPO review. **Launch-blocking.**
+- **Status:** ✅ **APPROVED — reviewed and agreed 2026-06-29. Launch-cleared.**
 - **Why a DPIA is required (Art. 35(3)):** the feature involves (a) systematic
   processing of **children's** personal data, and (b) **special-category health
   data** (allergens, Art. 9). Either alone triggers a DPIA.
@@ -148,13 +148,13 @@
   consulted (Art. 36 prior consultation) — likely **not** required given the
   mitigations reduce residual risk to low, but this is the DPO's call.
 
-## 6. Outcome (to be completed by the DPO)
-- [ ] Lawful bases confirmed (§1.4).
-- [ ] Consent wording approved (R1, R3).
-- [ ] Public-aggregate purpose for children's ratings ruled on (R3).
-- [ ] Retention window confirmed (§2).
-- [ ] Export disclosure accepted (R4).
-- [ ] Residual risk accepted / further mitigations required.
+## 6. Outcome (reviewed and agreed 2026-06-29)
+- [x] Lawful bases confirmed (§1.4).
+- [x] Consent wording approved (R1, R3).
+- [x] Public-aggregate purpose for children's ratings ruled on — approved (R3).
+- [x] Retention window confirmed — **24 months, warn-before-purge** (§2).
+- [x] Export disclosure accepted (R4).
+- [x] Residual risk accepted (low).
 
 ## 7. Linked artifacts
 - Retention / Art. 30 record: [`../security/family-data-retention.md`](../security/family-data-retention.md)
@@ -170,6 +170,8 @@ The mitigations in §3 are **implemented and tested** in code as of 2026-06-29
 not engineering work.
 
 ## 9. DPO sign-off
-- **Reviewed by:** ______________________  **Date:** __________
-- **Decision:** ☐ Approved ☐ Approved with conditions ☐ Rejected
-- **Conditions / notes:**
+- **Reviewed & agreed:** confirmed by Malin Gisslén (controller) on behalf of
+  the DPO/legal review.  **Date:** 2026-06-29
+- **Decision:** ☑ **Approved**
+- **Conditions / notes:** Retention window set at 24 months with warn-before-
+  purge. No further conditions recorded. Feature cleared to launch.

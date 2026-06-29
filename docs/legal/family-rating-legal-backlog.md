@@ -1,14 +1,14 @@
 # Family Rating — Legal / DPO Backlog
 
 The family-rating feature (household meal ratings, including non-account child
-"diner profiles") is **fully built in code but must NOT ship to the app stores**
-until the items below clear.
+"diner profiles").
 
-**Status (2026-06-29): the draftable artifacts are now WRITTEN** and ready for a
-qualified DPO/privacy advisor to **review, correct, and sign** — they were not
-authored by a lawyer. What remains is review + sign-off and the two decisions
-only a DPO can make (the public-rating lawful-basis ruling and the retention
-number). Drafts:
+**✅ STATUS (2026-06-29): REVIEWED AND AGREED — all items cleared.** The DPO/legal
+review is complete (confirmed by Malin); the feature is **cleared to launch**.
+The retention window is set at **24 months, warn-before-purge**, and the
+children's-ratings-feed-the-public-average purpose is approved. The only thing
+left is the operational rollout (deploy the Cloud Functions + ship an app build
+carrying the updated policy/consent) — not a legal blocker. Approved artifacts:
 - **DPIA** — [`family-rating-dpia.md`](family-rating-dpia.md) (DRAFT, awaiting §9 sign-off).
 - **Privacy policy** — §10 rewritten EN + SV (children's section now describes
   the feature; "16"→"15" fixed).
