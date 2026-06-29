@@ -11,7 +11,10 @@ import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
@@ -26,6 +29,7 @@ import 'package:butlery/services/account/export/social_export_manager.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
+import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson;
 
@@ -54,6 +58,7 @@ class DataExportService extends BaseService {
   late final ActivityExportManager _activityManager;
   late final ComplianceExportManager _complianceManager;
   late final PreferencesExportManager _preferencesManager;
+  late final FamilyExportManager _familyManager;
 
   // BUT-501: residual-Firestore gateway used by every manager that still
   // touches collections without a typed repository. Held here so the
@@ -78,6 +83,11 @@ class DataExportService extends BaseService {
     FirebasePersonalTagRepository? personalTagRepository,
     FirebasePersonalTagGroupRepository? personalTagGroupRepository,
     FirebaseDataExportRepository? dataExportRepository,
+    // Family (Phase 5 item 14) — optional seams; production resolves via
+    // ServiceLocator inside FamilyExportManager.
+    HouseholdRepository? householdRepository,
+    DinerProfileRepository? dinerProfileRepository,
+    FamilyRatingRepository? familyRatingRepository,
     // Test seam: ComplianceExportManager's default ctor calls
     // FirebaseFunctions.instanceFor() which requires Firebase.initializeApp.
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
@@ -116,6 +126,11 @@ class DataExportService extends BaseService {
         );
     _preferencesManager = PreferencesExportManager(
       dataExportRepository: _exportRepo,
+    );
+    _familyManager = FamilyExportManager(
+      householdRepository: householdRepository,
+      dinerProfileRepository: dinerProfileRepository,
+      familyRatingRepository: familyRatingRepository,
     );
   }
 
@@ -169,6 +184,7 @@ class DataExportService extends BaseService {
       'category_preferences': _preferencesManager.exportCategoryPreferences(
         userId,
       ),
+      'family': _familyManager.exportFamily(userId),
     };
 
     final keys = futures.keys.toList();
