@@ -2,13 +2,25 @@
 
 The family-rating feature (household meal ratings, including non-account child
 "diner profiles") is **fully built in code but must NOT ship to the app stores**
-until the items below clear. This is the hand-off list for a privacy advisor /
-DPO. Each item says what it is, why it blocks, and what it unblocks.
+until the items below clear.
+
+**Status (2026-06-29): the draftable artifacts are now WRITTEN** and ready for a
+qualified DPO/privacy advisor to **review, correct, and sign** — they were not
+authored by a lawyer. What remains is review + sign-off and the two decisions
+only a DPO can make (the public-rating lawful-basis ruling and the retention
+number). Drafts:
+- **DPIA** — [`family-rating-dpia.md`](family-rating-dpia.md) (DRAFT, awaiting §9 sign-off).
+- **Privacy policy** — §10 rewritten EN + SV (children's section now describes
+  the feature; "16"→"15" fixed).
+- **Guardian consent text** — updated in-app to disclose the public-average
+  contribution (EN + SV).
+- **ADR-0003** — [`../org/adr/ADR-0003-household-diner-profiles.md`](../org/adr/ADR-0003-household-diner-profiles.md).
+- **Terms custody clause** — added to `tos.md` + `tos_sv.md` (§4).
+- **Retention / Art. 30 record** — [`../security/family-data-retention.md`](../security/family-data-retention.md) (24-month proposal, DPO confirms the number).
 
 Engineering inputs already prepared (point your advisor at these):
 - Consent mechanism (two-tier: guardian Art. 6 + separate explicit allergen
   Art. 9) — live in the "Min familj" screen.
-- Data-retention / Art. 30 record — `docs/security/family-data-retention.md`.
 - Data export (Art. 15/20) — includes child profiles + the user's family
   verdicts; see the in-code DPIA note in `family_export_manager.dart`.
 - Erasure (Art. 17) — account-deletion cascade handles family data, including

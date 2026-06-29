@@ -22,6 +22,16 @@ Du måste vara minst 16 år för att skapa ett konto. Genom att skapa ett konto 
 - Du ansvarar för att skydda ditt lösenord och för all aktivitet under ditt konto.
 - Du måste omedelbart meddela oss vid obehörig användning av ditt konto.
 
+**Hushåll och hanterade profiler.** Ett hushåll kan bestå av vuxna kontomedlemmar
+och "matgästprofiler" för personer utan eget konto (till exempel barn eller
+gäster). Genom att skapa en matgästprofil för ett barn intygar du att du är
+vårdnadshavare för barnet och samtycker till behandlingen som beskrivs i vår
+Integritetspolicy. Matgästprofiler **delas och samförvaltas** av hushållets
+alla vuxna medlemmar — var och en kan se och redigera dem. **Butlery medlar
+inte** i tvister mellan hushållets medlemmar om en delad profil eller dess
+uppgifter; att lösa sådana tvister, inklusive vårdnadsfrågor, är medlemmarnas
+ansvar.
+
 ## 5. Användarinnehåll
 
 Du behåller ägarskapet till recept, foton och annat innehåll du laddar upp ("Användarinnehåll"). Genom att ladda upp Användarinnehåll ger du oss en världsomspännande, royaltyfri licens att lagra, visa och bearbeta innehållet i den utsträckning som krävs för att tillhandahålla Tjänsten till dig och (där du väljer att dela) till de personer du delar med.

@@ -22,6 +22,16 @@ You must be at least 16 years old to create an account. By creating an account, 
 - You are responsible for safeguarding your password and for any activity under your account.
 - You must notify us promptly of any unauthorized use of your account.
 
+**Households and managed profiles.** A household may include adult account
+members and "diner profiles" for people without their own account (such as
+children or guests). By creating a diner profile for a child, you confirm that
+you hold parental responsibility for that child and consent to the processing
+described in our Privacy Policy. Diner profiles are **shared and co-controlled**
+by all adult members of the household — each can view and edit them. **Butlery
+does not mediate disputes** between household members over a shared profile or
+its data; resolving such disputes, including any custody matter, is the
+members' responsibility.
+
 ## 5. User content
 
 You retain ownership of the recipes, photos, and other content you upload ("User Content"). By uploading User Content, you grant us a worldwide, royalty-free license to store, display, and process the content as necessary to provide the Service to you and (where you choose to share) to people you share with.

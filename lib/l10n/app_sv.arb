@@ -11027,7 +11027,7 @@
   "familyAgeBandHint": "Bara grov åldersgrupp — inget födelsedatum sparas.",
   "familyConsentSectionTitle": "samtycke",
   "familyConsentRequiredBadge": "krävs",
-  "familyGuardianConsentText": "Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet.",
+  "familyGuardianConsentText": "Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet. Betyg som sätts på måltider bidrar anonymt till receptens allmänna snittbetyg.",
   "familyAllergenSectionTitle": "allergier & specialkost",
   "familyOptionalBadge": "valfritt",
   "familyAllergenHealthNote": "Allergiuppgifter räknas som känsliga hälsouppgifter. Du kan spara profilen utan dem och lägga till senare.",

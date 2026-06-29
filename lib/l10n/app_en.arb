@@ -10985,7 +10985,7 @@
   "familyAgeBandHint": "Coarse age group only — no birth date is stored.",
   "familyConsentSectionTitle": "consent",
   "familyConsentRequiredBadge": "required",
-  "familyGuardianConsentText": "I am the guardian and consent to {name}'s name and age group being stored to plan the household's meals.",
+  "familyGuardianConsentText": "I am the guardian and consent to {name}'s name and age group being stored to plan the household's meals. Meal ratings contribute anonymously to recipes' public average ratings.",
   "familyAllergenSectionTitle": "allergies & diet",
   "familyOptionalBadge": "optional",
   "familyAllergenHealthNote": "Allergy data counts as sensitive health data. You can save the profile without it and add it later.",

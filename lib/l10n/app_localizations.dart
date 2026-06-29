@@ -26042,7 +26042,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyGuardianConsentText.
   ///
   /// In sv, this message translates to:
-  /// **'Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet.'**
+  /// **'Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet. Betyg som sätts på måltider bidrar anonymt till receptens allmänna snittbetyg.'**
   String familyGuardianConsentText(String name);
 
   /// No description provided for @familyAllergenSectionTitle.

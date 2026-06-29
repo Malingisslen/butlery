@@ -103,7 +103,13 @@ You have the right to:
 
 ## 10. Children's privacy
 
-Butlery is not directed at children under 16. We do not knowingly collect data from children. If you believe a child has created an account, contact us and we will delete the account.
+Butlery accounts are for users aged 15 and over (see our Terms). We do not knowingly allow under-15s to create accounts.
+
+**Managed diner profiles (children in a household).** An adult household member can create a "diner profile" for a child too young for their own account, so the household can plan meals around that child's needs. A diner profile holds the child's first name, a coarse age band, an avatar colour, and — only with separate, explicit consent — allergen and dietary information (health data, GDPR Article 9). These profiles are created and controlled by an adult who confirms they hold parental responsibility; that consent is recorded, versioned and timestamped, and can be withdrawn at any time in the "Min familj" screen, which erases the associated allergen data. A profile can be created without any allergen data.
+
+A child's meal ratings (1–5 stars) are private to the household at the individual level — no one outside the household sees who rated what — but contribute, anonymously and only in aggregate, to a recipe's public average rating. Allergen and health data is never made public.
+
+A child's data is shared only within the household, is included in that household's data export, and is deleted (or re-homed to a remaining household member) when an account is deleted, per our retention policy. If you believe a child's data has been stored without a guardian's consent, contact us and we will remove it.
 
 ## 11. Security
 

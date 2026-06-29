@@ -15555,7 +15555,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String familyGuardianConsentText(String name) {
-    return 'I am the guardian and consent to $name\'s name and age group being stored to plan the household\'s meals.';
+    return 'I am the guardian and consent to $name\'s name and age group being stored to plan the household\'s meals. Meal ratings contribute anonymously to recipes\' public average ratings.';
   }
 
   @override

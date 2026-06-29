@@ -15595,7 +15595,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String familyGuardianConsentText(String name) {
-    return 'Jag är vårdnadshavare och samtycker till att ${name}s namn och åldersgrupp sparas för att planera måltider åt hushållet.';
+    return 'Jag är vårdnadshavare och samtycker till att ${name}s namn och åldersgrupp sparas för att planera måltider åt hushållet. Betyg som sätts på måltider bidrar anonymt till receptens allmänna snittbetyg.';
   }
 
   @override

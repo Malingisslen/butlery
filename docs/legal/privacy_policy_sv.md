@@ -103,7 +103,13 @@ Du har rätt att:
 
 ## 10. Barns integritet
 
-Butlery vänder sig inte till barn under 16 år. Vi samlar inte medvetet in data från barn. Om du tror att ett barn har skapat ett konto, kontakta oss så raderar vi kontot.
+Butlery-konton är till för användare som är 15 år eller äldre (se våra Användarvillkor). Vi tillåter inte medvetet att personer under 15 år skapar konton.
+
+**Hanterade matgästprofiler (barn i ett hushåll).** En vuxen medlem i hushållet kan skapa en "matgästprofil" för ett barn som är för ungt för ett eget konto, så att hushållet kan planera måltider utifrån barnets behov. En matgästprofil innehåller barnets förnamn, en grov åldersgrupp, en avatarfärg och — endast med separat, uttryckligt samtycke — allergi- och kostuppgifter (hälsouppgifter, GDPR artikel 9). Profilerna skapas och hanteras av en vuxen som intygar att hen är vårdnadshavare; samtycket registreras, versionshanteras och tidsstämplas, och kan återkallas när som helst i skärmen "Min familj", vilket raderar tillhörande allergiuppgifter. En profil kan skapas helt utan allergiuppgifter.
+
+Ett barns betyg på måltider (1–5 stjärnor) är privata för hushållet på individnivå — ingen utanför hushållet ser vem som satte vad — men bidrar anonymt och endast i aggregerad form till ett recepts allmänna snittbetyg. Allergi- och hälsouppgifter görs aldrig offentliga.
+
+Ett barns uppgifter delas endast inom hushållet, ingår i hushållets dataexport och raderas (eller flyttas över till en kvarvarande medlem i hushållet) när ett konto raderas, enligt vår lagringspolicy. Om du tror att ett barns uppgifter har sparats utan vårdnadshavares samtycke, kontakta oss så tar vi bort dem.
 
 ## 11. Säkerhet
 
