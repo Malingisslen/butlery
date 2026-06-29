@@ -36,6 +36,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/views/settings/settings_hub_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
+import 'package:butlery/views/family/min_familj_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
@@ -363,6 +364,13 @@ class AppRouter {
         case Routes.settings:
           return _buildRoute(
             const SettingsHubView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsFamily:
+          return _buildRoute(
+            const MinFamiljView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

@@ -15513,4 +15513,140 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yRelatedRecipeThumbnail(String title) {
     return 'Öppna relaterat recept: $title';
   }
+
+  @override
+  String get familyTitle => 'min familj';
+
+  @override
+  String get familyIntro =>
+      'Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.';
+
+  @override
+  String get familyHouseholdSection => 'hushållet';
+
+  @override
+  String get familyMembersSection => 'familjen';
+
+  @override
+  String get familyAccountsWord => 'konton';
+
+  @override
+  String get familyProfilesWord => 'profiler';
+
+  @override
+  String get familyAddMember => 'lägg till familjemedlem';
+
+  @override
+  String get familyRoleAdmin => 'admin';
+
+  @override
+  String get familyRoleGuest => 'gäst';
+
+  @override
+  String get familyNoAllergies => 'inga allergier';
+
+  @override
+  String get familyEmptyTitle => 'Inga familjemedlemmar än';
+
+  @override
+  String get familyEmptySubtitle =>
+      'Lägg till barn eller gäster som inte har eget konto.';
+
+  @override
+  String get ageBandToddler => 'bebis';
+
+  @override
+  String get ageBandChild => 'barn';
+
+  @override
+  String get ageBandTeen => 'tonåring';
+
+  @override
+  String get ageBandAdult => 'vuxen';
+
+  @override
+  String get familyAddTitle => 'ny familjemedlem';
+
+  @override
+  String get familyEditTitle => 'redigera familjemedlem';
+
+  @override
+  String get familyNameLabel => 'namn';
+
+  @override
+  String get familyNameHint =>
+      'Smeknamn eller initial räcker — vi behöver inte fullständigt namn.';
+
+  @override
+  String get familyColorLabel => 'färg';
+
+  @override
+  String get familyAgeBandLabel => 'åldersgrupp';
+
+  @override
+  String get familyAgeBandHint =>
+      'Bara grov åldersgrupp — inget födelsedatum sparas.';
+
+  @override
+  String get familyConsentSectionTitle => 'samtycke';
+
+  @override
+  String get familyConsentRequiredBadge => 'krävs';
+
+  @override
+  String familyGuardianConsentText(String name) {
+    return 'Jag är vårdnadshavare och samtycker till att ${name}s namn och åldersgrupp sparas för att planera måltider åt hushållet.';
+  }
+
+  @override
+  String get familyAllergenSectionTitle => 'allergier & specialkost';
+
+  @override
+  String get familyOptionalBadge => 'valfritt';
+
+  @override
+  String get familyAllergenHealthNote =>
+      'Allergiuppgifter räknas som känsliga hälsouppgifter. Du kan spara profilen utan dem och lägga till senare.';
+
+  @override
+  String familyAllergenConsentText(String name) {
+    return 'Jag samtycker uttryckligen till att ${name}s allergi- och kostuppgifter (hälsouppgifter) sparas.';
+  }
+
+  @override
+  String get familyConsentGivenPrefix => 'Samtycke givet';
+
+  @override
+  String get familyWithdrawAllergenConsent =>
+      'Återkalla samtycke & radera allergiuppgifter';
+
+  @override
+  String get familyDeleteMember => 'Ta bort familjemedlem';
+
+  @override
+  String get familyDeleteConfirmTitle => 'Ta bort familjemedlem?';
+
+  @override
+  String get familyDeleteConfirmBody =>
+      'Familjemedlemmen och deras familjebetyg tas bort. Detta går inte att ångra.';
+
+  @override
+  String get a11yAddFamilyMember => 'Lägg till familjemedlem';
+
+  @override
+  String get a11yEditFamilyMember => 'Redigera familjemedlem';
+
+  @override
+  String get familyConsentChildWord => 'barnet';
+
+  @override
+  String get familyConsentPersonWord => 'personen';
+
+  @override
+  String get familyHubSubtitle => 'Hantera barn och gäster i hushållet';
+
+  @override
+  String a11yColorSwatch(int index) {
+    return 'Avatarfärg $index';
+  }
 }

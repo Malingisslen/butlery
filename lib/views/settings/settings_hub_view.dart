@@ -38,6 +38,13 @@ class SettingsHubView extends StatelessWidget {
               children: [
                 _SectionHeader(title: context.l10n.settingsSectionFood),
                 _SettingsTile(
+                  icon: Icons.family_restroom,
+                  title: context.l10n.familyTitle,
+                  subtitle: context.l10n.familyHubSubtitle,
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.settingsFamily),
+                ),
+                _SettingsTile(
                   icon: Icons.restaurant_menu,
                   title: context.l10n.allergenSettingsTitle,
                   subtitle: context.l10n.allergenSettingsHubSubtitle,

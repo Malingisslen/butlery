@@ -25888,6 +25888,252 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Öppna relaterat recept: {title}'**
   String a11yRelatedRecipeThumbnail(String title);
+
+  /// No description provided for @familyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'min familj'**
+  String get familyTitle;
+
+  /// No description provided for @familyIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.'**
+  String get familyIntro;
+
+  /// No description provided for @familyHouseholdSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'hushållet'**
+  String get familyHouseholdSection;
+
+  /// No description provided for @familyMembersSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'familjen'**
+  String get familyMembersSection;
+
+  /// No description provided for @familyAccountsWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'konton'**
+  String get familyAccountsWord;
+
+  /// No description provided for @familyProfilesWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'profiler'**
+  String get familyProfilesWord;
+
+  /// No description provided for @familyAddMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'lägg till familjemedlem'**
+  String get familyAddMember;
+
+  /// No description provided for @familyRoleAdmin.
+  ///
+  /// In sv, this message translates to:
+  /// **'admin'**
+  String get familyRoleAdmin;
+
+  /// No description provided for @familyRoleGuest.
+  ///
+  /// In sv, this message translates to:
+  /// **'gäst'**
+  String get familyRoleGuest;
+
+  /// No description provided for @familyNoAllergies.
+  ///
+  /// In sv, this message translates to:
+  /// **'inga allergier'**
+  String get familyNoAllergies;
+
+  /// No description provided for @familyEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga familjemedlemmar än'**
+  String get familyEmptyTitle;
+
+  /// No description provided for @familyEmptySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till barn eller gäster som inte har eget konto.'**
+  String get familyEmptySubtitle;
+
+  /// No description provided for @ageBandToddler.
+  ///
+  /// In sv, this message translates to:
+  /// **'bebis'**
+  String get ageBandToddler;
+
+  /// No description provided for @ageBandChild.
+  ///
+  /// In sv, this message translates to:
+  /// **'barn'**
+  String get ageBandChild;
+
+  /// No description provided for @ageBandTeen.
+  ///
+  /// In sv, this message translates to:
+  /// **'tonåring'**
+  String get ageBandTeen;
+
+  /// No description provided for @ageBandAdult.
+  ///
+  /// In sv, this message translates to:
+  /// **'vuxen'**
+  String get ageBandAdult;
+
+  /// No description provided for @familyAddTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'ny familjemedlem'**
+  String get familyAddTitle;
+
+  /// No description provided for @familyEditTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'redigera familjemedlem'**
+  String get familyEditTitle;
+
+  /// No description provided for @familyNameLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'namn'**
+  String get familyNameLabel;
+
+  /// No description provided for @familyNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Smeknamn eller initial räcker — vi behöver inte fullständigt namn.'**
+  String get familyNameHint;
+
+  /// No description provided for @familyColorLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'färg'**
+  String get familyColorLabel;
+
+  /// No description provided for @familyAgeBandLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'åldersgrupp'**
+  String get familyAgeBandLabel;
+
+  /// No description provided for @familyAgeBandHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara grov åldersgrupp — inget födelsedatum sparas.'**
+  String get familyAgeBandHint;
+
+  /// No description provided for @familyConsentSectionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'samtycke'**
+  String get familyConsentSectionTitle;
+
+  /// No description provided for @familyConsentRequiredBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'krävs'**
+  String get familyConsentRequiredBadge;
+
+  /// No description provided for @familyGuardianConsentText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag är vårdnadshavare och samtycker till att {name}s namn och åldersgrupp sparas för att planera måltider åt hushållet.'**
+  String familyGuardianConsentText(String name);
+
+  /// No description provided for @familyAllergenSectionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'allergier & specialkost'**
+  String get familyAllergenSectionTitle;
+
+  /// No description provided for @familyOptionalBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'valfritt'**
+  String get familyOptionalBadge;
+
+  /// No description provided for @familyAllergenHealthNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergiuppgifter räknas som känsliga hälsouppgifter. Du kan spara profilen utan dem och lägga till senare.'**
+  String get familyAllergenHealthNote;
+
+  /// No description provided for @familyAllergenConsentText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag samtycker uttryckligen till att {name}s allergi- och kostuppgifter (hälsouppgifter) sparas.'**
+  String familyAllergenConsentText(String name);
+
+  /// No description provided for @familyConsentGivenPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycke givet'**
+  String get familyConsentGivenPrefix;
+
+  /// No description provided for @familyWithdrawAllergenConsent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återkalla samtycke & radera allergiuppgifter'**
+  String get familyWithdrawAllergenConsent;
+
+  /// No description provided for @familyDeleteMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort familjemedlem'**
+  String get familyDeleteMember;
+
+  /// No description provided for @familyDeleteConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort familjemedlem?'**
+  String get familyDeleteConfirmTitle;
+
+  /// No description provided for @familyDeleteConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjemedlemmen och deras familjebetyg tas bort. Detta går inte att ångra.'**
+  String get familyDeleteConfirmBody;
+
+  /// No description provided for @a11yAddFamilyMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till familjemedlem'**
+  String get a11yAddFamilyMember;
+
+  /// No description provided for @a11yEditFamilyMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera familjemedlem'**
+  String get a11yEditFamilyMember;
+
+  /// No description provided for @familyConsentChildWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'barnet'**
+  String get familyConsentChildWord;
+
+  /// No description provided for @familyConsentPersonWord.
+  ///
+  /// In sv, this message translates to:
+  /// **'personen'**
+  String get familyConsentPersonWord;
+
+  /// No description provided for @familyHubSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hantera barn och gäster i hushållet'**
+  String get familyHubSubtitle;
+
+  /// No description provided for @a11yColorSwatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avatarfärg {index}'**
+  String a11yColorSwatch(int index);
 }
 
 class _AppLocalizationsDelegate

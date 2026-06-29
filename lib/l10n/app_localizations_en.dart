@@ -15473,4 +15473,140 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yRelatedRecipeThumbnail(String title) {
     return 'Open related recipe: $title';
   }
+
+  @override
+  String get familyTitle => 'my family';
+
+  @override
+  String get familyIntro =>
+      'Everyone who eats at home with you. Adults and teens (15+) have their own accounts; children and guests are added as family members.';
+
+  @override
+  String get familyHouseholdSection => 'household';
+
+  @override
+  String get familyMembersSection => 'family';
+
+  @override
+  String get familyAccountsWord => 'accounts';
+
+  @override
+  String get familyProfilesWord => 'profiles';
+
+  @override
+  String get familyAddMember => 'add family member';
+
+  @override
+  String get familyRoleAdmin => 'admin';
+
+  @override
+  String get familyRoleGuest => 'guest';
+
+  @override
+  String get familyNoAllergies => 'no allergies';
+
+  @override
+  String get familyEmptyTitle => 'No family members yet';
+
+  @override
+  String get familyEmptySubtitle =>
+      'Add children or guests who don\'t have their own account.';
+
+  @override
+  String get ageBandToddler => 'baby';
+
+  @override
+  String get ageBandChild => 'child';
+
+  @override
+  String get ageBandTeen => 'teen';
+
+  @override
+  String get ageBandAdult => 'adult';
+
+  @override
+  String get familyAddTitle => 'new family member';
+
+  @override
+  String get familyEditTitle => 'edit family member';
+
+  @override
+  String get familyNameLabel => 'name';
+
+  @override
+  String get familyNameHint =>
+      'A nickname or initial is enough — we don\'t need a full name.';
+
+  @override
+  String get familyColorLabel => 'colour';
+
+  @override
+  String get familyAgeBandLabel => 'age group';
+
+  @override
+  String get familyAgeBandHint =>
+      'Coarse age group only — no birth date is stored.';
+
+  @override
+  String get familyConsentSectionTitle => 'consent';
+
+  @override
+  String get familyConsentRequiredBadge => 'required';
+
+  @override
+  String familyGuardianConsentText(String name) {
+    return 'I am the guardian and consent to $name\'s name and age group being stored to plan the household\'s meals.';
+  }
+
+  @override
+  String get familyAllergenSectionTitle => 'allergies & diet';
+
+  @override
+  String get familyOptionalBadge => 'optional';
+
+  @override
+  String get familyAllergenHealthNote =>
+      'Allergy data counts as sensitive health data. You can save the profile without it and add it later.';
+
+  @override
+  String familyAllergenConsentText(String name) {
+    return 'I explicitly consent to $name\'s allergy and dietary data (health data) being stored.';
+  }
+
+  @override
+  String get familyConsentGivenPrefix => 'Consent given';
+
+  @override
+  String get familyWithdrawAllergenConsent =>
+      'Withdraw consent & erase allergy data';
+
+  @override
+  String get familyDeleteMember => 'Remove family member';
+
+  @override
+  String get familyDeleteConfirmTitle => 'Remove family member?';
+
+  @override
+  String get familyDeleteConfirmBody =>
+      'The family member and their family ratings will be removed. This cannot be undone.';
+
+  @override
+  String get a11yAddFamilyMember => 'Add family member';
+
+  @override
+  String get a11yEditFamilyMember => 'Edit family member';
+
+  @override
+  String get familyConsentChildWord => 'the child';
+
+  @override
+  String get familyConsentPersonWord => 'the person';
+
+  @override
+  String get familyHubSubtitle => 'Manage children and guests in the household';
+
+  @override
+  String a11yColorSwatch(int index) {
+    return 'Avatar colour $index';
+  }
 }
