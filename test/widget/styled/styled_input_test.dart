@@ -5,12 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 
 void main() {
   group('StyledInput Widget Tests', () {
     // Helper to wrap widget with MaterialApp for proper theming
     Widget createTestWidget(Widget child) {
       return MaterialApp(
+        // StyledFormField.build reads context.l10n (a11yRequiredFieldSuffix)
+        // when isRequired — without these delegates that lookup throws and the
+        // widget never builds (BUT-1449 / BUT-1430 localized required-field).
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
         theme: ThemeData(
           colorScheme: const ColorScheme.light(
             primary: Colors.blue,
@@ -593,6 +600,12 @@ void main() {
   group('StyledFormField Widget Tests', () {
     Widget createTestWidget(Widget child) {
       return MaterialApp(
+        // StyledFormField.build reads context.l10n (a11yRequiredFieldSuffix)
+        // when isRequired — without these delegates that lookup throws
+        // (BUT-1449 / BUT-1430 localized required-field).
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('sv'),
         home: Scaffold(
           body: Center(
             child: SizedBox(

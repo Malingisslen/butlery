@@ -23,6 +23,8 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_group_reposi
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/models/household.dart';
 import 'dart:convert';
 
 import '../../../test_support/base_unit_test.dart';
@@ -31,6 +33,21 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 
 // Mocks
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
+// BUT-1449: the GDPR export's family section (FamilyExportManager) resolves
+// HouseholdRepository via the production ServiceLocator, which this test does
+// not bridge. Inject a stub whose getForUser returns empty so exportFamily
+// short-circuits to an empty section (no 'family-export-failed' warning)
+// instead of throwing on an unregistered/unstubbed repo.
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+HouseholdRepository _emptyFamilyHouseholdRepo() {
+  final repo = _MockHouseholdRepository();
+  when(
+    () => repo.getForUser(any()),
+  ).thenAnswer((_) async => const <Household>[]);
+  return repo;
+}
 
 // FirebaseFunctions stub. ComplianceExportManager's constructor otherwise
 // calls FirebaseFunctions.instanceFor() which throws
@@ -186,6 +203,7 @@ void main() {
       service = DataExportService(
         authRepository: mockAuthRepository,
         firestoreRepository: mockFirestoreRepository,
+        householdRepository: _emptyFamilyHouseholdRepo(),
         // Inject a manager wired to the fake-functions stub so the
         // constructor doesn't hit FirebaseFunctions.instanceFor().
         // BUT-842: also inject a fake-firestore-backed dataExportRepository so
@@ -522,6 +540,7 @@ void main() {
           final transientService = DataExportService(
             authRepository: mockAuthRepository,
             firestoreRepository: mockFirestoreRepository,
+            householdRepository: _emptyFamilyHouseholdRepo(),
             complianceExportManager: ComplianceExportManager(
               functions: _TransientFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
@@ -585,6 +604,7 @@ void main() {
         final partialService = DataExportService(
           authRepository: mockAuthRepository,
           firestoreRepository: mockFirestoreRepository,
+          householdRepository: _emptyFamilyHouseholdRepo(),
           complianceExportManager: ComplianceExportManager(
             functions: _SuccessThenTransientFirebaseFunctions(),
             dataExportRepository: FirebaseDataExportRepository(
