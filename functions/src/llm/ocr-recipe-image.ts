@@ -30,6 +30,7 @@ import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
+import { captureLlmSample } from "./llm-sample-capture";
 import { runStructureRecipe, buildLocaleInstruction } from "./structure-recipe";
 import {
   runOcrRetry,
@@ -410,6 +411,24 @@ export async function runOcrRecipeImage(
         modelId: MODEL_ID,
       };
     }
+
+    // BUT-1451: capture the model's raw OCR text (scrubbed in the helper) +
+    // metadata before parsing. The input is an image, so bytes are NOT stored;
+    // only the optional scrubbed context note rides along. Best-effort.
+    await captureLlmSample({
+      mode: "ocr",
+      inputKind: "image",
+      scrubbedInput: context ? scrubPii(context) : undefined,
+      rawLlmResponse: content,
+      promptVersion,
+      promptSource: prompts.source,
+      experimentBucket,
+      promptVariant,
+      authUidHash,
+      modelId: MODEL_ID,
+      promptTokenCount: usage?.promptTokenCount,
+      candidatesTokenCount: usage?.candidatesTokenCount,
+    });
 
     // Try to parse as structured recipe
     const recipe = parseRecipeResponse(content, promptVersion);

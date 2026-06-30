@@ -53,6 +53,7 @@
     "test:send-notification": "ts-node src/__tests__/send-notification.test.ts",
     "test:ocr-retry": "ts-node src/__tests__/ocr-retry.test.ts",
     "test:kill-switch": "ts-node src/__tests__/llm-kill-switch.test.ts",
+    "test:llm-sample-capture": "ts-node src/__tests__/llm-sample-capture.test.ts",
     "test:web-error": "ts-node src/__tests__/log-web-error.test.ts",
     "test:presence-cascade": "ts-node src/__tests__/presence-cascade.test.ts",
     "test:ocr-validation": "ts-node src/__tests__/ocr-validation.test.ts",

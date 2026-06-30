@@ -29,8 +29,8 @@ service cloud.firestore {
     //
     // Other:
     //   menus, blocks, presence, feedback, deep_links(/clicks), reports,
-    //   audit_logs, deletion_audit_logs, ingredient_suggestions,
-    //   butlery_archive,
+    //   audit_logs, deletion_audit_logs, llm_response_samples (server-only),
+    //   ingredient_suggestions, butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
     //   user_shared_shopping_lists, user_shared_menus, menu_templates
     //
@@ -513,6 +513,15 @@ service cloud.firestore {
 
     // P3-06: Audit logs for account deletions — deny all client access
     match /deletion_audit_logs/{logId} {
+      allow read, write: if false;
+    }
+
+    // BUT-1451: paid-LLM input/output samples (scrubbed, TTL'd via expireAt)
+    // captured by Cloud Functions for parser/prompt mining. Admin-SDK writes
+    // only; deny ALL client access (incl. admin client) given the content
+    // sensitivity — a future mining surface would relax read to isAdmin() with
+    // DPO sign-off, not before.
+    match /llm_response_samples/{sampleId} {
       allow read, write: if false;
     }
 

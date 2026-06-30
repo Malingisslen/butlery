@@ -25,6 +25,7 @@ import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
+import { captureLlmSample, domainFromUrl } from "./llm-sample-capture";
 
 // =============================================================================
 // Request/Response Types
@@ -324,6 +325,25 @@ export async function runStructureRecipe(
 
     // Calculate actual cost from API usage
     const actualCost = calculateGeminiCost(response.usageMetadata);
+
+    // BUT-1451: capture the (scrubbed) input + raw output of this paid call
+    // BEFORE parsing — so parse failures (the interesting cases) are sampled
+    // too. Best-effort: never throws, awaited so the write lands before return.
+    await captureLlmSample({
+      mode,
+      inputKind: "text",
+      scrubbedInput: cleanText,
+      rawLlmResponse: content,
+      promptVersion,
+      promptSource: prompts.source,
+      experimentBucket,
+      promptVariant,
+      domain: domainFromUrl(cleanSourceUrl),
+      authUidHash,
+      modelId: MODEL_ID,
+      promptTokenCount: usage?.promptTokenCount,
+      candidatesTokenCount: usage?.candidatesTokenCount,
+    });
 
     // Parse response — ingredient lines mode returns array, others return recipe
     if (isIngredientLines) {
