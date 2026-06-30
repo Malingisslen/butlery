@@ -6,6 +6,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/user_root_deletion_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -300,15 +301,34 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     );
   }
 
-  /// Search for users by display name or email.
   @override
-  Future<List<UserProfile>> searchProfiles(String query) async {
+  Future<List<UserProfile>> searchProfiles(String query) async =>
+      (await searchProfilesResult(query)).hits;
+
+  /// Search for users by display name or email. BUT-1442: carries `failed`,
+  /// set true only when EVERY query attempt errored (a backend outage) — not
+  /// when the queries ran and matched zero profiles — so callers can show a
+  /// degraded notice instead of a neutral "no results" state.
+  @override
+  Future<SearchResult<UserProfile>> searchProfilesResult(String query) async {
     const int limit = 20;
-    if (query.trim().isEmpty) return [];
+    if (query.trim().isEmpty) {
+      return const SearchResult(
+        hits: [],
+        totalHits: 0,
+        page: 0,
+        totalPages: 1,
+        processingTimeMs: 0,
+      );
+    }
     final normalizedQuery = query.trim().toLowerCase();
     final results = <UserProfile>[];
     final seen = <String>{};
     final uid = currentUserId;
+
+    // failed == true iff no query level completes (all three throw). Set true
+    // the moment any `.get()` returns, even with zero docs (a legitimate empty).
+    var searchSucceeded = false;
 
     // Try optimized indexed search first
     bool usedFallback = false;
@@ -329,6 +349,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
           .limit(limit)
           .get();
+      searchSucceeded = true;
 
       for (final doc in nameQuery.docs) {
         if (doc.id == uid) continue;
@@ -354,6 +375,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             .where('isSearchable', isEqualTo: true)
             .limit(100)
             .get();
+        searchSucceeded = true;
 
         for (final doc in slowQuery.docs) {
           if (doc.id == uid) continue;
@@ -378,6 +400,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         // If both indexed and fallback fail, try most basic query
         try {
           final basicQuery = await collection.limit(50).get();
+          searchSucceeded = true;
 
           for (final doc in basicQuery.docs) {
             if (doc.id == uid) continue;
@@ -448,10 +471,18 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     });
 
     AppLogger.info(
-      'searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback',
+      'searchProfiles: Search completed: ${results.length} total results, '
+      'used fallback: $usedFallback, failed: ${!searchSucceeded}',
     );
 
-    return results;
+    return SearchResult(
+      hits: results,
+      totalHits: results.length,
+      page: 0,
+      totalPages: 1,
+      processingTimeMs: 0,
+      failed: !searchSucceeded,
+    );
   }
 
   /// Check if a display name is available (case sensitive).

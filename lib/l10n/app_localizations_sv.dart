@@ -6708,6 +6708,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialSearchingUsers => 'Söker användare...';
 
   @override
+  String get socialSearchUnavailable =>
+      'Sökningen är inte tillgänglig just nu. Försök igen om en stund.';
+
+  @override
   String get socialBlocked => 'Blockerad';
 
   @override

@@ -129,6 +129,10 @@ class FriendsViewModel extends ChangeNotifier
   /// Search error message
   String? get searchError => _searchManager.searchError;
 
+  /// True when the last search failed because the backend was unavailable
+  /// (BUT-1442) — the view shows a degraded notice instead of "no users found".
+  bool get searchDegraded => _searchManager.searchDegraded;
+
   /// Search results availability
   bool get hasSearchResults => _searchManager.hasSearchResults;
 

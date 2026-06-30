@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -214,24 +215,39 @@ class UserService extends ChangeNotifier
   }
 
   /// Search users by display name or email - OPTIMERAD VERSION
-  Future<List<UserProfile>> searchUsers(String query) async {
-    if (ValidationUtils.isNullOrWhitespace(query)) return [];
+  Future<List<UserProfile>> searchUsers(String query) async =>
+      (await searchUsersResult(query)).hits;
+
+  /// Like [searchUsers] but carries a `failed` flag (BUT-1442): true when the
+  /// search backend errored on every attempt (an outage), vs. a legitimate
+  /// zero-match search. Lets the friend-search UI show a degraded notice
+  /// instead of a neutral "no users found" state.
+  Future<SearchResult<UserProfile>> searchUsersResult(String query) async {
+    if (ValidationUtils.isNullOrWhitespace(query)) {
+      return const SearchResult(
+        hits: [],
+        totalHits: 0,
+        page: 0,
+        totalPages: 1,
+        processingTimeMs: 0,
+      );
+    }
 
     _setLoading(true);
     _clearError();
 
     try {
-      final results = await _repository.searchProfiles(query);
+      final result = await _repository.searchProfilesResult(query);
 
-      for (final profile in results) {
+      for (final profile in result.hits) {
         _cacheProfile(profile.uid, profile);
       }
 
-      return results;
+      return result;
     } catch (e, stackTrace) {
       AppLogger.error('Search users failed: $e', stackTrace);
       _setError(sanitizeErrorForUser(e));
-      return [];
+      return const SearchResult.failure();
     } finally {
       _setLoading(false);
     }

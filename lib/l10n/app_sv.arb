@@ -4393,6 +4393,7 @@
   "socialSearchForNewFriends": "Sök efter nya vänner",
   "socialSearchForNewFriendsDescription": "Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.",
   "socialSearchingUsers": "Söker användare...",
+  "socialSearchUnavailable": "Sökningen är inte tillgänglig just nu. Försök igen om en stund.",
   "socialBlocked": "Blockerad",
   "socialCouldNotAcceptFriendRequest": "Kunde inte acceptera vänskapsförfrågan",
   "socialCouldNotFindFriendRequest": "Kunde inte hitta vänskapsförfrågan",

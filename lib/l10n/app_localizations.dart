@@ -11341,6 +11341,12 @@ abstract class AppLocalizations {
   /// **'Söker användare...'**
   String get socialSearchingUsers;
 
+  /// No description provided for @socialSearchUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sökningen är inte tillgänglig just nu. Försök igen om en stund.'**
+  String get socialSearchUnavailable;
+
   /// No description provided for @socialBlocked.
   ///
   /// In sv, this message translates to:

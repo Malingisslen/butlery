@@ -1,4 +1,5 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
@@ -61,8 +62,15 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Update the online status for a user.
   Future<void> updateOnlineStatus(String userId, bool isOnline);
 
-  /// Search for profiles matching a query
+  /// Search for profiles matching a query.
   Future<List<UserProfile>> searchProfiles(String query);
+
+  /// Like [searchProfiles] but carries a `failed` flag (BUT-1442): true when
+  /// every query attempt errored (a backend outage) rather than legitimately
+  /// matching zero profiles, so callers can show a degraded notice instead of
+  /// a neutral "no results" state. A successful zero-match search has
+  /// `failed == false`. [searchProfiles] delegates to this and returns `.hits`.
+  Future<SearchResult<UserProfile>> searchProfilesResult(String query);
 
   /// Check if a display name is available
   Future<bool> isDisplayNameAvailable(String displayName);

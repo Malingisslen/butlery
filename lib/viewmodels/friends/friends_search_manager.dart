@@ -20,6 +20,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   String _searchQuery = '';
   List<UserProfile> _searchResults = [];
   String? _searchError;
+  bool _searchDegraded = false;
   bool _isSearching = false;
   bool _isDisposed = false;
 
@@ -33,6 +34,12 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   String get searchQuery => _searchQuery;
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
   String? get searchError => _searchError;
+
+  /// True when the last search failed because the backend errored (an outage),
+  /// as opposed to legitimately matching nobody (BUT-1442). The view shows a
+  /// "search unavailable" notice for this state instead of the neutral
+  /// "no users found" empty state.
+  bool get searchDegraded => _searchDegraded;
   bool get isSearching => _isSearching;
   bool get hasSearchResults => _searchResults.isNotEmpty;
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
@@ -54,6 +61,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
       cancelDebounce('search');
       _searchResults = [];
       _searchError = AppLocale.current.errorFillRequiredFields;
+      _searchDegraded = false;
       _safeNotifyListeners();
       return;
     }
@@ -75,6 +83,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
     if (_searchCache.containsKey(_searchQuery)) {
       _searchResults = _searchCache[_searchQuery]!;
       _searchError = null;
+      _searchDegraded = false;
       AppLogger.info(
         '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results (from cache)',
       );
@@ -86,34 +95,47 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
     _safeNotifyListeners();
 
     try {
-      final results = await _friendsService.management.searchUsers(
+      final result = await _friendsService.management.searchUsersResult(
         _searchQuery,
       );
 
       if (_isDisposed) return;
 
-      _searchResults = results;
-      _searchError = null;
+      _searchResults = result.hits;
 
-      // Cache the results
-      _cacheSearchResults(_searchQuery, results);
+      if (result.failed) {
+        // BUT-1442: the search backend errored (an outage) — surface a
+        // degraded notice instead of a neutral "no users found" state, and do
+        // NOT cache the result, or a transient outage would poison this
+        // query's cache until eviction.
+        _searchDegraded = true;
+        _searchError = AppLocale.current.socialSearchUnavailable;
+        AppLogger.warning(
+          '🔍 Search for "$_searchQuery" failed (backend unavailable)',
+        );
+      } else {
+        _searchDegraded = false;
+        _searchError = null;
+        _cacheSearchResults(_searchQuery, result.hits);
 
-      AppLogger.info(
-        '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
-      );
+        AppLogger.info(
+          '🔍 Search for "$_searchQuery" returned ${result.hits.length} results',
+        );
 
-      // BUT-939: log only on actual network search (cache hits don't
-      // qualify — they don't reflect user intent re-engaging the funnel).
-      // tryGet so a missing analytics service can't break the search flow.
-      ServiceLocator.tryGet<AnalyticsService>()?.social
-          .logFriendSearchPerformed(
-            queryLength: _searchQuery.length,
-            resultCount: results.length,
-          );
+        // BUT-939: log only on actual network search (cache hits don't
+        // qualify — they don't reflect user intent re-engaging the funnel).
+        // tryGet so a missing analytics service can't break the search flow.
+        ServiceLocator.tryGet<AnalyticsService>()?.social
+            .logFriendSearchPerformed(
+              queryLength: _searchQuery.length,
+              resultCount: result.hits.length,
+            );
+      }
     } catch (e) {
       if (_isDisposed) return;
 
-      _searchError = AppLocale.current.errorGeneric;
+      _searchDegraded = true;
+      _searchError = AppLocale.current.socialSearchUnavailable;
       AppLogger.error('Search failed: $e');
     } finally {
       _isSearching = false;
@@ -134,6 +156,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
     _searchQuery = '';
     _searchResults = [];
     _searchError = null;
+    _searchDegraded = false;
   }
 
   void _safeNotifyListeners() {
@@ -145,7 +168,10 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   @override
   void dispose() {
     _isDisposed = true;
-    _searchResults.clear();
+    // Replace rather than clear() in place: a degraded/empty search assigns the
+    // unmodifiable `const []` from SearchResult.failure (BUT-1442), and
+    // clear()-ing that throws. Dropping the reference frees it just the same.
+    _searchResults = [];
     _searchCache.clear();
     super.dispose();
   }

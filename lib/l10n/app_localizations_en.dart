@@ -6701,6 +6701,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialSearchingUsers => 'Searching users...';
 
   @override
+  String get socialSearchUnavailable =>
+      'Search is unavailable right now. Please try again in a moment.';
+
+  @override
   String get socialBlocked => 'Blocked';
 
   @override

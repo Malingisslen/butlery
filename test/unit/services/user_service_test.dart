@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
@@ -377,8 +378,14 @@ void main() {
           ),
         ];
 
-        when(() => mockUserRepository.searchProfiles('Doe')).thenAnswer(
-          (_) async => searchResults,
+        when(() => mockUserRepository.searchProfilesResult('Doe')).thenAnswer(
+          (_) async => SearchResult<UserProfile>(
+            hits: searchResults,
+            totalHits: searchResults.length,
+            page: 0,
+            totalPages: 1,
+            processingTimeMs: 0,
+          ),
         );
 
         // Act
@@ -388,7 +395,7 @@ void main() {
         expect(results, hasLength(2));
         expect(results[0].displayName, equals('John Doe'));
         expect(results[1].displayName, equals('Jane Doe'));
-        verify(() => mockUserRepository.searchProfiles('Doe')).called(1);
+        verify(() => mockUserRepository.searchProfilesResult('Doe')).called(1);
       });
 
       test('should return empty list for empty search query', () async {
@@ -397,12 +404,13 @@ void main() {
 
         // Assert
         expect(results, isEmpty);
-        verifyNever(() => mockUserRepository.searchProfiles(any()));
+        verifyNever(() => mockUserRepository.searchProfilesResult(any()));
       });
 
       test('should handle search errors gracefully', () async {
-        // Arrange
-        when(() => mockUserRepository.searchProfiles('error')).thenAnswer(
+        // Arrange — the repository throws on every backend level, which the
+        // service catch path must turn into an empty result + error state.
+        when(() => mockUserRepository.searchProfilesResult('error')).thenAnswer(
           (_) async => throw Exception('Search failed'),
         );
 
@@ -412,6 +420,92 @@ void main() {
         // Assert
         expect(results, isEmpty);
         expect(userService.hasError, isTrue);
+      });
+
+      test('searchUsersResult carries failed == true when the repository '
+          'reports a backend outage (not a legitimate zero-match)', () async {
+        // Arrange — repo ran but every level threw, so it returns a failure
+        // result (BUT-1442). The service must propagate the flag, not flatten
+        // it into a neutral empty.
+        when(
+          () => mockUserRepository.searchProfilesResult('Doe'),
+        ).thenAnswer((_) async => const SearchResult<UserProfile>.failure());
+
+        // Act
+        final result = await userService.searchUsersResult('Doe');
+
+        // Assert
+        expect(result.failed, isTrue);
+        expect(result.hits, isEmpty);
+      });
+
+      test('searchUsersResult returns failed == true when the repository call '
+          'itself throws', () async {
+        // Arrange — the service\'s own catch block returns SearchResult.failure.
+        when(
+          () => mockUserRepository.searchProfilesResult('error'),
+        ).thenAnswer((_) async => throw Exception('Search failed'));
+
+        // Act
+        final result = await userService.searchUsersResult('error');
+
+        // Assert
+        expect(result.failed, isTrue);
+        expect(result.hits, isEmpty);
+        expect(userService.hasError, isTrue);
+      });
+
+      test('searchUsersResult returns the hits with failed == false on a '
+          'successful search', () async {
+        // Arrange
+        final hits = [
+          MockFactory.createUserProfile(
+            userId: 'user1',
+            displayName: 'John Doe',
+            email: 'john@example.com',
+          ),
+        ];
+        when(() => mockUserRepository.searchProfilesResult('Doe')).thenAnswer(
+          (_) async => SearchResult<UserProfile>(
+            hits: hits,
+            totalHits: 1,
+            page: 0,
+            totalPages: 1,
+            processingTimeMs: 0,
+          ),
+        );
+
+        // Act
+        final result = await userService.searchUsersResult('Doe');
+
+        // Assert
+        expect(result.failed, isFalse);
+        expect(result.hits, hasLength(1));
+        expect(result.hits.first.displayName, equals('John Doe'));
+      });
+
+      test('searchUsersResult returns a successful empty (failed == false) for '
+          'a legitimate zero-match — distinct from an outage', () async {
+        // Arrange — a query that ran fine but matched nobody.
+        when(
+          () => mockUserRepository.searchProfilesResult('nobody'),
+        ).thenAnswer(
+          (_) async => const SearchResult<UserProfile>(
+            hits: [],
+            totalHits: 0,
+            page: 0,
+            totalPages: 1,
+            processingTimeMs: 0,
+          ),
+        );
+
+        // Act
+        final result = await userService.searchUsersResult('nobody');
+
+        // Assert — empty, but NOT degraded: the UI must show "no users found",
+        // not the outage notice.
+        expect(result.hits, isEmpty);
+        expect(result.failed, isFalse);
       });
     });
 

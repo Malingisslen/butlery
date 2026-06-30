@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart' as model;
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -436,15 +437,25 @@ class FriendsManagementOperations extends BaseService {
         .toList();
   }
 
-  Future<List<model.UserProfile>> searchUsers(String query) async {
+  Future<List<model.UserProfile>> searchUsers(String query) async =>
+      (await searchUsersResult(query)).hits;
+
+  /// Like [searchUsers] but carries a `failed` flag (BUT-1442): true when the
+  /// user-search backend errored (an outage) rather than legitimately matching
+  /// nobody, so the friend-search UI can show a degraded notice instead of a
+  /// neutral "no users found" state. Locally-matched current friends are still
+  /// returned even on a backend failure.
+  Future<SearchResult<model.UserProfile>> searchUsersResult(
+    String query,
+  ) async {
     try {
       AppLogger.info('Searching users with query: $query');
 
-      // Search current friends first
+      // Search current friends first (local, never fails)
       final currentFriends = searchFriends(query);
 
-      // Search for new users from UserService
-      final allUsers = await _userService.searchUsers(query);
+      // Search for new users from UserService (carries the failure flag)
+      final usersResult = await _userService.searchUsersResult(query);
 
       // Combine results, prioritizing current friends
       final combinedResults = <model.UserProfile>[];
@@ -454,7 +465,7 @@ class FriendsManagementOperations extends BaseService {
 
       // Add new users that aren't already friends
       final currentFriendIds = currentFriends.map((f) => f.uid).toSet();
-      final newUsers = allUsers
+      final newUsers = usersResult.hits
           .where((user) => !currentFriendIds.contains(user.uid))
           .toList();
       combinedResults.addAll(newUsers);
@@ -467,12 +478,20 @@ class FriendsManagementOperations extends BaseService {
       }
 
       AppLogger.info(
-        'Search returned ${currentFriends.length} current friends and ${newUsers.length} new users',
+        'Search returned ${currentFriends.length} current friends and '
+        '${newUsers.length} new users (backend failed: ${usersResult.failed})',
       );
-      return combinedResults;
+      return SearchResult(
+        hits: combinedResults,
+        totalHits: combinedResults.length,
+        page: 0,
+        totalPages: 1,
+        processingTimeMs: 0,
+        failed: usersResult.failed,
+      );
     } catch (e) {
       AppLogger.error('Failed to search users', e);
-      return [];
+      return const SearchResult.failure();
     }
   }
 

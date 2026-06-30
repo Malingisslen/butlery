@@ -30,6 +30,14 @@ class SearchTab {
     }
 
     if (viewModel.searchResults.isEmpty) {
+      // BUT-1442: distinguish a backend outage from a legitimately-empty
+      // search — show "search unavailable", not "no users found".
+      if (viewModel.searchDegraded && !isGroupsSearch) {
+        return StateWidget.error(
+          message:
+              viewModel.searchError ?? context.l10n.socialSearchUnavailable,
+        );
+      }
       return isGroupsSearch
           ? StateWidget.noGroupsSearchResults()
           : StateWidget.noFriendsSearchResults();

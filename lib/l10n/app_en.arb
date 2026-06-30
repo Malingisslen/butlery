@@ -4372,6 +4372,7 @@
   "socialSearchForNewFriends": "Search for new friends",
   "socialSearchForNewFriendsDescription": "Type a name or username in the search field above to find new friends.",
   "socialSearchingUsers": "Searching users...",
+  "socialSearchUnavailable": "Search is unavailable right now. Please try again in a moment.",
   "socialBlocked": "Blocked",
   "socialCouldNotAcceptFriendRequest": "Could not accept friend request",
   "socialCouldNotFindFriendRequest": "Could not find friend request",
