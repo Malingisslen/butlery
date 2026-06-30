@@ -1,51 +1,60 @@
 # Sprint Backlog
 
-## Sprint: autonomous-lane (deploy rollback + coverage floor) — 2026-06-30
+## Sprint: compliance quick wins (need-malin, interactive) — 2026-06-30
 
-The `autonomous` lane holds exactly 5 tickets. Three are ops/credential-gated (Tier D):
-BUT-889 (paid Vertex/Mistral API + WIF service account), BUT-1240 (device-capable CI runner),
-and the live-verification half of BUT-1424. BUT-1176 is Low/optional ("pick up only if
-custom_lint is being added for other reasons" — zero current leaks) so it's deliberately
-deprioritized, not silently skipped. That leaves two genuinely workable picks this batch.
+Autonomous lane drained (BUT-889/1240 ops-blocked, BUT-1176 deprioritized). Malin present this
+session and chose the GDPR/compliance cluster from the need-malin lane. Two decisions taken live:
+- BUT-1395 → REMOVE the social-features toggle (social runs on GDPR contract basis, not consent).
+- BUT-1399 → switch appeals@butlery.app → appeals@butlery.se (no .app mailbox).
 
-Both router `single`-tier, no high-stakes hits, both Medium priority → Phase 1.5 plan-gate does
-NOT fire. Phase 1.4 stakeholder critique (owning role) runs per ticket before build.
+All four are router single/full-panel (account/security/legal paths). Phase 1.4 stakeholder
+critique (firebase-backend-security as owning role) runs at commit via the Tier-2 gate.
 
-### Agent A: deploy reliability — Stakeholders: DevOps/SRE (single)
-- [ ] **A1. Add an executable rollback path to the backend deploy** `[Tier C]` (BUT-1424) — `.github/workflows/deploy-firebase.yml`
-  - Capture pre-deploy state (functions manifest + the rules/indexes/storage config being replaced) → workflow artifact; add an `if: failure()` rollback that redeploys the previous-good source for in-scope targets.
+### Agent A: GDPR right-of-access + accountability — Stakeholders: Privacy/DPO, Legal (single→panel)
+- [ ] **A1. Add 3 erased-but-unexported PII collections to the Art.15 export** `[Tier A]` (BUT-1396) — `data_export_service.dart` + export managers
+  - Add export sections: `reports` (reporterId==uid), `pings` (fromUserId==uid), `realtime_recipes` (userId==uid); wire the already-implemented `exportGroupWeeklyMenuPlans` into the orchestrator futures map.
   - Acceptance:
-    - The workflow captures pre-deploy state (functions:list manifest + replaced rules/indexes/storage config) and uploads it as a workflow artifact.
-    - A rollback step runs ONLY on deploy failure (`if: failure()`), redeploying the in-scope targets from a resolved previous ref (prior `v*` tag on tag-push, `HEAD^` on dispatch) — never on the pre-deploy rules-gate failure.
-    - The previous ref is resolved dynamically (no hardcoded revision) and the rollback no-ops gracefully (logs, exit 0) when no previous ref exists.
-    - Success-path deploy behaviour is unchanged (same targets/commands); the workflow YAML parses.
-  - Negative constraint: do NOT change the deploy targets, project, or the existing rules-gate / smoke-gate logic.
-
-### Agent B: test coverage floor — Stakeholders: QA/Test Engineer (single)
-- [!] **B1. Restore coverage floor to 60.0% — BLOCKED on a trustworthy measurement** `[Tier A]` (BUT-1149) — `.github/workflows/test.yml:305`
-  - Step-0 outcome: MEASURED. A ~99%-complete `flutter test test/unit --coverage` run (15406 passed) → filtered coverage **56.76%** (parser `tasks/cov_filter.py` replicates the CI `lcov --remove` filter; lcov binary absent locally). That is a near-lower-bound and is ~3.2pp below the 60.0 floor — so the ticket's premise still holds and raising the floor would red-CI main. Disposition: floor NOT raised (stays 55.0); ticket stays in Backlog. Acceptance "<60 → don't raise + post measured number" satisfied. (Side note: run showed 6 failing tests on Windows-local — flag to confirm against ubuntu CI, likely env-specific; not chased this batch.)
-  - Step 0: MEASURE current filtered unit coverage at HEAD (a 12-min background run is in progress). The floor is currently 55.0; ticket reported 55.5% at filing; much test work has shipped since.
+    - `exportUserData()` output contains top-level keys `reports`, `pings`, `realtime_recipes`, and group weekly-menu participation — each scoped to the calling user's id.
+    - Each new export path is read-only and ownership-scoped (mirrors existing managers; no cross-user read).
+    - `exportGroupWeeklyMenuPlans` is no longer dead code — it is referenced in the futures map.
+    - A test asserts the new sections appear for a user with such data and are empty/absent-safe when they have none.
+  - Negative constraint: do NOT change existing export sections' shape/keys; do not weaken ownership scoping.
+- [ ] **A2. Persist a Terms-acceptance record at signup** `[Tier A]` (BUT-1400) — auth signup path + `terms_of_service_{en,sv}.md`
+  - Write `termsAcceptedAt` + `termsVersion` at account creation (every signup path); add a `Version:` field to both ToS headers so the record pins to something semantic.
   - Acceptance:
-    - Current filtered coverage measured at HEAD and recorded.
-    - If measured ≥60.0 → `OVERALL_FLOOR` raised to `60.0`; close Done with the measured number.
-    - If measured <60.0 → floor NOT raised (raising it would red-CI main, a real regression); ticket stays open, post measured coverage + the remaining gap, file/keep the DI-seam test follow-ups.
-  - Negative constraint: never raise the floor above the actual measured coverage.
+    - A new account creation persists `termsAcceptedAt` (timestamp) and `termsVersion` (matching the ToS header version) to the user's record/Firestore.
+    - Both `terms_of_service_en.md` and `terms_of_service_sv.md` carry a `Version: 1.0` header line.
+    - The version written is sourced from a single constant, not hardcoded at the call site twice.
+    - A test proves the record is written on signup with the expected version.
+  - Negative constraint: do not block/break the existing signup flow if the record write fails (best-effort, logged) — acceptance-record gap must not become an onboarding outage.
 
-### Needs you (Tier D — flagged, not worked)
-- BUT-889 — 4 paid-API LLM golden corpora: needs CI Vertex AI/Mistral credentials (a GCP service account + Workload Identity Federation binding) and paid API budget to generate gold standards. Ops/secrets the loop can't reach.
-- BUT-1240 — NER golden corpus real-signal lane: needs a device-capable CI runner provisioned.
+### Agent B: misleading-consent + dead-contact fixes — Stakeholders: Privacy/DPO, Legal (single)
+- [ ] **B1. Remove the unenforced socialFeatures consent toggle** `[Tier A]` (BUT-1395) — `consent_management_view.dart`
+  - Remove the social-features toggle from the consent screen; social features run on the contract basis. Model field preserved for Firestore back-compat.
+  - Acceptance:
+    - The consent screen no longer renders a social-features toggle.
+    - `ConsentPurpose.socialFeatures` field/enum stays in the model (no serialization break); only the UI toggle is gone.
+    - A code comment records why (unenforced consent → contract basis, IMY misleading-consent risk).
+  - Negative constraint: do not remove the enum case or change `toMap`/`fromMap` (would break stored docs).
+- [ ] **B2. Fix appeals contact domain** `[Tier A]` (BUT-1399) — `terms_of_service_{en,sv}.md`
+  - Replace `appeals@butlery.app` with `appeals@butlery.se` in both language ToS.
+  - Acceptance:
+    - Neither ToS file contains `butlery.app`; both use `appeals@butlery.se`.
+  - Negative constraint: only the appeals address changes; no other contact addresses touched.
 
-### Deprioritized (autonomous-lane, deliberately not worked)
-- BUT-1176 — custom_lint/AST upgrade: Low priority, explicitly optional ("pick up only if custom_lint is being added for other reasons"); zero current production leaks and the file-level arch-test already guards regressions. Adding the custom_lint dependency slows every analyzer run for marginal value — not worth it now.
+### Needs you (Tier D — flagged, not worked this session, from earlier scan)
+- BUT-889 — 4 paid-API LLM golden corpora: needs CI Vertex AI/Mistral credentials + budget.
+- BUT-1240 — NER real-signal lane: needs a device-capable/emulator CI runner provisioned.
 
 ### Post-Sprint Steps
-- [x] No Dart/TS changed — workflow YAML only; no code-reviewer/testing-specialist markers apply
-- [x] BUT-1424 verified (fresh-context grader: 6/6 acceptance criteria pass)
-- [ ] Commit BUT-1424, push to main
-- [ ] Linear: BUT-1424 → In Review + notify (Tier C, prod-pipeline, unverifiable without a real failed deploy); BUT-1149 stays Backlog with disposition comment
+- [ ] `dart analyze --fatal-infos`
+- [ ] Relevant unit tests (data_export, consent, auth/terms)
+- [ ] code-reviewer + testing-specialist + firebase-backend-security gates (touches lib/services + export)
+- [ ] Commit, push to main
+- [ ] Linear: all four Tier A → Done (or In Review if a criterion fails)
 
 ---
 
-## Sprint: autonomous-lane batch (notifications, a11y, voice, search) — 2026-06-29
+## Sprint: autonomous-lane (deploy rollback + coverage floor) — 2026-06-30
 
-(archived — all shipped: BUT-1427 Done; BUT-1426/1431 In Review; BUT-1442 descoped + Linear body rewritten)
+(archived — BUT-1424 shipped `9df35297b` → In Review; BUT-1149 stays Backlog, measured 56.76% < 60.0 floor)

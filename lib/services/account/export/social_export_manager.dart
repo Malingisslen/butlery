@@ -234,4 +234,50 @@ class SocialExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// BUT-1396: Export moderation reports the user filed (`reports` where
+  /// `reporterId == uid`). The whole doc is exported, including the free-text
+  /// `description` field (the genuine PII; `reason` itself is an enum) — data
+  /// the deletion cascade erases, so Art. 15 requires it in the export.
+  Future<Map<String, dynamic>> exportReports(String userId) async {
+    try {
+      final reports = await _exports.exportReportsByReporter(userId);
+      return {
+        'reports': reports
+            .map(
+              (e) => {
+                'report_id': e['id'],
+                'data': sanitizeForJson(e['data']),
+              },
+            )
+            .toList(),
+        'total': reports.length,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export reports', e);
+      return {'error': e.toString()};
+    }
+  }
+
+  /// BUT-1396: Export group pings the user sent (`pings` collection-group
+  /// where `fromUserId == uid`).
+  Future<Map<String, dynamic>> exportPings(String userId) async {
+    try {
+      final pings = await _exports.exportPingsSent(userId);
+      return {
+        'pings': pings
+            .map(
+              (e) => {
+                'ping_id': e['id'],
+                'data': sanitizeForJson(e['data']),
+              },
+            )
+            .toList(),
+        'total': pings.length,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export pings', e);
+      return {'error': e.toString()};
+    }
+  }
 }

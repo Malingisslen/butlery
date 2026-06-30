@@ -580,6 +580,33 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     }, SetOptions(merge: true));
   }
 
+  /// BUT-1400: record the Terms-of-Service acceptance event on `users/{uid}`.
+  /// `termsAcceptedAt` uses a server timestamp so the record is authoritative;
+  /// `termsVersion` pins it to the accepted ToS version. Merge-write so it
+  /// never clobbers profile fields owned by other writers. Called once at
+  /// account creation by [UserService].
+  @override
+  Future<void> recordTermsAcceptance(String userId, String termsVersion) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'record terms acceptance',
+    );
+
+    await firestore.collection(FirestoreCollections.users).doc(userId).set({
+      'termsAcceptedAt': timestampProvider.serverTimestamp(),
+      'termsVersion': termsVersion,
+    }, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'record_terms_acceptance',
+      granted: true,
+    );
+  }
+
   /// Increment public recipe count when a recipe is created or shared publicly
   @override
   Future<void> incrementPublicRecipeCount(String userId) async {

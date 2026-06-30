@@ -25220,7 +25220,7 @@ abstract class AppLocalizations {
   /// BUT-556: body text for the appeal process.
   ///
   /// In sv, this message translates to:
-  /// **'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.app. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.'**
+  /// **'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.se. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.'**
   String get appealProcessBody;
 
   /// BUT-556: settings tile label that opens the appeal mailto.
@@ -25244,7 +25244,7 @@ abstract class AppLocalizations {
   /// BUT-556: snackbar when mailto launch fails.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.'**
+  /// **'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.se.'**
   String get appealEmailLaunchFailed;
 
   /// Semantics label for editable avatar tap target.

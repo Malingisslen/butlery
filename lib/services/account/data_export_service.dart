@@ -185,6 +185,15 @@ class DataExportService extends BaseService {
         userId,
       ),
       'family': _familyManager.exportFamily(userId),
+      // BUT-1396: PII the deletion cascade erases but the export previously
+      // omitted (Art. 15 right-of-access). `group_weekly_menu_plans` wires in
+      // the already-implemented-but-orphaned ContentExportManager method.
+      'reports': _socialManager.exportReports(userId),
+      'pings': _socialManager.exportPings(userId),
+      'realtime_recipes': _contentManager.exportRealtimeRecipes(userId),
+      'group_weekly_menu_plans': _contentManager.exportGroupWeeklyMenuPlans(
+        userId,
+      ),
     };
 
     final keys = futures.keys.toList();

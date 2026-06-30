@@ -10235,7 +10235,7 @@
   "@appealProcessTitle": {
     "description": "BUT-556: section heading in ToS + settings for the appeal process."
   },
-  "appealProcessBody": "If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.app. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.",
+  "appealProcessBody": "If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.se. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.",
   "@appealProcessBody": {
     "description": "BUT-556: body text for the appeal process."
   },
@@ -10251,7 +10251,7 @@
   "@appealEmailBodyTemplate": {
     "description": "BUT-556: mailto body prefill template."
   },
-  "appealEmailLaunchFailed": "Could not open the email app. Please email appeals@butlery.app manually.",
+  "appealEmailLaunchFailed": "Could not open the email app. Please email appeals@butlery.se manually.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
   },

@@ -43,6 +43,12 @@ class UserService extends ChangeNotifier
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 
+  /// BUT-1400: current Terms-of-Service version. Single source of truth for
+  /// the per-user acceptance record — mirrors the `Version:` header in
+  /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
+  /// ToS text changes so the stored `termsVersion` stays meaningful.
+  static const String currentTermsVersion = '1.0';
+
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
   final Map<String, UserProfile> _profileCache = {};
@@ -423,6 +429,20 @@ class UserService extends ChangeNotifier
         );
 
         if (_currentUserProfile != null) {
+          // BUT-1400: record ToS acceptance once, at the account-creation
+          // moment (this branch only runs when no profile existed yet — i.e.
+          // signup). Best-effort: an accountability-record write must never
+          // block onboarding, so a failure is logged and swallowed.
+          try {
+            await _repository.recordTermsAcceptance(
+              user.uid,
+              currentTermsVersion,
+            );
+          } catch (e) {
+            AppLogger.warning(
+              '⚠️ Kunde inte registrera villkorsgodkännande: $e',
+            );
+          }
           AppLogger.success(
             '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}',
           );

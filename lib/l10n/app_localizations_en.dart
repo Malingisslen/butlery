@@ -15020,7 +15020,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appealProcessBody =>
-      'If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.app. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.';
+      'If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.se. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.';
 
   @override
   String get appealEmailLinkLabel => 'Appeal a removal';
@@ -15034,7 +15034,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appealEmailLaunchFailed =>
-      'Could not open the email app. Please email appeals@butlery.app manually.';
+      'Could not open the email app. Please email appeals@butlery.se manually.';
 
   @override
   String get a11yProfileImageEdit => 'Profile picture, tap to change';

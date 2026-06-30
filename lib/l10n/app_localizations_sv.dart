@@ -15061,7 +15061,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get appealProcessBody =>
-      'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.app. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.';
+      'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.se. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.';
 
   @override
   String get appealEmailLinkLabel => 'Överklaga en borttagning';
@@ -15075,7 +15075,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get appealEmailLaunchFailed =>
-      'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.';
+      'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.se.';
 
   @override
   String get a11yProfileImageEdit => 'Profilbild, tryck för att ändra';

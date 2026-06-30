@@ -471,4 +471,30 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// BUT-1396: Export collaborative recipes the user owns (`realtime_recipes`
+  /// where `ownerId == uid`). The deletion cascade erases these, so Art. 15
+  /// requires them in the export.
+  Future<Map<String, dynamic>> exportRealtimeRecipes(String userId) async {
+    try {
+      final recipes = await _exports.exportRealtimeRecipesByOwner(userId);
+      return {
+        'realtime_recipes': recipes
+            .map(
+              (entry) => {
+                'recipe_id': entry['id'],
+                'data': sanitizeForJson(entry['data']),
+              },
+            )
+            .toList(),
+        'total_count': recipes.length,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export realtime recipes',
+        e,
+      );
+      return {'error': e.toString()};
+    }
+  }
 }

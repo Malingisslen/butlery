@@ -1,5 +1,6 @@
 TERMS OF SERVICE FOR BUTLERY
 
+Version: 1.0
 Last updated: 2026-02-28
 
 1. ACCEPTANCE OF TERMS
@@ -51,7 +52,7 @@ We reserve the right to suspend or terminate your account if you violate these T
 
 6.1 Appeal a Removal
 
-If we remove content you posted and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.app. Include your username, the type of content (recipe, comment, message) and a brief description. We review appeals within 14 days and respond with a reasoned decision. The same link is available under Settings → Appeal a removal.
+If we remove content you posted and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.se. Include your username, the type of content (recipe, comment, message) and a brief description. We review appeals within 14 days and respond with a reasoned decision. The same link is available under Settings → Appeal a removal.
 
 7. LIMITATION OF LIABILITY
 

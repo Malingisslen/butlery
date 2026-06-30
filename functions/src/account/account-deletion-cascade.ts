@@ -663,9 +663,14 @@ export async function deleteRealtimeRecipes(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  // BUT-1396 follow-up: the owner field on `realtime_recipes` is `ownerId`
+  // (the model writes it, the Firestore rule gates read/delete on it). The
+  // prior `userId` filter matched zero docs, so a deleted user's collaborative
+  // recipes were exported (Art. 15) but never erased (Art. 17). Filter on
+  // `ownerId` so deletion mirrors the export.
   const snap = await db
     .collection("realtime_recipes")
-    .where("userId", "==", uid)
+    .where("ownerId", "==", uid)
     .get();
   await batchDeleteAll(db, snap.docs);
   return true;

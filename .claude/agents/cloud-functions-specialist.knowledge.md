@@ -2361,3 +2361,56 @@ scheduler to pass `"digest"`. Reviewed clean — no Critical/High; 6/6 test, tsc
   (is the push *channel* allowed right now) is enforced in the helper. Don't try to
   fold frequency into the category gate — the scheduler already filtered the
   user set before the push fan-out, and the helper has no frequency context.
+
+### 2026-06-30 — BUT-1396 follow-up: realtime_recipes deletion keyed on the wrong owner field [Bug fixed]
+
+`deleteRealtimeRecipes` (in `account-deletion-cascade.ts`, Tier 1) queried
+`realtime_recipes` with `.where("userId", "==", uid)`. That collection has **no
+`userId` field** — the authoritative owner field is `ownerId`:
+- the Flutter model serializes `ownerId` (`lib/models/realtime/realtime_recipe.dart:327/408`),
+- the Firestore rule gates read/delete on `resource.data.ownerId`
+  (`firestore.rules` ~909-923; only the owner may delete).
+So the filter matched **zero docs** — a deleted user's collaborative recipes were
+exported under Art. 15 but never erased under Art. 17 (right-to-erasure leak). Fix
+(already applied): filter on `ownerId`. Verified the step is wired into the
+orchestrator at `request-account-deletion.ts:209` (Tier 1, parallel) — a fix to an
+unwired function would be moot.
+
+Cross-checks done (worth repeating for any "wrong filter field" cascade bug):
+- **Other writers of the same collection**: `admin/reset-user-data.ts` deletes
+  `realtime_recipes` via a collection *registry* (recursive/whole-collection delete),
+  NOT a `userId` filter, so nothing depended on the old field.
+- **Owner vs participant**: deletion must key on the OWNER, never on
+  `participantIds`. A collaborator deleting their account must not erase someone
+  else's recipe (and the rule only lets the owner delete anyway). The regression
+  test pins this with a `rt-participant` fixture (TARGET is a participant on OTHER's
+  recipe → must survive).
+
+**Regression test added** to the emulator-backed
+`request-account-deletion.integration.test.ts` (now 42 tests): 3 `realtime_recipes`
+fixtures — `rt-own` (ownerId==TARGET → deleted), `rt-control` (ownerId==OTHER →
+survives), `rt-participant` (TARGET only a participant → survives). Proved the test
+is a real guard, not a tautology: temporarily reverting the SUT to the buggy
+`userId` filter turns exactly the owned-deleted assertion RED (41/42), restoring
+`ownerId` returns 42/42.
+
+**Patterns worth remembering**:
+- **"Wrong filter field" cascade bugs are silent and asymmetric.** An over-broad
+  filter deletes too much (loud — control docs vanish); a wrong-field filter
+  deletes *nothing* (silent — the negative-only "control survives" assertions still
+  pass). A GDPR-deletion test MUST include a POSITIVE "owned doc is gone" assertion,
+  not just "control survives" — only the positive one catches a no-op filter.
+- **Prove the test bites.** For a regression test against an already-applied fix,
+  flip the SUT back to the bug for one run and confirm the new assertion goes red.
+  Cheap, and it's the only thing that distinguishes a real guard from a green
+  tautology.
+- **Cross-check the owner field across all three layers** when a cascade filters by
+  identity: the Flutter model's `toFirestore` key, the Firestore rule's
+  `resource.data.<field>`, and any sibling deleter (admin reset, export). The export
+  side already filtered on `ownerId`; "export ⊇ erased" requires the SAME field on
+  both — a mismatch is the tell.
+- **Emulator workflow**: `bash .claude/hooks/ensure-firestore-emulator.sh` starts a
+  local Firestore emulator on 127.0.0.1:8080 (needs firebase-cli + java, both
+  present in this env); then
+  `npx ts-node src/__tests__/request-account-deletion.integration.test.ts`. The test
+  self-clears its namespace via the emulator REST DELETE endpoint before/after.

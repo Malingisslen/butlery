@@ -124,4 +124,11 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Note: this targets the `users` collection (not `public_profiles`,
   /// where `collectionName` points). Caller must own the document.
   Future<bool> deleteUserRootDoc(String userId);
+
+  /// BUT-1400: persist a Terms-of-Service acceptance record (`termsAcceptedAt`
+  /// + `termsVersion`) on `users/{userId}`. Written once at account creation
+  /// so we can demonstrate when, and to which ToS version, a user agreed —
+  /// the accountability record the UI-only checkbox never produced. Caller
+  /// must own the document (`validateSelfOperation`).
+  Future<void> recordTermsAcceptance(String userId, String termsVersion);
 }

@@ -32,7 +32,12 @@ enum ExportResourceType {
   categoryPreferences('category_preferences'),
   listCategoryOrders('list_category_orders'),
   users('users'),
-  publicProfiles('public_profiles')
+  publicProfiles('public_profiles'),
+  // BUT-1396: PII collections the deletion cascade erases but the export
+  // previously omitted — a right-of-access gap (Art. 15).
+  reports('reports'),
+  pings('pings'),
+  realtimeRecipes('realtime_recipes')
   ;
 
   const ExportResourceType(this.tag);
@@ -550,5 +555,53 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     firestore.collection(FirestoreCollections.publicProfiles).doc(userId),
     userId,
     ExportResourceType.publicProfiles,
+  );
+
+  // ── BUT-1396: erased-but-unexported PII collections (Art. 15) ──
+
+  /// Top-level `reports` where `reporterId == userId` — moderation reports
+  /// the user filed, including their free-text reason. Mirrors the deletion
+  /// cascade's `deleteUserReports` scoping so export ⊇ erased.
+  Future<List<Map<String, dynamic>>> exportReportsByReporter(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.reports)
+        .where('reporterId', isEqualTo: userId),
+    userId,
+    ExportResourceType.reports,
+    limit: maxDocuments,
+  );
+
+  /// `pings` collection-group where `fromUserId == userId` — group pings the
+  /// user sent (pings nest under `pings/{groupId}/pings`). Mirrors the
+  /// cascade's `deletePingsByUser` collection-group scoping.
+  Future<List<Map<String, dynamic>>> exportPingsSent(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collectionGroup(FirestoreCollections.pings)
+        .where('fromUserId', isEqualTo: userId),
+    userId,
+    ExportResourceType.pings,
+    limit: maxDocuments,
+  );
+
+  /// Top-level `realtime_recipes` where `ownerId == userId` — collaborative
+  /// recipes the user owns. `ownerId` is the model's authoritative field
+  /// (`RealtimeRecipe.fromFirestore` reads `ownerId`; the cascade CF's
+  /// `userId` filter is a known no-op), so the export queries `ownerId`.
+  Future<List<Map<String, dynamic>>> exportRealtimeRecipesByOwner(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.realtimeRecipes)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.realtimeRecipes,
+    limit: maxDocuments,
   );
 }

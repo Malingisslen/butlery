@@ -6,10 +6,13 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -1127,6 +1130,103 @@ void main() {
             reason:
                 'a rejected erasure must never record a granted:true '
                 'success entry on the audit trail',
+          );
+        },
+      );
+    });
+
+    group('Terms acceptance (BUT-1400)', () {
+      test(
+        'recordTermsAcceptance writes termsVersion + non-null '
+        'termsAcceptedAt to users/{uid}',
+        () async {
+          // Intent: accepting the ToS leaves an authoritative record on the
+          // user document so the app can later prove which version the user
+          // consented to (GDPR Art. 7). A regression that drops either field,
+          // or writes to the wrong doc, fails here.
+          await repository.recordTermsAcceptance(
+            'user-123',
+            UserService.currentTermsVersion,
+          );
+
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc('user-123')
+              .get();
+
+          expect(doc.exists, isTrue);
+          final data = doc.data()!;
+          expect(data['termsVersion'], '1.0');
+          expect(
+            UserService.currentTermsVersion,
+            '1.0',
+            reason:
+                'the test asserts the literal version it writes — keep them '
+                'in lockstep so a version bump is a deliberate, visible edit',
+          );
+          expect(
+            data['termsAcceptedAt'],
+            isNotNull,
+            reason:
+                'serverTimestamp() must land a concrete value (test provider) '
+                'so the acceptance is timestamped',
+          );
+          expect(data['termsAcceptedAt'], isA<Timestamp>());
+        },
+      );
+
+      test(
+        'recordTermsAcceptance merges — does not clobber existing profile '
+        'fields on users/{uid}',
+        () async {
+          // Intent: the write is a merge, so an unrelated field already on the
+          // user doc must survive. A regression switching to a non-merge set()
+          // would erase profile data the deletion cascade / other writers own.
+          await fakeFirestore.collection('users').doc('user-123').set({
+            'displayName': 'Existing Name',
+          });
+
+          await repository.recordTermsAcceptance(
+            'user-123',
+            UserService.currentTermsVersion,
+          );
+
+          final data =
+              (await fakeFirestore.collection('users').doc('user-123').get())
+                  .data()!;
+          expect(
+            data['displayName'],
+            'Existing Name',
+            reason: 'merge-write must preserve pre-existing fields',
+          );
+          expect(data['termsVersion'], '1.0');
+        },
+      );
+
+      test(
+        'recordTermsAcceptance for a uid other than the authenticated user '
+        'is denied (validateSelfOperation)',
+        () async {
+          // Intent: a user must not be able to record a ToS acceptance on
+          // someone else's document. validateSelfOperation guards this; if the
+          // guard is removed the call would succeed and write foreign data.
+          await expectLater(
+            repository.recordTermsAcceptance(
+              'other-user',
+              UserService.currentTermsVersion,
+            ),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+
+          // And nothing landed on the victim's document.
+          final victim = await fakeFirestore
+              .collection('users')
+              .doc('other-user')
+              .get();
+          expect(
+            victim.exists,
+            isFalse,
+            reason: 'a denied acceptance must not write the foreign doc',
           );
         },
       );

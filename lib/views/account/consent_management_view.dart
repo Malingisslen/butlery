@@ -294,16 +294,11 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         // analytics consent covers, pulled from the AnalyticsEvents constants.
         _buildAnalyticsTransparency(),
         // Marketing toggle hidden — no marketing system implemented yet.
-        // Field preserved in model for Firestore backwards compatibility.
-        const SizedBox(height: AppDimensions.spacingL),
-        _buildConsentToggle(
-          viewModel,
-          context.l10n.consentSocialFeatures,
-          context.l10n.consentSocialFeaturesDescription,
-          Icons.people_rounded,
-          viewModel.socialFeatures,
-          viewModel.setSocialFeatures,
-        ),
+        // Social-features toggle removed (BUT-1395): it was an unenforced
+        // "consent" gate, but social features run on the GDPR *contract* basis
+        // (they are part of the service you sign up for), not consent. A toggle
+        // that did nothing is the misleading-consent pattern IMY has fined for.
+        // Both fields stay in the model for Firestore back-compat.
         const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,

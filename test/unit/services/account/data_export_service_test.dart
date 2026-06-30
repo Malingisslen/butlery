@@ -333,6 +333,13 @@ void main() {
         expect(data['preferences'], isNotNull);
         expect(data['notifications'], isNotNull);
         expect(data['notification_preferences'], isNotNull);
+        // BUT-1396: erased-but-unexported PII collections + group menus must
+        // each have a present (non-null) section so Art. 15 right-of-access is
+        // satisfied even when the user has none of this data.
+        expect(data['reports'], isNotNull);
+        expect(data['pings'], isNotNull);
+        expect(data['realtime_recipes'], isNotNull);
+        expect(data['group_weekly_menu_plans'], isNotNull);
       });
     });
 
@@ -484,6 +491,152 @@ void main() {
           isA<String>(),
           reason: 'timestamps must be sanitized to ISO strings for JSON',
         );
+      });
+
+      test('BUT-1396: reports filed by the user export with the free-text '
+          'description round-tripping (and total==1)', () async {
+        // `description` is the genuine PII (the `reason` field is an enum);
+        // the deletion cascade erases this doc, so Art. 15 requires it in the
+        // export. A repo/ownership regression turns the section into an
+        // {error: ...} payload or drops the free-text field.
+        await fakeFirestore.collection('reports').doc('rep-1').set({
+          'reporterId': testUserId,
+          'reason': 'harassment',
+          'description': 'Skickade hotfulla meddelanden i gruppchatten.',
+        });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['reports'] as Map<String, dynamic>;
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason: 'an ownership-guard/repo regression yields {error: ...}',
+        );
+        expect(section['total'], 1);
+        final reports = section['reports'] as List<dynamic>;
+        final report = reports.single as Map<String, dynamic>;
+        expect(report['report_id'], 'rep-1');
+        expect(
+          report['data']['description'],
+          'Skickade hotfulla meddelanden i gruppchatten.',
+          reason: 'the free-text PII must survive the export verbatim',
+        );
+      });
+
+      test('BUT-1396: a report filed by a DIFFERENT user is NOT in the '
+          'calling user\'s export (ownership scoping)', () async {
+        // The query filters on reporterId == uid; a foreign report must never
+        // leak into this user\'s bundle. If the filter regresses to fetching
+        // all reports, this fails.
+        await fakeFirestore.collection('reports').doc('mine').set({
+          'reporterId': testUserId,
+          'reason': 'spam',
+          'description': 'min anmälan',
+        });
+        await fakeFirestore.collection('reports').doc('theirs').set({
+          'reporterId': 'someone-else',
+          'reason': 'spam',
+          'description': 'annans anmälan',
+        });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['reports'] as Map<String, dynamic>;
+        expect(section['total'], 1);
+        final ids = (section['reports'] as List<dynamic>)
+            .map((e) => (e as Map<String, dynamic>)['report_id'])
+            .toList();
+        expect(ids, ['mine']);
+        expect(
+          ids,
+          isNot(contains('theirs')),
+          reason: 'a foreign user\'s report must never appear in the export',
+        );
+      });
+
+      test('BUT-1396: collaborative recipes the user owns export under '
+          'realtime_recipes (total_count==1)', () async {
+        // `realtime_recipes` is keyed on `ownerId` (the model\'s authoritative
+        // field), not the cascade CF\'s no-op `userId`. The export queries
+        // ownerId so the bundle ⊇ what deletion erases.
+        await fakeFirestore.collection('realtime_recipes').doc('rt-1').set({
+          'ownerId': testUserId,
+          'title': 'Delat recept',
+        });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['realtime_recipes'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 1);
+        final recipes = section['realtime_recipes'] as List<dynamic>;
+        final recipe = recipes.single as Map<String, dynamic>;
+        expect(recipe['recipe_id'], 'rt-1');
+        expect(recipe['data']['title'], 'Delat recept');
+      });
+
+      test('BUT-1396: group pings the user sent export via the pings '
+          'collection-group (total==1)', () async {
+        // Pings nest under pings/{groupId}/pings/{pingId}; the export uses a
+        // collectionGroup('pings').where(fromUserId==uid) query. Confirmed
+        // fake_cloud_firestore 4.x supports collectionGroup, so this is a real
+        // end-to-end assertion (not a degraded presence-only check).
+        await fakeFirestore
+            .collection('pings')
+            .doc('group-1')
+            .collection('pings')
+            .doc('ping-1')
+            .set({
+              'fromUserId': testUserId,
+              'message': 'middag 18:00?',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['pings'] as Map<String, dynamic>;
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason: 'a collectionGroup/ownership regression yields {error: ...}',
+        );
+        expect(section['total'], 1);
+        final pings = section['pings'] as List<dynamic>;
+        final ping = pings.single as Map<String, dynamic>;
+        expect(ping['ping_id'], 'ping-1');
+        expect(ping['data']['message'], 'middag 18:00?');
+      });
+
+      test('BUT-1396: a user with none of the new PII data still gets the '
+          'sections present with no error (empty-safe Art. 15)', () async {
+        // No reports/pings/realtime_recipes/group menus seeded — the export
+        // must still surface every section as an empty, error-free shape so
+        // the bundle is honest about "you have none of this" rather than
+        // omitting the section or carrying a swallowed error.
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        for (final key in const [
+          'reports',
+          'pings',
+          'realtime_recipes',
+          'group_weekly_menu_plans',
+        ]) {
+          final section = data[key] as Map<String, dynamic>;
+          expect(
+            section.containsKey('error'),
+            isFalse,
+            reason: '$key must be empty-safe, not an {error: ...} payload',
+          );
+        }
+        expect(data['reports']['total'], 0);
+        expect(data['pings']['total'], 0);
+        expect(data['realtime_recipes']['total_count'], 0);
+        expect(data['group_weekly_menu_plans']['total_count'], 0);
       });
     });
 

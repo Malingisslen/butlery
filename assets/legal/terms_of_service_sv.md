@@ -1,5 +1,6 @@
 ANVÄNDARVILLKOR FÖR BUTLERY
 
+Version: 1.0
 Senast uppdaterad: 2026-02-28
 
 1. GODKÄNNANDE AV VILLKOR
@@ -51,7 +52,7 @@ Vi förbehåller oss rätten att stänga av eller avsluta ditt konto om du bryte
 
 6.1 Överklaga en borttagning
 
-Om vi tar bort innehåll du har publicerat och du anser att beslutet är felaktigt kan du överklaga genom att mejla appeals@butlery.app. Inkludera ditt användarnamn, vilken typ av innehåll (recept, kommentar, meddelande) och en kort beskrivning. Vi behandlar överklaganden inom 14 dagar och återkommer med ett motiverat beslut. Du hittar samma länk under Inställningar → Överklaga en borttagning.
+Om vi tar bort innehåll du har publicerat och du anser att beslutet är felaktigt kan du överklaga genom att mejla appeals@butlery.se. Inkludera ditt användarnamn, vilken typ av innehåll (recept, kommentar, meddelande) och en kort beskrivning. Vi behandlar överklaganden inom 14 dagar och återkommer med ett motiverat beslut. Du hittar samma länk under Inställningar → Överklaga en borttagning.
 
 7. ANSVARSBEGRÄNSNING
 
