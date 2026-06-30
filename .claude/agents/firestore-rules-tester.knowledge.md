@@ -969,3 +969,81 @@ Coverage triad for any optional-list field of this shape:
 - Implicit (CE4): field absent entirely → ALLOW (the `!('field' in ...)` short-circuit)
 
 The absent case is covered implicitly by the baseline create-allow test that uses `validEventBody()` with no extra fields. If a future diff adds similar optional-list fields to this collection (or any other), reuse this five-test cluster (a–e) plus the baseline implicit-absent proof. Suite 29/29 green on emulator, namespace cleared before run.
+
+### 2026-06-30 — NEVER feed admin-SDK `FieldValue` sentinels into a rules-unit-testing context (acquisition CI red)
+
+`acquisition-rules.test.ts` went standing-red after the firebase-admin 12→13
+dependabot bump. Three tests failed (1 owner-create-allow, 6 + 9 deny tests)
+— the ONLY trait they shared was a CLIENT write carrying
+`FieldValue.serverTimestamp()` imported from `firebase-admin/firestore`.
+
+**Root cause (test-harness only, NOT a production bug):** the rules-unit-testing
+context's `ctx.firestore()` is the `firebase` CLIENT SDK (v12.x here), not the
+admin SDK. The client SDK only recognizes its own sentinel; an admin-SDK
+`serverTimestamp()` sentinel is rejected at `.set()` time with
+`FirebaseError code:'invalid-argument' — Unsupported field value: a custom
+ServerTimestampTransform object`, thrown BEFORE any rule runs. With firebase-admin
+12 the two sentinels happened to be interchangeable enough to pass; the 12→13
+bump changed the admin sentinel object so the client SDK now throws.
+
+Why it also broke the two `assertFails` deny tests: `invalid-argument` is not
+`permission-denied`, and rules-unit-testing's `assertFails` only treats
+permission-denied as success → a synchronous `invalid-argument` throw fails the
+`assertFails` too. (Test 3, which sends a plain `new Date()`, kept passing — a
+legit client value the rule correctly denies.)
+
+**Fix (smallest correct, test layer only):** `import { serverTimestamp } from
+"firebase/firestore"` and call the bare `serverTimestamp()` — the established
+repo pattern (reports-rules + age-gate already do exactly this). The client
+sentinel resolves to `request.time` in the emulator, so Test 1 genuinely
+exercises the `firstSeenAt == request.time` allow path and Test 3 still proves
+a client-supplied Date is denied. Contract unchanged: 9/9 green on a cleared
+`butlery-acquisition-test` namespace. firestore.rules NOT touched (no rules
+regression — the acquisition block is correct).
+
+**Production impact: NONE.** Real Flutter clients call the client-SDK
+`FieldValue.serverTimestamp()`, which Firestore resolves to `request.time` and
+the rule accepts. The breakage was entirely the test importing the wrong SDK's
+sentinel.
+
+### 2026-06-30 — llm-response-samples-rules.test.ts created (BUT-1451, deny-all server-only)
+
+New top-level collection `/llm_response_samples/{sampleId}` (scrubbed, TTL'd
+`expireAt` paid-LLM input/output samples; Cloud-Functions/Admin-SDK write only).
+Rule is the exact `deletion_audit_logs` precedent: `allow read, write: if false`.
+New test file `functions/src/__tests__/llm-response-samples-rules.test.ts`
+(11 tests, all green on a cleared emulator namespace), wired as
+`test:rules:llm-response-samples`, appended to `test:rules:all` (after
+audit-logs), and added to BOTH path-filter blocks in `firestore-rules.yml`.
+Project id `butlery-rules-llm-response-samples`.
+
+Map row to add:
+
+| `/llm_response_samples/{sampleId}` (deny-all, server-only) | `llm-response-samples-rules.test.ts` | `test:rules:llm-response-samples` |
+
+**Deny-all coverage shape (reusable for any `allow read, write: if false`
+server-only collection — same as the SPRINT-G D1–D11 pattern):** matrix is
+{read, create, update, delete} × {unauthenticated, authed non-admin, app admin}
+plus one Admin-SDK-bypass write that SUCCEEDS (proves the policy doesn't break
+the capture path). Seed the existing doc AND the `/admins/{ADMIN_UID}` record via
+`withSecurityRulesDisabled` so the app-admin deny is genuine (isAdmin() resolves
+true yet still denies — the load-bearing assertion, since the rule comment says a
+future relax would go to `isAdmin()` only with DPO sign-off). Read-deny of an
+EXISTING doc is stronger than a missing-doc read.
+
+**Union-safety verified for a single-segment top-level deny collection:** the
+collection-group catch-alls (`match /{path=**}/recipes|members|comments|...`)
+require a trailing named subcollection segment, so a single-segment path like
+`llm_response_samples/{id}` cannot match any of them — no accidental allow union.
+The only other matching rule is the global `match /{document=**}` (L2341) which is
+itself `if false`. Emulator deny logs confirm the double-match `L525 + L2341`
+(specific rule + global default), both deny. No firestore.rules edits.
+
+**Reusable rule of thumb:** in ANY `*-rules.test.ts`, server-value sentinels
+(`serverTimestamp`, `increment`, `arrayUnion`, `deleteField`, etc.) used inside
+a `ctx.firestore()` / `withSecurityRulesDisabled` write MUST come from
+`firebase/firestore`, never `firebase-admin/firestore`. Grep
+`from "firebase-admin/firestore"` across `__tests__/*-rules.test.ts` after any
+firebase-admin major bump — that import in a rules test is the smell. (Admin
+SDK sentinels are correct only in the `*.integration.test.ts` files that drive
+the admin SDK directly against the emulator.)

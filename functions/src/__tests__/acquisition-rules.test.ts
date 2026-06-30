@@ -24,7 +24,11 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { FieldValue } from "firebase-admin/firestore";
+// Use the CLIENT-SDK serverTimestamp sentinel, not firebase-admin's. The
+// rules-unit-testing context's `firestore()` is the `firebase` client SDK,
+// which only recognizes its own sentinel; an admin-SDK FieldValue.serverTimestamp()
+// is rejected at .set() time with `invalid-argument` before any rule runs.
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-acquisition-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -67,7 +71,7 @@ test(
           source: "instagram",
           medium: "social",
           campaign: "spring2026",
-          firstSeenAt: FieldValue.serverTimestamp(),
+          firstSeenAt: serverTimestamp(),
         })
     );
   }
@@ -153,7 +157,7 @@ test("another user cannot create another user's acquisition", async () => {
         source: "instagram",
         medium: "social",
         campaign: "spring2026",
-        firstSeenAt: FieldValue.serverTimestamp(),
+        firstSeenAt: serverTimestamp(),
       })
   );
 });
@@ -207,7 +211,7 @@ test("unauthenticated user cannot read or create acquisition", async () => {
         source: "instagram",
         medium: "social",
         campaign: "spring2026",
-        firstSeenAt: FieldValue.serverTimestamp(),
+        firstSeenAt: serverTimestamp(),
       })
   );
 });
