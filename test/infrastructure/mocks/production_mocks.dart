@@ -3656,7 +3656,10 @@ class MockFirebaseMessaging extends Mock implements FirebaseMessaging {
 
   // Core token methods
   @override
-  Future<String?> getToken({String? vapidKey}) async => _token;
+  Future<String?> getToken({
+    String? serviceWorkerScriptPath,
+    String? vapidKey,
+  }) async => _token;
 
   @override
   Stream<String> get onTokenRefresh => _tokenRefreshStream;

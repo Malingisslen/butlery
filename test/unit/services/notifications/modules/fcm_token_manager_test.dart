@@ -24,7 +24,10 @@ class _MockDeviceRepo extends Mock implements DeviceRepository {}
 /// MockFirebaseMessaging variant that returns null token
 class _NullTokenMessaging extends MockFirebaseMessaging {
   @override
-  Future<String?> getToken({String? vapidKey}) async => null;
+  Future<String?> getToken({
+    String? serviceWorkerScriptPath,
+    String? vapidKey,
+  }) async => null;
 }
 
 void main() {
