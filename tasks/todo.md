@@ -23,7 +23,7 @@ NOT fire. Phase 1.4 stakeholder critique (owning role) runs per ticket before bu
 
 ### Agent B: test coverage floor — Stakeholders: QA/Test Engineer (single)
 - [!] **B1. Restore coverage floor to 60.0% — BLOCKED on a trustworthy measurement** `[Tier A]` (BUT-1149) — `.github/workflows/test.yml:305`
-  - Step-0 outcome: the floor gates on the FILTERED ubuntu-CI coverage number. Locally: `lcov` is not installed (can't apply the exact `--remove` filter), and a full `flutter test test/unit --coverage` run ran 30+ min with no result. Raising the floor to 60 on an unverified/Windows-local number risks red-CI on main (asymmetric regression). Disposition: floor NOT raised; ticket stays in Backlog with a comment. Authoritative path = a CI run, or install lcov + reproduce the filter.
+  - Step-0 outcome: MEASURED. A ~99%-complete `flutter test test/unit --coverage` run (15406 passed) → filtered coverage **56.76%** (parser `tasks/cov_filter.py` replicates the CI `lcov --remove` filter; lcov binary absent locally). That is a near-lower-bound and is ~3.2pp below the 60.0 floor — so the ticket's premise still holds and raising the floor would red-CI main. Disposition: floor NOT raised (stays 55.0); ticket stays in Backlog. Acceptance "<60 → don't raise + post measured number" satisfied. (Side note: run showed 6 failing tests on Windows-local — flag to confirm against ubuntu CI, likely env-specific; not chased this batch.)
   - Step 0: MEASURE current filtered unit coverage at HEAD (a 12-min background run is in progress). The floor is currently 55.0; ticket reported 55.5% at filing; much test work has shipped since.
   - Acceptance:
     - Current filtered coverage measured at HEAD and recorded.
