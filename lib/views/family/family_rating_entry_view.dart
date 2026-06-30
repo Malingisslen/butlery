@@ -7,6 +7,7 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
@@ -92,23 +93,28 @@ class _FamilyRatingEntryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     final vm = context.watch<FamilyRatingEntryViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: cs.surface,
       appBar: AppBar(
         title: Text(l10n.familyRatingTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(20),
           child: Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 8, right: 16),
+            padding: const EdgeInsetsDirectional.only(
+              start: 16,
+              bottom: 8,
+              end: 16,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 recipeTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.rust),
+                style: AppTextStyles.bodySmall.copyWith(color: cs.secondary),
               ),
             ),
           ),
@@ -130,6 +136,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     FamilyRatingEntryViewModel vm,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     // Holder name powers the "inmatat av {name}" attribution on proxy rows.
     String? holderName;
     for (final m in vm.present) {
@@ -144,7 +151,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
       children: [
         Text(
           l10n.familyRatingIntro,
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textLight),
+          style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
         ),
         const SizedBox(height: 16),
         for (final member in vm.present)
@@ -162,23 +169,24 @@ class _FamilyRatingEntryContent extends StatelessWidget {
   }
 
   Widget _privateNote(BuildContext context, AppLocalizations l10n) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
-      color: AppColors.cream,
+      color: cs.surface,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.lock_outline,
             size: 15,
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n.familyRatingPrivateNote,
               style: AppTextStyles.captionText.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -192,6 +200,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     FamilyRatingEntryViewModel vm,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -208,8 +217,8 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 label: Text(l10n.familyRatingSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
-                  backgroundColor: AppColors.forestGreen,
-                  foregroundColor: AppColors.cream,
+                  backgroundColor: cs.primary,
+                  foregroundColor: cs.surface,
                 ),
               ),
             ),
@@ -220,7 +229,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(40),
-                  foregroundColor: AppColors.textLight,
+                  foregroundColor: cs.outline,
                 ),
                 child: Text(l10n.whoAteSkip),
               ),
@@ -264,14 +273,15 @@ class _DinerRatingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          left: BorderSide(color: AppColors.forestGreen, width: 4),
-          bottom: BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.primary, width: 4),
+          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
         ),
       ),
       child: Row(
@@ -304,7 +314,7 @@ class _DinerRatingRow extends StatelessWidget {
                 Text(
                   _tag(context),
                   style: AppTextStyles.captionText.copyWith(
-                    color: AppColors.textLight,
+                    color: cs.outline,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -321,7 +331,7 @@ class _DinerRatingRow extends StatelessWidget {
                   Text(
                     l10n.familyRatingProxyNote(holderName!),
                     style: AppTextStyles.captionText.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -341,16 +351,17 @@ class _YouBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
-        color: AppColors.greenPale,
-        border: Border.all(color: AppColors.forestGreen),
+        color: context.butleryColors.heroPaleGreen,
+        border: Border.all(color: cs.primary),
       ),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: AppColors.forestGreen,
+          color: cs.primary,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
@@ -50,6 +49,7 @@ class _MinFamiljContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final vm = context.watch<MinFamiljViewModel>();
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AdaptiveAppBar(title: l10n.familyTitle),
@@ -71,7 +71,7 @@ class _MinFamiljContent extends StatelessWidget {
                       Text(
                         l10n.familyIntro,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMedium,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
@@ -121,6 +121,7 @@ class _MinFamiljContent extends StatelessWidget {
     MinFamiljViewModel vm,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -137,7 +138,7 @@ class _MinFamiljContent extends StatelessWidget {
             child: Text(
               l10n.familyEmptySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           )

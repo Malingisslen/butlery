@@ -8,6 +8,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Swedish (localized) label for a coarse age band.
 String ageBandLabel(AppLocalizations l10n, DinerAgeBand band) {
@@ -29,7 +30,10 @@ Color parseAvatarColor(String? hex) {
     final value = int.tryParse(hex.substring(1), radix: 16);
     if (value != null) return Color(0xFF000000 | value);
   }
-  return AppColors.forestGreen;
+  // Context-less helper: fall back to the brand forest-green literal
+  // (0xFF4A7C59, the value behind cs.primary) so callers in other files
+  // need no signature change.
+  return const Color(0xFF4A7C59);
 }
 
 String _initials(String name) {
@@ -53,9 +57,11 @@ class FamilySectionHeader extends StatelessWidget {
     return Semantics(
       header: true,
       child: Container(
-        padding: const EdgeInsets.only(left: AppDimensions.paddingM),
-        decoration: const BoxDecoration(
-          border: Border(left: BorderSide(color: AppColors.rust, width: 3)),
+        padding: const EdgeInsetsDirectional.only(
+          start: AppDimensions.paddingM,
+        ),
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: cs.secondary, width: 3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -68,7 +74,7 @@ class FamilySectionHeader extends StatelessWidget {
               Text(
                 trailing!,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textLight,
+                  color: cs.outline,
                 ),
               ),
           ],
@@ -116,18 +122,19 @@ class _TagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: emphasized ? AppColors.greenPale : AppColors.cream,
+        color: emphasized ? context.butleryColors.heroPaleGreen : cs.surface,
         border: Border.all(
-          color: emphasized ? AppColors.forestGreen : AppColors.divider,
+          color: emphasized ? cs.primary : cs.outlineVariant,
         ),
       ),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: emphasized ? AppColors.forestGreen : AppColors.textLight,
+          color: emphasized ? cs.primary : cs.outline,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -141,13 +148,14 @@ class _AllergenBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      color: AppColors.error.withValues(alpha: 0.1),
+      color: cs.error.withValues(alpha: 0.1),
       child: Text(
         label,
         style: AppTextStyles.captionText.copyWith(
-          color: AppColors.error,
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -175,9 +183,9 @@ class FamilyAccountRow extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cs.surface,
-        border: const Border(
-          left: BorderSide(color: AppColors.forestGreen, width: 4),
-          bottom: BorderSide(color: AppColors.rustLight, width: 3),
+        border: Border(
+          left: BorderSide(color: cs.primary, width: 4),
+          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
         ),
       ),
       child: Row(
@@ -239,9 +247,9 @@ class FamilyMemberRow extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: cs.surface,
-            border: const Border(
-              left: BorderSide(color: AppColors.rust, width: 4),
-              bottom: BorderSide(color: AppColors.rustLight, width: 3),
+            border: Border(
+              left: BorderSide(color: cs.secondary, width: 4),
+              bottom: const BorderSide(color: AppColors.rustLight, width: 3),
             ),
           ),
           child: Row(
@@ -275,7 +283,7 @@ class FamilyMemberRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textLight),
+              Icon(Icons.chevron_right, color: cs.outline),
             ],
           ),
         ),

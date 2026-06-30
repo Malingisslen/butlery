@@ -56,7 +56,7 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
 
   final result = await showModalBottomSheet<WhoAteResult>(
     context: context,
-    backgroundColor: AppColors.cream,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     isScrollControlled: true,
     builder: (_) => ChangeNotifierProvider<WhoIsEatingViewModel>.value(
       value: vm,
@@ -76,7 +76,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final vm = context.watch<WhoIsEatingViewModel>();
-    final primary = Theme.of(context).colorScheme.primary;
+    final cs = Theme.of(context).colorScheme;
 
     return SafeArea(
       child: Padding(
@@ -90,20 +90,20 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 14),
-                color: AppColors.divider,
+                color: cs.outlineVariant,
               ),
             ),
             Text(
               l10n.whoAteTitle,
-              style: AppTextStyles.headlineSmall.copyWith(color: primary),
+              style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.restaurant_outlined,
                   size: 15,
-                  color: AppColors.rust,
+                  color: cs.secondary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -112,7 +112,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.rust,
+                      color: cs.secondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -149,8 +149,8 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 label: Text(l10n.whoAteConfirm(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
-                  backgroundColor: AppColors.forestGreen,
-                  foregroundColor: AppColors.cream,
+                  backgroundColor: cs.primary,
+                  foregroundColor: cs.surface,
                 ),
               ),
             ),
@@ -162,7 +162,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                     Navigator.pop(context, const WhoAteResult.skipped()),
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(40),
-                  foregroundColor: AppColors.textLight,
+                  foregroundColor: cs.outline,
                 ),
                 child: Text(l10n.whoAteSkip),
               ),
@@ -198,7 +198,7 @@ class _DinerToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Theme.of(context).colorScheme.surface;
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       toggled: selected,
@@ -210,14 +210,14 @@ class _DinerToggleRow extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: surface,
+              color: cs.surface,
               border: Border(
                 left: BorderSide(
-                  color: selected ? AppColors.forestGreen : AppColors.divider,
+                  color: selected ? cs.primary : cs.outlineVariant,
                   width: 4,
                 ),
                 bottom: BorderSide(
-                  color: selected ? AppColors.rustLight : AppColors.divider,
+                  color: selected ? AppColors.rustLight : cs.outlineVariant,
                   width: 3,
                 ),
               ),
@@ -242,7 +242,7 @@ class _DinerToggleRow extends StatelessWidget {
                       Text(
                         _tag(context),
                         style: AppTextStyles.captionText.copyWith(
-                          color: AppColors.textLight,
+                          color: cs.outline,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -265,13 +265,14 @@ class _CheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: 26,
       height: 26,
       decoration: BoxDecoration(
-        color: selected ? AppColors.forestGreen : Colors.transparent,
+        color: selected ? cs.primary : Colors.transparent,
         border: Border.all(
-          color: selected ? AppColors.forestGreen : AppColors.divider,
+          color: selected ? cs.primary : cs.outlineVariant,
           width: 2,
         ),
       ),

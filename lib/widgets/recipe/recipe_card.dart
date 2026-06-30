@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -533,20 +532,21 @@ class RecipeCard extends StatelessWidget {
 
   /// Rust "alla X,X" pill \u2014 the public aggregate from all users.
   Widget _buildAllaPill(BuildContext context, double avg) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(_fmt(avg)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
-        decoration: const BoxDecoration(color: AppColors.rust),
+        decoration: BoxDecoration(color: cs.secondary),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star, size: 12, color: AppColors.cream),
+            Icon(Icons.star, size: 12, color: cs.surface),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeAllaRatingPill(_fmt(avg)),
               style: AppTextStyles.badge.copyWith(
-                color: AppColors.cream,
+                color: cs.surface,
                 fontWeight: FontWeight.w600,
               ),
             ),

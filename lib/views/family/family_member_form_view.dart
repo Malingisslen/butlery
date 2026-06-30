@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
@@ -59,7 +60,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     super.initState();
     _vm = MinFamiljViewModel()..load();
     final e = widget.existing;
-    _name = TextEditingController(text: e?.name ?? '')
+    _name = TextEditingController(text: (e?.name).orEmpty())
       ..addListener(() => setState(() {}));
     _color = e?.avatarColor ?? _palette.first;
     _band = e?.ageBand ?? DinerAgeBand.child;
@@ -124,6 +125,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     return ListenableBuilder(
       listenable: _vm,
       builder: (context, _) {
@@ -171,7 +173,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         icon: const Icon(Icons.delete_outline),
                         label: Text(l10n.familyDeleteMember),
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.error,
+                          foregroundColor: cs.error,
                           minimumSize: const Size.fromHeight(48),
                         ),
                       ),
@@ -186,20 +188,23 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     );
   }
 
-  Widget _fieldLabel(String text) => Padding(
+  Widget _fieldLabel(BuildContext context, String text) => Padding(
     padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
     child: Text(
       text.toUpperCase(),
-      style: AppTextStyles.labelSmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.labelSmall.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     ),
   );
 
   Widget _colorPicker(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(l10n.familyColorLabel),
+        _fieldLabel(context, l10n.familyColorLabel),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -218,7 +223,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                       color: parseAvatarColor(hex),
                       border: Border.all(
                         color: _color == hex
-                            ? AppColors.textDark
+                            ? cs.onSurface
                             : Colors.transparent,
                         width: 2,
                       ),
@@ -234,16 +239,17 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   Widget _ageBandPicker(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(l10n.familyAgeBandLabel),
+        _fieldLabel(context, l10n.familyAgeBandLabel),
         Row(
           children: [
             for (final band in DinerAgeBand.values)
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsetsDirectional.only(end: 6),
                   child: Semantics(
                     button: true,
                     selected: _band == band,
@@ -254,21 +260,17 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: _band == band
-                              ? AppColors.forestGreen
-                              : AppColors.cream,
+                          color: _band == band ? cs.primary : cs.surface,
                           border: Border.all(
                             color: _band == band
-                                ? AppColors.forestGreen
-                                : AppColors.divider,
+                                ? cs.primary
+                                : cs.outlineVariant,
                           ),
                         ),
                         child: Text(
                           ageBandLabel(l10n, band),
                           style: AppTextStyles.captionText.copyWith(
-                            color: _band == band
-                                ? Colors.white
-                                : AppColors.textLight,
+                            color: _band == band ? Colors.white : cs.outline,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -284,7 +286,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           child: Text(
             l10n.familyAgeBandHint,
             style: AppTextStyles.captionText.copyWith(
-              color: AppColors.textLight,
+              color: cs.outline,
             ),
           ),
         ),
@@ -329,13 +331,14 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   Widget _guardianConsentCard(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: const Border(
-          left: BorderSide(color: AppColors.forestGreen, width: 3),
+        color: cs.surface,
+        border: Border(
+          left: BorderSide(color: cs.primary, width: 3),
         ),
       ),
       child: Column(
@@ -344,8 +347,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           _consentHeader(
             l10n.familyConsentSectionTitle,
             l10n.familyConsentRequiredBadge,
-            AppColors.forestGreen,
-            titleColor: AppColors.forestGreen,
+            cs.primary,
+            titleColor: cs.primary,
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
@@ -366,15 +369,16 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   Widget _allergenCard(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     final showWithdraw =
         _isEdit && (widget.existing?.hasAllergenConsent ?? false);
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: const Border(
-          left: BorderSide(color: AppColors.warning, width: 3),
+        color: cs.surface,
+        border: Border(
+          left: BorderSide(color: context.butleryColors.warning, width: 3),
         ),
       ),
       child: Column(
@@ -383,14 +387,14 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           _consentHeader(
             l10n.familyAllergenSectionTitle,
             l10n.familyOptionalBadge,
-            AppColors.textLight,
-            titleColor: AppColors.rust,
+            cs.outline,
+            titleColor: cs.secondary,
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
             l10n.familyAllergenHealthNote,
             style: AppTextStyles.captionText.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
           ),
           CheckboxListTile(
@@ -415,7 +419,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               runSpacing: 6,
               children: [
                 for (final entry in AllergenPreferenceOptions.allergens.entries)
-                  _allergenChip(entry.key, entry.value),
+                  _allergenChip(context, entry.key, entry.value),
               ],
             ),
           ],
@@ -429,7 +433,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                 icon: const Icon(Icons.undo, size: 16),
                 label: Text(l10n.familyWithdrawAllergenConsent),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
+                  foregroundColor: cs.error,
                   minimumSize: const Size.fromHeight(48),
                 ),
               ),
@@ -439,7 +443,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     );
   }
 
-  Widget _allergenChip(String key, String label) {
+  Widget _allergenChip(BuildContext context, String key, String label) {
+    final cs = Theme.of(context).colorScheme;
     final selected = _allergens.contains(key);
     return Semantics(
       button: true,
@@ -456,17 +461,15 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: selected
-                ? AppColors.error.withValues(alpha: 0.1)
-                : AppColors.cream,
+            color: selected ? cs.error.withValues(alpha: 0.1) : cs.surface,
             border: Border.all(
-              color: selected ? AppColors.error : AppColors.divider,
+              color: selected ? cs.error : cs.outlineVariant,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.captionText.copyWith(
-              color: selected ? AppColors.error : AppColors.textLight,
+              color: selected ? cs.error : cs.outline,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -477,6 +480,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
 
   Widget _consentGivenInfo(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
     final consent = widget.existing!.guardianConsent!;
     final d = consent.at;
     final date =
@@ -486,20 +490,20 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          color: AppColors.greenPale,
+          color: context.butleryColors.heroPaleGreen,
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.verified_user_outlined,
                 size: 18,
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '${l10n.familyConsentGivenPrefix} $date · ${consent.consentVersion}',
                   style: AppTextStyles.captionText.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                   ),
                 ),
               ),
@@ -513,8 +517,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   Widget _errorBox(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
     child: Text(
-      _vm.error ?? '',
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+      (_vm.error).orEmpty(),
+      style: AppTextStyles.bodySmall.copyWith(
+        color: Theme.of(context).colorScheme.error,
+      ),
     ),
   );
 }

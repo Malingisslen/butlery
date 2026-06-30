@@ -7,6 +7,7 @@ import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
@@ -92,6 +93,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     FamilyRatingBreakdownViewModel vm,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       toggled: _expanded,
@@ -100,8 +102,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
         onTap: () => setState(() => _expanded = !_expanded),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: const BoxDecoration(
-            border: Border(left: BorderSide(color: AppColors.rust, width: 3)),
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: cs.secondary, width: 3)),
           ),
           child: Row(
             children: [
@@ -109,15 +111,15 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               Text(
                 l10n.familyRatingSectionTitle,
                 style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                 ),
               ),
               const SizedBox(width: 10),
-              _familyPill(vm.familyAverageDisplay),
+              _familyPill(context, vm.familyAverageDisplay),
               const Spacer(),
               Icon(
                 _expanded ? Icons.expand_less : Icons.expand_more,
-                color: AppColors.textLight,
+                color: cs.outline,
               ),
             ],
           ),
@@ -126,19 +128,20 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     );
   }
 
-  Widget _familyPill(String value) {
+  Widget _familyPill(BuildContext context, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      color: AppColors.forestGreen,
+      color: cs.primary,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.groups_outlined, size: 14, color: AppColors.cream),
+          Icon(Icons.groups_outlined, size: 14, color: cs.surface),
           const SizedBox(width: 4),
           Text(
             value,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.cream,
+              color: cs.surface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -152,18 +155,19 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     FamilyRatingBreakdownViewModel vm,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: const BoxDecoration(
-        color: AppColors.greenPale,
+      decoration: BoxDecoration(
+        color: context.butleryColors.heroPaleGreen,
         border: Border(
-          left: BorderSide(color: AppColors.forestGreen, width: 4),
-          bottom: BorderSide(color: AppColors.rustLight, width: 3),
+          left: BorderSide(color: cs.primary, width: 4),
+          bottom: const BorderSide(color: AppColors.rustLight, width: 3),
         ),
       ),
       child: Row(
         children: [
-          _familyPill(vm.familyAverageDisplay),
+          _familyPill(context, vm.familyAverageDisplay),
           const SizedBox(width: 14),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +181,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
               Text(
                 l10n.familyRatingCount(vm.familyCount),
                 style: AppTextStyles.captionText.copyWith(
-                  color: AppColors.textLight,
+                  color: cs.outline,
                 ),
               ),
             ],
@@ -192,6 +196,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     DinerRatingDisplay row,
     AppLocalizations l10n,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final isHolder =
         row.member.type == HouseholdMemberType.user && !row.isProxy;
     return Semantics(
@@ -201,9 +206,9 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
         onTap: () => _editMember(context, row.member.memberId),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: AppColors.cream, width: 1),
+              bottom: BorderSide(color: cs.surface, width: 1),
             ),
           ),
           child: Row(
@@ -234,7 +239,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                           Text(
                             l10n.familyRatingYou,
                             style: AppTextStyles.captionText.copyWith(
-                              color: AppColors.forestGreen,
+                              color: cs.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -245,14 +250,14 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                       Text(
                         l10n.familyRatingProxyEntered(row.enteredByName!),
                         style: AppTextStyles.captionText.copyWith(
-                          color: AppColors.textMedium,
+                          color: cs.onSurfaceVariant,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
                     Text(
                       l10n.familyRatingUpdated(_shortDate(row.lastUpdated)),
                       style: AppTextStyles.captionText.copyWith(
-                        color: AppColors.textLight,
+                        color: cs.outline,
                       ),
                     ),
                   ],
@@ -272,6 +277,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   /// Community average (shared recipes) + the user's own personal rating, shown
   /// as a comparison below the family rows. Sourced from the recipe itself.
   Widget _comparison(BuildContext context, AppLocalizations l10n) {
+    final cs = Theme.of(context).colorScheme;
     final recipe = widget.recipe;
     final communityAvg = recipe.core.averageRating;
     final communityCount = recipe.core.ratingCount;
@@ -283,15 +289,15 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     return Container(
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.only(top: 14),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.cream, width: 2)),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: cs.surface, width: 2)),
       ),
       child: Column(
         children: [
           if (showCommunity)
             _compareRow(
               context,
-              color: AppColors.rust,
+              color: cs.secondary,
               label: l10n.familyRatingCommunityLabel,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -300,7 +306,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     communityAvg.toStringAsFixed(1).replaceAll('.', ','),
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textLight,
+                      color: cs.outline,
                     ),
                   ),
                   if (communityCount != null) ...[
@@ -308,7 +314,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     Text(
                       l10n.familyRatingCount(communityCount),
                       style: AppTextStyles.captionText.copyWith(
-                        color: AppColors.textMedium,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -319,7 +325,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           if (showPersonal)
             _compareRow(
               context,
-              color: AppColors.warning,
+              color: context.butleryColors.warning,
               label: l10n.familyRatingYourOwnLabel,
               trailing: StarRatingRow(rating: personal, size: 16),
             ),
@@ -331,24 +337,25 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   /// Colour/term key so the green-vs-rust(-vs-gold) pills are never a guess —
   /// this is the "explained when you look into a recipe" legend.
   Widget _legend(BuildContext context, AppLocalizations l10n) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.all(10),
-      color: AppColors.cream,
+      color: cs.surface,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline,
             size: 14,
-            color: AppColors.textLight,
+            color: cs.outline,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n.familyRatingLegend,
               style: AppTextStyles.captionText.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
