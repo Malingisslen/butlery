@@ -252,7 +252,7 @@ void main() {
         expect(captured[2], false); // shareWithFriends default
         expect(captured[3], <String>[]); // no selected friend ids
         // Default share message is menuShareDefaultMessage, set in build().
-        expect(captured[4], 'Kolla min veckomeny!');
+        expect(captured[4], 'Ta gärna en titt på min veckomeny.');
       },
     );
 

@@ -45,31 +45,32 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Grattis!'), findsOneWidget);
+      expect(find.text('Första receptet är inlagt.'), findsOneWidget);
     });
 
-    testWidgets('renders the localized message with the recipe title injected', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          FirstRecipeCelebrationOverlay(
-            recipeTitle: 'Köttbullar',
-            onDismiss: () {},
-            autoDismissDuration: const Duration(hours: 1),
+    testWidgets(
+      'renders the localized message with the recipe title injected',
+      (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrap(
+            FirstRecipeCelebrationOverlay(
+              recipeTitle: 'Köttbullar',
+              onDismiss: () {},
+              autoDismissDuration: const Duration(hours: 1),
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // ARB: "Du har sparat ditt första recept: {recipeTitle}. Välkommen till Butlery!"
-      expect(
-        find.text(
-          'Du har sparat ditt första recept: Köttbullar. Välkommen till Butlery!',
-        ),
-        findsOneWidget,
-      );
-    });
+        // ARB: "Receptet {recipeTitle} är sparat. Butlery står redo."
+        expect(
+          find.text('Receptet Köttbullar är sparat. Butlery står redo.'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('renders the localized continue button label', (tester) async {
       await tester.pumpWidget(
@@ -247,7 +248,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
 
         expect(find.byType(FirstRecipeCelebrationOverlay), findsOneWidget);
-        expect(find.text('Grattis!'), findsOneWidget);
+        expect(find.text('Första receptet är inlagt.'), findsOneWidget);
 
         // The internal onDismiss closure pops the route.
         await tester.tap(find.text('Fortsätt'));

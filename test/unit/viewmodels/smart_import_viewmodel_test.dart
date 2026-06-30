@@ -920,7 +920,7 @@ void main() {
           ImportManagerResult.success(RecipeFactory.build(), strategy: 'url'),
         );
         await f;
-        expect(viewModel.progressMessage, 'Klar!');
+        expect(viewModel.progressMessage, 'Klar.');
       },
     );
   });
