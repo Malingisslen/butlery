@@ -42,6 +42,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 - **Enhetsdata:** Enhetstyp, operativsystem, appversion
 - **Teknisk data:** IP-adress, anslutningstyp
 - **Analyticsdata:** Användningsstatistik (endast om du har gett samtycke)
+- **Aviseringsuppgifter:** Leverans- och engagemangsuppgifter för aviseringar – vilken avisering som skickades till dig (eller som du utlöste till andra), när, dess leveransstatus och om du öppnade den
 
 ### 3.3 Information från tredje part
 

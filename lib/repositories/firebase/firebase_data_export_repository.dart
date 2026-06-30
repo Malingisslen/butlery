@@ -37,7 +37,13 @@ enum ExportResourceType {
   // previously omitted — a right-of-access gap (Art. 15).
   reports('reports'),
   pings('pings'),
-  realtimeRecipes('realtime_recipes')
+  realtimeRecipes('realtime_recipes'),
+  // BUT-1450: notification analytics the deletion cascade erases but the
+  // export previously omitted (Art. 15 ⊇ Art. 17).
+  notificationHistory('notification_history'),
+  notificationBatches('notification_batches'),
+  notificationEngagement('notification_engagement'),
+  notificationDelivery('notification_delivery')
   ;
 
   const ExportResourceType(this.tag);
@@ -602,6 +608,83 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('ownerId', isEqualTo: userId),
     userId,
     ExportResourceType.realtimeRecipes,
+    limit: maxDocuments,
+  );
+
+  // ── BUT-1450: notification analytics (Art. 15 ⊇ erased) ──
+
+  /// `notification_history` where `userId == uid` — notifications the user
+  /// received, carrying the human-readable title/body they saw. Most-recent
+  /// first (the composite index userId+sentAt already exists).
+  Future<List<Map<String, dynamic>>> exportNotificationHistory(
+    String userId, {
+    int maxDocuments = 2000,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.notificationHistory)
+        .where('userId', isEqualTo: userId)
+        .orderBy('sentAt', descending: true),
+    userId,
+    ExportResourceType.notificationHistory,
+    limit: maxDocuments,
+  );
+
+  /// `notification_batches` where `userId == uid`.
+  Future<List<Map<String, dynamic>>> exportNotificationBatches(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.notificationBatches)
+        .where('userId', isEqualTo: userId),
+    userId,
+    ExportResourceType.notificationBatches,
+    limit: maxDocuments,
+  );
+
+  /// `notification_engagement` where `userId == uid` — open/click events.
+  Future<List<Map<String, dynamic>>> exportNotificationEngagement(
+    String userId, {
+    int maxDocuments = 1000,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.notificationEngagement)
+        .where('userId', isEqualTo: userId),
+    userId,
+    ExportResourceType.notificationEngagement,
+    limit: maxDocuments,
+  );
+
+  /// `notification_delivery` where `senderId == uid` — delivery records for
+  /// notifications THIS user triggered toward others. The counterparty
+  /// (`targetUserId`) is stored only as a UID and is exported as-is — NOT
+  /// anonymised — per the Art. 15(4) include-the-counterparty decision (the
+  /// friendly record is in notification_history, joined via notificationId).
+  /// See `.claude/rules/accepted-deviations.md`.
+  Future<List<Map<String, dynamic>>> exportNotificationDeliverySent(
+    String userId, {
+    int maxDocuments = 1000,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.notificationDelivery)
+        .where('senderId', isEqualTo: userId),
+    userId,
+    ExportResourceType.notificationDelivery,
+    limit: maxDocuments,
+  );
+
+  /// `notification_delivery` where `targetUserId == uid` — delivery records for
+  /// notifications delivered TO this user. (Two-query union with the sent side;
+  /// Firestore has no cross-field OR.)
+  Future<List<Map<String, dynamic>>> exportNotificationDeliveryReceived(
+    String userId, {
+    int maxDocuments = 1000,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.notificationDelivery)
+        .where('targetUserId', isEqualTo: userId),
+    userId,
+    ExportResourceType.notificationDelivery,
     limit: maxDocuments,
   );
 }

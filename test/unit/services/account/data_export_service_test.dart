@@ -340,6 +340,12 @@ void main() {
         expect(data['pings'], isNotNull);
         expect(data['realtime_recipes'], isNotNull);
         expect(data['group_weekly_menu_plans'], isNotNull);
+        // BUT-1450: notification-analytics sections the deletion cascade
+        // erases must each be present for Art. 15 right-of-access.
+        expect(data['notification_history'], isNotNull);
+        expect(data['notification_batches'], isNotNull);
+        expect(data['notification_engagement'], isNotNull);
+        expect(data['notification_delivery'], isNotNull);
       });
     });
 
@@ -637,6 +643,220 @@ void main() {
         expect(data['pings']['total'], 0);
         expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
+      });
+    });
+
+    group('BUT-1450: notification analytics in GDPR export', () {
+      test('notification_history the user received exports with title/body '
+          'round-tripping (total_count==1)', () async {
+        // The deletion cascade erases these; Art. 15 requires the export to
+        // carry the friendly record the user actually saw. The repo query
+        // orderBy('sentAt', descending) requires the field present — confirmed
+        // fake_cloud_firestore honours orderBy on a present field.
+        await fakeFirestore.collection('notification_history').doc('nh-1').set({
+          'userId': testUserId,
+          'sentAt': DateTime(2026, 6, 20, 9, 0),
+          'title': 'Dags att handla',
+          'body': 'Din inköpslista är redo inför helgen.',
+          'type': 'shopping_reminder',
+        });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['notification_history'] as Map<String, dynamic>;
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason: 'a repo/ownership/orderBy regression yields {error: ...}',
+        );
+        expect(section['total_count'], 1);
+        final entries = section['notification_history'] as List<dynamic>;
+        final entry = entries.single as Map<String, dynamic>;
+        expect(entry['id'], 'nh-1');
+        expect(entry['data']['title'], 'Dags att handla');
+        expect(
+          entry['data']['body'],
+          'Din inköpslista är redo inför helgen.',
+          reason: 'the human-readable notification body must survive verbatim',
+        );
+      });
+
+      test(
+        'notification_batches the user owns export (total_count==1)',
+        () async {
+          await fakeFirestore
+              .collection('notification_batches')
+              .doc('nb-1')
+              .set({
+                'userId': testUserId,
+                'kind': 'weekly_digest',
+              });
+
+          final jsonString = await service.exportUserData();
+          final data = json.decode(jsonString) as Map<String, dynamic>;
+
+          final section = data['notification_batches'] as Map<String, dynamic>;
+          expect(section.containsKey('error'), isFalse);
+          expect(section['total_count'], 1);
+          final entries = section['notification_batches'] as List<dynamic>;
+          expect((entries.single as Map<String, dynamic>)['id'], 'nb-1');
+        },
+      );
+
+      test('notification_engagement (open/click events) export '
+          '(total_count==1)', () async {
+        await fakeFirestore
+            .collection('notification_engagement')
+            .doc('ne-1')
+            .set({
+              'userId': testUserId,
+              'action': 'opened',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['notification_engagement'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 1);
+        final entry =
+            (section['notification_engagement'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(entry['id'], 'ne-1');
+        expect(entry['data']['action'], 'opened');
+      });
+
+      test('notification_delivery merges sent + received, and the '
+          'counterparty UID is INCLUDED, not anonymised', () async {
+        // One row where the user SENT (target is someone else), one where the
+        // user RECEIVED (sender is someone else). The union is two rows.
+        await fakeFirestore
+            .collection('notification_delivery')
+            .doc('nd-sent')
+            .set({
+              'senderId': testUserId,
+              'targetUserId': 'other-uid',
+              'notificationId': 'n-sent',
+            });
+        await fakeFirestore
+            .collection('notification_delivery')
+            .doc('nd-recv')
+            .set({
+              'senderId': 'other-uid',
+              'targetUserId': testUserId,
+              'notificationId': 'n-recv',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['notification_delivery'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse);
+        expect(section['total_count'], 2);
+        expect(section['sent_count'], 1);
+        expect(section['received_count'], 1);
+
+        final rows = (section['notification_delivery'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        final receivedRow = rows.firstWhere(
+          (r) =>
+              (r['data'] as Map<String, dynamic>)['targetUserId'] == testUserId,
+        );
+        // BUT-1450 decided behaviour (see accepted-deviations.md): on the row
+        // where THIS user is the target, the counterparty senderId is exported
+        // AS-IS — the real 'other-uid', NOT '[anonymised]'. This pins the
+        // include-the-counterparty Art. 15(4) decision; a redaction regression
+        // (replacing the UID) must fail here.
+        expect(
+          (receivedRow['data'] as Map<String, dynamic>)['senderId'],
+          'other-uid',
+          reason: 'counterparty UID is included, never anonymised (BUT-1450)',
+        );
+      });
+
+      test('notification_delivery de-dupes a self-targeted row matched by '
+          'both queries (appears once)', () async {
+        // senderId == targetUserId == the user: both the sent query and the
+        // received query match this single doc; the merged list must hold it
+        // exactly once even though both counts see it.
+        await fakeFirestore
+            .collection('notification_delivery')
+            .doc('nd-self')
+            .set({
+              'senderId': testUserId,
+              'targetUserId': testUserId,
+              'notificationId': 'n-self',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['notification_delivery'] as Map<String, dynamic>;
+        expect(section['sent_count'], 1);
+        expect(section['received_count'], 1);
+        // De-duped by doc id: counted once in the merged list / total_count.
+        expect(section['total_count'], 1);
+        final rows = section['notification_delivery'] as List<dynamic>;
+        expect(rows, hasLength(1));
+        expect((rows.single as Map<String, dynamic>)['id'], 'nd-self');
+      });
+
+      test('ownership-negative: foreign notification_delivery and foreign '
+          'notification_history never leak into the bundle', () async {
+        // A delivery doc where neither side is the user.
+        await fakeFirestore
+            .collection('notification_delivery')
+            .doc('nd-foreign')
+            .set({
+              'senderId': 'stranger-a',
+              'targetUserId': 'stranger-b',
+            });
+        // A history doc owned by a different user.
+        await fakeFirestore
+            .collection('notification_history')
+            .doc('nh-foreign')
+            .set({
+              'userId': 'other-uid',
+              'sentAt': DateTime(2026, 6, 21, 9, 0),
+              'title': 'Inte din',
+              'body': 'Tillhör någon annan.',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final delivery = data['notification_delivery'] as Map<String, dynamic>;
+        expect(delivery['total_count'], 0);
+        expect(delivery['notification_delivery'], isEmpty);
+
+        final history = data['notification_history'] as Map<String, dynamic>;
+        expect(history['total_count'], 0);
+        final historyIds = (history['notification_history'] as List<dynamic>)
+            .map((e) => (e as Map<String, dynamic>)['id'])
+            .toList();
+        expect(historyIds, isNot(contains('nh-foreign')));
+      });
+
+      test('empty-safe: a user with no notification analytics still gets all '
+          'four sections present with no error', () async {
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        for (final key in const [
+          'notification_history',
+          'notification_batches',
+          'notification_engagement',
+          'notification_delivery',
+        ]) {
+          final section = data[key] as Map<String, dynamic>;
+          expect(
+            section.containsKey('error'),
+            isFalse,
+            reason: '$key must be empty-safe, not an {error: ...} payload',
+          );
+          expect(section['total_count'], 0);
+        }
       });
     });
 

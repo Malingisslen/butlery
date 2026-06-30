@@ -194,6 +194,18 @@ class DataExportService extends BaseService {
       'group_weekly_menu_plans': _contentManager.exportGroupWeeklyMenuPlans(
         userId,
       ),
+      // BUT-1450: notification analytics the deletion cascade erases (Art. 15).
+      'notification_history': _preferencesManager.exportNotificationHistory(
+        userId,
+      ),
+      'notification_batches': _preferencesManager.exportNotificationBatches(
+        userId,
+      ),
+      'notification_engagement': _preferencesManager
+          .exportNotificationEngagement(userId),
+      'notification_delivery': _preferencesManager.exportNotificationDelivery(
+        userId,
+      ),
     };
 
     final keys = futures.keys.toList();

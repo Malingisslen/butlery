@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
-    show sanitizeForJson;
+    show ExportPaginationHelper, sanitizeForJson;
 
 /// Handles export of user preferences: settings, notifications.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -167,6 +167,138 @@ class PreferencesExportManager {
     } catch (e) {
       app_logger.AppLogger.error(
         '[$_logTag] Failed to export category preferences',
+        e,
+      );
+      return {'error': e.toString()};
+    }
+  }
+
+  /// BUT-1450: Export notification-history records (notifications the user
+  /// received, with the title/body they saw). The deletion cascade erases
+  /// these, so Art. 15 requires the export to include them.
+  Future<Map<String, dynamic>> exportNotificationHistory(String userId) async {
+    try {
+      final limit = ExportPaginationHelper.getLimitForType(
+        'notification_history',
+      );
+      final entries = await _exports.exportNotificationHistory(
+        userId,
+        maxDocuments: limit,
+      );
+      return {
+        'notification_history': entries
+            .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
+            .toList(),
+        'total_count': entries.length,
+        if (entries.length >= limit) 'truncated': true,
+        if (entries.length >= limit)
+          'note': 'Limited to the $limit most recent records',
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export notification history',
+        e,
+      );
+      return {'error': e.toString()};
+    }
+  }
+
+  /// BUT-1450: Export notification_batches (userId-scoped).
+  Future<Map<String, dynamic>> exportNotificationBatches(String userId) async {
+    try {
+      final limit = ExportPaginationHelper.getLimitForType(
+        'notification_batches',
+      );
+      final entries = await _exports.exportNotificationBatches(
+        userId,
+        maxDocuments: limit,
+      );
+      return {
+        'notification_batches': entries
+            .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
+            .toList(),
+        'total_count': entries.length,
+        if (entries.length >= limit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export notification batches',
+        e,
+      );
+      return {'error': e.toString()};
+    }
+  }
+
+  /// BUT-1450: Export notification_engagement (userId-scoped open/click events).
+  Future<Map<String, dynamic>> exportNotificationEngagement(
+    String userId,
+  ) async {
+    try {
+      final limit = ExportPaginationHelper.getLimitForType(
+        'notification_engagement',
+      );
+      final entries = await _exports.exportNotificationEngagement(
+        userId,
+        maxDocuments: limit,
+      );
+      return {
+        'notification_engagement': entries
+            .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
+            .toList(),
+        'total_count': entries.length,
+        if (entries.length >= limit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export notification engagement',
+        e,
+      );
+      return {'error': e.toString()};
+    }
+  }
+
+  /// BUT-1450: Export notification_delivery — the union of records where the
+  /// user is the SENDER and where the user is the TARGET (two queries; Firestore
+  /// has no cross-field OR), de-duplicated by doc id. The counterparty is stored
+  /// only as a UID and is exported AS-IS (not anonymised) per the Art. 15(4)
+  /// include-the-counterparty decision: the right of access reflects what the
+  /// user's data actually is, and the human-readable notification is in
+  /// notification_history (joined via notificationId). See
+  /// `.claude/rules/accepted-deviations.md`.
+  Future<Map<String, dynamic>> exportNotificationDelivery(
+    String userId,
+  ) async {
+    try {
+      final limit = ExportPaginationHelper.getLimitForType(
+        'notification_delivery',
+      );
+      final sent = await _exports.exportNotificationDeliverySent(
+        userId,
+        maxDocuments: limit,
+      );
+      final received = await _exports.exportNotificationDeliveryReceived(
+        userId,
+        maxDocuments: limit,
+      );
+      // De-dupe by doc id — a self-targeted notification can match both queries.
+      final byId = <String, Map<String, dynamic>>{};
+      for (final e in [...sent, ...received]) {
+        byId[e['id'] as String] = {
+          'id': e['id'],
+          'data': sanitizeForJson(e['data']),
+        };
+      }
+      final merged = byId.values.toList();
+      return {
+        'notification_delivery': merged,
+        'total_count': merged.length,
+        'sent_count': sent.length,
+        'received_count': received.length,
+        if (sent.length >= limit || received.length >= limit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export notification delivery',
         e,
       );
       return {'error': e.toString()};

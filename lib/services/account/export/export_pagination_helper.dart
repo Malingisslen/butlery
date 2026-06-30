@@ -181,6 +181,12 @@ class ExportPaginationHelper {
     'weekly_menu_plans': 260, // ~5 years × 52 weeks
     'pantry_items': 1000,
     'recipe_cook_events': 2000, // ~5 years of daily cooking
+    // BUT-1450: notification analytics (Art. 15 export). History + delivery
+    // can be high-volume, so cap explicitly rather than fall through to 10k.
+    'notification_history': 2000,
+    'notification_delivery': 1000,
+    'notification_batches': 500,
+    'notification_engagement': 1000,
   };
 
   /// Get export limit for content type

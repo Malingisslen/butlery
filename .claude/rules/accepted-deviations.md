@@ -36,3 +36,17 @@ The following intentionally differ from the design mockup — do **not** file
 
 **Why:** Each was a considered product/UX call recorded in project memory ("UI/UX Design
 Preferences"). The mockup is a reference, not a contract, on these points. — 2026-06-22
+
+### [Privacy/GDPR] notification_delivery counterparty is exported, not anonymised (BUT-1450)
+The GDPR data export (`DataExportService`) includes the `notification_delivery` records' raw
+counterparty identifier (`senderId` / `targetUserId`) **without anonymisation or redaction**.
+A blind Privacy/DPO + Legal panel recommended stripping the counterparty UID; that
+recommendation was **consciously overridden by Malin**.
+**Why:** Art. 15(4) is a case-by-case *balancing* test, not a blanket "redact all third parties"
+rule. Mainstream exports (Facebook, Google) include the counterparty so the subject sees their
+own interaction data as they experienced it; the human-readable notification is already in
+`notification_history` (joined via `notificationId`). The only thing deliberately *not* exported
+is bulk UID→name resolution (cost). Do **not** file a "third-party PII / must redact `senderId`"
+finding against the notification-export path — it is a decided product+legal call. (The narrow
+exception the panel flagged — a counterparty in a notification the user never saw — does not
+apply: all exported notification categories are user-facing.) — 2026-06-30

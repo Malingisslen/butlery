@@ -42,6 +42,7 @@ We collect the following types of personal data when you use Butlery:
 - **Device data:** Device type, operating system, app version
 - **Technical data:** IP address, connection type
 - **Analytics data:** Usage statistics (only with your consent)
+- **Notification records:** Delivery and engagement records for notifications — which notification was sent to you (or that you triggered to others), when, its delivery status, and whether you opened it
 
 ### 3.3 Information from third parties
 

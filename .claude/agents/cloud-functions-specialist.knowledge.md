@@ -2414,3 +2414,48 @@ is a real guard, not a tautology: temporarily reverting the SUT to the buggy
   present in this env); then
   `npx ts-node src/__tests__/request-account-deletion.integration.test.ts`. The test
   self-clears its namespace via the emulator REST DELETE endpoint before/after.
+
+### 2026-06-30 — BUT-1450 residual-probe field scoping for notification analytics [Pattern discovered]
+
+`probeResidualData` in `account/account-deletion-cascade.ts` (the post-cascade
+"did anything survive?" sweep) was extended to cover the notification-analytics
+collections that `deleteNotificationAnalytics` erases. Reviewed clean; build
+clean; 42/42 deletion-cascade integration tests pass against the live emulator.
+
+**The probe MUST mirror the deleter's field scoping, collection by collection.**
+`deleteNotificationAnalytics` erases on these exact fields:
+- `notification_history` / `notification_batches` / `notification_engagement` → `userId == uid`
+- `notification_delivery` → `senderId == uid` AND `targetUserId == uid` (two queries, unioned)
+
+The change reflects that split correctly: the first three go in the `userId`-scoped
+`probes` array (the existing `count().where("userId","==",uid)` loop); `notification_delivery`
+gets its OWN loop over `["senderId","targetUserId"]`. Putting `notification_delivery`
+in the userId array would silently `count()` zero — the exact `realtime_recipes`/`ownerId`
+wrong-field trap from BUT-1396 (a deleter/probe filtering the wrong field passes green
+while leaving Art.17 data behind). So the probe now catches a silent delete failure for
+each of the five collections, not just three.
+
+**Patterns worth remembering**:
+- **A residual probe is only as good as its field alignment with the deleter.** When
+  reviewing a new probe, open the matching `delete*` function and diff the `.where()`
+  field per collection. A probe on the wrong field is worse than no probe — it reports
+  "clean" while data persists.
+- **`count()` is the right primitive for residual probes** (vs `limit(1).get()` used for
+  the feature-retention "did it ever happen" flags): here we want the actual surviving
+  doc count in the warn log for ops triage, and `count()` is a single aggregation read.
+- **The probe never aborts the cascade** — preserved. Both loops swallow errors into
+  `logger.error` and bump `residual += 1` on probe failure (fail-toward-flagging:
+  a probe that itself errors is treated as "possible residual" so `residual_data_detected`
+  still trips). The only side effect is appending `"residual_data_detected"` to
+  `result.failedCollections`; nothing throws, no retry storm.
+- **Accepted Low — self-notification double-count.** A `notification_delivery` doc with
+  `senderId == uid` AND `targetUserId == uid` (user notified themselves) is counted twice
+  across the two probe queries, inflating the residual total. Harmless: `residual` is a
+  trip-the-flag signal, not an exact figure, and the deleter's `batchDeleteAll` dedups by
+  doc ref anyway. Not worth a `Set<docId>` dedup pass on a once-per-deletion sweep.
+- **Coverage gap noted, not a blocker.** Neither `request-account-deletion.test.ts` (unit)
+  nor the integration suite asserts `probeResidualData` behaviour directly — the integration
+  run exercises it only incidentally (ends "cascade: completed with no failed collections").
+  A targeted probe test (seed a residual `notification_delivery.senderId` doc, assert
+  `residual_data_detected` trips) would lock the field scoping against future drift; left
+  for the owning ticket.

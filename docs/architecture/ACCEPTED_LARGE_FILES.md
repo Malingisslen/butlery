@@ -67,6 +67,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_user_repository.dart` | 610 | User profile CRUD + settings + GDPR cascade methods (BUT-498) |
 | `firebase_ingredient_repository.dart` | 521 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 515 | Friends CRUD + query |
+| `firebase_data_export_repository.dart` | 690 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. |
 
 ## Service Modules / Facades
 

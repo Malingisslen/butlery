@@ -82,7 +82,15 @@ export async function probeResidualData(
   uid: string,
   result: DeletionResult,
 ): Promise<void> {
-  const probes = ["recipes", "user_notifications", "user_fcm_tokens"] as const;
+  const probes = [
+    "recipes",
+    "user_notifications",
+    "user_fcm_tokens",
+    // BUT-1450: notification analytics the cascade erases (all userId-scoped).
+    "notification_history",
+    "notification_batches",
+    "notification_engagement",
+  ] as const;
   let residual = 0;
   for (const col of probes) {
     try {
@@ -99,6 +107,31 @@ export async function probeResidualData(
     } catch (err) {
       residual += 1;
       logger.error(`[deletion-cascade] residual probe failed: ${col}`, { err });
+    }
+  }
+  // BUT-1450: notification_delivery is scoped by senderId / targetUserId, NOT
+  // userId, so it needs its own two-field probe — a userId==uid probe would
+  // silently match zero (the realtime_recipes wrong-field trap).
+  for (const field of ["senderId", "targetUserId"] as const) {
+    try {
+      const snap = await db
+        .collection("notification_delivery")
+        .where(field, "==", uid)
+        .count()
+        .get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn(
+          `[deletion-cascade] residual in notification_delivery.${field}: ${count} docs`,
+        );
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(
+        `[deletion-cascade] residual probe failed: notification_delivery.${field}`,
+        { err },
+      );
     }
   }
   if (residual > 0 && !result.failedCollections.includes("residual_data_detected")) {
