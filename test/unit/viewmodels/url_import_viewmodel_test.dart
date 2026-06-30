@@ -585,7 +585,7 @@ void main() {
         // Assert
         expect(
           suggestions,
-          contains('Känd receptsida — bra chans att importera!'),
+          contains('Känd receptsida — goda chanser att importera.'),
         );
       });
 
@@ -657,10 +657,13 @@ void main() {
         // When it's a known site but no recipe keyword, should still get known site message
         expect(
           suggestions,
-          contains('Känd receptsida — bra chans att importera!'),
+          contains('Känd receptsida — goda chanser att importera.'),
         );
         // When only one positive suggestion and is known site, should show optimal
-        expect(suggestions.any((s) => s.contains('Perfekt')), isTrue);
+        expect(
+          suggestions.any((s) => s.contains('Adressen ser bra ut')),
+          isTrue,
+        );
       });
 
       test('should return validation errors when URL invalid', () {

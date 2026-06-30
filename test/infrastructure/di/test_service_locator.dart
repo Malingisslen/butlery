@@ -40,6 +40,18 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 
+// Family-rating layer (production: social_module). Registered here so any
+// view/widget test that renders RecipeDetailView (→ FamilyRatingBreakdown
+// resolves these at build time) doesn't throw "not registered" (BUT-1448).
+import 'package:mocktail/mocktail.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
+import 'package:butlery/services/family/household_roster_service.dart';
+import 'package:butlery/services/family/family_rating_service.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/models/family_rating.dart';
+
 // ViewModel imports
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
@@ -54,6 +66,20 @@ import '../mocks/widget_mocks.dart';
 // View testing specific imports (mock_view_models.dart not wired up)
 
 // Core interfaces - production ServiceLocator integration removed for E2E simplification
+
+// BUT-1448: lightweight mocks for the family-rating layer. Stubbed to the
+// "no ratings" path so FamilyRatingBreakdown renders nothing (its default)
+// without Firebase. Tests that exercise family ratings register their own via
+// TestServiceLocator.registerSingleton (which unregisters-first).
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockDinerProfileRepository extends Mock
+    implements DinerProfileRepository {}
+
+class _MockHouseholdRosterService extends Mock
+    implements HouseholdRosterService {}
+
+class _MockFamilyRatingService extends Mock implements FamilyRatingService {}
 
 /// Test service locator that matches production patterns
 ///
@@ -275,6 +301,19 @@ class TestServiceLocator {
     getIt.registerSingleton<CollaborativeRecipeRepository>(
       MockFactory.createCollaborativeRecipeRepository(),
     );
+
+    // Family-rating repositories (BUT-1448). ensureForUser is stubbed so the
+    // recipe-detail breakdown's load() resolves a household then finds no
+    // ratings → renders nothing.
+    final householdRepo = _MockHouseholdRepository();
+    when(
+      () => householdRepo.ensureForUser(any()),
+    ).thenAnswer((_) async => Household.create(creatorId: 'test-user-123'));
+    getIt.registerSingleton<HouseholdRepository>(householdRepo);
+
+    getIt.registerSingleton<DinerProfileRepository>(
+      _MockDinerProfileRepository(),
+    );
   }
 
   /// Register all service mocks
@@ -295,6 +334,23 @@ class TestServiceLocator {
     getIt.registerSingleton<PermissionService>(
       MockFactory.createPermissionService(),
     );
+
+    // Family-rating services (BUT-1448). getMemberRatings/getRoster stubbed
+    // empty so the recipe-detail breakdown settles on the no-ratings path.
+    final rosterService = _MockHouseholdRosterService();
+    when(
+      () => rosterService.getRoster(any()),
+    ).thenAnswer((_) async => const <HouseholdRosterMember>[]);
+    getIt.registerSingleton<HouseholdRosterService>(rosterService);
+
+    final familyRatingService = _MockFamilyRatingService();
+    when(
+      () => familyRatingService.getMemberRatings(
+        householdId: any(named: 'householdId'),
+        recipeId: any(named: 'recipeId'),
+      ),
+    ).thenAnswer((_) async => const <FamilyRating>[]);
+    getIt.registerSingleton<FamilyRatingService>(familyRatingService);
 
     // Unified Recipe Service
     getIt.registerSingleton<UnifiedRecipeService>(
