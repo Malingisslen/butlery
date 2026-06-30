@@ -155,7 +155,10 @@ void main() {
 
       // BUT-1426: the inline link is now a Semantics(link:)+GestureDetector,
       // located by its accessible name (the contract screen readers see).
-      final link = find.bySemanticsLabel(_kTermsA11yLabel);
+      // Use .first: the footer also carries a11yTermsOfServiceLink now, so
+      // the finder matches two nodes. The inline link precedes the footer in
+      // the widget tree (Column: form body first, _buildFooter last).
+      final link = find.bySemanticsLabel(_kTermsA11yLabel).first;
       await tester.ensureVisible(link);
       await tester.pumpAndSettle(_kPumpCap);
       await tester.tap(link);
@@ -194,7 +197,13 @@ void main() {
       // (isHidden) semantics node materializes, then assert the label exists.
       // Its absence (e.g. a regression to bare GestureDetector or Text.rich
       // recognizer spans) fails this assertion.
-      final tosLink = find.bySemanticsLabel(_kTermsA11yLabel);
+      //
+      // NOTE: after the footer-label fix (_buildFooter now also carries
+      // a11yTermsOfServiceLink / a11yPrivacyPolicyLink), this finder matches
+      // two nodes in register mode (inline + footer). Use .first to pin to the
+      // inline link — the footer is the last child of the Column so appears
+      // second in the semantics tree.
+      final tosLink = find.bySemanticsLabel(_kTermsA11yLabel).first;
       await tester.ensureVisible(tosLink);
       await tester.pumpAndSettle(_kPumpCap);
 
@@ -206,11 +215,45 @@ void main() {
       expect(
         find.bySemanticsLabel(_kPrivacyA11yLabel),
         findsWidgets,
-        reason: 'Privacy inline link must carry its a11y label',
+        reason: 'Privacy inline and footer links must carry the a11y label',
       );
 
       handle.dispose();
     });
+
+    testWidgets(
+      'footer links expose named semantic labels to screen readers in login mode',
+      // Regression for the WCAG 4.1.2 gap closed by the staged change:
+      // _buildFooter() had Semantics(link: true) nodes with no label, so screen
+      // readers announced nothing. After the fix, each node carries the ARB
+      // string (a11yTermsOfServiceLink / a11yPrivacyPolicyLink). This test
+      // pumps the default login mode (no pumpRegisterMode) so the footer is the
+      // only source of these semantic nodes — proving the fix without relying on
+      // the register-mode inline links as a bystander match.
+      (tester) async {
+        final handle = tester.ensureSemantics();
+
+        await tester.pumpWidget(_appUnderTest());
+        await tester.pumpAndSettle(_kPumpCap);
+
+        // Both labels must be present. Absence means the Semantics node has no
+        // label attribute — exactly the pre-fix state.
+        expect(
+          find.bySemanticsLabel(_kTermsA11yLabel),
+          findsWidgets,
+          reason:
+              'footer ToS Semantics node must carry the a11yTermsOfServiceLink label',
+        );
+        expect(
+          find.bySemanticsLabel(_kPrivacyA11yLabel),
+          findsWidgets,
+          reason:
+              'footer Privacy Semantics node must carry the a11yPrivacyPolicyLink label',
+        );
+
+        handle.dispose();
+      },
+    );
 
     testWidgets('consent checkboxes provide a >=48dp tap target', (
       tester,

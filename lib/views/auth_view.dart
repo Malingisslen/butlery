@@ -579,6 +579,7 @@ class _AuthViewState extends State<AuthView> {
           children: [
             Semantics(
               link: true,
+              label: context.l10n.a11yTermsOfServiceLink,
               child: InkWell(
                 onTap: () =>
                     Navigator.pushNamed(context, Routes.termsOfService),
@@ -600,6 +601,7 @@ class _AuthViewState extends State<AuthView> {
             ),
             Semantics(
               link: true,
+              label: context.l10n.a11yPrivacyPolicyLink,
               child: InkWell(
                 onTap: () => Navigator.pushNamed(context, Routes.privacyPolicy),
                 child: Text(
