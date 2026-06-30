@@ -1,69 +1,51 @@
 # Sprint Backlog
 
-## Sprint: autonomous-lane batch (notifications, a11y, voice, search) — 2026-06-29
+## Sprint: autonomous-lane (deploy rollback + coverage floor) — 2026-06-30
 
-Pulled 4 `autonomous`/clean tickets. All router `single`-tier, no high-stakes hits → Phase 1.5
-plan-gate does not fire for any. Carry-forward BUT-1438 dropped: already Done + archived
-2026-06-28 (all 3 export test files exist). `need-malin` legal/consent tickets (BUT-1395/96/99/
-1400) left for Malin; BUT-1424 deploy-rollback deferred (Tier-C, unverifiable without a real
-failed deploy).
+The `autonomous` lane holds exactly 5 tickets. Three are ops/credential-gated (Tier D):
+BUT-889 (paid Vertex/Mistral API + WIF service account), BUT-1240 (device-capable CI runner),
+and the live-verification half of BUT-1424. BUT-1176 is Low/optional ("pick up only if
+custom_lint is being added for other reasons" — zero current leaks) so it's deliberately
+deprioritized, not silently skipped. That leaves two genuinely workable picks this batch.
 
-### Agent A: notifications/CF — Stakeholders: Growth Marketer/ASO (single)
-- [x] **A1. Dedicated `digest` push category, gated on a digest preference** `[Tier A]` (BUT-1427) — DONE, `11e5b5e80`, closed Done
-  - `functions/src/analytics/send-activity-digest.ts` sends FCM as category `reEngagement`; the
-    in-app doc gates on `digestFrequency`, so digest opt-out is honored only for the doc, not the push.
-  - Files: `functions/src/analytics/send-activity-digest.ts`, the BUT-438 typed push-category contract,
-    `functions/src/shared/preference-aware-push.ts`, `lib/models/notification_preferences.dart`.
-  - Acceptance: a `digest` category exists in the typed contract + the preference model · the digest
-    push is gated on `digest` (passed to evaluateSendGate + sendPushToUserRespectingPreferences), not
-    `reEngagement` · a user with digest opted-out but reEngagement on does NOT get the digest push
-    (test) · in-app doc gating unchanged; analyze + CF tests green.
+Both router `single`-tier, no high-stakes hits, both Medium priority → Phase 1.5 plan-gate does
+NOT fire. Phase 1.4 stakeholder critique (owning role) runs per ticket before build.
 
-### Agent B: accessibility/auth UI — Stakeholders: Accessibility Specialist (single)
-- [x] **B1. Registration checkboxes ≥48dp + link Semantics on ToS/Privacy spans** `[Tier B]` (BUT-1426) — DONE, `e84f56538`, In Review. Follow-up BUT-1446 filed (3 more TapGestureRecognizer gaps).
-  - Both registration checkboxes pinned to 24x24 (half the 48dp WCAG floor); inline ToS/Privacy
-    TextSpans carry no link Semantics; both slip the audit scanner.
-  - Files: `lib/views/auth_view.dart`, `tools/audit_unwrapped_tap_targets.dart`.
-  - Acceptance: both checkboxes have a ≥48dp tap target · inline ToS/Privacy spans expose link role +
-    accessible name · the audit scanner flags TapGestureRecognizer links (or the new affordance passes
-    it) · no layout regression vs current screen (preview screenshot) · analyze clean.
+### Agent A: deploy reliability — Stakeholders: DevOps/SRE (single)
+- [ ] **A1. Add an executable rollback path to the backend deploy** `[Tier C]` (BUT-1424) — `.github/workflows/deploy-firebase.yml`
+  - Capture pre-deploy state (functions manifest + the rules/indexes/storage config being replaced) → workflow artifact; add an `if: failure()` rollback that redeploys the previous-good source for in-scope targets.
+  - Acceptance:
+    - The workflow captures pre-deploy state (functions:list manifest + replaced rules/indexes/storage config) and uploads it as a workflow artifact.
+    - A rollback step runs ONLY on deploy failure (`if: failure()`), redeploying the in-scope targets from a resolved previous ref (prior `v*` tag on tag-push, `HEAD^` on dispatch) — never on the pre-deploy rules-gate failure.
+    - The previous ref is resolved dynamically (no hardcoded revision) and the rollback no-ops gracefully (logs, exit 0) when no previous ref exists.
+    - Success-path deploy behaviour is unchanged (same targets/commands); the workflow YAML parses.
+  - Negative constraint: do NOT change the deploy targets, project, or the existing rules-gate / smoke-gate logic.
 
-### Agent C: voice/i18n — Stakeholders: UX Writer/Content Strategist (single)
-- [x] **C1. Reframe ~69 celebration/success strings off exclamation marks** `[Tier B]` (BUT-1431) — DONE, `adc8a5b8d`, In Review. 79 strings (10 more than estimate — embedded-quote strings a naive grep missed).
-  - Butler-voice guide rule #1 ("Inga utropstecken. Aldrig.") + rule #4 (bans "Grattis!") violated by
-    the highest-visibility success strings.
-  - Files: `lib/l10n/app_sv.arb`, `lib/l10n/app_en.arb`, `.claude/rules/code-style.md` (voice pointer).
-  - Acceptance: the named strings (celebrationFirstRecipeTitle, successItemCreated, recipeSaved,
-    profileSaved, profileDeleteIrreversible, urlSuggestionOptimal) + the ~69 `!`-terminated sv strings
-    rewritten without `!` in butler register; matching en updated · grep proof: no `!` in the targeted
-    set · a voice-guide pointer added to code-style.md (auto-loads on ARB edits) · ARB still valid
-    (gen-l10n / analyze clean); ICU placeholders untouched.
-  - Negative constraint: don't touch out-of-scope strings; don't alter ICU placeholders/`{counts}`.
+### Agent B: test coverage floor — Stakeholders: QA/Test Engineer (single)
+- [!] **B1. Restore coverage floor to 60.0% — BLOCKED on a trustworthy measurement** `[Tier A]` (BUT-1149) — `.github/workflows/test.yml:305`
+  - Step-0 outcome: the floor gates on the FILTERED ubuntu-CI coverage number. Locally: `lcov` is not installed (can't apply the exact `--remove` filter), and a full `flutter test test/unit --coverage` run ran 30+ min with no result. Raising the floor to 60 on an unverified/Windows-local number risks red-CI on main (asymmetric regression). Disposition: floor NOT raised; ticket stays in Backlog with a comment. Authoritative path = a CI run, or install lcov + reproduce the filter.
+  - Step 0: MEASURE current filtered unit coverage at HEAD (a 12-min background run is in progress). The floor is currently 55.0; ticket reported 55.5% at filing; much test work has shipped since.
+  - Acceptance:
+    - Current filtered coverage measured at HEAD and recorded.
+    - If measured ≥60.0 → `OVERALL_FLOOR` raised to `60.0`; close Done with the measured number.
+    - If measured <60.0 → floor NOT raised (raising it would red-CI main, a real regression); ticket stays open, post measured coverage + the remaining gap, file/keep the DI-seam test follow-ups.
+  - Negative constraint: never raise the floor above the actual measured coverage.
 
-### Agent D: search UX — Stakeholders: Data/Integrations Engineer (single)
-- [~] **D1. Consume SearchResult.failed for user/friend search** `[Tier B]` (BUT-1442) — DESCOPED (Step-0 plan-stale): the `failed` flag is swallowed upstream (user_service + friends_management return bare lists), so the real fix is a cross-service contract change, not a VM branch. Linear body rewritten with corrected scope; left in Backlog.
-  - `algolia_search_repository.searchUsers` flags `SearchResult.failure` on outage, but nothing consumes
-    it — friend search still shows a neutral empty list (the bug BUT-1416 fixed for recipe search).
-  - Files: `lib/viewmodels/friends/friends_search_manager.dart` (+ the friend-search view empty state).
-  - Acceptance: friend/user search branches on `result.failed` → degraded/offline notice, not the
-    "no users found" empty state · a successful-but-empty search still shows the normal empty state ·
-    test asserts the failed path produces the degraded state · analyze + tests green.
+### Needs you (Tier D — flagged, not worked)
+- BUT-889 — 4 paid-API LLM golden corpora: needs CI Vertex AI/Mistral credentials (a GCP service account + Workload Identity Federation binding) and paid API budget to generate gold standards. Ops/secrets the loop can't reach.
+- BUT-1240 — NER golden corpus real-signal lane: needs a device-capable CI runner provisioned.
 
-### Needs you (not worked this batch)
-- BUT-1395/1396/1399/1400 — `need-malin` legal/consent/PII (Art.15 export gaps, ToS-record persistence,
-  consent-toggle, appeals domain). Codeable but reserved for your sign-off.
-- BUT-1424 — executable backend-deploy rollback (Tier-C; can't be verified without a real failed deploy).
+### Deprioritized (autonomous-lane, deliberately not worked)
+- BUT-1176 — custom_lint/AST upgrade: Low priority, explicitly optional ("pick up only if custom_lint is being added for other reasons"); zero current production leaks and the file-level arch-test already guards regressions. Adding the custom_lint dependency slows every analyzer run for marginal value — not worth it now.
 
 ### Post-Sprint Steps
-- [ ] dart analyze --fatal-infos
-- [ ] Per-ticket review gates (code-reviewer all; testing-specialist lib/**; cloud-functions-specialist
-      BUT-1427; firebase-backend-security BUT-1442 repo path) + markers
-- [ ] Commit per-ticket, push to main
-- [ ] Linear: BUT-1427 → Done; BUT-1426/1431/1442 → In Review + notify
+- [x] No Dart/TS changed — workflow YAML only; no code-reviewer/testing-specialist markers apply
+- [x] BUT-1424 verified (fresh-context grader: 6/6 acceptance criteria pass)
+- [ ] Commit BUT-1424, push to main
+- [ ] Linear: BUT-1424 → In Review + notify (Tier C, prod-pipeline, unverifiable without a real failed deploy); BUT-1149 stays Backlog with disposition comment
 
 ---
 
-## Sprint: direct unit tests for 3 GDPR-export sub-managers — 2026-06-28
-- [~] **A1. BUT-1438** — obsolete: already Done + archived 2026-06-28; all 3 export test files exist.
+## Sprint: autonomous-lane batch (notifications, a11y, voice, search) — 2026-06-29
 
-## Recent shipped (prior session): BUT-1421 (doc fix, Done).
+(archived — all shipped: BUT-1427 Done; BUT-1426/1431 In Review; BUT-1442 descoped + Linear body rewritten)

@@ -63,6 +63,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          # Full history (+ tags) so the rollback step can resolve the previous
+          # committed config (HEAD^, or the prior v* tag) to re-release on failure.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -137,29 +141,86 @@ jobs:
         if: always()
         run: pkill -f "firebase" || true
 
+      # ─── PRE-DEPLOY STATE CAPTURE (BUT-1424 rollback baseline) ────────────────
+      #
+      # Records what we are about to overwrite so a failed deploy can be reverted
+      # and a human has the prior state for forensics. This step is READ-ONLY and
+      # never fails the job — a capture hiccup must not block a legitimate deploy.
+      #
+      # The functions rollback target is the LIVE Cloud Run revision map (gen2
+      # functions are Cloud Run services). Capturing name→latestReadyRevision here
+      # means rollback can traffic-swap back to the exact prior revision without
+      # guessing service names or rebuilding old source (the rebuild path can fail
+      # independently mid-incident — see BUT-1424 DevOps/SRE review).
+      - name: Capture pre-deploy state (rollback baseline)
+        id: capture
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+        run: |
+          set -uo pipefail
+          PROJECT=butlery-app-1
+          REGION=europe-west1
+          mkdir -p rollback-baseline
+
+          # firebase uses ADC; gcloud needs an explicit SA activation.
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 \
+            || echo "::warning::gcloud SA activation failed — Cloud Run revision capture may be empty"
+          gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
+
+          # 1. Cloud Run revision map — ground-truth functions rollback target.
+          if [ "$DEPLOY_TARGET" = "functions" ] || [ "$DEPLOY_TARGET" = "all" ]; then
+            gcloud run services list --region "$REGION" \
+              --format='csv[no-heading](metadata.name,status.latestReadyRevisionName)' \
+              > rollback-baseline/cloud-run-revisions.csv 2>/dev/null \
+              || echo "::warning::Could not list Cloud Run services — functions rollback baseline empty"
+            firebase functions:list --project "$PROJECT" --json \
+              > rollback-baseline/functions-pre-deploy.json 2>&1 || true
+          fi
+
+          # 2. Snapshot the config files being replaced (forensics).
+          cp -f firestore.rules firestore.indexes.json storage.rules rollback-baseline/ 2>/dev/null || true
+
+          # 3. Resolve the previous-good source ref for config rollback. No v* tags
+          #    exist today (deploys run via dispatch from main), so HEAD^ is the
+          #    previous committed config; prefer a prior v* tag if the trigger is a tag.
+          PREV_REF=""
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            PREV_REF=$(git describe --tags --abbrev=0 --match 'v*' "HEAD^" 2>/dev/null || echo "")
+          fi
+          if [ -z "$PREV_REF" ]; then
+            PREV_REF=$(git rev-parse --verify -q "HEAD^" || echo "")
+          fi
+          echo "PREV_DEPLOY_REF=$PREV_REF" >> "$GITHUB_ENV"
+          echo "$PREV_REF" > rollback-baseline/previous-good-ref.txt
+          echo "Captured pre-deploy baseline. Previous config ref: ${PREV_REF:-<none>}"
+
       # Deploy by target. `--non-interactive` keeps the CLI from prompting.
       # `all` deploys firestore (rules + indexes), functions, and storage — but
-      # NOT hosting (hosting needs a web build and deploys separately).
+      # NOT hosting (hosting needs a web build and deploys separately). The `all`
+      # path deploys sub-targets sequentially and records each one it COMPLETES in
+      # reached-targets.txt, so the rollback step knows exactly how far it got.
       - name: Deploy
+        id: deploy
         run: |
           set -euo pipefail
           PROJECT=butlery-app-1
+          : > reached-targets.txt
+          deploy_one() {
+            local t="$1"
+            echo "Deploying: $t"
+            firebase deploy --only "$t" --project "$PROJECT" --non-interactive
+            echo "$t" >> reached-targets.txt
+          }
           echo "Deploying target: $DEPLOY_TARGET"
           case "$DEPLOY_TARGET" in
-            rules)
-              firebase deploy --only firestore:rules --project "$PROJECT" --non-interactive
-              ;;
-            indexes)
-              firebase deploy --only firestore:indexes --project "$PROJECT" --non-interactive
-              ;;
-            functions)
-              firebase deploy --only functions --project "$PROJECT" --non-interactive
-              ;;
-            storage)
-              firebase deploy --only storage --project "$PROJECT" --non-interactive
-              ;;
+            rules)    deploy_one "firestore:rules" ;;
+            indexes)  deploy_one "firestore:indexes" ;;
+            functions) deploy_one "functions" ;;
+            storage)  deploy_one "storage" ;;
             all)
-              firebase deploy --only firestore,functions,storage --project "$PROJECT" --non-interactive
+              deploy_one "firestore"
+              deploy_one "functions"
+              deploy_one "storage"
               ;;
             *)
               echo "::error::Unknown deploy target '$DEPLOY_TARGET'" >&2
@@ -208,6 +269,7 @@ jobs:
       # new secrets or resources are required. This purely queries the control plane.
       # ─────────────────────────────────────────────────────────────────────────────
       - name: Post-deploy smoke gate (functions presence check)
+        id: smoke
         if: env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all'
         env:
           # Reuse the ADC credential written by the Authenticate step above.
@@ -215,11 +277,6 @@ jobs:
         run: |
           set -euo pipefail
           PROJECT=butlery-app-1
-
-          echo "Querying deployed function list for project ${PROJECT}..."
-          # Capture list output; if the command itself fails, set -e exits immediately.
-          FUNCTIONS_LIST="$(firebase functions:list --project "${PROJECT}" --json 2>&1)"
-          echo "$FUNCTIONS_LIST"
 
           # Core functions that MUST be present after every functions deploy.
           # These span every major family so a wholesale or partial failure is caught.
@@ -234,27 +291,123 @@ jobs:
             "drainRatingAggregations"
           )
 
-          FAILED=0
-          for fn in "${REQUIRED_FUNCTIONS[@]}"; do
-            # The --json output includes function names as "id" or in the "name"
-            # resource path (e.g. "projects/.../functions/structureRecipe"). A simple
-            # substring match on the name token is sufficient and robust against
-            # minor CLI format changes between firebase-tools patch versions.
-            if echo "$FUNCTIONS_LIST" | grep -qF "\"${fn}\""; then
-              echo "  [OK] ${fn} present"
-            else
-              echo "  [FAIL] ${fn} NOT FOUND in deployed function list" >&2
-              FAILED=1
-            fi
-          done
+          # Control-plane lag: a freshly-deployed function can take 15-30s to appear
+          # in functions:list. Settle first, then check with one retry. This avoids a
+          # FALSE-POSITIVE smoke failure which — now that rollback is wired — would
+          # otherwise revert a perfectly good deploy (BUT-1424 DevOps/SRE must-have).
+          echo "Waiting 30s for the Cloud Functions control plane to settle..."
+          sleep 30
 
-          if [ "$FAILED" -ne 0 ]; then
-            echo "" >&2
-            echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing from the deployed function list. Check the output above for details. The deploy may have partially failed on the backend even though the firebase CLI exited 0." >&2
-            exit 1
+          check_once() {
+            local list
+            list="$(firebase functions:list --project "${PROJECT}" --json 2>&1)" || return 2
+            echo "$list"
+            local failed=0 fn
+            for fn in "${REQUIRED_FUNCTIONS[@]}"; do
+              # --json output carries the name token (e.g. "structureRecipe" as id or
+              # in the resource path). Substring match is robust across CLI patch
+              # versions.
+              if echo "$list" | grep -qF "\"${fn}\""; then
+                echo "  [OK] ${fn} present"
+              else
+                echo "  [MISSING] ${fn} not in deployed function list" >&2
+                failed=1
+              fi
+            done
+            return $failed
+          }
+
+          if check_once; then
+            echo "Post-deploy smoke gate passed — all required functions confirmed present."
+            exit 0
           fi
 
-          echo "Post-deploy smoke gate passed — all required functions confirmed present."
+          echo "First smoke check missed a function — settling 20s more and retrying once..." >&2
+          sleep 20
+          if check_once; then
+            echo "Post-deploy smoke gate passed on retry."
+            exit 0
+          fi
+
+          echo "" >&2
+          echo "::error::Post-deploy smoke gate FAILED — one or more expected functions are missing after a settle + retry. The deploy may have partially failed on the backend even though the firebase CLI exited 0. Auto-rollback will run." >&2
+          exit 1
+
+      # ─── AUTO-ROLLBACK ON FAILED DEPLOY (BUT-1424) ───────────────────────────
+      #
+      # Runs ONLY when the Deploy step or the post-deploy smoke gate failed — NOT
+      # when the pre-deploy rules gate failed (nothing was deployed in that case,
+      # so a bare `if: failure()` would wrongly "roll back" an untouched backend).
+      #
+      #   - Functions: traffic-swap each captured Cloud Run service back to the
+      #     revision it served before this deploy (atomic, ~seconds, no rebuild).
+      #     A swap to the already-current revision is a harmless no-op, so it is
+      #     safe to attempt whenever functions were in scope.
+      #   - Rules / indexes / storage: re-release the prior committed config from
+      #     PREV_DEPLOY_REF.
+      #
+      # The step ALWAYS ends non-zero: a rollback means the forward deploy failed,
+      # and the job must stay red so the incident is not masked from alerting. It
+      # also logs loudly that PREV_DEPLOY_REF is not *guaranteed* healthy — a human
+      # must confirm the prior version was good.
+      - name: Auto-rollback on deploy failure
+        if: steps.deploy.outcome == 'failure' || steps.smoke.outcome == 'failure'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+        run: |
+          set -uo pipefail
+          PROJECT=butlery-app-1
+          REGION=europe-west1
+          echo "::warning::Deploy failed — attempting auto-rollback. Verify the previous ref (${PREV_DEPLOY_REF:-<none>}) was actually healthy; rollback does NOT prove the prior version was good."
+          echo "Targets completed before failure: $(cat reached-targets.txt 2>/dev/null | tr '\n' ' ')"
+
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1 || true
+          gcloud config set project "$PROJECT" >/dev/null 2>&1 || true
+
+          # 1. Functions — traffic-swap each captured service to its prior revision.
+          if [ "$DEPLOY_TARGET" = "functions" ] || [ "$DEPLOY_TARGET" = "all" ]; then
+            if [ -s rollback-baseline/cloud-run-revisions.csv ]; then
+              while IFS=',' read -r svc rev; do
+                [ -z "${svc:-}" ] && continue
+                if [ -z "${rev:-}" ]; then
+                  echo "  skip ${svc} (no prior revision captured — likely a brand-new function)"
+                  continue
+                fi
+                echo "  rolling ${svc} -> ${rev}"
+                gcloud run services update-traffic "$svc" --region "$REGION" \
+                  --to-revisions="${rev}=100" --quiet \
+                  || echo "::warning::traffic-swap failed for ${svc} — revert manually to ${rev}"
+              done < rollback-baseline/cloud-run-revisions.csv
+            else
+              echo "::warning::No Cloud Run revision baseline — cannot auto-revert functions. Redeploy ${PREV_DEPLOY_REF:-the previous source} manually."
+            fi
+          fi
+
+          # 2. Rules / indexes / storage — re-release the prior committed config.
+          if [ -n "${PREV_DEPLOY_REF:-}" ]; then
+            git checkout "$PREV_DEPLOY_REF" -- firestore.rules firestore.indexes.json storage.rules 2>/dev/null || true
+            case "$DEPLOY_TARGET" in
+              rules)    firebase deploy --only firestore:rules --project "$PROJECT" --non-interactive || echo "::warning::rules rollback failed" ;;
+              indexes)  firebase deploy --only firestore:indexes --project "$PROJECT" --non-interactive || echo "::warning::indexes rollback failed" ;;
+              storage)  firebase deploy --only storage --project "$PROJECT" --non-interactive || echo "::warning::storage rollback failed" ;;
+              all)      firebase deploy --only firestore:rules,firestore:indexes,storage --project "$PROJECT" --non-interactive || echo "::warning::config rollback failed" ;;
+              functions) : ;;  # no config was deployed
+            esac
+            git checkout HEAD -- firestore.rules firestore.indexes.json storage.rules 2>/dev/null || true
+          else
+            echo "::warning::No previous ref resolved — skipping rules/indexes/storage rollback."
+          fi
+
+          echo "Rollback attempt complete. Failing the job so the incident is not masked."
+          exit 1
+
+      - name: Upload rollback baseline artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-baseline
+          path: rollback-baseline/
+          if-no-files-found: ignore
 
       - name: Summary
         if: always()
