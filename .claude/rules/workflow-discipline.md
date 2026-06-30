@@ -1,7 +1,7 @@
 # Workflow Discipline
 
 ## Plan Mode (automatic for complex tasks)
-- Triggers: 3+ files, new services/viewmodels, architectural changes, "refactor"/"migrate" requests
+- **Always plan before a large change — no exceptions.** A change is "large" if it hits ANY of: 3+ files, a new service / viewmodel / repository, an architectural or base-class change, a "refactor" / "migrate" request, a multi-file codemod, or a sensitive domain (Firestore data/rules, auth, Cloud Functions, GDPR / user data). Large changes ALWAYS get a written plan + approval before any Edit/Write — this holds in ad-hoc chat, not just `/sprint-execute` (it's the conversational equivalent of the sprint's Tier C). Small, obvious, single-file fixes ship without ceremony — don't gold-plate (CLAUDE.md rule #7).
 - Enter plan mode automatically (no user action needed)
 - Write plan to `/tasks/todo.md`, get approval, then implement
 - Task state persists on disk - PreCompact hook reads both Claude Code tasks and `/tasks/todo.md`
@@ -12,6 +12,14 @@
   - Uses zero technical jargon — no "viewmodel", "repository", "mixin", "provider", "widget tree"
   - Summarizes the risk: what could break, and how easy it is to undo
   - Is max 5-8 bullet points, written as if explaining to a friend who doesn't code
+
+## Cast stakeholders BEFORE planning (ad-hoc work, not just sprints)
+The role-org must be cast into planning the same way `/sprint-execute` Phase 1 + 1.4 does it — not only inside the sprint command. For any **large change** (above) OR any request touching a **sensitive domain** (user/children's data + GDPR, money/monetization, security/auth, Firestore rules, app-store/release compliance, legal), BEFORE writing the plan:
+1. **Cast the panel.** Resolve the likely-touched paths and run the router: `python tools/stakeholder_router.py --json <paths>`. It returns the tier (`skip` / `single` / `full-panel`) and the owning role(s) + high-stakes core. Deterministic, cheap, no agents — this is what makes "experts always on" affordable (depth is bounded by blast radius).
+2. **Convene the cast roles (Phase 1.4 style).** `single` → one blind critique from the owning role; `full-panel` → the full panel concurrently, each grounded in its dossier section of `docs/architecture/ROLE_RESPONSIBILITY_MAP.md`, blind to the others. Run these critiques on `sonnet` at low effort (scoped reads); keep the commit-gate reviewers on `opus`.
+3. **Fold their conditions into the plan** as binding items (they become acceptance criteria, not advisory notes), then present the plan. An unresolved high-stakes conflict — a `block` from a high-stakes-core role, or anything legal/privacy/interpretive — gets surfaced to Malin *in* the plan, never buried.
+
+`skip` tier (doc-only / trivial) → no panel, plan normally. This closes the only gap: the diff-review half of cast→plan→review already runs via the commit-gate specialists; this adds the cast + plan halves to direct requests.
 
 ## Fit Check (when 2+ approaches exist)
 - Requirements as rows, approaches as columns
