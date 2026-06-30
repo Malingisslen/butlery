@@ -221,9 +221,9 @@ Settings → "Granska rapporter" admin screen).
 CONTACT FOR REVIEWER QUESTIONS
 ----------------------------------------------------------------
 
-  Privacy:    privacy@butlery.se
+  Privacy:    integritet@butlery.se
   Support:    support@butlery.se
-  Appeals:    appeals@butlery.app
+  Appeals:    overklagande@butlery.se
 
 ================================================================
 ```

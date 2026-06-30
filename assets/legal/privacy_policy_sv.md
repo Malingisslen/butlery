@@ -20,7 +20,7 @@ Butlery
 Sverige
 
 **Kontakt för integritetsfrågor:**
-E-post: [privacy@butlery.se](mailto:privacy@butlery.se)
+E-post: [integritet@butlery.se](mailto:integritet@butlery.se)
 
 ---
 
@@ -202,7 +202,7 @@ Du har följande rättigheter enligt GDPR:
 
 ### 9.1 Rätt till tillgång (Art. 15)
 - Se vilka personuppgifter vi har om dig
-- **Hur:** Kontakta oss via privacy@butlery.se
+- **Hur:** Kontakta oss via integritet@butlery.se
 
 ### 9.2 Rätt till rättelse (Art. 16)
 - Korrigera felaktig information
@@ -220,7 +220,7 @@ Du har följande rättigheter enligt GDPR:
 
 ### 9.5 Rätt till begränsning (Art. 18)
 - Begränsa behandling av dina uppgifter
-- **Hur:** Kontakta oss via privacy@butlery.se
+- **Hur:** Kontakta oss via integritet@butlery.se
 
 ### 9.6 Rätt att återkalla samtycke (Art. 7.3)
 - Återkalla samtycke när som helst
@@ -229,7 +229,7 @@ Du har följande rättigheter enligt GDPR:
 
 ### 9.7 Rätt att invända (Art. 21)
 - Invända mot behandling baserad på berättigat intresse
-- **Hur:** Kontakta oss via privacy@butlery.se
+- **Hur:** Kontakta oss via integritet@butlery.se
 
 ### 9.8 Rätt att klaga (Art. 77)
 - Klaga till tillsynsmyndighet
@@ -290,7 +290,7 @@ Butlery är avsedd för användare som är 15 år eller äldre. Vi samlar inte m
 För att upprätthålla åldersgränsen samlar vi vid registreringen in ditt födelseår och sparar en åldersverifieringspost (ett bevis på att kontrollen har gjorts). Födelseåret behandlas som kontouppgift och lagras på vår server. Registreringar som avvisas för att personen är under 15 år loggas anonymiserat, utan uppgifter som kopplar en enskild person till åldern.
 
 Om du är förälder/vårdnadshavare och upptäcker att ditt barn har skapat ett konto:
-- Kontakta oss via privacy@butlery.se
+- Kontakta oss via integritet@butlery.se
 - Vi kommer radera kontot omedelbart
 
 ---
@@ -316,13 +316,13 @@ Vid väsentliga ändringar:
 
 ### Integritetsfrågor
 
-**E-post:** privacy@butlery.se
+**E-post:** integritet@butlery.se
 **Svarstid:** Vi strävar efter att svara inom 30 dagar (GDPR-krav)
 
 ### Utöva dina rättigheter
 
 För att utöva dina GDPR-rättigheter:
-1. Skicka e-post till privacy@butlery.se
+1. Skicka e-post till integritet@butlery.se
 2. Ange vilket rättighet du vill utöva
 3. Vi verifierar din identitet
 4. Vi svarar inom 30 dagar
@@ -348,13 +348,13 @@ För att utöva dina GDPR-rättigheter:
 
 | Rättighet | Vad det innebär | Hur du gör det |
 |-----------|-----------------|----------------|
-| **Tillgång** | Se vilka uppgifter vi har | Kontakta privacy@butlery.se |
+| **Tillgång** | Se vilka uppgifter vi har | Kontakta integritet@butlery.se |
 | **Rättelse** | Korrigera fel | Inställningar eller kontakta oss |
 | **Radering** | Radera allt | Profil → Radera konto |
 | **Portabilitet** | Exportera data | Profil → Exportera mina data |
-| **Begränsning** | Pausa behandling | Kontakta privacy@butlery.se |
+| **Begränsning** | Pausa behandling | Kontakta integritet@butlery.se |
 | **Återkalla samtycke** | Ta tillbaka godkännande | Profil → Hantera samtycken |
-| **Invända** | Protestera behandling | Kontakta privacy@butlery.se |
+| **Invända** | Protestera behandling | Kontakta integritet@butlery.se |
 | **Klaga** | Rapportera till myndighet | Kontakta IMY (imy.se) |
 
 ---

@@ -10283,7 +10283,7 @@
   "@appealProcessTitle": {
     "description": "BUT-556: section heading in ToS + settings for the appeal process."
   },
-  "appealProcessBody": "Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.se. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.",
+  "appealProcessBody": "Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till overklagande@butlery.se. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.",
   "@appealProcessBody": {
     "description": "BUT-556: body text for the appeal process."
   },
@@ -10299,7 +10299,7 @@
   "@appealEmailBodyTemplate": {
     "description": "BUT-556: mailto body prefill template."
   },
-  "appealEmailLaunchFailed": "Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.se.",
+  "appealEmailLaunchFailed": "Kunde inte öppna e-postappen. Skicka manuellt till overklagande@butlery.se.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
   },

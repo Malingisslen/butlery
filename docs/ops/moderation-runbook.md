@@ -82,7 +82,7 @@ content** on anything high-risk, consider:
 
 There is no "undo" button. If a content deletion was made in error:
 
-1. Ask the affected user (via appeals@butlery.app) to re-submit the
+1. Ask the affected user (via overklagande@butlery.se) to re-submit the
    content.
 2. If re-submission is not possible, file an incident in Linear tagged
    `moderation-rollback` describing the mistake and the user.

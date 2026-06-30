@@ -20,7 +20,7 @@ Butlery
 Sweden
 
 **Contact for privacy matters:**
-Email: [privacy@butlery.se](mailto:privacy@butlery.se)
+Email: [integritet@butlery.se](mailto:integritet@butlery.se)
 
 ---
 
@@ -202,7 +202,7 @@ You have the following rights under GDPR:
 
 ### 9.1 Right of access (Art. 15)
 - See what personal data we have about you
-- **How:** Contact us at privacy@butlery.se
+- **How:** Contact us at integritet@butlery.se
 
 ### 9.2 Right to rectification (Art. 16)
 - Correct inaccurate information
@@ -220,7 +220,7 @@ You have the following rights under GDPR:
 
 ### 9.5 Right to restriction (Art. 18)
 - Restrict processing of your data
-- **How:** Contact us at privacy@butlery.se
+- **How:** Contact us at integritet@butlery.se
 
 ### 9.6 Right to withdraw consent (Art. 7.3)
 - Withdraw consent at any time
@@ -229,7 +229,7 @@ You have the following rights under GDPR:
 
 ### 9.7 Right to object (Art. 21)
 - Object to processing based on legitimate interest
-- **How:** Contact us at privacy@butlery.se
+- **How:** Contact us at integritet@butlery.se
 
 ### 9.8 Right to complain (Art. 77)
 - Complain to supervisory authority
@@ -290,7 +290,7 @@ The 15-year age limit follows from Swedish data-protection law (the Data Protect
 To enforce this age limit, we collect your birth year at signup and keep an age-verification record (evidence that the check was carried out). The birth year is treated as account information and stored on our server. Signups blocked because the person is under 15 are logged anonymously, without any data linking an individual to their age.
 
 If you are a parent/guardian and discover that your child has created an account:
-- Contact us at privacy@butlery.se
+- Contact us at integritet@butlery.se
 - We will delete the account immediately
 
 ---
@@ -316,13 +316,13 @@ For significant changes:
 
 ### Privacy questions
 
-**Email:** privacy@butlery.se
+**Email:** integritet@butlery.se
 **Response time:** We aim to respond within 30 days (GDPR requirement)
 
 ### Exercise your rights
 
 To exercise your GDPR rights:
-1. Send an email to privacy@butlery.se
+1. Send an email to integritet@butlery.se
 2. Specify which right you want to exercise
 3. We verify your identity
 4. We respond within 30 days
@@ -348,13 +348,13 @@ To exercise your GDPR rights:
 
 | Right | What it means | How to do it |
 |-------|---------------|--------------|
-| **Access** | See what data we have | Contact privacy@butlery.se |
+| **Access** | See what data we have | Contact integritet@butlery.se |
 | **Rectification** | Correct errors | Settings or contact us |
 | **Erasure** | Delete everything | Profile > Delete account |
 | **Portability** | Export data | Profile > Export my data |
-| **Restriction** | Pause processing | Contact privacy@butlery.se |
+| **Restriction** | Pause processing | Contact integritet@butlery.se |
 | **Withdraw consent** | Take back approval | Profile > Manage consents |
-| **Object** | Protest processing | Contact privacy@butlery.se |
+| **Object** | Protest processing | Contact integritet@butlery.se |
 | **Complain** | Report to authority | Contact IMY (imy.se) |
 
 ---

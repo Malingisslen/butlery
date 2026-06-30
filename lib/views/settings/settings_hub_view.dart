@@ -164,7 +164,7 @@ class SettingsHubView extends StatelessWidget {
   Future<void> _launchAppealEmail(BuildContext context) async {
     final uri = Uri(
       scheme: 'mailto',
-      path: 'appeals@butlery.se',
+      path: 'overklagande@butlery.se',
       queryParameters: {
         'subject': context.l10n.appealEmailSubject,
         'body': context.l10n.appealEmailBodyTemplate,

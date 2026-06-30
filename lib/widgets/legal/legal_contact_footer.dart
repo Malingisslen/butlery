@@ -51,7 +51,7 @@ class LegalContactFooter extends StatelessWidget {
 
   Future<void> _handleContactUs(BuildContext context) async {
     final subject = Uri.encodeComponent(context.l10n.privacyEmailSubject);
-    final uri = Uri.parse('mailto:privacy@butlery.se?subject=$subject');
+    final uri = Uri.parse('mailto:integritet@butlery.se?subject=$subject');
 
     try {
       final canLaunch = await canLaunchUrl(uri);
