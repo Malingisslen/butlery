@@ -53,9 +53,15 @@ class _RecordingMessaging extends MockFirebaseMessaging {
   int deleteTokenCalls = 0;
 
   @override
-  Future<String?> getToken({String? vapidKey}) async {
+  Future<String?> getToken({
+    String? serviceWorkerScriptPath,
+    String? vapidKey,
+  }) async {
     getTokenCalls++;
-    return super.getToken(vapidKey: vapidKey);
+    return super.getToken(
+      serviceWorkerScriptPath: serviceWorkerScriptPath,
+      vapidKey: vapidKey,
+    );
   }
 
   @override
