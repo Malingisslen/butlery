@@ -59,4 +59,61 @@ void main() {
       expect(observed, equals(ButleryColors.light.iconMuted));
     });
   });
+
+  group('ButleryColors.heroPaleGreen', () {
+    test('light value matches legacy AppColors.greenPale hex', () {
+      // BUT-1447: light mode must stay byte-identical after the token swap,
+      // so this slot has to equal the hardcoded value the screens used before.
+      expect(
+        ButleryColors.light.heroPaleGreen,
+        equals(const Color(0xFFE8F0EA)),
+      );
+    });
+
+    test('dark value is a low-chroma green on the warm-dark surface', () {
+      expect(
+        ButleryColors.dark.heroPaleGreen,
+        equals(const Color(0xFF24302A)),
+      );
+    });
+
+    test('copyWith preserves heroPaleGreen when not overridden', () {
+      final copy = ButleryColors.light.copyWith();
+      expect(copy.heroPaleGreen, equals(ButleryColors.light.heroPaleGreen));
+    });
+
+    test('copyWith overrides heroPaleGreen when provided', () {
+      final override = const Color(0xFF000000);
+      final copy = ButleryColors.light.copyWith(heroPaleGreen: override);
+      expect(copy.heroPaleGreen, equals(override));
+    });
+
+    test('lerp interpolates heroPaleGreen between light and dark', () {
+      final mid = ButleryColors.light.lerp(ButleryColors.dark, 0.5);
+      final expected = Color.lerp(
+        ButleryColors.light.heroPaleGreen,
+        ButleryColors.dark.heroPaleGreen,
+        0.5,
+      )!;
+      expect(mid.heroPaleGreen, equals(expected));
+    });
+
+    testWidgets('extension accessor resolves heroPaleGreen via Theme', (
+      tester,
+    ) async {
+      Color? observed;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: const [ButleryColors.light]),
+          home: Builder(
+            builder: (context) {
+              observed = context.butleryColors.heroPaleGreen;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      expect(observed, equals(ButleryColors.light.heroPaleGreen));
+    });
+  });
 }
