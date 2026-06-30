@@ -26,6 +26,7 @@ on:
       - Model Version Guard
       - SBOM (CycloneDX)
       - Prompt Changelog Gate
+      - Cloud Functions Unit Tests
     types: [completed]
 
 permissions:
@@ -56,18 +57,28 @@ jobs:
               'Model Version Guard',
               'SBOM (CycloneDX)',
               'Prompt Changelog Gate',
+              'Cloud Functions Unit Tests',
             ];
             const TITLE = '🔴 main CI is failing';
+            const OWNER_HANDLE = 'Malingisslen'; // solo founder — assign + @mention so it actually notifies
             const { owner, repo } = context.repo;
+
+            // A `cancelled`/`skipped`/`stale`/`null` run is INCONCLUSIVE — with
+            // cancel-in-progress, rapid pushes leave a cancelled run as the
+            // newest, which previously masked an earlier real failure (and
+            // could falsely auto-close the tracking issue). So per gate, take
+            // the most recent run with a CONCLUSIVE verdict, skipping the rest.
+            const CONCLUSIVE = new Set(['success', 'failure', 'timed_out']);
+            const RED = new Set(['failure', 'timed_out']);
 
             // Latest completed main run per gating workflow (one API page).
             const runs = (await github.rest.actions.listWorkflowRunsForRepo({
               owner, repo, branch: 'main', status: 'completed', per_page: 100,
             })).data.workflow_runs;
             const latest = gates
-              .map((name) => runs.find((r) => r.name === name))
+              .map((name) => runs.find((r) => r.name === name && CONCLUSIVE.has(r.conclusion)))
               .filter(Boolean);
-            const failing = latest.filter((r) => r.conclusion === 'failure');
+            const failing = latest.filter((r) => RED.has(r.conclusion));
 
             // Find our existing open tracking issue by exact title.
             const openIssues = (await github.rest.issues.listForRepo({
@@ -79,11 +90,18 @@ jobs:
               const list = failing
                 .map((r) => `- ❌ **${r.name}** — ${r.html_url} (\`${r.head_sha.slice(0, 8)}\`)`)
                 .join('\n');
-              const body = `\`main\` CI is red:\n\n${list}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
+              const body = `@${OWNER_HANDLE} — \`main\` CI is red:\n\n${list}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
               if (issue) {
-                await github.rest.issues.update({ owner, repo, issue_number: issue.number, body });
+                // Keep it assigned so it stays in the owner's notifications.
+                await github.rest.issues.update({
+                  owner, repo, issue_number: issue.number, body, assignees: [OWNER_HANDLE],
+                });
               } else {
-                await github.rest.issues.create({ owner, repo, title: TITLE, body });
+                // First open: assignee + @mention both fire a notification, so
+                // a red main reaches the solo founder even unwatched.
+                await github.rest.issues.create({
+                  owner, repo, title: TITLE, body, assignees: [OWNER_HANDLE],
+                });
               }
             } else if (issue) {
               await github.rest.issues.createComment({
