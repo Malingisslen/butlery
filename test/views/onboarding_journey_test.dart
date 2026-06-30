@@ -57,9 +57,20 @@ class _MockAgeVerificationService extends Mock
 /// Mirrors the real onboarding wizard (age-gate → welcome → allergens →
 /// dietary → import) without pulling in the full production view tree.
 class _OnboardingBody extends StatelessWidget {
-  const _OnboardingBody({required this.onCompleted});
+  const _OnboardingBody({
+    required this.onCompleted,
+    required this.onAgeRejected,
+  });
 
   final VoidCallback onCompleted;
+
+  /// Fired when the age-gate advance returns [AgeGateAdvanceResult.rejected].
+  /// In production this is `OnboardingView._handleAgeRejection`: sign-out +
+  /// `Navigator.pushNamedAndRemoveUntil(Routes.auth)`. The journey stand-in
+  /// swaps `home` to a `Key('start_screen')` widget — the user-visible
+  /// equivalent (the wizard is gone; they're back at start/auth) and proves
+  /// the UGC pages are unreachable after rejection.
+  final VoidCallback onAgeRejected;
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +120,33 @@ class _OnboardingBody extends StatelessWidget {
                               if (viewModel.isLastPage) {
                                 final ok = await viewModel.completeOnboarding();
                                 if (ok) onCompleted();
-                              } else {
-                                viewModel.nextPage();
+                                return;
                               }
+                              // FAITHFUL MIRROR of OnboardingView._handleNext
+                              // (lib/views/onboarding/onboarding_view.dart
+                              // ~L279-297): the server-side age check runs AT
+                              // the gate (page 0 advance), NOT at completion.
+                              // Verify-at-gate is the contract — a rejected
+                              // under-15 user is routed away and the UGC pages
+                              // (allergens/dietary/import) are never reached.
+                              if (viewModel.isAgeGatePage) {
+                                final result = await viewModel.verifyAgeGate();
+                                switch (result) {
+                                  case AgeGateAdvanceResult.rejected:
+                                    // Prod: sign-out + pushNamedAndRemoveUntil
+                                    // (Routes.auth). Stand-in: swap home to the
+                                    // start screen. Do NOT advance.
+                                    onAgeRejected();
+                                    return;
+                                  case AgeGateAdvanceResult.error:
+                                    // Prod: showError(errorGeneric) and stay on
+                                    // the gate. Stand-in: stay on page 0.
+                                    return;
+                                  case AgeGateAdvanceResult.compliant:
+                                    break; // fall through to advance
+                                }
+                              }
+                              viewModel.nextPage();
                             },
                       child: Text(viewModel.isLastPage ? 'Kom igång' : 'Nästa'),
                     ),
@@ -128,15 +163,27 @@ class _OnboardingBody extends StatelessWidget {
   Widget _buildPage(BuildContext context, OnboardingViewModel viewModel) {
     switch (viewModel.currentPage) {
       case 0:
-        // Age-gate stand-in — a button that drops in an adult birth year
-        // directly. Keeps the journey focused on the existing allergen/
-        // dietary/import flow without wrapping a real dropdown.
+        // Age-gate stand-in — two buttons that drop in a birth year directly
+        // (adult vs clearly-under-15), parallel affordances. Keeps the journey
+        // focused on the gate branch without wrapping a real dropdown.
         return Center(
           key: const Key('page_age_gate'),
-          child: ElevatedButton(
-            key: const Key('age_gate_set_adult'),
-            onPressed: () => viewModel.setBirthYear(DateTime.now().year - 25),
-            child: const Text('Välj vuxet födelseår'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                key: const Key('age_gate_set_adult'),
+                onPressed: () =>
+                    viewModel.setBirthYear(DateTime.now().year - 25),
+                child: const Text('Välj vuxet födelseår'),
+              ),
+              ElevatedButton(
+                key: const Key('age_gate_set_minor'),
+                onPressed: () =>
+                    viewModel.setBirthYear(DateTime.now().year - 10),
+                child: const Text('Välj barn-födelseår'),
+              ),
+            ],
           ),
         );
       case 1:
@@ -191,6 +238,7 @@ class _OnboardingBody extends StatelessWidget {
 Widget _testApp({
   required OnboardingViewModel viewModel,
   required VoidCallback onCompleted,
+  required ValueNotifier<bool> ageRejected,
 }) {
   return ChangeNotifierProvider<OnboardingViewModel>.value(
     value: viewModel,
@@ -204,7 +252,25 @@ Widget _testApp({
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: AppTheme.lightTheme,
-      home: _OnboardingBody(onCompleted: onCompleted),
+      // On age rejection, production signs out + replaces the whole navigation
+      // stack with Routes.auth. The user-visible equivalent here is swapping
+      // `home` away from the wizard to a start-screen stand-in — proving the
+      // onboarding tree (and its UGC pages) is gone, not merely held back.
+      home: ValueListenableBuilder<bool>(
+        valueListenable: ageRejected,
+        builder: (context, rejected, _) {
+          if (rejected) {
+            return const Scaffold(
+              key: Key('start_screen'),
+              body: Center(child: Text('Start')),
+            );
+          }
+          return _OnboardingBody(
+            onCompleted: onCompleted,
+            onAgeRejected: () => ageRejected.value = true,
+          );
+        },
+      ),
     ),
   );
 }
@@ -216,6 +282,7 @@ void main() {
   late _MockAgeVerificationService mockAgeVerificationService;
   late OnboardingViewModel viewModel;
   late bool onboardingCompleted;
+  late ValueNotifier<bool> ageRejected;
 
   setUpAll(() {
     registerFallbackValue(UserAllergenPreferences.defaults);
@@ -299,9 +366,11 @@ void main() {
 
     viewModel = OnboardingViewModel();
     onboardingCompleted = false;
+    ageRejected = ValueNotifier<bool>(false);
   });
 
   tearDown(() {
+    ageRejected.dispose();
     viewModel.dispose();
     final getIt = GetIt.instance;
     if (getIt.isRegistered<UserService>()) getIt.unregister<UserService>();
@@ -325,6 +394,7 @@ void main() {
           _testApp(
             viewModel: viewModel,
             onCompleted: () => onboardingCompleted = true,
+            ageRejected: ageRejected,
           ),
         );
 
@@ -412,6 +482,80 @@ void main() {
             },
           ),
         ).called(1);
+
+        // BUT-1437: the age check ran exactly ONCE — at the gate (page 0
+        // advance via verifyAgeGate), NOT re-called at completion. The VM sets
+        // `_ageVerifiedThisSession` on a compliant gate result so
+        // completeOnboarding's belt skips re-verifying. This pins the
+        // verify-at-gate contract the stub now mirrors from production.
+        verify(() => mockAgeVerificationService.verifyAge(any())).called(1);
+      },
+    );
+
+    testWidgets(
+      'under-15 at the age gate is rejected → routed to start, UGC unreachable',
+      (tester) async {
+        // This case mocks the age-verification CF to REJECT (verifyAge → false),
+        // proving the user-visible rejection contract from OnboardingView:
+        // verify-at-gate, then route away so the allergen/dietary/import (UGC)
+        // pages are never reachable.
+        when(
+          () => mockAgeVerificationService.verifyAge(any()),
+        ).thenAnswer((_) async => false);
+
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onCompleted: () => onboardingCompleted = true,
+            ageRejected: ageRejected,
+          ),
+        );
+
+        // Page 0 — age gate is first; the wizard is showing.
+        expect(find.byKey(const Key('page_age_gate')), findsOneWidget);
+        expect(find.byKey(const Key('start_screen')), findsNothing);
+
+        // Declare a clearly-under-15 birth year, then attempt to advance.
+        await tester.tap(find.byKey(const Key('age_gate_set_minor')));
+        await tester.pumpAndSettle();
+        expect(
+          viewModel.computedAge,
+          lessThan(OnboardingViewModel.minAgeYears),
+          reason: 'The minor affordance must pick a year below the 15 floor',
+        );
+
+        await tester.tap(find.byKey(const Key('next')));
+        await tester.pumpAndSettle();
+
+        // User-visible result: routed to the start/auth stand-in. The whole
+        // onboarding tree is gone — not merely held on page 0.
+        expect(find.byKey(const Key('start_screen')), findsOneWidget);
+        expect(find.byKey(const Key('page_age_gate')), findsNothing);
+
+        // The UGC pages must be unreachable after rejection. The allergen page
+        // never rendered, and there's no longer a wizard to advance into.
+        expect(find.byKey(const Key('page_allergens')), findsNothing);
+        expect(find.byKey(const Key('page_dietary')), findsNothing);
+        expect(find.byKey(const Key('page_import')), findsNothing);
+        expect(find.byKey(const Key('next')), findsNothing);
+
+        // VM recorded the under-15 rejection.
+        expect(viewModel.ageRejected, isTrue);
+        expect(
+          onboardingCompleted,
+          isFalse,
+          reason: 'A rejected user must not complete onboarding',
+        );
+
+        // The age check ran exactly once — at the gate. Completion was never
+        // reached, so there's no second call to fold in.
+        verify(() => mockAgeVerificationService.verifyAge(any())).called(1);
+        verifyNever(
+          () => mockUserService.completeOnboardingWithPreferences(
+            any(),
+            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          ),
+        );
       },
     );
 
@@ -422,6 +566,7 @@ void main() {
         _testApp(
           viewModel: viewModel,
           onCompleted: () => onboardingCompleted = true,
+          ageRejected: ageRejected,
         ),
       );
 

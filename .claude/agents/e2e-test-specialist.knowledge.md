@@ -131,3 +131,34 @@ re-derivations of what's already here.
    `deep_link_import_journey_test.dart` | proves `butlery://import?url=...`
    lands on Routes.smartImport with the decoded URL as arguments; also proves
    an unknown host (`butlery://evil.example.com/x`) pushes nothing.
+
+### 2026-07-01 — onboarding age-gate rejection journey (BUT-1437) [Pattern discovered]
+
+**Journey:** under-15 age-gate rejection in `onboarding_journey_test.dart`.
+
+**Stub-must-mirror-production rule (the real lesson):** the journey stub
+`_OnboardingBody` had been advancing page 0 with a plain `viewModel.nextPage()`,
+which NEVER called `verifyAgeGate()`. The stub was silently diverging from the
+production handler `OnboardingView._handleNext`
+(`lib/views/onboarding/onboarding_view.dart` ~L279-297). A journey stub that
+skips the gate proves nothing about the gate. When a stub stands in for a
+production navigation handler, its branch must mirror the production switch
+arm-for-arm (here: `verifyAgeGate()` → switch on `AgeGateAdvanceResult` with
+`rejected`→route-away, `error`→stay, `compliant`→advance). Added a code comment
+in the stub pinning it to the prod line range so a future refactor of either
+side is forced to reconcile.
+
+**User-visible contract over method-spy:** the rejection assertion proves the
+*routing* (a `Key('start_screen')` stand-in for prod's
+`pushNamedAndRemoveUntil(Routes.auth)` replaces the whole wizard) AND that the
+UGC pages (`page_allergens`/`page_dietary`/`page_import`) are unreachable — not
+merely that `verifyAge` was called. The start-screen swap is done with a
+`ValueNotifier<bool>` driving a `ValueListenableBuilder` at `home`, so the
+onboarding tree is genuinely removed, mirroring the stack replacement.
+
+**verify-at-gate, not at-completion:** asserted `verifyAge` is called EXACTLY
+ONCE in BOTH the compliant and the rejected journeys. The VM sets
+`_ageVerifiedThisSession` on a compliant gate result so `completeOnboarding`'s
+belt doesn't re-verify — pinning that the check fires at the gate, not twice.
+A second under-15 affordance (`Key('age_gate_set_minor')`,
+`year - 10`) parallels the existing adult one.
