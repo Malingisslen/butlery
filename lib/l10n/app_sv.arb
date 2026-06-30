@@ -9388,6 +9388,13 @@
   "authTermsAcceptRequired": "Du måste acceptera villkoren för att skapa ett konto",
   "a11yTermsOfServiceLink": "Användarvillkor",
   "a11yPrivacyPolicyLink": "Integritetspolicy",
+  "a11yLinkTo": "Länk till {url}",
+  "@a11yLinkTo": {
+    "description": "Accessibility label for an inline link in user/markdown text — read by screen readers as the link's name (BUT-1446)",
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
   "reportContent": "Rapportera",
   "reportReasonInappropriate": "Olämpligt innehåll",
   "reportReasonSpam": "Spam",

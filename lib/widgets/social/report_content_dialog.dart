@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -174,32 +173,11 @@ class _ReportOutcome {
 /// Inline note linking to community guidelines from the report dialog.
 /// Tap on the linked phrase opens the guidelines view; the visible
 /// version is implicitly the version stamped on the resulting report record.
-class _GuidelinesNote extends StatefulWidget {
+class _GuidelinesNote extends StatelessWidget {
   const _GuidelinesNote({required this.prefix, required this.linkText});
 
   final String prefix;
   final String linkText;
-
-  @override
-  State<_GuidelinesNote> createState() => _GuidelinesNoteState();
-}
-
-class _GuidelinesNoteState extends State<_GuidelinesNote> {
-  late final TapGestureRecognizer _recognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _recognizer = TapGestureRecognizer()
-      ..onTap = () =>
-          Navigator.of(context).pushNamed(Routes.communityGuidelines);
-  }
-
-  @override
-  void dispose() {
-    _recognizer.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,13 +187,28 @@ class _GuidelinesNoteState extends State<_GuidelinesNote> {
       TextSpan(
         style: base.copyWith(color: base.color?.withValues(alpha: 0.75)),
         children: [
-          TextSpan(text: '${widget.prefix} '),
-          TextSpan(
-            text: widget.linkText,
-            recognizer: _recognizer,
-            style: base.copyWith(
-              color: theme.colorScheme.primary,
-              decoration: TextDecoration.underline,
+          TextSpan(text: '$prefix '),
+          // BUT-1446: WidgetSpan + Semantics(link:) so the guidelines link is
+          // announced as a link with a name (was an inline TapGestureRecognizer
+          // — no link role, invisible to the a11y audit scanner). Dropping the
+          // recognizer also lets this be a StatelessWidget.
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Semantics(
+              link: true,
+              label: linkText,
+              child: GestureDetector(
+                onTap: () =>
+                    Navigator.of(context).pushNamed(Routes.communityGuidelines),
+                child: Text(
+                  linkText,
+                  style: base.copyWith(
+                    color: theme.colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

@@ -145,6 +145,9 @@ dev_dependencies:
   # (depend_on_referenced_packages enforcement).
   plugin_platform_interface: ^2.1.8
   firebase_core_platform_interface: ^6.0.3
+  # Mocked directly to assert tapped links call launchUrl without opening a
+  # browser (linkified_text + markdown_body link tests, BUT-1446).
+  url_launcher_platform_interface: ^2.3.2
 
 flutter:
   generate: true

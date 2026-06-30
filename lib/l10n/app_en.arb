@@ -9359,6 +9359,7 @@
   "authTermsAcceptRequired": "You must accept the terms to create an account",
   "a11yTermsOfServiceLink": "Terms of service",
   "a11yPrivacyPolicyLink": "Privacy policy",
+  "a11yLinkTo": "Link to {url}",
   "reportContent": "Report",
   "reportReasonInappropriate": "Inappropriate content",
   "reportReasonSpam": "Spam",

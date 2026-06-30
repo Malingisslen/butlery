@@ -19,9 +19,9 @@
 /// ```
 library;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 class LinkifiedText {
   const LinkifiedText._();
@@ -69,11 +69,22 @@ class LinkifiedText {
             spans.add(TextSpan(text: text.substring(cursor, match.start)));
           }
           final url = match.group(0)!;
+          // BUT-1446: render the link as a WidgetSpan wrapping a
+          // Semantics(link:) node so screen readers announce it as a link
+          // with a name. An inline TapGestureRecognizer TextSpan carries no
+          // link role and is invisible to the a11y audit scanner.
           spans.add(
-            TextSpan(
-              text: url,
-              style: effectiveLinkStyle,
-              recognizer: TapGestureRecognizer()..onTap = () => _openUrl(url),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.baseline,
+              baseline: TextBaseline.alphabetic,
+              child: Semantics(
+                link: true,
+                label: context.l10n.a11yLinkTo(url),
+                child: GestureDetector(
+                  onTap: () => _openUrl(url),
+                  child: Text(url, style: effectiveLinkStyle),
+                ),
+              ),
             ),
           );
           cursor = match.end;

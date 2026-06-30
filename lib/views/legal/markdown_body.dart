@@ -1,6 +1,5 @@
 // lib/views/legal/markdown_body.dart
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -25,7 +24,6 @@ class MarkdownBody extends StatefulWidget {
 
 class _MarkdownBodyState extends State<MarkdownBody> {
   late List<_Block> _blocks;
-  final List<TapGestureRecognizer> _recognizers = [];
 
   @override
   void initState() {
@@ -37,31 +35,11 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   void didUpdateWidget(MarkdownBody oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.data != widget.data) {
-      _disposeRecognizers();
       _parse();
     }
   }
 
-  @override
-  void dispose() {
-    _disposeRecognizers();
-    super.dispose();
-  }
-
-  void _disposeRecognizers() {
-    for (final r in _recognizers) {
-      r.dispose();
-    }
-    _recognizers.clear();
-  }
-
   void _parse() {
-    // Recognizers must be disposed before re-parsing (callers: initState with
-    // an empty list, didUpdateWidget after _disposeRecognizers).
-    assert(
-      _recognizers.isEmpty,
-      '_parse() called without disposing recognizers first',
-    );
     final blocks = <_Block>[];
     for (final raw in widget.data.split('\n')) {
       final line = raw.trimRight();
@@ -98,10 +76,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       if (m.group(1) != null) {
         tokens.add(_Token.bold(m.group(1)!));
       } else {
-        final url = m.group(3)!;
-        final recognizer = TapGestureRecognizer()..onTap = () => _launch(url);
-        _recognizers.add(recognizer);
-        tokens.add(_Token.link(m.group(2)!, recognizer));
+        tokens.add(_Token.link(m.group(2)!, m.group(3)!));
       }
       last = m.end;
     }
@@ -135,13 +110,27 @@ class _MarkdownBodyState extends State<MarkdownBody> {
             text: t.text,
             style: base.copyWith(fontWeight: FontWeight.bold),
           ),
-          _TokenKind.link => TextSpan(
-            text: t.text,
-            style: base.copyWith(
-              color: linkColor,
-              decoration: TextDecoration.underline,
+          // BUT-1446: WidgetSpan + Semantics(link:) so screen readers
+          // announce the legal-doc link with a role and name. Replaces the
+          // inline TapGestureRecognizer (no link role, audit-invisible) and
+          // removes the per-link recognizer-disposal bookkeeping.
+          _TokenKind.link => WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Semantics(
+              link: true,
+              label: t.text,
+              child: GestureDetector(
+                onTap: () => _launch(t.url!),
+                child: Text(
+                  t.text,
+                  style: base.copyWith(
+                    color: linkColor,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
-            recognizer: t.recognizer,
           ),
         },
     ];
@@ -257,11 +246,10 @@ enum _TokenKind { text, bold, link }
 class _Token {
   final _TokenKind kind;
   final String text;
-  final TapGestureRecognizer? recognizer;
-  const _Token(this.kind, this.text, [this.recognizer]);
+  final String? url;
+  const _Token(this.kind, this.text, [this.url]);
 
   factory _Token.text(String t) => _Token(_TokenKind.text, t);
   factory _Token.bold(String t) => _Token(_TokenKind.bold, t);
-  factory _Token.link(String t, TapGestureRecognizer r) =>
-      _Token(_TokenKind.link, t, r);
+  factory _Token.link(String t, String url) => _Token(_TokenKind.link, t, url);
 }

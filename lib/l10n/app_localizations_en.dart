@@ -13743,6 +13743,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yPrivacyPolicyLink => 'Privacy policy';
 
   @override
+  String a11yLinkTo(String url) {
+    return 'Link to $url';
+  }
+
+  @override
   String get reportContent => 'Report';
 
   @override

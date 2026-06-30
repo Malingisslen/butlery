@@ -13778,6 +13778,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yPrivacyPolicyLink => 'Integritetspolicy';
 
   @override
+  String a11yLinkTo(String url) {
+    return 'Länk till $url';
+  }
+
+  @override
   String get reportContent => 'Rapportera';
 
   @override

@@ -23051,6 +23051,12 @@ abstract class AppLocalizations {
   /// **'Integritetspolicy'**
   String get a11yPrivacyPolicyLink;
 
+  /// Accessibility label for an inline link in user/markdown text — read by screen readers as the link's name (BUT-1446)
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk till {url}'**
+  String a11yLinkTo(String url);
+
   /// No description provided for @reportContent.
   ///
   /// In sv, this message translates to:

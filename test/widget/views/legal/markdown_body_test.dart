@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 import 'package:butlery/views/legal/markdown_body.dart';
 
+/// Captures the URLs handed to url_launcher so a tapped legal-doc link's
+/// outcome can be asserted without opening a real browser.
+class _RecordingUrlLauncher extends UrlLauncherPlatform
+    with MockPlatformInterfaceMixin {
+  final List<String> launched = [];
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    launched.add(url);
+    return true;
+  }
+}
+
 void main() {
+  late _RecordingUrlLauncher launcher;
+  late UrlLauncherPlatform original;
+
+  setUp(() {
+    original = UrlLauncherPlatform.instance;
+    launcher = _RecordingUrlLauncher();
+    UrlLauncherPlatform.instance = launcher;
+  });
+
+  tearDown(() {
+    UrlLauncherPlatform.instance = original;
+  });
+
   Future<void> pump(WidgetTester tester, String data) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -42,32 +73,45 @@ void main() {
     expect(find.textContaining('- första'), findsNothing);
   });
 
-  testWidgets('turns [label](url) into a tappable link span (recognizer)', (
+  testWidgets('turns [label](url) into a tappable link that opens the url', (
     tester,
   ) async {
+    // BUT-1446: links render as WidgetSpan -> Semantics(link:) ->
+    // GestureDetector -> Text(label). The visible text is the label; the URL
+    // and bracket syntax never render. Interactivity is proven by driving a
+    // real tap through the widget (the old TapGestureRecognizer is gone) and
+    // asserting url_launcher received the underlying URL.
     await pump(tester, 'Se [vår policy](https://butlery.se/x) här.');
 
     // The label renders; the URL and bracket syntax do not.
-    expect(find.textContaining('vår policy'), findsWidgets);
+    expect(find.text('vår policy'), findsOneWidget);
     expect(find.textContaining(']('), findsNothing);
     expect(find.textContaining('https://butlery.se'), findsNothing);
 
-    // Prove a gesture recognizer was attached to the link span (i.e. it's
-    // interactive, not just styled text).
-    final richTexts = tester.widgetList<Text>(find.byType(Text));
-    var foundRecognizer = false;
-    for (final st in richTexts) {
-      st.textSpan?.visitChildren((span) {
-        if (span is TextSpan && span.recognizer is TapGestureRecognizer) {
-          foundRecognizer = true;
-        }
-        return true;
-      });
-    }
-    expect(
-      foundRecognizer,
-      isTrue,
-      reason: 'a link must carry a TapGestureRecognizer',
+    await tester.tap(find.text('vår policy'));
+    await tester.pump();
+
+    expect(launcher.launched, contains('https://butlery.se/x'));
+  });
+
+  testWidgets('link exposes a link role with the visible label as its name', (
+    tester,
+  ) async {
+    // BUT-1446 core win: screen readers announce the legal-doc link as a link
+    // (role) named by its visible label — not as generic styled text.
+    final handle = tester.ensureSemantics();
+    await pump(tester, 'Se [vår policy](https://butlery.se/x) här.');
+
+    final node = tester.getSemantics(
+      find.bySemanticsLabel(RegExp(r'vår policy')),
     );
+    expect(node.label, contains('vår policy'));
+    expect(
+      node.flagsCollection.isLink,
+      isTrue,
+      reason: 'the markdown link must carry the link role',
+    );
+
+    handle.dispose();
   });
 }
