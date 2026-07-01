@@ -10,6 +10,21 @@
 > single tracker for pipeline health work. Malin decided 2026-07-01: docs only, no Linear
 > tickets pre-filed — sessions pick from here.
 
+## How to work this roadmap (model routing — decided 2026-07-01)
+
+Route by blast radius, not task size (per `~/.claude/CLAUDE.md` + `CLAUDE.local.md`):
+- **Script first, AI second.** Data validation, register diffs, bulk checks → deterministic
+  scripts (the audits' pre-passes found half the findings for ~$0). Sheet edits are Malin's.
+- **Sonnet, low effort** for the mechanical items (marked S with no safety domain): sync
+  comma-split, `.trim()`/plural normalization fixes, TTL fields, telemetry one-liners,
+  cache write-back, doc updates, all Explore/scan subagents.
+- **Opus (session model), plan-first** for anything touching allergen verdicts, menu
+  filtering, `allergen_config`/`dietary_config`, draft policy, Firestore rules/repos —
+  and ALWAYS for the commit-gate reviewers regardless of diff size.
+- **Workflows only for fan-out** (re-audits, multi-file sweeps): sonnet finders → opus
+  verifiers. Single-session for everything else — orchestration overhead isn't free.
+- Effort knob is separate from model: subagents run low effort even on opus.
+
 ## P0 — Safety (allergen correctness)
 
 - [ ] **Wire household/present-diner allergen filtering into menu generation** (effort: M)
@@ -142,6 +157,47 @@ not new systems.
   zero migration-correctness coverage.
 - [ ] **Strengthen `import_manager_test` happy path** (S) — asserts only
   `isSuccess`/strategy-not-null; add title + ingredient-count assertions.
+
+## P0 — Register & config data quality (added 2026-07-01, second audit)
+
+Source: 23-agent semantic audit of the full 2,230-row ingredient register + tag configs.
+Evidence: `tasks/scans/register-audit-2026-07-01/` (fix-list CSV + config/drift/coverage reports).
+Register fixes happen in the **Google Sheet** then re-sync — they are Malin's data edits, not code.
+
+- [ ] **CONFIG: `seafood` property fires no allergen verdict** (S, code)
+  6 rows (incl. *validated* `skaldjursfond`, `tom-kha-paste`) carry `seafood` as their only
+  marine marker — a shellfish stock gets `skaldjursfri`/`fiskfri`/`vegetarisk` = FREE. Add
+  `seafood` to the combined skaldjur trigger + vegetarian/kosher exclusions (or map it in
+  the register). `allergen_config.dart` / `dietary_config.dart`.
+- [ ] **CONFIG: `vegetarisk` misses `animal-product` — gelatin marked vegetarian** (S, code)
+  `dietary_config.dart:52` excludes only meat/fish/crustacean/mollusc; `gelatinblad`
+  (validated) passes as vegetarian. Also harden `vegansk` beyond the single
+  `animal-product` property (belt-and-braces exclusion list).
+- [x] **POLICY: draft ingredients produce authoritative FREE verdicts** — DECIDED 2026-07-01:
+  Malin keeps status quo (drafts retain full verdict authority incl. FREE). Recorded in
+  `.claude/rules/accepted-deviations.md`; mitigations = draft banner + fix-list + hygiene.
+  Do not reopen in reviews.
+- [ ] **DATA: apply the 87 confirmed register fixes** (Sheet work + re-sync)
+  `tasks/scans/register-audit-2026-07-01/register-fix-list.csv` — sorted danger-first.
+  Themes: compound products missing carrier allergens (öl→gluten, leverpastej→mjölk,
+  naan→mjölk, currypastor→räkpasta/fisk, müsli→nötter, HP-sås→korn/gluten), meat cuts
+  missing beef/pork detail props, dangerous aliases (chicken-oyster→"ostron",
+  senapssill on a mustard-less row). 8 uncertain rows need her judgment; 1 refuted.
+- [ ] **SYNC BUG: comma-separated aliases not split** (S, code)
+  `sync-ingredients.ts` splits aliases on `;` only; rows using commas sync as one
+  comma-joined array element (seen live on `vegofärs`, `tartar-sauce`). Split on both.
+- [ ] **NORMALIZATION defects blocking whole word classes** (S, code)
+  (a) no `-erna`/`-orna` definite-plural stripping ("morötterna" never matches),
+  (b) `_generateLookupVariations` never trims → trailing-space misses ("halloumi ost"),
+  (c) "och"-conjunction lines not split ("salt och peppar"). `ingredient_lookup_service.dart`.
+- [ ] **DATA: add missing staples** (Sheet) — skorpmjöl, generic korv (+korvar), vaniljyoghurt,
+  sour cream→gräddfil alias, glutenfritt mjöl, yoggi→yoghurt alias, kokos alias, bare fläsk.
+- [ ] **Cleanup** (S) — retire dead `excludes_tags` CSV column or wire it; reconcile
+  `shellfish`/`wheat` vocabulary drift between PROPERTIES.csv and `property_registry.dart`;
+  log (or status-prioritize) silent doc-ID-order collision wins on duplicate names/aliases.
+
+Drift check verdict: live Firestore matches the CSV (16 docs sampled, zero learned aliases
+yet) — the Sheet→CSV→Firestore chain is trustworthy; last sync 2025-12-27.
 
 ## Deliberately NOT flagged
 

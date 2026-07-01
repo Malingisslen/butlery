@@ -50,3 +50,14 @@ is bulk UID→name resolution (cost). Do **not** file a "third-party PII / must 
 finding against the notification-export path — it is a decided product+legal call. (The narrow
 exception the panel flagged — a counterparty in a notification the user never saw — does not
 apply: all exported notification categories are user-facing.) — 2026-06-30
+
+### [Tagging/Safety] Draft (AI-generated, unverified) ingredients may ground "fritt från X" verdicts
+The 2026-07-01 register audit recommended that draft-status ingredients (54% of the register,
+AI-generated, never human-verified) should not be able to prove FREE verdicts — only CONTAINS
+or UNKNOWN. **Malin decided 2026-07-01: keep full verdict authority for drafts, including
+FREE.** The existing draft-warning banner + the 87-row fix-list + register structural hygiene
+are the accepted mitigations.
+**Why:** Downgrading drafts to UNKNOWN-for-FREE would strip "fritt från" badges from most of
+the app pre-launch; the register's structure is clean and the known-bad rows are being fixed
+in the Sheet. Do not file findings proposing draft-status downgrades of FREE verdicts or
+"drafts are unverified" warnings against the tagging pipeline — decided. — 2026-07-01

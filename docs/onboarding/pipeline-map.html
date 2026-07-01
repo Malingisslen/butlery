@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlerys receptmotor — så funkar kedjan</title>
+<style>
+  :root{
+    --cream:#F5F1E8; --cream-dark:#E8E2D6; --green:#4A7C59; --green-dark:#2F5240;
+    --rust:#A8502F; --gold:#D4A03C; --ink:#1A1A1A; --ink2:#666666; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Georgia,'Times New Roman',serif; background:var(--cream); color:var(--ink); line-height:1.55;}
+  .wrap{max-width:880px; margin:0 auto; padding:32px 20px 64px;}
+  header{border-left:6px solid var(--green); padding:8px 0 8px 20px; margin-bottom:8px;}
+  header h1{font-size:1.7rem; color:var(--green-dark); font-weight:normal;}
+  header p{color:var(--ink2); margin-top:6px; font-size:.95rem;}
+  .meta{font-size:.8rem; color:var(--ink2); margin:10px 0 26px; padding-left:26px;}
+
+  .legend{display:flex; gap:18px; flex-wrap:wrap; background:var(--cream-dark); padding:12px 16px; margin-bottom:30px; font-size:.85rem;}
+  .lamp{display:inline-block; width:12px; height:12px; margin-right:6px; vertical-align:-1px;}
+  .lamp.g{background:var(--green);} .lamp.y{background:var(--gold);} .lamp.r{background:var(--rust);}
+
+  .stage{background:var(--white); border-left:4px solid var(--green); border-bottom:3px solid var(--rust); padding:20px 22px; margin-bottom:0;}
+  .stage h2{font-size:1.05rem; letter-spacing:.06em; text-transform:lowercase; color:var(--green-dark);}
+  .stage h2 .en{font-family:Consolas,monospace; font-size:.72rem; color:var(--ink2); letter-spacing:0; text-transform:none; margin-left:10px;}
+  .stage p.desc{margin:8px 0 10px; font-size:.95rem;}
+  .facts{list-style:none; font-size:.88rem; color:var(--ink);}
+  .facts li{padding:3px 0 3px 18px; position:relative;}
+  .facts li::before{content:""; position:absolute; left:0; top:9px; width:8px; height:8px;}
+  .facts li.g::before{background:var(--green);} .facts li.y::before{background:var(--gold);} .facts li.r::before{background:var(--rust);}
+  .arrow{text-align:center; color:var(--green); font-size:1.4rem; padding:6px 0; line-height:1;}
+  details{margin-top:10px; font-size:.85rem;}
+  summary{cursor:pointer; color:var(--green-dark); font-size:.85rem;}
+  details p{margin:8px 0 0 14px; color:var(--ink2);}
+
+  .loop{background:var(--green-dark); color:var(--cream); padding:22px; margin-top:34px;}
+  .loop h2{font-size:1.05rem; letter-spacing:.06em; text-transform:lowercase; color:var(--cream);}
+  .loop p{font-size:.92rem; margin:8px 0 14px; color:var(--cream-dark);}
+  table{width:100%; border-collapse:collapse; font-size:.85rem;}
+  th{color:var(--gold); font-weight:normal; text-align:left; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.25);}
+  td{padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12); vertical-align:top;}
+  td.st{white-space:nowrap;}
+
+  .warn{background:var(--gold); color:var(--ink); padding:16px 20px; margin-top:34px; font-size:.92rem;}
+  .warn strong{display:block; margin-bottom:6px;}
+  footer{margin-top:36px; font-size:.78rem; color:var(--ink2); border-top:1px solid var(--cream-dark); padding-top:14px;}
+  footer code{font-family:Consolas,monospace; font-size:.75rem;}
+  @media print{ .stage{break-inside:avoid;} body{background:var(--white);} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>butlerys receptmotor</h1>
+  <p>Appens hela idé i en kedja: ta emot ett recept från <em>vilken källa som helst</em>,
+  förstå det, märk upp det i detalj — och använd det för att bygga veckomenyer som passar just din familj.</p>
+</header>
+<div class="meta">Granskad i grunden 2026-07-01 (två djuprevisioner, varje påstående verifierat mot koden). Lamporna visar ärligt läge — inte ambition.</div>
+
+<div class="legend">
+  <span><span class="lamp g"></span>Fungerar i drift</span>
+  <span><span class="lamp y"></span>Byggt men vilande / väntar</span>
+  <span><span class="lamp r"></span>Trasigt eller ej inkopplat</span>
+</div>
+
+<!-- ═══ STAGE 1 ═══ -->
+<div class="stage">
+  <h2>1 · källorna <span class="en">import</span></h2>
+  <p class="desc">Ett recept kan komma in på åtta sätt: länk, foto, inklistrad text, fil,
+  Instagram, TikTok, YouTube eller via telefonens dela-knapp.</p>
+  <ul class="facts">
+    <li class="g">Huvudvägen ("Importera länk") hanterar allt: plattformsspecifika tolkar, kostnadsbroms, cache som gör att en populär länk bara tolkas en gång för alla användare.</li>
+    <li class="r">Dela-knappen och den äldre länk-skärmen går en <em>egen, sämre väg</em> — utan cache, kostnadsbroms och mätning. Ska slås ihop med huvudvägen.</li>
+  </ul>
+  <details><summary>mer</summary><p>YouTube-recept som delas via dela-knappen tappar sin transkript-tolkning och blir en rå sidskrapning. Fixen är att låta båda vägarna gå genom samma dörr (ImportManager).</p></details>
+</div>
+<div class="arrow">▼</div>
+
+<!-- ═══ STAGE 2 ═══ -->
+<div class="stage">
+  <h2>2 · tolkningen <span class="en">parsing</span></h2>
+  <p class="desc">En trappa där varje steg kostar mer än det förra — och vi stannar så
+  tidigt vi kan: färdig receptdata på sidan → kända sajters mallar → egna språkmodeller
+  i telefonen (gratis) → först som sista utväg molnets AI (kostar pengar).</p>
+  <ul class="facts">
+    <li class="g">Trappan fungerar och är snål: AI:n anropas bara när de gratis stegen misslyckas, och då helst bara för de osäkra raderna.</li>
+    <li class="g">Kvaliteten bevakas av ett facit på 433 riktiga ingrediensrader — bygget stoppas automatiskt om träffsäkerheten sjunker under 85&nbsp;%.</li>
+    <li class="r">En bugg gör att en svårtolkad sida kan utlösa upp till <em>tre</em> AI-anrop i stället för ett — två parallella trappor eskalerar var för sig.</li>
+  </ul>
+  <details><summary>mer</summary><p>Tre egna ML-modeller körs direkt i telefonen (radklassning + ingrediensförståelse). De kan uppdateras på distans med kryptografisk verifiering — men se lärloopen nedan för haken.</p></details>
+</div>
+<div class="arrow">▼</div>
+
+<!-- ═══ STAGE 3 ═══ -->
+<div class="stage">
+  <h2>3 · taggningen <span class="en">tagging</span></h2>
+  <p class="desc">Helt utan AI — ren regellogik i fem faser: allergener &amp; kost först
+  (säkerheten), sedan rätt-typ, komplexitet, stämning och kök. Hjärtat är
+  ingrediensregistret: 2&nbsp;230 ingredienser med egenskaper som "innehåller gluten".</p>
+  <ul class="facts">
+    <li class="g">Försiktig i grunden: utan 100&nbsp;% täckning av ingredienserna säger appen "okänt" i stället för att gissa "fritt från".</li>
+    <li class="g">Registrets struktur är föredömlig — noll dubbletter, noll ogiltiga egenskaper (granskat rad för rad).</li>
+    <li class="r">87 bekräftade datafel: sammansatta produkter som saknar sin dolda allergen (öl utan gluten, leverpastej utan mjölk, currypasta utan räkpasta…). Fixas i ditt Google Sheet.</li>
+    <li class="r">Kodhål: egenskapen "seafood" lyssnar ingen regel på — skaldjursfond kan visas som <em>skaldjursfri</em>. Gelatin räknas som vegetariskt.</li>
+    <li class="y">54&nbsp;% av registret är AI-genererade utkast som ingen människa granskat — de ger fullvärdiga besked inklusive "fritt från". Medvetet beslut 2026-07-01 (varningsbanner + åtgärdslistan är skyddsnätet).</li>
+  </ul>
+</div>
+<div class="arrow">▼</div>
+
+<!-- ═══ STAGE 4 ═══ -->
+<div class="stage">
+  <h2>4 · personaliseringen <span class="en">menu generation</span></h2>
+  <p class="desc">Taggarna + betygen blir veckomenyer: hårda filter för allergener och kost,
+  sedan mjuka vikter — säsong, familjens betyg, skafferi, favoritkök, kockvana — och
+  variation så att inget kök dominerar veckan.</p>
+  <ul class="facts">
+    <li class="g">Viktningen är genomtänkt och testad, med tak så att ingen signal kan ta över.</li>
+    <li class="r"><strong>Viktigast av allt:</strong> familjens/barnens allergener kopplas aldrig in i menygenereringen — bara kontoägarens. Byggt, testat, men aldrig inkopplat. (P0 i åtgärdslistan.)</li>
+    <li class="r">Om du manuellt rättar en felaktig allergenmärkning respekteras det i receptlistan — men <em>inte</em> av menygeneratorn.</li>
+  </ul>
+</div>
+
+<!-- ═══ LOOP ═══ -->
+<div class="loop">
+  <h2>lärloopen — blir systemet bättre av att användas?</h2>
+  <p>Tanken: användarnas rättelser och beteende matas tillbaka så att tolkning och taggning
+  blir bättre över tid. Verkligheten idag, länk för länk:</p>
+  <table>
+    <tr><th>Signal</th><th>Läge</th><th>Kommentar</th></tr>
+    <tr><td>Sajt-statistik → smartare vägval per domän</td><td class="st"><span class="lamp g"></span>Sluten loop</td><td>Fungerar helt automatiskt — mönstret att kopiera.</td></tr>
+    <tr><td>Rättelser → nya ingrediens-alias</td><td class="st"><span class="lamp y"></span>Vilande</td><td>Kräver 3 användare som håller med — omöjligt före lansering. Saknar ångra-knapp.</td></tr>
+    <tr><td>Rättelser → omträning av tolknings-modellen</td><td class="st"><span class="lamp r"></span>Halvbyggd</td><td>Träningen funkar, men resultatet kan inte nå användarna utan manuellt handarbete + ny appversion, och ingen kvalitetsgrind.</td></tr>
+    <tr><td>Rättelser samlas in över huvud taget</td><td class="st"><span class="lamp r"></span>1 av 8 vägar</td><td>Bara länk-importens första steg. Foto, text, sociala medier — inget sparas.</td></tr>
+    <tr><td>Fel taggning ("den HÄR innehåller gluten!")</td><td class="st"><span class="lamp r"></span>Saknas</td><td>Rättelsen syns bara på skärmen — ingen lär sig något.</td></tr>
+    <tr><td>Menybeteende (byten, omgenereringar)</td><td class="st"><span class="lamp r"></span>Saknas</td><td>Monetariseringens kärnmått är omätbart idag.</td></tr>
+    <tr><td>AI-svar sparas för analys</td><td class="st"><span class="lamp r"></span>Skriv-bara</td><td>Betald data som raderas efter 30 dagar utan att någon tittat.</td></tr>
+  </table>
+</div>
+
+<div class="warn">
+  <strong>Den goda nyheten</strong>
+  Nästan allt rött ovan är <em>kopplingar mellan färdiga delar</em>, inte nybyggen. Grunden —
+  snål arkitektur, försiktig allergenlogik, riktiga kvalitetsgrindar, integritetsskydd i
+  varje led — är ovanligt gedigen för ett förlanserings-projekt. Åtgärdslistan är sorterad:
+  säkerhet först, sedan lärloopen, sedan kostnad.
+</div>
+
+<footer>
+  För den tekniska sanningen (framtida Claude-sessioner &amp; utvecklare):
+  <code>docs/architecture/RECIPE_PIPELINE.md</code> (kartan + vad-är-inkopplat-tabellen) ·
+  <code>docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md</code> (åtgärdslistan) ·
+  råmaterial i <code>tasks/scans/pipeline-audit-2026-07-01/</code> och
+  <code>register-audit-2026-07-01/</code>. Sidan genererad 2026-07-01 ur två verifierade djuprevisioner.
+</footer>
+
+</div>
+</body>
+</html>

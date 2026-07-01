@@ -7,6 +7,8 @@
 > Prioritized fixes: `PIPELINE_IMPROVEMENT_ROADMAP.md` (sibling file).
 > Deeper stage docs: `docs/parser/PARSER_ARCHITECTURE.md`, `docs/tagging/tagging_system.md`,
 > skills `tagging-domain-knowledge`, `butlery-architecture`.
+> Human-facing visual (Swedish, for Malin/onboarding): `docs/onboarding/pipeline-map.html` —
+> keep its status lamps in sync when roadmap items are fixed.
 
 ## The chain at a glance
 

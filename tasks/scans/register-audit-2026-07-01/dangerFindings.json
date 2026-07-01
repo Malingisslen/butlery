@@ -1,0 +1,770 @@
+[
+ {
+  "id": "beer",
+  "issue": "Öl lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Beer is brewed from barley (and often wheat) malt; standard öl carries gluten unless explicitly gluten-free. A recipe with öl would be falsely marked 'fri från gluten'."
+ },
+ {
+  "id": "beef-broth",
+  "issue": "Nötbuljong lacks the beef property",
+  "direction": "missing-property",
+  "property": "beef",
+  "severity": "danger",
+  "rationale": "Has animal-product,meat but not beef, so a recipe using nötbuljong/oxbuljong would show falsely free from nötkött. (Buljong products also frequently contain celery — worth checking, but beef is the certain miss.)"
+ },
+ {
+  "id": "beef-tallow",
+  "issue": "Talg (nöttalg) lacks meat and beef properties",
+  "direction": "missing-property",
+  "property": "meat,beef",
+  "severity": "danger",
+  "rationale": "Rendered beef fat has only animal-product; recipes with talg would be falsely free from kött and nötkött. Compare bacon-fat, which correctly carries meat,pork."
+ },
+ {
+  "id": "bouillon-cube-beef",
+  "issue": "Beef bouillon cube has meat but lacks the beef property",
+  "direction": "missing-property",
+  "property": "beef",
+  "severity": "danger",
+  "rationale": "Buljongtärning nöt is made from beef; without the beef property a recipe using it would be marked free from nötkött. Celery is also a very common ingredient in Swedish bouillon cubes and is absent."
+ },
+ {
+  "id": "bone-marrow",
+  "issue": "Benmärg lacks meat (and beef) properties",
+  "direction": "missing-property",
+  "property": "meat",
+  "severity": "danger",
+  "rationale": "Bone marrow is a beef/veal product (alias 'köttmärg'); with only animal-product it would yield a false 'free from kött/nötkött' verdict for meat avoiders."
+ },
+ {
+  "id": "black-bean-sauce",
+  "issue": "Black bean sauce lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Commercial svartbönssås is almost always made with fermented soybeans plus wheat flour/soy sauce containing wheat; soy is tagged but gluten is not, producing a false gluten-free verdict."
+ },
+ {
+  "id": "char-siu-sauce",
+  "issue": "Char siu sauce lacks contains-gluten (and often sesame)",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Char siu sauce is soy-sauce/hoisin-based and typically contains wheat; many brands also contain sesame. Only soy is tagged, so gluten- or sesame-allergic users would get a false free-from."
+ },
+ {
+  "id": "curry-paste-green",
+  "issue": "Marked plant-based/vegan-friendly with no crustacean or fish property",
+  "direction": "missing-property",
+  "property": "crustacean/fish",
+  "severity": "danger",
+  "rationale": "Traditional and many commercial Thai green curry pastes (e.g. Mae Ploy) contain räkpasta (shrimp paste) and sometimes fish sauce; a shellfish-allergic user could get a false 'free from kräftdjur' verdict."
+ },
+ {
+  "id": "curry-paste-red",
+  "issue": "Marked plant-based/vegan-friendly with no crustacean or fish property",
+  "direction": "missing-property",
+  "property": "crustacean/fish",
+  "severity": "danger",
+  "rationale": "Red Thai curry paste commonly contains shrimp paste/fish sauce; missing crustacean produces a false free-from verdict. Generic aliases ('currypasta','curry paste') widen the blast radius."
+ },
+ {
+  "id": "curry-paste-yellow",
+  "issue": "Marked plant-based/vegan-friendly with no crustacean or fish property",
+  "direction": "missing-property",
+  "property": "crustacean/fish",
+  "severity": "danger",
+  "rationale": "Yellow Thai curry paste frequently contains shrimp paste; same false 'free from kräftdjur/fisk' risk as the other pastes."
+ },
+ {
+  "id": "chicken-oyster",
+  "issue": "Alias 'ostron' means oyster (mollusc)",
+  "direction": "bad-alias",
+  "property": "mollusc",
+  "severity": "danger",
+  "rationale": "A recipe listing 'ostron' (real oysters) could match this chicken cut, which carries no mollusc property — false 'free from blötdjur/skaldjur' for a mollusc-allergic user. Keep 'ryggbit', drop 'ostron'."
+ },
+ {
+  "id": "furikake",
+  "issue": "Furikake lacks the fish property (and usually soy) despite typically containing dried bonito/katsuobushi flakes and soy sauce",
+  "direction": "missing-property",
+  "property": "fish",
+  "severity": "danger",
+  "rationale": "Generic 'seafood' is not a fish trigger in the config; most furikake blends contain bonito (fish) and often soy — a fish-allergic user would get a false 'free from fisk' verdict. Soy is likewise commonly present and missing."
+ },
+ {
+  "id": "dumpling-frozen",
+  "issue": "Frozen dumplings marked plant-based/vegan-friendly, but aliases 'gyoza;dim sum' colloquially mean pork/meat-filled dumplings that also usually contain soy and egg",
+  "direction": "missing-property",
+  "property": "pork/meat/soy",
+  "severity": "danger",
+  "rationale": "Typical frozen gyoza are pork+soy; matching 'gyoza' to a vegan gluten-only row gives false 'free from fläsk/kött/soja' verdicts. Either split vegan vs meat variants or add meat/pork/soy conservatively."
+ },
+ {
+  "id": "herring-pickled",
+  "issue": "Alias 'senapssill' is a mustard-based product but row lacks senap trigger (mustard)",
+  "direction": "bad-alias",
+  "property": "mustard",
+  "severity": "danger",
+  "rationale": "Senapssill is sill in mustard sauce — matching it to this row yields a false 'free from senap' verdict for a mustard allergic. Either drop the alias or the alias needs its own mustard-carrying entry."
+ },
+ {
+  "id": "light-margarine",
+  "issue": "Marked plant-based/vegan-friendly with no dairy; common Swedish lättmargarin (e.g. Lätta) contains buttermilk/milk",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Many 40% margarines list kärnmjölk or mjölkprotein among ingredients; missing dairy (and contains-lactose) produces a false 'fri från mjölk' verdict."
+ },
+ {
+  "id": "hp-sauce",
+  "issue": "HP sauce contains barley malt vinegar but row lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "HP-sås is labeled with korn (barley malt vinegar) as an allergen in the EU; without contains-gluten a recipe with HP-sås is falsely marked glutenfri."
+ },
+ {
+  "id": "kimchi",
+  "issue": "Traditional kimchi commonly contains shrimp paste (saeujeot) but row lacks crustacean",
+  "direction": "missing-property",
+  "property": "crustacean",
+  "severity": "danger",
+  "rationale": "Row already conservatively carries fish (fish sauce) but not crustacean; shrimp paste is at least as common, so a crustacean allergic gets a false 'fri från kräftdjur/skaldjur'."
+ },
+ {
+  "id": "massaman-curry-paste",
+  "issue": "Missing peanut and crustacean (shrimp paste); also wrongly marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "peanut, crustacean",
+  "severity": "danger",
+  "rationale": "Traditional massaman curry paste nearly always contains peanuts and Thai commercial pastes typically contain räkpasta (shrimp paste) and often fish sauce. As tagged, a recipe with it would be marked free from jordnöt and kräftdjur — a dangerous false verdict. vegan-friendly is also wrong for shrimp-paste-containing pastes."
+ },
+ {
+  "id": "naan",
+  "issue": "Missing dairy (and often egg); tagged vegan-friendly",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Naan is traditionally made with yoghurt and/or milk/ghee, and store-bought Swedish naan almost always lists mjölk. Without dairy/contains-lactose the app would call a naan recipe free from mjölk."
+ },
+ {
+  "id": "liver-pate",
+  "issue": "Missing dairy (and typically contains-lactose)",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Swedish leverpastej standardly contains milk/cream (mjölkprotein) — e.g. all mainstream brands list mjölk. Only pork/meat tagged → false 'free from mjölk' verdict."
+ },
+ {
+  "id": "muesli",
+  "issue": "Generic müsli commonly contains nuts but has no tree-nut property",
+  "direction": "missing-property",
+  "property": "tree-nut",
+  "severity": "danger",
+  "rationale": "Blandad müsli very often contains hasselnötter/mandel; alias 'blandad müsli' explicitly covers mixed variants. Missing tree-nut yields a false 'free from nötter' verdict for a nut allergic — the most dangerous allergen to miss."
+ },
+ {
+  "id": "pork-hot-dog",
+  "issue": "Swedish name 'varmkorvsbröd' means hot-dog BREAD (the bun), but the row is typed as a pork sausage (meat/pork props, protein/meat/pork group)",
+  "direction": "other",
+  "property": "pork/meat",
+  "severity": "danger",
+  "rationale": "If a recipe says 'varmkorvsbröd' it matches this row and gets pork+meat (false contains) — but a hot-dog bun typically contains milk and possibly sesame, which are then MISSING, so a dairy/sesame-sensitive user could get a false free-from verdict. Either rename to the sausage ('varmkorv' already lives on wiener-sausage) or retype as a bread with contains-gluten (+dairy)."
+ },
+ {
+  "id": "pork-trotter",
+  "issue": "Alias 'kroketter' means croquettes (a breaded potato/meat product), not grisfötter",
+  "direction": "bad-alias",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "A recipe listing 'kroketter' would map to pig trotters (pork only). Croquettes are breaded (contains-gluten, often dairy/egg) — mapping them here yields a false gluten-free/dairy-free verdict."
+ },
+ {
+  "id": "falukorv",
+  "issue": "Falukorv is by definition a pork-and-BEEF sausage but lacks the beef property",
+  "direction": "missing-property",
+  "property": "beef",
+  "severity": "danger",
+  "rationale": "Swedish falukorv (protected designation) is made from a mix of fläsk- och nötkött. Missing 'beef' gives a false 'free from nötkött' verdict. Many brands also contain potato starch and sometimes milk protein — worth a compound-product note."
+ },
+ {
+  "id": "pancake-mix",
+  "issue": "Swedish pannkaksmix almost always contains milk powder (skummjölkspulver) and often egg powder — no dairy/lactose/egg props, and 'vegan-friendly' is wrong",
+  "direction": "missing-property",
+  "property": "dairy (and likely egg)",
+  "severity": "danger",
+  "rationale": "Mainstream mixes (Kungsörnen etc.) list skummjölkspulver; some include egg. As tagged, a recipe using pannkaksmix would be marked free from mjölk/laktos — a false free-from for a dairy-allergic user."
+ },
+ {
+  "id": "ponzu",
+  "issue": "Traditional ponzu (ponzu shōyu) commonly contains bonito/dashi — fish property missing and 'vegan-friendly' likely wrong",
+  "direction": "missing-property",
+  "property": "fish",
+  "severity": "danger",
+  "rationale": "Many commercial ponzu sauces include katsuobushi (bonito) extract. Missing 'fish' can produce a false fish-free verdict. Gluten+soy are correctly present."
+ },
+ {
+  "id": "oyster-sauce",
+  "issue": "Commercial ostronsås almost always contains wheat and often soy — contains-gluten (and soy) missing",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Typical oyster sauce (Lee Kum Kee etc.) lists wheat flour/soy; only mollusc is tagged, so a gluten-allergic user gets a false gluten-free verdict on recipes with ostronsås."
+ },
+ {
+  "id": "quorn-mince",
+  "issue": "Standard Quorn contains egg white (mycoprotein binder) but row has no egg and is marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Regular Quorn färs sold in Sweden uses egg albumen; only the explicitly vegan line is egg-free. Missing egg → false 'fri från ägg' verdict."
+ },
+ {
+  "id": "quorn-pieces",
+  "issue": "Standard Quorn pieces contain egg white but row lacks egg and claims vegan-friendly",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Same as quorn-mince: default Quorn products contain egg albumen (and sometimes milk protein)."
+ },
+ {
+  "id": "ravioli",
+  "issue": "Ravioli lacks egg and dairy despite fresh egg-pasta shell and typically cheese (ricotta) filling; marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Store ravioli is nearly always egg pasta with cheese-based filling → false free-from egg/mjölk verdicts."
+ },
+ {
+  "id": "ready-pesto",
+  "issue": "Färdig pesto lacks dairy/contains-lactose and is marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Jarred pesto (green) almost always contains parmesan/grana padano and pecorino → milk allergen missing."
+ },
+ {
+  "id": "remoulade",
+  "issue": "Remouladsås lacks mustard (senap)",
+  "direction": "missing-property",
+  "property": "mustard",
+  "severity": "danger",
+  "rationale": "Danish/Swedish remoulade recipes and commercial products contain mustard as a standard ingredient; egg is present but senap is missing → false 'fri från senap'."
+ },
+ {
+  "id": "ready-tikka-masala",
+  "issue": "Färdig tikka masala lacks dairy and is marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Tikka masala jar sauces standardly contain cream and/or yoghurt; also frequently almond (tree-nut). Missing dairy → false free-from mjölk."
+ },
+ {
+  "id": "potato-salad-prepared",
+  "issue": "Färdig potatissallad lacks egg (and often mustard/dairy) and is marked vegan-friendly",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Swedish store potato salad is mayonnaise- or crème-fraiche-based → egg (and often senap, mjölk) missing produces false free-from verdicts."
+ },
+ {
+  "id": "surimi",
+  "issue": "Surimi lacks contains-gluten and egg despite fish-only props",
+  "direction": "missing-property",
+  "property": "contains-gluten, egg",
+  "severity": "danger",
+  "rationale": "Commercial surimi/crabsticks almost always contain wheat starch and egg white as binders; with only fish tagged, recipes would show false 'free from gluten/ägg' verdicts."
+ },
+ {
+  "id": "tortellini",
+  "issue": "Filled pasta missing egg and dairy properties",
+  "direction": "missing-property",
+  "property": "egg, dairy",
+  "severity": "danger",
+  "rationale": "Tortellini is typically egg pasta filled with cheese (ricotta/parmesan); it carries animal-product + contains-gluten only, so mjölk/laktos/ägg verdicts would be falsely 'free from'."
+ },
+ {
+  "id": "tapenade",
+  "issue": "Classic tapenade contains anchovy but has no fish property",
+  "direction": "missing-property",
+  "property": "fish",
+  "severity": "danger",
+  "rationale": "Traditional and most commercial olive tapenade includes ansjovis/sardeller; also 'plant-based,vegan-friendly' is wrong for the same reason. False 'free from fisk' verdict possible."
+ },
+ {
+  "id": "spring-rolls-frozen",
+  "issue": "Frozen spring rolls missing soy (and possibly sesame)",
+  "direction": "missing-property",
+  "property": "soy",
+  "severity": "danger",
+  "rationale": "Frozen vårrullar almost universally contain soy sauce in the filling; only gluten is tagged, so a 'free from soja' verdict would be false."
+ },
+ {
+  "id": "garlic-sauce",
+  "issue": "Vitlökssås/kebabsås marked plant-based,vegan-friendly with no egg/dairy — Swedish vitlökssås/kebabsås is almost always mayonnaise- or crème fraiche/gräddfil-based",
+  "direction": "missing-property",
+  "property": "egg, dairy, contains-lactose",
+  "severity": "danger",
+  "rationale": "Row is even 'validated'; an egg- or milk-allergic user would see a false 'free from ägg/mjölk' verdict on any kebab recipe."
+ },
+ {
+  "id": "buljong",
+  "issue": "Generic 'buljong' tagged plant-based,vegan-friendly with no meat/fish/celery",
+  "direction": "missing-property",
+  "property": "meat, celery (potentially fish)",
+  "severity": "danger",
+  "rationale": "Unqualified buljong in Swedish recipes is usually köttbuljong/hönsbuljong and stock cubes routinely contain selleri; assuming plant-based produces false free-from verdicts for kött and selleri."
+ },
+ {
+  "id": "choklad",
+  "issue": "Generic 'choklad' tagged plant-based,vegan-friendly with no dairy/lactose (or soy)",
+  "direction": "missing-property",
+  "property": "dairy, contains-lactose",
+  "severity": "danger",
+  "rationale": "Unqualified choklad is very often mjölkchoklad and nearly all chocolate contains soy lecithin (a labelled soy allergen); generic entry should carry at least dairy."
+ },
+ {
+  "id": "swedish-meatballs",
+  "issue": "Köttbullar missing gluten, dairy and pork (only beef+egg present)",
+  "direction": "missing-property",
+  "property": "contains-gluten, dairy, contains-lactose, pork",
+  "severity": "danger",
+  "rationale": "Classic Swedish köttbullar use blandfärs (pork+beef), breadcrumbs (wheat) and milk/cream — gluten-, milk- and pork-avoiding users get false free-from verdicts."
+ },
+ {
+  "id": "worcestershire",
+  "issue": "Worcestershiresås missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Standard Worcestershire (Lea & Perrins EU) is made on barley malt vinegar → gluten; fish is correctly present but gluten is not."
+ },
+ {
+  "id": "brown-sauce",
+  "issue": "Brunsås missing gluten and meat",
+  "direction": "missing-property",
+  "property": "contains-gluten, meat",
+  "severity": "danger",
+  "rationale": "Swedish brunsås is a wheat-flour roux on meat fond/sky (alias 'sky' confirms); only dairy is tagged."
+ },
+ {
+  "id": "vegetable-broth",
+  "issue": "Grönsaksbuljong missing celery",
+  "direction": "missing-property",
+  "property": "celery",
+  "severity": "danger",
+  "rationale": "Virtually all Swedish grönsaksbuljong cubes/fond list selleri among ingredients; celery is an EU-14 allergen and is absent."
+ },
+ {
+  "id": "veggie-sausage",
+  "issue": "Vegetarisk korv aliased 'sojakorv' but carries no soy (and likely gluten)",
+  "direction": "missing-property",
+  "property": "soy",
+  "severity": "danger",
+  "rationale": "The alias explicitly names a soy product; matching 'sojakorv' to a row without soy yields a false soja-free verdict. Veggie sausages also commonly contain wheat protein."
+ },
+ {
+  "id": "vegan-quark",
+  "issue": "Alias 'sojaqvarg' on a row with no soy property",
+  "direction": "missing-property",
+  "property": "soy",
+  "severity": "danger",
+  "rationale": "Soy-based vegan quark matched via this alias would be reported soja-free."
+ },
+ {
+  "id": "vegan-feta",
+  "issue": "Alias 'tofu-feta' on a row with no soy property",
+  "direction": "missing-property",
+  "property": "soy",
+  "severity": "danger",
+  "rationale": "Tofu-feta is a soy product; alias match produces false soja-free verdict."
+ },
+ {
+  "id": "vegan-parmesan",
+  "issue": "Alias 'nötparmesan' (nut parmesan) on a row with no tree-nut property",
+  "direction": "missing-property",
+  "property": "tree-nut",
+  "severity": "danger",
+  "rationale": "Vegan parmesan aliased as nut-based (typically cashew) but carries no tree-nut → false nötter-free verdict."
+ },
+ {
+  "id": "glogg",
+  "issue": "Glögg missing sulfites",
+  "direction": "missing-property",
+  "property": "sulfites",
+  "severity": "danger",
+  "rationale": "Glögg is wine-based; other wine rows in this chunk (rott-vin, vitt-vin, vermouth) correctly carry sulfites."
+ },
+ {
+  "id": "veal-stock-concentrate",
+  "issue": "Kalvfond has meat but not beef",
+  "direction": "missing-property",
+  "property": "beef",
+  "severity": "danger",
+  "rationale": "Kalv is bovine; a user avoiding nötkött would get a false free-from on recipes using kalvfond. Other veal row (veal) correctly carries beef."
+ },
+ {
+  "id": "piccalilli",
+  "issue": "Piccalilli is a mustard-based pickle but has no mustard property",
+  "direction": "missing-property",
+  "property": "mustard",
+  "severity": "danger",
+  "rationale": "Piccalilli's sauce is defined by mustard (senapspulver/senapsfrö) plus turmeric and vinegar; a senap-allergic user would get a false 'free from senap' verdict. Vinegar base also suggests sulfites, but mustard is the critical miss. Row is even marked validated."
+ },
+ {
+  "id": "cumberland-sauce",
+  "issue": "Cumberlandsås classically contains mustard and port wine but carries neither mustard nor alcohol/sulfites",
+  "direction": "missing-property",
+  "property": "mustard",
+  "severity": "danger",
+  "rationale": "Standard Cumberland sauce = redcurrant jelly + portvin + senap(spulver) + citrus. Missing mustard gives a false free-from-senap verdict; missing contains-alcohol/sulfites (port) is a secondary miss."
+ },
+ {
+  "id": "pork-blood-sausage",
+  "issue": "Blodkorv lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Swedish blodkorv is thickened with rågmjöl/vetemjöl (rye/wheat flour) as a defining ingredient — a gluten-free verdict on a recipe with blodkorv would be false."
+ },
+ {
+  "id": "reindeer-blood-sausage",
+  "issue": "Renblodkorv lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Blood sausage recipes (incl. renblodkorv) use rye/barley/wheat flour as binder; same false gluten-free risk as blodkorv."
+ },
+ {
+  "id": "small-beer",
+  "issue": "Svagdricka lacks contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Svagdricka is brewed from malted barley (korn) — a fermented, non-distilled malt beverage carries gluten, like beer. Alcohol is tagged but gluten is not."
+ },
+ {
+  "id": "braised-cabbage",
+  "issue": "Alias 'långkål' on a vegan brunkål entry — långkål is a different dish traditionally made with cream/milk",
+  "direction": "bad-alias",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Halländsk långkål is kale cooked in grädde/mjölk (often with ham broth); mapping it to a plant-based/vegan-friendly entry would give a false free-from-mjölk (and possibly meat) verdict. 'Julkål' is similarly ambiguous. Row is validated."
+ },
+ {
+  "id": "pytt-i-panna",
+  "issue": "Pytt i panna tagged beef only — typical pytt contains pork (bacon/falukorv/skinka)",
+  "direction": "missing-property",
+  "property": "pork",
+  "severity": "danger",
+  "rationale": "Standard Swedish pytt i panna mixes beef with fläsk/bacon or korv; a fläsk-avoiding user (allergy or religious) gets a false 'free from fläsk' verdict. Egg is already covered."
+ },
+ {
+  "id": "rom",
+  "issue": "'rom' (the rum beverage) collides with Swedish 'rom' = fish roe",
+  "direction": "bad-alias",
+  "property": "fish",
+  "severity": "danger",
+  "rationale": "In recipe text 'rom' very often means fiskrom (roe), which carries fish. Matching it to an alcohol beverage entry yields a false free-from-fisk verdict. The entry needs disambiguation (e.g. 'mörk rom') or a guard."
+ },
+ {
+  "id": "dill-sauce",
+  "issue": "Dillsås marked plant-based/vegan with no allergen props",
+  "direction": "missing-property",
+  "property": "dairy (+egg/gluten/fish depending on variant)",
+  "severity": "danger",
+  "rationale": "Classic Swedish dillsås is either a roux-based sauce (wheat flour + cream, often fish stock) or a cold mayo/gräddfil-based sauce — dairy and typically egg or gluten. As tagged it produces false 'free from mjölk/ägg/gluten' and even a false vegan claim; and it's status=validated."
+ },
+ {
+  "id": "sandwich-sauce",
+  "issue": "Smörgåssås marked plant-based/vegan without egg",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Smörgåssås is a mayonnaise-based condiment (mayo + cream/yoghurt) — egg and usually dairy. Missing egg gives a false 'free from ägg' verdict; validated status makes it worse."
+ },
+ {
+  "id": "polsa",
+  "issue": "Pölsa missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Pölsa/lungmos is made with korngryn (barley groats) — barley → contains-gluten per EU rules. Currently a gluten-allergic user would see pölsa as gluten-free."
+ },
+ {
+  "id": "hazelnut-cream",
+  "issue": "Alias 'nötkräm' colloquially means Nutella-type spread which contains milk",
+  "direction": "bad-alias",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "The row is tagged plant-based/vegan, but 'nötkräm' in Swedish usage is a chocolate-hazelnut spread (Nutella-style) containing skimmed-milk powder. Matching 'nötkräm' to this dairy-free row yields a false 'free from mjölk'."
+ },
+ {
+  "id": "herring-salad",
+  "issue": "Sillsallad missing dairy/egg from the dressing",
+  "direction": "missing-property",
+  "property": "dairy, egg",
+  "severity": "danger",
+  "rationale": "Classic rödbetssillsallad is bound with gräddfil/vispgrädde and/or mayonnaise — dairy and often egg. Only fish is tagged, so a milk- or egg-allergic user gets a false free-from verdict."
+ },
+ {
+  "id": "nubbe-salad",
+  "issue": "Nubbesallad missing dairy/egg from the dressing",
+  "direction": "missing-property",
+  "property": "dairy, egg",
+  "severity": "danger",
+  "rationale": "Nubbesallad (herring salad with aquavit) is dressed with gräddfil/mayonnaise like sillsallad — dairy/egg missing while fish and alcohol are tagged."
+ },
+ {
+  "id": "wok-sauce",
+  "issue": "Ready woksås missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Ready-made wok/stir-fry sauces are soy-sauce based; standard soja is brewed with wheat (the register's own soy-sauce-generic row correctly carries contains-gluten). Soy is tagged but gluten is not — false 'free from gluten'."
+ },
+ {
+  "id": "ssamjang",
+  "issue": "Ssamjang missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Ssamjang is doenjang + gochujang; commercial gochujang and doenjang almost always contain wheat. Soy is tagged, gluten is not."
+ },
+ {
+  "id": "daim-bits",
+  "issue": "Daim is milk chocolate with almond brittle but is tagged plant-based/vegan-friendly",
+  "direction": "missing-property",
+  "property": "dairy, contains-lactose, tree-nut",
+  "severity": "danger",
+  "rationale": "Daim contains milk chocolate (dairy/lactose) and almonds (tree-nut); current props produce false 'free from mjölk/laktos/nötter' verdicts."
+ },
+ {
+  "id": "chokladmousse",
+  "issue": "Chocolate mousse tagged plant-based/vegan-friendly with no dairy or egg",
+  "direction": "missing-property",
+  "property": "dairy, contains-lactose, egg",
+  "severity": "danger",
+  "rationale": "Classic mousse au chocolat is whipped cream + egg; a recipe with chokladmousse would be marked free from mjölk and ägg."
+ },
+ {
+  "id": "almond-biscuits",
+  "issue": "Mandelbiskvier missing egg (they are almond + sugar + egg white)",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Biskvier are made on egg white; also tagged plant-based/vegan-friendly which contradicts. (Secondary: contains-gluten is usually wrong — biskvier are typically gluten-free.)"
+ },
+ {
+  "id": "caesar-salad",
+  "issue": "Ready caesar salad missing egg",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Caesar dressing is egg-based (mayonnaise/raw yolk) — the sibling row caesar-dressing correctly carries egg; the salad would give a false 'fri från ägg'."
+ },
+ {
+  "id": "cucumber-relish",
+  "issue": "Bostongurka missing mustard",
+  "direction": "missing-property",
+  "property": "mustard",
+  "severity": "danger",
+  "rationale": "Swedish bostongurka (Felix etc.) contains senapsfrön as a standard ingredient; senap is an EU-declared allergen."
+ },
+ {
+  "id": "biscoff",
+  "issue": "Speculoos/Biscoff cookies missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Biscoff/speculoos are wheat-flour cookies; false 'fri från gluten' verdict."
+ },
+ {
+  "id": "biscoff-spread",
+  "issue": "Biscoff spread missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "The spread is ~58% crushed speculoos wheat cookies."
+ },
+ {
+  "id": "cookie-butter",
+  "issue": "Cookie butter (speculoospread) missing contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Same product family as biscoff-spread: ground wheat cookies."
+ },
+ {
+  "id": "swede-casserole",
+  "issue": "Kålrotslåda missing egg and gluten; alias 'rotmos' means a different dish",
+  "direction": "missing-property",
+  "property": "egg, contains-gluten",
+  "severity": "danger",
+  "rationale": "Traditional kålrotslåda contains egg and breadcrumbs/flour. Also bad-alias: rotmos is mashed swede+potato with no egg/gluten/dairy required — matching 'rotmos' to this row gives wrong verdicts both ways."
+ },
+ {
+  "id": "pea-soup",
+  "issue": "Ärtsoppa tagged plant-based/vegan-friendly; Swedish canned ärtsoppa normally contains fläsk",
+  "direction": "missing-property",
+  "property": "meat, pork",
+  "severity": "danger",
+  "rationale": "Standard ärtsoppa (burk) contains pork; the kött/fläsk filters would show a false 'free from' for the typical product. If the row is meant as vegetarian, aliases 'ärtsoppa burk/färdig' point at the pork product."
+ },
+ {
+  "id": "bordelaisesås",
+  "issue": "Red-wine sauce missing sulfites (and alcohol/dairy likely)",
+  "direction": "missing-property",
+  "property": "sulfites",
+  "severity": "danger",
+  "rationale": "Bordelaise is built on red wine (sulfites, residual alcohol) and finished with butter; row is plant-based/vegan with no sulfites."
+ },
+ {
+  "id": "bubbel",
+  "issue": "Sparkling wine missing sulfites",
+  "direction": "missing-property",
+  "property": "sulfites",
+  "severity": "danger",
+  "rationale": "Wine/champagne virtually always carries declarable sulfites; other wine-based rows in the register (balsamico, grå vinäger) have it."
+ },
+ {
+  "id": "pastejer",
+  "issue": "Marked plant-based/vegan but aliased 'paté, leverpastej' — liver pâté is a meat/pork product",
+  "direction": "bad-alias",
+  "property": "meat",
+  "severity": "danger",
+  "rationale": "A recipe listing 'leverpastej' could match this vegan-marked row and be declared free from kött/fläsk. Row 126 (paté) is the correct meat version; this row's aliases collide with it."
+ },
+ {
+  "id": "imat-fraiche",
+  "issue": "iMat fraiche marked plant-based/vegan-friendly; Arla iMat is a lactose-free DAIRY product — missing dairy",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "iMat is lactose-free but milk-based; a milk-allergic user would get a false 'fri från mjölk' verdict. (If the intent was an oat-based cooking cream, the alias 'lätt creme fraiche' still pulls in dairy products.)"
+ },
+ {
+  "id": "köttbuljong",
+  "issue": "Meat broth lacks the 'meat' property (only animal-product,processed)",
+  "direction": "missing-property",
+  "property": "meat",
+  "severity": "danger",
+  "rationale": "kött verdict is driven by the meat property; oxbuljong alias also suggests beef. Recipe with köttbuljong would show 'fri från kött'."
+ },
+ {
+  "id": "malsocker",
+  "issue": "Aliased 'maltsocker, maltextrakt' but no contains-gluten — barley malt extract contains gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Malt/maltextrakt is made from korn (barley), an EU-declared gluten grain; false gluten-free verdict for coeliacs."
+ },
+ {
+  "id": "leverpatté",
+  "issue": "Liver pâté has meat but not pork; Swedish leverpastej is pork-liver based",
+  "direction": "missing-property",
+  "property": "pork",
+  "severity": "danger",
+  "rationale": "Users filtering fläsk would get a false free-from; leverpastej also commonly contains milk (secondary)."
+ },
+ {
+  "id": "pressylta",
+  "issue": "Pressylta (brawn) marked dairy+contains-lactose but missing pork; it is a pork head-meat product with no dairy",
+  "direction": "missing-property",
+  "property": "pork",
+  "severity": "danger",
+  "rationale": "Missing pork gives a false 'fri från fläsk'; the dairy/contains-lactose flags are simultaneously wrong-property (false contains mjölk/laktos)."
+ },
+ {
+  "id": "maggi-seasoning",
+  "issue": "Maggi liquid seasoning marked plant-based only; European Maggi is hydrolyzed WHEAT protein (contains gluten, often labeled contains wheat)",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Standard EU Maggi Würze declares vete; missing contains-gluten yields a false gluten-free verdict. Soy may also apply for some variants."
+ },
+ {
+  "id": "hallonmousse",
+  "issue": "Raspberry mousse marked vegan/plant-based; mousse typically contains whipped cream and/or egg white (and gelatin)",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Compound dessert product; default preparation carries dairy/egg, so mjölk/ägg free-from verdicts are unsafe."
+ },
+ {
+  "id": "shrimp-paste",
+  "issue": "Named 'räkost' (shrimp cheese spread, Kalles-style) but lacks dairy/contains-lactose (and typically egg); räkost is a dairy product",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Swedish räkost is a cheese-based spread; a milk-allergic user would get a false 'free from mjölk'. Also a confused mapping: 'shrimp paste' (SE-Asian fermented) and räkost are different products."
+ },
+ {
+  "id": "streusel",
+  "issue": "Streusel/smulpaj crumble is wheat flour + butter but marked plant-based/vegan with no gluten or dairy",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Crumble topping is flour, butter, sugar — missing contains-gluten AND dairy/contains-lactose produces false free-from gluten and mjölk."
+ },
+ {
+  "id": "speculaas",
+  "issue": "Spekulatius spice cookies are wheat-based (usually with butter) but carry no contains-gluten",
+  "direction": "missing-property",
+  "property": "contains-gluten",
+  "severity": "danger",
+  "rationale": "Speculaas is a wheat cookie; often contains butter (dairy) too. False 'free from gluten' verdict."
+ },
+ {
+  "id": "tartar-sauce",
+  "issue": "Tartarsås/remoulad is mayonnaise-based but marked plant-based/vegan with no egg",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Tartar sauce is mayo (egg) + pickles; often also mustard. Egg-allergic user gets false free-from ägg."
+ },
+ {
+  "id": "tom-kha-paste",
+  "issue": "Has only generic 'seafood', missing crustacean and fish",
+  "direction": "missing-property",
+  "property": "crustacean",
+  "severity": "danger",
+  "rationale": "Tom kha paste typically contains shrimp paste and/or fish sauce; without crustacean/fish props the specific kräftdjur/fisk verdicts show falsely free. Generic 'seafood' only covers the combined skaldjur badge."
+ },
+ {
+  "id": "skaldjursfond",
+  "issue": "Shellfish stock has only 'seafood', missing crustacean (and fish per alias 'fiskkraft')",
+  "direction": "missing-property",
+  "property": "crustacean",
+  "severity": "danger",
+  "rationale": "Skaldjursfond is made from crustacean shells (often with fish); the kräftdjur and fisk allergen checks won't trigger on generic 'seafood' alone."
+ },
+ {
+  "id": "vaniljprotein",
+  "issue": "Marked plant-based/vegan but alias 'vassle vanilj' means whey protein (dairy)",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Whey protein is milk-derived; most 'vaniljprotein' is whey. Missing dairy + contains-lactose gives false free-from mjölk. Either add dairy or drop the vassle alias and vegan claim."
+ },
+ {
+  "id": "vitvinssås",
+  "issue": "Marked plant-based/vegan but aliased 'smörsås' (butter sauce); white wine sauce is normally cream/butter based, missing dairy",
+  "direction": "missing-property",
+  "property": "dairy",
+  "severity": "danger",
+  "rationale": "Beurre-blanc-style vitvinssås contains butter/cream; the alias directly names a dairy sauce while props say vegan-friendly."
+ },
+ {
+  "id": "vanilla-sauce",
+  "issue": "Vaniljsås (custard) typically contains egg yolk but has no egg property",
+  "direction": "missing-property",
+  "property": "egg",
+  "severity": "danger",
+  "rationale": "Traditional vaniljsås/vaniljkräm is an egg-yolk custard; only some store-bought variants are egg-free. Missing egg risks a false free-from ägg."
+ }
+]
