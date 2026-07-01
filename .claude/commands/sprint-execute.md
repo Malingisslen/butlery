@@ -1,6 +1,6 @@
 ---
 description: Pick the next 3–10 tickets from Linear and implement them — self-sufficient, no triage step required
-argument-hint: [N] [--pick] [--dry-run] [--focus <area>] [--no-review] — N = ticket count (default auto-size 6–10), --pick = interactive single/few-ticket selection (replaces the old /linear backlog), --dry-run previews without coding, --focus filters by area label, --no-review disables the always-on stakeholder panel (default: experts ON)
+argument-hint: [N] [malin] [--pick] [--dry-run] [--focus <area>] [--no-review] — N = ticket count (default auto-size 6–10), malin = also surface + prep everything waiting on you (need-malin lane + Tier-D blockers + parked high-stakes) and ask you live at the end, --pick = interactive single/few-ticket selection (replaces the old /linear backlog), --dry-run previews without coding, --focus filters by area label, --no-review disables the always-on stakeholder panel (default: experts ON)
 ---
 
 Self-sufficient sprint command. Selects the next batch of Linear tickets and implements them in one pass. No `/triage` prerequisite — that command was deleted because the scope-approval gate was rubber-stamp ceremony in a solo setup (see `memory/feedback_solo_no_scope_gate.md`).
@@ -10,6 +10,7 @@ Self-sufficient sprint command. Selects the next batch of Linear tickets and imp
 1. Verify Linear MCP is connected (test `list_issues`). If not: "Linear MCP not connected. Run `/mcp` to reconnect." and stop.
 2. If `$ARGUMENTS` contains `--dry-run`, run selection and print the plan without implementing.
 3. If `$ARGUMENTS` contains `--pick`, selection is interactive (you choose the ticket(s)) instead of auto-batch — see "Interactive pick mode" in Phase 1.
+4. If `$ARGUMENTS` contains `malin` (positional keyword; `--malin` also accepted), enable **Malin decision-queue mode** — see Phase 3.6. The normal sprint runs unchanged; this only ADDS a prepared decision pass at the very end. Because Malin typed it, she is present, so that pass asks her **live** (`AskUserQuestion`) instead of parking — the one thing the autonomous loop can't do.
 
 ## Phase 1 — Selection (replaces old `/triage plan`)
 
@@ -461,6 +462,77 @@ After all tasks processed (or remaining tasks blocked):
    `save_comment` (the "what to spot-check" must be checkable by looking at the app, not the diff),
    and every PushNotification one-liner.
 
+## Phase 3.6 — Malin decision queue (ONLY when `malin` passed)
+
+`malin` is one mode, not an add-on: it runs the **full** autonomous sprint (Phases 1–3) first —
+building, verifying, shipping, and closing everything it can on its own, exactly as a normal run —
+and only **then**, here, collects everything still needing Malin into **one group** and walks her
+through it. The building is done before this phase starts; this phase itself builds no blocked
+scope — it **gathers, prepares, and asks** as a single batch. Skip this entire phase unless
+`$ARGUMENTS` contains `malin` / `--malin`.
+
+### 1. Assemble the queue (three sources, deduped)
+
+- **`need-malin` lane** — `list_issues` with `team: "Butlery"` filtered to the label
+  `need-malin` (the standing backlog of decisions/ops that are hers — see
+  `memory/project_linear_lane_labels.md`). This is the primary source and exists independent
+  of this sprint.
+- **Tier-D blockers hit this run** — the ops-blocked tickets flagged under "Needs you" in
+  Phase 1.6 / the Phase 3 report.
+- **High-stakes parked items** — any ticket Phase 1.4 parked in **In Review** because a
+  stakeholder raised an unresolved legal/privacy/interpretive conflict this run.
+
+Dedup by BUT-XXX. Cap the live queue at the **top ~6 by stakes/priority** (Urgent/High,
+legal/privacy, launch-blockers first); note any overflow in the final report so it isn't lost.
+
+### 2. Prepare each into a decision brief (cheap prep only — this is read/research, NOT building)
+
+For every queued item, do the inexpensive work that turns a vague "needs Malin" into a fast
+yes/no or pick-one. **This is allowed even though the item is need-malin** — reading code,
+reading the dossier, and researching an external unknown are not "building the blocked scope":
+
+- **Read** the code/spec/ticket the decision touches so the options are grounded in reality.
+- **Research the unknown** if it's external (a law, an App-Store rule, a vendor capability, a
+  price) — use Context7 / web search rather than guessing; her training data and yours both age.
+- **Frame it** as one of two shapes:
+  - **A decision that's hers** (product/UX/legal call) → 2–3 concrete options, each with *what
+    she'd notice in the app* and the tradeoff, **in plain language, zero jargon**; mark a
+    recommendation (first option) and state what she risks either way.
+  - **An ops action only she can do** (deploy, store/Apple enrollment, secrets, billing-enable)
+    → it's not a decision, it's a to-do: state the exact single step and what it unblocks.
+
+Build **nothing** that depends on her answer before she gives it. The mode prepares and asks; it
+does not pre-decide.
+
+### 3. Present it as ONE group, then ask her live (she's present)
+
+Lay the whole prepared queue out as a **single grouped summary first** — split into **Godkänna**
+(decisions/approvals that are hers) and **Göra** (ops to-dos only she can do) — so she sees the
+full pile at once instead of drip-fed. Then walk her through it via `AskUserQuestion`, batched
+(≤4 options-questions per call; decisions before to-dos, highest-stakes first). For each answer,
+act **within this session**:
+
+- **She picks an option / says go** → if that unblocks autonomous work, either build it now (if
+  small and clearly in-scope) or file/keep the Linear ticket and **re-lane it to `autonomous`**
+  (`save_issue.labels` REPLACES the set — pass `existing-labels − need-malin + autonomous`). Then
+  it flows through a future `/sprint-execute` normally.
+- **Legal / privacy / interpretive answer** → record it as an ADR (`docs/org/adr/`) and update
+  the ticket body; build only what she explicitly authorized, no further.
+- **Ops to-do** → leave the ticket for her, confirm the exact step in the ticket comment.
+- **She defers** → leave it in `need-malin`, note her reason on the ticket.
+
+### 4. If somehow NOT interactive (headless / inside `/loop`)
+
+`AskUserQuestion` halts an unattended loop, so don't call it. Instead write the full prepared
+queue into the final report and fire **one** `PushNotification` ("N decisions ready for you"),
+then end. The live-ask is the interactive-only half; the prep half runs either way.
+
+### 5. Report
+
+Add to the Phase 3 final report a line:
+`Decisions: cleared X (BUT-… re-laned autonomous), still open Y (BUT-…), ops to-dos Z (BUT-…)`.
+Keep every brief in plain language — Malin reads these herself and does not read code.
+
 ## Follow-up rule (mandatory, applies in every phase)
 
 **`tasks/todo.md` is sprint-scratch, not a backlog.** The next `/sprint-execute` overwrites it. Anything that needs to outlive the current sprint must land in Linear before the commit.
@@ -510,6 +582,9 @@ backlog was largely drained by iter-103→105; Tier B/C is where the volume is n
 - `/sprint-execute --pick` — interactive single/few-ticket build. **This replaces `/linear backlog`**
   (removed 2026-06-27): same browse-and-pick, but with the full review/verify/close ceremony and
   live high-stakes escalation.
+- `/sprint-execute malin` — normal autonomous sprint PLUS a prepared decision-queue at the end
+  (Phase 3.6): everything waiting on Malin (need-malin lane + Tier-D blockers + parked high-stakes),
+  researched into ready-to-decide briefs and asked live. Composes with `N` / `--focus` / `--no-review`.
 
 `/triage` was removed (2026-05-03) and `/linear backlog` folded into `--pick` (2026-06-27). Their
 prioritization/selection logic now lives in Phase 1 above.

@@ -1,6 +1,6 @@
 ---
 description: Run the full-auto PARALLEL sprint — selects Linear tickets, implements area-clusters in parallel worktrees, reviews, commits, pushes to main, closes tickets. Ships autonomously. Use --dry-run to preview first.
-argument-hint: [N] [--dry-run] [--focus <area>] — N = ticket count (default auto 6–10), --dry-run previews without coding, --focus filters by area label
+argument-hint: [N] [malin] [--dry-run] [--focus <area>] — N = ticket count (default auto 6–10), malin = after the sprint, prep + ask you live about everything waiting on you, --dry-run previews without coding, --focus filters by area label
 ---
 
 Launch the **`sprint-execute-parallel`** workflow via the **Workflow tool**. This is the
@@ -42,3 +42,14 @@ The Workflow tool returns immediately with a Task ID and runs in the background.
 it's running and that you'll report when it finishes; mention they can watch live with
 `/workflows`. When it completes, relay the plain-language summary (what shipped, what's parked
 in In Review, what needs them) per `CLAUDE.local.md` — written for a non-coder who wasn't watching.
+
+## `malin` keyword — decision-queue after the parallel run
+
+If `$ARGUMENTS` contains `malin` (or `--malin`), do NOT pass it into the workflow args (the
+workflow ships unattended and can't ask anything). Instead, the parallel sprint runs exactly as
+normal, and **once the workflow completes**, run **Phase 3.6 of `/sprint-execute`** here in this
+session — assemble the queue (need-malin lane + the workflow's Tier-D "needs you" tickets +
+any parked high-stakes items it reports), prepare each into a ready-to-decide brief, and ask
+Malin **live** via `AskUserQuestion`. She launched the run, so she's present for this tail —
+this is where the parallel engine gets the "ask her now" step it otherwise lacks. Strip `malin`
+before building the workflow args object so it doesn't get misparsed as a flag.
