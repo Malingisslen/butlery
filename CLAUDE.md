@@ -34,6 +34,11 @@ Additional rules in `.claude/rules/` are auto-loaded.
 
 **Pattern**: MVVM + Repository (Views → ViewModels → Services → Repositories → Firebase)
 
+**The USP chain** (import→parse→tag→personalize + learning loop): read
+`docs/architecture/RECIPE_PIPELINE.md` before working on import/parsing/tagging/menu code —
+it maps what is live vs dormant vs dead (audited 2026-07-01). Improvement backlog:
+`docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`.
+
 See `.claude/rules/code-style.md` for file size limits, service access, syntax, commenting.
 See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, lefthook.
 See `.claude/rules/workflow-discipline.md` for plan mode, verification, self-improvement.

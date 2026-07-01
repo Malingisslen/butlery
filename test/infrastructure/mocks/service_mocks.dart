@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -84,6 +85,7 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
   String? _lastGeneratePrompt;
   List<Recipe>? _lastGenerateRecipes;
   Set<String>? _lastRecentlyUsedRecipeIds;
+  MenuScoringContext? _lastScoringContext;
   bool _shouldThrowError = false;
 
   /// Configure the result for generateMenuFromPrompt
@@ -106,11 +108,16 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
   /// (used to assert BUT-1318/BUT-1329 cross-week freshness plumbing).
   Set<String>? get lastRecentlyUsedRecipeIds => _lastRecentlyUsedRecipeIds;
 
+  /// Get the last personalisation context threaded into generateMenuFromPrompt
+  /// (used to assert BUT-1320/BUT-1321 pantry/cuisine/skill plumbing).
+  MenuScoringContext? get lastScoringContext => _lastScoringContext;
+
   @override
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
     List<Recipe> allRecipes, {
     Set<String> recentlyUsedRecipeIds = const {},
+    MenuScoringContext scoringContext = MenuScoringContext.empty,
   }) async {
     if (_shouldThrowError) {
       throw Exception('Mock configured to throw error');
@@ -119,6 +126,7 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
     _lastGeneratePrompt = input;
     _lastGenerateRecipes = allRecipes;
     _lastRecentlyUsedRecipeIds = recentlyUsedRecipeIds;
+    _lastScoringContext = scoringContext;
 
     return _generateMenuResult ?? <String, List<Recipe>>{};
   }

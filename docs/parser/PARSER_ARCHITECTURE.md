@@ -137,13 +137,18 @@ Each tier contributes confidence scores per field. A weighted formula produces a
 
 ### Feedback Loop
 
-User corrections feed back into model improvement:
+User corrections feed back into model improvement — **partially wired** (audited 2026-07-01,
+see `docs/architecture/RECIPE_PIPELINE.md` truth table and the roadmap):
 
-1. User edits a parsed ingredient → correction saved to Firestore
-2. `export-corrections.ts` Cloud Function exports corrections as training data
-3. CRF weights retrained and uploaded to Firebase Storage
-4. `RemoteWeightLoader` picks up new weights on next check (12h interval)
-5. BERT NER model retrained periodically via Python pipeline (`scripts/ner/`)
+1. User edits a parsed ingredient → correction saved to Firestore ⚠ *only for Tier-1 URL
+   imports; photo/OCR, text-paste, social, and URL tiers 2-7 capture nothing*
+2. `export-corrections.ts` Cloud Function exports corrections as training data ✅ *works,
+   but reads the unscrubbed aggregate collection, not `parse_corrections_v2`*
+3. CRF weights retrained → `scripts/crf/retrain_with_corrections.sh` ✅ *works* — but there
+   is **no Storage upload step**, no golden-set eval gate, and the hash registry requires a
+   code change + app release for OTA weights to be accepted
+4. `RemoteWeightLoader` picks up new weights on next check ✅ *loader half works and is tested*
+5. BERT NER model retrained periodically via Python pipeline (`scripts/ner/`) — manual
 
 ### Golden Dataset
 

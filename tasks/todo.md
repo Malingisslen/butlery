@@ -1,5 +1,52 @@
 # Sprint Backlog
 
+## Sprint: weekly-menu personalization (linchpin) — 2026-07-01
+
+Building the autonomous-laned tickets from the malin decision queue. Batch 1 = the
+menu-scoring cluster (shares `menu_service.dart` `_recipeWeight`). Remaining autonomous
+tickets follow in later batches.
+
+### Agent A: flutter-developer — menu scoring (Tier C, single-panel: Product Manager)
+- [ ] **A1. Pantry-aware weighting** `[Tier C]` — `lib/services/menu_service.dart`: gentle pantry-overlap boost via `PantryService.getMatchingRecipes` (⚠️ ticket's `scoreRecipesByPantry` is stale — corrected in BUT-1321 body). (BUT-1321)
+  - Acceptance: higher pantry-match out-weights identical no-match · zero match → weight unchanged · matches fetched once per generation · analyze clean, existing menu tests green
+- [ ] **A2. Cuisine-affinity + cooking-skill bias** `[Tier C]` — same file: affinity-cuisine boost from `UserProfile.cuisineAffinities`; gentle skill-based complexity bias from `cookingSkillLevel`. (BUT-1320 scoring half)
+  - Acceptance: affinity cuisine out-weights non-affinity sibling · beginner skill biases toward simpler recipe · `MenuScoringContext.empty` yields pre-change weights (parity) · never excludes a recipe
+
+### Deferred to later batches (autonomous lane)
+- BUT-1320 Settings UI (Tier B) · BUT-1324 protein/category balance · BUT-1322 household-size scaling · BUT-1323 who's-eating (L) · BUT-1454 minor safety (full-panel) · BUT-1360 offline polish · BUT-945 easier rejoin · BUT-684 handwritten OCR · BUT-520 6 priority VM migration
+
+**Carried PM conditions (bind when these batches build):**
+- BUT-1324 (protein pass): add a test with a pool triggering BOTH cuisine (3+ same) AND protein (3+ same) clusters simultaneously, asserting the final selection satisfies both constraints (or documents which pass wins) — the two post-selection swap passes must not undo each other.
+- BUT-1320 Settings UI: point-of-use copy must say cuisine/skill *tunes menu suggestions* (today they read as a social "cooking identity" bio field) — ship in the same release as the scoring so users attribute the menu change.
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` · relevant unit tests · code-reviewer + testing-specialist on staged · commit + push · Linear: Tier C → In Review + notify
+
+---
+
+## Sprint: malin decision-queue — 2026-07-01
+
+Autonomous Tier-A backlog is nearly drained (only BUT-1240 carries `autonomous`, and it's
+genuinely infra-blocked). The headline of this `malin` run is the Phase 3.6 decision queue on
+the 23 `need-malin` tickets. The autonomous half is one clean win + one measured/conditional.
+
+### Agent A: e2e-test-specialist — age-gate journey
+- [ ] **A1. e2e under-15 rejection journey test** `[Tier A]` — `test/views/onboarding_journey_test.dart`: make the stub age-gate "next" handler call `verifyAgeGate()` and branch like production (`OnboardingView._handleNext` switch), add an under-15 journey case. (BUT-1437)
+  - Acceptance: (1) the stub `_OnboardingBody` age-gate page advance calls `viewModel.verifyAgeGate()` and switches on `AgeGateAdvanceResult` exactly like production (compliant→advance, rejected→route-to-start, error→stay) · (2) new case: under-15 year picked → `verifyAge` mock returns false → rejection UI shown + routed to a start/auth screen, no allergen/UGC page reachable · (3) the existing compliant journey still completes AND now routes through the gate: `verifyAge` called exactly once (at the gate, not re-called at completion) · (4) `dart analyze --fatal-infos` clean; file's tests pass.
+  - Stakeholders: Software Architect, Product Manager (router: `single`) — folded into the e2e-test-specialist's faithful-mirror check.
+
+### Conditional (measured, not blind)
+- [ ] **BUT-1149 restore coverage floor 60.0** `[Tier A]` — GATED on a measured run. Flip `OVERALL_FLOOR` 55.0→60.0 in `.github/workflows/test.yml:305` ONLY if the live coverage run clears 60%. Strong prior it's still <60 (ticket: stalled 55.5%, needs 4-6 more test batches) → then leave open with the measured number, do NOT flip blind.
+
+### Needs you (Tier D — flagged, not worked)
+- BUT-1240 — needs a device-capable CI lane (Android emulator or desktop-native runner with the ONNX native lib) + a CI secret to download the NER model. Infrastructure/ops, can't be done from here.
+- BUT-1441 — needs a prod Firestore data migration (console/script run). I'll draft the one-off backfill script; you run it against prod.
+
+### Phase 3.6 — Malin decision queue (live)
+- 23 `need-malin` tickets + any Tier-D blockers. Capped at top ~6 by stakes (security/legal/launch first), prepped into decision briefs, asked live.
+
+---
+
 ## Plan: BUT-1450 — export notification-analytics collections (Art.15 ⊇ Art.17) — 2026-06-30 (rev. 2)
 
 Sensitive domain (GDPR / user data, data-export). Router tier: **full-panel**. Panel convened

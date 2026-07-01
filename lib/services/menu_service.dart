@@ -14,6 +14,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
+import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
@@ -54,6 +55,7 @@ class MenuService extends BaseService {
     String input,
     List<Recipe> allRecipes, {
     Set<String> recentlyUsedRecipeIds = const {},
+    MenuScoringContext scoringContext = MenuScoringContext.empty,
   }) async {
     final lexicon = await _loadLexicon();
     if (lexicon == null) return {};
@@ -63,6 +65,7 @@ class MenuService extends BaseService {
       parsed,
       allRecipes,
       recentlyUsedRecipeIds: recentlyUsedRecipeIds,
+      scoringContext: scoringContext,
     );
   }
 
@@ -80,6 +83,12 @@ class MenuService extends BaseService {
   /// never dominate recency — the spread (1.0 → 1.4) is smaller than the
   /// season boost (1.5) on purpose.
   static const double _maxRatingBoost = 1.4;
+
+  /// Test-only view of the rating ceiling, so the personalisation-signal
+  /// ceilings can be asserted to stay below it (rating stays the strongest
+  /// nudge; personalisation is a tiebreaker, not a filter).
+  @visibleForTesting
+  static double get debugMaxRatingBoost => _maxRatingBoost;
 
   /// Down-weight applied to a recipe that appears in a recent weekly plan
   /// (BUT-1318). A decay rather than a hard exclude so the recipe can still
@@ -102,6 +111,7 @@ class MenuService extends BaseService {
     Recipe recipe, {
     required String seasonTag,
     Set<String> recentlyUsedIds = const {},
+    MenuScoringContext context = MenuScoringContext.empty,
   }) {
     const maxDays = 90;
     final lastCooked = recipe.lastCookedAt;
@@ -119,6 +129,11 @@ class MenuService extends BaseService {
     }
 
     weight *= _ratingMultiplier(recipe);
+
+    // Personalisation nudges (BUT-1320 pantry/cuisine/skill). Gentle,
+    // multiplicative, never zero — identity (1.0) when no context is supplied,
+    // so the pre-personalisation behaviour is byte-for-byte preserved.
+    weight *= context.multiplierFor(recipe);
 
     // Recent-use decay: strongly down-weight (not exclude) recently used
     // recipes so they keep a small, non-zero probability.
@@ -171,6 +186,7 @@ class MenuService extends BaseService {
     Random rand, {
     required String seasonTag,
     Set<String> recentlyUsedIds = const {},
+    MenuScoringContext context = MenuScoringContext.empty,
   }) {
     if (pool.isEmpty) return [];
     final available = List<Recipe>.from(pool);
@@ -185,6 +201,7 @@ class MenuService extends BaseService {
               r,
               seasonTag: seasonTag,
               recentlyUsedIds: recentlyUsedIds,
+              context: context,
             ),
           )
           .toList();
@@ -220,10 +237,12 @@ class MenuService extends BaseService {
     Recipe recipe, {
     required String seasonTag,
     Set<String> recentlyUsedIds = const {},
+    MenuScoringContext context = MenuScoringContext.empty,
   }) => _recipeWeight(
     recipe,
     seasonTag: seasonTag,
     recentlyUsedIds: recentlyUsedIds,
+    context: context,
   );
 
   static String? _cuisineOf(Recipe recipe) =>
@@ -241,6 +260,7 @@ class MenuService extends BaseService {
     required Set<String> usedIds,
     required String seasonTag,
     Set<String> recentlyUsedIds = const {},
+    MenuScoringContext context = MenuScoringContext.empty,
   }) {
     if (selected.length <= 2) return selected;
 
@@ -281,6 +301,7 @@ class MenuService extends BaseService {
           counts,
           seasonTag,
           recentlyUsedIds,
+          context,
         );
         if (replacement == null) continue;
 
@@ -303,6 +324,7 @@ class MenuService extends BaseService {
     Map<String, int> currentCuisineCounts,
     String seasonTag,
     Set<String> recentlyUsedIds,
+    MenuScoringContext context,
   ) {
     Recipe? best;
     double bestWeight = -1;
@@ -320,6 +342,7 @@ class MenuService extends BaseService {
         recipe,
         seasonTag: seasonTag,
         recentlyUsedIds: recentlyUsedIds,
+        context: context,
       );
       if (weight > bestWeight) {
         bestWeight = weight;
@@ -338,12 +361,14 @@ class MenuService extends BaseService {
     ParsedMenuRequest parsed,
     List<Recipe> allRecipes, {
     Set<String> recentlyUsedRecipeIds = const {},
+    MenuScoringContext scoringContext = MenuScoringContext.empty,
   }) async {
     return await executeServiceOperation(
           () async => _generateFromParsedInternal(
             parsed,
             allRecipes,
             recentlyUsedRecipeIds,
+            scoringContext,
           ),
           operationName: 'Generate menu from parsed request',
           defaultValue: <String, List<Recipe>>{},
@@ -356,6 +381,7 @@ class MenuService extends BaseService {
     ParsedMenuRequest parsed,
     List<Recipe> allRecipes,
     Set<String> recentlyUsedRecipeIds,
+    MenuScoringContext scoringContext,
   ) {
     final globallyOk = allRecipes
         .where((r) => _passesGlobals(r, parsed))
@@ -391,6 +417,7 @@ class MenuService extends BaseService {
         rand,
         seasonTag: season,
         recentlyUsedIds: recentlyUsedRecipeIds,
+        context: scoringContext,
       );
       for (final r in pick) {
         usedIds.add(r.id);
@@ -433,6 +460,7 @@ class MenuService extends BaseService {
           rand,
           seasonTag: season,
           recentlyUsedIds: recentlyUsedRecipeIds,
+          context: scoringContext,
         );
         // Soft constraints fall back to unconstrained pool when empty.
         if (selected.isEmpty && sub.isSoft) {
@@ -442,6 +470,7 @@ class MenuService extends BaseService {
             rand,
             seasonTag: season,
             recentlyUsedIds: recentlyUsedRecipeIds,
+            context: scoringContext,
           );
         }
         for (final r in selected) {
@@ -457,6 +486,7 @@ class MenuService extends BaseService {
         usedIds: usedIds,
         seasonTag: season,
         recentlyUsedIds: recentlyUsedRecipeIds,
+        context: scoringContext,
       );
       for (final r in diversified) {
         usedIds.add(r.id);

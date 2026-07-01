@@ -223,6 +223,13 @@ class TestServiceLocator {
     registerMock<T>(mock);
   }
 
+  /// Unregister a service (for test-specific cleanup between cases)
+  static void unregister<T extends Object>() {
+    if (ServiceLocator._getIt.isRegistered<T>()) {
+      ServiceLocator._getIt.unregister<T>();
+    }
+  }
+
   /// Get a service from the service locator
   static T get<T extends Object>() {
     return ServiceLocator.get<T>();

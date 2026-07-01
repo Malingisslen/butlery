@@ -4,7 +4,9 @@ import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -323,11 +325,13 @@ class MenuGenerator {
     final pool = _applyPromptKeywordFilter(prompt, availableRecipes);
 
     final recentIds = await _recentlyUsedRecipeIds();
+    final scoringContext = await _buildScoringContext(pool);
 
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
       pool,
       recentlyUsedRecipeIds: recentIds,
+      scoringContext: scoringContext,
     );
 
     if (generatedMenu.isEmpty) {
@@ -368,6 +372,43 @@ class MenuGenerator {
       AppLogger.warning('Recent-plan dedup skipped: $e');
       return const {};
     }
+  }
+
+  /// Builds the per-generation personalisation context (BUT-1320 + BUT-1321):
+  /// pantry overlap, the user's favourite cuisines, and cooking skill. Every
+  /// signal is optional — a missing profile, an unregistered [PantryService],
+  /// or a pantry read failure simply yields an empty/partial context, so
+  /// generation degrades gracefully to the pre-personalisation behaviour.
+  ///
+  /// The pantry overlap is fetched ONCE here (a single batch call over the
+  /// whole [pool]) and memoised into a map, so the per-candidate weight
+  /// function never touches async work.
+  Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
+    final profile = _userService.currentUserProfile;
+    final affinities = profile?.cuisineAffinities?.toSet() ?? const <String>{};
+    final skill = profile?.cookingSkillLevel;
+
+    final pantryMatch = <String, double>{};
+    final pantryService = ServiceLocator.tryGet<PantryService>();
+    final userId = _userService.currentUserId;
+    if (pantryService != null && userId != null && pool.isNotEmpty) {
+      try {
+        final matches = await pantryService.getMatchingRecipes(userId, pool);
+        for (final match in matches) {
+          pantryMatch[match.recipe.id] = match.matchPercent;
+        }
+      } catch (e) {
+        // Never let a pantry read block menu generation — fall through with
+        // no pantry boost.
+        AppLogger.warning('Pantry-aware menu scoring skipped: $e');
+      }
+    }
+
+    return MenuScoringContext(
+      pantryMatchByRecipeId: pantryMatch,
+      cuisineAffinities: affinities,
+      skill: skill,
+    );
   }
 
   /// Filters or boosts recipes based on prompt keywords.
@@ -426,11 +467,14 @@ class MenuGenerator {
     // down-weighting as a full generation, so last-week recipes are deprioritised
     // here too. Empty set / no plan service → behaves exactly as before.
     final recentIds = await _recentlyUsedRecipeIds();
+    final pool = availableRecipes;
+    final scoringContext = await _buildScoringContext(pool);
 
     final newRecipes = await _menuService.generateMenuFromPrompt(
       prompt,
-      availableRecipes,
+      pool,
       recentlyUsedRecipeIds: recentIds,
+      scoringContext: scoringContext,
     );
 
     if (newRecipes.containsKey(section)) {

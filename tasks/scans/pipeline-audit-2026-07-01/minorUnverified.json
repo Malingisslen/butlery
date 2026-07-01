@@ -1,0 +1,294 @@
+[
+  {
+    "title": "Cache extraction metadata is fabricated: tier hardcoded 0, confidence hardcoded 0.8, sourceType inferred by substring-matching display names",
+    "severity": "medium",
+    "files": [
+      "lib/services/import/import_manager.dart"
+    ],
+    "evidence": "import_manager.dart:786-791 — every GlobalRecipeCache entry gets ExtractionMeta(tier: 0 /* 'Phase 4 will add proper tier tracking' */, confidence: 0.8 /* 'Default confidence for now' */) even though UrlImportStrategy tracks the real successful tier and discards it at this boundary. :820-833 — _sourceTypeFromStrategy classifies via lower.contains('url')/('youtube')/etc. on the human-readable strategyName; renaming 'URL Import' silently reclassifies cache analytics with no compile-time signal, and any unmatched name defaults to 'website'. Cached-recipe quality decisions (e.g. the 30-day retag check) and any future cache-confidence gating are built on fake numbers.",
+    "recommendation": "Thread the real tier/confidence from ImportResult.metadata (already carries 'tier' for LLM/user-assisted paths) into ExtractionMeta, and replace the substring inference with a typed sourceType enum on ImportStrategy.",
+    "effort": "small",
+    "lens": "flow"
+  },
+  {
+    "title": "TagGenerator.generate() is a ~175-line dead duplicate of the live tagging pipeline; assembly logic exists in three copies",
+    "severity": "medium",
+    "files": [
+      "lib/services/tagging/tag_generator.dart",
+      "lib/services/tagging/tagging_pipeline_runner.dart"
+    ],
+    "evidence": "tag_generator.dart:165 defines TagResult generate({...}); repo-wide grep for '.generate(' finds zero production call sites on TagGenerator (all matches are List.generate/CorrelationId/etc.) — TaggingPipelineRunner reimplements the phase sequencing via runPhase1..5 + assembleResult, and generatePhase1Only covers the preview path. The phase-skip/tag-union/isPartial logic is therefore maintained in three places (generate(), assembleResult(), and the runner), only two live. Any tag-rule change applied to generate() alone silently does nothing, and tag_generator_test.dart likely pins the unreachable path, inflating apparent coverage.",
+    "recommendation": "Delete TagGenerator.generate(), repoint any tests at TaggingPipelineRunner/assembleResult, and keep assembleResult as the single assembly owner.",
+    "effort": "small",
+    "lens": "flow"
+  },
+  {
+    "title": "Two parallel import-result vocabularies with the V2→legacy adapter duplicated in three pipelines",
+    "severity": "medium",
+    "files": [
+      "lib/services/import/models/import_result_v2.dart",
+      "lib/services/import/pipelines/instagram_pipeline.dart",
+      "lib/services/import/pipelines/tiktok_pipeline.dart",
+      "lib/services/import/youtube/youtube_import_strategy.dart"
+    ],
+    "evidence": "ImportResultV2 (sealed, 5 subtypes) is the native shape of every newer pipeline and LlmEnhancementService, but ImportManager still consumes legacy ImportResult, so _convertToLegacyResult is implemented separately in instagram_pipeline.dart:181, tiktok_pipeline.dart:461, and youtube_import_strategy.dart:207 — three copies of the same 5-arm switch that must drift-proof each other by hand. Richer V2 states (ImportPartial, ImportNeedsScreenshot) get flattened at each boundary, losing signal the orchestrator could act on.",
+    "recommendation": "Either migrate ImportManager/ImportStrategy to ImportResultV2 (one adapter at the ViewModel boundary if needed) or extract a single shared toLegacy() extension on ImportResultV2 and delete the three private copies.",
+    "effort": "medium",
+    "lens": "flow"
+  },
+  {
+    "title": "Learning loop has two write-only sinks and an unscrubbed training-data path",
+    "severity": "medium",
+    "files": [
+      "functions/src/llm/llm-sample-capture.ts",
+      "functions/src/admin/export-corrections.ts",
+      "functions/src/events/log-parse-correction.ts"
+    ],
+    "evidence": "(a) llm_response_samples: repo-wide grep finds only the capture (llm-sample-capture.ts), rules, and docs — no reader anywhere; the 30-day TTL deletes paid-for mining data before any mining tool exists. (b) parse_corrections_v2 (the per-field collection BUT-595 built specifically for queryable correction data, with server-side PII re-scrub and heavy-redaction drop, log-parse-correction.ts:155-160) has no consumer found. (c) Meanwhile the CRF retraining export (export-corrections.ts:51) reads the whole client-written parsing_corrections aggregate collection, which is a direct client Firestore write with NO server-side PII scrub — training data flows through the one path that skips the scrubbing defenses built for the other.",
+    "recommendation": "Point export-corrections.ts at parse_corrections_v2 (or add a server scrub on the aggregate path), and either build the sample-mining consumer or turn off captureLlmSample until one exists — currently it is pure Firestore write cost.",
+    "effort": "medium",
+    "lens": "flow"
+  },
+  {
+    "title": "Correction telemetry can be silently dropped with no failure metric (unknown tier, analytics salt not yet loaded)",
+    "severity": "medium",
+    "files": [
+      "lib/services/parsing/feedback/parse_correction_uploader.dart",
+      "functions/src/events/log-parse-event.ts",
+      "functions/src/events/log-parse-correction.ts"
+    ],
+    "evidence": "The tier vocabulary exists in three hand-synced copies: _dartToServerTier (parse_correction_uploader.dart:20-30) plus VALID_TIERS in both log-parse-event.ts and log-parse-correction.ts. A new parser tier missing from the client map makes upload() return 0 with only a debug log (:190-199), and the caller (recipe_persistence_manager.dart:504) ignores the return value; if the BUT-421 salt isn't loaded yet, uploadWithSharedSalt also silently returns 0 (:251-256) — first-session corrections (highest-value signal) are lost. ParseEventLogger self-reports failures via _emitFailureMetric; the correction path has no equivalent, so a systemic break is invisible until someone queries parse_corrections_v2 volume.",
+    "recommendation": "Add a correction-upload failure analytics event mirroring parseEventLogFailed, queue-and-retry when the salt is missing, and generate/share the tier vocabulary from one source (or add a test asserting the three lists are identical).",
+    "effort": "small",
+    "lens": "flow"
+  },
+  {
+    "title": "Vestigial API surface: FileImportStrategy unreachable in autoImport loop; InstagramContentExtractor.extractWithResult dead",
+    "severity": "low",
+    "files": [
+      "lib/services/import/file_import_strategy.dart",
+      "lib/services/extraction/extractors/instagram_content_extractor.dart",
+      "lib/services/import/import_manager.dart"
+    ],
+    "evidence": "file_import_strategy.dart:37-46 — canHandle/validateInput always return false, yet the strategy is registered in ImportManager._strategies, so it can never fire through the autoImport canHandle loop (misleading to readers tracing the loop); :26-27 and :48-52 carry '@override removed - not in parent class' annotations on dead members. extractWithResult (instagram_content_extractor.dart:250) — the richer needsScreenshot/hasRecipeContent result — has zero callers in lib/ (web_scraper.dart:258-259 calls plain extract()), so its recipe-keyword heuristic is unreachable in production.",
+    "recommendation": "Remove FileImportStrategy from the autoImport strategy list (keep it as the picker-driven entry only), delete the annotated dead members, and delete extractWithResult or wire it in where the screenshot-fallback signal is actually wanted.",
+    "effort": "small",
+    "lens": "flow"
+  },
+  {
+    "title": "TagGenerator config binding is construction-time only — a failed/late config fetch pins the whole session to static fallback rules",
+    "severity": "low",
+    "files": [
+      "lib/services/tagging/tagging_service.dart",
+      "lib/core/di/modules/tagging_module.dart"
+    ],
+    "evidence": "tagging_service.dart:57-59 builds TagGenerator once from tagConfigService?.configOrNull in the constructor initializer. In the normal boot order this is fine (tagging_module.dart:206-212 awaits TagConfigService.initialize() before the lazy TaggingService is resolved), but if the Firestore config fetch fails/times out (TagConfigService has retry+15s timeout then falls back), configOrNull is null at construction and the generator uses hardcoded static allergen/dietary/cuisine configs for the app's entire lifetime — nothing re-creates _tagGenerator when config becomes available later. Allergen/dietary rule updates shipped via tag_configs silently don't apply for that session.",
+    "recommendation": "Have TagGenerator read config through a provider callback (or rebuild _tagGenerator on a TagConfigService loaded event) so a late-arriving config takes effect; at minimum log/analytics-flag when tagging runs on static fallback so drift is observable.",
+    "effort": "small",
+    "lens": "flow"
+  },
+  {
+    "title": "The allergen-safety tag scorecard and the cookbook gold-corpus eval harness are not wired into any CI gate — test/corpus never runs automatically",
+    "severity": "medium",
+    "files": [
+      ".github/workflows/test.yml",
+      "test/corpus/tag_scorecard_test.dart",
+      "tools/corpus_eval.dart"
+    ],
+    "evidence": "test.yml runs test/unit (3 shards), suites [widget, views, golden, evaluation], and test/integration (line 555-557); no workflow anywhere references test/corpus, tag_scorecard, or corpus_eval (grep over .github/workflows/ returns only golden-llm.yml's unrelated LLM corpora). So the tag-accuracy scorecard behind the /tagcheck skill (test/corpus/tag_scorecard_test.dart, allergen-safety-first per its framing) and the flea-market-cookbook OCR eval (tools/corpus_eval.dart) only run when someone manually invokes them — consistent with project memory calling the prelabel harness 'wired-but-unverified'. Counterweight noted as a strength: the 433-entry CRF ingredient-parser golden IS CI-gated at an >=85% all-fields-exact floor via the test/evaluation suite (test.yml comment, BUT-1443), and the 20-entry tagging golden runs in the golden suite. But the aggregate allergen-accuracy scorecard — the safety metric — has no gate.",
+    "recommendation": "Add test/corpus (or at minimum tag_scorecard_test.dart with a numeric floor) to the suite matrix in test.yml, mirroring the evaluation-suite pattern. If the OCR corpus is still blocked on scan data, gate just the tag scorecard now and leave a dated TODO for corpus_eval.",
+    "effort": "small",
+    "lens": "testing"
+  },
+  {
+    "title": "Gated parser regression corpora are very thin (4 parsing-golden recipes, 20 tagging-golden) and site-parser fixtures are hand-authored synthetic HTML, so real-site markup drift is invisible until production failure",
+    "severity": "medium",
+    "files": [
+      "test/golden/parsing_golden_dataset.json",
+      "test/golden/tagging_golden_dataset.json",
+      "test/fixtures/swedish_sites/ica_test_data.dart"
+    ],
+    "evidence": "parsing_golden_dataset.json contains 4 recipe entries (grep -c '\"title\"' → 4, 267 lines total); tagging_golden_dataset.json contains 20. For an 'import ANY recipe' USP, 4 gated parsing regressions is a token corpus. Site-parser fixtures are authored by hand, not captured: test/fixtures/swedish_sites/ica_test_data.dart header says 'Based on classic Swedish meatballs recipe' with invented JSON-LD — the ~460-line-per-site parser tests (ica/arla/koket/recept) therefore pin the parser against Butlery's own guess at each site's markup, so if ICA changes its JSON-LD/CSS structure every test stays green while every real ICA import degrades to lower tiers or fails. Compounding: production already captures the raw material to fix this (llm_response_samples per functions/src/llm/llm-sample-capture.ts, parse_events), but nothing mines it back into fixtures.",
+    "recommendation": "Grow the parsing golden set toward the CRF-eval scale (dozens of real recipes per source type), and replace/augment site-parser fixtures with periodically captured real HTML snapshots (a small script fetching 2-3 live recipe pages per supported domain into fixtures, refreshed manually or nightly). Mine llm_response_samples/parse_corrections for hard cases before their 30-day TTL deletes them.",
+    "effort": "medium",
+    "lens": "testing"
+  },
+  {
+    "title": "reserved_tags.dart's hand-maintained ~120-tag list has no test tying it to the tags the phase files actually emit — a new auto-tag can be silently shadowed by a personal tag",
+    "severity": "medium",
+    "files": [
+      "lib/services/tagging/reserved_tags.dart"
+    ],
+    "evidence": "Grep over test/ for reserved_tags/reservedTags/ReservedTags returns zero files — no test asserts the reserved list is a superset of the tag strings emitted by tag_phase1..5 code and the allergen/dietary/cuisine configs. The list exists precisely to stop personal-tag name collisions with system tags; since it is maintained by hand-copying literals from the phase files, adding a tag to e.g. tag_phase4_mood.dart without mirroring it lets a user-created personal tag silently collide with a system tag, and nothing fails.",
+    "recommendation": "Add a consistency test: run the live pipeline (or each phase calculator) over a fixture set engineered to emit every known tag, plus enumerate config-derived tags, and assert each emitted tag is in the reserved set. Even a partial version (assert all config-derived allergen/dietary/cuisine tags are reserved) removes most of the drift risk cheaply.",
+    "effort": "small",
+    "lens": "testing"
+  },
+  {
+    "title": "Import-manager happy-path test asserts only isSuccess/strategy-not-null — a regression parsing garbage-but-non-null output passes",
+    "severity": "low",
+    "files": [
+      "test/unit/services/import/import_manager_test.dart"
+    ],
+    "evidence": "import_manager_test.dart:91-109 ('should auto-detect text strategy and parse') feeds a full Swedish meatball recipe through autoImport with a real TextImportStrategy but asserts only `result.isSuccess` and `result.strategy != null` — no title, no ingredient count, no instruction assertion. Mitigating: text_import_strategy_test.dart does pin content in depth (title-extraction assertions at lines 62-136+), so the parser itself is covered; the gap is only that the orchestration-level test proves 'something non-null came out', not that the manager preserved the parsed content (e.g. a manager-level bug mangling the recipe during tagging-preview attachment would pass).",
+    "recommendation": "Strengthen the assertion to at least recipe title and ingredient count on the returned recipe. One-line change per test.",
+    "effort": "small",
+    "lens": "testing"
+  },
+  {
+    "title": "llm_response_samples is a write-only cost sink: every paid Gemini call is captured for mining, but no reader exists and the 30-day TTL deletes the data before any mining tool is built",
+    "severity": "medium",
+    "files": [
+      "functions/src/llm/llm-sample-capture.ts",
+      "docs/security/llm-sample-retention.md"
+    ],
+    "evidence": "Repo-wide grep for `llm_response_samples`: only the capture module (llm-sample-capture.ts:28), firestore rules (deny-all), rules tests, and docs. docs/security/llm-sample-retention.md:78 explicitly defers mining ('cross-referencing with parse_corrections_v2, seeding a recorded-test corpus') to the future. With RETENTION_DAYS=30 (llm-sample-capture.ts:23), the samples the file's own docstring says exist 'so we can mine what we already pay for' expire unread. Pre-launch volume is ~0 so nothing is lost yet — but at launch this becomes a rolling 30-day window that silently discards exactly the LLM-fallback cases the deterministic parser failed on.",
+    "recommendation": "Minimal viable consumer before launch: an admin export script mirroring export-corrections.ts (functions/src/admin/export-llm-samples.ts) that dumps samples to JSON for prompt iteration and golden-fixture seeding, plus a monthly reminder (or fold into the retrain script). Alternatively lengthen the TTL with DPO sign-off. Either closes the stated purpose; the current state is pure Firestore write cost.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "parse_corrections_v2 (BUT-595, built specifically to make corrections queryable) has no consumer — no query, export, dashboard, or analysis reads it",
+    "severity": "medium",
+    "files": [
+      "functions/src/events/log-parse-correction.ts",
+      "functions/src/admin/export-corrections.ts"
+    ],
+    "evidence": "Grep for `parse_corrections_v2`: writers and rules tests only (log-parse-correction.ts:227 is the sole write; rules tests pin admin-SDK-only access; one doc mention). The collection's docstring (log-parse-correction.ts:7) says it exists so the dataset is 'queryable for which sites/tiers produce bad parses' — nothing queries it. Meanwhile the CRF retrain export (export-corrections.ts:51) reads the older aggregate collection, so the per-field, PII-re-scrubbed, tier-tagged dataset that would best answer 'which tier/field to fix next' is orphaned. The whole per-field fan-out (client hashing, tier translation, server validation) is running costs for an unread table.",
+    "recommendation": "Either point one consumer at it (an admin-dashboard 'corrections by tier/field' metric, or switch export-corrections.ts to read _v2 for the ingredient-name fields, gaining the server-side scrub for free) — or decide it's premature and disable the fan-out until a consumer exists. Given the founder's flywheel goal, the dashboard metric is the better call: it's the only dataset that can answer 'is parse quality improving after a prompt/model change'.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "Tagging has no correction loop: user tag/allergen overrides are display-only and never analyzed, so the safety-critical signal 'the auto-tagger got an allergen wrong' is invisible",
+    "severity": "medium",
+    "files": [
+      "lib/services/tagging/tag_editing_service.dart",
+      "lib/services/tagging/tag_resolution_service.dart",
+      "lib/services/tagging/tagging_events_tracker.dart"
+    ],
+    "evidence": "Grep for tagOverrides consumers in lib/services: only tag_editing_service.dart and tag_resolution_service.dart (both display-time merge). TaggingEventsTracker logs pipeline health (performance, coverage, anomalies) to Firebase Analytics but no override/correction events. Contrast with parsing, where an edit triggers RecipeDiffCalculator → two Firestore sinks → alias learning. A user removing a wrong 'gluten: CONTAINS' badge (or worse, a wrong 'FREE') is exactly the ingredient-DB/config bug you most want surfaced, and it currently leaves no queryable trace. The one genuine tagging learning hook is saveUserIngredient (user teaches a missing ingredient, tagging_service.dart:316) — per-user only, never aggregated globally.",
+    "recommendation": "Mirror the parsing pattern at minimal scale: when a tag override is saved, write a small doc (recipeId-hash, tag, direction added/removed, triggering ingredients from TagDecision) to a `tag_overrides_log` collection, and add a weekly admin-dashboard count by tag. Allergen-status overrides deserve priority — 3 users removing the same false CONTAINS on the same ingredient is the tagging equivalent of the alias-approval loop and could reuse its 3-distinct-user pattern later.",
+    "effort": "medium",
+    "lens": "learning"
+  },
+  {
+    "title": "Menu personalization captures zero engagement signals — swaps, regenerations, and rejections are not logged, so menu quality (the monetization linchpin) is unmeasurable",
+    "severity": "medium",
+    "files": [
+      "lib/services/menu_service.dart",
+      "lib/viewmodels/menu/menu_generator.dart"
+    ],
+    "evidence": "Grep for logEvent/analytics/AnalyticsService in menu_service.dart and menu_generator.dart: zero matches. swapSingleRecipe, regenerateMenuSection, and generateMenuFromPrompt run with only AppLogger debug lines. Project memory records 'weekly-menu quality is the linchpin' of the grocery-channel monetization bet, yet the strongest implicit feedback available ('user swapped recipe X out of slot Y') is discarded. The only feedback into scoring is the lagging rating signal (family/public averages in _ratingMultiplier).",
+    "recommendation": "Two analytics events close most of the gap: `menu_generated` (slot count, pool size, prompt-keyword bucket) and `menu_recipe_swapped` (category, whether the replacement shares cuisine/tags with the rejected one). Fire-and-forget Firebase Analytics, same pattern as ParseEventsTracker — no Firestore cost. A swap-rate-per-generated-menu metric is the single cheapest 'is the menu getting better' number the admin dashboard could show at launch.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "Global recipe cache writes hardcode tier=0 and confidence=0.8, discarding the real per-tier provenance UrlImportStrategy already computes",
+    "severity": "medium",
+    "files": [
+      "lib/services/import/import_manager.dart"
+    ],
+    "evidence": "import_manager.dart:788-790: `tier: 0, // Phase 4 will add proper tier tracking` and `confidence: 0.8, // Default confidence for now` — verified by grep. UrlImportStrategy tracks real tier numbers in its result metadata (e.g. 'tier': 4 for LLM), which are dropped at this cache-write boundary. Every cached entry claims identical fake provenance, so any future analysis of cache quality ('are LLM-tier cached recipes worse?') is pre-corrupted, and stale-retag decisions can't prioritize low-confidence entries.",
+    "recommendation": "Thread `result.metadata['tier']`/method into ExtractionMeta at _saveToCacheIfUrl (the data is already in the ImportResult being handled). Small change; without it, the cache accumulates data that will need backfilling or discarding once anyone tries to use ExtractionMeta.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "Correction uploads fail silently: unknown-tier and salt-not-loaded drops return 0 with debug-level logs and no failure metric, unlike parse-event logging which self-reports loss",
+    "severity": "low",
+    "files": [
+      "lib/services/parsing/feedback/parse_correction_uploader.dart",
+      "lib/services/parsing/parse_event_logger.dart"
+    ],
+    "evidence": "Verified by reading parse_correction_uploader.dart: unknown serverTier → AppLogger.debug + return 0 (~line 192); missing analytics salt → AppLogger.debug + return 0 (~line 251); the caller (recipe_persistence_manager.dart:504) ignores the return value. ParseEventLogger by contrast emits a `parseEventLogFailed` analytics metric on loss (parse_event_logger.dart:74, BUT-616). A schema/tier drift that starts dropping 100% of corrections would be invisible until someone manually inspects parse_corrections_v2 volume — and since that collection has no consumer (see above), likely never.",
+    "recommendation": "Reuse the BUT-616 pattern: emit a `correctionUploadDropped` analytics event with a reason field (unknownTier / noSalt / cfError) on each drop path. Ten lines, and it makes the intake pipe's health observable.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "Alias auto-approval (the one fully automatic learning loop) is structurally dormant pre-launch — the 3-distinct-user threshold is unreachable with ~1 user — and has no demote/revert path once approved",
+    "severity": "low",
+    "files": [
+      "functions/src/analytics/analyze-corrections.ts"
+    ],
+    "evidence": "analyze-corrections.ts:29 ALIAS_APPROVAL_THRESHOLD = 3; approval transaction at lines 256-305 verified: arrayUnion of userIds, threshold check, write of learnedAliasesSv onto the live ingredient doc. Anti-poisoning check exists (corrected name must resolve to a known ingredient, line 241). No code path demotes an approved alias or removes it from learnedAliasesSv; the admin callable only lists pending candidates. Classification: 'built but dormant' — correctly designed for scale, cannot fire at current user count, which also means the founder cannot exercise/verify it end-to-end before launch.",
+    "recommendation": "No threshold change (3 users is the right anti-poisoning bar). Two small items: (a) add an emulator integration test that drives 3 hashed users through the trigger so the loop is verified before real users arrive (none exists — the maps found no test for analyzeCorrections' approval logic); (b) add an admin callable to revoke an approved alias (delete from learnedAliasesSv + mark candidate rejected) so a bad approval isn't permanent.",
+    "effort": "small",
+    "lens": "learning"
+  },
+  {
+    "title": "LLM daily/monthly cost ceilings exist only client-side; the server permits ~4,300 structureRecipe + ~2,900 OCR Gemini calls per user per day",
+    "severity": "medium",
+    "files": [
+      "lib/services/import/models/rate_limit_models.dart",
+      "functions/src/middleware/rate_limiter.ts",
+      "lib/services/import/import_rate_limiter.dart"
+    ],
+    "evidence": "The $0.50/day and $10/month LLM cost ceilings are defined and enforced purely in the Dart client (`rate_limit_models.dart:303-304` `llmCostPerDay = 0.50`, `llmCostPerMonth = 10.00`), against a Firestore doc the client itself writes (`/users/{uid}/rateLimits/imports`), with `recordUsage` documented to fail open after 3 retries (BUT-1415). Server-side, `functions/src/middleware/rate_limiter.ts:66-77` has only per-minute token buckets: `structureRecipe` refills 3/min (≈4,320 calls/day/user permitted) and `ocrRecipeImage` 2/min (≈2,880/day). There is no server-side cumulative daily/monthly cap or cost accounting. A modified client (or organic client-state loss — the usage doc is user-writable) can spend 10-20× the intended ceiling per user per day in Vertex charges; App Check enforcement (app-check-enforcement.test.ts) is the only backstop.",
+    "recommendation": "Add a cheap server-side daily counter: in the existing rate-limiter transaction, also increment a per-user per-day LLM-op count and reject past a hard daily cap (e.g. 40 LLM ops/day matching the client's 20+10+10 budget). This costs zero extra reads (same transaction doc) and converts the ceiling from advisory to enforced.",
+    "effort": "small",
+    "lens": "cost"
+  },
+  {
+    "title": "Stale global-cache hits re-run the full tagging pipeline on EVERY hit and the retagged result is never written back to the cache",
+    "severity": "medium",
+    "files": [
+      "lib/services/import/import_manager.dart",
+      "lib/models/tagging/tag_result.dart",
+      "lib/services/import/cache/global_recipe_cache.dart"
+    ],
+    "evidence": "import_manager.dart:719-726 retags on cache hit when `_cachedRecipeNeedsRetagging` is true, but the result is returned only to the caller — `_saveToCacheIfUrl` explicitly skips writing when `fromCache == true` (import_manager.dart:773-776), so the cache entry keeps its stale tagResult. `_cachedRecipeNeedsRetagging` (import_manager.dart:841-855) is true for age > 30 days AND for `tagResult.needsRetagging`, which per tag_result.dart:762-770 is true whenever `generatorVersion != kTagGeneratorVersion`. Cache TTLs are 90 days (website) and 180 days (YouTube) (global_recipe_cache.dart:31-38). Consequence: after any tag-generator version bump, every existing cache entry re-runs the full 5-phase tagging pipeline (up to 35s of per-phase budgets, plus triggering the ingredient-DB session load in finding #1) on every single hit by every user for its remaining 60-150 days of cache life. The cross-user cache's whole point — do the work once — is defeated for tagging.",
+    "recommendation": "After a successful retag on cache hit, write the updated tagResult back into the cache entry (one `update` on the doc already read — same shape as the existing `_updateAccessStats` fire-and-forget). Then the pipeline runs once per entry per version bump instead of once per hit.",
+    "effort": "small",
+    "lens": "cost"
+  },
+  {
+    "title": "`parse_events` collection grows unbounded — one Firestore doc per import attempt, forever, with no TTL",
+    "severity": "medium",
+    "files": [
+      "functions/src/events/log-parse-event.ts"
+    ],
+    "evidence": "log-parse-event.ts:231 does `collection(\"parse_events\").add(trustedFields)` on every import attempt (plus a `site_configs/{domain}` counter update, :234-249). Grep for `ttl|expireAt|TTL` in the file returns nothing — unlike `llm_response_samples`, which carries an `expireAt` field with a documented, active native TTL policy (docs/security/llm-sample-retention.md:22-25), parse_events docs are never expired or purged. Storage and any dashboard scans over the collection grow linearly with total lifetime imports. Also a quiet GDPR surface: the doc stores raw `userId` and the imported `url` indefinitely.",
+    "recommendation": "Add an `expireAt` field (e.g. 90-180 days — long enough for the parsing-health dashboard and domain prioritization) and enable a Firestore native TTL policy, exactly mirroring the llm_response_samples pattern already in the repo. The site_configs counters keep the durable per-domain signal.",
+    "effort": "small",
+    "lens": "cost"
+  },
+  {
+    "title": "llm_response_samples is a write-only cost sink: one Firestore write (up to ~100KB) per paid Gemini call — two per failed OCR — with no consumer, and 30-day TTL deletes the data before any mining tool exists",
+    "severity": "low",
+    "files": [
+      "functions/src/llm/llm-sample-capture.ts",
+      "functions/src/llm/structure-recipe.ts",
+      "functions/src/llm/ocr-recipe-image.ts"
+    ],
+    "evidence": "captureLlmSample (llm-sample-capture.ts:86-124) writes scrubbed input + output (each truncated at 50,000 chars, :26) on every Gemini call: structure-recipe.ts:332 and ocr-recipe-image.ts:418. The OCR-fail path captures twice (vision call, then the in-process structureRecipe retry captures again). Repo-wide grep for `llm_response_samples` finds only the writer, firestore.rules, tests, and docs — no reader/export/mining code anywhere. Data expires after 30 days (:23, TTL active per docs/security/llm-sample-retention.md:22). The stated purpose (BUT-1451, 'mine what we already pay for to improve the deterministic parser') is unrealized: 100% of the write + storage cost is currently pure waste, rolling off before use. Cost is small relative to the LLM call itself, but it scales 1:1 with LLM volume and delivers zero value until a consumer ships.",
+    "recommendation": "Either build the minimal consumer now (a scheduled export or admin-dashboard query that surfaces the top domains/modes where the LLM succeeded, feeding site-config/CRF prioritization) or disable capture via the existing `llmSampleCaptureEnabled` kill switch until the mining tool is scheduled. Keeping a paid write path alive for a tool that doesn't exist contradicts the cost-minimization principle.",
+    "effort": "small",
+    "lens": "cost"
+  },
+  {
+    "title": "Cache entries record fake tier (0) and confidence (0.8), making it impossible to measure how much LLM spend the cross-user cache actually saves",
+    "severity": "low",
+    "files": [
+      "lib/services/import/import_manager.dart",
+      "lib/services/import/cache/global_recipe_cache.dart"
+    ],
+    "evidence": "import_manager.dart:786-791 hardcodes `ExtractionMeta(tier: 0 /* 'Phase 4 will add proper tier tracking' */, confidence: 0.8 /* 'Default confidence for now' */)` for every cache save, even though UrlImportStrategy tracks the real winning tier (including 'tier 6 = LLM') in result metadata and discards it at this boundary. global_recipe_cache.dart:224-229 then logs that placeholder tier to the `cache_save` analytics event, and cache-hit metadata (`originalTier`, import_manager.dart:742) reports the same fake value. For the cost lens this matters: cache-hit telemetry cannot distinguish 'this hit avoided a Gemini call' from 'this hit avoided a free schema.org parse', so the ROI of the cache — and where LLM spend concentrates — is unmeasurable from the data being collected.",
+    "recommendation": "Thread the real tier number from the strategy result metadata (UrlImportStrategy already sets it) into ExtractionMeta at _saveToCacheIfUrl. One-field plumbing change; fixes both the analytics event and the cache-hit attribution.",
+    "effort": "small",
+    "lens": "cost"
+  },
+  {
+    "title": "Gemini pricing constants are unconfirmed (open TODO), so all cost telemetry and the client-side cost ceilings run on possibly-wrong numbers",
+    "severity": "low",
+    "files": [
+      "functions/src/llm/gemini-client.ts"
+    ],
+    "evidence": "gemini-client.ts:828 `TODO(BUT-1187): confirm gemini-2.5-flash-lite pricing against the live Vertex` sits above the only source of truth for cost accounting (`INPUT_COST_PER_M = 0.10`, `OUTPUT_COST_PER_M = 0.40`, :833-834; used in calculateGeminiCost :875-876). Every estimatedCost the client records against its $0.50/day ceiling, every `structure_recipe.complete` log line, and every totalCostSek in parse_events derives from these constants. If Vertex's live rate differs (the model was swapped in during the 2.0-flash retirement without reconfirming), the entire cost-observability layer and the spend ceilings silently drift from real billing.",
+    "recommendation": "Close BUT-1187: verify the two constants against the live Vertex AI price list for gemini-2.5-flash-lite in the `eu` region and remove the TODO. Five-minute check protecting every downstream cost number.",
+    "effort": "small",
+    "lens": "cost"
+  }
+]
