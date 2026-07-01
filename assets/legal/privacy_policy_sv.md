@@ -102,6 +102,12 @@ Vi använder dina personuppgifter för följande ändamål:
 - Informera om delningar
 - Påminna om aktivitet
 
+**AI-stödda funktioner (om du har samtyckt):**
+- Läsa ut och strukturera recept från foton och webblänkar (OCR och textanalys)
+- Föreslå veckomenyer och receptförbättringar
+
+Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
+
 ---
 
 ## 6. Delning med tredje part

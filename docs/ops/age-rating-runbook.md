@@ -64,8 +64,11 @@ App Store Connect → My Apps → Butlery → **App Information** → **Age Rati
 | Gambling and Contests | **No** | None. |
 | User-Generated Content | **Yes** | Recipes (titles, ingredients, instructions, photos), comments, ratings, group messages, 1:1 pings. **Moderation:** report flow on every UGC surface; 24-h SLA; admin review screen at Settings → Review reports. **Block:** `lib/views/social/friend_profile_view.dart` exposes block on friend profiles. **Filter:** Community Guidelines + automated heuristics. This combination satisfies App Store Review Guideline 1.2. |
 | Made for Kids | **No** | App is 12+, not in the Kids category. Sign-up enforces `birthYear ≤ 2013` (i.e., user is at least 13) at Firestore-rules layer. |
+| Social media capabilities (declaration, from ~Sept 2026) | **Yes** | Friend graph, recipe sharing, comments, group chat and 1:1 pings meet Apple's "redistribute / amplify / interact with UGC via a social feed or similar" definition — not a close call. Declaring Yes carries a minimum **13+** rating (BUT-1382). |
 
-**Resulting Apple rating:** 12+ (driven by Profanity/Crude Humor "Infrequent/Mild" + Alcohol References "Infrequent/Mild" + Unrestricted UGC = Yes).
+**Resulting Apple rating:** 12+ today (driven by Profanity/Crude Humor "Infrequent/Mild" + Alcohol References "Infrequent/Mild" + Unrestricted UGC = Yes). Moves to **13+** once the social-media declaration below applies.
+
+> **⚠️ Upcoming — social-media declaration (BUT-1382).** From ~July 2026 the App Store Connect age-rating questionnaire adds a "social media capabilities" question; answering it becomes **mandatory** for any new submission/update from ~Sept 2026. **Decision (Malin-approved, 2026-07-01): declare _Yes_ and accept the resulting 13+ rating.** Rationale: Butlery's friend-graph + sharing + comments + group chat clearly qualifies; the shift from 12+ to 13+ is effectively cosmetic — Apple's revised scale retires the 12+ tier (new tiers 4+/9+/13+/16+/18+), and Butlery's own age gate already blocks under-15s, so the store rating and the in-app gate stack in the same direction. **Action before the first submission on/after the deadline:** answer the declaration _Yes_, re-validate the resulting Apple rating in App Store Connect, and confirm it. The Apple _Declared Age Range API_ route (to avoid the social-media classification for under-13s) is **not** needed — the age gate already blocks that cohort entirely. Verify the exact Apple dates/wording at the source before submitting: developer.apple.com/news/upcoming-requirements/.
 
 ---
 

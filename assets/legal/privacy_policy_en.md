@@ -102,6 +102,12 @@ We use your personal data for the following purposes:
 - Inform about shares
 - Remind about activity
 
+**AI-assisted features (if you have consented):**
+- Extract and structure recipes from photos and web links (OCR and text analysis)
+- Suggest weekly menus and recipe enhancements
+
+These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
+
 ---
 
 ## 6. Sharing with third parties
