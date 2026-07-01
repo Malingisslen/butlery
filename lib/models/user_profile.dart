@@ -87,6 +87,12 @@ class UserProfile with JsonSerializableMixin {
   // the same 15 floor, so [copyWith] is safe for any already-validated value.
   final int? birthYear;
 
+  // BUT-674: server-authoritative minor flag. Set ONLY by the verifySignupAge
+  // Cloud Function (true for a compliant 15–17-year-old); the client may READ
+  // it (analytics minimization + UI) but NEVER writes it — mirrors birthYear.
+  // Default false so legacy accounts and adults are not treated as minors.
+  final bool isMinor;
+
   // Moderation hide flag. Admin-only writeable (rules-enforced). When true,
   // the profile is excluded from search and rendered as a placeholder in
   // friend/group/comment surfaces. Existing data is preserved so a
@@ -128,6 +134,7 @@ class UserProfile with JsonSerializableMixin {
     this.cuisineAffinities,
     this.bio,
     this.birthYear,
+    this.isMinor = false,
     this.isHidden = false,
     this.hiddenAt,
     this.schemaVersion = 1,
@@ -180,6 +187,7 @@ class UserProfile with JsonSerializableMixin {
     Object? cuisineAffinities = _sentinel,
     Object? bio = _sentinel,
     Object? birthYear = _sentinel,
+    bool? isMinor,
     bool? isHidden,
     Object? hiddenAt = _sentinel,
     int? schemaVersion,
@@ -230,6 +238,7 @@ class UserProfile with JsonSerializableMixin {
           : cuisineAffinities as List<String>?,
       bio: bio == _sentinel ? this.bio : bio as String?,
       birthYear: birthYear == _sentinel ? this.birthYear : birthYear as int?,
+      isMinor: isMinor ?? this.isMinor,
       isHidden: isHidden ?? this.isHidden,
       hiddenAt: hiddenAt == _sentinel ? this.hiddenAt : hiddenAt as DateTime?,
       schemaVersion: schemaVersion ?? this.schemaVersion,
@@ -427,6 +436,7 @@ class UserProfile with JsonSerializableMixin {
       'cuisineAffinities': cuisineAffinities,
       'bio': bio,
       'birthYear': birthYear,
+      'isMinor': isMinor,
       'isHidden': isHidden,
       'hiddenAt': hiddenAt != null ? serializeDateTime(hiddenAt!) : null,
       'schemaVersion': schemaVersion,
@@ -521,6 +531,7 @@ class UserProfile with JsonSerializableMixin {
           : null,
       bio: utils.SerializationUtils.safeNullableString(data, 'bio'),
       birthYear: _readBirthYear(data),
+      isMinor: utils.SerializationUtils.safeBool(data, 'isMinor'),
       isHidden: utils.SerializationUtils.safeBool(data, 'isHidden'),
       hiddenAt: utils.SerializationUtils.safeDateTime(data, 'hiddenAt'),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
@@ -611,6 +622,7 @@ class UserProfile with JsonSerializableMixin {
           : null,
       bio: utils.SerializationUtils.safeNullableString(json, 'bio'),
       birthYear: _readBirthYear(json),
+      isMinor: utils.SerializationUtils.safeBool(json, 'isMinor'),
       isHidden: utils.SerializationUtils.safeBool(json, 'isHidden'),
       hiddenAt: utils.SerializationUtils.parseDateTimeValue(json['hiddenAt']),
       schemaVersion: json['schemaVersion'] as int? ?? 1,

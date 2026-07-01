@@ -213,6 +213,13 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // always read as the default false and the hint re-fired forever.
             hasSeenActivityFeedHint:
                 s['hasSeenActivityFeedHint'] as bool? ?? false,
+            // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
+            // for rules + this settings sub-doc, both CF-written, server-
+            // authoritative) — it is deliberately NOT on the world-readable
+            // public_profiles doc. So, like the hint flag above, it must be
+            // merged back from settings here or the client's profile.isMinor
+            // reads false forever and the analytics minimization never fires.
+            isMinor: s['isMinor'] as bool? ?? false,
           );
         }
       } catch (e) {

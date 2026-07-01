@@ -2459,3 +2459,75 @@ each of the five collections, not just three.
   A targeted probe test (seed a residual `notification_delivery.senderId` doc, assert
   `residual_data_detected` trips) would lock the field scoping against future drift; left
   for the owning ticket.
+
+### 2026-07-01 — BUT-674 minor default-private profile in verifySignupAge [Pattern discovered]
+
+`verify-signup-age.ts` gained `AGE_OF_MAJORITY_YEARS = 18` and a derived
+`isMinor = compliant && age < 18` threaded into `writeComplianceArtifacts`. The
+`users/{uid}` merge-set now writes `{ birthYear, isMinor }`, plus
+`isSearchable: false` ONLY when `isMinor` — the default-private profile for
+15–17-year-olds. Reviewed clean, no findings.
+
+**Why the derivation can't mislabel:** the non-compliant branch (`!compliant`)
+returns after `writeRejectionAudit` + `auth.deleteUser` BEFORE any artifact
+write, so `isMinor` is only ever read for compliant users. `compliant &&` is
+therefore belt-and-suspenders — the value is meaningful by construction.
+
+**Why the `isSearchable:false` write is retry-safe** (confirmed Malin's reasoning):
+- The CF runs only during onboarding, before the profile privacy toggle is
+  reachable in the client, so it can never clobber a later minor opt-in.
+- Both call sites (first-pass + BUT-1435 idempotent-retry branch) thread the
+  same `isMinor`, and the write is a `merge:true` set of the same value — a
+  retry re-writing `isSearchable:false` is a no-op in effect, harmless.
+- Adults get `isMinor:false` and NO `isSearchable` key (the field is only added
+  to the write object `if (isMinor)`), so an adult's `isSearchable` default —
+  which lives in `UserProfile` — is never touched by this CF.
+
+**Test pattern:** the existing `makeFakeDb` already captures every `doc().set()`
+into `setWrites[{path,data,merge}]`, so asserting the new fields needed no fake
+changes — just `find(w => w.path === users/${uid})` and inspect `.data`. Added
+3 BUT-674 cases (adult isMinor:false + no isSearchable across [1990, exactly-18];
+minor isMinor:true + isSearchable:false across ages 15/16/17; idempotent-retry
+minor still writes both). Full suite 10/10, tsc clean. Run:
+`npm run test:verify-signup-age`.
+
+**Age boundary note:** Jan-1 (year-subtraction) cutoff means age is conservative
+— someone turning 18 later this year is still `isMinor:true` until Jan 1. That's
+the safe direction for a protection default (over-protect, never under-protect);
+matches the same conservative cutoff the ≥15 gate already uses.
+
+### 2026-07-01 — BUT-674 post-review: `isSearchable` write removed, `isMinor` mirrored to prefs [User correction]
+
+SUPERSEDES the `isSearchable:false` half of the 2026-06 BUT-674 entry above.
+A security review changed `writeComplianceArtifacts` in
+`functions/src/account/verify-signup-age.ts`. The `isSearchable:false` write to
+`users/{uid}` was **DEAD** — user search reads `public_profiles.isSearchable`,
+not the root user doc — so it was removed entirely (search-suppression deferred
+to a follow-up that threads `isMinor` through onboarding profile creation +
+the searchable opt-in + a group-DM CF). New behavior:
+
+- `users/{uid}` (root) now gets `{ birthYear, isMinor }`. `isMinor` here is
+  **load-bearing**: `firestore.rules` reads it via `get()` to gate 1:1 DMs to a
+  minor. Root doc is owner/admin-read only, not loaded into the client profile.
+- `users/{uid}/settings/preferences` now gets `{ birthYear, isMinor }` (was just
+  `birthYear`). The client hydrates its `UserProfile` from this **private** doc,
+  so this mirror is how the app learns `isMinor` for analytics minimization —
+  without it the client's `isMinor` is always false and minimization is inert.
+- NO `isSearchable` is written by the CF anywhere anymore.
+
+**Lesson — verify the *consumer* of a field before trusting a "private default"
+write.** The old entry rationalized `isSearchable:false` as retry-safe (true) but
+never checked that anything *reads* it at that path. It didn't — the client reads
+`isSearchable` off `public_profiles`. A write nobody reads is dead code that looks
+correct in every unit test (the fake db happily records it). When a CF writes a
+"protection default", trace the read path in the client/rules, not just the write.
+
+**Test update:** the 3 BUT-674 cases previously asserted `isSearchable:false` on
+`users/{uid}` — now wrong. Updated to: adult → `isMinor:false` on BOTH docs + no
+`isSearchable` anywhere; minor(15/16/17) → `isMinor:true` on BOTH docs + no
+`isSearchable`; minor retry → still writes `isMinor:true` to both, no
+`isSearchable`. The `makeFakeDb` `setWrites[{path,data,merge}]` capture already
+records per-path, so asserting the `settings/preferences` write separately is a
+`find(w => w.path === users/${uid}/settings/preferences)`. Every remaining
+`isSearchable` reference in the test is now a **negative** assertion
+(`setWrites.every(w => !("isSearchable" in w.data))`). Suite 10/10, tsc clean.

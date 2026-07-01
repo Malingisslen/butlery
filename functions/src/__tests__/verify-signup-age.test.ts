@@ -258,6 +258,134 @@ test("idempotent retry: re-ensures birthYear + one consent row, does NOT re-set 
 });
 
 /**
+ * BUT-674 — a compliant ADULT (age ≥18) gets `isMinor:false` on BOTH
+ * `users/{uid}` (rules-read, DM gate) and `users/{uid}/settings/preferences`
+ * (client hydrates its UserProfile from this private doc), and NO `isSearchable`
+ * field anywhere (search-suppression is a deferred follow-up; this CF must never
+ * touch `isSearchable`). Proves the derivation `age < 18` and that no removed
+ * dead write resurfaces.
+ */
+test("BUT-674 compliant adult: both docs get isMinor:false and NO isSearchable anywhere", async () => {
+  // 30-year-old — comfortably ≥18.
+  for (const birthYear of [1990, CURRENT_YEAR - 18]) {
+    const dbState: FakeDbState = { auditRows: [], setWrites: [] };
+    const authState = freshAuthState(undefined);
+    const uid = "uid-adult-674";
+
+    const result = await runVerifySignupAgeWithDeps(
+      { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
+      uid,
+      birthYear,
+    );
+
+    assert(result.compliant === true, `expected compliant:true for birthYear ${birthYear}`);
+
+    const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
+    assert(userWrite !== undefined, `users/${uid} write missing for birthYear ${birthYear}`);
+    assert(userWrite!.data.isMinor === false, `adult must get isMinor:false on users/{uid} (birthYear ${birthYear})`);
+
+    const prefsWrite = dbState.setWrites.find(
+      (w) => w.path === `users/${uid}/settings/preferences`,
+    );
+    assert(prefsWrite !== undefined, `settings/preferences write missing for birthYear ${birthYear}`);
+    assert(
+      prefsWrite!.data.isMinor === false,
+      `adult must get isMinor:false on settings/preferences (birthYear ${birthYear})`,
+    );
+
+    // No isSearchable written by the CF on ANY path (dead write removed post-review).
+    assert(
+      dbState.setWrites.every((w) => !("isSearchable" in w.data)),
+      `no CF write may carry isSearchable for an adult (birthYear ${birthYear})`,
+    );
+  }
+});
+
+/**
+ * BUT-674 — a compliant MINOR (age 15–17) gets `isMinor:true` on BOTH
+ * `users/{uid}` (read by firestore.rules to gate 1:1 DMs) and
+ * `users/{uid}/settings/preferences` (client hydrates its UserProfile from this
+ * private doc, so this is how the app learns it's a minor account for analytics
+ * minimization). NO `isSearchable` is written anywhere — search-suppression was
+ * removed as a dead write and deferred to a follow-up.
+ */
+test("BUT-674 compliant minor: both docs get isMinor:true and NO isSearchable anywhere", async () => {
+  // 15, 16, 17 — all compliant (≥15) but under the 18 age-of-majority line.
+  for (const age of [15, 16, 17]) {
+    const dbState: FakeDbState = { auditRows: [], setWrites: [] };
+    const authState = freshAuthState(undefined);
+    const uid = "uid-minor-674";
+
+    const result = await runVerifySignupAgeWithDeps(
+      { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
+      uid,
+      CURRENT_YEAR - age,
+    );
+
+    assert(result.compliant === true, `age ${age} must be compliant (≥15)`);
+    assert(authState.deleteUserCallCount === 0, `age ${age} is compliant — must not be deleted`);
+
+    const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
+    assert(userWrite !== undefined, `users/${uid} write missing for age ${age}`);
+    assert(userWrite!.data.isMinor === true, `age ${age} must get isMinor:true on users/{uid}`);
+
+    const prefsWrite = dbState.setWrites.find(
+      (w) => w.path === `users/${uid}/settings/preferences`,
+    );
+    assert(prefsWrite !== undefined, `settings/preferences write missing for age ${age}`);
+    assert(
+      prefsWrite!.data.isMinor === true,
+      `age ${age} must get isMinor:true on settings/preferences (client hydrates minor status from here)`,
+    );
+
+    // No isSearchable written by the CF on ANY path.
+    assert(
+      dbState.setWrites.every((w) => !("isSearchable" in w.data)),
+      `no CF write may carry isSearchable for age ${age}`,
+    );
+  }
+});
+
+/**
+ * BUT-674 — an idempotent retry for a MINOR (claim already ageCompliant:true)
+ * still re-writes isMinor:true into BOTH docs without crashing, and never writes
+ * isSearchable. Re-writing the same server-authoritative value on retry is
+ * harmless (merge-set, same value) so a partial-failure retry converges.
+ */
+test("BUT-674 idempotent retry for minor: still writes isMinor:true to both docs, no isSearchable, no crash", async () => {
+  const dbState: FakeDbState = { auditRows: [], setWrites: [] };
+  const authState = freshAuthState({ ageCompliant: true }); // retry — claim pre-set
+  const uid = "uid-minor-retry-674";
+
+  const result = await runVerifySignupAgeWithDeps(
+    { db: makeFakeDb(dbState), auth: makeFakeAuth(authState) },
+    uid,
+    CURRENT_YEAR - 16, // 16-year-old
+  );
+
+  assert(result.compliant === true, "retry of a compliant minor must return compliant:true");
+  assert(authState.setClaimsCallCount === 0, "retry must NOT re-set the claim");
+
+  const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
+  assert(userWrite !== undefined, `retry must still write users/${uid}`);
+  assert(userWrite!.data.isMinor === true, "retry must re-write isMinor:true on users/{uid}");
+  assert(userWrite!.merge === true, "the users/{uid} write must use { merge: true }");
+
+  const prefsWrite = dbState.setWrites.find(
+    (w) => w.path === `users/${uid}/settings/preferences`,
+  );
+  assert(prefsWrite !== undefined, "retry must still write settings/preferences");
+  assert(prefsWrite!.data.isMinor === true, "retry must re-write isMinor:true on settings/preferences");
+  assert(prefsWrite!.merge === true, "the settings/preferences write must use { merge: true }");
+
+  // No isSearchable resurfaces on retry either.
+  assert(
+    dbState.setWrites.every((w) => !("isSearchable" in w.data)),
+    "retry must not write isSearchable anywhere",
+  );
+});
+
+/**
  * Case 3 — a minor is rejected: account deleted, no claim set, and the
  * rejection audit row is deliberately non-identifying (no uid / userIdHash /
  * birthYear — Legal: never link an identity to being under 15).

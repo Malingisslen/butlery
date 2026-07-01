@@ -283,6 +283,86 @@ test(
 );
 
 // ============================================================================
+// SETTINGS — users/{uid}/settings/{settingId} isMinor immutability (BUT-674)
+// (4 assertions across 4 tests)
+//
+// `isMinor` is CF-only-written here too — the CF mirrors it into
+// users/{uid}/settings/preferences so the client can read it for analytics
+// minimization. A client that could forge isMinor:false there would defeat that
+// minimization, so the client CREATE must omit it and client UPDATE must leave
+// it exactly as-is. Mirrors S1/S2/S5/S6. The last test proves the protection is
+// isMinor-SPECIFIC: unrelated settings edits still succeed while isMinor holds.
+// ============================================================================
+
+// SM1: create settings WITH isMinor from the client -> DENIED (CF-only field).
+test(
+  "settings: owner CANNOT create preferences carrying isMinor",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${USER_UID}/settings/s-create-minor-${RUN}`)
+        .set({ notificationsEnabled: true, isMinor: false })
+    );
+  }
+);
+
+// SM2: create settings WITHOUT isMinor (normal settings write) -> allowed.
+//      Proves the isMinor clause does not block a legitimate settings create.
+test(
+  "settings: owner can create preferences WITHOUT isMinor",
+  async () => {
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${USER_UID}/settings/s-create-nominor-${RUN}`)
+        .set({ notificationsEnabled: true, hasCompletedOnboarding: true })
+    );
+  }
+);
+
+// SM3: update that CHANGES an existing (CF-set) isMinor -> DENIED.
+//      Seed isMinor:true via withSecurityRulesDisabled, then the client tries to
+//      flip it to false (the exact un-gating attack the rule blocks).
+test(
+  "settings: owner CANNOT change a seeded isMinor via update",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-minor-chg-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      isMinor: true,
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertFails(
+      ctx.firestore().doc(docPath).set({ isMinor: false }, { merge: true })
+    );
+  }
+);
+
+// SM4: update OTHER fields while a CF-set isMinor is PRESERVED -> allowed.
+//      Load-bearing: proves the immutability clause permits unrelated settings
+//      edits when isMinor is present and unchanged (not a blanket update block).
+test(
+  "settings: owner can edit other fields while CF-set isMinor is preserved",
+  async () => {
+    const docPath = `users/${USER_UID}/settings/s-upd-minor-keep-${RUN}`;
+    await seedDoc(docPath, {
+      notificationsEnabled: true,
+      isMinor: true,
+    });
+    const ctx = env.authenticatedContext(USER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(docPath)
+        .set({ notificationsEnabled: false }, { merge: true })
+    );
+  }
+);
+
+// ============================================================================
 // PROFILE DOC — users/{uid} birthYear immutability
 // (6 assertions across 6 tests)
 //
@@ -387,6 +467,95 @@ test(
 );
 
 // ============================================================================
+// PROFILE DOC — users/{uid} isMinor immutability (BUT-674)
+// (4 assertions across 4 tests)
+//
+// `isMinor` is server-authoritative — set ONLY by the verifySignupAge Cloud
+// Function (Admin SDK bypasses rules). It gates DMs to a minor, so a client that
+// could write `isMinor:false` would un-gate itself. Mirrors birthYear's
+// create-absent + update-immutable split. The last test proves the protection is
+// isMinor-SPECIFIC: a minor may still flip `isSearchable` (the Q1 discovery
+// opt-in) while isMinor stays unchanged.
+// ============================================================================
+
+// IM1: create profile WITH isMinor from the client -> DENIED (CF-only field).
+test(
+  "profile: owner CANNOT create their profile doc carrying isMinor",
+  async () => {
+    const uid = `prof-create-minor-${RUN}`;
+    const ctx = env.authenticatedContext(uid);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ uid, displayName: "Anna", isMinor: false })
+    );
+  }
+);
+
+// IM2: create profile WITHOUT isMinor -> allowed (owner).
+//      Same birthYear-absent condition as P1; proves the isMinor clause does not
+//      block a legitimate client-created profile doc.
+test(
+  "profile: owner can create their profile doc WITHOUT isMinor",
+  async () => {
+    const uid = `prof-create-nominor-${RUN}`;
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ uid, displayName: "Anna" })
+    );
+  }
+);
+
+// IM3: update that CHANGES an existing (CF-set) isMinor -> DENIED.
+//      Seed isMinor:true via withSecurityRulesDisabled, then the client tries to
+//      flip it to false (the exact un-gating attack the rule blocks).
+test(
+  "profile: owner CANNOT change isMinor on their profile doc",
+  async () => {
+    const uid = `prof-upd-minor-chg-${RUN}`;
+    await seedDoc(`users/${uid}`, {
+      uid,
+      displayName: "Anna",
+      isMinor: true,
+    });
+    const ctx = env.authenticatedContext(uid);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ isMinor: false }, { merge: true })
+    );
+  }
+);
+
+// IM4: update OTHER fields (isSearchable) while a CF-set isMinor is PRESERVED
+//      -> allowed. Load-bearing: proves the protection is isMinor-specific and
+//      does NOT block a minor opting into discovery (Q1 searchable opt-in).
+test(
+  "profile: minor can toggle isSearchable while isMinor is preserved",
+  async () => {
+    const uid = `prof-upd-minor-keep-${RUN}`;
+    await seedDoc(`users/${uid}`, {
+      uid,
+      displayName: "Anna",
+      isMinor: true,
+      isSearchable: false,
+    });
+    const ctx = env.authenticatedContext(uid);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${uid}`)
+        .set({ isSearchable: true }, { merge: true })
+    );
+  }
+);
+
+// ============================================================================
 // isAgeCompliant() MATRIX on the four UGC create paths
 // (12 assertions across 12 tests)
 //
@@ -398,11 +567,14 @@ test(
 
 // --- recipe_comments ---
 
-// C1: age-compliant author can create a comment.
+// C1: age-compliant AND matured author can create a comment. BUT-1419 added
+// isAccountMatured() to the recipe_comments create rule, so the age-only AGE_OK
+// context no longer suffices — the happy path needs email_verified (or a
+// ≥60-min-old account doc), same as messages/social_requests.
 test(
-  "recipe_comments: age-compliant author can create a comment",
+  "recipe_comments: age-compliant matured author can create a comment",
   async () => {
-    const ctx = env.authenticatedContext(USER_UID, AGE_OK);
+    const ctx = env.authenticatedContext(USER_UID, AGE_OK_MATURED);
     await assertSucceeds(
       ctx
         .firestore()

@@ -200,6 +200,48 @@ service cloud.firestore {
         || get(limitsPath).data.lastWrite + duration.value(seconds, 's') <= request.time;
     }
 
+    // ------------------------------------------------------------------
+    // BUT-674: 1:1 DM minor-safety helpers.
+    // A non-friend must not be able to open a direct-message conversation
+    // with a minor. `isMinor:true` is written server-authoritatively by the
+    // verifySignupAge CF onto users/{uid} for a compliant 15–17-year-old.
+    // These helpers fire ONLY on a 1:1 conversation create (participantIds
+    // size == 2); Firestore rules cannot iterate a group participant list.
+    // ------------------------------------------------------------------
+
+    // The participant who is NOT the creator, for a 2-person conversation.
+    function otherParticipant(participantIds) {
+      return participantIds[0] == request.auth.uid
+        ? participantIds[1]
+        : participantIds[0];
+    }
+
+    // True only when the other user's profile doc exists and explicitly
+    // carries isMinor == true. A missing doc or absent/false field is
+    // treated as NON-minor (fail-open for adults — adults are unaffected).
+    function otherIsMinor(otherUid) {
+      let userPath = /databases/$(database)/documents/users/$(otherUid);
+      return exists(userPath)
+        && get(userPath).data.get('isMinor', false) == true;
+    }
+
+    // The creator is a friend of the (minor) other user: a doc exists at
+    // users/{other}/friends/{creator} (same directional pattern as
+    // cook_snaps read ~L1250 and activity_events read ~L1354).
+    function creatorIsFriendOf(otherUid) {
+      return exists(/databases/$(database)/documents/users/$(otherUid)/friends/$(request.auth.uid));
+    }
+
+    // 1:1-only minor gate. For a 2-person conversation, if the OTHER
+    // participant is a minor, the creator must be their friend. Adults
+    // (or missing/false isMinor) pass unchanged. Group conversations
+    // (size != 2) are NOT gated here — see the create rule comment.
+    function passesMinorDmGate(participantIds) {
+      return participantIds.size() != 2
+        || !otherIsMinor(otherParticipant(participantIds))
+        || creatorIsFriendOf(otherParticipant(participantIds));
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -274,11 +316,21 @@ service cloud.firestore {
       // wants a single trusted writer. Split the former `allow write` so the
       // birthYear-immutability clause can sit on create + update; delete stays
       // owner-only.
+      //
+      // BUT-674: `isMinor` is the same shape — server-authoritative, set ONLY by
+      // verifySignupAge (Admin SDK). It gates DMs to a minor, so a client that
+      // could write `isMinor:false` would un-gate itself. Mirror birthYear's
+      // create-absent + update-immutable clauses. NOTE: `isSearchable` stays
+      // freely client-writable — a minor's private default is set once by the CF,
+      // but the user may later opt into discovery by toggling it (Q1).
       allow create: if isOwner(userId)
-        && request.resource.data.get('birthYear', null) == null;
+        && request.resource.data.get('birthYear', null) == null
+        && request.resource.data.get('isMinor', null) == null;
       allow update: if isOwner(userId)
         && request.resource.data.get('birthYear', null)
-           == resource.data.get('birthYear', null);
+           == resource.data.get('birthYear', null)
+        && request.resource.data.get('isMinor', null)
+           == resource.data.get('isMinor', null);
       allow delete: if isOwner(userId);
 
       // User's recipes
@@ -477,16 +529,22 @@ service cloud.firestore {
       match /settings/{settingId} {
         allow read: if isOwner(userId);
 
-        // Client create must not carry birthYear at all.
+        // Client create must not carry birthYear or isMinor at all — both are
+        // CF-set (BUT-674 mirrors isMinor here so the client profile can read it
+        // for analytics minimization; a client that could forge isMinor:false
+        // would defeat that minimization and mislead any minor-aware client logic).
         allow create: if isOwner(userId)
-          && request.resource.data.get('birthYear', null) == null;
+          && request.resource.data.get('birthYear', null) == null
+          && request.resource.data.get('isMinor', null) == null;
 
-        // Client update must leave birthYear exactly as the CF set it (or
-        // absent if not yet set). Comparing post-write to existing denies any
-        // add/change/remove of the field while allowing all other settings edits.
+        // Client update must leave birthYear and isMinor exactly as the CF set
+        // them (or absent if not yet set). Comparing post-write to existing denies
+        // any add/change/remove while allowing all other settings edits.
         allow update: if isOwner(userId)
           && request.resource.data.get('birthYear', null)
-             == resource.data.get('birthYear', null);
+             == resource.data.get('birthYear', null)
+          && request.resource.data.get('isMinor', null)
+             == resource.data.get('isMinor', null);
 
         allow delete: if isOwner(userId);
       }
@@ -1405,10 +1463,23 @@ service cloud.firestore {
       // Can read if you're a participant
       allow read: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
 
-      // Can create if you're adding yourself as a participant
+      // Can create if you're adding yourself as a participant.
+      // BUT-674: for a 1:1 conversation (participantIds.size() == 2), if the
+      // OTHER participant is a minor (users/{other}.isMinor == true, written
+      // server-side by verifySignupAge), the creator must already be their
+      // friend. This is the chokepoint for 1:1 DMs — participantIds is set at
+      // create and immutable after, so message access is decided here.
+      //
+      // GROUP conversations (size > 2) are intentionally NOT gated: Firestore
+      // rules cannot iterate the participant list to find the minor. Group
+      // minor-protection is instead provided by the default-private profile
+      // (a non-friend can't discover the minor to add them) plus a planned
+      // Cloud Function follow-up — NOT this rule. The get() cost is bounded:
+      // otherIsMinor()/creatorIsFriendOf() only fire on a 1:1 create.
       allow create: if isAuthenticated()
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['participantIds', 'createdAt'])
+        && passesMinorDmGate(request.resource.data.participantIds)
         && rateLimitWrite('conversations', 10);
 
       // Can update if you're a participant (but cannot modify participantIds or createdAt)

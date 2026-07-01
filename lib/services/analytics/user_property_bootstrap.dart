@@ -65,12 +65,19 @@ class UserPropertyBootstrap {
 
   /// Re-classify and emit lifecycle after a cook completion. Caller owns
   /// the data fetch — this method is a thin pass-through to the classifier.
+  ///
+  /// BUT-674: minors get analytics minimization — the lifecycle stage is a
+  /// behavioral profiling signal (how active the user is), so it is NOT emitted
+  /// for a minor account. Only the coarse, non-identifying platform + language
+  /// properties are kept. Gating here (not just at session start) also
+  /// suppresses the cook-event re-emit path. Adults are unaffected.
   Future<void> emitLifecycle({
     required UserProfile? profile,
     required DateTime? lastCookAt,
     required int cooksLast14Days,
     DateTime? now,
   }) {
+    if (profile?.isMinor == true) return Future<void>.value();
     final stage = classifyLifecycleStage(
       signupAt: profile?.joinedAt,
       lastCookAt: lastCookAt,

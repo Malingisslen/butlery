@@ -318,6 +318,62 @@ void main() {
         expect(profile!.hasSeenActivityFeedHint, isFalse);
       });
 
+      test('fetchProfile surfaces isMinor from the private settings sub-doc '
+          '(BUT-674)', () async {
+        // Regression guard for the load-bearing children's-data wiring:
+        // isMinor is server-authoritative and lives ONLY on the private docs
+        // (the CF writes it to users/{uid}/settings/preferences), deliberately
+        // NOT the world-readable public_profiles doc. fetchProfile must merge
+        // it back, else profile.isMinor reads false forever and the analytics
+        // minimization for minors never fires. The public seed here carries
+        // isMinor:false, so a true result can ONLY come from the settings merge.
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({'isMinor': true});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(
+          profile!.isMinor,
+          isTrue,
+          reason:
+              'isMinor must survive a fetch via the settings merge — '
+              'otherwise the analytics minimization for minors is inert',
+        );
+      });
+
+      test('fetchProfile defaults isMinor to false when the settings sub-doc '
+          'omits it (BUT-674)', () async {
+        // A settings doc that exists (holds other prefs) but has no isMinor —
+        // e.g. an adult account, or a pre-field account — must default to
+        // false, not throw and not leak a stale true.
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({'notificationsEnabled': true});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.isMinor, isFalse);
+      });
+
       test(
         'markActivityFeedHintSeen writes only the flag to the settings '
         'sub-doc and never touches the public profile doc (BUT-1220)',

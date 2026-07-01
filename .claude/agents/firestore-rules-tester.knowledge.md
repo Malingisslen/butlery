@@ -1094,3 +1094,121 @@ setup() handle it, or single-quote/escape the path. Also added a `clearFirestore
 create tests and NO namespace clear — was re-run-fragile). No firestore.rules,
 package.json, or CI edits needed: all three files were already wired into
 `test:rules:all` and both `firestore-rules.yml` path-filter blocks.
+
+### 2026-07-01 — conversations-rules.test.ts created (BUT-674, 1:1 DM minor gate)
+
+New test file `functions/src/__tests__/conversations-rules.test.ts` (5 tests,
+5/5 green on a cleared emulator namespace), wired as `test:rules:conversations`,
+appended to `test:rules:all` (after family-rating), and added to BOTH
+path-filter blocks in `firestore-rules.yml`. Project id
+`butlery-rules-conversations`. **This run DID edit firestore.rules** (the task
+explicitly directed the rule change + proof — a scoped exception to the usual
+"tester never edits rules" rule; noted in the report).
+
+Map row to add:
+
+| `/conversations/{conversationId}` (create, 1:1 minor gate) | `conversations-rules.test.ts` | `test:rules:conversations` |
+
+**Rule shape (BUT-674).** Conversation-create is the chokepoint for 1:1 DMs:
+`participantIds` is set at create and immutable after (update rule blocks
+`participantIds`/`createdAt` via `hasAny`), and message read/create keys off
+`get(conversations/{id}).data.participantIds`. New helpers near
+`rateLimitWrite`:
+- `otherParticipant(ids)` = `ids[0]==auth.uid ? ids[1] : ids[0]` (list indexing).
+- `otherIsMinor(uid)` = `exists(users/{uid}) && get(users/{uid}).data.get('isMinor', false)==true`. **The `exists()` guard is load-bearing** — a bare `get(...).data.get(...)` CEL-errors if the profile doc is missing; guarding with `exists()` makes a missing doc fail-open (non-minor). `isMinor:true` is written server-side by `verifySignupAge` for a compliant 15–17-year-old.
+- `creatorIsFriendOf(uid)` = `exists(users/{uid}/friends/{auth.uid})` — the same directional friend pattern as cook_snaps read (~L1250) and activity_events read (~L1354): `friends/{OTHER's friend}` under the OTHER user's tree.
+- `passesMinorDmGate(ids)` = `ids.size()!=2 || !otherIsMinor(otherParticipant(ids)) || creatorIsFriendOf(otherParticipant(ids))`. Added to `allow create` between `hasRequiredFields` and `rateLimitWrite` so the `get()` cost only fires on a 1:1 create.
+
+**Group (size>2) is DELIBERATELY ungated** — rules cannot iterate a participant
+list, so there's no way to find the minor among N participants. C5 PINS this as
+an ALLOW (non-friend creates a size-3 conversation including a minor → succeeds
+today). If C5 ever flips to FAIL, the group path got gated — reconcile with the
+rule comment (group-minor protection is deferred to default-private profiles +
+a planned CF, not this rule).
+
+**Fail-closed proof pattern (reusable for any "X is allowed only if a seeded
+relationship doc exists" gate).** A deny test alone can pass for the WRONG
+reason (rate limit, missing field, bad shape). Prove the deny is the
+RELATIONSHIP gate by re-issuing the IDENTICAL actor+body with the relationship
+doc seeded and asserting SUCCESS. Built into the suite as the C1(deny)/C2(allow)
+pair (same body shape, only the friend doc differs) AND re-verified this run with
+a throwaway probe: same STRANGER+body DENIES with no friend doc, SUCCEEDS after
+seeding `users/{minor}/friends/{stranger}`. C4 adds order-sensitivity coverage
+(minor at index 0, non-friend creator at index 1 → still DENY) so
+`otherParticipant()` is proven to pick the non-creator regardless of array order.
+
+**Rate-limit note:** `conversations` create carries `rateLimitWrite('conversations',10)`,
+but the rate-limit doc `users/{uid}/rate_limits/conversations` is app-written
+only — never seeded here — so C3 and C5 (both by STRANGER within 10s) do NOT
+trip it. Consistent with the standing rule-of-thumb: create-allow tests share an
+actor safely as long as no test seeds the rate_limits subdoc.
+
+### 2026-07-01 — BUT-674: isMinor write-protection on users/{uid} profile doc (mirrors birthYear)
+
+The `users/{uid}` profile create/update rules gained an `isMinor` guard exactly
+mirroring the existing `birthYear` one (firestore.rules ~L326–333):
+`allow create: ... && request.resource.data.get('isMinor', null) == null;`
+`allow update: ... && request.resource.data.get('isMinor', null) == resource.data.get('isMinor', null);`
+`isMinor` is server-authoritative (only `verifySignupAge` sets it via Admin SDK,
+which bypasses rules); a client writing `isMinor:false` would un-gate itself from
+the DM-to-minor protection. Rule change was applied by the task author — the
+tester only added the proof (no firestore.rules edit this run).
+
+Added 4 tests to `age-gate-rules.test.ts` in a new PROFILE DOC isMinor block
+(IDs `IM1`–`IM4`), parallel to the birthYear `P1`–`P6` block:
+- IM1 create carrying `isMinor:false` → DENY (`get('isMinor',null)==null` fails).
+- IM2 create WITHOUT isMinor → ALLOW (subject to the same birthYear-absent condition).
+- IM3 update flipping a CF-seeded `isMinor:true`→`false` → DENY (immutability clause).
+- IM4 update flipping `isSearchable` while isMinor is PRESERVED → ALLOW. **Load-bearing:**
+  proves the protection is isMinor-SPECIFIC and does NOT block the Q1 discovery
+  opt-in (a minor may still toggle isSearchable). Without IM4, a blanket-deny
+  regression of the update rule would pass every isMinor deny test.
+
+**Fail-closed confirmed via emulator deny logs:** IM1 denies at `L326:24` (the
+create rule carrying the isMinor clause), IM3 at `L329` (the update rule with the
+immutability clause) — the exact rule lines, not an unrelated failure. Same
+seed/fixture pattern as the birthYear tests: seed the CF-set `isMinor:true` via
+`withSecurityRulesDisabled`, then attempt the client mutation. No per-actor
+collision (each test uses a unique `prof-*-${RUN}` uid + the namespace is cleared
+in setup).
+
+**Pre-existing unrelated red surfaced (NOT BUT-674):** `recipe_comments:
+age-compliant author can create a comment` (C1) fails standing —
+`Property email_verified is undefined on object` at L1222. The recipe_comments
+create rule now also requires `isAccountMatured()` (per the 2026-07-01 BUT-1418
+entry), but C1's `AGE_OK` claim lacks `email_verified`. Baseline is 24/25 without
+my change, 28/29 with it (delta = exactly my 4 passing isMinor tests). Not fixed
+here (fixing it is outside BUT-674 scope and would edit an unrelated allow test);
+surfaced to the author. C1's `AGE_OK` should become `AGE_OK_MATURED` when someone
+touches that section.
+
+### 2026-07-01 — BUT-674: isMinor write-protection extended to users/{uid}/settings/{settingId}
+
+Second half of the BUT-674 isMinor guard: the same create-absent + update-immutable
+clauses were added to the `settings/{settingId}` rule (firestore.rules ~L534–548),
+mirroring the birthYear pair already there and the profile-doc isMinor pair from the
+prior 2026-07-01 entry. Rationale: the CF now mirrors `isMinor` into
+`users/{uid}/settings/preferences` (client reads it for analytics minimization), so a
+client that could forge `isMinor:false` there would defeat the minimization. Rule edit
+was applied by the task author; the tester only added proof (no firestore.rules edit).
+
+Added 4 tests to `age-gate-rules.test.ts` in a new "SETTINGS — isMinor immutability"
+block (IDs `SM1`–`SM4`), placed between the birthYear settings block (S1–S7) and the
+profile birthYear block, parallel to S2/S1/S5/S6:
+- SM1 create carrying `isMinor:false` → DENY.
+- SM2 create WITHOUT isMinor (normal settings write) → ALLOW.
+- SM3 update flipping a seeded `isMinor:true`→`false` → DENY (immutability clause).
+- SM4 update editing `notificationsEnabled` while isMinor PRESERVED → ALLOW (load-bearing;
+  proves the guard is isMinor-specific, not a blanket update block).
+All 4 green on emulator. Deny logs pin SM1/SM3 to the settings create/update rule lines,
+not an unrelated failure — fail-closed and isMinor-specific.
+
+**Combined-rules compile confirmed:** conversations suite 5/5 green this run, which
+proves the whole firestore.rules parses with all three BUT-674 surfaces present
+(settings isMinor + profile isMinor + conversations minor-DM gate helpers).
+
+**Pre-existing unrelated red still standing (NOT BUT-674):** age-gate suite is 32/33 —
+the single fail is still C1 (`recipe_comments: age-compliant author can create a comment`,
+`Property email_verified is undefined`), the BUT-1419 `isAccountMatured()` staleness from
+the prior entry. My +169-line working diff is all test insertions; the failure predates it
+and is outside BUT-674 scope. Delta from my change = exactly my 4 passing SM tests.

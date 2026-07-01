@@ -50,6 +50,12 @@ const db = admin.firestore();
  *  `UserProfile`'s birthYear invariant. */
 export const MIN_AGE_YEARS = 15;
 
+/** BUT-674: a compliant user (≥15) who is still under 18 is a "minor" and gets
+ *  extra protections downstream (default-private profile, DM restrictions,
+ *  analytics minimization). 18 is the age-of-majority line, independent of the
+ *  15-year service-eligibility floor above. */
+export const AGE_OF_MAJORITY_YEARS = 18;
+
 /** Lower plausibility bound for a self-declared birth year. Mirrors the
  *  Firestore rule + `UserProfile` validation. */
 const MIN_PLAUSIBLE_BIRTH_YEAR = 1900;
@@ -164,6 +170,10 @@ export async function runVerifySignupAgeWithDeps(
   const currentYear = new Date().getFullYear();
   const age = currentYear - birthYear;
   const compliant = age >= MIN_AGE_YEARS;
+  // BUT-674: a compliant 15–17-year-old. Derived from the same self-declared
+  // year the CF already trusts for the gate; conservative (Jan-1 cutoff, so a
+  // borderline year is treated as the lower age).
+  const isMinor = compliant && age < AGE_OF_MAJORITY_YEARS;
 
   if (!compliant) {
     // Non-identifying record ONLY (Legal): never link a real identity to the
@@ -203,7 +213,7 @@ export async function runVerifySignupAgeWithDeps(
     // birthYear / consent-audit row. Re-assert the artifacts idempotently
     // (merge-sets + a deterministic-id audit → no duplicates) so a
     // partial-failure retry converges, then return success.
-    await writeComplianceArtifacts(database, uid, birthYear);
+    await writeComplianceArtifacts(database, uid, birthYear, isMinor);
     logger.info("[verifySignupAge] idempotent retry — artifacts re-ensured", {
       uid_prefix: hashUid(uid),
     });
@@ -215,7 +225,7 @@ export async function runVerifySignupAgeWithDeps(
   // idempotent compliance artifacts (a partial failure here is recovered by the
   // retry branch above).
   await auth.setCustomUserClaims(uid, { ...existingClaims, ageCompliant: true });
-  await writeComplianceArtifacts(database, uid, birthYear);
+  await writeComplianceArtifacts(database, uid, birthYear, isMinor);
 
   logger.info("[verifySignupAge] admitted ≥15 + claim set", {
     uid_prefix: hashUid(uid),
@@ -234,17 +244,37 @@ export async function runVerifySignupAgeWithDeps(
  * (users/{uid}, read by `UserProfile.fromMap`) and the settings/preferences
  * copy (read by the GDPR export). The client no longer writes either; this CF
  * is the sole writer of both.
+ *
+ * BUT-674: also writes `isMinor` (a compliant 15–17-year-old), server-authoritative,
+ * to BOTH locations for two different consumers:
+ *  - `users/{uid}` (root) — read by `firestore.rules` via `get()` to gate 1:1
+ *    DMs to a minor. The root doc is owner/admin-read only, so it is NOT loaded
+ *    into the client's `UserProfile`.
+ *  - `users/{uid}/settings/preferences` — the CLIENT hydrates its `UserProfile`
+ *    from this private doc (+ public_profiles), so mirroring `isMinor` here is
+ *    how the app learns it's a minor account and applies analytics minimization
+ *    (suppressing the behavioral lifecycle-stage signal). Without this mirror the
+ *    client's `isMinor` would always be false and the minimization would be inert.
+ * Both writes are idempotent-retry-safe (derived value, merge-set).
+ *
+ * NOTE — default-private search-suppression is deliberately NOT done here. User
+ * search reads `public_profiles.isSearchable`, and setting that correctly for a
+ * minor requires threading `isMinor` through onboarding profile creation so the
+ * client never re-enables it. That + the searchable opt-in + a group-DM CF are a
+ * tracked follow-up; until they land a minor is no less discoverable than today
+ * (no regression), and the 1:1 DM gate + analytics minimization already apply.
  */
 async function writeComplianceArtifacts(
   database: admin.firestore.Firestore,
   uid: string,
   birthYear: number,
+  isMinor: boolean,
 ): Promise<void> {
   await Promise.all([
-    database.doc(`users/${uid}`).set({ birthYear }, { merge: true }),
+    database.doc(`users/${uid}`).set({ birthYear, isMinor }, { merge: true }),
     database
       .doc(`users/${uid}/settings/preferences`)
-      .set({ birthYear }, { merge: true }),
+      .set({ birthYear, isMinor }, { merge: true }),
   ]);
 
   await writeComplianceAudit(database, uid, birthYear);
