@@ -244,11 +244,12 @@ abstract final class AnalyticsUserProperties {
   /// Recomputed on cold start + after each cook completion.
   static const lifecycleStage = 'lifecycle_stage';
 
-  /// Monetization cohort bucket (BUT-623): `free | pro | family | trial`.
-  /// Set to `free` for all users during beta — costless schema seeding so
-  /// post-beta paid cohorts can be sliced from day 1 without retroactive
-  /// backfill. Re-emitted on purchase / downgrade / trial transitions.
-  static const subscriptionTier = 'subscription_tier';
+  // BUT-1410: `subscription_tier` retired. It was seeded (BUT-623) to slice
+  // paid cohorts, but Butlery has no consumer subscription (monetization =
+  // grocery-channel aggregation + POD cookbook gifting), so it emitted a
+  // constant `'free'` for every user forever — a zero-information dimension
+  // and a misleading "we have tiers" signal. Removed rather than repurposed;
+  // a real free-app cohort dimension is a separate, deliberate design.
 
   // --- Experiments (BUT-657) ---
   /// Prefix for per-experiment user properties. Concrete property name is

@@ -1,10 +1,14 @@
-/// Tests for [UserPropertyBootstrap] orchestration (BUT-636/637/639/623).
+/// Tests for [UserPropertyBootstrap] orchestration (BUT-636/637/639).
 ///
 /// The repo-level setters are covered in `user_property_setters_test.dart`.
 /// This file covers the orchestrator: that `emitAtSessionStart` fires the
-/// right property names with the right values for a typical session, and
-/// that `subscription_tier` defaults to `'free'` (BUT-623) so the post-beta
-/// paid-cohort slice has data from day 1.
+/// right property names for a typical session, and that a failing setter
+/// doesn't block the others (best-effort contract).
+///
+/// BUT-1410: the `subscription_tier` property was retired (dead monetization
+/// plumbing — Butlery has no consumer subscription), so the tests that pinned
+/// its `'free'` default and `emitSubscriptionTier` transitions were removed
+/// with it.
 library;
 
 import 'dart:ui' show Locale;
@@ -34,34 +38,26 @@ void main() {
       bootstrap = UserPropertyBootstrap(analytics);
     });
 
-    test('emits subscription_tier=free by default (BUT-623)', () async {
+    test('emits language + platform for a typical session', () async {
       await bootstrap.emitAtSessionStart(locale: const Locale('sv'));
 
       verify(
         () => analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: 'free',
+          name: AnalyticsUserProperties.language,
+          value: 'sv',
         ),
       ).called(1);
-    });
-
-    test('emits subscription_tier=pro when caller passes pro', () async {
-      await bootstrap.emitAtSessionStart(
-        locale: const Locale('sv'),
-        subscriptionTier: 'pro',
-      );
-
       verify(
         () => analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: 'pro',
+          name: AnalyticsUserProperties.platform,
+          value: any(named: 'value'),
         ),
       ).called(1);
     });
 
-    test('all session-scoped properties fire even if one throws', () async {
-      // platform setter throws — verify language + lifecycle + subscription
-      // still get attempted (best-effort contract).
+    test('remaining properties fire even if one setter throws', () async {
+      // platform setter throws — language must still be attempted
+      // (best-effort contract; failures are logged, never propagated).
       when(
         () => analytics.setUserProperty(
           name: AnalyticsUserProperties.platform,
@@ -75,71 +71,6 @@ void main() {
         () => analytics.setUserProperty(
           name: AnalyticsUserProperties.language,
           value: 'sv',
-        ),
-      ).called(1);
-      verify(
-        () => analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: 'free',
-        ),
-      ).called(1);
-    });
-  });
-
-  group('UserPropertyBootstrap.emitSubscriptionTier', () {
-    late _MockAnalyticsService analytics;
-    late UserPropertyBootstrap bootstrap;
-
-    setUp(() {
-      analytics = _MockAnalyticsService();
-      when(
-        () => analytics.setUserProperty(
-          name: any(named: 'name'),
-          value: any(named: 'value'),
-        ),
-      ).thenAnswer((_) async {});
-      bootstrap = UserPropertyBootstrap(analytics);
-    });
-
-    test(
-      're-emits on tier transition (purchase → downgrade → trial)',
-      () async {
-        await bootstrap.emitSubscriptionTier('pro');
-        await bootstrap.emitSubscriptionTier('free');
-        await bootstrap.emitSubscriptionTier('trial');
-
-        verifyInOrder([
-          () => analytics.setUserProperty(
-            name: AnalyticsUserProperties.subscriptionTier,
-            value: 'pro',
-          ),
-          () => analytics.setUserProperty(
-            name: AnalyticsUserProperties.subscriptionTier,
-            value: 'free',
-          ),
-          () => analytics.setUserProperty(
-            name: AnalyticsUserProperties.subscriptionTier,
-            value: 'trial',
-          ),
-        ]);
-      },
-    );
-
-    test('swallows analytics failure (best-effort)', () async {
-      when(
-        () => analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: any(named: 'value'),
-        ),
-      ).thenThrow(Exception('FA SDK error'));
-
-      // Must not throw.
-      await bootstrap.emitSubscriptionTier('pro');
-
-      verify(
-        () => analytics.setUserProperty(
-          name: AnalyticsUserProperties.subscriptionTier,
-          value: 'pro',
         ),
       ).called(1);
     });
