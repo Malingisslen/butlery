@@ -87,6 +87,7 @@ class Routes {
   // Settings routes
   static const String settings = '/settings';
   static const String settingsFamily = '/settings/family';
+  static const String settingsMenuTaste = '/settings/menu-taste';
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
@@ -144,6 +145,7 @@ class Routes {
     notifications,
     settings,
     settingsFamily,
+    settingsMenuTaste,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -189,6 +191,7 @@ class Routes {
     notifications,
     settings,
     settingsFamily,
+    settingsMenuTaste,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -292,6 +295,7 @@ class Routes {
     // Settings
     settings,
     settingsFamily,
+    settingsMenuTaste,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,

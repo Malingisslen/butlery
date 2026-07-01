@@ -51,6 +51,16 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsAllergens),
                 ),
+                // BUT-1320: surface the weekly-menu tuning controls (cuisine
+                // affinities + cooking skill) where the user reads them as menu
+                // settings, not a social bio field.
+                _SettingsTile(
+                  icon: Icons.tune,
+                  title: context.l10n.settingsMenuTasteTitle,
+                  subtitle: context.l10n.settingsMenuTasteSubtitle,
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.settingsMenuTaste),
+                ),
                 _SettingsTile(
                   icon: Icons.label_outline,
                   title: context.l10n.personalTagsViewTitle,
