@@ -20,6 +20,7 @@
  */
 
 import * as fs from "fs";
+import * as http from "http";
 import * as path from "path";
 import {
   initializeTestEnvironment,
@@ -36,7 +37,41 @@ const FRIEND_UID = "friend-uid";
 const STRANGER_UID = "stranger-uid";
 const ADMIN_UID = "admin-uid";
 
+// BUT-1418 (ADR-0002): cook_snaps create now ALSO requires `isAgeCompliant()`
+// (custom claim `ageCompliant == true`). Every authed context that performs a
+// create carries this claim so each test keeps isolating its intended gate
+// (impersonation / required-field / size / visibility), not the new age gate.
+// Without it every create-allow assertion here fails closed. Read/update/delete
+// contexts are NOT age-gated and stay claimless.
+const AGE_OK = { ageCompliant: true };
+
 let env: RulesTestEnvironment;
+
+// The emulator persists documents across separate `npm run` invocations
+// (env.cleanup() only closes clients). The create-allow tests below use FIXED
+// doc ids (cs-create-ok, cs-create-onlyme); on a 2nd+ run those already exist,
+// so the create is evaluated as an UPDATE and the cook_snaps update rule denies
+// a full-body re-set — a false FAIL. Clearing the namespace at setup keeps every
+// create-allow target brand-new. (See firestore-rules-tester knowledge file,
+// 2026-06-03 entry.)
+function clearFirestore(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port: 8080,
+        method: "DELETE",
+        path: `/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`,
+      },
+      (res) => {
+        res.on("data", () => undefined);
+        res.on("end", resolve);
+      }
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}
 
 async function setup(): Promise<void> {
   const rules = fs.readFileSync(RULES_PATH, "utf8");
@@ -44,6 +79,7 @@ async function setup(): Promise<void> {
     projectId: PROJECT_ID,
     firestore: { rules, host: "127.0.0.1", port: 8080 },
   });
+  await clearFirestore();
 
   await env.withSecurityRulesDisabled(async (ctx) => {
     // Seed the admin record (collection is rules-locked; admins are added
@@ -255,7 +291,7 @@ test("cook_snaps: legacy snap without visibility is NOT friend-readable (backfil
 
 // create accepts both enum values…
 test("cook_snaps: owner can create an onlyMe snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   await assertSucceeds(
     ctx
       .firestore()
@@ -267,7 +303,7 @@ test("cook_snaps: owner can create an onlyMe snap", async () => {
 // …but rejects a forged value (would be get-readable yet query-invisible —
 // an inconsistent state the validation refuses to persist).
 test("cook_snaps: create with forged visibility value is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -401,15 +437,34 @@ test("cook_snaps: query that would include a stranger's snap is denied", async (
 // authenticated user can create a snap with userId == auth.uid and all
 // required fields.
 test("cook_snaps: owner can create a valid snap", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   await assertSucceeds(
     ctx.firestore().doc(`cook_snaps/cs-create-ok`).set(validSnapBody())
   );
 });
 
+// BUT-1418: DENY — an owner whose token lacks the ageCompliant claim cannot
+// create a snap, even with an otherwise-valid body and matching userId. This is
+// the load-bearing deny for the new age gate: it fails closed on a missing
+// claim (CEL `request.auth.token.ageCompliant` is undefined -> `== true` false).
+test("cook_snaps: owner without ageCompliant claim cannot create a snap", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx.firestore().doc(`cook_snaps/cs-noclaim`).set(validSnapBody())
+  );
+});
+
+// BUT-1418: DENY — an explicit ageCompliant:false claim is also rejected.
+test("cook_snaps: owner with ageCompliant=false cannot create a snap", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID, { ageCompliant: false });
+  await assertFails(
+    ctx.firestore().doc(`cook_snaps/cs-agefalse`).set(validSnapBody())
+  );
+});
+
 // cannot impersonate — userId in body must match auth.uid.
 test("cook_snaps: cannot create a snap impersonating another user", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -420,7 +475,7 @@ test("cook_snaps: cannot create a snap impersonating another user", async () => 
 
 // missing required field (photoUrl) is rejected.
 test("cook_snaps: create without required photoUrl is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   const bodyMissing = { ...validSnapBody() } as Record<string, unknown>;
   delete bodyMissing.photoUrl;
   await assertFails(
@@ -430,7 +485,7 @@ test("cook_snaps: create without required photoUrl is rejected", async () => {
 
 // oversized userDisplayName (>100) is rejected.
 test("cook_snaps: oversized userDisplayName is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -441,7 +496,7 @@ test("cook_snaps: oversized userDisplayName is rejected", async () => {
 
 // oversized caption (>200) is rejected.
 test("cook_snaps: oversized caption is rejected", async () => {
-  const ctx = env.authenticatedContext(OWNER_UID);
+  const ctx = env.authenticatedContext(OWNER_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()

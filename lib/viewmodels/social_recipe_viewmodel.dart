@@ -32,7 +32,13 @@ class SocialRecipeViewModel extends ChangeNotifier {
   }) : _friendsService = friendsService,
        _recipeService = recipeService,
        _userService = userService {
-    _commentsManager = SocialCommentsManager(_recipeService);
+    // Thread the viewmodel's UserService through (matches _profileManager
+    // below) so the BUT-1419 maturity guard reads the real profile rather than
+    // relying on a locator lookup at construction time.
+    _commentsManager = SocialCommentsManager(
+      _recipeService,
+      userService: _userService,
+    );
     _engagementManager = SocialEngagementManager();
     _profileManager = SocialProfileManager(_friendsService, _userService);
 

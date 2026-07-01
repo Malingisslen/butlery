@@ -6,6 +6,9 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/auth/account_maturity_helper.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -14,6 +17,9 @@ class SocialCommentsManager extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   ContentFilterService? _contentFilter;
   UnifiedFriendsService? _friendsService;
+  UserService? _userService;
+  AuthRepository? _authRepository;
+  final AccountMaturityHelper _maturityHelper;
   bool _isDisposed = false;
 
   bool _isLoadingComments = false;
@@ -29,10 +35,25 @@ class SocialCommentsManager extends ChangeNotifier {
   StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
   String? _watchedRecipeId;
 
-  SocialCommentsManager(this._recipeService) {
+  SocialCommentsManager(
+    this._recipeService, {
+    AccountMaturityHelper? maturityHelper,
+    UserService? userService,
+    AuthRepository? authRepository,
+  }) : _maturityHelper = maturityHelper ?? AccountMaturityHelper() {
     _contentFilter = ServiceLocator.tryGet<ContentFilterService>();
     _friendsService = ServiceLocator.tryGet<UnifiedFriendsService>();
+    _userService = userService ?? ServiceLocator.tryGet<UserService>();
+    _authRepository = authRepository ?? ServiceLocator.tryGet<AuthRepository>();
   }
+
+  /// Client-side mirror of the server `isAccountMatured()` gate (BUT-1419).
+  /// The Firestore rule is the authority; this lets the UI surface a clear
+  /// "verify your email" message instead of an opaque permission-denied.
+  bool get isAccountMatured => _maturityHelper.isMatured(
+    profile: _userService?.currentUserProfile,
+    firebaseUser: _authRepository?.currentUser,
+  );
 
   void _safeNotify() {
     if (!_isDisposed) notifyListeners();
@@ -157,6 +178,17 @@ class SocialCommentsManager extends ChangeNotifier {
     List<String> imageUrls = const [],
   }) async {
     if (_newCommentText.trim().isEmpty) return;
+
+    // BUT-1419: client-side mirror of the server isAccountMatured() gate.
+    // Comments are now maturity-gated (like DMs/friend-requests) to close the
+    // register-blast-abandon comment-spam vector. The Firestore rule is the
+    // authority; this surfaces a clear "verify your email" message instead of
+    // the opaque permission-denied a fresh, unverified account would hit.
+    if (!isAccountMatured) {
+      _commentsError = AppLocale.current.newAccountSocialBlockedComment;
+      _safeNotify();
+      return;
+    }
 
     // BUT-1393: gate comment text through the canonical profanity filter before
     // publishing (same path as recipe titles, group names, bios, cook-snap

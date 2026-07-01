@@ -40,6 +40,14 @@ const ACTOR_UID = "activity-actor-uid";
 const FRIEND_UID = "activity-friend-uid";
 const STRANGER_UID = "activity-stranger-uid";
 
+// BUT-1418 (ADR-0002): activity_events create now ALSO requires
+// `isAgeCompliant()` (custom claim `ageCompliant == true`). Every authed context
+// that performs a create carries this claim so each test keeps isolating its
+// intended gate (actor-only / required-field / size / rate-limit), not the new
+// age gate. Without it every create-allow assertion fails closed. Read/update/
+// delete contexts are NOT age-gated and stay claimless.
+const AGE_OK = { ageCompliant: true };
+
 // Per-run token: the emulator persists docs across invocations, so a
 // fixed-id create-allow test would become an UPDATE on the 2nd run and hit a
 // different rule. Unique ids keep create tests proving the create rule.
@@ -148,15 +156,34 @@ test("activity_events: unauthenticated user cannot read the event", async () => 
 
 // AE5: the actor can create a valid event for themselves.
 test("activity_events: actor can create a valid event", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   await assertSucceeds(
     ctx.firestore().doc(`activity_events/ae-create-ok-${RUN}`).set(validEventBody())
   );
 });
 
+// AE5b: BUT-1418 DENY — an actor whose token lacks the ageCompliant claim
+// cannot create an event, even with an otherwise-valid body and matching
+// actorId. Load-bearing deny for the new age gate: fails closed on a missing
+// claim (CEL `request.auth.token.ageCompliant` undefined -> `== true` false).
+test("activity_events: actor without ageCompliant claim cannot create an event", async () => {
+  const ctx = env.authenticatedContext(ACTOR_UID);
+  await assertFails(
+    ctx.firestore().doc(`activity_events/ae-noclaim-${RUN}`).set(validEventBody())
+  );
+});
+
+// AE5c: BUT-1418 DENY — an explicit ageCompliant:false claim is rejected too.
+test("activity_events: actor with ageCompliant=false cannot create an event", async () => {
+  const ctx = env.authenticatedContext(ACTOR_UID, { ageCompliant: false });
+  await assertFails(
+    ctx.firestore().doc(`activity_events/ae-agefalse-${RUN}`).set(validEventBody())
+  );
+});
+
 // AE6: a user cannot forge an event attributed to someone else (actorId spoof).
 test("activity_events: cannot create an event with a spoofed actorId", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID);
+  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -178,7 +205,7 @@ test("activity_events: unauthenticated user cannot create an event", async () =>
 
 // AE8: missing required field (recipeId) is rejected.
 test("activity_events: create without recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   const body = validEventBody();
   delete (body as Record<string, unknown>).recipeId;
   await assertFails(
@@ -188,7 +215,7 @@ test("activity_events: create without recipeId is rejected", async () => {
 
 // AE9: missing required field (createdAt) is rejected.
 test("activity_events: create without createdAt is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   const body = validEventBody();
   delete (body as Record<string, unknown>).createdAt;
   await assertFails(
@@ -200,7 +227,7 @@ test("activity_events: create without createdAt is rejected", async () => {
 // hasRequiredFields but had no dedicated deny — without this a future drop of
 // 'type' from the required list would go unnoticed.
 test("activity_events: create without type is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   const body = validEventBody();
   delete (body as Record<string, unknown>).type;
   await assertFails(
@@ -210,7 +237,7 @@ test("activity_events: create without type is rejected", async () => {
 
 // AE9c: non-string type is rejected (`type is string`).
 test("activity_events: non-string type is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -221,7 +248,7 @@ test("activity_events: non-string type is rejected", async () => {
 
 // AE10: non-string recipeId is rejected (`is string`).
 test("activity_events: non-string recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -232,7 +259,7 @@ test("activity_events: non-string recipeId is rejected", async () => {
 
 // AE11: oversized recipeId (201 chars) is rejected (size() <= 200).
 test("activity_events: oversized recipeId is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -243,7 +270,7 @@ test("activity_events: oversized recipeId is rejected", async () => {
 
 // AE12: oversized recipeTitle (301 chars) is rejected (size() <= 300).
 test("activity_events: oversized recipeTitle is rejected", async () => {
-  const ctx = env.authenticatedContext(ACTOR_UID);
+  const ctx = env.authenticatedContext(ACTOR_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()
@@ -265,7 +292,7 @@ test("activity_events: create within the rate-limit window is rejected", async (
       .doc(`users/${RL_UID}/rate_limits/activity_events`)
       .set({ lastWrite: new Date() });
   });
-  const ctx = env.authenticatedContext(RL_UID);
+  const ctx = env.authenticatedContext(RL_UID, AGE_OK);
   await assertFails(
     ctx
       .firestore()

@@ -1170,6 +1170,11 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.authorId
         && isAgeCompliant()
+        // BUT-1419: maturity-gated, matching messages/social_requests. Comments
+        // are public-facing UGC and an identical spam vector to DMs — a fresh
+        // "register → blast → abandon" bot was blocked from DMs/friend-requests
+        // but could still post comments (subject only to the 5s rate limit).
+        && isAccountMatured()
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000
@@ -1249,8 +1254,12 @@ service cloud.firestore {
 
       // Create: caller must be the snap-owner. Structural validation prevents
       // oversized documents and forged identity.
+      // BUT-1418: age-gated. A cook-snap broadcasts a photo + caption to the
+      // owner's friends — self-authored UGC published to other users, the exact
+      // category ADR-0002 gates. Kept consistent with recipe_comments/messages.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
+        && isAgeCompliant()
         && hasRequiredFields(['recipeId', 'userId', 'userDisplayName', 'photoUrl', 'createdAt'])
         && request.resource.data.recipeId is string
         && request.resource.data.userId is string
@@ -1347,8 +1356,12 @@ service cloud.firestore {
 
       // Create: only the actor may write their own event. Structural
       // validation prevents identity forgery and oversized documents.
+      // BUT-1418: age-gated. Activity events publish self-authored social-feed
+      // items to the actor's friends — same UGC-broadcast category as cook_snaps
+      // and comments, so the ADR-0002 age gate applies here too.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.actorId
+        && isAgeCompliant()
         && hasRequiredFields(['actorId', 'type', 'recipeId', 'createdAt'])
         && request.resource.data.actorId is string
         && request.resource.data.type is string

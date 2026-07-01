@@ -13869,6 +13869,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Bekräfta din e-post för att bjuda in till grupp';
 
   @override
+  String get newAccountSocialBlockedComment =>
+      'Bekräfta din e-post för att kommentera';
+
+  @override
   String get duplicateContentRejected =>
       'Du har precis skickat samma meddelande.';
 

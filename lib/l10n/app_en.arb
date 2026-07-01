@@ -9387,6 +9387,7 @@
   "newAccountSocialBlockedAction": "Send verification",
   "newAccountSocialBlockedDm": "Verify your email to send messages",
   "newAccountSocialBlockedGroup": "Verify your email to invite members to a group",
+  "newAccountSocialBlockedComment": "Verify your email to comment",
   "duplicateContentRejected": "You just sent the same message.",
   "contentFilterWarning": "The text contains inappropriate language. Please edit before submitting.",
   "noResults": "No results",

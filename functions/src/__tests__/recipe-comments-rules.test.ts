@@ -96,14 +96,17 @@ async function setup(): Promise<void> {
 // (See firestore-rules-tester knowledge file, 2026-06-03 entry.)
 const RUN = Date.now().toString(36);
 
-// BUT-1386 (ADR-0002): recipe_comments + recipe_ratings create now ALSO require
-// `isAgeCompliant()` (custom claim `ageCompliant == true`). Every authed context
-// that performs a create on a gated path carries this claim so each test keeps
-// isolating its intended gate (blocking / imageUrls / impersonation), not the
-// new age gate. Without it the 5 create-allow assertions here fail closed —
-// pre-fix failure count for this file was 5 (recipe_comments x4 + recipe_ratings
-// x1; user_notifications creates are NOT age-gated and stay claimless).
-const AGE_OK = { ageCompliant: true };
+// BUT-1386 (ADR-0002): recipe_comments + recipe_ratings create require
+// `isAgeCompliant()` (custom claim `ageCompliant == true`).
+// BUT-1419: recipe_comments create ADDITIONALLY requires `isAccountMatured()`
+// (email_verified OR user-doc createdAt >= 60min); recipe_ratings was already
+// maturity-gated by BUT-659. Every authed context that performs a create on a
+// gated path therefore carries BOTH `ageCompliant:true` and `email_verified:true`
+// so each test keeps isolating its intended gate (blocking / imageUrls /
+// impersonation), not the age or maturity gate. Without maturity every comment
+// create-allow fails closed — that is the BUT-1419 regression this file proves.
+// (user_notifications creates are NOT age- or maturity-gated and stay claimless.)
+const AGE_OK_MATURED = { ageCompliant: true, email_verified: true };
 
 async function teardown(): Promise<void> {
   if (env) await env.cleanup();
@@ -253,9 +256,10 @@ test("recipe_comments: admin can read any comment (moderation)", async () => {
 // A3: recipe_comments create — blocking gate (BUT-459)
 // ----------------------------------------------------------------------------
 
-// ALLOW: a non-blocked user can comment on the recipe owner's recipe.
+// ALLOW: a non-blocked, matured, age-compliant user can comment on the recipe
+// owner's recipe.
 test("recipe_comments: non-blocked user can create a comment", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertSucceeds(
     ctx
       .firestore()
@@ -264,10 +268,44 @@ test("recipe_comments: non-blocked user can create a comment", async () => {
   );
 });
 
+// BUT-1419 DENY: a fresh, unverified account (email_verified false, no matured
+// user doc) cannot create a comment even when age-compliant. This is the
+// load-bearing deny for the new maturity gate — proves a "register → blast →
+// abandon" bot is blocked from comments the same way it is from DMs. FRESH_UID
+// has NO seeded users/{uid} doc, so isAccountMatured()'s second branch (createdAt
+// >= 60min) is also false; the write fails closed.
+test("recipe_comments: fresh unverified account cannot create a comment", async () => {
+  const FRESH_UID = "fresh-comment-author-uid";
+  const ctx = env.authenticatedContext(FRESH_UID, {
+    ageCompliant: true,
+    email_verified: false,
+  });
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-fresh-${RUN}`)
+      .set(validCommentBody(FRESH_UID, { recipeOwnerId: FRESH_UID }))
+  );
+});
+
+// BUT-1419 ALLOW: an age-compliant author whose email is verified is matured
+// immediately (verified-email bypasses the 60min wait) and can create a comment.
+// The allow-with-maturity companion to the fresh-account deny above; without it a
+// blanket-deny regression of the maturity gate would pass the deny test silently.
+test("recipe_comments: verified-email account can create a comment immediately", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-verified-${RUN}`)
+      .set(validCommentBody(AUTHOR_UID))
+  );
+});
+
 // DENY: a user who has been blocked by the recipe owner cannot create a
 // comment on that recipe (blocking-gate kicks in via recipeOwnerId).
 test("recipe_comments: blocked user cannot create a comment on blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK);
+  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()
@@ -288,7 +326,7 @@ test("recipe_comments: blocked user cannot create a comment on blocker's recipe"
 
 // ALLOW: author creates a comment with a valid imageUrls list (<= 3 strings).
 test("recipe_comments: author can create a comment with <=3 image URLs", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertSucceeds(
     ctx
       .firestore()
@@ -308,7 +346,7 @@ test("recipe_comments: author can create a comment with <=3 image URLs", async (
 // ALLOW (back-compat): a comment with no imageUrls field still creates — the
 // validator only fires when the field is present.
 test("recipe_comments: author can create a comment with no imageUrls (back-compat)", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertSucceeds(
     ctx
       .firestore()
@@ -319,7 +357,7 @@ test("recipe_comments: author can create a comment with no imageUrls (back-compa
 
 // ALLOW: an empty imageUrls list is a valid list of size 0.
 test("recipe_comments: author can create a comment with an empty imageUrls list", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertSucceeds(
     ctx
       .firestore()
@@ -330,7 +368,7 @@ test("recipe_comments: author can create a comment with an empty imageUrls list"
 
 // DENY: more than 3 image URLs exceeds the size cap.
 test("recipe_comments: create with >3 image URLs is denied", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()
@@ -351,7 +389,7 @@ test("recipe_comments: create with >3 image URLs is denied", async () => {
 // DENY: imageUrls of the wrong type (a string, not a list) is rejected by the
 // `is list` guard.
 test("recipe_comments: create with non-list imageUrls is denied", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()
@@ -370,7 +408,7 @@ test("recipe_comments: create with non-list imageUrls is denied", async () => {
 // Here the blocked user (who the owner blocked) tries to create a comment with
 // images — the impersonation/blocking gate is unaffected by the new validator.
 test("recipe_comments: blocked user cannot create an image comment on blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK);
+  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()
@@ -386,7 +424,7 @@ test("recipe_comments: blocked user cannot create an image comment on blocker's 
 // DENY (author check): a user cannot create a comment whose authorId is
 // someone else's, regardless of a valid imageUrls list.
 test("recipe_comments: cannot create an image comment impersonating another author", async () => {
-  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK);
+  const ctx = env.authenticatedContext(STRANGER_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()
@@ -404,7 +442,7 @@ test("recipe_comments: cannot create an image comment impersonating another auth
 // ----------------------------------------------------------------------------
 
 test("recipe_ratings: non-blocked user can rate a recipe", async () => {
-  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK);
+  const ctx = env.authenticatedContext(AUTHOR_UID, AGE_OK_MATURED);
   await assertSucceeds(
     ctx
       .firestore()
@@ -414,7 +452,7 @@ test("recipe_ratings: non-blocked user can rate a recipe", async () => {
 });
 
 test("recipe_ratings: blocked user cannot rate the blocker's recipe", async () => {
-  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK);
+  const ctx = env.authenticatedContext(BLOCKED_UID, AGE_OK_MATURED);
   await assertFails(
     ctx
       .firestore()

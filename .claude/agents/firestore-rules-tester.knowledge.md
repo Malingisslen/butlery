@@ -1047,3 +1047,50 @@ a `ctx.firestore()` / `withSecurityRulesDisabled` write MUST come from
 firebase-admin major bump — that import in a rules test is the smell. (Admin
 SDK sentinels are correct only in the `*.integration.test.ts` files that drive
 the admin SDK directly against the emulator.)
+
+### 2026-07-01 — BUT-1418 + BUT-1419: three UGC-create gates added (cook_snaps, activity_events, recipe_comments)
+
+Three `allow create` rules gained a gate, verified on emulator:
+1. **cook_snaps create** (L1262) `+ isAgeCompliant()` — `cook-snaps-and-message-mod-rules.test.ts`, 34/34.
+2. **activity_events create** (L1364) `+ isAgeCompliant()` — `activity-events-rules.test.ts`, 25/25.
+3. **recipe_comments create** (L1177) `+ isAccountMatured()` (already had `isAgeCompliant()`) — `recipe-comments-rules.test.ts`, 24/24 (was 20/22 broken pre-fix).
+
+**The cross-file fallout is the whole job.** Adding a gate to an EXISTING
+create rule fails-closed every prior create-allow test whose auth context didn't
+mint the newly-required claim. This is identical to the 2026-06-27 BUT-1386
+fallout entry — the pattern recurs on EVERY gate-tightening of an existing
+create. Checklist when a gate is ADDED to an existing create rule:
+- Grep the owning test file for `authenticatedContext(<actor>)` on that
+  collection's creates and add the required claim to ALL of them (allow AND deny
+  contexts, so denies fail for their INTENDED reason, not silently on the new gate).
+- Add the NEW allow/deny pair for the gate itself.
+
+**`isAccountMatured()` needs email_verified OR a seeded old user doc.** Cheapest:
+mint `{ email_verified: true }` in the claim (bypasses the 60-min wait). The
+fresh-account DENY must use `email_verified:false` AND a uid with NO seeded
+`users/{uid}` doc, so BOTH maturity branches are false. **Trap:** the pre-fix
+baseline showed `recipe_ratings: non-blocked user can rate` PASSING with only
+`{ageCompliant:true}` and no maturity — a false pass caused by a `users/AUTHOR_UID`
+doc PERSISTED in the emulator from a prior run satisfying the createdAt branch.
+recipe_ratings has required maturity since BUT-659; that test was only green by
+persistence luck. Made it (and all comment creates) mint `AGE_OK_MATURED =
+{ageCompliant:true, email_verified:true}` so it's correct on a cleared namespace.
+Reinforces the 2026-06-03 persistence gotcha: a green create-allow that reads a
+`get()`-gated user doc can be lying if the emulator wasn't cleared.
+
+**Fail-closed proof for a gate-deny (do this every time).** A deny test that
+denies for the WRONG reason is a false pass. Prove the deny is gate-only by
+running the IDENTICAL body+id with the gate satisfied and asserting it SUCCEEDS
+(throwaway probe, deleted after). Did this for all three: cook_snaps + activity
+deny-bodies succeed with `ageCompliant:true`; recipe_comments fresh-account
+deny-body succeeds when `email_verified:true`. If the probe had failed, the deny
+was denying on body/id/persistence, not the gate.
+
+**Gotcha this run:** `curl -X DELETE .../databases/(default)/documents` from the
+Bash tool — the literal `(default)` parens are shell-globbed and the request
+never lands (exit 7, `000`). Let each test file's own `clearFirestore()` in
+setup() handle it, or single-quote/escape the path. Also added a `clearFirestore()`
++ `http` import to `cook-snaps-and-message-mod-rules.test.ts` (it had fixed-id
+create tests and NO namespace clear — was re-run-fragile). No firestore.rules,
+package.json, or CI edits needed: all three files were already wired into
+`test:rules:all` and both `firestore-rules.yml` path-filter blocks.
