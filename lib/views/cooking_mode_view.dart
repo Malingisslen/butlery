@@ -18,6 +18,7 @@ import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
@@ -136,6 +137,11 @@ class _CookingModeContent extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            // BUT-1360: cooking offline is the marquee scenario — surface a
+            // slim top strip so the cook knows edits/substitutions won't sync.
+            // Self-hides (SizedBox.shrink) when online, so the split layout is
+            // untouched with a connection.
+            LayoutComponents.offlineIndicator(),
             _buildTopBar(context, vm),
             Expanded(
               child: Row(
