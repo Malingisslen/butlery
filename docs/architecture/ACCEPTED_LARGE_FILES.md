@@ -134,7 +134,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 528 | Direct-collaboration coordinator extending base; single shopping-list domain |
-| `menu_service.dart` | 528 | Single-algorithm service for Swedish NLP menu generation; coherent domain |
+| `menu_service.dart` | 613 | Single-algorithm service for Swedish NLP menu generation; coherent domain (grew with BUT-1320/1321/1324 personalization + combined cuisine/protein diversity pass) |
 | `presence_tracking_module.dart` | 510 | SRP module for presence only; explicit "does not contain" guards in comments |
 | `persistence_service.dart` | 693 | SharedPreferences local persistence service; large due to many recipe+menu fields across platforms |
 | `personal_tag_crud_service.dart` | 666 | CRUD service extracted from PersonalTagService to keep each service under 500 lines |

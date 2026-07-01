@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
+import 'package:butlery/services/menu/protein_category.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -856,6 +857,407 @@ void main() {
       });
     });
 
+    group('Protein diversity (BUT-1324)', () {
+      // A recipe carrying the given cuisine + protein tags, never cooked so it
+      // starts at the max recency weight, with an optional recency offset so a
+      // subset of the pool can be made clearly heavier (to force the initial
+      // weighted selection into a cluster the balance pass must then break up).
+      Recipe tagged(
+        String id, {
+        Set<String> tags = const {},
+        int cookedDaysAgo = -1,
+      }) {
+        final base = RecipeFactory.build(
+          id: id,
+          title: id,
+          mealType: 'middag',
+          lastCookedAt: cookedDaysAgo < 0
+              ? null
+              : DateTime.now().subtract(Duration(days: cookedDaysAgo)),
+        );
+        final tagResult = TagResult(
+          tags: tags,
+          allergenStatus: const {},
+          dietaryStatus: const {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+        );
+        return Recipe(
+          core: base.core.copyWith(tagResult: tagResult),
+          type: base.type,
+        );
+      }
+
+      ParsedMenuRequest dinnerRequest(int count, String prompt) =>
+          ParsedMenuRequest(
+            slotRequests: [
+              SlotRequest(
+                mealType: 'middag',
+                subRequests: [RecipeConstraint(count: count)],
+              ),
+            ],
+            globalAllergenAvoid: const {},
+            globalDietaryRequire: const {},
+            dayPins: const [],
+            trace: const ExtractionTrace(),
+            rawPrompt: prompt,
+          );
+
+      Map<String, int> proteinCounts(List<Recipe> recipes) {
+        final counts = <String, int>{};
+        for (final r in recipes) {
+          final p = ProteinCategory.categoryOf(r);
+          if (p != null) counts[p] = (counts[p] ?? 0) + 1;
+        }
+        return counts;
+      }
+
+      Map<String, int> cuisineCounts(List<Recipe> recipes) {
+        final counts = <String, int>{};
+        for (final r in recipes) {
+          final c = CuisineConfig.extractCuisineTag(r);
+          if (c != null) counts[c] = (counts[c] ?? 0) + 1;
+        }
+        return counts;
+      }
+
+      // Seeded so the probabilistic initial selection is reproducible: the
+      // balance-pass invariants below hold for any selection, but a fixed seed
+      // removes flake and makes the "trap fires then gets fixed" path exact.
+      MenuService seeded() => MenuService(
+        lexiconProvider: const CodeLexiconProvider(),
+        random: Random(20240701),
+      );
+
+      test('a four-same-protein week is rebalanced to <= 2 per protein', () async {
+        // Four chicken dinners, each in a DIFFERENT cuisine so only the protein
+        // constraint fires. The heavy (never-cooked) chicken recipes dominate the
+        // initial weighted pick; lighter (60-day) alternatives with other
+        // proteins are pulled in by the balance pass.
+        final pool = [
+          tagged('c_ita', tags: {'italiensk', 'kyckling'}),
+          tagged('c_sv', tags: {'svensk', 'kyckling'}),
+          tagged('c_thai', tags: {'thailändsk', 'kyckling'}),
+          tagged('c_jap', tags: {'japansk', 'kyckling'}),
+          tagged('a_beef', tags: {'grekisk', 'nötkött'}, cookedDaysAgo: 60),
+          tagged('a_fish', tags: {'mexikansk', 'lax'}, cookedDaysAgo: 60),
+          tagged('a_game', tags: {'koreansk', 'vilt'}, cookedDaysAgo: 60),
+        ];
+
+        final result = await seeded().generateMenuFromParsedRequest(
+          dinnerRequest(4, 'fyra middagar'),
+          pool,
+        );
+        final dinners = result['middag'] ?? [];
+        expect(dinners.length, equals(4));
+        for (final entry in proteinCounts(dinners).entries) {
+          expect(
+            entry.value,
+            lessThanOrEqualTo(2),
+            reason: '${entry.key} should have max 2, got ${entry.value}',
+          );
+        }
+      });
+
+      test(
+        'combined cuisine + protein trap ends satisfying BOTH constraints',
+        () async {
+          // The trap: four recipes that are BOTH the same cuisine (italiensk)
+          // AND the same protein (kyckling). Selected as-is they violate both
+          // constraints simultaneously (4 italiensk AND 4 poultry). The heavy
+          // never-cooked cluster dominates the initial pick; a spread of lighter
+          // alternatives — each a distinct cuisine AND distinct protein — lets the
+          // combined pass rebalance without a cuisine swap reintroducing a protein
+          // cluster or vice versa. Order-independence: whatever the pass does, the
+          // FINAL selection must satisfy both caps.
+          final pool = [
+            tagged('trap0', tags: {'italiensk', 'kyckling'}),
+            tagged('trap1', tags: {'italiensk', 'kyckling'}),
+            tagged('trap2', tags: {'italiensk', 'kyckling'}),
+            tagged('trap3', tags: {'italiensk', 'kyckling'}),
+            tagged('a0', tags: {'svensk', 'nötkött'}, cookedDaysAgo: 60),
+            tagged('a1', tags: {'thailändsk', 'lax'}, cookedDaysAgo: 60),
+            tagged('a2', tags: {'grekisk', 'fläskkött'}, cookedDaysAgo: 60),
+            tagged('a3', tags: {'japansk', 'vilt'}, cookedDaysAgo: 60),
+            tagged('a4', tags: {'mexikansk', 'skaldjur'}, cookedDaysAgo: 60),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(5), reason: 'no recipe dropped');
+
+          for (final entry in cuisineCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'cuisine ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+          for (final entry in proteinCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'protein ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+        },
+      );
+
+      test(
+        'resolves a cuisine cluster via a swap that frees a shared protein slot (BUT-1457)',
+        () async {
+          // The decrement-before-scan fix. A three-italiensk cluster (over the
+          // cuisine cap) is resolvable by exactly one candidate — and that
+          // candidate shares its protein (beef) with the recipe being swapped out.
+          //
+          // Initial heavy selection = the five never-cooked recipes below:
+          //   x_beef  {italiensk, nötkött}   ┐
+          //   x_fish  {italiensk, lax}       ├ 3 italiensk (violation)
+          //   x_bird  {italiensk, kyckling}  ┘
+          //   y_beef  {svensk, nötkött}      → beef now at the cap of 2 (x_beef + y_beef)
+          //   z_egg   {grekisk, ägg}
+          // The only replacement in the pool is `cand` {thailändsk, nötkött}, also
+          // beef. To break the cuisine cluster the pass must swap out x_beef — but
+          // beef already sits at 2. The OLD code scanned candidates against counts
+          // that still included the outgoing x_beef (beef == 2 >= cap) and rejected
+          // `cand`, leaving italiensk stuck at 3. The FIXED code decrements the
+          // outgoing recipe's categories first (beef → 1), so `cand` is a legal
+          // swap. `cand` is cooked (lighter) so it never wins the initial pick.
+          final pool = [
+            tagged('x_beef', tags: const {'italiensk', 'nötkött'}),
+            tagged('x_fish', tags: const {'italiensk', 'lax'}),
+            tagged('x_bird', tags: const {'italiensk', 'kyckling'}),
+            tagged('y_beef', tags: const {'svensk', 'nötkött'}),
+            tagged('z_egg', tags: const {'grekisk', 'ägg'}),
+            tagged(
+              'cand',
+              tags: const {'thailändsk', 'nötkött'},
+              cookedDaysAgo: 45,
+            ),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(5), reason: 'no recipe dropped');
+
+          // The fix's payoff: the cuisine cluster is actually broken. Under the
+          // old code italiensk would stay at 3 because the only viable candidate
+          // was wrongly rejected on the shared beef slot.
+          for (final entry in cuisineCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'cuisine ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+          for (final entry in proteinCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'protein ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+          // The freeing swap actually happened: the shared-protein candidate is in
+          // the final week and the outgoing beef recipe is gone.
+          final ids = dinners.map((r) => r.id).toSet();
+          expect(ids.contains('cand'), isTrue);
+          expect(ids.contains('x_beef'), isFalse);
+        },
+      );
+
+      test(
+        'combined pass handles fillers that collide in ONE dimension (sequential pass would fail)',
+        () async {
+          // Strengthens the double-violation test: here the diverse fillers are
+          // NOT all-distinct. Three beef fillers share a protein while spanning
+          // three cuisines. A buggy CUISINE-then-PROTEIN sequential pass, fixing
+          // the italiensk cluster first, would greedily pull the three heaviest
+          // non-italiensk recipes — all three beef — and only afterwards discover
+          // it created a beef cluster it can no longer undo. The combined pass
+          // rejects the third beef up front because _findBalancedReplacement checks
+          // BOTH dimensions per candidate.
+          //
+          // Weights are ordered so the trap fires deterministically: the three
+          // beef fillers are the heaviest non-trap recipes, so a one-dimension
+          // picker reaches for them; the fish/egg fallbacks are lighter and only
+          // get chosen once the combined check has capped beef at 2.
+          final pool = [
+            tagged('t0', tags: const {'italiensk', 'kyckling'}),
+            tagged('t1', tags: const {'italiensk', 'kyckling'}),
+            tagged('t2', tags: const {'italiensk', 'kyckling'}),
+            tagged(
+              'b_sv',
+              tags: const {'svensk', 'nötkött'},
+              cookedDaysAgo: 10,
+            ),
+            tagged(
+              'b_gr',
+              tags: const {'grekisk', 'nötkött'},
+              cookedDaysAgo: 20,
+            ),
+            tagged(
+              'b_mx',
+              tags: const {'mexikansk', 'nötkött'},
+              cookedDaysAgo: 30,
+            ),
+            tagged('f_ko', tags: const {'koreansk', 'lax'}, cookedDaysAgo: 40),
+            tagged('e_sp', tags: const {'spansk', 'ägg'}, cookedDaysAgo: 50),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(5), reason: 'no recipe dropped');
+
+          for (final entry in cuisineCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'cuisine ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+          for (final entry in proteinCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'protein ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+          // The joint check is what's under test: beef must be capped at 2 even
+          // though three distinct-cuisine beef fillers were available and heavy.
+          expect((proteinCounts(dinners)['beef'] ?? 0), lessThanOrEqualTo(2));
+        },
+      );
+
+      test(
+        'recipes with no protein tag are never dropped for lacking one',
+        () async {
+          // Three chicken recipes (distinct cuisines, so only protein clusters)
+          // plus two recipes with NO cuisine and NO protein tag. Filling four
+          // dinners forces the protein cap to swap a chicken out for an untagged
+          // recipe — the untagged recipes must be usable replacements and must not
+          // be flagged/dropped for lacking a protein signal.
+          final pool = [
+            tagged('c0', tags: {'italiensk', 'kyckling'}),
+            tagged('c1', tags: {'svensk', 'kyckling'}),
+            tagged('c2', tags: {'thailändsk', 'kyckling'}),
+            tagged('plain0', tags: const {}, cookedDaysAgo: 60),
+            tagged('plain1', tags: const {}, cookedDaysAgo: 60),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(4, 'fyra middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(4));
+
+          for (final entry in proteinCounts(dinners).entries) {
+            expect(entry.value, lessThanOrEqualTo(2));
+          }
+          // Both untagged recipes were pulled in as diverse fillers (they carry no
+          // protein category, so they can never be the item a cap swaps out).
+          final ids = dinners.map((r) => r.id).toSet();
+          expect(ids.contains('plain0'), isTrue);
+          expect(ids.contains('plain1'), isTrue);
+        },
+      );
+
+      test(
+        'existing cuisine-diversity behaviour is unchanged (no protein tags)',
+        () async {
+          // Same shape as the legacy cuisine test: cuisine tags only, no protein
+          // signal. The combined pass must still cap cuisine at 2 exactly as before.
+          final pool = [
+            ...List.generate(
+              5,
+              (i) => tagged('ita_$i', tags: const {'italiensk'}),
+            ),
+            ...List.generate(2, (i) => tagged('sv_$i', tags: const {'svensk'})),
+            ...List.generate(3, (i) => tagged('plain_$i', tags: const {})),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(5));
+          for (final entry in cuisineCounts(dinners).entries) {
+            expect(
+              entry.value,
+              lessThanOrEqualTo(2),
+              reason: 'cuisine ${entry.key} exceeded 2: ${entry.value}',
+            );
+          }
+        },
+      );
+
+      test(
+        'unsatisfiable pool keeps the requested count — a cap is never met by dropping a recipe',
+        () async {
+          // Every recipe is the SAME cuisine AND the SAME protein, so no swap can
+          // ever break the cluster: there is no diverse alternative anywhere in the
+          // pool. The binding product guarantee is that the menu still fills all
+          // requested slots — the balance pass may leave a residual violation, but
+          // it must NEVER drop a recipe (or shrink the week) to satisfy a cap.
+          final pool = List.generate(
+            5,
+            (i) => tagged('same_$i', tags: const {'italiensk', 'kyckling'}),
+          );
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+
+          // No drop: all five slots filled even though both caps are violated.
+          expect(dinners.length, equals(5), reason: 'no recipe dropped');
+          // The residual violation is tolerated, not "fixed" by truncation:
+          // proves the pass kept the best achievable selection rather than
+          // privileging the cap over slot count.
+          expect(cuisineCounts(dinners)['italiensk'], equals(5));
+          expect(proteinCounts(dinners)['poultry'], equals(5));
+        },
+      );
+
+      test(
+        'partial-infeasibility does what it can and still drops nothing',
+        () async {
+          // Four identical trap recipes plus a SINGLE diverse alternative, asked
+          // for all five. Only one swap is possible (there is just one clean
+          // recipe), so the cluster cannot be fully broken — but the pass must
+          // still return all five, applying the one improvement it can without
+          // dropping anyone.
+          final pool = [
+            tagged('t0', tags: const {'italiensk', 'kyckling'}),
+            tagged('t1', tags: const {'italiensk', 'kyckling'}),
+            tagged('t2', tags: const {'italiensk', 'kyckling'}),
+            tagged('t3', tags: const {'italiensk', 'kyckling'}),
+            tagged('clean', tags: const {'svensk', 'nötkött'}),
+          ];
+
+          final result = await seeded().generateMenuFromParsedRequest(
+            dinnerRequest(5, 'fem middagar'),
+            pool,
+          );
+          final dinners = result['middag'] ?? [];
+          expect(dinners.length, equals(5), reason: 'no recipe dropped');
+          // The lone diverse recipe is retained in the week (used, not discarded).
+          expect(dinners.map((r) => r.id).toSet().contains('clean'), isTrue);
+        },
+      );
+    });
+
     group('Performance', () {
       test('should handle large recipe collections efficiently', () async {
         final largeList = List.generate(
@@ -906,5 +1308,171 @@ void main() {
         expect(sw.elapsedMilliseconds, lessThan(200));
       });
     });
+  });
+
+  group('ProteinCategory (BUT-1324)', () {
+    // Minimal recipe carrying an explicit tag set (or none), for exercising the
+    // pure classifier without booting the menu generator.
+    Recipe recipeWithTags(Set<String>? tags) {
+      final base = RecipeFactory.build(id: 'r', title: 'r');
+      if (tags == null) {
+        // Leave tagResult null (RecipeFactory does not set one) to exercise the
+        // "no tag data at all" path.
+        return base;
+      }
+      return Recipe(
+        core: base.core.copyWith(
+          tagResult: TagResult(
+            tags: tags,
+            allergenStatus: const {},
+            dietaryStatus: const {},
+            coverage: 1.0,
+            generatedAt: DateTime(2024),
+          ),
+        ),
+        type: base.type,
+      );
+    }
+
+    test('categoryOf returns null when the recipe carries no tagResult', () {
+      expect(ProteinCategory.categoryOf(recipeWithTags(null)), isNull);
+    });
+
+    test('categoryOf returns null when tags carry no protein signal', () {
+      // Cuisine tag present, but nothing the protein map recognises.
+      expect(
+        ProteinCategory.categoryOf(
+          recipeWithTags({'italiensk', 'pastabaserad'}),
+        ),
+        isNull,
+      );
+      expect(ProteinCategory.categoryOf(recipeWithTags(const {})), isNull);
+    });
+
+    test('categoryOf classifies a single protein tag by its category', () {
+      expect(
+        ProteinCategory.categoryOf(recipeWithTags({'kyckling'})),
+        ProteinCategory.poultry,
+      );
+      expect(
+        ProteinCategory.categoryOf(recipeWithTags({'lax'})),
+        ProteinCategory.fish,
+      );
+      expect(
+        ProteinCategory.categoryOf(recipeWithTags({'baljväxter'})),
+        ProteinCategory.plantBased,
+      );
+    });
+
+    test(
+      'categoryOf resolves a multi-protein dish by precedence, order-independent',
+      () {
+        // A surf-and-turf dish resolves by the fixed center-of-plate precedence
+        // (beef > pork > lamb > game > poultry > fish > shellfish > plant > egg),
+        // NOT by tag iteration order. Beef outranks shellfish, so a beef+shellfish
+        // dish is beef in EITHER ordering — the reverse must not flip to shellfish.
+        // This is the guarantee that makes classification survive a reload, since
+        // TagResult persists its tags alphabetically sorted (M15 in tag_result.dart).
+        expect(
+          ProteinCategory.categoryOf(recipeWithTags({'nötkött', 'skaldjur'})),
+          ProteinCategory.beef,
+        );
+        expect(
+          ProteinCategory.categoryOf(recipeWithTags({'skaldjur', 'nötkött'})),
+          ProteinCategory.beef,
+          reason:
+              'reversed tag order must still bucket by precedence, not order',
+        );
+        // Pork precedes egg, so a trace-egg pork dish (e.g. egg-wash) classifies
+        // as pork regardless of which tag iterates first.
+        expect(
+          ProteinCategory.categoryOf(recipeWithTags({'fläskkött', 'ägg'})),
+          ProteinCategory.pork,
+        );
+        expect(
+          ProteinCategory.categoryOf(recipeWithTags({'ägg', 'fläskkött'})),
+          ProteinCategory.pork,
+        );
+      },
+    );
+
+    test(
+      'categoryOf buckets an already-alpha-sorted dish by precedence, not alphabetically',
+      () {
+        // Regression for the shipped bug: TagResult serialises its tags
+        // alphabetically, so a saved chicken + fish dish reloads as
+        // {'fisk', 'kyckling'} — already alpha-sorted with 'fisk' first. The old
+        // first-recognised-tag-wins bucketed it as fish; the center of the plate
+        // is poultry (poultry outranks fish in precedence). A recipe persisted and
+        // reloaded must classify by precedence, or a saved chicken dish silently
+        // reads as fish and escapes the poultry cap. This is the exact reload path
+        // that would have caught the bug.
+        expect(
+          ProteinCategory.categoryOf(recipeWithTags({'fisk', 'kyckling'})),
+          ProteinCategory.poultry,
+          reason:
+              "'fisk' sorts before 'kyckling', but poultry outranks fish in "
+              'center-of-plate precedence — must not bucket by alphabetical order',
+        );
+      },
+    );
+
+    test(
+      'maps every protein tag Phase1NutritionCalculator can emit (drift guard)',
+      () {
+        // Canonical list of the protein tags emitted by
+        // Phase1NutritionCalculator.calculateProteinTags
+        // (lib/services/tagging/phases/tag_phase1_nutrition.dart). If a protein
+        // tag is added to the tagger, add it here AND to ProteinCategory —
+        // otherwise a whole protein silently escapes the weekly-balance cap.
+        // Asserting set EQUALITY also catches a dead mapping (a ProteinCategory
+        // key the tagger no longer emits).
+        const taggerEmittedProteinTags = {
+          // Poultry
+          'kyckling', 'anka', 'kalkon',
+          // Red meat
+          'nötkött', 'fläskkött', 'lamm', 'vilt',
+          // Fish (generic + species)
+          'fisk', 'lax', 'torsk', 'sill',
+          // Shellfish
+          'skaldjur', 'räkor',
+          // Plant-based
+          'tofu', 'tempeh', 'seitan', 'quorn', 'växtfärs', 'bönprotein',
+          'oumph', 'växtprotein', 'baljväxter',
+          // Egg
+          'ägg',
+        };
+
+        expect(
+          ProteinCategory.allTags,
+          equals(taggerEmittedProteinTags),
+          reason:
+              'ProteinCategory and calculateProteinTags have drifted — every '
+              'emitted protein tag must map to a balancing category, and no '
+              'category may map a tag the tagger never emits.',
+        );
+
+        // Every mapped tag must resolve to a real, non-empty category.
+        for (final tag in taggerEmittedProteinTags) {
+          final recipe = Recipe(
+            core: RecipeFactory.build(id: tag, title: tag).core.copyWith(
+              tagResult: TagResult(
+                tags: {tag},
+                allergenStatus: const {},
+                dietaryStatus: const {},
+                coverage: 1.0,
+                generatedAt: DateTime(2024),
+              ),
+            ),
+            type: RecipeFactory.build(id: tag, title: tag).type,
+          );
+          expect(
+            ProteinCategory.categoryOf(recipe),
+            isNotNull,
+            reason: '$tag should classify to a protein category',
+          );
+        }
+      },
+    );
   });
 }

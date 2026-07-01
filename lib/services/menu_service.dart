@@ -15,6 +15,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
+import 'package:butlery/services/menu/protein_category.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
@@ -248,12 +249,46 @@ class MenuService extends BaseService {
   static String? _cuisineOf(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
 
-  /// Replaces excess same-cuisine recipes with next-highest-weighted alternatives.
+  /// Most recipes of one category allowed in a single generated week, per
+  /// dimension (cuisine, protein). Extras are swapped out for a diverse
+  /// alternative.
+  static const int _maxPerCategory = 2;
+
+  /// The classification dimensions the weekly-menu balance enforces, each
+  /// mapping a recipe to its category within that dimension (or `null` = no
+  /// signal, left unconstrained). Cuisine (BUT-359) and protein category
+  /// (BUT-1324) are enforced TOGETHER by [_enforceMenuDiversity] — see the note
+  /// there on why a single combined pass is used instead of two sequential ones.
+  static final List<String? Function(Recipe)> _diversityDimensions = [
+    _cuisineOf,
+    ProteinCategory.categoryOf,
+  ];
+
+  /// Rebalances the selected recipes so that, within a single generated week, no
+  /// cuisine AND no protein category appears more than [_maxPerCategory] times
+  /// (BUT-359 cuisine + BUT-1324 protein). Extras are swapped for the
+  /// best-weighted non-duplicate alternative from the full pool; recipes with no
+  /// cuisine/protein signal are never constrained and never dropped for lacking
+  /// one.
   ///
-  /// If more than 2 recipes share a cuisine, extras are swapped out for the
-  /// best non-duplicate alternative from the full pool. Replacements are chosen
-  /// so they don't create new clustering (checks current cuisine counts).
-  List<Recipe> _enforceCuisineDiversity(
+  /// This is a single COMBINED pass over both dimensions, and that is
+  /// deliberate. A cuisine-only pass and a protein-only pass run back-to-back
+  /// can undo each other: a cuisine swap that breaks up an Italian cluster can
+  /// pull in a chicken dish that recreates a poultry cluster, and the protein
+  /// pass fixing that can reintroduce the cuisine cluster. By checking every
+  /// dimension on each swap — a selected recipe is a replacement candidate if it
+  /// sits in an over-full category in ANY dimension, and a replacement is
+  /// accepted only if it creates no new cluster in ANY dimension — the pass
+  /// converges on a selection that satisfies both constraints at once.
+  ///
+  /// Termination: every accepted swap removes one recipe from an over-full
+  /// category and adds a replacement that creates no new cluster, so the total
+  /// count of over-full slots strictly decreases; the loop therefore converges.
+  /// The iteration cap is a belt-and-suspenders guard. If the pool cannot
+  /// satisfy both constraints, no swap is forced — the best achievable selection
+  /// is kept rather than dropping any recipe, and neither dimension is privileged
+  /// over the other (a residual violation can remain in either).
+  List<Recipe> _enforceMenuDiversity(
     List<Recipe> selected,
     List<Recipe> fullPool,
     Random rand, {
@@ -262,42 +297,56 @@ class MenuService extends BaseService {
     Set<String> recentlyUsedIds = const {},
     MenuScoringContext context = MenuScoringContext.empty,
   }) {
-    if (selected.length <= 2) return selected;
+    if (selected.length <= _maxPerCategory) return selected;
 
+    final dimensions = _diversityDimensions;
     final result = List<Recipe>.from(selected);
     final resultIds = {for (final r in result) r.id, ...usedIds};
 
-    // Recount cuisines from the current result (we'll update after each swap)
-    Map<String, int> countCuisines() {
-      final counts = <String, int>{};
+    // Per-dimension category counts of the current result (recount after swaps).
+    List<Map<String, int>> countCategories() {
+      final counts = List.generate(dimensions.length, (_) => <String, int>{});
       for (final recipe in result) {
-        final cuisine = _cuisineOf(recipe);
-        if (cuisine != null) {
-          counts[cuisine] = (counts[cuisine] ?? 0) + 1;
+        for (var d = 0; d < dimensions.length; d++) {
+          final key = dimensions[d](recipe);
+          if (key != null) {
+            counts[d][key] = (counts[d][key] ?? 0) + 1;
+          }
         }
       }
       return counts;
     }
 
-    // Iterate until no cuisine exceeds 2, or no more replacements possible.
-    // Safety bound prevents infinite loop if replacements keep causing new clusters.
     var changed = true;
     var iterations = 0;
-    final maxIterations = result.length * 2;
+    final maxIterations = result.length * dimensions.length * 2;
     while (changed && iterations < maxIterations) {
       iterations++;
       changed = false;
-      final counts = countCuisines();
-      if (counts.values.every((c) => c <= 2)) break;
+      final counts = countCategories();
+
+      final hasViolation = counts.any(
+        (m) => m.values.any((c) => c > _maxPerCategory),
+      );
+      if (!hasViolation) break;
 
       for (var i = 0; i < result.length; i++) {
-        final cuisine = _cuisineOf(result[i]);
-        if (cuisine == null || (counts[cuisine] ?? 0) <= 2) continue;
+        // Only touch recipes sitting in an over-full category in some dimension.
+        var overfull = false;
+        for (var d = 0; d < dimensions.length; d++) {
+          final key = dimensions[d](result[i]);
+          if (key != null && (counts[d][key] ?? 0) > _maxPerCategory) {
+            overfull = true;
+            break;
+          }
+        }
+        if (!overfull) continue;
 
-        // Find replacement: not already used, and whose cuisine has < 2 in result
-        final replacement = _findDiverseReplacement(
+        final replacement = _findBalancedReplacement(
           fullPool,
+          result[i],
           resultIds,
+          dimensions,
           counts,
           seasonTag,
           recentlyUsedIds,
@@ -316,27 +365,55 @@ class MenuService extends BaseService {
     return result;
   }
 
-  /// Finds the highest-weighted recipe not already selected and whose cuisine
-  /// won't create a new cluster (already has < 2 in current counts).
-  static Recipe? _findDiverseReplacement(
+  /// Finds the highest-weighted recipe not already selected whose categories
+  /// won't create a new cluster in ANY diversity dimension, evaluated as if
+  /// [outgoing] (the recipe about to be swapped out) were already removed. A
+  /// recipe with no signal in a dimension is unconstrained there.
+  static Recipe? _findBalancedReplacement(
     List<Recipe> pool,
+    Recipe outgoing,
     Set<String> usedIds,
-    Map<String, int> currentCuisineCounts,
+    List<String? Function(Recipe)> dimensions,
+    List<Map<String, int>> currentCounts,
     String seasonTag,
     Set<String> recentlyUsedIds,
     MenuScoringContext context,
   ) {
+    // Swapping [outgoing] out frees a slot in each of its categories, so a
+    // candidate that shares a now-freed category is a legal replacement.
+    // Without this decrement the scan checks candidates against counts that
+    // still include the outgoing recipe, wrongly rejecting valid diversifying
+    // swaps and leaving a cluster the pool could have resolved (BUT-1457).
+    final effectiveCounts = [
+      for (final m in currentCounts) Map<String, int>.from(m),
+    ];
+    for (var d = 0; d < dimensions.length; d++) {
+      final key = dimensions[d](outgoing);
+      if (key != null) {
+        final c = (effectiveCounts[d][key] ?? 0) - 1;
+        if (c <= 0) {
+          effectiveCounts[d].remove(key);
+        } else {
+          effectiveCounts[d][key] = c;
+        }
+      }
+    }
+
     Recipe? best;
     double bestWeight = -1;
 
     for (final recipe in pool) {
       if (usedIds.contains(recipe.id)) continue;
 
-      final cuisine = _cuisineOf(recipe);
-      // Allow if no cuisine tag, or cuisine has room (< 2 in current menu)
-      if (cuisine != null && (currentCuisineCounts[cuisine] ?? 0) >= 2) {
-        continue;
+      var wouldCluster = false;
+      for (var d = 0; d < dimensions.length; d++) {
+        final key = dimensions[d](recipe);
+        if (key != null && (effectiveCounts[d][key] ?? 0) >= _maxPerCategory) {
+          wouldCluster = true;
+          break;
+        }
       }
+      if (wouldCluster) continue;
 
       final weight = _recipeWeight(
         recipe,
@@ -479,7 +556,7 @@ class MenuService extends BaseService {
         picks.addAll(selected);
       }
 
-      final diversified = _enforceCuisineDiversity(
+      final diversified = _enforceMenuDiversity(
         picks,
         slotPool,
         rand,
