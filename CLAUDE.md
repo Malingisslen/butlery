@@ -40,8 +40,9 @@ it maps what is live vs dormant vs dead (audited 2026-07-01). Improvement backlo
 `docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`.
 
 **Workflow map freshness:** `docs/onboarding/workflow-map.html` (interactive, JSON-driven)
-documents six end-to-end flows. CI fails if a path it references stops existing
-(`tools/check_workflow_map.py`). A PostToolUse hook stamps `docs/onboarding/workflow-map.stale`
+documents ALL end-to-end flows — full coverage of the 137-feature inventory. CI fails if a
+path it references stops existing OR if any `docs/feature_inventory.csv` ID loses flow
+coverage (`tools/check_workflow_map.py`) — so a new feature requires a map flow. A PostToolUse hook stamps `docs/onboarding/workflow-map.stale`
 when mapped code is edited. **If that marker exists:** re-trace ONLY the flows whose nodes match
 the marker's `triggers`, update the map's `<script id="data">` JSON (nothing else), run the
 linter, delete the marker, commit both. Don't rebuild the map; don't ignore the marker.
