@@ -6,7 +6,7 @@
 // lib/viewmodels/recipe_list_viewmodel.dart
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -25,7 +25,13 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
-class RecipeListViewModel extends ChangeNotifier {
+class RecipeListViewModel extends BaseViewModel {
+  // Deliberately kept alongside BaseViewModel's own disposed-guard — NOT
+  // removable duplication. dispose() sets this at the START of teardown, so
+  // notifications fired while the managers below are being disposed are
+  // suppressed. BaseViewModel only sets its private flag inside super.dispose()
+  // (the end of teardown), so relying on the inherited guard alone would let a
+  // mid-disposal notify through. Removing this would reintroduce that bug.
   bool _isDisposed = false;
   StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
@@ -276,8 +282,11 @@ class RecipeListViewModel extends ChangeNotifier {
 
   List<Recipe> get recipes => _getFilteredAndSortedRecipes();
 
+  @override
   bool get isLoading => _recipeService.isLoading;
+  @override
   String? get error => _recipeService.error;
+  @override
   bool get hasError => _recipeService.hasError;
 
   String get searchQuery => _searchQuery;
@@ -767,6 +776,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Clears error state with service coordination and comprehensive state management.
   /// Delegates to UnifiedRecipeService for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
+  @override
   void clearError() {
     _recipeService.clearError();
   }

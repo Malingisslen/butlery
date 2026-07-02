@@ -1429,6 +1429,29 @@ void main() {
         expect(() => testViewModel.dispose(), returnsNormally);
       });
 
+      test(
+        'notifyListeners after dispose is a guarded no-op, not a throw',
+        () {
+          // BUT-1462: on BaseViewModel, notifyListeners after dispose must be
+          // a silent no-op (the raw ChangeNotifier would throw). Regression
+          // guard for the BaseViewModel migration: a disposed VM must neither
+          // throw nor invoke a stale listener.
+          // Arrange
+          final testViewModel = RecipeListViewModel(
+            recipeService: mockRecipeService,
+            searchService: mockSearchService,
+            tagEditingService: TagEditingService(),
+          );
+          var notified = false;
+          testViewModel.addListener(() => notified = true);
+          testViewModel.dispose();
+
+          // Act & Assert - post-dispose notify must not throw or invoke listener
+          expect(testViewModel.notifyListeners, returnsNormally);
+          expect(notified, isFalse);
+        },
+      );
+
       test('should notify listeners on state changes', () {
         fakeAsync((async) {
           // Arrange
