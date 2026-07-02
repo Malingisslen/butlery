@@ -259,9 +259,16 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             _checkedUserRating = true;
           });
         }
+        // BUT-1360: offline the rating is queued locally — surface that instead
+        // of the silent success the path previously showed.
+        SnackBarUtils.showPendingSyncIfOffline(context);
       }
     } catch (e) {
       if (!context.mounted) return;
+      // BUT-1360: a thrown exception is a real failure (permission/validation/
+      // profile-resolution), NOT a queued offline write — offline state doesn't
+      // prove otherwise. Always surface the real error so the rating isn't lost
+      // silently; the pending-sync hint belongs only on the success branch.
       SnackBarUtils.showError(context, context.l10n.ratingError);
     }
   }

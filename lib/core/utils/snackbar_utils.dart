@@ -7,6 +7,8 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
 class SnackBarUtils {
@@ -249,6 +251,33 @@ class SnackBarUtils {
     } catch (e) {
       AppLogger.error('Failed to show custom snackbar: $e');
     }
+  }
+
+  /// BUT-1360: when the device is offline, replace a write's normal success
+  /// feedback with a "saved locally, will sync" hint so the user knows the
+  /// change is queued (Firestore applied it to the local cache but it hasn't
+  /// reached the server). Returns true when the offline hint was shown, so the
+  /// caller can skip its plain success snackbar; returns false when online (or
+  /// the OfflineService isn't available), leaving normal feedback to the caller.
+  ///
+  /// Call this ONLY on a write's SUCCESS branch — a successful local write while
+  /// offline is genuinely queued. A thrown exception is a real failure
+  /// (permission/validation/etc.); `isOnline == false` does not prove it was a
+  /// queued write, so error/catch branches must surface the real error instead.
+  ///
+  /// Known limitation (web): the Firestore JS SDK does not resolve a write's
+  /// Future until server-ack, so a caller that `await`s the write while
+  /// web-offline never reaches its success branch — and this hint won't fire —
+  /// until reconnect. The hint fires reliably on mobile (the primary offline
+  /// scenario, where writes resolve against the local cache immediately);
+  /// web-offline hint fidelity is the accepted gap.
+  static bool showPendingSyncIfOffline(BuildContext context) {
+    final offline = ServiceLocator.tryGet<OfflineService>();
+    if (offline != null && !offline.isOnline) {
+      showInfo(context, context.l10n.pendingSyncOffline);
+      return true;
+    }
+    return false;
   }
 
   static void hide(BuildContext context) {

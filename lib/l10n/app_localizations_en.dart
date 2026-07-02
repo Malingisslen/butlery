@@ -1550,6 +1550,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionFood => 'Food preferences';
 
   @override
+  String get settingsMenuTasteTitle => 'Menu & taste';
+
+  @override
+  String get settingsMenuTasteSubtitle =>
+      'Cuisines and skill level that shape the weekly menu';
+
+  @override
+  String get menuTasteIntro =>
+      'These preferences steer your weekly menu suggestions.';
+
+  @override
+  String get menuTasteSaved => 'Your preferences have been saved.';
+
+  @override
   String get settingsSectionNotifications => 'Notifications';
 
   @override
@@ -5515,6 +5529,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importGoodQuality => 'Good quality';
+
+  @override
+  String get importHandwrittenToggle => 'This is a handwritten recipe';
+
+  @override
+  String get importHandwrittenToggleSubtitle =>
+      'Uses AI to read handwriting. A little slower, and worth double-checking the result.';
 
   @override
   String get importHighQuality => 'High quality';
@@ -14877,6 +14898,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get heirloomUploadOffline => 'Saving when you\'re back online';
+
+  @override
+  String get pendingSyncOffline =>
+      'Saved. It\'ll sync when you\'re back online.';
 
   @override
   String get heirloomUploadError => 'Couldn\'t save the image — try again';

@@ -1554,6 +1554,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsSectionFood => 'Matpreferenser';
 
   @override
+  String get settingsMenuTasteTitle => 'Meny och smak';
+
+  @override
+  String get settingsMenuTasteSubtitle =>
+      'Kök och kunskapsnivå som formar veckomenyn';
+
+  @override
+  String get menuTasteIntro => 'Det här styr dina veckomenyförslag.';
+
+  @override
+  String get menuTasteSaved => 'Inställningarna sparades.';
+
+  @override
   String get settingsSectionNotifications => 'Aviseringar';
 
   @override
@@ -5524,6 +5537,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importGoodQuality => 'God kvalitet';
+
+  @override
+  String get importHandwrittenToggle => 'Det här är ett handskrivet recept';
+
+  @override
+  String get importHandwrittenToggleSubtitle =>
+      'Använder AI för att tyda handstilen. Det tar lite längre tid, och resultatet är värt att dubbelkolla.';
 
   @override
   String get importHighQuality => 'Hög kvalitet';
@@ -14918,6 +14938,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get heirloomUploadOffline => 'Sparas när du är online igen';
+
+  @override
+  String get pendingSyncOffline => 'Sparat. Synkas när du är online igen.';
 
   @override
   String get heirloomUploadError => 'Kunde inte spara bilden — försök igen';

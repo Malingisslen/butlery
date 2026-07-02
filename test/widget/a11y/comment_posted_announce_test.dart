@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
@@ -112,6 +113,28 @@ void main() {
 
     expect(announces.messages, [l10nOf(tester).a11yCommentPosted]);
   });
+
+  testWidgets(
+    'BUT-1360: offline, the announcement reflects the queued state, not "posted"',
+    (tester) async {
+      when(() => socialVm.postComment('recipe-1')).thenAnswer((_) async {});
+      final offline = MockOfflineService();
+      when(() => offline.isOnline).thenReturn(false);
+      TestServiceLocator.registerMock<OfflineService>(offline);
+
+      final announces = AnnounceChannel.arm(tester);
+      await pumpHost(tester, commentText: 'Riktigt gott!');
+      await tester.tap(find.text('post'));
+      await tester.pumpAndSettle();
+
+      final l10n = l10nOf(tester);
+      // Screen-reader user hears "saved, will sync" — matching the visible hint
+      // — never "posted", which would falsely claim the comment is live.
+      expect(announces.messages, [l10n.pendingSyncOffline]);
+      expect(find.text(l10n.pendingSyncOffline), findsOneWidget);
+      expect(find.text(l10n.socialCommentPosted), findsNothing);
+    },
+  );
 
   testWidgets('a failed post announces nothing (error snackbar only)', (
     tester,

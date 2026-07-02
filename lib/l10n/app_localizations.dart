@@ -2684,6 +2684,30 @@ abstract class AppLocalizations {
   /// **'Matpreferenser'**
   String get settingsSectionFood;
 
+  /// No description provided for @settingsMenuTasteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny och smak'**
+  String get settingsMenuTasteTitle;
+
+  /// No description provided for @settingsMenuTasteSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kök och kunskapsnivå som formar veckomenyn'**
+  String get settingsMenuTasteSubtitle;
+
+  /// No description provided for @menuTasteIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här styr dina veckomenyförslag.'**
+  String get menuTasteIntro;
+
+  /// No description provided for @menuTasteSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inställningarna sparades.'**
+  String get menuTasteSaved;
+
   /// No description provided for @settingsSectionNotifications.
   ///
   /// In sv, this message translates to:
@@ -9354,6 +9378,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'God kvalitet'**
   String get importGoodQuality;
+
+  /// No description provided for @importHandwrittenToggle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är ett handskrivet recept'**
+  String get importHandwrittenToggle;
+
+  /// No description provided for @importHandwrittenToggleSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använder AI för att tyda handstilen. Det tar lite längre tid, och resultatet är värt att dubbelkolla.'**
+  String get importHandwrittenToggleSubtitle;
 
   /// No description provided for @importHighQuality.
   ///
@@ -24982,6 +25018,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Sparas när du är online igen'**
   String get heirloomUploadOffline;
+
+  /// BUT-1360: snackbar shown after a write (mark-as-cooked, rating, comment) succeeds locally while offline — Firestore has queued it and it will sync on reconnect. Reused across those offline write paths so the user knows the change isn't lost but hasn't reached the server yet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat. Synkas när du är online igen.'**
+  String get pendingSyncOffline;
 
   /// BUT-410: error shown when heirloom image upload fails for a reason other than connectivity.
   ///

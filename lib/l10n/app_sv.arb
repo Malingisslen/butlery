@@ -3599,6 +3599,8 @@
   },
   "importFromPhoto": "Importera från foto",
   "importGoodQuality": "God kvalitet",
+  "importHandwrittenToggle": "Det här är ett handskrivet recept",
+  "importHandwrittenToggleSubtitle": "Använder AI för att tyda handstilen. Det tar lite längre tid, och resultatet är värt att dubbelkolla.",
   "importHighQuality": "Hög kvalitet",
   "importImageQualityLow": "Bildkvaliteten är låg ({percentage}%)",
   "@importImageQualityLow": {
@@ -10095,6 +10097,10 @@
   "heirloomUploadOffline": "Sparas när du är online igen",
   "@heirloomUploadOffline": {
     "description": "BUT-410: banner shown when an heirloom image cannot be uploaded right now because the device is offline."
+  },
+  "pendingSyncOffline": "Sparat. Synkas när du är online igen.",
+  "@pendingSyncOffline": {
+    "description": "BUT-1360: snackbar shown after a write (mark-as-cooked, rating, comment) succeeds locally while offline — Firestore has queued it and it will sync on reconnect. Reused across those offline write paths so the user knows the change isn't lost but hasn't reached the server yet."
   },
   "heirloomUploadError": "Kunde inte spara bilden — försök igen",
   "@heirloomUploadError": {

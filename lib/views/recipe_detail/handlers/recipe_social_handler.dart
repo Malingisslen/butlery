@@ -88,11 +88,22 @@ class RecipeSocialHandler {
       await socialViewModel.postComment(recipeId);
       if (!context.mounted) return;
 
-      SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
+      // BUT-1360: offline the comment is queued locally — show the pending-sync
+      // hint instead of the plain "posted" success so the user knows it hasn't
+      // reached the server yet.
+      final queuedOffline = SnackBarUtils.showPendingSyncIfOffline(context);
+      if (!queuedOffline) {
+        SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
+      }
       // BUT-905: announce to screen readers — the snackbar isn't reliably read.
+      // BUT-1360: keep the announcement in sync with the visible message so a
+      // screen-reader user offline hears "saved, will sync" — not "posted",
+      // which would falsely claim the comment is already live.
       SemanticsService.sendAnnouncement(
         View.of(context),
-        context.l10n.a11yCommentPosted,
+        queuedOffline
+            ? context.l10n.pendingSyncOffline
+            : context.l10n.a11yCommentPosted,
         Directionality.of(context),
       );
     } catch (e) {

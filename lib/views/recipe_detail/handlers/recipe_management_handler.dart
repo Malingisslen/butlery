@@ -160,7 +160,11 @@ class RecipeManagementHandler {
       );
       if (!context.mounted) return;
       if (recorded) {
-        SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
+        // BUT-1360: offline, the cook event is queued locally — tell the user
+        // it'll sync rather than implying it already reached the server.
+        if (!SnackBarUtils.showPendingSyncIfOffline(context)) {
+          SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
+        }
         // Auto-chain the family rating entry for the diners who ate. Only when
         // attendance was actually picked — a solo household ("hoppa över" /
         // skipped) gets no redundant rating screen.
