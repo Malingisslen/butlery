@@ -26,6 +26,7 @@ import 'package:butlery/core/form/form_fields_manager.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 // Import focused managers
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
@@ -45,7 +46,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 /// Coordinator for recipe form operations with delegation to specialized managers.
-class RecipeFormViewModel extends ChangeNotifier
+class RecipeFormViewModel extends BaseViewModel
     with
         ErrorHandlingMixin,
         ErrorCoordinatorMixin,
@@ -179,7 +180,17 @@ class RecipeFormViewModel extends ChangeNotifier
 
   bool get isSaving => _state.isSaving;
   bool get isForking => _state.isForking;
+
+  /// Overrides [BaseViewModel.error] to surface the form/persistence error that
+  /// lives in [RecipeFormState] (managers own the save/fork/delete lifecycle),
+  /// rather than BaseViewModel's own `_error`. Consumers reading `.error` (the
+  /// save/fork failure snackbars) keep the specific Swedish message.
+  @override
   String? get error => _state.error;
+
+  /// Overrides [BaseViewModel.hasError] for the same reason as [error]: error
+  /// state is delegated to [RecipeFormState], not BaseViewModel's `_error`.
+  @override
   bool get hasError => _state.hasError;
   bool get isEditing => _state.isEditing;
   bool get isValid => _state.isValid;

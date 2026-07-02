@@ -847,25 +847,24 @@ void main() {
         expect(() => testViewModel.dispose(), returnsNormally);
       });
 
-      test('should clean up listeners on dispose', () {
-        // Create a new viewModel for this test
+      test('should not notify listeners after dispose', () {
+        // After the BaseViewModel migration, notifyListeners is disposal-guarded:
+        // instead of throwing on a disposed ChangeNotifier (the old behaviour),
+        // it safely no-ops. This proves the cleanup contract without relying on
+        // the incidental FlutterError throw.
         final testViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
         );
 
-        // Arrange
-        testViewModel.addListener(() {
-          // Listener registered but should not be called after dispose
-        });
+        var notified = false;
+        testViewModel.addListener(() => notified = true);
 
-        // Act
         testViewModel.dispose();
 
-        // Try to trigger notification (should throw error)
-        expect(
-          () => testViewModel.notifyListeners(),
-          throwsFlutterError,
-        );
+        // Guarded notifyListeners returns normally and does not invoke listeners.
+        expect(() => testViewModel.notifyListeners(), returnsNormally);
+        expect(notified, isFalse);
+        expect(testViewModel.isDisposed, isTrue);
       });
     });
 

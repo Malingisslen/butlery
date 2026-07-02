@@ -433,6 +433,7 @@ class MockRecipeFormViewModel extends Mock
     _hasUnsavedChanges = hasUnsavedChanges;
   }
 
+  @override
   bool get isLoading => _isLoading;
 
   @override

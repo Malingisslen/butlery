@@ -2448,3 +2448,19 @@ Same migration family as the FriendsViewModel entry above, but the shadow is *un
 
 ### 2026-07-02 — BUT-520 UnifiedShoppingViewModel→BaseViewModel: new tests only covered the SAFE quadrant [Review, added 2]
 Third VM in the migration family. Overrides `isLoading`/`error`/`hasError`/`clearError` as **unconditional passthroughs** to `_shoppingService` (never read `super`). The agent kept 61 tests + added a 2-test BUT-520 group. **The added tests were non-vacuous but covered the wrong quadrant.** Test 1 seeds a service error via `setShoppingState(error:)` while base `_error` is clean, asserts the specific message surfaces — catches override *removal* only in the "service-has-error / base-clean" quadrant. Test 2 ("no service error → no VM error") is **vacuous re: override removal** — base default `_error` is also null, so it passes with or without the override (harmless documentation, not load-bearing). **The migration risk the group's own comment describes — base `executeAsync` writing generic `errorUnexpected` to `super._error` then rethrowing — was NEVER exercised: no test drove a failed `executeAsync`, so `super._error` stayed null across all 63.** Also the task claimed the 61 covered "executeAsync rethrow at initialize/addItemsFromRecipe" — **false, zero `throwsA`/`thenThrow` in the file.** Added 2: (a) failed `initialize()` where the service ALSO reports its own specific error (mirrors production) → `expectLater(throwsA)` pins the rethrow + asserts `error==service message` AND `isNot(AppLocale.current.errorUnexpected)` — the FriendsViewModel gold pattern, kills the dropped-override leak in the base-populated quadrant; (b) `addItemsFromRecipe([{}])` (malformed data → cast throws inside `executeAsync`) → `throwsA(anything)` pins that method's rethrow contract so a future swap to `executeAsyncVoid` (silent `false`) is caught. 63→65 green, analyze clean. **Lesson (reinforces the Friends entry): for an unconditional error-shadow override, a test that only seeds the service error with base clean is NOT enough — you must drive the failed `executeAsync` so base writes its generic, else the exact leak the override guards is untested. `MockUnifiedShoppingService.error` reads `_error` (set by `setShoppingState`) independently of stubbed method throws, so you can make `initialize()` throw AND report a specific service error in the same test.**
+
+### 2026-07-02 — Trigger: reviewing a ChangeNotifier→BaseViewModel migration (BUT-520)
+BaseViewModel (`lib/viewmodels/base_viewmodel.dart`) overrides `notifyListeners` to be
+disposal-guarded (`if (!_isDisposed) super.notifyListeners()`) and exposes `isDisposed`.
+Migrating a VM off raw ChangeNotifier flips the teardown contract: raw ChangeNotifier
+THROWS FlutterError on `notifyListeners()` after dispose; BaseViewModel safely no-ops.
+So `throwsFlutterError` lifecycle tests MUST be rewritten, not deleted. The CORRECT
+replacement still proves the teardown behaviour: register a listener, dispose, notify,
+then assert (a) `returnsNormally`, (b) the listener was NOT invoked (`expect(notified,
+isFalse)`), (c) `isDisposed == true`. The not-invoked assertion is load-bearing — without
+it the test would still pass if listeners leaked, i.e. a weakening. Verified the BUT-520
+recipe_form test did include it (sound, no strengthening needed).
+Also: when a migrated VM delegates error state to a sub-state object (RecipeFormState),
+it legitimately `@override`s BaseViewModel's `error`/`hasError` getters to surface the
+domain-specific (Swedish) message instead of BaseViewModel's `_error`. Confirm the
+error-surfacing tests still pass unchanged — that's the behaviour-preservation contract.
