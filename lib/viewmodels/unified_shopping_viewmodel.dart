@@ -16,7 +16,6 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -24,8 +23,7 @@ import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart'
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
-import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
@@ -36,8 +34,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
-class UnifiedShoppingViewModel extends ChangeNotifier
-    with StateNotifierMixin, AsyncOperationMixin {
+class UnifiedShoppingViewModel extends BaseViewModel {
   final UnifiedShoppingService _shoppingService =
       ServiceLocator.get<UnifiedShoppingService>();
   StreamSubscription? _shoppingServiceSubscription;

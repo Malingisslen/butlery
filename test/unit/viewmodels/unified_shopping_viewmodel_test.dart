@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
@@ -833,5 +834,74 @@ void main() {
         ),
       ).called(1);
     });
+  });
+
+  // BUT-520: guards the BaseViewModel migration. The VM overrides error/hasError
+  // to delegate to the shopping service, so a failure surfaces the service's
+  // SPECIFIC message rather than BaseViewModel.executeAsync's generic fallback.
+  // If the overrides were ever dropped, this would regress to a generic string.
+  group('Error surfacing (BaseViewModel migration, BUT-520)', () {
+    test('error and hasError delegate to the service, not base state', () {
+      mockShoppingService.setShoppingState(
+        lists: [testList],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+        error: 'Kunde inte ladda inkopslistan',
+      );
+
+      expect(viewModel.hasError, isTrue);
+      expect(viewModel.error, 'Kunde inte ladda inkopslistan');
+    });
+
+    test('no service error means the VM reports no error', () {
+      expect(viewModel.hasError, isFalse);
+      expect(viewModel.error, isNull);
+    });
+
+    test(
+      'a failed initialize rethrows and still surfaces the SERVICE error, not '
+      "BaseViewModel's generic fallback",
+      () async {
+        // The dangerous quadrant: base executeAsync writes errorUnexpected to
+        // its OWN _error and rethrows. Because the service records its own
+        // specific error on init failure (as production does), the VM's
+        // error/hasError overrides must shadow the generic base value. If the
+        // overrides were dropped, viewModel.error would leak
+        // AppLocale.current.errorUnexpected onto the shopping screen.
+        mockShoppingService.setShoppingState(
+          lists: [testList],
+          activeListId: testListId,
+          isInitialized: false,
+          currentUserId: testUserId,
+          error: 'Kunde inte initiera inkopslistan',
+        );
+        when(
+          () => mockShoppingService.initialize(),
+        ).thenThrow(Exception('init boom'));
+
+        await expectLater(viewModel.initialize(), throwsA(isA<Exception>()));
+
+        expect(viewModel.hasError, isTrue);
+        expect(viewModel.error, 'Kunde inte initiera inkopslistan');
+        expect(viewModel.error, isNot(AppLocale.current.errorUnexpected));
+      },
+    );
+
+    test(
+      'addItemsFromRecipe propagates (rethrows) failures instead of swallowing '
+      'them',
+      () async {
+        // BUT-520: addItemsFromRecipe wraps its work in executeAsync, which
+        // RETHROWS on failure (unlike executeAsyncVoid, which returns false).
+        // A future swap to the swallowing variant would silently drop bulk
+        // recipe-import errors. Malformed ingredient data (missing 'name')
+        // makes the operation throw inside executeAsync.
+        await expectLater(
+          viewModel.addItemsFromRecipe([<String, dynamic>{}]),
+          throwsA(anything),
+        );
+      },
+    );
   });
 }
