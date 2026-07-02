@@ -18,7 +18,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/household_service.dart';
 
@@ -29,12 +29,18 @@ import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
-class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
   final AnalyticsService _analyticsService;
 
+  // Local disposal flag, kept alongside BaseViewModel's own guard. It is set at
+  // the very START of dispose() (before super.dispose()) so the module/stream
+  // callbacks below (_onStateChanged, _onRecipesChanged) are already inert
+  // during teardown, before the base flag flips. BaseViewModel.isDisposed only
+  // becomes true inside super.dispose() at the end, which would be too late for
+  // this VM's own guarded callbacks.
   bool _isDisposed = false;
 
   // Modules
@@ -93,7 +99,17 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // Getters
   Map<String, List<Recipe>> get menu => _stateManager.menu;
   bool get isGenerating => _stateManager.isGenerating;
+  // Error state is owned by _stateManager, NOT BaseViewModel's own _error store.
+  // These getters (and clearError below) override the base to read _stateManager.
+  // Consequence: the INHERITED setError/setLoading/reset write BaseViewModel's
+  // inert _error/_isLoading, which nothing here reads — so route menu errors
+  // through _stateManager.setError, never the inherited setError, and don't wrap
+  // menu ops in executeAsync (its catch calls the inherited setError → a silent,
+  // never-displayed error). Cross-cutting cleanup for the delegate-pattern VMs
+  // tracked in BUT-1462.
+  @override
   String? get error => _stateManager.error;
+  @override
   bool get hasError => _stateManager.hasError;
   bool get hasMenu => _stateManager.hasMenu;
   String get lastPrompt => _stateManager.lastPrompt;
@@ -264,6 +280,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Clears current error state for error recovery and clean state management.
   /// Delegates to MenuStateManager for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
+  @override
   void clearError() => _stateManager.clearError();
 
   /// Loads menu content from a SharedMenu for viewing/editing.
