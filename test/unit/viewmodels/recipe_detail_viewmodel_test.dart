@@ -730,6 +730,27 @@ void main() {
         expect(viewModel.hasError, isFalse);
       });
 
+      test('error stays suppressed after a failed operation (BUT-520 '
+          'BaseViewModel migration)', () async {
+        // The VM deliberately hardcodes error → null / hasError → false. After
+        // the BaseViewModel migration, executeAsync writes the failure into the
+        // base _error field internally; the VM's getter overrides must keep it
+        // invisible to consumers. Dropping those overrides would silently
+        // surface BaseViewModel's generic error string on the detail screen.
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenThrow(Exception('Network error'));
+
+        try {
+          await viewModel.deleteRecipe();
+        } catch (_) {
+          // executeAsync rethrows — irrelevant to the error-surface contract.
+        }
+
+        expect(viewModel.error, isNull);
+        expect(viewModel.hasError, isFalse);
+      });
+
       test('should handle service exceptions gracefully', () async {
         // Arrange
         when(

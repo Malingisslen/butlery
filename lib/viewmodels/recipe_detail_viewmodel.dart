@@ -75,8 +75,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
-import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// BUT-1205: result of [RecipeDetailViewModel.reextractFromSource] — the View
@@ -112,8 +111,7 @@ ImportStrategy defaultReextractStrategyForTest(SourceArtefactType type) =>
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
 /// separation between recipe detail business logic and UI presentation concerns.
-class RecipeDetailViewModel extends ChangeNotifier
-    with StateNotifierMixin, AsyncOperationMixin {
+class RecipeDetailViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
