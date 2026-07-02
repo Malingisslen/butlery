@@ -283,6 +283,22 @@ function validateIngredient(row: IngredientRow): ValidationResult {
     }
   }
 
+  // Generic 'seafood' without a detail property triggers the conservative
+  // skaldjur CONTAINS verdict client-side (allergen safety net, 2026-07-02).
+  // Legit only for non-crustacean/non-mollusc marine animals (jellyfish,
+  // sea urchin, sea cucumber) — warn so mislabeled fish/shellfish get fixed.
+  if (
+    properties.includes("seafood") &&
+    !properties.some((p) => ["fish", "crustacean", "mollusc"].includes(p))
+  ) {
+    warnings.push(
+      "Generic 'seafood' without fish/crustacean/mollusc detail — " +
+      "the specific allergen (fisk/kräftdjur/blötdjur) cannot be detected " +
+      "and the row falls back to the conservative skaldjur CONTAINS net; " +
+      "add the detail property unless genuinely neither (e.g. jellyfish/sea urchin)"
+    );
+  }
+
   // Validate status
   const validStatuses = ["validated", "pending", "deleted"];
   if (row.status && !validStatuses.includes(row.status)) {
@@ -351,10 +367,15 @@ function validateAllIngredients(
       result.errors.forEach((e) => console.log(`      • ${e}`));
     }
 
-    if (result.warnings.length > 0 && verbose) {
+    if (result.warnings.length > 0) {
+      // Count unconditionally so the summary's "N warnings" hint appears on
+      // default runs — previously gated on --verbose, which silently hid
+      // safety-relevant warnings (e.g. the seafood-detail check).
       warningCount += result.warnings.length;
-      console.log(`\n   ⚠️  ${row.id || "(no id)"} - ${row.swedish || "(no name)"}:`);
-      result.warnings.forEach((w) => console.log(`      • ${w}`));
+      if (verbose) {
+        console.log(`\n   ⚠️  ${row.id || "(no id)"} - ${row.swedish || "(no name)"}:`);
+        result.warnings.forEach((w) => console.log(`      • ${w}`));
+      }
     }
   }
 

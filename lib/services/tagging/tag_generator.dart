@@ -14,7 +14,12 @@ import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 
 /// Generator version for tracking changes.
 /// Bump on any tagging logic change so needsRetagging detects stale recipes.
-const String kTagGeneratorVersion = '2.1.0';
+/// 2.2.0: seafood→skaldjur safety net + vegetarisk/vegansk/kosher exclusion
+/// fixes + 87 register corrections (2026-07-02) — retag flushes stale
+/// pre-fix verdicts. Known cost: global-cache hits re-tag client-side per
+/// hit until entries age out (write-back blocked by cache-poisoning rules;
+/// roadmap P1). Accepted: safety > cost at current scale.
+const String kTagGeneratorVersion = '2.2.0';
 
 /// Orchestrates the 5-phase tag generation process.
 ///

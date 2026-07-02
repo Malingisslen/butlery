@@ -47,15 +47,30 @@ class DietaryConfig {
     DietaryEntry(
       key: 'vegetarisk',
       tagSv: 'vegetarisk',
-      // Use specific properties (not 'seafood') to avoid data integrity risk:
-      // an ingredient might have 'fish' but not 'seafood' in the database
-      excludedProperties: ['meat', 'fish', 'crustacean', 'mollusc'],
+      // Specific marine properties AND generic 'seafood': the audit found
+      // rows carrying only 'seafood' (e.g. skaldjursfond) that passed as
+      // vegetarian. Both directions are now covered — fish-without-seafood
+      // and seafood-without-fish. NOT 'animal-product' (dairy/egg carry it
+      // and are vegetarian); gelatin is handled register-side via 'meat'.
+      excludedProperties: ['meat', 'fish', 'crustacean', 'mollusc', 'seafood'],
       description: 'Ingen ingrediens har kött eller fisk/skaldjur',
     ),
     DietaryEntry(
       key: 'vegansk',
       tagSv: 'vegansk',
-      excludedProperties: ['animal-product'],
+      // 'animal-product' is the primary marker; the specific properties are
+      // belt-and-braces so one forgotten animal-product on an AI-draft row
+      // (54% of the register) can't silently make a recipe vegan.
+      excludedProperties: [
+        'animal-product',
+        'meat',
+        'fish',
+        'crustacean',
+        'mollusc',
+        'seafood',
+        'dairy',
+        'egg',
+      ],
       description: 'Ingen ingrediens har animaliska produkter',
     ),
     DietaryEntry(
@@ -87,8 +102,9 @@ class DietaryConfig {
     DietaryEntry(
       key: 'kosheranpassad',
       tagSv: 'kosheranpassad',
-      // H8: Use actual ingredient properties (not 'shellfish' which doesn't exist)
-      excludedProperties: ['pork', 'crustacean', 'mollusc'],
+      // Generic 'seafood' excluded conservatively: it can't prove the item
+      // isn't shellfish, and kosher-adapted must never false-FREE.
+      excludedProperties: ['pork', 'crustacean', 'mollusc', 'seafood'],
       description: 'Ej fläsk, ej skaldjur',
     ),
     DietaryEntry(

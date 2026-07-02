@@ -256,7 +256,9 @@ Future<void> _migrateAllergens(Directory outputDir) async {
     // Combined allergens
     _allergen(
       key: 'skaldjur',
-      triggerProperties: ['crustacean', 'mollusc'],
+      // 'seafood' = safety net: generic-marine-only rows must never prove
+      // skaldjursfri (register audit 2026-07-01). Mirrors allergen_config.dart.
+      triggerProperties: ['crustacean', 'mollusc', 'seafood'],
       containsTagSv: 'innehåller-skaldjur',
       freeTagSv: 'skaldjursfri',
       containsTagEn: 'contains-shellfish',
@@ -278,7 +280,8 @@ Future<void> _migrateAllergens(Directory outputDir) async {
 
   final document = {
     'schemaVersion': 1,
-    'version': 1,
+    // v2: skaldjur trigger gained 'seafood' (2026-07-02 audit fix)
+    'version': 2,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'displayOrder': allergens.map((a) => a['key']).toList(),
@@ -332,7 +335,11 @@ Future<void> _migrateDietary(Directory outputDir) async {
       key: 'vegetarisk',
       tagSv: 'vegetarisk',
       tagEn: 'vegetarian',
-      excludedProperties: ['meat', 'seafood'],
+      // Union of specific marine props AND generic 'seafood' — the previous
+      // live config (meat+seafood only) let fish-without-seafood rows pass as
+      // vegetarian while the static fallback had the mirror-image gap.
+      // Mirrors dietary_config.dart (keep in sync).
+      excludedProperties: ['meat', 'fish', 'crustacean', 'mollusc', 'seafood'],
       descriptionSv: 'Ingen ingrediens har kött eller fisk/skaldjur',
       priority: 1,
     ),
@@ -340,7 +347,18 @@ Future<void> _migrateDietary(Directory outputDir) async {
       key: 'vegansk',
       tagSv: 'vegansk',
       tagEn: 'vegan',
-      excludedProperties: ['animal-product'],
+      // Belt-and-braces beyond 'animal-product' — one forgotten property on
+      // an AI-draft row must not make a recipe vegan. Mirrors dietary_config.dart.
+      excludedProperties: [
+        'animal-product',
+        'meat',
+        'fish',
+        'crustacean',
+        'mollusc',
+        'seafood',
+        'dairy',
+        'egg',
+      ],
       descriptionSv: 'Ingen ingrediens har animaliska produkter',
       priority: 2,
     ),
@@ -381,7 +399,8 @@ Future<void> _migrateDietary(Directory outputDir) async {
       key: 'kosheranpassad',
       tagSv: 'kosheranpassad',
       tagEn: 'kosher-friendly',
-      excludedProperties: ['pork', 'crustacean', 'mollusc'],
+      // Generic 'seafood' can't prove non-shellfish → excluded conservatively.
+      excludedProperties: ['pork', 'crustacean', 'mollusc', 'seafood'],
       descriptionSv: 'Ej fläsk, ej skaldjur',
       priority: 7,
     ),
@@ -415,7 +434,8 @@ Future<void> _migrateDietary(Directory outputDir) async {
 
   final document = {
     'schemaVersion': 1,
-    'version': 1,
+    // v2: vegetarisk/vegansk/kosheranpassad exclusion fixes (2026-07-02)
+    'version': 2,
     'updatedAt': DateTime.now().toUtc().toIso8601String(),
     'updatedBy': 'migration-script',
     'displayOrder': dietary.map((d) => d['key']).toList(),

@@ -46,11 +46,13 @@ void main() {
       test('vegetarisk excludes meat and all seafood types', () {
         final veg = DietaryConfig.getByKey('vegetarisk')!;
 
-        // Uses specific properties (not 'seafood') for data integrity
+        // Specific marine properties AND generic 'seafood' (2026-07-02 audit
+        // fix — seafood-only rows must not pass as vegetarian).
         expect(veg.excludedProperties, contains('meat'));
         expect(veg.excludedProperties, contains('fish'));
         expect(veg.excludedProperties, contains('crustacean'));
         expect(veg.excludedProperties, contains('mollusc'));
+        expect(veg.excludedProperties, contains('seafood'));
       });
 
       test('vegansk excludes animal products', () {

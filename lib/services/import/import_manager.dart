@@ -715,7 +715,13 @@ class ImportManager {
         return null;
       }
 
-      // HIGH-2: Check if cached recipe needs retagging
+      // HIGH-2: Check if cached recipe needs retagging.
+      // NOTE (2026-07-02): the retag result is deliberately NOT written back
+      // to the shared cache entry — firestore.rules restricts cache updates
+      // to access stats as a cache-poisoning defense (a client-writable
+      // shared recipe would let one user's tags, incl. user-defined
+      // ingredient overrides, become canonical for everyone). Per-hit
+      // client-side retag is the accepted cost; see roadmap P1.
       final needsRetagging = _cachedRecipeNeedsRetagging(recipe, cacheEntry);
       if (needsRetagging) {
         AppLogger.info(
