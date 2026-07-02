@@ -87,6 +87,7 @@ class _FakeLlmService extends Fake implements LlmService {
   int ocrCalls = 0;
   Uint8List? lastOcrBytes;
   String? lastOcrContext;
+  bool? lastOcrIsHandwritten;
 
   bool isAvailableValue = true;
   int isAvailableCalls = 0;
@@ -114,10 +115,12 @@ class _FakeLlmService extends Fake implements LlmService {
     String? imageUrl,
     String? mimeType,
     String? context,
+    bool isHandwritten = false,
   }) async {
     ocrCalls++;
     lastOcrBytes = imageBytes;
     lastOcrContext = context;
+    lastOcrIsHandwritten = isHandwritten;
     if (ocrThrow != null) throw ocrThrow!;
     return ocrResponse ??
         const OcrRecipeImageResponse(success: false, estimatedCost: 0.0);
@@ -686,6 +689,22 @@ void main() {
         context: 'menu page 3',
       );
       expect(llm.lastOcrContext, 'menu page 3');
+    });
+
+    test(
+      'BUT-684: threads isHandwritten:true to LlmService.ocrRecipeImage',
+      () async {
+        await service.extractFromImage(
+          Uint8List.fromList([1]),
+          isHandwritten: true,
+        );
+        expect(llm.lastOcrIsHandwritten, isTrue);
+      },
+    );
+
+    test('BUT-684: default omits handwriting flag (sends false)', () async {
+      await service.extractFromImage(Uint8List.fromList([1]));
+      expect(llm.lastOcrIsHandwritten, isFalse);
     });
   });
 

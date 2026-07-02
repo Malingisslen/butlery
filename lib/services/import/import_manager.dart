@@ -327,6 +327,57 @@ class ImportManager {
     }
   }
 
+  /// BUT-1460: single-image import for the handwritten opt-in (LLM-vision).
+  ///
+  /// Unlike [autoImport], this does NOT run the multi-strategy fallback loop.
+  /// The handwritten flow is a single image processed by one strategy (photo /
+  /// LLM-vision) whose result — success, assistance, OR failure — is TERMINAL:
+  /// handwriting has no viable char-OCR fallback, so a failure here is the real
+  /// answer, not a "try the next strategy" miss. [autoImport]'s loop only early-
+  /// returns on `isSuccess`/`needsAssistance`, so a terminal photo FAILURE falls
+  /// through to the generic "No import strategy could handle the provided input"
+  /// message — discarding the strategy's real failure text and, critically, the
+  /// structured rate-limit retry message (BUT-1144). This method returns the
+  /// strategy's result directly so that message survives to the ViewModel.
+  ///
+  /// The rate-limit CHECK mirrors [autoImport] (same local `basic('auto')` check
+  /// → structured `rateLimit(denied)` on denial). It does not record basic-bucket
+  /// usage on success — the cost is metered on the LLM vision bucket, same as the
+  /// normal multi-page photo path (`autoParseMulti`), so handwritten stays
+  /// consistent with the rest of the photo feature.
+  Future<ImportManagerResult> importSinglePhoto(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
+    try {
+      final rateLimiter = _rateLimiter;
+      if (rateLimiter != null) {
+        final limitResult = await rateLimiter.checkLimit(
+          ImportOperation.basic('auto'),
+        );
+        if (limitResult is RateLimitDenied) {
+          return ImportManagerResult.rateLimit(limitResult);
+        }
+      }
+
+      final strategy = _strategies.whereType<PhotoImportStrategy>().firstOrNull;
+      if (strategy == null) {
+        return ImportManagerResult.failure(
+          'No photo import strategy is available',
+          availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+        );
+      }
+
+      // Return the terminal result directly — no fallback loop to swallow it.
+      return await _parseWithStrategy(strategy, input, options);
+    } catch (e) {
+      return ImportManagerResult.failure(
+        'Import manager error: $e',
+        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+      );
+    }
+  }
+
   /// Record successful import usage for rate limiting.
   Future<void> _recordImportUsage(String sourceType) async {
     try {

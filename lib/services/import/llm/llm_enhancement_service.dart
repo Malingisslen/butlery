@@ -142,9 +142,13 @@ class LlmEnhancementService extends BaseService {
   /// Extract recipe from image using LLM vision.
   ///
   /// This is the final fallback after OCR methods fail.
+  ///
+  /// [isHandwritten] BUT-684: routes to the handwriting-tuned OCR prompt in
+  /// the Cloud Function. Default false = printed-text prompt (unchanged).
   Future<ImportResultV2> extractFromImage(
     Uint8List imageBytes, {
     String? context,
+    bool isHandwritten = false,
   }) async {
     AppLogger.debug(
       'LlmEnhancementService: Extracting from image (${imageBytes.length} bytes)',
@@ -167,6 +171,7 @@ class LlmEnhancementService extends BaseService {
       final response = await _llmService.ocrRecipeImage(
         imageBytes: imageBytes,
         context: context,
+        isHandwritten: isHandwritten,
       );
 
       if (response.success && response.recipe != null) {

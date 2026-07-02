@@ -1016,6 +1016,308 @@ void main() {
         },
       );
     });
+
+    group('BUT-684: handwritten mode', () {
+      test('setHandwritten flips state and notifies listeners', () {
+        expect(viewModel.isHandwritten, isFalse);
+        var notified = 0;
+        viewModel.addListener(() => notified++);
+
+        viewModel.setHandwritten(true);
+
+        expect(viewModel.isHandwritten, isTrue);
+        expect(notified, greaterThan(0));
+      });
+
+      test(
+        'handwritten import routes through importSinglePhoto with '
+        'isHandwritten:true and surfaces the recipe as reviewable OCR text',
+        () async {
+          Map<String, dynamic>? capturedOptions;
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer((invocation) async {
+            capturedOptions =
+                invocation.namedArguments[#options] as Map<String, dynamic>;
+            return ImportManagerResult.success(
+              RecipeFactory.build(
+                title: 'Mormors pannkakor',
+                ingredients: ['3 ägg', '3 dl mjölk'],
+                instructions: ['Vispa ihop', 'Stek tunt'],
+              ),
+              strategy: 'photo',
+            );
+          });
+
+          viewModel.setHandwritten(true);
+          await viewModel.extractHandwrittenForTesting(testImageBytes);
+
+          expect(capturedOptions, isNotNull);
+          expect(capturedOptions!['isHandwritten'], isTrue);
+          expect(viewModel.parsedRecipe?.title, 'Mormors pannkakor');
+          expect(viewModel.hasOcrResult, isTrue);
+          expect(viewModel.ocrText, contains('Mormors pannkakor'));
+        },
+      );
+
+      test(
+        'vision path reflects the OFF flag: options isHandwritten:false when '
+        'not opted in (guards against a hardcoded true)',
+        () async {
+          Map<String, dynamic>? capturedOptions;
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer((invocation) async {
+            capturedOptions =
+                invocation.namedArguments[#options] as Map<String, dynamic>;
+            return ImportManagerResult.success(
+              RecipeFactory.build(title: 'Tryckt recept'),
+              strategy: 'photo',
+            );
+          });
+
+          // Flag left at its default (false); the option must mirror that.
+          expect(viewModel.isHandwritten, isFalse);
+          await viewModel.extractHandwrittenForTesting(testImageBytes);
+
+          expect(capturedOptions, isNotNull);
+          expect(capturedOptions!['isHandwritten'], isFalse);
+        },
+      );
+
+      test(
+        'BUT-1460: toggle stays switchable after a capture (no capture-lock) — '
+        'setHandwritten can flip it back off',
+        () async {
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.success(
+              RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
+              strategy: 'photo',
+            ),
+          );
+
+          expect(viewModel.canToggleHandwritten, isTrue);
+          viewModel.setHandwritten(true);
+          await viewModel.extractHandwrittenForTesting(testImageBytes);
+
+          // A capture now exists, but the toggle is NOT locked (single-image
+          // replace flow — nothing to strand). It stays switchable and can be
+          // flipped back off.
+          expect(
+            viewModel.canToggleHandwritten,
+            isTrue,
+            reason: 'no capture-lock — switchable while not processing',
+          );
+          viewModel.setHandwritten(false);
+          expect(
+            viewModel.isHandwritten,
+            isFalse,
+            reason: 'the user can turn handwritten back off after a capture',
+          );
+        },
+      );
+
+      test(
+        'clearPhoto resets the handwritten flag (not sticky across imports)',
+        () {
+          viewModel.setHandwritten(true);
+          expect(viewModel.isHandwritten, isTrue);
+
+          viewModel.clearPhoto();
+
+          expect(
+            viewModel.isHandwritten,
+            isFalse,
+            reason: 'a fresh import must default back to the printed-text path',
+          );
+          expect(viewModel.canToggleHandwritten, isTrue);
+        },
+      );
+
+      // BUT-1460: the char-OCR quality gate (BUT-660) hard-rejects tiny/low-res
+      // images. testImageBytes is 5 bytes → below the min-size gate → isRejected.
+      // These prove the handwritten branch runs BEFORE that gate (so a readable
+      // handwritten photo the LLM could parse is never rejected first), while
+      // the printed path still enforces it.
+      test(
+        'handwritten pick SKIPS the char-OCR quality gate and reaches the '
+        'vision path even on gate-rejecting bytes',
+        () async {
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.success(
+              RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
+              strategy: 'photo',
+            ),
+          );
+
+          viewModel.setHandwritten(true);
+          await viewModel.processPickedImageForTesting(
+            testImageBytes, // 5 bytes → the gate WOULD reject this
+            ImageSource.gallery,
+          );
+
+          expect(
+            viewModel.hasError,
+            isFalse,
+            reason: 'the quality gate must be skipped for handwritten',
+          );
+          verify(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'printed (handwritten OFF) pick still ENFORCES the quality gate — '
+        'gate-rejecting bytes error out before any vision call',
+        () async {
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.success(
+              RecipeFactory.build(title: 'skall aldrig nas'),
+              strategy: 'photo',
+            ),
+          );
+
+          // Handwritten left OFF.
+          await viewModel.processPickedImageForTesting(
+            testImageBytes,
+            ImageSource.gallery,
+          );
+
+          expect(
+            viewModel.hasError,
+            isTrue,
+            reason: 'the printed path must reject tiny images at the gate',
+          );
+          verifyNever(
+            () => mockImportManager.importSinglePhoto(
+              any(),
+              options: any(named: 'options'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'BUT-1460 review FIX 1: a handwritten pick clears the previous printed '
+        'pick quality-gate fields (no stale "Bildkvaliteten är låg" banner)',
+        () async {
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.success(
+              RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
+              strategy: 'photo',
+            ),
+          );
+
+          // 1) Printed pick populates the quality fields (the tiny bytes score
+          //    low and get gate-rejected — the fields are set either way).
+          await viewModel.processPickedImageForTesting(
+            testImageBytes,
+            ImageSource.gallery,
+          );
+          expect(
+            viewModel.qualityScore,
+            isNotNull,
+            reason: 'precondition: the printed pick set a quality score',
+          );
+
+          // 2) Handwritten pick WITHOUT pressing X (no clearPhoto) — the
+          //    previous image's quality warning state must not survive, or the
+          //    view renders a stale low-quality banner for the new photo.
+          viewModel.setHandwritten(true);
+          await viewModel.processPickedImageForTesting(
+            testImageBytes,
+            ImageSource.gallery,
+          );
+
+          expect(
+            viewModel.qualityScore,
+            isNull,
+            reason: 'stale quality score from the previous image must be gone',
+          );
+          expect(
+            viewModel.recommendations,
+            isNull,
+            reason: 'stale quality tips from the previous image must be gone',
+          );
+        },
+      );
+
+      test(
+        'a printed pick AFTER a handwritten one routes to the char-OCR path, '
+        'not the vision path (no second importSinglePhoto)',
+        () async {
+          when(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer(
+            (_) async => ImportManagerResult.success(
+              RecipeFactory.build(title: 'Handskrivet', ingredients: ['1 ägg']),
+              strategy: 'photo',
+            ),
+          );
+
+          // 1) Handwritten pick → vision path (one importSinglePhoto call).
+          viewModel.setHandwritten(true);
+          await viewModel.processPickedImageForTesting(
+            testImageBytes,
+            ImageSource.gallery,
+          );
+
+          // 2) Turn it off (freely switchable) and pick again → char-OCR path,
+          //    which rejects the tiny bytes at the gate. Crucially it does NOT
+          //    fire a second vision call.
+          viewModel.setHandwritten(false);
+          await viewModel.processPickedImageForTesting(
+            testImageBytes,
+            ImageSource.gallery,
+          );
+
+          verify(
+            () => mockImportManager.importSinglePhoto(
+              'photo',
+              options: any(named: 'options'),
+            ),
+          ).called(1);
+          expect(
+            viewModel.hasError,
+            isTrue,
+            reason: 'the second, printed pick hits the char-OCR quality gate',
+          );
+        },
+      );
+    });
   });
 }
 

@@ -81,12 +81,18 @@ class OcrRecipeImageRequest {
   /// nudging. Additive — older server versions ignore it.
   final String? locale;
 
+  /// BUT-684: when true the Cloud Function selects a handwriting-tuned Swedish
+  /// OCR prompt instead of the default printed-text prompt. Always sent (default
+  /// false); older server versions that don't read it are unaffected.
+  final bool isHandwritten;
+
   const OcrRecipeImageRequest({
     this.imageBase64,
     this.imageUrl,
     this.mimeType,
     this.context,
     this.locale,
+    this.isHandwritten = false,
   }) : assert(
          imageBase64 != null || imageUrl != null,
          'Either imageBase64 or imageUrl must be provided',
@@ -98,12 +104,14 @@ class OcrRecipeImageRequest {
     String? mimeType,
     String? context,
     String? locale,
+    bool isHandwritten = false,
   }) {
     return OcrRecipeImageRequest(
       imageBase64: _encodeBase64(bytes),
       mimeType: mimeType ?? _detectMimeType(bytes),
       context: context,
       locale: locale,
+      isHandwritten: isHandwritten,
     );
   }
 
@@ -112,11 +120,13 @@ class OcrRecipeImageRequest {
     String url, {
     String? context,
     String? locale,
+    bool isHandwritten = false,
   }) {
     return OcrRecipeImageRequest(
       imageUrl: url,
       context: context,
       locale: locale,
+      isHandwritten: isHandwritten,
     );
   }
 
@@ -127,6 +137,7 @@ class OcrRecipeImageRequest {
       if (mimeType != null) 'mimeType': mimeType,
       if (context != null) 'context': context,
       if (locale != null) 'locale': locale,
+      'isHandwritten': isHandwritten,
     };
   }
 

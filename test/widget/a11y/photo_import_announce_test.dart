@@ -85,6 +85,12 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   String get ocrText => 'tolkad text';
 
   @override
+  bool get isHandwritten => false;
+
+  @override
+  bool get canToggleHandwritten => true;
+
+  @override
   Uint8List? get imageBytes => null;
 
   /// BUT-910: the view's post-frame draft-restore check asks for a persisted

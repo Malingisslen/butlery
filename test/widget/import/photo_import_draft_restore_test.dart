@@ -103,6 +103,12 @@ class _FakePhotoImportViewModel extends ChangeNotifier
   @override
   String get ocrText => '';
 
+  @override
+  bool get isHandwritten => false;
+
+  @override
+  bool get canToggleHandwritten => true;
+
   /// Valid 1x1 transparent PNG so ImagePreview can decode when hasImage.
   static final Uint8List _onePixelPng = Uint8List.fromList(const [
     0x89,

@@ -35,15 +35,13 @@ import 'dart:typed_data';
 
 import 'package:clock/clock.dart';
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/heic_converter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/photo_llm_vision.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
-import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Strategy for importing recipes from photos using OCR technology.
@@ -75,14 +73,12 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
        _textStrategy = textStrategy ?? TextImportStrategy(),
        _heicConverter = heicConverter ?? HeicConverter();
 
-  /// Get the LLM enhancement service (lazy initialization with graceful fallback)
-  LlmEnhancementService? get _llmService {
-    try {
-      return ServiceLocator.get<LlmEnhancementService>();
-    } catch (e) {
-      return null;
-    }
-  }
+  /// BUT-1460: both LLM-vision routes (printed Tier-4 fallback + handwritten
+  /// opt-in) live in [PhotoLlmVision] — extracted to keep this file under the
+  /// 500-line limit and to share one result conversion between the routes.
+  late final PhotoLlmVision _llmVision = PhotoLlmVision(
+    strategyName: strategyName,
+  );
 
   @override
   String get strategyName => 'Photo Import';
@@ -160,6 +156,26 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         // error path.
       }
 
+      // BUT-684: handwritten recipes are LLM-vision-only — the char-OCR
+      // providers (OCR.space / Google Vision / Tesseract) reliably produce
+      // garbage on handwriting, so trying them first would only burn quota.
+      // The handwriting-tuned Cloud Function prompt is the only path with a
+      // real chance, gated behind an explicit user opt-in (so the extra LLM
+      // cost is intentional). We ALWAYS return the vision result here —
+      // success, assistance, OR failure — and never fall through to the
+      // char-OCR cascade. Falling through would re-enter the Tier-4 LLM
+      // fallback with the PRINTED prompt: a second billed vision call that
+      // also drops the handwriting tuning (review BUG 1).
+      final isHandwritten = options?['isHandwritten'] == true;
+      if (isHandwritten) {
+        return await _llmVision.handwrittenImport(
+          bytesToOcr,
+          options?['sourceType'] as String?,
+          formatBefore: formatBefore,
+          formatAfter: formatAfter,
+        );
+      }
+
       // Step 2: Initialize OCR service
       await _ocrService.initialize();
 
@@ -168,7 +184,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       if (!ocrResult.isSuccessful) {
         // OCR failed - try LLM vision as Tier 4 fallback
-        final llmResult = await _tryLlmFallback(
+        final llmResult = await _llmVision.tryFallback(
           bytesToOcr,
           options?['sourceType'] as String?,
           formatBefore: formatBefore,
@@ -194,7 +210,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Check if OCR extracted any text
       if (ocrResult.text.isEmpty) {
         // No text extracted - try LLM vision as Tier 4 fallback
-        final llmResult = await _tryLlmFallback(
+        final llmResult = await _llmVision.tryFallback(
           bytesToOcr,
           options?['sourceType'] as String?,
           formatBefore: formatBefore,
@@ -222,7 +238,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       if (!textResult.isSuccess || textResult.recipe == null) {
         // Text parsing failed - try LLM vision as Tier 4 fallback
-        final llmResult = await _tryLlmFallback(
+        final llmResult = await _llmVision.tryFallback(
           bytesToOcr,
           options?['sourceType'] as String?,
           formatBefore: formatBefore,
@@ -285,64 +301,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           'strategy': strategyName,
         },
       );
-    }
-  }
-
-  /// Try LLM vision extraction as Tier 4 fallback when OCR fails.
-  Future<ImportResult?> _tryLlmFallback(
-    Uint8List imageBytes,
-    String? sourceType, {
-    ImageFormat formatBefore = ImageFormat.unknown,
-    ImageFormat formatAfter = ImageFormat.unknown,
-  }) async {
-    final llmService = _llmService;
-    if (llmService == null) {
-      return null; // LLM service not available
-    }
-
-    try {
-      final llmResult = await llmService.extractFromImage(
-        imageBytes,
-        context: 'Recipe image from photo import',
-      );
-
-      // Convert ImportResultV2 to ImportResult
-      if (llmResult is ImportSuccess) {
-        return ImportResult.success(
-          llmResult.recipe,
-          metadata: {
-            'strategy': 'Photo Import (LLM Vision)',
-            'tier': 4,
-            'method': 'llm-vision',
-            'usedLlm': true,
-            'image_size_bytes': imageBytes.length,
-            'source_type': sourceType,
-            'image_format': ImageFormatUtils.wireName(formatBefore),
-            'image_format_sent': ImageFormatUtils.wireName(formatAfter),
-            ...?llmResult.metadata,
-          },
-        );
-      }
-
-      if (llmResult is ImportNeedsAssistance) {
-        return ImportResult.assistance(
-          extractedText: llmResult.extractedText,
-          suggestedTitle: llmResult.suggestedTitle,
-          metadata: {
-            'imageBytes': imageBytes,
-            'tier': 4,
-            'method': 'llm-vision-partial',
-            'image_format': ImageFormatUtils.wireName(formatBefore),
-            'image_format_sent': ImageFormatUtils.wireName(formatAfter),
-          },
-        );
-      }
-
-      // LLM failed - return null to fall through to original error
-      return null;
-    } catch (e) {
-      // LLM error - return null to fall through to original error
-      return null;
     }
   }
 

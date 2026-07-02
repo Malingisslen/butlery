@@ -141,6 +141,9 @@ class LlmService extends BaseService {
   /// [imageUrl] - Alternative: URL to image
   /// [mimeType] - Optional MIME type (auto-detected if not provided)
   /// [context] - Optional context (e.g., filename)
+  /// [isHandwritten] - BUT-684: when true, the Cloud Function uses a
+  ///   handwriting-tuned Swedish OCR prompt. Default false = printed-text
+  ///   prompt (unchanged behaviour).
   ///
   /// Returns [OcrRecipeImageResponse] with extracted recipe or raw text.
   /// Throws [LlmException] on Firebase errors.
@@ -149,6 +152,7 @@ class LlmService extends BaseService {
     String? imageUrl,
     String? mimeType,
     String? context,
+    bool isHandwritten = false,
   }) async {
     if (imageBytes == null && imageUrl == null) {
       throw const LlmException(
@@ -173,12 +177,14 @@ class LlmService extends BaseService {
         mimeType: mimeType,
         context: context,
         locale: locale,
+        isHandwritten: isHandwritten,
       );
     } else {
       request = OcrRecipeImageRequest.fromUrl(
         imageUrl!,
         context: context,
         locale: locale,
+        isHandwritten: isHandwritten,
       );
     }
 
