@@ -105,9 +105,16 @@ not new systems.
 - [ ] **Server-side daily LLM cap** (S)
   Cost ceilings are client-only; server per-minute buckets allow ~4.3k calls/user/day. Add
   a per-day counter in the existing rate-limiter transaction.
-- [ ] **Write retagged results back to GlobalRecipeCache** (S)
-  Cache hits re-run the full 35s tagging pipeline on *every* hit after a version bump and
-  never write back (`import_manager.dart:773`). One `update` on the doc already read.
+- [ ] **Write retagged results back to GlobalRecipeCache** (was S — actually L)
+  ATTEMPTED + REVERTED 2026-07-02: a client-side write-back is **impossible by design** —
+  firestore.rules restricts cache updates to access stats as a deliberate cache-poisoning
+  defense (code review confirmed: loosening it would let one client's tags, incl. per-user
+  ingredient overrides and partial timeout results, become canonical shared allergen data).
+  Real fix requires a server-side path (Cloud Function re-running the tagging engine —
+  which is Dart client code, so this means a TS port or a headless tagging service) OR
+  accepting per-hit client retag cost. Accepted for now (pre-launch scale, pennies);
+  revisit before user growth. The 2.2.0 retag bump shipped WITHOUT it (Legal condition —
+  known-wrong FREE verdicts must not persist — outweighed the FinOps deferral at ~1 user).
 - [ ] **TTL on `parse_events`** (S) — grows unbounded, one doc per import attempt, stores raw
   userId+URL forever (also a quiet GDPR surface). Mirror the `llm_response_samples` TTL.
 - [ ] **Confirm Gemini pricing constants** (S) — BUT-1187 TODO; all cost telemetry and the
@@ -164,25 +171,35 @@ Source: 23-agent semantic audit of the full 2,230-row ingredient register + tag 
 Evidence: `tasks/scans/register-audit-2026-07-01/` (fix-list CSV + config/drift/coverage reports).
 Register fixes happen in the **Google Sheet** then re-sync — they are Malin's data edits, not code.
 
-- [ ] **CONFIG: `seafood` property fires no allergen verdict** (S, code)
-  6 rows (incl. *validated* `skaldjursfond`, `tom-kha-paste`) carry `seafood` as their only
-  marine marker — a shellfish stock gets `skaldjursfri`/`fiskfri`/`vegetarisk` = FREE. Add
-  `seafood` to the combined skaldjur trigger + vegetarian/kosher exclusions (or map it in
-  the register). `allergen_config.dart` / `dietary_config.dart`.
-- [ ] **CONFIG: `vegetarisk` misses `animal-product` — gelatin marked vegetarian** (S, code)
-  `dietary_config.dart:52` excludes only meat/fish/crustacean/mollusc; `gelatinblad`
-  (validated) passes as vegetarian. Also harden `vegansk` beyond the single
-  `animal-product` property (belt-and-braces exclusion list).
+- [x] **CONFIG: `seafood` property fires no allergen verdict** — DONE 2026-07-02.
+  Panel-reviewed (7× approve-with-conditions). `seafood` added to the skaldjur combined
+  trigger + vegetarisk/kosheranpassad exclusions + vegansk hardened, in BOTH the static
+  fallback AND the Firestore `tag_configs` docs (seeded to production at version 2 —
+  which turned out to have never been seeded before: production ran on static fallback
+  all along, and the un-seeded script copy even had a DIFFERENT vegetarisk rule; now
+  unified). NOT added to fisk (PM condition). Sync-time warning added for seafood-only
+  rows. 18 behavioral tests on both config branches + vocabulary lockstep test.
+  kTagGeneratorVersion 2.1.0→2.2.0 forces organic retag of all stale verdicts.
+- [ ] **REGISTER: gelatin still passes as vegetarian — 2 Sheet cells for Malin** (S)
+  `gelatin` + `gelatinblad` carry only `animal-product` (verified in synced register
+  2026-07-02); vegetarisk correctly doesn't exclude animal-product (dairy/egg carry it),
+  so gelatin needs `meat,pork` added to its properties in the Sheet + re-sync. (`pork`
+  also fixes halalanpassad — Swedish gelatin is overwhelmingly pork-derived.) The
+  config half is DONE: vegetarisk now also excludes `seafood`, so seafood-only animals
+  (jellyfish etc.) can't pass as vegetarian; the audit's original suggestion (exclude
+  `animal-product` wholesale) was wrong and is documented in dietary_config.dart.
 - [x] **POLICY: draft ingredients produce authoritative FREE verdicts** — DECIDED 2026-07-01:
   Malin keeps status quo (drafts retain full verdict authority incl. FREE). Recorded in
   `.claude/rules/accepted-deviations.md`; mitigations = draft banner + fix-list + hygiene.
   Do not reopen in reviews.
-- [ ] **DATA: apply the 87 confirmed register fixes** (Sheet work + re-sync)
-  `tasks/scans/register-audit-2026-07-01/register-fix-list.csv` — sorted danger-first.
-  Themes: compound products missing carrier allergens (öl→gluten, leverpastej→mjölk,
-  naan→mjölk, currypastor→räkpasta/fisk, müsli→nötter, HP-sås→korn/gluten), meat cuts
-  missing beef/pork detail props, dangerous aliases (chicken-oyster→"ostron",
-  senapssill on a mustard-less row). 8 uncertain rows need her judgment; 1 refuted.
+- [x] **DATA: apply the 87 confirmed register fixes** — DONE 2026-07-02. Malin's session
+  fixed the Sheet (84 sweep + 7 judgment calls; before/after verified, no allergen ever
+  removed); export diffed independently (87 rows, 4 intended removals only) and synced to
+  production Firestore (2,230 docs updated — also backfilled the Sprint-1 metadata fields
+  the Dec-27 sync predated). Live-verified: öl+gluten, hazelnut-cream=nutella+dairy,
+  chicken-oyster "ostron" alias gone, liver-pate+dairy.
+  NOTE: existing recipes keep pre-fix verdicts until the retag bump ships (part of the
+  seafood config fix plan below).
 - [ ] **SYNC BUG: comma-separated aliases not split** (S, code)
   `sync-ingredients.ts` splits aliases on `;` only; rows using commas sync as one
   comma-joined array element (seen live on `vegofärs`, `tartar-sauce`). Split on both.
