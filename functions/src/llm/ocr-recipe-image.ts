@@ -56,6 +56,13 @@ interface OcrRecipeImageRequest {
    * retry path. Absent → no instruction, backward-compatible.
    */
   locale?: string;
+  /**
+   * BUT-684: when true, the handler selects the handwritten OCR system prompt
+   * (`imageOcrHandwrittenSystemPrompt`) instead of the printed one. Absent or
+   * false → printed prompt, behaviour unchanged. Set by the client's
+   * "handwritten recipe" toggle (separate follow-on task).
+   */
+  isHandwritten?: boolean;
 }
 
 interface OcrRecipeImageResponse {
@@ -260,7 +267,8 @@ export async function runOcrRecipeImage(
   opts: OcrCoreOptions
 ): Promise<OcrRecipeImageResponse> {
   const { data, authUidHash } = opts;
-  const { imageBase64, imageUrl, mimeType, context, locale } = data;
+  const { imageBase64, imageUrl, mimeType, context, locale, isHandwritten } =
+    data;
   const performOcr = opts.performOcr ?? defaultPerformOcr;
   const isAiDisabled = opts.isAiDisabled ?? defaultIsAiDisabled;
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
@@ -379,8 +387,17 @@ export async function runOcrRecipeImage(
     ({ bucket: experimentBucket, variant: promptVariant } =
       resolvePromptBucket(authUidHash, prompts.promptVariants));
 
+    // BUT-684: pick the handwritten OCR prompt when the client flags the image
+    // as handwritten; otherwise keep the printed prompt (default, unchanged).
+    // The A/B bucket resolved above is unaffected — it's still computed and
+    // logged for both paths; this only swaps which system-prompt string is
+    // sent to the vision model.
+    const ocrSystemPrompt = isHandwritten
+      ? prompts.imageOcrHandwrittenSystemPrompt
+      : prompts.imageOcrSystemPrompt;
+
     logger.info(
-      `[ocrRecipeImage] Processing image for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`,
+      `[ocrRecipeImage] Processing image for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source}, handwritten=${isHandwritten === true})`,
       { inputType: imageUrl ? "url" : "base64" }
     );
 
@@ -389,7 +406,7 @@ export async function runOcrRecipeImage(
       imageUrl,
       mimeType,
       context,
-      systemPrompt: prompts.imageOcrSystemPrompt,
+      systemPrompt: ocrSystemPrompt,
       locale,
     });
     ocrUsage = usage;

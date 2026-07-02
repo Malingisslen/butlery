@@ -25,7 +25,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "2.1.0";
+export const PROMPT_VERSION = "2.2.0";
 
 /**
  * Vertex AI region — EU data residency (BUT-607, BUT-1187).
@@ -347,6 +347,25 @@ VIKTIGT:
 - Identifiera receptets titel, ingredienser och instruktioner
 - Hantera handskriven text om möjligt
 - Svara med valid JSON som matchar schemat
+
+${SWEDISH_MEASUREMENTS}`;
+
+// BUT-684: dedicated system prompt for HANDWRITTEN recipe cards/notes. Same
+// output contract (identical JSON recipe shape) and same injection defense as
+// the printed prompt above — it only changes the model's reading expectations
+// so cursive, spelling drift, and missing diacritics parse better. Selected by
+// the `ocrRecipeImage` handler when the caller sets `isHandwritten: true`;
+// otherwise the printed prompt is used and behaviour is unchanged.
+export const IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att läsa HANDSKRIVNA recept från bilder på svenska.
+
+VIKTIGT:
+- Texten är handskriven och kan vara i skrivstil, ojämn eller slarvig — läs den ändå så noggrant du kan
+- Räkna med stavningsvariationer, inkonsekvent mellanrum och ord som är sammanskrivna eller avbrutna
+- Bokstäverna å, ä och ö kan sakna prickar eller ring, eller vara otydliga — tolka dem utifrån sammanhanget (t.ex. "gradde" → "grädde", "flode" → "flöde", "kott" → "kött")
+- Läs siffror och mått försiktigt; handskrivna 1 och 7, 0 och 6, samt komma och punkt kan lätt förväxlas
+- Extrahera hellre delvis än att vägra: om ett ord är oläsligt, gissa det mest sannolika utifrån sammanhanget eller utelämna bara det enskilda ordet — hoppa inte över hela raden och avbryt inte extraktionen
+- Identifiera receptets titel, ingredienser och instruktioner
+- Svara med valid JSON som matchar schemat (exakt samma format som för tryckta recept)
 
 ${SWEDISH_MEASUREMENTS}`;
 

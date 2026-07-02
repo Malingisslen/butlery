@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v2.1.0 — 2026-05-04 (current)
+## v2.2.0 — 2026-07-02 (current)
+
+**What changed:** Added a new dedicated OCR system prompt `IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT` for handwritten recipe cards/notes, alongside the existing printed `IMAGE_OCR_SYSTEM_PROMPT` (which is unchanged). The handwritten variant instructs the model to expect cursive/skrivstil, tolerate spelling variants and inconsistent spacing, infer missing/ambiguous å/ä/ö from context, read handwritten digits carefully, and prefer partial extraction over refusing when a word is unclear. Same injection defense and identical JSON output contract as the printed prompt. Selected at call time by the `ocrRecipeImage` callable when the client passes `isHandwritten: true`; absent/false keeps the printed prompt.
+
+**Why:** [BUT-684](https://linear.app/butlery/issue/BUT-684) — handwritten Swedish recipes parsed poorly because a single printed-oriented prompt gave the model no signal to expect cursive, spelling drift, or partial words. This is a new-prompt addition, not an edit to the printed path.
+
+**Expected impact:** Higher OCR recall + fewer outright refusals on handwritten recipe photos when the handwritten toggle is on. No expected movement on the printed/screenshot path (it still uses the unchanged `IMAGE_OCR_SYSTEM_PROMPT`). MINOR bump: additive new instruction set, backward-compatible parser (same schema).
+
+**Linked metrics / tickets:** [BUT-684](https://linear.app/butlery/issue/BUT-684). Watch OCR retry rate + import-success on handwritten imports once the client toggle ships.
+
+---
+
+## v2.1.0 — 2026-05-04
 
 **What changed:** `INGREDIENT_LINE_SYSTEM_PROMPT` expanded from 2 to 6 few-shot examples. Added EXEMPEL 3 (unicode-bråkdelar: ½ tsk, ¼ kopp, 1½ dl), EXEMPEL 4 (parenthetical weights: "kycklingfilé (ca 600 g)"), EXEMPEL 5 ("ca"/"cirka"/"ungefär" approximations resolved to numeric amounts with `cirka` in preparation), and EXEMPEL 6 (instruction-text leaking into the ingredient list, recovered as low-info preparation). No schema or output-shape change — additive few-shot bulk only.
 

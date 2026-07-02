@@ -94,6 +94,8 @@ function validRemoteDoc(): Record<string, unknown> {
     recipeExtractionSystemPrompt: "REMOTE_EXTRACTION_PROMPT",
     recipeEnhancementSystemPrompt: "REMOTE_ENHANCEMENT_PROMPT",
     imageOcrSystemPrompt: "REMOTE_OCR_PROMPT",
+    // BUT-684: required field mirrored end-to-end.
+    imageOcrHandwrittenSystemPrompt: "REMOTE_HANDWRITTEN_OCR_PROMPT",
     spokenContentSystemPrompt: "REMOTE_SPOKEN_PROMPT",
     ingredientLineSystemPrompt: "REMOTE_INGREDIENT_PROMPT",
     promptVersion: "9.9.9-remote",

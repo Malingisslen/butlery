@@ -2531,3 +2531,154 @@ records per-path, so asserting the `settings/preferences` write separately is a
 `find(w => w.path === users/${uid}/settings/preferences)`. Every remaining
 `isSearchable` reference in the test is now a **negative** assertion
 (`setWrites.every(w => !("isSearchable" in w.data))`). Suite 10/10, tsc clean.
+
+### 2026-07-02 — BUT-684 handwritten-recipe OCR prompt variant [Pattern discovered]
+
+Added a second OCR system prompt for handwritten recipe cards, selected at
+call time. Files: `gemini-client.ts` (new `IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT`
+const + `PROMPT_VERSION` 2.1.0→2.2.0), `PROMPT_CHANGELOG.md` (v2.2.0 entry),
+`prompts-config.ts` (new `imageOcrHandwrittenSystemPrompt` field mirrored
+end-to-end), `ocr-recipe-image.ts` (new `isHandwritten?: boolean` request flag +
+selection), new test `ocr-handwritten-prompt.test.ts` + `test:ocr-handwritten`
+script. Client toggle is a separate follow-on.
+
+**Param shape for the client**: `ocrRecipeImage` request gains
+`isHandwritten?: boolean` (default false). `true` → handwritten prompt; absent/
+false → printed prompt, byte-for-byte unchanged.
+
+**Patterns worth remembering**:
+
+- **Adding a NEW `*_SYSTEM_PROMPT` const trips the prompt-changelog CI guard.**
+  `prompt-changelog-guard.ts` keys on the `_SYSTEM_PROMPT` substring on any
+  +/- diff line, so a new prompt constant REQUIRES a `PROMPT_CHANGELOG.md`
+  entry in the same change or the gate fails. Bump `PROMPT_VERSION` too (the
+  bundle changed) — MINOR for an additive new prompt. The guard's unit tests
+  use synthetic diffs, so they stay green regardless.
+
+- **Mirroring a Firestore-backed prompt field = 5 edit sites in
+  `prompts-config.ts`**: the doc-shape docstring, the `PromptsConfig`
+  interface, `buildFallback()`, the `requiredStringKeys` array, and the
+  `validateRemoteDoc()` return literal. Miss any one and either the field is
+  silently absent (missing from return) or never validated.
+
+- **Adding a REQUIRED key is a breaking change to any live `system/prompts`
+  override doc.** Because validation is all-or-nothing (BUT-621), an existing
+  override doc that predates the new field now fails validation and the WHOLE
+  bundle reverts to compiled-in fallback until an operator adds the field.
+  The *prompt string sent* for the printed path is unchanged (fallback ==
+  current compiled-in const), but the reported `source`/`promptVersion` flips
+  to fallback. Operator action item: add `imageOcrHandwrittenSystemPrompt` to
+  the prod doc. This also breaks any existing prompts-config test fixture
+  (`validRemoteDoc()`) — it must gain the new field or the firestore-source
+  cases fail. Audit test fixtures whenever you add a required key.
+
+- **A/B bucket vs prompt selection are orthogonal in the OCR handler.**
+  `resolvePromptBucket()` only tags analytics (`experimentBucket`/
+  `promptVariant` on the timing log); it does NOT swap the prompt string. So
+  the handwritten selection (`isHandwritten ? handwritten : printed`) sits
+  independently and both keep working — bucket is still computed + logged for
+  both paths.
+
+- **Unit-testing `runOcrRecipeImage` without an initialized admin app**: the
+  handler has no seam for `getPromptsConfig` or `captureLlmSample`. Both call
+  `admin.firestore()`. `getPromptsConfig` catches the `app/no-app` throw and
+  falls back to compiled-in prompts (deterministic — the selected prompt then
+  equals the imported const). `captureLlmSample` throws its default-arg
+  `admin.firestore()` eagerly AFTER `performOcr` runs, surfacing as an internal
+  HttpsError. To test prompt SELECTION, capture `args.systemPrompt` inside the
+  `performOcr` seam (runs first) and wrap the call in try/catch — the assertion
+  is on the captured value, not the return. Same limitation already affects the
+  `ocr-validation.test.ts` accepted-URL integration case.
+
+### 2026-07-02 — BUT-684 handwritten-OCR prompt: adding a required prompts-config key breaks OTHER test fixtures [Bug fixed]
+
+BUT-684 added `imageOcrHandwrittenSystemPrompt` as a **required** key in
+`validateRemoteDoc()`'s `requiredKeys` list (all-or-nothing validation, same
+rationale as BUT-621). The author correctly updated the fixture in
+`prompts-config.test.ts` (`validRemoteDoc()`) — but a second module,
+`prompt-ab-bucket.test.ts`, builds its OWN inline `system/prompts` doc fixtures
+in THREE places (the "promptVariants populated / absent / malformed" cases) and
+none were updated. Effect after the change:
+
+- The **"populated"** case asserts `source === "firestore"` → now **FAILS**
+  (`expected source=firestore, got fallback`) because its doc lacks the new
+  required key, so the whole bundle reverts to compiled-in fallback.
+- The **"absent"** and **"malformed variants"** cases only assert
+  `promptVariants === undefined` → they still pass, but **for the wrong reason**:
+  the fallback bundle happens to have no `promptVariants`, so they no longer
+  exercise the firestore validation path they were written to test (silently
+  vacuous).
+
+Fix: add `imageOcrHandwrittenSystemPrompt: "handwritten ocr prompt"` to all
+three doc literals in `prompt-ab-bucket.test.ts` (the fixtures at the
+`imageOcrSystemPrompt: "ocr prompt"` lines), mirroring the staged
+`prompts-config.test.ts` update.
+
+**Pattern worth remembering — grep ALL fixtures when adding a required key.**
+The `requiredKeys` list in `prompts-config.ts` is validated against every inline
+`system/prompts` doc any test constructs. Adding a key there silently invalidates
+every hand-rolled fixture that omits it. Before committing a new required prompt
+field, run `grep -rn "imageOcrSystemPrompt:" src/__tests__/*.ts` (any always-present
+sibling key works as the anchor) and add the new field to each hit. Watch for the
+insidious variant: a fixture-turned-fallback whose assertion still passes because
+it only checks something the fallback bundle also satisfies — green but no longer
+testing the intended path.
+
+**BUT-684 review verdict (rest clean):** printed path is byte-for-byte unchanged
+when `isHandwritten` is falsy (ternary defaults to `prompts.imageOcrSystemPrompt`;
+only added a `handwritten=false` log field). Handwritten prompt keeps the same
+`${INJECTION_DEFENSE}` prefix + `${SWEDISH_MEASUREMENTS}` suffix and the same
+"valid JSON som matchar schemat" contract (schema is enforced downstream by
+`structureRecipe` regardless). A/B `resolvePromptBucket` is still computed and
+logged for both paths — the variant is metadata only and never overrode the
+system-prompt string, so bucketing/kill-switch/App-Check/rate-limit/PII-scrub are
+untouched. No region change, no new trigger, no idempotency surface. PROMPT_VERSION
+2.1.0→2.2.0 with changelog "(current)" marker moved — `prompt-changelog-guard`
+passes.
+
+**Deploy dependency (documented, not a defect):** because the new key is required,
+a live `system/prompts` override doc that predates this field will fail validation
+on deploy and revert the WHOLE bundle to compiled-in fallback until an operator
+adds `imageOcrHandwrittenSystemPrompt`. The PRINTED fallback (`buildFallback()`
+uses the unchanged compiled-in `IMAGE_OCR_SYSTEM_PROMPT`) is identical to what
+shipped, so there is NO behaviour change **unless** an operator had hot-fixed a
+prompt in Firestore that diverges from compiled-in — in which case all five
+prompts silently revert. Coordinate: add the field to the live override doc as
+part of the deploy, not after. Reporting-only change otherwise (`source` flips to
+`fallback`, `promptVersion` reports 2.2.0).
+
+### 2026-07-02 — BUT-684 follow-up: handwritten prompt made OPTIONAL, not required [User correction]
+
+A /code-review flagged the required-key design from the entry above as a deploy
+footgun and it was corrected. **Superseding guidance:** a NEW Firestore-backed
+prompt field must be OPTIONAL with per-field fallback, NOT added to
+`requiredStringKeys`.
+
+Why required was wrong: the config validation is all-or-nothing (BUT-621). Any
+EXISTING production `system/prompts` override doc — valid under the prior 6
+keys — would fail validation the moment the 7th key became required, silently
+reverting EVERY prompt (extraction, enhancement, printed OCR, spoken,
+ingredient) to compiled-in defaults and losing all operator tuning until
+someone hand-edits the prod doc. That's a data-loss-of-tuning event triggered
+purely by deploying code, gated on a manual prod-doc edit.
+
+The fix in `validateRemoteDoc()`:
+- Keep `requiredStringKeys` at the original 6 (do NOT add the new key).
+- In the return, default the new field per-field:
+  `typeof raw.x === "string" && raw.x.trim() ? raw.x : COMPILED_IN_CONST`.
+- A doc lacking the field still validates as `source: "firestore"`, keeps all
+  its other overrides, and the new field gracefully falls back. Removes the
+  deploy dependency entirely.
+
+**General rule for this codebase:** all-or-nothing bundle validation means
+"required key" == "breaking change to every existing override doc". Reserve
+required status for keys present since the doc's inception. Every ADDED key
+should be optional + per-field fallback. This contradicts the instinct (from
+the original 5 prompts) that "all prompts are required for version integrity" —
+that instinct only holds for the original shape, never for additions.
+
+Test to pin it: a fixture doc WITHOUT the new key must assert
+`source === "firestore"` AND that a sibling override (e.g. `imageOcrSystemPrompt`)
+survives AND the new field equals the compiled-in const. See
+`ocr-handwritten-prompt.test.ts` case [6]. (The field-present fixtures in
+`prompts-config.test.ts` / `prompt-ab-bucket` are now harmless either way.)

@@ -22,6 +22,7 @@
  *     recipeExtractionSystemPrompt: string,
  *     recipeEnhancementSystemPrompt: string,
  *     imageOcrSystemPrompt: string,
+ *     imageOcrHandwrittenSystemPrompt?: string, // BUT-684 handwritten variant (OPTIONAL; per-field fallback)
  *     spokenContentSystemPrompt: string,
  *     ingredientLineSystemPrompt: string,
  *     promptVersion: string,           // bump on every doc edit
@@ -40,6 +41,7 @@ import {
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
   RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
   IMAGE_OCR_SYSTEM_PROMPT,
+  IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT,
   SPOKEN_CONTENT_SYSTEM_PROMPT,
   INGREDIENT_LINE_SYSTEM_PROMPT,
 } from "./gemini-client";
@@ -68,6 +70,16 @@ export interface PromptsConfig {
   recipeExtractionSystemPrompt: string;
   recipeEnhancementSystemPrompt: string;
   imageOcrSystemPrompt: string;
+  /**
+   * BUT-684: system prompt for handwritten recipe images. Firestore-overridable,
+   * but OPTIONAL in the remote doc: a doc lacking it still validates as
+   * `source: firestore` and this field falls back per-field to the compiled-in
+   * `IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT` (so pre-existing override docs keep
+   * their other tuning). Always a non-empty string on the resolved config. The
+   * `ocrRecipeImage` handler selects it when the request sets
+   * `isHandwritten: true`.
+   */
+  imageOcrHandwrittenSystemPrompt: string;
   spokenContentSystemPrompt: string;
   ingredientLineSystemPrompt: string;
   promptVersion: string;
@@ -118,6 +130,7 @@ function buildFallback(): PromptsConfig {
     recipeExtractionSystemPrompt: RECIPE_EXTRACTION_SYSTEM_PROMPT,
     recipeEnhancementSystemPrompt: RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
     imageOcrSystemPrompt: IMAGE_OCR_SYSTEM_PROMPT,
+    imageOcrHandwrittenSystemPrompt: IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT,
     spokenContentSystemPrompt: SPOKEN_CONTENT_SYSTEM_PROMPT,
     ingredientLineSystemPrompt: INGREDIENT_LINE_SYSTEM_PROMPT,
     promptVersion: FALLBACK_PROMPT_VERSION,
@@ -177,10 +190,24 @@ function validateRemoteDoc(
     // If invalid, silently omit — experiment simply isn't active.
   }
 
+  // BUT-684: the handwritten OCR prompt is OPTIONAL and backward-compatible.
+  // A pre-existing `system/prompts` doc (valid under the original 6 keys) must
+  // keep validating as `source: firestore` and retain all its other overrides —
+  // it must NOT invalidate the whole bundle. So this field falls back
+  // PER-FIELD to the compiled-in constant when absent or non-string/empty,
+  // rather than being required. This also removes any deploy dependency on an
+  // operator hand-editing the prod doc.
+  const rawHandwritten = raw.imageOcrHandwrittenSystemPrompt;
+  const imageOcrHandwrittenSystemPrompt =
+    typeof rawHandwritten === "string" && rawHandwritten.trim().length > 0
+      ? rawHandwritten
+      : IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT;
+
   return {
     recipeExtractionSystemPrompt: raw.recipeExtractionSystemPrompt as string,
     recipeEnhancementSystemPrompt: raw.recipeEnhancementSystemPrompt as string,
     imageOcrSystemPrompt: raw.imageOcrSystemPrompt as string,
+    imageOcrHandwrittenSystemPrompt,
     spokenContentSystemPrompt: raw.spokenContentSystemPrompt as string,
     ingredientLineSystemPrompt: raw.ingredientLineSystemPrompt as string,
     promptVersion: (raw.promptVersion as string).trim(),

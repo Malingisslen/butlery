@@ -61,6 +61,7 @@
     "test:ocr-validation": "ts-node src/__tests__/ocr-validation.test.ts",
     "test:notification-payload": "ts-node src/__tests__/notification-payload.test.ts",
     "test:prompts-config": "ts-node src/__tests__/prompts-config.test.ts",
+    "test:ocr-handwritten": "ts-node src/__tests__/ocr-handwritten-prompt.test.ts",
     "test:quiet-hours": "ts-node src/__tests__/quiet-hours.test.ts",
     "test:notification-effectiveness": "ts-node src/__tests__/notification-effectiveness.test.ts",
     "test:north-star": "ts-node src/__tests__/north-star-weekly.test.ts",
