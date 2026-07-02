@@ -2,7 +2,8 @@
   "role": "Claude AI-Harness Owner / Agent-Ops Lead",
   "stale_since": "2026-07-02",
   "triggers": [
-    "tasks/pooled-ratings-proposal-draft.md"
+    "tasks/pooled-ratings-proposal-draft.md",
+    "tasks/todo.md"
   ],
   "last_stamped": "2026-07-02"
 }
