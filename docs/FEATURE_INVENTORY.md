@@ -47,7 +47,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **ENG-15 Predictive cache, ENG-14 Image optimization, ENG-06 personal-tag rule engine** — background services with adjacent coverage but no dedicated tests.
 
 **Notes & known stubs surfaced during discovery:**
-- **MENU-10** — `MenuSocialManager.loadImportedMenuData` is a stub returning null (imported-menu full-data loading not implemented).
+- **MENU-10** — ~~stub note~~ corrected 2026-07-02: `loadImportedMenuData` reads and parses real Firestore data end to end (workflow-map trace).
 - **SET-12 FAQ** content is hardcoded Swedish, not localized via the normal l10n system — inconsistent with the rest of the app.
 - **Intentional overlaps:** Cook-snaps appear as both REC-12 (gallery on the recipe page) and SOC-16 (the social feature) — same feature, two surfaces. Friend groups appear as SOC-05 and GRP-01 (friend-categorization vs. the group surface). The "social discovery dashboard" was deliberately removed and is confirmed gone.
 
@@ -604,7 +604,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **User story:** As a user, I want to send a weekly menu to friends and import menus they send me so that we can swap meal plans.
 - **Expected behavior:** Distributes a menu (optional message + title) to selected friends; recipients mark-as-viewed and import. Tracks sharing stats + activity summary.
 - **Edge cases:** Share validates non-empty menu/name/≥1 friend; failures log/rethrow.
-- **Known stub:** `loadImportedMenuData` returns null (imported-menu full-data loading not implemented).
+- **Corrected 2026-07-02:** `loadImportedMenuData` reads real Firestore data end to end — the old stub note was stale (workflow-map trace).
 - **Test coverage:** Verified — `menu_social_manager_test.dart`, `social_menu_operations_test.dart`, `firebase_shared_menu_repository_test.dart`, `shared_menu_viewmodel_test.dart`.
 
 #### MENU-11: Unified shopping list management (CRUD + items + categories + export)
