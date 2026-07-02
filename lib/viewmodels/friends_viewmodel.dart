@@ -5,7 +5,6 @@
 
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -23,16 +22,14 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_profile_cache_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_selection_manager.dart';
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
-import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Friendship status between current user and another user
 enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
 
 /// Coordinates social relationship operations through service and manager delegation.
-class FriendsViewModel extends ChangeNotifier
-    with StateNotifierMixin, AsyncOperationMixin {
+class FriendsViewModel extends BaseViewModel {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
   final AnalyticsService _analyticsService;

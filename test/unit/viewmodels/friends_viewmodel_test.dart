@@ -6,6 +6,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -496,6 +498,40 @@ void main() {
         expect(threw, isTrue);
         expect(viewModel.isCreatingGroup, isFalse);
       });
+
+      test(
+        'group creation failure surfaces the group-specific error, not the '
+        'generic executeAsync error (BUT-520 shadowing contract)',
+        () async {
+          // Proves that after the BaseViewModel migration, createGroup's
+          // failure path still shows the user the SPECIFIC "could not create
+          // group" message. Base executeAsync now writes the generic
+          // errorUnexpected string to super._error; the FriendsViewModel.error
+          // getter must place _groupCreationError ahead of super.error so the
+          // specific message shadows the generic one. If the getter override
+          // were dropped or reordered during migration, the user would see the
+          // generic message instead — this test would catch that regression.
+          mockCategories.setCategoriesState(shouldSucceed: false);
+
+          try {
+            await viewModel.createGroup(name: 'Test Group');
+          } catch (_) {
+            // Throw is asserted by the sibling test; here we inspect state.
+          }
+
+          expect(
+            viewModel.groupCreationError,
+            equals(AppLocale.current.errorCouldNotCreateGroup),
+          );
+          expect(
+            viewModel.error,
+            equals(AppLocale.current.errorCouldNotCreateGroup),
+          );
+          // The generic base-class error must NOT leak through the getter.
+          expect(viewModel.error, isNot(AppLocale.current.errorUnexpected));
+          expect(viewModel.hasError, isTrue);
+        },
+      );
 
       test('should get friends in group', () {
         // Arrange
