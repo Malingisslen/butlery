@@ -1,141 +1,137 @@
-# Sprint Backlog
+# Ingredient Section Headers (recipe sub-groups like "Deg" / "Fyllning" / "Glasyr")
 
-## Sprint: weekly-menu personalization (linchpin) — 2026-07-01
+> After approval: copy this plan to `tasks/todo.md` (workflow-discipline requirement) before starting chunk 1.
 
-Building the autonomous-laned tickets from the malin decision queue. Batch 1 = the
-menu-scoring cluster (shares `menu_service.dart` `_recipeWeight`). Remaining autonomous
-tickets follow in later batches.
+## Context
 
-### Agent A: flutter-developer — menu scoring (Tier C, single-panel: Product Manager)
-- [ ] **A1. Pantry-aware weighting** `[Tier C]` — `lib/services/menu_service.dart`: gentle pantry-overlap boost via `PantryService.getMatchingRecipes` (⚠️ ticket's `scoreRecipesByPantry` is stale — corrected in BUT-1321 body). (BUT-1321)
-  - Acceptance: higher pantry-match out-weights identical no-match · zero match → weight unchanged · matches fetched once per generation · analyze clean, existing menu tests green
-- [ ] **A2. Cuisine-affinity + cooking-skill bias** `[Tier C]` — same file: affinity-cuisine boost from `UserProfile.cuisineAffinities`; gentle skill-based complexity bias from `cookingSkillLevel`. (BUT-1320 scoring half)
-  - Acceptance: affinity cuisine out-weights non-affinity sibling · beginner skill biases toward simpler recipe · `MenuScoringContext.empty` yields pre-change weights (parity) · never excludes a recipe
+Recipes with multiple components (sponge + icing, dough + filling) currently import and display as one flat ingredient list. The pipeline already *detects* Swedish section headings at import (line classifier, section-detector vocabulary, and the Gemini prompt) but throws the information away — the Gemini prompt even flattens group names into the free-text `preparation` field for lack of a proper slot. Malin decided: build it as **one feature — capture at import + display + full editing** (no read-only phase; heuristic-detected headings must be user-correctable from day one).
 
-### Deferred to later batches (autonomous lane)
-- BUT-1320 Settings UI (Tier B) · BUT-1324 protein/category balance · BUT-1322 household-size scaling · BUT-1323 who's-eating (L) · BUT-1454 minor safety (full-panel) · BUT-1360 offline polish · BUT-945 easier rejoin · BUT-684 handwritten OCR · BUT-520 6 priority VM migration
+Stakeholder router verdict: **full-panel** (12 roles). Panel result: **no blocks**; all conditions are folded in below as binding acceptance criteria.
 
-**Carried PM conditions (bind when these batches build):**
-- BUT-1324 (protein pass): add a test with a pool triggering BOTH cuisine (3+ same) AND protein (3+ same) clusters simultaneously, asserting the final selection satisfies both constraints (or documents which pass wins) — the two post-selection swap passes must not undo each other.
-- BUT-1320 Settings UI: point-of-use copy must say cuisine/skill *tunes menu suggestions* (today they read as a social "cooking identity" bio field) — ship in the same release as the scoring so users attribute the menu change.
+## Decided design (do not re-litigate)
 
-### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` · relevant unit tests · code-reviewer + testing-specialist on staged · commit + push · Linear: Tier C → In Review + notify
+- New optional `section: String?` on `RecipeIngredient` + `ParsedIngredient`, serialized only inside the existing `structuredIngredients` array. **The flat `ingredients` List<String> NEVER contains heading lines** (allergen tagging reads it — this is the safety invariant of the whole feature). No schemaVersion bump (additive optional key; old readers ignore it), no Firestore migration, no rules change, no new collections/indexes.
+- Contiguous runs of the same `section` value render as one subheading. Missing/misaligned section data → render exactly as today (fail open).
+- Sections persist through duplication/sharing/collaborative editing (they're part of the recipe doc). Shopping aggregation ignores sections (sugar in Deg + Fyllning still merges). Old recipes stay flat unless re-imported or manually sectioned in the form ("Lägg till rubrik" works on any recipe).
+- Capture is gated behind one kill-switch feature flag (`ingredient_section_capture`, default on) using the existing feature-flag service — rollback lever if heuristics misfire broadly (PM condition). Display/editing always on (inert without data).
 
----
+## Design summary
 
-## Sprint: malin decision-queue — 2026-07-01
+**Data (chunks 1–2).** `section` field + JSON round-trip in `recipe_ingredient.dart` (via SerializationUtils, `copyWithSection` to avoid null-vs-unset ambiguity) and `parsed_ingredient.dart`. `structured_ingredient_deriver.dart`: `deriveAll(lines, {reuse, sections})` where `sections` is authoritative; **fix the byRaw reuse collision** (duplicate raw lines like "1 dl socker" under two headings) with a FIFO multimap (`Map<String, Queue<RecipeIngredient>>`). `recipe_operations.dart`: in-place edit preserves old entry's section; append inherits the last section; full line rewrite drops section→null (accepted degradation).
 
-Autonomous Tier-A backlog is nearly drained (only BUT-1240 carries `autonomous`, and it's
-genuinely infra-blocked). The headline of this `malin` run is the Phase 3.6 decision queue on
-the 23 `need-malin` tickets. The autonomous half is one clean win + one measured/conditional.
+**Import capture (chunks 3–6).**
+- *Cloud (LLM)*: `section` (nullable STRING) added to `INGREDIENT_SCHEMA` in `gemini-client.ts`; replace the flatten-into-preparation rule (line ~268) with a section-field rule + explicit "don't duplicate the group name in preparation"; rework EXEMPEL 4. `PROMPT_VERSION` 2.2.0 → **3.0.0 (MAJOR — schema change)** + `PROMPT_CHANGELOG.md` entry (hard gate; `prompt-changelog-guard.test.ts` enforces sync). Covers extract, OCR (printed + handwritten), spoken — all share the schema. **No new LLM calls, no model change (stays gemini-2.5-flash-lite), no rate-limiter weight change, no free-text elaboration in the schema.**
+- *Client LLM bridge*: `ExtractedIngredient.section` → `ParsedIngredient`; **fix `llm_tier._deduplicateIngredients`** to key on `name|section` so same-name ingredients in different sections never merge.
+- *Text/social*: `swedish_line_classifier.dart` — the `sectionHeader` discard (`break` at ~304) becomes "set currentSection" for ingredient-side sub-headers; `ParsedRecipeStructure` gains index-aligned `ingredientSections` (incl. isolate serialization); applied post-`parseLines` in `rule_based_tier.dart`.
+- *schema.org*: conservative pre-scan in `schema_org_tier._extractIngredients`: heading iff (trailing `:` OR RecipeSectionDetector vocabulary) AND no digit AND no Swedish unit token AND length ≤ 40 AND a line follows. **Every uncertain case stays an ingredient** — a false heading would remove an allergen-bearing line from tagging input, the one direction we must never err.
 
-### Agent A: e2e-test-specialist — age-gate journey
-- [ ] **A1. e2e under-15 rejection journey test** `[Tier A]` — `test/views/onboarding_journey_test.dart`: make the stub age-gate "next" handler call `verifyAgeGate()` and branch like production (`OnboardingView._handleNext` switch), add an under-15 journey case. (BUT-1437)
-  - Acceptance: (1) the stub `_OnboardingBody` age-gate page advance calls `viewModel.verifyAgeGate()` and switches on `AgeGateAdvanceResult` exactly like production (compliant→advance, rejected→route-to-start, error→stay) · (2) new case: under-15 year picked → `verifyAge` mock returns false → rejection UI shown + routed to a start/auth screen, no allergen/UGC page reachable · (3) the existing compliant journey still completes AND now routes through the gate: `verifyAge` called exactly once (at the gate, not re-called at completion) · (4) `dart analyze --fatal-infos` clean; file's tests pass.
-  - Stakeholders: Software Architect, Product Manager (router: `single`) — folded into the e2e-test-specialist's faithful-mirror check.
+**Display (chunks 7–8).** New sealed `IngredientDisplayRow` (heading|line, ~70 lines, `lib/models/recipe/ingredient_display_row.dart`); `build(structured, displayLines)` fails open on length mismatch; works because `PortionScalerLogic.scaleEntries` preserves 1:1 order. Cooking mode: rows cached in the viewmodel (ctor + `updatePortions`), headings excluded from the substitution long-press. Detail view: computed + memoized inside `RecipeDetailContent` (it already receives both inputs; threading a channel through `recipe_detail_actions` would touch 4 files for nothing). Tablet reuses the same widget — zero changes.
 
-### Conditional (measured, not blind)
-- [ ] **BUT-1149 restore coverage floor 60.0** `[Tier A]` — GATED on a measured run. Flip `OVERALL_FLOOR` 55.0→60.0 in `.github/workflows/test.yml:305` ONLY if the live coverage run clears 60%. Strong prior it's still <60 (ticket: stalled 55.5%, needs 4-6 more test batches) → then leave open with the measured number, do NOT flip blind.
+**Editing (chunks 9–11).** Sidecar row model — `FormFieldsManager` stays line-only (shared with instructions/tags; only gains a `moveAt` primitive). New `IngredientSectionState` (~220 lines, new file) owns the ordered row list (`HeadingRow(id)` | `LineRow` markers), heading controllers, `sectionsForValues()` (single derivation point at save), `seedFromStructured()`, reorder row→line index mapping (adjust once, §test matrix), caps (max 20 headings, 60 chars). `RecipeFormState.createRecipe` filters values+sections in lockstep; **new `_seedStructured` field captured even for `isTemplate` loads — closes the discovered gap where imported sections would be silently dropped on first save** (template loads null out `_originalRecipe`, emptying the deriver's reuse). Collaborative sync needs no payload change (`syncToCollaborative` already ships full `createRecipe()` output; old clients ignore the unknown key). New `SectionedIngredientListBuilder` widget (~280 lines, new file) for ingredients only — `DynamicListBuilder` untouched for instructions/tags. Auto-append keys to the last *LineRow*; heading ValueKeys are id-stable (`hdr_${id}`), line keys index-based as today.
 
-### Needs you (Tier D — flagged, not worked)
-- BUT-1240 — needs a device-capable CI lane (Android emulator or desktop-native runner with the ONNX native lib) + a CI secret to download the NER model. Infrastructure/ops, can't be done from here.
-- BUT-1441 — needs a prod Firestore data migration (console/script run). I'll draft the one-off backfill script; you run it against prod.
+Form wireframe:
+```
+Ingrediens
+┌──────────────────────────────────────┐
+│ ≡  ▐ DEG                        [🗑] │   ← heading row (tinted, bold, no quantity)
+│ ≡  5 dl vetemjöl                [🗑] │
+│ ≡  25 g jäst                    [🗑] │
+│ ≡  ▐ FYLLNING                   [🗑] │
+│ ≡  75 g rumsvarmt smör          [🗑] │
+│ ≡  (tom rad — auto-append)           │
+└──────────────────────────────────────┘
+[ + Lägg till rubrik ]
+```
+Detail view:
+```
+INGREDIENSER            [– 4 port +]
+──────────────────────────────────
+DEG                                ← Semantics(header: true), titleSmall bold
+   5 dl │ vetemjöl            ⇄
+  25 g  │ jäst                ⇄
+FYLLNING
+  75 g  │ smör, rumsvarmt     ⇄
+```
+All styling via theme tokens (AppTextStyles, butleryColors, theme spacing; square design — no radius). New l10n keys in BOTH `app_sv.arb` + `app_en.arb`, butler voice (no exclamation marks): `recipeIngredientHeadingHint` ("Rubrik, t.ex. Deg"), `recipeAddIngredientHeading` ("Lägg till rubrik"), `a11yRemoveIngredientHeading`, `recipeMoveToSection` ("Flytta till rubrik").
 
-### Phase 3.6 — Malin decision queue (live)
-- 23 `need-malin` tickets + any Tier-D blockers. Capped at top ~6 by stakes (security/legal/launch first), prepped into decision briefs, asked live.
+## Binding acceptance criteria (from the stakeholder panel — these are gates, not notes)
 
----
+**Safety / allergen (Data-ML, Legal, Architect):**
+1. Test: `createRecipe().ingredients` and every import path's flat list contain no heading text, ever; a sectioned recipe produces the identical allergen/tagging result as its unsectioned twin (extend tagging_service suite).
+2. Test: no code path emits a `structuredIngredients` entry for a heading line (alignment invariant `entry.raw == ingredients[i]` extended to cover section presence).
+3. Test: section label text never feeds CONTAINS/FREE verdict logic.
+4. ≥15 new golden fixture cases for ambiguous headers ("Till glasyren:", "2 såser:", unit-bearing colon lines) proving the schema.org heuristic fails open; re-run the swedish_line_classifier golden set and re-verify (don't carry over) the "100% validation" claim in PARSER_ARCHITECTURE.md.
 
-## Plan: BUT-1450 — export notification-analytics collections (Art.15 ⊇ Art.17) — 2026-06-30 (rev. 2)
+**Round-trip integrity (Data-Integrations, Architect, Performance):**
+5. FIFO reuse test: two identical raw lines under different headings keep distinct sections through edit/reorder (byRaw fix).
+6. Test: same raw text moved from section A to B on save persists B (sections param authoritative over reuse).
+7. Round-trip test: import → edit (add/remove/reorder heading) → save → reload keeps `structuredIngredients[i].section` aligned with flat position; scale-up/down/save cycle preserves sections (scaler passes field through, never re-derives from position).
+8. Template/import save path test: LLM-captured sections survive first save (`_seedStructured`).
 
-Sensitive domain (GDPR / user data, data-export). Router tier: **full-panel**. Panel convened
-(Privacy/DPO, Legal, Security Architect, Performance Engineer) — all approve-with-conditions, no blocks.
+**Security:**
+9. `section` capped at 60 chars in the form AND truncated server-side in the CF output-shaping step (Gemini responseSchema can't enforce length). Rendered via plain `Text` widgets only — verify no HTML/markdown renderer in the path.
+10. Follow-up ticket (not this PR, required before GA): server-side shape validation for `structuredIngredients` entries — today the array is wholly client-controlled at the trust boundary.
 
-**Malin's decision on the one interpretive point:** the panel's Privacy/DPO + Legal advice to
-**anonymise the notification counterparty** is **consciously overridden**. Real-world exports
-(Facebook, Google) include the counterparty; Art.15(4) is a *balancing test*, not a blanket
-redaction rule; and the export should reflect what the user already saw in the app. So the
-counterparty is **included as seen**, not anonymised. This deviation gets an entry in
-`.claude/rules/accepted-deviations.md` so future Privacy/security reviews don't re-flag it.
+**Accessibility:**
+11. Heading rows carry `Semantics(header: true)` + localized labels in form, detail, and cooking mode (verify via `find.bySemanticsLabel` / `tester.ensureSemantics()`); heading delete button announces "ta bort rubrik", not the ingredient-delete label.
+12. Non-drag section reassignment: ingredient rows get a "Flytta till rubrik…" action (overflow/long-press menu, shown when ≥1 heading exists) — drag-only would be WCAG 2.1.1-inaccessible. Inline heading rename tap target ≥ 48dp.
 
-### Problem
-The account-deletion cascade `deleteNotificationAnalytics` (functions/src/account/account-deletion-cascade.ts:634)
-erases four collections, but DataExportService never exports them — a right-of-access gap
-(export must ⊇ erased):
-- `notification_history`     WHERE userId == uid
-- `notification_batches`     WHERE userId == uid
-- `notification_engagement`  WHERE userId == uid
-- `notification_delivery`    WHERE senderId == uid  (notifications the user triggered)
-- `notification_delivery`    WHERE targetUserId == uid (notifications delivered to the user)
+**LLM / cost / vendor (FinOps, Vendor, Privacy, Monetization):**
+13. PROMPT_VERSION 3.0.0 + changelog entry in the same commit (guard test enforces); before/after run on the existing sample-capture loop to confirm no exact-match-rate regression and no group-word duplication in `preparation`.
+14. No new LLM calls, no model tier change, no rate-limiter weight change; token growth rides existing cost telemetry (verify `estimatedCost` still logged).
+15. Verify the GDPR export path has no field allowlist on `structuredIngredients` that would drop `section` (Art. 15 completeness).
 
-### Approach (mirror the just-shipped BUT-1396 pattern)
-Read-only export reads through `FirebaseDataExportRepository` (`_guardSelfExport` →
-`validateOwnership`), surfaced via `PreferencesExportManager`, wired into
-`DataExportService.exportUserData()`. No deletion change, no firestore.rules change.
+**Product (PM):**
+16. Defined empty-heading behavior: headings with no following lines are form-only artifacts, produce nothing at save (documented in `IngredientSectionState`); delete-heading merges lines into the previous section, immediate, no dialog.
+17. Manual sectioning affordance ("Lägg till rubrik") available in the edit form for existing recipes — in scope, chunk 11.
+18. Lightweight analytics event: recipe saved with ≥1 section (existing AnalyticsEvents infra).
+19. Kill-switch flag `ingredient_section_capture` gates all three capture points.
 
-### Pre-implementation verification (Step 0 — drives the counterparty representation)
-- Read where `notification_delivery` + `notification_history` are written (send-notification.ts
-  and friends) to confirm each record's real fields.
-- Decide the counterparty representation **from reality**: prefer the human-readable name /
-  notification content the user already saw; include a bare internal Firebase UID only if no
-  friendlier field exists. Do NOT add expensive bulk UID→name profile lookups for a rare export.
-- Confirm these notifications are user-facing (things the user actually saw). If any category
-  involves a counterparty the user never saw (hidden third-party telemetry), flag it before
-  including — that narrow case is the only place the panel's caution could still apply.
+## Implementation chunks (≤3 prod files each, per agent-timeout guidance; commit each with its gates)
 
-### Files
-1. `lib/repositories/firebase/firebase_data_export_repository.dart`
-   - +4 `ExportResourceType` enum values (notificationHistory, notificationBatches, notificationEngagement, notificationDelivery).
-   - +5 methods via `_queryList`: history/batches/engagement (userId==uid); delivery **sent** (senderId==uid) and **received** (targetUserId==uid) as TWO separate queries (Firestore has no cross-field OR). History sorted `descending` on sentAt/createdAt; explicit `maxDocuments` per collection.
-2. `lib/services/account/export/export_pagination_helper.dart`
-   - Add `exportLimits` entries: notification_history 2000, notification_delivery 1000, notification_batches 500, notification_engagement 1000. Passed as `maxDocuments` (NOT the 10k default).
-3. `lib/services/account/export/preferences_export_manager.dart`
-   - +manager methods returning `{data, total_count, truncated, note}`. The delivery method merges sent+received and **includes the counterparty as the user saw it** (human-readable where stored; no anonymisation). In-code comment recording the Art.15(4) balancing call (include, per Malin's decision + industry norm).
-4. `lib/services/account/data_export_service.dart`
-   - +4 futures keys (notification_history, notification_batches, notification_engagement, notification_delivery).
-5. `functions/src/account/account-deletion-cascade.ts`
-   - Add the 4 collections to the GDPR probe/coverage array (~line 85) so the export⊇erased invariant stays self-checking.
-6. `.claude/rules/accepted-deviations.md` — entry: notification counterparty is exported (not anonymised) — Malin's call, Art.15(4) balancing + industry norm; don't re-flag.
-7. `docs/security/` — Art.30 record entry for notification analytics (lawful basis, retention, export treatment = included-as-seen), following the family-data-retention.md pattern.
-8. `assets/legal/privacy_policy_en.md` + `_sv.md` — add "notification delivery and engagement records" as a disclosed data category in the Art.15/30 section.
-9. `test/unit/services/account/data_export_service_test.dart` — new tests.
+| # | Files | What |
+|---|---|---|
+| 1 | recipe_ingredient.dart, parsed_ingredient.dart, structured_ingredient_deriver.dart | `section` field + serialization + `copyWithSection`; deriveAll(sections:) authoritative; FIFO byRaw fix |
+| 2 | recipe_operations.dart (+tests) | edit ops preserve/inherit section; recipe JSON/Firestore round-trip tests (recipe_unified needs no code change) |
+| 3 | gemini-client.ts, PROMPT_CHANGELOG.md | schema + prompt rule + EXEMPEL 4; v3.0.0; CF-side 60-char truncation |
+| 4 | llm_models.dart, ingredient_conversion.dart, llm_tier.dart | ExtractedIngredient.section; cross-section dedup fix |
+| 5 | swedish_line_classifier.dart, rule_based_tier.dart | keep sub-headers as section context; `ingredientSections` incl. isolate round-trip |
+| 6 | schema_org_tier.dart (+ recipe_section_detector.dart helper if needed) | conservative fail-open heuristic; flag-gated |
+| 7 | ingredient_display_row.dart (new), cooking_mode_viewmodel.dart, cooking_mode_view.dart | display rows + cooking-mode panel |
+| 8 | recipe_detail_content.dart | memoized rows + heading rendering (HTML preview via `docs/design/previews/_butlery-template.html` first — one preview covering BOTH the detail-view heading style and the form heading row used in chunk 11) |
+| 9 | ingredient_section_state.dart (new), form_fields_manager.dart | sidecar row model; `moveAt` primitive (reorderAt refactored, existing callers identical) |
+| 10 | recipe_form_state.dart, recipe_backward_compatibility_mixin.dart | seed/save/draft wiring; heading mutation API + syncToCollaborative |
+| 11 | sectioned_ingredient_list_builder.dart (new), edit_recipe_view.dart, skriv_sjalv_recept_view.dart (+2 .arb, gen-l10n) | form UI incl. "Flytta till rubrik" non-drag path; per `.claude/rules/html-previews.md`, add the heading-row / sectioned-list component to `_butlery-components.html` (approved via the chunk-8 preview) before writing the Dart widget |
+| 12 | tests only | cross-cutting: allergen twin test, aggregator ignores sections, golden fixtures |
 
-### Acceptance criteria (binding)
-- AC1. Export output contains keys `notification_history`, `notification_batches`, `notification_engagement`, `notification_delivery`, each scoped to the calling user.
-- AC2. `notification_delivery` is two queries (senderId + targetUserId), merged and de-duplicated.
-- AC3. The counterparty is **included as the user already saw it** (name / notification content), not anonymised — matching how mainstream exports format interaction data. Bare internal Firebase UIDs are not dumped where a human-readable field exists. (Malin's decision, overriding the Privacy/Legal redaction recommendation.)
-- AC4. Each section paginated with its explicit per-collection limit and emits `truncated: true` + a note when capped; `DataExportService` surfaces it in `export_metadata.truncated_collections`.
-- AC5. `notification_history` returns most-recent-first.
-- AC6. The four collections are added to the deletion-cascade GDPR probe array.
-- AC7. The override (include, not anonymise) is recorded in `.claude/rules/accepted-deviations.md`.
-- AC8. Art.30 record updated; privacy policy (EN+SV) lists the new data category.
-- AC9. Tests prove: each section present; an OTHER user's first-party rows excluded (ownership-negative on userId-scoped collections); empty-safe (keys present, no error, for a user with none); truncation flag when over the cap.
-- AC10. No firestore.rules change; `dart analyze --fatal-infos` clean; CF `tsc` clean.
+New logic lives in the three new files — `recipe_form_state.dart` (803 lines) and `recipe_detail_content.dart` (859) get thin wiring only (both on/near the accepted-large-files list; check rationale rows before touching). If `recipe_operations.dart` (465) tips over 500 in chunk 2, split the facade then, not later.
 
-### Negative constraints
-- Don't dump bare internal Firebase UIDs where a human-readable counterparty field exists.
-- Don't include any counterparty data the user never saw in-app (the narrow hidden-telemetry case).
-- Don't change any deletion behavior or any existing export section's shape.
+## Verification (per CLAUDE.md rule #5 — part of the work)
 
-### Verification + gates
-- dart analyze; the new unit tests; firebase-backend-security + code-reviewer + testing-specialist; cloud-functions-specialist for the cascade-probe edit.
+- Per chunk: `dart analyze --fatal-infos` clean; the named test suites in the chunk pass; **plus `flutter test test/architecture/architecture_test.dart` locally before every push** (3×-recurring lesson: `?? ''` ban, raw-spinner ban, EdgeInsetsDirectional guard, AppColors keep-set grep — live risks in chunks 7/8/11) and a quick `git diff | grep "?? ''"` self-check on UI chunks; commit gates: code-reviewer + testing-specialist markers on all Dart chunks; cloud-functions-specialist on chunk 3; `/code-review high` (xhigh for chunk 3 per CLAUDE.md).
+- Watch for `docs/onboarding/workflow-map.stale` after edits to mapped import/parsing code — if stamped, re-trace only the triggered flows, update the map JSON, run `tools/check_workflow_map.py`, delete the marker, commit both (CLAUDE.md rule).
+- End-to-end (`/verify` before final commit): in Chrome — import a text recipe with "Deg:/Fyllning:" headings → headings appear in detail view; open in edit form → rename a heading, drag an ingredient across it, save → detail reflects it; scale portions → headings intact; add the recipe to a shopping list → duplicated ingredient names merged (no section split); recipe without sections renders pixel-identical to today.
+- Full-suite runs for touched areas (per lessons.md: run EVERY existing suite constructing changed classes — especially recipe_form_state/viewmodel suites after chunk 10).
 
-### Rollback
-Purely additive (new export sections + doc edits). Revert the single commit — no migration, no
-change to existing export/deletion flows.
+## Risks
+
+- **Old-client collaborative save wipes sections** (re-derives structuredIngredients without the field): accepted graceful degradation — no crash, flat list intact; next sectioned edit restores. Release-note it.
+- **Prompt MAJOR bump regression**: mitigated by the explicit no-duplication rule, reworked example, and the before/after sample run (criterion 13).
+- **Mixed-row reorder is new surface**: pinned by the 4-way direction/type test matrix + drag-across-heading test; heading keys id-stable to avoid controller detach mid-drag.
+- **Draft restore loses empty (line-less) headings**: accepted, documented.
+
+## Follow-ups (out of scope, to ticket)
+
+- Server-side validation of `structuredIngredients` entry shape (security criterion 10).
+- Telemetry counter for schema.org heading-heuristic hits/rejections (flywheel visibility).
+- Consider sections in share/print output (render headings in `share_service` / print HTML) — cosmetic, separate small ticket.
 
 ## What this means in plain language
-- This is about your "download all my data" feature, which the law requires to be complete.
-- Right now it leaves out four behind-the-scenes notification record types (history of what was sent to you, delivery records, engagement stats). This adds them, so the download is honest and complete.
-- **On the "other person" question you caught:** you were right — your export will show the other people the way you already see them in the app (e.g. "Anna shared a recipe with you"), exactly like Facebook/Google do. We're *not* blanking them out. The only thing we avoid dumping is the meaningless internal database ID — you get the name/notification you actually saw, not a 28-character code.
-- Big notification lists get capped (a few thousand most-recent) so the download doesn't balloon, and it'll clearly say if anything was trimmed.
-- I'll list these records in your privacy policy and the internal compliance record, and note our decision (show the counterparty, don't anonymise) so a future automated review doesn't "correct" it back.
-- **Risk:** very low. It only *adds* to the data export; nothing about how the app works changes; one-commit undo.
 
----
-
-## Sprint: compliance quick wins (need-malin, interactive) — 2026-06-30
-
-(archived — BUT-1395/1396/1399/1400 all Done + pushed; CF deletion leak fixed; Swedish email
-migration done; acquisition-rules CI red fixed. Follow-up BUT-1450 planned above.)
+- Recipes like kanelbullar will show their ingredients under small headings — "Deg", "Fyllning", "Glasyr" — instead of one long mixed list, both on the recipe page and in cooking mode.
+- New recipes you import get these headings automatically when the original recipe has them; your existing recipes stay exactly as they are until you re-import or add headings yourself.
+- In the recipe editor you can add a heading anywhere, rename it, delete it, and drag ingredients between sections — so if the app guesses a heading wrong, you can always fix it.
+- Shopping lists and allergy warnings work exactly as before — headings can never sneak in as fake ingredients, and we prove that with automatic tests.
+- There's an off-switch: if the automatic heading detection misbehaves after launch, we can turn the detection off remotely without an app update.
+- Running costs stay basically zero — no new AI calls, just a tiny bit of extra text on calls that already happen.
+- If something goes wrong it's easy to undo: old recipes are untouched, and the whole thing degrades back to today's flat list.
