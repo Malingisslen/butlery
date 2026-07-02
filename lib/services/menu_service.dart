@@ -14,6 +14,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
+import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/protein_category.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
@@ -583,12 +584,32 @@ class MenuService extends BaseService {
     final tr = r.tagResult;
     // Allergen/dietary checks need tagResult
     if (p.globalAllergenAvoid.isNotEmpty || p.globalDietaryRequire.isNotEmpty) {
-      if (tr == null) return true; // No tag data = include (can't determine)
+      if (tr == null) {
+        // No tag data = include (can't determine) — EXCEPT when a manual
+        // override says CONTAINS: a human correction can exist on an
+        // untagged recipe and must still exclude it (BUT-1464 review M1).
+        final ov = r.tagOverrides;
+        if (ov != null) {
+          for (final a in p.globalAllergenAvoid) {
+            if (ov.allergenOverrides[a] == TriState.contains) return false;
+          }
+          for (final d in p.globalDietaryRequire) {
+            if (ov.dietaryOverrides[d] == TriState.contains) return false;
+          }
+        }
+        return true;
+      }
+      // BUT-1464: trust-guarded reads — manual overrides win, stale FREE is
+      // not trusted for an explicit "utan X" prompt constraint.
       for (final a in p.globalAllergenAvoid) {
-        if (tr.getAllergenStatus(a) != TriState.free) return false;
+        if (MenuAllergenTrust.effectiveAllergenStatus(r, a) != TriState.free) {
+          return false;
+        }
       }
       for (final d in p.globalDietaryRequire) {
-        if (tr.getDietaryStatus(d) != TriState.free) return false;
+        if (MenuAllergenTrust.effectiveDietaryStatus(r, d) != TriState.free) {
+          return false;
+        }
       }
     }
     // Tag + ingredient exclusion (doesn't require tagResult)

@@ -12,6 +12,8 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -461,6 +463,11 @@ void main() {
           dietaryStatus: dietary ?? const {},
           coverage: 1.0,
           generatedAt: DateTime.now(),
+          // Fresh version: these tests pin UNKNOWN-vs-FREE handling for
+          // TRUSTED tags. An unversioned (stale) FREE downgrades to UNKNOWN
+          // by design since BUT-1464 — that path is tested in
+          // menu_household_allergen_test.dart.
+          generatorVersion: kTagGeneratorVersion,
         );
       }
 

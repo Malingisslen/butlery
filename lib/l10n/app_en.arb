@@ -850,6 +850,28 @@
     }
   },
   "menuChooseManually": "Choose recipes manually",
+  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recipe hidden due to family allergies} other{{count} recipes hidden due to family allergies}}",
+  "@menuHiddenByFamilyAllergies": {
+    "description": "Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuHiddenByOwnAllergies": "{count, plural, =1{1 recipe hidden due to your allergen choices} other{{count} recipes hidden due to your allergen choices}}",
+  "@menuHiddenByOwnAllergies": {
+    "description": "Neutral variant of menuHiddenByFamilyAllergies when only the user's own preferences filtered (BUT-1464 review M2)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuAllergenUnknownChip": "allergens unknown",
+  "@menuAllergenUnknownChip": {
+    "description": "Chip on a menu recipe card included despite unknown allergen status (BUT-1464)"
+  },
   "menuNoMoreRecipes": "No more recipes available for swap",
   "menuGenerateError": "Could not generate menu",
   "menuWeekBadgeWithCount": "Week {week} · {count} dishes",
@@ -1045,6 +1067,30 @@
   "settingsMenuTasteSubtitle": "Cuisines and skill level that shape the weekly menu",
   "menuTasteIntro": "These preferences steer your weekly menu suggestions.",
   "menuTasteSaved": "Your preferences have been saved.",
+  "settingsHouseholdSize": "Household size",
+  "@settingsHouseholdSize": {
+    "description": "BUT-1322: label for the household-size stepper in Settings > Menu & taste"
+  },
+  "settingsHouseholdSizeHint": "Recipes open pre-set to this many portions. Portion choices on a recipe always take precedence.",
+  "@settingsHouseholdSizeHint": {
+    "description": "BUT-1322: explains the household-size default and that the manual scaler wins"
+  },
+  "householdSizeRecipeDefault": "Recipe default",
+  "@householdSizeRecipeDefault": {
+    "description": "BUT-1322: shown in the stepper when no household size is set (null state)"
+  },
+  "householdSizeUseRecipeDefault": "Use recipe default",
+  "@householdSizeUseRecipeDefault": {
+    "description": "BUT-1322: button that clears the household size back to null"
+  },
+  "a11yDecreaseHouseholdSize": "Decrease household size",
+  "@a11yDecreaseHouseholdSize": {
+    "description": "BUT-1322: tooltip/semantics for the household-size minus button"
+  },
+  "a11yIncreaseHouseholdSize": "Increase household size",
+  "@a11yIncreaseHouseholdSize": {
+    "description": "BUT-1322: tooltip/semantics for the household-size plus button"
+  },
   "settingsSectionNotifications": "Notifications",
   "settingsSectionAccount": "Account & security",
   "settingsSectionAbout": "About",

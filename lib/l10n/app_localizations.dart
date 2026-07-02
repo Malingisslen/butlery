@@ -2156,6 +2156,24 @@ abstract class AppLocalizations {
   /// **'Välj recept manuellt'**
   String get menuChooseManually;
 
+  /// Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}'**
+  String menuHiddenByFamilyAllergies(int count);
+
+  /// Neutral variant of menuHiddenByFamilyAllergies when only the user's own preferences filtered (BUT-1464 review M2)
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept dolt på grund av dina allergival} other{{count} recept dolda på grund av dina allergival}}'**
+  String menuHiddenByOwnAllergies(int count);
+
+  /// Chip on a menu recipe card included despite unknown allergen status (BUT-1464)
+  ///
+  /// In sv, this message translates to:
+  /// **'allergener okända'**
+  String get menuAllergenUnknownChip;
+
   /// No description provided for @menuNoMoreRecipes.
   ///
   /// In sv, this message translates to:
@@ -2707,6 +2725,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inställningarna sparades.'**
   String get menuTasteSaved;
+
+  /// BUT-1322: label for the household-size stepper in Settings > Menu & taste
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållets storlek'**
+  String get settingsHouseholdSize;
+
+  /// BUT-1322: explains the household-size default and that the manual scaler wins
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept öppnas förinställda på så här många portioner. Portionsval på ett recept gäller alltid före.'**
+  String get settingsHouseholdSizeHint;
+
+  /// BUT-1322: shown in the stepper when no household size is set (null state)
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptets standard'**
+  String get householdSizeRecipeDefault;
+
+  /// BUT-1322: button that clears the household size back to null
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd receptets standard'**
+  String get householdSizeUseRecipeDefault;
+
+  /// BUT-1322: tooltip/semantics for the household-size minus button
+  ///
+  /// In sv, this message translates to:
+  /// **'Minska hushållets storlek'**
+  String get a11yDecreaseHouseholdSize;
+
+  /// BUT-1322: tooltip/semantics for the household-size plus button
+  ///
+  /// In sv, this message translates to:
+  /// **'Öka hushållets storlek'**
+  String get a11yIncreaseHouseholdSize;
 
   /// No description provided for @settingsSectionNotifications.
   ///

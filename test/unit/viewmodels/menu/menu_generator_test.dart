@@ -11,6 +11,8 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
@@ -594,6 +596,11 @@ void main() {
         dietaryStatus: dietary ?? {},
         coverage: 1.0,
         generatedAt: DateTime.now(),
+        // Fresh version: these tests pin UNKNOWN-vs-FREE handling for
+        // TRUSTED tags. Stale (unversioned) FREE downgrades to UNKNOWN by
+        // design since BUT-1464 — that path has its own tests in
+        // menu_household_allergen_test.dart.
+        generatorVersion: kTagGeneratorVersion,
       );
     }
 
@@ -742,6 +749,8 @@ void main() {
         dietaryStatus: dietary ?? {},
         coverage: 1.0,
         generatedAt: DateTime.now(),
+        // Fresh version — see the identical note in the dietary group above.
+        generatorVersion: kTagGeneratorVersion,
       );
     }
 
@@ -1052,7 +1061,7 @@ void main() {
       );
     }
 
-    test('should return SwapResult with alternatives count', () {
+    test('should return SwapResult with alternatives count', () async {
       final current = recipeWith('current', mealType: 'Middag');
       final alt1 = recipeWith('alt1', mealType: 'Middag');
       final alt2 = recipeWith('alt2', mealType: 'Middag');
@@ -1063,7 +1072,7 @@ void main() {
         isInitialized: true,
       );
 
-      final result = menuGenerator.swapSingleRecipe(
+      final result = await menuGenerator.swapSingleRecipe(
         current,
         'Middag',
         {
@@ -1078,7 +1087,7 @@ void main() {
       expect(result.exhaustedMessage, isNull);
     });
 
-    test('should return exhausted message when no alternatives', () {
+    test('should return exhausted message when no alternatives', () async {
       final current = recipeWith('current', mealType: 'Middag');
 
       mockRecipeService.setRecipeState(
@@ -1086,7 +1095,7 @@ void main() {
         isInitialized: true,
       );
 
-      final result = menuGenerator.swapSingleRecipe(
+      final result = await menuGenerator.swapSingleRecipe(
         current,
         'Middag',
         {
@@ -1100,7 +1109,7 @@ void main() {
       expect(result.exhaustedMessage, contains('alternativ'));
     });
 
-    test('should prefer same cuisine when useSmartSwap is true', () {
+    test('should prefer same cuisine when useSmartSwap is true', () async {
       menuGenerator.useSmartSwap = true;
 
       final current = recipeWith(
@@ -1127,7 +1136,7 @@ void main() {
       // Run multiple times to confirm consistency
       var sameCuisineCount = 0;
       for (var i = 0; i < 20; i++) {
-        final result = menuGenerator.swapSingleRecipe(
+        final result = await menuGenerator.swapSingleRecipe(
           current,
           'Middag',
           {
@@ -1141,7 +1150,7 @@ void main() {
       expect(sameCuisineCount, greaterThan(15));
     });
 
-    test('should pick randomly when useSmartSwap is false', () {
+    test('should pick randomly when useSmartSwap is false', () async {
       menuGenerator.useSmartSwap = false;
 
       final current = recipeWith(
@@ -1160,7 +1169,7 @@ void main() {
       // Run multiple times - should get both alternatives
       final picked = <String>{};
       for (var i = 0; i < 30; i++) {
-        final result = menuGenerator.swapSingleRecipe(
+        final result = await menuGenerator.swapSingleRecipe(
           current,
           'Middag',
           {
@@ -1177,7 +1186,7 @@ void main() {
       menuGenerator.useSmartSwap = true;
     });
 
-    test('should not swap to recipes already in menu', () {
+    test('should not swap to recipes already in menu', () async {
       final current = recipeWith('current', mealType: 'Middag');
       final inMenu = recipeWith('in_menu', mealType: 'Middag');
       final available = recipeWith('available', mealType: 'Middag');
@@ -1187,7 +1196,7 @@ void main() {
         isInitialized: true,
       );
 
-      final result = menuGenerator.swapSingleRecipe(
+      final result = await menuGenerator.swapSingleRecipe(
         current,
         'Middag',
         {

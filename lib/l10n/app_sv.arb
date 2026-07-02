@@ -856,6 +856,28 @@
     }
   },
   "menuChooseManually": "Välj recept manuellt",
+  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}",
+  "@menuHiddenByFamilyAllergies": {
+    "description": "Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuHiddenByOwnAllergies": "{count, plural, =1{1 recept dolt på grund av dina allergival} other{{count} recept dolda på grund av dina allergival}}",
+  "@menuHiddenByOwnAllergies": {
+    "description": "Neutral variant of menuHiddenByFamilyAllergies when only the user's own preferences filtered (BUT-1464 review M2)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuAllergenUnknownChip": "allergener okända",
+  "@menuAllergenUnknownChip": {
+    "description": "Chip on a menu recipe card included despite unknown allergen status (BUT-1464)"
+  },
   "menuNoMoreRecipes": "Inga fler recept tillgängliga för byte",
   "menuGenerateError": "Kunde inte generera meny",
   "menuWeekBadgeWithCount": "Vecka {week} · {count} rätter",
@@ -1051,6 +1073,30 @@
   "settingsMenuTasteSubtitle": "Kök och kunskapsnivå som formar veckomenyn",
   "menuTasteIntro": "Det här styr dina veckomenyförslag.",
   "menuTasteSaved": "Inställningarna sparades.",
+  "settingsHouseholdSize": "Hushållets storlek",
+  "@settingsHouseholdSize": {
+    "description": "BUT-1322: label for the household-size stepper in Settings > Menu & taste"
+  },
+  "settingsHouseholdSizeHint": "Recept öppnas förinställda på så här många portioner. Portionsval på ett recept gäller alltid före.",
+  "@settingsHouseholdSizeHint": {
+    "description": "BUT-1322: explains the household-size default and that the manual scaler wins"
+  },
+  "householdSizeRecipeDefault": "Receptets standard",
+  "@householdSizeRecipeDefault": {
+    "description": "BUT-1322: shown in the stepper when no household size is set (null state)"
+  },
+  "householdSizeUseRecipeDefault": "Använd receptets standard",
+  "@householdSizeUseRecipeDefault": {
+    "description": "BUT-1322: button that clears the household size back to null"
+  },
+  "a11yDecreaseHouseholdSize": "Minska hushållets storlek",
+  "@a11yDecreaseHouseholdSize": {
+    "description": "BUT-1322: tooltip/semantics for the household-size minus button"
+  },
+  "a11yIncreaseHouseholdSize": "Öka hushållets storlek",
+  "@a11yIncreaseHouseholdSize": {
+    "description": "BUT-1322: tooltip/semantics for the household-size plus button"
+  },
   "settingsSectionNotifications": "Aviseringar",
   "settingsSectionAccount": "Konto & säkerhet",
   "settingsSectionAbout": "Om",

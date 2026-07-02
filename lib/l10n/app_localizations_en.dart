@@ -1252,6 +1252,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuChooseManually => 'Choose recipes manually';
 
   @override
+  String menuHiddenByFamilyAllergies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes hidden due to family allergies',
+      one: '1 recipe hidden due to family allergies',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String menuHiddenByOwnAllergies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes hidden due to your allergen choices',
+      one: '1 recipe hidden due to your allergen choices',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuAllergenUnknownChip => 'allergens unknown';
+
+  @override
   String get menuNoMoreRecipes => 'No more recipes available for swap';
 
   @override
@@ -1562,6 +1587,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuTasteSaved => 'Your preferences have been saved.';
+
+  @override
+  String get settingsHouseholdSize => 'Household size';
+
+  @override
+  String get settingsHouseholdSizeHint =>
+      'Recipes open pre-set to this many portions. Portion choices on a recipe always take precedence.';
+
+  @override
+  String get householdSizeRecipeDefault => 'Recipe default';
+
+  @override
+  String get householdSizeUseRecipeDefault => 'Use recipe default';
+
+  @override
+  String get a11yDecreaseHouseholdSize => 'Decrease household size';
+
+  @override
+  String get a11yIncreaseHouseholdSize => 'Increase household size';
 
   @override
   String get settingsSectionNotifications => 'Notifications';

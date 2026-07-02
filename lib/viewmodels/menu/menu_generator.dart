@@ -3,6 +3,8 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -35,6 +37,47 @@ class SwapResult {
   });
 }
 
+/// Whose preferences filtered the last menu pool. The UI attributes the
+/// hidden-recipe hint to "familjens allergier" only when the household or
+/// present-diner union was actually in play — a solo user's own filter gets
+/// neutral wording (BUT-1464 review M2, no over-attribution).
+enum MenuPrefSource { present, household, singleUser }
+
+/// Pool statistics from the last [MenuGenerator.getAvailableRecipesAsync]
+/// run, so the menu UI can explain a shrunken pool instead of it looking
+/// like a bug (BUT-1464, PM conditions 1-3).
+class MenuPoolStats {
+  /// Recipes removed by the allergen/dietary filter (household union when a
+  /// household exists, otherwise the single user's own preferences).
+  final int hiddenByAllergenFilter;
+
+  /// Recipes that stayed in the pool despite an UNKNOWN effective status for
+  /// a tracked allergen — the `includeUnknownInMenu` soft path. The UI marks
+  /// these with an "allergener okända" chip.
+  final Set<String> unknownSoftRecipeIds;
+
+  /// How many allergens were tracked by the preferences used for filtering
+  /// (analytics context for the hidden count).
+  final int trackedAllergenCount;
+
+  /// Which preference set did the filtering — drives the hint wording.
+  final MenuPrefSource prefSource;
+
+  const MenuPoolStats({
+    required this.hiddenByAllergenFilter,
+    required this.unknownSoftRecipeIds,
+    required this.trackedAllergenCount,
+    required this.prefSource,
+  });
+
+  static const empty = MenuPoolStats(
+    hiddenByAllergenFilter: 0,
+    unknownSoftRecipeIds: {},
+    trackedAllergenCount: 0,
+    prefSource: MenuPrefSource.singleUser,
+  );
+}
+
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
 /// - AI-powered menu generation from prompts
@@ -58,7 +101,12 @@ class MenuGenerator {
   bool useSmartSwap;
 
   /// Whether to use aggregated household allergens instead of single-user.
-  bool useHouseholdAllergens = false;
+  ///
+  /// Defaults to TRUE (safety-by-default, BUT-1464): once a household exists,
+  /// one member's allergy keeps those recipes out of everyone's menus without
+  /// any setup step. With no household this is a no-op (single-user
+  /// filtering, unchanged). A settings opt-out toggle is BUT-1465.
+  bool useHouseholdAllergens = true;
 
   /// Present-aware allergen filtering (family Phase 4, opt-in). When set, the
   /// async menu pool is filtered against the UNION of just these present
@@ -102,55 +150,68 @@ class MenuGenerator {
     return recipes;
   }
 
+  /// Stats from the most recent [getAvailableRecipesAsync] run, so the UI
+  /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
+  MenuPoolStats? lastPoolStats;
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   Future<List<Recipe>> getAvailableRecipesAsync() async {
     if (!_recipeService.isInitialized) return [];
 
     var recipes = _recipeService.recipes;
 
-    // Present-aware filtering takes precedence over the whole-household union
-    // when a NON-EMPTY present set is supplied (opt-in). An empty list ("no one
-    // selected") must NOT disable filtering — it falls through to the
-    // whole-household union, never an unfiltered (unsafe) pool. Also falls
-    // through if the roster/household can't be resolved.
-    final present = presentMemberIds;
-    if (present != null &&
-        present.isNotEmpty &&
-        (filterByAllergens || filterByDietary)) {
-      final prefs = await _presentAllergenPrefs(present);
-      if (prefs != null) {
-        if (filterByAllergens) {
-          recipes = _filterByPrefs(recipes, prefs, allergens: true);
-        }
-        if (filterByDietary) {
-          recipes = _filterByPrefs(recipes, prefs, allergens: false);
-        }
-        return recipes;
-      }
+    if (!filterByAllergens && !filterByDietary) {
+      lastPoolStats = MenuPoolStats.empty;
+      return recipes;
     }
 
+    final (prefs, prefSource) = await _resolveActivePrefs();
+    final beforeCount = recipes.length;
+    final unknownSoft = <String>{};
+    if (filterByAllergens) {
+      recipes = _filterByPrefs(
+        recipes,
+        prefs,
+        allergens: true,
+        unknownSoftCollector: unknownSoft,
+      );
+    }
+    if (filterByDietary) {
+      recipes = _filterByPrefs(recipes, prefs, allergens: false);
+    }
+    lastPoolStats = MenuPoolStats(
+      hiddenByAllergenFilter: beforeCount - recipes.length,
+      unknownSoftRecipeIds: unknownSoft,
+      trackedAllergenCount: prefs.trackedAllergens.length,
+      prefSource: prefSource,
+    );
+    return recipes;
+  }
+
+  /// Resolves which allergen/dietary preferences the async pool filters by.
+  ///
+  /// Priority: present-diner union (opt-in, NON-EMPTY set required — an empty
+  /// "no one selected" list must NOT disable filtering) → whole-household
+  /// union (when [useHouseholdAllergens] and a household exists) → the single
+  /// user's own preferences. Every fall-through lands on a FILTERED pool,
+  /// never an unfiltered one.
+  Future<(UserAllergenPreferences, MenuPrefSource)>
+  _resolveActivePrefs() async {
+    final present = presentMemberIds;
+    if (present != null && present.isNotEmpty) {
+      final prefs = await _presentAllergenPrefs(present);
+      if (prefs != null) return (prefs, MenuPrefSource.present);
+    }
     if (useHouseholdAllergens) {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
       if (householdService != null && householdService.hasHousehold) {
-        final prefs = await householdService.getAggregatedAllergenPreferences();
-        if (filterByAllergens) {
-          recipes = _filterByPrefs(recipes, prefs, allergens: true);
-        }
-        if (filterByDietary) {
-          recipes = _filterByPrefs(recipes, prefs, allergens: false);
-        }
-        return recipes;
+        return (
+          await householdService.getAggregatedAllergenPreferences(),
+          MenuPrefSource.household,
+        );
       }
     }
-
-    // Fall back to single-user filtering
-    if (filterByAllergens) {
-      recipes = _filterByAllergenPreferences(recipes);
-    }
-    if (filterByDietary) {
-      recipes = _filterByDietaryPreferences(recipes);
-    }
-    return recipes;
+    return (_userService.allergenPreferences, MenuPrefSource.singleUser);
   }
 
   /// Union of the present diners' allergens/dietary prefs, resolved from the
@@ -196,24 +257,42 @@ class MenuGenerator {
     );
   }
 
-  /// Filter recipes using explicit prefs (for household aggregation).
+  /// Filter recipes using explicit prefs — the ONE allergen/dietary filter
+  /// for menu pools (household, present-diner, and single-user paths all
+  /// land here so the trust guards can't diverge between them).
+  ///
+  /// Statuses go through [MenuAllergenTrust] (BUT-1464): manual overrides
+  /// honoured, stale FREE downgraded to UNKNOWN, stale CONTAINS kept.
+  /// A recipe with NO tagResult is functionally UNKNOWN (BUT-1394) and
+  /// follows the same `includeUnknownInMenu` opt-out as tagged-but-unknown.
+  ///
+  /// [unknownSoftCollector], when supplied on the allergen pass, receives the
+  /// ids of recipes that were INCLUDED despite an UNKNOWN effective status
+  /// for a tracked allergen — the UI marks these (PM condition 2).
   List<Recipe> _filterByPrefs(
     List<Recipe> recipes,
     UserAllergenPreferences prefs, {
     required bool allergens,
+    Set<String>? unknownSoftCollector,
   }) {
     if (allergens) {
       if (!prefs.hasTrackedAllergens) return recipes;
       final tracked = prefs.trackedAllergens;
       final includeUnknown = prefs.includeUnknownInMenu;
       return recipes.where((recipe) {
-        final tagResult = recipe.tagResult;
-        if (tagResult == null) return includeUnknown;
+        var sawUnknown = false;
         for (final allergen in tracked) {
-          final status = tagResult.getAllergenStatus(allergen);
+          final status = MenuAllergenTrust.effectiveAllergenStatus(
+            recipe,
+            allergen,
+          );
           if (status == TriState.contains) return false;
-          if (!includeUnknown && status == TriState.unknown) return false;
+          if (status == TriState.unknown) {
+            if (!includeUnknown) return false;
+            sawUnknown = true;
+          }
         }
+        if (sawUnknown) unknownSoftCollector?.add(recipe.id);
         return true;
       }).toList();
     } else {
@@ -221,80 +300,36 @@ class MenuGenerator {
       final tracked = prefs.trackedDietary;
       final includeUnknown = prefs.includeUnknownInMenu;
       return recipes.where((recipe) {
-        final tagResult = recipe.tagResult;
-        if (tagResult == null) return includeUnknown;
         for (final dietary in tracked) {
-          final status = tagResult.getDietaryStatus(dietary);
-          if (status != TriState.free) {
-            if (status == TriState.contains) return false;
-            if (!includeUnknown && status == TriState.unknown) return false;
-          }
+          final status = MenuAllergenTrust.effectiveDietaryStatus(
+            recipe,
+            dietary,
+          );
+          if (status == TriState.contains) return false;
+          if (!includeUnknown && status == TriState.unknown) return false;
         }
         return true;
       }).toList();
     }
   }
 
-  /// Filters out recipes that CONTAIN any of the user's tracked allergens.
-  /// When includeUnknownInMenu is false, also excludes UNKNOWN status recipes.
-  List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) {
-    final prefs = _userService.allergenPreferences;
-    if (!prefs.hasTrackedAllergens) return recipes;
+  /// Single-user allergen filtering (sync pool only) — same trust-guarded
+  /// filter as the async paths, fed by the user's own preferences.
+  List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) =>
+      _filterByPrefs(
+        recipes,
+        _userService.allergenPreferences,
+        allergens: true,
+      );
 
-    final tracked = prefs.trackedAllergens;
-    final includeUnknown = prefs.includeUnknownInMenu;
-    return recipes.where((recipe) {
-      final tagResult = recipe.tagResult;
-      // BUT-1394: a null verdict is functionally UNKNOWN. Honour the
-      // "include unknown in menu" opt-out here exactly as the async
-      // household path (_filterByPrefs) does — otherwise a user who asked for
-      // only-proven-safe recipes still gets fully-untagged ones in a
-      // single-user menu (allergen-safety surface).
-      if (tagResult == null) return includeUnknown;
-
-      for (final allergen in tracked) {
-        final status = tagResult.getAllergenStatus(allergen);
-        if (status == TriState.contains) {
-          return false;
-        }
-        if (!includeUnknown && status == TriState.unknown) {
-          return false;
-        }
-      }
-      return true;
-    }).toList();
-  }
-
-  /// Filters out recipes that don't match user's tracked dietary preferences.
-  /// A recipe passes if it is FREE for ALL tracked dietary preferences.
-  /// Respects includeUnknownInMenu setting for consistency with allergen filtering.
-  List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) {
-    final prefs = _userService.allergenPreferences;
-    if (!prefs.hasTrackedDietary) return recipes;
-
-    final tracked = prefs.trackedDietary;
-    final includeUnknown = prefs.includeUnknownInMenu;
-    return recipes.where((recipe) {
-      final tagResult = recipe.tagResult;
-      // BUT-1394: a null verdict is functionally UNKNOWN. Honour the
-      // "include unknown in menu" opt-out here exactly as the async
-      // household path (_filterByPrefs) does — otherwise a user who asked for
-      // only-proven-safe recipes still gets fully-untagged ones in a
-      // single-user menu (allergen-safety surface).
-      if (tagResult == null) return includeUnknown;
-
-      for (final diet in tracked) {
-        final status = tagResult.getDietaryStatus(diet);
-        if (status == TriState.contains) {
-          return false;
-        }
-        if (!includeUnknown && status == TriState.unknown) {
-          return false;
-        }
-      }
-      return true;
-    }).toList();
-  }
+  /// Single-user dietary filtering (sync pool only) — see
+  /// [_filterByAllergenPreferences].
+  List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) =>
+      _filterByPrefs(
+        recipes,
+        _userService.allergenPreferences,
+        allergens: false,
+      );
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;
 
@@ -318,11 +353,16 @@ class MenuGenerator {
 
     await Future.delayed(const Duration(milliseconds: 300));
 
-    if (availableRecipes.isEmpty) {
+    // BUT-1464: the async pool is THE allergen-safe pool (household union +
+    // trust guards). Computed once — both the emptiness check and the
+    // keyword filter must see the same filtered pool, never the sync
+    // single-user one.
+    final available = await getAvailableRecipesAsync();
+    if (available.isEmpty) {
       throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }
 
-    final pool = _applyPromptKeywordFilter(prompt, availableRecipes);
+    final pool = _applyPromptKeywordFilter(prompt, available);
 
     final recentIds = await _recentlyUsedRecipeIds();
     final scoringContext = await _buildScoringContext(pool);
@@ -340,7 +380,25 @@ class MenuGenerator {
       );
     }
 
+    _logHiddenByHouseholdEvent();
+
     return generatedMenu;
+  }
+
+  /// Fire-and-forget analytics for the pool shrink caused by allergen
+  /// filtering (PM condition 3). [AnalyticsService.tryLog] (BUT-766) already
+  /// guarantees this can never throw or delay generation.
+  void _logHiddenByHouseholdEvent() {
+    final stats = lastPoolStats;
+    if (stats == null) return;
+    AnalyticsService.tryLog(
+      'menu_recipes_hidden_by_household',
+      parameters: {
+        'hidden_count': stats.hiddenByAllergenFilter,
+        'tracked_allergen_count': stats.trackedAllergenCount,
+        'pref_source': stats.prefSource.name,
+      },
+    );
   }
 
   /// Collects recipe IDs used in the last 1-2 weekly plans so generation can
@@ -467,7 +525,9 @@ class MenuGenerator {
     // down-weighting as a full generation, so last-week recipes are deprioritised
     // here too. Empty set / no plan service → behaves exactly as before.
     final recentIds = await _recentlyUsedRecipeIds();
-    final pool = availableRecipes;
+    // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
+    // generation — a refresh must not reintroduce a filtered-out recipe.
+    final pool = await getAvailableRecipesAsync();
     final scoringContext = await _buildScoringContext(pool);
 
     final newRecipes = await _menuService.generateMenuFromPrompt(
@@ -491,11 +551,14 @@ class MenuGenerator {
   /// - +2 same category tag (mealType match)
   /// - +1 seasonal match
   /// Ties are broken randomly. Returns [SwapResult] with alternatives count.
-  SwapResult swapSingleRecipe(
+  ///
+  /// Async since BUT-1464: candidates come from the allergen-safe async pool
+  /// so a manual swap can never return an allergen-unsafe replacement.
+  Future<SwapResult> swapSingleRecipe(
     Recipe currentRecipe,
     String category,
     Map<String, List<Recipe>> currentMenu,
-  ) {
+  ) async {
     final currentMenuRecipeIds = <String>{};
     for (final recipes in currentMenu.values) {
       for (final recipe in recipes) {
@@ -504,7 +567,7 @@ class MenuGenerator {
     }
 
     final eligibleRecipes = _filterEligibleForSwap(
-      availableRecipes,
+      await getAvailableRecipesAsync(),
       currentMenuRecipeIds,
       category,
     );
@@ -615,6 +678,9 @@ class MenuGenerator {
   void validateGenerationPrerequisites(String prompt) {
     MenuQualityAnalyzer.validatePromptNotEmpty(prompt);
 
+    // Sync single-user pool is fine here: this emptiness PRE-check is not
+    // safety-load-bearing — generation itself draws from the async
+    // household-filtered pool and re-checks emptiness there (BUT-1464).
     if (availableRecipes.isEmpty) {
       throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }

@@ -131,6 +131,25 @@ class MenuViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  /// Recipes hidden from the last generated pool by the family/household
+  /// allergen+dietary filter (BUT-1464, PM condition 1 — a smaller menu must
+  /// never look like a bug). 0 until a generation has run.
+  int get hiddenByFamilyCount =>
+      _generator.lastPoolStats?.hiddenByAllergenFilter ?? 0;
+
+  /// Whose preferences hid those recipes — the hint says "familjens
+  /// allergier" only when a household/present union actually filtered; a
+  /// solo user's own filter gets neutral wording (BUT-1464 review M2).
+  MenuPrefSource get hiddenPrefSource =>
+      _generator.lastPoolStats?.prefSource ?? MenuPrefSource.singleUser;
+
+  /// Whether [recipeId] stayed in the last pool despite an UNKNOWN effective
+  /// status for a tracked allergen (the `includeUnknownInMenu` soft path) —
+  /// the menu card shows an "allergener okända" chip for these.
+  bool isUnknownSoft(String recipeId) =>
+      _generator.lastPoolStats?.unknownSoftRecipeIds.contains(recipeId) ??
+      false;
+
   /// Generates menu from AI prompt
   /// - Menu state update with generated content
   /// **Usage Example:**
@@ -237,7 +256,8 @@ class MenuViewModel extends BaseViewModel {
       );
     }
 
-    final result = _generator.swapSingleRecipe(recipe, category, menu);
+    // BUT-1464: async — the swap pool is the allergen-safe household pool.
+    final result = await _generator.swapSingleRecipe(recipe, category, menu);
     if (result.recipe == null) {
       _stateManager.setError(
         result.exhaustedMessage ?? AppLocale.current.errorNoMoreRecipesForSwap,

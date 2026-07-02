@@ -98,8 +98,9 @@ void main() {
   });
 
   // Convenience: load [pool] into the mock and call swapSingleRecipe with
-  // [current] already in the menu so it is excluded.
-  SwapResult doSwap(Recipe current, List<Recipe> pool) {
+  // [current] already in the menu so it is excluded. Async since BUT-1464
+  // (swap draws from the allergen-safe async pool).
+  Future<SwapResult> doSwap(Recipe current, List<Recipe> pool) {
     mockRecipeService.setRecipeState(
       recipes: [current, ...pool],
       isInitialized: true,
@@ -120,8 +121,8 @@ void main() {
   group('scoring — cuisine (+3) beats category-only (+2)', () {
     test(
       'always picks the cuisine-matching candidate over the category-only one',
-      () {
-        withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+      () async {
+        await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
           // current: italiensk middag
           final current = _recipe(
             'current',
@@ -143,7 +144,10 @@ void main() {
           final picks = <String>{};
           for (var i = 0; i < 15; i++) {
             picks.add(
-              doSwap(current, [cuisineAndCategory, categoryOnly]).recipe!.id,
+              (await doSwap(current, [
+                cuisineAndCategory,
+                categoryOnly,
+              ])).recipe!.id,
             );
           }
 
@@ -167,8 +171,8 @@ void main() {
   group('scoring — category (+2) beats seasonal-only (+1)', () {
     test(
       'always picks the category-matching candidate over the seasonal-only one',
-      () {
-        withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+      () async {
+        await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
           // current: no cuisine tag, Middag → so +3 path is inactive for all candidates
           final current = _recipe('current', mealType: 'Middag');
           // best: same category = 2
@@ -184,7 +188,7 @@ void main() {
           final picks = <String>{};
           for (var i = 0; i < 15; i++) {
             picks.add(
-              doSwap(current, [categoryMatch, seasonalOnly]).recipe!.id,
+              (await doSwap(current, [categoryMatch, seasonalOnly])).recipe!.id,
             );
           }
 
@@ -205,31 +209,38 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('scoring — seasonal (+1) beats zero-score candidate', () {
-    test('prefers the seasonal candidate when no cuisine or category matches', () {
-      withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
-        // current: no cuisine tag, Middag. Both candidates use an empty mealType
-        // so they stay eligible (isEmpty branch of the swap filter) but earn no
-        // category point — isolating the seasonal tier (1) vs zero.
-        final current = _recipe('current', mealType: 'Middag');
-        // one candidate has seasonal tag = 1
-        final seasonal = _recipe('seasonal', mealType: '', tags: {_kWinterTag});
-        // other has no advantage = 0
-        final noMatch = _recipe('no_match', mealType: '');
+    test(
+      'prefers the seasonal candidate when no cuisine or category matches',
+      () async {
+        await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
+          // current: no cuisine tag, Middag. Both candidates use an empty mealType
+          // so they stay eligible (isEmpty branch of the swap filter) but earn no
+          // category point — isolating the seasonal tier (1) vs zero.
+          final current = _recipe('current', mealType: 'Middag');
+          // one candidate has seasonal tag = 1
+          final seasonal = _recipe(
+            'seasonal',
+            mealType: '',
+            tags: {_kWinterTag},
+          );
+          // other has no advantage = 0
+          final noMatch = _recipe('no_match', mealType: '');
 
-        final picks = <String>{};
-        for (var i = 0; i < 15; i++) {
-          picks.add(doSwap(current, [seasonal, noMatch]).recipe!.id);
-        }
+          final picks = <String>{};
+          for (var i = 0; i < 15; i++) {
+            picks.add((await doSwap(current, [seasonal, noMatch])).recipe!.id);
+          }
 
-        expect(
-          picks,
-          equals({'seasonal'}),
-          reason:
-              'A seasonal-tagged recipe (score 1) must always beat a zero-score '
-              'recipe when no cuisine or category match exists.',
-        );
-      });
-    });
+          expect(
+            picks,
+            equals({'seasonal'}),
+            reason:
+                'A seasonal-tagged recipe (score 1) must always beat a zero-score '
+                'recipe when no cuisine or category match exists.',
+          );
+        });
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -237,8 +248,8 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('scoring — full-score winner (cuisine+category+seasonal = 6)', () {
-    test('is always chosen when all three criteria are met', () {
-      withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+    test('is always chosen when all three criteria are met', () async {
+      await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
         final current = _recipe(
           'current',
           mealType: 'Middag',
@@ -273,12 +284,12 @@ void main() {
         final picks = <String>{};
         for (var i = 0; i < 15; i++) {
           picks.add(
-            doSwap(current, [
+            (await doSwap(current, [
               perfect,
               cuisineCategory,
               categorySeasonal,
               cuisineOnly,
-            ]).recipe!.id,
+            ])).recipe!.id,
           );
         }
 
@@ -298,8 +309,8 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('scoring — tie-break uses random shuffle within the tied bucket', () {
-    test('two equal-score candidates are both reachable', () {
-      withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () {
+    test('two equal-score candidates are both reachable', () async {
+      await withClock(Clock.fixed(DateTime(_kWinterDate, 1)), () async {
         // current: no cuisine, Middag
         final current = _recipe('current', mealType: 'Middag');
         // Two candidates with identical scores (same category, no seasonal) = 2 each
@@ -308,7 +319,7 @@ void main() {
 
         final picked = <String>{};
         for (var i = 0; i < 50; i++) {
-          picked.add(doSwap(current, [tieA, tieB]).recipe!.id);
+          picked.add((await doSwap(current, [tieA, tieB])).recipe!.id);
         }
 
         // Both must appear — the tie is resolved by shuffle, not insertion order.
