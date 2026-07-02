@@ -83,6 +83,14 @@ jobs:
     - name: Require SHA pinning for high-blast-radius actions
       run: bash tools/check_action_pinning.sh
 
+    # Workflow-map freshness: every component path referenced by the
+    # interactive map (docs/onboarding/workflow-map.html) must still exist,
+    # and every flow step must reference a real node id. Catches renames/
+    # deletions mechanically; semantic drift is handled by the
+    # map-freshness-stamp hook + workflow-map.stale marker.
+    - name: Workflow map paths must exist
+      run: python3 tools/check_workflow_map.py
+
     # BUT-809: the app migrated from Mistral to Vertex AI / Gemini.
     # Stale `mistral` references in active code mislead readers and
     # imply a processor relationship that no longer exists.

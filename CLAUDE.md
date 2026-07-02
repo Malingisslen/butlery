@@ -39,6 +39,13 @@ Additional rules in `.claude/rules/` are auto-loaded.
 it maps what is live vs dormant vs dead (audited 2026-07-01). Improvement backlog:
 `docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`.
 
+**Workflow map freshness:** `docs/onboarding/workflow-map.html` (interactive, JSON-driven)
+documents six end-to-end flows. CI fails if a path it references stops existing
+(`tools/check_workflow_map.py`). A PostToolUse hook stamps `docs/onboarding/workflow-map.stale`
+when mapped code is edited. **If that marker exists:** re-trace ONLY the flows whose nodes match
+the marker's `triggers`, update the map's `<script id="data">` JSON (nothing else), run the
+linter, delete the marker, commit both. Don't rebuild the map; don't ignore the marker.
+
 See `.claude/rules/code-style.md` for file size limits, service access, syntax, commenting.
 See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, lefthook.
 See `.claude/rules/workflow-discipline.md` for plan mode, verification, self-improvement.

@@ -227,6 +227,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/dossier-freshness-stamp.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/map-freshness-stamp.sh"
           }
         ]
       }
