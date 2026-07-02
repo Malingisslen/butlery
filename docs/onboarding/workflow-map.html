@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Butlery — arbetsflödeskarta</title>
+<!--
+  Butlery workflow map — single self-contained file, opens offline (double-click).
+  DATA-DRIVEN: to add a flow, add one entry to DATA.actions. No build step, no framework,
+  no external requests.
+
+  Companion to pipeline-map.html (which covers import/tagging/menu in depth); this map covers
+  six end-to-end user flows across all layers. Source of truth for flows 1-2:
+  docs/architecture/RECIPE_PIPELINE.md (audited 2026-07-01). Flows 3-6 traced from code 2026-07-02.
+
+  Edge colours = status:  green live · gold dormant (built, unused) · rust dead (never runs).
+  Dashed = inferred (hop not fully read in code) or non-live status.
+  Butlery design language: square corners, forestGreen/rust/gold, cream surfaces.
+-->
+<style>
+  :root{
+    --green:#4A7C59; --green-dark:#3A6247; --green-t:#4A7C5920;
+    --rust:#B0532F; --gold:#D4A03C;
+    --ink:#1A1A1A; --muted:#666666; --faint:#999999;
+    --cream:#EFE9DC; --cream-dark:#E8E2D6; --card:#FFFFFF; --line:#D9D2C2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font:13.5px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--cream)}
+  .app{display:grid;grid-template-columns:300px 1fr 352px;height:100vh}
+
+  /* ---- left rail ---- */
+  aside{background:var(--cream-dark);border-right:1px solid var(--line);overflow-y:auto;padding:20px 0}
+  aside h1{font:700 19px/1.2 Georgia,'Times New Roman',serif;margin:0 20px 2px;text-transform:lowercase}
+  aside h1::after{content:"";display:block;width:34px;height:3px;background:var(--rust);margin-top:7px}
+  aside .sub{font-size:11.5px;color:var(--muted);margin:12px 20px 16px;line-height:1.55}
+  .flow{display:block;width:100%;text-align:left;border:0;background:none;cursor:pointer;
+        padding:11px 20px 11px 16px;border-left:4px solid transparent;color:var(--ink);font:inherit}
+  .flow:hover{background:#DFD8C8}
+  .flow.active{background:var(--card);border-left-color:var(--green)}
+  .flow .flabel{font:700 14px/1.3 Georgia,'Times New Roman',serif;text-transform:lowercase}
+  .flow.active .flabel{color:var(--green-dark)}
+  .flow .fdesc{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .legend{margin:16px 20px 6px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .legend div{margin:6px 0;display:flex;align-items:center;gap:9px}
+  .legend .sw{width:24px;height:0;border-top:2.5px solid var(--green)}
+  .legend .sw.dorm{border-top:2.5px dashed var(--gold)}
+  .legend .sw.dead{border-top:2.5px dotted var(--rust)}
+  .legend .sw.inf{border-top:2.5px dashed var(--green)}
+
+  /* ---- centre canvas ---- */
+  main{position:relative;overflow:auto}
+  #canvas{position:relative;min-width:100%;padding:30px 34px 64px}
+  .colhead{position:absolute;top:8px;font-size:10px;font-weight:700;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--faint);white-space:nowrap}
+  #edges{position:absolute;inset:0;pointer-events:none;overflow:visible}
+  .node{position:absolute;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--green);
+        padding:8px 11px;width:178px;transition:opacity .15s,border-color .15s,box-shadow .15s;z-index:1}
+  .node .nlabel{font-size:11.5px;font-weight:600;line-height:1.35}
+  .node .npath{font-size:10px;color:var(--faint);margin-top:3px;word-break:break-all;display:none}
+  .node:hover .npath{display:block}
+  .node:hover{z-index:5}
+  .node.dim{opacity:.13}
+  .node.on{border-color:var(--green);border-bottom:3px solid var(--rust);box-shadow:0 3px 12px #4A7C5926}
+  .node[data-ctx=view]{border-left-color:var(--rust)}
+  .node[data-ctx=viewmodel]{border-left-color:var(--gold)}
+  .node[data-ctx=service]{border-left-color:var(--green)}
+  .node[data-ctx=repository]{border-left-color:var(--green-dark)}
+  .node[data-ctx=cloud-function]{border-left-color:#7A4E35}
+  .node[data-ctx=datastore]{border-left-color:#5B7089}
+  .node[data-ctx=external]{border-left-color:#8A8A8A}
+
+  .badge-t{fill:#fff;font-size:10px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+  .badge-t.ongold{fill:var(--ink)}
+
+  /* ---- right panel ---- */
+  section.notes{background:var(--card);border-left:1px solid var(--line);overflow-y:auto;padding:22px 20px}
+  section.notes h2{font:700 17px/1.25 Georgia,'Times New Roman',serif;margin:0 0 2px;text-transform:lowercase}
+  section.notes .ndesc{font-size:11.5px;color:var(--muted);margin:6px 0 16px;line-height:1.55}
+  .step{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .step .n{flex:0 0 21px;height:21px;background:var(--green);color:#fff;
+           font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .step.dorm .n{background:var(--gold);color:var(--ink)}
+  .step.dead .n{background:var(--rust)}
+  .step .body{flex:1;min-width:0}
+  .step .route{font-size:11.5px;font-weight:600;line-height:1.4}
+  .step .route .arrow{color:var(--green);font-weight:400;margin:0 5px}
+  .step.dead .route .arrow{color:var(--rust)}
+  .step .payload{font-size:11.5px;margin-top:3px;color:#3d3d3d;line-height:1.5}
+  .step .transport{display:inline-block;font-size:10px;color:var(--muted);background:var(--cream);
+                   border:1px solid var(--line);padding:1px 6px;margin-top:6px;
+                   font-family:ui-monospace,Menlo,Consolas,monospace}
+  .step .tag{font-size:9.5px;margin-left:6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  .step .tag.inf{color:var(--faint)}
+  .step .tag.dorm{color:var(--gold)}
+  .step .tag.dead{color:var(--rust)}
+  .empty{color:var(--muted);font-size:12.5px;margin-top:40px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>butlery · arbetsflöden</h1>
+    <p class="sub">Hur data rör sig genom lagren (View → ViewModel → Service → Repository → Firebase) för sex centrala flöden. Klicka på ett flöde. Källa: RECIPE_PIPELINE.md + kodspårning 2026-07-02.</p>
+    <div id="flowlist"></div>
+    <div class="legend">
+      <div><span class="sw"></span> live — kör i produktion</div>
+      <div><span class="sw inf"></span> inferred — ej radläst</div>
+      <div><span class="sw dorm"></span> dormant — byggd, oanvänd</div>
+      <div><span class="sw dead"></span> dead — körs aldrig</div>
+    </div>
+  </aside>
+
+  <main><div id="canvas"><svg id="edges"></svg></div></main>
+
+  <section class="notes">
+    <h2 id="ntitle">välj ett flöde</h2>
+    <p class="ndesc" id="ndesc">Varje steg visar vad som skickas och över vilken kanal.</p>
+    <div id="steps"><p class="empty">Välj ett flöde till vänster.</p></div>
+  </section>
+</div>
+
+<script id="data" type="application/json">
+{
+  "columns": [
+    {"key":"view",  "label":"Views",           "types":["view"]},
+    {"key":"vm",    "label":"ViewModels",      "types":["viewmodel"]},
+    {"key":"svc",   "label":"Services",        "types":["service"]},
+    {"key":"repo",  "label":"Repositories",    "types":["repository"]},
+    {"key":"cf",    "label":"Cloud Functions", "types":["cloud-function"]},
+    {"key":"data",  "label":"Data & externt",  "types":["datastore","external"]}
+  ],
+  "nodes": [
+    {"id":"v-smart-import","label":"Smart Import","context":"view","path":"lib/views/smart_import_view.dart"},
+    {"id":"v-recipe-form","label":"Receptformulär (granska + spara)","context":"view","path":"lib/views/skriv_sjalv_recept_view.dart"},
+    {"id":"v-veckomeny","label":"Veckomeny","context":"view","path":"lib/views/veckomeny_view.dart"},
+    {"id":"v-share-dialogs","label":"Delningsdialoger (vän/grupp/universal)","context":"view","path":"lib/widgets/common/dialogs/recipe_selection/*, universal_share_dialog.dart"},
+    {"id":"v-feed","label":"Flöde (begär delning)","context":"view","path":"lib/views/social/friends_list/feed_tab.dart"},
+    {"id":"v-recipe-detail","label":"Receptdetalj (acceptera · markAsCooked)","context":"view","path":"lib/views/recipe_detail_view.dart"},
+    {"id":"v-who-eating","label":"Vilka äter i dag-arket","context":"view","path":"lib/views/family/who_is_eating_sheet.dart"},
+    {"id":"v-rating-entry","label":"Familjebetyg — inmatning","context":"view","path":"lib/views/family/family_rating_entry_view.dart"},
+    {"id":"v-data-export","label":"Dataexport","context":"view","path":"lib/views/account/data_export_view.dart"},
+    {"id":"v-settings","label":"Inställningar (radera konto)","context":"view","path":"lib/views/settings/settings_hub_view.dart"},
+
+    {"id":"vm-smart-import","label":"SmartImportViewModel","context":"viewmodel","path":"lib/viewmodels/smart_import_viewmodel.dart"},
+    {"id":"vm-recipe-form","label":"RecipeFormCoordinator","context":"viewmodel","path":"lib/viewmodels/recipe_form/recipe_form_coordinator.dart"},
+    {"id":"vm-menu","label":"MenuViewModel","context":"viewmodel","path":"lib/viewmodels/menu_viewmodel.dart"},
+    {"id":"vm-menu-generator","label":"MenuGenerator","context":"viewmodel","path":"lib/viewmodels/menu/menu_generator.dart"},
+    {"id":"vm-weekly-plan","label":"WeeklyMenuPlanViewModel","context":"viewmodel","path":"lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart"},
+    {"id":"vm-recipe-selection","label":"RecipeSelectionViewModel","context":"viewmodel","path":"lib/viewmodels/recipe_selection_viewmodel.dart"},
+    {"id":"vm-who-eating","label":"WhoIsEatingViewModel","context":"viewmodel","path":"lib/viewmodels/family/who_is_eating_viewmodel.dart"},
+    {"id":"vm-rating-entry","label":"FamilyRatingEntryViewModel","context":"viewmodel","path":"lib/viewmodels/family/family_rating_entry_viewmodel.dart"},
+    {"id":"vm-data-export","label":"DataExportViewModel","context":"viewmodel","path":"lib/viewmodels/account/data_export_viewmodel.dart"},
+    {"id":"vm-profile","label":"ProfileViewModel","context":"viewmodel","path":"lib/viewmodels/profile/profile_viewmodel.dart"},
+
+    {"id":"svc-import-manager","label":"ImportManager — 7-stegs vattenfall","context":"service","path":"lib/services/import/import_manager.dart, url_import_strategy.dart"},
+    {"id":"svc-recipe-parser","label":"RecipeParserService — parser-nivåer","context":"service","path":"lib/services/parsing/recipe_parser_service.dart"},
+    {"id":"svc-tagging","label":"TaggingService — deterministisk, noll LLM","context":"service","path":"lib/services/tagging/tagging_service.dart"},
+    {"id":"svc-unified-recipe","label":"UnifiedRecipeService (.personal)","context":"service","path":"lib/services/unified/unified_recipe_service.dart"},
+    {"id":"svc-menu","label":"MenuService — sv. NLP + viktad poäng","context":"service","path":"lib/services/menu_service.dart"},
+    {"id":"svc-weekly-plan","label":"WeeklyMenuPlanService","context":"service","path":"lib/services/menu/weekly_menu_plan_service.dart"},
+    {"id":"svc-user","label":"UserService — allergener (en användare)","context":"service","path":"lib/services/user_service.dart"},
+    {"id":"svc-household","label":"HouseholdRosterService — hushållsallergener","context":"service","path":"lib/services/family/household_roster_service.dart"},
+    {"id":"svc-social-share","label":"SocialRecipeOperations → SharingManager","context":"service","path":"lib/services/unified/operations/modules/recipe_sharing_manager.dart"},
+    {"id":"svc-social-request","label":"SocialRecipeService — begär/acceptera","context":"service","path":"lib/services/social_recipe_service.dart, social/modules/recipe_share_request_module.dart"},
+    {"id":"svc-social-sharing","label":"SocialRecipeSharingService — muterar original","context":"service","path":"lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart"},
+    {"id":"svc-notification","label":"NotificationService — klientsänd","context":"service","path":"lib/services/notification_service.dart"},
+    {"id":"svc-family-rating","label":"FamilyRatingService","context":"service","path":"lib/services/family/family_rating_service.dart"},
+    {"id":"svc-data-export","label":"DataExportService (fasad)","context":"service","path":"lib/services/account/data_export_service.dart"},
+    {"id":"svc-export-managers","label":"ExportManagers — ~34 sektioner","context":"service","path":"lib/services/account/export/*.dart"},
+    {"id":"svc-account-deletion","label":"AccountDeletionService","context":"service","path":"lib/services/account/account_deletion_service.dart"},
+    {"id":"svc-auth","label":"AuthService — re-auth · signOut","context":"service","path":"lib/services/auth_service.dart"},
+
+    {"id":"repo-recipe","label":"FirebaseRecipeRepository","context":"repository","path":"lib/repositories/firebase/firebase_recipe_repository.dart"},
+    {"id":"repo-weekly-plan","label":"WeeklyMenuPlan-repository","context":"repository","path":"via WeeklyMenuPlanService._repository"},
+    {"id":"repo-family-rating","label":"FirebaseFamilyRatingRepository","context":"repository","path":"lib/repositories/firebase/firebase_family_rating_repository.dart"},
+    {"id":"repo-shared","label":"FirebaseSharedRecipeRepository","context":"repository","path":"lib/repositories/firebase/firebase_shared_recipe_repository.dart"},
+    {"id":"repo-search","label":"SearchRepository — sökindex","context":"repository","path":"Algolia/Meili-index"},
+
+    {"id":"cf-structure","label":"structureRecipe — LLM-parse","context":"cloud-function","path":"functions/src/llm/structure-recipe.ts"},
+    {"id":"cf-rating-trig","label":"onFamilyRating-triggers","context":"cloud-function","path":"functions/src/index.ts"},
+    {"id":"cf-rating-agg","label":"Betygsaggregering (debounce 1 min)","context":"cloud-function","path":"functions/src/ratings/rating-aggregation.ts, update-recipe-rating-stats.ts"},
+    {"id":"cf-export-audit","label":"exportAuditLogs (callable)","context":"cloud-function","path":"functions/src/exports/audit-logs.ts"},
+    {"id":"cf-request-deletion","label":"requestAccountDeletion + kaskad","context":"cloud-function","path":"functions/src/account/request-account-deletion.ts, account-deletion-cascade.ts"},
+    {"id":"cf-on-user-deleted","label":"onUserDeleted (Auth-trigger)","context":"cloud-function","path":"functions/src/cleanup/on-user-deleted.ts"},
+
+    {"id":"ds-recipes","label":"recipes","context":"datastore","path":"Firestore"},
+    {"id":"ds-weekly-plans","label":"weekly_menu_plans","context":"datastore","path":"Firestore"},
+    {"id":"ds-family-ratings","label":"family_ratings","context":"datastore","path":"Firestore"},
+    {"id":"ds-social","label":"shared_content · social_requests","context":"datastore","path":"Firestore"},
+    {"id":"ds-stats","label":"recipe_social_stats","context":"datastore","path":"Firestore"},
+    {"id":"ds-users","label":"users/{uid} + ägda collections","context":"datastore","path":"Firestore"},
+    {"id":"ds-auth","label":"Firebase Authentication","context":"datastore","path":"Firebase Auth"},
+    {"id":"ext-gemini","label":"Gemini 2.5 Flash Lite (Vertex, EU)","context":"external","path":"Vertex AI"},
+    {"id":"ext-device","label":"Enhetens filsystem / delningsark","context":"external","path":"OS"}
+  ],
+  "actions": [
+    {"id":"flow1","label":"importera recept (URL)","description":"Fulla pipelinen bakom “Importera länk”. Obs: en äldre parallell importväg (delningsark + /importViaUrl) går via WebScraper utan cache, hastighetsgräns eller telemetri — verklig men degraderad. Fotoimport (OCR) är en tredje, separat delväg.","steps":[
+      {"from":"v-smart-import","to":"vm-smart-import","payload":"url","transport":"method call (autoImport)","verified":true},
+      {"from":"vm-smart-import","to":"svc-import-manager","payload":"url → 7-stegs vattenfall med GlobalRecipeCache, hastighetsgräns och parse-telemetri","transport":"method call","verified":true},
+      {"from":"svc-import-manager","to":"svc-recipe-parser","payload":"HTML/text → nivåer: SchemaOrg → SiteConfig → RuleBased → LLM, stopp vid kvalitet ≥ 0.65","transport":"method call","verified":true},
+      {"from":"svc-recipe-parser","to":"cf-structure","payload":"skrubbad sidtext (endast LLM-nivån; ~500-token selektiv förbättring först)","transport":"callable CF","verified":true},
+      {"from":"cf-structure","to":"ext-gemini","payload":"prompt → strukturerat recept","transport":"HTTPS (Vertex AI, eu)","verified":true},
+      {"from":"svc-import-manager","to":"v-recipe-form","payload":"ParsedRecipe → Recipe som förifyllt formulär (granska före spar)","transport":"return + Navigator","verified":true},
+      {"from":"v-recipe-form","to":"vm-recipe-form","payload":"användarredigerade fält","transport":"method call (createRecipe)","verified":false},
+      {"from":"vm-recipe-form","to":"svc-unified-recipe","payload":"Recipe-utkast","transport":"method call (.personal create)","verified":true},
+      {"from":"svc-unified-recipe","to":"svc-tagging","payload":"Recipe → auto-taggar (TagResult) — 100 % deterministiskt, noll LLM-anrop","transport":"method call (_applyTagging)","verified":true},
+      {"from":"svc-unified-recipe","to":"repo-recipe","payload":"lokal cache först (Drift), sedan bakgrundssynk (mobil) / väntad synk (webb)","transport":"async sync","verified":true},
+      {"from":"repo-recipe","to":"ds-recipes","payload":"Recipe-dokument","transport":"Firestore write","verified":true}
+    ]},
+    {"id":"flow2","label":"generera veckomeny","description":"Svensk prompt → deterministisk parser → viktad slumpdragning. Guldkorn och rost nedan: hushållsallergen-filtreringen är byggd och testad men körs aldrig (P0 i pipeline-backloggen), och menyn ignorerar användarens manuella taggkorrigeringar som receptlistan respekterar.","steps":[
+      {"from":"v-veckomeny","to":"vm-menu","payload":"svensk prompt, t.ex. “3 middagar, 2 luncher”","transport":"method call","verified":true},
+      {"from":"vm-menu","to":"vm-menu-generator","payload":"hämtar receptpool via availableRecipes — den SYNKRONA gettern","transport":"method call","verified":true},
+      {"from":"vm-menu-generator","to":"svc-user","payload":".allergenPreferences — filtrerar ENDAST på inloggad användare","transport":"method call","verified":true},
+      {"from":"vm-menu-generator","to":"svc-household","payload":"getAvailableRecipesAsync — hushålls- + närvaroallergener. Fullt byggd och enhetstestad, NOLL produktionsanrop; testerna anropar den döda metoden direkt och maskerar gapet","transport":"method call (aldrig anropad)","verified":true,"status":"dead"},
+      {"from":"vm-menu","to":"svc-menu","payload":"prompt + filtrerad pool → generateMenuFromPrompt","transport":"method call","verified":true},
+      {"from":"svc-menu","to":"vm-menu","payload":"MenuConstraintParser (lexikon, ej LLM) → viktad dragning: recency × säsong 1.5 × betyg × skafferi × kök × skicklighet → köksdiversitetstak → Map<String, List<Recipe>>","transport":"in-memory return","verified":true},
+      {"from":"vm-menu","to":"vm-weekly-plan","payload":"genererad menykarta","transport":"method call (applyGeneratedMenu)","verified":true},
+      {"from":"vm-weekly-plan","to":"svc-weekly-plan","payload":"meny + veckostart","transport":"method call (distributeFromGeneratedMenu)","verified":true},
+      {"from":"svc-weekly-plan","to":"repo-weekly-plan","payload":"WeeklyMenuPlan","transport":"method call (.save)","verified":true},
+      {"from":"repo-weekly-plan","to":"ds-weekly-plans","payload":"WeeklyMenuPlan-dokument","transport":"Firestore write","verified":true}
+    ]},
+    {"id":"flow3","label":"dela recept — två vägar","description":"Väg A (dela direkt) skapar ett NYTT dokument; väg B (begär → acceptera) muterar ORIGINALETS memberPermissions på plats. Båda skriver shared_content via olika kod — latent driftrisk. Ingen Cloud Function på någon av vägarna; notiser är klientsända.","steps":[
+      {"from":"v-share-dialogs","to":"vm-recipe-selection","payload":"recipeId + memberIds","transport":"method call","verified":true},
+      {"from":"vm-recipe-selection","to":"svc-social-share","payload":".social.shareRecipe(recipeId, memberIds, displayNames, allowGuestViewing)","transport":"method call","verified":true},
+      {"from":"svc-social-share","to":"ds-recipes","payload":"NYTT dokument: full kopia, type=collaborative, memberPermissions från noll","transport":"Firestore create","verified":true},
+      {"from":"svc-social-share","to":"ds-social","payload":"shared_content-metadata {recipeId, sharedByUserId, sharedWithUserIds[], isActive}","transport":"Firestore set/merge","verified":true},
+      {"from":"svc-social-share","to":"svc-notification","payload":"recipeShare-notis — klientinitierad; krasch mitt i delningen kan tyst tappa notisen","transport":"method call","verified":false},
+      {"from":"v-feed","to":"svc-social-request","payload":"requestRecipeShare {ownerId, recipeId, recipeTitle}","transport":"method call","verified":true},
+      {"from":"svc-social-request","to":"ds-social","payload":"social_requests {from, to, recipeId, status: pending}","transport":"Firestore create","verified":true},
+      {"from":"v-recipe-detail","to":"svc-social-request","payload":"acceptRecipeShareRequest(SocialRequest) via banner","transport":"method call","verified":true},
+      {"from":"svc-social-request","to":"svc-social-sharing","payload":"recipeId, [fromUserId], ResourcePermission.viewer","transport":"method call (via koordinator)","verified":true},
+      {"from":"svc-social-sharing","to":"ds-recipes","payload":"ORIGINALET muteras på plats: memberPermissions{userId}, type → collaborative (samma doc-id)","transport":"Firestore update","verified":true},
+      {"from":"svc-social-sharing","to":"repo-shared","payload":"receptsnapshot speglas till shared_content (best effort)","transport":"Firestore create","verified":true},
+      {"from":"svc-social-request","to":"ds-social","payload":"status → accepted","transport":"Firestore update","verified":true}
+    ]},
+    {"id":"flow4","label":"familjebetyg & vilka äter","description":"Betygskedjan är live hela vägen till aggregerad statistik. Två luckor värda att känna till: ingen push skickas när en familjemedlem betygsätter, och betygsvyn saknar realtidslyssnare (läser om manuellt).","steps":[
+      {"from":"v-recipe-detail","to":"vm-who-eating","payload":"householdId → roster + senaste ätare (engångsläsningar)","transport":"method call (.load)","verified":true},
+      {"from":"v-who-eating","to":"v-recipe-detail","payload":"attendeeMemberIds — ingen Firestore-skrivning här","transport":"in-memory return","verified":true},
+      {"from":"v-recipe-detail","to":"v-rating-entry","payload":"recipeId, recipeTitle, presentMemberIds","transport":"Navigator push","verified":true},
+      {"from":"v-rating-entry","to":"vm-rating-entry","payload":"stjärnor, memberId, memberType","transport":"method call (.save)","verified":true},
+      {"from":"vm-rating-entry","to":"svc-family-rating","payload":"rateAsFamily — DTO med id “recipeId|memberId”","transport":"method call","verified":true},
+      {"from":"svc-family-rating","to":"repo-family-rating","payload":"FamilyRating (create/update)","transport":"method call","verified":true},
+      {"from":"repo-family-rating","to":"ds-family-ratings","payload":"FamilyRating-dokument","transport":"Firestore write","verified":true},
+      {"from":"svc-family-rating","to":"svc-unified-recipe","payload":"familyAverage + count patchas på egna recept (best effort)","transport":"method call","verified":true},
+      {"from":"ds-family-ratings","to":"cf-rating-trig","payload":"trigger — endast memberType == profile","transport":"Firestore trigger","verified":true},
+      {"from":"cf-rating-trig","to":"cf-rating-agg","payload":"debounce-markör → schemalagd aggregering var 1 min","transport":"Firestore write + schedule","verified":true},
+      {"from":"cf-rating-agg","to":"ds-stats","payload":"aggregat av recipe_ratings + family_ratings","transport":"Firestore write","verified":true}
+    ]},
+    {"id":"flow5","label":"GDPR-dataexport","description":"Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse).","steps":[
+      {"from":"v-data-export","to":"vm-data-export","payload":"knapptryck","transport":"method call (.exportData)","verified":true},
+      {"from":"vm-data-export","to":"svc-data-export","payload":"userId","transport":"method call (.exportUserData)","verified":true},
+      {"from":"svc-data-export","to":"svc-export-managers","payload":"Future.wait över ~34 namngivna sektioner","transport":"method call","verified":true},
+      {"from":"svc-export-managers","to":"ds-users","payload":"~34 collections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records m.fl.","transport":"Firestore reads","verified":true},
+      {"from":"svc-export-managers","to":"cf-export-audit","payload":"{before?: cursor} — audit_logs är admin-only i reglerna","transport":"callable CF","verified":true},
+      {"from":"cf-export-audit","to":"svc-export-managers","payload":"{rows, nextCursor, gdprArticle}","transport":"callable response","verified":true},
+      {"from":"svc-data-export","to":"vm-data-export","payload":"JSON-sträng (export_metadata + alla sektioner, version 2.0)","transport":"in-memory return","verified":true},
+      {"from":"v-data-export","to":"ext-device","payload":"butlery_data_export_<ts>.json → filspar / OS-delningsark (plattformsvillkorad import)","transport":"local file save","verified":true}
+    ]},
+    {"id":"flow6","label":"radera konto","description":"Sedan BUT-788 ligger hela kaskaden serversidigt (fixade en klientsidig auth-race). Klienten väntar på callablen i upp till 9 min; endast korsanvändar-städningen i onUserDeleted är asynkron. Ingen ångerperiod — hård radering vid bekräftelse.","steps":[
+      {"from":"v-settings","to":"vm-profile","payload":"radera-kontot-panelen","transport":"onTap (AuthActionHandler)","verified":true},
+      {"from":"vm-profile","to":"svc-auth","payload":"lösenord → re-autentisering (klientsidig, redundant med serverkollen)","transport":"method call","verified":true},
+      {"from":"vm-profile","to":"svc-account-deletion","payload":"{reason: 'User requested account deletion'}","transport":"method call (.deleteUserAccount)","verified":true},
+      {"from":"svc-account-deletion","to":"repo-search","payload":"uid → sökindexradering (före CF, klientsidigt)","transport":"index delete","verified":true},
+      {"from":"svc-account-deletion","to":"cf-request-deletion","payload":"{reason} · App Check-krav · 9 min klienttimeout","transport":"callable CF","verified":true},
+      {"from":"cf-request-deletion","to":"ds-users","payload":"Tier 1 parallellt (recept, menyer, listor, taggar, snaps, skafferi, familj, delat, notiser, Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}","transport":"Admin SDK delete + write","verified":true},
+      {"from":"cf-request-deletion","to":"ds-auth","payload":"admin.auth().deleteUser(uid) — allra sista steget, efter all städning","transport":"Admin SDK","verified":true},
+      {"from":"ds-auth","to":"cf-on-user-deleted","payload":"Auth-trigger (v1, europe-west1) — asynkron, kan bli klar EFTER att callablen returnerat","transport":"Auth trigger","verified":true},
+      {"from":"cf-on-user-deleted","to":"ds-users","payload":"korsanvändar-städning: vänskaper, social_requests, grupper, presence, notiskyer, sharedBy-tombstones","transport":"Firestore writes","verified":true},
+      {"from":"svc-account-deletion","to":"svc-auth","payload":"resetForLogout + signOut","transport":"method call","verified":true}
+    ]}
+  ]
+}
+</script>
+
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('edges');
+const NS = 'http://www.w3.org/2000/svg';
+const nodeEl = {};
+let current = null;
+const COLW = 214, ROW_H = 60, NODE_GAP = 13, TOP = 36, COLGAP = 42;
+const COLORS = {live:'#4A7C59', dormant:'#D4A03C', dead:'#B0532F'};
+const colOf = {};
+DATA.columns.forEach(c => c.types.forEach(t => colOf[t] = c.key));
+
+function layout(){
+  canvas.querySelectorAll('.node,.colhead').forEach(n=>n.remove());
+  const perCol = {};
+  DATA.columns.forEach(c => perCol[c.key] = []);
+  DATA.nodes.forEach(n => (perCol[colOf[n.context]] ||= []).push(n));
+  DATA.columns.forEach((col, ci) => {
+    const x = 34 + ci * (COLW + COLGAP);
+    const head = document.createElement('div');
+    head.className = 'colhead'; head.textContent = col.label; head.style.left = x + 'px';
+    canvas.appendChild(head);
+    let y = TOP;
+    (perCol[col.key]||[]).forEach(n => {
+      const el = document.createElement('div');
+      el.className = 'node'; el.dataset.ctx = n.context; el.dataset.id = n.id;
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      el.innerHTML = `<div class="nlabel">${n.label}</div><div class="npath">${n.path}</div>`;
+      canvas.appendChild(el);
+      nodeEl[n.id] = el;
+      y += Math.max(ROW_H, el.offsetHeight + NODE_GAP);
+    });
+  });
+  const cols = DATA.columns.length;
+  canvas.style.minWidth = (34 + cols * (COLW + COLGAP) + 20) + 'px';
+  const maxY = Math.max(...Object.values(nodeEl).map(el => el.offsetTop + el.offsetHeight));
+  canvas.style.minHeight = (maxY + 60) + 'px';
+  sizeSvg();
+  if (current) draw(current);
+}
+function sizeSvg(){
+  svg.setAttribute('width', canvas.scrollWidth);
+  svg.setAttribute('height', canvas.scrollHeight);
+  svg.setAttribute('viewBox', `0 0 ${canvas.scrollWidth} ${canvas.scrollHeight}`);
+}
+function rectOf(id){
+  const el = nodeEl[id];
+  return {x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight};
+}
+function draw(action){
+  svg.innerHTML = '';
+  addDefs();
+  const active = new Set();
+  action.steps.forEach(s => { active.add(s.from); active.add(s.to); });
+  Object.entries(nodeEl).forEach(([id,el]) => {
+    el.classList.toggle('dim', !active.has(id));
+    el.classList.toggle('on', active.has(id));
+  });
+  const pairCount = {};
+  action.steps.forEach((s, i) => {
+    const a = rectOf(s.from), b = rectOf(s.to);
+    const key = [s.from, s.to].sort().join('|');
+    const occ = (pairCount[key] = (pairCount[key]||0) + 1) - 1;
+    drawEdge(a, b, i+1, s, occ);
+  });
+}
+function drawEdge(a, b, num, step, occ){
+  const st = step.status || 'live';
+  const color = COLORS[st];
+  const rightward = (b.x + b.w/2) >= (a.x + a.w/2);
+  const x1 = rightward ? a.x + a.w : a.x;
+  const y1 = a.y + a.h/2;
+  const x2 = rightward ? b.x : b.x + b.w;
+  const y2 = b.y + b.h/2;
+  const dx = Math.max(40, Math.abs(x2 - x1) * 0.5);
+  const bow = occ * 24 * (occ % 2 ? 1 : -1);
+  const c1x = x1 + (rightward ? dx : -dx), c2x = x2 + (rightward ? -dx : dx);
+  const c1y = y1 + bow, c2y = y2 + bow;
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', `M${x1},${y1} C${c1x},${c1y} ${c2x},${c2y} ${x2},${y2}`);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('opacity', '.9');
+  if (st === 'dead') path.setAttribute('stroke-dasharray', '2 4');
+  else if (st === 'dormant') path.setAttribute('stroke-dasharray', '7 4');
+  else if (!step.verified) path.setAttribute('stroke-dasharray', '5 4');
+  path.setAttribute('marker-end', `url(#arrow-${st})`);
+  svg.appendChild(path);
+  const t = 0.5;
+  const bx = bez(x1, c1x, c2x, x2, t), by = bez(y1, c1y, c2y, y2, t);
+  const g = document.createElementNS(NS, 'g');
+  const r = document.createElementNS(NS, 'rect');
+  r.setAttribute('x', bx-9); r.setAttribute('y', by-9);
+  r.setAttribute('width', 18); r.setAttribute('height', 18);
+  r.setAttribute('fill', color);
+  r.setAttribute('stroke', '#fff'); r.setAttribute('stroke-width', '1.5');
+  const txt = document.createElementNS(NS, 'text');
+  txt.setAttribute('x', bx); txt.setAttribute('y', by+0.5);
+  txt.setAttribute('class', 'badge-t' + (st==='dormant' ? ' ongold' : ''));
+  txt.textContent = num;
+  g.appendChild(r); g.appendChild(txt); svg.appendChild(g);
+}
+const bez = (p0,p1,p2,p3,t)=>{const u=1-t;return u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3;};
+function addDefs(){
+  svg.insertAdjacentHTML('afterbegin', `<defs>
+    <marker id="arrow-live" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4A7C59"/></marker>
+    <marker id="arrow-dormant" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#D4A03C"/></marker>
+    <marker id="arrow-dead" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#B0532F"/></marker>
+  </defs>`);
+}
+function showNotes(action){
+  document.getElementById('ntitle').textContent = action.label;
+  document.getElementById('ndesc').textContent = action.description;
+  const wrap = document.getElementById('steps');
+  wrap.innerHTML = '';
+  action.steps.forEach((s, i) => {
+    const st = s.status || 'live';
+    const from = DATA.nodes.find(n=>n.id===s.from), to = DATA.nodes.find(n=>n.id===s.to);
+    const div = document.createElement('div');
+    div.className = 'step' + (st==='dormant' ? ' dorm' : st==='dead' ? ' dead' : '');
+    const tags = [];
+    if (st==='dead') tags.push('<span class="tag dead">dead</span>');
+    if (st==='dormant') tags.push('<span class="tag dorm">dormant</span>');
+    if (!s.verified) tags.push('<span class="tag inf">inferred</span>');
+    div.innerHTML = `
+      <div class="n">${i+1}</div>
+      <div class="body">
+        <div class="route">${from?from.label:s.from}<span class="arrow">→</span>${to?to.label:s.to}${tags.join('')}</div>
+        <div class="payload">${s.payload}</div>
+        <div class="transport">${s.transport}</div>
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+const list = document.getElementById('flowlist');
+DATA.actions.forEach(a => {
+  const b = document.createElement('button');
+  b.className = 'flow';
+  b.innerHTML = `<span class="flabel">${a.label}</span><span class="fdesc">${a.description.split('.')[0]}.</span>`;
+  b.onclick = () => select(a, b);
+  list.appendChild(b);
+});
+function select(a, btn){
+  current = a;
+  document.querySelectorAll('.flow').forEach(f=>f.classList.remove('active'));
+  btn.classList.add('active');
+  draw(a); showNotes(a);
+}
+layout();
+window.addEventListener('resize', () => { sizeSvg(); if (current) draw(current); });
+select(DATA.actions[0], list.firstChild);
+</script>
+</body>
+</html>
