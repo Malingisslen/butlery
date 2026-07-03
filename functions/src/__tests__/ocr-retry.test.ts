@@ -88,6 +88,7 @@ function makeRecipe(title: string): ExtractedRecipe {
         unit: "g",
         name: "mjöl",
         preparation: null,
+        section: null,
       },
     ],
     instructions: ["Blanda allt.", "Grädda 20 min."],

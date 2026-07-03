@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v2.2.0 — 2026-07-02 (current)
+## v3.0.0 — 2026-07-02 (current)
+
+**What changed:** Ingredient group headings ("Deg:", "Fyllning:", "Glasyr:") now land in a dedicated nullable `section` field on each ingredient (added to `INGREDIENT_SCHEMA`, so it applies to extract, OCR printed, OCR handwritten, and spoken — they all share the schema). The old workaround — flattening the group name into the free-text `preparation` field ("smält, deg") — is replaced: the extraction prompt's group rule now instructs `section="Deg"` per grouped ingredient, forbids emitting the heading as an ingredient of its own, and forbids repeating the group name in `preparation`. EXEMPEL 4 (Kanelbullar) reworked accordingly. Server-side output shaping (`validateIngredient`) trims and caps `section` at 60 chars (responseSchema cannot enforce length).
+
+**Why:** Ingredient section headers feature (plan in `tasks/todo.md`, PR #211) — the pipeline detected groups but threw the information away, and the `preparation` flattening polluted genuine prep notes. Client displays/edits sections from this field.
+
+**Expected impact:** No exact-match-rate regression expected on ungrouped recipes (rule and example only touch grouped inputs). On grouped recipes: `preparation` gets cleaner (no more ", deg" suffixes — false-positive prep-note rate down), ingredient rows/counts unchanged. MAJOR bump: output schema change (`ExtractedIngredient` gained a field; parsers updated in the same commit). No new LLM calls, no model change, token growth negligible (one short field per grouped ingredient).
+
+**Linked metrics / tickets:** PR #211 (ingredient sections). Before/after sample-capture run per acceptance criterion 13; watch import-success + ingredient-count drift after deploy.
+
+---
+
+## v2.2.0 — 2026-07-02
 
 **What changed:** Added a new dedicated OCR system prompt `IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT` for handwritten recipe cards/notes, alongside the existing printed `IMAGE_OCR_SYSTEM_PROMPT` (which is unchanged). The handwritten variant instructs the model to expect cursive/skrivstil, tolerate spelling variants and inconsistent spacing, infer missing/ambiguous å/ä/ö from context, read handwritten digits carefully, and prefer partial extraction over refusing when a word is unclear. Same injection defense and identical JSON output contract as the printed prompt. Selected at call time by the `ocrRecipeImage` callable when the client passes `isHandwritten: true`; absent/false keeps the printed prompt.
 

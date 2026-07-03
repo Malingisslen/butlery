@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -90,6 +91,98 @@ void main() {
     });
   });
 
+  group('section field (ingredient sub-groups)', () {
+    test('round-trips through toJson/fromJson', () {
+      const original = RecipeIngredient(
+        amount: 5,
+        unit: 'dl',
+        name: 'vetemjöl',
+        raw: '5 dl vetemjöl',
+        section: 'Deg',
+      );
+      final json = original.toJson();
+      expect(json['section'], 'Deg');
+      expect(RecipeIngredient.fromJson(json), original);
+    });
+
+    test(
+      'sectionless entry omits the key (legacy docs stay byte-identical)',
+      () {
+        final json = RecipeIngredient.rawOnly('salt').toJson();
+        expect(json.containsKey('section'), isFalse);
+      },
+    );
+
+    test('blank/whitespace section from JSON normalizes to null — an empty '
+        'heading must not create a phantom group', () {
+      final restored = RecipeIngredient.fromJson({
+        'name': 'salt',
+        'raw': 'salt',
+        'section': '   ',
+      });
+      expect(restored.section, isNull);
+    });
+
+    test('copyWithSection sets, clears, and normalizes', () {
+      const entry = RecipeIngredient(name: 'salt', raw: 'salt');
+      expect(entry.copyWithSection('Fyllning').section, 'Fyllning');
+      expect(entry.copyWithSection(' Deg ').section, 'Deg');
+      expect(entry.copyWithSection('').section, isNull);
+      expect(
+        entry.copyWithSection('Deg').copyWithSection(null).section,
+        isNull,
+        reason:
+            'null must CLEAR, not keep — the copyWith ambiguity this '
+            'dedicated method exists to avoid',
+      );
+    });
+
+    test('fromParsed carries the parser section through', () {
+      final ing = RecipeIngredient.fromParsed(
+        ParsedIngredient(
+          name: 'jäst',
+          originalLine: '25 g jäst',
+          confidence: ParseConfidence.high,
+          quantity: '25',
+          unit: 'g',
+          section: 'Deg',
+        ),
+      );
+      expect(ing.section, 'Deg');
+    });
+
+    test('fromParsed normalizes a blank parser section to null — an '
+        'LLM-emitted whitespace section must not create a phantom group', () {
+      final ing = RecipeIngredient.fromParsed(
+        const ParsedIngredient(
+          name: 'salt',
+          originalLine: 'salt',
+          confidence: ParseConfidence.medium,
+          section: '  ',
+        ),
+      );
+      expect(ing.section, isNull);
+    });
+
+    test('equality distinguishes section (same line, different group)', () {
+      const inDeg = RecipeIngredient(
+        name: 'socker',
+        raw: 'socker',
+        section: 'Deg',
+      );
+      const inFyllning = RecipeIngredient(
+        name: 'socker',
+        raw: 'socker',
+        section: 'Fyllning',
+      );
+      expect(inDeg == inFyllning, isFalse);
+      expect(
+        inDeg,
+        const RecipeIngredient(name: 'socker', raw: 'socker', section: 'Deg'),
+      );
+    });
+  });
+
   group('RecipeCore integration', () {
     RecipeCore coreWith({List<RecipeIngredient>? structured}) => RecipeCore(
       id: 'r1',
@@ -102,11 +195,14 @@ void main() {
     );
 
     final structured = [
+      // One sectioned + one flat entry so both recipe-level round-trip tests
+      // below also prove sections survive Firestore and JSON paths.
       const RecipeIngredient(
         amount: 2.5,
         unit: 'dl',
         name: 'vetemjöl',
         raw: '2,5 dl vetemjöl',
+        section: 'Deg',
       ),
       const RecipeIngredient(amount: 3, name: 'ägg', raw: '3 ägg'),
     ];

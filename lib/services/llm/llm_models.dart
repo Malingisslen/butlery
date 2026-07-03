@@ -163,11 +163,16 @@ class ExtractedIngredient {
   final String name;
   final String? preparation;
 
+  /// Ingredient group heading (Deg, Fyllning, ...) or null when ungrouped.
+  /// Prompt v3.0.0+; older cached responses simply lack the key.
+  final String? section;
+
   const ExtractedIngredient({
     this.amount,
     this.unit,
     required this.name,
     this.preparation,
+    this.section,
   });
 
   factory ExtractedIngredient.fromJson(Map<String, dynamic> json) {
@@ -176,6 +181,7 @@ class ExtractedIngredient {
       unit: json['unit'] as String?,
       name: (json['name'] as String?).orEmpty(),
       preparation: json['preparation'] as String?,
+      section: json['section'] as String?,
     );
   }
 
@@ -185,6 +191,7 @@ class ExtractedIngredient {
       'unit': unit,
       'name': name,
       'preparation': preparation,
+      if (section != null) 'section': section,
     };
   }
 

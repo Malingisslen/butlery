@@ -1,7 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/tiers/llm_tier.dart';
@@ -32,6 +38,8 @@ class MockLlmService implements LlmService {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 void main() {
   late MockLlmService mockLlmService;
@@ -542,6 +550,158 @@ void main() {
       test('passes plain title with %-symbol (no template syntax)', () async {
         final result = await parseWithTitle('100% smör pannkakor');
         expect(result.success, isTrue);
+      });
+    });
+
+    group('section-aware dedup (ingredient sections)', () {
+      // Intention: same-name ingredients under DIFFERENT headings are
+      // distinct rows (kanelbullar have smör in both Deg and Fyllning);
+      // duplicates within the SAME heading still merge as before.
+      Future<List<ParsedIngredient>> parseIngredients(
+        List<ExtractedIngredient> ingredients,
+      ) async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(ingredients: ingredients),
+          estimatedCost: 0.01,
+        );
+        final result = await tier.parse(createContext());
+        expect(result.success, isTrue);
+        return result.recipe!.ingredients.value!;
+      }
+
+      test('same name+unit in different sections stays two rows', () async {
+        final parsed = await parseIngredients(const [
+          ExtractedIngredient(
+            name: 'smör',
+            amount: 75,
+            unit: 'g',
+            section: 'Deg',
+          ),
+          ExtractedIngredient(
+            name: 'smör',
+            amount: 50,
+            unit: 'g',
+            section: 'Fyllning',
+          ),
+        ]);
+
+        expect(parsed, hasLength(2));
+        expect(parsed[0].section, 'Deg');
+        expect(parsed[0].quantity, '75', reason: 'NOT summed to 125');
+        expect(parsed[1].section, 'Fyllning');
+        expect(parsed[1].quantity, '50');
+      });
+
+      test('duplicates within the same section still merge (sum)', () async {
+        final parsed = await parseIngredients(const [
+          ExtractedIngredient(
+            name: 'socker',
+            amount: 1,
+            unit: 'dl',
+            section: 'Deg',
+          ),
+          ExtractedIngredient(
+            name: 'socker',
+            amount: 0.5,
+            unit: 'dl',
+            section: 'Deg',
+          ),
+        ]);
+
+        expect(parsed, hasLength(1));
+        expect(parsed.single.quantity, '1.5');
+        expect(
+          parsed.single.section,
+          'Deg',
+          reason: 'merged entry must not lose its section',
+        );
+      });
+
+      test(
+        'sectionless duplicates keep merging (pre-section behavior)',
+        () async {
+          final parsed = await parseIngredients(const [
+            ExtractedIngredient(name: 'salt', amount: 1, unit: 'tsk'),
+            ExtractedIngredient(name: 'salt', amount: 1, unit: 'tsk'),
+          ]);
+
+          expect(parsed, hasLength(1));
+          expect(parsed.single.quantity, '2');
+          expect(parsed.single.section, isNull);
+        },
+      );
+
+      test(
+        'blank section collides with null section (no phantom group)',
+        () async {
+          final parsed = await parseIngredients(const [
+            ExtractedIngredient(name: 'salt', amount: 1, unit: 'tsk'),
+            ExtractedIngredient(
+              name: 'salt',
+              amount: 1,
+              unit: 'tsk',
+              section: '   ',
+            ),
+          ]);
+
+          expect(parsed, hasLength(1), reason: "'   ' and null must merge");
+          expect(parsed.single.section, isNull);
+        },
+      );
+
+      group('kill switch OFF (acceptance criterion 19)', () {
+        // With ingredient_section_capture OFF, sections are stripped BEFORE
+        // dedup so same-name rows merge exactly as pre-feature — the mirror
+        // of the 'stays two rows' test above. Registers a flag service
+        // returning false through the ServiceLocator the tier reads.
+        late _MockFeatureFlags flags;
+
+        setUp(() {
+          flags = _MockFeatureFlags();
+          when(
+            () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
+          ).thenReturn(false);
+          final getIt = GetIt.instance;
+          if (getIt.isRegistered<FeatureFlagService>()) {
+            getIt.unregister<FeatureFlagService>();
+          }
+          getIt.registerSingleton<FeatureFlagService>(flags);
+          ServiceLocator.initialize(DIContainer());
+        });
+
+        tearDown(() {
+          final getIt = GetIt.instance;
+          if (getIt.isRegistered<FeatureFlagService>()) {
+            getIt.unregister<FeatureFlagService>();
+          }
+          ServiceLocator.reset();
+        });
+
+        test('same name+unit across sections MERGE when capture off', () async {
+          final parsed = await parseIngredients(const [
+            ExtractedIngredient(
+              name: 'smör',
+              amount: 75,
+              unit: 'g',
+              section: 'Deg',
+            ),
+            ExtractedIngredient(
+              name: 'smör',
+              amount: 50,
+              unit: 'g',
+              section: 'Fyllning',
+            ),
+          ]);
+
+          expect(
+            parsed,
+            hasLength(1),
+            reason: 'flag off ⇒ sections stripped ⇒ rows merge as pre-feature',
+          );
+          expect(parsed.single.quantity, '125');
+          expect(parsed.single.section, isNull);
+        });
       });
     });
   });

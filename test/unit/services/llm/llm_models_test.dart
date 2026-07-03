@@ -166,6 +166,21 @@ void main() {
       expect(i.unit, isNull);
       expect(i.name, '');
       expect(i.preparation, isNull);
+      expect(i.section, isNull, reason: 'pre-3.0.0 responses lack the key');
+    });
+
+    test('section round-trips and is omitted from JSON when null', () {
+      const sectioned = ExtractedIngredient(
+        name: 'jäst',
+        amount: 25.0,
+        unit: 'g',
+        section: 'Deg',
+      );
+      expect(ExtractedIngredient.fromJson(sectioned.toJson()).section, 'Deg');
+      expect(
+        const ExtractedIngredient(name: 'salt').toJson().containsKey('section'),
+        isFalse,
+      );
     });
 
     test('fromJson handles int amount as double (num→double)', () {

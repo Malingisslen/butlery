@@ -107,5 +107,139 @@ void main() {
       );
       expect(entries[0].amount, 2, reason: 'new line is derived');
     });
+
+    test('duplicate raw lines consume reuse entries FIFO — identical lines '
+        'under different headings keep their own entries', () {
+      const inDeg = RecipeIngredient(
+        amount: 1,
+        unit: 'dl',
+        name: 'socker',
+        note: 'strösocker', // distinguishes the entries beyond section
+        raw: '1 dl socker',
+        section: 'Deg',
+      );
+      const inFyllning = RecipeIngredient(
+        amount: 1,
+        unit: 'dl',
+        name: 'socker',
+        raw: '1 dl socker',
+        section: 'Fyllning',
+      );
+
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['1 dl socker', '1 dl socker'],
+        reuse: const [inDeg, inFyllning],
+      );
+
+      expect(entries[0], same(inDeg));
+      expect(
+        entries[1],
+        same(inFyllning),
+        reason:
+            'second duplicate must get the SECOND reuse entry, not a '
+            'copy of the first (the old byRaw map collapsed these)',
+      );
+    });
+
+    test('more duplicate lines than reuse entries derives the overflow', () {
+      const only = RecipeIngredient(
+        amount: 2,
+        name: 'ägg',
+        note: 'rumsvarma',
+        raw: '2 ägg',
+      );
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['2 ägg', '2 ägg'],
+        reuse: const [only],
+      );
+      expect(entries[0], same(only));
+      expect(entries[1].note, isNull, reason: 'overflow line is re-derived');
+      expect(entries[1].raw, '2 ägg');
+    });
+  });
+
+  group('StructuredIngredientDeriver.deriveAll sections', () {
+    test('sections apply index-aligned to derived entries', () {
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['5 dl vetemjöl', '25 g jäst', '75 g smör'],
+        sections: ['Deg', 'Deg', 'Fyllning'],
+      );
+      expect(entries.map((e) => e.section), ['Deg', 'Deg', 'Fyllning']);
+    });
+
+    test('sections are AUTHORITATIVE over a reused entry — moving a line to '
+        'another heading wins over stale persisted data', () {
+      const persisted = RecipeIngredient(
+        amount: 1,
+        unit: 'dl',
+        name: 'socker',
+        raw: '1 dl socker',
+        section: 'Deg',
+      );
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['1 dl socker'],
+        reuse: const [persisted],
+        sections: ['Fyllning'],
+      );
+      expect(entries.single.section, 'Fyllning');
+      expect(entries.single.amount, 1, reason: 'rich data still reused');
+    });
+
+    test(
+      'a null section in an authoritative list CLEARS the reused section',
+      () {
+        const persisted = RecipeIngredient(
+          name: 'socker',
+          raw: 'socker',
+          section: 'Deg',
+        );
+        final entries = StructuredIngredientDeriver.deriveAll(
+          ['socker'],
+          reuse: const [persisted],
+          sections: [null],
+        );
+        expect(entries.single.section, isNull);
+      },
+    );
+
+    test('blank section labels normalize to null', () {
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['socker'],
+        sections: ['   '],
+      );
+      expect(entries.single.section, isNull);
+    });
+
+    test('length mismatch ignores sections entirely (fail open) — reused '
+        'sections survive, nothing is misassigned', () {
+      const persisted = RecipeIngredient(
+        name: 'socker',
+        raw: 'socker',
+        section: 'Deg',
+      );
+      final entries = StructuredIngredientDeriver.deriveAll(
+        ['socker', '2 ägg'],
+        reuse: const [persisted],
+        sections: ['Fyllning'], // 1 section for 2 lines — broken bookkeeping
+      );
+      expect(entries[0].section, 'Deg', reason: 'reuse kept untouched');
+      expect(entries[1].section, isNull);
+    });
+
+    test(
+      'omitting sections keeps reused sections (non-authoritative path)',
+      () {
+        const persisted = RecipeIngredient(
+          name: 'socker',
+          raw: 'socker',
+          section: 'Deg',
+        );
+        final entries = StructuredIngredientDeriver.deriveAll(
+          ['socker'],
+          reuse: const [persisted],
+        );
+        expect(entries.single, same(persisted));
+      },
+    );
   });
 }

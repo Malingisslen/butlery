@@ -31,6 +31,11 @@ class ParsedIngredient {
   /// Parsing notes or warnings.
   final String? notes;
 
+  /// Recipe component group the source placed this line under
+  /// (e.g. "Deg", "Fyllning"). Carried through to
+  /// `RecipeIngredient.section` — never emitted as an ingredient line.
+  final String? section;
+
   const ParsedIngredient({
     required this.name,
     required this.originalLine,
@@ -40,6 +45,7 @@ class ParsedIngredient {
     this.size,
     this.preparation,
     this.notes,
+    this.section,
   });
 
   /// Creates from a simple ingredient string with medium confidence.
@@ -99,6 +105,7 @@ class ParsedIngredient {
     String? preparation,
     ParseConfidence? confidence,
     String? notes,
+    String? section,
   }) => ParsedIngredient(
     name: name ?? this.name,
     originalLine: originalLine ?? this.originalLine,
@@ -108,6 +115,7 @@ class ParsedIngredient {
     preparation: preparation ?? this.preparation,
     confidence: confidence ?? this.confidence,
     notes: notes ?? this.notes,
+    section: section ?? this.section,
   );
 
   /// Converts to JSON.
@@ -120,6 +128,7 @@ class ParsedIngredient {
     if (size != null) 'size': size,
     if (preparation != null) 'preparation': preparation,
     if (notes != null) 'notes': notes,
+    if (section != null) 'section': section,
   };
 
   /// Creates from JSON.
@@ -138,6 +147,7 @@ class ParsedIngredient {
       size: json['size']?.toString(),
       preparation: json['preparation']?.toString(),
       notes: json['notes']?.toString(),
+      section: json['section']?.toString(),
     );
   }
 
