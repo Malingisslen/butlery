@@ -95,8 +95,16 @@ Binding conditions (by gate):
   - C4 (Architect must-have). Cross-language golden-fixture parity (decision 2) MUST include a
     tie-length anchor case (first-wins pinned) and a generic-anchor case, so Dart and TS cannot
     silently diverge.
-  - C5 (Architect should). Qualifier/unit/stopword/generic word-lists shared via one JSON both
-    languages load, OR a CI script diffing the two const sets byte-for-byte.
+  - C5 (Architect should → NOW DUE, re-confirmed by /code-review high 2026-07-03 as a live
+    PLAUSIBLE drift risk). Qualifier/unit/stopword/generic word-lists are hand-duplicated across
+    Dart (`canonical_pool_key.dart`), TS (`canonical-pool-key.ts`), and a third copy in the
+    disposable Step-0 tool (`measure_poolkey_hitrate.dart`). The parity fixture only pins SAMPLED
+    outputs, so a word added to one list but not the other diverges keys for un-sampled titles →
+    the client pool badge routes to a different pool than the server aggregates into (wrong
+    displayed rating, no test catches it). **Close before the aggregation CF wires the key in:**
+    share the lists via one JSON asset both languages load (or a CI byte-diff of the const sets),
+    and point the Step-0 tool's HYBRID keyer at `CanonicalPoolKey.compute` so C6 measures
+    production, not a stale copy.
 - **Before the BACKFILL CF is authorized to run (the irreversible history-merge step):**
   - C6 (Data + T&S must-have). Re-run `measure_poolkey_hitrate.dart` against a REAL corpus batch
     (≥20–30 scans) with false-merges still 0. Synthetic validation is fine for BUILDING the pipes;
