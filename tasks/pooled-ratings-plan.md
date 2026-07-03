@@ -70,6 +70,52 @@ fuzzy-matching territory the plan already reserves, not a v1 blocker.
 stakeholder re-check (Data/Integrations, Software Architect, Trust & Safety, Product, Security)
 BEFORE the aggregation backend is built.
 
+### Panel re-check on the revised key (2026-07-03) — 3/3 approve-with-conditions, 0 blocks
+Blind critiques from Data/Integrations, Software Architect, Trust & Safety. All approve; the
+binding conditions below are folded into the acceptance criteria and MUST hold at the stated gate.
+Already APPLIED to the reference tool: fail-closed guard (empty OR generic/definite dish anchor →
+do not pool; `_genericAnchors` denylist), first-wins tie-break pinned, cross-method metric split
+into URL↔OCR (v1-fixable) vs URL↔Instagram (v2 fuzzy). Re-measured HYBRID: 100% URL↔URL,
+38% URL↔OCR, 63% URL↔Instagram, **0 false merges, 2 recipes correctly excluded** (generic titles);
+ingredient-only now shows **2** false merges — the guard earns its place.
+
+Binding conditions (by gate):
+- **Before the shared-normalizer extraction PR merges (decision 3):**
+  - C1 (Data must-have). Golden-fixture OUTPUT pinning for `ContentFingerprint.generate()` —
+    byte-for-byte against a fixed real-recipe corpus, CI-enforced, fails on ANY change. Not just
+    "existing tests stay green." Protects the LIVE GlobalRecipeCache hit rate (it persists
+    `contentFingerprint` as a field + `fp_$fingerprint` doc-ID + equality query).
+  - C2 (Data must-have). Extraction is diff-only/verbatim; the strengthened steps (fold / OCR
+    digit repair / hashtag strip) compose ONLY on the poolKey call path — structurally incapable
+    of entering `ContentFingerprint`'s call path (two call sites into shared low-level pieces).
+- **Before the production key builders ship (decisions 1, 2, 4):**
+  - C3 (Architect must-have). `canonical_pool_key.dart` (Dart hint) and `canonical-pool-key.ts`
+    (TS authority) implement the fail-closed guard (empty/generic anchor → return null); covered
+    by a golden fixture that actually exercises an all-qualifier/generic title.
+  - C4 (Architect must-have). Cross-language golden-fixture parity (decision 2) MUST include a
+    tie-length anchor case (first-wins pinned) and a generic-anchor case, so Dart and TS cannot
+    silently diverge.
+  - C5 (Architect should). Qualifier/unit/stopword/generic word-lists shared via one JSON both
+    languages load, OR a CI script diffing the two const sets byte-for-byte.
+- **Before the BACKFILL CF is authorized to run (the irreversible history-merge step):**
+  - C6 (Data + T&S must-have). Re-run `measure_poolkey_hitrate.dart` against a REAL corpus batch
+    (≥20–30 scans) with false-merges still 0. Synthetic validation is fine for BUILDING the pipes;
+    it is NOT sufficient for RUNNING the backfill on production ratings.
+  - C7 (Data must-have). Specifically test real-OCR title extraction for compound-word splitting
+    ("kött bullar" → "bullar") — the generic-anchor guard must catch it (fail closed), verified on
+    real scans. Note: `TextImportStrategy` does NOT OCR-correct the title today (only ingredient/
+    instruction lines), so titles reaching the key can be noisier than the synthetic sample.
+  - C8 (T&S must-have). Expand the adversarial precision set beyond the current pairs — dessert-
+    family (cake/muffin/cupcake), protein-swap, synonym-title, generic-anchor classes; tag each by
+    class so "0 false merges" reads as coverage, not a raw count.
+- **Before ship (T&S should):**
+  - C9. Confirm decision-13 spike-detection + admin "split a bad merge" tooling is OPERATIONAL
+    (not just planned), covering bad-faith injected merges, given the ingredient-dominant key's
+    pool-hijack vector.
+  - C10. Surface anchor-only title changes (title edited, ingredient set unchanged) distinctly in
+    telemetry — under "longest title token" a user can detach from a bad pool by adding one title
+    word without changing the dish (a cheaper "rating laundering" lever than decision 13 assumed).
+
 ### Architecture (panel-resolved decisions)
 1. **Identity (REVISED 2026-07-03 — was: title keywords + ingredient names, exact):**
    `ratingPoolKey`, versioned (`v1:` prefix, kTagGeneratorVersion precedent). **Hybrid key:**

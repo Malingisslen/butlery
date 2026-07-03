@@ -326,6 +326,60 @@ const _dishQualifiers = {
   'allra',
 };
 
+/// Generic dish-CATEGORY nouns that carry almost no disambiguating power. If the
+/// dish anchor reduces to one of these (a bare "Soppa", or an OCR compound-split
+/// leaving "bullar" from "köttbullar"), the anchor cannot guard precision, so
+/// per the panel (T&S must-have + Data/Integrations OCR-split finding) the recipe
+/// FAILS CLOSED: it does not pool rather than risk a silent false merge.
+/// Folded (å/ä/ö→a/o) to match the anchor's normalized form.
+const _genericAnchors = {
+  'soppa',
+  'sas',
+  'kaka',
+  'kakor',
+  'bullar',
+  'bulle',
+  'paj',
+  'gryta',
+  'grateng',
+  'sallad',
+  'rora',
+  'pytt',
+  'lada',
+  'form',
+  'gratin',
+  'mos',
+  'stuvning',
+  'soppor',
+  'ratt',
+  'ratter',
+  'mat',
+  'middag',
+  'lunch',
+  'frukost',
+  'efterratt',
+  'dessert',
+  'bakelse',
+  'tarta',
+  'paltbrod',
+  'brod',
+  'kex',
+  // Common Swedish definite-singular forms of the same generics (soppa->soppan).
+  'soppan',
+  'sasen',
+  'kakan',
+  'grytan',
+  'pajen',
+  'salladen',
+  'roran',
+  'tartan',
+  'bakelsen',
+  'stuvningen',
+  'gratengen',
+  'brodet',
+  'moset',
+};
+
 String? poolKeyHybrid({
   required String title,
   required List<String> ingredients,
@@ -341,6 +395,8 @@ String? poolKeyHybrid({
   if (normalized.isEmpty) return null;
 
   // Dish anchor: longest significant title token, qualifiers removed.
+  // Tie-break is FIRST-WINS (strict >), pinned so the Dart hint and the TS
+  // authority agree — the cross-language golden fixture must cover a tie case.
   final foldedQualifiers = _dishQualifiers.map(_foldDiacritics).toSet();
   final tokens = _extractTitleKeywordsStrong(
     title,
@@ -349,6 +405,11 @@ String? poolKeyHybrid({
   for (final t in tokens) {
     if (t.length > anchor.length) anchor = t;
   }
+
+  // Fail closed: no usable anchor (empty OR a generic category noun) => do NOT
+  // pool. Silently degrading to ingredient-only here would reintroduce the
+  // false-merge risk the anchor exists to prevent (panel: 3/3 must-have).
+  if (anchor.isEmpty || _genericAnchors.contains(anchor)) return null;
 
   final raw = '$anchor::${normalized.take(12).join('|')}';
   final hash = sha256.convert(utf8.encode(raw)).toString().substring(0, 16);
@@ -663,6 +724,26 @@ const _cases = <RecipeCase>[
       '2 tsk bakpulver',
     ]),
   ]),
+  // Generic-anchor precision pair (panel must-have): two different soups with an
+  // identical base but bare generic titles. Under ingredient-only they merge;
+  // under the hybrid they must FAIL CLOSED (generic anchor -> null -> no pool),
+  // so they neither pool wrongly nor count as a false merge.
+  RecipeCase('Soppa A (generic title)', [
+    RecipeVariant(ImportMethod.url, 'Soppa', [
+      '1 gul lök',
+      '2 morötter',
+      '1 l buljong',
+      'salt',
+    ]),
+  ]),
+  RecipeCase('Soppa B (generic title)', [
+    RecipeVariant(ImportMethod.url, 'Soppan', [
+      '1 gul lök',
+      '2 morötter',
+      '1 l buljong',
+      'salt',
+    ]),
+  ]),
 ];
 
 // ---------------------------------------------------------------------------
@@ -676,9 +757,15 @@ typedef Keyer =
     });
 
 class KeyerResult {
-  int urlHits = 0, urlTotal = 0, crossHits = 0, crossTotal = 0, falseMerges = 0;
-  double get urlPct => urlTotal == 0 ? 0 : 100.0 * urlHits / urlTotal;
-  double get crossPct => crossTotal == 0 ? 0 : 100.0 * crossHits / crossTotal;
+  int urlHits = 0, urlTotal = 0, falseMerges = 0, excluded = 0;
+  int ocrHits = 0, ocrTotal = 0, igHits = 0, igTotal = 0;
+  int get crossHits => ocrHits + igHits;
+  int get crossTotal => ocrTotal + igTotal;
+  double _pct(int h, int t) => t == 0 ? 0 : 100.0 * h / t;
+  double get urlPct => _pct(urlHits, urlTotal);
+  double get crossPct => _pct(crossHits, crossTotal);
+  double get ocrPct => _pct(ocrHits, ocrTotal);
+  double get igPct => _pct(igHits, igTotal);
 }
 
 /// Run one keyer over the whole sample set. Recall = same recipe -> same key.
@@ -701,17 +788,25 @@ KeyerResult _evaluate(Keyer key, {bool verbose = false}) {
     final ref = refIndex >= 0 ? keyed[refIndex] : keyed.first;
     final refI = refIndex >= 0 ? refIndex : 0;
     refKeyByCase[rc.name] = ref.$3;
+    // A null reference key = intentionally excluded from pooling (fail-closed
+    // guard), not a recall failure — count it separately so it does not distort
+    // the hit-rate denominators.
+    if (ref.$3 == null) r.excluded++;
 
     for (var i = 0; i < keyed.length; i++) {
       if (i == refI) continue;
       final e = keyed[i];
       final hit = e.$3 != null && ref.$3 != null && e.$3 == ref.$3;
-      if (e.$1 == ImportMethod.url) {
-        r.urlTotal++;
-        if (hit) r.urlHits++;
-      } else {
-        r.crossTotal++;
-        if (hit) r.crossHits++;
+      switch (e.$1) {
+        case ImportMethod.url:
+          r.urlTotal++;
+          if (hit) r.urlHits++;
+        case ImportMethod.ocr:
+          r.ocrTotal++;
+          if (hit) r.ocrHits++;
+        case ImportMethod.instagram:
+          r.igTotal++;
+          if (hit) r.igHits++;
       }
       if (verbose && !hit) {
         stdout.writeln('  [MISS] ${rc.name}: "${e.$2}" (${_label(e.$1)})');
@@ -761,12 +856,20 @@ void main(List<String> args) {
       '(${res.urlPct.toStringAsFixed(0)}%)',
     );
     stdout.writeln(
-      '  cross-method  : ${res.crossHits}/${res.crossTotal} '
-      '(${res.crossPct.toStringAsFixed(0)}%)',
+      '  URL<->OCR     : ${res.ocrHits}/${res.ocrTotal} '
+      '(${res.ocrPct.toStringAsFixed(0)}%)  <- normalization-fixable (v1 scope)',
+    );
+    stdout.writeln(
+      '  URL<->Instagr : ${res.igHits}/${res.igTotal} '
+      '(${res.igPct.toStringAsFixed(0)}%)  <- caption content loss (v2 fuzzy)',
     );
     stdout.writeln(
       '  false merges  : ${res.falseMerges} '
-      '(distinct recipes wrongly pooled — precision cost)\n',
+      '(distinct recipes wrongly pooled — precision cost)',
+    );
+    stdout.writeln(
+      '  excluded      : ${res.excluded} '
+      '(no usable dish anchor — fail-closed, not a recall miss)\n',
     );
   }
 
