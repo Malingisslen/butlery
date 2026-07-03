@@ -493,6 +493,23 @@ async function seedFixtures(): Promise<void> {
     createdAt: new Date(),
   });
 
+  // --- canonical_rating_events (Increment 5, decision 12): the target's frozen
+  //     pool events are erased by deleteUserSubcollections; OTHER's are a scope
+  //     control that must survive. Also the residual probe must count zero for
+  //     the target afterwards. ---
+  await db
+    .collection("users")
+    .doc(TARGET)
+    .collection("canonical_rating_events")
+    .doc(`v1:pool-a-${RUN}`)
+    .set({ poolKey: `v1:pool-a-${RUN}`, ratingValue: 4, recipeId: `r-sub-${RUN}` });
+  await db
+    .collection("users")
+    .doc(OTHER)
+    .collection("canonical_rating_events")
+    .doc(`v1:pool-b-${RUN}`)
+    .set({ poolKey: `v1:pool-b-${RUN}`, ratingValue: 5, recipeId: "r-other" });
+
   // --- users/{target} root doc (deleted last) ---
   await db.collection("users").doc(TARGET).set({ displayName: "Target" });
 }
@@ -1007,6 +1024,30 @@ test("realtime_recipes: a recipe target only participates in is retained", async
     "recipe where target is a participant (not owner) must NOT be erased by their deletion",
   );
 });
+
+// ===========================================================================
+// CANONICAL RATING EVENTS (Increment 5, decision 12) — own erased, control kept
+// ===========================================================================
+
+// I-CRE1: target's own pool event is erased by deleteUserSubcollections.
+test("canonical_rating_events: target's own pool event is deleted", async () => {
+  assert(
+    !(await exists(`users/${TARGET}/canonical_rating_events/v1:pool-a-${RUN}`)),
+    "target's own pool event should be gone",
+  );
+});
+
+// I-CRE2: OTHER's pool event survives (scope proof — the cascade is uid-scoped).
+test("canonical_rating_events: another user's pool event is retained", async () => {
+  assert(
+    await exists(`users/${OTHER}/canonical_rating_events/v1:pool-b-${RUN}`),
+    "control pool event owned by OTHER must survive",
+  );
+});
+
+// I-CRE3: the residual probe found no leftover events — otherwise the cascade
+// would have pushed "residual_data_detected" into failedCollections (asserted
+// empty by I21 below), so a surviving target event would fail the whole run.
 
 // ===========================================================================
 // ENVELOPE: cascade reported these steps as deleted (not failed).

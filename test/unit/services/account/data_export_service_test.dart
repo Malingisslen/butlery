@@ -346,6 +346,10 @@ void main() {
         expect(data['notification_batches'], isNotNull);
         expect(data['notification_engagement'], isNotNull);
         expect(data['notification_delivery'], isNotNull);
+        // Increment 5 (pooled ratings, decision 12): the deletion cascade erases
+        // canonical_rating_events, so the export must carry the section (export ⊇
+        // erased) even when the user has no pooled votes.
+        expect(data['pooled_rating_events'], isNotNull);
       });
     });
 
@@ -420,6 +424,35 @@ void main() {
         final data = json.decode(jsonString) as Map<String, dynamic>;
 
         expect(data['comments_and_ratings'], isNotNull);
+      });
+
+      test('Increment 5: seeded canonical_rating_events flows into the export '
+          '(export ⊇ erased, real data not error payload)', () async {
+        // Seed a frozen pool event at the user-scoped subcollection the deletion
+        // cascade erases. If the export wiring regresses (wrong path, ownership
+        // guard, or a stray error), the section falls back to {'error': ...} and
+        // this fails — proving the real read path, not just section presence.
+        await fakeFirestore
+            .collection('users')
+            .doc(testUserId)
+            .collection('canonical_rating_events')
+            .doc('v1:aaaabbbbccccdddd')
+            .set({
+              'poolKey': 'v1:aaaabbbbccccdddd',
+              'ratingValue': 4,
+              'recipeId': 'recipe-1',
+            });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['pooled_rating_events'] as Map<String, dynamic>;
+        expect(section['error'], isNull);
+        expect(section['events'], isList);
+        expect(section['total_count'], 1);
+        final events = section['events'] as List;
+        expect(events.first['id'], 'v1:aaaabbbbccccdddd');
+        expect((events.first['data'] as Map)['ratingValue'], 4);
       });
 
       test('BUT-501: export-via-repo paths return real data (not error '

@@ -43,7 +43,10 @@ enum ExportResourceType {
   notificationHistory('notification_history'),
   notificationBatches('notification_batches'),
   notificationEngagement('notification_engagement'),
-  notificationDelivery('notification_delivery')
+  notificationDelivery('notification_delivery'),
+  // Increment 5 (decision 12): pooled-rating events the deletion cascade
+  // erases but the export previously omitted (Art. 15 ⊇ Art. 17).
+  canonicalRatingEvents('canonical_rating_events')
   ;
 
   const ExportResourceType(this.tag);
@@ -685,6 +688,26 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('targetUserId', isEqualTo: userId),
     userId,
     ExportResourceType.notificationDelivery,
+    limit: maxDocuments,
+  );
+
+  // ── Increment 5: pooled ratings ("Butlery-betyget") events (Art. 15 ⊇ erased) ──
+
+  /// `users/{uid}/canonical_rating_events` subcollection — the user's frozen
+  /// pooled-rating contributions (one doc per pool they voted in; doc-id =
+  /// poolKey). The deletion cascade erases these, so Art. 15 right-of-access
+  /// requires the export to include them. PSEUDONYMOUS, not anonymous
+  /// (decision 12): the poolKey is a reproducible content hash tied to this uid.
+  Future<List<Map<String, dynamic>>> exportCanonicalRatingEvents(
+    String userId, {
+    int maxDocuments = 1000,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.canonicalRatingEvents),
+    userId,
+    ExportResourceType.canonicalRatingEvents,
     limit: maxDocuments,
   );
 }

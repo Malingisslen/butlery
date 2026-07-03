@@ -134,6 +134,33 @@ export async function probeResidualData(
       );
     }
   }
+  // Pooled ratings (decision 12): canonical_rating_events is a SUBCOLLECTION
+  // (users/{uid}/canonical_rating_events), not a top-level userId-scoped
+  // collection — a where("userId","==",uid) probe would silently match zero (the
+  // realtime_recipes wrong-field trap). Probe the subcollection directly; the
+  // cascade erases it in deleteUserSubcollections.
+  try {
+    const snap = await db
+      .collection("users")
+      .doc(uid)
+      .collection("canonical_rating_events")
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(
+        `[deletion-cascade] residual in canonical_rating_events: ${count} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      `[deletion-cascade] residual probe failed: canonical_rating_events`,
+      { err },
+    );
+  }
+
   if (residual > 0 && !result.failedCollections.includes("residual_data_detected")) {
     result.failedCollections.push("residual_data_detected");
   }
@@ -754,6 +781,12 @@ export async function deleteUserSubcollections(
     "category_preferences",
     "list_category_orders",
     "report_throttle",
+    // Pooled ratings (decision 12): the user's frozen pool events. Each delete
+    // fires the Stage-B trigger (onPooledRatingEventWritten), which recomputes
+    // the affected pool's canonical_recipe_stats — so erasing the rater also
+    // shrinks the public averages they contributed to, with no explicit
+    // recompute call (the established trigger separation).
+    "canonical_rating_events",
   ];
   for (const name of subs) {
     const snap = await userDoc.collection(name).get();

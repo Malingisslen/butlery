@@ -89,6 +89,10 @@ abstract final class FirestoreCollections {
   // BUT-781: per-(reporter, contentOwner) brigade-rate-limit sentinel
   // doc id is the contentOwnerId; field is `lastReportAt: serverTimestamp()`.
   static const String userReportThrottle = 'report_throttle';
+  // Pooled ratings ("Butlery-betyget"): one frozen pool event per pool the user
+  // has voted in (doc-id = poolKey). Server-only writes (CF mirror, Admin SDK);
+  // owner-read for GDPR export. Pseudonymous, not anonymous.
+  static const String canonicalRatingEvents = 'canonical_rating_events';
 
   // ── Shared content subcollections ──
 

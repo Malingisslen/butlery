@@ -264,6 +264,28 @@ unauthenticated-events-read deny + a collection-group leak guard, and independen
 confirmed no broader rule unions in a client write — union-safety holds). No production
 CF logic changed this increment.
 
+## Increment 5 — DONE (GDPR same-PR coverage committed 2026-07-03)
+The pooled-rating events store is now covered by deletion + export in the same
+branch as the write path (decision 12), so no un-erasable data can exist before
+erasure does. Three parts:
+- **Deletion:** `canonical_rating_events` added to the deleteUserSubcollections
+  `subs` array (account-deletion-cascade.ts). Each event delete fires the Stage-B
+  trigger → the pools the user contributed to recompute (no explicit call).
+- **Residual probe:** a subcollection-shaped `.count()` block (NOT a top-level
+  `where('userId'==)` which would silently match zero) — a leftover pushes
+  `residual_data_detected` into failedCollections (fail-closed).
+- **Export:** new `exportCanonicalRatingEvents` repo method (routes through the
+  `_guardSelfExport` ownership check) + `ActivityExportManager.exportPooledRatingEvents`
+  + `FirestoreCollections.canonicalRatingEvents` const + `ExportResourceType`
+  enum value + pagination limit; wired into the export fan-out as
+  `pooled_rating_events`. Section is ALWAYS present (Art. 15 holds for a user with
+  none). Labelled **pseudonymous, never anonymous** (decision 12 / Breyer).
+Gates all clean: firebase-backend-security + cloud-functions-specialist (the
+plan-designated pair) + code-reviewer + testing-specialist. Emulator: account
+deletion 44/44 (target's events erased, another user's retained, residual clean);
+Dart export suite 33/33 (incl. a data-flow test proving a seeded event reaches the
+export, not just section presence). Flag stays OFF in prod until incr 1–5 merged.
+
 ## Sequencing & safety
 Build order 1→2→3→4→5 (pipeline + rules + GDPR) with the **feature flag OFF in prod throughout**;
 then 6 (client display) still behind the flag; then 7 (detachment). 8 stays dormant until its

@@ -187,6 +187,8 @@ class ExportPaginationHelper {
     'notification_delivery': 1000,
     'notification_batches': 500,
     'notification_engagement': 1000,
+    // Increment 5: pooled-rating events (one per pool the user voted in).
+    'canonical_rating_events': 1000,
   };
 
   /// Get export limit for content type

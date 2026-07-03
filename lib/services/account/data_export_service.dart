@@ -118,6 +118,8 @@ class DataExportService extends BaseService {
       commentsRepository: commentsRepository,
       ratingsRepository: ratingsRepository,
       feedbackRepository: feedbackRepository,
+      // Increment 5: pooled-rating events read through the export gateway.
+      dataExportRepository: _exportRepo,
     );
     _complianceManager =
         complianceExportManager ??
@@ -206,6 +208,9 @@ class DataExportService extends BaseService {
       'notification_delivery': _preferencesManager.exportNotificationDelivery(
         userId,
       ),
+      // Increment 5 (decision 12): pooled-rating events the deletion cascade
+      // erases must be present in the export (Art. 15 ⊇ Art. 17). Pseudonymous.
+      'pooled_rating_events': _activityManager.exportPooledRatingEvents(userId),
     };
 
     final keys = futures.keys.toList();
