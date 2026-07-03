@@ -252,6 +252,18 @@ index config matches the aggregate's needs; recorded in `tasks/lessons.md`. Fina
 9/9 Stage B + 18/18 Stage A + 5/5 shared-debounce + 4/4 flag green. Index enablement
 remains an explicit deploy step (decision 14); feature flag OFF in prod throughout.
 
+## Increment 4 — DONE (rules + rules tests committed 2026-07-03)
+firestore.rules gained two server-authoritative matches (decision 10):
+`users/{uid}/canonical_rating_events/{poolKey}` (owner-only read, all client writes
+denied — CF-only) and `canonical_recipe_stats/{poolKey}` (any-authed read, all client
+writes denied — mirrors recipe_social_stats). COLLECTION INVENTORY header updated. New
+`canonical-stats-rules.test.ts` registered in package.json (`test:rules:canonical-stats`
++ `test:rules:all`) and both path lists of `.github/workflows/firestore-rules.yml`.
+firestore-rules-tester gate: proven on the real emulator, 12/12 (it added an
+unauthenticated-events-read deny + a collection-group leak guard, and independently
+confirmed no broader rule unions in a client write — union-safety holds). No production
+CF logic changed this increment.
+
 ## Sequencing & safety
 Build order 1→2→3→4→5 (pipeline + rules + GDPR) with the **feature flag OFF in prod throughout**;
 then 6 (client display) still behind the flag; then 7 (detachment). 8 stays dormant until its

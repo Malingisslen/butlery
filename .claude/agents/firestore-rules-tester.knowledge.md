@@ -1212,3 +1212,45 @@ the single fail is still C1 (`recipe_comments: age-compliant author can create a
 `Property email_verified is undefined`), the BUT-1419 `isAccountMatured()` staleness from
 the prior entry. My +169-line working diff is all test insertions; the failure predates it
 and is outside BUT-674 scope. Delta from my change = exactly my 4 passing SM tests.
+
+### 2026-07-03 — canonical-stats-rules.test.ts created (pooled ratings "Butlery-betyget", decision 10)
+
+New test file `functions/src/__tests__/canonical-stats-rules.test.ts` (12 tests,
+all green on the running emulator), wired as `test:rules:canonical-stats`,
+appended to `test:rules:all` (after conversations), and in BOTH path-filter
+blocks of `firestore-rules.yml`. Project id `butlery-canonical-stats-test`.
+
+Map rows to add:
+
+| `/users/{userId}/canonical_rating_events/{poolKey}` (owner-read, CF-only writes) | `canonical-stats-rules.test.ts` | `test:rules:canonical-stats` |
+| `/canonical_recipe_stats/{poolKey}` (any-authed read, CF-only writes) | `canonical-stats-rules.test.ts` | `test:rules:canonical-stats` |
+
+**Rule shape (decision 10, two server-authoritative pooled-ratings homes):**
+- `canonical_rating_events`: `read: isAuthenticated() && auth.uid==userId` (owner
+  only — GDPR export + future "my votes" UI); `create,update,delete: false`
+  (Stage-A mirror CF via Admin SDK is the only writer; doc-ID = poolKey).
+- `canonical_recipe_stats`: `read: isAuthenticated()` (any signed-in user reads
+  the anonymous {count, average}); `create,update,delete: false` (Stage-B
+  aggregator CF). Exact `recipe_social_stats` precedent. Doc-ID = opaque poolKey,
+  no rater identity.
+
+**Union-safety confirmed independently.** The collection-group catch-alls
+(`match /{path=**}/members|friend_categories|engagements|comments|ratings|recipes|pings`)
+end in a NAMED segment — none is `canonical_rating_events` or `canonical_recipe_stats`,
+and there is NO recursive `match /users/{userId}/{...=**}`. So the only rules that
+match these two paths are the specific matches + the L2451 global default-deny. No
+broad grant unions in a client write. Deny logs pinned each write-deny to the
+exact new rule lines (events L1941, stats L2419), each paired with L2451.
+
+**Gaps I closed in the authored 10-test file (added 2, now 12):**
+1. **Unauthenticated events read** — the only events-read deny was an authed
+   STRANGER; added an `unauthenticatedContext()` deny (`isAuthenticated()` short-circuit).
+2. **Collection-group leak guard** — `collectionGroup("canonical_rating_events").get()`
+   by a non-owner must DENY (the engine cannot prove every matched doc satisfies
+   `auth.uid==userId` for an unconstrained collection-group query). This is the
+   load-bearing cross-user leak guard: if a future catch-all matching this
+   subcollection is ever added, this test flips red before rater votes leak.
+   `ctx.firestore().collectionGroup(name).get()` works on the compat SDK — no
+   modular import needed.
+
+No firestore.rules edits (rules authored by the task author, verified correct + minimal).

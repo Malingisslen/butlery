@@ -8,13 +8,15 @@ service cloud.firestore {
     //   recipes, unified_shopping_lists(/items), ingredients, personal_tags,
     //   personal_tag_groups, friends, friend_categories, conversations,
     //   rate_limits, counters, conversation_memberships,
-    //   settings, consent, category_preferences, list_category_orders
+    //   settings, consent, category_preferences, list_category_orders,
+    //   canonical_rating_events (pooled-ratings pool events, server-only writes)
     //
     // Social / shared:
     //   public_profiles, social_requests,
     //   shared_content(/members/views/engagements/dismissals/collaborators/items),
     //   recipe_comments(/likes), recipe_ratings,
-    //   recipe_social_stats (server-only)
+    //   recipe_social_stats (server-only),
+    //   canonical_recipe_stats (pooled-ratings aggregate, server-only)
     //
     // Realtime collaboration:
     //   realtime_recipes(/presence), recipePresence(/activeUsers)
@@ -1925,6 +1927,21 @@ service cloud.firestore {
     }
 
     // ========================================
+    // CANONICAL RATING EVENTS (pooled ratings "Butlery-betyget", decision 10)
+    // ========================================
+    // One frozen pool event per pool the user has voted in, written ONLY by the
+    // Stage-A mirror Cloud Function (Admin SDK bypasses these rules). The owner
+    // may READ their own events (GDPR export + any future "my contributions" UI);
+    // ALL client writes are denied — the poolKey and ratingValue are
+    // server-authoritative (a client write could poison a pool or forge a vote).
+    // The doc-ID is the poolKey. This is pseudonymous data (uid + reproducible
+    // hash), covered by the deletion cascade + export (Increment 5).
+    match /users/{userId}/canonical_rating_events/{poolKey} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow create, update, delete: if false;  // CF-only via Admin SDK
+    }
+
+    // ========================================
     // MENU TEMPLATES - Reusable menu templates
     // ========================================
 
@@ -2389,6 +2406,15 @@ service cloud.firestore {
     // ========================================
 
     match /recipe_social_stats/{recipeId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;  // Server-only via Cloud Functions (Admin SDK)
+    }
+
+    // Pooled ratings "Butlery-betyget" aggregate (decision 10). Same contract as
+    // recipe_social_stats: any signed-in user reads the anonymous {count, average}
+    // (the public number); writes are server-only via the Stage-B aggregator
+    // Cloud Function (Admin SDK). Doc-ID is the opaque poolKey — no rater identity.
+    match /canonical_recipe_stats/{poolKey} {
       allow read: if isAuthenticated();
       allow create, update, delete: if false;  // Server-only via Cloud Functions (Admin SDK)
     }
