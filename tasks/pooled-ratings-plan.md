@@ -78,6 +78,10 @@ do not pool; `_genericAnchors` denylist), first-wins tie-break pinned, cross-met
 into URL↔OCR (v1-fixable) vs URL↔Instagram (v2 fuzzy). Re-measured HYBRID: 100% URL↔URL,
 38% URL↔OCR, 63% URL↔Instagram, **0 false merges, 2 recipes correctly excluded** (generic titles);
 ingredient-only now shows **2** false merges — the guard earns its place.
+(NOTE 2026-07-03: URL↔OCR was re-measured at **50%** once C5 pointed the tool at production
+`CanonicalPoolKey.compute` — up from the 38% the stale tool copy reported, because production
+carries the fold-first + OCR-repair-before-unit-strip fixes the copy lacked. 100% URL↔URL,
+63% URL↔Instagram, 0 false merges, 2 excluded all unchanged.)
 
 Binding conditions (by gate):
 - **Before the shared-normalizer extraction PR merges (decision 3):**
@@ -95,16 +99,27 @@ Binding conditions (by gate):
   - C4 (Architect must-have). Cross-language golden-fixture parity (decision 2) MUST include a
     tie-length anchor case (first-wins pinned) and a generic-anchor case, so Dart and TS cannot
     silently diverge.
-  - C5 (Architect should → NOW DUE, re-confirmed by /code-review high 2026-07-03 as a live
-    PLAUSIBLE drift risk). Qualifier/unit/stopword/generic word-lists are hand-duplicated across
-    Dart (`canonical_pool_key.dart`), TS (`canonical-pool-key.ts`), and a third copy in the
-    disposable Step-0 tool (`measure_poolkey_hitrate.dart`). The parity fixture only pins SAMPLED
-    outputs, so a word added to one list but not the other diverges keys for un-sampled titles →
-    the client pool badge routes to a different pool than the server aggregates into (wrong
-    displayed rating, no test catches it). **Close before the aggregation CF wires the key in:**
-    share the lists via one JSON asset both languages load (or a CI byte-diff of the const sets),
-    and point the Step-0 tool's HYBRID keyer at `CanonicalPoolKey.compute` so C6 measures
-    production, not a stale copy.
+  - C5 (Architect should → NOW DUE) — **DONE 2026-07-03.** The qualifier/unit/stopword/generic
+    word-lists were hand-duplicated across Dart, TS, and a third copy in the Step-0 tool; the
+    parity fixture only pins SAMPLED outputs, so a word added to one list but not the others
+    would diverge keys for un-sampled titles (client badge routes to a different pool than the
+    server aggregates into — wrong displayed rating, no test catches it). Closed as follows:
+    - **One shared source of truth:** `test/fixtures/pool_key_wordlists.json` holds all five
+      lists in order. Both languages keep native `const` copies (kept native, NOT loaded from
+      the JSON: a CF `import`ing a `.json` is a deploy footgun — `tsc` doesn't copy it into
+      `lib/` — and the Dart lists feed the live-cache-protected normalizer via sync initializers
+      that can't become async asset loads). Two drift-guard suites pin the consts IN ORDER to the
+      JSON and run in CI: `canonical_pool_key_wordlist_parity_test.dart` (Dart) and
+      `pool-key-wordlist-parity.test.ts` (TS, auto-discovered by `npm test`). Adding a word to
+      one language but not the JSON — or vice versa — fails one suite. Verified non-vacuous
+      (injected a probe word → both suites went red).
+    - **Third copy eliminated:** `measure_poolkey_hitrate.dart` no longer carries its own key
+      algorithm or word-lists (that copy had already drifted — an extra `krama` qualifier the
+      production lists never had). It now calls production `CanonicalPoolKey.compute`, so the
+      measured number is the shipped number (C6 requirement). This raised the measured URL↔OCR
+      from 38% → 50% (production's fixes vs the stale copy).
+    - Dart consts `dishQualifiers`/`genericAnchors` are now `@visibleForTesting` public; TS
+      consts are `export`ed — both only so the guards can read them.
 - **Before the BACKFILL CF is authorized to run (the irreversible history-merge step):**
   - C6 (Data + T&S must-have). Re-run `measure_poolkey_hitrate.dart` against a REAL corpus batch
     (≥20–30 scans) with false-merges still 0. Synthetic validation is fine for BUILDING the pipes;

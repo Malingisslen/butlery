@@ -11,8 +11,14 @@
  * canonical_pool_key_parity_test.dart, TS: __tests__/pool-key-parity.test.ts,
  * condition C4). Any change here must be mirrored in the Dart twin and the fixture.
  *
- * C5 follow-up: the word lists below are duplicated from the Dart twin; share
- * them via one JSON asset (or a CI byte-diff) so the two languages cannot drift.
+ * C5 drift guard (CLOSED): the word lists below are pinned IN ORDER to the
+ * shared source of truth test/fixtures/pool_key_wordlists.json by
+ * pool-key-wordlist-parity.test.ts (this file's `npm test` suite) and its Dart
+ * twin canonical_pool_key_wordlist_parity_test.dart. They stay native consts
+ * (not loaded from the JSON) so the key stays synchronous and needs no .json
+ * copied into the deployed functions/lib bundle; the parity tests are what make
+ * the two languages incapable of silently drifting. Adding a word here without
+ * updating the JSON and the Dart twin fails CI.
  */
 
 import { createHash } from "crypto";
@@ -21,7 +27,8 @@ const VERSION = "v1";
 
 // Mirror of RecipeTextNormalizer.ingredientUnits (Dart). Contains diacritics;
 // a folded copy drives ingredient unit-stripping (see foldedUnitsRe).
-const INGREDIENT_UNITS = [
+// Exported for the C5 word-list parity test.
+export const INGREDIENT_UNITS = [
   "dl", "msk", "tsk", "krm", "g", "kg", "ml", "l", "cl", "st", "stk", "port",
   "portion", "portioner", "nypa", "nypor", "bit", "bitar", "skiva", "skivor",
   "klyfta", "klyftor", "kvist", "kvistar", "blad", "paket", "burk", "burkar",
@@ -30,17 +37,19 @@ const INGREDIENT_UNITS = [
 
 // Mirror of RecipeTextNormalizer.titleStopWords (Dart). Diacritic forms — the
 // stop-word filter runs on unfolded lowercased title words.
-const TITLE_STOP_WORDS = new Set([
+export const TITLE_STOP_WORDS = new Set([
   "och", "med", "på", "i", "till", "för", "av", "en", "ett", "den", "det", "de",
   "som", "från", "and", "with", "the", "a", "an", "of", "for", "to", "in", "on",
   "enkel", "enkelt", "lätt", "snabb", "snabbt", "god", "gott", "bästa",
   "klassisk", "klassiskt", "hemlagad", "hemlagat", "äkta",
 ]);
 
-const APPROXIMATE_WORDS = ["ca", "cirka", "ungefär", "about", "approximately"];
+export const APPROXIMATE_WORDS = [
+  "ca", "cirka", "ungefär", "about", "approximately",
+];
 
 // Folded (å/ä/ö→a/o) — matched against the folded dish anchor.
-const DISH_QUALIFIERS = new Set([
+export const DISH_QUALIFIERS = new Set([
   "gammaldags", "tunna", "tunn", "tunt", "mjuk", "mjuka", "mjukt", "kramig",
   "kramiga", "saftig", "saftiga", "nyttig", "nyttiga", "festlig", "festliga",
   "matig", "matiga", "krispig", "krispiga", "ugnsbakad", "ugnsbakade",
@@ -50,7 +59,7 @@ const DISH_QUALIFIERS = new Set([
 ]);
 
 // Folded generic dish-category nouns → fail closed (do not pool).
-const GENERIC_ANCHORS = new Set([
+export const GENERIC_ANCHORS = new Set([
   "soppa", "sas", "kaka", "kakor", "bullar", "bulle", "paj", "gryta", "grateng",
   "sallad", "rora", "pytt", "lada", "form", "gratin", "mos", "stuvning",
   "soppor", "ratt", "ratter", "mat", "middag", "lunch", "frukost", "efterratt",

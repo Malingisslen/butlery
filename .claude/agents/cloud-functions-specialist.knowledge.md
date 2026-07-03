@@ -2776,3 +2776,53 @@ both `functions/src/__tests__/pool-key-parity.test.ts` and the Dart test). Revie
 `toLowerCase()` parity + `gi` unit regex), >12 unique ingredients (locks sort-then-
 `take(12)` boundary — the single most divergence-prone construct), and ingredients
 that fold to the same name across mixed case (locks Set dedup after folding).
+
+### 2026-07-03 — C5 word-list drift guard CLOSED [Pattern discovered]
+
+The predicted C5 fix (above) shipped. Reviewed the TS side clean.
+
+- `canonical-pool-key.ts` now `export`s the five word-list consts
+  (`INGREDIENT_UNITS`, `TITLE_STOP_WORDS`, `APPROXIMATE_WORDS`,
+  `DISH_QUALIFIERS`, `GENERIC_ANCHORS`). No algorithm change; regex build +
+  `Set.has` usage unchanged. `noUnusedLocals` still satisfied (all consumed
+  in-module).
+- New `__tests__/pool-key-wordlist-parity.test.ts` — same hand-rolled,
+  `process.exit(1)`-on-fail, `run()`-at-top-level style as the C4
+  `pool-key-parity.test.ts`. Reads repo-root `test/fixtures/pool_key_wordlists.json`
+  (`__dirname/../../../test/fixtures/...`), compares each list IN ORDER. The Dart
+  twin pins the same JSON, so a one-sided edit reddens one of the two suites.
+- `package.json` adds `test:parity:poolkey-wordlists`; auto-discovered by
+  `scripts/run-all-tests.js` (`test:*` minus `test:rules*`/`test:integration:*`).
+  Confirmed the prefix filter admits it.
+
+**Patterns worth remembering:**
+
+- **Native consts + CI parity test, NOT runtime JSON load — deliberate and
+  correct.** `tsc` does not copy `.json` under `src/` into `functions/lib` on
+  build, so a runtime `import`/`readFileSync` of the fixture would crash the
+  deployed function. Keeping the lists as compiled-in consts keeps the pool key
+  synchronous and dependency-free; drift is caught at CI time by the two parity
+  suites instead of at runtime. Do NOT "improve" this into a runtime shared-asset
+  load — that reintroduces a deploy-bundle-missing-file crash. (Decision 2: this
+  TS module is the pool-key SERVER AUTHORITY.)
+
+- **Set→Array insertion order is a sound parity basis.** ECMAScript guarantees
+  Set iteration in insertion order, so `Array.from(set)`/`[...set]` reproduce the
+  literal declaration order; Dart's default `Set` (`LinkedHashSet`) is likewise
+  insertion-ordered. Ordered comparison is meaningful for BOTH: the array lists
+  (`INGREDIENT_UNITS`, `APPROXIMATE_WORDS`) are joined into a regex alternation
+  where order is load-bearing; the Set lists compare by order too, harmlessly
+  (membership is what the algorithm uses, but ordered compare is stricter and free).
+
+- **Exporting pure-data consts has zero cold-start / isolate cost.** The consts
+  were already instantiated at module load; adding `export` changes nothing the
+  deployed entry loads (the test file is never `require`d from `index.ts`). No
+  admin-init import-poison either — the module builds only regexes + `createHash`
+  at load, no `admin.firestore()`. One theoretical Low: exported arrays/Sets are
+  mutable references (not `Object.freeze`d), but the only importer is a read-only
+  test, and internal consumers could already mutate pre-export — so no new risk.
+
+- **`src/__tests__/*` compiles into `functions/lib` (tsconfig `include: ["src"]`).**
+  Pre-existing convention for every parity/rules suite; slightly bloats the deploy
+  artifact but costs nothing at cold start (unreferenced modules aren't loaded).
+  Not introduced by this change — do not flag.

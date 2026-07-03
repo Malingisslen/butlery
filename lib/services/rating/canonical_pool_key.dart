@@ -22,6 +22,7 @@ library;
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:meta/meta.dart';
 import 'package:butlery/services/import/cache/recipe_text_normalizer.dart';
 
 class CanonicalPoolKey {
@@ -35,9 +36,16 @@ class CanonicalPoolKey {
   /// Descriptive title qualifiers that vary between sources but do not change
   /// the dish. Removed before choosing the dish anchor. Stored folded
   /// (å/ä/ö→a/o) to match the folded token form.
-  /// C5 follow-up: share this + [_genericAnchors] with the TS twin via one JSON
-  /// asset (or a CI byte-diff) so the two languages cannot drift.
-  static const _dishQualifiers = {
+  ///
+  /// C5 drift guard (CLOSED): this list + [genericAnchors] + the three
+  /// [RecipeTextNormalizer] lists are pinned IN ORDER to the shared source of
+  /// truth test/fixtures/pool_key_wordlists.json by
+  /// canonical_pool_key_wordlist_parity_test.dart (Dart) and
+  /// pool-key-wordlist-parity.test.ts (TS server twin). Adding a word here
+  /// without updating the JSON and the TS twin fails CI. Kept as a native const
+  /// (not loaded from the asset) so the keyer stays synchronous.
+  @visibleForTesting
+  static const dishQualifiers = {
     'gammaldags',
     'tunna',
     'tunn',
@@ -81,8 +89,9 @@ class CanonicalPoolKey {
   /// Generic dish-CATEGORY nouns that carry almost no disambiguating power. If
   /// the anchor reduces to one of these (a bare "Soppa", or an OCR compound
   /// split leaving "bullar" from "köttbullar"), the recipe FAILS CLOSED — it
-  /// does not pool. Folded form.
-  static const _genericAnchors = {
+  /// does not pool. Folded form. Pinned to the shared JSON — see [dishQualifiers].
+  @visibleForTesting
+  static const genericAnchors = {
     // indefinite singular/plural
     'soppa', 'sas', 'kaka', 'kakor', 'bullar', 'bulle', 'paj', 'gryta',
     'grateng', 'sallad', 'rora', 'pytt', 'lada', 'form', 'gratin', 'mos',
@@ -161,7 +170,7 @@ class CanonicalPoolKey {
     final tokens = RecipeTextNormalizer.significantTitleWords(deHashed)
         .map(_foldDiacritics)
         .map(_repairOcrDigitsToken)
-        .where((w) => !_dishQualifiers.contains(w))
+        .where((w) => !dishQualifiers.contains(w))
         .toList();
 
     var anchor = '';
@@ -169,7 +178,7 @@ class CanonicalPoolKey {
       if (t.length > anchor.length) anchor = t; // first-wins on tie
     }
 
-    if (anchor.isEmpty || _genericAnchors.contains(anchor)) return null;
+    if (anchor.isEmpty || genericAnchors.contains(anchor)) return null;
     return anchor;
   }
 

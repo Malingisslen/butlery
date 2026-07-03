@@ -15,6 +15,7 @@
     "seed-tag-configs": "ts-node src/admin/seed-tag-configs.ts",
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
     "test:parity:poolkey": "ts-node src/__tests__/pool-key-parity.test.ts",
+    "test:parity:poolkey-wordlists": "ts-node src/__tests__/pool-key-wordlist-parity.test.ts",
     "test:rules": "ts-node src/__tests__/reports-rules.test.ts",
     "test:rules:age-gate": "ts-node src/__tests__/age-gate-rules.test.ts",
     "test:rules:account-maturity": "ts-node src/__tests__/account-maturity-rules.test.ts",

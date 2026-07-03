@@ -1,0 +1,34 @@
+{
+  "_comment": "SOURCE OF TRUTH for the pooled-ratings CanonicalPoolKey word-lists (condition C5, tasks/pooled-ratings-plan.md). The Dart hint (lib/services/rating/canonical_pool_key.dart + lib/services/import/cache/recipe_text_normalizer.dart) and the TS server authority (functions/src/ratings/canonical-pool-key.ts) each hold native const copies for sync/no-runtime-IO reasons; drift-guard tests in BOTH languages assert those consts equal these lists IN ORDER (Dart: test/unit/services/rating/canonical_pool_key_wordlist_parity_test.dart; TS: functions/src/__tests__/pool-key-wordlist-parity.test.ts, run via `npm test`). A word added to one list but not the others fails CI here. Order matters: units/approx are joined into a regex alternation, so both languages must agree on order, not just membership. Do NOT reorder or edit without changing every consumer — the guard will catch you, which is the point.",
+  "ingredientUnits": [
+    "dl", "msk", "tsk", "krm", "g", "kg", "ml", "l", "cl", "st", "stk", "port",
+    "portion", "portioner", "nypa", "nypor", "bit", "bitar", "skiva", "skivor",
+    "klyfta", "klyftor", "kvist", "kvistar", "blad", "paket", "burk", "burkar",
+    "påse", "påsar", "ask", "askar"
+  ],
+  "titleStopWords": [
+    "och", "med", "på", "i", "till", "för", "av", "en", "ett", "den", "det", "de",
+    "som", "från", "and", "with", "the", "a", "an", "of", "for", "to", "in", "on",
+    "enkel", "enkelt", "lätt", "snabb", "snabbt", "god", "gott", "bästa",
+    "klassisk", "klassiskt", "hemlagad", "hemlagat", "äkta"
+  ],
+  "approximateWords": [
+    "ca", "cirka", "ungefär", "about", "approximately"
+  ],
+  "dishQualifiers": [
+    "gammaldags", "tunna", "tunn", "tunt", "mjuk", "mjuka", "mjukt", "kramig",
+    "kramiga", "saftig", "saftiga", "nyttig", "nyttiga", "festlig", "festliga",
+    "matig", "matiga", "krispig", "krispiga", "ugnsbakad", "ugnsbakade",
+    "grillad", "grillade", "stekt", "stekta", "kokt", "kokta", "perfekt",
+    "perfekta", "lyxig", "lyxiga", "billig", "billiga", "vardaglig",
+    "vardagliga", "fina", "godaste", "allra"
+  ],
+  "genericAnchors": [
+    "soppa", "sas", "kaka", "kakor", "bullar", "bulle", "paj", "gryta", "grateng",
+    "sallad", "rora", "pytt", "lada", "form", "gratin", "mos", "stuvning",
+    "soppor", "ratt", "ratter", "mat", "middag", "lunch", "frukost", "efterratt",
+    "dessert", "bakelse", "tarta", "paltbrod", "brod", "kex", "soppan", "sasen",
+    "kakan", "grytan", "pajen", "salladen", "roran", "tartan", "bakelsen",
+    "stuvningen", "gratengen", "brodet", "moset"
+  ]
+}
