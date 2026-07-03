@@ -113,6 +113,26 @@ void main() {
       expect(r.toJson()['locale'], 'sv');
     });
 
+    test('BUT-684: isHandwritten defaults to false and is always sent', () {
+      final r = OcrRecipeImageRequest.fromUrl('u');
+      expect(r.isHandwritten, isFalse);
+      expect(r.toJson()['isHandwritten'], isFalse);
+    });
+
+    test('BUT-684: fromBytes threads isHandwritten:true into payload', () {
+      final r = OcrRecipeImageRequest.fromBytes(
+        Uint8List.fromList([0xFF, 0xD8, 0xFF]),
+        isHandwritten: true,
+      );
+      expect(r.isHandwritten, isTrue);
+      expect(r.toJson()['isHandwritten'], isTrue);
+    });
+
+    test('BUT-684: fromUrl threads isHandwritten:true into payload', () {
+      final r = OcrRecipeImageRequest.fromUrl('u', isHandwritten: true);
+      expect(r.toJson()['isHandwritten'], isTrue);
+    });
+
     test('base64 encoder produces a 4-char-per-3-byte-block output', () {
       // NOTE: The hand-rolled encoder in this file has divergent padding
       // behavior from RFC 4648 — pinning exact output for boundary

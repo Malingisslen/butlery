@@ -29,6 +29,8 @@ class InputComponents {
   /// Creates a portion scaler with automatic ingredient scaling.
   /// [structuredIngredients] (BUT-444) enables amount-based scaling from
   /// `Recipe.structuredIngredients` instead of string re-parsing.
+  /// [initialPortions] (BUT-1322) pre-selects a target (household default);
+  /// [originalPortions] stays the scaling base.
   static Widget portionScaler({
     required int originalPortions,
     required List<String> originalIngredients,
@@ -37,6 +39,7 @@ class InputComponents {
     onPortionChanged,
     int minPortions = 1,
     int maxPortions = 20,
+    int? initialPortions,
   }) {
     return PortionScaler(
       originalPortions: originalPortions,
@@ -45,6 +48,7 @@ class InputComponents {
       onPortionChanged: onPortionChanged,
       minPortions: minPortions,
       maxPortions: maxPortions,
+      initialPortions: initialPortions,
     );
   }
 

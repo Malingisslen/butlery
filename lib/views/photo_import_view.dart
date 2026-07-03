@@ -394,6 +394,44 @@ class _PhotoImportViewContent extends StatelessWidget {
                         : () => _showImageSourceDialog(context),
                     isExpanded: true,
                   ),
+                  const SizedBox(height: AppDimensions.spacingM),
+
+                  // BUT-684: handwritten-recipe opt-in. Set before picking a
+                  // photo — routes the import through the handwriting-tuned
+                  // OCR instead of the standard printed-text OCR. SwitchListTile
+                  // is a self-labeling Material primitive (no extra Semantics).
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
+                      ),
+                      border: Border.all(color: cs.outlineVariant),
+                    ),
+                    child: SwitchListTile(
+                      value: viewModel.isHandwritten,
+                      // BUT-1460: freely switchable except while an import is
+                      // processing (canToggleHandwritten == !isProcessing).
+                      // Handwritten is a single-image replace flow, so there are
+                      // no captured pages to strand — the old capture-lock is
+                      // gone. Only blocked mid-pipeline to avoid a race.
+                      onChanged: viewModel.canToggleHandwritten
+                          ? (value) => viewModel.setHandwritten(value)
+                          : null,
+                      title: Text(
+                        context.l10n.importHandwrittenToggle,
+                        style: AppTextStyles.titleSmall,
+                      ),
+                      subtitle: Text(
+                        context.l10n.importHandwrittenToggleSubtitle,
+                        style: AppTextStyles.bodySmall,
+                      ),
+                      secondary: Icon(Icons.draw_outlined, color: cs.primary),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingM,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Bildvisning

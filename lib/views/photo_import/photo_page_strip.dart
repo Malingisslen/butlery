@@ -46,7 +46,10 @@ class PhotoPageStrip extends StatelessWidget {
             buildDefaultDragHandles: viewModel.hasMultiplePages,
             itemCount: pages.length,
             onReorder: viewModel.reorderPage,
-            footer: viewModel.canAddPage
+            // BUT-684: handwritten mode is a single-image, different-pipeline
+            // flow — hide the add-page tile so the affordance can't offer an
+            // append that would replace the handwritten capture instead.
+            footer: viewModel.canAddPage && !viewModel.isHandwritten
                 ? Padding(
                     key: const ValueKey('photo-page-add'),
                     padding: const EdgeInsetsDirectional.only(

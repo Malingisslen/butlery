@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -38,8 +39,37 @@ class CookingModeViewModel extends ChangeNotifier {
   double get fontScale => _fontScale;
 
   CookingModeViewModel({required this.recipe}) {
-    _currentPortions = recipe.portions ?? 1;
-    _scaledIngredients = List.from(recipe.ingredients);
+    // BUT-1322: open pre-scaled to the household default when one is set and
+    // differs from the recipe. The recipe's own portions stay the scaling
+    // BASE; the manual scaler (updatePortions) is the explicit override.
+    // householdSize null ⇒ this is byte-for-byte the pre-BUT-1322 init.
+    // Guard (review): only auto-apply when the recipe declares a REAL portion
+    // count (> 0). A null/0-portions recipe has no meaningful base — scaling
+    // "from 1" would multiply the printed amounts by the household size, and
+    // scaling from 0 is a scaler no-op that would desync the portion header
+    // from the (unscaled) amounts and log a bogus analytics event.
+    final base = recipe.portions;
+    final household = (base != null && base > 0)
+        ? _resolveHouseholdDefault()
+        : null;
+    _currentPortions = household ?? base ?? 1;
+    if (_currentPortions != originalPortions) {
+      _scaledIngredients = PortionScalerLogic.scaleEntries(
+        recipe.structuredIngredients,
+        originalPortions,
+        _currentPortions,
+        false,
+      );
+      _logScalingApplied(
+        source: 'household_default',
+        fromPortions: originalPortions,
+        toPortions: _currentPortions,
+      );
+    } else {
+      _scaledIngredients = List.from(recipe.ingredients);
+    }
+    // PR #211: build the section-grouped rows from the FINAL scaled list
+    // (after any household pre-scaling above).
     _rebuildIngredientRows();
     _loadFontScale();
   }
@@ -49,6 +79,23 @@ class CookingModeViewModel extends ChangeNotifier {
       recipe.structuredIngredients,
       _scaledIngredients,
     );
+  }
+
+  /// BUT-1322: household-size default from the user profile. `tryGet` keeps
+  /// construction safe when UserService isn't registered (tests, degraded
+  /// boot); out-of-range values fall back to the recipe's own portions.
+  int? _resolveHouseholdDefault() {
+    try {
+      final size = ServiceLocator.tryGet<UserService>()
+          ?.currentUserProfile
+          ?.householdSize;
+      if (size == null || size < minPortions || size > maxPortions) {
+        return null;
+      }
+      return size;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _loadFontScale() async {
@@ -121,6 +168,26 @@ class CookingModeViewModel extends ChangeNotifier {
     _logStepAdvanced(from, _currentStepIndex);
   }
 
+  /// BUT-1322 (binding monetization condition): scaling telemetry. Best-effort
+  /// fire-and-forget — a missing/failing analytics service never breaks the
+  /// cook.
+  void _logScalingApplied({
+    required String source,
+    required int fromPortions,
+    required int toPortions,
+  }) {
+    try {
+      ServiceLocator.tryGet<AnalyticsService>()
+          ?.logPortionScalingApplied(
+            recipeId: recipe.id,
+            source: source,
+            fromPortions: fromPortions,
+            toPortions: toPortions,
+          )
+          .catchError((Object _) {});
+    } catch (_) {}
+  }
+
   void _logStepAdvanced(int from, int to) {
     final sid = _sessionId;
     if (sid == null) return;
@@ -157,9 +224,23 @@ class CookingModeViewModel extends ChangeNotifier {
   static const int minPortions = 1;
   static const int maxPortions = 50;
 
+  /// BUT-1322: manual-override analytics fires once per cooking session so
+  /// household-default vs override usage stays a per-open signal, not a
+  /// tap-counter.
+  bool _manualOverrideLogged = false;
+
   void updatePortions(int newPortions) {
     if (newPortions < minPortions || newPortions > maxPortions) return;
     if (newPortions == _currentPortions) return;
+
+    if (!_manualOverrideLogged) {
+      _manualOverrideLogged = true;
+      _logScalingApplied(
+        source: 'manual_override',
+        fromPortions: _currentPortions,
+        toPortions: newPortions,
+      );
+    }
 
     _currentPortions = newPortions;
     // BUT-444: structured-first scaling (persisted amounts; per-entry

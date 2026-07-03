@@ -180,17 +180,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     super.initState();
     _actions = RecipeDetailActions();
 
-    // Initialize scaled ingredients with original recipe portions
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _actions.onPortionChanged(
-            widget.recipe.portions ?? 1,
-            widget.recipe.ingredients,
-          );
-        });
-      }
-    });
+    // BUT-1322: portion state initialized synchronously (household-size
+    // default, recipe portions as scaling base) so the first frame already
+    // renders the right amounts and the PortionScaler mounts with the right
+    // initial value. Replaces the old post-frame onPortionChanged bootstrap.
+    _actions.initializeScaling(widget.recipe);
   }
 
   @override

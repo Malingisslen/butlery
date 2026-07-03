@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -68,6 +69,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   List<String> get cuisineAffinities =>
       List.unmodifiable(_editedProfile?.cuisineAffinities ?? []);
   String get bio => (_editedProfile?.bio).orEmpty();
+
+  /// BUT-1322: household-size default (null = each recipe's own portions).
+  int? get householdSize => _editedProfile?.householdSize;
   UserProfile? get currentProfile =>
       ServiceLocator.get<UserService>().currentUserProfile;
   bool get hasProfile => currentProfile != null;
@@ -157,6 +161,27 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
     notifyListeners();
     return true;
+  }
+
+  /// BUT-1322 (review): true only after the user deliberately changed the
+  /// household size THIS editing session. saveProfile passes the field to the
+  /// service only then — an in-memory null is ambiguous (cleared vs a degraded
+  /// settings-doc read), so an untouched save must not write it at all or it
+  /// would silently wipe the stored setting.
+  bool _householdSizeEdited = false;
+
+  /// BUT-1322: set the household-size default. Null clears back to "recipe
+  /// default"; out-of-range values are ignored (the stepper clamps too, this
+  /// guards programmatic callers).
+  void updateHouseholdSize(int? value) {
+    if (value != null &&
+        (value < UserProfile.minHouseholdSize ||
+            value > UserProfile.maxHouseholdSize)) {
+      return;
+    }
+    _householdSizeEdited = true;
+    _editedProfile = _editedProfile?.copyWith(householdSize: value);
+    notifyListeners();
   }
 
   void updateBio(String value) {
@@ -257,6 +282,10 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     final edited = _editedProfile;
     if (edited == null) return false;
 
+    // BUT-1322: captured before the save syncs _originalProfile, so the
+    // set/changed analytics below compares against the persisted value.
+    final previousHouseholdSize = _originalProfile?.householdSize;
+
     return await safeExecute(() async {
           final updatedProfile = await _userService.createOrUpdateProfile(
             displayName: edited.displayName,
@@ -271,9 +300,24 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             showOnlineStatus: edited.showOnlineStatus,
             shareActivityToFeed: edited.shareActivityToFeed,
             activityFeedEventTypes: edited.activityFeedEventTypes,
+            // BUT-1322 (review): pass the field ONLY when the user edited it
+            // this session. An untouched save must send the sentinel, or a
+            // degraded settings-doc read (in-memory null) followed by any
+            // unrelated profile save would silently wipe the stored setting.
+            householdSize: _householdSizeEdited
+                ? edited.householdSize
+                : UserService.householdSizeUntouched,
           ); // BUT-906/BUT-1220: persist the master opt-out + per-type toggles
 
           if (updatedProfile != null) {
+            if (_householdSizeEdited &&
+                previousHouseholdSize != updatedProfile.householdSize) {
+              _logHouseholdSizeChanged(
+                previousHouseholdSize,
+                updatedProfile.householdSize,
+              );
+            }
+            _householdSizeEdited = false;
             // Sync both profiles to the fresh server response
             _originalProfile = updatedProfile;
             _editedProfile = updatedProfile;
@@ -333,6 +377,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     AppLogger.error('User error: $message');
   }
 
+  /// BUT-1322 (binding monetization condition): set/changed telemetry for the
+  /// household-size preference. Best-effort — a missing or failing analytics
+  /// service must never fail the profile save.
+  void _logHouseholdSizeChanged(int? previous, int? next) {
+    try {
+      ServiceLocator.tryGet<AnalyticsService>()
+          ?.logHouseholdSizeChanged(previousSize: previous, newSize: next)
+          .catchError((Object _) {});
+    } catch (_) {}
+  }
+
   /// Loads current profile data into both original and edited state.
   void _loadCurrentProfile() {
     final profile = currentProfile;
@@ -387,6 +442,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         a.bio.orEmpty() == b.bio.orEmpty() &&
         a.showOnlineStatus == b.showOnlineStatus &&
         a.shareActivityToFeed == b.shareActivityToFeed &&
+        a.householdSize == b.householdSize &&
         mapEquals(a.activityFeedEventTypes, b.activityFeedEventTypes);
   }
 

@@ -1255,6 +1255,31 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuChooseManually => 'Välj recept manuellt';
 
   @override
+  String menuHiddenByFamilyAllergies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept dolda på grund av familjens allergier',
+      one: '1 recept dolt på grund av familjens allergier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String menuHiddenByOwnAllergies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept dolda på grund av dina allergival',
+      one: '1 recept dolt på grund av dina allergival',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuAllergenUnknownChip => 'allergener okända';
+
+  @override
   String get menuNoMoreRecipes => 'Inga fler recept tillgängliga för byte';
 
   @override
@@ -1565,6 +1590,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuTasteSaved => 'Inställningarna sparades.';
+
+  @override
+  String get settingsHouseholdSize => 'Hushållets storlek';
+
+  @override
+  String get settingsHouseholdSizeHint =>
+      'Recept öppnas förinställda på så här många portioner. Portionsval på ett recept gäller alltid före.';
+
+  @override
+  String get householdSizeRecipeDefault => 'Receptets standard';
+
+  @override
+  String get householdSizeUseRecipeDefault => 'Använd receptets standard';
+
+  @override
+  String get a11yDecreaseHouseholdSize => 'Minska hushållets storlek';
+
+  @override
+  String get a11yIncreaseHouseholdSize => 'Öka hushållets storlek';
 
   @override
   String get settingsSectionNotifications => 'Aviseringar';

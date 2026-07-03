@@ -8,7 +8,10 @@ mechanically:
   1. every node path that looks like a repo path must exist (glob tokens must
      match at least one file) — catches renames/deletions;
   2. every flow step's from/to must reference an existing node id — catches
-     JSON edits that break the diagram.
+     JSON edits that break the diagram;
+  3. COVERAGE: every feature ID in docs/feature_inventory.csv must be claimed
+     by at least one flow's "features" array, and no flow may claim an unknown
+     ID — a new feature without a mapped flow fails CI.
 
 Semantic drift (behavior changed inside a still-existing file) is handled by the
 map-freshness stamp hook + docs/onboarding/workflow-map.stale, not by this script.
@@ -77,6 +80,28 @@ def main():
                         f"'{step.get(end)}' in '{end}'"
                     )
 
+    # Coverage cross-check against the feature inventory.
+    inv_csv = "docs/feature_inventory.csv"
+    covered = 0
+    if os.path.isfile(inv_csv):
+        import csv as _csv
+
+        with open(inv_csv, encoding="utf-8") as f:
+            inventory = {row["Feature ID"].strip() for row in _csv.DictReader(f) if row.get("Feature ID")}
+        claimed = set()
+        for action in data.get("actions", []):
+            for fid in action.get("features", []):
+                claimed.add(fid)
+                if fid not in inventory:
+                    problems.append(
+                        f"flow '{action.get('id')}': claims unknown feature id '{fid}' "
+                        f"(not in {inv_csv})"
+                    )
+        missing = sorted(inventory - claimed)
+        covered = len(inventory & claimed)
+        for fid in missing:
+            problems.append(f"feature '{fid}' is not covered by any flow (add it to a flow's features)")
+
     if problems:
         print(f"workflow-map linter: {len(problems)} problem(s) in {MAP_FILE}:")
         for p in problems:
@@ -90,7 +115,8 @@ def main():
 
     print(
         f"workflow-map linter: OK — {len(node_ids)} nodes, "
-        f"{len(data.get('actions', []))} flows, all referenced paths exist"
+        f"{len(data.get('actions', []))} flows, all referenced paths exist, "
+        f"feature coverage {covered}/137"
     )
     return 0
 

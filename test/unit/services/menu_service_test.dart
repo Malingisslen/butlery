@@ -6,7 +6,11 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/menu/protein_category.dart';
 
@@ -331,6 +335,100 @@ void main() {
         );
         expect(menu, isEmpty);
       });
+    });
+
+    group('Global constraints trust routing (BUT-1464)', () {
+      Recipe taggedRecipe(
+        String id, {
+        TagResult? tagResult,
+        TagOverrides? overrides,
+      }) {
+        final base = RecipeFactory.build(
+          id: id,
+          title: id,
+          mealType: 'middag',
+        );
+        return Recipe(
+          core: base.core.copyWith(tagResult: tagResult),
+          type: base.type,
+        ).copyWith(tagOverrides: overrides);
+      }
+
+      TagResult glutenTag(
+        TriState status, {
+        String version = kTagGeneratorVersion,
+      }) => TagResult(
+        tags: const {},
+        allergenStatus: {'gluten': status},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026),
+        generatorVersion: version,
+      );
+
+      ParsedMenuRequest utanGluten() => ParsedMenuRequest(
+        slotRequests: [
+          SlotRequest(
+            mealType: 'middag',
+            subRequests: [RecipeConstraint(count: 5)],
+          ),
+        ],
+        globalAllergenAvoid: const {'gluten'},
+        globalDietaryRequire: const {},
+        dayPins: const [],
+        trace: const ExtractionTrace(),
+        rawPrompt: 'utan gluten',
+      );
+
+      test(
+        '"utan gluten" excludes stale-FREE, keeps fresh-FREE, rescues a '
+        'manual-FREE override, and honours a CONTAINS override on an '
+        'untagged recipe (M1)',
+        () async {
+          final pool = [
+            // Trusted FREE — the only auto-verdict that passes.
+            taggedRecipe('fresh-free', tagResult: glutenTag(TriState.free)),
+            // Stale FREE (old generator version) → effective UNKNOWN → an
+            // explicit "utan gluten" constraint requires proven FREE.
+            taggedRecipe(
+              'stale-free',
+              tagResult: glutenTag(TriState.free, version: '1.0.0'),
+            ),
+            // Auto CONTAINS but the user manually corrected it to FREE —
+            // the human verdict rescues it.
+            taggedRecipe(
+              'rescued',
+              tagResult: glutenTag(TriState.contains),
+              overrides: const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+              ),
+            ),
+            // No tag data at all + manual CONTAINS override → must be
+            // excluded even though untagged recipes are otherwise included
+            // (review M1 — human corrections exist on untagged recipes too).
+            taggedRecipe(
+              'untagged-contains',
+              overrides: const TagOverrides(
+                allergenOverrides: {'gluten': TriState.contains},
+              ),
+            ),
+            // No tag data, no override → include-on-no-data preserved.
+            taggedRecipe('untagged'),
+          ];
+
+          final menu = await menuService.generateMenuFromParsedRequest(
+            utanGluten(),
+            pool,
+          );
+
+          final ids = (menu['middag'] ?? const <Recipe>[])
+              .map((r) => r.id)
+              .toSet();
+          expect(ids, containsAll(['fresh-free', 'rescued', 'untagged']));
+          expect(ids, isNot(contains('stale-free')));
+          expect(ids, isNot(contains('untagged-contains')));
+        },
+      );
     });
 
     group('Weighted Selection', () {

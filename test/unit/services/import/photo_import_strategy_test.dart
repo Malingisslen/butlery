@@ -14,12 +14,18 @@ library;
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Test infrastructure
@@ -30,6 +36,31 @@ import '../../../infrastructure/di/test_service_locator.dart';
 class MockOCRExtractionService extends Mock implements OCRExtractionService {}
 
 class MockTextImportStrategy extends Mock implements TextImportStrategy {}
+
+/// BUT-684: records vision calls + the handwriting flag, returns a configurable
+/// result. Lets us prove the handwritten path calls LLM vision exactly once and
+/// never falls through to char-OCR (a second, printed-prompt vision call).
+class _FakeLlmEnhancementService extends Fake implements LlmEnhancementService {
+  int extractFromImageCalls = 0;
+  bool? lastIsHandwritten;
+  ImportResultV2 result = ImportFailure(
+    message: 'vision failed',
+    errorCode: ImportErrorCode.ocrFailed,
+    pipeline: 'photo',
+    tier: 4,
+  );
+
+  @override
+  Future<ImportResultV2> extractFromImage(
+    Uint8List imageBytes, {
+    String? context,
+    bool isHandwritten = false,
+  }) async {
+    extractFromImageCalls++;
+    lastIsHandwritten = isHandwritten;
+    return result;
+  }
+}
 
 void main() {
   group('PhotoImportStrategy', () {
@@ -932,6 +963,93 @@ void main() {
     // combined text to ImportManager.autoParseMulti. That dead strategy path
     // (and its tests, which only proved dead code) were removed; multi-page
     // combine is covered end-to-end by photo_import_viewmodel_multi_test.dart.
+
+    group('BUT-684: handwritten LLM-vision path', () {
+      late _FakeLlmEnhancementService fakeLlm;
+
+      setUp(() {
+        // The strategy resolves LlmEnhancementService via the production
+        // ServiceLocator; wire it to a fake we can observe.
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        fakeLlm = _FakeLlmEnhancementService();
+        getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      test(
+        'a failing handwritten vision call does NOT fall through to char-OCR '
+        '(no second, printed-prompt vision call)',
+        () async {
+          // fakeLlm returns ImportFailure by default.
+          final result = await strategy.import(
+            'photo',
+            options: {
+              'imageBytes': testImageBytes,
+              'isHandwritten': true,
+            },
+          );
+
+          expect(result.isSuccess, isFalse);
+          expect(
+            fakeLlm.extractFromImageCalls,
+            1,
+            reason: 'exactly one vision call — no printed-prompt retry',
+          );
+          expect(
+            fakeLlm.lastIsHandwritten,
+            isTrue,
+            reason: 'the single call must use the handwriting prompt',
+          );
+          // The char-OCR cascade (whose Tier-4 fallback would fire the second,
+          // printed-prompt vision call) must never run.
+          verifyNever(() => mockOcrService.extractText(any()));
+          verifyNever(() => mockOcrService.initialize());
+        },
+      );
+
+      test(
+        'a successful handwritten vision call returns without touching char-OCR',
+        () async {
+          fakeLlm.result = ImportSuccess(
+            recipe: _createTestRecipe(
+              title: 'Mormors bullar',
+              ingredients: ['5 dl mjöl'],
+              instructions: ['Blanda', 'Grädda'],
+            ),
+            confidence: 0.8,
+            pipeline: 'photo',
+            tier: 4,
+            method: 'llm-vision',
+            usedLlm: true,
+          );
+
+          final result = await strategy.import(
+            'photo',
+            options: {
+              'imageBytes': testImageBytes,
+              'isHandwritten': true,
+            },
+          );
+
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe?.title, 'Mormors bullar');
+          expect(fakeLlm.extractFromImageCalls, 1);
+          verifyNever(() => mockOcrService.extractText(any()));
+        },
+      );
+    });
   });
 }
 

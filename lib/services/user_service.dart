@@ -63,6 +63,17 @@ class UserService extends ChangeNotifier
   static const int _cacheDurationMinutes = 30;
   static const int _maxCacheSize = 200;
 
+  /// BUT-1322: "not passed" sentinel for nullable [createOrUpdateProfile]
+  /// fields where an explicit null is a meaningful value (clear-to-default).
+  static const Object _unset = Object();
+
+  /// BUT-1322 (review): public alias of the sentinel so an editing surface can
+  /// say "leave householdSize untouched" on a save where the user never edited
+  /// it. Passing the current in-memory value instead would wipe the stored
+  /// setting whenever the settings sub-doc read was degraded (fetchProfile
+  /// swallows a failed sub-doc fetch into null).
+  static const Object householdSizeUntouched = _unset;
+
   // Getters
   UserProfile? get currentUserProfile => _currentUserProfile;
   bool get isLoading => _isLoading;
@@ -124,6 +135,10 @@ class UserService extends ChangeNotifier
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
+    // BUT-1322: sentinel default (not plain null) so callers that don't pass
+    // the field (auto-creation, social handler) can't wipe a saved household
+    // size, while an explicit null still clears it back to "recipe default".
+    Object? householdSize = _unset,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -178,6 +193,9 @@ class UserService extends ChangeNotifier
             activityFeedEventTypes: activityFeedEventTypes,
           );
         }
+        if (!identical(householdSize, _unset)) {
+          profile = profile.copyWith(householdSize: householdSize as int?);
+        }
       } else {
         final now = clock.now();
         profile = UserProfile(
@@ -198,10 +216,18 @@ class UserService extends ChangeNotifier
           cookingSkillLevel: cookingSkillLevel,
           cuisineAffinities: cuisineAffinities,
           bio: bio,
+          householdSize: identical(householdSize, _unset)
+              ? null
+              : householdSize as int?,
         );
       }
 
-      await _repository.saveProfile(profile);
+      // BUT-1322 (review): only write the householdSize key when the caller
+      // deliberately set/cleared it — see UserRepository.saveProfile.
+      await _repository.saveProfile(
+        profile,
+        writeHouseholdSize: !identical(householdSize, _unset),
+      );
 
       _currentUserProfile = profile;
       _cacheProfile(user.uid, profile);
@@ -659,7 +685,11 @@ class UserService extends ChangeNotifier
       final updated = _currentUserProfile!.copyWith(
         hasCompletedOnboarding: true,
       );
-      await _repository.saveProfile(updated);
+      await _repository.saveProfile(
+        updated,
+        writeHouseholdSize:
+            false, // onboarding never edits it (BUT-1322 review)
+      );
 
       _currentUserProfile = updated;
       _cacheProfile(userId, updated);
@@ -762,7 +792,10 @@ class UserService extends ChangeNotifier
       hasCompletedOnboarding: true,
       onboardingSkippedAt: onboardingSkippedAt,
     );
-    await _repository.saveProfile(updated);
+    await _repository.saveProfile(
+      updated,
+      writeHouseholdSize: false, // onboarding never edits it (BUT-1322 review)
+    );
 
     _currentUserProfile = updated;
     _cacheProfile(userId, updated);

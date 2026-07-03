@@ -4704,6 +4704,14 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   @override
   int get lastSaveFailureCount => 0;
 
+  // BUT-684: non-nullable bool getters — a Mock returns null via noSuchMethod
+  // and would crash any view that reads them. Default OFF / toggle-able.
+  @override
+  bool get isHandwritten => false;
+
+  @override
+  bool get canToggleHandwritten => true;
+
   // All methods left without implementation to allow stubbing with when()
 }
 

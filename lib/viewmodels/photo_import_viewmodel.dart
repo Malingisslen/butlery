@@ -12,6 +12,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
@@ -37,6 +38,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// flow is simply the `length == 1` case — [_imageBytes]/[_ocrText] stay the
   /// live combined state so no existing consumer changes.
   final List<_PhotoPage> _pages = [];
+
+  /// BUT-684: user opted in to handwritten-recipe mode. When true the pick
+  /// pipeline routes the image through the LLM-vision path (which uses a
+  /// handwriting-tuned Cloud Function prompt) instead of the char-OCR cascade,
+  /// which reliably fails on handwriting. Opt-in because the LLM call costs
+  /// more than OCR.space.
+  bool _isHandwritten = false;
 
   /// Last OCR quality score from image assessment (0.0-1.0).
   /// Enables quality-based error messaging and user guidance on image quality.
@@ -90,6 +98,27 @@ class PhotoImportViewModel extends ImportBaseViewModel
   static const int maxPageSizeMb = 15;
 
   Uint8List? get imageBytes => _imageBytes;
+
+  /// BUT-684: whether the user marked the current import as a handwritten
+  /// recipe (drives the toggle on the photo-import screen).
+  bool get isHandwritten => _isHandwritten;
+
+  /// BUT-1460: the toggle is freely switchable except while an import is in
+  /// flight. Handwritten mode is a single-image REPLACE flow — a fresh pick
+  /// clears the previous capture — so there is no multi-page data-loss to guard
+  /// against and no reason to lock the toggle once a capture exists (the old
+  /// `_pages.isEmpty` lock trapped the user ON after a handwritten capture). We
+  /// only block mid-processing, where flipping would race the running pipeline.
+  bool get canToggleHandwritten => !isProcessing;
+
+  /// BUT-684: flip handwritten mode. Applies to the NEXT capture — the toggle
+  /// sits next to the pick action so the user sets it before choosing a photo.
+  /// Ignored while an import is processing (see [canToggleHandwritten]).
+  void setHandwritten(bool value) {
+    if (isDisposed || _isHandwritten == value || !canToggleHandwritten) return;
+    _isHandwritten = value;
+    notifyListeners();
+  }
 
   String get ocrText => _ocrText;
 
@@ -335,6 +364,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
     _lastRecommendations = null;
     _lastConfidence = null;
     _parsedRecipes.clear();
+    // BUT-684: the handwritten opt-in is per-import. Reset it here (the
+    // explicit X-button / post-save cleanup) so it isn't sticky across imports
+    // and doesn't silently keep the next fresh import on the costlier LLM path.
+    // NOT reset in clearImportData(): that runs mid-pick (fresh capture) BEFORE
+    // the handwritten branch reads the flag, so resetting there would wipe the
+    // toggle the user just set and break the feature.
+    _isHandwritten = false;
     // Heirloom form clears with the photo — they belong to the same capture.
     clearHeirloomForm();
     clearImportData();
@@ -456,26 +492,170 @@ class PhotoImportViewModel extends ImportBaseViewModel
       }
       notifyListeners();
 
-      // Pre-flight quality assessment (Phase 2 Enhancement)
-      final qualityAssessment = await OCRExtractionService.instance
-          .assessImageQuality(bytes);
-      _lastQualityScore = qualityAssessment.qualityScore;
-      _lastRecommendations = qualityAssessment.recommendations;
-
-      // BUT-660: hard-reject before OCR — saves quota on images that cannot
-      // yield usable text (bytes too small, resolution too low). The OCR
-      // service has a defense-in-depth gate too, but throwing here surfaces
-      // the message via the standard error path the UI already renders.
-      if (qualityAssessment.isRejected) {
-        throw Exception(
-          qualityAssessment.rejectionReason ??
-              AppLocale.current.ocrImageRejected,
-        );
-      }
-
-      // OCR just this page, append it, then combine + parse the whole set.
-      await _ocrAndAppendPage(bytes);
+      await _assessAndRoute(bytes, source, addAsPage: addAsPage);
     }, errorPrefix: AppLocale.current.errorGeneric);
+  }
+
+  /// Routes picked bytes to the right pipeline. Extracted from
+  /// [_pickImageAndProcess] so the branch ORDER (handwritten vs the char-OCR
+  /// quality gate) is unit-testable via [processPickedImageForTesting] without
+  /// a platform image picker.
+  Future<void> _assessAndRoute(
+    Uint8List bytes,
+    ImageSource source, {
+    required bool addAsPage,
+  }) async {
+    // BUT-1460: handwritten routes BEFORE the char-OCR quality gate. The gate
+    // (BUT-660) is tuned for printed text — it hard-rejects small/low-res
+    // images because the char-OCR backends produce garbage on them. But the
+    // LLM-vision path can still read faint or low-res handwriting, so running
+    // the gate first would reject readable handwritten photos before they ever
+    // reach the model. Skip it for handwritten and go straight to the vision
+    // path. The `!addAsPage` guard is belt-and-suspenders: an "add page" action
+    // must never route here and clobber the pages already captured (the UI also
+    // hides the add-page tile in handwritten mode).
+    if (_isHandwritten && !addAsPage) {
+      // The quality fields belong to the char-OCR path this branch skips.
+      // Without this reset, a low-quality PRINTED pick followed by a
+      // handwritten pick (without pressing X in between) leaves the PREVIOUS
+      // image's "Bildkvaliteten är låg" banner + tips on screen —
+      // clearImportData() doesn't touch these fields. Same cleared shape as
+      // clearPhoto (confidence included: the vision path has no char-OCR
+      // confidence, so a stale badge would be equally wrong).
+      _lastQualityScore = null;
+      _lastRecommendations = null;
+      _lastConfidence = null;
+      await _extractHandwritten(bytes, source);
+      return;
+    }
+
+    // Pre-flight quality assessment (Phase 2 Enhancement), printed-text path.
+    final qualityAssessment = await OCRExtractionService.instance
+        .assessImageQuality(bytes);
+    _lastQualityScore = qualityAssessment.qualityScore;
+    _lastRecommendations = qualityAssessment.recommendations;
+
+    // BUT-660: hard-reject before OCR — saves quota on images that cannot
+    // yield usable text (bytes too small, resolution too low). The OCR
+    // service has a defense-in-depth gate too, but throwing here surfaces
+    // the message via the standard error path the UI already renders.
+    if (qualityAssessment.isRejected) {
+      throw Exception(
+        qualityAssessment.rejectionReason ?? AppLocale.current.ocrImageRejected,
+      );
+    }
+
+    // OCR just this page, append it, then combine + parse the whole set.
+    await _ocrAndAppendPage(bytes);
+  }
+
+  /// BUT-1460: test seam for [_assessAndRoute] — runs the real post-pick
+  /// routing (handwritten-branch vs quality-gate) against injected bytes so a
+  /// unit test can prove the handwritten branch skips the char-OCR quality gate
+  /// (and the printed path still enforces it) without a platform image picker.
+  @visibleForTesting
+  Future<void> processPickedImageForTesting(
+    Uint8List bytes,
+    ImageSource source, {
+    bool addAsPage = false,
+  }) async {
+    if (!addAsPage || _pages.isEmpty) _imageBytes = bytes;
+    await executeAsyncVoid(
+      () => _assessAndRoute(bytes, source, addAsPage: addAsPage),
+      errorPrefix: AppLocale.current.errorGeneric,
+    );
+  }
+
+  /// BUT-684: run the picked image through the LLM-vision import path with the
+  /// handwriting flag set, then feed the result into the same
+  /// OCR-text→review→parse pipeline every other photo import uses.
+  ///
+  /// A structured recipe (the common success shape) is rendered to a readable
+  /// text block so the interpreted-text preview + "proceed to edit" handoff
+  /// work unchanged; a raw-text/assistance shape flows straight in as OCR text.
+  @visibleForTesting
+  Future<void> extractHandwrittenForTesting(
+    Uint8List bytes, {
+    ImageSource source = ImageSource.gallery,
+  }) => _extractHandwritten(bytes, source);
+
+  Future<void> _extractHandwritten(Uint8List bytes, ImageSource source) async {
+    // BUT-1460: use importSinglePhoto, NOT autoImport. The handwritten LLM-vision
+    // result is terminal — autoImport's multi-strategy fallback loop would
+    // swallow a terminal failure (or rate-limit denial) into a generic English
+    // "No import strategy could handle" message. importSinglePhoto returns the
+    // strategy's own result so the setError block below surfaces the real text.
+    final result = await importManager.importSinglePhoto(
+      'photo',
+      options: {
+        'imageBytes': bytes,
+        'sourceType': source == ImageSource.camera ? 'camera' : 'gallery',
+        'isHandwritten': _isHandwritten,
+      },
+    );
+
+    if (result.isSuccess && result.recipe != null) {
+      final recipe = result.recipe!;
+      final reviewText = _recipeToReviewText(recipe);
+      // _imageBytes was already set by the caller (_pickImageAndProcess) before
+      // routing here — no need to reassign.
+      _ocrText = reviewText;
+      _lastConfidence = null;
+      _pages
+        ..clear()
+        ..add(_PhotoPage(bytes: bytes, text: reviewText));
+      _parsedRecipes
+        ..clear()
+        ..add(recipe);
+      setParsedRecipe(recipe);
+      unawaited(persistPhotoDraft(imageBytes: bytes, ocrText: _ocrText));
+      return;
+    }
+
+    if (result.needsAssistance &&
+        result.extractedText.orEmpty().trim().isNotEmpty) {
+      final text = result.extractedText!;
+      _ocrText = text;
+      _lastConfidence = null; // vision path carries no char-OCR confidence
+      _pages
+        ..clear()
+        ..add(_PhotoPage(bytes: bytes, text: text));
+      notifyListeners();
+      unawaited(persistPhotoDraft(imageBytes: bytes, ocrText: _ocrText));
+      await _autoParseOcrText(text);
+      return;
+    }
+
+    // BUT-684 (review BUG 2): surface the structured rate-limit message the
+    // normal import path shows (BUT-1144) — and otherwise the failure's own
+    // message — instead of collapsing everything to a generic error. We call
+    // setError directly rather than throwing: executeAsyncVoid only shows its
+    // errorPrefix on a throw, which would discard this detail (the user would
+    // see "something went wrong" instead of "try again in N minutes").
+    final denied = result.rateLimitDenied;
+    setError(
+      denied != null
+          ? denied.swedishMessage
+          : (result.errorMessage ?? AppLocale.current.errorGeneric),
+    );
+  }
+
+  /// Render a parsed recipe back to a plain-text block for the interpreted-text
+  /// preview. The handwriting vision path returns a structured recipe directly;
+  /// this keeps the text-review UX identical to the char-OCR path.
+  String _recipeToReviewText(Recipe recipe) {
+    final buffer = StringBuffer()..writeln(recipe.title);
+    if (recipe.ingredients.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln(recipe.ingredients.join('\n'));
+    }
+    if (recipe.instructions.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln(recipe.instructions.join('\n'));
+    }
+    return buffer.toString().trim();
   }
 
   /// BUT-903: multi-provider OCR (OCR.space → Google Vision → Tesseract) on a

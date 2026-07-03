@@ -33,6 +33,7 @@ class _FakeStripViewModel extends ChangeNotifier
   _FakeStripViewModel({
     required int pageCount,
     this.isProcessing = false,
+    this.isHandwritten = false,
   }) : _pages = List<Uint8List>.generate(
          pageCount,
          (_) => _onePixelPng,
@@ -42,6 +43,9 @@ class _FakeStripViewModel extends ChangeNotifier
 
   @override
   final bool isProcessing;
+
+  @override
+  final bool isHandwritten;
 
   int? removedIndex;
   int? reorderOld;
@@ -211,6 +215,22 @@ void main() {
     );
     // All five capped pages are present as list items.
     expect(strip(tester).itemCount, PhotoImportViewModel.maxPages);
+  });
+
+  testWidgets('BUT-684: hides the add-page tile in handwritten mode', (
+    tester,
+  ) async {
+    // A handwritten capture is single-image; offering "add page" would replace
+    // it rather than append, so the affordance must not render.
+    final vm = _FakeStripViewModel(pageCount: 1, isHandwritten: true);
+    await pumpStrip(tester, vm);
+
+    expect(
+      strip(tester).footer,
+      isNull,
+      reason: 'handwritten mode is single-image — no add-page affordance',
+    );
+    expect(find.byKey(const ValueKey('photo-page-add')), findsNothing);
   });
 
   testWidgets('disables the remove buttons while OCR is processing', (

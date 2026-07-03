@@ -80,6 +80,10 @@ abstract final class AnalyticsEvents {
   static const cookingSessionCompleted = 'cooking_session_completed';
   static const cookingSessionAbandoned = 'cooking_session_abandoned';
 
+  // --- Household size / portion scaling (BUT-1322) ---
+  static const householdSizeChanged = 'household_size_changed';
+  static const portionScalingApplied = 'portion_scaling_applied';
+
   // --- Menu / meal plan ---
   static const menuGenerated = 'menu_generated';
   static const menuGenerationStarted = 'menu_generation_started';

@@ -38,6 +38,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MenuGenerator generator;
+  late MockMenuService menuService;
   late MockUnifiedRecipeService recipeService;
   late MockUserService userService;
   late _MockHouseholdRepository hhRepo;
@@ -72,7 +73,7 @@ void main() {
   }
 
   setUp(() {
-    final menuService = MockMenuService();
+    menuService = MockMenuService();
     recipeService = MockUnifiedRecipeService();
     userService = MockUserService();
     when(() => userService.allergenPreferences).thenReturn(
@@ -123,20 +124,30 @@ void main() {
   });
 
   test(
-    'a present child with a gluten allergy excludes gluten recipes',
+    'a present child with a gluten allergy excludes gluten recipes from a '
+    'generated menu (public entry point)',
     () async {
+      // Re-anchored on generateMenuFromPrompt (BUT-1464): the audit's exact
+      // complaint was that tests exercised getAvailableRecipesAsync directly
+      // while production never called it. The contract now: the pool handed
+      // to the selection service contains no unsafe recipe.
       generator.filterByAllergens = true;
       generator.presentMemberIds = ['m-kid'];
+      final safe = recipeWith('safe', tag({'gluten': TriState.free}));
       recipeService.setRecipeState(
         isInitialized: true,
         recipes: [
           recipeWith('gluten', tag({'gluten': TriState.contains})),
-          recipeWith('safe', tag({'gluten': TriState.free})),
+          safe,
         ],
       );
+      menuService.setGenerateMenuResult({
+        'middag': [safe],
+      });
 
-      final available = await generator.getAvailableRecipesAsync();
-      expect(available.map((r) => r.id), ['safe']);
+      await generator.generateMenuFromPrompt('veckomeny');
+
+      expect(menuService.lastGenerateRecipes!.map((r) => r.id), ['safe']);
     },
   );
 

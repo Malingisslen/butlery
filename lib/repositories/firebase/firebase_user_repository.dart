@@ -137,8 +137,15 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   /// Create or update the current user's profile.
+  ///
+  /// [writeHouseholdSize] — see [UserRepository.saveProfile]: false omits the
+  /// key from the settings merge so a degraded (null) in-memory value can't
+  /// wipe the stored setting on an unrelated profile save.
   @override
-  Future<void> saveProfile(UserProfile profile) async {
+  Future<void> saveProfile(
+    UserProfile profile, {
+    bool writeHouseholdSize = true,
+  }) async {
     // Validate user is updating their own profile
     final currentUser = requireCurrentUserId();
     await validateSelfOperation(
@@ -164,11 +171,15 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // (see the regression guard in firebase_user_repository_test.dart).
     final data = profile.toFirestoreEditable();
     data['displayNameLower'] = profile.displayName.toLowerCase();
+    final settings = profile.toPrivateSettings();
+    if (!writeHouseholdSize) {
+      // Merge-writes only skip ABSENT keys — an explicit null would clear the
+      // stored value. Dropping the key preserves it.
+      settings.remove('householdSize');
+    }
     await Future.wait([
       collection.doc(profile.uid).set(data, SetOptions(merge: true)),
-      _settingsDoc(
-        profile.uid,
-      ).set(profile.toPrivateSettings(), SetOptions(merge: true)),
+      _settingsDoc(profile.uid).set(settings, SetOptions(merge: true)),
     ]);
 
     logPermissionCheck(
@@ -213,6 +224,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // always read as the default false and the hint re-fired forever.
             hasSeenActivityFeedHint:
                 s['hasSeenActivityFeedHint'] as bool? ?? false,
+            // BUT-1322: householdSize is a private preference persisted only
+            // in this settings sub-doc (toPrivateSettings) — merge it back or
+            // the portion-scaling default always reads null.
+            householdSize: UserProfile.parseHouseholdSize(s['householdSize']),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable

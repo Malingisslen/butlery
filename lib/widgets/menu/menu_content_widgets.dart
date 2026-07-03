@@ -7,6 +7,8 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart'
+    show MenuPrefSource;
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -174,6 +176,14 @@ class MenuContentWidgets {
     return ListView(
       children: [
         buildMenuSummary(context, viewModel: viewModel),
+        // BUT-1464 (PM condition 1): explain the pool shrink — a menu made
+        // smaller by allergen filtering must never look like a bug.
+        if (viewModel.hiddenByFamilyCount > 0)
+          _buildHiddenByFamilyHint(
+            context,
+            viewModel.hiddenByFamilyCount,
+            viewModel.hiddenPrefSource,
+          ),
         for (final entry in MenuViewHelpers.getSortedMenuEntries(
           viewModel.menu,
         )) ...[
@@ -245,6 +255,44 @@ class MenuContentWidgets {
         ),
         const SizedBox(height: AppDimensions.spacingL),
       ],
+    );
+  }
+
+  /// Small muted hint row explaining hidden recipes. Attribution follows
+  /// [source]: "familjens allergier" only when a household/present union
+  /// actually filtered; a solo user's own filter gets neutral wording
+  /// (review M2 — no over-attribution). Butler voice (states the action,
+  /// no exclamation).
+  static Widget _buildHiddenByFamilyHint(
+    BuildContext context,
+    int count,
+    MenuPrefSource source,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final isFamilyScope = source != MenuPrefSource.singleUser;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      child: Row(
+        children: [
+          Icon(
+            isFamilyScope ? Icons.family_restroom : Icons.no_meals,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Expanded(
+            child: Text(
+              isFamilyScope
+                  ? context.l10n.menuHiddenByFamilyAllergies(count)
+                  : context.l10n.menuHiddenByOwnAllergies(count),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -529,6 +577,31 @@ class _MenuRecipeCard extends StatelessWidget {
                             ].join(' · '),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        // BUT-1464 (PM condition 2): recipe was included via
+                        // the UNKNOWN-soft path while the household tracks
+                        // allergens — mark the uncertainty. Square corners
+                        // per design language.
+                        if (viewModel.isUnknownSoft(recipe.id))
+                          Container(
+                            margin: const EdgeInsets.only(
+                              top: AppDimensions.spacingXs,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingXs,
+                              vertical: AppDimensions.spacingXxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.surface,
+                              borderRadius: BorderRadius.zero,
+                              border: Border.all(color: cs.outlineVariant),
+                            ),
+                            child: Text(
+                              context.l10n.menuAllergenUnknownChip,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
                           ),
                       ],

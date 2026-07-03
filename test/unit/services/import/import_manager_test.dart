@@ -1,19 +1,71 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart'
     as import_strategy;
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/photo_import_strategy.dart';
+import 'package:butlery/services/import/import_rate_limiter.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/core/di/di_container.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 
+/// BUT-1460: returns a fixed [RateLimitResult] so importSinglePhoto's local
+/// rate-limit branch can be driven to denied without Firestore.
+class _StubRateLimiter extends Fake implements ImportRateLimiter {
+  _StubRateLimiter(this._result);
+  final RateLimitResult _result;
+
+  @override
+  Future<RateLimitResult> checkLimit(ImportOperation operation) async =>
+      _result;
+}
+
+/// BUT-1460: a handwritten LLM-vision service that always fails with a
+/// distinctive message, so a test can prove importSinglePhoto surfaces the
+/// strategy's OWN message rather than the generic multi-strategy miss.
+class _FakeLlmFailure extends Fake implements LlmEnhancementService {
+  _FakeLlmFailure(this.message);
+  final String message;
+  int calls = 0;
+
+  @override
+  Future<ImportResultV2> extractFromImage(
+    Uint8List imageBytes, {
+    String? context,
+    bool isHandwritten = false,
+  }) async {
+    calls++;
+    return ImportFailure(
+      message: message,
+      errorCode: ImportErrorCode.ocrFailed,
+      pipeline: 'photo',
+      tier: 4,
+    );
+  }
+}
+
 void main() {
+  // Constructing a real PhotoImportStrategy (importSinglePhoto tests) builds
+  // OCRExtractionService.instance, which reads SharedPreferences on init —
+  // needs the test binding + a stubbed prefs channel.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('ImportManager', () {
     late ImportManager importManager;
     late MockPersonalRecipeOperations mockPersonalOps;
@@ -23,6 +75,7 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+      SharedPreferences.setMockInitialValues({});
       registerFallbackValue(RecipeFactory.build());
     });
 
@@ -512,6 +565,117 @@ void main() {
         expect(suggestion.confidence, equals(0.85));
         expect(suggestion.description, equals('desc'));
       });
+    });
+
+    // BUT-1460: importSinglePhoto is the single-image (handwritten LLM-vision)
+    // path. Unlike autoImport it must NOT run the fallback loop that swallows a
+    // terminal failure/rate-limit into the generic "No import strategy could
+    // handle" message — its whole point is to return the strategy's own result.
+    group('importSinglePhoto (BUT-1460)', () {
+      final imageBytes = Uint8List.fromList(List<int>.filled(16, 7));
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ImportRateLimiter>()) {
+          getIt.unregister<ImportRateLimiter>();
+        }
+        if (getIt.isRegistered<LlmEnhancementService>()) {
+          getIt.unregister<LlmEnhancementService>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      test(
+        'a denied rate limit returns a structured rateLimit result '
+        '(not a swallowed generic failure)',
+        () async {
+          const denied = RateLimitDenied(
+            message: 'Too many imports per minute',
+            retryAfter: Duration(seconds: 30),
+            limitType: LimitType.perMinute,
+            suggestedAction: FallbackAction.retryLater,
+          );
+          final getIt = GetIt.instance;
+          if (getIt.isRegistered<ImportRateLimiter>()) {
+            getIt.unregister<ImportRateLimiter>();
+          }
+          getIt.registerSingleton<ImportRateLimiter>(_StubRateLimiter(denied));
+          app_provider.ServiceLocator.reset();
+          app_provider.ServiceLocator.initialize(DIContainer());
+
+          final mgr = ImportManager.withStrategies(mockPersonalOps, [
+            PhotoImportStrategy(),
+          ]);
+
+          final result = await mgr.importSinglePhoto(
+            'photo',
+            options: {'imageBytes': imageBytes, 'isHandwritten': true},
+          );
+
+          expect(result.isSuccess, isFalse);
+          expect(result.strategy, 'rate_limited');
+          expect(result.rateLimitDenied, isNotNull);
+          expect(result.rateLimitDenied!.limitType, LimitType.perMinute);
+          expect(
+            result.errorMessage,
+            isNot(contains('No import strategy')),
+            reason: 'the rate-limit denial must not be swallowed',
+          );
+        },
+      );
+
+      test(
+        'a strategy failure surfaces the strategy own message, preserved '
+        '(NOT the generic multi-strategy miss)',
+        () async {
+          final fakeLlm = _FakeLlmFailure('kunde inte tolka handstilen');
+          final getIt = GetIt.instance;
+          if (getIt.isRegistered<LlmEnhancementService>()) {
+            getIt.unregister<LlmEnhancementService>();
+          }
+          getIt.registerSingleton<LlmEnhancementService>(fakeLlm);
+          // No ImportRateLimiter registered → _rateLimiter resolves null → the
+          // rate-limit check is skipped and we reach the strategy.
+          app_provider.ServiceLocator.reset();
+          app_provider.ServiceLocator.initialize(DIContainer());
+
+          final mgr = ImportManager.withStrategies(mockPersonalOps, [
+            PhotoImportStrategy(),
+          ]);
+
+          final result = await mgr.importSinglePhoto(
+            'photo',
+            options: {'imageBytes': imageBytes, 'isHandwritten': true},
+          );
+
+          expect(result.isSuccess, isFalse);
+          expect(
+            result.errorMessage,
+            'kunde inte tolka handstilen',
+            reason:
+                'the strategy failure message must pass through unswallowed',
+          );
+          expect(result.errorMessage, isNot(contains('No import strategy')));
+          expect(fakeLlm.calls, 1, reason: 'exactly one vision call');
+        },
+      );
+
+      test(
+        'returns a clear failure when no photo strategy is registered',
+        () async {
+          final mgr = ImportManager.withStrategies(mockPersonalOps, [
+            textStrategy,
+          ]);
+
+          final result = await mgr.importSinglePhoto(
+            'photo',
+            options: {'imageBytes': imageBytes},
+          );
+
+          expect(result.isSuccess, isFalse);
+          expect(result.errorMessage, contains('No photo import strategy'));
+        },
+      );
     });
   });
 }

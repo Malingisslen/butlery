@@ -48,7 +48,7 @@ MENU-06,Generate shopping list from menu,Menu & Shopping,Verified,"Planner turns
 MENU-07,Real-time collaborative menu,Menu & Shopping,Verified,"Household members edit a shared menu live together",
 MENU-08,Menu slot voting,Menu & Shopping,Verified,"Group votes between recipe alternatives for a menu slot",
 MENU-09,Conflict resolution + diff/recovery,Menu & Shopping,Verified,"Collaborator sees which fields differed and re-applies their version",
-MENU-10,Share / import a menu,Menu & Shopping,Verified,"User sends a weekly menu to friends and imports menus they send","loadImportedMenuData is a stub (returns null)"
+MENU-10,Share / import a menu,Menu & Shopping,Verified,"User sends a weekly menu to friends and imports menus they send","Stub note removed 2026-07-02: loadImportedMenuData reads real Firestore data end to end (verified in workflow-map trace)"
 MENU-11,Unified shopping list management,Menu & Shopping,Verified,"Shopper manages lists, items, categories and export end to end",
 MENU-12,Create shared shopping list,Menu & Shopping,Verified,"User creates a list shared with chosen friends",
 MENU-13,Collaborative shopping view,Menu & Shopping,Verified,"Co-shoppers claim items, see who's live, and split the list",

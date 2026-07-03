@@ -1252,5 +1252,55 @@ void main() {
         expect(updated.displayName, equals(original.displayName));
       });
     });
+
+    group('BUT-1322 householdSize', () {
+      test('defaults to null and round-trips through toJson/fromJson', () {
+        expect(testProfile.householdSize, isNull);
+
+        final nullTrip = UserProfile.fromJson(testProfile.toJson());
+        expect(nullTrip.householdSize, isNull);
+
+        final withSize = testProfile.copyWith(householdSize: 6);
+        final roundTrip = UserProfile.fromJson(withSize.toJson());
+        expect(roundTrip.householdSize, equals(6));
+      });
+
+      test('fromJson without the key yields null (pre-BUT-1322 docs)', () {
+        final json = testProfile.toJson()..remove('householdSize');
+        expect(UserProfile.fromJson(json).householdSize, isNull);
+      });
+
+      test('copyWith sets and clears via sentinel', () {
+        final withSize = testProfile.copyWith(householdSize: 4);
+        expect(withSize.householdSize, equals(4));
+
+        final cleared = withSize.copyWith(householdSize: null);
+        expect(cleared.householdSize, isNull);
+
+        final untouched = withSize.copyWith(displayName: 'Ny');
+        expect(untouched.householdSize, equals(4));
+      });
+
+      test('constructor rejects out-of-range values', () {
+        expect(
+          () => testProfile.copyWith(householdSize: 0),
+          throwsArgumentError,
+        );
+        expect(
+          () => testProfile.copyWith(
+            householdSize: UserProfile.maxHouseholdSize + 1,
+          ),
+          throwsArgumentError,
+        );
+        expect(
+          testProfile
+              .copyWith(
+                householdSize: UserProfile.maxHouseholdSize,
+              )
+              .householdSize,
+          equals(UserProfile.maxHouseholdSize),
+        );
+      });
+    });
   });
 }

@@ -374,6 +374,148 @@ void main() {
         expect(profile!.isMinor, isFalse);
       });
 
+      test('fetchProfile merges householdSize from the private settings '
+          'sub-doc (BUT-1322)', () async {
+        // householdSize is written ONLY by toPrivateSettings — toFirestore /
+        // toFirestoreEditable deliberately exclude it (private preference,
+        // never on the friend-readable public doc). So the public seed here
+        // carries no such key, and a non-null result can ONLY come from the
+        // settings merge. Without the merge the portion-scaling default
+        // reads null forever and the feature is inert.
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({'householdSize': 6});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(
+          profile!.householdSize,
+          equals(6),
+          reason:
+              'householdSize must survive a fetch via the settings merge — '
+              'otherwise the portion-scaling default never applies',
+        );
+      });
+
+      test('fetchProfile drops a corrupt householdSize without losing the '
+          'rest of the settings merge (BUT-1322)', () async {
+        // Regression guard on the merge-back parse: a naive `as int?` would
+        // feed the out-of-range value to UserProfile's range-checking
+        // constructor, which throws inside fetchProfile's try — the catch
+        // would then return the profile WITHOUT any settings merge, silently
+        // dropping allergen preferences, the hint flag, isMinor, etc. The
+        // hint-flag assertion is what proves the merge survived.
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({'householdSize': 99, 'hasSeenActivityFeedHint': true});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.householdSize, isNull);
+        expect(
+          profile.hasSeenActivityFeedHint,
+          isTrue,
+          reason:
+              'a corrupt householdSize must not abort the whole settings '
+              'merge — the other private prefs still have to come through',
+        );
+      });
+
+      test('saveProfile persists householdSize to the settings sub-doc only '
+          'and it round-trips on fetch (BUT-1322)', () async {
+        // The full write→read path: saveProfile routes the field through
+        // toPrivateSettings into users/{uid}/settings/preferences, keeps the
+        // friend-readable public doc clean, and fetchProfile merges it back.
+        const userId = 'user-123';
+        final profile = _createUserProfile(userId).copyWith(householdSize: 5);
+
+        await repository.saveProfile(profile);
+
+        final settings = await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .get();
+        expect(settings.data()!['householdSize'], equals(5));
+
+        final publicDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(
+          publicDoc.data()!.containsKey('householdSize'),
+          isFalse,
+          reason:
+              'the household size is a private preference and must never '
+              'leak into the friend-readable public doc',
+        );
+
+        expect(
+          (await repository.fetchProfile(userId))!.householdSize,
+          equals(5),
+        );
+      });
+
+      test(
+        'saveProfile with writeHouseholdSize:false preserves the stored '
+        'value — a degraded (null) profile can not wipe it (BUT-1322 review)',
+        () async {
+          // The confirmed wipe bug: fetchProfile swallows a failed settings-doc
+          // read into householdSize=null; a later UNRELATED save (e.g. bio) must
+          // NOT clear the persisted setting. The service passes
+          // writeHouseholdSize:false whenever the field was not edited, which
+          // drops the key from the merge so the stored value survives.
+          const userId = 'user-123';
+          await repository.saveProfile(
+            _createUserProfile(userId).copyWith(householdSize: 5),
+          );
+
+          // Simulate the degraded in-memory profile (household size lost) doing
+          // an unrelated save with the field intentionally not written.
+          await repository.saveProfile(
+            _createUserProfile(
+              userId,
+            ).copyWith(displayName: 'Ny', householdSize: null),
+            writeHouseholdSize: false,
+          );
+
+          expect(
+            (await repository.fetchProfile(userId))!.householdSize,
+            equals(5),
+            reason: 'an untouched save must leave the stored setting intact',
+          );
+
+          // And a deliberate clear (writeHouseholdSize:true, null) DOES wipe it.
+          await repository.saveProfile(
+            _createUserProfile(userId).copyWith(householdSize: null),
+          );
+          expect(
+            (await repository.fetchProfile(userId))!.householdSize,
+            isNull,
+            reason: 'an explicit clear must still null the stored setting',
+          );
+        },
+      );
+
       test(
         'markActivityFeedHintSeen writes only the flag to the settings '
         'sub-doc and never touches the public profile doc (BUT-1220)',
