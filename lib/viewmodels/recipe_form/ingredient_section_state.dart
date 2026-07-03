@@ -111,6 +111,10 @@ class IngredientSectionState {
   void onLineRemoved(int lineIndex) {
     final rowIndex = _rowIndexForLine(lineIndex);
     if (rowIndex != null) _rows.removeAt(rowIndex);
+    // Mirror seedFromStructured's "always at least one line slot" contract so
+    // the sidecar can't fall out of sync with the line manager (which re-adds
+    // an empty value when emptied) even if a caller removes the last line.
+    if (_rows.whereType<LineRow>().isEmpty) _rows.add(const LineRow());
   }
 
   /// Moves the row at [fromRow] to [toRow] (ReorderableListView semantics: when
@@ -118,21 +122,51 @@ class IngredientSectionState {
   /// (fromLine, toLine) move to apply to the FormFieldsManager when a LINE was
   /// dragged, or null when a heading was dragged (no line move needed).
   ({int from, int to})? moveRow(int fromRow, int toRow) {
-    if (fromRow < 0 || fromRow >= _rows.length) return null;
     var adjustedTo = toRow;
     if (adjustedTo > fromRow) adjustedTo--;
-    if (adjustedTo < 0 || adjustedTo >= _rows.length) return null;
-    if (adjustedTo == fromRow) return null;
+    return _moveRowFinal(fromRow, adjustedTo);
+  }
+
+  /// The WCAG non-drag reassignment (criterion 12): moves the line whose row is
+  /// [fromRow] under heading [headingId] — placed immediately after that
+  /// heading — or to the ungrouped top when [headingId] is null. Returns the
+  /// equivalent flat line move, or null if nothing moved. Drag-only would be
+  /// inaccessible, so this backs a "Flytta till rubrik" menu action.
+  ({int from, int to})? moveLineToSection(int fromRow, String? headingId) {
+    if (fromRow < 0 || fromRow >= _rows.length || _rows[fromRow] is! LineRow) {
+      return null;
+    }
+    final int finalTo;
+    if (headingId == null) {
+      finalTo = 0; // ungroup → before every heading
+    } else {
+      final headingRow = _rows.indexWhere(
+        (r) => r is HeadingRow && r.id == headingId,
+      );
+      if (headingRow < 0) return null;
+      // After removing fromRow, a heading above it shifts down by one.
+      finalTo = fromRow > headingRow ? headingRow + 1 : headingRow;
+    }
+    return _moveRowFinal(fromRow, finalTo);
+  }
+
+  /// Moves the row at [fromRow] to the FINAL index [toRow] (post-removal, no
+  /// ReorderableListView adjustment). Returns the equivalent flat line move, or
+  /// null for a heading move / a same-line-index move (section-only change).
+  ({int from, int to})? _moveRowFinal(int fromRow, int toRow) {
+    if (fromRow < 0 || fromRow >= _rows.length) return null;
+    if (toRow < 0 || toRow >= _rows.length) return null;
+    if (toRow == fromRow) return null;
 
     final moved = _rows[fromRow];
     // Line index BEFORE the move = number of line rows strictly before it.
     final fromLine = moved is LineRow ? _lineIndexOfRow(fromRow) : -1;
 
     _rows.removeAt(fromRow);
-    _rows.insert(adjustedTo, moved);
+    _rows.insert(toRow, moved);
 
     if (moved is! LineRow) return null;
-    final toLine = _lineIndexOfRow(adjustedTo);
+    final toLine = _lineIndexOfRow(toRow);
     if (fromLine == toLine) return null;
     return (from: fromLine, to: toLine);
   }

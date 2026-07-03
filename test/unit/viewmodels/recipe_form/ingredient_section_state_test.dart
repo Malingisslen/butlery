@@ -286,4 +286,60 @@ void main() {
       addTearDown(s.dispose);
     });
   });
+
+  group('moveLineToSection — the WCAG non-drag reassignment', () {
+    // Rows: H:Deg(0) L(1) L(2) H:Fyllning(3) L(4)  → lines m1,m2,f1
+    IngredientSectionState seeded() {
+      final s = IngredientSectionState();
+      s.seedFromStructured([
+        ing('m1', section: 'Deg'),
+        ing('m2', section: 'Deg'),
+        ing('f1', section: 'Fyllning'),
+      ], 3);
+      return s;
+    }
+
+    test('moves a Deg line under Fyllning (line index shifts)', () {
+      final s = seeded();
+      final fyllningId = (s.rows[3] as HeadingRow).id;
+      // Move m1 (row 1, line 0) under Fyllning — it lands immediately after
+      // the heading, i.e. BEFORE f1 (flat line index 1).
+      final move = s.moveLineToSection(1, fyllningId);
+      expect(describe(s), 'H:Deg, L, H:Fyllning, L, L');
+      expect(move, (from: 0, to: 1));
+      // Manager applies moveAt(0→1): [m1,m2,f1] → [m2,m1,f1].
+      expect(s.sectionsForValues(['m2', 'm1', 'f1']), [
+        'Deg',
+        'Fyllning',
+        'Fyllning',
+      ]);
+      addTearDown(s.dispose);
+    });
+
+    test('moves a Fyllning line up under Deg', () {
+      final s = seeded();
+      final degId = (s.rows[0] as HeadingRow).id;
+      // Move f1 (row 4, line 2) under Deg.
+      final move = s.moveLineToSection(4, degId);
+      expect(describe(s), 'H:Deg, L, L, L, H:Fyllning');
+      expect(move, (from: 2, to: 0));
+      addTearDown(s.dispose);
+    });
+
+    test('null heading ungroups the line to the top', () {
+      final s = seeded();
+      final move = s.moveLineToSection(4, null); // f1 → ungrouped top
+      expect(describe(s), 'L, H:Deg, L, L, H:Fyllning');
+      expect(move, (from: 2, to: 0));
+      expect(s.sectionsForValues(['f1', 'm1', 'm2']), [null, 'Deg', 'Deg']);
+      addTearDown(s.dispose);
+    });
+
+    test('a non-line row or unknown heading is ignored', () {
+      final s = seeded();
+      expect(s.moveLineToSection(0, 'anything'), isNull); // row 0 is a heading
+      expect(s.moveLineToSection(1, 'no-such-id'), isNull);
+      addTearDown(s.dispose);
+    });
+  });
 }

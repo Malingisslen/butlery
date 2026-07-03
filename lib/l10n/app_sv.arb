@@ -3466,6 +3466,17 @@
   "recipeImportLink": "Importera länk",
   "recipeIngredient": "Ingrediens",
   "recipeInstruction": "Instruktion",
+  "recipeAddIngredientHeading": "Lägg till rubrik",
+  "recipeIngredientHeadingHint": "Rubrik, t.ex. Deg",
+  "a11yRemoveIngredientHeading": "Ta bort rubrik",
+  "recipeMoveToSection": "Flytta till rubrik",
+  "recipeMoveToSectionNone": "Ingen rubrik",
+  "a11yIngredientHeadingField": "Rubrik {label}",
+  "@a11yIngredientHeadingField": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "recipeLeaveWithoutSaving": "Lämna utan att spara",
   "recipeManageAllTags": "Hantera alla taggar",
   "recipeRating": "Betyg (0–5)",

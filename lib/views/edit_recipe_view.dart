@@ -45,6 +45,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
+import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
@@ -491,14 +492,21 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ),
         ),
 
-      // Ingredients dynamic list
-      DynamicListBuilder(
+      // Ingredients — sectioned editor (headings + lines, PR #211)
+      SectionedIngredientListBuilder(
         label: context.l10n.recipeIngredient,
-        controllers: viewModel.ingredientControllers,
-        onUpdate: viewModel.updateIngredient,
-        onAdd: viewModel.addIngredient,
-        onRemove: viewModel.removeIngredient,
-        onReorder: viewModel.reorderIngredient,
+        rows: viewModel.state.ingredientSectionState.rows,
+        lineControllers: viewModel.ingredientControllers,
+        headingControllerFor:
+            viewModel.state.ingredientSectionState.headingController,
+        onLineChanged: viewModel.updateIngredient,
+        onAddLine: viewModel.addIngredient,
+        onRemoveLine: viewModel.removeIngredient,
+        onReorder: viewModel.moveIngredientRow,
+        onAddHeading: viewModel.addIngredientHeading,
+        onRemoveHeading: viewModel.removeIngredientHeading,
+        onMoveLineToSection: viewModel.moveIngredientLineToSection,
+        canAddHeading: viewModel.state.ingredientSectionState.canAddHeading,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 

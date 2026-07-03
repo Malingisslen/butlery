@@ -5309,6 +5309,26 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeInstruction => 'Instruktion';
 
   @override
+  String get recipeAddIngredientHeading => 'Lägg till rubrik';
+
+  @override
+  String get recipeIngredientHeadingHint => 'Rubrik, t.ex. Deg';
+
+  @override
+  String get a11yRemoveIngredientHeading => 'Ta bort rubrik';
+
+  @override
+  String get recipeMoveToSection => 'Flytta till rubrik';
+
+  @override
+  String get recipeMoveToSectionNone => 'Ingen rubrik';
+
+  @override
+  String a11yIngredientHeadingField(String label) {
+    return 'Rubrik $label';
+  }
+
+  @override
   String get recipeLeaveWithoutSaving => 'Lämna utan att spara';
 
   @override

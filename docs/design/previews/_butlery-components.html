@@ -735,6 +735,31 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   <div class="lib-section-title">10. recipe components &mdash; widgets/recipe/</div>
 
   <div class="lib-item-full">
+    <div class="lib-label">SectionedIngredientListBuilder</div>
+    <div class="lib-class">SectionedIngredientListBuilder (widgets/recipe/recipe_form/)</div>
+    <div class="lib-demo">
+      <div style="max-width:340px;margin:0 auto;background:var(--cream);padding:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--green-muted);margin-bottom:8px">Ingrediens</div>
+        <!-- heading row: primaryContainer tint + green left border, bold, delete -->
+        <div style="display:flex;align-items:center;gap:8px;background:var(--green-pale);border-left:4px solid var(--green-dark);padding:8px 10px;margin-bottom:8px">
+          <span style="color:var(--text-muted)">&#9776;</span>
+          <div style="flex:1;font-weight:700;color:var(--green-dark)">Deg</div>
+          <span style="color:var(--rust)">&#128465;</span>
+        </div>
+        <!-- line row: drag handle, field, move-to-section, delete -->
+        <div style="display:flex;align-items:center;gap:8px;background:var(--white);padding:8px 10px;margin-bottom:6px">
+          <span style="color:var(--text-muted)">&#9776;</span>
+          <div style="flex:1;font-size:13px">5 dl vetemjöl</div>
+          <span style="color:var(--green-muted)">&#8623;</span>
+          <span style="color:var(--rust)">&#10005;</span>
+        </div>
+        <div style="border:2px dashed var(--green);color:var(--green-dark);font-weight:600;font-size:12px;text-align:center;padding:8px;margin-top:8px">+ Lägg till rubrik</div>
+      </div>
+      <div class="lib-note">Reorderable list of component headings + ingredient lines. Headings: add / rename / delete / drag; carry Semantics(header:true). Lines: drag OR non-drag &ldquo;Flytta till rubrik&rdquo; menu (WCAG 2.1.1). Sections are positional &mdash; derived once at save. Replaces DynamicListBuilder for the ingredient list only.</div>
+    </div>
+  </div>
+
+  <div class="lib-item-full">
     <div class="lib-label">CommentItemWidget</div>
     <div class="lib-class">CommentItemWidget</div>
     <div class="lib-demo">
