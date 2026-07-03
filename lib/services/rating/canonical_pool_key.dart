@@ -128,8 +128,13 @@ class CanonicalPoolKey {
   ///    parentheticals. Uses a folded unit+approx regex, NOT the base one.
   static String _strengthenIngredientName(String raw) {
     var s = _foldDiacritics(raw.toLowerCase().trim());
-    s = _repairOcrDigitsPerToken(s);
+    // Strip the leading amount FIRST (decimal-aware: "1,5", "0,5", "1.5", and
+    // glued "500g"→"g"). Must precede OCR repair — otherwise per-token
+    // leading-digit stripping turns "1,5" into ",5" (only the integer run goes),
+    // and the decimal residue then survives, fragmenting the pool for the
+    // pervasive decimal-amount recipes.
     s = s.replaceAll(RecipeTextNormalizer.leadingNumbersRe, '');
+    s = _repairOcrDigitsPerToken(s);
     s = s.replaceAll(_foldedApproxRe, '');
     s = s.replaceAll(_foldedUnitsRe, '');
     s = s.replaceAll(RecipeTextNormalizer.parentheticalRe, '');

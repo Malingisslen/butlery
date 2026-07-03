@@ -44,6 +44,24 @@ void main() {
       expect(a, equals(b));
     });
 
+    test('decimal and integer amounts of the same recipe pool together', () {
+      // Swedish recipes pervasively use decimal amounts ("1,5 dl", "0,5 tsk").
+      // The leading amount must be stripped whole (comma OR period) so the
+      // ingredient NAME is identical to the integer-amount twin.
+      final decimal = key('Kladdkaka', const [
+        '1,5 dl vetemjöl',
+        '0,5 tsk salt',
+      ]);
+      final period = key('Kladdkaka', const [
+        '1.5 dl vetemjöl',
+        '0.5 tsk salt',
+      ]);
+      final integer = key('Kladdkaka', const ['2 dl vetemjöl', '1 tsk salt']);
+      expect(decimal, isNotNull);
+      expect(decimal, equals(integer));
+      expect(period, equals(integer));
+    });
+
     test('OCR diacritic drops collapse to the same key', () {
       // "Köttbullar" scanned as "Kottbullar", "ströbröd" as "strobrod".
       final clean = key('Köttbullar', const [

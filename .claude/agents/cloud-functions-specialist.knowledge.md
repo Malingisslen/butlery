@@ -2682,3 +2682,97 @@ Test to pin it: a fixture doc WITHOUT the new key must assert
 survives AND the new field equals the compiled-in const. See
 `ocr-handwritten-prompt.test.ts` case [6]. (The field-present fixtures in
 `prompts-config.test.ts` / `prompt-ab-bucket` are now harmless either way.)
+
+### 2026-07-02 — sync-ingredients.ts review: warnings invisible by default [Pattern discovered]
+
+Reviewed the generic-'seafood' validation warning added to
+`functions/src/admin/sync-ingredients.ts` (`validateIngredient`). Two
+findings worth remembering about this admin/ script:
+
+1. **`validateAllIngredients` only counts warnings under `--verbose`.**
+   `warningCount += result.warnings.length` sits INSIDE
+   `if (result.warnings.length > 0 && verbose)`, so a default (non-verbose)
+   run reports 0 warnings and the "N warnings (use --verbose to see)" hint
+   never prints (guarded by `warningCount > 0`). Any warning added to
+   `validateIngredient` is therefore INVISIBLE on the standard
+   `npm run sync-ingredients:dry-run` invocation. When adding warnings,
+   also move the counting outside the verbose guard (gate only the
+   per-row printing) or the warning is dead code in practice.
+
+2. **The script is a non-testable monolith by design**: module scope runs
+   `admin.initializeApp()` + `main()` executes on import, so
+   `validateIngredient` can't be imported into the hand-rolled test harness
+   without refactoring (extract validators to a side-effect-free module).
+   Consistent with the admin/ family's "test: n/a" row — pinning validation
+   warnings is optional here; if warnings ever gate real decisions, extract
+   first.
+
+Client-side contract behind the seafood warning (verified in
+`lib/services/tagging/`): skaldjur allergen trigger is
+`crustacean OR mollusc OR seafood` via plain `hasAnyProperty` OR-logic
+(`tag_phase1_allergen.dart` → `getCombinedPropertyStatus`). So ANY row
+carrying 'seafood' yields skaldjur CONTAINS — adding a detail property
+(fish/crustacean/mollusc) does NOT clear it (deliberate false-CONTAINS
+safety net, allergen_config.dart comment 2026-07-01); the detail property's
+real value is making the SPECIFIC allergen (fisk/kräftdjur/blötdjur)
+detectable. Sync-time warning messages should say that, not imply the
+skaldjur verdict flips.
+
+### 2026-07-03 — pooled-ratings v1 server key twin (canonical-pool-key.ts) [Pattern discovered]
+
+New family `ratings/` (pure helper for now). `computePoolKey(title, ingredients)`
+is the SERVER AUTHORITY for the pooled-ratings recipe-identity key and must be a
+byte-identical twin of the Dart `lib/services/rating/canonical_pool_key.dart`.
+Parity is gated by the shared fixture `test/fixtures/pool_key_parity.json` (read by
+both `functions/src/__tests__/pool-key-parity.test.ts` and the Dart test). Reviewed
+2026-07-03: 11/11 parity, faithful twin, no correctness-breaking divergence found.
+
+**Cross-language parity checklist (reusable for any TS↔Dart twin):**
+- **Dart RegExp follows ECMAScript non-Unicode semantics.** With no `unicode:true`
+  (Dart) / no `u` flag (JS), `\w`/`\b` are ASCII-only in BOTH, and `\s` matches the
+  same set. This is why "fold å/ä/ö→a/o FIRST, then strip single-letter units with
+  `\b(l|g|...)\b`" works identically in both — the string is ASCII by the time the
+  boundary regex runs. Add `unicode`/`u` to only one side and this breaks.
+- **Default string sort is UTF-16 code-unit ordinal in BOTH.** Dart `List<String>
+  ..sort()` (→ `String.compareTo`) and JS `Array.sort()` with no comparator both
+  compare by UTF-16 code units (shorter-prefix-first). They agree even for non-ASCII
+  BMP + surrogate pairs. Safe to rely on — but only because neither passes a
+  locale-aware comparator.
+- **Dedup order is irrelevant when you sort after.** `set().toList()..sort()` (Dart
+  LinkedHashSet insertion order) vs `Array.from(new Set()).sort()` (JS insertion
+  order) — the trailing sort makes insertion order moot. Good pattern; don't remove
+  the sort thinking Set order is stable across languages.
+- **`String.split(' ')` is literal in both** (only JS `split('')`/regex-split and
+  Python `split()`-no-arg are special). Consecutive spaces → empty tokens in both;
+  `''.split(' ')` → `['']` in both.
+- **Anchored `^` regex: Dart `replaceAll` == JS non-global `.replace`.** `^`
+  (non-multiline) matches only index 0, so replaceAll does exactly one replacement,
+  same as a non-global `.replace`. No `g` flag needed on TS `leadingNumbersRe`/
+  `leadingDigitsRe`.
+- **sha256 hex is lowercase in both** (`Digest.toString()` / `.digest('hex')`);
+  `utf8.encode` == `.update(raw,'utf8')`. `.substring(0,16)` identical.
+
+**Footguns flagged (not bugs today):**
+- **Module-level `/g` regexes are safe with `.replace` but NOT with `.test()`/
+  `.exec()`.** canonical-pool-key.ts only uses `.replace` on its global regexes, so
+  no `lastIndex` statefulness bug. If a future edit calls `.test()`/`.exec()` on any
+  module-scope `/g` regex, `lastIndex` persists across invocations (CF isolates are
+  long-lived) → intermittent wrong results. Keep global regexes to `.replace`, or
+  make them local.
+- **Input validation belongs in the calling CF, not the helper.** `computePoolKey`
+  guards `!ingredients`/empty but does `title.toLowerCase()` and `raw.toLowerCase()`
+  on array elements unconditionally. A Firestore doc with a non-string title or a
+  non-string element in the ingredients array throws a `TypeError`; inside a Firestore
+  trigger that's an uncaught exception → retry storm. The aggregation CF MUST coerce/
+  validate (`typeof === 'string'`) and fail-closed (skip / null) before calling.
+- **C5 word-list drift.** INGREDIENT_UNITS / TITLE_STOP_WORDS / APPROXIMATE_WORDS /
+  DISH_QUALIFIERS / GENERIC_ANCHORS are hand-duplicated from the Dart twin. Verified
+  in sync 2026-07-03, but nothing mechanically prevents a one-sided edit. Both files
+  already flag the C5 follow-up (share via one JSON asset or CI byte-diff). Highest-
+  value guard: the parity fixture only exercises lists indirectly — a shared asset or
+  byte-diff CI is the real fix.
+
+**Fixture gaps worth closing (proposed, not divergences):** all-caps input (locks
+`toLowerCase()` parity + `gi` unit regex), >12 unique ingredients (locks sort-then-
+`take(12)` boundary — the single most divergence-prone construct), and ingredients
+that fold to the same name across mixed case (locks Set dedup after folding).

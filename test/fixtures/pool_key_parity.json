@@ -1,0 +1,188 @@
+{
+  "version": "v1",
+  "description": "Cross-language parity vectors for the pooled-ratings CanonicalPoolKey (condition C4). Read by BOTH the Dart test (test/unit/services/rating/canonical_pool_key_parity_test.dart) and the TS test (functions/src/__tests__/pool-key-parity.test.ts). Dart hint and TS authority MUST produce identical keys, or pool routing diverges. expected=null means the recipe must NOT pool (fail closed).",
+  "contract": "key = 'v1:' + sha256(dishAnchor + '::' + sortedFoldedIngredientNames.take(12).join('|')).hex[0:16]; null when ingredients empty, no ingredient names survive, or the dish anchor is empty/generic.",
+  "cases": [
+    {
+      "name": "kottbullar_clean",
+      "title": "Köttbullar",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "kottbullar_ocr_same_pool",
+      "title": "Kottbullar",
+      "ingredients": [
+        "500 g blandfars",
+        "1 gul lok",
+        "1 dl strobrod"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "kottbullar_glued_units_same_pool",
+      "title": "Köttbullar",
+      "ingredients": [
+        "500g blandfärs",
+        "1 gul lök",
+        "1dl ströbröd"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "kottbullar_hashtag_same_pool",
+      "title": "Köttbullar 🧆 #husmanskost",
+      "ingredients": [
+        "500 g blandfärs",
+        "1 gul lök",
+        "1 dl ströbröd"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "kottbullar_qualifier_same_pool",
+      "title": "Klassiska köttbullar",
+      "ingredients": [
+        "1 dl ströbröd",
+        "500 g blandfärs",
+        "1 gul lök"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "sockerkaka_distinct",
+      "title": "Sockerkaka",
+      "ingredients": [
+        "3 ägg",
+        "3 dl socker",
+        "3 dl vetemjöl",
+        "100 g smör"
+      ],
+      "expected": "v1:935e60fec6a9baac"
+    },
+    {
+      "name": "muffins_distinct_from_sockerkaka",
+      "title": "Muffins",
+      "ingredients": [
+        "3 ägg",
+        "3 dl socker",
+        "3 dl vetemjöl",
+        "100 g smör"
+      ],
+      "expected": "v1:c35a811fd3ae20ed"
+    },
+    {
+      "name": "generic_anchor_fails_closed",
+      "title": "Soppa",
+      "ingredients": [
+        "lök",
+        "morot",
+        "buljong",
+        "salt"
+      ],
+      "expected": null
+    },
+    {
+      "name": "empty_ingredients_fails_closed",
+      "title": "Köttbullar",
+      "ingredients": [],
+      "expected": null
+    },
+    {
+      "name": "empty_title_fails_closed",
+      "title": "",
+      "ingredients": [
+        "blandfärs",
+        "lök"
+      ],
+      "expected": null
+    },
+    {
+      "name": "tie_length_anchor_deterministic",
+      "title": "Lever sylta",
+      "ingredients": [
+        "lever",
+        "lök",
+        "kryddpeppar"
+      ],
+      "expected": "v1:fcb7529d95d4bd66"
+    },
+    {
+      "name": "decimal_amounts_same_pool_as_integer",
+      "title": "Kladdkaka",
+      "ingredients": [
+        "1,5 dl vetemjöl",
+        "2,5 dl socker",
+        "0,5 tsk salt"
+      ],
+      "expected": "v1:75852925e70d8cb1"
+    },
+    {
+      "name": "integer_amounts_twin_of_decimal",
+      "title": "Kladdkaka",
+      "ingredients": [
+        "2 dl vetemjöl",
+        "3 dl socker",
+        "1 tsk salt"
+      ],
+      "expected": "v1:75852925e70d8cb1"
+    },
+    {
+      "name": "period_decimal_same_pool",
+      "title": "Kladdkaka",
+      "ingredients": [
+        "1.5 dl vetemjöl",
+        "2.5 dl socker",
+        "0.5 tsk salt"
+      ],
+      "expected": "v1:75852925e70d8cb1"
+    },
+    {
+      "name": "all_caps_same_as_clean",
+      "title": "KÖTTBULLAR",
+      "ingredients": [
+        "500 G BLANDFÄRS",
+        "1 GUL LÖK",
+        "1 DL STRÖBRÖD"
+      ],
+      "expected": "v1:48c582de54bffd84"
+    },
+    {
+      "name": "mixed_case_and_fold_dedup",
+      "title": "Löksoppa",
+      "ingredients": [
+        "lök",
+        "lok",
+        "LÖK",
+        "buljong"
+      ],
+      "expected": "v1:b594716e874c2a7b"
+    },
+    {
+      "name": "over_twelve_ingredients_sort_take_boundary",
+      "title": "Kalops",
+      "ingredients": [
+        "nötkött",
+        "lök",
+        "morot",
+        "lagerblad",
+        "kryddpeppar",
+        "vatten",
+        "salt",
+        "peppar",
+        "socker",
+        "vinäger",
+        "smör",
+        "mjöl",
+        "timjan",
+        "persilja",
+        "selleri"
+      ],
+      "expected": "v1:38f7ef691df11788"
+    }
+  ]
+}
