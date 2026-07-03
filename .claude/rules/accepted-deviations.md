@@ -61,3 +61,15 @@ are the accepted mitigations.
 the app pre-launch; the register's structure is clean and the known-bad rows are being fixed
 in the Sheet. Do not file findings proposing draft-status downgrades of FREE verdicts or
 "drafts are unverified" warnings against the tagging pipeline — decided. — 2026-07-01
+
+### [Ratings] Pooled ratings have NO edit-triggered detachment (decision 6 superseded)
+The pooled-ratings plan's draft decision 6 (`tasks/pooled-ratings-plan.md`) proposed a
+recipe-write trigger that removes a user's contribution from the old pool when an edit changes
+the recipe's poolKey, plus a one-time user notice. **Malin decided 2026-07-03: NO detachment.**
+A rating is frozen to the pool of the dish it judged; editing a recipe never moves or removes a
+past rating; the edited dish gets a rating only when the user rates it again.
+**Why:** it is the pure form of decision 4 ("an edit never reclassifies past ratings"), simpler,
+and strictly harder to game (you cannot remove your vote from a pool by editing). Do NOT file a
+"missing edit-detachment trigger" / "recipe edit doesn't update the old pool" / "no one-time
+detach notice" finding against the pooled-ratings code — the frozen-only behavior is the decided
+design. (GDPR deletion still recomputes affected pools — that is unrelated to edits.) — 2026-07-03

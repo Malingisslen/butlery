@@ -197,12 +197,17 @@ both approve; findings fixed):
    is unbounded by design; the BUT-482 recount pattern must not be ported unchanged).
    Debounce: **generalize** rating-aggregation.ts's marker module to a generic key (explicit
    decision — don't fork a second copy of the debounce logic).
-6. **Edit-triggered pool migration (Software Architect — the gap in the draft):** a recipe-
-   write trigger detects poolKey change on the user's copy and removes the user's
-   contribution from the old pool (stats delta), leaving the frozen event as history or
-   tombstoning it — spec'd precisely in implementation. Same debounce marker pattern
-   (Vendor condition: no new unthrottled trigger path). Plus a **one-time user-visible
-   notice** when an edit detaches a recipe from its pool (Support condition — not silent).
+6. **Edit-triggered pool migration — SUPERSEDED by Malin's decision 2026-07-03: NO
+   detachment.** The draft proposed a recipe-write trigger that, on a poolKey change, removes
+   the user's contribution from the old pool + shows a one-time notice. **Malin decided
+   instead: the rating STAYS frozen in the pool of the dish it actually judged; editing a
+   recipe never moves or removes a past rating; the edited (now different) dish simply has no
+   rating until the user rates it again.** This is the pure form of decision 4 ("an edit never
+   reclassifies past ratings") — the frozen event is authoritative, so no edit-triggered
+   trigger, no stats delta on edit, and no one-time notice are built. Re-rating the edited
+   recipe re-triggers the mirror (decision 2) and pools that fresh rating to the new dish.
+   Rationale: simpler, and strictly *harder* to game than detachment (you cannot remove your
+   vote from a pool by editing). Removes the intricate recipe-write detachment path entirely.
 7. **Eligibility gates (T&S + Security):** a rating counts toward the pool only if
    `isAgeCompliant()` AND `isAccountMatured()` (reuse kAccountMaturityWindow — no new
    mechanism). Family/household ratings are **structurally** excluded: the mirror CF reads
@@ -288,9 +293,11 @@ both approve; findings fixed):
 - AC2. Pool routing key is server-recomputed; a tampered client key field cannot direct a
   rating into a foreign pool (CF unit test proves it).
 - AC3. One uid = max one live contribution per poolKey, regardless of copy count (test).
-- AC4. Editing a recipe (key-changing) removes the user's contribution from the old pool and
-  shows the one-time notice; non-key-changing edits (instructions, portions, photos) do NOT
-  detach (test both).
+- AC4. (REVISED 2026-07-03 — no detachment, per decision 6 override.) Editing a recipe does
+  NOT move or remove the user's frozen rating from the pool it judged; there is no
+  edit-triggered pool-migration trigger. Re-rating the edited recipe pools that new rating to
+  the new dish (test: edit-then-no-rerate leaves the old pool's count unchanged; edit-then-rerate
+  adds a rating to the new pool).
 - AC5. Stats updates are O(1) per event (deltas/aggregate queries) — no full pool recount
   anywhere (code review + test asserts no query-all in the drain path).
 - AC6. Family ratings can never reach the pool (structural test).

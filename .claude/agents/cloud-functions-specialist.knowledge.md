@@ -2826,3 +2826,57 @@ The predicted C5 fix (above) shipped. Reviewed the TS side clean.
   Pre-existing convention for every parity/rules suite; slightly bloats the deploy
   artifact but costs nothing at cold start (unreferenced modules aren't loaded).
   Not introduced by this change — do not flag.
+
+### 2026-07-03 — pooled-ratings Increment 1: debounce-queue generalization [Pattern discovered]
+
+`functions/src/shared/debounce-queue.ts` (NEW, generic core) +
+`functions/src/ratings/rating-aggregation.ts` (now a thin adapter). Decision 5
+of `tasks/pooled-ratings-plan.md`: the pool aggregator REUSES this generic
+coalesce+claim-by-delete module instead of forking a second copy. Reviewed
+CLEAN — 5/5 BUT-482 tests pass unmodified, tsc clean, index.ts untouched.
+
+**Field-rename across a Cloud Functions deploy is transition-safe ONLY when the
+value equals the doc ID.** The marker's internal field was renamed
+`recipeId`→`key`, and the drain reads `data?.key ?? doc.id`. This is safe in
+BOTH deploy-window directions because `debounceMarkerRef` writes markers at
+`{markerCollection}/{key}` — the doc ID IS the key, always:
+- OLD writer (`recipeId` field) → NEW drain: `data?.key` undefined → `doc.id`. ✓
+- NEW writer (`key` field) → OLD drain still deployed: `data?.recipeId`
+  undefined → `doc.id`. ✓
+No stranded/duplicated/lost markers. `pendingUntil`/`scheduledAt` field names
+are unchanged, so coalescing works regardless of which version wrote a marker
+in flight at deploy time. **General rule: a doc-field rename in a marker/queue
+collection is a free deploy ONLY if every reader falls back to `doc.id` and the
+doc ID equals the renamed value. Otherwise you need a two-phase deploy
+(read-both, then write-new).**
+
+**Coincidental test proof of the transition:** the two drain seed-tests
+(`drainerProcessesReadyMarkers`, `drainerSurvivesAggregatorFailure`) still seed
+markers with the OLD field name `recipeId:` and drain correctly via the doc.id
+fallback — so the existing suite already exercises the deploy-transition path
+without modification. Worth preserving when the pool aggregator's own tests land.
+
+**Log-field rename (`recipeId`→`key`) verified low-risk:** the structured-log
+FIELD changed but the event NAMES are preserved (`rating_aggregation.scheduled`
+/`.skipped`/`.failed`, plus `.drain_complete` in index.ts which never carried a
+recipeId). Grep found NO in-repo dashboards/alerts/log-based-metric configs
+(no `monitoring/`, `*.tf`, alert yaml) filtering on `jsonPayload.recipeId`.
+Caveat I CANNOT verify from code: alert policies / log-based metrics created
+directly in the GCP Cloud Console. Any alert keyed on the event NAME (normal
+pattern) is unaffected; only one filtering on the `recipeId` value would need a
+one-line edit. Not a blocker — flagged to user as the single unverifiable point.
+
+**Adapter mapping is correct:** `drainRatingAggregationQueue({aggregate})` maps
+`drain: deps.aggregate`; both are `(string) => Promise<void>`. index.ts calls
+`drainRatingAggregationQueue({ aggregate: updateRecipeRatingStats })` unchanged.
+The adapter re-exports `ScheduleDeps` from the shared module and defines its own
+`DrainDeps` (keeps the `aggregate` name for API stability). Public API
+(`scheduleRatingAggregation`/`drainRatingAggregationQueue`/`__test__`) identical.
+
+**When the pool aggregator (`canonical-rating-aggregation.ts`) lands**, its
+`DebounceConfig` should use `markerCollection: "_internal/pool_debounce/markers"`
+(already named in the shared module's docstring) and a distinct `logPrefix`
+(`pool_aggregation`) so the two queues never share markers and their logs stay
+separable. The generic drain default THROWS if no `drain` is wired — the pool
+drainer's `onSchedule` must pass its aggregator, same as
+`drainRatingAggregations` in index.ts.
