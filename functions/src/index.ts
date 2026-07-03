@@ -13,7 +13,7 @@
  */
 
 import { setGlobalOptions } from "firebase-functions/v2/options";
-import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
@@ -22,6 +22,11 @@ import {
   drainRatingAggregationQueue,
 } from "./ratings/rating-aggregation";
 import { updateRecipeRatingStats } from "./ratings/update-recipe-rating-stats";
+import {
+  mirrorRatingToPool,
+  POOL_MIRROR_TRIGGER_PATH,
+  RatingDoc,
+} from "./ratings/canonical-rating-aggregation";
 
 setGlobalOptions({ region: "europe-west1" });
 
@@ -336,5 +341,46 @@ export const drainRatingAggregations = onSchedule(
       failed: result.failed,
       durationMs: result.durationMs,
     });
+  }
+);
+
+// ─── Pooled ratings (Butlery-betyget) — Stage A: server-authoritative mirror ──
+//
+// SEPARATE from the recipe_social_stats aggregation above: this recomputes the
+// content-derived poolKey server-side and files one frozen "pool event" per
+// eligible rater. Bound to recipe_ratings ONLY (structural family exclusion,
+// decision 7). Feature-flag gated (decision 11) — a no-op while the flag is off.
+// The core logic + guarantees live in ratings/canonical-rating-aggregation.ts.
+export const onRecipeRatingWrittenForPool = onDocumentWritten(
+  POOL_MIRROR_TRIGGER_PATH,
+  async (event) => {
+    const beforeSnap = event.data?.before;
+    const afterSnap = event.data?.after;
+    const before = beforeSnap?.exists ? (beforeSnap.data() as RatingDoc) : null;
+    const after = afterSnap?.exists ? (afterSnap.data() as RatingDoc) : null;
+    if (!before && !after) return;
+
+    try {
+      const result = await mirrorRatingToPool({
+        ratingId: event.params.ratingId,
+        before,
+        after,
+      });
+      logger.info("pool_mirror.result", {
+        event: "pool_mirror.result",
+        ratingId: event.params.ratingId,
+        action: result.action,
+        poolKey: result.poolKey,
+      });
+    } catch (err) {
+      // Let Cloud Functions retry — the upsert/delete are idempotent (doc-ID =
+      // poolKey; delete keyed on recipeId), so a re-run is safe.
+      logger.error("pool_mirror.failed", {
+        event: "pool_mirror.failed",
+        ratingId: event.params.ratingId,
+        err,
+      });
+      throw err;
+    }
   }
 );

@@ -85,6 +85,7 @@
     "test:but753-sharedwith-cascade": "ts-node src/__tests__/but753-legacy-sharedwith-cascade.test.ts",
     "test:but466-display-name-tombstone": "ts-node src/__tests__/share-display-name-tombstone.test.ts",
     "test:rating-aggregation": "ts-node src/__tests__/rating-aggregation.test.ts",
+    "test:canonical-rating-aggregation": "ts-node src/__tests__/canonical-rating-aggregation.test.ts",
     "test:ping-rate-limit": "ts-node src/__tests__/ping_rate_limit.test.ts",
     "test:app-check-enforcement": "ts-node src/__tests__/app-check-enforcement.test.ts",
     "test:notification-rate-cap": "ts-node src/__tests__/notification-rate-cap.test.ts",

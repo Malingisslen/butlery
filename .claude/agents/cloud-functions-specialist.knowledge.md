@@ -2880,3 +2880,122 @@ The adapter re-exports `ScheduleDeps` from the shared module and defines its own
 separable. The generic drain default THROWS if no `drain` is wired — the pool
 drainer's `onSchedule` must pass its aggregator, same as
 `drainRatingAggregations` in index.ts.
+
+### 2026-07-03 — Finding D: cross-prompt-family instruction gap (schema-shared prompts) [Pattern discovered]
+
+Review of a prompt-only change in `gemini-client.ts`. The ingredient-group rule
+("Deg:"/"Fyllning:" → `section=` per ingredient, NEVER emit the heading as its
+own ingredient) lived ONLY in `RECIPE_EXTRACTION_SYSTEM_PROMPT` (text path).
+The OCR, handwritten, and spoken prompts all share `RECIPE_SCHEMA`, where a bare
+`name:"Deg"` is structurally valid — so a grouped recipe photographed/transcribed
+could emit a phantom heading row that the text path would not. Fix extracted a
+shared `INGREDIENT_GROUP_RULE` const and interpolated it into all four prompts.
+
+**The reusable lesson: when N prompts share ONE responseSchema, a behavioural
+instruction added to only one of them is a latent gap for the other N−1.** The
+schema constrains structure, not semantics — anything the schema permits but you
+don't want must be forbidden in *every* prompt that uses that schema, not just
+the one you happened to edit. Grep the schema constant's usages before assuming a
+per-prompt instruction is sufficient. Prefer a shared const over copy-paste so
+the four prompts can't drift.
+
+**Verification I ran (all clean):**
+- **Byte-identical text prompt:** the `INGREDIENT_GROUP_RULE` value equals the
+  old literal line verbatim (leading `- ` included); the template now interpolates
+  `${INGREDIENT_GROUP_RULE}` on its own line → rendered text unchanged. Confirm
+  this char-for-char, not by eyeballing — a dropped leading `- ` would silently
+  reword the text prompt.
+- **MINOR bump correct:** `INGREDIENT_SCHEMA`/`RECIPE_SCHEMA` untouched (the
+  `section` field shipped in v3.0.0); this change is additive instruction only,
+  same schema, same client parser → 3.0.0→3.1.0 MINOR is right. (v3.0.0 was MAJOR
+  because it changed the schema + parser.)
+- **INJECTION_DEFENSE still leads all four prompts** (`${INJECTION_DEFENSE}` is
+  the first token of each template literal) — the rule was inserted mid-body,
+  not before the security prefix.
+- **Deploy-note keys are real override keys:** `prompts-config.ts` reads
+  `imageOcrSystemPrompt`, `imageOcrHandwrittenSystemPrompt`, and
+  `spokenContentSystemPrompt`. Nuance worth remembering: the three text/OCR/spoken
+  keys are in the all-or-nothing `REQUIRED_FIELDS` set, but
+  `imageOcrHandwrittenSystemPrompt` is OPTIONAL with a **per-field** fallback
+  (BUT-684). So if prod `system/prompts` overrides a required key with a stale
+  value (missing the rule), that stale value serves until the doc is updated in
+  the same deploy; if prod simply lacks the handwritten key, the compiled fallback
+  (which now carries the rule) serves. The changelog deploy note captures this.
+- **No allergen risk:** `section` text stays on each ingredient object, never in
+  the flat allergen-tagged ingredient list, so this can't ground a false
+  "fritt från X" verdict. A phantom "Deg" row is junk, not a safety issue → LOW.
+
+### 2026-07-03 — pooled-ratings Increment 2: Stage A mirror CF review [Pattern discovered]
+
+Reviewed the NEW `ratings/canonical-rating-aggregation.ts` (core
+`mirrorRatingToPool`), `ratings/pooled-ratings-flag.ts` (fail-CLOSED RC kill
+switch), the `onRecipeRatingWrittenForPool` `onDocumentWritten` trigger in
+index.ts, and the 11-case test suite. No Critical. Fail-closed flag + fail-closed
+maturity gate + server-recomputed key are all correct. Followed the C4 knowledge
+note exactly (coerces `core.title`/`core.ingredients` to string / string[] before
+`computeKey`, so a malformed recipe doc can't throw a TypeError inside the
+trigger). Two Medium + one Low below; all three are enhancement-shaped, not
+blockers.
+
+**Verified — recipe read location is correct (not a silent no-op).** The mirror
+reads TOP-LEVEL `db.collection("recipes").doc(recipeId)`. The repo also has a
+user-scoped personal library at `users/{uid}/recipes/{recipeId}` (that's what the
+firestore-rules tests, `cleanup-recipe-storage.ts`, and `backfill-recipe-comments`
+target), which made the correct location genuinely ambiguous. Confirmed top-level
+is right because the LIVE Dart rating aggregate
+(`lib/services/unified/operations/modules/rating_statistics.dart:180`) also writes
+denormalized stats to `firestore.collection('recipes').doc(recipeId)` and
+`batch.update(recipeRef)` — an update that would THROW if the top-level doc were
+absent — so a top-level `recipes/{recipeId}` with `core.title`+`core.ingredients`
+(also confirmed by `admin/bulk-retag.ts`) provably exists for every rated recipe.
+`recipe_ratings.recipeId` therefore resolves against the top-level doc. **General
+rule for this repo: `recipes/{id}` (top-level) is the rated/denormalized recipe;
+`users/{uid}/recipes/{id}` is the personal library. Don't assume one from the
+other — the rating pipeline keys off the top-level one.**
+
+**MEDIUM (cost + consistency + latent semantic drift) — the mirror has NO
+rating-change gate, unlike its sibling.** The existing `onRatingUpdated`
+(index.ts:226) skips when `before.rating === after.rating`; the new
+`onDocumentWritten` mirror reprocesses EVERY write. Two consequences:
+1. Cost: any no-rating-change write to a `recipe_ratings` doc (review-text edit,
+   `updatedAt` touch, client re-save) pays 1 billed recipe read + 1 event write
+   that the social-stats path deliberately skips.
+2. Latent correctness: the mirror always recomputes the key from CURRENT recipe
+   content, so if the recipe was edited between the original rating and a later
+   no-rating-change write, it files a NEW event at the new poolKey while the old
+   event persists — a pool vote the user never actively cast. This is NOT the
+   accepted "re-rate an edited dish → new vote" case (there the user re-rates);
+   here an incidental write fabricates it. Remedy: in the trigger (or core), when
+   `before && after && before.rating === after.rating && before.recipeId ===
+   after.recipeId`, return a `skipped_unchanged` no-op — mirrors the sibling and
+   kills both issues.
+
+**MEDIUM (cost ordering) — maturity gate runs AFTER the billed recipe read.** The
+order is validate → `recipes/{id}.get()` (billed) → `computeKey` → `isAccountMatured`
+(`auth.getUser`, not billed per-call). The maturity gate exists to reject
+throwaway-account spam, but a spam flood still pays one recipe read each before
+rejection. Reorder to validate → maturity check → recipe read → key → write:
+`getUser` is free, the recipe read is billed, so the free adversarial check should
+gate the billed read. Pure win — normal ratings do the same total work reordered.
+
+**LOW (Stage-B forward-looking) — `createdAt: serverTimestamp()` is rewritten on
+every upsert.** A CF retry, or any re-processing of the same vote, shifts
+`createdAt` to the reprocess time despite the "frozen" framing in the docstring.
+Harmless today (Stage B doesn't exist), but if Increment 3 uses `createdAt` for
+recency weighting or first-vote tie-breaking it will drift. Decide deliberately in
+Increment 3: keep last-write semantics (rename to `updatedAt`) or preserve
+first-create (transaction/`create`-then-`update`, or merge-if-absent).
+
+**Boundary note (hand-off, not a finding):** the mirror trusts
+`recipe_ratings.recipeId` and reads whatever recipe it names. The guarantee that a
+user may only create a `recipe_ratings` doc for a recipe they're allowed to rate
+lives in `firestore.rules` — that's `firestore-rules-tester`'s surface, not this
+CF's. The CF's own poisoning defense (never trust a client-written key; recompute
+from content) is intact and tested (AC2).
+
+**Idempotency confirmed solid:** upsert = `set()` at doc-ID=poolKey (retry-safe);
+delete = query-by-`recipeId` + delete (retry → `delete_noop`); the recipeId-keyed
+delete correctly cleans up the multi-event case from the edit-then-rerate path.
+`onDocumentWritten` create/update/delete branches all handled; both-absent guarded
+in index.ts. Throw-on-error → CF retry is safe because the only mutation is the
+final idempotent write.
