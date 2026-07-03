@@ -59,6 +59,50 @@ void main() {
     });
   });
 
+  group('parseStructureCachedAsync — captureSubHeadings cache key', () {
+    const grouped = '''
+Kanelbullar
+
+Ingredienser:
+Deg:
+5 dl vetemjöl
+25 g jäst
+
+Gör så här:
+Baka.
+''';
+
+    test('the same text parsed ON then OFF on ONE context does NOT return a '
+        'stale ON result — the flag is part of the cache key', () async {
+      final ctx = ParsingContext.fromText(
+        text: grouped,
+        source: ImportSource.text,
+        userId: 'u1',
+        parserVersion: '1.0',
+      );
+
+      final on = await ctx.parseStructureCachedAsync(grouped);
+      expect(
+        on.ingredients,
+        isNot(contains('Deg:')),
+        reason: 'capture ON drops the heading line',
+      );
+
+      // Second call, SAME text, flag flipped. If the cache keyed on text only
+      // it would hand back the ON structure (heading dropped) — the collision
+      // this fix prevents.
+      final off = await ctx.parseStructureCachedAsync(
+        grouped,
+        captureSubHeadings: false,
+      );
+      expect(
+        off.ingredients,
+        contains('Deg:'),
+        reason: 'capture OFF must recompute and retain the heading line',
+      );
+    });
+  });
+
   group('elapsed (clock-driven)', () {
     test('measures time since construction', () {
       final t0 = DateTime.utc(2026, 1, 1);

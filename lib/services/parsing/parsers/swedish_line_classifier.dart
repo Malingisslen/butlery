@@ -257,17 +257,32 @@ class SwedishLineClassifier {
   }
 
   /// Get confidence-weighted recipe structure from text.
-  ParsedRecipeStructure parseStructure(String text) {
+  ///
+  /// [captureSubHeadings] threads the `ingredient_section_capture` kill switch
+  /// down from the tier (ServiceLocator isn't reachable inside a background
+  /// isolate, so the flag must arrive as a value). When false, component
+  /// sub-heading lines ("Deg:") are RETAINED as ingredients rather than pulled
+  /// out — so flipping the flag off fully reverts the text path, matching the
+  /// LLM/schema.org tiers.
+  ParsedRecipeStructure parseStructure(
+    String text, {
+    bool captureSubHeadings = true,
+  }) {
     final sections = classifyAndGroup(text);
-    return extractStructureFromSections(sections);
+    return extractStructureFromSections(
+      sections,
+      captureSubHeadings: captureSubHeadings,
+    );
   }
 
   /// Extracts [ParsedRecipeStructure] from grouped sections.
   ///
-  /// Shared between rule-based and neural classifiers.
+  /// Shared between rule-based and neural classifiers. See [parseStructure]
+  /// for [captureSubHeadings].
   static ParsedRecipeStructure extractStructureFromSections(
-    List<RecipeSection> sections,
-  ) {
+    List<RecipeSection> sections, {
+    bool captureSubHeadings = true,
+  }) {
     String? title;
     final ingredients = <String>[];
     final ingredientSections = <String?>[];
@@ -302,10 +317,14 @@ class SwedishLineClassifier {
             // only removes a phantom "deg" row. The detector must err toward
             // "it's an ingredient" so a real allergen-bearing line is never
             // dropped from tagging input.
-            final subHeading = _componentSubHeading(text);
+            final subHeading = captureSubHeadings
+                ? _componentSubHeading(text)
+                : null;
             if (subHeading != null) {
               currentSection = subHeading;
             } else {
+              // Capture off ⇒ the line stays an ingredient (never dropped),
+              // so allergen tagging sees exactly the pre-feature input.
               ingredients.add(text);
               ingredientSections.add(currentSection);
             }
@@ -332,8 +351,11 @@ class SwedishLineClassifier {
           case LineType.sectionHeader:
             // A classified section header: a generic block marker
             // ("Ingredienser:", "Gör så här:") clears the group; a genuine
-            // component header ("Deg:") sets it.
-            currentSection = _componentSubHeading(line.text);
+            // component header ("Deg:") sets it. With capture off, no group
+            // is tracked (sections aren't stamped anyway).
+            currentSection = captureSubHeadings
+                ? _componentSubHeading(line.text)
+                : null;
             break;
           case LineType.empty:
           case LineType.noise:
@@ -555,10 +577,16 @@ class SwedishLineClassifier {
 /// Top-level worker for [compute()] — must be top-level so the Dart isolate
 /// spawner can reference it without capturing any closure state.
 ///
-/// Returns a [Map] of primitive values so the result can cross the isolate
-/// boundary via [SendPort] without custom serialization.
-Map<String, dynamic> parseStructureInIsolate(String text) {
-  return SwedishLineClassifier.instance.parseStructure(text).toIsolateMap();
+/// Input is a primitive [Map] ('text' + 'captureSubHeadings') because
+/// `compute` passes a single message and the kill-switch flag can't be read
+/// from ServiceLocator inside the isolate — it must ride in. Returns a [Map]
+/// of primitives so the result crosses the boundary without custom codecs.
+Map<String, dynamic> parseStructureInIsolate(Map<String, dynamic> args) {
+  final text = (args['text'] as String?).orEmpty();
+  final capture = args['captureSubHeadings'] as bool? ?? true;
+  return SwedishLineClassifier.instance
+      .parseStructure(text, captureSubHeadings: capture)
+      .toIsolateMap();
 }
 
 /// Parsed recipe structure from line classification.

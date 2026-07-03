@@ -1,7 +1,11 @@
 // test/unit/viewmodels/recipe_form_state_test.dart
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
+import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
@@ -1154,6 +1158,43 @@ void main() {
           reason: 'vetemjöl dragged under Fyllning; smör already there',
         );
       });
+
+      test(
+        'loadFromDraft re-seeds the section sidecar to the restored line '
+        'count (Finding A: draft restore must not hide ingredients)',
+        () async {
+          // Seed a 6-ingredient draft in local storage.
+          const draftId = 'draft-1';
+          SharedPreferences.setMockInitialValues({
+            'recipe_draft_$draftId': jsonEncode({
+              'title': 'Köttbullar',
+              'ingredients': [
+                '500 g köttfärs',
+                '1 ägg',
+                'ströbröd',
+                '1 lök',
+                'salt',
+                'peppar',
+              ],
+              'instructions': ['Blanda', 'Stek'],
+              'tags': <String>[],
+            }),
+          });
+
+          final ok = await formState.loadFromDraft(draftId);
+          expect(ok, isTrue);
+
+          // The bug: the sidecar kept its 1-row constructor seed while the
+          // manager held 6 values, so the sectioned editor rendered only row 1
+          // and the other 5 ingredients appeared lost. After the fix the sidecar
+          // line-row count matches the manager value count.
+          final lineRows = formState.ingredientSectionState.rows
+              .whereType<LineRow>()
+              .length;
+          expect(lineRows, formState.ingredientsManager.values.length);
+          expect(lineRows, 6);
+        },
+      );
     });
 
     group('BUT-1232 structured ingredient derivation at save', () {
