@@ -20,6 +20,9 @@ import {
   parseRecipeResponse,
   PROMPT_VERSION,
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
+  IMAGE_OCR_SYSTEM_PROMPT,
+  IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT,
+  SPOKEN_CONTENT_SYSTEM_PROMPT,
 } from "../llm/gemini-client";
 
 interface UnitCase {
@@ -138,9 +141,9 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "prompt v3.0.0 teaches section and drops the preparation flatten",
+    name: "prompt v3.1.0 teaches section and drops the preparation flatten",
     fn: () => {
-      assertEqual(PROMPT_VERSION, "3.0.0", "MAJOR version bump");
+      assertEqual(PROMPT_VERSION, "3.1.0", "prompt version");
       assert(
         RECIPE_EXTRACTION_SYSTEM_PROMPT.includes('sätt section="Deg"'),
         "group rule instructs the section field"
@@ -156,6 +159,31 @@ const cases: UnitCase[] = [
       assert(
         !RECIPE_EXTRACTION_SYSTEM_PROMPT.includes('"smält, deg"'),
         "EXEMPEL 4 no longer flattens the group into preparation"
+      );
+    },
+  },
+  {
+    // Finding D: OCR/handwritten/spoken prompts share RECIPE_SCHEMA (where a
+    // bare name:"Deg" is valid), so they must ALSO carry the group rule or a
+    // photographed/transcribed grouped recipe can emit a phantom heading row.
+    name: "v3.1.0: the group rule reaches the OCR, handwritten, and spoken prompts",
+    fn: () => {
+      const rule = 'sätt section="Deg"';
+      assert(
+        IMAGE_OCR_SYSTEM_PROMPT.includes(rule),
+        "photo OCR prompt carries the group rule"
+      );
+      assert(
+        IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT.includes(rule),
+        "handwritten OCR prompt carries the group rule"
+      );
+      assert(
+        SPOKEN_CONTENT_SYSTEM_PROMPT.includes(rule),
+        "spoken prompt carries the group rule"
+      );
+      assert(
+        IMAGE_OCR_SYSTEM_PROMPT.includes("ALDRIG en egen ingrediens"),
+        "the phantom-heading prohibition is present, not just the field name"
       );
     },
   },

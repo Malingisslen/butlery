@@ -150,15 +150,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  /// Legacy flat reorder (no section awareness). Superseded by
-  /// [moveIngredientRow] once a view uses the sectioned editor; retained for
-  /// any caller still on the plain list. Do NOT use from the sectioned editor.
-  void reorderIngredient(int oldIndex, int newIndex) {
-    state.ingredientsManager.reorderAt(oldIndex, newIndex);
-    notifyListeners();
-    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
-  }
-
   /// Move an ingredient EDITOR ROW (line or heading) from [fromRow] to
   /// [toRow]. The sectioned editor addresses rows, not flat line indices; the
   /// state translates a line move to the underlying manager.

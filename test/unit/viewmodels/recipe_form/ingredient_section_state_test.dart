@@ -185,6 +185,31 @@ void main() {
       expect(describe(s), 'H:Deg, L, H:Fyllning, L');
       addTearDown(s.dispose);
     });
+
+    test('removing the last line re-adds an empty line row (flat)', () {
+      final s = IngredientSectionState();
+      s.seedFromStructured([ing('a')], 1);
+      expect(describe(s), 'L');
+
+      s.onLineRemoved(0); // a non-UI caller drains the only line
+
+      // The sole guard keeps the sidecar non-empty rather than leaving zero
+      // line rows, mirroring seedFromStructured's "always one line slot".
+      expect(describe(s), 'L');
+      addTearDown(s.dispose);
+    });
+
+    test('removing the last line under a heading re-adds an empty line row', () {
+      final s = IngredientSectionState();
+      s.seedFromStructured([ing('a', section: 'Deg')], 1);
+      expect(describe(s), 'H:Deg, L');
+
+      s.onLineRemoved(0);
+
+      // Heading stays; guard re-adds a bare line so the list never goes empty.
+      expect(describe(s), 'H:Deg, L');
+      addTearDown(s.dispose);
+    });
   });
 
   group('moveRow — the 4-way reorder matrix + line-move mapping', () {
