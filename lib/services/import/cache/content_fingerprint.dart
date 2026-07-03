@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/import/cache/recipe_text_normalizer.dart';
 
 /// Generates content-based fingerprints for recipe deduplication.
 ///
@@ -12,98 +13,10 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// This allows detection of duplicate recipes from different sources
 /// (e.g., the same recipe posted on multiple blogs).
 class ContentFingerprint {
-  /// Swedish measurement units to strip from ingredients
-  static const _units = {
-    'dl',
-    'msk',
-    'tsk',
-    'krm',
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'cl',
-    'st',
-    'stk',
-    'port',
-    'portion',
-    'portioner',
-    'nypa',
-    'nypor',
-    'bit',
-    'bitar',
-    'skiva',
-    'skivor',
-    'klyfta',
-    'klyftor',
-    'kvist',
-    'kvistar',
-    'blad',
-    'paket',
-    'burk',
-    'burkar',
-    'påse',
-    'påsar',
-    'ask',
-    'askar',
-  };
-
-  /// Words to skip when extracting title keywords
-  static const _stopWords = {
-    // Swedish common words
-    'och',
-    'med',
-    'på',
-    'i',
-    'till',
-    'för',
-    'av',
-    'en',
-    'ett',
-    'den',
-    'det',
-    'de',
-    'som',
-    'från',
-    // English common words
-    'and',
-    'with',
-    'the',
-    'a',
-    'an',
-    'of',
-    'for',
-    'to',
-    'in',
-    'on',
-    // Recipe qualifiers (less significant)
-    'enkel',
-    'enkelt',
-    'lätt',
-    'snabb',
-    'snabbt',
-    'god',
-    'gott',
-    'bästa',
-    'klassisk',
-    'klassiskt',
-    'hemlagad',
-    'hemlagat',
-    'äkta',
-  };
-
-  // Pre-compiled RegExp patterns for normalization hot paths
-  static final _punctuationRe = RegExp(r'[^\wåäö\s]');
-  static final _multiSpaceRe = RegExp(r'\s+');
-  static final _leadingNumbersRe = RegExp(r'^\s*\d+[\s,./]*\d*\s*');
-  static final _approximateWordsRe = RegExp(
-    r'\b(ca|cirka|ungefär|about|approximately)\b',
-  );
-  static final _parentheticalRe = RegExp(r'\([^)]*\)');
-  static final _allUnitsRe = RegExp(
-    '\\b(${_units.join('|')})\\b',
-    caseSensitive: false,
-  );
+  // Normalization primitives (units, stop words, ingredient/title cleaning)
+  // are shared with CanonicalPoolKey via RecipeTextNormalizer. See
+  // content_fingerprint_golden_test.dart — the extracted logic is pinned so
+  // this cache-critical fingerprint cannot drift.
 
   /// Generate a content fingerprint for a recipe.
   ///
@@ -168,45 +81,15 @@ class ContentFingerprint {
     );
   }
 
-  /// Extract significant keywords from title.
-  List<String> _extractTitleKeywords(String title) {
-    final normalized = title
-        .toLowerCase()
-        .replaceAll(_punctuationRe, ' ')
-        .replaceAll(_multiSpaceRe, ' ')
-        .trim();
+  /// Extract significant keywords from title (shared normalizer).
+  List<String> _extractTitleKeywords(String title) =>
+      RecipeTextNormalizer.significantTitleWords(title);
 
-    final words = normalized.split(' ');
-
-    // Filter out stop words and short words
-    final keywords = words
-        .where((w) => w.length > 2)
-        .where((w) => !_stopWords.contains(w))
-        .toList();
-
-    return keywords;
-  }
-
-  /// Normalize an ingredient for fingerprinting.
+  /// Normalize an ingredient for fingerprinting (shared normalizer).
   ///
-  /// Removes quantities, units, and preparation words.
-  /// Returns the core ingredient name.
-  String _normalizeIngredient(String ingredient) {
-    var normalized = ingredient.toLowerCase().trim();
-
-    normalized = normalized.replaceAll(_leadingNumbersRe, '');
-    normalized = normalized.replaceAll(_approximateWordsRe, '');
-    normalized = normalized.replaceAll(_allUnitsRe, '');
-    normalized = normalized.replaceAll(_parentheticalRe, '');
-    normalized = normalized.replaceAll(_multiSpaceRe, ' ').trim();
-
-    // If result is too short, it's probably not useful
-    if (normalized.length < 2) {
-      return '';
-    }
-
-    return normalized;
-  }
+  /// Removes quantities, units, and preparation words; returns the core name.
+  String _normalizeIngredient(String ingredient) =>
+      RecipeTextNormalizer.normalizeIngredientName(ingredient);
 
   /// Safely extract a string list from a dynamic value.
   List<String> _extractStringList(dynamic value) {

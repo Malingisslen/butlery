@@ -116,6 +116,30 @@ Binding conditions (by gate):
     telemetry — under "longest title token" a user can detach from a bad pool by adding one title
     word without changing the dish (a cheaper "rating laundering" lever than decision 13 assumed).
 
+### Foundation batch BUILT (2026-07-03) — C1/C2/C3 done, code+test reviewed
+Shipped on branch `claude/pooled-ratings-v1` (commit-gated: code-reviewer + testing-specialist,
+both approve; findings fixed):
+- `content_fingerprint_golden_test.dart` — pins ContentFingerprint output byte-for-byte (C1).
+- `recipe_text_normalizer.dart` — shared base normalization, extracted verbatim (C2). Refactor
+  proven behavior-preserving (golden + full fingerprint/cache suites green).
+- `canonical_pool_key.dart` (`CanonicalPoolKey.compute`) — Dart hint key with fail-closed guard
+  (C3), + 18 behavioral tests (recall / precision / fail-closed / shape).
+- Bugs found & fixed during review, folded into the design: (i) diacritics aren't ASCII word
+  chars, so the base unit-strip dropped the 'l' from "lök"/"vetemjöl" but not the OCR "lok" —
+  the pool-key path now FOLDS before unit-stripping; (ii) OCR digit-repair mangled glued
+  quantity+unit tokens ("500g"→"5oog") — a leading numeric run is now stripped per token first;
+  (iii) Swedish-letter hashtags ("#kött") only partially stripped — hashtag regex now includes åäö.
+- **NOT WIRED YET (code-reviewer High, gating):** `CanonicalPoolKey.compute` is not called from
+  any Firestore write or pool-routing path, and MUST NOT be until the TS twin
+  (`functions/src/ratings/canonical-pool-key.ts`) + the C4 cross-language parity fixture land.
+  The three bug cases above (fold-first, glued qty+unit, Swedish hashtag) plus tie-length and
+  generic-anchor become REQUIRED C4 parity cases — the TS twin must reproduce each identically.
+- **Known v1 recall limitations (documented, not blockers):** (a) exact ingredient-SET match —
+  adding one ingredient to an otherwise-identical recipe splits the pool (fuzzy is v2); (b)
+  anchor-hijack — a long descriptive title noun can flip the "longest token" anchor ("Tacopaj"
+  vs "Tacopaj med köttfärs"), splitting a pool. Both are recall (missed pooling), never precision
+  (false merge). Revisit under v2 fuzzy matching; (b) also ties to C10 telemetry.
+
 ### Architecture (panel-resolved decisions)
 1. **Identity (REVISED 2026-07-03 — was: title keywords + ingredient names, exact):**
    `ratingPoolKey`, versioned (`v1:` prefix, kTagGeneratorVersion precedent). **Hybrid key:**
