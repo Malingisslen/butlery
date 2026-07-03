@@ -62,6 +62,36 @@ the app pre-launch; the register's structure is clean and the known-bad rows are
 in the Sheet. Do not file findings proposing draft-status downgrades of FREE verdicts or
 "drafts are unverified" warnings against the tagging pipeline — decided. — 2026-07-01
 
+### [Ratings] Two accepted rare-edge behaviours in the pooled-ratings mirror CF (v1)
+The Stage-A mirror (`functions/src/ratings/canonical-rating-aggregation.ts`) keys each pool
+event by `poolKey` in the rater's `users/{uid}/canonical_rating_events` subcollection (doc-ID =
+poolKey ⇒ free one-vote-per-user-per-pool). Two rare corners are **consciously accepted**; do NOT
+file findings against them (the "correct" fixes each cost an unbounded per-delete read sweep,
+which violates the cost-minimisation rule, and both corners are bounded to ±1 vote in a pool that
+only displays at n ≥ 5 and self-heal on the user's next rating):
+1. **Retraction of a shared-pool-backing copy.** If a user rates *two of their own* recipe copies
+   that normalise to the *same* poolKey, they share one event doc (stamped with the last-rated
+   recipeId). Deleting that last-rated copy removes the shared doc even though the other copy is
+   still rated (or deleting the other is a no-op). Retraction is by stored `recipeId` (edit-proof —
+   it must survive poolKey drift after a recipe edit, the common flow); the two-own-copies-same-pool
+   case is the rare price. Do NOT propose recompute-the-key-on-delete — it breaks the common
+   rate→edit→delete flow (recomputes the *new* dish's key and orphans the frozen event).
+2. **Phantom re-pool from a rating touch after a recipe edit.** There is no `skipped_unchanged`
+   gate (it was removed because it made a rating first cast while the account was immature never
+   pool after maturity — a common miss, review finding #5). Consequence: if a user rates, then
+   edits the recipe into a different dish, then touches the rating without changing the star, a
+   fresh event is filed at the new dish's pool. Rare (needs all three, in order); the removed gate
+   would cost the far more common immature-then-matured pool. **Why:** both fixes trade a rare ±1
+   for either unbounded reads or a common systematic under-count. Decided at the 2026-07-03 xhigh
+   review rework. — 2026-07-03
+3. **No cost gate on unchanged rating writes.** Because the `skipped_unchanged` early-return was
+   removed (edge #2), an incidental unchanged rating write (review-text edit, `updatedAt` touch)
+   now pays a `users/{uid}/recipes/{recipeId}` read + a pool-event re-write. There is no cheap safe
+   gate: skipping requires knowing an event already exists for this rating, which needs the poolKey
+   (i.e. the recipe read) — so any gate that avoids the read reintroduces edge #2's #5 miss. The
+   cost (one read + one write on a low-frequency action) is accepted over reintroducing a
+   systematic pooling miss. Do NOT re-file "unchanged rating write does a redundant read/write." — 2026-07-03
+
 ### [Ratings] Pooled ratings have NO edit-triggered detachment (decision 6 superseded)
 The pooled-ratings plan's draft decision 6 (`tasks/pooled-ratings-plan.md`) proposed a
 recipe-write trigger that removes a user's contribution from the old pool when an edit changes

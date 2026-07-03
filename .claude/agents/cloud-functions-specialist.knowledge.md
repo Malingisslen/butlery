@@ -2999,3 +2999,35 @@ delete correctly cleans up the multi-event case from the edit-then-rerate path.
 `onDocumentWritten` create/update/delete branches all handled; both-absent guarded
 in index.ts. Throw-on-error → CF retry is safe because the only mutation is the
 final idempotent write.
+
+### 2026-07-03 — [User correction] The 2026-07-03 pooled-ratings review above was WRONG on 3 counts — an xhigh multi-agent review caught a showstopper I cleared
+I reviewed the Increment-2 pooled-ratings mirror CF and reported it "clean of
+Critical/High." A subsequent `/code-review xhigh` (6 finders + 13 verifiers) found
+**12 verified issues**, including a **showstopper I explicitly endorsed as correct**.
+Corrections to the entry directly above — supersede it with these:
+1. **Recipe content is USER-SCOPED, not top-level.** I asserted `recipes/{recipeId}`
+   (top-level) was correct, citing a Dart write at `rating_statistics.dart:180`. WRONG.
+   Recipes live at `users/{ownerUid}/recipes/{recipeId}` — `firestore.rules` has ONLY
+   the nested `match /users/{userId}/recipes/{recipeId}` (line ~337, no top-level
+   `match /recipes`), `FirebaseRecipeRepository` mixes in `UserScopedFirebaseRepository`
+   (see `lib/repositories/CLAUDE.md`), and `recipe_ratings` docs carry **no owner uid**
+   (only `recipeId, userId, rating, review, createdAt, updatedAt`). A CF reading
+   `db.collection("recipes").doc(id)` always misses → feature dead on arrival. The
+   `bulk-retag.ts` / `getRetagStatus` admin functions ALSO use top-level
+   `collection("recipes")` and are the trap that misled me — do not treat them as proof
+   a top-level collection exists; they are unverified/legacy. **Lesson: to confirm a
+   server-side collection path, read `firestore.rules` (the authoritative layout) + the
+   repository's mixin, NOT an incidental `collection(name)` call elsewhere.**
+2. **`throw` does NOT retry by default.** firebase-functions v2 event triggers
+   (`onDocumentWritten` et al.) have `retry=false` by default — a thrown error is logged
+   and DROPPED, not redelivered. Must pass `{ retry: true }` in the trigger options for
+   "throw → retry" to hold. I called the throw-to-retry design "safe" without checking.
+3. **A test that seeds the same wrong path as the code cannot catch a path bug.** The 12
+   unit tests passed only because the FakeFirestore seeded recipes at the same fake
+   `recipes/{id}` path the code read. **Lesson: the fake must mirror the REAL collection
+   layout (user-scoped subcollection), or a path bug is structurally invisible.**
+Also confirmed-wrong from the entry above: the `recipeId`-keyed retraction does NOT
+"correctly clean up" — when two copies of one dish collapse onto one poolKey doc it
+deletes a still-live vote (or no-ops the wrong one). **Meta-lesson: on data-writing CFs,
+the single-specialist gate is necessary but NOT sufficient — an adversarial multi-finder
+review is warranted before commit.**

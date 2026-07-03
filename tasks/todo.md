@@ -182,6 +182,57 @@ Recorded in `pooled-ratings-plan.md` decision 6 (superseded) + AC4 + `accepted-d
    (the real product payoff; v1 alone is display-only).
 5. **Display floor n=5:** decided, trivially tunable — say the word to change.
 
+## Increment 2 — DONE (Stage A committed 2026-07-03) — all review findings resolved
+Stage A shipped after a hard review cycle: the `cloud-functions-specialist` gate passed but a
+`/code-review xhigh` found **12 issues incl. a dead-on-arrival showstopper**; the rework fixed
+all 12, a second xhigh found **8 more (incl. a critical kill-switch precedence bug I introduced)**,
+those were fixed, and a focused delta-check came back clean. Final: 18/18 mirror + 4/4 flag-module
++ 5/5 regression tests green. The two xhigh passes are why nothing broken reached a commit. The
+finding history below is kept as a record; every item is addressed in the committed code.
+
+**Showstopper**
+1. **Wrong recipe path (DOA).** Reads top-level `recipes/{recipeId}` which does not exist —
+   recipes are user-scoped `users/{ownerUid}/recipes/{recipeId}` (rules line ~337 nested-only;
+   `UserScopedFirebaseRepository`). `recipe_ratings` carries no owner uid (only
+   `recipeId,userId,rating,review,createdAt,updatedAt`). **Fix:** read
+   `users/{userId}/recipes/{recipeId}` (rater's own copy = the pooled model's primary case).
+   Friend-recipe ratings w/o an own copy → `skipped_no_recipe` (v1 pools own copies; note it).
+   **Fix the tests too:** `seedRecipe` must write the user-scoped path or the bug stays invisible.
+
+**High (data-integrity)**
+2. **Retraction wipes a still-live vote.** delete-by-`recipeId` on a shared poolKey doc removes a
+   vote another still-rated copy backs. **Fix:** on delete, recompute K from
+   `users/{uid}/recipes/{recipeId}`, delete `…/canonical_rating_events/{K}` iff its `recipeId`===
+   the deleted recipe; fall back to where-recipeId only if the recipe is gone. (Rare two-own-copies
+   edge stays — document it.)
+3. **No CF retry.** `onDocumentWritten` defaults `retry=false`; the `throw` is dropped. **Fix:**
+   register with `{ retry: true }` (returns don't retry, so flag/immature/no-recipe paths are safe).
+4. **`isAccountMatured` swallows transient auth errors → permanent vote loss.** **Fix:** in catch,
+   `throw` on transient errors (→ retry); return false only for terminal `auth/user-not-found`.
+5. **`skipped_unchanged` runs before the maturity gate** (a bug I ADDED this turn): an
+   immature-time rating never pools even after the account matures. **Fix:** remove the
+   value-equality gate entirely — always run maturity→recompute→upsert on create/update (recipe
+   edits don't fire this trigger, so the incidental-re-pool corner the specialist worried about is
+   negligible; the gate's cost is not worth reintroducing #5).
+6. **Kill-switch gates the delete branch → flag-off orphans retractions.** **Fix:** flag-gate only
+   create/update; deletes/retractions ALWAYS run (like the existing `onRatingDeleted`).
+7. **RC blip caches disabled for the full 5-min TTL** (`pooled-ratings-flag.ts`). **Fix:** on
+   loader error return false WITHOUT caching (or a short negative TTL), so the next call retries RC.
+
+**Medium / Low**
+8. NaN rating passes `<1||>5` (both false for NaN) → `ratingValue:NaN`. **Fix:** add
+   `!Number.isInteger(rating)` to the guard (defense-in-depth; rules also reject NaN today).
+9. Flag reader ignores RC conditional/percentage values (reads only `defaultValue.value`), can
+   diverge from the client. **Fix (v1):** document "roll this flag out via defaultValue only, no RC
+   conditions," or use `getServerTemplate().evaluate()`. v1 = simple on/off, defaultValue is fine.
+10. Maturity `getUser` runs per-write. **Fix:** in-isolate `Set<uid>` memo of matured uids.
+11. AC6 test is tautological (asserts a const equals its own literal). **Fix:** read `index.ts`
+    source and assert the trigger binds a `recipe_ratings` path (real wiring guard).
+12. Third hand-rolled RC reader (dup of notification-rc-flags + prompts-config). **DEFER** —
+    extracting `shared/rc-boolean-flag.ts(key,{failMode})` touches 3 modules; out of scope here.
+
+Recorded: `cloud-functions-specialist.knowledge.md` (2026-07-03 correction), `tasks/lessons.md`.
+
 ## Sequencing & safety
 Build order 1→2→3→4→5 (pipeline + rules + GDPR) with the **feature flag OFF in prod throughout**;
 then 6 (client display) still behind the flag; then 7 (detachment). 8 stays dormant until its

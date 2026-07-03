@@ -352,7 +352,10 @@ export const drainRatingAggregations = onSchedule(
 // decision 7). Feature-flag gated (decision 11) — a no-op while the flag is off.
 // The core logic + guarantees live in ratings/canonical-rating-aggregation.ts.
 export const onRecipeRatingWrittenForPool = onDocumentWritten(
-  POOL_MIRROR_TRIGGER_PATH,
+  // retry:true — v2 event triggers do NOT retry by default; without this the
+  // `throw` below is logged and dropped. The mirror's writes are idempotent
+  // (upsert at doc-ID=poolKey; delete keyed on recipeId) so a re-run is safe.
+  { document: POOL_MIRROR_TRIGGER_PATH, retry: true },
   async (event) => {
     const beforeSnap = event.data?.before;
     const afterSnap = event.data?.after;

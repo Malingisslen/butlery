@@ -8,6 +8,16 @@
  * the recipe's own content and files ONE frozen pool event for the rater:
  *   users/{uid}/canonical_rating_events/{poolKey} = {poolKey, ratingValue, recipeId, createdAt}
  *
+ * DATA MODEL (verified 2026-07-03): `recipe_ratings` is a TOP-LEVEL collection
+ * (doc-id `{recipeId}_{userId}`) carrying only {recipeId,userId,rating,review,
+ * createdAt,updatedAt} — NO owner uid. Recipe CONTENT is USER-SCOPED at
+ * `users/{uid}/recipes/{recipeId}` (firestore.rules has only the nested match;
+ * FirebaseRecipeRepository is UserScoped). So the mirror reads the RATER'S OWN
+ * copy `users/{userId}/recipes/{recipeId}` — which is the pooled model's primary
+ * case (each user rates their own imported copy). A rating on a friend's recipe
+ * that the rater doesn't own is not locatable server-side and simply doesn't
+ * pool in v1 (skipped_no_recipe).
+ *
  * Guarantees this module enforces (not the security rules):
  *   - **Pool-poisoning defense (decision 2):** the key is ALWAYS recomputed by
  *     `computePoolKey` from the recipe content. A client-written key on the
@@ -23,14 +33,17 @@
  *     `family_ratings` collection; this trigger is bound to `recipe_ratings`
  *     ONLY, so a family rating structurally never reaches a pool.
  *
- * Feature-flag gated (decision 11): flag off ⇒ every path no-ops (no event
- * written, no event deleted) — the feature is fully dark.
+ * Feature-flag gated (decision 11): while the flag is off, create/update no-op.
+ * DELETE/retraction is deliberately NOT flag-gated — retracting data must always
+ * run (mirrors the existing always-on `onRatingDeleted`), or a rating deleted
+ * while the feature is dark would orphan its pool vote.
  *
  * Frozen semantics (decision 4, accepted-deviations 2026-07-03): editing a
  * recipe does NOT fire this (it triggers on the rating doc, not the recipe doc),
  * so a past vote stays in the pool of the dish it judged. Deleting the *rating*
- * is an explicit retraction and removes the rater's pool contribution(s) — keyed
- * off the stored `recipeId`, which is edit-proof and needs no recipe read.
+ * is an explicit retraction and removes the rater's pool contribution(s) — found
+ * by the stored `recipeId`, which is edit-proof (survives key drift) and needs
+ * no recipe read. Two rare frozen-key edges are accepted, see accepted-deviations.
  *
  * Stage B (the aggregate into canonical_recipe_stats) is a SEPARATE trigger on
  * the event write — added in Increment 3, not here.
@@ -51,6 +64,20 @@ export const CANONICAL_EVENTS_SUBCOLLECTION = "canonical_rating_events";
 /** Decision 7: an account must be this old (or email-verified) before its
  *  ratings count toward a public pool — anti-throwaway-account spam. */
 export const kAccountMaturityWindowMs = 60 * 60 * 1000; // 60 minutes
+
+// In-isolate memo of uids proven matured. Maturity is monotonic (once true it
+// stays true), so we never re-query a known-matured uid — saves an Identity
+// Platform round-trip per rating in a burst. Immature/unknown uids are not
+// cached (they may cross the window at any time). Capped so a long-lived,
+// high-traffic isolate can't accumulate unbounded retained state — on overflow
+// we simply clear (the memo is a pure optimization; a cold re-query is correct).
+const maturedUids = new Set<string>();
+const MATURED_MEMO_CAP = 10_000;
+
+/** Test-only reset so a fresh account can be re-evaluated between cases. */
+export function __resetMaturedMemoForTests(): void {
+  maturedUids.clear();
+}
 
 /** The fields this mirror reads off a `recipe_ratings` doc. */
 export interface RatingDoc {
@@ -80,11 +107,10 @@ export interface MirrorDeps {
 
 export interface MirrorResult {
   action:
-    | "skipped_flag" // kill switch off — feature dark
-    | "skipped_invalid" // missing uid/recipeId or out-of-range rating
-    | "skipped_unchanged" // update that didn't change the rating value
+    | "skipped_flag" // kill switch off — feature dark (create/update only)
+    | "skipped_invalid" // missing uid/recipeId or out-of-range/NaN rating
     | "skipped_immature" // account-maturity gate (decision 7)
-    | "skipped_no_recipe" // recipe doc gone — cannot derive the key
+    | "skipped_no_recipe" // rater's own recipe copy not found — cannot derive key
     | "skipped_no_key" // fail-closed key (no anchor / no ingredient names)
     | "upserted" // one pool event written
     | "deleted" // rating retracted — event(s) removed
@@ -103,55 +129,99 @@ function eventsRef(
 }
 
 /**
+ * Compute the poolKey for the rater's own recipe copy. Returns null if the
+ * recipe doc is missing OR the content yields no key (fail-closed). Reads
+ * `users/{uid}/recipes/{recipeId}` — the user-scoped location (see module doc).
+ */
+async function recipeContentToKey(
+  db: admin.firestore.Firestore,
+  uid: string,
+  recipeId: string,
+  computeKey: (title: string, ingredients: string[]) => string | null
+): Promise<{ found: boolean; poolKey: string | null }> {
+  const snap = await db
+    .collection("users")
+    .doc(uid)
+    .collection("recipes")
+    .doc(recipeId)
+    .get();
+  if (!snap.exists) return { found: false, poolKey: null };
+  const core = (snap.data()?.core ?? {}) as {
+    title?: unknown;
+    ingredients?: unknown;
+  };
+  const title = typeof core.title === "string" ? core.title : "";
+  const ingredients = Array.isArray(core.ingredients)
+    ? (core.ingredients.filter((s) => typeof s === "string") as string[])
+    : [];
+  return { found: true, poolKey: computeKey(title, ingredients) };
+}
+
+/**
  * Decision 7 maturity gate. The source rating already proves the account is
  * age-compliant; this only adds the "not a fresh throwaway" requirement.
- * Fail-closed: any lookup error ⇒ treat as immature (do not write a vote).
+ *
+ * Distinguishes two failure modes (the earlier version conflated them, losing
+ * real votes): a DETERMINATE "young/unverified" returns false (skip, no retry);
+ * an INDETERMINATE transient `getUser` error THROWS so the trigger retries
+ * (with `{ retry: true }`) — otherwise a mature user's vote is silently dropped.
+ * A deleted account (`auth/user-not-found`) is terminal → false (no retry).
  */
 async function isAccountMatured(
   uid: string,
   nowMs: number,
   deps: MirrorDeps
 ): Promise<boolean> {
+  if (maturedUids.has(uid)) return true;
   const auth = deps.auth ?? admin.auth();
+  let user: admin.auth.UserRecord;
   try {
-    const user = await auth.getUser(uid);
-    if (user.emailVerified) return true;
-    const created = user.metadata?.creationTime;
-    if (!created) return false;
-    const createdMs = new Date(created).getTime();
-    if (Number.isNaN(createdMs)) return false;
-    return nowMs - createdMs >= kAccountMaturityWindowMs;
+    user = await auth.getUser(uid);
   } catch (err) {
-    logger.warn("pool_mirror maturity check failed; treating as immature", {
+    const code = (err as { code?: string })?.code;
+    if (code === "auth/user-not-found") return false; // terminal: account gone
+    logger.warn("pool_mirror maturity lookup failed transiently; will retry", {
       uid,
       err,
     });
-    return false;
+    throw err; // transient → propagate so the trigger retries
   }
+  let matured = false;
+  if (user.emailVerified) {
+    matured = true;
+  } else {
+    const created = user.metadata?.creationTime;
+    const createdMs = created ? new Date(created).getTime() : NaN;
+    matured = !Number.isNaN(createdMs) && nowMs - createdMs >= kAccountMaturityWindowMs;
+  }
+  if (matured) {
+    if (maturedUids.size >= MATURED_MEMO_CAP) maturedUids.clear();
+    maturedUids.add(uid);
+  }
+  return matured;
 }
 
 /**
  * Mirror one `recipe_ratings` write into the pooled-rating event store.
  * Pure-ish: all IO goes through injectable deps so it is unit-testable with a
- * Firestore stub and a fake auth.
+ * Firestore stub and a fake auth. May throw on transient IO (recipe read, event
+ * write, maturity lookup) — the trigger re-runs it under `{ retry: true }`.
  */
 export async function mirrorRatingToPool(
   input: MirrorInput,
   deps: MirrorDeps = {}
 ): Promise<MirrorResult> {
-  const isEnabled = deps.isEnabled ?? isPooledRatingsEnabled;
-  if (!(await isEnabled())) return { action: "skipped_flag" };
-
   const db = deps.db ?? admin.firestore();
   const now = deps.now ?? (() => Date.now());
   const computeKey = deps.computeKey ?? computePoolKey;
 
   const isDelete = input.after === null && input.before !== null;
 
-  // ── Retraction: remove the rater's contribution(s) from THIS recipe ──
-  // Keyed off the stored recipeId (edit-proof; no recipe read; works even if
-  // the recipe was itself deleted). A user cannot have two live ratings for one
-  // recipe, so this removes exactly the event(s) this recipe backed.
+  // ── Retraction: remove the rater's contribution(s) for THIS recipe ──
+  // NOT flag-gated — a deletion must always be honored, or turning the kill
+  // switch off would orphan votes for ratings deleted while dark. Found by the
+  // stored recipeId (edit-proof: survives poolKey drift from a since-edited
+  // recipe; needs no recipe read; works even if the recipe was itself deleted).
   if (isDelete) {
     const before = input.before!;
     const uid = before.userId;
@@ -162,65 +232,54 @@ export async function mirrorRatingToPool(
       .where("recipeId", "==", recipeId)
       .get();
     if (snap.empty) return { action: "delete_noop", uid };
-    for (const doc of snap.docs) {
-      await doc.ref.delete();
-    }
+    await Promise.all(snap.docs.map((doc) => doc.ref.delete()));
     return { action: "deleted", uid, deletedCount: snap.size };
   }
 
   // ── Create / update: derive the key server-side and upsert one event ──
+  // Flag-gated (kill switch). Deletes above are intentionally NOT gated.
+  // Parens matter: `await` MUST cover the whole `?? fallback`. Without them, in
+  // production (deps.isEnabled undefined) `await` binds only to
+  // `deps.isEnabled?.()` → awaits `undefined`, leaving the fallback Promise
+  // un-awaited (always truthy) → the kill switch silently disables itself.
+  // isPooledRatingsEnabled THROWS if RC is unreachable (indeterminate ≠ off) so
+  // the retry-enabled trigger re-runs — a vote is not lost to a brief RC blip.
+  if (!(await (deps.isEnabled?.() ?? isPooledRatingsEnabled()))) {
+    return { action: "skipped_flag" };
+  }
+
   const after = input.after;
   if (!after) return { action: "skipped_invalid" };
   const uid = after.userId;
   const recipeId = after.recipeId;
   const rating = after.rating;
+  // Number.isFinite rejects NaN/Infinity (which slip past the < / > comparisons)
+  // while ALLOWING fractional half-star ratings — firestore.rules and the Dart
+  // `double rating` API permit non-integer [1,5], and recipe_social_stats counts
+  // them, so the pool must too (Number.isInteger would silently drop half-stars).
   if (
     !uid ||
     !recipeId ||
     typeof rating !== "number" ||
+    !Number.isFinite(rating) ||
     rating < 1 ||
     rating > 5
   ) {
     return { action: "skipped_invalid" };
   }
 
-  // No-op when the update didn't change the rating value (review-text edit,
-  // `updatedAt` touch, client re-save). Two reasons this matters:
-  //  - Cost: skip a billed recipe read + event write per incidental write
-  //    (mirrors the sibling `onRatingUpdated`'s before.rating===after.rating gate).
-  //  - Correctness/anti-gaming: the key is recomputed from CURRENT recipe
-  //    content, so reprocessing an unchanged rating AFTER the recipe was edited
-  //    would file a vote at the new dish's key that the user never actively cast
-  //    — and would let someone pad a pool by editing the recipe then touching
-  //    the rating. The frozen design (decision 4) forbids exactly that.
-  if (
-    input.before &&
-    input.before.rating === rating &&
-    input.before.recipeId === recipeId
-  ) {
-    return { action: "skipped_unchanged", uid };
-  }
-
-  // Maturity gate BEFORE the billed recipe read: `getUser` is free, the recipe
-  // read is billed, so the free anti-throwaway-spam check gates the paid read.
+  // Maturity gate BEFORE the billed recipe read: the memoized `getUser` is far
+  // cheaper (and free after the first hit) than the recipe read, so the free
+  // anti-throwaway-spam check gates the paid read. (No skipped_unchanged gate:
+  // it would make a rating first cast while immature never pool after the
+  // account matures unless the star value later changed — a common miss.)
   const matured = await isAccountMatured(uid, now(), deps);
   if (!matured) return { action: "skipped_immature", uid };
 
-  // Read the rater's own recipe copy — the ONLY source of the key. A poolKey
-  // written on the rating doc by a client is deliberately never consulted.
-  const recipeSnap = await db.collection("recipes").doc(recipeId).get();
-  if (!recipeSnap.exists) return { action: "skipped_no_recipe" };
-  const core = (recipeSnap.data()?.core ?? {}) as {
-    title?: unknown;
-    ingredients?: unknown;
-  };
-  const title = typeof core.title === "string" ? core.title : "";
-  const ingredients = Array.isArray(core.ingredients)
-    ? (core.ingredients.filter((s) => typeof s === "string") as string[])
-    : [];
-
-  const poolKey = computeKey(title, ingredients);
-  if (poolKey === null) return { action: "skipped_no_key" };
+  const keyed = await recipeContentToKey(db, uid, recipeId, computeKey);
+  if (!keyed.found) return { action: "skipped_no_recipe" };
+  if (keyed.poolKey === null) return { action: "skipped_no_key" };
+  const poolKey = keyed.poolKey;
 
   await eventsRef(db, uid).doc(poolKey).set({
     poolKey,

@@ -7,11 +7,19 @@
  * its own cache and cold starts invalidate. Same shape as
  * `shared/notification-rc-flags.ts` and `prompts-config.ts`.
  *
- * **Fail-CLOSED contract** (the opposite of the notification flags): if Remote
- * Config can't be fetched, or the flag is missing, pooled ratings are treated
- * as DISABLED. A missed read on the notification side costs a few extra pushes;
- * a missed read here would silently START writing pool events before we intend
- * the feature to be live. A kill switch you can't read must default to off.
+ * **Never-activate-on-error contract** (the opposite of the notification flags,
+ * which fail OPEN): this distinguishes DETERMINATE from INDETERMINATE state.
+ *   - RC readable, flag literal "true"  → returns true.
+ *   - RC readable, flag absent/not-true → returns false (feature intentionally off).
+ *   - RC UNREACHABLE (fetch error)      → THROWS. The state is unknown, so the
+ *     caller (the retry-enabled mirror trigger) re-runs later instead of
+ *     deciding. It NEVER returns true on an error, so a fetch failure can never
+ *     wrongly activate the feature; and because it throws rather than returning
+ *     a determinate-looking `false`, a rating submitted while the feature is
+ *     LIVE during a brief RC blip is retried (and pools once RC recovers) rather
+ *     than silently and permanently dropped. (A missed read on the notification
+ *     side costs a few extra pushes; here it would either wrongly start writing
+ *     pool data, or — if we fail-closed-to-false — lose real user votes.)
  */
 
 import { logger } from "firebase-functions/logger";
@@ -48,6 +56,11 @@ async function defaultLoader(): Promise<boolean> {
     | undefined;
   const raw = param?.defaultValue?.value;
   // Strict: only the literal string "true" enables. Missing/anything-else = off.
+  // ROLLOUT CONSTRAINT: this reads only the parameter's defaultValue — it does
+  // NOT evaluate RC conditions/percentage rollouts. The Flutter client
+  // (fetchAndActivate) DOES evaluate conditions, so a conditional rollout would
+  // let the client show the feature while the server no-ops every write. Roll
+  // this flag as a plain on/off defaultValue only; do not attach RC conditions.
   return typeof raw === "string" && raw.toLowerCase() === "true";
 }
 
@@ -71,10 +84,14 @@ export async function isPooledRatingsEnabled(
     cache = { enabled, fetchedAt: now() };
     return enabled;
   } catch (err) {
-    logger.warn("pooled_ratings flag fetch failed; failing closed (disabled)", {
+    // INDETERMINATE — do NOT cache and do NOT return a determinate-looking
+    // false. Throw so the retry-enabled trigger re-runs: this never wrongly
+    // activates (we never return true on error) AND never drops a live vote to
+    // a momentary RC blip (a fail-closed false would look "off" and skip with
+    // no retry). See the module contract above.
+    logger.warn("pooled_ratings flag fetch failed; throwing so caller retries", {
       err,
     });
-    cache = { enabled: false, fetchedAt: now() };
-    return false;
+    throw err;
   }
 }
