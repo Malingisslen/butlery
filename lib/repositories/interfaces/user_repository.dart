@@ -44,7 +44,15 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 /// ```
 abstract class UserRepository extends Repository<UserProfile> {
   /// Persist the given profile (create or update).
-  Future<void> saveProfile(UserProfile profile);
+  ///
+  /// [writeHouseholdSize] (BUT-1322 review): when false, the `householdSize`
+  /// key is OMITTED from the private-settings merge write so the stored value
+  /// survives. An in-memory null is ambiguous — it can mean "cleared" or
+  /// "settings sub-doc read failed/degraded" — and only the editing surface
+  /// knows the user's intent. Callers that did not deliberately change the
+  /// field must pass false, or an unrelated profile save after a degraded
+  /// load would silently wipe the stored setting.
+  Future<void> saveProfile(UserProfile profile, {bool writeHouseholdSize});
 
   /// Fetch a profile by id.
   Future<UserProfile?> fetchProfile(String userId);

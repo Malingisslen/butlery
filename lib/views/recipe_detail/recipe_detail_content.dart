@@ -697,6 +697,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       // BUT-444: scale on persisted amounts; falls back per-entry to the
       // string path for legacy recipes (raw-only entries).
       structuredIngredients: viewModel.recipe.structuredIngredients,
+      // BUT-1322: mount at the parent's portion state — the household-size
+      // default on first open (RecipeDetailActions.initializeScaling), or the
+      // user's manual choice after an override. Base stays recipe.portions.
+      initialPortions: currentPortions,
       onPortionChanged: onPortionChanged,
       minPortions: 1,
       maxPortions: 20,

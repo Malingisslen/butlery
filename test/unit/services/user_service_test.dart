@@ -248,7 +248,12 @@ void main() {
           (_) async => testProfile,
         );
 
-        when(() => mockUserRepository.saveProfile(any())).thenAnswer(
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer(
           (_) async {},
         );
 
@@ -262,7 +267,12 @@ void main() {
         expect(result, isNotNull);
         expect(result?.displayName, equals('Updated Name'));
         expect(result?.isSearchable, isTrue);
-        verify(() => mockUserRepository.saveProfile(any())).called(1);
+        verify(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).called(1);
       });
 
       test('should not update profile when not authenticated', () async {
@@ -280,7 +290,101 @@ void main() {
 
         // Assert
         expect(result, isNull);
-        verifyNever(() => mockUserRepository.saveProfile(any()));
+        verifyNever(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        );
+      });
+    });
+
+    group('householdSize sentinel (BUT-1322)', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      test(
+        'a caller that omits householdSize cannot wipe the saved value',
+        () async {
+          // The auto-creation / social-handler callers pass displayName only.
+          // If the sentinel default regressed to plain null (+ unconditional
+          // copyWith), every such call would silently clear the user's saved
+          // household size back to "recipe default".
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer(
+            (_) async => testProfile.copyWith(householdSize: 4),
+          );
+
+          await userService.createOrUpdateProfile(displayName: 'Test User');
+
+          final saved =
+              verify(
+                    () => mockUserRepository.saveProfile(
+                      captureAny(),
+                      writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                    ),
+                  ).captured.single
+                  as UserProfile;
+          expect(
+            saved.householdSize,
+            equals(4),
+            reason:
+                'omitting the parameter must preserve the persisted household '
+                'size — only an explicit null clears it',
+          );
+        },
+      );
+
+      test('a set value persists and an explicit null clears it', () async {
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => testProfile,
+        );
+
+        // Set: the value must reach the repository write.
+        await userService.createOrUpdateProfile(
+          displayName: 'Test User',
+          householdSize: 6,
+        );
+        var saved =
+            verify(
+                  () => mockUserRepository.saveProfile(
+                    captureAny(),
+                    writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                  ),
+                ).captured.single
+                as UserProfile;
+        expect(saved.householdSize, equals(6));
+        expect(userService.currentUserProfile?.householdSize, equals(6));
+
+        // Clear: explicit null (the Settings "use recipe default" affordance)
+        // must genuinely null the field on the next write — distinct from the
+        // omitted-parameter case above.
+        await userService.createOrUpdateProfile(
+          displayName: 'Test User',
+          householdSize: null,
+        );
+        saved =
+            verify(
+                  () => mockUserRepository.saveProfile(
+                    captureAny(),
+                    writeHouseholdSize: any(named: 'writeHouseholdSize'),
+                  ),
+                ).captured.single
+                as UserProfile;
+        expect(saved.householdSize, isNull);
+        expect(userService.currentUserProfile?.householdSize, isNull);
       });
     });
 
@@ -292,7 +396,10 @@ void main() {
           userId: 'test_user_123',
         );
         when(
-          () => mockUserRepository.saveProfile(any()),
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
         ).thenAnswer((_) async {});
         when(
           () => mockUserRepository.markActivityFeedHintSeen(any()),
@@ -312,7 +419,10 @@ void main() {
         await userService.createOrUpdateProfile(displayName: 'Test User');
         clearInteractions(mockUserRepository);
         when(
-          () => mockUserRepository.saveProfile(any()),
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
         ).thenAnswer((_) async {});
         when(
           () => mockUserRepository.markActivityFeedHintSeen(any()),
@@ -337,7 +447,12 @@ void main() {
         verify(
           () => mockUserRepository.markActivityFeedHintSeen('test_user_123'),
         ).called(1);
-        verifyNever(() => mockUserRepository.saveProfile(any()));
+        verifyNever(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        );
       });
 
       test(
@@ -348,7 +463,12 @@ void main() {
           await userService.markActivityFeedHintSeen();
 
           verifyNever(() => mockUserRepository.markActivityFeedHintSeen(any()));
-          verifyNever(() => mockUserRepository.saveProfile(any()));
+          verifyNever(
+            () => mockUserRepository.saveProfile(
+              any(),
+              writeHouseholdSize: any(named: 'writeHouseholdSize'),
+            ),
+          );
         },
       );
 

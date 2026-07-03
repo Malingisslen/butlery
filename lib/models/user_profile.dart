@@ -70,6 +70,14 @@ class UserProfile with JsonSerializableMixin {
   /// has been shown on the first shopping-checkoff. Flipped true after it fires
   /// once so it never re-nags. Defaults false.
   final bool pantryAutoAddPrompted;
+
+  /// BUT-1322: how many people the user usually cooks for. When set, the
+  /// portion scaler opens pre-set to this value (recipe detail, cooking mode,
+  /// add-to-shopping); the manual scaler stays the explicit override. Null =
+  /// use each recipe's own portions — exactly today's behaviour. Valid range
+  /// [minHouseholdSize]–[maxHouseholdSize], enforced by the constructor;
+  /// stored in the private settings sub-doc (personal preference, not public).
+  final int? householdSize;
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
@@ -123,6 +131,7 @@ class UserProfile with JsonSerializableMixin {
     this.hasSeenActivityFeedHint = false,
     this.autoAddBoughtToPantry = false,
     this.pantryAutoAddPrompted = false,
+    this.householdSize,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
@@ -139,6 +148,14 @@ class UserProfile with JsonSerializableMixin {
     this.hiddenAt,
     this.schemaVersion = 1,
   }) {
+    if (householdSize != null &&
+        (householdSize! < minHouseholdSize ||
+            householdSize! > maxHouseholdSize)) {
+      throw ArgumentError(
+        'householdSize must be between $minHouseholdSize and '
+        '$maxHouseholdSize (got $householdSize)',
+      );
+    }
     if (birthYear != null) {
       final currentYear = clock.now().year;
       // Floor of 15, per ADR-0001 (Dataskyddslag 2 kap. 4 § — social-ISS),
@@ -156,6 +173,10 @@ class UserProfile with JsonSerializableMixin {
   /// checked separately by the caller and overrides this.
   bool isActivityEventTypeEnabled(String typeName) =>
       activityFeedEventTypes[typeName] ?? true;
+
+  /// BUT-1322: valid range for [householdSize].
+  static const int minHouseholdSize = 1;
+  static const int maxHouseholdSize = 12;
 
   static const _sentinel = Object();
 
@@ -176,6 +197,7 @@ class UserProfile with JsonSerializableMixin {
     bool? hasSeenActivityFeedHint,
     bool? autoAddBoughtToPantry,
     bool? pantryAutoAddPrompted,
+    Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
@@ -214,6 +236,9 @@ class UserProfile with JsonSerializableMixin {
           autoAddBoughtToPantry ?? this.autoAddBoughtToPantry,
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
+      householdSize: householdSize == _sentinel
+          ? this.householdSize
+          : householdSize as int?,
       fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
           ? this.fcmTokenUpdatedAt
@@ -395,6 +420,9 @@ class UserProfile with JsonSerializableMixin {
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
+      // BUT-1322: portion-scaling default — private preference, so it lives
+      // here (settings sub-doc), never on the public profile doc.
+      'householdSize': householdSize,
     };
   }
 
@@ -418,6 +446,7 @@ class UserProfile with JsonSerializableMixin {
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
+      'householdSize': householdSize,
       // Notification fields
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
@@ -493,6 +522,7 @@ class UserProfile with JsonSerializableMixin {
         data,
         'pantryAutoAddPrompted',
       ),
+      householdSize: parseHouseholdSize(data['householdSize']),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.safeDateTime(
@@ -588,6 +618,7 @@ class UserProfile with JsonSerializableMixin {
         json,
         'pantryAutoAddPrompted',
       ),
+      householdSize: parseHouseholdSize(json['householdSize']),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
         json['fcmTokenUpdatedAt'],
@@ -642,6 +673,25 @@ class UserProfile with JsonSerializableMixin {
       if (value is bool) result[key.toString()] = value;
     });
     return result;
+  }
+
+  /// BUT-1322: read householdSize defensively — drops wrong-typed or
+  /// out-of-range values so deserialization of legacy/corrupt data never
+  /// throws (the constructor enforces the range for valid values). Public so
+  /// the repository's private-settings merge-back uses the same rule.
+  static int? parseHouseholdSize(Object? raw) {
+    if (raw == null) return null;
+    // Accept a Firestore num (a double like 4.0 from a non-Dart writer or an
+    // admin-console edit) as well as int/string — int.tryParse('4.0') is null,
+    // so a bare string-parse would silently drop a valid double-typed value.
+    final parsed = switch (raw) {
+      final int v => v,
+      final num v => v.toInt(),
+      _ => int.tryParse(raw.toString()),
+    };
+    if (parsed == null) return null;
+    if (parsed < minHouseholdSize || parsed > maxHouseholdSize) return null;
+    return parsed;
   }
 
   /// Read birthYear defensively: drops invalid values (out of range, wrong type)

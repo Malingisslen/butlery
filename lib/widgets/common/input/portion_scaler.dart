@@ -26,6 +26,11 @@ class PortionScaler extends StatefulWidget {
   final int minPortions;
   final int maxPortions;
 
+  /// BUT-1322: initially-selected target portions (e.g. the household-size
+  /// default). Null keeps the pre-BUT-1322 behaviour: start at
+  /// [originalPortions]. Scaling always uses [originalPortions] as the base.
+  final int? initialPortions;
+
   const PortionScaler({
     super.key,
     required this.originalPortions,
@@ -34,6 +39,7 @@ class PortionScaler extends StatefulWidget {
     required this.onPortionChanged,
     this.minPortions = 1,
     this.maxPortions = 20,
+    this.initialPortions,
   });
 
   @override
@@ -53,8 +59,8 @@ class _PortionScalerState extends State<PortionScaler>
   @override
   void initState() {
     super.initState();
-    _currentPortions = widget.originalPortions;
-    _scaledIngredients = List.from(widget.originalIngredients);
+    _currentPortions = widget.initialPortions ?? widget.originalPortions;
+    _scaledIngredients = _scale(_currentPortions);
     _hasAmericanUnits = PortionScalerLogic.detectAmericanUnits(
       widget.originalIngredients,
     );

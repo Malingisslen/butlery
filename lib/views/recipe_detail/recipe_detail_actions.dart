@@ -2,9 +2,12 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
@@ -27,17 +30,85 @@ class RecipeDetailActions {
   bool _isCommentsExpanded = false;
   int _currentPortions = 1;
 
+  // BUT-1322: scaling-analytics state — set by [initializeScaling], the
+  // manual-override event fires once per recipe-open.
+  String _recipeId = '';
+  bool _manualOverrideLogged = false;
+
   // Getters
   List<String> get scaledIngredients => _scaledIngredients;
   bool get isCommentsExpanded => _isCommentsExpanded;
   int get currentPortions => _currentPortions;
 
-  /// Initialize actions with recipe data
-  void initializeActions(BuildContext context) {
-    final viewModel = context.read<RecipeDetailViewModel>();
-    _scaledIngredients = List.from(viewModel.recipe.ingredients);
-    _currentPortions = viewModel.recipe.portions ?? 1;
+  /// BUT-1322: initialize portion state with the household-size default
+  /// (`householdSize ?? recipe.portions ?? 1`). The recipe's own portions
+  /// stay the scaling BASE; when the household default differs, the initial
+  /// ingredient list is pre-scaled so the detail view, the cooking-mode
+  /// handoff, and add-to-shopping (which reads [currentPortions]) all agree.
+  /// householdSize null — or equal to the recipe's portions — reproduces the
+  /// pre-BUT-1322 init exactly. The manual scaler stays the explicit override.
+  void initializeScaling(Recipe recipe) {
+    _recipeId = recipe.id;
+    _manualOverrideLogged = false;
     _isCommentsExpanded = false;
+    // Guard (review): only auto-apply the household default when the recipe
+    // declares a REAL portion count (> 0). A null/0-portions recipe has no
+    // meaningful base — scaling "from 1" would multiply the printed amounts
+    // by the household size, and scaling from 0 is a scaler no-op that would
+    // desync the header from the amounts and log a bogus analytics event.
+    final declared = recipe.portions;
+    final base = declared ?? 1;
+    final household = (declared != null && declared > 0)
+        ? _resolveHouseholdDefault()
+        : null;
+    _currentPortions = household ?? base;
+    if (_currentPortions != base) {
+      _scaledIngredients = PortionScalerLogic.scaleEntries(
+        recipe.structuredIngredients,
+        base,
+        _currentPortions,
+        false,
+      );
+      _logScalingApplied(
+        source: 'household_default',
+        fromPortions: base,
+        toPortions: _currentPortions,
+      );
+    } else {
+      _scaledIngredients = List.from(recipe.ingredients);
+    }
+  }
+
+  /// Household default from the user profile (model enforces range 1–12).
+  /// `tryGet` keeps this safe when UserService isn't registered (tests).
+  int? _resolveHouseholdDefault() {
+    try {
+      return ServiceLocator.tryGet<UserService>()
+          ?.currentUserProfile
+          ?.householdSize;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// BUT-1322 (binding monetization condition): scaling telemetry.
+  /// Best-effort fire-and-forget — analytics failures never surface here.
+  void _logScalingApplied({
+    required String source,
+    required int fromPortions,
+    required int toPortions,
+  }) {
+    if (_recipeId.isEmpty) return;
+    try {
+      ServiceLocator.tryGet<AnalyticsService>()
+          ?.logPortionScalingApplied(
+            recipeId: _recipeId,
+            source: source,
+            fromPortions: fromPortions,
+            toPortions: toPortions,
+          )
+          .catchError((Object _) {});
+    } catch (_) {}
   }
 
   // ACTION METHODS (Delegating to specialized handlers)
@@ -189,8 +260,19 @@ class RecipeDetailActions {
 
   // STATE MANAGEMENT METHODS
 
-  /// Handle portion scaling
+  /// Handle portion scaling from the manual scaler (the explicit override).
   void onPortionChanged(int newPortions, List<String> newIngredients) {
+    // BUT-1322: a real portion change is an explicit override of the
+    // household default — record it once per recipe-open. The unit-conversion
+    // toggle re-fires this callback with unchanged portions; skip those.
+    if (newPortions != _currentPortions && !_manualOverrideLogged) {
+      _manualOverrideLogged = true;
+      _logScalingApplied(
+        source: 'manual_override',
+        fromPortions: _currentPortions,
+        toPortions: newPortions,
+      );
+    }
     _currentPortions = newPortions;
     _scaledIngredients = newIngredients;
   }

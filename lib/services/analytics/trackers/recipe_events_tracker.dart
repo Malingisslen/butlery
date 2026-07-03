@@ -301,4 +301,41 @@ class RecipeEventsTracker extends BaseTracker {
       },
     );
   }
+
+  /// BUT-1322 (binding monetization condition): household-size preference
+  /// set/changed/cleared from Settings. An absent `previous_size`/`new_size`
+  /// param means "recipe default" (null) — no magic 0 values in BigQuery.
+  Future<void> logHouseholdSizeChanged({
+    int? previousSize,
+    int? newSize,
+  }) async {
+    await logEvent(
+      name: AnalyticsEvents.householdSizeChanged,
+      parameters: {
+        'previous_size': ?previousSize,
+        'new_size': ?newSize,
+      },
+    );
+  }
+
+  /// BUT-1322 (binding monetization condition): portion scaling ran on a
+  /// recipe surface. `source` distinguishes the household default kicking in
+  /// on open (`household_default`) from the user's explicit scaler tap
+  /// (`manual_override`) — the split the grocery-basket work needs.
+  Future<void> logPortionScalingApplied({
+    required String recipeId,
+    required String source,
+    required int fromPortions,
+    required int toPortions,
+  }) async {
+    await logEvent(
+      name: AnalyticsEvents.portionScalingApplied,
+      parameters: {
+        'recipe_id': recipeId,
+        'source': source,
+        'from_portions': fromPortions,
+        'to_portions': toPortions,
+      },
+    );
+  }
 }

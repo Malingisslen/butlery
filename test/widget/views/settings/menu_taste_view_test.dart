@@ -189,6 +189,74 @@ void main() {
     });
   });
 
+  group('Household size control (BUT-1322)', () {
+    testWidgets('renders the null state and steps up on +', (tester) async {
+      final vm = registerVm();
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const MenuTasteView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(vm.householdSize, isNull, reason: 'precondition: unset profile');
+      expect(
+        find.text(sv.householdSizeRecipeDefault),
+        findsOneWidget,
+        reason: 'null state must read as "recipe default", not a number',
+      );
+
+      final plus = find.byTooltip(sv.a11yIncreaseHouseholdSize);
+      await tester.ensureVisible(plus);
+      await tester.pumpAndSettle();
+      await tester.tap(plus);
+      await tester.pump();
+      await tester.tap(plus);
+      await tester.pump();
+
+      expect(
+        vm.householdSize,
+        2,
+        reason: 'two + taps from unset must land on 2 on the shared VM',
+      );
+      expect(find.text('2'), findsOneWidget);
+    });
+
+    testWidgets('clears back to recipe default', (tester) async {
+      final vm = registerVm();
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const MenuTasteView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final plus = find.byTooltip(sv.a11yIncreaseHouseholdSize);
+      await tester.ensureVisible(plus);
+      await tester.pumpAndSettle();
+      await tester.tap(plus);
+      await tester.pump();
+      expect(vm.householdSize, 1);
+
+      final clear = find.text(sv.householdSizeUseRecipeDefault);
+      await tester.ensureVisible(clear);
+      await tester.pumpAndSettle();
+      await tester.tap(clear);
+      await tester.pump();
+
+      expect(
+        vm.householdSize,
+        isNull,
+        reason: 'the clear affordance must return the setting to null',
+      );
+      expect(find.text(sv.householdSizeRecipeDefault), findsOneWidget);
+    });
+  });
+
   group('SettingsHub row → MenuTaste route (BUT-1320)', () {
     testWidgets('the "Meny och smak" tile navigates to the menu-taste route', (
       tester,

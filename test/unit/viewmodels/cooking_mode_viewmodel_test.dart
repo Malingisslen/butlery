@@ -7,7 +7,9 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -705,4 +707,115 @@ void main() {
       vm.dispose();
     });
   });
+
+  group('CookingModeViewModel - BUT-1322 household default', () {
+    UserProfile profileWith(int? size) => UserProfile(
+      uid: 'u1',
+      displayName: 'Test',
+      email: 't@t.se',
+      joinedAt: DateTime(2024, 1, 1),
+      lastActiveAt: DateTime(2024, 1, 1),
+      householdSize: size,
+    );
+
+    void registerUserService(int? size) {
+      final mockUser = _MockUserService();
+      when(() => mockUser.currentUserProfile).thenReturn(profileWith(size));
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      getIt.registerSingleton<UserService>(mockUser);
+    }
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+    });
+
+    test('opens pre-scaled to householdSize when it differs from recipe', () {
+      registerUserService(6);
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      expect(vm.currentPortions, 6);
+      // '2 dl mjol' scaled from 4 → 6 portions (×1.5) = '3 dl mjol'
+      expect(vm.scaledIngredients.first, contains('3'));
+      expect(vm.scaledIngredients.first, contains('dl'));
+
+      vm.dispose();
+    });
+
+    test('manual override always wins over the household default', () {
+      registerUserService(6);
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      vm.updatePortions(2); // explicit user choice
+
+      expect(vm.currentPortions, 2);
+      // Base stays the RECIPE's portions (4): '2 dl mjol' × 0.5 = '1 dl mjol'.
+      expect(vm.scaledIngredients.first, contains('1'));
+
+      vm.dispose();
+    });
+
+    test('no household default keeps the pre-BUT-1322 init byte-for-byte', () {
+      // No UserService registered at all.
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      expect(vm.currentPortions, 4);
+      expect(vm.scaledIngredients, testRecipe.ingredients);
+
+      vm.dispose();
+    });
+
+    test('householdSize equal to recipe portions applies no scaling', () {
+      registerUserService(4);
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      expect(vm.currentPortions, 4);
+      expect(vm.scaledIngredients, testRecipe.ingredients);
+
+      vm.dispose();
+    });
+
+    test('household-default open logs scaling_applied with correct source', () {
+      registerUserService(6);
+      final mockAnalytics = _MockAnalyticsService();
+      when(
+        () => mockAnalytics.logPortionScalingApplied(
+          recipeId: any(named: 'recipeId'),
+          source: any(named: 'source'),
+          fromPortions: any(named: 'fromPortions'),
+          toPortions: any(named: 'toPortions'),
+        ),
+      ).thenAnswer((_) async {});
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+      getIt.registerSingleton<AnalyticsService>(mockAnalytics);
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      verify(
+        () => mockAnalytics.logPortionScalingApplied(
+          recipeId: testRecipe.id,
+          source: 'household_default',
+          fromPortions: 4,
+          toPortions: 6,
+        ),
+      ).called(1);
+
+      vm.dispose();
+    });
+  });
 }
+
+class _MockUserService extends Mock implements UserService {}

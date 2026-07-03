@@ -419,6 +419,27 @@ class AnalyticsService extends BaseService {
     filtersApplied: filtersApplied,
   );
 
+  /// BUT-1322: household-size preference set/changed/cleared (Settings save).
+  Future<void> logHouseholdSizeChanged({int? previousSize, int? newSize}) =>
+      _recipeTracker.logHouseholdSizeChanged(
+        previousSize: previousSize,
+        newSize: newSize,
+      );
+
+  /// BUT-1322: portion scaling applied on a recipe surface.
+  /// `source`: 'household_default' (auto on open) | 'manual_override'.
+  Future<void> logPortionScalingApplied({
+    required String recipeId,
+    required String source,
+    required int fromPortions,
+    required int toPortions,
+  }) => _recipeTracker.logPortionScalingApplied(
+    recipeId: recipeId,
+    source: source,
+    fromPortions: fromPortions,
+    toPortions: toPortions,
+  );
+
   Future<void> logMenuGenerated({
     required int recipeCount,
     required String method,

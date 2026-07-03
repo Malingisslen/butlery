@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
@@ -121,6 +122,16 @@ class _MenuTasteContentState extends State<_MenuTasteContent> {
                       child: CookingPreferenceControls(viewModel: viewModel),
                     ),
                   ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  // BUT-1322: household-size default for the portion scaler.
+                  // Shares the same ViewModel + save path as the tuning
+                  // controls above, so one Save button persists everything.
+                  StyledCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.paddingL),
+                      child: _HouseholdSizeControl(viewModel: viewModel),
+                    ),
+                  ),
                   const SizedBox(height: AppDimensions.spacingXl),
                   ActionButtons.primaryButton(
                     context,
@@ -160,7 +171,7 @@ class _MenuTasteContentState extends State<_MenuTasteContent> {
     }
   }
 
-  /// Guards back-navigation: with unsaved menu-tuning changes, offer save /
+  /// Guards back-navigation: with unsaved menu-tuning + household changes, offer save /
   /// discard / cancel (mirrors the profile-edit exit guard) so a change isn't
   /// silently lost on pop. Returns true when it's safe to leave.
   Future<bool> _handleBackNavigation(UserProfileViewModel viewModel) async {
@@ -193,5 +204,76 @@ class _MenuTasteContentState extends State<_MenuTasteContent> {
       ),
     );
     return shouldDiscard ?? false;
+  }
+}
+
+/// BUT-1322: stepper for the household-size default (how many people the user
+/// usually cooks for). Null renders as "Receptets standard"; stepping below 1
+/// — or the explicit clear button — returns to null, so the default state is
+/// always recoverable. Persistence goes through the shared
+/// [UserProfileViewModel.saveProfile], same as the tuning controls above.
+class _HouseholdSizeControl extends StatelessWidget {
+  final UserProfileViewModel viewModel;
+
+  const _HouseholdSizeControl({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final size = viewModel.householdSize;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.l10n.settingsHouseholdSize,
+          style: AppTextStyles.labelMedium,
+        ),
+        const SizedBox(height: AppDimensions.spacingXxs),
+        Text(
+          context.l10n.settingsHouseholdSizeHint,
+          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+        ),
+        const SizedBox(height: AppDimensions.spacingXs),
+        Row(
+          children: [
+            IconButton(
+              // Below 1 clears back to null ("recipe default").
+              onPressed: size == null
+                  ? null
+                  : () => viewModel.updateHouseholdSize(
+                      size <= UserProfile.minHouseholdSize ? null : size - 1,
+                    ),
+              icon: const Icon(Icons.remove),
+              tooltip: context.l10n.a11yDecreaseHouseholdSize,
+            ),
+            Expanded(
+              child: Text(
+                size?.toString() ?? context.l10n.householdSizeRecipeDefault,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.titleMedium.copyWith(
+                  color: size == null ? cs.onSurfaceVariant : cs.onSurface,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: (size != null && size >= UserProfile.maxHouseholdSize)
+                  ? null
+                  : () => viewModel.updateHouseholdSize((size ?? 0) + 1),
+              icon: const Icon(Icons.add),
+              tooltip: context.l10n.a11yIncreaseHouseholdSize,
+            ),
+          ],
+        ),
+        if (size != null)
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton(
+              onPressed: () => viewModel.updateHouseholdSize(null),
+              child: Text(context.l10n.householdSizeUseRecipeDefault),
+            ),
+          ),
+      ],
+    );
   }
 }

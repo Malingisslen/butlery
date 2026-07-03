@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -62,6 +63,8 @@ class UserProfileBuilder {
 }
 
 class MockImageUploadService extends Mock implements ImageUploadService {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
 /// Extended MockUserService that properly exposes currentUserProfile
 /// and supports listener registration for ViewModel tests.
@@ -149,6 +152,7 @@ void main() {
           showOnlineStatus: any(named: 'showOnlineStatus'),
           shareActivityToFeed: any(named: 'shareActivityToFeed'),
           activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+          householdSize: any(named: 'householdSize'),
         ),
       ).thenAnswer((_) async => UserProfileBuilder.build());
 
@@ -591,6 +595,7 @@ void main() {
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
             activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
           ),
         ).thenAnswer((_) async => savedProfile);
 
@@ -610,6 +615,7 @@ void main() {
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
             activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
           ),
         ).called(1);
       });
@@ -632,6 +638,7 @@ void main() {
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
             activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
           ),
         );
       });
@@ -673,6 +680,7 @@ void main() {
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
             activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
           ),
         ).thenAnswer((_) async => savedProfile);
 
@@ -697,6 +705,7 @@ void main() {
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
             activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
           ),
         ).thenAnswer((_) async => null);
 
@@ -706,6 +715,157 @@ void main() {
 
         expect(result, isFalse);
         expect(viewModel.hasUnsavedChanges, isTrue);
+      });
+    });
+
+    group('Household size (BUT-1322)', () {
+      _MockAnalyticsService registerAnalytics() {
+        final mock = _MockAnalyticsService();
+        when(
+          () => mock.logHouseholdSizeChanged(
+            previousSize: any(named: 'previousSize'),
+            newSize: any(named: 'newSize'),
+          ),
+        ).thenAnswer((_) async {});
+        TestServiceLocator.registerMock<AnalyticsService>(mock);
+        return mock;
+      }
+
+      test('updateHouseholdSize edits the draft and enables save; '
+          'out-of-range values are ignored', () {
+        expect(viewModel.householdSize, isNull);
+        expect(viewModel.hasUnsavedChanges, isFalse);
+
+        viewModel.updateHouseholdSize(UserProfile.maxHouseholdSize + 1);
+        expect(viewModel.householdSize, isNull);
+        expect(
+          viewModel.hasUnsavedChanges,
+          isFalse,
+          reason: 'an out-of-range value must be a complete no-op',
+        );
+
+        viewModel.updateHouseholdSize(5);
+        expect(viewModel.householdSize, equals(5));
+        expect(
+          viewModel.hasUnsavedChanges,
+          isTrue,
+          reason:
+              'a household-only edit must enable Save — pins the '
+              'householdSize clause in the profile-equality check; without '
+              'it the setting can never be persisted from Settings',
+        );
+      });
+
+      test('save fires household_size_changed when the value changed, with '
+          'the persisted before/after pair', () async {
+        final analytics = registerAnalytics();
+        viewModel.updateHouseholdSize(4);
+
+        final savedProfile = UserProfileBuilder.build().copyWith(
+          householdSize: 4,
+        );
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
+          ),
+        ).thenAnswer((_) async => savedProfile);
+
+        final result = await viewModel.saveProfile();
+
+        expect(result, isTrue);
+        // The edited value — not the service's "unset" sentinel — must reach
+        // the persistence call.
+        final passed = verify(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: captureAny(named: 'householdSize'),
+          ),
+        ).captured.single;
+        expect(passed, equals(4));
+
+        verify(
+          () =>
+              analytics.logHouseholdSizeChanged(previousSize: null, newSize: 4),
+        ).called(1);
+      });
+
+      test('save does NOT fire household_size_changed when the value is '
+          'unchanged', () async {
+        final analytics = registerAnalytics();
+        // A save touching only another field — the persisted household size
+        // (null) is identical before and after, so no event may be emitted
+        // (the BigQuery signal is set/changed/cleared, not "profile saved").
+        viewModel.updateDisplayName('New Name');
+
+        final result = await viewModel.saveProfile();
+
+        expect(result, isTrue);
+        verifyNever(
+          () => analytics.logHouseholdSizeChanged(
+            previousSize: any(named: 'previousSize'),
+            newSize: any(named: 'newSize'),
+          ),
+        );
+      });
+
+      test('an unedited household on save passes the untouched sentinel, not '
+          'a plain null that would wipe the stored setting', () async {
+        // Wipe-prevention at the VM boundary: a save that touches ONLY another
+        // field must forward the household as UserService.householdSizeUntouched
+        // so the service omits the settings-doc key (writeHouseholdSize:false).
+        // If the VM regressed to passing edited.householdSize (in-memory null,
+        // possibly a degraded settings-read) unconditionally, the analytics
+        // assertion above would still pass — but the field would reach the
+        // service as a real null and clear the persisted value. Only capturing
+        // the argument identity proves the sentinel is preserved.
+        registerAnalytics();
+        viewModel.updateDisplayName('New Name');
+
+        final result = await viewModel.saveProfile();
+
+        expect(result, isTrue);
+        final passed = verify(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: captureAny(named: 'householdSize'),
+          ),
+        ).captured.single;
+        expect(
+          identical(passed, UserService.householdSizeUntouched),
+          isTrue,
+          reason:
+              'an untouched household must forward the sentinel so the '
+              'service leaves the stored value alone — a plain null would '
+              'wipe it',
+        );
       });
     });
 
