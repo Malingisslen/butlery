@@ -160,23 +160,33 @@ class ParsingContext {
   Future<ParsedRecipeStructure> parseStructureCachedAsync(
     String text, {
     NeuralLineClassifier? neuralClassifier,
+    bool captureSubHeadings = true,
   }) async {
-    if (_cachedStructure != null && _structureCacheKey == text) {
+    // The flag changes the structure, so it is part of the cache identity.
+    final cacheKey = '$captureSubHeadings|$text';
+    if (_cachedStructure != null && _structureCacheKey == cacheKey) {
       return _cachedStructure!;
     }
     final ParsedRecipeStructure result;
     if (neuralClassifier != null && neuralClassifier.isAvailable) {
-      result = await neuralClassifier.parseStructureAsync(text);
+      result = await neuralClassifier.parseStructureAsync(
+        text,
+        captureSubHeadings: captureSubHeadings,
+      );
     } else {
       // Offload to a background isolate — [parseStructureInIsolate] is a
-      // top-level function so compute() can reference it directly.
-      // Input: String (primitive). Output: Map<String, dynamic> (primitives
-      // only, Duration encoded as int minutes). Reconstructed on return.
-      final map = await compute(parseStructureInIsolate, text);
+      // top-level function so compute() can reference it directly. Input: a
+      // primitive Map (text + the kill-switch flag, which can't be read from
+      // ServiceLocator inside the isolate). Output: Map<String, dynamic>
+      // (primitives only). Reconstructed on return.
+      final map = await compute(parseStructureInIsolate, {
+        'text': text,
+        'captureSubHeadings': captureSubHeadings,
+      });
       result = ParsedRecipeStructure.fromIsolateMap(map);
     }
     _cachedStructure = result;
-    _structureCacheKey = text;
+    _structureCacheKey = cacheKey;
     return result;
   }
 

@@ -379,6 +379,23 @@ Rulla och grädda.
         expect(s.ingredientSections.length, s.ingredients.length);
       });
 
+      test('kill switch OFF (captureSubHeadings:false) RETAINS heading lines as '
+          'ingredients — the flag fully reverts the text path', () {
+        // With capture off the detector must not run, so the sub-heading lines
+        // stay in the flat list exactly as pre-feature; allergen tagging sees
+        // the unmodified input, and no line is ever dropped by the emergency
+        // lever (the gap Finding B fixed).
+        final s = classifier.parseStructure(grouped, captureSubHeadings: false);
+
+        expect(s.ingredients, contains('Deg:'));
+        expect(s.ingredients, contains('Fyllning:'));
+        expect(
+          s.ingredientSections.every((e) => e == null),
+          isTrue,
+          reason: 'no sections tracked when capture is off',
+        );
+      });
+
       test('a colon-less bare ingredient word is NEVER dropped as a heading '
           '(the one direction we must not err — allergen safety)', () {
         const text = '''

@@ -62,10 +62,13 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
       );
     }
 
-    // Classify and parse (cached across tiers)
+    // Classify and parse (cached across tiers). Thread the kill switch so
+    // that with capture OFF, heading lines are RETAINED as ingredients (not
+    // dropped) — the flag now fully reverts this tier, matching the others.
     final structure = await context.parseStructureCachedAsync(
       text,
       neuralClassifier: _neuralClassifier,
+      captureSubHeadings: isSectionCaptureEnabled,
     );
 
     if (!structure.isValid) {

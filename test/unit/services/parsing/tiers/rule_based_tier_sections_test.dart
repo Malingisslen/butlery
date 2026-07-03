@@ -147,16 +147,25 @@ void main() {
       ServiceLocator.reset();
     });
 
-    test('capture off ⇒ no sections stamped (lines still parse)', () async {
-      final tier = RuleBasedTier(ingredientStrategy: _EchoStrategy());
-      final parsed = await sectionsOf(tier);
+    test(
+      'capture off ⇒ no sections stamped AND heading lines RETAINED as '
+      'ingredients (Finding B: the flag fully reverts the text path)',
+      () async {
+        final tier = RuleBasedTier(ingredientStrategy: _EchoStrategy());
+        final parsed = await sectionsOf(tier);
 
-      expect(parsed, isNotEmpty);
-      expect(
-        parsed.every((p) => p.section == null),
-        isTrue,
-        reason: 'the flag gates _applySections',
-      );
-    });
+        expect(parsed, isNotEmpty);
+        expect(
+          parsed.every((p) => p.section == null),
+          isTrue,
+          reason: 'the flag gates _applySections',
+        );
+        // Before Finding B, heading lines were dropped even with capture off.
+        // Now they are retained, so the flat tagging input is fully reverted.
+        final names = parsed.map((p) => p.name).toList();
+        expect(names, contains('Deg:'));
+        expect(names, contains('Fyllning:'));
+      },
+    );
   });
 }

@@ -702,6 +702,18 @@ class RecipeFormState extends ChangeNotifier {
       _instructionsManager.updateItems(instructions);
       _tagsManager.updateItems(tags);
 
+      // Re-seed the section sidecar to the restored line count — drafts carry
+      // no structured/section data, so an ungrouped re-seed. Without this the
+      // sidecar keeps its stale row list and SectionedIngredientListBuilder
+      // renders only as many rows as the sidecar has, hiding the restored
+      // ingredients (the other three line-count-changing paths — ctor,
+      // _loadRecipeData, resetForm — all re-seed here too).
+      _seedStructured = null;
+      _ingredientSectionState.seedFromStructured(
+        const [],
+        _ingredientsManager.values.length,
+      );
+
       notifyListeners();
       return true;
     } catch (e) {

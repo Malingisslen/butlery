@@ -88,9 +88,15 @@ class NeuralLineClassifier {
   /// Async version that actually uses the neural model.
   ///
   /// Preferred entry point — callers that can await should use this.
-  Future<ParsedRecipeStructure> parseStructureAsync(String text) async {
+  Future<ParsedRecipeStructure> parseStructureAsync(
+    String text, {
+    bool captureSubHeadings = true,
+  }) async {
     if (_isDisposed || !_classifierService.isAvailable) {
-      return SwedishLineClassifier.instance.parseStructure(text);
+      return SwedishLineClassifier.instance.parseStructure(
+        text,
+        captureSubHeadings: captureSubHeadings,
+      );
     }
 
     final lines = text.split(RegExp(r'\r?\n'));
@@ -103,6 +109,9 @@ class NeuralLineClassifier {
 
     // Group into sections and extract structure
     final sections = SwedishLineClassifier.groupIntoSections(contextual);
-    return SwedishLineClassifier.extractStructureFromSections(sections);
+    return SwedishLineClassifier.extractStructureFromSections(
+      sections,
+      captureSubHeadings: captureSubHeadings,
+    );
   }
 }
