@@ -146,6 +146,40 @@ void main() {
           ),
         ).called(1);
       });
+
+      test(
+        'logRecipeCreated carries has_sections (PR #211, criterion 18)',
+        () async {
+          await repository.logRecipeCreated(
+            source: 'manual',
+            hasImage: false,
+            hasSections: true,
+          );
+
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'recipe_created',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
+          expect(captured['has_sections'], isTrue);
+          expect(captured['source'], 'manual');
+
+          // Default is false when the recipe has no headings.
+          await repository.logRecipeCreated(source: 'import');
+          final captured2 =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'recipe_created',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
+          expect(captured2['has_sections'], isFalse);
+        },
+      );
     });
 
     // BUT-786: every emitted event must carry the per-session UUID once

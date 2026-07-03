@@ -24,9 +24,14 @@ class RecipeEventsTracker extends BaseTracker {
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
+    bool hasSections = false,
   }) async {
     if (!await hasAnalyticsConsent()) return;
-    await repository.logRecipeCreated(source: source, hasImage: hasImage);
+    await repository.logRecipeCreated(
+      source: source,
+      hasImage: hasImage,
+      hasSections: hasSections,
+    );
   }
 
   /// Log recipe sharing. `recipeId` is sanitized (hashed) by the repository's
