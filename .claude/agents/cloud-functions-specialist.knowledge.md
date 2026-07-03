@@ -3031,3 +3031,70 @@ Also confirmed-wrong from the entry above: the `recipeId`-keyed retraction does 
 deletes a still-live vote (or no-ops the wrong one). **Meta-lesson: on data-writing CFs,
 the single-specialist gate is necessary but NOT sufficient — an adversarial multi-finder
 review is warranted before commit.**
+
+### 2026-07-03 — pooled-ratings Stage B pool aggregator (Increment 3) [Pattern discovered]
+
+Reviewed clean (no findings) the Stage B aggregator that maintains the PUBLIC pooled
+number `canonical_recipe_stats/{poolKey} = {count, average, updatedAt}`. Files:
+`ratings/update-pooled-rating-stats.ts` (aggregator), `ratings/pool-aggregation.ts`
+(debounce adapter), the `onPooledRatingEventWritten` trigger + `drainPooledRatingAggregations`
+scheduler in `index.ts`, and a collection-group index in `firestore.indexes.json`.
+
+**Patterns worth remembering:**
+
+- **Unbounded collection-group fold → use `.aggregate({count, average})`, never `.get()`.**
+  When a pool's rater count is unbounded by design, read-all-then-recompute is forbidden
+  (memory + billed reads scale with pool size). The right shape is
+  `db.collectionGroup(sub).where("poolKey","==",key).aggregate({ count:
+  AggregateField.count(), average: AggregateField.average("ratingValue") }).get()` — both
+  scalars computed in the index layer, O(1) memory, one billed read per ≤1000 matched
+  entries. Confirmed `AggregateField.count/average/sum` all present in **firebase-admin
+  13.8.0**. The test enforces the invariant by tripping a counter if anyone `.get()`s the
+  raw collection-group query (fold tripwire) and asserting `foldGetCalls === 0`.
+
+- **Collection-group equality query needs a fieldOverride COLLECTION_GROUP single-field
+  index — NOT a composite, and NOT covered by the auto single-field index.** Firestore
+  auto-creates single-field indexes at COLLECTION scope only; a `collectionGroup(...)`
+  query with even a single equality filter needs an explicit `fieldOverrides` entry
+  `{collectionGroup, fieldPath, indexes:[{order:"ASCENDING", queryScope:"COLLECTION_GROUP"}]}`.
+  Without it the query (and its aggregate) throws `FAILED_PRECONDITION` in prod (emulator
+  hides this). An aggregate query uses the SAME index as its underlying `where`; the
+  averaged field (`ratingValue`) does not need indexing. This is distinct from the
+  accepted-deviation "equality queries need no composite" — that rule is about COLLECTION
+  scope; collection-GROUP scope still needs the explicit override.
+
+- **count()/average() denominator parity depends on the producer validating the field.**
+  `count()` counts every matched doc; `average(f)` only averages docs where `f` is numeric.
+  If the producer could write an event missing/`null` `ratingValue`, the public average
+  would be over a smaller denominator than count. Safe here because Stage A gates
+  `typeof rating !== "number" || !Number.isFinite || <1 || >5` → `skipped_invalid`, so every
+  event carries a finite [1,5] `ratingValue`. When reviewing any aggregate-average CF,
+  verify the producer guarantees the averaged field or the two numbers silently diverge.
+
+- **Debounce reuse via `DebounceConfig`, distinct marker namespace.** Stage B does NOT fork
+  the claim-by-delete queue — it passes a `DebounceConfig` to the shared
+  `shared/debounce-queue.ts` with `markerCollection: "_internal/pool_debounce/markers"`
+  (rating aggregation uses `_internal/rating_debounce/markers` — no collision) and
+  `logKeyField: "poolKey"`. This is the canonical way to add a second debounced aggregator:
+  a thin adapter pinning namespace/config, never a second copy of the transaction logic.
+
+- **retry:true on the event trigger only retries the cheap scheduling, not the recompute.**
+  `onPooledRatingEventWritten` recovers `poolKey` from `event.params.poolKey` (works on
+  delete — the wildcard doc-ID survives when the after-snapshot is gone) and does nothing
+  but `schedulePoolAggregation` (an idempotent coalescing transaction). The actual
+  recompute+upsert runs in the separate every-1-min drainer. So `retry:true` is safe (it
+  re-runs an idempotent marker write); a drain failure self-heals on the next signal (the
+  pre-existing, accepted debounce tradeoff). No trigger-loop risk: stats writes go to
+  `canonical_recipe_stats` and markers to `_internal/...`, neither matching the trigger path.
+
+- **Empty pool is zeroed (count 0 / average null), not deleted.** On last-event retraction /
+  GDPR erasure the aggregate returns 0/null and that is written — the reader gates on n≥5 so
+  a zeroed doc shows no pill (never a stale number). Leaves a negligible orphan zero-doc;
+  accepted over an extra delete round-trip.
+
+- **Per-minute drainer cadence is by parity with the sibling rating drainer, not a new
+  cost.** `drainPooledRatingAggregations` runs `every 1 minutes` exactly like
+  `drainRatingAggregations`. This nominally contradicts the "schedule hourly not per-minute"
+  guidance, but it's the decided latency trade (0..60s pool freshness), the empty-scan cost
+  is ~1 min-billed read per run (≈$0.016/mo), and the feature flag is OFF in prod so it
+  rarely does real work pre-launch. Accepted.

@@ -372,6 +372,14 @@
         { "fieldPath": "operation", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "canonical_rating_events",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "poolKey", "order": "ASCENDING" },
+        { "fieldPath": "ratingValue", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

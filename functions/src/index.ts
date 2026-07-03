@@ -27,6 +27,12 @@ import {
   POOL_MIRROR_TRIGGER_PATH,
   RatingDoc,
 } from "./ratings/canonical-rating-aggregation";
+import {
+  schedulePoolAggregation,
+  drainPoolAggregationQueue,
+  POOL_EVENT_TRIGGER_PATH,
+} from "./ratings/pool-aggregation";
+import { updatePooledRatingStats } from "./ratings/update-pooled-rating-stats";
 
 setGlobalOptions({ region: "europe-west1" });
 
@@ -385,5 +391,52 @@ export const onRecipeRatingWrittenForPool = onDocumentWritten(
       });
       throw err;
     }
+  }
+);
+
+// ─── Pooled ratings (Butlery-betyget) — Stage B: pool aggregator ──────────────
+//
+// Maintains canonical_recipe_stats/{poolKey} = {count, average, updatedAt} from
+// the frozen events Stage A files. SEPARATE from Stage A: a change to ANY user's
+// event for a pool must recompute THAT pool. The doc-ID wildcard {poolKey} is the
+// pool identity, so we recover it from event.params even on delete (retraction /
+// GDPR erasure), which fires this trigger to shrink the pool back down.
+//
+// NOT feature-flag gated: Stage A only creates events while the flag is on, but a
+// retraction/erasure must always keep the stats consistent — like the always-on
+// delete branch of the Stage A mirror. So this simply reflects whatever events
+// exist; flag-off (pre-launch) means ~no events, so it rarely fires.
+export const onPooledRatingEventWritten = onDocumentWritten(
+  // retry:true — writes are idempotent (recompute-from-source aggregate + upsert
+  // at doc-ID=poolKey), so a re-run on transient failure is safe.
+  { document: POOL_EVENT_TRIGGER_PATH, retry: true },
+  async (event) => {
+    const poolKey = event.params.poolKey as string;
+    if (!poolKey) return;
+    // Only schedule a debounced recompute here (decision 5). The scheduler below
+    // is the single producer of canonical_recipe_stats writes.
+    await schedulePoolAggregation(poolKey);
+  }
+);
+
+/**
+ * Drain pending pool-aggregation markers every minute — the single producer of
+ * canonical_recipe_stats writes. Per-pool latency is 0..60s after the write
+ * burst settles (same trade-off as the rating drainer above). The aggregator is
+ * wired here explicitly; the shared drainer has no default and would throw if it
+ * were omitted (so a wiring mistake fails loudly, never silently no-ops).
+ */
+export const drainPooledRatingAggregations = onSchedule(
+  { schedule: "every 1 minutes", timeoutSeconds: 120 },
+  async () => {
+    const result = await drainPoolAggregationQueue({
+      aggregate: updatePooledRatingStats,
+    });
+    logger.info("pool_aggregation.drain_complete", {
+      event: "pool_aggregation.drain_complete",
+      processed: result.processed,
+      failed: result.failed,
+      durationMs: result.durationMs,
+    });
   }
 );

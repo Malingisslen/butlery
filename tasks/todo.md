@@ -233,6 +233,25 @@ finding history below is kept as a record; every item is addressed in the commit
 
 Recorded: `cloud-functions-specialist.knowledge.md` (2026-07-03 correction), `tasks/lessons.md`.
 
+## Increment 3 — DONE (Stage B committed 2026-07-03)
+Pool aggregator shipped: `update-pooled-rating-stats.ts` runs ONE Firestore
+aggregate query (`collectionGroup(canonical_rating_events).where(poolKey==)
+.aggregate({count, average(ratingValue)})`) → `canonical_recipe_stats/{poolKey}`
+— decision 5's no-read-all invariant holds in the real code (O(1) memory). Debounce
+reuses `shared/debounce-queue.ts` via `pool-aggregation.ts` (POOL_DEBOUNCE, separate
+`_internal/pool_debounce/markers` namespace — no fork). `index.ts` wires the event
+trigger `users/{uid}/canonical_rating_events/{poolKey}` (retry:true) + a 1-min drain
+scheduler passing the real aggregator. cloud-functions-specialist gate: clean. A
+focused adversarial review then caught a **test-hidden ship-blocker**: the
+`average("ratingValue")` aggregate needs a COMPOSITE collection-group index
+`(poolKey, ratingValue)`, not the single-field poolKey index first written — a
+single-field index serves count() but makes average() throw FAILED_PRECONDITION in
+prod (the in-memory test fake models data, not the index layer, so it stayed green).
+Fixed to the composite; added `requiredCompositeIndexDeclared` test that asserts the
+index config matches the aggregate's needs; recorded in `tasks/lessons.md`. Final:
+9/9 Stage B + 18/18 Stage A + 5/5 shared-debounce + 4/4 flag green. Index enablement
+remains an explicit deploy step (decision 14); feature flag OFF in prod throughout.
+
 ## Sequencing & safety
 Build order 1→2→3→4→5 (pipeline + rules + GDPR) with the **feature flag OFF in prod throughout**;
 then 6 (client display) still behind the flag; then 7 (detachment). 8 stays dormant until its
