@@ -102,6 +102,7 @@
     "test:ingredient-section-schema": "ts-node src/__tests__/ingredient-section-schema.test.ts",
     "test:prompt-changelog-guard": "ts-node src/__tests__/prompt-changelog-guard.test.ts",
     "test:log-parse-event-domain": "ts-node src/__tests__/log-parse-event-domain.test.ts",
+    "test:sync-ingredients-diff": "ts-node src/__tests__/sync-ingredients-diff.test.ts",
     "test:rate-limiter-refill": "ts-node src/__tests__/rate-limiter-refill.test.ts",
     "test:validate-limit": "ts-node src/__tests__/validate-limit.test.ts",
     "test:winback-context": "ts-node src/__tests__/winback-context.test.ts",
