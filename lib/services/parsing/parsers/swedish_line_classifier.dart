@@ -352,58 +352,11 @@ class SwedishLineClassifier {
     );
   }
 
-  /// Swedish unit tokens that, appearing as a whole word, mark a line as a
-  /// real ingredient rather than a component heading.
-  static final _subHeadingUnitGuard = RegExp(
-    r'\b(dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
-    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe)\b',
-    caseSensitive: false,
-  );
-
-  /// Returns the component-group label for a line that is a sub-heading
-  /// ("Deg:", "Fyllning:", "Till servering:"), or null when the line is a
-  /// generic block marker OR looks even slightly like an ingredient.
-  ///
-  /// Conservative by design (the whole feature's safety hinge): a false
-  /// positive would strip an allergen-bearing line from the flat ingredient
-  /// list that tagging reads. Every uncertain line returns null → stays an
-  /// ingredient. A heading must clear ALL of: no digit, no unit token,
-  /// length ≤ 40, and be either colon-terminated or in the known
-  /// component vocabulary.
-  static String? _componentSubHeading(String text) {
-    final clean = text.trim();
-    if (clean.isEmpty) return null;
-    final lower = clean.toLowerCase();
-
-    // Generic block markers ("Ingredienser:", "Gör så här:") are not groups.
-    for (final p in _ingredientHeaders) {
-      if (p.hasMatch(lower)) return null;
-    }
-    for (final p in _instructionHeaders) {
-      if (p.hasMatch(lower)) return null;
-    }
-
-    final hasColon = clean.endsWith(':');
-    final label = hasColon
-        ? clean.substring(0, clean.length - 1).trim()
-        : clean;
-    if (label.isEmpty || label.length > 40) return null;
-
-    // Any digit or unit token ⇒ treat as an ingredient, never a heading.
-    if (RegExp(r'\d').hasMatch(label)) return null;
-    if (_subHeadingUnitGuard.hasMatch(label)) return null;
-
-    // Require a STRONG heading signal. The trailing colon is the primary one.
-    // For colon-less lines, only the CURATED component vocabulary counts —
-    // deliberately NOT RecipeSectionDetector.isSectionHeader, which treats any
-    // short single word ("salt", "socker") as a possible header and would eat
-    // real ingredients. A bare word outside the curated set stays an
-    // ingredient.
-    final inVocabulary = RecipeSectionDetector.sectionHeaders.contains(lower);
-    if (!hasColon && !inVocabulary) return null;
-
-    return label;
-  }
+  /// Component sub-heading detection is the one audited heuristic in
+  /// [RecipeSectionDetector.componentSubHeadingLabel] — shared with the
+  /// schema.org import tier so the allergen-safety rule lives in one place.
+  static String? _componentSubHeading(String text) =>
+      RecipeSectionDetector.componentSubHeadingLabel(text);
 
   bool _isSectionHeader(String text) {
     for (final pattern in _ingredientHeaders) {
