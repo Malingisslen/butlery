@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
@@ -17,6 +18,9 @@ class CookingModeViewModel extends ChangeNotifier {
 
   late int _currentPortions;
   late List<String> _scaledIngredients;
+  // Cached section-grouped rows, rebuilt only when the scaled lines change
+  // (ctor + updatePortions) so build() stays allocation-free per frame.
+  late List<IngredientDisplayRow> _ingredientRows;
   int _currentStepIndex = 0;
 
   // BUT-802 HIGH-PA4: per-session analytics state. `_sessionId` is generated
@@ -36,7 +40,15 @@ class CookingModeViewModel extends ChangeNotifier {
   CookingModeViewModel({required this.recipe}) {
     _currentPortions = recipe.portions ?? 1;
     _scaledIngredients = List.from(recipe.ingredients);
+    _rebuildIngredientRows();
     _loadFontScale();
+  }
+
+  void _rebuildIngredientRows() {
+    _ingredientRows = IngredientDisplayRow.build(
+      recipe.structuredIngredients,
+      _scaledIngredients,
+    );
   }
 
   Future<void> _loadFontScale() async {
@@ -65,6 +77,11 @@ class CookingModeViewModel extends ChangeNotifier {
   double get scaleFactor =>
       originalPortions > 0 ? _currentPortions / originalPortions : 1.0;
   List<String> get scaledIngredients => _scaledIngredients;
+
+  /// Section-grouped rows for rendering (headings + lines). Flat (all lines,
+  /// no headings) for recipes without sections.
+  List<IngredientDisplayRow> get ingredientRows => _ingredientRows;
+
   List<String> get instructions => recipe.instructions;
   String get title => recipe.title;
 
@@ -153,6 +170,7 @@ class CookingModeViewModel extends ChangeNotifier {
       _currentPortions,
       false,
     );
+    _rebuildIngredientRows();
     notifyListeners();
   }
 
