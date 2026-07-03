@@ -498,6 +498,12 @@ class RealtimeRecipe extends RealtimeResource {
         title: AppLocale.current.realtimeRecipeCopyTitle(recipe.title),
         description: recipe.description,
         ingredients: [...recipe.ingredients],
+        // Preserve structured data (amount/unit/section per line); the copied
+        // `ingredients` are byte-identical so the list stays alignment-valid
+        // and headings survive (plan invariant: sections persist on copy).
+        structuredIngredients: recipe.core.structuredIngredients != null
+            ? [...recipe.core.structuredIngredients!]
+            : null,
         instructions: [...recipe.instructions],
         mealType: recipe.mealType,
         portions: recipe.portions,

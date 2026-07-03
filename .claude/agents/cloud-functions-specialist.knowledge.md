@@ -2682,3 +2682,44 @@ Test to pin it: a fixture doc WITHOUT the new key must assert
 survives AND the new field equals the compiled-in const. See
 `ocr-handwritten-prompt.test.ts` case [6]. (The field-present fixtures in
 `prompts-config.test.ts` / `prompt-ab-bucket` are now harmless either way.)
+
+### 2026-07-02 — ingredient `section` field (PR #211, prompt v3.0.0) review [Pattern discovered]
+
+Reviewed the chunk-3 CF diff adding nullable `section` to `INGREDIENT_SCHEMA` +
+`ExtractedIngredient`, reworking the extraction prompt's group rule/EXEMPEL 4,
+and capping `section` at 60 chars in `validateIngredient`. Clean except one
+deploy-coordination finding. Patterns worth remembering:
+
+- **Compiled-in prompt edits are INERT in prod while a valid `system/prompts`
+  override doc is live (BUT-621).** `structure-recipe.ts` serves
+  `prompts.recipeExtractionSystemPrompt` from Firestore when the doc validates;
+  the new compiled-in v3.0.0 rule ("sätt section=...") never reaches the model
+  until the operator updates the doc. Worse than inert here: the stale doc
+  actively teaches the OLD flatten (`preparation="deg"`), so post-deploy the
+  schema offers `section` but the prompt forbids using it — feature silently
+  dead, `preparation` stays polluted, analytics reports the doc's
+  `promptVersion` (not 3.0.0). **Any prompt-content change must ship with a
+  matching prod `system/prompts` doc update (or verified doc absence) as an
+  explicit deploy step.** Sibling of the BUT-684 required-key footgun but
+  inverted: there the doc broke on deploy; here the doc silently wins.
+
+- **Schema `description` is the only prompt surface shared by ALL callers of a
+  schema.** `INGREDIENT_SCHEMA` feeds RECIPE_SCHEMA (extract + OCR printed +
+  handwritten + spoken) AND INGREDIENT_LINES_SCHEMA. Putting the behavioural
+  guidance ("never repeat group name in preparation / never emit heading as
+  ingredient") in the field's `description` gives the OCR/spoken paths the
+  rule without touching their prompts — and, unlike the prompts, the schema is
+  compiled-in (NOT Firestore-overridable), so it deploys atomically.
+
+- **responseSchema cannot enforce string length** — server-side
+  `trim().slice(0, maxLen)` in the validator is the enforcement point for any
+  bounded STRING field. Blank/whitespace → null BEFORE the cap so no phantom
+  empty groups.
+
+- **Widening `ExtractedIngredient` with a required TS field**: `tsc --noEmit`
+  is the audit tool for literal construction sites (here: one, in
+  `ocr-retry.test.ts`); `validateIngredient` is the single runtime constructor,
+  so missing/non-string keys from old cached responses or pre-3.0.0 replays
+  coerce to null — backward compatible by construction. Contract pinned in
+  `__tests__/ingredient-section-schema.test.ts` (5 cases incl. a prompt-content
+  guard asserting the old flatten wording is GONE).

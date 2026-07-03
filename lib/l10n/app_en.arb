@@ -3506,6 +3506,17 @@
   "recipeImportLink": "Import link",
   "recipeIngredient": "Ingredient",
   "recipeInstruction": "Instruction",
+  "recipeAddIngredientHeading": "Add heading",
+  "recipeIngredientHeadingHint": "Heading, e.g. Dough",
+  "a11yRemoveIngredientHeading": "Remove heading",
+  "recipeMoveToSection": "Move to heading",
+  "recipeMoveToSectionNone": "No heading",
+  "a11yIngredientHeadingField": "Heading {label}",
+  "@a11yIngredientHeadingField": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "recipeLeaveWithoutSaving": "Leave without saving",
   "recipeManageAllTags": "Manage all tags",
   "recipeRating": "Rating (0–5)",

@@ -5,7 +5,9 @@ import 'package:html/dom.dart' as dom;
 
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -642,7 +644,21 @@ class LlmTier extends ParsingTier with QualityScoring {
       );
     }
 
-    final deduped = _deduplicateIngredients(filtered);
+    // Kill switch: with capture off, strip sections BEFORE dedup so
+    // same-name rows merge exactly as pre-feature (acceptance criterion 19).
+    final sectionSource = isSectionCaptureEnabled
+        ? filtered
+        : [
+            for (final ing in filtered)
+              ExtractedIngredient(
+                amount: ing.amount,
+                unit: ing.unit,
+                name: ing.name,
+                preparation: ing.preparation,
+              ),
+          ];
+
+    final deduped = _deduplicateIngredients(sectionSource);
     final parsed = <ParsedIngredient>[];
 
     for (final ing in deduped) {
@@ -652,16 +668,24 @@ class LlmTier extends ParsingTier with QualityScoring {
     return FieldResult.mediumConfidence(parsed, 'LLM extraction');
   }
 
-  /// Deduplicate ingredients by normalized name.
-  /// Same name + same unit → sum amounts.
-  /// Same name + different units → keep first occurrence.
+  /// Deduplicate ingredients by normalized name + section.
+  /// Same name + same section + same unit → sum amounts.
+  /// Same name + same section + different units → keep first occurrence.
+  /// Same name in DIFFERENT sections → never merged: "1 dl socker" in Deg
+  /// and Fyllning are distinct rows (the sectioned-recipe contract).
   List<ExtractedIngredient> _deduplicateIngredients(
     List<ExtractedIngredient> ingredients,
   ) {
     final seen = <String, ExtractedIngredient>{};
 
     for (final ing in ingredients) {
-      final key = ing.name.toLowerCase().trim();
+      // Normalize the section half of the key so a blank/whitespace section
+      // (server normally strips these, but belt-and-braces) collides with
+      // null instead of forming its own group.
+      final sectionKey = (RecipeIngredient.normalizeSection(
+        ing.section,
+      )?.toLowerCase()).orEmpty();
+      final key = '${ing.name.toLowerCase().trim()}|$sectionKey';
       final existing = seen[key];
 
       if (existing == null) {
@@ -675,6 +699,7 @@ class LlmTier extends ParsingTier with QualityScoring {
           unit: existing.unit,
           name: existing.name,
           preparation: existing.preparation ?? ing.preparation,
+          section: existing.section,
         );
       }
       // Different units — keep first occurrence (skip duplicate)

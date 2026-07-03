@@ -119,6 +119,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
+    bool hasSections = false,
   }) async {
     // No-op: Analytics not supported
   }

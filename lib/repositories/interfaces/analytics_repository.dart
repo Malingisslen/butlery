@@ -99,6 +99,7 @@ abstract class AnalyticsRepository {
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
+    bool hasSections = false,
   });
 
   /// Log recipe sharing

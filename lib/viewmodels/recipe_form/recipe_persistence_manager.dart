@@ -212,7 +212,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             );
             if (result.isSuccess) {
               savedRecipe = recipe;
-              _logRecipeCreated(validImageUrls);
+              _logRecipeCreated(validImageUrls, recipe);
             } else {
               throw Exception(result.message ?? 'Failed to create recipe');
             }
@@ -390,11 +390,17 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     return result;
   }
 
-  void _logRecipeCreated(List<String> imageUrls) {
+  void _logRecipeCreated(List<String> imageUrls, Recipe recipe) {
     final source = _state.originalParsedRecipe != null ? 'import' : 'manual';
+    final hasSections =
+        recipe.core.structuredIngredients?.any(
+          (e) => e.section != null,
+        ) ??
+        false;
     _analyticsService?.recipe.logRecipeCreated(
       source: source,
       hasImage: imageUrls.isNotEmpty,
+      hasSections: hasSections,
     );
 
     // P8-15: Keep user properties in sync after recipe creation

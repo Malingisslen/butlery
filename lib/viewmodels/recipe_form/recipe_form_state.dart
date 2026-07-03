@@ -18,6 +18,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
+import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -25,6 +26,17 @@ class RecipeFormState extends ChangeNotifier {
   late final FormFieldsManager _ingredientsManager;
   late final FormFieldsManager _instructionsManager;
   late final FormFieldsManager _tagsManager;
+
+  // Ingredient section headings (PR #211). Sidecar to the line manager: it
+  // tracks heading positions/labels; the line VALUES stay in
+  // _ingredientsManager. Kept in lockstep with every line add/remove/reorder.
+  final IngredientSectionState _ingredientSectionState =
+      IngredientSectionState();
+
+  // Structured ingredients captured at load, used to seed sections AND as the
+  // deriver reuse source. Captured even for isTemplate loads (which null out
+  // _originalRecipe) so LLM-captured sections survive the first save.
+  List<RecipeIngredient>? _seedStructured;
 
   // Auto-save manager for draft persistence
   late final RecipeFormAutoSaveManager _autoSaveManager;
@@ -69,8 +81,17 @@ class RecipeFormState extends ChangeNotifier {
     _autoSaveManager.initialize(isTemplate: isTemplate);
     if (initialRecipe != null) {
       _loadRecipeData(initialRecipe, isTemplate);
+    } else {
+      // New recipe: one empty line slot, no headings.
+      _ingredientSectionState.seedFromStructured(
+        const [],
+        _ingredientsManager.values.length,
+      );
     }
   }
+
+  /// Sidecar tracking ingredient component headings for the sectioned editor.
+  IngredientSectionState get ingredientSectionState => _ingredientSectionState;
 
   void _initializeFormFields() {
     // BUT-517 validators built once so the ContentFilterService lookup
@@ -175,6 +196,16 @@ class RecipeFormState extends ChangeNotifier {
     _ingredientsManager.updateItems(ingredients);
     _instructionsManager.updateItems(instructions);
     _tagsManager.updateItems(tags);
+
+    // Capture structured ingredients for BOTH section seeding and deriver
+    // reuse — even on template loads, where _originalRecipe is nulled out.
+    // Without this, an imported recipe opened as a template would drop its
+    // LLM-captured sections on first save (the discovered gap).
+    _seedStructured = recipe.core.structuredIngredients;
+    _ingredientSectionState.seedFromStructured(
+      _seedStructured ?? const [],
+      _ingredientsManager.values.length,
+    );
   }
 
   // Core getters
@@ -736,12 +767,19 @@ class RecipeFormState extends ChangeNotifier {
     // manual entry and post-import edits persist aligned data instead of
     // none/stale. Unchanged lines reuse the original entry (raw match) so
     // richer import-time parses (CRF/LLM) aren't downgraded to regex output.
+    // PR #211: sections (from the sidecar) are authoritative and applied in
+    // lockstep with the non-empty values; reuse falls back to _seedStructured
+    // so template/import loads keep their sections on first save.
     final List<RecipeIngredient>? structuredIngredients =
         cleanIngredients.isEmpty
         ? null
         : StructuredIngredientDeriver.deriveAll(
             cleanIngredients,
-            reuse: _originalRecipe?.core.structuredIngredients,
+            reuse:
+                _originalRecipe?.core.structuredIngredients ?? _seedStructured,
+            sections: _ingredientSectionState.sectionsForValues(
+              _ingredientsManager.values,
+            ),
           );
 
     return Recipe(
@@ -791,12 +829,54 @@ class RecipeFormState extends ChangeNotifier {
     _instructionsManager.updateItems(['']);
     _tagsManager.updateItems(['']);
 
+    _seedStructured = null;
+    _ingredientSectionState.seedFromStructured(const [], 1);
+
     notifyListeners();
   }
+
+  // --- Ingredient section coordination -------------------------------------
+  // Every ingredient LINE mutation must keep the section sidecar's row list in
+  // lockstep with the line manager's values, or sectionsForValues would
+  // mis-align at save. These are the single choke points the form/UI use.
+
+  /// Appends an empty ingredient line (auto-add on typing in the last field).
+  void addIngredientLine() {
+    _ingredientsManager.add('');
+    _ingredientSectionState.onLineAppended();
+  }
+
+  /// Removes the ingredient line at flat [index], keeping the sidecar aligned.
+  void removeIngredientLine(int index) {
+    _ingredientSectionState.onLineRemoved(index);
+    _ingredientsManager.removeAt(index);
+  }
+
+  /// Row-level reorder from the sectioned editor. Moves the row in the sidecar
+  /// and, when a LINE moved, applies the equivalent flat move to the manager.
+  void moveIngredientRow(int fromRow, int toRow) {
+    final move = _ingredientSectionState.moveRow(fromRow, toRow);
+    if (move != null) _ingredientsManager.moveAt(move.from, move.to);
+  }
+
+  /// Non-drag reassignment (WCAG): moves the line at [fromRow] under heading
+  /// [headingId] (null = ungroup), keeping the manager aligned.
+  void moveIngredientLineToSection(int fromRow, String? headingId) {
+    final move = _ingredientSectionState.moveLineToSection(fromRow, headingId);
+    if (move != null) _ingredientsManager.moveAt(move.from, move.to);
+  }
+
+  /// Appends a component heading. Returns its id, or null past the 20-cap.
+  String? addIngredientHeading() => _ingredientSectionState.addHeading();
+
+  /// Removes heading [id]; its lines fall under the previous heading.
+  void removeIngredientHeading(String id) =>
+      _ingredientSectionState.removeHeading(id);
 
   @override
   void dispose() {
     _autoSaveManager.dispose();
+    _ingredientSectionState.dispose();
     super.dispose();
   }
 }

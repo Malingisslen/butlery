@@ -27,6 +27,7 @@ import 'package:butlery/views/recipe_detail/recipe_save_navigation.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
+import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -596,15 +597,27 @@ class _SkrivSjalvReceptViewContentState
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
 
-                          // Ingredienser
-                          _buildDynamicList(
+                          // Ingredienser — sectioned editor (PR #211)
+                          SectionedIngredientListBuilder(
                             label: context.l10n.recipeIngredient,
-                            controllers: viewModel.ingredientControllers,
-                            onUpdate: viewModel.updateIngredient,
-                            onAdd: viewModel.addIngredient,
-                            onRemove: viewModel.removeIngredient,
-                            onReorder: viewModel.reorderIngredient,
-                            viewModel: viewModel,
+                            rows: viewModel.state.ingredientSectionState.rows,
+                            lineControllers: viewModel.ingredientControllers,
+                            headingControllerFor: viewModel
+                                .state
+                                .ingredientSectionState
+                                .headingController,
+                            onLineChanged: viewModel.updateIngredient,
+                            onAddLine: viewModel.addIngredient,
+                            onRemoveLine: viewModel.removeIngredient,
+                            onReorder: viewModel.moveIngredientRow,
+                            onAddHeading: viewModel.addIngredientHeading,
+                            onRemoveHeading: viewModel.removeIngredientHeading,
+                            onMoveLineToSection:
+                                viewModel.moveIngredientLineToSection,
+                            canAddHeading: viewModel
+                                .state
+                                .ingredientSectionState
+                                .canAddHeading,
                           ),
 
                           // BUT-925: per-ingredient confidence review, shown

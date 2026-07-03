@@ -342,12 +342,16 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   Future<void> logRecipeCreated({
     required String source,
     bool hasImage = false,
+    bool hasSections = false,
   }) async {
     await logEvent(
       name: AnalyticsEvents.recipeCreated,
       parameters: {
         'source': source,
         'has_image': hasImage,
+        // PR #211: does the saved recipe use ingredient headings? A boolean
+        // only — no counts or labels leave the device.
+        'has_sections': hasSections,
       },
     );
   }

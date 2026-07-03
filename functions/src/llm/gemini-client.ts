@@ -25,7 +25,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "2.2.0";
+export const PROMPT_VERSION = "3.0.0";
 
 /**
  * Vertex AI region — EU data residency (BUT-607, BUT-1187).
@@ -156,6 +156,15 @@ const INGREDIENT_SCHEMA: Schema = {
       description: "Preparation method (hackad, riven, etc.) or null",
       nullable: true,
     },
+    section: {
+      type: SchemaType.STRING,
+      description:
+        "Ingredient group heading exactly as the source groups it " +
+        "(Deg, Fyllning, Glasyr, ...) or null when ungrouped. Never repeat " +
+        "the group name in preparation, and never emit the heading as an " +
+        "ingredient of its own",
+      nullable: true,
+    },
   },
   required: ["name"],
 };
@@ -265,7 +274,7 @@ NOTERA — Svåra fall:
 - Valbara ingredienser ("ev. lite socker"): markera med preparation "valfritt"
 - Bestämd form ("löken", "smöret"): normalisera till obestämd form ("lök", "smör")
 - Ingredienser utan mängd ("salt och peppar"): amount=null, unit=null
-- Ingrediensgrupper ("Deg:", "Fyllning:"): behåll som separata ingredienser med preparation="deg" etc.
+- Ingrediensgrupper ("Deg:", "Fyllning:"): sätt section="Deg" på varje ingrediens i gruppen. Rubriken är ALDRIG en egen ingrediens, och gruppnamnet upprepas INTE i preparation
 - Textmängder ("en näve basilika", "två klyftor vitlök"): "en"/"ett" = amount 1, "två" = 2, etc.
 - "efter smak/behov" ("peppar efter smak"): amount=null, unit=null, preparation="efter smak"
 - Sociala medier-format (•, 🍳, emojis, versaler): ignorera formatering, extrahera normalt
@@ -294,7 +303,7 @@ EXEMPEL 4 — Input (grupperade ingredienser):
 "Kanelbullar. Deg: 5 dl vetemjöl, 25 g jäst, 2 dl mjölk, 75 g smör (smält), 1 dl socker. Fyllning: 75 g rumsvarmt smör, 2 msk kanel, 0.5 dl strösocker."
 
 EXEMPEL 4 — Output:
-{"title":"Kanelbullar","description":"Klassiska svenska kanelbullar","portions":16,"prepTimeMinutes":30,"cookTimeMinutes":12,"ingredients":[{"amount":5,"unit":"dl","name":"vetemjöl","preparation":"deg"},{"amount":25,"unit":"g","name":"jäst","preparation":"deg"},{"amount":2,"unit":"dl","name":"mjölk","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"smält, deg"},{"amount":1,"unit":"dl","name":"socker","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"rumsvarmt, fyllning"},{"amount":2,"unit":"msk","name":"kanel","preparation":"fyllning"},{"amount":0.5,"unit":"dl","name":"strösocker","preparation":"fyllning"}],"instructions":["Smula jästen i en bunke, värm mjölken och lös upp jästen.","Tillsätt smör, socker och mjöl. Knåda degen.","Låt jäsa 30 minuter under handduk.","Kavla ut degen, bred på smör och strö över kanel och socker.","Rulla ihop och skär i bitar. Jäs ytterligare 20 minuter.","Grädda i 225°C i ca 10-12 minuter."],"tags":["fika","bakning"],"difficulty":"medium","source":null}
+{"title":"Kanelbullar","description":"Klassiska svenska kanelbullar","portions":16,"prepTimeMinutes":30,"cookTimeMinutes":12,"ingredients":[{"amount":5,"unit":"dl","name":"vetemjöl","preparation":null,"section":"Deg"},{"amount":25,"unit":"g","name":"jäst","preparation":null,"section":"Deg"},{"amount":2,"unit":"dl","name":"mjölk","preparation":null,"section":"Deg"},{"amount":75,"unit":"g","name":"smör","preparation":"smält","section":"Deg"},{"amount":1,"unit":"dl","name":"socker","preparation":null,"section":"Deg"},{"amount":75,"unit":"g","name":"smör","preparation":"rumsvarmt","section":"Fyllning"},{"amount":2,"unit":"msk","name":"kanel","preparation":null,"section":"Fyllning"},{"amount":0.5,"unit":"dl","name":"strösocker","preparation":null,"section":"Fyllning"}],"instructions":["Smula jästen i en bunke, värm mjölken och lös upp jästen.","Tillsätt smör, socker och mjöl. Knåda degen.","Låt jäsa 30 minuter under handduk.","Kavla ut degen, bred på smör och strö över kanel och socker.","Rulla ihop och skär i bitar. Jäs ytterligare 20 minuter.","Grädda i 225°C i ca 10-12 minuter."],"tags":["fika","bakning"],"difficulty":"medium","source":null}
 
 EXEMPEL 5 — Input (sociala medier / informellt format):
 "🍝 PASTA CARBONARA 🍝
@@ -474,6 +483,11 @@ function validateIngredient(ing: unknown): ExtractedIngredient | null {
     unit: typeof obj.unit === "string" && (obj.unit as string).trim() ? (obj.unit as string).trim() : null,
     name,
     preparation: typeof obj.preparation === "string" && (obj.preparation as string).trim() ? (obj.preparation as string).trim() : null,
+    // 60-char cap enforced HERE because Gemini's responseSchema cannot
+    // enforce string length (acceptance criterion 9). Array.from slices by
+    // code point, not UTF-16 unit, so an emoji at the boundary is never cut
+    // into a lone surrogate (which would break the Firestore UTF-8 write).
+    section: typeof obj.section === "string" && (obj.section as string).trim() ? Array.from((obj.section as string).trim()).slice(0, 60).join("") : null,
   };
 }
 
@@ -677,6 +691,8 @@ export interface ExtractedIngredient {
   unit: string | null;
   name: string;
   preparation: string | null;
+  /** Ingredient group heading (Deg, Fyllning, ...) or null when ungrouped. */
+  section: string | null;
 }
 
 export interface ExtractedRecipe {

@@ -5347,6 +5347,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeInstruction => 'Instruction';
 
   @override
+  String get recipeAddIngredientHeading => 'Add heading';
+
+  @override
+  String get recipeIngredientHeadingHint => 'Heading, e.g. Dough';
+
+  @override
+  String get a11yRemoveIngredientHeading => 'Remove heading';
+
+  @override
+  String get recipeMoveToSection => 'Move to heading';
+
+  @override
+  String get recipeMoveToSectionNone => 'No heading';
+
+  @override
+  String a11yIngredientHeadingField(String label) {
+    return 'Heading $label';
+  }
+
+  @override
   String get recipeLeaveWithoutSaving => 'Leave without saving';
 
   @override

@@ -1,5 +1,6 @@
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 
 /// Converts an [ExtractedIngredient] (LLM DTO) to the canonical
@@ -25,5 +26,8 @@ ParsedIngredient parsedIngredientFromExtracted(
     unit: extracted.unit,
     preparation: extracted.preparation,
     confidence: confidence,
+    // ParsedIngredient itself never normalizes, so blanks must die at this
+    // bridge — an LLM whitespace section must not become a phantom group.
+    section: RecipeIngredient.normalizeSection(extracted.section),
   );
 }

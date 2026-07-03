@@ -52,6 +52,33 @@ void main() {
       expect(items.single.sourceCount, 2);
     });
 
+    test('sections are IGNORED — same ingredient in Deg + Fyllning merges '
+        'into one shopping line (PR #211)', () {
+      // A kanelbulle has smör in both Deg and Fyllning; the shopper buys one
+      // amount of butter. The aggregator keys on name|unit, never section.
+      final items = MenuShoppingAggregator.aggregate([
+        _recipe('kanelbullar', const [
+          RecipeIngredient(
+            amount: 75,
+            unit: 'g',
+            name: 'smör',
+            raw: '75 g smör',
+            section: 'Deg',
+          ),
+          RecipeIngredient(
+            amount: 50,
+            unit: 'g',
+            name: 'smör',
+            raw: '50 g smör',
+            section: 'Fyllning',
+          ),
+        ]),
+      ]);
+      expect(items, hasLength(1), reason: 'sections must not split the line');
+      expect(items.single.amount, 125);
+      expect(items.single.unit, 'g');
+    });
+
     test('Swedish-character variants merge ("Mjöl" + "mjol")', () {
       final items = MenuShoppingAggregator.aggregate([
         _recipe('r1', const [

@@ -29,12 +29,19 @@ class RecipeIngredient {
   /// net that lets every consumer render something meaningful.
   final String raw;
 
+  /// Recipe component group this line belongs to (e.g. "Deg", "Fyllning").
+  /// Lives HERE, never as a line of its own: the flat `Recipe.ingredients`
+  /// list feeds allergen tagging and must never contain heading text.
+  /// Null for ungrouped lines (the default for every legacy recipe).
+  final String? section;
+
   const RecipeIngredient({
     this.amount,
     this.unit,
     required this.name,
     this.note,
     required this.raw,
+    this.section,
   });
 
   /// A line we have no structured data for — name falls back to the line
@@ -57,7 +64,27 @@ class RecipeIngredient {
       name: parsed.name,
       note: noteParts.isEmpty ? null : noteParts.join(', '),
       raw: parsed.originalLine,
+      section: normalizeSection(parsed.section),
     );
+  }
+
+  /// Copy with [section] explicitly set (null clears it). A dedicated method
+  /// instead of a `copyWith` parameter so "clear the section" and "keep the
+  /// section" stay distinguishable. Blank/whitespace labels normalize to null.
+  RecipeIngredient copyWithSection(String? section) => RecipeIngredient(
+    amount: amount,
+    unit: unit,
+    name: name,
+    note: note,
+    raw: raw,
+    section: normalizeSection(section),
+  );
+
+  /// Blank or whitespace-only section labels mean "no section" everywhere —
+  /// a heading with no text must not create a phantom group.
+  static String? normalizeSection(String? section) {
+    final trimmed = section?.trim();
+    return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
   }
 
   /// Swedish sources write decimals with a comma ("1,5 dl").
@@ -76,6 +103,7 @@ class RecipeIngredient {
     'name': name,
     if (note != null) 'note': note,
     'raw': raw,
+    if (section != null) 'section': section,
   };
 
   factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
@@ -86,6 +114,9 @@ class RecipeIngredient {
       name: SerializationUtils.safeString(json, 'name', defaultValue: raw),
       note: SerializationUtils.safeNullableString(json, 'note'),
       raw: raw,
+      section: normalizeSection(
+        SerializationUtils.safeNullableString(json, 'section'),
+      ),
     );
   }
 
@@ -113,10 +144,11 @@ class RecipeIngredient {
           unit == other.unit &&
           name == other.name &&
           note == other.note &&
-          raw == other.raw;
+          raw == other.raw &&
+          section == other.section;
 
   @override
-  int get hashCode => Object.hash(amount, unit, name, note, raw);
+  int get hashCode => Object.hash(amount, unit, name, note, raw, section);
 
   @override
   String toString() => 'RecipeIngredient($raw)';

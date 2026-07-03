@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -986,6 +987,56 @@ void main() {
         expect(personalCopy.core.tagResult, isNull);
         expect(personalCopy.core.tagOverrides, isNull);
         expect(personalCopy.core.ingredientsNormalized, isNull);
+      });
+
+      test('should preserve structured ingredients incl. sections on copy', () {
+        // Plan invariant: sections persist through duplication/sharing.
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'sectioned',
+            title: 'Kanelbullar',
+            description: 'Med sektioner',
+            ingredients: const ['5 dl vetemjöl', '75 g smör'],
+            structuredIngredients: const [
+              RecipeIngredient(
+                amount: 5,
+                unit: 'dl',
+                name: 'vetemjöl',
+                raw: '5 dl vetemjöl',
+                section: 'Deg',
+              ),
+              RecipeIngredient(
+                amount: 75,
+                unit: 'g',
+                name: 'smör',
+                raw: '75 g smör',
+                section: 'Fyllning',
+              ),
+            ],
+            instructions: const ['Baka'],
+            mealType: 'Fika',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna',
+        );
+
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        expect(
+          personalCopy.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+        );
       });
     });
 
