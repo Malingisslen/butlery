@@ -111,9 +111,10 @@ class IngredientSectionState {
   void onLineRemoved(int lineIndex) {
     final rowIndex = _rowIndexForLine(lineIndex);
     if (rowIndex != null) _rows.removeAt(rowIndex);
-    // Mirror seedFromStructured's "always at least one line slot" contract so
-    // the sidecar can't fall out of sync with the line manager (which re-adds
-    // an empty value when emptied) even if a caller removes the last line.
+    // Keep at least one line slot, mirroring seedFromStructured. The UI already
+    // blocks removing the last line (the delete button is hidden at length <= 1)
+    // and the FormFieldsManager does NOT self-heal an empty list — so this is
+    // the sole guard that keeps the sidecar non-empty for any non-UI caller.
     if (_rows.whereType<LineRow>().isEmpty) _rows.add(const LineRow());
   }
 
