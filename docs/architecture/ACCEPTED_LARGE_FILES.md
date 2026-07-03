@@ -95,7 +95,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 810 | User profile + settings service |
 | `messaging_service.dart` | 903 | Chat/messaging service |
-| `text_import_strategy.dart` | 699 | Text-based recipe import strategy |
+| `text_import_strategy.dart` | 795 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
 | `collaboration_management_module.dart` | 626 | Realtime collaboration session management |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |

@@ -330,6 +330,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           break;
         }
         if (RecipeSectionDetector.looksLikeIngredient(line)) break;
+        // A sub-group heading ("Deg:") is never the recipe title — skip it so
+        // it flows to STAGE 3 and is captured as a section. Needed because
+        // isSectionHeader ignores it (the trailing colon breaks its word
+        // regex), so without this skip a headerless caption whose real title
+        // was rejected above would accept "Deg:" as the title at the guard below.
+        if (_ingredientSubHeading(line) != null) continue;
 
         if (line.length > 2 &&
             line.length < 100 &&
@@ -345,6 +351,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     bool inIngredients = false;
     bool inInstructions = false;
     final seenIngredientSections = <String>{};
+
+    // Current ingredient sub-group heading ("Deg", "Fyllning") and the section
+    // each captured ingredient sits under, joined back by ingredient string in
+    // STAGE 4. Heading text lives ONLY here / on the structured entry, never in
+    // the flat `ingredients` list that allergen tagging reads (safety invariant).
+    String? currentSection;
+    final sectionByKey = <String, String>{};
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
@@ -362,6 +375,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (RecipeSectionDetector.isIngredientHeader(lowerLine)) {
         inIngredients = true;
         inInstructions = false;
+        // A fresh ingredient block ("Ingredienser:") clears any sub-group
+        // carried over from an earlier block.
+        currentSection = null;
         continue;
       }
 
@@ -369,6 +385,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         inIngredients = false;
         inInstructions = true;
         continue;
+      }
+
+      // Capture an ingredient sub-group heading ("Deg:", "Fyllning:") so
+      // pasted-caption imports keep the same grouping the LLM/OCR tiers
+      // produce. Gated on !inInstructions (not inIngredients) because captions
+      // routinely omit the top-level "Ingredienser:" marker and jump straight
+      // to "Deg:". Stored only in currentSection (stamped onto the structured
+      // entries below) — the heading line is dropped here via `continue`, so it
+      // never reaches the flat `ingredients` list that allergen tagging reads.
+      if (!inInstructions) {
+        final subHeading = _ingredientSubHeading(line);
+        if (subHeading != null) {
+          currentSection = subHeading;
+          continue;
+        }
       }
 
       if (RecipeSectionDetector.isGarbage(line)) continue;
@@ -403,12 +434,24 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final score = RecipeSectionDetector.instructionScore(line);
 
       if (inIngredients) {
-        if (RecipeSectionDetector.isValidIngredient(line) &&
-            !capturedAsIngredient.contains(lowerLine)) {
+        if (RecipeSectionDetector.isValidIngredient(line)) {
           final ingredient = _parseIngredientLine(line);
           if (ingredient != null) {
-            ingredients.add(ingredient);
-            capturedAsIngredient.add(ingredient.toLowerCase());
+            if (!capturedAsIngredient.contains(lowerLine)) {
+              ingredients.add(ingredient);
+              capturedAsIngredient.add(ingredient.toLowerCase());
+            }
+            // Record the current sub-group for this line's STRUCTURED entry.
+            // Lines already captured measurement-first in STAGE 1 still get
+            // their section here; the flat list is left untouched. Two
+            // identical lines under different headings take the first
+            // (putIfAbsent) — cosmetic only, sections never touch tagging.
+            if (currentSection != null) {
+              sectionByKey.putIfAbsent(
+                ingredient.toLowerCase(),
+                () => currentSection!,
+              );
+            }
           }
         }
         continue;
@@ -428,12 +471,20 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           instructions.add(instruction);
         }
       } else if (RecipeSectionDetector.looksLikeIngredient(line)) {
-        if (!capturedAsIngredient.contains(lowerLine)) {
-          final ingredient = _parseIngredientLine(line);
-          if (ingredient != null &&
-              RecipeSectionDetector.isValidIngredient(ingredient)) {
+        final ingredient = _parseIngredientLine(line);
+        if (ingredient != null &&
+            RecipeSectionDetector.isValidIngredient(ingredient)) {
+          if (!capturedAsIngredient.contains(lowerLine)) {
             ingredients.add(ingredient);
             capturedAsIngredient.add(ingredient.toLowerCase());
+          }
+          // Stamp the current sub-group even for lines already captured
+          // measurement-first in STAGE 1 (the common headerless-caption path).
+          if (currentSection != null) {
+            sectionByKey.putIfAbsent(
+              ingredient.toLowerCase(),
+              () => currentSection!,
+            );
           }
         }
       } else if (description.isEmpty && line.length > 10 && score < 1) {
@@ -480,7 +531,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // as URL imports (BUT-1216). Index-aligned, raw == ingredients[i].
         structuredIngredients: cleanedIngredients.isEmpty
             ? null
-            : StructuredIngredientDeriver.deriveAll(cleanedIngredients),
+            : StructuredIngredientDeriver.deriveAll(
+                cleanedIngredients,
+                sections: _sectionsFor(cleanedIngredients, sectionByKey),
+              ),
         instructions: cleanedInstructions,
         imageUrls: [],
         mealType: mealType,
@@ -544,6 +598,48 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     return cleanedIngredients;
+  }
+
+  /// A colon-terminated ingredient sub-group heading ("Deg:", "Fyllning:",
+  /// "Glasyr:") — the explicit caption form the LLM/OCR tiers already capture.
+  /// Returns the cleaned label, or null when [line] is not such a heading.
+  /// Deliberately narrow: requires the trailing colon and rejects anything
+  /// numbered, measured, or that reads as an instruction cue, so the ingredient
+  /// scoring below is untouched for every other line.
+  String? _ingredientSubHeading(String line) {
+    final trimmed = line.trim();
+    if (!trimmed.endsWith(':')) return null;
+    final label = trimmed.substring(0, trimmed.length - 1).trim();
+    if (label.isEmpty || label.length > 30) return null;
+    if (label.split(RegExp(r'\s+')).length > 4) return null;
+    if (RegExp(r'\d').hasMatch(label)) return null;
+    final lower = label.toLowerCase();
+    // A top-level marker, an instruction cue, or a real ingredient is not a
+    // sub-group heading.
+    if (RecipeSectionDetector.isIngredientHeader(lower)) return null;
+    if (RecipeSectionDetector.isInstructionSectionHeader(lower)) return null;
+    if (RecipeSectionDetector.isInstructionHeader(lower)) return null;
+    if (RecipeSectionDetector.looksLikeIngredient(label)) return null;
+    return label;
+  }
+
+  /// Section labels index-aligned with [ingredients] for
+  /// `StructuredIngredientDeriver.deriveAll`, or null when no line was grouped
+  /// (so the deriver skips the section pass entirely). Joined by the parsed
+  /// ingredient string; an unmatched line degrades to no section, never a
+  /// wrong one. The join lands only when STAGE 1's measurement-first string and
+  /// STAGE 3's `_parseIngredientLine` output render identically for the same
+  /// source line (they do for clean caption lines); on divergence the section
+  /// is silently dropped for that line — safe, since it can never mislabel.
+  List<String?>? _sectionsFor(
+    List<String> ingredients,
+    Map<String, String> sectionByKey,
+  ) {
+    if (sectionByKey.isEmpty) return null;
+    final sections = [
+      for (final ing in ingredients) sectionByKey[ing.toLowerCase()],
+    ];
+    return sections.any((s) => s != null) ? sections : null;
   }
 
   String? _parseIngredientLine(String line) {
