@@ -270,6 +270,92 @@ String? poolKeyIngredientDominant({
 }
 
 // ---------------------------------------------------------------------------
+// HYBRID key (Malin's decision 2026-07-03): ingredients drive identity, a
+// single "dish anchor" from the title acts as a precision guard so two
+// genuinely different dishes with the same ingredient set (sockerkaka vs
+// muffins) do NOT pool. The anchor is the LONGEST significant title token
+// after folding + qualifier removal — in Swedish, dish names are long
+// compounds (köttbullar, havregrynsgröt, räksmörgås) while descriptive
+// additions (bacon, jul, vatten) are short, so the core noun survives while
+// qualifiers (klassiska/gammaldags/tunna...) are stripped. This keeps the key
+// a clean exact string (ADR-0004 doc-ID keying holds), no fuzzy infra (that is
+// still v2). Validated empirically below before the backend is built.
+// ---------------------------------------------------------------------------
+
+/// Descriptive qualifiers that vary between sources but do not change the dish.
+/// Superset of the title stopwords, used ONLY for the hybrid dish anchor.
+const _dishQualifiers = {
+  'gammaldags',
+  'tunna',
+  'tunn',
+  'tunt',
+  'mjuk',
+  'mjuka',
+  'mjukt',
+  'kramig',
+  'kramiga',
+  'saftig',
+  'saftiga',
+  'nyttig',
+  'nyttiga',
+  'festlig',
+  'festliga',
+  'matig',
+  'matiga',
+  'krispig',
+  'krispiga',
+  'ugnsbakad',
+  'ugnsbakade',
+  'grillad',
+  'grillade',
+  'stekt',
+  'stekta',
+  'kokt',
+  'kokta',
+  'perfekt',
+  'perfekta',
+  'krama',
+  'lyxig',
+  'lyxiga',
+  'billig',
+  'billiga',
+  'vardaglig',
+  'vardagliga',
+  'fina',
+  'godaste',
+  'allra',
+};
+
+String? poolKeyHybrid({
+  required String title,
+  required List<String> ingredients,
+}) {
+  if (ingredients.isEmpty) return null;
+  final normalized =
+      ingredients
+          .map(_normalizeIngredientStrong)
+          .where((i) => i.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+  if (normalized.isEmpty) return null;
+
+  // Dish anchor: longest significant title token, qualifiers removed.
+  final foldedQualifiers = _dishQualifiers.map(_foldDiacritics).toSet();
+  final tokens = _extractTitleKeywordsStrong(
+    title,
+  ).where((w) => !foldedQualifiers.contains(w)).toList();
+  var anchor = '';
+  for (final t in tokens) {
+    if (t.length > anchor.length) anchor = t;
+  }
+
+  final raw = '$anchor::${normalized.take(12).join('|')}';
+  final hash = sha256.convert(utf8.encode(raw)).toString().substring(0, 16);
+  return 'v1h:$hash';
+}
+
+// ---------------------------------------------------------------------------
 // Sample set: each recipe rendered as it would arrive from several methods.
 // ---------------------------------------------------------------------------
 
@@ -655,6 +741,7 @@ void main(List<String> args) {
     'proposed  (title+ingredients, exact)': poolKey,
     'strengthened (fold+OCR-fix+#strip)': poolKeyStrengthened,
     'ingredient-dominant (no title)': poolKeyIngredientDominant,
+    'HYBRID (ingredients + dish anchor)': poolKeyHybrid,
   };
 
   stdout.writeln(

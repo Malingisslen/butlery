@@ -45,12 +45,43 @@ database-right/copyright questions out of scope; those belong to the separate, l
   parser, not the URL cascade — ingredient-string shape differs structurally. Do not assume
   the schema.org-oriented normalizer transfers.
 
+### Step 0 RESULT + key-design decision (2026-07-03) — GATE CLEARED, decision 1 revised
+Ran `tools/measure_poolkey_hitrate.dart` (10 recipes: 8 in URL/OCR/Instagram variants + an
+adversarial same-ingredients/different-dish pair). Synthetic sample — real scans still pending
+(memory/project_cookbook_gold_corpus.md); the harness re-runs unchanged against scans.
+
+Measured hit-rate (same recipe → same key) and precision (false merges of DIFFERENT dishes):
+| Key variant | URL↔URL | cross-method | false merges |
+|---|---|---|---|
+| **Proposed** (title+ingredients, exact — the original decision 1) | 25% | 0% | 0 |
+| Strengthened normalization (fold å/ä/ö + OCR digit repair + #strip) | 25% | 50% | 0 |
+| Ingredient-only (no title) | 100% | 50% | **1** |
+| **HYBRID (ingredients + dish anchor)** ← chosen | **100%** | **50%** | **0** |
+
+Finding: the **original approved key (decision 1) is too fragile to build on** — 25% even
+between two web sources, 0% cross-method. Root cause = Swedish title variance (qualifiers like
+"klassiska"/"gammaldags"). **Malin's decision (2026-07-03):** ingredients drive identity, with
+a title-derived "dish anchor" as a precision guard so different dishes (sockerkaka vs muffins)
+never pool. Validated: 100% URL↔URL recall AND 0 false merges. Cross-method 50% is limited by
+genuine content loss in Instagram captions (dropped ingredients) — that residual is the v2
+fuzzy-matching territory the plan already reserves, not a v1 blocker.
+
+**Decision 1 is REVISED as below.** This changes a full-panel-approved decision → gets a focused
+stakeholder re-check (Data/Integrations, Software Architect, Trust & Safety, Product, Security)
+BEFORE the aggregation backend is built.
+
 ### Architecture (panel-resolved decisions)
-1. **Identity:** `ratingPoolKey`, versioned (`v1:` prefix baked into the key string, following
-   the kTagGeneratorVersion precedent). Derived from title keywords + normalized ingredient
-   NAMES (amounts stripped; instructionCount deliberately EXCLUDED — unlike the cache
-   fingerprint). Exact match in v1; fuzzy (MinHash/LSH) is v2 and would be a new vendor/infra
-   decision (Vendor flag) — never slide it in silently.
+1. **Identity (REVISED 2026-07-03 — was: title keywords + ingredient names, exact):**
+   `ratingPoolKey`, versioned (`v1:` prefix, kTagGeneratorVersion precedent). **Hybrid key:**
+   normalized ingredient NAMES drive identity (amounts/units stripped; instructionCount
+   EXCLUDED), with a single **dish anchor** = the longest significant title token after
+   diacritic folding + qualifier removal, prepended to the ingredient hash. Strengthened
+   normalization (fold å/ä/ö, OCR digit repair, hashtag/emoji strip) applies to BOTH title and
+   ingredients and is poolKey-ONLY (never folded into ContentFingerprint — decision 3). Still a
+   single exact string (ADR-0004 doc-ID keying holds); still deterministic, no LLM. Exact match
+   in v1; fuzzy (MinHash/LSH) is v2 and would be a new vendor/infra decision — never slide it in
+   silently. Measurement harness (`tools/measure_poolkey_hitrate.dart`) is the regression guard
+   for any future key change.
 2. **Server is authoritative for the key (Security, hard condition):** the aggregation CF and
    backfill CF **recompute the poolKey server-side (TS) from recipe content** — a
    client-written key field is never trusted for pool routing (pool-poisoning vector on a
