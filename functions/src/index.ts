@@ -112,6 +112,10 @@ export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
 // has held for 30 days without rule-error reports. See file header for full
 // lifecycle conditions.
 export { backfillRecipeCommentsDenorm } from "./migrations/backfill-recipe-comments-denorm";
+// Pooled ratings ("Butlery-betyget") one-shot backfill (decision 14). HARD-GATED:
+// a real run refuses unless enable_pooled_ratings is ON; see the file header for the
+// full run gate + lifecycle-delete conditions. Built now, not run.
+export { backfillCanonicalRatings } from "./migrations/backfill-canonical-ratings";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";

@@ -133,7 +133,10 @@ function eventsRef(
  * recipe doc is missing OR the content yields no key (fail-closed). Reads
  * `users/{uid}/recipes/{recipeId}` — the user-scoped location (see module doc).
  */
-async function recipeContentToKey(
+// Exported so the one-shot backfill CF (migrations/backfill-canonical-ratings.ts)
+// derives keys through the IDENTICAL code path — a forked copy could silently
+// drift from the live mirror (the C5 word-list lesson applied to the derivation).
+export async function recipeContentToKey(
   db: admin.firestore.Firestore,
   uid: string,
   recipeId: string,
@@ -167,7 +170,9 @@ async function recipeContentToKey(
  * (with `{ retry: true }`) — otherwise a mature user's vote is silently dropped.
  * A deleted account (`auth/user-not-found`) is terminal → false (no retry).
  */
-async function isAccountMatured(
+// Exported for the backfill CF — the maturity gate (with its transient-vs-terminal
+// error handling) must be byte-identical between the live mirror and the backfill.
+export async function isAccountMatured(
   uid: string,
   nowMs: number,
   deps: MirrorDeps
