@@ -21,8 +21,19 @@ NOW=$(date +%s)
 
 STALE=()
 
+# Size tripwire: a knowledge file past this many lines drowns its own signal
+# and is re-read in full on every agent invocation (recurring token cost).
+# Threshold per setup-hardening-plan item 4.
+SIZE_LIMIT=800
+OVERSIZED=()
+
 for kf in "$AGENTS_DIR"/*.knowledge.md; do
   [[ -e "$kf" ]] || continue
+
+  LINES=$(wc -l < "$kf" 2>/dev/null | tr -d ' ' || echo 0)
+  if [[ "${LINES:-0}" -gt "$SIZE_LIMIT" ]]; then
+    OVERSIZED+=("$(basename "$kf") (${LINES} lines > ${SIZE_LIMIT})")
+  fi
 
   # Last commit touching the knowledge file
   KF_TS=$(git log -1 --format=%ct -- "$kf" 2>/dev/null || echo "")
@@ -56,6 +67,36 @@ if [[ ${#STALE[@]} -gt 0 ]]; then
     echo "   contract. Check whether recent runs surfaced patterns that should"
     echo "   have been recorded but weren't."
   } >&2
+fi
+
+if [[ ${#OVERSIZED[@]} -gt 0 ]]; then
+  {
+    echo "📏 knowledge-size tripwire:"
+    for entry in "${OVERSIZED[@]}"; do
+      echo "   • $entry"
+    done
+    echo "   Oversized knowledge files bury their own principles and cost tokens on"
+    echo "   every agent invocation. Distill: compress entries >30d old into a"
+    echo "   principles section, move raw entries to <name>.knowledge.archive.md"
+    echo "   (append-only contract preserved). See tasks/setup-hardening-plan.md item 2."
+  } >&2
+fi
+
+# Digest-sync tripwire: every lesson in tasks/lessons.md must have its one-liner
+# in .claude/rules/lessons-digest.md (the auto-loaded surface). Counts drifting
+# apart means a correction was captured but is NOT in force at session start.
+LESSONS_FILE="tasks/lessons.md"
+DIGEST_FILE=".claude/rules/lessons-digest.md"
+if [[ -f "$LESSONS_FILE" && -f "$DIGEST_FILE" ]]; then
+  LESSON_COUNT=$(grep -c '^### ' "$LESSONS_FILE" 2>/dev/null || echo 0)
+  DIGEST_COUNT=$(grep -c '^- ' "$DIGEST_FILE" 2>/dev/null || echo 0)
+  if [[ "${LESSON_COUNT:-0}" -ne "${DIGEST_COUNT:-0}" ]]; then
+    {
+      echo "🔁 lessons-digest drift: $LESSON_COUNT lessons in $LESSONS_FILE but"
+      echo "   $DIGEST_COUNT one-liners in $DIGEST_FILE. Add the missing digest"
+      echo "   line(s) now (CLAUDE.md rule #9: lesson + digest line in the same edit)."
+    } >&2
+  fi
 fi
 
 exit 0

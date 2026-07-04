@@ -18,3 +18,13 @@
 - Another Claude Code session may be running in parallel in a worktree or on a different branch
 - If `git status` shows unexpected changes or merge conflicts you didn't create, **stop and ask the user** — do not reset, clean, or force-push
 - The other session's work is just as important
+- **Stage by explicit pathspec and commit in the SAME Bash call** — never `git add .`/`-A` when parallel work exists, and never leave files staged across turns (the other session's commit sweeps your index, and vice versa). After any gate block, re-verify the index before retrying.
+- **`tasks/todo.md` belongs to whichever session is mid-plan in it.** If it holds another session's unchecked plan, write yours to a separate `tasks/<initiative>-plan.md` instead of overwriting.
+- Committing onto the other session's feature branch is fine (solo repo, it merges to main soon) — sweeping its files into your commit is not.
+
+## Commit-Deadlock Ladder (lefthook analyze hangs/crashes — iter-147 family)
+Work the ladder in order; don't loop on one rung:
+1. **Zombies**: `taskkill //F //IM flutter_tester.exe` (tiny idle processes are dead runners), retry once.
+2. **Contending watcher**: check for a running "Continuous dart analyze" monitor (`/tmp/analyze*` mtimes fresh = active) — stop it, retry once.
+3. **IDE-locked cache**: `dart.exe` respawning instantly = VS Code's language server; the `.dartServer` cache under `%LOCALAPPDATA%` can be bloated/corrupted but can only be cleared with VS Code closed. Flag it to Malin as a when-convenient chore.
+4. **Documented exclusion** — `LEFTHOOK_EXCLUDE=analyze git commit ...` is legitimate ONLY when BOTH: a standalone `dart analyze` ran clean upstream, AND the staged diff contains no `.dart` files. State both facts in the commit body. All other gates still run. `LEFTHOOK=0` (all gates off) is never the answer.

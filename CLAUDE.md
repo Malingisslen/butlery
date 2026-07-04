@@ -12,7 +12,7 @@ Additional rules in `.claude/rules/` are auto-loaded.
 6. **Pushback = re-read** — terse follow-up after "done" means you missed something. "No, I want X" means you misunderstood. Re-read before responding.
 7. **Be accurate about scope** — don't over-estimate complexity
 8. **No retry loops** on plan/review gates — if rejected, ask user instead of retrying
-9. **Learn from corrections** — on any correction, IMMEDIATELY add to `tasks/lessons.md` (format: `### [Category] Title` + Date, Trigger, Rule, Example) before doing anything else.
+9. **Learn from corrections** — on any correction, IMMEDIATELY add to `tasks/lessons.md` (format: `### [Category] Title` + Date, Trigger, Rule, Example) AND append its one-line rule to `.claude/rules/lessons-digest.md` (the auto-loaded surface — a lesson not in the digest is not in force) before doing anything else. A Stop-hook tripwire warns if the two drift.
 10. **Honesty over completion** — "I don't know" is acceptable. Partial solution with clear gaps beats papering over problems. Never claim done if you skipped verification.
 11. **Check before "not doable"** — before concluding something is impossible or out of scope, do two checks and say which you did: (a) **Your own current tools first** — the capability is often already in this session. You routinely forget you can drive a real browser (Chrome automation — for anything visual, login-gated, or "just click through it"), run subagents in parallel, run multi-step Workflows, and hold very large context. If one fits, try it. (b) **Web-search the world second** — if the doubt is about what *exists* or is *currently possible* (a tool, API, model capability), search before answering from memory; your training data is older than the frontier. Only then may you call it not doable — and state what you tried. Raises what you *attempt*; does not lower the bar for verifying what you *did*.
 
@@ -75,6 +75,8 @@ When stop hook blocks with a `reason`, fix it immediately — don't ask the user
 - "tests" → run tests and fix
 
 Session-aware: only blocks on errors in files THIS session modified. Ignore errors from parallel sessions.
+
+**Analyzer false positives:** a block whose message is truncated right after "Analyzing butlery..." (no findings listed) while this session touched no `.dart` files is the analysis server crashing (contention or bloated `.dartServer` cache), not a real finding. Verify with one fresh `dart analyze` run: if clean, state that and continue — do not "fix" anything. If the analyzer keeps crashing: kill `dart.exe` zombies; the durable fix is clearing `%LOCALAPPDATA%\.dartServer` with VS Code closed (IDE holds the lock).
 
 ## Pre-commit /code-review effort
 
