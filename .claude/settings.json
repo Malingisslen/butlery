@@ -51,27 +51,7 @@
     ]
   },
   "hooks": {
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/pre-compact.sh"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
-      {
-        "matcher": "compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/inject-checkpoint.sh"
-          }
-        ]
-      },
       {
         "matcher": "",
         "hooks": [
@@ -82,45 +62,11 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/monitors/auto-analyze-monitor.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/world-watch-due-check.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/org-retro-due-check.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/janitor-due-check.sh"
           }
         ]
       }
     ],
     "PreToolUse": [
-      {
-        "matcher": "ExitPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/plan-review-gate.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/suggest-stakeholder-review.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/plan-threshold-guard.sh"
-          }
-        ]
-      },
       {
         "matcher": "Write",
         "hooks": [
@@ -145,14 +91,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/bash-firewall.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/require-simplify-before-commit.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/require-review-before-commit.sh"
           }
         ]
       }
@@ -186,21 +124,6 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/stop-analyze.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/knowledge-freshness.sh"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Bash",
@@ -224,10 +147,6 @@
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/track-session-files.sh"
-          },
-          {
-            "type": "command",
             "command": "bash .claude/hooks/file-size-guard.sh"
           },
           {
@@ -245,10 +164,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/firestore-index-verifier.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/dossier-freshness-stamp.sh"
           },
           {
             "type": "command",

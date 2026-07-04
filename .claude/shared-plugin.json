@@ -1,0 +1,54 @@
+{
+  "//": "Per-repo config for the shared malin-plugins hooks (C:/claude-plugins). Gate-class hooks FAIL CLOSED if this file is missing/malformed — see C:/claude-plugins/README.md for the schema.",
+  "productionGlobs": {
+    "include": ["^lib/.*\\.dart$", "^functions/src/"],
+    "exclude": ["^lib/l10n/", "\\.g\\.dart$", "\\.freezed\\.dart$", "^functions/src/__tests__/"]
+  },
+  "planTodoPath": "tasks/todo.md",
+  "planReviewChecklistPath": ".claude/plan-review-checklist.md",
+  "highStakes": {
+    "securityRegex": "(lib/repositories/|firestore\\.rules|firebase_auth|FirestoreRepository|GDPR|PermissionValidation)",
+    "designRegex": "(lib/theme/|app_colors|app_dimensions|app_typography|BorderRadius\\.circular|widgets/CLAUDE\\.md)",
+    "lineThreshold": 100
+  },
+  "codeReviewGate": {
+    "filePattern": "\\.dart$",
+    "marker": ".claude/state/simplify-done.marker",
+    "instructions": "For Dart-heavy diffs, prefer /code-review high (xhigh on Opus 4.7 if the diff touches lib/repositories/, lib/services/, or firestore.rules)."
+  },
+  "reviewGates": [
+    { "agent": "code-reviewer", "marker": "code-review-done.marker", "patterns": ["\\.dart$"] },
+    { "agent": "testing-specialist", "marker": "testing-review-done.marker", "patterns": ["^lib/.*\\.dart$"] },
+    { "agent": "firebase-backend-security", "marker": "firebase-security-done.marker", "patterns": ["^lib/repositories/", "^lib/services/.*(firebase|firestore|auth|user|gdpr)"] },
+    { "agent": "cloud-functions-specialist", "marker": "cloud-functions-done.marker", "patterns": ["^functions/src/"] },
+    { "agent": "firestore-rules-tester", "marker": "rules-tester-done.marker", "patterns": ["^functions/src/__tests__/.*-rules\\.test\\.ts$"], "exact": ["firestore.rules"] }
+  ],
+  "batchAdvisory": {
+    "pattern": "\\.dart$",
+    "scopedPattern": "^lib/.*\\.dart$",
+    "limit": 3,
+    "note": "Per memory/feedback_agent_timeout.md, agents stall on >3 files. Either split this commit, or run agents in batches and touch the marker after the final batch."
+  },
+  "stopCheck": {
+    "command": "dart analyze --fatal-infos",
+    "filePattern": "\\.dart$",
+    "errorPathRegex": "^\\s*\\S+\\s+-\\s+(\\S+\\.dart):\\d+:\\d+\\s+-\\s+",
+    "ticketAdvice": "create a Linear ticket with label 'bug' for this issue, then inform the user what was filed"
+  },
+  "knowledge": {
+    "agentsDir": ".claude/agents",
+    "sizeLimit": 800,
+    "windowDays": 30,
+    "lessonsFile": "tasks/lessons.md",
+    "digestFile": ".claude/rules/lessons-digest.md"
+  },
+  "roleOrg": {
+    "worldWatchStatePath": "docs/org/world-watch/state.json",
+    "janitorStampPath": "docs/org/janitor/last-run.json",
+    "janitorMaxDays": 8,
+    "retroSchedulePath": "docs/org/metrics/retro-schedule.json",
+    "metricsEventsPath": "docs/org/metrics/events.jsonl",
+    "rolePathsFile": "docs/org/role-paths.json",
+    "stalenessDir": "docs/org/dossier-staleness"
+  }
+}

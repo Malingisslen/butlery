@@ -80,7 +80,7 @@ Session-aware: only blocks on errors in files THIS session modified. Ignore erro
 
 ## Pre-commit /code-review effort
 
-The `/code-review` built-in (renamed from `/simplify` in CLI 2.1.146) gates `git commit` via `.claude/hooks/require-simplify-before-commit.sh`. When the hook blocks, run:
+The `/code-review` built-in (renamed from `/simplify` in CLI 2.1.146) gates `git commit` via the shared `workflow-guards` plugin (`require-simplify-before-commit` hook; config in `.claude/shared-plugin.json`). When the hook blocks, run:
 
 - `/code-review high` — default for Dart diffs
 - `/code-review xhigh` — on Opus 4.7 when the diff touches `lib/repositories/`, `lib/services/{firebase|firestore|auth|user|gdpr}`, `functions/src/`, or `firestore.rules`
@@ -101,7 +101,7 @@ it does the same. A genuinely new deviation gets appended there (dated), not arg
 **Tier 1 — Strongly Recommended (debugging / investigation):**
 - **debugger** — bug reports, errors, test failures, unexpected behavior
 
-**Tier 2 — Commit Enforced (hook-backed via `.claude/hooks/require-review-before-commit.sh`):**
+**Tier 2 — Commit Enforced (hook-backed via the shared `workflow-guards` plugin's `require-review-before-commit` hook; the agent→marker matrix lives in `.claude/shared-plugin.json`):**
 
 The hook blocks `git commit` until a fresh marker exists at `.claude/state/<name>-done.marker` for each specialist whose path pattern matches the staged diff. Markers are stale-checked by mtime: newest changed-file mtime > marker mtime → re-review required.
 

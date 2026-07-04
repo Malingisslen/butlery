@@ -3,7 +3,7 @@
 One line per lesson in `tasks/lessons.md` — this digest loads every session so the
 corrections are always in force; the full entries (Trigger/Rule/Example) are the deep
 reference. **Sync contract (CLAUDE.md rule #9):** every new lesson gets its one-liner
-appended here in the same edit. A Stop-hook tripwire (`knowledge-freshness.sh`) warns
+appended here in the same edit. A Stop-hook tripwire (`knowledge-freshness`, workflow-guards plugin) warns
 when the counts drift apart.
 
 ## Workflow
