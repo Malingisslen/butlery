@@ -34,6 +34,7 @@ when the counts drift apart.
 - Staging doesn't survive parallel sessions — pathspec-commit in one call and re-verify the index after any gate block.
 - "Map the workflows" means full coverage against a stated universe — never silently curate a sample.
 - Data-writing Cloud Functions get the xhigh multi-agent review BEFORE commit — the single-specialist gate is necessary but not sufficient.
+- When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
 
 ## Testing
 
