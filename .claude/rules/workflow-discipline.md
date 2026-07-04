@@ -22,6 +22,21 @@ The role-org must be cast into planning the same way `/sprint-execute` Phase 1 +
 
 `skip` tier (doc-only / trivial) → no panel, plan normally. This closes the only gap: the diff-review half of cast→plan→review already runs via the commit-gate specialists; this adds the cast + plan halves to direct requests.
 
+## Before building a new automation — the four-box test
+Loop/hook/agent machinery earns its keep only under specific conditions. Before proposing or
+building ANY new automation (a hook, a scheduled routine, a self-running loop, an agent), check
+all four boxes — miss one and it stays a **manual tool**, honestly labeled as such, not
+infrastructure:
+1. **Repeats ≥ weekly.** Below that, the setup + maintenance cost never amortizes; one good prompt wins.
+2. **Something can auto-reject bad output.** A test, gate, type-check, or hard rule fails the work without a human. No gate → the loop just spins and bills (the "Ralph Wiggum" failure: it declares done on a half-finished job and keeps running).
+3. **Doable end-to-end without handing a half-finished piece back.** If it stalls waiting for a human mid-run, it's a manual step wearing a loop costume.
+4. **"Done" is objective, not taste.** If quality is a judgment call (visual polish, product intent), a human still signs off — automate the *detection*, not the *decision*.
+
+This pairs with the mechanical-trigger rule (lessons-digest): an automation that passes the
+four boxes still needs a named firing path (hook / schedule / gate), or it rots unread. Cost
+note (CLAUDE.md Cost Principles): prefer deterministic code over an LLM call inside any loop —
+a git-log diff beats an agent for "what changed," a regex beats a classifier for known shapes.
+
 ## Fit Check (when 2+ approaches exist)
 - Requirements as rows, approaches as columns
 - Cells are strictly pass (Y) or fail (N) — no "maybe"

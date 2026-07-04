@@ -178,3 +178,28 @@ Per `.claude/rules/workflow-discipline.md`, every plan MUST end with a section c
 - Is max 5-8 bullet points, written as if explaining to a friend who doesn't code
 
 **Audit rule:** if this section is missing, that's a 🔴 RED — the plan is incomplete regardless of technical merit. If the section exists but uses banned jargon or exceeds 8 bullets, that's a 🟡 YELLOW — fix the wording before exit.
+
+## 12. Decision-First Ordering (the "tweakable plan")
+
+A plan optimizes for the reader's *leverage*, not the author's *completeness*. Malin reads
+every plan but can't read code — so the plan must front-load exactly the decisions where her
+judgment changes the outcome, and bury the mechanical parts she'd never touch. Structure the
+body (above the plain-language summary) in three tiers:
+
+- **A — Judgment calls (top).** The choices where a reasonable person could disagree: data
+  model, UX flow, a tradeoff between two real options. For each, name the **alternative** and
+  its cost in one line, so she can pick rather than reverse-engineer. Flag your own **weakest
+  point** honestly ("the shakiest part of this plan is X") — confidence signaling lowers her
+  review cost by aiming her attention.
+- **B — Build order (middle).** The sequence, stated neutrally. No decisions here, just the
+  path.
+- **C — Mechanical (bottom, collapsed).** Refactors, renames, boilerplate that need no input.
+  One line: "then the mechanical wiring — no decisions."
+
+**Reply starters.** Where a judgment call has a clear toggle, pre-write the nudge that flips
+it ("to switch choice ① to the other option, say so") so course-correcting costs a sentence,
+not a re-prompt.
+
+**Audit rule:** a plan that's ordered by execution sequence with the load-bearing decisions
+buried mid-list is a 🟡 YELLOW — re-order it decisions-first before exit. This is not extra
+length; it's the same content sorted by likelihood-of-tweaking.

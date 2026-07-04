@@ -374,6 +374,27 @@ Tasks under the same `### Agent` heading batch into one agent invocation. Don't 
 - `dart analyze` fails with non-obvious fix: stop the sprint, report which task caused it.
 - Never silently skip — always report.
 
+### Deviation log (append-as-you-go — the thing scrollback loses)
+
+During a long run, the moments where reality diverged from the plan are the highest-value
+learning signal, and they're exactly what evaporates into scrollback across compactions. Keep a
+running log in `tasks/todo.md` under a `## Deviation log` heading (below the task list, above the
+`---` archive separator). Append one line the instant any of these happens — don't batch, don't
+rely on memory:
+
+- **deviation** — the plan said X, the code turned out to be Y. State the **conservative choice
+  you made** and flag `[revisit]` if it's worth a second look. (Per Phase 2 Step-0: current code
+  wins over ticket text — this logs *when* that rule fired and what you did about it.)
+- **discovery** — something true and worth knowing surfaced (a dead capability, a hidden coupling)
+  that didn't change your plan but the next run should know.
+- **needs-malin** — a product/intent/legal judgment beyond the loop's authority (don't halt; log
+  it, park the ticket per Phase 1.6, keep going).
+
+Format: `- [deviation|discovery|needs-malin] BUT-XXX: <plan said> → <what I found> → <conservative choice / flag>`.
+Keep the conservative option; never expand scope to "fix" a surprise mid-run — that's what the
+`[revisit]` flag and a follow-up ticket are for. This log is read back in Phase 3's fold-back
+step and feeds the lessons/knowledge loop; a recurring deviation is a rule waiting to be written.
+
 ## Phase 2.7 — Outcome verification (grade against the acceptance criteria)
 
 **Why:** `dart analyze` + tests + reviewer markers verify *process* — that the code compiles, is
@@ -432,6 +453,16 @@ After all tasks processed (or remaining tasks blocked):
    - Skip silently only if Linear MCP is genuinely disconnected — and report that fact in the final summary so the user knows to transition manually.
 
 6. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue without waiting; include CI status in final report when results arrive.
+
+6.5. **Fold back the deviation log (MANDATORY when the log has entries).** Read the `## Deviation
+   log` section written during Phase 2. For each entry decide its destination — this is how a
+   one-off surprise becomes durable knowledge instead of being overwritten by the next sprint:
+   - A `[revisit]` deviation with lasting product impact → **file a follow-up Linear ticket** (step 2 already ran, so add it).
+   - A recurring or workflow-level deviation (a rule I'd want to hold next time) → **append a `tasks/lessons.md` entry + its `.claude/rules/lessons-digest.md` one-liner** (CLAUDE.md rule #9).
+   - A domain pattern an agent should remember → note it for that agent's `.knowledge.md`.
+   - A pure discovery with no action → let it archive with the sprint; no destination needed.
+   Summarize the fold-back in the final report ("3 deviations: 1 ticketed, 1 → lessons, 1 archived").
+   An empty deviation log is fine — say "no deviations logged" and move on.
 
 7. **PR (only if a PR is wanted)** — solo direct-to-main is the default per `CLAUDE.local.md`; skip `gh pr create` unless the sprint touched something risky enough to warrant review.
 

@@ -68,6 +68,31 @@ in its own dossier. Use this prompt per role:
 Use a cheap/low-effort subagent per role (these are scoped critiques). Collect all JSON results.
 If a role returns nothing, note it and continue — don't block the panel on one dead agent.
 
+### 2b. Blindspot pass (always seated on `full-panel`; also on any `single` with a `security` hit)
+
+The role critics reason from *stakes*; none of them digs the *codebase's own history* for traps.
+Seat ONE additional blind critic — the **Codebase Archaeologist** — concurrently with the panel
+(same message). It has no dossier and no stake; its only job is to surface what a plan-time read of
+the current code would miss. Prompt:
+
+> You are the **Codebase Archaeologist** for Butlery. You have no stake to defend — your job is to
+> find what will bite an implementer that isn't visible from reading the current code top-to-bottom.
+> For the blast-radius files below, investigate:
+> - **Landmines** — active traps: a value written in one place but read from another, a dual-write
+>   or migration where the "obvious" store is the wrong one, an ordering/timing dependency.
+> - **Unwritten conventions** — multi-step setup where only some steps are visible (e.g. "registering
+>   X also requires touching Y and Z"), invariants enforced by habit not by code.
+> - **Reverted history** — has this exact area been attempted and rolled back before? Run
+>   `git log --oneline -n 40 -- <files>` and `git log --oneline --all --grep=<feature-word>`; a prior
+>   revert usually encodes a lesson the code no longer shows.
+> - **Missing concepts** — a domain distinction the interface layer hides (e.g. identity vs account).
+> Return JSON only:
+> `{"role":"Codebase Archaeologist","landmines":[...],"unwritten_conventions":[...],"reverted_history":"<commits + what they teach, or empty>","missing_concepts":[...],"must_haves":[...],"one_line_stance":"<one sentence>"}`
+
+Give it Bash+Read+Grep (it needs git log). Fold its `must_haves` into the synthesis conditions like
+any role's, and surface a non-empty `reverted_history` prominently — a plan repeating a past failed
+attempt is the highest-value catch this pass produces. On `skip`/plain-`single` tiers, don't seat it.
+
 ### 3. Synthesize
 You (the main loop) or one synthesizer agent reconciles ALL critiques into one recommendation:
 - **Agreements** — what every seated role is fine with.
