@@ -53,11 +53,17 @@ Route by blast radius, not task size (per `~/.claude/CLAUDE.md` + `CLAUDE.local.
   the validation). New `shared/allergen-properties.ts` (incl. dietary triggers
   meat/pork/beef/contains-alcohol) feeds the BUT-1468 hold gate. Accepted: PLAUSIBLE TTL
   batch-abort race on an operator script (recovery = rerun).
-- [ ] **Add review/revert to alias auto-learning** (M) → BUT-1468
-  `analyze-corrections.ts`: 3 distinct users auto-write `learnedAliasesSv` onto live
-  ingredient docs — allergen-relevant, no human gate, no demotion path. Minimum: hold-for-
-  review when the target ingredient carries any allergen property + an admin revoke
-  callable + an emulator test driving 3 users through the trigger (none exists).
+- [x] **Add review/revert to alias auto-learning** (M) → BUT-1468 — DONE 2026-07-04 (`fe94a836b`, `7753c57df`, `b708b7a68`)
+  Delivered: hold-for-review (no auto-write) when the target ingredient carries an
+  allergen/dietary property OR the alias text matches an allergen-bearing ingredient
+  (diacritics-stripped via new `normalizedNames` — blocks the no-umlaut redirect attack);
+  60-min account-maturity gate on the quorum (threshold unchanged); candidate doc re-keyed
+  by (original name + target ingredient) so 3 users must agree on the SAME target and admin
+  actions never hit a stale target; transient allergen-check errors self-heal (stay pending,
+  retry next vote); `reviewLearnedAlias`/`revokeLearnedAlias` admin callables (approve doubles
+  as revoke-undo) writing transactional `audit_logs` rows; `getCorrectionStats` surfaces the
+  held queue; composite index added. 20-assertion emulator test. Reviewed cloud-functions-
+  specialist + xhigh (7 CONFIRMED findings all fixed). Admin queue UI lands in B1.
 
 ## P1 — Learning-loop intake (the founder's flywheel goal)
 
