@@ -103,3 +103,12 @@ and strictly harder to game (you cannot remove your vote from a pool by editing)
 "missing edit-detachment trigger" / "recipe edit doesn't update the old pool" / "no one-time
 detach notice" finding against the pooled-ratings code — the frozen-only behavior is the decided
 design. (GDPR deletion still recomputes affected pools — that is unrelated to edits.) — 2026-07-03
+
+### [Security/Age-gate] cook_snaps + activity_events create paths are intentionally NOT age-gated
+The 15+ age gate (`isAgeCompliant()`) is applied to most UGC create paths in `firestore.rules`,
+but the `cook_snaps` and `activity_events` create rules deliberately do NOT carry it. A blind
+Security-Architect scan (role #4) flagged the omission; **Malin decided 2026-07-04: leave both
+ungated — intentional.** Do NOT file a "missing age gate on cook_snaps/activity_events" finding
+against `firestore.rules` (create paths ~1137-1153 and ~1230-1242).
+**Why:** the age gate governs the account-creation boundary; these two paths are downstream
+activity of an already-gated account and don't re-open the age surface. Decided scope call. — 2026-07-04
