@@ -2723,3 +2723,94 @@ deploy-coordination finding. Patterns worth remembering:
   coerce to null — backward compatible by construction. Contract pinned in
   `__tests__/ingredient-section-schema.test.ts` (5 cases incl. a prompt-content
   guard asserting the old flatten wording is GONE).
+
+### 2026-07-03 — BUT-1467 sync-ingredients core extraction + allergen lockstep triple [Pattern discovered]
+
+`sync-ingredients.ts` (admin/, ts-node script) calls `admin.initializeApp()` +
+`main()` at import time, so it can't be imported by tests. BUT-1467 extracted
+the pure logic into `admin/sync-ingredients-core.ts` (csvToFirestore, diff,
+mergePreservedFields, isResurrection, buildSyncReport) — the admin-script
+analog of the `runX(deps)` seam. Tests: `__tests__/sync-ingredients-diff.test.ts`
+(8 behavioral cases, `_unit-runner`).
+
+**Allergen lockstep triple** (three lists that must stay aligned by hand):
+1. `admin/sync-ingredients.ts` — `VALID_PROPERTIES` (NOT in `-core.ts`; the
+   core file's docstring pointing there is a known drift hazard).
+2. `shared/allergen-properties.ts` — `ALLERGEN_RELEVANT_PROPERTIES` (allergen
+   block + fish/shellfish/seafood/dairy/egg). Feeds the sync diff report now,
+   the BUT-1468 alias hold-for-review gate next.
+3. `lib/services/tagging/config/allergen_config.dart` — client
+   `triggerProperty` list. Includes non-medical verdict triggers
+   (`contains-alcohol`, `meat`, `pork`, `beef`) that produce FREE/CONTAINS
+   tags via the same machinery — decide explicitly whether a "wrong allergen
+   verdict" gate covers them; as of BUT-1467 they are NOT in
+   ALLERGEN_RELEVANT_PROPERTIES.
+
+No automated drift pin exists between the three; when reviewing any of them,
+re-diff all three by hand.
+
+### 2026-07-03 — audit-event timing in confirm-gated admin scripts [Pattern discovered]
+
+BUT-1467 review of `admin/sync-ingredients.ts`: the `system_events` ops-log row
+(`type: "ingredient_sync"`, `executedAt`, counts) was written by
+`persistSyncReport` BEFORE the `askConfirmation` prompt and before any batch
+commit. Consequence: a run the operator cancels at the prompt, or one that
+throws mid-batch, still leaves an ops-log row claiming the sync executed —
+the audit trail over-claims, which defeats the feature's own purpose.
+
+Rule for confirm-gated admin scripts: **the human-review artifact (JSON diff
+report file) belongs BEFORE the confirmation prompt (the operator reviews it to
+decide); the executed-marker Firestore row belongs AFTER the final commit.**
+Split "persist report" into write-file (early) + log-event (post-commit) when
+both live in one helper. Dry-run correctly skips the event row.
+
+Related soft-delete+TTL patterns confirmed good in the same review:
+- Resurrection routing depends on the Firestore fetch being UNFILTERED
+  (`collection.get()` with no status filter) so soft-deleted docs land in
+  `toUpdate` (status differs) rather than `toAdd` — the update path can then
+  attach `FieldValue.delete()` clears for `deletedAt`/`expireAt`.
+- Pre-existing (not introduced): `hasChanges` skips `aliasesEn`/`searchTerms`
+  (edits to only those never sync), and sparse optional fields
+  (`notesSv`, `typicalUnit`, `seasonAvailability`, …) omitted from an `update`
+  payload are never DELETED when cleared in the Sheet — such rows churn as
+  "updated" on every sync forever and now pollute the diff report.
+
+### 2026-07-03 — BUT-1468 alias hold-for-review review [Pattern discovered]
+
+Review of `analytics/analyze-corrections.ts` (maturity gate + allergen hold)
+and new `analytics/review-learned-alias.ts` (admin approve/reject/revoke).
+
+- **Server gate vs client matching normalization MUST agree.** The
+  `allergen_alias_text` hold gate resolves the alias text via
+  `findIngredientByName` (exact / lowercase / array-contains on stored
+  diacritic forms), but the Dart consumer (`FirebaseIngredientRepository
+  ._normalize`) matches learned aliases **diacritics-stripped** (å/ä→a, ö→o).
+  So an ASCII-variant alias ("jordnotter") bypasses the server gate yet still
+  matches the real allergen word ("jordnötter") client-side. General rule: any
+  safety gate filtering strings the client will later match must run the SAME
+  normalization as the client matcher, or match on a normalized-lookup field
+  (e.g. stamp a `normalizedNames` array in the sync pipeline). Filed High.
+- **Hold states need an allowlist status check, not a blocklist.** The old
+  auto-approve guard was `status !== "approved"`; introducing
+  `held_for_review`/`rejected`/`revoked` under that guard would have let the
+  quorum re-approve them. The diff correctly flipped to
+  `status === "pending"`. When adding a terminal/parked state to a txn state
+  machine, audit every status conditional for blocklist shape.
+- **Hold-reason computed outside the txn is acceptable** when (a) it needs
+  queries, (b) its input (ingredient `properties`) changes only via rare
+  admin/sync paths, and (c) the bad-direction outcome is recoverable via an
+  admin revoke callable. Cheap hardening: the doc-read half (target's own
+  properties) can be re-verified inside the txn with `tx.get(ingredientRef)`
+  at the threshold moment; Admin SDK txns also support `tx.get(query)` if the
+  query half ever needs to move inside.
+- **`npm test` composite deliberately excludes `test:rules:*` and
+  `test:integration:*`** (`scripts/run-all-tests.js` EXCLUDE_PREFIXES) —
+  emulator-bound suites run manually. Don't file "new test not in the
+  composite chain" for `test:integration:*` scripts.
+- **Hoist per-event-constant reads out of per-candidate loops**: a correction
+  event with N ingredient corrections ran `isMatureAccount` (1 user-doc read)
+  N times for the same uid.
+- **`learned_aliases` admin queries (`status ==` + `orderBy count desc`) have
+  NO entry in `firestore.indexes.json`** — equality+orderBy needs a composite
+  in prod (emulator auto-creates). Pre-existing for pending/approved; verify
+  the console before relying on the new held_for_review queue surfacing.
