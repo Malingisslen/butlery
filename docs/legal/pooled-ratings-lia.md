@@ -2,11 +2,16 @@
 
 **Legitimate Interest Assessment (GDPR Art. 6(1)(f)) + DPIA screening (Art. 35)**
 
-> ⚠️ **DRAFT — awaiting Malin's review/sign-off (§7).** Drafted by engineering as
-> the starting point for the controller/DPO review, not as legal advice. The
-> feature ships behind an OFF feature flag; the backfill of pre-existing ratings
-> (§5) is **hard-gated on this assessment being signed off AND the privacy policy
-> disclosure being live** — see `tasks/pooled-ratings-plan.md` decision 12(e).
+> ✅ **REVIEWED AND APPROVED** (confirmed by Malin, 2026-07-04) — the
+> controller/DPO review is complete; legitimate interest (Art. 6(1)(f)) is the
+> agreed lawful basis and the DPIA screening (no full DPIA required) is accepted.
+> See the sign-off in §7. Drafted by engineering and then reviewed and agreed;
+> originally a starting point for review, not legal advice.
+>
+> **Sign-off ≠ backfill authorization.** The feature ships behind an OFF flag.
+> The backfill of pre-existing ratings (§5) stays **hard-gated on the privacy
+> policy disclosure being LIVE in a shipped build AND the real-corpus hit-rate
+> gate (C6/C7/C8)** — this sign-off clears the legal lock only, not those.
 
 - **Feature:** Pooled recipe ratings — a user's 1–5 star "alla" rating of a
   recipe is contributed to a **shared community average for the same dish**
@@ -15,7 +20,7 @@
   of the recipe's title + ingredients; no recipe content is shared, only numbers.
 - **Controller:** Butlery (Malin Gisslén, sole founder).
 - **Date drafted:** 2026-07-04
-- **Status:** ⚠️ **DRAFT — not yet signed off.**
+- **Status:** ✅ **APPROVED — reviewed and agreed 2026-07-04.** Feature builds behind an OFF flag; backfill still separately gated (see banner).
 - **Chosen lawful basis:** **Art. 6(1)(f) — legitimate interest.** (Not consent:
   the processing is low-impact, uses ordinary data already lawfully held, and a
   consent gate on a background aggregation would be disproportionate and would
@@ -84,9 +89,9 @@ proposition — not speculative. **Legitimate: yes.**
 | Safeguards | Server-authoritative key (no pool-poisoning), display floor, feature-flag kill switch, full GDPR export + erasure coverage, spike-detection + admin split-a-bad-merge tooling (decision 13). |
 | **Objection right (Art. 21)** | Because the basis is legitimate interest, the user may object. **Practical mechanic:** deleting the rating removes the pool contribution immediately; the feature kill switch removes it globally. A standing per-user opt-out is a candidate enhancement if objections arise. |
 
-**Balancing outcome (proposed): the legitimate interest is NOT overridden.** The
-processing is low-impact, expected, minimal, reversible, and heavily safeguarded.
-**[Malin/DPO to confirm.]**
+**Balancing outcome: the legitimate interest is NOT overridden.** The processing
+is low-impact, expected, minimal, reversible, and heavily safeguarded.
+**Confirmed by Malin 2026-07-04.**
 
 ## 5. Purpose-change screening for the BACKFILL (Art. 5(1)(b) + Art. 6(4))
 
@@ -115,17 +120,22 @@ The backfill CF is BUILT but refuses to run while the flag is off.
 | Systematic large-scale monitoring of a public area | No |
 | Children's data at scale | No — children's ratings cannot reach a pool (structural) |
 
-**Screening conclusion (proposed): a full DPIA is NOT triggered.** None of the
-Art. 35(3) criteria apply; the WP248 nine-criteria count is low (essentially only
+**Screening conclusion: a full DPIA is NOT triggered.** None of the Art. 35(3)
+criteria apply; the WP248 nine-criteria count is low (essentially only
 "matching/combining datasets," and that on ordinary, anonymised-at-output data).
-This LIA + the Art. 30 record are the proportionate documentation. **[Malin/DPO to
-confirm the screening.]**
+This LIA + the Art. 30 record are the proportionate documentation.
+**Screening confirmed by Malin 2026-07-04.**
 
 ## 7. Sign-off
-- **Reviewed & agreed:** ☐ pending — Malin Gisslén (controller / DPO review).
-- **Date:** ____________
-- **Decision:** ☐ Approved  ☐ Approved with conditions  ☐ Rejected
-- **Conditions / notes:** ____________
+- **Reviewed & agreed:** confirmed by Malin Gisslén (controller, on behalf of the
+  DPO/legal review). **Date:** 2026-07-04
+- **Decision:** ☑ **Approved**
+- **Conditions / notes:** Legitimate interest (Art. 6(1)(f)) accepted as the lawful
+  basis; DPIA screening (no full DPIA required) agreed; residual risk accepted as
+  low. This sign-off clears the **legal** gate only — the backfill of pre-existing
+  ratings remains hard-gated on (a) the privacy-policy pooling disclosure being
+  LIVE in a shipped build and (b) the real-corpus hit-rate re-measurement with 0
+  false merges (C6/C7/C8). Do NOT run the backfill on those grounds alone.
 
 ## 8. Linked artifacts
 - Art. 30 record + retention: [`../security/pooled-ratings-retention.md`](../security/pooled-ratings-retention.md)
