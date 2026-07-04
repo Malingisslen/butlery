@@ -915,3 +915,769 @@ test log now emits `"modelId":"gemini-2.5-flash-lite"`).
   so the skipped golden-test gate is auditable. Re-run the golden corpus
   retroactively when BUT-784 lands.
 
+
+## Relocated 2026-07-04 — consolidation batch (entries 2026-06-09 → 2026-06-26; durable lessons distilled into the active file's principles section)
+
+### 2026-06-09 — BUT-1032 phase 1: implicit-cache cost telemetry [Pattern discovered] [Cost finding]
+
+Gemini 2.5 models on Vertex have **implicit caching on by default**; cached
+prompt tokens surface as `usageMetadata.cachedContentTokenCount` and are
+billed at ~10% of the input rate. `calculateGeminiCost` in
+`llm/gemini-client.ts` is now cache-aware:
+`((prompt - cached) + cached * CACHED_INPUT_DISCOUNT) / 1M * INPUT_COST_PER_M`,
+with `cached` clamped to `[0, promptTokenCount]`. Telemetry-only — no
+request-behavior change. Both call sites (structure-recipe, OCR
+`defaultPerformOcr`) already passed the whole `usageMetadata` object, so the
+discount flowed automatically once the param type accepted the field.
+
+Raw token counts (`promptTokenCount` / `candidatesTokenCount` /
+`cachedContentTokenCount`) are now logged on every post-Gemini exit of
+`structure_recipe.complete` (incl. `empty_response` — it has a response too)
+and via a new `[ocrRecipeImage] Vision call usage` structured log inside
+`defaultPerformOcr`. Fields logged **as-is** (may be undefined) — Cloud
+Logging drops undefined JSON fields, which distinguishes "Vertex didn't
+report it" from a real 0. Never coerce to 0.
+
+Patterns worth remembering:
+
+- **SDK already declares the field.** `@google-cloud/vertexai@1.12.0`'s
+  `UsageMetadata` (build/src/types/content.d.ts:428) includes
+  `cachedContentTokenCount?: number` — no local type widening needed. Check
+  the installed `.d.ts` before assuming a usage field is undeclared.
+- **CJS export hijack = Vertex-client test seam without jest.** With
+  `module: node16` CJS emit, `import { getTextModel } from "./gemini-client"`
+  resolves through the module object at call time, and exported function
+  declarations are plain writable `exports.x = x` properties. A ts-node test
+  can reassign `geminiClient.getGeminiClient` / `.getTextModel` to fakes
+  (restore in `finally`) and drive `runStructureRecipe`'s real success path —
+  no seam param needed. See `__tests__/gemini-cache-telemetry.test.ts`.
+- **`getPromptsConfig` fail-open makes that test cheap**: the default loader's
+  `admin.firestore()` throws `app/no-app` in unit env → caught → compiled-in
+  fallback prompts. No admin.initializeApp needed for structure-recipe
+  success-path tests.
+- **OCR file has no `*.complete` timing log** (unlike structure-recipe's
+  BUT-483 `emitTiming`). Usage was logged inside `defaultPerformOcr` because
+  the `OcrPerformResult` seam is `{content, cost}` only — widening it would
+  touch every test seam. Follow-up candidate: an `ocr_recipe_image.complete`
+  emitTiming twin with token counts + retry outcome in one queryable event.
+- **Mirror private pricing constants in the cost test on purpose** — a silent
+  `INPUT_COST_PER_M` change should turn the telemetry suite red so the cache
+  math gets re-reviewed alongside any price update.
+
+### 2026-06-10 — BUT-1222 ocr_recipe_image.complete timing event [Pattern discovered]
+
+The BUT-1032 follow-up landed: `runOcrRecipeImage` now has an `emitTiming`
+twin of structure-recipe's `structure_recipe.complete` (BUT-483 pattern),
+emitting `ocr_recipe_image.complete` on every exit path with durationMs,
+success, reason, retryCount/retryOutcome (BUT-559), modelId, and the three
+raw token counts. The standalone `[ocrRecipeImage] Vision call usage` log
+from BUT-1032 is removed — tokens are queryable from the same event as
+duration/success (one metric filter).
+
+Patterns worth remembering:
+
+- **Optional seam-widening beats a side-channel log.** BUT-1032 avoided
+  widening `OcrPerformResult` and logged usage inside `defaultPerformOcr`
+  instead. The right long-term fix was an OPTIONAL `usage?` field on the
+  seam result — zero breakage for existing `{content, cost}` test seams
+  (verified: ocr-retry + ocr-validation suites compiled untouched), and the
+  caller owns the single structured event.
+- **Token fields stay undefined-capable through the closure.** `let
+  ocrUsage` is captured by `emitTiming` and assigned only after the vision
+  call; pre-Gemini exits log undefined token fields which Cloud Logging
+  drops (absence ≠ zero — BUT-1032 convention preserved).
+- **Early-throw exits sit BEFORE the try block** in `runOcrRecipeImage`
+  (missing input / isAllowedUrl / BUT-425 validator / size cap), so giving
+  them their own `emitTiming(...); throw` does NOT double-emit via the
+  catch's `https_error` path. When mirroring this pattern elsewhere, check
+  whether validation throws are inside or outside the try before adding
+  catch-side emits.
+- **OCR exit-path reason taxonomy**: missing_image_input, invalid_image_url,
+  url_validation_rejected (+ urlRejectionReason), image_too_large,
+  kill_switch_ai, empty_response, parse_failed_after_retry, https_error
+  (+ code), rate_limited, internal_error; success carries ingredientCount +
+  retryCount/retryOutcome instead of reason.
+- **"Exactly one event per call" is the test contract.** Layer-3 cases in
+  `ocr-retry.test.ts` clear a module-scope logger-capture array per case and
+  assert `completeEvents().length === 1` — this is what catches a future
+  double-emit (e.g. someone adding an emit inside the try AND keeping the
+  catch emit).
+
+### 2026-06-10 — BUT-1223 run-all test runner + 6 pre-existing suite fixes [Bug fixed]
+
+The composite `npm test` chained 34 suites with `&&` — the first red suite
+(lapsed-users, suite #2) masked everything after it, hiding that 6 suites
+were red on main. Replaced with `functions/scripts/run-all-tests.js`
+(plain Node, no deps): auto-discovers every `test:*` script in package.json
+except `test:rules*` / `test:integration:*` (emulator-bound, owned by
+firestore-rules-tester), runs ALL of them even when earlier ones fail,
+prints a summary, exits non-zero if any failed. Verified by deliberately
+breaking `test:kill-switch` mid-list: all 44 suites still ran, exit 1,
+failed suite named in summary; restored after.
+
+**Fix 1 — rate-cap app-init seam (lapsed-users + activity-digest)**:
+`sendPushToUserRespectingPreferences` called the real `checkAndIncrement`
+(BUT-651) directly, which opens a Firestore transaction via
+`admin.firestore()` → `app/no-app` in unit env. Root-cause fix: added a
+`checkRateCap` field to the helper's `Deps` interface (defaults to the
+real `checkAndIncrement`; tests inject `async () => ({allowed, count,
+cap, reason})`). Same convention as the gate/recordEvent seams on
+DispatchOptions (2026-04-30 entry). Also added a `rate_capped` scenario to
+detect-lapsed-users.test.ts proving the seam's decision flows through.
+
+**Fix 2 — cascade fakes vs BUT-886 audit wiring (4 suites)**:
+presence-cascade, notification-gdpr, but753-sharedwith, but466-tombstone
+fakes predated `stageCascadeAuditEntry` and broke three ways:
+1. `database.collection("audit_logs").doc()` — fakes lacked `.doc()` on
+   the collection stub (auto-id ref: `audit_logs/auto-N`).
+2. `batch.set(ref, data)` — fakes lacked `set`. Route audit set-ops to a
+   separate `auditRows` array (NOT the main docs map) so existing
+   size()/has() assertions stay about the cascade target docs.
+3. `doc.ref.parent.parent` (presence only) — refs were bare `{path}`;
+   built a `makeRef(path)` helper deriving the full parent chain.
+
+**Batching assertions were wrong-as-tests after BUT-886** — each cascade
+doc now stages 2 ops (mutation + audit), halving the per-batch cap to 250.
+The "501 docs → 2 commits" assertions asserted the obsolete pre-audit
+behavior; updated to 3 commits (250+250+1), and best-effort failure cases
+to "first of 3 chunks fails → 2 successful commits". Also added positive
+audit-row assertions (count + operation + userId/targetUid) per suite.
+
+**Orphan suites registered**: `notification-rate-cap`, `cascade-audit-log`,
+`cascade-audit-log-wirings`, `duplicate-content-guard`, `on-report-created`,
+`parse-recipe-description-length`, `pii-scrubber`,
+`rate-limiter-global-limits`, `request-account-deletion`,
+`structure-recipe-empty` — 10 test files existed with NO `test:` script
+(the 2026-04-30 "easy to forget the chain" lesson had escalated to
+forgetting the script entirely). All verified green standalone before
+registering. The auto-discovery runner makes this failure mode structural:
+a new `test:foo` script is automatically part of `npm test`.
+
+Patterns worth remembering:
+- **`npm test` now = `node scripts/run-all-tests.js`** (44 suites, ~100s).
+  Adding a suite = add the `test:<name>` script only; no chain to extend.
+- **When production code halves a batch cap, grep tests for the old
+  commit-count constant.** `git log -1 -- <test-file>` predating the
+  wiring commit (here 5bd98f8e8/633595561) is the tell that fakes/asserts
+  are stale, not that the production change is wrong.
+- **spawnSync on Windows needs `shell: true`** for `npm` (npm.cmd; Node's
+  CVE fix blocks .cmd without shell). Command string built only from our
+  own package.json script names.
+
+### 2026-06-11 — BUT-694(c) PII heuristics + BUT-838 cook-event GDPR cascade [Pattern discovered]
+
+**BUT-694 option (c)** — `llm/pii-scrubber.ts` gained two deterministic
+heuristic rules (no LLM/ONNX): Swedish street addresses
+(closed suffix set + REQUIRED house number → `[ADDRESS]`) and person names
+(closed relation/honorific trigger set + capitalized name → `[NAME]`,
+trigger word kept). The full HEURISTIC CONTRACT lives as a comment block in
+the file; the Dart mirror is written from it.
+
+Patterns worth remembering:
+- **Shared JSON vector fixture as the cross-port sync mechanism**:
+  `src/__tests__/fixtures/pii-heuristic-vectors.json` — `{_header: [...],
+  vectors: [{name, input, expected}]}`. TS suite asserts exact full-string
+  equality; the Dart side copies the file verbatim. JSON has no comments, so
+  the "Dart copies this" note lives in a `_header` string array (wrapper
+  object, not a bare array).
+- **JS ASCII `\b` mis-fires before å/ä/ö** (Å is non-word in `\w`). For
+  Swedish-letter patterns, don't lead with `\b` — let the letter class
+  extend the match — or use a `(?<=^|[^A-Za-zÅÄÖåäö])` lookbehind (used for
+  the relation triggers). Trailing `\b` is fine after ASCII digits/letters.
+- **No `/i` flag when only the trigger should be case-insensitive**: spell
+  per-letter classes (`[Mm]ormor`) so the NAME part stays strictly
+  capital-initial. The `\s+` after the trigger is what rejects genitives
+  ("mormors äppelkaka") and embedded matches ("Frukost" never triggers
+  "fru").
+- **Reuse `UNIT_SUFFIX_LOOKAHEAD` for any number-terminated heuristic** —
+  it's what keeps "Följ Ringvägen 5 minuter" from redacting as an address.
+- **Pinned negative landmines**: "X:s" possessive recipe titles ("Janssons
+  frestelse", "Gustavs special") must NEVER redact — no general
+  capitalized-word NER. These are fixture vectors; don't "improve" the name
+  rule into one that matches bare capitalized words.
+- **redactionRatio extends by token registration only**: new replacement
+  tokens just get appended to `PII_TOKENS`; the ratio (token coverage over
+  scrubbed output) then counts them with unchanged semantics. For RULE B the
+  kept trigger word correctly counts as non-redacted.
+
+**BUT-838** — `cleanup/on-user-deleted.ts` step 14:
+`cleanupRecipeCookEvents(WithDb)` purges the `recipe_cook_events/{userId}`
+tree (per-user root doc + event subcollection). BUT-886 audit wiring:
+delete + audit = 2 ops/doc via `commitInChunks(opsPerItem: 2)` (chunk cap
+250). Tests live in `notification-queues-gdpr.test.ts` (suite doubles as
+the general per-user GDPR cascade suite now).
+
+Patterns worth remembering:
+- **`listCollections()` for shape-not-yet-final subcollection purges**: this
+  cascade shipped BEFORE the client writer (Dart half of BUT-838 lands the
+  rules + writes). Discovering subcollections via
+  `rootRef.listCollections()` instead of hard-coding `events` keeps the
+  cascade correct if the name shifts. It also sees subcollections under
+  ghost parents (root doc never written).
+- **Root-doc delete gated on `exists`** — auditing the delete of a ghost
+  parent is noise; one extra read buys a truthful audit log.
+- **New cascade steps should be best-effort, not strict**: a re-thrown error
+  retries the WHOLE onUserDeleted cascade, and step 4's
+  `friendsCount: increment(-1)` is NOT idempotent — strict failure in a late
+  step double-decrements friend counts. Catch + warn + return partial
+  (BUT-753 rationale). The strict mode on the notification-queues step is
+  pre-existing behavior, not the template to copy.
+- **Rules assumption recorded, not implemented**: the cascade assumes
+  owner-only rules (`request.auth.uid == userId` read/create, no client
+  delete needed — admin cascade is the erasure path). firestore.rules is
+  owned by the Dart-side agent/firestore-rules-tester.
+
+### 2026-06-11 — BUT-839 v2-trigger integration tests via CloudFunction.run() [Pattern discovered]
+
+First integration tests for STORAGE/FIRESTORE-TRIGGERED functions (vs the
+BUT-1009 precedent which tested a callable's `runX(deps)` seam). Neither
+`moderateUpload` (`storage/moderate-upload.ts`, onObjectFinalized) nor
+`syncConversationLastMessage` (`messaging/sync-conversation-last-message.ts`,
+onDocumentWritten) has a deps seam — their logic is inline in the trigger
+body. The emulator does NOT fire deployed trigger code, so the tests invoke
+the real handler via the v2 SDK's `CloudFunction.run(event)` surface:
+
+- **v2 exports carry `.run(event)`** — every `onDocumentWritten`/
+  `onObjectFinalized`/etc. export is callable as `fn.run(event)` with a
+  typed event payload. This proves the REAL handler wiring without
+  firebase-functions-test or a functions emulator.
+- **Build Firestore `Change` payloads from REAL emulator snapshots**: read
+  the doc BEFORE the write (non-existent snapshot for creates — `.data()`
+  returns undefined, exactly like production), write, read again, pass
+  `{ params, data: { before, after } }`. Delete events: snapshot before,
+  delete, snapshot after (exists=false). No hand-rolled snapshot fakes.
+- **Storage events are plain objects**: `{ data: { bucket, name,
+  contentType, metadata } }` is all `moderateUpload` reads; seed the actual
+  bytes via `bucket().file(p).save(buf, { contentType })` first so the
+  handler's ranged `download({ start, end })` hits real emulator data.
+- **Admin SDK → Storage emulator**: set `FIREBASE_STORAGE_EMULATOR_HOST=
+  127.0.0.1:9199` (plus `FIRESTORE_EMULATOR_HOST`, `GCLOUD_PROJECT`,
+  `FIREBASE_CONFIG` with `storageBucket`) BEFORE importing firebase-admin.
+  The trigger module must also be `require()`d AFTER `admin.initializeApp`.
+- **Skip gate**: probe the emulator port(s) with a raw `http.request`
+  (any HTTP answer = live; storage answers 501 on bare GET). Port down +
+  `process.env.CI` unset → print SKIP, exit 0. In CI (GitHub Actions sets
+  `CI=true`) a missing emulator is a hard fail. This keeps Java-less local
+  machines green while CI stays strict.
+- **Storage emulator alongside the hook's firestore-only emulator**: the
+  `ensure-firestore-emulator.sh` instance holds hub 4400 / UI 4000, so a
+  second `emulators:start` collides. Workaround: alternate config at REPO
+  ROOT (`firebase.storage-emulator.json` — rules path must be inside the
+  config's directory, so it cannot live under `.claude/state/`) with
+  `--only storage`, hub 4401, logging 4501, UI disabled:
+  `firebase emulators:start --only storage --project demo-test --config
+  firebase.storage-emulator.json`. CI doesn't need this (it starts
+  firestore,storage in one instance).
+- **Shared demo-test namespace**: when a suite uses project `demo-test`
+  (so storage's singleProjectMode doesn't complain), use per-run unique
+  ids, assert by unique resourceId (avoids needing a namespace wipe that
+  would clobber parallel suites), and delete seeded docs in cleanup.
+- Suites wired as `test:integration:moderate-upload` /
+  `test:integration:sync-conversation`, appended to `test:rules:all`
+  (which the firestore-rules CI lane runs with both emulators up), and
+  added to the workflow's path triggers incl. `functions/src/storage/**`
+  + `functions/src/messaging/**`.
+
+### 2026-06-13 — BUT-626 prompt A/B bucket experiment [Pattern discovered]
+
+`functions/src/shared/prompt-ab-bucket.ts` — deterministic per-user bucket
+assignment for prompt experiments. Two exported functions:
+- `assignPromptBucket(userId, bucketCount?)` — SHA-256(`uid:prompt_experiment`)
+  mod bucketCount. Pure, <5µs, zero Firestore reads.
+- `resolvePromptBucket(userId, promptVariants?)` — maps bucket to named variant
+  from an optional `string[]`. Returns `{ bucket, variant }` where `variant`
+  is undefined when no experiment is configured (safe no-op).
+
+Integration points:
+- `PromptsConfig` (prompts-config.ts) gained optional `promptVariants?: string[]`
+  parsed from `system/prompts` Firestore doc. Validation is all-or-nothing:
+  any invalid element (non-string, empty string) → field absent (no partial
+  overlay). Doc without the field → field absent. The five required string
+  fields are completely unchanged; `promptVariants` is strictly additive.
+- `structure-recipe.ts` + `ocr-recipe-image.ts`: declared `let experimentBucket`
+  and `let promptVariant` in the function scope BEFORE the `emitTiming` closure
+  so the closure captures them at call time. They get assigned after
+  `getPromptsConfig()` resolves. Early exit paths (validation before prompts
+  fetch) emit undefined bucket fields — Cloud Logging drops undefined JSON
+  fields, distinguishing "bucket not yet known" from bucket=0.
+- Both `structure_recipe.complete` and `ocr_recipe_image.complete` analytics
+  events now carry `experimentBucket` (number) and `promptVariant` (string |
+  absent) alongside the existing `promptVersion`.
+
+**Operator workflow to start an experiment**: add
+`promptVariants: ["control", "challenger"]` to the `system/prompts` Firestore
+doc alongside the normal `promptVersion` bump. Every CF instance picks it up
+within the 5-min cache TTL. To end the experiment: remove the field (or leave
+it — variant=undefined is the no-op fallback). No redeploy needed.
+
+**Patterns worth remembering**:
+
+- **Mutable closure variables let early-exit emitTiming stay unaware of
+  bucket assignment.** The alternative (passing bucket explicitly to every
+  `emitTiming(false, {...})` call) would mean touching 9+ call sites. Declare
+  `let experimentBucket: number | undefined` BEFORE `emitTiming`, assign
+  AFTER prompts fetch. Cloud Logging drops undefined JSON fields, which is
+  exactly the right signal for "validate-before-fetch" exits.
+
+- **`:prompt_experiment` salt keeps this bucket independent of winback
+  buckets.** Same user hashes to different buckets for different experiments.
+  Don't reuse the `:thresholdType` salt pattern from BUT-688 for orthogonal
+  experiments — give each experiment its own salt string.
+
+- **`promptVariants` does NOT replace `promptVersion`.** `promptVersion`
+  remains the canonical analytics key for prompt regressions (bumped on every
+  doc edit). `experimentBucket` + `promptVariant` are additive fields for
+  A/B slicing. A Logs Explorer query like
+  `jsonPayload.experimentBucket=0 AND jsonPayload.promptVersion="v12"`
+  filters to one bucket for one prompt version.
+
+- **Bucket count comes from the variants array length.** When `promptVariants`
+  has 3 entries, bucketCount=3 automatically. No separate config field needed.
+
+- **Test suite** (`test:prompt-ab-bucket`, 14 cases): covers stability,
+  ±10% distribution for 2- and 3-bucket cases over 1000-1500 ids,
+  variant-to-bucket mapping correctness, all fallback/malformed paths, and
+  the analytics payload shape. Auto-discovered by the run-all-tests.js runner.
+
+### 2026-06-15 — BUT-840 Algolia mirror in on-profile-updated [OPS-BLOCKED]
+
+Ticket asked to extend `social/on-profile-updated.ts` to refresh the Algolia
+user search record (`partialUpdateObject`) on displayName/avatarUrl change, so
+the renamed-user mirror stops going stale. Step-0 feasibility gate halted it:
+the Cloud Functions environment has **no Algolia ADMIN credentials**, so the
+server cannot write the index. Not implemented (did not stub/invent a secret).
+
+Evidence gathered:
+- `functions/package.json` has no `algoliasearch` dependency. No
+  `functions/src/algolia/` directory exists (a stale doc-comment in
+  `lib/repositories/algolia/algolia_search_repository.dart:26` references one
+  — it was never created).
+- No `defineSecret`/params/functions-config entry for any `ALGOLIA_*` key
+  anywhere under `functions/`. The only "Algolia" hits in `functions/src/` are
+  a PII-scrubber regex comment and a test name — coincidental.
+- The Flutter client gets its key via `String.fromEnvironment('ALGOLIA_APP_ID'
+  / 'ALGOLIA_API_KEY')` (compile-time `--dart-define`, from the Flutter-side
+  `.env`). That is the **search-only** key — it cannot write the index. The
+  ticket itself notes the index is written client-side today.
+
+What must be provisioned (the OPS hand-off) before this can be implemented:
+1. An Algolia **Admin API key** (write-scoped) stored in **Secret Manager**,
+   e.g. `firebase functions:secrets:set ALGOLIA_ADMIN_API_KEY`, read in code
+   via `defineSecret("ALGOLIA_ADMIN_API_KEY")`.
+2. The Algolia **App ID** + **users index name** as params/secrets too
+   (`ALGOLIA_APP_ID`, `ALGOLIA_USERS_INDEX`). App ID must be the EU cluster
+   (`-eu`) per the BUT-580 GDPR invariant enforced client-side.
+3. Add the `algoliasearch` SDK (or call the REST `partialUpdateObject`
+   endpoint directly to avoid the cold-start cost of the SDK — preferred,
+   ~one `fetch` PATCH to `/1/indexes/{index}/{objectID}/partial`).
+
+Lesson worth remembering: **a client-side third-party integration using a
+public/search-scoped key does NOT imply the server can write that service.**
+Server-side index writes need an admin key that must be independently
+provisioned in Secret Manager — never assume it exists because the client
+talks to the same vendor. Re-validate creds at Step 0 for any "extend the CF
+to also call <external service>" ticket.
+
+### 2026-06-20 — daily-snapshots for dashboard delta/anomaly series [Pattern discovered]
+
+`functions/src/analytics/daily-snapshots.ts` — five `onSchedule` jobs that
+each write ONE doc per UTC day to `analytics/<group>/daily/{date}`, giving
+the admin dashboard's delta-arrow + anomaly engine a historical series for
+the non-time-series tabs (Importhälsa / Recept / Parsing / Drift / Feedback).
+Exports: `snapshotImportHealthDaily`, `snapshotRecipesDaily`,
+`snapshotParsingCorrectionsDaily`, `snapshotOpsDaily`, `snapshotFeedbackDaily`
+(registered in `index.ts` after `computeFeatureRetention`). Compiles clean.
+
+**Patterns worth remembering:**
+
+- **Five structurally-identical aggregators → shared helpers, one file.**
+  `resolveDayWindow(deps)` returns `{db, dateStr, startMs, endMs, dayStart,
+  dayEnd, computedAt}` from the run time once — every job calls it instead of
+  re-deriving UTC boundaries. `dailyDocRef(db, group, dateStr)` centralizes
+  the `analytics/<group>/daily/{date}` (4-segment doc) path so no job
+  miscounts segments (the recurring 3-vs-4 segment trap). `bump(obj, key)`
+  for the per-bucket counters. Kept all five `runX(deps)` seams + thin
+  `onSchedule` wrappers exactly like `compute-feature-retention.ts`.
+
+- **Region is inherited, NOT pinned per-function.** None of these set a
+  `region` in the `onSchedule` options — `setGlobalOptions({region:
+  "europe-west1"})` in `index.ts` governs every function. Pinning a per-
+  function region here would be redundant at best and a drift risk at worst.
+  Confirmed `compute-feature-retention.ts` also omits it. The convention is:
+  global option only, never per-function.
+
+- **`feedback.createdAt` is an ISO-8601 STRING, not a Timestamp.** The other
+  four collections (`parse_events`, `parsing_corrections`, `system_events`)
+  use real `Timestamp` fields (`timestamp`, `timestamp`, `executedAt`
+  respectively) so they range-compare with `Timestamp.fromMillis`. Feedback
+  must range-compare with `new Date(startMs).toISOString()` /
+  `endMs.toISOString()` boundary STRINGS — correct because ISO-8601 sorts
+  lexicographically == chronologically. Mixing the two (passing a Timestamp
+  to the feedback query, or a string to the others) silently returns zero
+  rows — no error, just a wrong snapshot.
+
+- **`system_events` removed-count is dual-named.** `totalDeleted` OR
+  `deletionAuditDeletedCount` depending on which cleanup job wrote the row.
+  The snapshot sums `data.totalDeleted ?? data.deletionAuditDeletedCount`,
+  mirroring `lib/models/admin/ops_event.dart:OpsEvent.fromFirestore` on the
+  dashboard read side. Verified against that model — keep the two in sync.
+
+- **Recipe method classification keys off `core.sourceArtefact.type`** (the
+  `SourceArtefactType.name` string from `lib/models/recipe/source_artefact.dart`):
+  `url→url`, `photoOcr→photo`, `textPaste→textPaste`,
+  `youtubeTranscript|tiktokCaption|instagramCaption→social`, missing/null/
+  unknown→`manual`. Extracted as `classifyRecipeMethod()` so it's unit-
+  testable. Recipes live at `users/{uid}/recipes` (subcollection) → the scan
+  is `db.collectionGroup("recipes")`.
+
+- **Only the recipe snapshot can grow unbounded.** Four of the five are
+  single-day range scans (effectively free at beta scale). The recipe one is
+  a FULL collection-group scan (a stock count, not a per-day delta) → hard-
+  capped at `RECIPE_SCAN_CAP = 5000` with a `logger.warn` if `snap.size >=
+  cap`. When that warn fires, the counts become a floor, not exact — switch
+  to an incremental `core.createdAt`-windowed query. Documented inline.
+
+- **Staggered 05:00–05:40 UTC** to clear the existing 04:00
+  (`track-retention`) / 04:30 (`compute-feature-retention`) jobs that scan
+  big collections. Same scheduling-collision discipline as BUT-599.
+
+### 2026-06-20 — Gen1→Gen2 fleet migration scoping [Pattern discovered]
+
+A `firebase deploy --only functions` aborts with "[onRecipeDeleted(europe-west1)]
+Upgrading from 1st Gen to 2nd Gen is not yet supported." This is NOT a single-
+function problem — it's a whole-fleet stale-generation drift. Firebase aborts
+the ENTIRE deploy on the first gen-conflict it hits, so you only ever see one
+name in the error even when dozens are affected.
+
+**Why it happened**: `index.ts` was migrated wholesale to `firebase-functions/v2/*`
++ `setGlobalOptions({region:"europe-west1"})`, but the matching `delete-then-
+deploy` was never run for the already-deployed 1st-gen copies. Firebase forbids
+in-place gen upgrade, so every function whose deployed copy is still gcfv1 blocks.
+
+**Scoping recipe (reusable)**:
+1. `firebase functions:list --json` — BUT the `version` field (gcfv1/gcfv2) only
+   populates on a DIRECT terminal call. Via `execSync`/piped context it comes
+   back `null`/`undefined`. Capture the gen/region from a direct `functions:list`
+   run, then cross-reference names against `index.ts` exports in code.
+2. Parse `index.ts` exports: `export { ... }` blocks (take the post-`as` alias)
+   + `export const X`. That's the source-of-truth set.
+3. Classify each deployed fn: gcfv1+eu+in-source → DELETE+RECREATE (gen blocker);
+   us-central1+in-source → DELETE(us)+DEPLOY(eu) (region move, also a delete);
+   gcfv2+eu → plain redeploy; deployed-but-not-in-source → DELETE-only orphan.
+
+**This audit's result** (butlery-app-1, 47 deployed): 16 gcfv1 eu gen-blockers,
+17 us-central1 stragglers (all gcfv1), 1 orphan (`cleanupExpiredFriendRequests`,
+renamed to `cleanupExpiredSocialRequests` in source), 13 already-correct,
+17 new-never-deployed.
+
+**Critical exception — auth triggers stay v1.** `onUserDeleted`
+(`cleanup/on-user-deleted.ts`) is `v1.auth.user().onDelete(...)` and imports
+`firebase-functions/v1` BY DESIGN — Firebase Auth `user().onDelete` has NO Gen2
+equivalent. It deploys as gcfv1 and that is CORRECT; it is a plain redeploy, NOT
+a gen migration. Don't "fix" it to v2 — there is no v2 form of it. (`shared/
+batch-update.ts` also imports `firebase-functions/v1` but only for `v1.logger`,
+not a trigger — harmless.) Grep `firebase-functions/v1` to find these before
+assuming "all source is v2".
+
+**Gap-risk classification for delete+recreate**: a delete-then-deploy leaves a
+window where the function doesn't exist.
+- SCHEDULED + CALLABLE → SAFE-GAP. A missed cron tick re-runs next interval; a
+  callable just errors client-side and retries. No silent data loss.
+- EVENT TRIGGERS (Firestore onDocument*, Auth onDelete) → RISKY-GAP. Eventarc
+  does NOT backfill events that fire while the trigger is absent — they're
+  dropped silently. Dangerous ones here: `onRecipeDeleted` (orphaned Storage
+  images = silent cost leak), `onUserDeleted` (GDPR social-cascade cleanup
+  missed — a deletion during the gap leaves PII in other users' docs),
+  `onProfileUpdated` (stale denormalized name/avatar), `onReportCreated`
+  (moderation report dropped). Mitigation: delete + immediately redeploy EACH
+  risky trigger individually (gap ~60-90s, not minutes), do them one at a time
+  last, ideally during low traffic. For pre-launch ~1-user scale the practical
+  risk is near-zero but the discipline matters at scale.
+
+**predeploy hook** (`firebase.json`): runs `npm ci` + `npm audit --audit-level=
+critical` + `npm run build`. `npm ci` does a CLEAN reinstall — slower, and will
+fail the whole deploy if lockfile/registry hiccups. Build was confirmed green
+before planning.
+
+### 2026-06-20 — detectAnomalies nightly outlier job [Pattern discovered]
+
+New scheduled CF `functions/src/analytics/detect-anomalies.ts` (export
+`detectAnomalies`, 06:00 UTC) reading the five `daily-snapshots.ts` series at
+`analytics/<group>/daily/{date}` and writing one report doc at
+`analytics/anomalies/daily/{date}` (4-seg = doc). Same `runDetectAnomalies(deps)`
+test-seam + thin `onSchedule` wrapper shape as `daily-snapshots.ts` /
+`compute-feature-retention.ts`. Test `__tests__/detect-anomalies.test.ts`
+(10 cases, all pass), `test:detect-anomalies` script added (auto-discovered by
+`scripts/run-all-tests.js`). Build + test green.
+
+**Detection rule** (all four gates): baseline count ≥ MIN_SAMPLES(14), sample
+stddev > 0, |z| > 3, AND |today − mean| ≥ a per-series ABSOLUTE_FLOOR (default
+5). The floor is the load-bearing one — without it 3σ on tiny pre-launch counts
+(0→2 feedback rows) fires constantly. `metric` token MUST be exactly
+`<group>_<field>` (e.g. `import_health_totalFailure`, `recipes_total`) — the
+Flutter AnomalyRepository keys its label map off these literals.
+
+**Patterns worth remembering**:
+
+- **Schedule offset for read-after-write CFs.** Pinned 06:00 UTC because it
+  CONSUMES what the 05:00–05:40 snapshot jobs PRODUCE that same morning. A
+  consumer that scans a producer's same-day output must schedule strictly after
+  the producer's slowest run, with margin (snapshots finish in <5 min at scale;
+  20 min margin is cheap insurance). If today's snapshot doc is missing for a
+  series (producer hasn't run / no data), SKIP that series and log info — don't
+  guess a zero, which would manufacture a false "drop" anomaly.
+
+- **Sample stddev (n−1), not population.** Daily series are a sample of an
+  ongoing process, so use the n−1 denominator. `computeBaselineStats` returns
+  stddev 0 for count<2 so the stddev>0 gate naturally absorbs the degenerate
+  case — no separate guard needed.
+
+- **id-desc orderBy on a date-string-keyed subcollection is free.**
+  `orderBy(FieldPath.documentId(), "desc").limit(29)` gives the trailing window
+  with no composite index (doc-id order is intrinsic) because doc ids are
+  `yyyy-mm-dd` which sort lexicographically == chronologically. Same property
+  the feedback snapshot relies on for its ISO-string range query.
+
+- **Pure `evaluateSeries(series, today, baseline)` split out from the I/O.**
+  The four-gate decision is a pure function tested in isolation (cases g/h),
+  while `runDetectAnomalies` only does fetch + split-on-run-day + write. Keeps
+  the statistical logic testable without any fake DB and makes the floor/z
+  thresholds trivially unit-checkable.
+
+- **Empty report is still written.** Even with zero anomalies the job writes
+  `{date, anomalies: [], computedAt}` so the dashboard can distinguish "ran,
+  nothing wrong" from "job never ran" (missing doc). Don't early-return on an
+  empty anomaly list.
+
+- **Idempotency**: deterministic doc id = run-day UTC date + `set()`. Re-run
+  test asserts writeCount=2 but one distinct output path (case i), the canonical
+  idempotency proof for this codebase.
+
+### 2026-06-20 — WS3 validate-limit + on-suggestion-created review [Pattern discovered]
+
+`shared/validate-limit.ts` — `clampLimit(raw, {fallback, max})` imports `HttpsError`
+from `"firebase-functions/v2/https"`. Confirmed correct: the v2 callable dispatcher
+catches any `HttpsError` instance thrown anywhere in the call stack and surfaces it
+as `functions/invalid-argument` to the client. No special wiring needed.
+
+`on-suggestion-created.ts:93-95` — **Medium**: `suggestion.originalName` (raw user
+text) was embedded as a string literal in a `logger.info` message body. Per logging
+conventions, user-supplied free-text must never appear in structured logs (potential
+PII). Fix: replace with `originalNameLength: suggestion.originalName?.length ?? 0`
+in the structured second argument. This is the correct pattern when the operationally
+useful signal is "did we get a non-empty value", not the value itself.
+
+Patterns worth remembering:
+- **`HttpsError` thrown by a helper inside an `onCall` handler propagates
+  correctly** — the v2 dispatcher does not require the `HttpsError` to originate
+  from the top-level handler function. Deep helpers can throw it directly.
+- **`requireAdmin` before `clampLimit` is safe**: a non-admin caller never reaches
+  the limit validation, so exposing a clear `invalid-argument` error to admin callers
+  on malformed input does not change the security posture for non-admins.
+- **Idempotency guard pattern for onDocumentCreated**: stamp a metadata field
+  (`notifiedAt`) on success, check `if (doc.notifiedAt) { return; }` at the start.
+  Works because the trigger retries on uncaught exception; any retry sees the stamp
+  and exits cleanly. The existing pattern in on-suggestion-created is correct.
+- **User-supplied free-text fields (ingredient names, recipe titles) must never
+  appear in logger message strings.** Log length or a hash instead. The structured
+  second arg to `logger.info` should only contain safe identifiers (hashed UIDs,
+  doc IDs, counts, enums).
+
+### 2026-06-20 — B1 acceptFriendRequest review: tx.update vs tx.set(merge) [Pattern discovered]
+
+`functions/src/social/accept-friend-request.ts` reviewed clean except one
+Medium finding: `tx.update(fromProfileRef, {friendsCount: increment(1)})` and
+the matching `tx.update(toProfileRef, ...)` both call `update`, which throws
+`NOT_FOUND` if the `public_profiles` doc does not exist. No data corruption
+results (the transaction aborts without committing anything), but the callable
+returns `HttpsError("internal")` instead of a meaningful error for any user
+whose profile doc was never created. The test seeds both docs unconditionally
+so the emulator suite can't surface this gap.
+
+Fix: replace both `tx.update` calls with `tx.set(..., { merge: true })`. A
+`set` with `merge: true` is an upsert — safe for both absent and existing docs.
+
+**Patterns worth remembering:**
+
+- **`tx.update` vs `tx.set(merge: true)` in transactions**: `tx.update` fails
+  with `NOT_FOUND` on a missing doc; `tx.set(data, { merge: true })` is the
+  safe upsert alternative. For `FieldValue.increment` writes on aggregate docs
+  that MIGHT not exist yet (profile docs created asynchronously on first sign-in,
+  join-era accounts, race conditions), always use `set + merge`.
+
+- **Integration test seeders hide the missing-doc class of bugs.** When every
+  test case calls `seedProfile()` before the function under test, any `tx.update`
+  precondition failure is invisible. Add a test variant that deliberately omits
+  the profile seed whenever the code path touches a doc that could reasonably
+  be absent.
+
+- **Early-return inside a transaction with no writes is valid and correct.**
+  `database.runTransaction(async tx => { ...; return value; })` with zero writes
+  commits an empty transaction (no-op). The SDK does not throw. Verified in B1
+  context: the `status === "accepted" && alreadyFriends` early return on line
+  127-129 is safe.
+
+- **Consent gate is transaction-local.** The `toUserId !== callerUid` check
+  (permission-denied path) occurs BEFORE any writes within the same transaction
+  execution. There is no path where writes precede the gate. Future reviewers
+  should verify this property explicitly whenever the guard and the writes
+  are both inside the same `runTransaction` callback.
+
+### 2026-06-21 — BUT-1167 (AI8) prompt-changelog CI gate [Pattern discovered]
+
+New CI gate failing when an LLM prompt in `gemini-client.ts` changes without a
+matching `PROMPT_CHANGELOG.md` update. Pure core +
+CLI + workflow + hand-rolled test. Files: `functions/src/ci/prompt-changelog-guard.ts`
+(pure `promptChangelogViolation(changedFiles, geminiClientDiff)`),
+`functions/src/ci/prompt-changelog-guard-cli.ts` (git-driven wrapper, exits 1),
+`functions/src/__tests__/prompt-changelog-guard.test.ts` (10 cases),
+`.github/workflows/prompt-changelog-gate.yml` (Node-only, no Flutter).
+
+**New family**: `ci/` — pure CI-gate logic + thin git/process CLI wrappers,
+deployed-irrelevant (excluded from `index.ts`). Test command:
+`npm run test:prompt-changelog-guard` (auto-discovered by
+`scripts/run-all-tests.js` since it's a `test:*` script).
+
+| Path | Concern | Trigger | Test |
+|---|---|---|---|
+| `ci/` | Pure gate logic + git CLI wrapper, not deployed | n/a (run in GitHub Actions) | `test:<name>` |
+
+**Patterns worth remembering**:
+
+- **Token-matching on changed lines is NOT enough for multi-line prompts.**
+  The prompts are big backtick template literals. Editing a prompt's *interior
+  body text* (the most common + most quality-relevant change) produces a diff
+  whose `+`/`-` lines carry NO prompt token — only the surrounding `const
+  RECIPE_EXTRACTION_SYSTEM_PROMPT = \`...` declaration does, and that sits on a
+  context line. My first cut missed this; my own test case (a') caught it. Fix:
+  also scan the **git hunk header's enclosing-declaration context**. For TS,
+  `git diff` appends the enclosing declaration after the closing `@@`, e.g.
+  `@@ -252,7 +252,7 @@ export const RECIPE_EXTRACTION_SYSTEM_PROMPT = \`...`.
+  If a hunk's context names a prompt token AND the hunk changes a line, it's a
+  prompt edit. Verified empirically against a real `sed` body edit before
+  coding the heuristic — don't guess what git emits, generate a sample diff.
+
+- **Two-signal detection avoids both misses and false-positives.** Signal 1:
+  prompt token on a changed line (version bump / constant decl / INJECTION_DEFENSE).
+  Signal 2: changed line inside a prompt-declaration hunk (interior body edit).
+  Context lines and `+++`/`---` file headers never trip it alone, so an edit to
+  a `estimateTokenCount` helper (whose hunk context is the function name, no
+  prompt token) correctly passes — the explicit no-false-positive case.
+
+- **`_SYSTEM_PROMPT` substring beats enumerating constant names.** Matching the
+  shared suffix covers all five current prompts AND any future `*_SYSTEM_PROMPT`
+  without a code change. Same spirit as the BUT-641 route-allowlist drift guard
+  but inverted (here we WANT new constants auto-covered).
+
+- **Diff-base resolution in the workflow.** PR events: `github.event.pull_request.base.sha`.
+  Push events: `github.event.before` (guard against the all-zero first-push
+  SHA → fall back to `HEAD^`). `fetch-depth: 0` is mandatory so the base commit
+  exists locally. The CLI takes `merge-base(base, HEAD)` internally so it only
+  sees this branch's own changes, not unrelated commits on the base.
+
+- **Pure core / git CLI split is the testable shape for CI gates.** The pure
+  function takes `(changedFiles, diff)` and is exhaustively unit-tested with
+  synthetic diffs; the CLI does the git plumbing and exits. End-to-end I also
+  validated the real CLI against a throwaway violating commit (exit 1) and the
+  fixed commit with changelog (exit 0) on a temp branch, then restored main.
+  Don't trust the unit test alone for a gate — prove the git wiring exits
+  correctly too.
+
+- **Convention check paid off: NO jest in this repo.** Task spec asked for a
+  "jest test" but the knowledge file (and every existing suite) uses the
+  hand-rolled `test()` harness via ts-node + `run-all-tests.js` auto-discovery.
+  Wrote the test in-harness instead; flagged the deviation rather than
+  introducing jest. Always reconcile a task's wording against the established
+  test convention before adding a framework.
+
+### 2026-06-22 — BUT-1352 (AI6) recipe-text splitter dedup — PREMISE STALE [Pattern discovered]
+
+Ticket asked to consolidate "duplicated recipe-text splitter logic" in
+`functions/src`. Investigated all `.split(` sites; there is NO genuine
+duplication. Closed as premise-stale, no refactor.
+
+Evidence map (so future passes don't re-chase this):
+- **Only one** recipe-text line-split exists: `llm/structure-recipe.ts:494`
+  `text.split("\n").filter((l) => l.trim().length > 0)` inside
+  `buildIngredientLinesPrompt` — counts already-newline-separated ingredient
+  lines from the Dart client to interpolate the count into the prompt.
+  Single occurrence in the whole LLM pipeline.
+- `llm/ocr-recipe-image.ts` — zero text line-splitting (URLs + JSON only).
+- `llm/gemini-client.ts` — zero text line-splitting; response handling is
+  `JSON.parse` + the BUT-577 brace-counter salvage, not line splitting.
+- `llm/pii-scrubber.ts:285` — `split("/")` on a URL **pathname** for opaque-
+  token redaction. Different delimiter/input/intent.
+- `admin/sync-ingredients.ts:158` — `content.split("\n").filter((l) => l.trim())`
+  looks structurally identical but is the first step of a **CSV parser** in a
+  manual non-deployed `admin/` script, feeding rows into the quote-aware
+  `parseCsvLine`. Sharing a helper would couple the deployed LLM pipeline to a
+  ts-node admin script for a one-liner — a false abstraction.
+- All other `.split` hits are unambiguous different-intent: `/` for Firestore
+  doc paths + Storage object names, `T` for ISO dates, `/\r?\n/` for the CI
+  prompt-changelog diff guard, `;`/`,` for CSV field lists + content-type headers.
+
+**Pattern worth remembering**: "scattered `.split()`" is NOT evidence of
+duplication. A real splitter-dedup needs the *same intent on the same input
+type* at 2+ sites. A line-split into trimmed non-empty lines that appears in a
+prompt builder and in a CSV parser are different intents that happen to share
+characters — don't extract. Per the ticket's own decision rule this is the
+"different-intent one-liners → do NOT refactor" branch.
+
+### 2026-06-24 — BUT-1354 emulator integration tests for cleanup jobs [Pattern discovered]
+
+Added emulator-bound integration tests for three scheduled/triggered cleanup
+jobs by extracting their handler bodies into plain exported async cores
+(mirroring `acceptFriendRequestWithDeps`). Cores: `cleanupOldRateLimitsCore(db)`
+in `cleanup/cleanup-rate-limits.ts`, `cleanupSharedContentMetadataCore(db)` in
+`cleanup/cleanup-shared-content-metadata.ts`, and (already a delegated private
+fn) `cleanupUserSocialData(userId)` in `cleanup/on-user-deleted.ts` — now
+exported and returning its `results` summary. Each `onSchedule`/trigger wrapper
+is a one-liner that calls the core. Tests:
+`cleanup-rate-limits.integration.test.ts` (7/7), `…shared-content-metadata…`
+(11/11), `on-user-deleted.integration.test.ts` (13/13). All green via
+`firebase emulators:exec --only firestore --project demo-test "npx ts-node …"`.
+
+**Patterns worth remembering**:
+
+- **`onSchedule`/v1-auth-trigger bodies need the `runX(db)` test seam too.**
+  Same lift as analytics CFs: pull the body into an exported async core, leave
+  the wrapper as one delegating line, return a small summary
+  (`{deletedCount, processedUsers}` etc.) so emulator tests can assert both
+  effects AND counts. Byte-for-byte body lift — no logic change.
+
+- **on-user-deleted needs NO injected `db`.** Its cascade + ~14 helpers all
+  close over the module-level `db = admin.firestore()`. Because the integration
+  test sets `FIRESTORE_EMULATOR_HOST` BEFORE `admin.initializeApp` and
+  `require()`s the module AFTERward, that module `db` is already emulator-bound.
+  Threading a `database` param through every helper would be large, risky churn
+  for zero test benefit — exporting the existing delegated fn (made to return
+  its results) is the faithful minimal extraction. The injected-`db` form
+  (rate-limits/shared-metadata) is right when the body already takes `db`
+  locally; the module-db form is right when helpers close over module `db`.
+
+- **Storage delete fails gracefully without a Storage emulator.** The feedback
+  screenshot purge in on-user-deleted calls
+  `admin.storage().bucket().deleteFiles(...)`; with no `storageBucket` configured
+  it throws "Bucket name not specified", but the production try/catch logs a
+  warn and continues. The integration test (firestore-only emulator) exercises
+  this path and confirms the cascade still completes + returns its summary —
+  good evidence the best-effort wrapping works.
+
+- **Parent docs must be seeded for `orderBy("__name__")` user/parent scans.**
+  Both rate-limits (scans `users`) and shared-metadata (scans
+  `shared_recipes`/`shared_menus`/`shared_shopping_lists`) paginate the parent
+  collection. Subcollection-only writes don't make the parent doc "exist" for a
+  collection scan in the emulator, so seed an explicit `parentRef.set({...})`
+  or the scan enumerates nothing and the test silently deletes zero.
+
+- **`run-all-tests.js` already excludes `test:integration:`** — registering the
+  three new `test:integration:cleanup-*` / `test:integration:on-user-deleted`
+  scripts keeps them out of `npm test` automatically (emulator-bound). No edit
+  to the runner needed; confirmed the prefix match.
+
+- **functions/ has no eslint config or lint script.** The `eslint-disable`
+  comments in existing `*.integration.test.ts` are precautionary only. The
+  verification gate is `npm run build` (tsc): `tsconfig.json` `include:["src"]`
+  covers `src/__tests__`, and `noUnusedLocals` + `noImplicitReturns` are on, so
+  the typecheck catches unused imports and missing-return paths in both cores
+  and tests.
