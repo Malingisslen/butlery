@@ -151,6 +151,8 @@ export { purgeDormantFamilyData } from "./family/purge-dormant-family-data";
 
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
+// BUT-1468: human review + revoke for held allergen-relevant aliases
+export { reviewLearnedAlias, revokeLearnedAlias } from "./analytics/review-learned-alias";
 
 
 // Feedback Functions - Beta user feedback
