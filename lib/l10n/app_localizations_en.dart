@@ -15791,6 +15791,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String butleryBetygCount(int count) {
+    return '$count ratings';
+  }
+
+  @override
+  String a11yButleryBetygPill(String rating, int count) {
+    return 'Butlery rating $rating, $count votes';
+  }
+
+  @override
+  String get pooledCommunityLabel => 'butlery rating';
+
+  @override
+  String get pooledHouseholdLabel => 'everyone in your kitchen';
+
+  @override
+  String a11yPooledHouseholdPill(String rating) {
+    return 'Your kitchen\'s rating $rating';
+  }
+
+  @override
   String familyRatingProxyEntered(String name) {
     return 'entered by $name';
   }

@@ -15834,6 +15834,27 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String butleryBetygCount(int count) {
+    return '$count betyg';
+  }
+
+  @override
+  String a11yButleryBetygPill(String rating, int count) {
+    return 'Butlery-betyget $rating, $count röster';
+  }
+
+  @override
+  String get pooledCommunityLabel => 'butlery-betyget';
+
+  @override
+  String get pooledHouseholdLabel => 'alla i ditt kök';
+
+  @override
+  String a11yPooledHouseholdPill(String rating) {
+    return 'Ditt köks betyg $rating';
+  }
+
+  @override
   String familyRatingProxyEntered(String name) {
     return 'inmatat av $name';
   }

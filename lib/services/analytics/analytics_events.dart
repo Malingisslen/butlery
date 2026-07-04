@@ -74,6 +74,15 @@ abstract final class AnalyticsEvents {
   static const recipeFavorited = 'recipe_favorited';
   static const postImportEdit = 'post_import_edit';
 
+  // --- Pooled ratings "Butlery-betyget" (decision 15) ---
+  // `poolRatingShown` fires once per recipe-detail open when the community
+  // score clears the display floor and is rendered (the detail-open stats
+  // read); NOT per card, to keep the funnel + read volume low. `poolRatingContributed`
+  // fires when the user rates a poolable recipe (client-side intent signal;
+  // the server mirror CF remains the authority for the actual pool event).
+  static const poolRatingShown = 'pool_rating_shown';
+  static const poolRatingContributed = 'pool_rating_contributed';
+
   // --- Cooking mode (BUT-802 HIGH-PA4) ---
   static const cookingSessionStarted = 'cooking_session_started';
   static const cookingStepAdvanced = 'cooking_step_advanced';

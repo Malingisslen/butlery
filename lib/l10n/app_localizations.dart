@@ -26399,6 +26399,36 @@ abstract class AppLocalizations {
   /// **'Allas betyg {rating}'**
   String a11yAllaRatingPill(String rating);
 
+  /// No description provided for @butleryBetygCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} betyg'**
+  String butleryBetygCount(int count);
+
+  /// No description provided for @a11yButleryBetygPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery-betyget {rating}, {count} röster'**
+  String a11yButleryBetygPill(String rating, int count);
+
+  /// No description provided for @pooledCommunityLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'butlery-betyget'**
+  String get pooledCommunityLabel;
+
+  /// No description provided for @pooledHouseholdLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'alla i ditt kök'**
+  String get pooledHouseholdLabel;
+
+  /// No description provided for @a11yPooledHouseholdPill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt köks betyg {rating}'**
+  String a11yPooledHouseholdPill(String rating);
+
   /// No description provided for @familyRatingProxyEntered.
   ///
   /// In sv, this message translates to:
