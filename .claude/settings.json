@@ -90,6 +90,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/org-retro-due-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/janitor-due-check.sh"
           }
         ]
       }
