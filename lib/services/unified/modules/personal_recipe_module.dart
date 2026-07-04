@@ -16,6 +16,8 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -550,6 +552,36 @@ class PersonalRecipeModule with StreamManagementMixin {
   }
 
   Future<void> _saveToCache(Recipe recipe) async {
+    // Pooled-ratings hint (Increment 6): stamp the content-derived poolKey onto
+    // the recipe just before it's persisted (cache + the Firebase sync that
+    // follows share this same object) so the card/detail can read
+    // canonical_recipe_stats/{poolKey} without recomputing. Gated on the
+    // `enable_pooled_ratings` KILL SWITCH: with the feature off (e.g. a legal /
+    // backfill hold) NO pooling metadata is written client-side. When the flag
+    // flips on, new saves stamp the hint; recipes saved earlier have a null hint
+    // and the display computes the key on-the-fly. Cheap + deterministic; the
+    // server stays authoritative for actual pool routing. Null poolKey =
+    // fail-closed (generic/no-anchor dish) — display falls back to the per-copy.
+    final pooledOn =
+        ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
+          FeatureFlags.enablePooledRatings,
+        ) ??
+        false;
+    if (pooledOn) {
+      // A display hint must NEVER be able to abort a recipe save. compute() is
+      // deterministic string processing over arbitrary user text — treat "it
+      // can't throw" as an assumption, not a guarantee: on any failure leave the
+      // hint null (fail-closed) and let the save proceed.
+      try {
+        recipe.core.ratingPoolKey = CanonicalPoolKey.compute(
+          title: recipe.core.title,
+          ingredients: recipe.core.ingredients,
+        );
+      } catch (e) {
+        recipe.core.ratingPoolKey = null;
+        AppLogger.error('poolKey hint compute failed (non-fatal): $e');
+      }
+    }
     try {
       final recipeData = recipe.toJson();
       await _cacheHelper.saveJson(recipe.id, recipeData);

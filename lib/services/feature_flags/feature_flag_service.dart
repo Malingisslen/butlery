@@ -61,6 +61,10 @@ class FeatureFlagService {
     'audit_log_retention_days': 90,
     'enable_performance_monitoring': true,
 
+    // Pooled ratings "Butlery-betyget" — OFF until the full pipeline (incr 1–6)
+    // ships and the backfill/legal gates clear. Same RC key the server reads.
+    'enable_pooled_ratings': false,
+
     // Safety Flags (kill switches)
     'enable_social_features': true,
     'enable_sharing': true,
@@ -305,6 +309,10 @@ abstract final class FeatureFlags {
   // Operational Flags
   static const auditLogRetentionDays = 'audit_log_retention_days';
   static const enablePerformanceMonitoring = 'enable_performance_monitoring';
+
+  // Pooled ratings "Butlery-betyget" display + contribution kill switch.
+  // Must equal the server key in functions/src/ratings/pooled-ratings-flag.ts.
+  static const enablePooledRatings = 'enable_pooled_ratings';
 
   // Safety Flags (kill switches)
   static const enableSocialFeatures = 'enable_social_features';

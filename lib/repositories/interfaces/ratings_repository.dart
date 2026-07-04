@@ -48,6 +48,14 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   /// Get ratings stream for real-time updates
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId);
 
+  /// Read the pooled "Butlery-betyget" stats for a dish identity ([poolKey]).
+  ///
+  /// Reads the server-authoritative `canonical_recipe_stats/{poolKey}` aggregate
+  /// (count + average across every user who rated the same dish). Returns null
+  /// when no pool doc exists yet. Any signed-in user may read this per the
+  /// security rules; there is no per-entity ownership on an anonymous aggregate.
+  Future<PooledStats?> getPooledStats(String poolKey);
+
   /// Get user's ratings across all recipes
   Future<List<RecipeRating>> getUserRatings(String userId);
 
@@ -142,4 +150,24 @@ class RatingStatistics {
 
   /// Get display-friendly average rating
   String get displayRating => averageRating.toStringAsFixed(1);
+}
+
+/// Pooled "Butlery-betyget" stats for one dish identity (poolKey) — the
+/// server-computed aggregate across every user who rated the same dish.
+/// [average] is null when the pool is empty (no raters).
+class PooledStats {
+  final int count;
+  final double? average;
+
+  const PooledStats({required this.count, this.average});
+
+  /// Decision 8: the pooled score displays only once at least this many
+  /// distinct people have rated the dish (k-anonymity + anti-gaming floor).
+  static const int displayFloor = 5;
+
+  /// True when the pool has both a value and enough raters to display.
+  bool get meetsDisplayFloor => average != null && count >= displayFloor;
+
+  /// Display-friendly average (one decimal), e.g. "4.3".
+  String get displayAverage => (average ?? 0).toStringAsFixed(1);
 }

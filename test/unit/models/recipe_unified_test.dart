@@ -365,6 +365,33 @@ void main() {
         final json3 = deserialized2.toJson();
         expect(json3, equals(json2));
       });
+
+      test(
+        'ratingPoolKey (pooled-ratings hint) round-trips + is backward-safe',
+        () {
+          final core = testRecipe.core.copyWith(
+            ratingPoolKey: 'v1:abcd1234ef567890',
+          );
+          // Firestore round-trip preserves the hint.
+          expect(
+            RecipeCore.fromMap(core.id, core.toFirestore()).ratingPoolKey,
+            'v1:abcd1234ef567890',
+          );
+          // JSON round-trip preserves it too — both serializers changed, so the
+          // JSON leg needs its own guard (a future refactor that drops the field
+          // from fromJson while fromMap keeps it would otherwise ship green).
+          expect(
+            RecipeCore.fromJson(core.toJson()).ratingPoolKey,
+            'v1:abcd1234ef567890',
+          );
+          // copyWith sentinel: omitting keeps it; passing null clears it.
+          expect(core.copyWith().ratingPoolKey, 'v1:abcd1234ef567890');
+          expect(core.copyWith(ratingPoolKey: null).ratingPoolKey, isNull);
+          // Backward-compat: a legacy doc with no field deserializes to null.
+          final legacy = core.toFirestore()..remove('ratingPoolKey');
+          expect(RecipeCore.fromMap(core.id, legacy).ratingPoolKey, isNull);
+        },
+      );
     });
 
     group('RecipeCore Firestore Serialization', () {

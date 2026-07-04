@@ -24,6 +24,10 @@ abstract final class FirestoreCollections {
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';
+  // Pooled ratings "Butlery-betyget": server-authoritative aggregate keyed by
+  // poolKey (count + average across every user who rated the same dish).
+  // Read-only for signed-in users; written only by the Stage-B aggregator CF.
+  static const String canonicalRecipeStats = 'canonical_recipe_stats';
   // Family-rating feature (household-scoped, shared across household members).
   static const String households = 'households';
   static const String dinerProfiles = 'diner_profiles';

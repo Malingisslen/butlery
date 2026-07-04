@@ -163,6 +163,13 @@ class RecipeCore with JsonSerializableMixin {
 
   String? sourceUrl;
 
+  /// Pooled-ratings "Butlery-betyget" hint: the content-derived poolKey for this
+  /// dish, computed client-side on save (display/index only — the server stays
+  /// authoritative). Lets the card/detail read canonical_recipe_stats/{poolKey}
+  /// without recomputing. Nullable + backward-safe (mirrors [sourceUrl]); null
+  /// when the dish yields no key (fail-closed) or the recipe predates this field.
+  String? ratingPoolKey;
+
   /// BUT-989: ids of recipes related to this one (variations, "used in"
   /// references, base components). Symmetric — if A.relatedRecipeIds
   /// contains B, then B.relatedRecipeIds should contain A. The
@@ -364,6 +371,7 @@ class RecipeCore with JsonSerializableMixin {
     this.rating,
     required this.mealType,
     this.sourceUrl,
+    this.ratingPoolKey,
     this.relatedRecipeIds,
     this.sourceArtefact,
     List<String>? imageUrls,
@@ -432,6 +440,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? ratingPoolKey = _sentinel,
     Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
@@ -511,6 +520,9 @@ class RecipeCore with JsonSerializableMixin {
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
+      ratingPoolKey: ratingPoolKey == _sentinel
+          ? this.ratingPoolKey
+          : ratingPoolKey as String?,
       relatedRecipeIds: relatedRecipeIds == _sentinel
           ? this.relatedRecipeIds
           : (relatedRecipeIds as List?)?.cast<String>(),
@@ -632,6 +644,7 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    'ratingPoolKey': ratingPoolKey,
     'relatedRecipeIds': relatedRecipeIds,
     'sourceArtefact': sourceArtefact?.toJson(),
     'imageUrls': imageUrls,
@@ -684,6 +697,7 @@ class RecipeCore with JsonSerializableMixin {
     'rating': rating,
     'mealType': mealType,
     'sourceUrl': sourceUrl,
+    'ratingPoolKey': ratingPoolKey,
     'relatedRecipeIds': relatedRecipeIds,
     'sourceArtefact': sourceArtefact?.toJson(),
     'imageUrls': imageUrls,
@@ -785,6 +799,10 @@ class RecipeCore with JsonSerializableMixin {
         defaultValue: 'Middag',
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
+      ratingPoolKey: utils.SerializationUtils.safeNullableString(
+        json,
+        'ratingPoolKey',
+      ),
       relatedRecipeIds: json['relatedRecipeIds'] is List
           ? List<String>.from(json['relatedRecipeIds'] as List)
           : null,
@@ -1020,6 +1038,10 @@ class RecipeCore with JsonSerializableMixin {
         defaultValue: 'Middag',
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      ratingPoolKey: utils.SerializationUtils.safeNullableString(
+        data,
+        'ratingPoolKey',
+      ),
       relatedRecipeIds: data['relatedRecipeIds'] is List
           ? List<String>.from(data['relatedRecipeIds'] as List)
           : null,

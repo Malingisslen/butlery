@@ -415,6 +415,24 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   }
 
   @override
+  Future<PooledStats?> getPooledStats(String poolKey) async {
+    if (poolKey.isEmpty) return null;
+    // One doc read of the server-maintained aggregate (Stage-B CF). Raw-map read
+    // like getRatingStatisticsStream — the doc is an anonymous count/average, so
+    // no per-entity ownership check applies (rules allow any signed-in read).
+    final snap = await firestore
+        .collection(FirestoreCollections.canonicalRecipeStats)
+        .doc(poolKey)
+        .get();
+    final data = snap.data();
+    if (data == null) return null;
+    return PooledStats(
+      count: (data['count'] as num?)?.toInt() ?? 0,
+      average: (data['average'] as num?)?.toDouble(),
+    );
+  }
+
+  @override
   Future<List<RecipeRating>> getUserRatings(String userId) async {
     final querySnapshot = await collection
         .where('userId', isEqualTo: userId)
