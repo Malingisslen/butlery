@@ -14,6 +14,7 @@ import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 
 // Re-export for backward compatibility
 export 'package:butlery/widgets/recipe/recipe_card.dart' show RecipeCardStyle;
@@ -149,6 +150,11 @@ class ContentCard extends StatelessWidget {
   /// a badge when the "Laga med vad jag har" filter is active.
   final double? matchPercent;
 
+  /// Pooled "Butlery-betyget" stats for this recipe's dish, when the feature is
+  /// on and the pool clears the display floor. Null → the card shows the
+  /// per-copy rating (decision 9 fallback).
+  final PooledStats? pooledStats;
+
   /// Accept action handler specifically for friend request cards
   final VoidCallback? onAccept;
 
@@ -195,6 +201,7 @@ class ContentCard extends StatelessWidget {
     this.userDietaryPrefs,
     this.onFavoriteToggle,
     this.matchPercent,
+    this.pooledStats,
     this.onAccept,
     this.onDecline,
   });
@@ -252,6 +259,7 @@ class ContentCard extends StatelessWidget {
       userAllergenPrefs: userAllergenPrefs,
       userDietaryPrefs: userDietaryPrefs,
       matchPercent: matchPercent,
+      pooledStats: pooledStats,
     );
   }
 

@@ -59,6 +59,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
       matchPercent: viewModel.pantryOnly
           ? viewModel.pantryMatches[recipe.id]
           : null,
+      pooledStats: viewModel.pooledStats[recipe.id],
       onFavoriteToggle: viewModel.isSelectionMode
           ? null
           : () => viewModel.toggleFavorite(recipe.id),

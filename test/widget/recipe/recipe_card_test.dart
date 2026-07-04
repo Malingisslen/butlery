@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -879,13 +880,18 @@ void main() {
         offlineData: base.offlineData,
       );
 
-      Future<void> pump(WidgetTester tester, Recipe recipe) =>
-          tester.pumpWidget(
-            createLocalizedTestApp(
-              wrapInScaffold: false,
-              child: Scaffold(body: RecipeCard(recipe: recipe)),
-            ),
-          );
+      Future<void> pump(
+        WidgetTester tester,
+        Recipe recipe, {
+        PooledStats? pooledStats,
+      }) => tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Scaffold(
+            body: RecipeCard(recipe: recipe, pooledStats: pooledStats),
+          ),
+        ),
+      );
 
       testWidgets('family verdict supersedes the personal star', (
         tester,
@@ -928,6 +934,67 @@ void main() {
           );
           expect(find.textContaining('familj'), findsOneWidget);
           expect(find.textContaining('alla'), findsOneWidget);
+        },
+      );
+
+      // ── Butlery-betyget community pill (AC7) ──
+      testWidgets(
+        'community pill shows at n>=5 with the count, replacing the per-copy alla pill',
+        (tester) async {
+          await pump(
+            tester,
+            withCore(testRecipe, averageRating: 4.0),
+            pooledStats: const PooledStats(count: 12, average: 4.3),
+          );
+          // The community pill carries the vote count ("betyg" is unique to it).
+          expect(find.textContaining('12 betyg'), findsOneWidget);
+          // Decision 9: it replaces the per-copy 'alla' aggregate on the card.
+          expect(find.textContaining('alla'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'below the floor (n<5) shows no community pill — per-copy fallback intact',
+        (tester) async {
+          await pump(
+            tester,
+            withCore(testRecipe, averageRating: 4.0),
+            pooledStats: const PooledStats(count: 4, average: 4.3),
+          );
+          expect(find.textContaining('betyg'), findsNothing);
+          expect(find.textContaining('alla'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'null pooledStats (flag off / not loaded) leaves the per-copy display unchanged',
+        (tester) async {
+          await pump(tester, withCore(testRecipe, averageRating: 4.0));
+          expect(find.textContaining('betyg'), findsNothing);
+          expect(find.textContaining('alla'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'a floored pool DEMOTES the co-existing family pill off brand-green',
+        (tester) async {
+          await pump(
+            tester,
+            withCore(testRecipe, familyAverage: 4.2, familyRatingCount: 3),
+            pooledStats: const PooledStats(count: 12, average: 4.3),
+          );
+          // Both render: the family verdict is kept AND the community pill added.
+          expect(find.textContaining('familj'), findsOneWidget);
+          expect(find.textContaining('12 betyg'), findsOneWidget);
+          // Demotion (decision 9): the family pill's text recedes from the
+          // brand-green onPrimary to the neutral onSurfaceVariant, so only the
+          // community number reads as green. Removing `demoted: showPool` would
+          // leave it onPrimary and fail this.
+          final cs = Theme.of(
+            tester.element(find.byType(RecipeCard)),
+          ).colorScheme;
+          final familyText = tester.widget<Text>(find.textContaining('familj'));
+          expect(familyText.style?.color, cs.onSurfaceVariant);
         },
       );
     });

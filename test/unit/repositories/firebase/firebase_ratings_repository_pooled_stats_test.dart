@@ -109,4 +109,43 @@ void main() {
       expect(stats.meetsDisplayFloor, isFalse);
     });
   });
+
+  group('getBulkPooledStats (batch read for a list screen)', () {
+    test(
+      'returns stats keyed by poolKey; missing keys are simply absent',
+      () async {
+        final fs = FakeFirebaseFirestore();
+        await fs.collection('canonical_recipe_stats').doc('v1:a').set({
+          'count': 7,
+          'average': 4.5,
+        });
+        await fs.collection('canonical_recipe_stats').doc('v1:b').set({
+          'count': 3,
+          'average': 5, // int mean stored as int — must survive as num?
+        });
+        final map = await _repo(
+          fs,
+        ).getBulkPooledStats(['v1:a', 'v1:b', 'v1:missing']);
+        expect(map.keys.toSet(), {'v1:a', 'v1:b'});
+        expect(map['v1:a']!.count, 7);
+        expect(map['v1:a']!.average, 4.5);
+        expect(map['v1:b']!.average, 5.0);
+        expect(map.containsKey('v1:missing'), isFalse);
+      },
+    );
+
+    test('empties dropped, duplicates deduped, empty input → {}', () async {
+      final fs = FakeFirebaseFirestore();
+      await fs.collection('canonical_recipe_stats').doc('v1:a').set({
+        'count': 6,
+        'average': 4.0,
+      });
+      expect(await _repo(fs).getBulkPooledStats(const []), isEmpty);
+      expect(await _repo(fs).getBulkPooledStats(const ['', '']), isEmpty);
+      // Duplicate 'v1:a' + an empty key: one unique pool queried, one result.
+      final map = await _repo(fs).getBulkPooledStats(['v1:a', 'v1:a', '']);
+      expect(map.length, 1);
+      expect(map['v1:a']!.count, 6);
+    });
+  });
 }

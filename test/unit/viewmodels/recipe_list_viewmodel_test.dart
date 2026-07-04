@@ -21,8 +21,14 @@ import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/mocks/service_mocks.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 
 // ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
+
+class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
 
 void main() {
   group('RecipeListViewModel', () {
@@ -160,6 +166,95 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('pooled "Butlery-betyget" stats enrichment (_refreshPooledStats)', () {
+      // The seam the endpoint tests stub past: the ViewModel joins the
+      // poolKey-keyed batch read to a recipe-id-keyed map the card reads.
+      late RatingsRepository ratingsRepo;
+      late _MockFeatureFlagService flags;
+
+      Recipe pooled(String id, String title, String? poolKey) {
+        final r = RecipeFactory.build(id: id, title: title);
+        r.core.ratingPoolKey = poolKey;
+        return r;
+      }
+
+      setUp(() {
+        final getIt = GetIt.instance;
+        flags = _MockFeatureFlagService();
+        when(
+          () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+        ).thenReturn(true);
+        if (getIt.isRegistered<FeatureFlagService>()) {
+          getIt.unregister<FeatureFlagService>();
+        }
+        getIt.registerSingleton<FeatureFlagService>(flags);
+        ratingsRepo = getIt<RatingsRepository>();
+      });
+
+      // Set the live recipe list AND emit on stateStream (which fires
+      // _onRecipesChanged → the unawaited _refreshPooledStats), then flush the
+      // mock Future chain.
+      Future<void> load(List<Recipe> recipes) async {
+        mockRecipeService.setRecipeState(
+          recipes: recipes,
+          currentUserId: 'test-user-123',
+          isInitialized: true,
+          isLoading: false,
+        );
+        mockRecipeService.emitState(RecipeStateData(recipes: recipes));
+        for (var i = 0; i < 6; i++) {
+          await Future.delayed(const Duration(milliseconds: 5));
+        }
+      }
+
+      test('re-keys poolKey stats onto recipe ids; shared pool reaches '
+          'BOTH copies; pool-less recipes get none', () async {
+        when(() => ratingsRepo.getBulkPooledStats(any())).thenAnswer(
+          (_) async => {'v1:soppa': const PooledStats(count: 12, average: 4.3)},
+        );
+        // r1 + r2 are two copies of the SAME dish (shared poolKey) — the exact
+        // pooling premise; r3's pool has no stats; r4 has no pool at all.
+        await load([
+          pooled('r1', 'Soppa', 'v1:soppa'),
+          pooled('r2', 'Soppa kopia', 'v1:soppa'),
+          pooled('r3', 'Gryta', 'v1:gryta'),
+          pooled('r4', 'Ny rätt', null),
+        ]);
+
+        final stats = viewModel.pooledStats;
+        expect(stats['r1']?.count, 12, reason: 'copy 1 gets the shared stat');
+        expect(stats['r2']?.count, 12, reason: 'copy 2 gets the SAME stat');
+        expect(
+          stats.containsKey('r3'),
+          isFalse,
+          reason: 'no stat for its pool',
+        );
+        expect(stats.containsKey('r4'), isFalse, reason: 'no poolKey at all');
+      });
+
+      test('flag OFF → no read, empty map (per-copy fallback)', () async {
+        when(
+          () => flags.isEnabled(FeatureFlags.enablePooledRatings),
+        ).thenReturn(false);
+        when(
+          () => ratingsRepo.getBulkPooledStats(any()),
+        ).thenAnswer((_) async => {'v1:soppa': const PooledStats(count: 9)});
+        await load([pooled('r1', 'Soppa', 'v1:soppa')]);
+
+        expect(viewModel.pooledStats, isEmpty);
+        verifyNever(() => ratingsRepo.getBulkPooledStats(any()));
+      });
+
+      test('repo error → fail-soft empty map (cards fall back)', () async {
+        when(
+          () => ratingsRepo.getBulkPooledStats(any()),
+        ).thenThrow(Exception('network'));
+        await load([pooled('r1', 'Soppa', 'v1:soppa')]);
+
+        expect(viewModel.pooledStats, isEmpty);
+      });
     });
 
     group('Initialization', () {

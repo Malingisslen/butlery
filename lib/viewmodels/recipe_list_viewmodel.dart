@@ -23,6 +23,8 @@ import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends BaseViewModel {
@@ -99,6 +101,21 @@ class RecipeListViewModel extends BaseViewModel {
   /// is inactive or still loading.
   Map<String, double> _pantryMatches = const {};
   bool _isLoadingPantryMatches = false;
+
+  /// Recipe id → pooled "Butlery-betyget" stats for the currently loaded window.
+  /// Populated by [_refreshPooledStats] when the `enable_pooled_ratings` flag is
+  /// on; empty when the flag is off, still loading, or no recipe has a pool.
+  Map<String, PooledStats> _pooledStats = const {};
+
+  /// The unique poolKey set + the poolKey→stats map of the last successful
+  /// pooled-stats read. Lets [_refreshPooledStats] skip the Firestore READ when
+  /// the visible pools are unchanged (cost-minimisation) while STILL rebuilding
+  /// the recipe-id map every call — because the same poolKey set can back a
+  /// different set of visible recipe copies (loadMore reveals more copies of one
+  /// dish; a same-pool id swaps in on a stream tick), the id map must never be
+  /// memoised, only the network read.
+  Set<String> _lastPooledKeyQuery = const {};
+  Map<String, PooledStats> _lastPooledByKey = const {};
 
   // Grid/list view toggle
   bool _isGridView = false;
@@ -318,6 +335,11 @@ class RecipeListViewModel extends BaseViewModel {
 
   /// Whether the pantry match list is currently being fetched.
   bool get isLoadingPantryMatches => _isLoadingPantryMatches;
+
+  /// Pooled "Butlery-betyget" stats per recipe id for the loaded window.
+  /// Empty when the feature flag is off or the stats haven't loaded yet — the
+  /// card then shows the per-copy number (decision 9 fallback).
+  Map<String, PooledStats> get pooledStats => _pooledStats;
 
   /// Whether local writes are pending server confirmation (Firestore metadata).
   bool get hasPendingWrites => _recipeService.hasPendingWrites;
@@ -587,6 +609,83 @@ class RecipeListViewModel extends BaseViewModel {
     }
   }
 
+  /// Fetch pooled "Butlery-betyget" stats for the currently displayed recipes,
+  /// batched into `whereIn` chunks (kFirestoreWhereInLimit per query) — never
+  /// one read per card. Flag-gated and fail-soft: any error leaves the map empty
+  /// and the cards fall back to the per-copy number. The Firestore READ is
+  /// memoised on the visible poolKey set, but the recipe-id map is ALWAYS rebuilt
+  /// from the current window — the same pool set can back a different set of
+  /// visible copies (loadMore reveals more copies of one dish), so memoising the
+  /// id map would drop pills from the newly-shown copies.
+  Future<void> _refreshPooledStats() async {
+    final on =
+        ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
+          FeatureFlags.enablePooledRatings,
+        ) ??
+        false;
+    if (!on) {
+      if (_pooledStats.isNotEmpty ||
+          _lastPooledKeyQuery.isNotEmpty ||
+          _lastPooledByKey.isNotEmpty) {
+        _pooledStats = const {};
+        _lastPooledKeyQuery = const {};
+        _lastPooledByKey = const {};
+        if (!_isDisposed) notifyListeners();
+      }
+      return;
+    }
+    final visible = recipes; // already limited to the display window
+    final poolKeys = <String>[
+      for (final r in visible)
+        if (r.core.ratingPoolKey != null && r.core.ratingPoolKey!.isNotEmpty)
+          r.core.ratingPoolKey!,
+    ];
+    if (poolKeys.isEmpty) {
+      if (_pooledStats.isNotEmpty ||
+          _lastPooledKeyQuery.isNotEmpty ||
+          _lastPooledByKey.isNotEmpty) {
+        _pooledStats = const {};
+        _lastPooledKeyQuery = const {};
+        _lastPooledByKey = const {};
+        if (!_isDisposed) notifyListeners();
+      }
+      return;
+    }
+    final keySet = poolKeys.toSet();
+    // Skip only the NETWORK read when the visible pools are unchanged (a busy
+    // real-time list ticks often without the dish set changing) — but still fall
+    // through to rebuild the recipe-id map below from the cached stats.
+    final sameKeys =
+        keySet.length == _lastPooledKeyQuery.length &&
+        keySet.containsAll(_lastPooledKeyQuery);
+    Map<String, PooledStats> byKey;
+    if (sameKeys) {
+      byKey = _lastPooledByKey;
+    } else {
+      try {
+        byKey = await ServiceLocator.get<RatingsRepository>()
+            .getBulkPooledStats(poolKeys);
+        _lastPooledByKey = byKey;
+        _lastPooledKeyQuery = keySet;
+      } catch (_) {
+        _pooledStats = const {};
+        _lastPooledByKey = const {};
+        _lastPooledKeyQuery = const {};
+        if (!_isDisposed) notifyListeners();
+        return;
+      }
+    }
+    // Always rebuild the recipe-id map from the CURRENT visible list.
+    final byRecipe = <String, PooledStats>{};
+    for (final r in visible) {
+      final k = r.core.ratingPoolKey;
+      final s = (k == null) ? null : byKey[k];
+      if (s != null) byRecipe[r.id] = s;
+    }
+    _pooledStats = byRecipe;
+    if (!_isDisposed) notifyListeners();
+  }
+
   void clearAllFilters() {
     _activeTimeFilters.clear();
     _activeMealTypeFilters.clear();
@@ -787,6 +886,8 @@ class RecipeListViewModel extends BaseViewModel {
   void loadMore() {
     if (canLoadMore) {
       _displayLimit += _initialPageSize;
+      // The newly revealed page needs its pooled stats too (decision 9).
+      unawaited(_refreshPooledStats());
       notifyListeners();
     }
   }
@@ -1098,6 +1199,7 @@ class RecipeListViewModel extends BaseViewModel {
     if (_pantryOnly) {
       unawaited(_refreshPantryMatches());
     }
+    unawaited(_refreshPooledStats());
     notifyListeners();
   }
 

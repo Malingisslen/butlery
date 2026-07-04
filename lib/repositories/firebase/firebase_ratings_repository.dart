@@ -433,6 +433,35 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   }
 
   @override
+  Future<Map<String, PooledStats>> getBulkPooledStats(
+    List<String> poolKeys,
+  ) async {
+    // De-dupe + drop empties so a list with many copies of the same dish (the
+    // pooling premise) issues at most one query per unique pool, and an empty
+    // key never becomes a `.doc('')` assertion inside a whereIn batch.
+    final unique = poolKeys.where((k) => k.isNotEmpty).toSet().toList();
+    if (unique.isEmpty) return const {};
+
+    final results = <String, PooledStats>{};
+    // canonical_recipe_stats is keyed by poolKey (doc-id), so filter on the
+    // document id — same chunked whereIn shape as getBulkRatingStatistics.
+    for (final batch in unique.chunked(kFirestoreWhereInLimit)) {
+      final snap = await firestore
+          .collection(FirestoreCollections.canonicalRecipeStats)
+          .where(FieldPath.documentId, whereIn: batch)
+          .get();
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        results[doc.id] = PooledStats(
+          count: (data['count'] as num?)?.toInt() ?? 0,
+          average: (data['average'] as num?)?.toDouble(),
+        );
+      }
+    }
+    return results;
+  }
+
+  @override
   Future<List<RecipeRating>> getUserRatings(String userId) async {
     final querySnapshot = await collection
         .where('userId', isEqualTo: userId)

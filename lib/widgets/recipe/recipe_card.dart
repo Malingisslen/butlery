@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -58,6 +59,13 @@ class RecipeCard extends StatelessWidget {
   /// active in the recipe list.
   final double? matchPercent;
 
+  /// Pooled "Butlery-betyget" stats for this recipe's dish. When present and the
+  /// pool clears the display floor (n>=5), the card shows the green community
+  /// pill INSTEAD of the per-copy 'alla' aggregate (decision 9) and demotes the
+  /// household/personal pill to neutral so there is one brand-green number. Null
+  /// (flag off / below floor / not loaded) → unchanged per-copy display.
+  final PooledStats? pooledStats;
+
   const RecipeCard({
     super.key,
     required this.recipe,
@@ -83,6 +91,7 @@ class RecipeCard extends StatelessWidget {
     this.showAnalysisStatus =
         false, // UI Redesign: Hide analysis status in list
     this.matchPercent,
+    this.pooledStats,
   });
 
   @override
@@ -474,6 +483,12 @@ class RecipeCard extends StatelessWidget {
     final hasAlla = allaAvg != null && allaAvg > 0;
     final hasPersonal = recipe.rating != null && recipe.rating! > 0;
 
+    // Decision 9: when the pool clears the floor, the green Butlery-betyget pill
+    // takes the community slot (replacing the per-copy 'alla' pill), and the
+    // household/personal pill is demoted to neutral so only one green shows.
+    final pooled = pooledStats;
+    final showPool = pooled != null && pooled.meetsDisplayFloor;
+
     final hasMatchPercent = matchPercent != null;
 
     // Wrap (not Row) so the rating + match badges flow to a new line
@@ -492,10 +507,13 @@ class RecipeCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         if (hasFamily)
-          _buildFamilyPill(context, familyAvg)
+          _buildFamilyPill(context, familyAvg, demoted: showPool)
         else if (hasPersonal)
-          _buildRatingPill(context),
-        if (hasAlla) _buildAllaPill(context, allaAvg),
+          _buildRatingPill(context, demoted: showPool),
+        if (showPool)
+          _buildPooledPill(context, pooled)
+        else if (hasAlla)
+          _buildAllaPill(context, allaAvg),
         if (hasMatchPercent) _buildMatchBadge(context, matchPercent!),
       ],
     );
@@ -505,23 +523,69 @@ class RecipeCard extends StatelessWidget {
   String _fmt(double v) => v.toStringAsFixed(1).replaceAll('.', ',');
 
   /// Green "familj X,X" pill \u2014 the household's private verdict (the default).
-  Widget _buildFamilyPill(BuildContext context, double avg) {
+  Widget _buildFamilyPill(
+    BuildContext context,
+    double avg, {
+    bool demoted = false,
+  }) {
     final cs = Theme.of(context).colorScheme;
+    // Demoted (a green Butlery-betyget pill is also present): recede to a quiet
+    // OUTLINED slate — transparent fill + hairline outline + secondary-text
+    // colour — so only the community number reads as brand green. Uses the
+    // onSurfaceVariant/outlineVariant roles, which carry a defined dark-theme
+    // variant (a filled neutral pill would fail AA contrast in dark mode).
+    final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(_fmt(avg)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
-        decoration: BoxDecoration(color: cs.primary),
+        decoration: demoted
+            ? BoxDecoration(border: Border.all(color: cs.outlineVariant))
+            : BoxDecoration(color: cs.primary),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.groups_outlined, size: 12, color: cs.onPrimary),
+            Icon(Icons.groups_outlined, size: 12, color: fg),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeFamilyRatingPill(_fmt(avg)),
               style: AppTextStyles.badge.copyWith(
-                color: cs.onPrimary,
+                color: fg,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Green filled "Butlery-betyget" community pill: `★ X,X · N betyg`. Shown on
+  /// cards instead of the per-copy 'alla' pill once the pool clears the floor
+  /// (decision 8/9). Always carries the vote count. Warm star on brand green.
+  Widget _buildPooledPill(BuildContext context, PooledStats stats) {
+    final cs = Theme.of(context).colorScheme;
+    final avg = _fmt(stats.average ?? 0);
+    return Semantics(
+      label: context.l10n.a11yButleryBetygPill(avg, stats.count),
+      child: Container(
+        padding: AppDimensions.paddingSymmetric6x2,
+        decoration: BoxDecoration(
+          color: cs.primary,
+          borderRadius: BorderRadius.zero,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Decorative star uses the app-wide starGold token (as every other
+            // star pill does) — NOT the warning/status colour.
+            Icon(Icons.star, size: 12, color: context.butleryColors.starGold),
+            const SizedBox(width: 3),
+            Text(
+              '$avg · ${context.l10n.butleryBetygCount(stats.count)}',
+              style: AppTextStyles.badge.copyWith(
+                color: cs.onPrimary,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -582,8 +646,11 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRatingPill(BuildContext context) {
+  Widget _buildRatingPill(BuildContext context, {bool demoted = false}) {
     final cs = Theme.of(context).colorScheme;
+    // Demoted when a green community pill is also shown \u2014 recede to the same
+    // quiet OUTLINED slate as the family pill (AA-safe in both themes).
+    final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
 
     return Semantics(
       label: context.l10n.recipeRatingSemantics(
@@ -591,14 +658,16 @@ class RecipeCard extends StatelessWidget {
       ),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
-        decoration: BoxDecoration(
-          color: cs.primary,
-          borderRadius: BorderRadius.zero,
-        ),
+        decoration: demoted
+            ? BoxDecoration(
+                border: Border.all(color: cs.outlineVariant),
+                borderRadius: BorderRadius.zero,
+              )
+            : BoxDecoration(color: cs.primary, borderRadius: BorderRadius.zero),
         child: Text(
           '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
           style: AppTextStyles.badge.copyWith(
-            color: cs.onPrimary,
+            color: fg,
             fontWeight: FontWeight.w600,
           ),
         ),

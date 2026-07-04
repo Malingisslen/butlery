@@ -56,6 +56,13 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   /// security rules; there is no per-entity ownership on an anonymous aggregate.
   Future<PooledStats?> getPooledStats(String poolKey);
 
+  /// Batch variant of [getPooledStats] for a list-screen's worth of recipes:
+  /// reads `canonical_recipe_stats` for [poolKeys] in chunked `whereIn` queries
+  /// (one query per `kFirestoreWhereInLimit` keys) rather than one read per card. Returns a map
+  /// keyed by poolKey; keys with no pool doc are simply absent. Empty/duplicate
+  /// keys are de-duplicated by the caller-facing contract.
+  Future<Map<String, PooledStats>> getBulkPooledStats(List<String> poolKeys);
+
   /// Get user's ratings across all recipes
   Future<List<RecipeRating>> getUserRatings(String userId);
 
