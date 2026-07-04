@@ -5061,3 +5061,41 @@ and new `analytics/review-learned-alias.ts` (admin approve/reject/revoke).
   NO entry in `firestore.indexes.json`** — equality+orderBy needs a composite
   in prod (emulator auto-creates). Pre-existing for pending/approved; verify
   the console before relying on the new held_for_review queue surfacing.
+
+### 2026-07-04 — best-effort telemetry must resolve `admin.firestore()` INSIDE the try [Bug fixed]
+
+`captureLlmSample` (`llm/llm-sample-capture.ts`, BUT-1451) had a test-seam
+default param `db: admin.firestore.Firestore = admin.firestore()`. Default
+params are evaluated at **call time, BEFORE the function body's try/catch**, so
+in any context with no initialized default app (DI-seam unit tests) or an
+unreachable Firestore, `admin.firestore()` threw and the exception escaped the
+"best-effort, never a failure surface for an import" catch — it bubbled up
+through the awaiting OCR/structure-import callers and surfaced as an internal
+`HttpsError`. This kept the "Cloud Functions Unit Tests" workflow red on `main`
+for ~4 days (ocr-retry, kill-switch, ocr-validation, ocr-handwritten-prompt).
+
+Fix: param → optional `dbOverride?: admin.firestore.Firestore`; resolve
+`const db = dbOverride ?? admin.firestore();` as the FIRST line inside the try.
+The missing-app/unreachable throw is now swallowed by the existing catch.
+
+**Reviewed clean:**
+- **Zero production behavior change** — prod always has an initialized app
+  (`admin.initializeApp()` in `index.ts`), so `admin.firestore()` never threw
+  there; the handle is SDK-memoized per app, so resolving it inside the try vs
+  as a default has no cost/perf delta. Only the failure path changes.
+- **Seam rename breaks no caller** — the only two prod callers
+  (`ocr-recipe-image.ts:435`, `structure-recipe.ts:332`) pass no db (now safe).
+  The standalone `llm-sample-capture.test.ts` passes db as the 2nd positional
+  arg — unchanged position, just optional/renamed.
+- **Idempotency N/A** — helper does `.add()` (auto-id, inherently non-idempotent
+  duplicate on retry), but it's awaited best-effort telemetry that can never
+  throw, and both callers are `onCall` callables (no server-side auto-retry).
+  Not part of any retry-corruption story. The fix doesn't touch this.
+
+**Pattern (reusable):** any best-effort / never-throw helper that takes a
+`= admin.firestore()` (or any throwing expression) default param has a latent
+escape hatch — the default is evaluated OUTSIDE the guard. Make the seam
+`?:` optional and resolve `?? admin.firestore()` on the first line inside the
+try. Same root cause as the 2026-06-10 `notification-rate-cap.ts` lazy
+`admin.firestore()` note — a throwing SDK call in a "can't fail" path must sit
+inside the catch, never at the boundary.

@@ -86,9 +86,15 @@ const orNull = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
 export async function captureLlmSample(
   sample: LlmSampleInput,
   // Test seam — production uses the default Admin SDK Firestore handle.
-  db: admin.firestore.Firestore = admin.firestore()
+  // Resolved lazily INSIDE the try below: a default-param `admin.firestore()`
+  // is evaluated at call time, before the try, so a missing default app (unit
+  // tests) or an unreachable Firestore would escape the best-effort guard and
+  // take down the import. Keeping the handle lazy honours "never a failure
+  // surface for an import" (see the catch).
+  dbOverride?: admin.firestore.Firestore
 ): Promise<void> {
   try {
+    const db = dbOverride ?? admin.firestore();
     if (!(await captureEnabled(db))) return;
 
     const scrubbedOutput = scrubPii(sample.rawLlmResponse);
