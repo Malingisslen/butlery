@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 24 april 2026
-**Version:** 1.2.0
+**Senast uppdaterad:** 4 juli 2026
+**Version:** 1.3.0
 
 ---
 
@@ -63,6 +63,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Sociala funktioner | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Push-notiser | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Säkerhet och bedrägeriförebyggande | Berättigat intresse (Art. 6.1.f) | Skydda tjänsten |
+| Gemensamma betyg ("Butlery-betyget") | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
 
 ---
 
@@ -107,6 +108,28 @@ Vi använder dina personuppgifter för följande ändamål:
 - Föreslå veckomenyer och receptförbättringar
 
 Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom EU – se avsnitt 6). Innehåll som tas fram med AI-stöd – som ett recept avläst från ett foto eller en föreslagen meny – skapas för att hjälpa dig och visas alltid för din granskning och redigering innan det sparas; du avgör vad du behåller. I linje med EU:s AI-förordning (förordning (EU) 2024/1689, artikel 50) informerar vi dig här när du tar emot AI-stött innehåll. Butlery använder inte AI-chattbottar, känsloigenkänning eller AI-genererat material som utges för att vara verkligt.
+
+### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
+
+När du betygsätter ett recept (betyget "alla", 1–5 stjärnor) sammanförs det med
+betygen från andra användare som har **samma rätt** till ett gemensamt
+snittbetyg som visas som "Butlery-betyget". Rätten känns igen via ett
+innehållsfingeravtryck av titel och ingredienser – **ingen recepttext delas, bara
+siffrorna.**
+
+- **Vad som visas:** endast ett **sammanlagt snitt och ett antal röster**, och
+  först när minst **fem olika personer** har betygsatt rätten. Ett enskilt betyg
+  visas aldrig för sig, och det visade snittet bär ingen identitet.
+- **Vad som lagras:** ditt stjärnvärde kopplat till rättens fingeravtryck och till
+  ditt konto. Denna uppgift är **pseudonym, inte anonym** – den är din personuppgift
+  och ingår i din dataexport och raderas när du tar bort ditt konto eller det
+  underliggande betyget.
+- **Familjens privata betyg räknas aldrig in** – hushållets/"familjens" betyg
+  ligger separat och är strukturellt undantagna.
+- **Rättslig grund – berättigat intresse (Art. 6.1.f):** att förbättra
+  receptupptäckt och menykvalitet med en pålitlig gemensam signal. Detta kräver
+  **inte** ditt samtycke, men du har **rätt att invända (Art. 21)**: att ta bort ett
+  betyg tar omedelbart bort dess bidrag, och du kan kontakta oss för att invända.
 
 ---
 
@@ -198,6 +221,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
+| Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig.
 

@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** April 24, 2026
-**Version:** 1.2.0
+**Last updated:** July 4, 2026
+**Version:** 1.3.0
 
 ---
 
@@ -63,6 +63,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Social features | Consent (Art. 6.1.a) | You can withdraw at any time |
 | Push notifications | Consent (Art. 6.1.a) | You can withdraw at any time |
 | Security and fraud prevention | Legitimate interest (Art. 6.1.f) | Protect the service |
+| Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
 
 ---
 
@@ -107,6 +108,27 @@ We use your personal data for the following purposes:
 - Suggest weekly menus and recipe enhancements
 
 These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU — see section 6). Content produced with AI assistance — such as a recipe read from a photo or a suggested menu — is generated to help you and is always presented for your review and editing before it is saved; you decide what to keep. In line with the EU AI Act (Regulation (EU) 2024/1689, Article 50), we tell you here when you receive AI-assisted content. Butlery does not use AI chatbots, emotion recognition, or AI-generated media presented as real.
+
+### 5.3 Community ratings ("Butlery-betyget") — legitimate interest, not consent
+
+When you rate a recipe (the "everyone" rating, 1–5 stars), that rating is combined
+with the ratings of other users who hold the **same dish** into a shared community
+average, shown as "Butlery-betyget." We identify the dish by a content fingerprint
+of its title and ingredients — **no recipe text is shared, only the numbers.**
+
+- **What is shown:** only a **combined average and a vote count**, and only once at
+  least **five different people** have rated the dish. A single rating is never
+  shown on its own; the displayed average carries no identity.
+- **What is stored:** your star value linked to the dish fingerprint and to your
+  account. This record is **pseudonymous, not anonymous** — it is your personal
+  data and is included in your data export and erased when you delete your account
+  or the underlying rating.
+- **Your family's private ratings never feed this** — household/"family" ratings
+  are kept in a separate place and are structurally excluded.
+- **Legal basis — legitimate interest (Art. 6.1.f):** improving recipe discovery
+  and menu quality with a trustworthy shared signal. This does **not** require your
+  consent, but you have the **right to object (Art. 21)**: deleting a rating
+  removes its contribution immediately, and you may contact us to object.
 
 ---
 
@@ -198,6 +220,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
 | Deletion audit logs | 180 days | GDPR accountability |
+| Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 
 After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible.
 
