@@ -1,0 +1,13 @@
+{
+  "role": "Product Manager",
+  "stale_since": "2026-07-01",
+  "triggers": [
+    "lib/viewmodels/menu/menu_generator.dart",
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb",
+    "lib/services/analytics/analytics_events.dart",
+    "lib/services/analytics/trackers/recipe_events_tracker.dart",
+    "lib/services/feature_flags/feature_flag_service.dart"
+  ],
+  "last_stamped": "2026-07-04"
+}

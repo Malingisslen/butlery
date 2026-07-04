@@ -1,0 +1,33 @@
+{
+  "role": "Vendor / Procurement Manager",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "functions/src/llm/gemini-client.ts",
+    "functions/src/llm/PROMPT_CHANGELOG.md",
+    "functions/src/llm/prompts-config.ts",
+    "functions/src/llm/ocr-recipe-image.ts",
+    "functions/src/__tests__/ocr-handwritten-prompt.test.ts",
+    "functions/package.json",
+    "functions/src/__tests__/prompts-config.test.ts",
+    "functions/src/__tests__/prompt-ab-bucket.test.ts",
+    "functions/src/admin/sync-ingredients.ts",
+    "functions/src/ratings/canonical-pool-key.ts",
+    "functions/src/__tests__/pool-key-parity.test.ts",
+    "functions/src/__tests__/pool-key-wordlist-parity.test.ts",
+    "pubspec.yaml",
+    "functions/src/shared/debounce-queue.ts",
+    "functions/src/ratings/rating-aggregation.ts",
+    "functions/src/ratings/pooled-ratings-flag.ts",
+    "functions/src/ratings/canonical-rating-aggregation.ts",
+    "functions/src/index.ts",
+    "functions/src/__tests__/canonical-rating-aggregation.test.ts",
+    "functions/src/ratings/update-pooled-rating-stats.ts",
+    "functions/src/ratings/pool-aggregation.ts",
+    "functions/src/__tests__/pool-aggregation.test.ts",
+    "functions/src/__tests__/canonical-stats-rules.test.ts",
+    "functions/src/account/account-deletion-cascade.ts",
+    "functions/src/migrations/backfill-canonical-ratings.ts",
+    "functions/src/__tests__/backfill-canonical-ratings.test.ts"
+  ],
+  "last_stamped": "2026-07-04"
+}

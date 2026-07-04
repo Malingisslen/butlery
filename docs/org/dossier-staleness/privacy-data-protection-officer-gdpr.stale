@@ -1,0 +1,23 @@
+{
+  "role": "Privacy / Data Protection Officer (GDPR)",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "functions/src/llm/gemini-client.ts",
+    "functions/src/llm/PROMPT_CHANGELOG.md",
+    "functions/src/llm/prompts-config.ts",
+    "functions/src/llm/ocr-recipe-image.ts",
+    "functions/src/ratings/canonical-pool-key.ts",
+    "functions/src/ratings/rating-aggregation.ts",
+    "functions/src/ratings/pooled-ratings-flag.ts",
+    "functions/src/ratings/canonical-rating-aggregation.ts",
+    "functions/src/ratings/update-pooled-rating-stats.ts",
+    "functions/src/ratings/pool-aggregation.ts",
+    "functions/src/account/account-deletion-cascade.ts",
+    "lib/services/account/export/export_pagination_helper.dart",
+    "lib/services/account/export/activity_export_manager.dart",
+    "lib/services/account/data_export_service.dart",
+    "docs/legal/pooled-ratings-lia.md",
+    "docs/security/pooled-ratings-retention.md"
+  ],
+  "last_stamped": "2026-07-04"
+}

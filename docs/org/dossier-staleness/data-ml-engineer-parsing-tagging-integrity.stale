@@ -1,0 +1,10 @@
+{
+  "role": "Data / ML Engineer (parsing & tagging integrity)",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "lib/services/tagging/config/allergen_config.dart",
+    "lib/services/tagging/config/dietary_config.dart",
+    "lib/services/tagging/tag_generator.dart"
+  ],
+  "last_stamped": "2026-07-02"
+}

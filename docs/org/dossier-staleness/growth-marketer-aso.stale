@@ -1,0 +1,9 @@
+{
+  "role": "Growth Marketer / ASO",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "lib/services/analytics/analytics_events.dart",
+    "lib/services/analytics/trackers/recipe_events_tracker.dart"
+  ],
+  "last_stamped": "2026-07-02"
+}
