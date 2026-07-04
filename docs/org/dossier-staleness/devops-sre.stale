@@ -1,0 +1,9 @@
+{
+  "role": "DevOps / SRE",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    ".github/workflows/architecture-validation.yml",
+    ".github/workflows/firestore-rules.yml"
+  ],
+  "last_stamped": "2026-07-03"
+}

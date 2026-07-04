@@ -1,0 +1,12 @@
+{
+  "role": "Database Administrator / Data-layer Engineer",
+  "stale_since": "2026-07-03",
+  "triggers": [
+    "functions/src/shared/debounce-queue.ts",
+    "firestore.indexes.json",
+    "firestore.rules",
+    "functions/src/account/account-deletion-cascade.ts",
+    "functions/src/migrations/backfill-canonical-ratings.ts"
+  ],
+  "last_stamped": "2026-07-04"
+}

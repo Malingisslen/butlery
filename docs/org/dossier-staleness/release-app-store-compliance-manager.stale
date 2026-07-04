@@ -1,0 +1,10 @@
+{
+  "role": "Release / App-Store Compliance Manager",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    ".github/workflows/architecture-validation.yml",
+    "pubspec.yaml",
+    ".github/workflows/firestore-rules.yml"
+  ],
+  "last_stamped": "2026-07-03"
+}

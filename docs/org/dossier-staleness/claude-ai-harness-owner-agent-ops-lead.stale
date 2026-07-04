@@ -1,0 +1,23 @@
+{
+  "role": "Claude AI-Harness Owner / Agent-Ops Lead",
+  "stale_since": "2026-07-01",
+  "triggers": [
+    "tasks/hardest-issues.md",
+    "tasks/todo.md",
+    ".claude/settings.json",
+    "CLAUDE.md",
+    ".claude/agents/testing-specialist.knowledge.md",
+    ".claude/agents/cloud-functions-specialist.knowledge.md",
+    "tasks/todo-menu-allergen-p0.md",
+    ".claude/agents/firebase-backend-security.knowledge.md",
+    "tasks/pooled-ratings-plan.md",
+    ".claude/rules/accepted-deviations.md",
+    "tasks/lessons.md",
+    ".claude/hooks/plan-review-gate.sh",
+    ".claude/rules/workflow-discipline.md",
+    "tasks/setup-hardening-plan.md",
+    ".claude/rules/lessons-digest.md",
+    ".claude/rules/git-workflow.md"
+  ],
+  "last_stamped": "2026-07-04"
+}

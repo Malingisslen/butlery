@@ -1,0 +1,15 @@
+{
+  "role": "Engineering Manager / Release Manager",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    ".claude/settings.json",
+    ".github/workflows/architecture-validation.yml",
+    "CLAUDE.md",
+    ".github/workflows/firestore-rules.yml",
+    ".claude/rules/git-workflow.md",
+    ".claude/commands/sprint-execute.md",
+    ".claude/commands/stakeholder-review.md",
+    ".claude/commands/janitor.md"
+  ],
+  "last_stamped": "2026-07-04"
+}

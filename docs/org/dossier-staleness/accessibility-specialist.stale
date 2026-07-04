@@ -1,0 +1,15 @@
+{
+  "role": "Accessibility Specialist",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb",
+    "lib/core/utils/snackbar_utils.dart",
+    "lib/views/recipe_detail/handlers/recipe_management_handler.dart",
+    "lib/views/recipe_detail/recipe_detail_metadata.dart",
+    "lib/views/recipe_detail/handlers/recipe_social_handler.dart",
+    "lib/views/recipe_detail/recipe_detail_actions.dart",
+    "lib/views/recipe_detail/recipe_detail_content.dart"
+  ],
+  "last_stamped": "2026-07-02"
+}

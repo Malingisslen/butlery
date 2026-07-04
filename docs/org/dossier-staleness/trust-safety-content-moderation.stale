@@ -1,0 +1,12 @@
+{
+  "role": "Trust & Safety / Content Moderation",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "lib/repositories/firebase/firebase_user_repository.dart",
+    "firestore.rules",
+    "functions/src/account/account-deletion-cascade.ts",
+    "lib/repositories/firebase/firebase_data_export_repository.dart",
+    "lib/repositories/firebase/firebase_ratings_repository.dart"
+  ],
+  "last_stamped": "2026-07-04"
+}

@@ -1,0 +1,11 @@
+{
+  "role": "Technical Writer / Documentation",
+  "stale_since": "2026-07-01",
+  "triggers": [
+    "docs/architecture/ACCEPTED_LARGE_FILES.md",
+    "CLAUDE.md",
+    ".claude/rules/accepted-deviations.md",
+    ".claude/plan-review-checklist.md"
+  ],
+  "last_stamped": "2026-07-04"
+}

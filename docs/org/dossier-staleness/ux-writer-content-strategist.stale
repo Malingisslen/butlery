@@ -1,0 +1,19 @@
+{
+  "role": "UX Writer / Content Strategist",
+  "stale_since": "2026-07-02",
+  "triggers": [
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb",
+    ".claude/hooks/map_stamp.py",
+    ".claude/hooks/map-freshness-stamp.sh",
+    "CLAUDE.md",
+    ".claude/rules/accepted-deviations.md",
+    ".claude/hooks/plan-threshold-guard.sh",
+    ".claude/hooks/plan-review-gate.sh",
+    "docs/design/previews/butlery-betyget-pill-preview.html",
+    ".claude/hooks/knowledge-freshness.sh",
+    ".claude/hooks/preview-gate.sh",
+    ".claude/hooks/janitor-due-check.sh"
+  ],
+  "last_stamped": "2026-07-04"
+}
