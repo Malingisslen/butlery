@@ -43,6 +43,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `ingredient_data.dart` | 530 | Ingredient data model — nutritional properties, Swedish/English names |
 | `shared_recipe.dart` | 572 | Shared recipe model with denormalized metadata and copy-on-write mixins |
 | `user_profile.dart` | 663 | Core user profile model — social fields, settings, notification prefs, serialization |
+| `firebase_ratings_repository.dart` | 507 | Ratings repository — CRUD, denormalized stats streams, bulk stats, GDPR export, pooled "Butlery-betyget" read. Crossed 500 with the cohesive `getPooledStats` read (Increment 6a); the methods share the same collection + auth context, so splitting would fragment one repository. |
 
 ## Infrastructure Mixins
 
