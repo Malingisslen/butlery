@@ -51,23 +51,9 @@ log_line() {
 
 NOW=$(date +%s)
 
-# Fresh marker → second call → allow
-if [ -f "$MARKER" ]; then
-  STAMP=$(cat "$MARKER" 2>/dev/null || echo 0)
-  AGE=$(( NOW - STAMP ))
-  if [ "$AGE" -lt "$TTL_SECONDS" ]; then
-    rm -f "$MARKER"
-    log_line allow "fresh-marker-age=${AGE}s"
-    exit 0
-  fi
-  rm -f "$MARKER"
-  log_line block "stale-marker-age=${AGE}s"
-else
-  log_line block "no-marker"
-fi
-
-# First call — write fresh marker and block with review instructions
-printf '%s' "$NOW" > "$MARKER"
+emit_block() {
+  PYTHONIOENCODING=utf-8 python -c 'import json,sys; sys.stdout.write(json.dumps({"decision":"block","reason":sys.stdin.read()},ensure_ascii=False))' <<< "$1" 2>/dev/null
+}
 
 # Resolve the active plan file. ExitPlanMode tool_input does not include
 # the plan path, so we pick the most-recently-modified candidate across
@@ -103,6 +89,44 @@ if [ -f "$PLAN_TODO" ]; then
   fi
 fi
 
+# Fresh marker → second call → interview check, then allow
+if [ -f "$MARKER" ]; then
+  STAMP=$(cat "$MARKER" 2>/dev/null || echo 0)
+  AGE=$(( NOW - STAMP ))
+  if [ "$AGE" -lt "$TTL_SECONDS" ]; then
+    # Interview gate: the plan must record its open questions — either
+    # blast-radius-ranked questions that were actually asked (AskUserQuestion)
+    # with the answers folded in, or an explicit declaration that none exist.
+    # Keeps the gate armed (marker refreshed) so the retry re-checks.
+    if [ -n "$PLAN_FILE" ] && [ -f "$PLAN_FILE" ] && \
+       ! grep -qiE '(open questions|öppna frågor|no architecture-changing unknowns)' "$PLAN_FILE" 2>/dev/null; then
+      printf '%s' "$NOW" > "$MARKER"
+      log_line block "missing-interview-section plan=${PLAN_FILE##*/}"
+      emit_block "PLAN REVIEW GATE: the plan is missing its interview record.
+
+Plan file: $PLAN_FILE
+
+Every plan must contain an 'Open questions' section holding ONE of:
+  a) The blast-radius-ranked open questions (biggest architecture impact first) that were ASKED via AskUserQuestion, with the user's answers folded into the plan, or
+  b) The explicit line 'No architecture-changing unknowns' followed by the assumptions you are proceeding on.
+
+Add the section (asking the questions first if any exist), then call ExitPlanMode again."
+      exit 0
+    fi
+    rm -f "$MARKER"
+    printf '%s' "$NOW" > "$STATE_DIR/plan-approved-$MARKER_HASH.marker"
+    log_line allow "fresh-marker-age=${AGE}s"
+    exit 0
+  fi
+  rm -f "$MARKER"
+  log_line block "stale-marker-age=${AGE}s"
+else
+  log_line block "no-marker"
+fi
+
+# First call — write fresh marker and block with review instructions
+printf '%s' "$NOW" > "$MARKER"
+
 # High-stakes trigger detection — escalates from in-context self-review
 # to a fresh-agent dispatch via /review-plan. Triggers picked from actual
 # correction history (memory/feedback_*.md):
@@ -135,7 +159,8 @@ Required: run \`/review-plan${PLAN_FILE:+ $PLAN_FILE}\` to dispatch a fresh-cont
 Steps:
   1. Run /review-plan${PLAN_FILE:+ $PLAN_FILE}
   2. Address any RED or YELLOW findings (update the plan file if needed)
-  3. Call ExitPlanMode again — this gate will let it through
+  3. Ensure the plan has an 'Open questions' section: blast-radius-ranked questions asked via AskUserQuestion (answers folded in), or 'No architecture-changing unknowns — assumptions: ...'
+  4. Call ExitPlanMode again — this gate will let it through
 
 Do NOT do an in-context self-review for this plan. The whole point is that the auditor reads the rules cold without the context that wrote the plan."
   log_line block "high-stakes:${HIGH_STAKES} plan=${PLAN_FILE##*/}"
@@ -147,7 +172,8 @@ else
 3. For each checklist section, verify your plan addresses it. If the section is not relevant to this plan (e.g., no UI work → skip Design System), note it and move on.
 4. If you find issues, update the plan file and note what you changed.
 5. If you need to verify specific theme tokens, read the actual theme files (lib/theme/).
-6. Call ExitPlanMode when done.
+6. Ensure the plan has an 'Open questions' section: blast-radius-ranked questions asked via AskUserQuestion (answers folded in), or the explicit line 'No architecture-changing unknowns' + your assumptions. The gate checks for this on the next call.
+7. Call ExitPlanMode when done.
 
 (Self-review path: this plan didn't trip any high-stakes triggers — security/data, design-system, or >100 lines. If you think it should have, run /review-plan anyway.)"
 fi
