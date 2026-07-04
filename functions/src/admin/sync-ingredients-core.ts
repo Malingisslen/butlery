@@ -20,6 +20,7 @@
 
 import * as admin from "firebase-admin";
 import { ALLERGEN_RELEVANT_PROPERTIES } from "../shared/allergen-properties";
+import { stripDiacritics } from "../shared/swedish-normalize";
 
 // Allergen block of the property vocabulary. Every entry MUST also be in
 // ALLERGEN_RELEVANT_PROPERTIES (pinned by sync-ingredients-diff.test.ts) so
@@ -78,6 +79,7 @@ export interface IngredientDoc {
   aliasesSv: string[];
   aliasesEn: string[];
   searchTerms: string[];
+  normalizedNames: string[];
   status: string;
   updatedAt: admin.firestore.FieldValue;
   seasonAvailability?: string[];
@@ -183,15 +185,25 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
   const avgPriceSekStr = row.avg_price_sek?.trim().replace(",", ".");
   const avgPriceSek = avgPriceSekStr ? parseFloat(avgPriceSekStr) : undefined;
 
+  const aliasesSv = parseList(row.aliases_sv || "", ";");
+
   const doc: IngredientDoc = {
     id,
     swedish,
     english: english || swedish, // Fallback to Swedish name if English missing
     group: group || "other", // Fallback to "other" category
     properties: parseList(row.properties || "", ","),
-    aliasesSv: parseList(row.aliases_sv || "", ";"),
+    aliasesSv,
     aliasesEn: parseList(row.aliases_en || "", ";"),
     searchTerms: parseList(row.search_terms || "", ";"),
+    // Diacritics-stripped lookup forms. The alias hold-for-review gate
+    // (analyze-corrections.ts, BUT-1468) queries this to catch allergen words
+    // submitted WITHOUT umlauts ("jordnotter" for "jordnötter") — the
+    // client's _normalize matching is diacritics-stripped, so the server
+    // gate must match on the same form or it can be trivially bypassed.
+    normalizedNames: dedupe(
+      [swedish, ...aliasesSv].map((n) => stripDiacritics(n.toLowerCase().trim()))
+    ),
     status: row.status?.trim() || "validated",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
@@ -255,6 +267,13 @@ export function hasChanges(
 
   const currentSearchTerms = (current.searchTerms as string[]) || [];
   if (!listEquals(currentSearchTerms, newData.searchTerms)) {
+    return true;
+  }
+
+  // normalizedNames backfill (BUT-1468 gate): first sync after this ships
+  // updates every doc once to stamp the field; steady state compares equal.
+  const currentNormalized = (current.normalizedNames as string[]) || [];
+  if (!listEquals(currentNormalized, newData.normalizedNames)) {
     return true;
   }
 
@@ -381,6 +400,10 @@ export function isResurrection(
 
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? (value as string[]) : [];
+}
+
+function dedupe(values: string[]): string[] {
+  return [...new Set(values.filter((v) => v.length > 0))];
 }
 
 export function buildSyncReport(
