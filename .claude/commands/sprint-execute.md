@@ -196,7 +196,17 @@ For each selected ticket, using the `tier` + `panel` computed in Phase 1's routi
    **concurrently in one message**, each agent blind to the others. Same per-role prompt.
 
 Use cheap/low-effort subagents (these are scoped critiques). Then **synthesize** (stakeholder-review
-steps 3–4):
+steps 3–4).
+
+**Log the review (non-optional — retro finding 2026-07-04):** after synthesis, for `single` and
+`full-panel` tiers, append a review event so /org-retro can compute value + rubber-stamp rate
+(unlogged panels made the org's measurement blind in all three repos):
+```
+python docs/org/metrics/log_event.py '{"type":"review","tier":"single|full-panel","panel":["<roles>"],"plan":"BUT-XXXX","outcome":"approve|approve-with-conditions|escalated|object","must_haves":N,"conflicts":N,"escalations":N,"adrs":[],"rubber_stamp":false,"approx_tokens":T,"via":"sprint-execute"}'
+```
+(Canonical field names, pinned 2026-07-04 across all three repos — `must_haves` is a count;
+`via` lets /org-retro exclude sprint-routed reviews from trigger calibration.)
+Then apply the outcome:
 
 - **Fold every `must_have` / condition into THIS ticket's acceptance criteria** (Phase 1) and into
   the implementation brief. After review, the conditions are *binding*, not advisory — the Phase 2.7

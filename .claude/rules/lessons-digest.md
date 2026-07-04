@@ -35,6 +35,7 @@ when the counts drift apart.
 - "Map the workflows" means full coverage against a stated universe — never silently curate a sample.
 - Data-writing Cloud Functions get the xhigh multi-agent review BEFORE commit — the single-specialist gate is necessary but not sufficient.
 - When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
+- Port per-repo configs from the RETIRED implementation's real paths/semantics — structurally different machinery keeps its native hook + opts out of the shared one.
 
 ## Testing
 
