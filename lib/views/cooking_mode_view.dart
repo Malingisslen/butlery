@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
+import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -317,17 +318,42 @@ class _IngredientsPanel extends StatelessWidget {
                 horizontal: AppDimensions.spacingMd,
                 vertical: AppDimensions.spacingSm,
               ),
-              itemCount: vm.scaledIngredients.length,
+              itemCount: vm.ingredientRows.length,
               itemBuilder: (context, index) {
-                final ingredientText = vm.scaledIngredients[index];
+                final row = vm.ingredientRows[index];
+                // Component sub-heading ("Deg", "Fyllning") — a labelled
+                // header, never long-pressable (headings aren't ingredients).
+                if (row is IngredientHeadingRow) {
+                  return Semantics(
+                    header: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingMd,
+                        bottom: AppDimensions.spacingTight,
+                      ),
+                      child: Text(
+                        row.label.toUpperCase(),
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: cs.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                final line = row as IngredientLineRow;
                 return Semantics(
-                  label: context.l10n.a11yCookingModeIngredient(ingredientText),
+                  label: context.l10n.a11yCookingModeIngredient(line.text),
                   // BUT-202: long-press → substitution suggestions sheet.
                   // BUT-948 exception: long-press activates substitutions
                   // (feature affordance), not multi-select.
                   child: GestureDetector(
-                    onLongPress: () =>
-                        _showSubstitutionSheet(context, vm, index),
+                    onLongPress: () => _showSubstitutionSheet(
+                      context,
+                      vm,
+                      line.ingredientIndex,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppDimensions.spacingTight,
@@ -349,7 +375,7 @@ class _IngredientsPanel extends StatelessWidget {
                           ),
                           Expanded(
                             child: Text(
-                              ingredientText,
+                              line.text,
                               style: AppTextStyles.bodyLarge.copyWith(
                                 color: cs.onPrimary,
                               ),

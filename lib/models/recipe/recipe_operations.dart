@@ -31,7 +31,16 @@ class RecipeOperations {
 
     final updatedIngredients = [...recipe.core.ingredients, ingredient.trim()];
     final structured = _structuredForEdit(recipe);
-    structured?.add(StructuredIngredientDeriver.derive(ingredient.trim()));
+    if (structured != null) {
+      // An appended line lands visually under the last heading, so it
+      // inherits that section (null when the list is flat or empty).
+      final inherited = structured.isEmpty ? null : structured.last.section;
+      structured.add(
+        StructuredIngredientDeriver.derive(
+          ingredient.trim(),
+        ).copyWithSection(inherited),
+      );
+    }
     return recipe.copyWith(
       ingredients: updatedIngredients,
       structuredIngredients: structured,
@@ -55,9 +64,12 @@ class RecipeOperations {
     updatedIngredients[index] = newIngredient.trim();
 
     final structured = _structuredForEdit(recipe);
-    structured?[index] = StructuredIngredientDeriver.derive(
-      newIngredient.trim(),
-    );
+    if (structured != null) {
+      // Editing a line's text doesn't move it — it keeps its section.
+      structured[index] = StructuredIngredientDeriver.derive(
+        newIngredient.trim(),
+      ).copyWithSection(structured[index].section);
+    }
 
     return recipe.copyWith(
       ingredients: updatedIngredients,

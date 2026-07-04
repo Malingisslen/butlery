@@ -2,6 +2,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
+import 'package:butlery/models/realtime/recipe_serialization.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -986,6 +988,137 @@ void main() {
         expect(personalCopy.core.tagResult, isNull);
         expect(personalCopy.core.tagOverrides, isNull);
         expect(personalCopy.core.ingredientsNormalized, isNull);
+      });
+
+      test('should preserve structured ingredients incl. sections on copy', () {
+        // Plan invariant: sections persist through duplication/sharing.
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'sectioned',
+            title: 'Kanelbullar',
+            description: 'Med sektioner',
+            ingredients: const ['5 dl vetemjöl', '75 g smör'],
+            structuredIngredients: const [
+              RecipeIngredient(
+                amount: 5,
+                unit: 'dl',
+                name: 'vetemjöl',
+                raw: '5 dl vetemjöl',
+                section: 'Deg',
+              ),
+              RecipeIngredient(
+                amount: 75,
+                unit: 'g',
+                name: 'smör',
+                raw: '75 g smör',
+                section: 'Fyllning',
+              ),
+            ],
+            instructions: const ['Baka'],
+            mealType: 'Fika',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna',
+        );
+
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        expect(
+          personalCopy.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+        );
+      });
+    });
+
+    group('RecipeSerialization round-trip preserves section headers', () {
+      // The bug: serializeRecipe wrote structuredIngredients but the
+      // hand-rolled deserializeRecipe never read them back, so a shared /
+      // collaborative recipe loaded from Firestore lost all its section
+      // headers. This proves the full write→read cycle now keeps them.
+      Recipe sectionedRecipe() => Recipe(
+        core: RecipeCore(
+          id: 'shared-1',
+          title: 'Kanelbullar',
+          description: 'Med sektioner',
+          ingredients: const ['5 dl vetemjöl', '2 msk kanel'],
+          structuredIngredients: const [
+            RecipeIngredient(
+              amount: 5,
+              unit: 'dl',
+              name: 'vetemjöl',
+              raw: '5 dl vetemjöl',
+              section: 'Deg',
+            ),
+            RecipeIngredient(
+              amount: 2,
+              unit: 'msk',
+              name: 'kanel',
+              raw: '2 msk kanel',
+              section: 'Fyllning',
+            ),
+          ],
+          instructions: const ['Baka'],
+          mealType: 'Fika',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          createdBy: 'user_123',
+          isPublic: false,
+        ),
+        type: RecipeType.personal,
+      );
+
+      test('sections survive serialize → deserialize (the shared-recipe '
+          'load path)', () {
+        final serialized = RecipeSerialization.serializeRecipe(
+          sectionedRecipe(),
+        );
+        final restored = RecipeSerialization.deserializeRecipe(
+          serialized,
+          'shared-1',
+        );
+
+        expect(restored.core.structuredIngredients, isNotNull);
+        expect(
+          restored.core.structuredIngredients!.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+        );
+        // Safety invariant unchanged: heading text stays out of the flat list.
+        expect(restored.core.ingredients, ['5 dl vetemjöl', '2 msk kanel']);
+      });
+
+      test('a flat recipe round-trips with null structuredIngredients', () {
+        final flat = Recipe(
+          core: RecipeCore(
+            id: 'flat-1',
+            title: 'Pasta',
+            description: 'Enkel',
+            ingredients: const ['200 g pasta'],
+            instructions: const ['Koka'],
+            mealType: 'Middag',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final restored = RecipeSerialization.deserializeRecipe(
+          RecipeSerialization.serializeRecipe(flat),
+          'flat-1',
+        );
+        expect(restored.core.structuredIngredients, isNull);
       });
     });
 

@@ -41,6 +41,91 @@ class RecipeSectionDetector {
     'övrigt', // often contains final instructions
   };
 
+  /// Swedish unit tokens that, as a whole word, mark a line as a real
+  /// ingredient rather than a component heading. A curated regex-safe subset
+  /// of `swedish_units.dart`'s `kSwedishUnits` (kept explicit here so the
+  /// heading heuristic never depends on a unit constant changing shape); if a
+  /// new common unit is added there, mirror it here.
+  static final _subHeadingUnitGuard = RegExp(
+    r'\b(dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
+    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe)\b',
+    caseSensitive: false,
+  );
+
+  /// Generic ingredient/instruction block markers that are NOT component
+  /// groups (checked colon-stripped + lowercased in [componentSubHeadingLabel]).
+  /// Mirrors the anchored header regexes the Swedish line classifier used
+  /// before it delegated here, so consolidation stays behaviour-equivalent —
+  /// e.g. "Metod:" / "Så gör du:" clear the group instead of becoming one.
+  /// Kept separate from [isInstructionHeader] (a loose `contains` check with
+  /// other callers) to avoid changing multi-recipe splitting behaviour.
+  static const _genericBlockMarkers = {
+    'ingrediens',
+    'ingredienser',
+    'ingredienserna',
+    'du behöver',
+    'detta behövs',
+    'det här behöver du',
+    'gör så här',
+    'så gör du',
+    'instruktion',
+    'instruktioner',
+    'tillagning',
+    'tillagningssätt',
+    'tillredning',
+    'framställning',
+    'steg',
+    'metod',
+  };
+
+  /// The one audited "is this a component sub-heading?" heuristic, shared by
+  /// the rule-based line classifier and the schema.org import tier. Returns
+  /// the group label ("Deg", "Fyllning", "Till servering") for a heading line,
+  /// or null when the line is a generic block marker OR looks even slightly
+  /// like an ingredient.
+  ///
+  /// **Safety hinge of the whole sections feature.** A false positive strips
+  /// an allergen-bearing line out of the flat ingredient list that tagging
+  /// reads — the one direction we must never err. So every uncertain line
+  /// returns null (→ stays an ingredient). A heading must clear ALL of: not a
+  /// generic ingredient/instruction block marker, no digit, no unit token,
+  /// label length ≤ 40, and be either colon-terminated OR in the curated
+  /// [sectionHeaders] vocabulary. Deliberately NOT [isSectionHeader], which
+  /// greenlights any short single word ("salt", "socker") and would eat real
+  /// ingredients.
+  static String? componentSubHeadingLabel(String text) {
+    final clean = text.trim();
+    if (clean.isEmpty) return null;
+    final lower = clean.toLowerCase();
+
+    // Generic block markers ("Ingredienser:", "Gör så här:") are not groups.
+    // Using the loose header checks here is safe: a false positive only means
+    // "not a component group" → the line stays an ingredient (the safe side).
+    if (isIngredientHeader(lower) || isInstructionHeader(lower)) return null;
+
+    final hasColon = clean.endsWith(':');
+    final label = hasColon
+        ? clean.substring(0, clean.length - 1).trim()
+        : clean;
+    if (label.isEmpty || label.length > 40) return null;
+
+    // Generic block markers keep their colon-terminated forms out of the
+    // component-group space ("Metod:", "Så gör du:") — they clear the group.
+    if (_genericBlockMarkers.contains(label.toLowerCase())) return null;
+
+    // Any digit or unit token ⇒ treat as an ingredient, never a heading.
+    if (RegExp(r'\d').hasMatch(label)) return null;
+    if (_subHeadingUnitGuard.hasMatch(label)) return null;
+
+    // Strong-signal gate: a trailing colon, or a curated-vocabulary hit for
+    // colon-less lines. A bare word outside the curated set stays an
+    // ingredient.
+    final inVocabulary = sectionHeaders.contains(label.toLowerCase());
+    if (!hasColon && !inVocabulary) return null;
+
+    return label;
+  }
+
   /// Check if text is a section header (like "biffen", "såsen")
   static bool isSectionHeader(String text) {
     final clean = text.toLowerCase().trim();

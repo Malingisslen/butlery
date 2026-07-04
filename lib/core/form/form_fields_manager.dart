@@ -282,15 +282,26 @@ class FormFieldsManager {
     removeController(index);
   }
 
-  /// Reorder item from [oldIndex] to [newIndex].
+  /// Reorder item from [oldIndex] to [newIndex] using ReorderableListView
+  /// semantics (when dragging down, [newIndex] is the index AFTER removal, so
+  /// it is decremented). Existing callers rely on this adjustment.
   void reorderAt(int oldIndex, int newIndex) {
-    if (oldIndex < 0 || oldIndex >= _values.length) return;
     var adjustedNew = newIndex;
     if (adjustedNew > oldIndex) adjustedNew--;
-    if (adjustedNew < 0 || adjustedNew >= _values.length) return;
-    final item = _values.removeAt(oldIndex);
-    _values.insert(adjustedNew, item);
-    // Clear cached controllers so they rebuild with correct indices
+    moveAt(oldIndex, adjustedNew);
+  }
+
+  /// Raw move of a value from [from] to [to] (already-final indices, no
+  /// ReorderableListView adjustment). Used by the sectioned ingredient editor,
+  /// which computes the exact target line index itself. Rebuilds controllers
+  /// so their `field_$i` keys realign to the new order.
+  void moveAt(int from, int to) {
+    if (from < 0 || from >= _values.length) return;
+    if (to < 0 || to >= _values.length) return;
+    if (from == to) return;
+    final item = _values.removeAt(from);
+    _values.insert(to, item);
+    // Clear cached controllers so they rebuild with correct indices.
     for (final entry in _controllers.entries) {
       final listener = _controllerListeners[entry.key];
       if (listener != null) entry.value.removeListener(listener);

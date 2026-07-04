@@ -19,6 +19,9 @@ void main() {
     ParsedRecipeStructure fullInstance() => const ParsedRecipeStructure(
       title: 'Pannkakor med sylt',
       ingredients: ['2 ägg', '3 dl mjölk', '1 dl mjöl', 'smör'],
+      // Mix of grouped + ungrouped so both a String and a null must survive
+      // the SendPort encoding (the isolate path the rule-based tier uses).
+      ingredientSections: ['Smet', 'Smet', 'Smet', null],
       instructions: [
         'Vispa ihop ägg och mjölk.',
         'Tillsätt mjölet och rör tills smeten är slät.',
@@ -68,6 +71,25 @@ void main() {
       expect(restored.totalTime, equals(original.totalTime));
     });
 
+    test('ingredientSections survive round-trip incl. null entries', () {
+      final original = fullInstance();
+      final restored = ParsedRecipeStructure.fromIsolateMap(
+        original.toIsolateMap(),
+      );
+      expect(restored.ingredientSections, ['Smet', 'Smet', 'Smet', null]);
+    });
+
+    test('empty ingredientSections omits the key and round-trips as empty', () {
+      const flat = ParsedRecipeStructure(
+        ingredients: ['salt'],
+        instructions: ['x'],
+      );
+      final map = flat.toIsolateMap();
+      expect(map.containsKey('ingredientSections'), isFalse);
+      final restored = ParsedRecipeStructure.fromIsolateMap(map);
+      expect(restored.ingredientSections, isEmpty);
+    });
+
     test('null-valued optional fields round-trip as null', () {
       // Construct with only the required non-nullable fields.
       const sparse = ParsedRecipeStructure(
@@ -107,7 +129,7 @@ void main() {
       },
     );
 
-    test('all five fields covered — full field-by-field assertion', () {
+    test('all six fields covered — full field-by-field assertion', () {
       // This single consolidated test is the regression gate:
       // if a new field is added to ParsedRecipeStructure without updating
       // both serializers, one of these expects will fail.
@@ -140,6 +162,11 @@ void main() {
         restored.totalTime,
         equals(original.totalTime),
         reason: 'totalTime field lost in round-trip',
+      );
+      expect(
+        restored.ingredientSections,
+        equals(original.ingredientSections),
+        reason: 'ingredientSections field lost in round-trip',
       );
     });
   });

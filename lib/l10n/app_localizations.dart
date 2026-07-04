@@ -9025,6 +9025,42 @@ abstract class AppLocalizations {
   /// **'Instruktion'**
   String get recipeInstruction;
 
+  /// No description provided for @recipeAddIngredientHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till rubrik'**
+  String get recipeAddIngredientHeading;
+
+  /// No description provided for @recipeIngredientHeadingHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rubrik, t.ex. Deg'**
+  String get recipeIngredientHeadingHint;
+
+  /// No description provided for @a11yRemoveIngredientHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort rubrik'**
+  String get a11yRemoveIngredientHeading;
+
+  /// No description provided for @recipeMoveToSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta till rubrik'**
+  String get recipeMoveToSection;
+
+  /// No description provided for @recipeMoveToSectionNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen rubrik'**
+  String get recipeMoveToSectionNone;
+
+  /// No description provided for @a11yIngredientHeadingField.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rubrik {label}'**
+  String a11yIngredientHeadingField(String label);
+
   /// No description provided for @recipeLeaveWithoutSaving.
   ///
   /// In sv, this message translates to:

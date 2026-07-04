@@ -268,6 +268,127 @@ void main() {
       });
     });
 
+    group('ingredient sections survive edit operations', () {
+      // Intention: model-level edits never silently strip a line's section —
+      // text edits keep it, appends inherit it, moves carry it along.
+      const dough = RecipeIngredient(
+        amount: 5,
+        unit: 'dl',
+        name: 'vetemjöl',
+        raw: '5 dl vetemjöl',
+        section: 'Deg',
+      );
+      const filling = RecipeIngredient(
+        amount: 75,
+        unit: 'g',
+        name: 'smör',
+        raw: '75 g smör',
+        section: 'Fyllning',
+      );
+
+      Recipe buildSectionedRecipe() => RecipeFactory.createPersonal(
+        title: 'Kanelbullar',
+        description: 'Med sektioner',
+        ingredients: ['5 dl vetemjöl', '75 g smör'],
+        structuredIngredients: [dough, filling],
+        instructions: ['Baka'],
+        mealType: 'Fika',
+      );
+
+      test('updateIngredient keeps the edited line in its section', () {
+        final updated = RecipeOperations.updateIngredient(
+          buildSectionedRecipe(),
+          0,
+          '6 dl rågmjöl',
+        );
+
+        final entry = updated.core.structuredIngredients![0];
+        expect(entry.amount, 6, reason: 'text edit is re-derived');
+        expect(
+          entry.section,
+          'Deg',
+          reason: 'editing text must not move the line out of its group',
+        );
+      });
+
+      test('addIngredient inherits the last entry\'s section', () {
+        final updated = RecipeOperations.addIngredient(
+          buildSectionedRecipe(),
+          '1 dl socker',
+        );
+
+        expect(
+          updated.core.structuredIngredients!.last.section,
+          'Fyllning',
+          reason: 'an appended line lands under the last visible heading',
+        );
+      });
+
+      test('addIngredient to an EMPTY structured list does not crash and '
+          'appends sectionless (guards the .last crash on first line)', () {
+        final empty = RecipeFactory.createPersonal(
+          title: 'Tom',
+          description: '',
+          ingredients: const [],
+          structuredIngredients: const [],
+          instructions: ['x'],
+          mealType: 'Middag',
+        );
+
+        final updated = RecipeOperations.addIngredient(empty, 'salt');
+
+        expect(updated.core.ingredients, ['salt']);
+        expect(updated.core.structuredIngredients!.single.section, isNull);
+      });
+
+      test('addIngredient to a flat recipe stays sectionless', () {
+        final flat = RecipeFactory.createPersonal(
+          title: 'Platt',
+          description: '',
+          ingredients: ['salt'],
+          structuredIngredients: const [
+            RecipeIngredient(name: 'salt', raw: 'salt'),
+          ],
+          instructions: ['x'],
+          mealType: 'Middag',
+        );
+
+        final updated = RecipeOperations.addIngredient(flat, 'peppar');
+
+        expect(updated.core.structuredIngredients!.last.section, isNull);
+      });
+
+      test('reorderIngredients carries each line\'s section with it', () {
+        final updated = RecipeOperations.reorderIngredients(
+          buildSectionedRecipe(),
+          0,
+          1,
+        );
+
+        expect(
+          updated.core.structuredIngredients!.map((e) => e.section),
+          ['Fyllning', 'Deg'],
+          reason: 'the section travels with the line, no positional reassign',
+        );
+      });
+
+      test('updateAllIngredients keeps sections for surviving lines and '
+          'leaves genuinely new lines sectionless (accepted degradation)', () {
+        final updated = RecipeOperations.updateAllIngredients(
+          buildSectionedRecipe(),
+          ['75 g smör', '2 ägg'],
+        );
+
+        final entries = updated.core.structuredIngredients!;
+        expect(entries[0].section, 'Fyllning', reason: 'reused via raw match');
+        expect(
+          entries[1].section,
+          isNull,
+          reason: 'a full-list rewrite cannot know where a new line belongs',
+        );
+      });
+    });
+
     group('Instruction Operations', () {
       test('should add instruction with user tracking', () {
         final updated = RecipeOperations.addInstruction(

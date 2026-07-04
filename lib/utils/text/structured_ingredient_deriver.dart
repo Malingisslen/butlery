@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 
@@ -57,14 +59,52 @@ class StructuredIngredientDeriver {
   /// When [reuse] is given (e.g. a recipe's previously persisted structured
   /// list), entries whose `raw` exactly matches a line are kept instead of
   /// re-derived — preserves richer import-time data (CRF/LLM-parsed notes)
-  /// for unchanged lines and survives reordering.
+  /// for unchanged lines and survives reordering. Duplicate raw lines are
+  /// consumed FIFO so two identical lines under different headings each keep
+  /// their own entry.
+  ///
+  /// When [sections] is given (index-aligned with [lines]) it is
+  /// AUTHORITATIVE: it overwrites any section carried by a reused entry,
+  /// including clearing it — the caller (the form) knows where each line
+  /// sits now, the stale persisted entry doesn't. A length mismatch means
+  /// the caller's bookkeeping broke; sections are ignored entirely (fail
+  /// open to today's behavior) rather than misassigned.
   static List<RecipeIngredient> deriveAll(
     List<String> lines, {
     List<RecipeIngredient>? reuse,
+    List<String?>? sections,
   }) {
-    final byRaw = <String, RecipeIngredient>{
-      for (final entry in reuse ?? const <RecipeIngredient>[]) entry.raw: entry,
-    };
-    return [for (final line in lines) byRaw[line] ?? derive(line)];
+    final byRaw = <String, Queue<RecipeIngredient>>{};
+    for (final entry in reuse ?? const <RecipeIngredient>[]) {
+      byRaw.putIfAbsent(entry.raw, () => Queue()).add(entry);
+    }
+    final applySections = sections != null && sections.length == lines.length;
+    return [
+      for (final (i, line) in lines.indexed)
+        _withSection(
+          _takeReused(byRaw, line) ?? derive(line),
+          applySections ? sections[i] : null,
+          applySections,
+        ),
+    ];
+  }
+
+  static RecipeIngredient? _takeReused(
+    Map<String, Queue<RecipeIngredient>> byRaw,
+    String line,
+  ) {
+    final queue = byRaw[line];
+    if (queue == null || queue.isEmpty) return null;
+    return queue.removeFirst();
+  }
+
+  static RecipeIngredient _withSection(
+    RecipeIngredient entry,
+    String? section,
+    bool authoritative,
+  ) {
+    if (!authoritative) return entry;
+    final normalized = RecipeIngredient.normalizeSection(section);
+    return normalized == entry.section ? entry : entry.copyWithSection(section);
   }
 }

@@ -41,17 +41,29 @@ Route by blast radius, not task size (per `~/.claude/CLAUDE.md` + `CLAUDE.local.
   reads raw `tagResult` with none of these (`menu_generator.dart:209-264`, plus
   `_passesGlobals` in `menu_service.dart:500`). A user's manual "this contains gluten"
   correction is ignored by menus. Unify on one filtering helper shared by list + menu.
-- [ ] **Gate ingredient master-data writes** (M) → BUT-1467
-  Three writers on the global `ingredients` collection; the `toAdd` path is full-overwrite
-  `batch.set` (wipes `learnedAliasesSv`); no validation between a Sheet cell edit and
-  production allergen verdicts; the duplicate `tools/sync_ingredients.dart` can drift from
-  the CF. Minimum: preserve learned aliases on add, produce a diff report on every sync,
-  and delete one of the two sync implementations.
-- [ ] **Add review/revert to alias auto-learning** (M) → BUT-1468
-  `analyze-corrections.ts`: 3 distinct users auto-write `learnedAliasesSv` onto live
-  ingredient docs — allergen-relevant, no human gate, no demotion path. Minimum: hold-for-
-  review when the target ingredient carries any allergen property + an admin revoke
-  callable + an emulator test driving 3 users through the trigger (none exists).
+- [x] **Gate ingredient master-data writes** (M) → BUT-1467 — DONE 2026-07-03 (`0139f8d2a`)
+  Delivered: pure logic extracted to `sync-ingredients-core.ts` with 14 contract tests;
+  learnedAliasesSv unwipeable (payload never contains it; adds never target existing docs);
+  TTL lifecycle repairs (resurrection clears, Sheet-side delete stamps, zombie healing);
+  fail-closed on malformed CSV rows (was: silent skip → unintended soft-delete + reap);
+  blanked optional cells now explicitly deleted (no eternal churn); aliasesEn/searchTerms
+  edits now sync (were invisible to the differ); decimal-comma prices fixed; per-sync diff
+  report to `docs/tagging/data/sync-reports/` + `system_events` row (written only after the
+  final batch commit); duplicate `tools/sync_ingredients.dart` deleted (TS kept — it has
+  the validation). New `shared/allergen-properties.ts` (incl. dietary triggers
+  meat/pork/beef/contains-alcohol) feeds the BUT-1468 hold gate. Accepted: PLAUSIBLE TTL
+  batch-abort race on an operator script (recovery = rerun).
+- [x] **Add review/revert to alias auto-learning** (M) → BUT-1468 — DONE 2026-07-04 (`fe94a836b`, `7753c57df`, `b708b7a68`)
+  Delivered: hold-for-review (no auto-write) when the target ingredient carries an
+  allergen/dietary property OR the alias text matches an allergen-bearing ingredient
+  (diacritics-stripped via new `normalizedNames` — blocks the no-umlaut redirect attack);
+  60-min account-maturity gate on the quorum (threshold unchanged); candidate doc re-keyed
+  by (original name + target ingredient) so 3 users must agree on the SAME target and admin
+  actions never hit a stale target; transient allergen-check errors self-heal (stay pending,
+  retry next vote); `reviewLearnedAlias`/`revokeLearnedAlias` admin callables (approve doubles
+  as revoke-undo) writing transactional `audit_logs` rows; `getCorrectionStats` surfaces the
+  held queue; composite index added. 20-assertion emulator test. Reviewed cloud-functions-
+  specialist + xhigh (7 CONFIRMED findings all fixed). Admin queue UI lands in B1.
 
 ## P1 — Learning-loop intake (the founder's flywheel goal)
 

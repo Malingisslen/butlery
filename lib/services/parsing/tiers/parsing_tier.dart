@@ -3,6 +3,8 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -39,6 +41,16 @@ abstract class ParsingTier {
 
   /// Whether this tier should be skipped for the given context.
   bool shouldSkip(ParsingContext context);
+
+  /// Kill switch for ingredient-heading CAPTURE (PR #211), shared by every
+  /// capture tier (LLM, rule-based, schema.org). Fails OPEN: if the flag
+  /// service isn't registered (unit tests, early startup) capture stays on,
+  /// matching the flag's `true` default. Flip the Remote Config flag off to
+  /// disable heading capture app-wide without a release.
+  bool get isSectionCaptureEnabled {
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    return flags?.isEnabled(FeatureFlags.ingredientSectionCapture) ?? true;
+  }
 
   /// Execute the parsing logic.
   ///

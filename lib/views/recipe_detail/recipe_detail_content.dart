@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/utils/duration_parser.dart';
@@ -69,6 +70,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   /// Tracks which instruction steps are completed (local state, not persisted).
   final Set<int> _completedSteps = {};
 
+  /// Section-grouped rows (headings + lines), memoized: rebuilt only when the
+  /// scaled ingredient lines change (portion scaling), not on every rebuild.
+  /// Pairs the recipe's structured entries (for `section`) with the scaled
+  /// display strings — see [IngredientDisplayRow.build].
+  late List<IngredientDisplayRow> _ingredientRows;
+
   /// Tag ID → display-name map resolved on-demand from [PersonalTagService]
   /// when the parent doesn't supply [widget.personalTagNames]. Without this,
   /// `personalTagIds` never resolve to names and the personal-tags section
@@ -91,7 +98,24 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   @override
   void initState() {
     super.initState();
+    _rebuildIngredientRows();
     _resolvePersonalTagNames();
+  }
+
+  @override
+  void didUpdateWidget(RecipeDetailContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Rescaling passes a new scaledIngredients list; rebuild the grouped rows.
+    if (!identical(oldWidget.scaledIngredients, widget.scaledIngredients)) {
+      _rebuildIngredientRows();
+    }
+  }
+
+  void _rebuildIngredientRows() {
+    _ingredientRows = IngredientDisplayRow.build(
+      viewModel.recipe.structuredIngredients,
+      scaledIngredients,
+    );
   }
 
   /// Resolves the recipe's personal tag IDs to display names so the
@@ -228,24 +252,70 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: scaledIngredients.length,
-            itemBuilder: (context, index) =>
-                _buildIngredientRow(context, index),
+            itemCount: _ingredientRows.length,
+            itemBuilder: (context, index) => _buildDisplayRow(context, index),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildIngredientRow(BuildContext context, int index) {
+  Widget _buildDisplayRow(BuildContext context, int index) {
+    final row = _ingredientRows[index];
+    if (row is IngredientHeadingRow) {
+      return _buildSectionHeading(context, row.label);
+    }
+    final line = row as IngredientLineRow;
+    // Divider between consecutive ingredient lines; a heading already provides
+    // visual separation, so no divider immediately below one (or at the top).
+    final prevIsLine =
+        index > 0 && _ingredientRows[index - 1] is IngredientLineRow;
+    return _buildIngredientRow(context, line.text, showDivider: prevIsLine);
+  }
+
+  Widget _buildSectionHeading(BuildContext context, String label) {
     final cs = Theme.of(context).colorScheme;
-    final ingredient = scaledIngredients[index];
+    return Semantics(
+      header: true,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: AppDimensions.paddingM,
+          bottom: AppDimensions.spacingTight,
+        ),
+        child: Container(
+          padding: const EdgeInsetsDirectional.only(
+            bottom: AppDimensions.spacingXs,
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: cs.secondary, width: 2), // rust
+            ),
+          ),
+          child: Text(
+            label.toUpperCase(),
+            style: AppTextStyles.titleSmall.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIngredientRow(
+    BuildContext context,
+    String ingredient, {
+    required bool showDivider,
+  }) {
+    final cs = Theme.of(context).colorScheme;
     final parsed = IngredientParser.parseIngredient(ingredient);
     final isAllergen = _isAllergenIngredient(parsed.name);
 
     return Column(
       children: [
-        if (index > 0)
+        if (showDivider)
           Divider(
             height: 1,
             thickness: 1,

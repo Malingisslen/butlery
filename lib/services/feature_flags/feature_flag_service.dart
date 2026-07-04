@@ -72,6 +72,11 @@ class FeatureFlagService {
     // BUT-670: full-app maintenance kill switch + Swedish copy override
     'app_maintenance_mode': false,
     'app_maintenance_message_sv': '',
+    // Ingredient sections (PR #211): kill switch for heading CAPTURE at
+    // import (LLM bridge, text parser, schema.org heuristic). Display and
+    // editing stay on — they're inert without data. Flip off remotely if
+    // heading heuristics misfire broadly.
+    'ingredient_section_capture': true,
 
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
@@ -321,6 +326,8 @@ abstract final class FeatureFlags {
   // BUT-670: maintenance-mode kill switch
   static const appMaintenanceMode = 'app_maintenance_mode';
   static const appMaintenanceMessageSv = 'app_maintenance_message_sv';
+  // Ingredient sections (PR #211): import-capture kill switch
+  static const ingredientSectionCapture = 'ingredient_section_capture';
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';

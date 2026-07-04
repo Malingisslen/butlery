@@ -1,4 +1,8 @@
 {
   "lastRun": "2026-07-04",
-  "seededBy": "setup-hardening item5"
+  "dossiersRefreshed": 0,
+  "worldWatchRoles": 2,
+  "retroDue": true,
+  "acceptRate": null,
+  "notes": "No stale dossier markers; Security Architect + Release/App-Store Compliance scans ran (weekly, both due) — 1 issue filed (#215, Apple Time Allowances/Social Media classification); accept-rate script not found in tools/, skipped; shakedown retro overdue since 2026-07-01."
 }

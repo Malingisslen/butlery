@@ -127,4 +127,28 @@ void main() {
       expect(a == a.copyWith(name: 'socker'), isFalse);
     });
   });
+
+  group('section (ingredient sub-groups)', () {
+    test('round-trips through toJson/fromJson and is omitted when null', () {
+      final sectioned = ParsedIngredient(
+        name: 'jäst',
+        originalLine: '25 g jäst',
+        confidence: ParseConfidence.high,
+        section: 'Deg',
+      );
+      final restored = ParsedIngredient.fromJson(sectioned.toJson());
+      expect(restored.section, 'Deg');
+      expect(
+        ParsedIngredient.simple('salt').toJson().containsKey('section'),
+        isFalse,
+      );
+    });
+
+    test('copyWith carries and overrides section', () {
+      final i = ParsedIngredient.simple('salt').copyWith(section: 'Deg');
+      expect(i.section, 'Deg');
+      expect(i.copyWith(quantity: '1').section, 'Deg');
+      expect(i.copyWith(section: 'Fyllning').section, 'Fyllning');
+    });
+  });
 }
