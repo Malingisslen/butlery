@@ -103,26 +103,9 @@ Standard deny matrix for ownership-checked collections:
 
 ### Archived (pre-2026-06-04) — see firestore-rules-tester.knowledge.archive.md
 
-- 2026-04-25 — initial seed — baseline builders, actor conventions, coverage rules seeded
-- 2026-04-26 — moderation-rules.test.ts created (BUT-511 + BUT-728) — admin-delete overrides for four content types wired
-- 2026-04-26 — rate-limit deny pattern via rate_limits subcollection — seed lastWrite field to prove rate-limit deny
-- 2026-04-26 — userId-switch attack pattern for set()-based collections — single test proves dual userId pin via rewrite
-- 2026-04-30 — onboarding progress (BUT-675) added to firestore-rules.test.ts — owner-only identity-scoping tests, five cases, no validator
-- 2026-04-26 — Java/emulator gap on Windows dev workstation — no local Java; type-check only, CI verifies
-- 2026-05-01 — menus-rules.test.ts created (BUT-746 + BUT-747) — new collection test file, builder shape, required fields
-- 2026-05-01 — recipient self-scrub rule pattern (reusable) — self-removal-only array mutation, four-deny-plus-allow coverage
-- 2026-05-01 — paired removeAll() check closes self-scrub griefing (BUT-749) — closes self-scrub griefing gap with removeAll sandwich
-- 2026-05-04 — Sprint G defence-in-depth deny blocks (BUT-627 + BUT-482) — audit/_internal wildcard deny-all plus precedence regression test
-- 2026-05-04 — symmetric-difference + isInList membership-gate pattern (BUT-464) — six-branch coverage matrix for member self-mutation gate
-- 2026-05-04 — rate-limit collision across same-actor tests (gotcha) — same actor across tests trips shared rate limit
-- 2026-05-04 — `members` collection-group catch-all coverage shape (BUT-463) — canary plus path-agnostic allow tests for catch-all
-- 2026-05-28 — iter102-rules.test.ts created (shared_content list + notification expireAt) — list-rule recipient branch plus TTL allowlist pattern
-- 2026-06-03 — Java NOW on PATH; emulator runs locally (supersedes 2026-04-26 + iter102 gap) — local verification now real, not CI-only
-- 2026-06-03 — Storage rules testing (BUT-1049 comment images) — first Storage rules test, most-specific-match pattern
-- 2026-06-03 — recipe_comments imageUrls validator (BUT-1049) — bounded optional list field, CEL element-type gap noted
-- 2026-06-03 — EMULATOR PERSISTS DATA ACROSS `npm run` INVOCATIONS (critical isolation gotcha) — persisted docs break create-as-update and rate limits
-- 2026-06-03 — Admin-SDK cascade integration test against emulator (BUT-1009) — first cascade integration harness, 21/21 verified correct
-- 2026-06-03 — cascade collectionGroup + shopping-list item-scrub coverage (BUT-1191) — collectionGroup author-field map plus item-level scrub proof
+- 2026-04-25→04-30 (6 entries) — seed; moderation-rules (BUT-511/728); rate-limit deny via `rate_limits` subcollection; userId-switch attack pattern for `set()` collections; onboarding progress (BUT-675); Java/emulator gap on Windows.
+- 2026-05-01→05-04 (7 entries) — menus-rules (BUT-746/747); recipient self-scrub pattern + paired `removeAll()` anti-griefing (BUT-749); Sprint G defence-in-depth denies (BUT-627/482); symmetric-difference + isInList membership gates (BUT-464); same-actor rate-limit collision gotcha; `members` collection-group catch-all shape (BUT-463).
+- 2026-05-28→06-03 (7 entries) — iter102-rules (shared_content list + notification expireAt); Java-on-PATH supersedes the emulator gap; Storage rules + `recipe_comments` imageUrls validator (BUT-1049); EMULATOR PERSISTS DATA ACROSS `npm run` INVOCATIONS (isolation gotcha); Admin-SDK cascade integration (BUT-1009); cascade collectionGroup + shopping item-scrub (BUT-1191).
 
 ### 2026-06-10 — map correction: cook_snaps lives in cook-snaps-and-message-mod-rules.test.ts
 
