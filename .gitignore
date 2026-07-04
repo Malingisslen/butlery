@@ -201,3 +201,7 @@ tools/probe-config.js
 tools/probe-exe.js
 tools/probe-exe2.js
 tools/validate-claude-config.js
+
+# /brag skill output (local launch video + share copy — never commit the mp4 blob)
+brag-output/
+brag-output-*/

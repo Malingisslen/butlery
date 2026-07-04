@@ -8,6 +8,7 @@ when the counts drift apart.
 
 ## Workflow
 
+- Feedback right after a deliverable may target the TOOL/process, not the one artifact — disambiguate "fix this output" vs "improve the capability" before acting.
 - A multi-part agreed initiative gets ONE written plan before any slice ships — chat scrollback is not a backlog.
 - Every proposed improvement must name its mechanical trigger; upgrading an optional command is convenience, not infrastructure.
 - Never prune a young system for inactivity — the observation window must exceed its natural cycle (tune now; keep/cut only after 2–3 cycles).

@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] Feedback after a deliverable may target the TOOL that made it, not the one artifact
+- **Date**: 2026-07-04
+- **Trigger**: After I delivered a one-off `/brag` launch video for Butlery, Malin said the visuals had empty placeholder spots that "should have been fixed," and that she wanted "the skill" to analyze the whole project longer, allow longer videos when needed, and use Q&A when unsure. I read this as "redo THIS movie" and started a deep re-analysis + rebuild of the single Butlery clip (even asked 4 scoped questions about it). Malin: "My input was intended to improve the whole skill not this particular movie."
+- **Rule**: When feedback arrives right after a deliverable, first disambiguate its SCOPE: is it "fix this specific output" or "improve the general capability / skill / process that produced it"? Behavioural or quality feedback phrased in general terms ("it should…", "the skill should…", "way longer", "wherever it is unsure") usually means the tool, not the single artifact — improving the artifact by hand leaves the next run just as broken. If the target is ambiguous, ask which one before doing the work; don't default to the narrow re-do just because the artifact is the thing in front of you.
+- **Example**: Correct read here: "spend way longer analyzing, allow longer videos, use Q&A when unsure, stop shipping emoji placeholders" = edit the `/brag` skill's SKILL.md + step-1/step-2 references so EVERY future run (any project) behaves that way — not a rebuild of the Butlery mp4.
+
 ### [Workflow] An agreed multi-part initiative gets ONE written plan before any slice ships — don't implement the piece under discussion and let the rest evaporate
 - **Date**: 2026-07-03
 - **Trigger**: The setup-improvement conversation produced an accepted set of ~10 mechanically-triggered improvements. When Malin pushed on one slice (mandatory interview + plan threshold), I implemented that slice immediately — hooks, rules, tests, commit — with no written plan covering the whole initiative. Malin: "but now you are implementing only part of the plan?" The other 8 items existed only in chat scrollback, exactly where accepted work goes to die. Also self-inconsistent: the change itself was multi-file and shipped ad hoc while I was busy making ad-hoc multi-file changes impossible.
