@@ -33,10 +33,21 @@ Before executing any subcommand, verify Linear MCP is connected by checking if `
 
 Before creating any ticket:
 1. Check `.claude/linear-tracker.json` for existing mapping
-2. Fetch open issues via `list_issues` and compare titles for near-duplicates
+2. Fetch open issues via `list_issues` and compare titles for near-duplicates.
+   **Near-duplicate heuristic:** same area label AND ≥60% of the candidate title's
+   non-stopword tokens appear in an existing open title → treat as a suspected dup;
+   confirm with one judgment pass ("is this the same underlying issue in the CURRENT
+   code?") before dropping. Remember the dedup lesson: match against the live code +
+   decided-nos, never against closed-ticket titles alone — a closed same-name ticket
+   may be a regression to REFILE.
 3. Only create if no match found
 
-If `.claude/linear-tracker.json` is missing, create it fresh. If corrupted JSON, rename to `.bak` and start fresh.
+If `.claude/linear-tracker.json` is missing, create it fresh with this minimal skeleton
+(then fill as tickets are created):
+```json
+{ "lastScanDate": null, "lastScanFocus": null, "findings": {} }
+```
+If corrupted JSON, rename to `.bak` and start fresh from the same skeleton.
 
 After creating tickets, update `.claude/linear-tracker.json` with new mappings.
 
@@ -96,7 +107,10 @@ User can also add free-form focus hints: `/linear scan deep auth and social` or 
 #### Common Steps (all modes)
 
 1. Read existing Linear issues (`list_issues`) to know what's already tracked
-2. Check `git log --since="last scan"` (read lastScanDate from tracker) to see what changed recently
+2. Check what changed since the last scan: read `lastScanDate` from the tracker and
+   substitute the ACTUAL value — `git log --since="<lastScanDate>"` (e.g.
+   `--since="2026-06-27"`). If `lastScanDate` is null/absent (first run), default to
+   `--since="30 days ago"`. Never pass the literal words "last scan" to git.
 3. Determine focus: combine gap-awareness (areas with no tickets), context-driven (recent changes), and rotation (what hasn't been deeply analyzed — check lastScanFocus in tracker)
 4. Run analysis (mode-specific — see below)
 5. Verify each finding against actual code (never trust documents as truth)
@@ -131,7 +145,12 @@ Run these automated checks in parallel:
 
 #### Deep Analysis (runs in `scan deep` / `scan ultrathink`)
 
-Launch 4-6 parallel Explore agents, each assigned a focused code area. Agents perform exhaustive code reading looking for bugs, security issues, race conditions, logic errors, data integrity problems, and edge cases. Report findings with exact file paths, line numbers, severity, and suggested fixes.
+Launch 4-6 parallel Explore agents, each assigned a focused code area — **model `sonnet`;
+effort `high` for this deep mode** (exhaustive code reading earns the higher effort;
+hygiene/census modes elsewhere in this command run `sonnet`/low). Agents perform
+exhaustive code reading looking for bugs, security issues, race conditions, logic errors,
+data integrity problems, and edge cases. Report findings with exact file paths, line
+numbers, severity, and suggested fixes.
 
 **Seat a role lens where the area maps to one.** When a code area is owned by a role (per
 `docs/org/role-paths.json`), give that agent the role's dossier section in
@@ -196,7 +215,9 @@ Concrete vision of the better state. Include references to how other apps/framew
 Brief assessment: is this a quick win or a major undertaking? What's the user-visible payoff?
 ```
 
-**Context-aware:** If triggered mid-coding session (context window has active work), spawn a background agent to protect context. If triggered at session start, run inline.
+**Context-aware:** Concrete signal — if the working tree has uncommitted changes OR
+`tasks/todo.md` holds an in-progress plan, treat it as mid-coding session and spawn a
+background agent to protect context. Clean tree and no active plan → run inline.
 
 ### `ticket <thought>`
 
@@ -253,7 +274,11 @@ Dashboard overview.
 
 ## Error Handling
 
-- **Linear API rate limits:** If `create_issue` or `list_issues` fails, report the error and stop. Don't retry in a loop. Report what was created so far.
+- **Linear API failures — triage by class, keep partial results:** a transient/5xx/
+  rate-limit error → wait ~30s and retry ONCE; still failing → stop, but SAVE completed
+  work (update the tracker with tickets already created, report the created list + the
+  not-yet-filed drafts so nothing is lost). An auth/4xx/permission error → stop
+  immediately (retrying can't help), same partial-results report. Never retry in a loop.
 - **Missing labels:** Before creating tickets, verify label names exist via `list_issue_labels`. If a label doesn't exist, warn the user to create it manually in Linear.
 - **Tracker issues:** Never crash on tracker file problems — recreate if missing, backup if corrupted.
 

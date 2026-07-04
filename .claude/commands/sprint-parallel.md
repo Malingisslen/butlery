@@ -18,10 +18,13 @@ Build an args **object** — never a JSON string. A stringified arg silently lea
 `undefined`, and a `dryRun` that flips to `false` would ship a full sprint to main by accident
 (this has happened — see `memory/feedback_workflow_args_stringification.md`).
 
-- Bare number (e.g. `8`) → `count: 8`. Omit `count` entirely to let it auto-size 6–10.
+- Bare number (e.g. `8`) → `count: 8`. Omit `count` entirely to let it auto-size 6–10 —
+  the sizing logic lives in the workflow script, not here; don't attempt to compute it.
 - `--dry-run` present → `dryRun: true`. Otherwise omit it (a real, shipping run).
 - `--focus <area>` → `focus: "<area>"` (recipe, tagging, import, parsing, social, menu,
   shopping, account, analytics, settings, backend).
+- `malin` detection is an exact whitespace-token match on the split arguments (`malin` or
+  `--malin`) — never a substring test, which would false-positive on e.g. a focus string.
 
 Examples:
 - `/sprint-parallel` → `Workflow({ name: "sprint-execute-parallel", args: {} })`
@@ -30,11 +33,20 @@ Examples:
 
 ## Before a REAL (non-dry-run) launch
 
-- A real run **commits and pushes to main and closes Linear tickets unattended.** If the user
-  seems to want a preview, run `--dry-run` first and confirm before the real launch.
+- A real run **commits and pushes to main and closes Linear tickets unattended.** Explicit
+  trigger rule: the message contains `--dry-run`, "preview", "kolla först"/"check first",
+  or anything hedged → run `--dry-run` and confirm before a real launch. A real run needs
+  the bare command or an explicit "ship it"/"kör skarpt". When genuinely ambiguous,
+  default to `--dry-run` — a wasted preview is cheap, an accidental ship is not.
 - The workflow has its own clean-tree precondition (Phase 0) — it refuses to run on a dirty
-  working tree unless overridden, so pre-existing uncommitted work won't get swept into the
-  sprint commit. (Dry runs skip this check — they're read-only.)
+  working tree. The override is the workflow arg `allowDirty: true` — pass it ONLY when the
+  user explicitly says the dirty files are theirs and should be left alone (a parallel
+  session's work, say), never on your own initiative; the default answer to a dirty tree is
+  commit/stash first or `--dry-run` (dry runs skip the check — they're read-only).
+- If the Workflow tool call itself errors (workflow not found, immediate failure): report
+  the error verbatim and stop. Do NOT fall back to running the sprint manually from
+  `sprint-execute.md`'s text — an ad-hoc reimplementation of an unattended shipping engine
+  is exactly how partial state gets pushed to main.
 
 ## After launching
 
