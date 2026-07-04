@@ -47,7 +47,26 @@
       "Bash(format d:*)",
       "Bash(diskpart*)",
       "Bash(shutdown*)",
-      "Bash(reboot*)"
+      "Bash(reboot*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*serviceAccount*.json)",
+      "Read(**/*service-account*.json)",
+      "Read(**/*-adminsdk-*.json)",
+      "Read(**/*firebase-adminsdk*.json)",
+      "Read(**/*.pem)",
+      "Read(**/*.p12)",
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Read(**/secrets/**)",
+      "Read(~/.ssh/**)",
+      "Read(//c/Users/malla/.ssh/**)"
+    ],
+    "ask": [
+      "mcp__plugin_firebase_firebase__firestore_delete_document",
+      "mcp__plugin_firebase_firebase__firestore_delete_database",
+      "mcp__plugin_firebase_firebase__firestore_delete_index",
+      "mcp__plugin_firebase_firebase__messaging_send_message"
     ]
   },
   "hooks": {
