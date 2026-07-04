@@ -121,6 +121,54 @@ server-side (never trust a client field — pool-poisoning defense).
   pool recomputed, no orphan events). **Flag stays OFF in prod until incr 1–5 are all merged** —
   this satisfies decision-12's same-PR intent (no un-erasable data created before erasure exists).
 
+## Increment 6 — DESIGN APPROVED (Malin 2026-07-03): green + slate two-pill scheme
+Visual preview approved (`docs/design/previews/butlery-betyget-pill-preview.html`):
+- **Community "Butlery-betyget" pill** = filled **brand green** square pill, star +
+  score + vote count (`★ 4.3 · 12 betyg`). It's the flagship number, so it keeps
+  green. Shown only at n ≥ 5, always with the count.
+- **Personal / household ("alla i ditt kök") pill** = quiet **neutral slate** square
+  pill (`★ 4.0`, no count) — moved OFF green so the two read apart instantly by hue
+  (supersedes the old "rating badge stays green" default for the per-copy number; the
+  community pill now owns green). Slate ≈ `rgba(44,44,44,.06)` bg / `#3A3A3A` text /
+  `--cream-darker` border / grey star.
+- Cards: community pill REPLACES the per-copy star when n ≥ 5; below floor / loading /
+  offline / missing → the slate personal pill (never a blank pill). Detail page shows
+  BOTH, labelled ("butlery-betyget" tinted-green panel leads; "alla i ditt kök" slate
+  as context). Square everywhere, butler-voice Swedish, no exclamation marks.
+
+## Increment 6 — IN PROGRESS (2026-07-04) — executing the approved plan in 2 slices
+Design approved (green + slate, above). Implementing per this plan (no re-decide):
+
+**Slice 6a — data foundation (backend-ish, unit-testable, no visual):**
+1. `FirestoreCollections.canonicalRecipeStats = 'canonical_recipe_stats'` ✓
+2. `RatingsRepository.getPooledStats(poolKey)` + `PooledStats {count, average?}` with
+   `displayFloor=5` / `meetsDisplayFloor` (interface + FirebaseRatingsRepository, raw-doc
+   read of `canonical_recipe_stats/{poolKey}`, any-authed read) ✓
+3. `RecipeCore.ratingPoolKey` (String?) — mirror `sourceUrl` at its 6 sites (field,
+   ctor, copyWith sentinel, toJson, toFirestore, fromJson, fromMap). Nullable +
+   backward-safe, NO schemaVersion bump (lazy-compat).
+4. Compute the hint on save via `CanonicalPoolKey.compute(title, ingredients)` in the
+   personal-recipe create/update path (first production call site).
+5. `FeatureFlags.enablePooledRatings = 'enable_pooled_ratings'` + default false.
+6. Unit tests: getPooledStats (null when absent, parses count/avg, floor logic);
+   ratingPoolKey round-trips through toMap/fromMap.
+- Gate: firebase-backend-security + code-reviewer + testing-specialist.
+
+**Slice 6b — UI (the visible pills):**
+7. Card: new green "Butlery-betyget" pill (`★ 4.3 · 12 betyg`) shown at n≥5, replacing
+   the per-copy star; demote the existing "alla" pill to slate. Pool stats fetched via a
+   `RecipeListViewModel` cache (mirror the `pantryMatches` map + `RecipeCard` param).
+8. Detail: add both pills labelled (butlery-betyget tinted-green leads; "alla i ditt kök"
+   slate as context) — async fetch mirroring `_checkUserRating()`.
+9. l10n: SV(source)+EN ARB keys (`pooledRatingPill`, `pooledRatingCount "{count} betyg"`,
+   a11y variants); `flutter gen-l10n`.
+10. Feature-flag gated display + analytics `pool_rating_shown`/`pool_rating_contributed`.
+11. Widget test (AC7): pill absent <5, shows count at ≥5, per-copy fallback intact,
+    offline→fallback, never a blank pill.
+- Gate: flutter-developer/uiux-designer + code-reviewer + testing-specialist.
+
+Flag OFF in prod throughout. No existing rating data mutated.
+
 ## Increment 6 — Client hint + display + telemetry (decisions 8,9,15)
 - `RecipeCore.ratingPoolKey` (String?) mirroring `sourceUrl` (6 sites); compute the hint on save
   via `CanonicalPoolKey.compute` (display/index only — server stays authoritative).

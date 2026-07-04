@@ -2426,3 +2426,86 @@ asymmetry. Not a bug here (both legs added symmetrically), but the guard is what
 test is for. Also: `getPooledStats('')`'s empty-key early-return is a *real* contract, not a
 tautology — `.doc('')` asserts in cloud_firestore, so the guard prevents a throw, not just a
 redundant read.
+
+### 2026-07-04 — Pooled-ratings 6/6a re-review: JSON-leg gap CLOSED, verified non-vacuous
+**Trigger:** re-review after the earlier "Firestore-only round-trip leaves JSON leg unguarded"
+finding was addressed. **Verified:** `recipe_unified_test.dart` now seeds a NON-null
+`ratingPoolKey: 'v1:abcd1234ef567890'` via `copyWith` (default is null, so the value genuinely
+differs) and asserts `RecipeCore.fromJson(core.toJson()).ratingPoolKey` == the seed alongside
+the `fromMap(toFirestore())` leg + copyWith-sentinel (omit-keeps / null-clears) + legacy-doc
+(field removed → null). Not a null-in/null-out tautology: dropping the field from `fromJson`
+returns null ≠ seed → red. Both round-trip legs now proven with a live value. 52/52 pass.
+**Pooled-stats file adequacy confirmed** — all six contracts each have a fail-iff-broken test:
+n≥5 floor pinned at exactly 5 (count 4 false / 5 true, so changing `displayFloor` to 6 breaks
+the at-floor test), null-average-never-displays (count 99 + null → false), whole-number average
+stored as `int` survives `as num?` (`'average': 5` → 5.0), empty poolKey → null, missing doc →
+null, one-decimal `displayAverage` (4.25 → "4.3", null → "0.0"). No real-regression gap found;
+did NOT pad. One documented caveat carried forward: the empty-key guard's throw-prevention value
+(real cloud_firestore asserts on `.doc('')`) is only partially reproduced by FakeFirebaseFirestore,
+which returns null for a missing empty-id doc anyway — the test still pins the null contract, but
+guard removal wouldn't necessarily go red under the fake. Acceptable; the contract is the null.
+
+### 2026-07-04 — Trigger: reviewing pooled-ratings E2 (client display); the inject-vs-remap coverage blind spot
+Pooled-ratings decision-9 display coverage came in three layers with a gap in the *middle*:
+- **Repo unit** (`getBulkPooledStats`) returns a map keyed by **poolKey**.
+- **Widget** (`RecipeCard`) is handed a `PooledStats?` **directly** and asserts pill-replaces-alla /
+  fallback / null-unchanged.
+- **The ViewModel seam that joins them** (`RecipeListViewModel._refreshPooledStats`) does the real
+  work: flag-gate, collect poolKeys off the visible window, then **re-key poolKey → recipeId** onto
+  the `pooledStats` getter the card reads. This seam had **zero** tests. If the remap regressed
+  (kept poolKey keys / mapped the wrong recipe / dropped the flag gate), pooled pills would silently
+  never appear in production and *neither* the repo test nor the widget test would go red — each
+  side stubs past the join. **Pattern: when a repo returns data keyed by X and the widget consumes
+  it keyed by Y, the VM that does X→Y is the highest-value test, not the endpoints.** Recommended a
+  focused VM test (two recipes sharing one poolKey both receive the stat via `pooledStats[recipeId]`;
+  a pool-less recipe gets none; flag-off → empty). Feasible on the existing `recipe_list_viewmodel_test`
+  setUp — `mockRecipeService.setRecipeState(recipes:)` fires `_onRecipesChanged` → `_refreshPooledStats`;
+  only extra wiring is registering a mock `RatingsRepository` + a `FeatureFlagService` returning enabled.
+  Note the parallel `_refreshPantryMatches` is *also* untested but is lower-risk — its map is keyed by
+  recipeId directly (no cross-key remap), so it lacks this seam's regression surface. "Mirrors an
+  untested method" is not a reason to skip when the remap is the untested part.
+- **Second gap: decision-9's demotion branch.** The widget tests never set a family/personal rating
+  *together with* a floor-meeting pool, so `_buildFamilyPill(demoted:true)` / `_buildRatingPill(demoted:true)`
+  — the "drop the household pill to neutral so only one brand-green number shows" invariant — have no
+  coverage. A theme-resolved test (capture `cs` + `context.butleryColors.neutral` via Builder, assert the
+  family pill's Container flips primary→neutral when a floored pool is present) catches removal of the
+  `demoted: showPool` arg (which would render two green pills). Don't hardcode the color; resolve from theme.
+- **Swedish assertions are robust here:** `betyg` (from `butleryBetygCount` → "N betyg") appears only in the
+  pooled pill's *Text*; the family a11y label "Familjebetyg" is a `Semantics` label, which
+  `find.text/textContaining` does **not** traverse. `alla` is an established pattern in this file; only
+  faint risk is a factory recipe title/tag containing the substring — acceptable.
+
+### 2026-07-04 — Pooled-ratings E2 re-review: T2 demotion gap CLOSED (non-vacuous); T1 seam still open [Pattern + verification]
+Re-review of `test/widget/recipe/recipe_card_test.dart` diff on `claude/pooled-ratings-v1`.
+- **T2 (demotion) — RESOLVED, verified non-vacuous.** New test `'a floored pool DEMOTES the
+  co-existing family pill off brand-green'` renders `familyAverage:4.2 + familyRatingCount:3`
+  together with `PooledStats(count:12)` (clears the n>=5 floor), asserts BOTH `familj` and
+  `12 betyg` render, then pins the family `Text.style.color == cs.onSurfaceVariant` (resolved
+  live via `tester.element(find.byType(RecipeCard))`). Non-vacuous by construction: in
+  `_buildFamilyPill` the demoted fg is `onSurfaceVariant`, the un-demoted fg is `onPrimary`;
+  these are distinct lightTheme roles, so removing `demoted: showPool` (default false) leaves
+  `onPrimary` and the assertion fails. `find.textContaining('familj')` is unique — the family
+  *Text* is lowercase "familj {rating}" while the a11y "Familjebetyg" is a `Semantics` label
+  (not traversed by `find.text*`), and the pooled pill text carries no "familj". Green in the run.
+- **T1 (RecipeListViewModel._refreshPooledStats poolKey→recipeId remap + flag gate) — STILL
+  ZERO coverage; deferred.** The caller's stated deferral rationale ("display contract already
+  covered by the widget tests + getBulkPooledStats unit tests") is **the exact seam blind spot
+  I flagged** and does not hold: the widget test injects a `PooledStats?` directly and the repo
+  test returns a poolKey-keyed map — *neither* exercises the VM's re-key. A remap regression
+  (keeps poolKey keys / maps the wrong recipe / drops the flag gate) leaves BOTH endpoint tests
+  green while pooled pills silently never render. So it is genuinely uncovered.
+- **My verdict: deferral is ACCEPTABLE for this increment, but for a different reason than the
+  one given.** The real mitigants are (1) `enable_pooled_ratings` defaults **false** in prod
+  (`feature_flag_service.dart:66`) so the seam is dark — a regression is invisible to users
+  until the flag is flipped; (2) the failure mode is display-only (pills don't show) — no data,
+  permission, money, or GDPR exposure. **T1 must land before the flag is enabled**, not "someday".
+- **Feasibility correction for the follow-up:** the "no test flag-setter / not in test DI" framing
+  overstates the cost. The VM reads `ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(...)`
+  and `ServiceLocator.get<RatingsRepository>().getBulkPooledStats(...)`. Standard path:
+  `class MockFeatureFlagService extends Mock implements FeatureFlagService` +
+  `when(() => m.isEnabled(FeatureFlags.enablePooledRatings)).thenReturn(true)`, register both it
+  and a mock `RatingsRepository` in the test ServiceLocator, then drive `setRecipeState(recipes:)`
+  (fires `_onRecipesChanged` → `_refreshPooledStats`) and assert `vm.pooledStats[recipeId]` for two
+  recipes sharing one poolKey + none for a pool-less recipe + empty when the flag stub returns false.
+  Moderate boilerplate, not a blocker-grade obstacle — it belongs on the existing
+  `recipe_list_viewmodel_test` setUp.

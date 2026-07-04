@@ -2228,6 +2228,113 @@ false-trip the TARGET-scoped residual probe), and I-CRE3 leans on I21
 the emulator. This "own erased + other kept + envelope-clean" triple is the canonical shape
 for any new GDPR-cascade subcollection test in this repo.
 
+### 2026-07-04 — pooled-ratings backfill: no persisted cursor caps forward progress [Bug fixed / review finding]
+
+Reviewed `migrations/backfill-canonical-ratings.ts` (decision 14, Increment F —
+one-shot, HARD-GATED behind `enable_pooled_ratings`, never run in prod). It reuses
+the live mirror's exported `isAccountMatured` + `recipeContentToKey` (the diff only
+added `export` to those two — no body change, so the live mirror's behavior is
+unchanged). Idempotency read + `batch.set` per event, 450 cap, ADR-0004 frozen
+event shape. Clean on: server-recompute of poolKey (never trusts the rating doc's
+client key — test 2 proves it), the maturity memo (monotonic ⇒ safe to memoize
+`true`, immature never cached), the flag-refusal gate (real run only, dryRun
+bypasses per AC10; `isPooledRatingsEnabled` throws on unreachable RC ⇒ fail-closed),
+and no `WriteBatch` overflow (≤450 sets/commit).
+
+**The real finding — inherited from `backfill-recipe-comments-denorm.ts`:** the
+cursor `lastDocId` is a LOCAL variable, reset to null every invocation; nothing is
+persisted across calls. `totalScanned` (vs `maxRatings`, default 10k) and
+`batchesProcessed` (vs `MAX_BATCHES_PER_INVOCATION=23`, ≈10,350 docs) both count
+**skipped-identical** docs. Consequence: a re-invoke always restarts from doc #1,
+re-scans the already-mirrored head as `skippedIdentical` while the counters climb,
+and short-circuits at the same ceiling — so **a corpus larger than ~10,350 ratings
+can never fully backfill**; `hasMore` stays true forever and re-invoking is a no-op
+loop over the head. The line-192 comment "the cursor lets a re-run resume" and the
+runbook's "re-invoke while `hasMore` until false" are therefore inaccurate above
+that ceiling. INERT at current beta scale (rating corpus << 10k), and at that scale
+the transient-maturity-error → `HttpsError('unavailable')` re-run story IS safe
+(re-scan from start + idempotent skip reliably reaches the previously-failing uid,
+which sits within the first ceiling). Remediation for any future scale: persist
+`lastDocId` to a cursor doc (e.g. `_migrations/backfill_canonical_ratings`) and
+resume from it, OR don't count skipped-identical docs against the caps. Flagged
+Medium (would be High if the corpus ever crosses ~10k before the file is deleted).
+
+Two Lows recorded: (1) `createdAt` divergence — the backfill preserves the original
+rating `Timestamp` (`data.createdAt ?? serverTimestamp()`) whereas the live mirror
+always writes `serverTimestamp()`; the mirror explicitly DEFERRED the createdAt
+semantics decision to Stage B (its own line 293-296 NOTE), so the two writers now
+disagree — no reader today, but Stage B's eventual decision must account for both.
+The `data.createdAt as Timestamp` cast is unchecked (harmless while recipe_ratings
+writes a client serverTimestamp). (2) A corpus size exactly == `maxRatings` (or the
+inner-break firing on the last real doc) reports `hasMore: true` perpetually —
+cosmetic; the operator never sees the clean `hasMore: false`. Region/cold-start
+conventions fine (europe-west1 pinned like the reference backfill; no new SDK).
+
+### 2026-07-04 — pooled-ratings backfill: cursor + dedup rewrite VERIFIED CLEAN [Bug fixed]
+
+Re-reviewed after the fix for the three findings above. All resolved; the four
+boundary hazards I re-checked are sound. Keeping the reasoning so a future run
+doesn't re-derive it.
+
+- **Persisted cursor (the Medium).** `startAfter?` in/`nextCursor` out now thread
+  the resume point through the caller (runbook: re-invoke with
+  `{ startAfter: nextCursor }` until `hasMore` false). `maxRatings` is a
+  PER-INVOCATION `totalScanned` ceiling (local, resets each call) — not a
+  cumulative cap — so an arbitrarily large corpus completes across invocations.
+  `hasMore` terminates: every invocation with `maxRatings ≥ 1` processes ≥1 doc
+  (fresh `totalScanned` 0→1 ≤ ceiling on the first doc), so `lastProcessedId`
+  strictly advances past `startAfter` each call; ends when `reachedEnd`
+  (empty/short page). The `reachedEnd` flag correctly suppresses the spurious
+  `hasMore` on an exact-`BATCH_SIZE`-multiple corpus (one extra empty query, then
+  done) and on the exact `MAX_BATCHES`×`BATCH_SIZE` boundary (one extra
+  invocation that returns empty).
+
+- **Two-cursor split is the load-bearing correctness trick.** `lastDocId` = last
+  FETCHED (drives the query `startAfter`); `lastProcessedId` = last actually
+  PROCESSED (drives `nextCursor`). They diverge only on the `maxRatings` cutoff:
+  the cutoff doc breaks BEFORE processing, so `lastProcessedId` stays at the prior
+  doc and `nextCursor = lastProcessedId` re-fetches the cutoff doc + its
+  unprocessed batch siblings next call → no skip. On the batch-ceiling exit they're
+  equal (full batch processed) → no re-scan. Confirmed no gap and no double-process
+  at either boundary.
+
+- **`batchStartCursor` resume-after-throw is genuinely safe.** The batch's writes
+  are collected in the `winners` map and committed in a SINGLE `batchWrites.commit()`
+  AFTER the per-doc loop; the transient-maturity `HttpsError('unavailable')` throws
+  INSIDE the loop, before that commit — so the current batch has ZERO committed
+  writes, and resuming from `batchStartCursor` (= `lastDocId` at batch start, i.e.
+  just past the prior COMMITTED batch) re-does exactly the uncommitted batch. No
+  lost write, no double (the re-do is idempotent — see next).
+
+- **Dedup winner is deterministic; re-runs converge (no oscillation).** Same-batch:
+  ratings collapse into a `Map` keyed `${uid} ${poolKey}`, last-by-doc-id wins
+  (iteration is `orderBy(documentId())` order), so the same-batch double-`set` that
+  caused the old oscillation is gone — ONE idempotency-checked write per unique
+  pool. The write is `batch.set` on a (uid,poolKey) doc-id (overwrite, NEVER
+  increment), and the idempotency skip compares recipeId+ratingValue only
+  (createdAt is deliberately NOT part of identity, so a Timestamp↔serverTimestamp
+  flip can't defeat the skip). Test 10 proves the same-batch collision converges to
+  the last-by-doc-id winner with a no-op second run. Cross-batch collision (the two
+  colliding ratings ≥`BATCH_SIZE` apart) is NOT fully deduped — batch N writes copy-a,
+  batch N+k overwrites with copy-b — but the FINAL committed value is invariant
+  (global-max-doc-id winner) across runs, so it does not oscillate; the residual is
+  one redundant overwrite per run, bounded to accepted-deviations edge #1 (rare
+  self-own-copies-same-pool) — cost, not corruption. Not a finding.
+
+- **`createdAt` cast fixed** — `data.createdAt instanceof admin.firestore.Timestamp
+  ? … : serverTimestamp()` — a malformed field can no longer ride through as a bad
+  cast.
+
+**One residual Low (pre-existing, not introduced by this fix):** `runCanonicalRatingsBackfill`
+does not clamp `maxRatings`, and the callable's `maxRatings = 10000` default only
+fills `undefined`. A caller passing `maxRatings: 0` cutoffs on doc #1 with NOTHING
+processed → `lastProcessedId` stays null → `nextCursor = lastProcessedId ?? lastDocId`
+falls back to `lastDocId` (end of the fetched batch), so the next invocation
+`startAfter`s PAST the whole unprocessed batch — silently skipping ratings while
+still reporting `hasMore`. Only reachable via the absurd admin input `maxRatings:0`;
+harmless at any sane value. Cheap guard: `const maxRatings = Math.max(1, options.maxRatings)`
+at the top of the run fn (or clamp in the callable). Flagged, not blocking.
+
 ### Archived (pre-2026-06-04) — see cloud-functions-specialist.knowledge.archive.md
 
 - 2026-04-25 — initial seed — Seeded knowledge file from index.ts and SDK conventions

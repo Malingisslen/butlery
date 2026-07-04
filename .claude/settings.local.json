@@ -53,5 +53,9 @@
       "Workflow(sprint-execute-parallel)",
       "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/simplify-done.marker)"
     ]
+  },
+  "enabledPlugins": {
+    "workflow-guards@malin-plugins": true,
+    "role-org@malin-plugins": true
   }
 }

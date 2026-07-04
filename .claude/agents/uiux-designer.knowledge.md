@@ -192,3 +192,77 @@ document the AppColors equivalence — that's the right boundary.
 (`vegetable_illustration.dart`) or user color picker palettes
 (`personal_tag_color_picker.dart`). These are decorative palettes
 intentionally divorced from the brand color system.
+
+### 2026-07-04 — Butlery-betyget pooled pill review (Increment E2, `recipe_card.dart`)
+
+**Trigger:** Reviewing the new green community pill + demoted personal/family
+pill against the approved `docs/design/previews/butlery-betyget-pill-preview.html`
+("green + slate" pairing).
+
+**Check for a dedicated decorative token before reusing a status token for a
+star glyph.** `_buildPooledPill` colors its star with `context.butleryColors.warning`
+(`#D4A03C`, the semantic warning/banner token). The app already has
+`butleryColors.starGold` (`#FBBF24` light / `#FFD54F` dark) used by every other
+star-rating glyph (`star_rating_row.dart`, `recipe_detail_metadata.dart`,
+`cooking_session_card.dart`). Reusing `warning` for decoration conflates two
+unrelated tokens and produces a second, slightly different gold in the same
+visual family. Rule going forward: grep for an existing decorative token
+(`starGold`, etc.) before defaulting to the nearest semantic-status color.
+
+**"Demote to neutral" needs matching visual weight, not just a color swap.**
+The approved mockup's slate personal pill is a *light, thin-bordered,
+near-white* pill (`rgba(44,44,44,.06)` fill + border) — deliberately quiet so
+the green community pill reads as the one flagship number. The shipped
+demoted pill instead keeps the same *solid filled* treatment as the
+non-demoted green pill, just swapped to `butleryColors.neutral`
+(`#9CA3AF`, a fairly saturated mid-gray). Contrast is fine (≈6.8:1 vs
+`onSurface` text, passes AA), but two solid-fill pills of similar darkness
+compete for attention more than the mockup's filled-vs-outlined pairing
+intended. When "demoting" a pill to signal secondary importance, prefer
+matching the mockup's *fill treatment* (outlined/light vs filled), not just
+recoloring within the same filled style.
+
+**Mixed star glyphs read as different weights.** The pooled pill uses a
+Material `Icons.star` (via `Icon`); the sibling personal rating pill
+(`_buildRatingPill`) uses a literal `'★'` character inlined in the
+`Text`. They can now render in the same `Wrap` row for the first time —
+worth normalizing to one glyph approach when pills that show stars sit next
+to each other.
+
+**What was correct:** square corners (no `borderRadius` introduced anywhere
+in this diff), Swedish butler-voice copy (`butleryBetygCount` / Swedish
+"betyg", `a11yButleryBetygPill` "Butlery-betyget {rating}, {count} röster" —
+no exclamation), and the semantics label wiring.
+
+### 2026-07-04 — Butlery-betyget detail-page pills review (Increment 6b, `recipe_detail_metadata.dart`)
+
+**Trigger:** Reviewing the two labelled pooled pills added to the recipe-detail
+metadata (`_buildPooledSection` / `_buildCommunityPill` / `_buildHouseholdPill`)
+against the card's E2 treatment and the approved preview.
+
+**The demoted-pill treatment is now shared across card + detail — that's the
+canonical "quiet secondary pill" pattern.** Both `recipe_card.dart`
+(`_buildFamilyRatingPill(demoted: true)`, `_buildRatingPill(demoted:)`) and the
+detail household pill use: transparent fill + `Border.all(cs.outlineVariant)` +
+`cs.onSurfaceVariant` text/star. Prefer this over a filled neutral-gray pill or
+the preview's literal light-theme `rgba` tokens — the `onSurfaceVariant` /
+`outlineVariant` roles carry defined dark-theme variants, so it stays AA-safe in
+both themes; a filled neutral pill fails AA in dark mode. Reuse these two roles
+when "demoting" any pill to secondary weight. This session's detail pills got the
+`starGold` decorative star right too (not the `warning` token that the E2 card
+pill got wrong).
+
+**Caption-case: decide brand-lowercase vs uppercase once.** `_buildLabelledPill`
+renders the ARB literal verbatim (`letterSpacing: 0.5`, `w600`, no
+`.toUpperCase()`), so "butlery-betyget" / "alla i ditt kök" show lowercase even
+when a design note says "uppercase caption." For the brand name lowercase is
+defensible (recipe titles render lowercase by design); the descriptor caption is
+the ambiguous one. When a labelled-pill caption is added, don't assume uppercase —
+match the ARB literal's case to the intended treatment explicitly.
+
+**Watch overstated fallback labels.** The household pill's value is
+`familyAverage ?? averageRating ?? recipe.rating`, but the caption + a11y label
+("alla i ditt kök" / "Ditt köks betyg") assert a whole-household verdict. Only
+`familyAverage` literally is that; the fallbacks are the per-copy aggregate (may
+include non-household raters) or the user's own single star. A caption that
+narrates provenance should hold across all its data fallbacks, or be softened.
