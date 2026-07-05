@@ -29,25 +29,34 @@ const FOCUS = A.focus ? A.focus : null        // area label filter
 const DRY_RUN = A.dryRun === true || A.dryRun === 'true'
 const ALLOW_DIRTY = A.allowDirty === true || A.allowDirty === 'true'
 
-// ── model policy: optimise for code quality, not cost ───────────────────────
-// Cost is not a constraint here — every judgement-bearing step runs on the BEST
-// available model. We do that by OMITTING the `model:` override: an agent with no
-// override inherits the session's resolved model, i.e. whatever you launched the
-// run on (today Opus 4.8 1M; a stronger model when one is available and selected).
+// ── model policy: match the model to the step's blast radius ────────────────
+// Three tiers, aligned with the "Subagent model = blast radius" rule in
+// CLAUDE.local.md (mechanical/classification → cheap; correctness-critical → best):
 //
-// Do NOT hardcode a model name (no 'fable', no 'opus') on these steps — a named
-// model goes stale the moment the frontier moves or a model is pulled (exactly the
-// breakage that retired the old Fable references). "Inherit" is self-updating and
-// can never point at a switched-off model.
+//   Best model (INHERIT — omit `model:`): implement, integrate, review,
+//   outcome-verify, completeness, fix, ship. Every step where judgement affects
+//   code quality OR that has irreversible side effects. Inheriting the session's
+//   resolved model (today Opus 4.8 1M; a stronger model when one is selected) keeps
+//   quality maxed without hardcoding a name that goes stale when the frontier moves
+//   (exactly the breakage that retired the old Fable references).
 //
-// Inherit (best model): select, implement, integrate, review, outcome-verify,
-// completeness, fix, ship — every step where judgement affects code quality.
+//   Cheap-but-capable (SELECT_MODEL): the `select` step. It is dominated by
+//   mechanical work — read the Linear backlog + git log, cluster by area — plus one
+//   classification judgement (each ticket's `disposition`). That judgement has a
+//   human backstop downstream (build-review + needsApproval are surfaced to Malin)
+//   and the acceptance criteria it writes are graded by the best-model Verify phase,
+//   so sonnet is the right tool, not a quality compromise. Not haiku — the
+//   disposition call needs more than the smallest tier.
 //
-// The ONLY pinned model is for the two pure git-state reads (precondition,
-// verify-ship). These run `git status` / `git rev-parse` and have zero quality
-// dimension — a bigger model cannot read a git status "better", only slower — so a
-// small fast model is the right tool, not a cost compromise.
-const MECH_MODEL = 'haiku'   // pure git-state reads only (precondition, verify-ship) — no judgement
+//   Smallest (MECH_MODEL): the two pure git-state reads (precondition, verify-ship).
+//   These run `git status` / `git rev-parse` and have zero judgement dimension — a
+//   bigger model cannot read a git status "better", only slower.
+//
+// The named constants below intentionally hardcode a model (staleness risk accepted)
+// because "inherit" cannot express "cheaper than the session"; this mirrors the
+// long-standing MECH_MODEL pattern.
+const MECH_MODEL = 'haiku'      // pure git-state reads only (precondition, verify-ship) — no judgement
+const SELECT_MODEL = 'sonnet'   // select phase — mechanical gather + backstopped classification, not the priciest tier
 
 const SKILL = '.claude/commands/sprint-execute.md'
 // Patches live in the MAIN repo's .claude/state/sprint-patches, derived from the
@@ -233,7 +242,7 @@ ${DRY_RUN ? 'NOTE: dry-run — selection only, fully read-only. The pipeline sto
 
 Return the structured plan. Estimate \`files\` per ticket from a quick code read so the implementation agents start with a target.`
 
-const plan = await agent(selectPrompt, { label: 'select', phase: 'Select', schema: PLAN_SCHEMA })
+const plan = await agent(selectPrompt, { label: 'select', phase: 'Select', model: SELECT_MODEL, schema: PLAN_SCHEMA })
 
 if (!plan) {
   log('Selection returned nothing — nothing to do.')
