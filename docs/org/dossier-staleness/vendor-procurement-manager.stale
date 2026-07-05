@@ -27,7 +27,8 @@
     "functions/src/__tests__/canonical-stats-rules.test.ts",
     "functions/src/account/account-deletion-cascade.ts",
     "functions/src/migrations/backfill-canonical-ratings.ts",
-    "functions/src/__tests__/backfill-canonical-ratings.test.ts"
+    "functions/src/__tests__/backfill-canonical-ratings.test.ts",
+    "firebase.json"
   ],
   "last_stamped": "2026-07-04"
 }

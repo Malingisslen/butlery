@@ -17,7 +17,8 @@
     ".claude/rules/workflow-discipline.md",
     "tasks/setup-hardening-plan.md",
     ".claude/rules/lessons-digest.md",
-    ".claude/rules/git-workflow.md"
+    ".claude/rules/git-workflow.md",
+    ".claude/agents/firestore-rules-tester.knowledge.md"
   ],
-  "last_stamped": "2026-07-04"
+  "last_stamped": "2026-07-05"
 }

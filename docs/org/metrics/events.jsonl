@@ -5,3 +5,17 @@
 {"type": "retro", "mode": "shakedown", "period": "2026-06-27..2026-07-04", "note": "second shakedown same day, post plugin-migration + first 3-repo janitor run; headline: dossier-staleness markers uncommitted so cloud janitor is blind to them", "ts": "2026-07-04T17:31:49.486757+00:00"}
 {"type": "review", "tier": "single", "stakeholders": 1, "role": "Claude AI-Harness Owner / Agent-Ops Lead", "plan": "shared-plugin (item 12)", "outcome": "approve-with-conditions", "conditions": 6, "findings_material": 6, "escalated_to_human": false, "adr": null, "ran": true, "note": "retro-logged: convened ad-hoc during plan review 2026-07-04, produced fail-closed gate policy + shakedown file retention; was invisible to the event trail until this entry", "ts": "2026-07-04T17:39:32.436727+00:00"}
 {"type": "world-watch", "role": "Security Architect", "item": "CVE-2026-48930 (Node null-byte hostname truncation / DNS authority rebinding)", "verdict": "not-material", "basis": "functions fetch only 2 hardcoded hosts (Livsmedelsverket API, api.resend.com); no user-supplied URLs reach server-side resolution; recipe-URL fetching is on-device; Gen2 runtime patch-managed by Google. Retro spot-check ⚠ resolved: janitor filtering was correct.", "ticket": null, "ts": "2026-07-04T18:01:39.138087+00:00"}
+{"ts":"2026-07-04T19:28:23.774Z","type":"trigger","fired":true,"signals":"delete","ran":null}
+{"ts":"2026-07-04T19:36:24.371Z","type":"trigger","fired":true,"signals":"delete","ran":null}
+{"ts":"2026-07-04T20:42:02.814Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,erasure,firestore.rules,functions/src,gdpr,moderation,privacy polic","ran":null}
+{"ts":"2026-07-04T20:51:39.211Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,llm","ran":null}
+{"ts":"2026-07-04T21:18:44.776Z","type":"trigger","fired":true,"signals":"consent,delete,deletion,gdpr,monetiz,pii","ran":null}
+{"ts":"2026-07-04T21:24:56.343Z","type":"trigger","fired":true,"signals":"consent,delete,deletion,gdpr,monetiz,pii","ran":null}
+{"ts":"2026-07-04T21:57:08.096Z","type":"trigger","fired":true,"signals":"functions/src","ran":null}
+{"ts":"2026-07-04T21:57:47.725Z","type":"trigger","fired":true,"signals":"functions/src","ran":null}
+{"ts":"2026-07-05T18:26:59.018Z","type":"trigger","fired":true,"signals":"functions/src","ran":null}
+{"ts":"2026-07-05T18:27:32.259Z","type":"trigger","fired":true,"signals":"functions/src","ran":null}
+{"ts":"2026-07-05T18:44:42.833Z","type":"trigger","fired":true,"signals":"allergen","ran":null}
+{"ts":"2026-07-05T18:51:44.617Z","type":"trigger","fired":true,"signals":"allergen","ran":null}
+{"ts":"2026-07-05T19:14:00.372Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}
+{"ts":"2026-07-05T19:19:41.078Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}

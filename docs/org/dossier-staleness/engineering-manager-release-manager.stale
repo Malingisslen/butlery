@@ -9,7 +9,10 @@
     ".claude/rules/git-workflow.md",
     ".claude/commands/sprint-execute.md",
     ".claude/commands/stakeholder-review.md",
-    ".claude/commands/janitor.md"
+    ".claude/commands/janitor.md",
+    ".claude/commands/linear.md",
+    ".claude/commands/sprint-parallel.md",
+    ".claude/commands/preview.md"
   ],
-  "last_stamped": "2026-07-04"
+  "last_stamped": "2026-07-05"
 }

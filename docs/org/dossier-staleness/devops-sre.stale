@@ -3,7 +3,8 @@
   "stale_since": "2026-07-02",
   "triggers": [
     ".github/workflows/architecture-validation.yml",
-    ".github/workflows/firestore-rules.yml"
+    ".github/workflows/firestore-rules.yml",
+    "firebase.json"
   ],
-  "last_stamped": "2026-07-03"
+  "last_stamped": "2026-07-04"
 }

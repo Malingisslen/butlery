@@ -18,7 +18,8 @@
     "functions/src/__tests__/canonical-stats-rules.test.ts",
     ".github/workflows/firestore-rules.yml",
     "test/unit/repositories/firebase/firebase_ratings_repository_pooled_stats_test.dart",
-    "functions/src/__tests__/backfill-canonical-ratings.test.ts"
+    "functions/src/__tests__/backfill-canonical-ratings.test.ts",
+    ".claude/agents/firestore-rules-tester.knowledge.md"
   ],
   "last_stamped": "2026-07-04"
 }

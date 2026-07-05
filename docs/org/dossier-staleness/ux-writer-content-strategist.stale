@@ -15,5 +15,5 @@
     ".claude/hooks/preview-gate.sh",
     ".claude/hooks/janitor-due-check.sh"
   ],
-  "last_stamped": "2026-07-04"
+  "last_stamped": "2026-07-05"
 }
