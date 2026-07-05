@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] A gate's block message may only name remedies that ship WITH the gate
+- **Date**: 2026-07-05
+- **Trigger**: A synat session hit the shared plan-review gate's high-stakes block, which instructed "run /review-plan" — a command that exists only as a Butlery-local file. The session got "Unknown skill: review-plan" and had to improvise the auditor by hand. The gate had been ported to all three repos; its remedy hadn't.
+- **Rule**: When a gate/hook blocks with instructions, every command, skill, script, or file it names must be guaranteed co-installed with the gate itself — ship the remedy inside the same plugin (auto-discovered skill), or make the message self-contained (inline the procedure), or have the hook check existence and adapt its message. "Works in the repo where it was written" is the porting bug's signature; test block messages from the OTHER repos' perspective when a gate is shared.
+- **Example**: Fixed by adding skills/review-plan/SKILL.md to workflow-guards (a repo-agnostic fresh-context auditor, auto-present wherever the gate is) and updating the block text to name the fallback; Butlery's richer local command still wins when present (9282f77).
+
 ### [Workflow] An audit agent's claim about a tool's OUTPUT FORMAT is plausible, not confirmed — reproduce before "fixing"
 - **Date**: 2026-07-05
 - **Trigger**: A verification-audit agent reported (MEDIUM, hedged) that Butlery's stop-check `errorPathRegex` "likely never matches" because `dart analyze` uses a bullet-separated format with the file path third. I rewrote the regex to the bullet format. The plan's own verification step — inducing a REAL lint error — then showed the actual output is hyphen-separated (`error - file:line:col - message - rule`), the ORIGINAL regex matched perfectly, and my "fix" was the regression. Reverted.

@@ -8,6 +8,7 @@ when the counts drift apart.
 
 ## Workflow
 
+- A gate's block message may only name remedies that SHIP with the gate (same plugin / inlined procedure) — test the message from every repo the gate is installed in.
 - An audit agent's claim about a tool's OUTPUT FORMAT is a guess until reproduced — run the real tool and test the regex against a real line before "fixing" a parser.
 - Feedback right after a deliverable may target the TOOL/process, not the one artifact — disambiguate "fix this output" vs "improve the capability" before acting.
 - A multi-part agreed initiative gets ONE written plan before any slice ships — chat scrollback is not a backlog.
