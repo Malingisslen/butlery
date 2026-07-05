@@ -1,4 +1,6 @@
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -60,10 +62,13 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
       );
     }
 
-    // Classify and parse (cached across tiers)
+    // Classify and parse (cached across tiers). Thread the kill switch so
+    // that with capture OFF, heading lines are RETAINED as ingredients (not
+    // dropped) — the flag now fully reverts this tier, matching the others.
     final structure = await context.parseStructureCachedAsync(
       text,
       neuralClassifier: _neuralClassifier,
+      captureSubHeadings: isSectionCaptureEnabled,
     );
 
     if (!structure.isValid) {
@@ -109,13 +114,15 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     ParsedRecipeStructure structure,
     ParsingContext context,
   ) async {
-    final ingredients = await _ingredientStrategy.parseLines(
+    var ingredients = await _ingredientStrategy.parseLines(
       structure.ingredients,
       ocrCorrection: context.isOcrSource,
     );
     if (ingredients.value == null || ingredients.value!.isEmpty) {
       return null;
     }
+
+    ingredients = _applySections(ingredients, structure);
 
     // Defense-in-depth: reject nav garbage from URL sources.
     // Real ingredients nearly always have quantities; nav text never does.
@@ -139,6 +146,41 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
       context: context,
       ingredients: ingredients,
       instructions: instructions,
+    );
+  }
+
+  /// Stamps the detected component group onto each parsed ingredient.
+  ///
+  /// Gated by the [isSectionCaptureEnabled] kill switch. Fails OPEN on any
+  /// length mismatch between the parsed ingredients and the detected section
+  /// list (e.g. a parser that merged/dropped lines): sections are skipped
+  /// entirely rather than misaligned — a wrong section is worse than none.
+  /// Only non-null groups are stamped; ungrouped lines keep their null
+  /// section (so ParsedIngredient.copyWith's inability to clear is moot).
+  FieldResult<List<ParsedIngredient>> _applySections(
+    FieldResult<List<ParsedIngredient>> ingredients,
+    ParsedRecipeStructure structure,
+  ) {
+    if (!isSectionCaptureEnabled) return ingredients;
+    final sections = structure.ingredientSections;
+    final parsed = ingredients.value;
+    if (parsed == null ||
+        sections.isEmpty ||
+        sections.length != parsed.length) {
+      return ingredients;
+    }
+    if (sections.every((s) => s == null)) return ingredients;
+
+    final stamped = [
+      for (var i = 0; i < parsed.length; i++)
+        sections[i] == null
+            ? parsed[i]
+            : parsed[i].copyWith(section: sections[i]),
+    ];
+    return FieldResult(
+      value: stamped,
+      confidence: ingredients.confidence,
+      failureReason: ingredients.failureReason,
     );
   }
 }

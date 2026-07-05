@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -88,6 +89,14 @@ class RecipeSerialization {
           'timeMinutes',
         ),
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
+        // Round-trip the ingredient section headers for shared/collaborative
+        // recipes. serializeRecipe writes structuredIngredients (via
+        // toFirestore); this hand-rolled deserializer must read it back or
+        // collaborators lose all "Deg"/"Fyllning" grouping (and portion-scaling
+        // structure) on load. Mirrors the canonical Recipe.fromFirestore path.
+        structuredIngredients: RecipeIngredient.listFromJson(
+          coreData['structuredIngredients'],
+        ),
         instructions: List<String>.from(coreData['instructions'] ?? []),
         personalTagIds: coreData['personalTagIds'] != null
             ? List<String>.from(coreData['personalTagIds'])

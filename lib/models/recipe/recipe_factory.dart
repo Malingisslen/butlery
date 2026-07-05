@@ -313,6 +313,13 @@ class RecipeFactory {
         title: customTitle ?? '${sourceRecipe.core.title}$titleSuffix',
         description: sourceRecipe.core.description,
         ingredients: [...sourceRecipe.core.ingredients],
+        // Carry the structured list (amount/unit/section per line) — a copy
+        // whose `ingredients` are byte-identical stays alignment-valid, so
+        // headings and scaling data survive duplication (plan invariant:
+        // "sections persist through duplication/sharing").
+        structuredIngredients: sourceRecipe.core.structuredIngredients != null
+            ? [...sourceRecipe.core.structuredIngredients!]
+            : null,
         instructions: [...sourceRecipe.core.instructions],
         mealType: sourceRecipe.core.mealType,
         createdBy: newOwnerId,

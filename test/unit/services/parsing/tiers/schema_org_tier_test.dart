@@ -19,14 +19,21 @@
 /// - Cuisine/category accept string or first element of List.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 /// Stub IngredientParsingStrategy that bypasses CRF loading entirely.
 ///
@@ -52,6 +59,32 @@ class _RecordingStrategy extends IngredientParsingStrategy {
     // Echo back as ParsedIngredient list so the tier sees "success".
     return FieldResult.success(
       lines
+          .map(
+            (l) => ParsedIngredient(
+              name: l,
+              originalLine: l,
+              confidence: ParseConfidence.high,
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+/// Strategy that returns FEWER parsed lines than it received (simulating a
+/// parser that merged/dropped lines). Used to prove `_applySections` fails
+/// open — a length mismatch must leave sections unstamped rather than
+/// misalign them.
+class _ShrinkingStrategy extends IngredientParsingStrategy {
+  @override
+  Future<FieldResult<List<ParsedIngredient>>> parseLines(
+    List<String> lines, {
+    bool ocrCorrection = false,
+  }) async {
+    final kept = lines.take(lines.length - 1).toList();
+    if (kept.isEmpty) return FieldResult.failed('No ingredients found');
+    return FieldResult.success(
+      kept
           .map(
             (l) => ParsedIngredient(
               name: l,
@@ -798,6 +831,162 @@ void main() {
     /// makes it minutes-long must be visible.
     test('defaultTimeout is 5 seconds', () {
       expect(tier.defaultTimeout, const Duration(seconds: 5));
+    });
+  });
+
+  // ----- ingredient section headings ----------------------------------------
+
+  group('ingredient section headings (heading pre-scan)', () {
+    String groupedHtml() => htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Kanelbullar",
+  "recipeIngredient": [
+    "Deg:",
+    "5 dl vetemjol",
+    "25 g jast",
+    "Fyllning:",
+    "75 g smor",
+    "2 msk kanel"
+  ],
+  "recipeInstructions": ["Baka."]
+}
+''');
+
+    test(
+      'pulls heading entries out of the ingredient list and stamps groups',
+      () async {
+        final result = await tier.parse(urlContextFor(groupedHtml()));
+
+        expect(result.success, isTrue);
+        // Heading rows are never forwarded to the parser (so they can't become
+        // phantom ingredients feeding allergen tagging).
+        expect(strategy.receivedLines, [
+          '5 dl vetemjol',
+          '25 g jast',
+          '75 g smor',
+          '2 msk kanel',
+        ]);
+        expect(strategy.receivedLines, isNot(contains('Deg:')));
+
+        final sections = result.recipe!.ingredients.value!
+            .map((i) => i.section)
+            .toList();
+        expect(sections, ['Deg', 'Deg', 'Fyllning', 'Fyllning']);
+      },
+    );
+
+    test(
+      'a bare ingredient (no colon, not vocab) is NEVER dropped as heading',
+      () async {
+        final html = htmlWithJsonLd('''
+{
+  "@type": "Recipe",
+  "name": "Sas",
+  "recipeIngredient": ["Sas:", "2 dl gradde", "salt", "1 msk soja"],
+  "recipeInstructions": ["Koka."]
+}
+''');
+        final result = await tier.parse(urlContextFor(html));
+
+        expect(result.success, isTrue);
+        expect(
+          strategy.receivedLines,
+          ['2 dl gradde', 'salt', '1 msk soja'],
+          reason:
+              'salt has no colon and is not curated vocab → stays ingredient',
+        );
+        expect(
+          result.recipe!.ingredients.value!.map((i) => i.section),
+          ['Sas', 'Sas', 'Sas'],
+        );
+      },
+    );
+
+    test('length mismatch (parser dropped a line) fails open — no section '
+        'stamped rather than misaligned', () async {
+      final shrinkTier = SchemaOrgTier(
+        ingredientStrategy: _ShrinkingStrategy(),
+      );
+      final result = await shrinkTier.parse(urlContextFor(groupedHtml()));
+
+      expect(result.success, isTrue);
+      // 4 ingredient lines went in (after heading removal); strategy returns 3.
+      // Sections length (4) != parsed length (3) ⇒ stamp nothing (fail open).
+      expect(
+        result.recipe!.ingredients.value!.every((i) => i.section == null),
+        isTrue,
+        reason: 'a wrong section is worse than none — fail open on mismatch',
+      );
+    });
+
+    test(
+      'a trailing heading that groups nothing is dropped entirely',
+      () async {
+        final html = htmlWithJsonLd('''
+{"@type":"Recipe","name":"X","recipeIngredient":["3 dl mjol","Till servering:"],"recipeInstructions":["s"]}
+''');
+        final result = await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['3 dl mjol']);
+        expect(result.recipe!.ingredients.value!.single.section, isNull);
+      },
+    );
+
+    test(
+      'an unsectioned recipe leaves every ingredient section null',
+      () async {
+        final html = htmlWithJsonLd('''
+{"@type":"Recipe","name":"X","recipeIngredient":["3 dl mjol","2 agg"],"recipeInstructions":["s"]}
+''');
+        final result = await tier.parse(urlContextFor(html));
+
+        expect(strategy.receivedLines, ['3 dl mjol', '2 agg']);
+        expect(
+          result.recipe!.ingredients.value!.every((i) => i.section == null),
+          isTrue,
+        );
+      },
+    );
+
+    group('kill switch OFF', () {
+      setUp(() {
+        final flags = _MockFeatureFlags();
+        when(
+          () => flags.isEnabled(FeatureFlags.ingredientSectionCapture),
+        ).thenReturn(false);
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<FeatureFlagService>()) {
+          getIt.unregister<FeatureFlagService>();
+        }
+        getIt.registerSingleton<FeatureFlagService>(flags);
+        ServiceLocator.initialize(DIContainer());
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<FeatureFlagService>()) {
+          getIt.unregister<FeatureFlagService>();
+        }
+        ServiceLocator.reset();
+      });
+
+      test(
+        'capture off ⇒ heading lines pass through as ingredients (today)',
+        () async {
+          final result = await tier.parse(urlContextFor(groupedHtml()));
+
+          expect(
+            strategy.receivedLines,
+            contains('Deg:'),
+            reason: 'flag off ⇒ no pre-scan ⇒ headings flow through unchanged',
+          );
+          expect(
+            result.recipe!.ingredients.value!.every((i) => i.section == null),
+            isTrue,
+          );
+        },
+      );
     });
   });
 }

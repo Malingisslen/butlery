@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
@@ -40,6 +41,117 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
+    });
+
+    group('Ingredient sub-group headings (caption imports)', () {
+      // Pasted captions ("Deg:", "Fyllning:") should keep their grouping the
+      // same way the LLM/OCR tiers do — the heading lands on each ingredient's
+      // structured `.section`, NEVER in the flat `ingredients` list that
+      // allergen tagging reads.
+      RecipeIngredient bySubstring(
+        List<RecipeIngredient> list,
+        String needle,
+      ) => list.firstWhere((e) => e.raw.toLowerCase().contains(needle));
+
+      test('captures "Deg:"/"Fyllning:" onto structured entries (both '
+          'measurement-first and scored ingredients)', () async {
+        const text =
+            'Kladdkaka\n'
+            'Ingredienser:\n'
+            'Deg:\n'
+            '2 dl socker\n' // measurement-first (STAGE 1) capture
+            '1 nypa salt\n' // no known unit — scored (STAGE 3) capture
+            'Fyllning:\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda i 20 min.';
+        final result = await strategy.import(text);
+        final structured = result.recipe!.structuredIngredients;
+
+        expect(bySubstring(structured, 'socker').section, 'Deg');
+        expect(bySubstring(structured, 'salt').section, 'Deg');
+        expect(bySubstring(structured, 'choklad').section, 'Fyllning');
+      });
+
+      test('never leaks a heading into the flat ingredients list', () async {
+        const text =
+            'Kladdkaka\n'
+            'Deg:\n'
+            '2 dl socker\n'
+            'Fyllning:\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+        final flat = result.recipe!.ingredients.map((e) => e.toLowerCase());
+
+        // The tagging system reads this list; a heading here could ground a
+        // false "fritt från" verdict.
+        expect(flat, isNot(contains('deg')));
+        expect(flat, isNot(contains('deg:')));
+        expect(flat, isNot(contains('fyllning')));
+        expect(flat, isNot(contains('fyllning:')));
+      });
+
+      test(
+        'a flat caption with no sub-groups leaves every section null',
+        () async {
+          const text =
+              'Pannkakor\n'
+              'Ingredienser:\n'
+              '3 dl vetemjöl\n'
+              '2 ägg\n'
+              'Gör så här:\n'
+              'Vispa ihop och stek.';
+          final result = await strategy.import(text);
+          final structured = result.recipe!.structuredIngredients;
+
+          expect(structured, isNotEmpty);
+          expect(structured.every((e) => e.section == null), isTrue);
+        },
+      );
+
+      test(
+        'ingredients before the first heading stay ungrouped; later ones are '
+        'stamped (no retroactive back-fill)',
+        () async {
+          const text =
+              'Kaka\n'
+              'Ingredienser:\n'
+              '2 ägg\n' // before any heading — must stay null
+              'Deg:\n'
+              '2 dl socker\n' // under "Deg"
+              'Gör så här:\n'
+              'Blanda och grädda.';
+          final result = await strategy.import(text);
+          final structured = result.recipe!.structuredIngredients;
+
+          expect(bySubstring(structured, 'ägg').section, isNull);
+          expect(bySubstring(structured, 'socker').section, 'Deg');
+        },
+      );
+
+      test(
+        'captures English caption groups ("Dough:"/"Filling:") and never an '
+        'instruction header ("Method:")',
+        () async {
+          const text =
+              'Muffins\n'
+              'Dough:\n'
+              '2 dl flour\n'
+              'Filling:\n'
+              '100 g chocolate\n'
+              'Method:\n'
+              'Mix and bake.';
+          final result = await strategy.import(text);
+          final structured = result.recipe!.structuredIngredients;
+          final sections = structured.map((e) => e.section).toList();
+
+          expect(bySubstring(structured, 'flour').section, 'Dough');
+          expect(bySubstring(structured, 'chocolate').section, 'Filling');
+          expect(sections, isNot(contains('Method')));
+        },
+      );
     });
 
     group('Cookbook title guards (corpus-found)', () {

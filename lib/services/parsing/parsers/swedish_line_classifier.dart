@@ -3,6 +3,7 @@ import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
+import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 
 /// Classification result for a single line of text.
 enum LineType {
@@ -256,31 +257,77 @@ class SwedishLineClassifier {
   }
 
   /// Get confidence-weighted recipe structure from text.
-  ParsedRecipeStructure parseStructure(String text) {
+  ///
+  /// [captureSubHeadings] threads the `ingredient_section_capture` kill switch
+  /// down from the tier (ServiceLocator isn't reachable inside a background
+  /// isolate, so the flag must arrive as a value). When false, component
+  /// sub-heading lines ("Deg:") are RETAINED as ingredients rather than pulled
+  /// out — so flipping the flag off fully reverts the text path, matching the
+  /// LLM/schema.org tiers.
+  ParsedRecipeStructure parseStructure(
+    String text, {
+    bool captureSubHeadings = true,
+  }) {
     final sections = classifyAndGroup(text);
-    return extractStructureFromSections(sections);
+    return extractStructureFromSections(
+      sections,
+      captureSubHeadings: captureSubHeadings,
+    );
   }
 
   /// Extracts [ParsedRecipeStructure] from grouped sections.
   ///
-  /// Shared between rule-based and neural classifiers.
+  /// Shared between rule-based and neural classifiers. See [parseStructure]
+  /// for [captureSubHeadings].
   static ParsedRecipeStructure extractStructureFromSections(
-    List<RecipeSection> sections,
-  ) {
+    List<RecipeSection> sections, {
+    bool captureSubHeadings = true,
+  }) {
     String? title;
     final ingredients = <String>[];
+    final ingredientSections = <String?>[];
     final instructions = <String>[];
     int? portions;
     Duration? totalTime;
 
+    // Sub-heading tracking: an INGREDIENT-side section header (e.g. "Deg:",
+    // "Fyllning:") sets the current group for subsequent ingredient lines.
+    // Instruction-side headers ("Gör så här:") clear it — the ingredient
+    // list is over. The heading text itself is NEVER added as an ingredient
+    // (the flat-list safety invariant lives here at the source).
+    String? currentSection;
+
     for (final section in sections) {
+      // A section whose type is instructions means we've left the ingredient
+      // block; drop any lingering ingredient sub-heading.
+      if (section.type == LineSectionType.instructions) {
+        currentSection = null;
+      }
       for (final line in section.lines) {
         switch (line.type) {
           case LineType.title:
             title ??= line.text.trim();
             break;
           case LineType.ingredient:
-            ingredients.add(line.text.trim());
+            final text = line.text.trim();
+            // The Viterbi context often pulls a component sub-heading
+            // ("Deg:", "Fyllning:") into the ingredient run. Detect it
+            // conservatively and treat it as a group marker instead of an
+            // ingredient — it was never a real ingredient, so dropping it
+            // only removes a phantom "deg" row. The detector must err toward
+            // "it's an ingredient" so a real allergen-bearing line is never
+            // dropped from tagging input.
+            final subHeading = captureSubHeadings
+                ? _componentSubHeading(text)
+                : null;
+            if (subHeading != null) {
+              currentSection = subHeading;
+            } else {
+              // Capture off ⇒ the line stays an ingredient (never dropped),
+              // so allergen tagging sees exactly the pre-feature input.
+              ingredients.add(text);
+              ingredientSections.add(currentSection);
+            }
             break;
           case LineType.instruction:
             instructions.add(line.text.trim());
@@ -302,6 +349,14 @@ class SwedishLineClassifier {
             }
             break;
           case LineType.sectionHeader:
+            // A classified section header: a generic block marker
+            // ("Ingredienser:", "Gör så här:") clears the group; a genuine
+            // component header ("Deg:") sets it. With capture off, no group
+            // is tracked (sections aren't stamped anyway).
+            currentSection = captureSubHeadings
+                ? _componentSubHeading(line.text)
+                : null;
+            break;
           case LineType.empty:
           case LineType.noise:
             break;
@@ -312,11 +367,18 @@ class SwedishLineClassifier {
     return ParsedRecipeStructure(
       title: title,
       ingredients: ingredients,
+      ingredientSections: ingredientSections,
       instructions: instructions,
       portions: portions,
       totalTime: totalTime,
     );
   }
+
+  /// Component sub-heading detection is the one audited heuristic in
+  /// [RecipeSectionDetector.componentSubHeadingLabel] — shared with the
+  /// schema.org import tier so the allergen-safety rule lives in one place.
+  static String? _componentSubHeading(String text) =>
+      RecipeSectionDetector.componentSubHeadingLabel(text);
 
   bool _isSectionHeader(String text) {
     for (final pattern in _ingredientHeaders) {
@@ -515,16 +577,27 @@ class SwedishLineClassifier {
 /// Top-level worker for [compute()] — must be top-level so the Dart isolate
 /// spawner can reference it without capturing any closure state.
 ///
-/// Returns a [Map] of primitive values so the result can cross the isolate
-/// boundary via [SendPort] without custom serialization.
-Map<String, dynamic> parseStructureInIsolate(String text) {
-  return SwedishLineClassifier.instance.parseStructure(text).toIsolateMap();
+/// Input is a primitive [Map] ('text' + 'captureSubHeadings') because
+/// `compute` passes a single message and the kill-switch flag can't be read
+/// from ServiceLocator inside the isolate — it must ride in. Returns a [Map]
+/// of primitives so the result crosses the boundary without custom codecs.
+Map<String, dynamic> parseStructureInIsolate(Map<String, dynamic> args) {
+  final text = (args['text'] as String?).orEmpty();
+  final capture = args['captureSubHeadings'] as bool? ?? true;
+  return SwedishLineClassifier.instance
+      .parseStructure(text, captureSubHeadings: capture)
+      .toIsolateMap();
 }
 
 /// Parsed recipe structure from line classification.
 class ParsedRecipeStructure {
   final String? title;
   final List<String> ingredients;
+
+  /// Component group per ingredient ("Deg", "Fyllning", ...), index-aligned
+  /// with [ingredients]; null entries are ungrouped. Empty when no sections
+  /// were detected. NEVER contains heading text as its own ingredient.
+  final List<String?> ingredientSections;
   final List<String> instructions;
   final int? portions;
   final Duration? totalTime;
@@ -532,6 +605,7 @@ class ParsedRecipeStructure {
   const ParsedRecipeStructure({
     this.title,
     required this.ingredients,
+    this.ingredientSections = const [],
     required this.instructions,
     this.portions,
     this.totalTime,
@@ -542,6 +616,10 @@ class ParsedRecipeStructure {
   Map<String, dynamic> toIsolateMap() => {
     'title': title,
     'ingredients': List<String>.from(ingredients),
+    // Encoded as a same-length list; null survives a SendPort so groups round
+    // trip when the rule-based tier runs the classifier in an isolate.
+    if (ingredientSections.isNotEmpty)
+      'ingredientSections': List<String?>.from(ingredientSections),
     'instructions': List<String>.from(instructions),
     'portions': portions,
     if (totalTime != null) 'totalTimeMinutes': totalTime!.inMinutes,
@@ -550,9 +628,13 @@ class ParsedRecipeStructure {
   /// Reconstruct from the map returned by [toIsolateMap].
   factory ParsedRecipeStructure.fromIsolateMap(Map<String, dynamic> map) {
     final rawMinutes = map['totalTimeMinutes'] as int?;
+    final rawSections = map['ingredientSections'] as List?;
     return ParsedRecipeStructure(
       title: map['title'] as String?,
       ingredients: List<String>.from(map['ingredients'] as List),
+      ingredientSections: rawSections == null
+          ? const []
+          : rawSections.map((e) => e as String?).toList(),
       instructions: List<String>.from(map['instructions'] as List),
       portions: map['portions'] as int?,
       totalTime: rawMinutes != null ? Duration(minutes: rawMinutes) : null,

@@ -8,6 +8,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -225,15 +226,74 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       return FieldResult.failed('No ingredients in schema.org data');
     }
 
-    final lines = rawIngredients
+    final rawLines = rawIngredients
         .whereType<String>()
         .map((s) => _stripPriceAnnotation(s.trim()))
         .where((s) => s.isNotEmpty)
         .toList();
 
-    return _ingredientStrategy.parseLines(
+    // Conservative heading pre-scan: some sites emit component headings
+    // ("Deg:", "Fyllning:") as their own recipeIngredient entries. Pull those
+    // out as section context so they don't become phantom ingredients, and
+    // stamp the group onto the lines that follow. Fail-open: every uncertain
+    // line stays an ingredient (a false heading would drop an allergen-bearing
+    // line from tagging — the one direction we must never err).
+    final (lines, sections) = _splitHeadings(rawLines);
+
+    final parsed = await _ingredientStrategy.parseLines(
       lines,
       ocrCorrection: context.isOcrSource,
+    );
+    return _applySections(parsed, sections);
+  }
+
+  /// Splits a flat recipeIngredient list into (ingredient lines, per-line
+  /// section labels). Heading entries are removed from the returned lines and
+  /// set as the current group for subsequent lines. A trailing heading (no
+  /// ingredient follows) is dropped entirely — it groups nothing.
+  (List<String>, List<String?>) _splitHeadings(List<String> rawLines) {
+    if (!isSectionCaptureEnabled) {
+      return (rawLines, const <String?>[]);
+    }
+    final lines = <String>[];
+    final sections = <String?>[];
+    String? current;
+    for (final line in rawLines) {
+      final label = RecipeSectionDetector.componentSubHeadingLabel(line);
+      if (label != null) {
+        current = label;
+      } else {
+        lines.add(line);
+        sections.add(current);
+      }
+    }
+    return (lines, sections);
+  }
+
+  /// Stamps detected groups onto the parsed ingredients, index-aligned.
+  /// Fails open on any length mismatch (a parser that merged/dropped lines):
+  /// a wrong section is worse than none. Only non-null groups are stamped.
+  FieldResult<List<ParsedIngredient>> _applySections(
+    FieldResult<List<ParsedIngredient>> ingredients,
+    List<String?> sections,
+  ) {
+    final parsed = ingredients.value;
+    if (parsed == null ||
+        sections.isEmpty ||
+        sections.length != parsed.length ||
+        sections.every((s) => s == null)) {
+      return ingredients;
+    }
+    final stamped = [
+      for (var i = 0; i < parsed.length; i++)
+        sections[i] == null
+            ? parsed[i]
+            : parsed[i].copyWith(section: sections[i]),
+    ];
+    return FieldResult(
+      value: stamped,
+      confidence: ingredients.confidence,
+      failureReason: ingredients.failureReason,
     );
   }
 

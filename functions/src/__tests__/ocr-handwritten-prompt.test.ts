@@ -75,28 +75,22 @@ async function captureSelectedPrompt(
 ): Promise<string | undefined> {
   __resetPromptsCacheForTests();
   let selected: string | undefined;
-  // The prompt is captured inside the performOcr seam, which runs BEFORE the
-  // best-effort captureLlmSample() call. captureLlmSample eagerly evaluates its
-  // default `admin.firestore()` argument, which throws in this unit context (no
-  // initialized app) and surfaces as an internal HttpsError. That is irrelevant
-  // to prompt selection, so we swallow it — `selected` is already set.
-  try {
-    await runOcrRecipeImage({
-      data: {
-        imageBase64: "/9j/fakebase64jpegdata",
-        isHandwritten,
-      },
-      authUidHash: "uid-hash-hw-test",
-      isAiDisabled: async () => false,
-      performOcr: async (args) => {
-        selected = args.systemPrompt;
-        return { content: VALID_RECIPE_JSON, cost: 0.01 };
-      },
-      now: () => 0,
-    });
-  } catch {
-    // Ignored — see comment above. Assertion is on `selected`.
-  }
+  // The prompt is captured inside the performOcr seam. captureLlmSample() is
+  // best-effort and swallows the missing-default-app case in this unit context,
+  // so runOcrRecipeImage completes normally; the assertion is on `selected`.
+  await runOcrRecipeImage({
+    data: {
+      imageBase64: "/9j/fakebase64jpegdata",
+      isHandwritten,
+    },
+    authUidHash: "uid-hash-hw-test",
+    isAiDisabled: async () => false,
+    performOcr: async (args) => {
+      selected = args.systemPrompt;
+      return { content: VALID_RECIPE_JSON, cost: 0.01 };
+    },
+    now: () => 0,
+  });
   return selected;
 }
 

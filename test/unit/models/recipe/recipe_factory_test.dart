@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -434,6 +435,46 @@ void main() {
           equals('Kopierat från: Shared Recipe'),
         );
         expect(personalCopy.socialData, isNull);
+      });
+
+      test('personal copy preserves structured ingredients incl. sections', () {
+        // Plan invariant: "sections persist through duplication/sharing".
+        // The copy keeps `ingredients` byte-identical, so the structured
+        // list stays alignment-valid and headings survive.
+        final sectioned = RecipeFactory.createPersonal(
+          title: 'Kanelbullar',
+          description: 'Med sektioner',
+          ingredients: const ['5 dl vetemjöl', '75 g smör'],
+          structuredIngredients: const [
+            RecipeIngredient(
+              amount: 5,
+              unit: 'dl',
+              name: 'vetemjöl',
+              raw: '5 dl vetemjöl',
+              section: 'Deg',
+            ),
+            RecipeIngredient(
+              amount: 75,
+              unit: 'g',
+              name: 'smör',
+              raw: '75 g smör',
+              section: 'Fyllning',
+            ),
+          ],
+          instructions: const ['Baka'],
+          mealType: 'Fika',
+        );
+
+        final copy = RecipeFactory.createPersonalCopy(
+          sectioned,
+          newOwnerId: 'user_456',
+        );
+
+        expect(
+          copy.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+          reason: 'copy must not silently flatten the sections',
+        );
       });
 
       test('should create personal copy with custom title', () {

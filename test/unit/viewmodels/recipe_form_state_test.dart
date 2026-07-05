@@ -1,7 +1,11 @@
 // test/unit/viewmodels/recipe_form_state_test.dart
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
+import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
@@ -1039,6 +1043,158 @@ void main() {
         expect(recipe.createdAt, equals(originalCreatedAt));
         expect(recipe.updatedAt.isAfter(originalCreatedAt), isTrue);
       });
+    });
+
+    group('ingredient sections at save (PR #211)', () {
+      Recipe sectionedRecipe({String id = 'r-sec'}) => Recipe(
+        core: RecipeCore(
+          id: id,
+          title: 'Kanelbullar',
+          description: '',
+          ingredients: const ['5 dl vetemjöl', '75 g smör'],
+          structuredIngredients: const [
+            RecipeIngredient(
+              amount: 5,
+              unit: 'dl',
+              name: 'vetemjöl',
+              raw: '5 dl vetemjöl',
+              section: 'Deg',
+            ),
+            RecipeIngredient(
+              amount: 75,
+              unit: 'g',
+              name: 'smör',
+              raw: '75 g smör',
+              section: 'Fyllning',
+            ),
+          ],
+          instructions: const ['Baka'],
+          mealType: 'Fika',
+        ),
+        type: RecipeType.personal,
+      );
+
+      test('editing a sectioned recipe preserves sections through save', () {
+        formState = RecipeFormState(initialRecipe: sectionedRecipe());
+
+        final recipe = formState.createRecipe();
+
+        expect(
+          recipe.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+        );
+      });
+
+      test('TEMPLATE load keeps LLM-captured sections on first save '
+          '(_seedStructured gap) — _originalRecipe is null yet sections '
+          'survive', () {
+        formState = RecipeFormState(
+          initialRecipe: sectionedRecipe(),
+          isTemplate: true,
+        );
+        expect(formState.originalRecipe, isNull, reason: 'template nulls it');
+
+        final recipe = formState.createRecipe();
+
+        expect(
+          recipe.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Fyllning'],
+          reason: 'without _seedStructured these would be null',
+        );
+      });
+
+      test('a manually added heading stamps following lines on save', () {
+        formState.ingredientsManager.updateItems(['5 dl vetemjöl', '2 ägg']);
+        // Seed the sidecar to match the two lines (no trailing empty here).
+        formState.ingredientSectionState.seedFromStructured(const [], 2);
+        // Prepend a heading, then re-order so it sits above the lines.
+        final id = formState.addIngredientHeading()!;
+        formState.ingredientSectionState.headingController(id).text = 'Deg';
+        // Heading was appended after the 2 lines; move it to the top (row 2→0).
+        formState.moveIngredientRow(2, 0);
+        formState.setTitle('T');
+        formState.instructionsManager.updateValue(0, 'x');
+
+        final recipe = formState.createRecipe();
+
+        expect(
+          recipe.structuredIngredients.map((e) => e.section),
+          ['Deg', 'Deg'],
+        );
+      });
+
+      test('a new flat recipe derives null sections', () {
+        formState.setTitle('T');
+        formState.ingredientsManager.updateValue(0, '2 dl mjölk');
+        formState.instructionsManager.updateValue(0, 'x');
+
+        final recipe = formState.createRecipe();
+
+        expect(
+          recipe.structuredIngredients.every((e) => e.section == null),
+          isTrue,
+        );
+      });
+
+      test('dragging a line across a heading via moveIngredientRow re-sections '
+          'it AND reorders the value in lockstep (the VM↔manager seam)', () {
+        // Seeded rows: H:Deg L(m1) L(m2) H:Fyllning L(f1) L(trailing empty).
+        formState = RecipeFormState(initialRecipe: sectionedRecipe());
+        // Add a Fyllning line so the recipe genuinely has both groups.
+        // rows index: 0=H:Deg 1=L 2=H:Fyllning 3=L 4=L(empty trailing)
+        // (sectionedRecipe has 2 lines: vetemjöl→Deg, smör→Fyllning)
+        // Move the Deg line (row 1) down under Fyllning (drag to end).
+        formState.moveIngredientRow(1, 4);
+
+        final recipe = formState.createRecipe();
+
+        // The value order and the section order must move together: if the
+        // sidecar moved the row but the manager forgot to apply moveAt (the
+        // `if (move != null)` seam), value[i] and section[i] would disagree.
+        expect(recipe.ingredients, ['75 g smör', '5 dl vetemjöl']);
+        expect(
+          recipe.structuredIngredients.map((e) => e.section),
+          ['Fyllning', 'Fyllning'],
+          reason: 'vetemjöl dragged under Fyllning; smör already there',
+        );
+      });
+
+      test(
+        'loadFromDraft re-seeds the section sidecar to the restored line '
+        'count (Finding A: draft restore must not hide ingredients)',
+        () async {
+          // Seed a 6-ingredient draft in local storage.
+          const draftId = 'draft-1';
+          SharedPreferences.setMockInitialValues({
+            'recipe_draft_$draftId': jsonEncode({
+              'title': 'Köttbullar',
+              'ingredients': [
+                '500 g köttfärs',
+                '1 ägg',
+                'ströbröd',
+                '1 lök',
+                'salt',
+                'peppar',
+              ],
+              'instructions': ['Blanda', 'Stek'],
+              'tags': <String>[],
+            }),
+          });
+
+          final ok = await formState.loadFromDraft(draftId);
+          expect(ok, isTrue);
+
+          // The bug: the sidecar kept its 1-row constructor seed while the
+          // manager held 6 values, so the sectioned editor rendered only row 1
+          // and the other 5 ingredients appeared lost. After the fix the sidecar
+          // line-row count matches the manager value count.
+          final lineRows = formState.ingredientSectionState.rows
+              .whereType<LineRow>()
+              .length;
+          expect(lineRows, formState.ingredientsManager.values.length);
+          expect(lineRows, 6);
+        },
+      );
     });
 
     group('BUT-1232 structured ingredient derivation at save', () {

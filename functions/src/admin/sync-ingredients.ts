@@ -22,6 +22,16 @@ import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
+import {
+  IngredientRow,
+  buildSyncReport,
+  buildUpdatePayload,
+  calculateDiff,
+  deriveLearnedAliasesAtRisk,
+  SyncReport,
+  VALID_GROUP_PREFIXES,
+  VALID_PROPERTIES,
+} from "./sync-ingredients-core";
 
 const PROJECT_ID = "butlery-app-1";
 
@@ -40,83 +50,11 @@ interface Options {
   verbose: boolean;
 }
 
-interface IngredientRow {
-  id: string;
-  swedish: string;
-  english: string;
-  group: string;
-  properties: string;
-  aliases_sv: string;
-  aliases_en: string;
-  search_terms: string;
-  status: string;
-  // New sustainability and metadata fields (Sprint 1)
-  season_availability: string;
-  price_category: string;
-  carbon_footprint_category: string;
-  notes_sv: string;
-  notes_en: string;
-  typical_storage: string;
-  typical_unit: string;
-  avg_price_sek: string;
-  [key: string]: string;
-}
-
-interface IngredientDoc {
-  id: string;
-  swedish: string;
-  english: string;
-  group: string;
-  properties: string[];
-  aliasesSv: string[];
-  aliasesEn: string[];
-  searchTerms: string[];
-  status: string;
-  updatedAt: admin.firestore.FieldValue;
-  // New sustainability and metadata fields (Sprint 1)
-  seasonAvailability?: string[];
-  priceCategory?: string;
-  carbonFootprintCategory?: string;
-  notesSv?: string;
-  notesEn?: string;
-  typicalStorage?: string;
-  typicalUnit?: string;
-  avgPriceSek?: number;
-}
-
-interface Diff {
-  toAdd: string[];
-  toUpdate: string[];
-  toRemove: string[];
-  newData: Map<string, IngredientDoc>;
-  unchanged: number;
-}
-
 interface ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
 }
-
-// Valid properties from Butlery_Ingredients_PROPERTIES.csv
-const VALID_PROPERTIES = new Set([
-  // Diet base
-  "animal-product", "dairy", "egg", "meat", "plant-based", "seafood", "vegan-friendly",
-  // Meat detail
-  "beef", "fish", "game", "lamb", "pork", "poultry", "shellfish",
-  // Allergens
-  "contains-gluten", "contains-lactose", "peanut", "sesame", "soy", "tree-nut",
-  "crustacean", "mollusc", "celery", "mustard", "lupin", "sulfites",
-  // Special diet
-  "contains-alcohol", "high-mercury", "nightshade",
-  // Practical
-  "needs-cooking", "processed", "is-spicy", "doesnt-freeze-well",
-]);
-
-// Valid group prefixes from Butlery_Ingredients_GROUPS.csv
-const VALID_GROUP_PREFIXES = [
-  "protein", "vegetable", "fruit", "grain", "fat", "other", "spice",
-];
 
 function parseArgs(args: string[]): Options {
   return {
@@ -161,12 +99,14 @@ function loadCsv(filePath: string): IngredientRow[] {
 
   const headers = parseCsvLine(lines[0]);
   const results: IngredientRow[] = [];
+  const malformed: number[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const values = parseCsvLine(lines[i]);
     if (values.length !== headers.length) {
+      malformed.push(i);
       console.log(
-        `   ⚠️ Skipping malformed row ${i}: ${values.length} vs ${headers.length} columns`
+        `   ❌ Malformed row ${i}: ${values.length} vs ${headers.length} columns`
       );
       continue;
     }
@@ -178,68 +118,21 @@ function loadCsv(filePath: string): IngredientRow[] {
     results.push(row as IngredientRow);
   }
 
+  // FAIL CLOSED on malformed rows. A skipped row silently falls out of
+  // csvData and lands in toRemove — i.e. a mangled quoted cell (typically a
+  // multi-line note; this parser splits on \n before quote handling) would
+  // soft-delete a live ingredient and, 30 days later, erase its allergen
+  // verdicts. Abort and make the operator fix the Sheet cell instead.
+  if (malformed.length > 0) {
+    console.log(
+      `\n❌ ${malformed.length} malformed CSV row(s) (lines ${malformed.join(", ")}).` +
+      "\n   A skipped row would be treated as removed and soft-deleted in production." +
+      "\n   Fix the Sheet cells (usually a line break inside a quoted cell) and re-export."
+    );
+    process.exit(1);
+  }
+
   return results;
-}
-
-/**
- * CRIT-6: Converts CSV row to Firestore document with validation.
- * Throws if required fields are missing or empty, preventing corrupt documents.
- */
-function csvToFirestore(row: IngredientRow): IngredientDoc {
-  const parseList = (str: string, separator: string): string[] =>
-    str
-      .split(separator)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
-  // CRIT-6: Validate required fields BEFORE conversion
-  const id = row.id?.trim();
-  const swedish = row.swedish?.trim();
-  const english = row.english?.trim();
-  const group = row.group?.trim();
-
-  if (!id) {
-    throw new Error(`CRIT-6: Row missing required 'id' field (swedish: ${swedish || "unknown"})`);
-  }
-  if (!swedish) {
-    throw new Error(`CRIT-6: Row ${id} missing required 'swedish' field`);
-  }
-
-  // Parse new fields (Sprint 1)
-  const seasonAvailability = parseList(row.season_availability || "", ";");
-  const priceCategory = row.price_category?.trim() || undefined;
-  const carbonFootprintCategory = row.carbon_footprint_category?.trim() || undefined;
-  const notesSv = row.notes_sv?.trim() || undefined;
-  const notesEn = row.notes_en?.trim() || undefined;
-  const typicalStorage = row.typical_storage?.trim() || undefined;
-  const typicalUnit = row.typical_unit?.trim() || undefined;
-  const avgPriceSekStr = row.avg_price_sek?.trim();
-  const avgPriceSek = avgPriceSekStr ? parseFloat(avgPriceSekStr) : undefined;
-
-  const doc: IngredientDoc = {
-    id,
-    swedish,
-    english: english || swedish, // Fallback to Swedish name if English missing
-    group: group || "other", // Fallback to "other" category
-    properties: parseList(row.properties || "", ","),
-    aliasesSv: parseList(row.aliases_sv || "", ";"),
-    aliasesEn: parseList(row.aliases_en || "", ";"),
-    searchTerms: parseList(row.search_terms || "", ";"),
-    status: row.status?.trim() || "validated",
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  };
-
-  // Only add new fields if they have values (sparse storage)
-  if (seasonAvailability.length > 0) doc.seasonAvailability = seasonAvailability;
-  if (priceCategory) doc.priceCategory = priceCategory;
-  if (carbonFootprintCategory) doc.carbonFootprintCategory = carbonFootprintCategory;
-  if (notesSv) doc.notesSv = notesSv;
-  if (notesEn) doc.notesEn = notesEn;
-  if (typicalStorage) doc.typicalStorage = typicalStorage;
-  if (typicalUnit) doc.typicalUnit = typicalUnit;
-  if (avgPriceSek !== undefined && !isNaN(avgPriceSek)) doc.avgPriceSek = avgPriceSek;
-
-  return doc;
 }
 
 /**
@@ -303,6 +196,13 @@ function validateIngredient(row: IngredientRow): ValidationResult {
   const validStatuses = ["validated", "pending", "deleted"];
   if (row.status && !validStatuses.includes(row.status)) {
     warnings.push(`Unusual status: "${row.status}" (expected: ${validStatuses.join(", ")})`);
+  }
+
+  // Validate price format: parseFloat would silently truncate junk like
+  // "12 kr" to 12 or "ca 15" to NaN — require a plain number (comma or dot).
+  const priceRaw = row.avg_price_sek?.trim();
+  if (priceRaw && !/^\d+([.,]\d+)?$/.test(priceRaw)) {
+    errors.push(`Invalid avg_price_sek: "${priceRaw}" (expected a plain number, e.g. 12.50 or 12,50)`);
   }
 
   return {
@@ -391,93 +291,85 @@ function validateAllIngredients(
   return { valid: errorCount === 0, errorCount, warningCount };
 }
 
-function listEquals(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const setA = new Set(a);
-  const setB = new Set(b);
-  return [...setA].every((x) => setB.has(x)) && [...setB].every((x) => setA.has(x));
+/**
+ * Writes the per-sync diff report JSON (BUT-1467) for line-by-line review —
+ * a Sheet edit must never reach production allergen verdicts invisibly.
+ * Written on every run (incl. dry-runs), BEFORE the confirmation prompt, so
+ * the operator reviews it before approving.
+ */
+function writeReportFile(report: SyncReport, options: Options): string | null {
+  // No-change runs leave no file — repeated dry-runs while iterating on the
+  // Sheet must not pile up all-zero JSON files in the repo.
+  const { added, updated, removed } = report.counts;
+  if (added === 0 && updated === 0 && removed === 0) {
+    return null;
+  }
+  const reportsDir = path.resolve(__dirname, "../../../docs/tagging/data/sync-reports");
+  fs.mkdirSync(reportsDir, { recursive: true });
+  const stamp = report.generatedAt.replace(/[:.]/g, "-");
+  const suffix = options.dryRun ? "-dryrun" : "";
+  const reportPath = path.join(reportsDir, `sync-${stamp}${suffix}.json`);
+  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  return reportPath;
 }
 
-function hasChanges(
-  current: admin.firestore.DocumentData,
-  newData: IngredientDoc
-): boolean {
-  // Compare string fields
-  const stringFieldsToCompare = [
-    "swedish", "english", "group", "status",
-    // New fields (Sprint 1)
-    "priceCategory", "carbonFootprintCategory", "notesSv", "notesEn",
-    "typicalStorage", "typicalUnit",
-  ];
-  for (const field of stringFieldsToCompare) {
-    if (String(current[field] || "") !== String(newData[field as keyof IngredientDoc] || "")) {
-      return true;
-    }
-  }
-
-  // Compare numeric fields
-  const currentAvgPrice = current.avgPriceSek as number | undefined;
-  const newAvgPrice = newData.avgPriceSek;
-  if (currentAvgPrice !== newAvgPrice) {
-    return true;
-  }
-
-  // Compare list fields
-  const currentProps = (current.properties as string[]) || [];
-  if (!listEquals(currentProps, newData.properties)) {
-    return true;
-  }
-
-  const currentAliases = (current.aliasesSv as string[]) || [];
-  if (!listEquals(currentAliases, newData.aliasesSv)) {
-    return true;
-  }
-
-  // Compare seasonAvailability (Sprint 1)
-  const currentSeasons = (current.seasonAvailability as string[]) || [];
-  const newSeasons = newData.seasonAvailability || [];
-  if (!listEquals(currentSeasons, newSeasons)) {
-    return true;
-  }
-
-  return false;
+/**
+ * system_events row for the admin ops log. Called only AFTER the final batch
+ * commit — the audit trail must never claim a sync that was declined at the
+ * prompt or died mid-batch.
+ */
+async function logSyncEvent(
+  report: SyncReport,
+  reportPath: string,
+  aliasesAtRiskCount: number
+): Promise<void> {
+  await db.collection("system_events").add({
+    type: "ingredient_sync",
+    added: report.counts.added,
+    updated: report.counts.updated,
+    removed: report.counts.removed,
+    unchanged: report.counts.unchanged,
+    allergenPropertyRemovals: report.allergenPropertyRemovals.length,
+    learnedAliasesAtRisk: aliasesAtRiskCount,
+    resurrections: report.resurrections.length,
+    healed: report.healed.length,
+    reportFile: path.basename(reportPath),
+    executedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 }
 
-async function calculateDiff(
-  csvData: IngredientRow[],
-  currentData: Map<string, admin.firestore.DocumentData>
-): Promise<Diff> {
-  const toAdd: string[] = [];
-  const toUpdate: string[] = [];
-  const toRemove: string[] = [];
-  const newData = new Map<string, IngredientDoc>();
-  let unchanged = 0;
-
-  for (const row of csvData) {
-    const id = row.id;
-    if (!id) continue;
-
-    const firestoreData = csvToFirestore(row);
-    newData.set(id, firestoreData);
-
-    if (!currentData.has(id)) {
-      toAdd.push(id);
-    } else {
-      if (hasChanges(currentData.get(id)!, firestoreData)) {
-        toUpdate.push(id);
-      } else {
-        unchanged++;
-      }
-    }
+function printReportHighlights(
+  report: SyncReport,
+  reportPath: string | null,
+  aliasesAtRisk: Array<{ id: string; aliases: string[] }>
+): void {
+  console.log(`\n📄 Diff report: ${reportPath ?? "(no changes — not written)"}`);
+  if (report.allergenPropertyRemovals.length > 0) {
+    console.log(
+      `   🚨 ALLERGEN PROPERTY REMOVALS (${report.allergenPropertyRemovals.length}) — review before trusting verdicts:`
+    );
+    report.allergenPropertyRemovals.forEach((r) =>
+      console.log(`      - ${r.id}: removes ${r.removedProperties.join(", ")}`)
+    );
   }
-
-  for (const [id, data] of currentData) {
-    if (!newData.has(id) && data.status !== "deleted") {
-      toRemove.push(id);
-    }
+  if (aliasesAtRisk.length > 0) {
+    console.log(
+      `   ⚠️  Learned aliases at risk (removal or Sheet-side delete) (${aliasesAtRisk.length}):`
+    );
+    aliasesAtRisk.forEach((r) =>
+      console.log(`      - ${r.id}: ${r.aliases.join(", ")}`)
+    );
   }
-
-  return { toAdd, toUpdate, toRemove, newData, unchanged };
+  if (report.resurrections.length > 0) {
+    console.log(
+      `   ♻️  Resurrected soft-deleted rows (${report.resurrections.length}): ${report.resurrections.join(", ")} (deletedAt/expireAt cleared)`
+    );
+  }
+  if (report.healed.length > 0) {
+    console.log(
+      `   🩹 Lifecycle repairs (${report.healed.length}): ${report.healed.join(", ")} (stale TTL state fixed)`
+    );
+  }
 }
 
 async function askConfirmation(question: string): Promise<boolean> {
@@ -534,7 +426,7 @@ async function main(): Promise<void> {
 
   // Calculate diff
   console.log("\n🔍 Calculating changes...");
-  const diff = await calculateDiff(csvIngredients, currentData);
+  const diff = calculateDiff(csvIngredients, currentData);
 
   // Show summary
   console.log("\n📊 Change Summary:");
@@ -560,6 +452,13 @@ async function main(): Promise<void> {
       }
     }
   }
+
+  // Diff report — always produced, so every sync (and dry-run) leaves an
+  // auditable trail of what a Sheet edit is about to do to allergen data.
+  const report = buildSyncReport(diff, currentData, { dryRun: options.dryRun });
+  const aliasesAtRisk = deriveLearnedAliasesAtRisk(report, currentData);
+  const reportPath = writeReportFile(report, options);
+  printReportHighlights(report, reportPath, aliasesAtRisk);
 
   // Exit if no changes
   if (
@@ -603,22 +502,26 @@ async function main(): Promise<void> {
     }
   };
 
-  // Add new ingredients
+  // Add new ingredients. toAdd ids are by construction absent from
+  // currentData (calculateDiff), so `set` here can never clobber an existing
+  // doc's learnedAliasesSv — existing docs always go through update() below.
   for (const id of diff.toAdd) {
-    const data = diff.newData.get(id)!;
-    batch.set(db.collection("ingredients").doc(id), data);
+    batch.set(db.collection("ingredients").doc(id), diff.newData.get(id)!);
     batchCount++;
     if (batchCount >= maxBatchSize) {
       await commitBatch();
     }
   }
 
-  // Update existing ingredients
+  // Update existing ingredients. update() patches only the listed fields, so
+  // learnedAliasesSv survives untouched. buildUpdatePayload adds the
+  // lifecycle repairs (TTL clears on revive, TTL stamps on Sheet-side
+  // soft-delete) and explicit deletes for blanked optional cells.
   for (const id of diff.toUpdate) {
-    const data = diff.newData.get(id)!;
+    const payload = buildUpdatePayload(currentData.get(id)!, diff.newData.get(id)!);
     batch.update(
       db.collection("ingredients").doc(id),
-      data as unknown as admin.firestore.UpdateData<admin.firestore.DocumentData>
+      payload as unknown as admin.firestore.UpdateData<admin.firestore.DocumentData>
     );
     batchCount++;
     if (batchCount >= maxBatchSize) {
@@ -643,6 +546,9 @@ async function main(): Promise<void> {
 
   // Commit remaining
   await commitBatch();
+
+  // Ops-log row only after everything committed (audit must not over-claim).
+  await logSyncEvent(report, reportPath ?? "(none)", aliasesAtRisk.length);
 
   console.log("\n✅ Sync complete!");
   console.log(`   Added: ${diff.toAdd.length}`);

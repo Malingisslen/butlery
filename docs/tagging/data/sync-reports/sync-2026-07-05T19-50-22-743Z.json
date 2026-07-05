@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-07-05T19:50:22.743Z",
+  "dryRun": false,
+  "counts": {
+    "added": 0,
+    "updated": 1,
+    "removed": 0,
+    "unchanged": 2234
+  },
+  "added": [],
+  "updated": [
+    {
+      "id": "coconut-whole",
+      "before": {
+        "properties": [
+          "plant-based",
+          "tree-nut",
+          "vegan-friendly"
+        ],
+        "aliasesSv": [
+          "hel kokosnöt",
+          "färsk kokos"
+        ],
+        "status": "validated"
+      },
+      "after": {
+        "properties": [
+          "plant-based",
+          "vegan-friendly"
+        ],
+        "aliasesSv": [
+          "hel kokosnöt",
+          "färsk kokos"
+        ],
+        "status": "validated"
+      }
+    }
+  ],
+  "removed": [],
+  "allergenPropertyRemovals": [
+    {
+      "id": "coconut-whole",
+      "removedProperties": [
+        "tree-nut"
+      ]
+    }
+  ],
+  "resurrections": [],
+  "healed": []
+}

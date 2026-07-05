@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
+import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -324,6 +325,93 @@ void main() {
       // Just verify it changed from original — the exact scaling is PortionScalerLogic's responsibility
       expect(vm.scaledIngredients, isNot(equals(testRecipe.ingredients)));
 
+      vm.dispose();
+    });
+  });
+
+  group('CookingModeViewModel - ingredientRows (section grouping)', () {
+    Recipe sectionedRecipe() => Recipe(
+      core: RecipeCore(
+        id: 'sectioned',
+        title: 'Kanelbullar',
+        description: '',
+        portions: 4,
+        ingredients: const ['5 dl vetemjöl', '75 g smör'],
+        structuredIngredients: const [
+          RecipeIngredient(
+            amount: 5,
+            unit: 'dl',
+            name: 'vetemjöl',
+            raw: '5 dl vetemjöl',
+            section: 'Deg',
+          ),
+          RecipeIngredient(
+            amount: 75,
+            unit: 'g',
+            name: 'smör',
+            raw: '75 g smör',
+            section: 'Fyllning',
+          ),
+        ],
+        instructions: const ['Baka'],
+        mealType: 'Fika',
+      ),
+      type: RecipeType.personal,
+    );
+
+    test('builds heading + line rows from the recipe sections', () {
+      final vm = CookingModeViewModel(recipe: sectionedRecipe());
+
+      final headings = vm.ingredientRows
+          .whereType<IngredientHeadingRow>()
+          .map((r) => r.label)
+          .toList();
+      expect(headings, ['Deg', 'Fyllning']);
+      expect(vm.ingredientRows.whereType<IngredientLineRow>(), hasLength(2));
+
+      vm.dispose();
+    });
+
+    test(
+      'rebuilds rows with rescaled text on portion change (headings kept)',
+      () {
+        final vm = CookingModeViewModel(recipe: sectionedRecipe());
+
+        vm.updatePortions(8); // factor 2.0 (scaler may normalize units)
+
+        final lines = vm.ingredientRows
+            .whereType<IngredientLineRow>()
+            .map((r) => r.text)
+            .toList();
+        expect(
+          lines.first,
+          isNot('5 dl vetemjöl'),
+          reason: 'row text is rescaled from the original, not stale',
+        );
+        expect(
+          lines.first,
+          contains('vetemjöl'),
+          reason: 'still the same ingredient, just rescaled',
+        );
+        // Headings survive the rebuild.
+        expect(
+          vm.ingredientRows.whereType<IngredientHeadingRow>().map(
+            (r) => r.label,
+          ),
+          ['Deg', 'Fyllning'],
+        );
+
+        vm.dispose();
+      },
+    );
+
+    test('a flat recipe yields line rows only (no headings)', () {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      expect(vm.ingredientRows.whereType<IngredientHeadingRow>(), isEmpty);
+      expect(
+        vm.ingredientRows.whereType<IngredientLineRow>(),
+        hasLength(testRecipe.ingredients.length),
+      );
       vm.dispose();
     });
   });

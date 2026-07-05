@@ -1652,3 +1652,177 @@ at the top of the run fn (or clamp in the callable). Flagged, not blocking.
  — Cascade cleanup of legacy sharedWith array field on deletion
 - 2026-06-03 — BUT-1187 Gemini model retirement 404 [Bug fixed]
  — Swapped retired Gemini model id, one-line fix
+
+### 2026-07-02 — ingredient `section` field (PR #211, prompt v3.0.0) review [Pattern discovered]
+
+Reviewed the chunk-3 CF diff adding nullable `section` to `INGREDIENT_SCHEMA` +
+`ExtractedIngredient`, reworking the extraction prompt's group rule/EXEMPEL 4,
+and capping `section` at 60 chars in `validateIngredient`. Clean except one
+deploy-coordination finding. Patterns worth remembering:
+
+- **Compiled-in prompt edits are INERT in prod while a valid `system/prompts`
+  override doc is live (BUT-621).** `structure-recipe.ts` serves
+  `prompts.recipeExtractionSystemPrompt` from Firestore when the doc validates;
+  the new compiled-in v3.0.0 rule ("sätt section=...") never reaches the model
+  until the operator updates the doc. Worse than inert here: the stale doc
+  actively teaches the OLD flatten (`preparation="deg"`), so post-deploy the
+  schema offers `section` but the prompt forbids using it — feature silently
+  dead, `preparation` stays polluted, analytics reports the doc's
+  `promptVersion` (not 3.0.0). **Any prompt-content change must ship with a
+  matching prod `system/prompts` doc update (or verified doc absence) as an
+  explicit deploy step.** Sibling of the BUT-684 required-key footgun but
+  inverted: there the doc broke on deploy; here the doc silently wins.
+
+- **Schema `description` is the only prompt surface shared by ALL callers of a
+  schema.** `INGREDIENT_SCHEMA` feeds RECIPE_SCHEMA (extract + OCR printed +
+  handwritten + spoken) AND INGREDIENT_LINES_SCHEMA. Putting the behavioural
+  guidance ("never repeat group name in preparation / never emit heading as
+  ingredient") in the field's `description` gives the OCR/spoken paths the
+  rule without touching their prompts — and, unlike the prompts, the schema is
+  compiled-in (NOT Firestore-overridable), so it deploys atomically.
+
+- **responseSchema cannot enforce string length** — server-side
+  `trim().slice(0, maxLen)` in the validator is the enforcement point for any
+  bounded STRING field. Blank/whitespace → null BEFORE the cap so no phantom
+  empty groups.
+
+- **Widening `ExtractedIngredient` with a required TS field**: `tsc --noEmit`
+  is the audit tool for literal construction sites (here: one, in
+  `ocr-retry.test.ts`); `validateIngredient` is the single runtime constructor,
+  so missing/non-string keys from old cached responses or pre-3.0.0 replays
+  coerce to null — backward compatible by construction. Contract pinned in
+  `__tests__/ingredient-section-schema.test.ts` (5 cases incl. a prompt-content
+  guard asserting the old flatten wording is GONE).
+
+
+### 2026-07-03 — BUT-1467 sync-ingredients core extraction + allergen lockstep triple [Pattern discovered]
+
+`sync-ingredients.ts` (admin/, ts-node script) calls `admin.initializeApp()` +
+`main()` at import time, so it can't be imported by tests. BUT-1467 extracted
+the pure logic into `admin/sync-ingredients-core.ts` (csvToFirestore, diff,
+mergePreservedFields, isResurrection, buildSyncReport) — the admin-script
+analog of the `runX(deps)` seam. Tests: `__tests__/sync-ingredients-diff.test.ts`
+(8 behavioral cases, `_unit-runner`).
+
+**Allergen lockstep triple** (three lists that must stay aligned by hand):
+1. `admin/sync-ingredients.ts` — `VALID_PROPERTIES` (NOT in `-core.ts`; the
+   core file's docstring pointing there is a known drift hazard).
+2. `shared/allergen-properties.ts` — `ALLERGEN_RELEVANT_PROPERTIES` (allergen
+   block + fish/shellfish/seafood/dairy/egg). Feeds the sync diff report now,
+   the BUT-1468 alias hold-for-review gate next.
+3. `lib/services/tagging/config/allergen_config.dart` — client
+   `triggerProperty` list. Includes non-medical verdict triggers
+   (`contains-alcohol`, `meat`, `pork`, `beef`) that produce FREE/CONTAINS
+   tags via the same machinery — decide explicitly whether a "wrong allergen
+   verdict" gate covers them; as of BUT-1467 they are NOT in
+   ALLERGEN_RELEVANT_PROPERTIES.
+
+No automated drift pin exists between the three; when reviewing any of them,
+re-diff all three by hand.
+
+
+### 2026-07-03 — audit-event timing in confirm-gated admin scripts [Pattern discovered]
+
+BUT-1467 review of `admin/sync-ingredients.ts`: the `system_events` ops-log row
+(`type: "ingredient_sync"`, `executedAt`, counts) was written by
+`persistSyncReport` BEFORE the `askConfirmation` prompt and before any batch
+commit. Consequence: a run the operator cancels at the prompt, or one that
+throws mid-batch, still leaves an ops-log row claiming the sync executed —
+the audit trail over-claims, which defeats the feature's own purpose.
+
+Rule for confirm-gated admin scripts: **the human-review artifact (JSON diff
+report file) belongs BEFORE the confirmation prompt (the operator reviews it to
+decide); the executed-marker Firestore row belongs AFTER the final commit.**
+Split "persist report" into write-file (early) + log-event (post-commit) when
+both live in one helper. Dry-run correctly skips the event row.
+
+Related soft-delete+TTL patterns confirmed good in the same review:
+- Resurrection routing depends on the Firestore fetch being UNFILTERED
+  (`collection.get()` with no status filter) so soft-deleted docs land in
+  `toUpdate` (status differs) rather than `toAdd` — the update path can then
+  attach `FieldValue.delete()` clears for `deletedAt`/`expireAt`.
+- Pre-existing (not introduced): `hasChanges` skips `aliasesEn`/`searchTerms`
+  (edits to only those never sync), and sparse optional fields
+  (`notesSv`, `typicalUnit`, `seasonAvailability`, …) omitted from an `update`
+  payload are never DELETED when cleared in the Sheet — such rows churn as
+  "updated" on every sync forever and now pollute the diff report.
+
+
+### 2026-07-03 — BUT-1468 alias hold-for-review review [Pattern discovered]
+
+Review of `analytics/analyze-corrections.ts` (maturity gate + allergen hold)
+and new `analytics/review-learned-alias.ts` (admin approve/reject/revoke).
+
+- **Server gate vs client matching normalization MUST agree.** The
+  `allergen_alias_text` hold gate resolves the alias text via
+  `findIngredientByName` (exact / lowercase / array-contains on stored
+  diacritic forms), but the Dart consumer (`FirebaseIngredientRepository
+  ._normalize`) matches learned aliases **diacritics-stripped** (å/ä→a, ö→o).
+  So an ASCII-variant alias ("jordnotter") bypasses the server gate yet still
+  matches the real allergen word ("jordnötter") client-side. General rule: any
+  safety gate filtering strings the client will later match must run the SAME
+  normalization as the client matcher, or match on a normalized-lookup field
+  (e.g. stamp a `normalizedNames` array in the sync pipeline). Filed High.
+- **Hold states need an allowlist status check, not a blocklist.** The old
+  auto-approve guard was `status !== "approved"`; introducing
+  `held_for_review`/`rejected`/`revoked` under that guard would have let the
+  quorum re-approve them. The diff correctly flipped to
+  `status === "pending"`. When adding a terminal/parked state to a txn state
+  machine, audit every status conditional for blocklist shape.
+- **Hold-reason computed outside the txn is acceptable** when (a) it needs
+  queries, (b) its input (ingredient `properties`) changes only via rare
+  admin/sync paths, and (c) the bad-direction outcome is recoverable via an
+  admin revoke callable. Cheap hardening: the doc-read half (target's own
+  properties) can be re-verified inside the txn with `tx.get(ingredientRef)`
+  at the threshold moment; Admin SDK txns also support `tx.get(query)` if the
+  query half ever needs to move inside.
+- **`npm test` composite deliberately excludes `test:rules:*` and
+  `test:integration:*`** (`scripts/run-all-tests.js` EXCLUDE_PREFIXES) —
+  emulator-bound suites run manually. Don't file "new test not in the
+  composite chain" for `test:integration:*` scripts.
+- **Hoist per-event-constant reads out of per-candidate loops**: a correction
+  event with N ingredient corrections ran `isMatureAccount` (1 user-doc read)
+  N times for the same uid.
+- **`learned_aliases` admin queries (`status ==` + `orderBy count desc`) have
+  NO entry in `firestore.indexes.json`** — equality+orderBy needs a composite
+  in prod (emulator auto-creates). Pre-existing for pending/approved; verify
+  the console before relying on the new held_for_review queue surfacing.
+
+
+### 2026-07-04 — best-effort telemetry must resolve `admin.firestore()` INSIDE the try [Bug fixed]
+
+`captureLlmSample` (`llm/llm-sample-capture.ts`, BUT-1451) had a test-seam
+default param `db: admin.firestore.Firestore = admin.firestore()`. Default
+params are evaluated at **call time, BEFORE the function body's try/catch**, so
+in any context with no initialized default app (DI-seam unit tests) or an
+unreachable Firestore, `admin.firestore()` threw and the exception escaped the
+"best-effort, never a failure surface for an import" catch — it bubbled up
+through the awaiting OCR/structure-import callers and surfaced as an internal
+`HttpsError`. This kept the "Cloud Functions Unit Tests" workflow red on `main`
+for ~4 days (ocr-retry, kill-switch, ocr-validation, ocr-handwritten-prompt).
+
+Fix: param → optional `dbOverride?: admin.firestore.Firestore`; resolve
+`const db = dbOverride ?? admin.firestore();` as the FIRST line inside the try.
+The missing-app/unreachable throw is now swallowed by the existing catch.
+
+**Reviewed clean:**
+- **Zero production behavior change** — prod always has an initialized app
+  (`admin.initializeApp()` in `index.ts`), so `admin.firestore()` never threw
+  there; the handle is SDK-memoized per app, so resolving it inside the try vs
+  as a default has no cost/perf delta. Only the failure path changes.
+- **Seam rename breaks no caller** — the only two prod callers
+  (`ocr-recipe-image.ts:435`, `structure-recipe.ts:332`) pass no db (now safe).
+  The standalone `llm-sample-capture.test.ts` passes db as the 2nd positional
+  arg — unchanged position, just optional/renamed.
+- **Idempotency N/A** — helper does `.add()` (auto-id, inherently non-idempotent
+  duplicate on retry), but it's awaited best-effort telemetry that can never
+  throw, and both callers are `onCall` callables (no server-side auto-retry).
+  Not part of any retry-corruption story. The fix doesn't touch this.
+
+**Pattern (reusable):** any best-effort / never-throw helper that takes a
+`= admin.firestore()` (or any throwing expression) default param has a latent
+escape hatch — the default is evaluated OUTSIDE the guard. Make the seam
+`?:` optional and resolve `?? admin.firestore()` on the first line inside the
+try. Same root cause as the 2026-06-10 `notification-rate-cap.ts` lazy
+`admin.firestore()` note — a throwing SDK call in a "can't fail" path must sit
+inside the catch, never at the boundary.

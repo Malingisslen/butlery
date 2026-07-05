@@ -137,21 +137,47 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
       // Max ingredients reached - silently ignore or could show feedback
       return;
     }
-    state.ingredientsManager.add('');
+    // Coordinated: keeps the section sidecar's row list aligned.
+    state.addIngredientLine();
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Remove ingredient at index
   void removeIngredient(int index) {
-    state.ingredientsManager.removeAt(index);
+    state.removeIngredientLine(index);
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  /// Reorder ingredient from [oldIndex] to [newIndex]
-  void reorderIngredient(int oldIndex, int newIndex) {
-    state.ingredientsManager.reorderAt(oldIndex, newIndex);
+  /// Move an ingredient EDITOR ROW (line or heading) from [fromRow] to
+  /// [toRow]. The sectioned editor addresses rows, not flat line indices; the
+  /// state translates a line move to the underlying manager.
+  void moveIngredientRow(int fromRow, int toRow) {
+    state.moveIngredientRow(fromRow, toRow);
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
+  /// Reassign the line at editor row [fromRow] to heading [headingId] (null =
+  /// ungroup) — the non-drag "Flytta till rubrik" path (WCAG-accessible).
+  void moveIngredientLineToSection(int fromRow, String? headingId) {
+    state.moveIngredientLineToSection(fromRow, headingId);
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
+  /// Add a component heading ("Deg", "Fyllning") to the ingredient list.
+  void addIngredientHeading() {
+    state.addIngredientHeading();
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
+  /// Remove the component heading with [id]; its lines fall to the previous
+  /// group. Immediate, no confirmation (a heading carries only its label).
+  void removeIngredientHeading(String id) {
+    state.removeIngredientHeading(id);
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }

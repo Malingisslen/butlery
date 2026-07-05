@@ -70,6 +70,25 @@ void main() {
       final result = sanitizeForJson([1, DateTime.utc(2026, 1, 3), 'x']);
       expect(result, [1, '2026-01-03T00:00:00.000Z', 'x']);
     });
+
+    test('GDPR completeness (PR #211, criterion 15): a nested ingredient '
+        'section survives the recipe export — no field allowlist drops it', () {
+      // The recipe export dumps the whole document through sanitizeForJson;
+      // there is no field allowlist, so structuredIngredients[].section is
+      // included (Art. 15 completeness).
+      final recipeData = {
+        'title': 'Kanelbullar',
+        'ingredients': ['5 dl vetemjöl', '75 g smör'],
+        'structuredIngredients': [
+          {'name': 'vetemjöl', 'raw': '5 dl vetemjöl', 'section': 'Deg'},
+          {'name': 'smör', 'raw': '75 g smör', 'section': 'Fyllning'},
+        ],
+      };
+      final exported = sanitizeForJson(recipeData) as Map<String, dynamic>;
+      final structured = exported['structuredIngredients'] as List<dynamic>;
+      expect((structured[0] as Map)['section'], 'Deg');
+      expect((structured[1] as Map)['section'], 'Fyllning');
+    });
   });
 
   group('getLimitForType', () {

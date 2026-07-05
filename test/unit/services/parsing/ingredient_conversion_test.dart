@@ -91,5 +91,25 @@ void main() {
       );
       expect(result.originalLine, 'en nypa salt');
     });
+
+    test('section passes through the bridge', () {
+      final result = parsedIngredientFromExtracted(
+        ExtractedIngredient(
+          name: 'jäst',
+          amount: 25.0,
+          unit: 'g',
+          section: 'Deg',
+        ),
+      );
+      expect(result.section, 'Deg');
+    });
+
+    test('blank section normalizes to null at the bridge — ParsedIngredient '
+        'itself never normalizes, so this is the last line of defense', () {
+      final result = parsedIngredientFromExtracted(
+        ExtractedIngredient(name: 'salt', section: '   '),
+      );
+      expect(result.section, isNull);
+    });
   });
 }

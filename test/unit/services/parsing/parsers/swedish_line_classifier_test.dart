@@ -337,6 +337,123 @@ Ingredienser:
       });
     });
 
+    group('ingredient sub-headings (component groups)', () {
+      const grouped = '''
+Kanelbullar
+
+Ingredienser:
+Deg:
+5 dl vetemjöl
+25 g jäst
+2 dl mjölk
+Fyllning:
+75 g smör
+2 msk kanel
+
+Gör så här:
+Blanda degen.
+Rulla och grädda.
+''';
+
+      test('extracts groups aligned with ingredients; heading rows are NOT '
+          'ingredients (flat-list safety invariant)', () {
+        final s = classifier.parseStructure(grouped);
+
+        expect(s.ingredients, [
+          '5 dl vetemjöl',
+          '25 g jäst',
+          '2 dl mjölk',
+          '75 g smör',
+          '2 msk kanel',
+        ]);
+        expect(s.ingredientSections, [
+          'Deg',
+          'Deg',
+          'Deg',
+          'Fyllning',
+          'Fyllning',
+        ]);
+        // The invariant that guards allergen tagging: no heading text leaked in.
+        expect(s.ingredients, isNot(contains('Deg:')));
+        expect(s.ingredients, isNot(contains('Fyllning:')));
+        expect(s.ingredientSections.length, s.ingredients.length);
+      });
+
+      test('kill switch OFF (captureSubHeadings:false) RETAINS heading lines as '
+          'ingredients — the flag fully reverts the text path', () {
+        // With capture off the detector must not run, so the sub-heading lines
+        // stay in the flat list exactly as pre-feature; allergen tagging sees
+        // the unmodified input, and no line is ever dropped by the emergency
+        // lever (the gap Finding B fixed).
+        final s = classifier.parseStructure(grouped, captureSubHeadings: false);
+
+        expect(s.ingredients, contains('Deg:'));
+        expect(s.ingredients, contains('Fyllning:'));
+        expect(
+          s.ingredientSections.every((e) => e == null),
+          isTrue,
+          reason: 'no sections tracked when capture is off',
+        );
+      });
+
+      test('a colon-less bare ingredient word is NEVER dropped as a heading '
+          '(the one direction we must not err — allergen safety)', () {
+        const text = '''
+Rätt
+
+Ingredienser:
+Sås:
+2 dl grädde
+salt
+1 msk soja
+
+Gör så här:
+Koka.
+''';
+        final s = classifier.parseStructure(text);
+
+        // "salt" has no colon and is not curated vocab → stays an ingredient.
+        expect(s.ingredients, contains('salt'));
+        expect(s.ingredients, ['2 dl grädde', 'salt', '1 msk soja']);
+        expect(s.ingredientSections, ['Sås', 'Sås', 'Sås']);
+      });
+
+      test('a line bearing a quantity/unit is never treated as a heading '
+          'even with a trailing colon', () {
+        const text = '''
+Ingredienser:
+2 dl mjölk:
+1 dl grädde
+''';
+        final s = classifier.parseStructure(text);
+        expect(
+          s.ingredients,
+          contains('2 dl mjölk:'),
+          reason: 'a digit/unit line stays an ingredient regardless of colon',
+        );
+      });
+
+      test('a flat recipe with no sub-headings yields all-null sections', () {
+        const text = '''
+Pannkakor
+
+Ingredienser:
+3 dl mjölk
+2 ägg
+
+Gör så här:
+Vispa och stek.
+''';
+        final s = classifier.parseStructure(text);
+        expect(s.ingredients, isNotEmpty);
+        expect(
+          s.ingredientSections.every((e) => e == null),
+          isTrue,
+          reason: 'no heading present ⇒ every ingredient is ungrouped',
+        );
+      });
+    });
+
     group('MT-2: Viterbi context-aware classification', () {
       const viterbi = ViterbiContextProcessor();
 
