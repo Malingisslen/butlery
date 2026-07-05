@@ -8,6 +8,7 @@ when the counts drift apart.
 
 ## Workflow
 
+- An audit agent's claim about a tool's OUTPUT FORMAT is a guess until reproduced — run the real tool and test the regex against a real line before "fixing" a parser.
 - Feedback right after a deliverable may target the TOOL/process, not the one artifact — disambiguate "fix this output" vs "improve the capability" before acting.
 - A multi-part agreed initiative gets ONE written plan before any slice ships — chat scrollback is not a backlog.
 - Every proposed improvement must name its mechanical trigger; upgrading an optional command is convenience, not infrastructure.

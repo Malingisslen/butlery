@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] An audit agent's claim about a tool's OUTPUT FORMAT is plausible, not confirmed — reproduce before "fixing"
+- **Date**: 2026-07-05
+- **Trigger**: A verification-audit agent reported (MEDIUM, hedged) that Butlery's stop-check `errorPathRegex` "likely never matches" because `dart analyze` uses a bullet-separated format with the file path third. I rewrote the regex to the bullet format. The plan's own verification step — inducing a REAL lint error — then showed the actual output is hyphen-separated (`error - file:line:col - message - rule`), the ORIGINAL regex matched perfectly, and my "fix" was the regression. Reverted.
+- **Rule**: Findings that assert what a tool PRINTS (CLI output shapes, log formats, error layouts) are training-data guesses until reproduced — even when the auditor names a version. Before changing any parser/regex on such a finding: run the real tool, capture a real line, test old AND new pattern against it. The audit agent itself flagged it couldn't reproduce under read-only constraints — that hedge means "verify me first," not "fix me first." Extends the digest line "when citing a deterministic tool's verdict, RUN it" to third-party-tool output formats surfaced by subagents.
+- **Example**: `dart analyze` probe file with `undefinedFunction()` → real line `  error - probe.dart:2:3 - ... - undefined_function`; original regex captured `probe.dart`, my bullet rewrite captured nothing. A fixture pinning the REAL format now guards it.
+
 ### [Workflow] Feedback after a deliverable may target the TOOL that made it, not the one artifact
 - **Date**: 2026-07-04
 - **Trigger**: After I delivered a one-off `/brag` launch video for Butlery, Malin said the visuals had empty placeholder spots that "should have been fixed," and that she wanted "the skill" to analyze the whole project longer, allow longer videos when needed, and use Q&A when unsure. I read this as "redo THIS movie" and started a deep re-analysis + rebuild of the single Butlery clip (even asked 4 scoped questions about it). Malin: "My input was intended to improve the whole skill not this particular movie."

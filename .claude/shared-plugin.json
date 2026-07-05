@@ -1,8 +1,16 @@
 {
   "//": "Per-repo config for the shared malin-plugins hooks (C:/claude-plugins). Gate-class hooks FAIL CLOSED if this file is missing/malformed — see C:/claude-plugins/README.md for the schema.",
   "productionGlobs": {
-    "include": ["^lib/.*\\.dart$", "^functions/src/"],
-    "exclude": ["^lib/l10n/", "\\.g\\.dart$", "\\.freezed\\.dart$", "^functions/src/__tests__/"]
+    "include": [
+      "^lib/.*\\.dart$",
+      "^functions/src/"
+    ],
+    "exclude": [
+      "^lib/l10n/",
+      "\\.g\\.dart$",
+      "\\.freezed\\.dart$",
+      "^functions/src/__tests__/"
+    ]
   },
   "planTodoPath": "tasks/todo.md",
   "planReviewChecklistPath": ".claude/plan-review-checklist.md",
@@ -17,11 +25,45 @@
     "instructions": "For Dart-heavy diffs, prefer /code-review high (xhigh on Opus 4.7 if the diff touches lib/repositories/, lib/services/, or firestore.rules)."
   },
   "reviewGates": [
-    { "agent": "code-reviewer", "marker": "code-review-done.marker", "patterns": ["\\.dart$"] },
-    { "agent": "testing-specialist", "marker": "testing-review-done.marker", "patterns": ["^lib/.*\\.dart$"] },
-    { "agent": "firebase-backend-security", "marker": "firebase-security-done.marker", "patterns": ["^lib/repositories/", "^lib/services/.*(firebase|firestore|auth|user|gdpr)"] },
-    { "agent": "cloud-functions-specialist", "marker": "cloud-functions-done.marker", "patterns": ["^functions/src/"] },
-    { "agent": "firestore-rules-tester", "marker": "rules-tester-done.marker", "patterns": ["^functions/src/__tests__/.*-rules\\.test\\.ts$"], "exact": ["firestore.rules"] }
+    {
+      "agent": "code-reviewer",
+      "marker": "code-review-done.marker",
+      "patterns": [
+        "^(?!.*\\.(g|freezed)\\.dart$).*\\.dart$"
+      ]
+    },
+    {
+      "agent": "testing-specialist",
+      "marker": "testing-review-done.marker",
+      "patterns": [
+        "^lib/.*\\.dart$"
+      ]
+    },
+    {
+      "agent": "firebase-backend-security",
+      "marker": "firebase-security-done.marker",
+      "patterns": [
+        "^lib/repositories/",
+        "^lib/services/.*(firebase|firestore|auth|user|gdpr)"
+      ]
+    },
+    {
+      "agent": "cloud-functions-specialist",
+      "marker": "cloud-functions-done.marker",
+      "patterns": [
+        "^functions/src/"
+      ]
+    },
+    {
+      "agent": "firestore-rules-tester",
+      "marker": "rules-tester-done.marker",
+      "patterns": [
+        "^functions/src/__tests__/.*-rules\\.test\\.ts$"
+      ],
+      "exact": [
+        "firestore.rules"
+      ]
+    }
   ],
   "batchAdvisory": {
     "pattern": "\\.dart$",

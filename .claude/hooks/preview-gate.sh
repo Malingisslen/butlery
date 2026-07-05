@@ -72,9 +72,10 @@ Malin reads visuals, not code — a new view starts from variants she can react 
 code she can't see (.claude/rules/html-previews.md + the design-directions pattern).
 
 Do ONE of:
-  1. Run /preview for this screen: show 2-4 deliberately DIFFERENT directions (dense vs airy,
-     etc.) as an HTML artifact with steal/skip choices, collect Malin's picks, then stamp
-     touch \"$MARKER\" and retry.
+  1. Run /preview --directions for this screen (see the 'Directions mode' section of
+     .claude/commands/preview.md): 3-4 deliberately INCOMPATIBLE variants with steal/skip
+     chips at tasks/previews/$SLUG-directions.html, rendered to Malin; after her picks are
+     folded into the design decision, stamp: touch \"$MARKER\" — then retry this Write.
   2. Genuinely non-visual view or a mechanical file move → SKIP_PREVIEW_GATE=1 and say so.
 
 Do NOT hand-build the view first and preview after — the point is she shapes it before it exists."
