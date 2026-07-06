@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-07-04",
-  "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": null,
-  "notes": "No stale dossier markers; Security Architect + Release/App-Store Compliance scans ran (weekly, both due) — 1 issue filed (#215, Apple Time Allowances/Social Media classification); accept-rate script not found in tools/, skipped; shakedown retro overdue since 2026-07-01."
+  "lastRun": "2026-07-06",
+  "dossiersRefreshed": 28,
+  "worldWatchRoles": 0,
+  "retroDue": false,
+  "acceptRate": 0.897,
+  "notes": "All 28 stale role dossiers refreshed against current code (docs/architecture/ROLE_RESPONSIBILITY_MAP.md updated, all markers deleted). World-watch: 0/3 roles due (Security Architect + Release/App-Store next due 2026-07-11, Legal Counsel next due 2026-07-27) — no scans run. Shakedown retro already logged 2026-07-04; full retro not due until 2026-07-25. Accept-rate 0.897 (healthy, >0.5), logged to docs/org/metrics/accept-rate.jsonl. Cruft sweep: tasks/pooled-ratings-plan.md left in place (tasks/todo.md is still actively mid-plan on this same topic awaiting Malin's go-ahead per its own text) — conservative per sweep rule."
 }
