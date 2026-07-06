@@ -1,9 +1,0 @@
-{
-  "role": "Customer Support / Operations",
-  "stale_since": "2026-07-03",
-  "triggers": [
-    "firestore.rules",
-    "lib/services/feature_flags/feature_flag_service.dart"
-  ],
-  "last_stamped": "2026-07-04"
-}
