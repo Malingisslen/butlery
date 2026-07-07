@@ -19,3 +19,4 @@
 {"ts":"2026-07-05T18:51:44.617Z","type":"trigger","fired":true,"signals":"allergen","ran":null}
 {"ts":"2026-07-05T19:14:00.372Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}
 {"ts":"2026-07-05T19:19:41.078Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}
+{"type": "janitor", "via": "manual-session", "dossiersRefreshed": 28, "acceptRate": 0.728, "scratchCleared": 31, "ts": "2026-07-07T19:12:52.309389+00:00"}

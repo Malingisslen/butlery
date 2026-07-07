@@ -2,7 +2,9 @@
   "lastRun": "2026-07-06",
   "dossiersRefreshed": 28,
   "worldWatchRoles": 0,
-  "retroDue": false,
-  "acceptRate": 0.897,
-  "notes": "All 28 stale role dossiers refreshed against current code (docs/architecture/ROLE_RESPONSIBILITY_MAP.md updated, all markers deleted). World-watch: 0/3 roles due (Security Architect + Release/App-Store next due 2026-07-11, Legal Counsel next due 2026-07-27) — no scans run. Shakedown retro already logged 2026-07-04; full retro not due until 2026-07-25. Accept-rate 0.897 (healthy, >0.5), logged to docs/org/metrics/accept-rate.jsonl. Cruft sweep: tasks/pooled-ratings-plan.md left in place (tasks/todo.md is still actively mid-plan on this same topic awaiting Malin's go-ahead per its own text) — conservative per sweep rule."
+  "retroFired": false,
+  "acceptRate": 0.728,
+  "scratchCleared": 31,
+  "via": "manual-session",
+  "notes": "Manual /janitor run (founder-invoked, Sunday night). 28 dossiers refreshed incl. pipeline-P0-resolved discovery (BUT-1464) + 3 unlisted >500-line files; world-watch all current (07-04 run); retro not due (full due 2026-07-25); accept-rate 72.8% (551 commits/30d, 150 reworked); swept 27 aged state artifacts + 3 tasks/ dumps + 1 shipped preview, archived pooled-ratings-plan. Pending founder approval: bulk-delete 1144 ~/.claude/security state files. NOTE: today's SCHEDULED run (Mon ~05:00Z) is verified separately by looking for ITS pushes/stamps \u2014 this manual stamp must not be read as schedule proof."
 }

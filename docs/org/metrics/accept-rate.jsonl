@@ -1,1 +1,2 @@
 {"ts": "2026-07-06T00:00:00Z", "window_days": 30, "rework_days": 7, "autonomous_commits": 97, "reworked": 10, "accept_rate": 0.897, "verdict": "healthy"}
+{"ts": "2026-07-05", "window_days": 30, "autonomous_commits": 551, "reworked": 150, "accept_rate": 0.728}
