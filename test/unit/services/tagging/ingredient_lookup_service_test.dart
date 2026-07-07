@@ -673,7 +673,139 @@ void main() {
       });
     });
 
+    group('BUT-1496: definite-plural variations', () {
+      // Before the fix, none of the or/ar/er/n/en/et rules fired on an '-a'
+      // ending, so definite plurals ("tomaterna", "gurkorna") generated zero
+      // variations and the whole word class went unmatched.
+
+      test('finds ingredient from "-erna" definite plural', () async {
+        // "tomaterna" → variation "tomat"
+        final tomato = _createIngredient('tomato', 'tomat');
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
+
+        final result = await service.lookupIngredients(['tomaterna']);
+
+        expect(
+          result.matchedCount,
+          1,
+          reason: '"tomaterna" must resolve via -erna stripping to "tomat"',
+        );
+        expect(result.matched.first.id, 'tomato');
+      });
+
+      test('finds ingredient from "-orna" definite plural', () async {
+        // "gurkorna" → variation "gurka" (-or plurals take -a singular)
+        final cucumber = _createIngredient('cucumber', 'gurka');
+        when(
+          () => mockIngredientRepo.findByName('gurka'),
+        ).thenAnswer((_) async => cucumber);
+
+        final result = await service.lookupIngredients(['gurkorna']);
+
+        expect(
+          result.matchedCount,
+          1,
+          reason: '"gurkorna" must resolve via -orna stripping to "gurka"',
+        );
+        expect(result.matched.first.id, 'cucumber');
+      });
+
+      test('finds ingredient from "-arna" definite plural', () async {
+        // "lökarna" → "lokarna" → bare-base variation "lok"
+        final onion = _createIngredient('onion', 'lok');
+        when(
+          () => mockIngredientRepo.findByName('lok'),
+        ).thenAnswer((_) async => onion);
+
+        final result = await service.lookupIngredients(['lökarna']);
+
+        expect(
+          result.matchedCount,
+          1,
+          reason: '"lökarna" must resolve via -arna stripping to "lok"',
+        );
+        expect(result.matched.first.id, 'onion');
+      });
+    });
+
+    group('BUT-1496: variation trimming', () {
+      test(
+        'adjective stripping with doubled internal space yields trimmed variation',
+        () async {
+          // "grön  tomat" (double space) → adjective prefix "gron " leaves
+          // " tomat"; without the trim fix the repository would be queried
+          // with a leading space and never match.
+          final tomato = _createIngredient('tomato', 'tomat');
+          when(
+            () => mockIngredientRepo.findByName('tomat'),
+          ).thenAnswer((_) async => tomato);
+
+          final result = await service.lookupIngredients(['grön  tomat']);
+
+          expect(
+            result.matchedCount,
+            1,
+            reason: 'variation " tomat" must be trimmed to "tomat"',
+          );
+          expect(result.matched.first.id, 'tomato');
+        },
+      );
+    });
+
     group('lookupFromRaw', () {
+      test(
+        'BUT-1496: splits "och"-conjunction line into both ingredients',
+        () async {
+          // "salt och peppar" was previously one unmatchable blob; the compound
+          // parser must expand it so BOTH ingredients are looked up.
+          final salt = _createIngredient('salt', 'salt');
+          final pepper = _createIngredient('pepper', 'peppar');
+          when(
+            () => mockIngredientRepo.findByName('salt'),
+          ).thenAnswer((_) async => salt);
+          when(
+            () => mockIngredientRepo.findByName('peppar'),
+          ).thenAnswer((_) async => pepper);
+
+          final result = await service.lookupFromRaw(['salt och peppar']);
+
+          expect(
+            result.matchedCount,
+            2,
+            reason: '"salt och peppar" must match salt AND peppar',
+          );
+          expect(
+            result.matched.map((i) => i.id),
+            containsAll(['salt', 'pepper']),
+          );
+        },
+      );
+
+      test(
+        'BUT-1496: "och" split with quantity/unit still resolves both parts',
+        () async {
+          // "2 dl mjölk och grädde" → "mjolk" + "gradde"
+          final milk = _createIngredient('milk', 'mjolk');
+          final cream = _createIngredient('cream', 'gradde');
+          when(
+            () => mockIngredientRepo.findByName('mjolk'),
+          ).thenAnswer((_) async => milk);
+          when(
+            () => mockIngredientRepo.findByName('gradde'),
+          ).thenAnswer((_) async => cream);
+
+          final result = await service.lookupFromRaw(['2 dl mjölk och grädde']);
+
+          expect(result.matchedCount, 2);
+          expect(
+            result.matched.map((i) => i.id),
+            containsAll(['milk', 'cream']),
+          );
+        },
+      );
+
       test('H2: deduplicates ingredients before lookup', () async {
         final tomato = _createIngredient('tomato', 'tomat');
         when(

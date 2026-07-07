@@ -2,7 +2,7 @@
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/tagging/ingredient_categorizer.dart';
+import 'package:butlery/services/shopping/ingredient_categorizer.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 

@@ -1,4 +1,83 @@
-# Implementation plan — Pooled ratings v1: the aggregation pipeline
+## Sprint: Pipeline-audit bug burndown + allergen/tagging correctness — 2026-07-07
+
+**Selection note (important):** the backlog carried a large 2026-07-04 "28-role org-scan"
+batch (BUT-1521–1568-ish range). Spot-verifying my first-pass picks from that batch against
+CURRENT code found a very high false-positive rate — see `obsolete` list below. All 10
+tickets actually selected here come from sources verified against live code this session:
+the 2026-07-01 pipeline audit (`docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`, "every
+P0/P1 item adversarially verified against the code"), a BUT-1464 implementer follow-up, and
+the `tasks/hardest-issues.md` 2026-07 deep scan. Recommend a follow-up pass to bulk-triage
+the rest of the 2026-07-04 scan batch before it's trusted for future sprints (see needsApproval).
+
+### Agent A: menu-allergen-safety — per-slot allergen trust guard
+- [ ] **A1. Route `_matchesConstraint` through `MenuAllergenTrust`** `[Tier A]` — `lib/services/menu_service.dart`: per-slot prompt constraints (e.g. "3 glutenfria middagar") still read raw `tr.getAllergenStatus`/`getDietaryStatus` instead of `MenuAllergenTrust.effectiveAllergenStatus`/`effectiveDietaryStatus` (the trust guard `_passesGlobals` already uses). A manual CONTAINS override on an auto-FREE recipe can currently satisfy a "free from X" per-slot constraint. (BUT-1466)
+  - Acceptance: a per-slot "fri från X" constraint rejects a recipe with a manual override marking it CONTAINS-X · a stale-FREE (needsRetagging/low-coverage) recipe follows `includeUnknownInMenu` in per-slot matching, same as the global-constraint path · a `menu_service_test.dart`-level test covers both
+  - Stakeholders: Product Manager (single tier) — requiresPlanMode: **true** (single-tier + High priority)
+
+### Agent B: tagging-data-integrity — register sync + normalization
+- [ ] **B1. Split ingredient aliases on both `;` and `,`** `[Tier A]` — `functions/src/admin/sync-ingredients-core.ts:188`: `parseList(row.aliases_sv, ";")` only splits on semicolon; Sheet rows using commas (seen live: `vegofärs`, `tartar-sauce`) sync as one comma-joined array element. (BUT-1495)
+  - Acceptance: alias cells split on both `;` and `,` · regression-tested against the two live-observed cases (`vegofärs`, `tartar-sauce`) · existing semicolon-only rows keep working (no regression)
+- [ ] **B2. Fix three normalization defects in ingredient lookup** `[Tier A]` — `lib/services/tagging/ingredient_lookup_service.dart` `_generateLookupVariations`/`_cleanForLookup`: (a) no `-erna`/`-orna` definite-plural stripping ("morötterna" never matches — CONFIRMED missing from the current suffix-stripping list), (b) trailing-space misses ("halloumi ost "), (c) "och"-conjunction lines not split ("salt och peppar"). (BUT-1496)
+  - Acceptance: "morötterna" resolves to the same ingredient as "morot" · a trailing-space input no longer misses a lookup that would otherwise hit · "salt och peppar"-style lines split into separate matchable ingredients · don't touch the unrelated existing plural rules (or/ar/er/n/en/et) — only add the missing cases
+  - Stakeholders: full-panel (Data/ML high-stakes hit + FinOps/Legal/Privacy/PM/Security/Architect core) — requiresPlanMode: **true**
+
+### Agent C: tagging-pipeline-cleanup — TagGenerator lifecycle + dead orchestrator
+- [ ] **C1. Rebuild `TagGenerator` when remote config loads late** `[Tier A]` — `lib/services/tagging/tag_generator.dart`: constructed once from `configOrNull`; a slow/failed config fetch pins the whole session to static fallback rules even after the real config arrives. (BUT-1483)
+  - Acceptance: a session that starts with a slow/failed config fetch picks up the real config once it arrives (no permanent pin to fallback) · existing fast-path (config already loaded) behavior unchanged
+- [ ] **C2. Delete `TagGenerator.generate()` dead orchestrator** `[Tier A]` — `lib/services/tagging/tag_generator.dart`: ~175-line dead duplicate orchestrator (confirmed: no non-test callers); `test/unit/services/tagging/tag_generator_test.dart` pins it 142×. Re-home phase tests onto the phase calculators / `TaggingPipelineRunner`. (BUT-1481)
+  - Acceptance: `TagGenerator.generate()` is deleted · the 142 pinned test assertions are re-homed onto phase calculators/`TaggingPipelineRunner`, not just deleted (no net coverage loss) · production tagging behavior is unchanged (only the dead duplicate path is removed)
+  - Do C1 before C2 in the same file (sequential within this agent, not parallel).
+
+### Agent D: import-tagging-dead-code — misc cleanup
+- [ ] **D1. Remove/wire three dead-code items** `[Tier A]` — `lib/services/import/file_import_strategy.dart` (`FileImportStrategy` unreachable in the `autoImport` loop — either wire it in or delete it), `lib/services/extraction/extractors/instagram_content_extractor.dart` (`extractWithResult` dead), `lib/services/tagging/ingredient_categorizer.dart` (mis-homed under `tagging/` — relocate to its correct home). (BUT-1487)
+  - Acceptance: each of the three items is either wired to a real caller or deleted, with a one-line note on which choice was made and why · `ingredient_categorizer.dart` moves out of `tagging/` with all imports updated · `dart analyze` clean after the move
+
+### Agent E: backend-cost-guardrails — LLM cap + parse_events TTL + pricing check
+- [ ] **E1. Add a per-user daily LLM call cap** `[Tier A]` — `functions/src/middleware/rate_limiter.ts`: today's server-side ceiling is per-minute-per-user only (theoretical ~4.3k calls/user/day) plus a separate GLOBAL aggregate daily/hourly cap (`checkGlobalLimit`, confirmed system-wide not per-user) — there is no per-user daily counter. Add one inside the existing per-user rate-limiter transaction (mirror the existing hourly/daily pattern already used for the global limit). (BUT-1477)
+  - Acceptance: a per-user daily counter exists in the rate-limiter transaction, distinct from the existing global aggregate cap · exceeding it denies further LLM calls for that user until the day rolls over (UTC) · existing per-minute and global-aggregate behavior unchanged
+- [ ] **E2. TTL on `parse_events`** `[Tier A]` — `functions/src/events/log-parse-event.ts` (+ wherever the existing `llm_response_samples` TTL is declared, to mirror it): `parse_events` grows unbounded, one doc per import attempt, storing raw userId+URL forever (a quiet GDPR surface). (BUT-1478)
+  - Acceptance: `parse_events` docs carry a TTL field/policy mirroring `llm_response_samples` · existing 30-day-style expiry pattern reused, not reinvented · no change to what gets logged, only to its retention
+- [ ] **E3. Confirm Gemini pricing constants** `[Tier A]` — `functions/src/llm/gemini-client.ts:833`: two unverified pricing constants feed all cost telemetry and spend ceilings (BUT-1187 TODO). Verify against current published Gemini pricing (web/Context7) and correct if drifted. (BUT-1479)
+  - Acceptance: the two constants are checked against a cited current Gemini pricing source · if unchanged, the ticket closes with the citation recorded in the commit; if drifted, the constants are corrected and the delta is called out in the commit message
+  - Stakeholders: full-panel (parse_events is a high-stakes hit; FinOps/Legal/Privacy/PM/Security/Architect core) — requiresPlanMode: **true** for E1–E3 as a group.
+
+### Agent F: social-recipe-sharing — non-atomic share write (build-review)
+- [ ] **F1. Make `shareRecipeWithUsers`'s two writes safe against partial failure** `[Tier B]` — `lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart:50-183`: confirmed live — on secondary `shared_recipes` write failure, the method deliberately `return`s `true` (BUT-1131 comment: "rules-based access works without the secondary doc; it's only a query-optimisation"). BUT-1503 argues this is still user-visible as "my friend never got the recipe" and asks for an atomic write or self-heal. **This revisits a previous deliberate call (BUT-1131)** — build the narrower, safer half only: make the two writes atomic (WriteBatch) OR add a retry/self-heal on the secondary write, and surface a clear error to the user when both fail. Do **NOT** build the ticket's second ask ("decide one canonical share model and converge") — that's a separate, larger architecture decision (the two-share-models divergence is a known tracked fragility, see memory `reference_recipe_share_two_paths`) and belongs in its own plan, not this fix. (BUT-1503)
+  - Acceptance: the primary recipe-permission write and the secondary `shared_recipes` write either both succeed or the failure is surfaced (no more silent `return true` on secondary-write failure) · the fix does NOT attempt to merge/converge `SocialRecipeOperations.shareRecipe`'s separate collaborative-doc model — that stays out of scope · a test drives a forced secondary-write failure and asserts the caller can tell it happened
+  - Stakeholders: Software Architect, Product Manager (single tier, High priority) — requiresPlanMode: **true**
+  - signoffReason: this reopens a documented BUT-1131 trade-off (return-true-on-secondary-failure was deliberate); Malin should confirm the new failure-surfacing behavior (hard fail vs. retry-and-warn) matches what she wants users to see, before this closes to Done instead of parking In Review.
+
+### Needs you (Tier D — flagged, not worked)
+- None this sprint — all 10 selected tickets are buildable now (no ops/deploy/external-account blockers).
+
+### Post-Sprint Steps
+- [ ] Run `dart analyze --fatal-infos` (Dart-touching batches: A, C, D)
+- [ ] Run `npm run build` / relevant `functions` tests (TS-touching batches: B1, E)
+- [ ] Run relevant unit tests per batch
+- [ ] Commit, push (direct to main per solo workflow)
+- [ ] Update Linear ticket states (Done for Tier A; In Review + notify for Tier B — Agent F)
+
+## Deviation log
+- [discovery] Six tickets originally shortlisted from the 2026-07-04 "28-role org-scan" batch
+  (BUT-1529, BUT-1530, BUT-1532, BUT-1534, BUT-1535, BUT-1537) turned out to be already-fixed
+  false positives on direct code verification — see `obsolete` in the structured plan output for
+  per-ticket evidence (commit hashes / blame dates, all predating the tickets' filing). Swapped
+  them for pipeline-audit-sourced tickets (verified against current code this session). Flagging
+  for a follow-up bulk-triage of the rest of that scan batch — see needsApproval.
+- [deviation] BUT-1529 ("solo weekly-menu includes untagged recipes") was also checked and found
+  already fixed by the BUT-1464 unification commit (`820e89b76`) two days before BUT-1529 was
+  filed — not swapped in, dropped from selection entirely (see obsolete).
+
+---
+
+# ARCHIVE — prior sprint (pooled-ratings v1, shipped)
+
+## Implementation plan — Pooled ratings v1: the aggregation pipeline
+
+**Status: SHIPPED.** Increments 1–6 (Stage A mirror CF, Stage B pool aggregator, rules,
+GDPR export/deletion coverage, client display) plus backfill CF (hard-gated, not run) are all
+committed on `claude/pooled-ratings-v1` per `memory/project_pooled_ratings.md`. Flag OFF in
+prod — deploy-only remaining. Content below kept as the historical build record.
 
 **Scope:** build the live "Butlery-betyget" pipeline specified in `tasks/pooled-ratings-plan.md`
 (decisions 2,4,5,6,7,8,9,10,11,12,13,15). The **key-design (C1–C5) foundation is already
@@ -101,7 +180,7 @@ server-side (never trust a client field — pool-poisoning defense).
   header index comment.
 - New `functions/src/__tests__/canonical-stats-rules.test.ts` (mirror `recipe-ratings-rules`
   harness): owner reads own events / stranger denied; all client writes to both denied; any
-  auth'd user reads stats. Register in `test:rules:all` + both path lists in
+  auth'd user reads stats. Register in `test:rules:all` + both path lists of
   `firestore-rules.yml`.
 - **Gate:** firestore-rules-tester (emulator-proven, AC9).
 
@@ -360,3 +439,4 @@ specialist(s). No existing rating data is mutated; flag-off = feature fully dark
   weekly-menu using these scores (the real payoff — I'll file it as its own task).
 - **Risk:** low. It's all new, additive, behind an off-switch; removing it is just flipping the
   switch and dropping two new data piles. Nothing existing changes.
+</content>

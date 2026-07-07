@@ -8,6 +8,10 @@
  * - Reads/writes server-side buckets at system_rate_limits/{userId}_{operation}
  *   (top-level, NOT a user subcollection — so clients can't reset their own
  *   limits by deleting docs; cleaned up weekly by cleanupOldRateLimits)
+ * - Per-user DAILY cap (BUT-1477) on operations that declare `dailyLimit` —
+ *   the per-minute bucket alone lets a patient abuser make thousands of LLM
+ *   calls/day; the daily counter (same doc, same transaction) bounds worst-case
+ *   per-user spend. Resets at UTC midnight, matching checkGlobalLimit's day key.
  * - Returns HTTP 429 with Retry-After header when exceeded
  * - Fails CLOSED on Firestore errors (denies the request — see the
  *   checkRateLimit catch block, not a graceful allow)
@@ -39,6 +43,12 @@ export interface RateLimitConfig {
   refillRate: number;
   /** Refill interval in milliseconds */
   refillIntervalMs: number;
+  /**
+   * BUT-1477: optional per-user daily request cap (UTC day). Set on expensive
+   * (LLM-backed) operations; omitted → no daily enforcement. Counted per
+   * request, not per token.
+   */
+  dailyLimit?: number;
 }
 
 export interface RateLimitCheckResult {
@@ -53,6 +63,11 @@ interface StoredRateLimit {
   lastRefill: admin.firestore.Timestamp;
   operationType: string;
   updatedAt: admin.firestore.Timestamp;
+  /** BUT-1477: UTC day key the daily counter belongs to (optional — absent on
+   * docs written before the daily cap shipped; treated as a fresh day). */
+  dayKey?: string;
+  /** BUT-1477: requests made during `dayKey`. */
+  dailyCount?: number;
 }
 
 // =============================================================================
@@ -65,15 +80,21 @@ interface StoredRateLimit {
  */
 const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // LLM Operations (expensive - strict limits)
+  // BUT-1477 dailyLimit rationale: the minute bucket alone permits ~4300
+  // structureRecipe calls/day (3/min sustained). Daily caps bound a single
+  // account's worst-case LLM spend while staying far above real usage (a
+  // heavy user imports a few dozen recipes/day at most).
   structureRecipe: {
     maxTokens: 10,
     refillRate: 3,
     refillIntervalMs: 60000, // 1 minute
+    dailyLimit: 100,
   },
   ocrRecipeImage: {
     maxTokens: 5,
     refillRate: 2,
     refillIntervalMs: 60000,
+    dailyLimit: 50,
   },
 
   // Notification Operations
@@ -88,11 +109,12 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
   },
 
-  // Import Operations
+  // Import Operations (LLM-backed downstream — carries a daily cap too)
   importRecipe: {
     maxTokens: 10,
     refillRate: 3,
     refillIntervalMs: 60000,
+    dailyLimit: 100,
   },
 
   // BUT-1386: signup age-verification callable. A user calls it ~once at
@@ -146,6 +168,24 @@ function getConfig(operationType: string): RateLimitConfig {
 }
 
 /**
+ * Test seam: overrides the Firestore handle used by checkRateLimit so the
+ * transaction wiring (daily-cap deny-before-consume, counter persistence) can
+ * be exercised without an emulator. Production never sets this; pass null to
+ * restore the real Admin SDK handle. Mirrors __resetGlobalLimitsCacheForTest.
+ */
+let firestoreForTest: admin.firestore.Firestore | null = null;
+
+export function __setFirestoreForTest(
+  db: admin.firestore.Firestore | null
+): void {
+  firestoreForTest = db;
+}
+
+function getFirestore(): admin.firestore.Firestore {
+  return firestoreForTest ?? admin.firestore();
+}
+
+/**
  * Get Firestore reference for rate limit document.
  * Stored under system_rate_limits/ (not user subcollection) so clients cannot
  * reset their own limits by deleting documents.
@@ -154,8 +194,7 @@ function getRateLimitRef(
   userId: string,
   operationType: string
 ): admin.firestore.DocumentReference {
-  return admin
-    .firestore()
+  return getFirestore()
     .collection("system_rate_limits")
     .doc(`${userId}_${operationType}`);
 }
@@ -211,6 +250,56 @@ export function calculateCurrentTokens(
   return { tokens, effectiveRefill };
 }
 
+/** UTC day key — same shape as checkGlobalLimit's dayKey (month is 0-based;
+ * only used for equality, never parsed back). */
+function utcDayKey(now: Date): string {
+  return `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+}
+
+/** Outcome of the per-user daily-cap evaluation (BUT-1477). */
+export interface DailyCapResult {
+  allowed: boolean;
+  /** Requests already made today (0 after a UTC-day rollover). */
+  priorDailyCount: number;
+  /** Day key to persist alongside the incremented counter. */
+  dayKey: string;
+  /** Set when denied: ms until the counter resets (next UTC midnight). */
+  retryAfterMs?: number;
+}
+
+/**
+ * Evaluate the per-user daily cap against the stored counter.
+ *
+ * Pure function, exported as a test seam (mirrors calculateCurrentTokens);
+ * not part of the public middleware contract. A stored counter from an
+ * earlier UTC day (or a pre-BUT-1477 doc with no counter) reads as 0.
+ */
+export function evaluateDailyCap(
+  stored: { dayKey?: string; dailyCount?: number } | undefined,
+  config: RateLimitConfig,
+  now: Date
+): DailyCapResult {
+  const dayKey = utcDayKey(now);
+  const priorDailyCount =
+    stored?.dayKey === dayKey ? (stored.dailyCount ?? 0) : 0;
+
+  if (config.dailyLimit !== undefined && priorDailyCount >= config.dailyLimit) {
+    const nextUtcMidnight = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1
+    );
+    return {
+      allowed: false,
+      priorDailyCount,
+      dayKey,
+      retryAfterMs: nextUtcMidnight - now.getTime(),
+    };
+  }
+
+  return { allowed: true, priorDailyCount, dayKey };
+}
+
 /**
  * Check if a rate limit allows the request.
  *
@@ -229,7 +318,7 @@ export async function checkRateLimit(
 
   try {
     // Use transaction for atomic read-update
-    const result = await admin.firestore().runTransaction(async (transaction) => {
+    const result = await getFirestore().runTransaction(async (transaction) => {
       const doc = await transaction.get(docRef);
       const now = new Date();
 
@@ -238,12 +327,13 @@ export async function checkRateLimit(
       // refill progress (see calculateCurrentTokens) rather than resetting to
       // `now`, which would strand fractional accrual and lock users out early.
       let refillAnchor: Date;
+      let storedData: StoredRateLimit | undefined;
 
       if (doc.exists) {
-        const data = doc.data() as StoredRateLimit;
+        storedData = doc.data() as StoredRateLimit;
         const refill = calculateCurrentTokens(
-          data.tokens,
-          data.lastRefill.toDate(),
+          storedData.tokens,
+          storedData.lastRefill.toDate(),
           config
         );
         currentTokens = refill.tokens;
@@ -252,6 +342,22 @@ export async function checkRateLimit(
         // First request - start with full bucket
         currentTokens = config.maxTokens;
         refillAnchor = now;
+      }
+
+      // BUT-1477: per-user daily cap, checked before consuming minute-bucket
+      // tokens (a denied request must not eat bucket capacity). Same
+      // transaction, same doc — no extra reads.
+      const dailyCap = evaluateDailyCap(storedData, config, now);
+      if (!dailyCap.allowed) {
+        const retryAfterMs = dailyCap.retryAfterMs ?? 24 * 60 * 60 * 1000;
+        return {
+          allowed: false,
+          remainingTokens: currentTokens,
+          retryAfterMs,
+          reason:
+            `Daily limit reached for ${operationType}. ` +
+            `Resets in ${Math.ceil(retryAfterMs / 1000)} seconds (midnight UTC).`,
+        };
       }
 
       // Check if enough tokens available
@@ -269,13 +375,17 @@ export async function checkRateLimit(
         };
       }
 
-      // Consume tokens and update Firestore
+      // Consume tokens and update Firestore. The daily counter is tracked for
+      // every operation (observability); it's only ENFORCED when the config
+      // declares a dailyLimit.
       const newTokens = currentTokens - tokensRequired;
       const updateData: Partial<StoredRateLimit> = {
         tokens: newTokens,
         lastRefill: admin.firestore.Timestamp.fromDate(refillAnchor),
         operationType,
         updatedAt: admin.firestore.Timestamp.now(),
+        dayKey: dailyCap.dayKey,
+        dailyCount: dailyCap.priorDailyCount + 1,
       };
 
       if (doc.exists) {

@@ -20,3 +20,9 @@
 {"ts":"2026-07-05T19:14:00.372Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}
 {"ts":"2026-07-05T19:19:41.078Z","type":"trigger","fired":true,"signals":"delete,functions/src,pii","ran":null}
 {"type": "janitor", "via": "manual-session", "dossiersRefreshed": 28, "acceptRate": 0.728, "scratchCleared": 31, "ts": "2026-07-07T19:12:52.309389+00:00"}
+{"ts":"2026-07-07T19:23:52.898Z","type":"trigger","fired":true,"signals":"allergen,auth,delete","ran":null}
+{"ts":"2026-07-07T19:24:57.020Z","type":"trigger","fired":true,"signals":"allergen,auth,delete","ran":null}
+{"ts":"2026-07-07T19:27:07.210Z","type":"trigger","fired":true,"signals":"allergen,auth,delete","ran":null}
+{"ts":"2026-07-07T19:27:16.104Z","type":"trigger","fired":true,"signals":"allergen,auth,delete","ran":null}
+{"ts":"2026-07-07T19:47:08.610Z","type":"trigger","fired":true,"signals":"delete","ran":null}
+{"ts":"2026-07-07T19:52:40.301Z","type":"trigger","fired":true,"signals":"delete,deletion","ran":null}

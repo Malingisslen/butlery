@@ -155,7 +155,7 @@ export function deriveLearnedAliasesAtRisk(
  * Contract: the produced doc NEVER contains `learnedAliasesSv` — see header.
  */
 export function csvToFirestore(row: IngredientRow): IngredientDoc {
-  const parseList = (str: string, separator: string): string[] =>
+  const parseList = (str: string, separator: string | RegExp): string[] =>
     str
       .split(separator)
       .map((s) => s.trim())
@@ -185,7 +185,10 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
   const avgPriceSekStr = row.avg_price_sek?.trim().replace(",", ".");
   const avgPriceSek = avgPriceSekStr ? parseFloat(avgPriceSekStr) : undefined;
 
-  const aliasesSv = parseList(row.aliases_sv || "", ";");
+  // BUT-1495: the Sheet convention is ';' but humans type ','; a comma-typed
+  // list must not survive as one blob alias (it poisons normalizedNames, the
+  // diacritics-stripped allergen-lookup surface).
+  const aliasesSv = parseList(row.aliases_sv || "", /[;,]/);
 
   const doc: IngredientDoc = {
     id,

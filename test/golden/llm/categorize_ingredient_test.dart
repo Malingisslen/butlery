@@ -19,7 +19,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/services/tagging/ingredient_categorizer.dart';
+import 'package:butlery/services/shopping/ingredient_categorizer.dart';
 
 import '_golden_runner.dart';
 

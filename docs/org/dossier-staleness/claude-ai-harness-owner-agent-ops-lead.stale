@@ -1,0 +1,9 @@
+{
+  "role": "Claude AI-Harness Owner / Agent-Ops Lead",
+  "stale_since": "2026-07-07",
+  "triggers": [
+    "tasks/todo.md",
+    ".claude/agents/cloud-functions-specialist.knowledge.md"
+  ],
+  "last_stamped": "2026-07-07"
+}

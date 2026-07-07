@@ -1,0 +1,14 @@
+{
+  "role": "Vendor / Procurement Manager",
+  "stale_since": "2026-07-07",
+  "triggers": [
+    "functions/package.json",
+    "functions/RUNBOOK.md",
+    "functions/src/middleware/rate_limiter.ts",
+    "functions/src/__tests__/rate-limiter-daily-cap.test.ts",
+    "functions/src/events/log-parse-event.ts",
+    "functions/src/__tests__/log-parse-event-expiry.test.ts",
+    "functions/src/admin/backfill-parse-event-expiry.ts"
+  ],
+  "last_stamped": "2026-07-07"
+}

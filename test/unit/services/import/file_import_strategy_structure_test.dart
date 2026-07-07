@@ -117,11 +117,6 @@ void main() {
         expect(strategy.description, contains('Excel'));
         expect(strategy.inputExample, contains('CSV or Excel file'));
       });
-
-      test('should have duplicate name property', () {
-        // Assert - Known issue: duplicate property
-        expect(strategy.name, equals(strategy.strategyName));
-      });
     });
 
     group('Input Validation', () {

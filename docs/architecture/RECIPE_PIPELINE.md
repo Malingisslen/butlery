@@ -124,7 +124,7 @@ not new systems — see the roadmap.
 - **Rate-limit asymmetry:** the $0.50/day / $10/month LLM ceilings are client-side only; the server allows ~4,300 structureRecipe calls/user/day via per-minute buckets alone.
 - **Cache provenance is fabricated:** every GlobalRecipeCache entry records `tier: 0, confidence: 0.8` — the real winning tier is computed and discarded, so cache ROI and LLM-spend attribution are unmeasurable.
 - **`ExtractionMeta`/`ParsingContext` side channels:** `SchemaOrgTier` writes `jsonLdData` that `LlmTier` reads — tier reordering breaks silently.
-- **`ingredient_categorizer.dart` is NOT tagging** — it's shopping-list bucketing living in the tagging directory by historical accident.
+- **`ingredient_categorizer.dart` is NOT tagging** — it's shopping-list bucketing; relocated to `lib/services/shopping/` (BUT-1487, previously mis-homed under `tagging/` by historical accident).
 - **Version keys:** `parserVersion` 2.0.0 (parse cache), `kTagGeneratorVersion` 2.1.0 (retag trigger), `PROMPT_VERSION` 2.1.0 (changelog-guarded), CRF `bundledWeightVersion`, TagResult schema V2 (read-time-only migration, never written back).
 
 ## What is genuinely good (preserve these patterns)

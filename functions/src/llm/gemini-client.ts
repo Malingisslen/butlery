@@ -871,11 +871,11 @@ export const MAX_TOKENS = 2000;
 export const TEMPERATURE = 0.3;
 
 // Gemini 2.5 Flash-Lite pricing per 1M tokens (Vertex AI, `eu` multi-region).
-// TODO(BUT-1187): confirm gemini-2.5-flash-lite pricing against the live Vertex
-// pricing page (and re-check if falling back to gemini-2.5-flash, which is
-// pricier + bills thinking tokens). Values below are best-known list rates; cost
-// telemetry only (does not affect request behavior). The 2.5 Flash-Lite tier is
-// cost-parity with the retired 2.0-flash, so these match the prior constants.
+// BUT-1479 (closes the BUT-1187 TODO): verified 2026-07-07 against Google's
+// published Gemini 2.5 Flash-Lite pricing — input $0.10/M, output $0.40/M,
+// unchanged (no drift). Re-verify if falling back to gemini-2.5-flash, which
+// is pricier + bills thinking tokens. Cost telemetry only (does not affect
+// request behavior).
 const INPUT_COST_PER_M = 0.10;
 const OUTPUT_COST_PER_M = 0.40;
 
@@ -886,6 +886,9 @@ const OUTPUT_COST_PER_M = 0.40;
  * standard input rate. This constant only improves cost-telemetry accuracy;
  * it does not affect request behavior (no cachedContent resources are
  * created, no request fields change).
+ *
+ * BUT-1479: verified 2026-07-07 — Vertex bills 2.5-series cached tokens at
+ * 10% of the input rate (90% discount), so 0.10 is correct.
  */
 const CACHED_INPUT_DISCOUNT = 0.10;
 

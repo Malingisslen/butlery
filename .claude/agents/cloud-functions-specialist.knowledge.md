@@ -1826,3 +1826,70 @@ escape hatch — the default is evaluated OUTSIDE the guard. Make the seam
 try. Same root cause as the 2026-06-10 `notification-rate-cap.ts` lazy
 `admin.firestore()` note — a throwing SDK call in a "can't fail" path must sit
 inside the catch, never at the boundary.
+
+### 2026-07-07 — BUT-1495 comma-tolerant aliases_sv split reviewed clean [Pattern discovered]
+
+`sync-ingredients-core.ts` `csvToFirestore` now splits `aliases_sv` on
+`/[;,]/` (Sheet convention is ';' but humans type ','; a comma blob alias
+poisoned `normalizedNames`, the diacritics-stripped allergen-lookup surface
+the BUT-1468 server gate queries). 15/15 diff tests + tsc clean.
+
+- **The change is safe against the CSV loader** because `parseCsvLine` in
+  `sync-ingredients.ts` is quote-aware (Sheets quotes comma-containing cells)
+  AND `loadCsv` fails closed (process.exit 1) on any column-count mismatch —
+  an unquoted comma cell aborts the run instead of mis-aligning columns and
+  soft-deleting rows. When widening any cell's separator handling, re-verify
+  both properties of the loader.
+- **Idempotency/retry/region/cost all N/A-clean for admin/ family**: the sync
+  is a manual ts-node script (never deployed → no region pin, no cold-start);
+  the transform is deterministic and the differ converges — docs healed on
+  the first post-ship sync compare `unchanged` thereafter. Expect a ONE-TIME
+  churn wave in the first diff report (every doc whose stored `aliasesSv`
+  holds an old comma blob lands in `updated`) — that is the fix working,
+  reviewable in the report, not a regression.
+- **Residual asymmetry (Low, deliberate scope)**: `aliases_en` and
+  `search_terms` still split on ';' only — a comma-typed list there survives
+  as one blob entry. Lower stakes (neither feeds `normalizedNames` nor any
+  allergen gate), but same human-error class; apply `/[;,]/` there if it
+  recurs in the Sheet.
+
+### 2026-07-07 — BUT-1477/1478/1479 daily LLM cap + parse_events TTL review [Pattern discovered]
+
+Reviewed `middleware/rate_limiter.ts` (per-user daily cap), `events/log-parse-event.ts`
+(`expireAt` TTL field), `llm/gemini-client.ts` (comment-only pricing verification),
+plus the new `rate-limiter-daily-cap.test.ts`. Build clean, 6/6 tests green.
+No Critical/High. Fixed two Mediums during the review (npm script + RUNBOOK entry).
+
+- **The BUT-1392 silent-coverage trap struck again**: the new test file shipped
+  without a `test:*` script in package.json, so `run-all-tests.js` / CI would
+  never run it. Added `test:rate-limiter-daily-cap`. Checklist item for every
+  review of a new `__tests__/*.test.ts`: grep package.json for the script FIRST.
+- **A Firestore TTL field is inert without the TTL policy** — `expireAt` on
+  `parse_events` enforces nothing until `gcloud firestore fields ttls update`
+  is run (console ops step). Added the runbook section (`functions/RUNBOOK.md`,
+  "parse_events TTL policy") with the exact gcloud command; it's a DEPLOY-DAY
+  dependency for the GDPR Art. 5(1)(e) retention claim. Same audit applies to
+  `llm_response_samples` (same pattern) — whenever a review sees a new
+  `expireAt`-style field, demand the runbook entry, or the retention claim is
+  documentation fiction.
+- **Daily-cap design verified sound**: counter lives in the SAME doc + SAME
+  transaction as the token bucket (no extra reads); denial is evaluated BEFORE
+  token consumption (a capped request doesn't burn bucket tokens) and the deny
+  path writes nothing (denials are free retries; cap counts allowed requests
+  only). `dayKey` uses 0-based `getUTCMonth()` matching `checkGlobalLimit` —
+  equality-only, never parsed back. Pre-BUT-1477 docs (no dayKey) read as a
+  fresh day. Weekly cleanup (90-day `updatedAt` staleness) can't race the
+  daily counter — an active user's doc is always fresh.
+- **Pre-existing ordering wart, amplified (filed Low, not fixed)**:
+  `withRateLimit` runs `checkGlobalLimit()` (which INCREMENTS the global
+  hourly/daily counters) BEFORE the per-user check — so a denied user's retries
+  inflate the global LLM budget without any LLM call. Was already true for
+  minute-bucket denials; a daily-capped user extends the denied window to a
+  whole day, so one hammering capped account can eat toward the 1000/h //
+  10000/d global caps and starve everyone. Fix if it ever bites: check per-user
+  first, or split checkGlobalLimit into check (read) and commit (increment
+  after per-user allow). Left as-is: costs an extra read per request on the
+  common path, and the master kill switch remains the emergency brake.
+- **Transaction wiring of the cap is untested** (only the pure
+  `evaluateDailyCap` seam has tests) — consistent with the house DI-seam
+  pattern (`calculateCurrentTokens` likewise), noted as Low.

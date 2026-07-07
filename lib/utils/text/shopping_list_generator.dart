@@ -43,7 +43,7 @@ import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/tagging/ingredient_categorizer.dart';
+import 'package:butlery/services/shopping/ingredient_categorizer.dart';
 
 /// Intelligent shopping list generation system providing ingredient consolidation and optimization for menu planning.
 /// This class serves as the central shopping list generation engine for the Butlery cooking application,

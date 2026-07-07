@@ -15,6 +15,33 @@ import { enforceRateLimit } from "../middleware/rate_limiter";
 const getDb = () => admin.firestore();
 
 /**
+ * BUT-1478: parse_events stores raw userId + sanitized URL, so unbounded
+ * retention is a GDPR Art. 5(1)(e) surface. Every doc carries `expireAt`,
+ * mirroring `llm_response_samples` (llm-sample-capture.ts): enable a Firestore
+ * TTL policy on `expireAt` for this collection so docs are reaped. 30 days
+ * matches the sample-capture window; history is preserved in aggregate form —
+ * daily-snapshots.ts rolls events up per day/domain and site_configs keeps
+ * cumulative success/failure counters, neither of which is TTL'd.
+ */
+const RETENTION_DAYS = 30;
+
+/**
+ * BUT-1478: TTL timestamp for a parse event created at `nowMs`.
+ *
+ * Exported as a test seam (same pattern as validateDomain below and
+ * evaluateDailyCap in rate_limiter.ts): the retention window is the
+ * load-bearing GDPR guarantee, so the 30-day math is pinned by
+ * log-parse-event-expiry.test.ts rather than living inline in the handler
+ * where a refactor could silently drop it. Also used by the one-time
+ * backfill script (admin/backfill-parse-event-expiry.ts).
+ */
+export function computeExpireAt(nowMs: number): admin.firestore.Timestamp {
+  return admin.firestore.Timestamp.fromMillis(
+    nowMs + RETENTION_DAYS * 24 * 60 * 60 * 1000
+  );
+}
+
+/**
  * Valid import sources
  */
 const VALID_SOURCES = ["url", "text", "instagram", "tiktok", "youtube", "ocr"];
@@ -223,6 +250,8 @@ export const logParseEvent = onCall(
       finalQuality: typeof data.finalQuality === "number" ? clamp(data.finalQuality, 0, 1) : null,
       usedLlm: typeof data.usedLlm === "boolean" ? data.usedLlm : null,
       totalCostSek: typeof data.totalCostSek === "number" ? clamp(data.totalCostSek, 0, 10) : null,
+      // BUT-1478: TTL field — see computeExpireAt/RETENTION_DAYS above.
+      expireAt: computeExpireAt(Date.now()),
       ...(tierAttempts ? { tierAttempts } : {}),
       ...(data.unknownDomain === true ? { unknownDomain: true } : {}),
     };

@@ -1,0 +1,8 @@
+{
+  "role": "Financial Controller / FinOps",
+  "stale_since": "2026-07-07",
+  "triggers": [
+    "functions/src/middleware/rate_limiter.ts"
+  ],
+  "last_stamped": "2026-07-07"
+}

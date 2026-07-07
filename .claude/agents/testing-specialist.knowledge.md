@@ -1110,3 +1110,31 @@ Re-review of `test/widget/recipe/recipe_card_test.dart` diff on `claude/pooled-r
   recipes sharing one poolKey + none for a pool-less recipe + empty when the flag stub returns false.
   Moderate boilerplate, not a blocker-grade obstacle — it belongs on the existing
   `recipe_list_viewmodel_test` setUp.
+
+### 2026-07-07 — BUT-1477/1478 review: pure-seam tests leave the transaction wiring AND the config table unpinned [Pattern — reviewed]
+
+`rate-limiter-daily-cap.test.ts` (6/6 pass, real pure function + fixed Date, strong exact-value asserts — no weakened assertions, no mocked-away subject). But the seam-only pattern (same as `rate-limiter-refill.test.ts`) leaves two regression holes in `checkRateLimit`:
+1. **Enforcement wiring**: nothing proves the transaction persists `dailyCount: prior + 1` + `dayKey` on the allowed path, nor that the daily-cap denial returns BEFORE consuming bucket tokens / writing the doc. Dropping the `+ 1` (or the whole `if (!dailyCap.allowed)` block) keeps all 6 seam tests green while the cap never fires. Same shape as BUT-1300 (injectable-factory default gap): a seam test proves the decision, never the caller.
+2. **Config-table pinning**: `RATE_LIMIT_CONFIGS` is module-private and `getConfig` unexported, so removing `dailyLimit: 100` from `structureRecipe`/`importRecipe`/`ocrRecipeImage` (the entire point of BUT-1477 — bounding per-user LLM spend) regresses with zero test failures. Mirrors the lessons-digest "assert the declared index config in a test" idiom — cost-control config values need a pin, which needs a small export seam.
+
+Also BUT-1478: `expireAt` (GDPR Art. 5(1)(e) TTL field on `parse_events`) is computed inline in the `onCall` handler — no seam, no test; a refactor dropping the field silently reopens unbounded retention. The Firestore TTL *policy* on `expireAt` is console config and untestable from unit tests — deploy-day checklist item, flag don't fake.
+
+### 2026-07-07 — BUT-1495/1496 tagging-lookup review: locale-comma splitting edge [Pattern discovered]
+Reviewing the comma-tolerant alias split (`csvToFirestore` now uses `/[;,]/` for `aliases_sv`)
+plus the Dart lookup fixes (definite plurals, och-conjunction expansion, variation trims).
+The new tests are well-aimed — each fails on pre-fix code, no weakened asserts, subject not
+mocked. **Recurring pattern worth checking every time a list-split regex gains ','**: scan the
+SAME file for decimal-comma handling of the same locale. `sync-ingredients-core.ts` already
+normalizes Swedish decimal commas for `avg_price_sek` ("12,50"), proving the Sheet contains
+decimal commas — so an alias like "lättmjölk 0,5%" would now split into two junk aliases that
+feed `normalizedNames` (the allergen-lookup surface). No test pins that edge; fix candidate is
+comma-not-between-digits (`/;|,(?![0-9])/`). Also noted: the `namesToNormalize.isEmpty → [raw]`
+fallback branch in `lookupFromRaw` (quantity-only lines like "2 dl") is new and untested — the
+och-split headline paths are tested but the defensive branch isn't.
+
+### 2026-07-07 — BUT-1487 dead-code sweep review: default strategy registry is the untested seam [Pattern discovered]
+
+Reviewing the import-tagging-dead-code sprint diff (FileImportStrategy removed from `ImportManager._initializeStrategies`; `ingredient_categorizer.dart` moved tagging/→shopping/ byte-identical, hash-verified; Instagram `extractWithResult`/`InstagramExtractionResult` family deleted with zero remaining references). Two reusable checks:
+
+1. **Verify a "pure move" with `git hash-object <new> == git rev-parse HEAD:<old>`** — instant proof no logic edit hid inside the relocation, immune to CRLF noise that makes `diff` scream.
+2. **The BUT-1300 injectable-factory-default gap applies to `ImportManager` specifically:** every active test uses `ImportManager.withStrategies(...)`; the ONLY default-constructor tests live in `test/integration/import/import_end_to_end_test.dart` which is bulk-`@Skip`ped (BUT-369) and `test/corpus/` (manual harness). So the production `_initializeStrategies` registry — which `importSinglePhoto` depends on via `whereType<PhotoImportStrategy>()` — has no active pin. Any diff editing that registry deserves one default-constructor test asserting `availableStrategies.whereType<PhotoImportStrategy>()` is non-empty (binding + `SharedPreferences.setMockInitialValues({})` already set up in import_manager_test.dart make it cheap). The "FileImportStrategy is unreachable in auto loops" premise itself IS pinned (three canHandle/validateInput-always-false tests in file_import_strategy_structure_test.dart), so its removal needed no new test.

@@ -179,6 +179,22 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "BUT-1495: comma-separated aliases_sv split like semicolons (and feed normalizedNames)",
+    fn: async () => {
+      const doc = csvToFirestore(
+        row({ id: "beer", swedish: "öl", aliases_sv: "pilsner, lager;folköl" })
+      );
+      assertEqual(
+        JSON.stringify(doc.aliasesSv),
+        JSON.stringify(["pilsner", "lager", "folköl"]),
+        "comma and semicolon both split, entries trimmed"
+      );
+      // The comma-typed alias must reach the diacritics-stripped lookup surface.
+      assertEqual(doc.normalizedNames.includes("lager"), true, "comma alias in normalizedNames");
+      assertEqual(doc.normalizedNames.includes("folkol"), true, "semicolon alias normalized");
+    },
+  },
+  {
     name: "Swedish decimal comma in avg_price_sek parses correctly",
     fn: async () => {
       const doc = csvToFirestore(row({ id: "beer", swedish: "öl", avg_price_sek: "12,50" }));

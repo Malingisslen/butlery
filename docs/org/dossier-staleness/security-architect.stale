@@ -1,0 +1,9 @@
+{
+  "role": "Security Architect",
+  "stale_since": "2026-07-07",
+  "triggers": [
+    "functions/src/__tests__/rate-limiter-daily-cap.test.ts",
+    "functions/src/__tests__/log-parse-event-expiry.test.ts"
+  ],
+  "last_stamped": "2026-07-07"
+}

@@ -23,9 +23,6 @@ class FileImportStrategy extends ImportStrategy {
   @override
   String get strategyName => 'File Import (CSV/Excel)';
 
-  // @override removed - not in parent class
-  String get name => 'File Import (CSV/Excel)';
-
   @override
   String get description => 'Import recipes from CSV or Excel files';
 
@@ -43,12 +40,6 @@ class FileImportStrategy extends ImportStrategy {
   bool canHandle(String input) {
     // This strategy handles file picker operations, not direct text input
     return false;
-  }
-
-  // @override removed - not in parent class
-  double calculateConfidence(String input) {
-    // File imports are handled through file picker, not text analysis
-    return 0.0;
   }
 
   @override

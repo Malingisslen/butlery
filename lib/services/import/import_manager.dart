@@ -10,7 +10,6 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
-import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
@@ -129,15 +128,18 @@ class ImportManager {
   }
 
   void _initializeStrategies() {
-    // Register available import strategies in priority order
+    // Register available import strategies in priority order.
+    // FileImportStrategy is deliberately NOT registered: its canHandle()
+    // always returns false (file import is picker-driven, not text-driven),
+    // so it was unreachable in the auto loops (BUT-1487). The picker path
+    // constructs it directly via FileImportViewModel.
     _strategies.addAll([
       ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
       UrlImportStrategy(
         httpClient: ServiceLocator.tryGet<http.Client>(),
       ), // 2. Try URL import (web scraping)
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
-      FileImportStrategy(), // 4. File import (explicit file selection)
-      PhotoImportStrategy(), // 5. Photo import (OCR extraction)
+      PhotoImportStrategy(), // 4. Photo import (OCR extraction)
     ]);
   }
 

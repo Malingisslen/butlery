@@ -234,6 +234,9 @@ class IngredientLookupService extends BaseService {
 
   /// Generates variations of a name for fuzzy matching.
   List<String> _generateLookupVariations(String name) {
+    // BUT-1496: defensive trim — variations built by substring surgery below
+    // must never carry stray whitespace into repository lookups.
+    name = name.trim();
     final variations = <String>[];
 
     // M6: Add space-removed variation ("kyckling brost" → "kycklingbrost")
@@ -256,6 +259,27 @@ class IngredientLookupService extends BaseService {
           variations.add('$base $suffix');
         }
       }
+    }
+
+    // BUT-1496: definite plurals ("tomaterna", "gurkorna", "lökarna") matched
+    // NO rule below — none of or/ar/er/n/en/et fires on an '-a' ending, so a
+    // whole word class generated zero variations. Strip the definite-plural
+    // suffix back to the singular candidates.
+    if (name.endsWith('orna')) {
+      // "gurkorna" → "gurka" (-or plurals take -a singular); keep the bare
+      // base as fallback for irregulars.
+      variations.add('${name.substring(0, name.length - 4)}a');
+      variations.add(name.substring(0, name.length - 4));
+    }
+    if (name.endsWith('erna')) {
+      // "tomaterna" → "tomat"
+      variations.add(name.substring(0, name.length - 4));
+    }
+    if (name.endsWith('arna')) {
+      // Same defect class: "applarna" → "apple" (mirrors the 'ar' rule's
+      // correct-form-first ordering), then bare base "appl" as fallback.
+      variations.add('${name.substring(0, name.length - 4)}e');
+      variations.add(name.substring(0, name.length - 4));
     }
 
     // Singular/plural variations
@@ -349,7 +373,9 @@ class IngredientLookupService extends BaseService {
       }
     }
 
-    return variations.where((v) => v.length > 2).toList();
+    // BUT-1496: trim every variation (substring surgery on names with unusual
+    // internal spacing can leave edge whitespace) and drop degenerate stubs.
+    return variations.map((v) => v.trim()).where((v) => v.length > 2).toList();
   }
 
   /// Looks up ingredients from raw ingredient strings.
@@ -369,27 +395,36 @@ class IngredientLookupService extends BaseService {
 
     for (final raw in rawIngredients) {
       // M2: Parse raw ingredient to extract name (strips quantity and unit)
+      // BUT-1496: parse och-conjunctions ("salt och peppar") into separate
+      // ingredients — the compound parser existed but was never used here, so
+      // conjunction lines stayed one unmatchable blob.
       // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
-      String nameToNormalize;
+      List<String> namesToNormalize;
       try {
-        final parsed = IngredientParser.parseIngredient(raw);
-        nameToNormalize = parsed.name.isNotEmpty ? parsed.name : raw;
+        final parsedParts = IngredientParser.parseCompoundIngredient(raw);
+        namesToNormalize = [
+          for (final parsed in parsedParts)
+            if (parsed.name.isNotEmpty) parsed.name,
+        ];
+        if (namesToNormalize.isEmpty) namesToNormalize = [raw];
       } catch (e) {
         AppLogger.warning(
           'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
         );
-        nameToNormalize = raw;
+        namesToNormalize = [raw];
       }
 
-      final result = IngredientNormalizer.normalize(
-        nameToNormalize,
-        additionalKnown: enrichedKnown,
-      );
-      final norm = result.normalized;
+      for (final nameToNormalize in namesToNormalize) {
+        final result = IngredientNormalizer.normalize(
+          nameToNormalize,
+          additionalKnown: enrichedKnown,
+        );
+        final norm = result.normalized;
 
-      if (norm.isNotEmpty && !seen.contains(norm)) {
-        seen.add(norm);
-        normalized.add(norm);
+        if (norm.isNotEmpty && !seen.contains(norm)) {
+          seen.add(norm);
+          normalized.add(norm);
+        }
       }
     }
 
