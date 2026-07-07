@@ -195,6 +195,24 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "BUT-1571: Swedish decimal comma inside an alias does not fragment it",
+    fn: async () => {
+      const doc = csvToFirestore(
+        row({ id: "milk", swedish: "mjölk", aliases_sv: "lättmjölk 0,5%;mellanmjölk 1,5%, minimjölk" })
+      );
+      assertEqual(
+        JSON.stringify(doc.aliasesSv),
+        JSON.stringify(["lättmjölk 0,5%", "mellanmjölk 1,5%", "minimjölk"]),
+        "decimal commas survive; semicolons and list commas still split"
+      );
+      // The intact alias — not its junk fragments — must reach the
+      // diacritics-stripped allergen-lookup surface.
+      assertEqual(doc.normalizedNames.includes("lattmjolk 0,5%"), true, "intact alias in normalizedNames");
+      assertEqual(doc.normalizedNames.includes("lattmjolk 0"), false, "no junk fragment in normalizedNames");
+      assertEqual(doc.normalizedNames.includes("5%"), false, "no junk tail in normalizedNames");
+    },
+  },
+  {
     name: "Swedish decimal comma in avg_price_sek parses correctly",
     fn: async () => {
       const doc = csvToFirestore(row({ id: "beer", swedish: "öl", avg_price_sek: "12,50" }));

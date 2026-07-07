@@ -188,7 +188,10 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
   // BUT-1495: the Sheet convention is ';' but humans type ','; a comma-typed
   // list must not survive as one blob alias (it poisons normalizedNames, the
   // diacritics-stripped allergen-lookup surface).
-  const aliasesSv = parseList(row.aliases_sv || "", /[;,]/);
+  // BUT-1571: a comma immediately followed by a digit is a Swedish decimal
+  // comma ("lättmjölk 0,5%"), not a separator — splitting there fragments the
+  // alias into junk that degrades its verdict to hidden-UNKNOWN.
+  const aliasesSv = parseList(row.aliases_sv || "", /;|,(?!\d)/);
 
   const doc: IngredientDoc = {
     id,

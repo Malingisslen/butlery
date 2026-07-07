@@ -1893,3 +1893,29 @@ No Critical/High. Fixed two Mediums during the review (npm script + RUNBOOK entr
 - **Transaction wiring of the cap is untested** (only the pure
   `evaluateDailyCap` seam has tests) — consistent with the house DI-seam
   pattern (`calculateCurrentTokens` likewise), noted as Low.
+
+### 2026-07-07 — BUT-1571 decimal-comma-aware aliases_sv split reviewed clean [Pattern discovered]
+
+`sync-ingredients-core.ts` `csvToFirestore`: the BUT-1495 split `/[;,]/` fragmented
+Swedish decimal commas ("lättmjölk 0,5%" → "lättmjölk 0" + "5%"), poisoning
+`normalizedNames` with junk. New split `/;|,(?!\d)/` treats a comma immediately
+followed by a digit as a decimal comma, not a separator. 16/16 diff tests, tsc clean.
+
+- **Normalization parity re-verified end-to-end for comma-bearing aliases** across
+  the three matching surfaces: sync stamp (`stripDiacritics(lower.trim())`,
+  `shared/swedish-normalize.ts`), server hold gate (`normalizeIngredientName` in
+  `analyze-corrections.ts`, identical), Dart client (`_normalize` in
+  `firebase_ingredient_repository.dart:243`, identical 8 replacements). All three
+  PRESERVE commas/`%`, so "lattmjolk 0,5%" matches on every surface. Whenever the
+  split regex changes, re-diff these three normalizers — a divergence there is the
+  BUT-1468 gate-bypass class.
+- **Differ self-heals the old fragments**: stored docs with junk `aliasesSv`/
+  `normalizedNames` compare unequal to the intact form → one-time `toUpdate` wave
+  in the first post-ship diff report (expected, reviewable), then converge to
+  `unchanged`. Deterministic + convergent = idempotent re-run; admin/ family so
+  region/cold-start/trigger-retry all N/A (manual ts-node, never deployed).
+- **Known heuristic limit (accepted, Info)**: a genuine list separator typed with
+  NO space before a digit-leading alias ("pilsner,3% öl") no longer splits — the
+  blob survives as one alias. Rare; the diff report's before/after aliasesSv is
+  the review surface. The `(?!\d)` lookahead is zero-width, so the digit is never
+  consumed — trailing/spaced commas split normally.
