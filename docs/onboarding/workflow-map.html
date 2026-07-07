@@ -344,9 +344,9 @@
   },
   {
    "id": "svc-household",
-   "label": "HouseholdRosterService — hushållsallergener",
+   "label": "HouseholdService — hushållsallergenunion (+ roster för närvaroval)",
    "context": "service",
-   "path": "lib/services/family/household_roster_service.dart"
+   "path": "lib/services/household_service.dart, lib/services/family/household_roster_service.dart"
   },
   {
    "id": "svc-social-share",
@@ -451,6 +451,18 @@
    "path": "functions/src/ratings/rating-aggregation.ts, update-recipe-rating-stats.ts"
   },
   {
+   "id": "cf-pool-mirror",
+   "label": "pool-mirror (Stage A, server-auktoritativ speglare)",
+   "context": "cloud-function",
+   "path": "functions/src/ratings/canonical-rating-aggregation.ts"
+  },
+  {
+   "id": "cf-pool-agg",
+   "label": "pool-aggregation (Stage B, delad debounce)",
+   "context": "cloud-function",
+   "path": "functions/src/ratings/pool-aggregation.ts, functions/src/ratings/update-pooled-rating-stats.ts"
+  },
+  {
    "id": "cf-export-audit",
    "label": "exportAuditLogs (callable)",
    "context": "cloud-function",
@@ -495,6 +507,18 @@
   {
    "id": "ds-stats",
    "label": "recipe_social_stats",
+   "context": "datastore",
+   "path": "Firestore"
+  },
+  {
+   "id": "ds-canonical-events",
+   "label": "canonical_rating_events (per-user poolevent, frusna)",
+   "context": "datastore",
+   "path": "Firestore"
+  },
+  {
+   "id": "ds-canonical-stats",
+   "label": "canonical_recipe_stats (poolat \"Butlery-betyget\")",
    "context": "datastore",
    "path": "Firestore"
   },
@@ -2386,7 +2410,7 @@
   {
    "id": "flow2",
    "label": "generera veckomeny",
-   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Guldkorn och rost nedan: hushållsallergen-filtreringen är byggd och testad men körs aldrig (P0 i pipeline-backloggen), och menyn ignorerar användarens manuella taggkorrigeringar som receptlistan respekterar.",
+   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool.",
    "steps": [
     {
      "from": "v-veckomeny",
@@ -2398,36 +2422,42 @@
     {
      "from": "vm-menu",
      "to": "vm-menu-generator",
-     "payload": "hämtar receptpool via availableRecipes — den SYNKRONA gettern",
-     "transport": "method call",
-     "verified": true
-    },
-    {
-     "from": "vm-menu-generator",
-     "to": "svc-user",
-     "payload": ".allergenPreferences — filtrerar ENDAST på inloggad användare",
+     "payload": "generateMenuFromPrompt(prompt) — poolen hämtas INTERNT via getAvailableRecipesAsync, den allergensäkra asynkrona vägen (BUT-1464); den synkrona gettern är kvar enbart för icke-säkerhetskritiska förkontroller",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "vm-menu-generator",
      "to": "svc-household",
-     "payload": "getAvailableRecipesAsync — hushålls- + närvaroallergener. Fullt byggd och enhetstestad, NOLL produktionsanrop; testerna anropar den döda metoden direkt och maskerar gapet",
-     "transport": "method call (aldrig anropad)",
-     "verified": true,
-     "status": "dead"
+     "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN (opt-out kommer i BUT-1465); när ”vem äter” är valt unioneras i stället de närvarandes allergener via familjerostern (konton OCH matgästprofiler)",
+     "transport": "method call",
+     "verified": true
     },
     {
-     "from": "vm-menu",
+     "from": "vm-menu-generator",
+     "to": "svc-user",
+     "payload": ".allergenPreferences — fallback för singelanvändare utan hushåll; varje väg landar i SAMMA MenuAllergenTrust-filter (manuella korrigeringar respekteras, otaggat = UNKNOWN med opt-out)",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "vm-menu-generator",
      "to": "svc-menu",
-     "payload": "prompt + filtrerad pool → generateMenuFromPrompt",
+     "payload": "prompt + allergenfiltrerad pool + nyligen-använda recept-id:n (veckodedup) + scoringContext (skafferi/köksaffinitet/skicklighet) → generateMenuFromPrompt",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "svc-menu",
-     "to": "vm-menu",
+     "to": "vm-menu-generator",
      "payload": "MenuConstraintParser (lexikon, ej LLM) → viktad dragning: recency × säsong 1.5 × betyg × skafferi × kök × skicklighet → köksdiversitetstak → Map<String, List<Recipe>>",
+     "transport": "in-memory return",
+     "verified": true
+    },
+    {
+     "from": "vm-menu-generator",
+     "to": "vm-menu",
+     "payload": "menykarta + MenuPoolStats (antal dolda, UNKNOWN-mjuka recept, prefkälla) → hint-raden om dolda recept och ”allergener okända”-chips i UI:t",
      "transport": "in-memory return",
      "verified": true
     },
@@ -2655,7 +2685,7 @@
   {
    "id": "flow5",
    "label": "GDPR-dataexport",
-   "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse).",
+   "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten.",
    "steps": [
     {
      "from": "v-data-export",
@@ -2674,14 +2704,14 @@
     {
      "from": "svc-data-export",
      "to": "svc-export-managers",
-     "payload": "Future.wait över ~34 namngivna sektioner",
+     "payload": "Future.wait över ~35 namngivna sektioner (Increment 5 lade till pooled_rating_events)",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "svc-export-managers",
      "to": "ds-users",
-     "payload": "~34 collections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records m.fl.",
+     "payload": "~35 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (nytt, Increment 5) m.fl.",
      "transport": "Firestore reads",
      "verified": true
     },
@@ -2702,7 +2732,7 @@
     {
      "from": "svc-data-export",
      "to": "vm-data-export",
-     "payload": "JSON-sträng (export_metadata + alla sektioner, version 2.0)",
+     "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0)",
      "transport": "in-memory return",
      "verified": true
     },
@@ -3001,7 +3031,7 @@
   {
    "id": "flow-auth-4",
    "label": "onboarding",
-   "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session.",
+   "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Inställningar > Meny och smak.",
    "features": [
     "AUTH-07",
     "AUTH-08"
@@ -3031,7 +3061,7 @@
     {
      "from": "svc-user",
      "to": "ds-users",
-     "payload": "sparar allergener/kostpreferenser + markerar onboarding klar",
+     "payload": "saveProfile(updated, writeHouseholdSize:false) — sparar allergener/kostpreferenser + markerar onboarding klar; BUT-1322-flaggan skyddar en ev. redan satt hushållsstorlek från att raderas av detta anrop",
      "transport": "Firestore write",
      "verified": true
     },
@@ -3214,7 +3244,7 @@
   {
    "id": "flow-rec-1",
    "label": "bläddra & sök recept",
-   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Rost: den Algolia-kapabla sökroutern finns och är byggd men har ingen anropande part i receptlistan (kill-switchad av förvalt AV feature-flaggan); dess enda produktionsanvändning idag är ID-uppslag, inte textsökning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning.",
+   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Rost: den Algolia-kapabla sökroutern finns och är byggd men har ingen anropande part i receptlistan (kill-switchad av förvalt AV feature-flaggan); dess enda produktionsanvändning idag är ID-uppslag, inte textsökning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning. Nytt (Increment E2): vid varje listförändring (sök/sortering/filter/loadMore) körs en batchad pooled-ratings-läsning för “Butlery-betyget”-pillen, men den är bakom feature-flaggan enable_pooled_ratings som är AV — anropet till repo-ratings nås därför aldrig i produktion.",
    "features": [
     "REC-01",
     "REC-02",
@@ -3269,6 +3299,14 @@
      "to": "svc-recipe-search-router",
      "payload": "sökfältets query — ANROPAS ALDRIG härifrån. Algolia/Firestore-routningen (repo-search) existerar och är enhetstestad, men receptlistans sökruta går aldrig via den",
      "transport": "method call (aldrig anropad från receptbläddring)",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "vm-recipe-list",
+     "to": "repo-ratings",
+     "payload": "getBulkPooledStats(poolKeys) — batchad whereIn-läsning av canonical_recipe_stats för synligt fönster (dedupe + chunkad), renderar “Butlery-betyget”-pillen på receptkortet. Körs vid varje _onRecipesChanged (sök/sortering/filter) och vid loadMore, men enable_pooled_ratings-flaggan är AV i produktion, så metoden kortsluter innan Firestore-anropet och kortet visar per-kopians eget betyg (fallback)",
+     "transport": "method call (bakom feature-flagga, AV)",
      "verified": true,
      "status": "dead"
     }
@@ -4889,7 +4927,7 @@
   {
    "id": "flow-soc-2",
    "label": "profiler",
-   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM.",
+   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/menu_taste_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder.",
    "features": [
     "SOC-06",
     "SOC-07",
@@ -4941,28 +4979,28 @@
     {
      "from": "v-profile-edit",
      "to": "vm-profile-edit",
-     "payload": "saveProfile() — displayName, bio, isSearchable, shareActivityToFeed, activityEventTypes{cooked,shared,startedCooking,pinged}",
+     "payload": "saveProfile() — displayName, bio, isSearchable, shareActivityToFeed, activityEventTypes{cooked,shared,startedCooking,pinged}. Denna vy anropar ALDRIG updateHouseholdSize() (BUT-1322), så _householdSizeEdited är alltid false här",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "vm-profile-edit",
      "to": "svc-user",
-     "payload": "createOrUpdateProfile({...sekretessfält})",
+     "payload": "createOrUpdateProfile({...sekretessfält}) — BUT-1322: skickar även parametern householdSize, men eftersom denna vy aldrig sätter _householdSizeEdited skickas alltid sentinelvärdet UserService.householdSizeUntouched (fältet lämnas orört)",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "svc-user",
      "to": "repo-user",
-     "payload": "save profile",
+     "payload": "saveProfile(profile, writeHouseholdSize: false) — sentinel otouched i detta flöde, så nyckeln householdSize utelämnas ur settings-merget och en ev. tidigare sparad hushållsstorlek skrivs inte över",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "repo-user",
      "to": "ds-public-profiles",
-     "payload": "uppdatera public_profiles/{uid}",
+     "payload": "uppdatera public_profiles/{uid} (toFirestoreEditable — innehåller inte householdSize, det fältet lever bara i users/{uid}/settings/preferences)",
      "transport": "Firestore write",
      "verified": true
     }
@@ -4972,12 +5010,7 @@
   {
    "id": "flow-soc-3",
    "label": "kommentarer & betyg",
-   "description": "Kommentera recept (trådat, gilla), betygsätt 1–5 stjärnor. Betygskedjan delar SAMMA debounce-aggregator som familjebetyg (cf-rating-agg, redan kartlagd i flow4) men har en EGEN triggerfunktion — familjebetyg triggas på family_ratings (endast memberType profile), sociala 1–5-betyg triggas separat på recipe_ratings.",
-   "features": [
-    "SOC-13",
-    "SOC-14",
-    "SOC-15"
-   ],
+   "description": "Kommentera recept (trådat, gilla), betygsätt 1–5 stjärnor. Betygskedjan delar SAMMA debounce-aggregator som familjebetyg (cf-rating-agg, redan kartlagd i flow4) men har en EGEN triggerfunktion — familjebetyg triggas på family_ratings (endast memberType profile), sociala 1–5-betyg triggas separat på recipe_ratings. Debounce-motorn är nu GENERALISERAD till en delad modul (shared/debounce-queue.ts) — samma beteende, ingen regression. Nytt sedan förra verifieringen: recipe_ratings speglas server-sidigt till en poolad betygsaggregator (\"Butlery-betyget\", canonical_recipe_stats) via en tvåstegs Stage A/B-pipeline plus en klientläsning i receptvyn — helt byggd och enhetstestad men BAKOM feature-flaggan enable_pooled_ratings (AV i produktion). Enda undantaget är raderings-/retraktionsvägen i Stage A, som körs ALLTID oavsett flagga (ingen orphanad poströst).",
    "steps": [
     {
      "from": "v-recipe-detail",
@@ -5094,7 +5127,7 @@
     {
      "from": "cf-recipe-rating-trig",
      "to": "cf-rating-agg",
-     "payload": "scheduleRatingAggregation(recipeId) — samma debounce-mekanism (5s coalescing, 1 min drainer) som familjebetygen",
+     "payload": "scheduleRatingAggregation(recipeId) — samma debounce-mekanism (5s coalescing, 1 min drainer) som familjebetygen, nu via delad modul shared/debounce-queue.ts (ren refaktor, oförändrat beteende, BUT-482-testerna intakta)",
      "transport": "method call (delad kod)",
      "verified": true
     },
@@ -5104,9 +5137,62 @@
      "payload": "recipe_social_stats/{recipeId} — vikt EN aggregator som vecklar in BÅDE recipe_ratings OCH family_ratings(memberType profile), ingen dubbelräkning",
      "transport": "Firestore write",
      "verified": true
+    },
+    {
+     "from": "ds-recipe-ratings",
+     "to": "cf-pool-mirror",
+     "payload": "onDocumentWritten(recipe_ratings/{ratingId}) — mirrorRatingToPool: härleder poolKey servercentralt ur RATARENS EGEN receptkopia (aldrig en klientskickad nyckel), mognadsspärr (60 min/verifierad e-post), skriver ETT poolevent per uid+pool. Create/update är feature-flagg-spärrat (enable_pooled_ratings, AV i produktion) — radering/retraktion körs ALLTID (annars föräldralösa poströster)",
+     "transport": "Firestore trigger",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "cf-pool-mirror",
+     "to": "ds-canonical-events",
+     "payload": "users/{uid}/canonical_rating_events/{poolKey} upsert (create/update bakom feature-flagga, AV) / delete vid retraktion (alltid aktivt, sökt på lagrat recipeId)",
+     "transport": "Firestore write",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "ds-canonical-events",
+     "to": "cf-pool-agg",
+     "payload": "onDocumentWritten → schedulePoolAggregation(poolKey) — egen markör-namnrymd (_internal/pool_debounce) men SAMMA delade debounce-modul och 5s/1min-mönster som cf-rating-agg; ej flagg-spärrad (reflekterar bara vad som finns, dvs nästan inget medan flaggan är AV)",
+     "transport": "Firestore trigger",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "cf-pool-agg",
+     "to": "ds-canonical-stats",
+     "payload": "canonical_recipe_stats/{poolKey} = {count, average} via collectionGroup-AGGREGATFRÅGA (count()+average(), aldrig .get() av events) — 1-min drainer, samma driftsmönster som cf-rating-agg",
+     "transport": "Firestore write",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "v-recipe-detail",
+     "to": "repo-ratings",
+     "payload": "RecipeDetailMetadata-widgeten läser getPooledStats(poolKey) direkt via ServiceLocator (ingen VM-mellanhand), gated på enable_pooled_ratings (AV) och visningsgolv meetsDisplayFloor — annars visas bara den befintliga per-kopian",
+     "transport": "method call",
+     "verified": true,
+     "status": "dead"
+    },
+    {
+     "from": "repo-ratings",
+     "to": "ds-canonical-stats",
+     "payload": "getPooledStats/getBulkPooledStats — doc-läsning resp. chunkad whereIn(FieldPath.documentId) på canonical_recipe_stats",
+     "transport": "Firestore read",
+     "verified": true,
+     "status": "dead"
     }
    ],
-   "area": "socialt"
+   "area": "socialt",
+   "features": [
+    "SOC-13",
+    "SOC-14",
+    "SOC-15"
+   ]
   },
   {
    "id": "flow-soc-4",
@@ -5917,13 +6003,7 @@
   {
    "id": "flow-cook-1",
    "label": "matlagningsläge — portioner, steg och timers",
-   "description": "Från receptvyn startas matlagningsläget i liggande delad vy: ingredienser vänster, instruktioner höger. Portionsjustering skalar ingredienserna om, långtryck på ett steg öppnar en fristående timer per steg och en rad högst upp visar alla aktiva timers samtidigt.",
-   "features": [
-    "COOK-01",
-    "COOK-02",
-    "COOK-03",
-    "COOK-05"
-   ],
+   "description": "Från receptvyn startas matlagningsläget i liggande delad vy: ingredienser vänster, instruktioner höger. BUT-1322: portionerna öppnar förvalda enligt hushållsstorlek (svc-user.currentUserProfile.householdSize) när receptet har en riktig bas (>0) och storleken ligger inom min/max — override:ar receptets bas via samma PortionScalerLogic.scaleEntries, ingen ny skalningsväg. Portionsjustering (manuell) skalar om ingredienserna på samma sätt. Ingredienslistan grupperas i sektionsrubriker (IngredientDisplayRow.build) som byggs om vid varje skalning — guldkorn: fail-open till platt olistad om structured/scaled-listorna får olika längd. Långtryck på ett steg öppnar en fristående timer per steg och en rad högst upp visar alla aktiva timers samtidigt.",
    "steps": [
     {
      "from": "v-recipe-detail",
@@ -5943,8 +6023,16 @@
     },
     {
      "from": "vm-cooking-mode",
+     "to": "svc-user",
+     "payload": "BUT-1322: currentUserProfile?.householdSize (default portions on open, clamped to min/maxPortions; skipped if recipe.portions null/0)",
+     "transport": "service-call",
+     "verified": true,
+     "status": "live"
+    },
+    {
+     "from": "vm-cooking-mode",
      "to": "vm-cooking-mode",
-     "payload": "updatePortions -> PortionScalerLogic.scaleEntries",
+     "payload": "init (household default) / updatePortions -> PortionScalerLogic.scaleEntries, then _rebuildIngredientRows (IngredientDisplayRow.build) groups lines under section headings",
      "transport": "in-memory",
      "verified": true,
      "status": "live"
@@ -5990,7 +6078,13 @@
      "status": "live"
     }
    ],
-   "area": "matlagning & skafferi"
+   "area": "matlagning & skafferi",
+   "features": [
+    "COOK-01",
+    "COOK-02",
+    "COOK-03",
+    "COOK-05"
+   ]
   },
   {
    "id": "flow-cook-2",
