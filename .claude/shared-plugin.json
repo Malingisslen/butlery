@@ -94,7 +94,20 @@
     "stalenessDir": "docs/org/dossier-staleness",
     "healthChecks": [
       { "name": "tagcheck", "run": "/tagcheck", "headline": "allergen-accuracy scorecard (safety-first)" }
-    ]
+    ],
+    "memoryCuration": {
+      "memoryDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery/memory",
+      "projectDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery",
+      "excludeFiles": ["current-state.md", "interview-decisions.md"],
+      "corpusCapMB": 4
+    }
+  },
+  "preview": {
+    "templatePath": "docs/design/previews/_butlery-template.html",
+    "tokensDoc": "docs/design/butlery-mockup-reference.md",
+    "outputDir": "tasks/previews",
+    "mockupsDir": "docs/design/mockups",
+    "frame": "phone 375x812"
   },
   "delivery": {
     "repoName": "Butlery",

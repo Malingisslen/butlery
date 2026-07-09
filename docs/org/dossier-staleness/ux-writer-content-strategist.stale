@@ -1,0 +1,8 @@
+{
+  "role": "UX Writer / Content Strategist",
+  "stale_since": "2026-07-09",
+  "triggers": [
+    ".claude/hooks/preview-gate.sh"
+  ],
+  "last_stamped": "2026-07-09"
+}
