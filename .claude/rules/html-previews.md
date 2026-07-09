@@ -106,6 +106,7 @@ The component library (`_butlery-components.html`) catalogs every reusable visua
 ## Directions mode + preview gate (2026-07-05)
 A NEW `lib/views/*.dart` file is blocked by `preview-gate.sh` until
 `~/.claude/state/preview-done-<view-basename>.marker` exists. The legitimate stamping flow
-is `/preview --directions` (see `.claude/commands/preview.md`): 3–4 deliberately
+is `/preview --directions` (the workflow-guards plugin's `preview` skill; repo paths in
+`shared-plugin.json` → `preview`): 3–4 deliberately
 incompatible variants with steal/skip chips at `tasks/previews/<slug>-directions.html`,
 Malin's picks folded into the design decision BEFORE the marker is touched.
