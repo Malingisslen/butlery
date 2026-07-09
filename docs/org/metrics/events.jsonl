@@ -26,3 +26,4 @@
 {"ts":"2026-07-07T19:27:16.104Z","type":"trigger","fired":true,"signals":"allergen,auth,delete","ran":null}
 {"ts":"2026-07-07T19:47:08.610Z","type":"trigger","fired":true,"signals":"delete","ran":null}
 {"ts":"2026-07-07T19:52:40.301Z","type":"trigger","fired":true,"signals":"delete,deletion","ran":null}
+{"ts": "2026-07-09", "type": "note", "topic": "delivery-unification", "note": "All three repos cut over to the delivery plugin (Butlery 3319f492d, binge local-delete, synat b72858c) after per-repo real-ticket proofs. Retro inputs: (1) cost_per_accepted_change now also reflects sibling sprints via the shared engine; (2) binge run hit a harness permission block on the engine's surface-needsApproval Linear comments (8 tickets) — decide whether sibling permission surfaces should allow that step or the engine should degrade to report-only; (3) binge's untracked .claude/ made the deletion-commit step n/a — plan steps were Butlery-shaped."}
