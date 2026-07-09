@@ -91,7 +91,10 @@
     "retroSchedulePath": "docs/org/metrics/retro-schedule.json",
     "metricsEventsPath": "docs/org/metrics/events.jsonl",
     "rolePathsFile": "docs/org/role-paths.json",
-    "stalenessDir": "docs/org/dossier-staleness"
+    "stalenessDir": "docs/org/dossier-staleness",
+    "healthChecks": [
+      { "name": "tagcheck", "run": "/tagcheck", "headline": "allergen-accuracy scorecard (safety-first)" }
+    ]
   },
   "delivery": {
     "repoName": "Butlery",
