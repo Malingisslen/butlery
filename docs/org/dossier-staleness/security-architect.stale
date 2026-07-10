@@ -4,7 +4,8 @@
   "triggers": [
     "functions/src/__tests__/rate-limiter-daily-cap.test.ts",
     "functions/src/__tests__/log-parse-event-expiry.test.ts",
-    "functions/src/__tests__/collection-group-wildcards-rules.test.ts"
+    "functions/src/__tests__/collection-group-wildcards-rules.test.ts",
+    "functions/src/__tests__/on-user-deleted.integration.test.ts"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-11"
 }

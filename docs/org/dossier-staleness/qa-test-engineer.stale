@@ -8,7 +8,8 @@
     ".claude/agents/firestore-rules-tester.knowledge.md",
     ".claude/agents/testing-specialist.knowledge.md",
     "CLAUDE.md",
-    "functions/src/__tests__/collection-group-wildcards-rules.test.ts"
+    "functions/src/__tests__/collection-group-wildcards-rules.test.ts",
+    "functions/src/__tests__/on-user-deleted.integration.test.ts"
   ],
   "last_stamped": "2026-07-11"
 }

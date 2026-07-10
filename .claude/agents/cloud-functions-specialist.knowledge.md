@@ -2048,3 +2048,52 @@ doc and each recomputes from the authoritative store; partial-field update avoid
 concurrent edits (the BUT-1505 bug). The ratings query isn't in the txn read set but the
 recipe-doc anchor covers it. This is Flutter-side Firestore → owned by firebase-backend-
 security; flagged sound, not deep-reviewed here.
+
+### 2026-07-11 — BUT-1582 poison-pill FIX verified clean (closes the HIGH+MEDIUM above) [Bug fixed]
+
+Reviewed the uncommitted fix to `cleanup/on-user-deleted.ts`
+`cleanupFriendshipsAndDecrementCounts` that closes the HIGH poison-pill and the MEDIUM
+test gap flagged in the 2026-07-11 BUT-1506 entry above. Verdict: **clean, no findings.**
+
+The fix reads each friend's `public_profiles/{friendId}` doc in the SAME `db.getAll`
+that already reads the reverse-friendship docs — refs concatenated
+`getAll(...reverseRefs, ...profileRefs)`, then split
+`reverseSnaps = snaps.slice(0, chunk.length)` / `profileSnaps = snaps.slice(chunk.length)`.
+When the profile is absent it stages only the reverse delete + audit and `continue`s
+BEFORE the decrement (no `set(...,{merge:true})` — a merge-set would resurrect a deleted
+peer with a negative count, which is exactly why the plain skip is correct).
+
+Verified rigorously, all 5 review axes clean:
+1. **Slicing correct, no off-by-one.** `getAll` returns snapshots in request order
+   (Admin SDK guarantee), and both ref arrays are built from the same `chunk` in the
+   same order, so `reverseSnaps[j]` and `profileSnaps[j]` both key `chunk[j]`. Each ref
+   yields a snapshot even when missing (`.exists===false`), so both slices are exactly N.
+2. **Idempotency preserved.** The reverse doc is still the sole reprocessing gate
+   (`if (!reverseSnap.exists) continue`); decrement is atomic with the reverse delete in
+   one batch, so reverse-absent ⟺ decrement-already-committed. No double-decrement on
+   retry. A profile-absent friend commits its reverse delete, so a later retry skips it —
+   and no decrement was owed anyway. Consistent.
+3. **Batch-size safe.** `FRIENDS_PER_BATCH = floor(500/4) = 125`. Present friend = 4 ops,
+   absent = 2, already-processed = 0. Worst case 125×4 = 500 = BATCH_LIMIT exactly (≤500,
+   allowed). No overflow. `batchOps++` moved to fire once per reverse-present friend — still
+   just the "did we stage anything" guard for `if (batchOps>0) commit`, unaffected by the
+   500 cap (chunk size enforces that statically). The 2N reads are BatchGetDocuments, not
+   batch writes — irrelevant to the 500 write cap.
+4. **Extra-read cost accepted, and it is the cheapest correct option.** 2N docs instead of
+   N, but piggybacked on the pre-existing `getAll` → still ONE round trip on a rare
+   account-deletion path. Alternatives are all worse: merge-set resurrects peers;
+   per-friend try/catch means N commits; batch commit is all-or-nothing so a NOT_FOUND
+   can't be caught per-op. Reading-before-writing is optimal here.
+5. **Test bites.** New case seeds `friendNoProfile` (reverse edge, NO profile) sharing
+   victim's single chunk with `friend` (profile friendsCount:3). Asserts friend's
+   decrement 3→2 STILL commits (chunk not poisoned — the load-bearing assertion), the
+   profile-less friend's reverse edge is removed, and no profile doc is resurrected.
+   Summary friendsRemoved:2 / friendCountsUpdated:1 matches. Reported 17/17 emulator-green.
+
+**Pattern worth remembering — piggyback the existence-probe onto the idempotency getAll.**
+When a merged cascade batch mixes `batch.delete` (safe on missing) with `batch.update`
+(throws NOT_FOUND on missing), and it already `getAll`s one set of docs for its idempotency
+gate, add the update-target refs to that SAME `getAll` and skip the update when absent.
+Costs 2N reads on one round trip, removes the data-driven poison pill, and avoids the
+merge-set-resurrection trap. This is the general fix for any "update in a merged batch can
+NOT_FOUND-abort a delete cascade" hazard.

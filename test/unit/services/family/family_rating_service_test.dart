@@ -508,6 +508,57 @@ void main() {
     );
 
     test(
+      'two near-simultaneous ratings for the same recipe both land '
+      '(no lost update)',
+      () async {
+        // BUT-1583 / BUT-1505 acceptance criterion #2: two household members
+        // rate the same recipe at the same moment. Each rateAsFamily upserts
+        // its verdict then denormalizes the recipe's family aggregate inside a
+        // transaction that recomputes from the authoritative rating store.
+        // Firing both concurrently must leave BOTH verdicts on the pill — the
+        // old read-cache-then-rewrite-whole-doc path dropped one (a lost
+        // update); the transactional recompute makes the final count 2.
+        // Scope note: fake_cloud_firestore's runTransaction is a no-op stub (no
+        // isolation/retry), so this proves the load-bearing half — each denorm
+        // recomputes from the authoritative rating store instead of clobbering
+        // from a stale cache — not Firestore's real conflict-retry (that needs
+        // the emulator). Recompute-from-store is what makes both verdicts land.
+        await seedOwnedRecipe();
+        when(
+          () => recipeService.getRecipeById(_recipe),
+        ).thenReturn(personalRecipe());
+
+        await Future.wait([
+          rate(
+            memberId: 'liam',
+            type: HouseholdMemberType.profile,
+            stars: 5,
+            enteredByUid: _malin,
+          ),
+          rate(
+            memberId: 'emma',
+            type: HouseholdMemberType.profile,
+            stars: 1,
+            enteredByUid: _malin,
+          ),
+        ]);
+
+        // Both verdicts persisted to the authoritative store...
+        final all = await ratingRepo.getForRecipe(_hh, _recipe);
+        expect(all, hasLength(2), reason: 'both member verdicts stored');
+
+        // ...and the denormalized pill reflects BOTH, not just the last writer.
+        final core = await readRecipeCore();
+        expect(
+          core?['familyRatingCount'],
+          2,
+          reason: 'no silent drop — both concurrent verdicts counted',
+        );
+        expect(core?['familyAverage'], 3.0); // (5 + 1) / 2
+      },
+    );
+
+    test(
       'a denormalization failure is isolated — rating + mirror still land',
       () async {
         // The transactional denorm blows up (firestore access throws), but the

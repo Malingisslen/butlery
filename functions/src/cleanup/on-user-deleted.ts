@@ -613,7 +613,27 @@ async function cleanupFriendshipsAndDecrementCounts(
     const reverseRefs = chunk.map((friendId) =>
       db.collection("users").doc(friendId).collection("friends").doc(userId),
     );
-    const reverseSnaps = await db.getAll(...reverseRefs);
+    // BUT-1582: read each friend's public_profiles doc in the SAME getAll.
+    // `batch.update` on a MISSING doc throws NOT_FOUND at commit and rolls back
+    // the ENTIRE chunk (a poison pill), so one absent profile — an orphaned
+    // edge, admin reset, legacy data, or a peer mid-deletion — would otherwise
+    // starve every other friend's cleanup in the chunk and, because the trigger
+    // retries the whole cascade, stall the deletion permanently.
+    //
+    // This getAll-then-batch is not atomic, so a narrow TOCTOU remains: a
+    // profile deleted in the window between this read and the commit still
+    // throws NOT_FOUND. That residual is bounded and self-healing — the trigger
+    // retries the whole cascade, the re-read then sees the profile absent, the
+    // guard below skips it, and the retry commits. A full close would need a
+    // per-chunk transaction; not worth refactoring the batch-based cascade for a
+    // millisecond race that recovers on the next retry (guard turns a permanent
+    // deterministic stall into a rare transient one).
+    const profileRefs = chunk.map((friendId) =>
+      db.collection("public_profiles").doc(friendId),
+    );
+    const snaps = await db.getAll(...reverseRefs, ...profileRefs);
+    const reverseSnaps = snaps.slice(0, chunk.length);
+    const profileSnaps = snaps.slice(chunk.length);
 
     const batch = db.batch();
     let batchOps = 0;
@@ -624,7 +644,9 @@ async function cleanupFriendshipsAndDecrementCounts(
 
       const friendId = chunk[j];
 
-      // (a) delete the reverse friendship doc — BUT-455 cross-user audit.
+      // (a) delete the reverse friendship doc — BUT-455 cross-user audit. The
+      // reverse doc is the idempotency token, so it is always staged when
+      // present, independent of whether the friend still has a public profile.
       batch.delete(reverseSnap.ref);
       stageCascadeAuditEntry(db, batch, {
         subjectUserId: userId,
@@ -634,9 +656,16 @@ async function cleanupFriendshipsAndDecrementCounts(
         resourceId: friendId,
         extra: { sourceCollection: `users/${friendId}/friends/${userId}` },
       });
+      friendsRemoved++;
+      batchOps++;
 
-      // (b) decrement the friend's public friend count — BUT-886 audit.
-      batch.update(db.collection("public_profiles").doc(friendId), {
+      // (b) decrement the friend's public friend count — BUT-886 audit — ONLY
+      // when the profile exists (BUT-1582). A deliberately plain skip on absence:
+      // no `set(..., {merge:true})`, which would resurrect a deleted peer's
+      // profile with a negative count.
+      if (!profileSnaps[j].exists) continue;
+
+      batch.update(profileSnaps[j].ref, {
         friendsCount: admin.firestore.FieldValue.increment(-1),
       });
       stageCascadeAuditEntry(db, batch, {
@@ -647,10 +676,7 @@ async function cleanupFriendshipsAndDecrementCounts(
         resourceId: friendId,
         extra: { field: "friendsCount", op: "decrement" },
       });
-
-      friendsRemoved++;
       friendCountsUpdated++;
-      batchOps++;
     }
 
     if (batchOps > 0) {

@@ -95,6 +95,16 @@ async function run_(): Promise<void> {
   // victim's own public_profile (deleted by step 7).
   await db.collection("public_profiles").doc(victim).set({ friendsCount: 1 });
 
+  // BUT-1582: a second friend with a reverse edge but NO public_profiles doc
+  // (orphaned edge / peer mid-deletion). It shares the victim's single cleanup
+  // chunk with `friend`, so if the missing profile poisoned the batch commit,
+  // `friend` would never be decremented either. Deliberately no public_profile.
+  const friendNoProfile = `friendnp-${RUN}`;
+  await db.collection("users").doc(victim)
+    .collection("friends").doc(friendNoProfile).set({ addedAt: Date.now() });
+  await db.collection("users").doc(friendNoProfile)
+    .collection("friends").doc(victim).set({ addedAt: Date.now() });
+
   // 2. social_requests: one sent by victim, one received by victim, one
   //    unrelated (friend → other) as scope control.
   const sentReqRef = db.collection("social_requests").doc(`sent-${RUN}`);
@@ -135,6 +145,19 @@ async function run_(): Promise<void> {
     "friend's friendsCount decremented 3 → 2",
     (friendProfile.data()?.friendsCount as number | undefined) === 2,
     JSON.stringify(friendProfile.data()),
+  );
+
+  // ── BUT-1582: a profile-absent friend must not poison the chunk ──
+  // `friend`'s 3 → 2 decrement above shares the SAME batch as friendNoProfile;
+  // its success proves the missing profile did not roll back the chunk.
+  check(
+    "BUT-1582: reverse edge of the profile-less friend still removed",
+    !(await db.collection("users").doc(friendNoProfile)
+      .collection("friends").doc(victim).get()).exists,
+  );
+  check(
+    "BUT-1582: no public_profiles doc resurrected for the profile-less friend",
+    !(await db.collection("public_profiles").doc(friendNoProfile).get()).exists,
   );
 
   // ── public_profile of the deleted user removed ──
