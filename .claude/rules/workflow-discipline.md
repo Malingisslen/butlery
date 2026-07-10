@@ -59,6 +59,7 @@ a git-log diff beats an agent for "what changed," a regex beats a classifier for
 
 ## Self-Improvement Loop (automatic)
 - After ANY user correction → add entry to `/tasks/lessons.md`
+- After SOLVING a hard problem (>1 failed attempt, or a non-obvious judgment call) → same: record the approach that worked as a lesson entry + digest line. Corrections capture what went wrong; this captures reasoning worth keeping. Routine wins don't qualify.
 - Format: `### [Category] Title` + Date, Trigger, Rule, Example
 - Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
 - If lesson should become CLAUDE.md rule → propose update
