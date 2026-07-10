@@ -3,7 +3,12 @@
   "stale_since": "2026-07-07",
   "triggers": [
     "tasks/todo.md",
-    ".claude/agents/cloud-functions-specialist.knowledge.md"
+    ".claude/agents/cloud-functions-specialist.knowledge.md",
+    ".claude/agents/firestore-rules-tester.knowledge.md",
+    ".claude/agents/testing-specialist.knowledge.md",
+    "CLAUDE.md",
+    ".claude/rules/workflow-discipline.md",
+    ".claude/rules/lessons-digest.md"
   ],
-  "last_stamped": "2026-07-08"
+  "last_stamped": "2026-07-10"
 }

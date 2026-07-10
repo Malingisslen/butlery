@@ -1,0 +1,8 @@
+{
+  "role": "Technical Writer / Documentation",
+  "stale_since": "2026-07-10",
+  "triggers": [
+    "CLAUDE.md"
+  ],
+  "last_stamped": "2026-07-10"
+}

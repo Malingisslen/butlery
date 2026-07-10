@@ -1,0 +1,9 @@
+{
+  "role": "Data / ML Engineer (parsing & tagging integrity)",
+  "stale_since": "2026-07-10",
+  "triggers": [
+    "lib/services/tagging/tag_generator.dart",
+    "lib/services/tagging/tagging_pipeline_runner.dart"
+  ],
+  "last_stamped": "2026-07-10"
+}
