@@ -200,8 +200,12 @@ export function csvToFirestore(row: IngredientRow): IngredientDoc {
     group: group || "other", // Fallback to "other" category
     properties: parseList(row.properties || "", ","),
     aliasesSv,
-    aliasesEn: parseList(row.aliases_en || "", ";"),
-    searchTerms: parseList(row.search_terms || "", ";"),
+    // BUT-1579: aliases_en and search_terms share aliases_sv's human-typed-comma
+    // error class (BUT-1495) and its Swedish decimal-comma exception (BUT-1571) —
+    // split on ';' or a comma NOT followed by a digit, so "0,5%" survives intact
+    // while a comma-typed list still splits.
+    aliasesEn: parseList(row.aliases_en || "", /;|,(?!\d)/),
+    searchTerms: parseList(row.search_terms || "", /;|,(?!\d)/),
     // Diacritics-stripped lookup forms. The alias hold-for-review gate
     // (analyze-corrections.ts, BUT-1468) queries this to catch allergen words
     // submitted WITHOUT umlauts ("jordnotter" for "jordnötter") — the

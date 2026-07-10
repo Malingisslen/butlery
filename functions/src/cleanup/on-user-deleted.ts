@@ -99,15 +99,27 @@ export async function cleanupUserSocialData(
     recipeCookEventsPurged: 0,
   };
 
-  // Fetch friends list once (used by steps 1 and 4)
+  // Fetch friends list once (used by the merged friendship + friend-count step)
   const friendsSnapshot = await db
     .collection("users")
     .doc(userId)
     .collection("friends")
     .get();
 
-  // 1. Remove reverse friendship documents
-  results.friendsRemoved = await cleanupReverseFriendships(userId, friendsSnapshot);
+  // 1 + 4 (BUT-1506). Remove reverse friendship docs AND decrement each
+  // remaining friend's public friend count in ONE idempotent pass. These used
+  // to be two separate steps keyed off the same top-of-function
+  // `friendsSnapshot`; because `friendsCount: increment(-1)` is not
+  // idempotent, a cascade that threw mid-run and was retried by the
+  // onUserDeleted trigger decremented every count a second time. Merging them
+  // makes the reverse-friendship doc the "not yet processed" token: the delete
+  // and the decrement commit in the same atomic batch, and a friend whose
+  // reverse doc is already gone (deleted on a prior attempt) is skipped.
+  const friendCleanup = await cleanupFriendshipsAndDecrementCounts(
+    userId,
+    friendsSnapshot,
+  );
+  results.friendsRemoved = friendCleanup.friendsRemoved;
 
   // 2. Clean up social requests (sent and received) — formerly friend_requests
   results.socialRequestsCleaned = await cleanupSocialRequests(userId);
@@ -115,8 +127,9 @@ export async function cleanupUserSocialData(
   // 3. Remove from group member arrays
   results.groupMembershipsRemoved = await cleanupGroupMemberships(userId);
 
-  // 4. Update friend counts
-  results.friendCountsUpdated = await updateFriendCounts(userId, friendsSnapshot);
+  // 4. Friend counts were decremented atomically alongside the reverse-
+  //    friendship deletes in step 1 (see BUT-1506) — nothing more to do here.
+  results.friendCountsUpdated = friendCleanup.friendCountsUpdated;
 
   // 5. Clean up feedback submissions and screenshots
   results.feedbackCleaned = await cleanupFeedback(userId);
@@ -552,68 +565,100 @@ export async function cleanupRecipeCookEventsWithDb(
 }
 
 /**
- * D1: Remove reverse friendship documents.
- * For each friend of the deleted user, remove the deleted user's doc
- * from their friends subcollection.
+ * D1 + D4 (BUT-1506): remove reverse friendship docs AND decrement each
+ * remaining friend's public friend count — idempotently under cascade retry.
  *
- * BUT-455: each reverse-friendship delete is a cross-user write — the
- * cascade mutates `users/{friendId}/friends/{deletedUid}` which `friendId`
- * is the data subject of. GDPR Art. 17 requires a demonstrable audit trail
- * for these system-initiated mutations. We stage one `audit_logs` entry per
- * friend in the same batch as the delete, so the audit commits iff the
- * cascade write commits. BATCH_LIMIT covers both ops (worst case ~250 friends).
+ * For every friend of the deleted user we (a) delete the reverse doc
+ * `users/{friendId}/friends/{userId}` and (b) decrement
+ * `public_profiles/{friendId}.friendsCount`. These MUST commit together,
+ * because the reverse-friendship doc is the idempotency token: `friendsCount:
+ * increment(-1)` is not idempotent, so when the cascade throws mid-run and the
+ * `onUserDeleted` trigger retries the WHOLE function, an already-processed
+ * friend must be skipped — which we detect by its reverse doc no longer
+ * existing. Doing the delete and the decrement in the same atomic batch keeps
+ * that token faithful (either both landed or neither did).
+ *
+ * We pre-read the reverse docs per chunk (via `getAll`) and only touch friends
+ * whose reverse doc is still present. Each friend contributes 4 ops (reverse
+ * delete + its audit + count decrement + its audit), so cap the chunk at
+ * BATCH_LIMIT/4 friends to stay under the 500-op Firestore batch limit.
+ *
+ * BUT-455 / BUT-886: both cross-user writes stage an `audit_logs` row in the
+ * same batch, so the audit row exists iff the mutation committed. Gating on
+ * existence also self-heals a friendship where the reverse doc was already
+ * missing — such a friend is never (double-)decremented.
  */
-async function cleanupReverseFriendships(
+async function cleanupFriendshipsAndDecrementCounts(
   userId: string,
-  friendsSnapshot: admin.firestore.QuerySnapshot
-): Promise<number> {
-  if (friendsSnapshot.empty) return 0;
+  friendsSnapshot: admin.firestore.QuerySnapshot,
+): Promise<{ friendsRemoved: number; friendCountsUpdated: number }> {
+  if (friendsSnapshot.empty) {
+    return { friendsRemoved: 0, friendCountsUpdated: 0 };
+  }
 
-  // Each friend contributes 2 ops (delete + audit), so halve the per-batch
-  // friend cap to stay under Firestore's 500-op-per-batch limit.
-  const FRIENDS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
+  // 4 ops per friend (reverse delete + audit + count decrement + audit).
+  const FRIENDS_PER_BATCH = Math.floor(BATCH_LIMIT / 4);
 
-  let count = 0;
-  let batch = db.batch();
-  let batchCount = 0;
+  const friendIds = friendsSnapshot.docs.map((doc) => doc.id);
+  let friendsRemoved = 0;
+  let friendCountsUpdated = 0;
 
-  for (const friendDoc of friendsSnapshot.docs) {
-    const friendId = friendDoc.id;
+  for (let i = 0; i < friendIds.length; i += FRIENDS_PER_BATCH) {
+    const chunk = friendIds.slice(i, i + FRIENDS_PER_BATCH);
 
-    // Delete the reverse friendship document
-    const reverseRef = db
-      .collection("users")
-      .doc(friendId)
-      .collection("friends")
-      .doc(userId);
+    // Idempotency anchor: read the reverse-friendship docs for this chunk. A
+    // missing reverse doc means this friend was already fully processed
+    // (delete + decrement committed together) by an earlier attempt of a
+    // retried cascade, so it must not be decremented again.
+    const reverseRefs = chunk.map((friendId) =>
+      db.collection("users").doc(friendId).collection("friends").doc(userId),
+    );
+    const reverseSnaps = await db.getAll(...reverseRefs);
 
-    batch.delete(reverseRef);
+    const batch = db.batch();
+    let batchOps = 0;
 
-    // BUT-455: audit the cross-user cascade write.
-    stageCascadeAuditEntry(db, batch, {
-      subjectUserId: userId,
-      targetUid: friendId,
-      operation: "cascade_delete",
-      resourceType: "friends",
-      resourceId: friendId,
-      extra: { sourceCollection: `users/${friendId}/friends/${userId}` },
-    });
+    for (let j = 0; j < chunk.length; j++) {
+      const reverseSnap = reverseSnaps[j];
+      if (!reverseSnap.exists) continue; // already processed on a prior run
 
-    count++;
-    batchCount++;
+      const friendId = chunk[j];
 
-    if (batchCount >= FRIENDS_PER_BATCH) {
+      // (a) delete the reverse friendship doc — BUT-455 cross-user audit.
+      batch.delete(reverseSnap.ref);
+      stageCascadeAuditEntry(db, batch, {
+        subjectUserId: userId,
+        targetUid: friendId,
+        operation: "cascade_delete",
+        resourceType: "friends",
+        resourceId: friendId,
+        extra: { sourceCollection: `users/${friendId}/friends/${userId}` },
+      });
+
+      // (b) decrement the friend's public friend count — BUT-886 audit.
+      batch.update(db.collection("public_profiles").doc(friendId), {
+        friendsCount: admin.firestore.FieldValue.increment(-1),
+      });
+      stageCascadeAuditEntry(db, batch, {
+        subjectUserId: userId,
+        targetUid: friendId,
+        operation: "cascade_delete",
+        resourceType: "public_profiles",
+        resourceId: friendId,
+        extra: { field: "friendsCount", op: "decrement" },
+      });
+
+      friendsRemoved++;
+      friendCountsUpdated++;
+      batchOps++;
+    }
+
+    if (batchOps > 0) {
       await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
     }
   }
 
-  if (batchCount > 0) {
-    await batch.commit();
-  }
-
-  return count;
+  return { friendsRemoved, friendCountsUpdated };
 }
 
 /**
@@ -710,55 +755,6 @@ async function cleanupGroupMemberships(userId: string): Promise<number> {
       },
     }
   );
-}
-
-/**
- * D4: Decrement friend counts on remaining users' public profiles.
- *
- * BUT-886: each decrement is a cross-user write on
- * `public_profiles/{friendId}`. Stage an audit row per friend; halve the
- * batch cap since each friend contributes 2 ops (update + audit).
- */
-async function updateFriendCounts(
-  userId: string,
-  friendsSnapshot: admin.firestore.QuerySnapshot
-): Promise<number> {
-  if (friendsSnapshot.empty) return 0;
-
-  const FRIENDS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
-
-  let batch = db.batch();
-  let batchCount = 0;
-
-  for (const friendDoc of friendsSnapshot.docs) {
-    const friendId = friendDoc.id;
-    const profileRef = db.collection("public_profiles").doc(friendId);
-
-    batch.update(profileRef, {
-      friendsCount: admin.firestore.FieldValue.increment(-1),
-    });
-    stageCascadeAuditEntry(db, batch, {
-      subjectUserId: userId,
-      targetUid: friendId,
-      operation: "cascade_delete",
-      resourceType: "public_profiles",
-      resourceId: friendId,
-      extra: { field: "friendsCount", op: "decrement" },
-    });
-    batchCount++;
-
-    if (batchCount >= FRIENDS_PER_BATCH) {
-      await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
-    }
-  }
-
-  if (batchCount > 0) {
-    await batch.commit();
-  }
-
-  return friendsSnapshot.size;
 }
 
 /**

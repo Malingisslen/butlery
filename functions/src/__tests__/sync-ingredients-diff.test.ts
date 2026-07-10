@@ -213,6 +213,52 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "BUT-1579: comma-separated aliases_en and search_terms split like semicolons",
+    fn: async () => {
+      const doc = csvToFirestore(
+        row({
+          id: "beer",
+          swedish: "öl",
+          aliases_en: "pilsner, lager;ale",
+          search_terms: "beer, brew;lager",
+        })
+      );
+      assertEqual(
+        JSON.stringify(doc.aliasesEn),
+        JSON.stringify(["pilsner", "lager", "ale"]),
+        "aliases_en: comma and semicolon both split, entries trimmed"
+      );
+      assertEqual(
+        JSON.stringify(doc.searchTerms),
+        JSON.stringify(["beer", "brew", "lager"]),
+        "search_terms: comma and semicolon both split, entries trimmed"
+      );
+    },
+  },
+  {
+    name: "BUT-1579: Swedish decimal comma inside aliases_en/search_terms does not fragment it",
+    fn: async () => {
+      const doc = csvToFirestore(
+        row({
+          id: "milk",
+          swedish: "mjölk",
+          aliases_en: "low-fat 0,5%;whole 3,0%, skimmed",
+          search_terms: "milk 1,5%;dairy",
+        })
+      );
+      assertEqual(
+        JSON.stringify(doc.aliasesEn),
+        JSON.stringify(["low-fat 0,5%", "whole 3,0%", "skimmed"]),
+        "aliases_en: decimal commas survive; semicolons and list commas still split"
+      );
+      assertEqual(
+        JSON.stringify(doc.searchTerms),
+        JSON.stringify(["milk 1,5%", "dairy"]),
+        "search_terms: decimal comma survives"
+      );
+    },
+  },
+  {
     name: "Swedish decimal comma in avg_price_sek parses correctly",
     fn: async () => {
       const doc = csvToFirestore(row({ id: "beer", swedish: "öl", avg_price_sek: "12,50" }));

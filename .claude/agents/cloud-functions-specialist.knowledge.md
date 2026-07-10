@@ -1955,3 +1955,96 @@ filters of `firestore-rules.yml` (avoids the BUT-1392 push-list-drift trap). Emu
 `test:rules:` prefix keeps it out of the no-emulator `run-ci-unit-tests.js` runner. Direct
 get/delete (not a real `collectionGroup()` query) is the accepted members-suite convention —
 not a finding.
+
+### 2026-07-11 — BUT-1579 comma-split extended to aliases_en/search_terms [Pattern discovered]
+
+`csvToFirestore` in `functions/src/admin/sync-ingredients-core.ts` now splits
+`aliases_en` and `search_terms` on `/;|,(?!\d)/` (was plain `";"`), matching the
+`aliases_sv` treatment established by BUT-1495 (humans type `,` where the Sheet
+convention is `;`) + BUT-1571 (a comma followed by a digit is a Swedish decimal
+`"0,5%"`, not a separator). Reviewed clean — no Critical/High/Medium. `npx ts-node
+src/__tests__/sync-ingredients-diff.test.ts` = 18/18, tsc clean.
+
+Why it's low-risk (verified, not assumed):
+- **No allergen-safety surface touched.** `normalizedNames` (the diacritics-
+  stripped allergen-lookup form the BUT-1468 hold-for-review gate queries) is
+  derived from `[swedish, ...aliasesSv]` ONLY — `aliasesEn`/`searchTerms` never
+  feed it. So a bad split here degrades search recall at worst, never an allergen
+  verdict. This is the reason the same regex is safe to extend here without the
+  xhigh multi-agent data-writing gate that a normalizedNames change would need.
+- **Idempotent after first run.** `admin/` scripts are manual/ts-node, not
+  deployed triggers, so no retry-storm concern. `hasChanges` DOES compare
+  `aliasesEn`/`searchTerms` (added in the 2026-07-03 xhigh review), so the first
+  sync after this ships re-updates every doc whose those columns held a comma
+  list — a one-time churn, matches the BUT-1571/BUT-1468 backfill shape; the
+  second run sees them equal. Reviewed via the human-gated dry-run diff report.
+
+Two Info-level notes worth carrying:
+- **Regex literal is now triplicated** (aliasesSv L194, aliasesEn L207, searchTerms
+  L208). A future tweak to the separator must touch all three. Cheap to hoist into
+  a module const `const LIST_SEPARATOR = /;|,(?!\d)/;` — not filed as a change, just
+  flagged so the next editor keeps them in lockstep.
+- **SyncReportEntry only surfaces properties/aliasesSv/status** in before/after, NOT
+  aliasesEn/searchTerms. So the first-run re-split churn appears in the dry-run
+  report as rows in `toUpdate` with *no visible before/after difference*. Pre-existing
+  report shape, not introduced here, but a reviewer eyeballing the diff should know a
+  "changed but looks identical" row on this sync is the aliasesEn/searchTerms re-split,
+  not a phantom.
+
+### 2026-07-11 — BUT-1506 merged friendship-delete + count-decrement review [Bug fixed]
+
+`cleanup/on-user-deleted.ts` merged the old `cleanupReverseFriendships` (D1) and
+`updateFriendCounts` (D4) into one `cleanupFriendshipsAndDecrementCounts`. The
+reverse-friendship doc is now the idempotency token: per chunk it `getAll`s the
+reverse docs and, only for friends whose reverse doc still exists, stages
+`delete(reverse) + audit + increment(-1) on public_profiles + audit` in ONE atomic
+batch (4 ops/friend → chunk = floor(500/4) = 125). Fixes the real non-idempotency
+bug: the old D4 blindly decremented every friend off the never-deleted victim
+friends-list, so a duplicate delivery / re-run double-decremented. `tsc --noEmit`
+clean. `stageCascadeAuditEntry` = exactly 1 `set` op (confirmed), so the /4 math is
+right and a full chunk is exactly 500 ops (at the limit, OK).
+
+**HIGH — poison-pill: a friend with a missing `public_profile` doc aborts the whole
+cascade.** `batch.update(public_profiles/{friendId}, …)` fails at commit if that doc
+doesn't exist (Firestore `update` requires existence), and because the decrement now
+shares a batch with the reverse-friendship deletes, the ENTIRE chunk rolls back →
+`cleanupUserSocialData` throws at step 1 → steps 2-14 never run → GDPR erasure aborts.
+The condition is data-driven (same every run), so it's a poison pill, not a transient.
+Worse than the pre-merge code, which committed the reverse deletes in their own batches
+before D4's blind update could throw. Fix: also `getAll` the `public_profiles/{friendId}`
+refs alongside the reverse docs; when a profile is absent, still delete the reverse doc
++ audit (2 ops) but SKIP the decrement. The reverse doc stays the token; no throw; a
+gone friend has no count to decrement anyway. Do NOT use `set(...,{merge:true})` — that
+resurrects a deleted peer's profile with a negative count.
+
+**MEDIUM (pre-existing, surfaced by this change) — no `failurePolicy`/retry configured.**
+The v1 `.auth.user().onDelete` trigger is `.runWith({ timeoutSeconds: 540, memory:
+"512MB" })` with NO `failurePolicy: true` (grep: zero matches repo-wide). v1 background/
+auth triggers do NOT auto-retry on a thrown error unless failurePolicy is set — so the
+`throw error; // Retry` comment and the whole "idempotent under cascade retry" rationale
+are load-bearing on a config that isn't there. Consequences: (1) a mid-cascade failure is
+DROPPED, never retried → Art.17 erasure silently incomplete; (2) the double-decrement the
+rework fixes can only arise from at-least-once DUPLICATE DELIVERY, not auto-retry (still
+real, so the idempotency work is still worth it — just for the right reason). Decide:
+add `failurePolicy: true` if failed erasures should retry, or drop the "// Retry" framing.
+
+**LOW — stale comment.** `cleanupGroupMemberships`'s strict-mode rationale still says
+"the reverse-friendship cleanup (D1) and friend-count decrement (D4) depend on a converged
+friendUserIds state" — but post-merge D1+D4 run in step 1 BEFORE group memberships (step 3),
+so that ordering claim is inverted. Comment only; no behavior impact.
+
+**MEDIUM — test gap.** The new retry assertion in the integration test only covers the
+happy path (friend WITH a public_profile). It does not cover the missing-profile poison
+pill (HIGH above) nor the already-missing-reverse-doc self-heal branch (`if
+(!reverseSnap.exists) continue`). Seed a friend whose `public_profile` is absent and assert
+the cascade still completes + that friend's reverse doc is erased.
+
+**Dart side (`lib/services/family/family_rating_service.dart`, BUT-1505) — reviewed
+sound, deferred.** `_denormalizeFamilyAverage` now wraps the read-then-write of the owned
+recipe doc in a `runTransaction`: `txn.get(recipeRef)` is the conflict anchor, then a
+non-transactional `_ratings.getForRecipe` recompute, then `txn.update` of ONLY the two
+`core.family*` fields. Correct: two concurrent denormalizations serialize on the recipe
+doc and each recomputes from the authoritative store; partial-field update avoids clobbering
+concurrent edits (the BUT-1505 bug). The ratings query isn't in the txn read set but the
+recipe-doc anchor covers it. This is Flutter-side Firestore → owned by firebase-backend-
+security; flagged sound, not deep-reviewed here.

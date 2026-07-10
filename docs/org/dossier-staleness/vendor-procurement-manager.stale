@@ -9,7 +9,8 @@
     "functions/src/events/log-parse-event.ts",
     "functions/src/__tests__/log-parse-event-expiry.test.ts",
     "functions/src/admin/backfill-parse-event-expiry.ts",
-    "functions/src/__tests__/collection-group-wildcards-rules.test.ts"
+    "functions/src/__tests__/collection-group-wildcards-rules.test.ts",
+    "functions/src/cleanup/on-user-deleted.ts"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-11"
 }

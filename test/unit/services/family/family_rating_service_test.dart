@@ -11,6 +11,7 @@
 library;
 
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,6 +21,7 @@ import 'package:butlery/models/household.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/services/family/family_rating_service.dart';
@@ -34,6 +36,12 @@ class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
 class _MockSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {}
+
+/// A FirestoreRepository whose `firestore` getter throws, used to prove the
+/// BUT-1505 denormalization transaction is best-effort (a failure must not
+/// break the rating or the social mirror).
+class _ThrowingFirestoreRepository extends Mock
+    implements FirestoreRepository {}
 
 const _hh = 'hh-1';
 const _malin = 'user-malin';
@@ -68,6 +76,7 @@ void main() {
   late FirebaseFamilyRatingRepository ratingRepo;
   late _MockSocialRecipeOperations socialOps;
   late _MockUnifiedRecipeService recipeService;
+  late FakeFirebaseFirestore fs;
 
   Recipe personalRecipe() => Recipe(
     core: RecipeCore(
@@ -99,7 +108,7 @@ void main() {
       isAuthenticated: true,
     );
 
-    final fs = FakeFirebaseFirestore();
+    fs = FakeFirebaseFirestore();
     await _seedHousehold(fs);
     final householdRepo = FirebaseHouseholdRepository(
       firestore: fs,
@@ -111,6 +120,14 @@ void main() {
       householdRepository: householdRepo,
     );
     TestServiceLocator.registerSingleton<FamilyRatingRepository>(ratingRepo);
+
+    // BUT-1505: the denormalization writes the family aggregate onto the
+    // owned recipe doc inside a Firestore transaction. Back the service's
+    // FirestoreRepository with the SAME fake store as the rating repo so the
+    // ratings query and the recipe patch see one consistent world.
+    TestServiceLocator.registerSingleton<FirestoreRepository>(
+      FirestoreRepository(firestore: fs),
+    );
 
     socialOps = _MockSocialRecipeOperations();
     when(
@@ -149,6 +166,20 @@ void main() {
     stars: stars,
     enteredByUid: enteredByUid,
   );
+
+  // BUT-1505: the denormalization now transactionally patches the owned recipe
+  // doc at users/{malin}/recipes/{recipe}, so denorm tests seed that doc and
+  // assert the persisted `core` fields (rather than a mocked updateRecipe).
+  DocumentReference<Map<String, dynamic>> ownedRecipeRef() =>
+      fs.collection('users').doc(_malin).collection('recipes').doc(_recipe);
+
+  Future<void> seedOwnedRecipe() =>
+      ownedRecipeRef().set(personalRecipe().toFirestore());
+
+  Future<Map<String, dynamic>?> readRecipeCore() async {
+    final snap = await ownedRecipeRef().get();
+    return snap.data()?['core'] as Map<String, dynamic>?;
+  }
 
   group('rateAsFamily upsert', () {
     test('creates a new family rating', () async {
@@ -423,6 +454,7 @@ void main() {
     test(
       'un-rating the last verdict clears the recipe family average',
       () async {
+        await seedOwnedRecipe();
         when(
           () => recipeService.getRecipeById(_recipe),
         ).thenReturn(personalRecipe());
@@ -435,14 +467,11 @@ void main() {
         );
         await service.removeRating(recipeId: _recipe, memberId: _malin);
 
-        // Last updateRecipe (from the un-rate denormalization) nulls the pill.
-        final patched =
-            verify(
-                  () => recipeService.updateRecipe(captureAny()),
-                ).captured.last
-                as Recipe;
-        expect(patched.core.familyAverage, isNull);
-        expect(patched.core.familyRatingCount, isNull);
+        // The un-rate denormalization (last transactional write) nulls the
+        // persisted pill on the owned recipe doc.
+        final core = await readRecipeCore();
+        expect(core?['familyAverage'], isNull);
+        expect(core?['familyRatingCount'], isNull);
       },
     );
   });
@@ -451,6 +480,7 @@ void main() {
     test(
       'writes an EQUAL-WEIGHT household average onto the owned recipe',
       () async {
+        await seedOwnedRecipe();
         when(
           () => recipeService.getRecipeById(_recipe),
         ).thenReturn(personalRecipe());
@@ -471,30 +501,24 @@ void main() {
           enteredByUid: _malin,
         );
 
-        final patched =
-            verify(
-                  () => recipeService.updateRecipe(captureAny()),
-                ).captured.last
-                as Recipe;
-        expect(
-          patched.core.familyAverage,
-          3.0,
-        ); // (5 + 1) / 2, NOT type-weighted
-        expect(patched.core.familyRatingCount, 2);
+        final core = await readRecipeCore();
+        expect(core?['familyAverage'], 3.0); // (5 + 1) / 2, NOT type-weighted
+        expect(core?['familyRatingCount'], 2);
       },
     );
 
     test(
       'a denormalization failure is isolated — rating + mirror still land',
       () async {
-        // updateRecipe blows up, but the family entry is the source of truth:
-        // the rating must persist and the adult self-rate must still mirror.
+        // The transactional denorm blows up (firestore access throws), but the
+        // family entry is the source of truth: the rating must persist and the
+        // adult self-rate must still mirror.
         when(
           () => recipeService.getRecipeById(_recipe),
         ).thenReturn(personalRecipe());
-        when(
-          () => recipeService.updateRecipe(any()),
-        ).thenThrow(Exception('boom'));
+        final throwingRepo = _ThrowingFirestoreRepository();
+        when(() => throwingRepo.firestore).thenThrow(Exception('boom'));
+        TestServiceLocator.registerSingleton<FirestoreRepository>(throwingRepo);
 
         final saved = await rate(
           memberId: _malin,
@@ -522,7 +546,8 @@ void main() {
       'skips the patch when the recipe is not in the user\'s list',
       () async {
         // getRecipeById returns null (setUp default) → community recipe / cold
-        // cache → no denormalization write, rating still lands.
+        // cache → the denorm returns before touching the recipe doc.
+        await seedOwnedRecipe();
         final saved = await rate(
           memberId: 'liam',
           type: HouseholdMemberType.profile,
@@ -530,7 +555,11 @@ void main() {
           enteredByUid: _malin,
         );
         expect(saved, isNotNull);
-        verifyNever(() => recipeService.updateRecipe(any()));
+
+        // The owned recipe doc keeps its seeded (null) family pill — no patch.
+        final core = await readRecipeCore();
+        expect(core?['familyAverage'], isNull);
+        expect(core?['familyRatingCount'], isNull);
       },
     );
   });

@@ -1,7 +1,10 @@
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/family_rating.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
@@ -103,36 +106,82 @@ class FamilyRatingService extends BaseService {
   }
 
   /// Recompute the household's average for [recipeId] and write it onto the
-  /// recipe's denormalized `core.familyAverage`/`familyRatingCount` so list
-  /// cards render the family pill without reading the rating store per card.
+  /// recipe's denormalized `core.familyAverage`/`core.familyRatingCount` so
+  /// list cards render the family pill without reading the rating store per
+  /// card.
   ///
-  /// Best-effort and owned-only by nature: it patches the recipe via
-  /// `UnifiedRecipeService.updateRecipe`, which only succeeds for a recipe the
-  /// household can write (their own). A community recipe the household cooked
-  /// keeps a null family pill until the deferred aggregate function ships. The
-  /// `updatedAt` is preserved so a rating never reorders "recently updated".
+  /// Owned-only by nature: only the household's OWN personal recipe copy
+  /// (stored at `users/{uid}/recipes/{recipeId}`) is patched. A community or
+  /// another member's recipe keeps a null family pill until the deferred
+  /// aggregate function ships.
+  ///
+  /// BUT-1505: this is a read-then-write on the recipe doc, so a second
+  /// concurrent verdict (two members rating on a shared phone, or the same
+  /// account on two devices) used to lose the first write — the old path read
+  /// the recipe from the in-memory cache and rewrote the WHOLE doc, clobbering
+  /// the other verdict and any unrelated field. It now runs inside a Firestore
+  /// transaction that reads the recipe doc as the conflict anchor and writes
+  /// ONLY the two family fields; a conflicting commit retries and recomputes
+  /// from the authoritative rating store. `core.updatedAt` is left untouched so
+  /// a rating never reorders "recently updated". Still best-effort — a failure
+  /// is logged and never fails the rating.
   Future<void> _denormalizeFamilyAverage(
     String recipeId,
     String householdId,
   ) async {
     try {
-      // Not in the user's own list → nothing to patch (community recipe, or
-      // a cold cache); the family pill stays null until a later rate/load.
+      // Not in the user's own list, or not a personal recipe we own → nothing
+      // to patch (community recipe, another member's copy, or a cold cache);
+      // the family pill stays null until a later rate/load.
       final recipe = _recipeService.getRecipeById(recipeId);
-      if (recipe == null) return;
+      if (recipe == null || !recipe.isPersonal) return;
 
-      final ratings = await _ratings.getForRecipe(householdId, recipeId);
-      final summary = FamilyRatingSummary.fromRatings(recipeId, ratings);
+      final uid = ServiceLocator.get<auth.AuthRepository>().currentUserId;
+      if (uid == null) return;
 
-      await _recipeService.updateRecipe(
-        recipe.copyWith(
-          familyAverage: summary.hasRatings ? summary.familyAverage : null,
-          familyRatingCount: summary.hasRatings
+      final firestore = ServiceLocator.get<FirestoreRepository>().firestore;
+      final recipeRef = firestore
+          .collection(FirestoreCollections.users)
+          .doc(uid)
+          .collection(FirestoreCollections.recipes)
+          .doc(recipeId);
+
+      FamilyRatingSummary? committed;
+      await firestore.runTransaction((txn) async {
+        // Conflict anchor: a concurrent denormalization writing this same
+        // recipe doc forces the transaction to retry and recompute from the
+        // authoritative rating store below.
+        final snap = await txn.get(recipeRef);
+        if (!snap.exists) return;
+
+        final ratings = await _ratings.getForRecipe(householdId, recipeId);
+        final summary = FamilyRatingSummary.fromRatings(recipeId, ratings);
+        committed = summary;
+
+        // Partial update — only the denormalized family fields, so a
+        // concurrent edit to any other recipe field is never clobbered.
+        txn.update(recipeRef, {
+          'core.familyAverage': summary.hasRatings
+              ? summary.familyAverage
+              : null,
+          'core.familyRatingCount': summary.hasRatings
               ? summary.familyRatingCount
               : null,
-          updatedAt: recipe.core.updatedAt,
-        ),
-      );
+        });
+      });
+
+      // Mirror the committed values onto the in-memory recipe so the card pill
+      // refreshes without a reload (the prior updateRecipe path notified too).
+      final result = committed;
+      if (result != null) {
+        recipe.core.familyAverage = result.hasRatings
+            ? result.familyAverage
+            : null;
+        recipe.core.familyRatingCount = result.hasRatings
+            ? result.familyRatingCount
+            : null;
+        _recipeService.notifyListeners();
+      }
     } catch (e) {
       AppLogger.warning(
         'FamilyRatingService: family-average denormalization failed '

@@ -447,6 +447,31 @@ void main() {
         expect(results[0].quantity, equals(1.0));
         expect(results[0].name, equals(''));
       });
+
+      test('BUT-1576: caps och-split fan-out at maxCompoundParts', () {
+        // A pathological many-"och" line must not fan out unbounded — each
+        // part walks the full Firestore lookup ladder downstream.
+        final line = List.generate(20, (i) => 'x$i').join(' och ');
+        final results = IngredientParser.parseCompoundIngredient(line);
+
+        expect(results, hasLength(IngredientParser.maxCompoundParts));
+        // The cap keeps the FIRST parts (drops the tail).
+        expect(results.first.name, equals('x0'));
+        expect(
+          results.last.name,
+          equals('x${IngredientParser.maxCompoundParts - 1}'),
+        );
+      });
+
+      test('BUT-1576: a normal short och-line is unaffected by the cap', () {
+        final results = IngredientParser.parseCompoundIngredient(
+          'salt och peppar',
+        );
+
+        expect(results, hasLength(2));
+        expect(results[0].name, equals('salt'));
+        expect(results[1].name, equals('peppar'));
+      });
     });
 
     group('RegexParseResult model', () {

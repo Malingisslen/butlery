@@ -3,7 +3,8 @@
   "stale_since": "2026-07-10",
   "triggers": [
     "lib/services/menu_service.dart",
-    "lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart"
+    "lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart",
+    "functions/src/cleanup/on-user-deleted.ts"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-11"
 }

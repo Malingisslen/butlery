@@ -169,6 +169,27 @@ async function run_(): Promise<void> {
     JSON.stringify(res),
   );
 
+  // ── BUT-1506: idempotent friend-count decrement on cascade retry ──
+  // The onUserDeleted trigger rethrows on any error, so Cloud Functions
+  // retries the WHOLE cascade. The victim's own friends subcollection is never
+  // deleted, so a retry re-reads `friend` in the friends list — but the reverse
+  // friendship doc it keys off was already removed on the first run, so the
+  // friend's count must NOT drop a second time. Re-run the cascade and assert
+  // the count is still 2 (a regression here would show 1).
+  const retryRes = await cleanupUserSocialData(victim);
+  const friendProfileAfterRetry =
+    await db.collection("public_profiles").doc(friend).get();
+  check(
+    "BUT-1506: friendsCount stays 2 after a retried cascade (no double-decrement)",
+    (friendProfileAfterRetry.data()?.friendsCount as number | undefined) === 2,
+    JSON.stringify(friendProfileAfterRetry.data()),
+  );
+  check(
+    "BUT-1506: retry re-decrements nothing (friendCountsUpdated === 0)",
+    retryRes.friendCountsUpdated === 0,
+    JSON.stringify(retryRes),
+  );
+
   console.log(`\n${run - failed}/${run} passed` + (failed ? `, ${failed} failed` : ""));
   if (failed > 0) process.exit(1);
 }

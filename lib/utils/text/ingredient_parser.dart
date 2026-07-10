@@ -162,6 +162,13 @@ class IngredientParser {
     );
   }
 
+  /// Cost guard (BUT-1576): a real recipe line never legitimately chains more
+  /// than a handful of "och"-separated ingredients. Capping the split bounds
+  /// the worst case — without it a pathological "a och b och c och …" line
+  /// fans out into an unbounded Firestore read amplifier downstream (each part
+  /// walks the full lookup ladder in IngredientLookupService.lookupFromRaw).
+  static const int maxCompoundParts = 8;
+
   /// Parses compound ingredients containing "och" (and) into separate items.
   static List<RegexParseResult> parseCompoundIngredient(String rawIngredient) {
     if (rawIngredient.isEmpty) {
@@ -178,7 +185,11 @@ class IngredientParser {
       return [parseIngredient(rawIngredient)];
     }
 
-    final parts = ingredient.split(RegExp(r'\s+och\s+'));
+    final allParts = ingredient.split(RegExp(r'\s+och\s+'));
+    // BUT-1576: cap the fan-out at the split site (drop parts beyond the cap).
+    final parts = allParts.length > maxCompoundParts
+        ? allParts.sublist(0, maxCompoundParts)
+        : allParts;
     final first = parseIngredient(parts[0]);
     final results = <RegexParseResult>[first];
 
