@@ -6,11 +6,18 @@ import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
+
+/// BUT-1483: the two config-backed phases (allergen/dietary Phase 1 + cuisine
+/// Phase 5) resolved for one tagging run. Captured once per run so a
+/// concurrent config rebuild can't swap them mid-run. See
+/// [TagGenerator.resolveConfigPhases].
+typedef ConfigBackedPhases = ({TagPhase1Base phase1, TagPhase5Cuisine phase5});
 
 /// Generator version for tracking changes.
 /// Bump on any tagging logic change so needsRetagging detects stale recipes.
@@ -30,11 +37,36 @@ const String kTagGeneratorVersion = '2.2.0';
 /// - Phase 4: Mood and occasion tags
 /// - Phase 5: Cuisine tags
 class TagGenerator {
+  // Phase 1 (allergen/dietary) and Phase 5 (cuisine) are the config-backed
+  // phases. These fields hold the BOOT-time build (from the constructor's
+  // firebaseConfig, or the static fallback) and are final — never mutated.
+  // A later, different remote config is picked up via [resolveConfigPhases],
+  // which returns a per-run immutable pair (see BUT-1483 concurrency note).
   final TagPhase1Base _phase1;
   final TagPhase2Derived _phase2;
   final TagPhase3Complex _phase3;
   final TagPhase4Mood _phase4;
   final TagPhase5Cuisine _phase5;
+
+  /// BUT-1483: `combinedVersion` of the [FirebaseTagConfig] the boot-time
+  /// [_phase1]/[_phase5] were built with (null = static fallback).
+  /// [resolveConfigPhases] rebuilds only when the live config differs from
+  /// this (the version hash is not monotonic, so a rollback also counts).
+  final int? _bootConfigVersion;
+
+  /// BUT-1483: True only when this generator built [_phase1] and [_phase5]
+  /// itself from config — i.e. neither was injected. When a caller injects
+  /// either phase (tests), [resolveConfigPhases] must never rebuild over
+  /// their instance.
+  final bool _canRebuildConfigPhases;
+
+  /// BUT-1483: memoised rebuild of the config-backed phases for the latest
+  /// seen live-config version, so a version change is parsed at most once
+  /// rather than per run. Only touched (synchronously) inside
+  /// [resolveConfigPhases]; guarded by [_canRebuildConfigPhases].
+  int? _cachedConfigVersion;
+  TagPhase1Base? _cachedPhase1;
+  TagPhase5Cuisine? _cachedPhase5;
 
   /// Creates a TagGenerator with optional Firebase-backed configuration.
   ///
@@ -52,13 +84,67 @@ class TagGenerator {
        _phase2 = phase2 ?? TagPhase2Derived(),
        _phase3 = phase3 ?? _createPhase3(),
        _phase4 = phase4 ?? _createPhase4(),
-       _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
+       _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig),
+       _bootConfigVersion = firebaseConfig?.combinedVersion,
+       _canRebuildConfigPhases = phase1 == null && phase5 == null;
+
+  /// BUT-1483: Resolve the (phase1, phase5) pair to use for ONE tagging run.
+  ///
+  /// The generator is usually constructed during boot, before
+  /// [TagConfigService] finishes its late Firebase load, so the boot-time
+  /// [_phase1]/[_phase5] would otherwise stay pinned to the static fallback
+  /// for the whole session even after the remote config arrives. This returns
+  /// the config-current pair — rebuilt (and memoised per version) when the
+  /// live config version differs from the boot one.
+  ///
+  /// The returned record is IMMUTABLE and must be captured ONCE per run. A
+  /// caller with separately-awaited phases (the pipeline runner) resolves this
+  /// once at the start of a recipe and reuses it for phase 1 and phase 5, so a
+  /// concurrent run rebuilding to a newer version can never swap phases out
+  /// from under an in-flight run — the shared generator is reused across a
+  /// parallel retag batch (see retagging_scheduler), and mutating shared phase
+  /// fields there used to let one recipe mix a fallback phase 1 with a live
+  /// phase 5. A single recipe now always tags phase 1 and phase 5 against one
+  /// consistent config version.
+  ///
+  /// Returns the boot phases when they were injected (tests) or no different
+  /// live config is available. Resolving [TagConfigService] via
+  /// [ServiceLocator] mirrors how [_createPhase3]/[_createPhase4] resolve
+  /// [FeatureFlagService], keeping the wiring self-contained in this file.
+  ConfigBackedPhases resolveConfigPhases() {
+    if (!_canRebuildConfigPhases) {
+      return (phase1: _phase1, phase5: _phase5);
+    }
+    final live = ServiceLocator.tryGet<TagConfigService>()?.configOrNull;
+    if (live == null || live.combinedVersion == _bootConfigVersion) {
+      return (phase1: _phase1, phase5: _phase5);
+    }
+    if (live.combinedVersion != _cachedConfigVersion) {
+      _cachedPhase1 = TagPhase1Base(firebaseConfig: live);
+      _cachedPhase5 = TagPhase5Cuisine(firebaseConfig: live);
+      _cachedConfigVersion = live.combinedVersion;
+      AppLogger.debug(
+        'TagGenerator rebuilt config-backed phases for late/changed config '
+            '(version: ${live.combinedVersion})',
+        'TagGenerator',
+      );
+    }
+    return (phase1: _cachedPhase1!, phase5: _cachedPhase5!);
+  }
 
   // BUT-553: per-phase accessors expose individual phase calculation to
   // `TaggingPipelineRunner` so each phase can be wrapped in its own
   // Future.timeout. Kept thin — orchestration logic lives in the runner.
-  Phase1Result runPhase1(IngredientLookupResult lookup, Recipe recipe) =>
-      _phase1.calculate(lookup, recipe);
+  //
+  // BUT-1483: the config-backed phases (phase1, phase5) are passed in by the
+  // caller, resolved ONCE per run via [resolveConfigPhases], so a concurrent
+  // rebuild can't swap them mid-run. The config-independent phases (2-4) read
+  // the generator's immutable fields directly.
+  Phase1Result runPhase1(
+    TagPhase1Base phase1,
+    IngredientLookupResult lookup,
+    Recipe recipe,
+  ) => phase1.calculate(lookup, recipe);
 
   Phase2Result runPhase2(Phase1Result phase1, Recipe recipe) =>
       _phase2.calculate(phase1, recipe);
@@ -76,15 +162,19 @@ class TagGenerator {
     Recipe recipe,
   ) => _phase4.calculate(phase1, phase2, phase3, recipe);
 
-  Phase5Result runPhase5(Phase4Result phase4, Recipe recipe) =>
-      _phase5.calculate(phase4, recipe);
+  Phase5Result runPhase5(
+    TagPhase5Cuisine phase5,
+    Phase4Result phase4,
+    Recipe recipe,
+  ) => phase5.calculate(phase4, recipe);
 
   /// CRIT-7 fallback path — used by the runner when Phases 2-4 are
   /// unavailable but Phase 1 succeeded, so we can still surface cuisine tags.
   Phase5ResultPartial runPhase5FromPhase1(
+    TagPhase5Cuisine phase5,
     Phase1Result phase1,
     Recipe recipe,
-  ) => _phase5.calculateFromPhase1(phase1, recipe);
+  ) => phase5.calculateFromPhase1(phase1, recipe);
 
   /// Combines per-phase results into a final TagResult. Mirrors the
   /// combination logic at the bottom of [generate], extracted so the
@@ -172,6 +262,7 @@ class TagGenerator {
     required Recipe recipe,
     Duration? timeout,
   }) {
+    final cfgPhases = resolveConfigPhases();
     final stopwatch = timeout != null ? (Stopwatch()..start()) : null;
 
     Phase1Result? phase1Result;
@@ -184,7 +275,7 @@ class TagGenerator {
     // Phase 1: Base tags (critical - if this fails, return failed result)
     // Phase 1 ALWAYS completes (allergens/dietary are safety-critical)
     try {
-      phase1Result = _phase1.calculate(ingredients, recipe);
+      phase1Result = cfgPhases.phase1.calculate(ingredients, recipe);
     } catch (e, stack) {
       AppLogger.error(
         'Phase 1 tagging failed for recipe ${recipe.id}',
@@ -278,7 +369,7 @@ class TagGenerator {
     if (!timedOut && phase4Result != null) {
       // Full chain available - use normal calculation
       try {
-        phase5Result = _phase5.calculate(phase4Result, recipe);
+        phase5Result = cfgPhases.phase5.calculate(phase4Result, recipe);
       } catch (e) {
         AppLogger.warning(
           'Phase 5 tagging failed for recipe ${recipe.id}: $e, continuing with Phases 1-4',
@@ -289,7 +380,10 @@ class TagGenerator {
       // CRIT-7 FIX: Phases 2-4 failed but we can still get cuisine tags
       // Phase 5 only needs Phase 1's ingredient lookup
       try {
-        phase5PartialResult = _phase5.calculateFromPhase1(phase1Result, recipe);
+        phase5PartialResult = cfgPhases.phase5.calculateFromPhase1(
+          phase1Result,
+          recipe,
+        );
         AppLogger.debug(
           'Phase 5 using Phase 1 fallback for recipe ${recipe.id}',
           'TagGenerator',
@@ -395,8 +489,9 @@ class TagGenerator {
     required Recipe recipe,
     Duration? timeout,
   }) {
+    final cfgPhases = resolveConfigPhases();
     final stopwatch = timeout != null ? (Stopwatch()..start()) : null;
-    final phase1Result = _phase1.calculate(ingredients, recipe);
+    final phase1Result = cfgPhases.phase1.calculate(ingredients, recipe);
 
     // HIGH-8: Check timeout after calculation (can't interrupt sync code)
     final timedOut = _hasTimedOut(stopwatch, timeout);

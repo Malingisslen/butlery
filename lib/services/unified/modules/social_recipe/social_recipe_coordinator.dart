@@ -170,7 +170,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     userId,
     permission,
   );
-  Future<bool> shareRecipeWithUsers(
+  Future<RecipeShareResult> shareRecipeWithUsers(
     String recipeId,
     List<String> userIds,
     ResourcePermission permission,
@@ -181,8 +181,10 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       permission,
     );
 
-    // Send notifications after successful sharing
-    if (result) {
+    // BUT-1503: notify whenever access was actually granted (the primary
+    // memberPermissions write succeeded), even if the secondary discovery-doc
+    // write failed — the recipient can open the recipe and must be told.
+    if (result.accessGranted) {
       await sendRecipeSharingNotifications(recipeId, userIds);
     }
 

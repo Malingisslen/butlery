@@ -106,11 +106,16 @@ class RecipeShareRequestModule {
       // memberPermissions. The read path (fetchFriendRecipe) and the firestore
       // rule both key off the original doc, so a new collaborative copy would
       // leave the requester unable to open the recipe.
-      final shared = await ServiceLocator.get<SocialRecipeCoordinator>()
+      final shareResult = await ServiceLocator.get<SocialRecipeCoordinator>()
           .shareRecipeWithUsers(recipeId, [
             request.fromUserId,
           ], ResourcePermission.viewer);
-      if (!shared) return false;
+      // BUT-1503: accept once access was actually granted (the primary
+      // memberPermissions write succeeded — the requester can open the recipe).
+      // A failed secondary discovery-doc write (accessGranted but not
+      // fullyShared) must NOT leave the request stuck pending forever, since
+      // the requester already has access; the discovery doc self-heals.
+      if (!shareResult.accessGranted) return false;
 
       await socialRequestRepository.updateRequestStatus(
         request.id,

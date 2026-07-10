@@ -151,11 +151,14 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     List<String> userIds,
     ResourcePermission permission,
   ) async {
-    return await _coordinator.shareRecipeWithUsers(
+    // BUT-1503: UI-facing bool keys off fullyShared (a partial share — access
+    // granted but discovery-doc write failed — reports false so the UI can
+    // prompt a retry that idempotently self-heals).
+    return (await _coordinator.shareRecipeWithUsers(
       recipeId,
       userIds,
       permission,
-    );
+    )).fullyShared;
   }
 
   /// Share recipe with friend categories/groups

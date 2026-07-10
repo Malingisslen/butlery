@@ -431,6 +431,198 @@ void main() {
       );
     });
 
+    group('Per-slot constraint trust routing (BUT-1466)', () {
+      Recipe taggedRecipe(
+        String id, {
+        TagResult? tagResult,
+        TagOverrides? overrides,
+      }) {
+        final base = RecipeFactory.build(
+          id: id,
+          title: id,
+          mealType: 'middag',
+        );
+        return Recipe(
+          core: base.core.copyWith(tagResult: tagResult),
+          type: base.type,
+        ).copyWith(tagOverrides: overrides);
+      }
+
+      TagResult glutenTag(
+        TriState status, {
+        String version = kTagGeneratorVersion,
+      }) => TagResult(
+        tags: const {},
+        allergenStatus: {'gluten': status},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026),
+        generatorVersion: version,
+      );
+
+      // A per-slot "glutenfri middag" — the constraint lives on the sub-request,
+      // NOT in globalAllergenAvoid, so it exercises _matchesConstraint.
+      ParsedMenuRequest glutenfriSlot() => ParsedMenuRequest(
+        slotRequests: [
+          SlotRequest(
+            mealType: 'middag',
+            subRequests: [
+              RecipeConstraint(count: 5, allergenFree: const {'gluten'}),
+            ],
+          ),
+        ],
+        globalAllergenAvoid: const {},
+        globalDietaryRequire: const {},
+        dayPins: const [],
+        trace: const ExtractionTrace(),
+        rawPrompt: 'en glutenfri middag',
+      );
+
+      test(
+        'per-slot "glutenfri" honours the trust guard: excludes stale-FREE, '
+        'excludes a CONTAINS override sitting on an auto-FREE verdict, keeps '
+        'fresh-FREE and a FREE override on an auto-CONTAINS verdict',
+        () async {
+          final pool = [
+            // Trusted FREE — passes.
+            taggedRecipe('fresh-free', tagResult: glutenTag(TriState.free)),
+            // Stale FREE (old generator version) → effective UNKNOWN → a
+            // positive "glutenfri" slot requires proven FREE, so excluded.
+            taggedRecipe(
+              'stale-free',
+              tagResult: glutenTag(TriState.free, version: '1.0.0'),
+            ),
+            // Auto FREE but the user manually corrected it to CONTAINS — the
+            // human verdict must win. Raw tagResult reads would have wrongly
+            // included this (the BUT-1466 bypass).
+            taggedRecipe(
+              'override-contains',
+              tagResult: glutenTag(TriState.free),
+              overrides: const TagOverrides(
+                allergenOverrides: {'gluten': TriState.contains},
+              ),
+            ),
+            // Auto CONTAINS but manually corrected to FREE — human rescue.
+            taggedRecipe(
+              'override-free',
+              tagResult: glutenTag(TriState.contains),
+              overrides: const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+              ),
+            ),
+          ];
+
+          final menu = await menuService.generateMenuFromParsedRequest(
+            glutenfriSlot(),
+            pool,
+          );
+
+          final ids = (menu['middag'] ?? const <Recipe>[])
+              .map((r) => r.id)
+              .toSet();
+          expect(ids, containsAll(['fresh-free', 'override-free']));
+          expect(ids, isNot(contains('stale-free')));
+          expect(ids, isNot(contains('override-contains')));
+        },
+      );
+
+      test(
+        'per-slot "glutenfri" includes an UNTAGGED recipe with a manual FREE '
+        'override, still excludes an untagged recipe with no data',
+        () async {
+          final pool = [
+            // Untagged (null tagResult) but a human marked it gluten-free — the
+            // override must win, so it qualifies for the glutenfri slot.
+            // Previously _matchesConstraint early-returned false on a null
+            // tagResult and wrongly dropped it (the BUT-1466 caller bug).
+            taggedRecipe(
+              'untagged-free-override',
+              overrides: const TagOverrides(
+                allergenOverrides: {'gluten': TriState.free},
+              ),
+            ),
+            // Untagged with no data at all → cannot prove FREE → excluded from a
+            // positive "glutenfri" slot (safe direction).
+            taggedRecipe('untagged-no-data'),
+          ];
+
+          final menu = await menuService.generateMenuFromParsedRequest(
+            glutenfriSlot(),
+            pool,
+          );
+
+          final ids = (menu['middag'] ?? const <Recipe>[])
+              .map((r) => r.id)
+              .toSet();
+          expect(
+            ids,
+            contains('untagged-free-override'),
+            reason: 'a human FREE override on an untagged recipe must qualify',
+          );
+          expect(
+            ids,
+            isNot(contains('untagged-no-data')),
+            reason: 'an untagged recipe with no data cannot prove gluten-free',
+          );
+        },
+      );
+
+      test(
+        'per-slot excludedTags still excludes an UNTAGGED recipe (no leak)',
+        () async {
+          // A "no grytor" slot: an untagged recipe can't be proven NOT a gryta,
+          // so it must stay excluded. The BUT-1466 fix relaxes only the
+          // allergen/dietary/time constraints for untagged recipes, never the
+          // tag-based exclusions.
+          final noGrytaSlot = ParsedMenuRequest(
+            slotRequests: [
+              SlotRequest(
+                mealType: 'middag',
+                subRequests: [
+                  RecipeConstraint(count: 5, excludedTags: const {'gryta'}),
+                ],
+              ),
+            ],
+            globalAllergenAvoid: const {},
+            globalDietaryRequire: const {},
+            dayPins: const [],
+            trace: const ExtractionTrace(),
+            rawPrompt: 'fem middagar men inga grytor',
+          );
+          final pool = [
+            // Tagged and NOT a gryta → qualifies.
+            taggedRecipe(
+              'tagged-soppa',
+              tagResult: TagResult(
+                tags: const {'soppa'},
+                allergenStatus: const {},
+                dietaryStatus: const {},
+                coverage: 1.0,
+                generatedAt: DateTime(2026),
+                generatorVersion: kTagGeneratorVersion,
+              ),
+            ),
+            // Untagged → can't prove it isn't a gryta → excluded.
+            taggedRecipe('untagged'),
+          ];
+
+          final menu = await menuService.generateMenuFromParsedRequest(
+            noGrytaSlot,
+            pool,
+          );
+          final ids = (menu['middag'] ?? const <Recipe>[])
+              .map((r) => r.id)
+              .toSet();
+          expect(ids, contains('tagged-soppa'));
+          expect(
+            ids,
+            isNot(contains('untagged')),
+            reason: 'an untagged recipe must not slip past a "no grytor" slot',
+          );
+        },
+      );
+    });
+
     group('Weighted Selection', () {
       Recipe recipeWithCookedAt(
         String id,

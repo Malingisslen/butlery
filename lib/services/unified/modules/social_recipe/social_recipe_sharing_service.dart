@@ -12,12 +12,43 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
+/// BUT-1503: outcome of a recipe share, distinguishing "the recipient can open
+/// the recipe" from "the share is also discoverable in inbox/group queries".
+///
+/// - [accessGranted] is true once the primary `memberPermissions` write
+///   succeeds (rules-based access), regardless of the secondary
+///   `shared_recipes` discovery doc.
+/// - [fullyShared] is true only when BOTH writes succeeded.
+///
+/// Callers that only need access to exist (accepting a share request, notifying
+/// the recipient) act on [accessGranted]; UI callers that offer a retry act on
+/// [fullyShared] — the idempotent secondary write self-heals on the next try.
+enum RecipeShareResult {
+  failed(accessGranted: false, fullyShared: false),
+  partial(accessGranted: true, fullyShared: false),
+  full(accessGranted: true, fullyShared: true)
+  ;
+
+  const RecipeShareResult({
+    required this.accessGranted,
+    required this.fullyShared,
+  });
+
+  final bool accessGranted;
+  final bool fullyShared;
+}
+
 /// Social Recipe Sharing Service
 /// Handles ONLY sharing and unsharing operations for recipes.
 /// This includes sharing with users, groups, and managing shared access.
 class SocialRecipeSharingService extends BaseService with UserContextMixin {
   @override
   String get serviceName => 'SocialRecipeSharingService';
+
+  /// BUT-1503: bounded self-heal for the idempotent secondary `shared_recipes`
+  /// write. Attempts include the first try; backoff grows linearly per attempt.
+  static const int _maxSecondaryWriteAttempts = 3;
+  static const Duration _secondaryWriteBackoff = Duration(milliseconds: 150);
 
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -47,7 +78,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   }
 
   /// Share a personal recipe with specific users
-  Future<bool> shareRecipeWithUsers(
+  Future<RecipeShareResult> shareRecipeWithUsers(
     String recipeId,
     List<String> userIds,
     ResourcePermission permission,
@@ -55,7 +86,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError(AppLocale.current.errorMustBeLoggedIn);
-      return false;
+      return RecipeShareResult.failed;
     }
 
     try {
@@ -65,14 +96,14 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
         _setError(AppLocale.current.errorRecipeNotFound);
-        return false;
+        return RecipeShareResult.failed;
       }
 
       // Check if current user can share this recipe
       if (recipe.createdBy != currentUserId &&
           recipe.socialData?.ownerId != currentUserId) {
         _setError(AppLocale.current.errorNoPermissionToShare);
-        return false;
+        return RecipeShareResult.failed;
       }
 
       // BUT-955: cap-guard. Existing members + owner + new userIds (deduped)
@@ -89,7 +120,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         _setError(
           AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe),
         );
-        return false;
+        return RecipeShareResult.failed;
       }
 
       // 2. Converting to collaborative recipe if needed
@@ -128,57 +159,96 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         );
       }
 
-      // 5. Saving to Firebase
+      // Build the secondary shared_recipes doc BEFORE the primary save so a
+      // failure constructing it happens pre-access-grant → a clean
+      // RecipeShareResult.failed. After the primary save succeeds, nothing on
+      // the path to the return may throw uncaught (the secondary write catches
+      // its own), so a post-save outcome is only ever full or partial — never
+      // a spurious failed that would leave an accepted request stuck pending.
+      // (Issue #014: members added via subcollection, recipientIds passed
+      // separately to the repository below.)
+      final sharedRecipe = SharedRecipe.create(
+        originalRecipeId: recipeId,
+        sharedByUserId: currentUserId,
+        sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
+        sharedToUserIds: userIds,
+        recipeSnapshot: updatedRecipe,
+        allowCollaboration:
+            permission == ResourcePermission.admin ||
+            permission == ResourcePermission.editor,
+      );
+
+      // 5. Saving to Firebase (primary memberPermissions write = access grant)
       final success = await _saveRecipe(updatedRecipe);
       if (!success) {
         _setError(AppLocale.current.errorCouldNotSaveRecipe);
-        return false;
+        return RecipeShareResult.failed;
       }
 
-      // 6. ALSO write to shared_recipes collection for group content queries
+      // BUT-1503: the primary recipe save (memberPermissions, the source of
+      // truth for rules-based access) already succeeded, but the recipient
+      // only *finds* the share via this secondary `shared_recipes` doc — group
+      // and inbox queries read it, not the recipe's memberPermissions. A
+      // silently-dropped secondary write meant the recipient could be granted
+      // access yet never see the share, while the caller was told it succeeded.
+      //
+      // The write is idempotent (BUT-1132: the repository dedupes by
+      // (sharedByUserId, originalRecipeId) and addMember uses .set()), so we
+      // retry with bounded backoff to self-heal transient failures. If every
+      // attempt fails we return RecipeShareResult.partial: access WAS granted
+      // (the primary write succeeded), but the share isn't discoverable yet.
+      // UI callers that key off [fullyShared] still prompt a retry; callers
+      // that only needed access (accept-request, notify) key off
+      // [accessGranted] and proceed.
+      Object? secondaryError;
+      for (var attempt = 1; attempt <= _maxSecondaryWriteAttempts; attempt++) {
+        try {
+          // Note (Issue #014): Pass recipientIds separately since arrays removed from model
+          await _sharedRecipeRepository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: userIds,
+          );
+          secondaryError = null;
+          AppLogger.debug('✅ Recipe also written to shared_recipes collection');
+          break;
+        } catch (e) {
+          secondaryError = e;
+          AppLogger.warning(
+            'shared_recipes write attempt '
+            '$attempt/$_maxSecondaryWriteAttempts failed: $e',
+          );
+          if (attempt < _maxSecondaryWriteAttempts) {
+            await Future.delayed(_secondaryWriteBackoff * attempt);
+          }
+        }
+      }
+
+      // Notify UI of the primary save regardless of the secondary outcome —
+      // the recipe is now collaborative and any listening view must refresh.
+      // Guarded so a throwing listener can't reach the outer catch and turn a
+      // granted-access share into a spurious `failed` (which would strand an
+      // accepted request pending). Post-save the outcome is only partial/full.
       try {
-        // Create SharedRecipe entry for query purposes (Issue #014: members added via subcollection)
-        final sharedRecipe = SharedRecipe.create(
-          originalRecipeId: recipeId,
-          sharedByUserId: currentUserId,
-          sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
-          sharedToUserIds: userIds,
-          recipeSnapshot: updatedRecipe,
-          allowCollaboration:
-              permission == ResourcePermission.admin ||
-              permission == ResourcePermission.editor,
-        );
-
-        // Note (Issue #014): Pass recipientIds separately since arrays removed from model
-        await _sharedRecipeRepository.createSharedRecipe(
-          sharedRecipe,
-          recipientIds: userIds,
-        );
-
-        AppLogger.debug('✅ Recipe also written to shared_recipes collection');
+        _notifyListeners();
       } catch (e) {
-        // BUT-1131: secondary `shared_recipes` write failed AFTER the primary
-        // recipe save succeeded. Bump severity warning → error (this is rare
-        // and worth investigating in logs) and surface a sanitised message
-        // via setError so the UI can prompt the user to retry if the
-        // recipient can't find the share. We still return `true` because the
-        // primary write succeeded — rules-based access works without the
-        // secondary doc; it's only a query-optimisation.
+        AppLogger.warning('shareRecipeWithUsers listener threw (ignored): $e');
+      }
+
+      if (secondaryError != null) {
         AppLogger.error(
-          'Failed to write to shared_recipes collection (non-critical): $e',
+          'Failed to write to shared_recipes after '
+          '$_maxSecondaryWriteAttempts attempts: $secondaryError',
         );
         _setError(AppLocale.current.errorSharedRecipeMayNotBeVisible);
+        return RecipeShareResult.partial;
       }
 
-      // Notify UI of changes
-      _notifyListeners();
-
       AppLogger.success('Recipe $recipeId shared with ${userIds.length} users');
-      return true;
+      return RecipeShareResult.full;
     } catch (e) {
       AppLogger.error('❌ Could not share recipe: $e');
       _setError(AppLocale.current.errorCouldNotSaveRecipe);
-      return false;
+      return RecipeShareResult.failed;
     }
   }
 
@@ -213,12 +283,14 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return false;
       }
 
-      // Use existing shareRecipeWithUsers method for actual sharing
-      final success = await shareRecipeWithUsers(
+      // Use existing shareRecipeWithUsers method for actual sharing.
+      // BUT-1503: group-share is UI-facing, so key off fullyShared (a partial
+      // share prompts a retry that self-heals the discovery doc).
+      final success = (await shareRecipeWithUsers(
         recipeId,
         allMemberIds.toList(),
         permission,
-      );
+      )).fullyShared;
 
       if (success) {
         AppLogger.success(

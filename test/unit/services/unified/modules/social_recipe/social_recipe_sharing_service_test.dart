@@ -23,10 +23,12 @@
 /// - data-scope: the SharedRecipe doc written to the secondary collection
 ///   carries only `sharedByUserId` + `sharedByDisplayName`, never the
 ///   sender's email/phone (GDPR minimisation).
-/// - partial-write isolation: if the secondary `shared_recipes` write throws,
-///   the primary recipe-save still wins and the operation reports success
-///   (documented "non-critical" contract — pinned so a future refactor that
-///   silently flips this to fail is intentional).
+/// - secondary-write self-heal (BUT-1503, supersedes BUT-1131): the secondary
+///   `shared_recipes` write is retried with bounded backoff; a transient
+///   failure that succeeds on retry lands exactly one doc and returns true,
+///   but a failure that persists across all retries surfaces as `false` +
+///   setError (never a phantom success — the recipient finds the share only
+///   via this doc). The primary recipe-save still wins and the UI is notified.
 /// - if the primary save fails, NO secondary write happens (no orphan
 ///   shared_recipes doc), and the operation returns false.
 /// - unshareRecipe wipes `socialData` entirely (memberPermissions, owner,
@@ -63,14 +65,24 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 class _FakeSharedRecipeRepo extends Fake
     implements FirebaseSharedRecipeRepository {
   final List<({SharedRecipe doc, List<String> recipientIds})> calls = [];
+
+  /// When set, EVERY call throws this (models a persistent failure).
   Object? throwOnCreate;
+
+  /// When > 0, the first N attempts throw [transientError] then subsequent
+  /// calls succeed (models a transient failure that self-heals on retry).
+  int failFirstNAttempts = 0;
+  Object transientError = Exception('transient shared_recipes write failure');
+  int attemptCount = 0;
 
   @override
   Future<String> createSharedRecipe(
     SharedRecipe sharedRecipe, {
     required List<String> recipientIds,
   }) async {
+    attemptCount++;
     if (throwOnCreate != null) throw throwOnCreate!;
+    if (attemptCount <= failFirstNAttempts) throw transientError;
     calls.add((doc: sharedRecipe, recipientIds: recipientIds));
     return sharedRecipe.id;
   }
@@ -246,7 +258,7 @@ void main() {
           'friend-A',
         ], ResourcePermission.editor);
 
-        expect(ok, isFalse);
+        expect(ok, RecipeShareResult.failed);
         expect(h.saved, isEmpty);
         expect(h.repo.calls, isEmpty);
         expect(h.errors, isNotEmpty);
@@ -265,7 +277,7 @@ void main() {
         'friend-A',
       ], ResourcePermission.editor);
 
-      expect(ok, isFalse);
+      expect(ok, RecipeShareResult.failed);
       expect(h.saved, isEmpty);
       expect(h.repo.calls, isEmpty);
     });
@@ -287,7 +299,7 @@ void main() {
 
         expect(
           ok,
-          isFalse,
+          RecipeShareResult.failed,
           reason:
               'a stranger sharing someone else\'s recipe is a privilege '
               'escalation — must be refused',
@@ -313,7 +325,7 @@ void main() {
         'friend-A',
       ], ResourcePermission.editor);
 
-      expect(ok, isTrue);
+      expect(ok, RecipeShareResult.full);
       expect(h.saved, hasLength(1));
     });
 
@@ -334,7 +346,7 @@ void main() {
         'friend-A',
       ], ResourcePermission.editor);
 
-      expect(ok, isTrue);
+      expect(ok, RecipeShareResult.full);
     });
   });
 
@@ -356,7 +368,7 @@ void main() {
         'friend-B',
       ], ResourcePermission.viewer);
 
-      expect(ok, isTrue);
+      expect(ok, RecipeShareResult.full);
       expect(h.saved, hasLength(1));
       final saved = h.saved.single;
       expect(saved.type, RecipeType.collaborative);
@@ -443,7 +455,7 @@ void main() {
         'friend-B',
       ], ResourcePermission.viewer);
 
-      expect(ok, isTrue);
+      expect(ok, RecipeShareResult.full);
       final saved = h.saved.single;
       final perms = saved.socialData!.memberPermissions!;
       expect(perms.keys, containsAll(['me-uid', 'friend-A', 'friend-B']));
@@ -512,7 +524,7 @@ void main() {
           ResourcePermission.viewer,
         );
 
-        expect(ok, isFalse);
+        expect(ok, RecipeShareResult.failed);
         expect(h.saved, isEmpty);
         expect(h.repo.calls, isEmpty);
         expect(h.errors.last, contains(cap.toString()));
@@ -545,7 +557,7 @@ void main() {
 
         expect(
           ok,
-          isTrue,
+          RecipeShareResult.full,
           reason: 'at-cap re-share must succeed when no new members added',
         );
       },
@@ -569,7 +581,7 @@ void main() {
           'friend-A',
         ], ResourcePermission.editor);
 
-        expect(ok, isFalse);
+        expect(ok, RecipeShareResult.failed);
         expect(
           h.repo.calls,
           isEmpty,
@@ -578,13 +590,16 @@ void main() {
       },
     );
 
-    /// Pinned (documented "non-critical" contract): secondary write throw
-    /// is swallowed; the operation still returns true because the primary
-    /// recipe was updated and the recipient gets access via rules. The
-    /// secondary collection is a query-optimisation, not the source of
-    /// truth. If this test fails because someone tightened the contract,
-    /// that may be a real improvement — re-evaluate, don't weaken.
-    test('secondary write throws → primary still wins, returns true', () async {
+    /// BUT-1503 (supersedes BUT-1131's "best-effort, return true" contract):
+    /// the recipient only *finds* a share via the secondary `shared_recipes`
+    /// doc, so a persistently failing secondary write is a real failure of
+    /// the operation's intent — reporting success while the recipient can
+    /// never see the share is the bug. After the bounded self-heal retries
+    /// are exhausted the operation must surface the failure (return false),
+    /// NOT silently return true. The primary save still happened (the recipe
+    /// is collaborative) and the UI is still notified, but the caller is told
+    /// the share did not fully land so it can prompt a retry.
+    test('secondary write throws on every retry → returns false', () async {
       final h = _Harness();
       h.seed(_personal(id: 'r1'));
       h.repo.throwOnCreate = Exception('shared_recipes write denied');
@@ -596,26 +611,66 @@ void main() {
 
       expect(
         ok,
-        isTrue,
-        reason: 'documented behaviour: secondary write is best-effort',
+        RecipeShareResult.partial,
+        reason:
+            'BUT-1503: a persistently failing secondary write is a PARTIAL '
+            'share — access was granted (primary write) but not yet discoverable',
       );
-      expect(h.saved, hasLength(1), reason: 'primary save must have happened');
+      expect(
+        ok.accessGranted,
+        isTrue,
+        reason:
+            'BUT-1503: accept-request and notify callers must see access was '
+            'granted, so they do not treat this as a total failure',
+      );
+      expect(h.saved, hasLength(1), reason: 'primary save still happened');
       expect(
         h.notifications,
         greaterThanOrEqualTo(1),
-        reason: 'UI should still be notified of the successful primary save',
+        reason: 'UI is still notified of the successful primary save',
+      );
+      expect(
+        h.repo.attemptCount,
+        greaterThan(1),
+        reason: 'BUT-1503: the idempotent secondary write must be retried',
       );
     });
 
-    /// BUT-1131: when the secondary `shared_recipes` write throws, the
-    /// catch block must surface a sanitised, non-empty error message to
-    /// the UI via setError — silent failure means the user has no signal
-    /// to retry if the recipient can't find the shared recipe in their
-    /// inbox. The primary write still wins (returns true) but the error
-    /// channel is populated so a UI can prompt "share may not be visible,
-    /// try again".
+    /// BUT-1503 self-heal: a secondary write that fails once then succeeds on
+    /// retry must land exactly one `shared_recipes` doc and return true — the
+    /// bounded retry absorbs a transient failure without bothering the user.
+    test('secondary write fails once then succeeds → returns true, one '
+        'shared_recipes write', () async {
+      final h = _Harness();
+      h.seed(_personal(id: 'r1'));
+      h.repo.failFirstNAttempts = 1;
+      final svc = h.build();
+
+      final ok = await svc.shareRecipeWithUsers('r1', [
+        'friend-A',
+      ], ResourcePermission.editor);
+
+      expect(
+        ok,
+        RecipeShareResult.full,
+        reason: 'transient failure self-heals on retry',
+      );
+      expect(
+        h.repo.calls,
+        hasLength(1),
+        reason:
+            'idempotent retry must not duplicate the shared_recipes doc — '
+            'exactly one successful write',
+      );
+      expect(h.errors, isEmpty, reason: 'a self-healed write shows no error');
+    });
+
+    /// BUT-1503: when the secondary write fails on every retry, the surfaced
+    /// error must be the sanitised localised key — never the raw exception
+    /// text — so the UI can prompt "share may not be visible, try again"
+    /// without leaking internals.
     test(
-      'secondary write throws → setError called with sanitised message',
+      'secondary write throws on every retry → setError sanitised message',
       () async {
         final h = _Harness();
         h.seed(_personal(id: 'r1'));
@@ -630,13 +685,15 @@ void main() {
 
         expect(
           ok,
-          isTrue,
-          reason: 'BUT-1131: primary save succeeded — return true',
+          RecipeShareResult.partial,
+          reason:
+              'BUT-1503: exhausted retries → partial (access granted, '
+              'discovery doc not yet written)',
         );
         expect(
           h.errors,
           isNotEmpty,
-          reason: 'BUT-1131: secondary failure must surface via setError',
+          reason: 'secondary failure must surface via setError',
         );
         final lastErr = h.errors.last;
         expect(lastErr, isNotEmpty);
@@ -665,7 +722,7 @@ void main() {
         'friend-A',
       ], ResourcePermission.editor);
 
-      expect(ok, isFalse);
+      expect(ok, RecipeShareResult.failed);
       expect(h.errors, isNotEmpty);
     });
 
@@ -678,7 +735,7 @@ void main() {
         'friend-A',
       ], ResourcePermission.editor);
 
-      expect(ok, isFalse);
+      expect(ok, RecipeShareResult.failed);
       expect(h.saved, isEmpty);
       expect(h.repo.calls, isEmpty);
     });

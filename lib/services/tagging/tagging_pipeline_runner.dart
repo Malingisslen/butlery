@@ -82,10 +82,16 @@ class TaggingPhaseCallables {
     String? userId,
   )
   lookup;
+  // BUT-1483: phase1/phase5/phase5FromPhase1 are the config-backed phases.
+  // Production leaves them null so [TaggingPipelineRunner.run] resolves ONE
+  // config-consistent pair per run (via [TagGenerator.resolveConfigPhases]) and
+  // calls the generator directly — this is what stops a concurrent config
+  // rebuild from swapping phases mid-run. Tests inject them (non-null) to
+  // simulate per-phase hangs.
   final Future<Phase1Result> Function(
     IngredientLookupResult,
     Recipe,
-  )
+  )?
   phase1;
   final Future<Phase2Result> Function(Phase1Result, Recipe) phase2;
   final Future<Phase3Result> Function(
@@ -101,21 +107,21 @@ class TaggingPhaseCallables {
     Recipe,
   )
   phase4;
-  final Future<Phase5Result> Function(Phase4Result, Recipe) phase5;
+  final Future<Phase5Result> Function(Phase4Result, Recipe)? phase5;
   final Future<Phase5ResultPartial> Function(
     Phase1Result,
     Recipe,
-  )
+  )?
   phase5FromPhase1;
 
   const TaggingPhaseCallables({
     required this.lookup,
-    required this.phase1,
+    this.phase1,
     required this.phase2,
     required this.phase3,
     required this.phase4,
-    required this.phase5,
-    required this.phase5FromPhase1,
+    this.phase5,
+    this.phase5FromPhase1,
   });
 }
 
@@ -123,22 +129,19 @@ TaggingPhaseCallables _defaultPhaseCallables(
   IngredientLookupService lookupService,
   TagGenerator generator,
 ) {
+  // BUT-1483: phase1/phase5/phase5FromPhase1 are intentionally omitted (null).
+  // The config-backed phases are resolved once per run inside [run] and passed
+  // to the generator there, so a concurrent config rebuild can't swap them
+  // mid-run. Only the config-independent phases are bound here.
   return TaggingPhaseCallables(
     lookup: (ingredients, userId) =>
         lookupService.lookupFromRaw(ingredients, userId: userId),
-    phase1: (lookup, recipe) =>
-        Future<Phase1Result>(() => generator.runPhase1(lookup, recipe)),
     phase2: (p1, recipe) =>
         Future<Phase2Result>(() => generator.runPhase2(p1, recipe)),
     phase3: (p1, p2, recipe) =>
         Future<Phase3Result>(() => generator.runPhase3(p1, p2, recipe)),
     phase4: (p1, p2, p3, recipe) =>
         Future<Phase4Result>(() => generator.runPhase4(p1, p2, p3, recipe)),
-    phase5: (p4, recipe) =>
-        Future<Phase5Result>(() => generator.runPhase5(p4, recipe)),
-    phase5FromPhase1: (p1, recipe) => Future<Phase5ResultPartial>(
-      () => generator.runPhase5FromPhase1(p1, recipe),
-    ),
   );
 }
 
@@ -227,12 +230,32 @@ class TaggingPipelineRunner {
       );
     }
 
+    // BUT-1483: resolve the config-backed (phase1, phase5) pair ONCE for this
+    // run so a concurrent config rebuild can't swap them between phases.
+    // Resolved whenever any config-backed callable is unset (production);
+    // stays null only when a test injected all of them (they drive the phases
+    // directly to simulate hangs).
+    final configPhases =
+        (_phases.phase1 == null ||
+            _phases.phase5 == null ||
+            _phases.phase5FromPhase1 == null)
+        ? _generator.resolveConfigPhases()
+        : null;
+
     // Phase 1 — base tags (FLOOR — allergen/dietary safety).
     final phase1Exec = await _runAsync<Phase1Result>(
       phaseIndex: 1,
       phaseName: 'phase1_base',
       budget: kPhase1Budget,
-      work: () => _phases.phase1(lookupResult, recipe),
+      work: () => _phases.phase1 != null
+          ? _phases.phase1!(lookupResult, recipe)
+          : Future<Phase1Result>(
+              () => _generator.runPhase1(
+                configPhases!.phase1,
+                lookupResult,
+                recipe,
+              ),
+            ),
     );
     outcomes.add(phase1Exec.outcome);
     final phase1 = phase1Exec.value;
@@ -302,7 +325,15 @@ class TaggingPipelineRunner {
         phaseIndex: 5,
         phaseName: 'phase5_cuisine',
         budget: kPhase5Budget,
-        work: () => _phases.phase5(phase4, recipe),
+        work: () => _phases.phase5 != null
+            ? _phases.phase5!(phase4, recipe)
+            : Future<Phase5Result>(
+                () => _generator.runPhase5(
+                  configPhases!.phase5,
+                  phase4,
+                  recipe,
+                ),
+              ),
       );
       outcomes.add(phase5Exec.outcome);
       phase5 = phase5Exec.value;
@@ -311,7 +342,15 @@ class TaggingPipelineRunner {
         phaseIndex: 5,
         phaseName: 'phase5_cuisine_from_phase1',
         budget: kPhase5Budget,
-        work: () => _phases.phase5FromPhase1(phase1, recipe),
+        work: () => _phases.phase5FromPhase1 != null
+            ? _phases.phase5FromPhase1!(phase1, recipe)
+            : Future<Phase5ResultPartial>(
+                () => _generator.runPhase5FromPhase1(
+                  configPhases!.phase5,
+                  phase1,
+                  recipe,
+                ),
+              ),
       );
       outcomes.add(phase5Exec.outcome);
       phase5Partial = phase5Exec.value;

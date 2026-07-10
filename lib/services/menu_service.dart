@@ -600,16 +600,10 @@ class MenuService extends BaseService {
         return true;
       }
       // BUT-1464: trust-guarded reads — manual overrides win, stale FREE is
-      // not trusted for an explicit "utan X" prompt constraint.
-      for (final a in p.globalAllergenAvoid) {
-        if (MenuAllergenTrust.effectiveAllergenStatus(r, a) != TriState.free) {
-          return false;
-        }
-      }
-      for (final d in p.globalDietaryRequire) {
-        if (MenuAllergenTrust.effectiveDietaryStatus(r, d) != TriState.free) {
-          return false;
-        }
+      // not trusted for an explicit "utan X" prompt constraint. Shared with
+      // the per-slot filter via _allTrustedFree so the two never diverge.
+      if (!_allTrustedFree(r, p.globalAllergenAvoid, p.globalDietaryRequire)) {
+        return false;
       }
     }
     // Tag + ingredient exclusion (doesn't require tagResult)
@@ -625,20 +619,55 @@ class MenuService extends BaseService {
     return true;
   }
 
+  /// BUT-1466/1464: true iff every listed allergen/dietary key resolves to a
+  /// TRUSTED FREE via [MenuAllergenTrust] — manual overrides win and a stale/
+  /// low-coverage auto-FREE is downgraded to UNKNOWN. Works on untagged recipes
+  /// too: a null tagResult reads as UNKNOWN unless a manual override says
+  /// otherwise, so an untagged recipe qualifies only when a human marked it
+  /// free. Shared by [_passesGlobals] and [_matchesConstraint] so the global
+  /// and per-slot filters never disagree on what counts as safe.
+  static bool _allTrustedFree(
+    Recipe r,
+    Iterable<String> allergenKeys,
+    Iterable<String> dietaryKeys,
+  ) {
+    for (final a in allergenKeys) {
+      if (MenuAllergenTrust.effectiveAllergenStatus(r, a) != TriState.free) {
+        return false;
+      }
+    }
+    for (final d in dietaryKeys) {
+      if (MenuAllergenTrust.effectiveDietaryStatus(r, d) != TriState.free) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   static bool _matchesConstraint(Recipe r, RecipeConstraint c) {
     if (c.isUnconstrained) return true;
     final tr = r.tagResult;
-    if (tr == null) return false;
-    for (final d in c.dietaryFree) {
-      if (tr.getDietaryStatus(d) != TriState.free) return false;
-    }
-    for (final a in c.allergenFree) {
-      if (tr.getAllergenStatus(a) != TriState.free) return false;
-    }
-    if (c.requiredTags.isNotEmpty && !tr.hasAllTags(c.requiredTags)) {
+    // BUT-1466: trust-guarded allergen/dietary reads via _allTrustedFree.
+    // Do NOT early-return on tr == null — MenuAllergenTrust honours a manual
+    // "utan X" override even on an untagged recipe, so a human-marked-free
+    // untagged recipe must still qualify (it was previously wrongly excluded).
+    // Untagged with no override reads UNKNOWN → not free → excluded (safe).
+    if (!_allTrustedFree(r, c.allergenFree, c.dietaryFree)) return false;
+
+    // The remaining checks read the auto tagResult; an untagged recipe can't
+    // satisfy a positive tag/cuisine requirement, but a pure allergen/dietary/
+    // time constraint it now can.
+    if (c.requiredTags.isNotEmpty &&
+        (tr == null || !tr.hasAllTags(c.requiredTags))) {
       return false;
     }
-    if (c.excludedTags.isNotEmpty && c.excludedTags.any(tr.tags.contains)) {
+    // An untagged recipe can't be proven free of an excluded tag, so exclude
+    // it from a "utan X" slot (conservative — a "no grytor" slot must not
+    // surface a recipe that might be a gryta). Only allergen/dietary/time
+    // constraints newly match untagged recipes (via a manual override); the
+    // tag-based checks stay strict as they were before BUT-1466.
+    if (c.excludedTags.isNotEmpty &&
+        (tr == null || c.excludedTags.any(tr.tags.contains))) {
       return false;
     }
     if (c.requiredCuisines.isNotEmpty) {

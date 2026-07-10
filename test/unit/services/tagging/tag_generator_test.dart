@@ -1,11 +1,92 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    show ServiceLocator;
+import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
+import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
 import '../../../infrastructure/helpers/tagging_test_helper.dart';
+
+/// BUT-1483: a [TagConfigService] test double whose config arrives *after*
+/// construction — mirrors the real boot race where [TagGenerator] is built
+/// before [TagConfigService] finishes its late Firebase load.
+class _LateArrivingTagConfigService extends TagConfigService {
+  FirebaseTagConfig? _late;
+
+  _LateArrivingTagConfigService() : super(firestore: FakeFirebaseFirestore());
+
+  @override
+  FirebaseTagConfig? get configOrNull => _late;
+
+  /// Simulates the remote config finishing its load mid-session.
+  void arrive(FirebaseTagConfig config) => _late = config;
+}
+
+/// One distinctive cuisine whose Swedish tag `testkök` is emitted by neither
+/// the hardcoded static fallback nor the seeded cuisines — so seeing it can
+/// only mean Phase 5 was built from a config carrying this entry.
+const Map<String, dynamic> _markerCuisineEntry = {
+  'key': 'marker_cuisine',
+  'tags': {'sv': 'testkök'},
+  'titleKeywords': ['zzcuisine'],
+  'ingredientKeywords': <String>[],
+  'ingredientGroups': <String>[],
+  'minIngredientMatches': 1,
+  'matchMode': 'title_only',
+  'enabled': true,
+  'priority': 0,
+};
+
+/// The real seeded production config (so this fails if the generated artifacts
+/// ever stop parsing) with the cuisines document swapped for [entries]. The
+/// cuisines `version` is pinned to 999 so every variant shares the same
+/// `combinedVersion` — letting a test build two configs that collide on
+/// version but differ in content (needed to exercise the no-rebuild guard).
+FirebaseTagConfig _seededConfigWithCuisines(
+  List<String> displayOrder,
+  List<Map<String, dynamic>> entries,
+) {
+  Map<String, dynamic> load(String name) =>
+      jsonDecode(
+            File('scripts/output/tagConfigs/$name.json').readAsStringSync(),
+          )
+          as Map<String, dynamic>;
+  return FirebaseTagConfig.fromDocuments(
+    allergensData: load('allergens'),
+    dietaryData: load('dietary'),
+    cuisinesData: {
+      'schemaVersion': 1,
+      'version': 999,
+      'updatedAt': '2026-01-01T00:00:00.000Z',
+      'updatedBy': 'but-1483-test',
+      'displayOrder': displayOrder,
+      'entries': entries,
+    },
+    propertiesData: load('properties'),
+    displayData: load('display'),
+  );
+}
+
+/// Seeded config that emits the marker cuisine.
+FirebaseTagConfig _lateConfigWithMarkerCuisine() =>
+    _seededConfigWithCuisines(['marker_cuisine'], [_markerCuisineEntry]);
+
+/// A DIFFERENT config that shares the same `combinedVersion` (same doc
+/// versions) but has no cuisines — so Phase 5 falls back to static and never
+/// emits the marker. Used to prove an unchanged version does not rebuild.
+FirebaseTagConfig _sameVersionConfigWithoutMarker() =>
+    _seededConfigWithCuisines(const [], const []);
 
 void main() {
   late TagGenerator generator;
@@ -3337,5 +3418,188 @@ void main() {
         });
       });
     });
+  });
+
+  // ===========================================================================
+  // BUT-1483: TagGenerator rebuilds its config-backed phases (allergen/dietary
+  // Phase 1 + cuisine Phase 5) when the remote config loads *after* the
+  // generator was constructed during boot — instead of staying pinned to the
+  // static fallback for the whole session.
+  // ===========================================================================
+  group('BUT-1483: late-loaded config rebuilds config-backed phases', () {
+    late _LateArrivingTagConfigService configService;
+
+    setUp(() {
+      configService = _LateArrivingTagConfigService();
+      GetIt.instance.registerSingleton<TagConfigService>(configService);
+      ServiceLocator.initialize(DIContainer());
+    });
+
+    tearDown(() {
+      ServiceLocator.reset();
+      if (GetIt.instance.isRegistered<TagConfigService>()) {
+        GetIt.instance.unregister<TagConfigService>();
+      }
+    });
+
+    test(
+      'a run picks up the real config when it arrives after construction',
+      () {
+        // Built during "boot": no live config yet (configOrNull == null), so
+        // the config-backed phases start on the static fallback.
+        final generator = TagGenerator();
+        final recipe = RecipeBuilder()
+            .withTitle('Zzcuisine Testrätt')
+            .withIngredients(['ris'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('ris', 'grain', {}),
+        ]);
+
+        final beforeConfig = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
+        expect(
+          beforeConfig.hasTag('testkök'),
+          isFalse,
+          reason: 'static fallback must not emit a Firebase-only cuisine tag',
+        );
+
+        // The remote config finishes loading mid-session — a real, non-null
+        // combinedVersion, different from the null the generator was built with.
+        configService.arrive(_lateConfigWithMarkerCuisine());
+
+        final afterConfig = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
+        expect(
+          afterConfig.hasTag('testkök'),
+          isTrue,
+          reason:
+              'a newer config version must trigger a rebuild of the '
+              'config-backed phases that picks up the late-loaded cuisine',
+        );
+      },
+    );
+
+    test(
+      'never rebuilds over an injected phase (test-provided instances are kept)',
+      () {
+        // Injecting a phase disables config rebuilding entirely, so even a
+        // late config must not change this generator's output.
+        final generator = TagGenerator(
+          phase5: TagPhase5Cuisine(firebaseConfig: null),
+        );
+        final recipe = RecipeBuilder()
+            .withTitle('Zzcuisine Testrätt')
+            .withIngredients(['ris'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('ris', 'grain', {}),
+        ]);
+
+        configService.arrive(_lateConfigWithMarkerCuisine());
+
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
+        expect(
+          result.hasTag('testkök'),
+          isFalse,
+          reason: 'an injected phase5 must never be rebuilt from live config',
+        );
+      },
+    );
+
+    test(
+      'does not rebuild when the live config version is unchanged (cost guard)',
+      () {
+        // Built WITH the marker config, so phase 5 already emits testkök.
+        final markerConfig = _lateConfigWithMarkerCuisine();
+        final generator = TagGenerator(firebaseConfig: markerConfig);
+        final recipe = RecipeBuilder()
+            .withTitle('Zzcuisine Testrätt')
+            .withIngredients(['ris'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('ris', 'grain', {}),
+        ]);
+
+        // The live service exposes a genuinely different config that happens
+        // to share the same combinedVersion (identical doc versions) but drops
+        // the marker cuisine. Guard the premise so the test can't silently rot.
+        final sameVersionNoMarker = _sameVersionConfigWithoutMarker();
+        expect(
+          sameVersionNoMarker.combinedVersion,
+          markerConfig.combinedVersion,
+          reason: 'premise: the two configs must collide on combinedVersion',
+        );
+        configService.arrive(sameVersionNoMarker);
+
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
+        // Version unchanged → no rebuild → still the marker config's phase 5.
+        // If the equality guard were dropped, this would rebuild to the
+        // marker-less config and testkök would disappear.
+        expect(
+          result.hasTag('testkök'),
+          isTrue,
+          reason: 'an unchanged config version must not trigger a rebuild',
+        );
+      },
+    );
+
+    test(
+      'a resolved pair is isolated from a later config change (concurrency)',
+      () {
+        // This is the core of the cross-recipe fix: a run captures its phase
+        // pair once, so a config that arrives mid-run (another recipe rebuild)
+        // cannot swap phase 5 out from under it.
+        final generator = TagGenerator();
+        final recipe = RecipeBuilder()
+            .withTitle('Zzcuisine Testrätt')
+            .withIngredients(['ris'])
+            .build();
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('ris', 'grain', {}),
+        ]);
+
+        // Pair captured BEFORE the config arrives — boot/static phases.
+        final captured = generator.resolveConfigPhases();
+        final p1Before = captured.phase1.calculate(lookup, recipe);
+        expect(
+          captured.phase5
+              .calculateFromPhase1(p1Before, recipe)
+              .hasTag('testkök'),
+          isFalse,
+        );
+
+        // Config arrives (as if a concurrent recipe triggered the rebuild).
+        configService.arrive(_lateConfigWithMarkerCuisine());
+
+        // A freshly-resolved pair sees the new cuisine…
+        final fresh = generator.resolveConfigPhases();
+        final p1Fresh = fresh.phase1.calculate(lookup, recipe);
+        expect(
+          fresh.phase5.calculateFromPhase1(p1Fresh, recipe).hasTag('testkök'),
+          isTrue,
+        );
+
+        // …but the EARLIER captured pair is unchanged — it still tags against
+        // the config it was resolved with. An in-flight run is never mixed.
+        expect(
+          captured.phase5
+              .calculateFromPhase1(p1Before, recipe)
+              .hasTag('testkök'),
+          isFalse,
+          reason: 'a captured pair must not be retroactively swapped',
+        );
+      },
+    );
   });
 }

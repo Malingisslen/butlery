@@ -1919,3 +1919,39 @@ followed by a digit as a decimal comma, not a separator. 16/16 diff tests, tsc c
   blob survives as one alias. Rare; the diff report's before/after aliasesSv is
   the review surface. The `(?!\d)` lookahead is zero-width, so the digit is never
   consumed — trailing/spaced commas split normally.
+
+### 2026-07-09 — BUT-1512 collection-group wildcard suite: friend_categories gap [Pattern discovered]
+
+`collection-group-wildcards-rules.test.ts` isolation-tests the owner-shape catch-all
+wildcards in `firestore.rules` on a NOVEL parent (`cg_wild/...`) so only the
+`{path=**}/<name>/{id}` rule can match — the same trick as the members suite. There are
+**seven** such catch-alls (grep `match /\{path=\*\*\}/` in firestore.rules): members,
+friend_categories, engagements, comments, ratings, recipes, pings. The new suite covers
+five (engagements/comments/ratings/recipes/pings) and correctly defers members to its own
+suite — but its docstring says "the remaining five" and silently omits
+**friend_categories** (`firestore.rules:2087`, `allow read if request.auth.uid in
+resource.data.friendUserIds`). That is a SIXTH owner-field-shaped catch-all with the exact
+latent-trust risk the suite exists to guard ("every present AND future subcollection of
+that name carries the expected owner shape").
+
+Its existing `friend-categories-rules.test.ts` does NOT close the gap: it only exercises
+`users/{ownerUid}/friend_categories/{categoryId}`, which matches the **narrower** per-user
+rule at `firestore.rules:436`, not the catch-all at 2087. So the friend_categories
+collection-group wildcard is untested in isolation. Fix = add friend_categories cases to
+the BUT-1512 suite on a novel parent: owner-in-array reads; array-missing denied;
+foreign-only-array denied; unauth denied.
+
+**Pattern**: when a "cover all the catch-all wildcards" suite lands, grep
+`match /\{path=\*\*\}/` and reconcile the count against the docstring — a wildcard with a
+sibling per-user rule (friend_categories, members) is the easy one to miss because a
+same-named narrower suite *looks* like coverage but tests a different rule block.
+
+Everything else verified clean: all five covered rules match the test assertions
+byte-for-byte (engagements = doc-id gate, recipes = isAdmin() with `admins/{uid}` seeded to
+match `isAdmin()` at rules:57, pings = from/to OR). Wiring is correct and consistent across
+all three surfaces — `test:rules:collection-group-wildcards` script + appended to
+`test:rules:all` (package.json), and listed in BOTH the `pull_request` and `push` path
+filters of `firestore-rules.yml` (avoids the BUT-1392 push-list-drift trap). Emulator-bound
+`test:rules:` prefix keeps it out of the no-emulator `run-ci-unit-tests.js` runner. Direct
+get/delete (not a real `collectionGroup()` query) is the accepted members-suite convention —
+not a finding.

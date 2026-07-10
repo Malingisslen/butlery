@@ -789,3 +789,38 @@ exact new rule lines (events L1941, stats L2419), each paired with L2451.
    modular import needed.
 
 No firestore.rules edits (rules authored by the task author, verified correct + minimal).
+
+### 2026-07-09 — collection-group-wildcards-rules.test.ts reviewed (BUT-1512, 23/23 green)
+
+Reviewed the new suite covering the five owner-shaped `{path=**}/<name>/{id}`
+catch-alls that the dedicated `members` suite (BUT-463) doesn't cover:
+`engagements` (DOC-ID gate L2095), `comments` (commentedBy L2102), `ratings`
+(ratedBy L2110), `recipes` (isAdmin-only read L2119), `pings` (fromUserId||toUserId
+L2128). Rule shapes verified against firestore.rules — test claims match exactly.
+Wiring complete: npm `test:rules:collection-group-wildcards`, appended to
+`test:rules:all`, in BOTH `firestore-rules.yml` path blocks. Project id
+`butlery-cg-wildcards-test`.
+
+Map rows to add:
+
+| `/{path=**}/engagements/{userId}` (doc-id gate) | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
+| `/{path=**}/comments/{commentId}` (commentedBy) | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
+| `/{path=**}/ratings/{ratingId}` (ratedBy) | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
+| `/{path=**}/recipes/{recipeId}` (admin read) | `collection-group-wildcards-rules.test.ts` | (also in admin-dashboard suite) |
+| `/{path=**}/pings/{pingId}` (from/toUserId) | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
+
+**Idempotent-without-clearFirestore pattern (worth reusing).** This suite has NO
+namespace clear yet is re-run-safe on the persistent emulator because EVERY test
+re-`seed()`s its doc via `withSecurityRulesDisabled` before the read/delete under
+test (delete tests re-seed then delete). `.set()` overwrites, so a leftover doc
+from a prior run is harmless — the persistence gotcha only bites suites whose
+create-allow doc ids aren't re-seeded. When a suite is all reads+deletes on
+pre-seeded docs, per-run tokens/clearFirestore are unnecessary.
+
+**Small coverage gaps (not blockers), pinned for a future top-up:**
+- comments/ratings/pings have no explicit *unauthenticated*-read deny (engagements
+  e4 + recipes rec3 do). The `isAuthenticated()` short-circuit branch is trivial
+  CEL and the deny is already proven via foreign/missing-field cases, so Low.
+- `recipes` catch-all is read-only but has no negative write/delete test proving
+  an admin CANNOT write via it (rule comment claims "admins never write here"). A
+  regression opening write would go unpinned. Low.

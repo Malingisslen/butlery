@@ -30,6 +30,8 @@ import 'package:butlery/services/social/modules/recipe_share_request_module.dart
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_sharing_service.dart'
+    show RecipeShareResult;
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
@@ -154,10 +156,10 @@ void main() {
     coordinator = _MockSocialRecipeCoordinator();
     notifier = _SpyNotificationService();
 
-    // Default: the in-place share succeeds. Individual tests override.
+    // Default: the in-place share fully succeeds. Individual tests override.
     when(
       () => coordinator.shareRecipeWithUsers(any(), any(), any()),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer((_) async => RecipeShareResult.full);
 
     if (GetIt.instance.isRegistered<NotificationService>()) {
       GetIt.instance.unregister<NotificationService>();
@@ -349,21 +351,53 @@ void main() {
       expect(requestRepo.statusUpdates, isEmpty);
     });
 
-    test('share fails (returns false) → false, status NOT flipped', () async {
-      when(
-        () => coordinator.shareRecipeWithUsers(any(), any(), any()),
-      ).thenAnswer((_) async => false);
-      final req = makeRequest();
+    test(
+      'share fails (no access granted) → false, status NOT flipped',
+      () async {
+        when(
+          () => coordinator.shareRecipeWithUsers(any(), any(), any()),
+        ).thenAnswer((_) async => RecipeShareResult.failed);
+        final req = makeRequest();
 
-      final ok = await module.acceptRecipeShareRequest(req);
+        final ok = await module.acceptRecipeShareRequest(req);
 
-      expect(ok, isFalse);
-      expect(
-        requestRepo.statusUpdates,
-        isEmpty,
-        reason: 'must not mark accepted when the share itself failed',
-      );
-    });
+        expect(ok, isFalse);
+        expect(
+          requestRepo.statusUpdates,
+          isEmpty,
+          reason: 'must not mark accepted when access was never granted',
+        );
+      },
+    );
+
+    test(
+      'BUT-1503: partial share (access granted, discovery-doc write failed) → '
+      'accepted, status flipped',
+      () async {
+        // The primary memberPermissions write succeeded (requester can open
+        // the recipe) but the secondary shared_recipes doc failed. The request
+        // must NOT be left stuck pending forever — access exists.
+        when(
+          () => coordinator.shareRecipeWithUsers(any(), any(), any()),
+        ).thenAnswer((_) async => RecipeShareResult.partial);
+        final req = makeRequest();
+
+        final ok = await module.acceptRecipeShareRequest(req);
+
+        expect(ok, isTrue, reason: 'access was granted, so accept succeeds');
+        expect(
+          requestRepo.statusUpdates,
+          hasLength(1),
+          reason:
+              'BUT-1503: a granted-access partial share must flip to '
+              'accepted, not stay pending forever',
+        );
+        expect(
+          requestRepo.statusUpdates.single.$2['status'],
+          SocialRequestStatus.accepted.name,
+        );
+      },
+    );
 
     test('owner guard: non-owner currentUserId → false, no share', () async {
       // Current user is someone other than the request's toUserId ('me-uid').

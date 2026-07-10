@@ -39,6 +39,10 @@ void main() {
     registerFallbackValue(_createTestLookupResult());
     registerFallbackValue(const Duration(seconds: 30));
     registerFallbackValue(_createTestIngredientData());
+    // BUT-1483: runPhase1/runPhase5 now take the resolved config-backed phase
+    // as their first arg, so mocktail needs fallbacks for those types too.
+    registerFallbackValue(TagPhase1Base());
+    registerFallbackValue(TagPhase5Cuisine());
     // BUT-553: per-phase methods need Phase*Result fallbacks so mocktail
     // can match `any()` for the new runPhaseN signatures.
     registerFallbackValue(_createTestPhase1Result(_createTestLookupResult()));
@@ -114,6 +118,12 @@ void main() {
     when(() => mockLookupService.initialize()).thenAnswer((_) async {});
     when(() => mockLookupService.dispose()).thenAnswer((_) async {});
 
+    // BUT-1483: the runner resolves the config-backed phase pair once per run
+    // via the generator; give the mock a valid (boot) pair by default.
+    when(
+      () => mockTagGenerator.resolveConfigPhases(),
+    ).thenReturn((phase1: TagPhase1Base(), phase5: TagPhase5Cuisine()));
+
     service = TaggingService(
       lookupService: mockLookupService,
       tagGenerator: mockTagGenerator,
@@ -169,7 +179,7 @@ void main() {
           ),
         ).thenAnswer((_) async => lookupResult);
         when(
-          () => mockTagGenerator.runPhase1(any(), any()),
+          () => mockTagGenerator.runPhase1(any(), any(), any()),
         ).thenReturn(phase1Result);
         when(
           () => mockTagGenerator.runPhase2(any(), any()),
@@ -181,7 +191,7 @@ void main() {
           () => mockTagGenerator.runPhase4(any(), any(), any(), any()),
         ).thenReturn(phase4Result);
         when(
-          () => mockTagGenerator.runPhase5(any(), any()),
+          () => mockTagGenerator.runPhase5(any(), any(), any()),
         ).thenReturn(phase5Result);
         when(
           () => mockTagGenerator.assembleResult(
@@ -208,8 +218,8 @@ void main() {
           ),
         ).called(1);
         // Each phase invoked exactly once on the happy path.
-        verify(() => mockTagGenerator.runPhase1(any(), any())).called(1);
-        verify(() => mockTagGenerator.runPhase5(any(), any())).called(1);
+        verify(() => mockTagGenerator.runPhase1(any(), any(), any())).called(1);
+        verify(() => mockTagGenerator.runPhase5(any(), any(), any())).called(1);
       });
 
       test('returns empty TagResult for recipe with no ingredients', () async {
@@ -264,7 +274,7 @@ void main() {
           expect(result.coverage, 0.0);
           expect(result.unknownIngredients, ['tomat']);
           // No phases should run when lookup fails.
-          verifyNever(() => mockTagGenerator.runPhase1(any(), any()));
+          verifyNever(() => mockTagGenerator.runPhase1(any(), any(), any()));
         },
       );
     });

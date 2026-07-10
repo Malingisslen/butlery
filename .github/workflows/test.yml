@@ -280,9 +280,11 @@ jobs:
       # Hard local coverage floor. Codecov is the primary gate, but if the
       # token is unavailable (outage, rotated secret) the dashboard fails open;
       # this step fails the build locally so regressions can't sneak in.
-      # BUT-1149: temporarily 55.0 (from 60.0); restore to 60.0 after the
-      # follow-up sprint pushes the remaining ~5pp. BUT-1193 did NOT change
-      # this floor — only re-timed when it runs.
+      # BUT-1149: temporarily 55.0 (from 60.0); restore to 60.0 once HEAD
+      # actually clears it. Re-measured 2026-07-09 from the nightly coverage
+      # job (stable at 57.3% across the 07-07/07-08/07-09 runs) — still 2.7pp
+      # short of 60.0, so the floor stays at 55.0 and BUT-1149 stays open.
+      # BUT-1193 did NOT change this floor — only re-timed when it runs.
       - name: Enforce coverage floors
         if: always()
         run: |
@@ -302,7 +304,7 @@ jobs:
             awk -v v="$1" -v f="$2" 'BEGIN { exit !(v+0 < f+0) }'
           }
 
-          OVERALL_FLOOR=55.0  # BUT-1149: restore to 60.0 after follow-up sprint
+          OVERALL_FLOOR=55.0  # BUT-1149: raise to 60.0 once HEAD clears it (57.3% as of 2026-07-09)
           OVERALL_PCT=$(parse_pct coverage/lcov_filtered.info)
           if [ -z "$OVERALL_PCT" ]; then
             echo "::warning::Could not parse overall filtered coverage"
