@@ -15886,4 +15886,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yEditMemberRating(String name) {
     return 'Ändra betyg för $name';
   }
+
+  @override
+  String get deepLinkExpired =>
+      'Länken har gått ut och kan inte längre öppnas.';
+
+  @override
+  String get deepLinkUnavailable => 'Innehållet är inte längre tillgängligt.';
 }

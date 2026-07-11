@@ -2140,3 +2140,54 @@ lands it on `N`. When two systems (client + server) must agree on a lifecycle/re
 boundary, compare raw elapsed (`ms` / full `Duration`), not truncated days, and pin a
 regression test with a **sub-day remainder** (e.g. `N*DAY + 12h`) — a whole-day
 fixture passes under the buggy floor and proves nothing.
+
+### 2026-07-11 — BUT-1573/1577 rate-limiter: config-pin + per-user-before-global reorder [Bug fixed / Pattern discovered]
+
+Reviewed two changes to `functions/src/middleware/rate_limiter.ts` (+ its daily-cap
+test). Both verified: `tsc --noEmit` clean, `rate-limiter-daily-cap.test.ts` 12/12.
+
+**BUT-1573 (clean).** `RATE_LIMIT_CONFIGS` is now `export`ed and three `dailyLimit`
+values are pinned by tests (structureRecipe 100, ocrRecipeImage 50, importRecipe 100).
+Values match production. Good defensive test — deleting/weakening a per-user LLM
+spend cap now regresses a test instead of shipping silently. No finding.
+
+**BUT-1577 (real bug fixed, with an accepted residual).** `withRateLimit` previously
+called `checkGlobalLimit()` (which *atomically increments* the shared
+`system/llmLimits` hourly+daily counters) BEFORE the per-user `checkRateLimit`. So a
+user whose own per-user bucket/daily-cap denied the request still inflated the shared
+global budget — one abuser could drain the global cap for everyone with requests that
+never ran (cross-user DoS). Fix reorders: per-user gate first, global increment only
+after per-user allows. Correct direction, comment is accurate.
+
+**Residual worth knowing (rated Low, not blocking).** The reorder is not free — it
+swaps the asymmetry. `checkRateLimit` commits its token-consume + `dailyCount++` in a
+transaction BEFORE `checkGlobalLimit` runs. So when the global limit denies (at
+capacity) OR fails closed on a Firestore error, the requester's own per-user token and
+daily counter were already spent for a request that never executed. During a sustained
+global-capacity event every user burns their per-user daily cap on rejected calls and
+can lock themselves out for the rest of the UTC day even after global frees up. This is
+strictly better than the old cross-user harm (self-limited, no DoS), and the caps are a
+soft cost-shaping lever, so accepted. A clean fix would need a global *peek* (read-only)
+before the per-user consume, then a global *commit* after — but `checkGlobalLimit`
+couples read+increment in one transaction; separating them wasn't in scope.
+
+**Pattern — a two-stage gate where each stage has a side effect has NO free ordering.**
+Whichever gate you run first, a denial by the second gate strands the first gate's
+mutation. Put the gate whose side effect is *shared/cross-user* last (so a denial only
+ever wastes the requester's *own* budget), which is exactly what this fix does. When
+reviewing any "reorder the checks" fix, ask: does the now-first check mutate state, and
+what does a later-check denial leave stranded?
+
+**Coverage gap (Low).** The new tests only pin config values (BUT-1573); the BUT-1577
+reorder — the actual behavioral fix — has NO test. `withRateLimit` is hard to unit-test
+because `checkGlobalLimit` reads/increments `system/llmLimits` via `admin.firestore()`
+directly with no injectable seam (only the *limits loader* is seam-injectable via
+`__resetGlobalLimitsCacheForTest`, not the counter transaction). Pre-existing
+testability limitation, consistent with the file having no `withRateLimit` test before.
+If this ordering is ever tightened again, add a `firestoreForTest`-style seam to
+`checkGlobalLimit` first so the order is pinnable.
+
+**onCall retry note:** `withRateLimit` wraps *callables*, which the Firebase SDK does
+NOT auto-retry on a thrown `resource-exhausted` — so the double-consume-on-retry worry
+from the trigger idempotency rules does not apply here. The knowledge file's
+idempotency section is about Firestore triggers; this is a callable gate.

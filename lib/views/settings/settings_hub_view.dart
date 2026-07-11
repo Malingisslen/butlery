@@ -10,6 +10,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,6 +28,7 @@ class SettingsHubView extends StatelessWidget {
         title: context.l10n.commonSettings,
         centerTitle: true,
       ),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

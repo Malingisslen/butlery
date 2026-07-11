@@ -6,9 +6,10 @@ library;
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -120,6 +121,43 @@ class DeepLinkHandler {
     return !recognisedHosts.contains(uri.host);
   }
 
+  /// Whether [uri] is a time-limited share link (recipe/menu/shopping) that has
+  /// passed its 7-day expiry.
+  ///
+  /// BUT-1587: recipe, menu and shopping share links all carry a `timestamp`
+  /// (ms since epoch) and expire after 7 days. This centralises the expiry
+  /// decision so [processDeepLink] can gate all three at one dispatch point.
+  ///
+  /// Fail-open on an ABSENT or non-numeric `timestamp` is deliberate: expiry is
+  /// staleness hygiene, not access control (the underlying reads stay gated by
+  /// Firestore `memberPermissions`), so an unparseable timestamp cannot widen
+  /// access — and failing closed would break every legacy link that predates
+  /// timestamps. Invite/profile/import are intentionally out of scope: profile
+  /// and import carry no timestamp, and invite expiry was never in scope for
+  /// this or BUT-1540. Extracted as a static so the guard is unit-testable.
+  @visibleForTesting
+  static bool isExpiredShareLink(Uri uri) {
+    const expiringPaths = {'/recipe', '/menu', '/shopping'};
+    final path = uri.path;
+    if (!expiringPaths.any((p) => path.startsWith(p))) return false;
+    final linkTimestamp = int.tryParse(
+      uri.queryParameters['timestamp'].orEmpty(),
+    );
+    return DeepLinkService.isTimestampExpired(linkTimestamp);
+  }
+
+  /// Surface a short Butler-voice notice when a deep link cannot be opened —
+  /// either it has expired or the target content is gone/inaccessible (BUT-1587).
+  /// Replaces this handler's previous silent-return convention for those two
+  /// user-facing dead ends. Uses [ScaffoldMessenger.maybeOf] so a missing
+  /// messenger ancestor degrades to the old silent behaviour instead of throwing.
+  void _showDeepLinkNotice(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(message)));
+  }
+
   /// Process a deep link URL and navigate to the appropriate view.
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
     try {
@@ -144,6 +182,18 @@ class DeepLinkHandler {
       _trackCampaignAttribution(params);
 
       if (!context.mounted) {
+        return;
+      }
+
+      // BUT-1587: single expiry gate for the time-limited share links
+      // (recipe/menu/shopping). Each carries a `timestamp` and expires after
+      // 7 days; centralising the check here at the dispatch point replaces the
+      // recipe-only inline check added by BUT-1540 and extends the same rule to
+      // menu + shopping links. Rather than fail silently (the old convention),
+      // an expired link now surfaces a short Butler-voice notice.
+      if (isExpiredShareLink(uri)) {
+        AppLogger.info('Ignoring expired deep link (older than 7 days)');
+        _showDeepLinkNotice(context, context.l10n.deepLinkExpired);
         return;
       }
 
@@ -250,33 +300,21 @@ class DeepLinkHandler {
     final recipeId = params['id'];
 
     if (recipeId != null && _isValidFirestoreId(recipeId)) {
-      // BUT-1540: enforce shared-link expiry on the LIVE path. Shared recipe
-      // links carry a `timestamp` (ms since epoch) and expire after 7 days; an
-      // expired link must not open the recipe. Silent return matches this
-      // handler's existing failure convention (a not-found recipe below also
-      // returns quietly rather than surfacing a message).
-      //
-      // Fail-open on an ABSENT or non-numeric `timestamp` is deliberate: expiry
-      // is staleness hygiene, not access control, so an unparseable timestamp
-      // cannot widen access — the recipe read below is still gated by Firestore
-      // `memberPermissions` (a non-member gets null → no navigation). Failing
-      // closed would instead break every legacy link that predates timestamps.
-      // (A corrupt-but-numeric timestamp is taken at face value and may read as
-      // expired; acceptable since expiry isn't the security boundary.)
-      final linkTimestamp = int.tryParse(params['timestamp'].orEmpty());
-      if (DeepLinkService.isTimestampExpired(linkTimestamp)) {
-        AppLogger.info('Ignoring expired recipe deep link (older than 7 days)');
-        return;
-      }
+      // BUT-1587: expiry is now enforced once at the processDeepLink dispatch
+      // point (see [isExpiredShareLink]), so no per-handler timestamp check.
 
       // Fetch full Recipe object — router expects Recipe, not String ID
       final recipeRepo = ServiceLocator.get<RecipeRepository>();
       final recipe = await recipeRepo.read(recipeId);
-      if (recipe != null && context.mounted) {
+      if (!context.mounted) return;
+      if (recipe != null) {
         Navigator.of(context).pushNamed(
           Routes.recipeDetail,
           arguments: recipe,
         );
+      } else {
+        // Link is valid but the recipe is gone or not shared with this user.
+        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
   }
@@ -294,8 +332,12 @@ class DeepLinkHandler {
       // Fetch full SharedMenu object — router expects SharedMenu, not String ID
       final menuRepo = ServiceLocator.get<FirebaseSharedMenuRepository>();
       final menu = await menuRepo.getSharedMenu(menuId);
-      if (menu != null && context.mounted) {
+      if (!context.mounted) return;
+      if (menu != null) {
         Navigator.of(context).pushNamed(Routes.menuPreview, arguments: menu);
+      } else {
+        // Link is valid but the shared menu is gone or no longer accessible.
+        _showDeepLinkNotice(context, context.l10n.deepLinkUnavailable);
       }
     }
   }

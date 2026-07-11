@@ -34,6 +34,24 @@ class LayoutScaffolds {
     );
   }
 
+  /// BUT-1526: standard bottom navigation for detail/leaf views (settings,
+  /// legal, notifications, FAQ) so the four main destinations stay one tap
+  /// away. Mirrors `recipe_detail_view.dart`: default Butlery styling
+  /// (cream-dark bg, greenDark active, greenMuted inactive, rust underline —
+  /// NO colour override, project memory keeps it identical everywhere) and
+  /// stack-based `pushNamed` so Back returns to the detail view.
+  ///
+  /// `currentIndex` is null on purpose — none of these leaf views is one of the
+  /// four main tabs, so nothing should render as selected.
+  static Widget detailBottomNav(BuildContext context) {
+    final items = ButleryAdaptiveNavigation.getNavigationItems(context);
+    return ButleryBottomNavigation(
+      currentIndex: null,
+      items: items,
+      onTap: (index) => Navigator.pushNamed(context, items[index].route),
+    );
+  }
+
   /// Simple layout for views without bottom navigation.
   /// For detail views and dialogs
   static Widget simpleLayout({

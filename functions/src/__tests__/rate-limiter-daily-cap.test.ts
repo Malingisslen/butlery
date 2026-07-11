@@ -27,6 +27,7 @@ import {
   __setFirestoreForTest,
   checkRateLimit,
   evaluateDailyCap,
+  RATE_LIMIT_CONFIGS,
   RateLimitConfig,
 } from "../middleware/rate_limiter";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
@@ -230,6 +231,41 @@ const cases: UnitCase[] = [
       } finally {
         __setFirestoreForTest(null);
       }
+    },
+  },
+
+  // ---- BUT-1573: the production dailyLimit values are the load-bearing
+  // per-user LLM-spend caps. Pin them so deleting or weakening one regresses a
+  // test instead of shipping silently. If a value is deliberately retuned,
+  // update these expectations in the same change. ----
+  {
+    name: "RATE_LIMIT_CONFIGS: structureRecipe daily cap is 100",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.structureRecipe.dailyLimit,
+        100,
+        "structureRecipe.dailyLimit"
+      );
+    },
+  },
+  {
+    name: "RATE_LIMIT_CONFIGS: ocrRecipeImage daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.ocrRecipeImage.dailyLimit,
+        50,
+        "ocrRecipeImage.dailyLimit"
+      );
+    },
+  },
+  {
+    name: "RATE_LIMIT_CONFIGS: importRecipe daily cap is 100",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.importRecipe.dailyLimit,
+        100,
+        "importRecipe.dailyLimit"
+      );
     },
   },
 ];

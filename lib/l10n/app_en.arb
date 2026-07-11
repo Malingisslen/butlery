@@ -11121,5 +11121,7 @@
   "@familyRatingProxyEntered": {"placeholders": {"name": {"type": "String"}}},
   "a11yToggleRatingBreakdown": "Show or hide rating breakdown",
   "a11yEditMemberRating": "Edit rating for {name}",
-  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}}
+  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}},
+  "deepLinkExpired": "This link has expired and can no longer be opened.",
+  "deepLinkUnavailable": "This content is no longer available."
 }

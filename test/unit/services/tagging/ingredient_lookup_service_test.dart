@@ -841,6 +841,41 @@ void main() {
         expect(result.matched.first.id, 'milk');
       });
 
+      test(
+        'BUT-1574: quantity-only line falls back to the raw string as lookup name',
+        () async {
+          // "2 dl" parses to quantity=2, unit=dl, name="" — every parsed part
+          // has an empty name, so lookupFromRaw's defensive
+          // `if (namesToNormalize.isEmpty) namesToNormalize = [raw]` fallback
+          // fires and keeps the raw line as the lookup name instead of dropping
+          // it. Without that branch, zero names would be normalized and no
+          // lookup would happen at all (an empty result). Asserting the raw
+          // survives into `unmatched` proves the fallback ran.
+          final lookedUp = <String>[];
+          when(() => mockIngredientRepo.findByName(any())).thenAnswer((
+            invocation,
+          ) async {
+            lookedUp.add(invocation.positionalArguments.first as String);
+            return null;
+          });
+
+          final result = await service.lookupFromRaw(['2 dl']);
+
+          expect(
+            result.unmatched,
+            contains('2 dl'),
+            reason:
+                'the quantity-only "2 dl" must fall back to the raw string and '
+                'be looked up, landing in unmatched (default repo finds nothing)',
+          );
+          expect(
+            lookedUp,
+            contains('2 dl'),
+            reason: 'the raw fallback name must reach the repository lookup',
+          );
+        },
+      );
+
       test('LOW-2: handles parsing failures gracefully', () async {
         // This should not throw even with weird input
         final result = await service.lookupFromRaw([

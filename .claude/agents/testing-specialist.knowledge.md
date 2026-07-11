@@ -1224,6 +1224,21 @@ Reviewed `functions/src/cleanup/on-user-deleted.ts` (BUT-1506 merge of reverse-f
 
 2. **[Coverage gap, Medium] The emphasized "priority matters" invariant between habitual (stage 3) and activated (stage 4) is untested.** The activated test uses cooksLast14Days:1; the habitual test uses signup 60d ago (outside activation window). No test pins a user who is BOTH inside the 7d activation window AND has 3+ cooks asserting `habitual` wins. A regression swapping the stage-3/stage-4 check order goes green. Add: signup 5d, lastCook 1d, cooks 5 → expect habitual (not activated).
 
+### 2026-07-11 — settings-ui sprint review (BUT-1526 detailBottomNav + legal views) [Bug found — reviewed]
+
+Reviewed `layout_scaffolds.dart` (new `detailBottomNav`), `settings_hub_view.dart`, the three
+legal views, `notifications_view.dart`, `faq_view.dart`.
+
+1. **[Correctness, Medium — content-language mismatch] Legal views load markdown by DEVICE locale, ignoring the in-app language override.** `privacy_policy_view.dart:49`, `terms_of_service_view.dart:38`, `community_guidelines_view.dart:40` all resolve the asset with `PlatformDispatcher.instance.locale.languageCode` (the platform/device locale). But `MaterialApp.locale` is driven by `LocaleProvider` (`butlery_app.dart:620,722`), and the very `LanguageTile` in `settings_hub_view.dart` lets the user override it. So a user who forces the app to English on a Swedish device sees an English AppBar title (`context.l10n.privacyTitle`) over a Swedish policy body — a GDPR/legal document in the wrong language. Fix: read `Localizations.localeOf(context).languageCode` (capture in `didChangeDependencies`, not `initState`) or `LocaleProvider.locale`. **Test to write:** pump each legal view inside `createLocalizedTestApp` with locale forced to `en` while `PlatformDispatcher` reports `sv`; assert the `en` asset is requested (inject an asset-loader / assert the loaded string is the English one). No existing test pins the locale SOURCE — every current fixture has device==app locale so the bug is invisible.
+
+2. **[Convention/cost, Low] `settings_hub_view.dart:24` calls `ServiceLocator.get<ReportService>()` inside `build()`** (widgets/views rule: never `ServiceLocator.get` in `build`). Compounded: `reportService.watchIsAdmin()` is invoked in the StreamBuilder builder on every rebuild, so each rebuild spins up a fresh Firestore listener (cost principle). StatelessWidget so rebuilds are rare, but move the service+stream into a StatefulWidget `initState`/cached field.
+
+3. **[UX inconsistency, Low] `detailBottomNav` "+" (index 3) navigates, main-menu "+" opens a modal.** `layout_scaffolds.dart:51` does `Navigator.pushNamed(context, items[3].route)` → `/laggTill` (route IS registered, no crash), whereas `_MainMenuLayout.onNavigationChanged` intercepts `index == 3` to open the add-recipe modal bottom sheet. Same affordance, two behaviours depending on surface. Decide: intercept index 3 in `detailBottomNav` too, or accept intentionally.
+
+4. **[Consistency, Info] `terms_of_service_view.dart:31` `_loadContent` lacks the leading `if (!mounted) return;`** its two sibling legal views have. Harmless today (only initState calls it) but diverges — would matter if wired to a retry/listener.
+
+5. **[Info] Markdown rendering split:** `privacy_policy_view` renders via `MarkdownBody`; `terms_of_service` + `community_guidelines` use raw `SelectableText`. Current `.md` assets are near-plain-text (numbered sections, `-` bullets) so it reads fine, but any future `##`/`**bold**`/link in ToS/CG would show as raw syntax. Not a bug now.
+
 3. **[Coverage gap, Low] Never-cooked churned/dormant boundaries (lines 77-79) are a SEPARATE code path** (`sinceSignup`) from the cook-path boundaries, tested only at 20d→dormant / 35d→churned. Exact 14d/30d/31d edges on this branch are unpinned, so a `>`→`>=` regression on line 78 escapes. The cook-path has all three edges; mirror at least the 30/31 edge for the never-cooked branch.
 
 ### 2026-07-11 — BUT-1551 AuthService.deleteCurrentAuthUser quiet-delete review [Pattern discovered]
@@ -1239,3 +1254,15 @@ Reviewed the 5 new tests for `DeepLinkService.isTimestampExpired(int?)` (refacto
 - **Spec/impl off-by-one (pre-existing, not introduced): "expires after 7 days" but code keeps links valid through ~8 days** (`> 7` full days). Preserved from the original `isLinkExpired`, so not a BUT-1540 regression — but the test comment "at the 7-day edge (6d23h)" enshrines the mislabel. If product truly means death at 7×24h, code+tests are both wrong; that's a product question.
 - **Handler navigation NOT worth a standalone test.** The 4-line guard is `int.tryParse(params['timestamp'] ?? '')` → `isTimestampExpired` → silent return. Decision is fully covered by the static tests; the early return is trivial. The only handler-specific untested bit is the tryParse→null fail-open (malformed/absent timestamp still opens the recipe — intended for legacy links). A NavigatorObserver+MaterialApp+mocked-RecipeRepository test for a 4-line guard is the heavy-scaffolding anti-pattern; fold "expired link doesn't open" + "malformed timestamp still opens" into a deep-link JOURNEY test if/when one exists (BUT-387 Phase 6 stance).
 - **Style (no flake here): tests use `DateTime.now()` while prod reads `clock.now()`.** No clock override → same wall clock, and margins are hour/day-scale, so not flaky — but `withClock`/`fakeAsync` would be the pattern-correct form.
+
+### 2026-07-11 — Boundary tests, not just far-side tests, catch off-by-one expiry bugs
+Trigger: reviewing test/unit/core/bootstrap/deep_link_handler_test.dart (BUT-1587/BUT-1540 share-link 7-day expiry).
+Pattern: an "8-days-stale is expired" assertion does NOT protect the fix BUT-1540 made
+(`.inDays > 7`, which truncates to whole days and lets links live ~8 days, vs the correct
+`> Duration(days: 7)`). Both the buggy and fixed impl return `true` at 8 days — the test
+passes either way. To pin an off-by-one time boundary you must assert JUST INSIDE it: a
+7d-12h timestamp is NOT-expired under the buggy `.inDays > 7` but expired under the fixed
+`Duration` compare. Rule: when a ticket fixes a boundary/off-by-one, the regression test
+must straddle the boundary (±1 unit), not sit comfortably on the far side. Pair with
+`withClock`/`fakeAsync` so the reference `now` is fixed and the assertion is deterministic —
+production here resolves time via `clock.now()`, so `withClock` controls it.

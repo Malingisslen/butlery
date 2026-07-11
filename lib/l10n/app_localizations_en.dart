@@ -15843,4 +15843,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yEditMemberRating(String name) {
     return 'Edit rating for $name';
   }
+
+  @override
+  String get deepLinkExpired =>
+      'This link has expired and can no longer be opened.';
+
+  @override
+  String get deepLinkUnavailable => 'This content is no longer available.';
 }

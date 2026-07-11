@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
@@ -93,6 +94,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
       appBar: _selectionMode
           ? _buildSelectionAppBar(context, vm)
           : _buildDefaultAppBar(context, vm),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 700),

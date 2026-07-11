@@ -42,6 +42,8 @@ when the counts drift apart.
 - Deny-rule-safe worktree cleanup uses non-destructive `git stash` (not `reset --hard`/`clean -f`, and don't script around the deny rule — the classifier catches the intent); and the Bash safety hook matches dangerous-command strings inside commit MESSAGES too, so `git commit -F <file>` for messages that quote them.
 - Step-0 premise check greps CURRENT main (not `git log`) at SELECTION time — a scanner ticket whose fix already shipped under another ID gets closed as a duplicate, never carried as buildable.
 - At ship time an `MM`/half-staged file is an explicit decision — `git diff` it and either review+test it into scope or `git checkout -- ` back to the reviewed staged version and file a follow-up with the reverted code; never let `git add -A` ship an unreviewed data-CF edit.
+- Grade each SELECTED ticket against its OWN diff at ship — a batch "N landed, none failed" summary hides silent drops; a zero-diff ticket is dropped (carry forward) or obsolete (close citing the resolving commit), never Done.
+- A fresh parallel worktree without `.dart_tool` makes analyze report PHANTOM undefined-member errors (`package:<self>` resolves to the MAIN checkout) — run `dart pub get --offline`/`flutter pub get` in the worktree before trusting analyze.
 
 ## Testing
 

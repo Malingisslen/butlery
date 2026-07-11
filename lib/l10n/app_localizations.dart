@@ -26482,6 +26482,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ändra betyg för {name}'**
   String a11yEditMemberRating(String name);
+
+  /// Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)
+  ///
+  /// In sv, this message translates to:
+  /// **'Länken har gått ut och kan inte längre öppnas.'**
+  String get deepLinkExpired;
+
+  /// Butler-voice snackbar shown when a shared deep link is valid but its target content is gone or no longer accessible to this user (BUT-1587)
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet är inte längre tillgängligt.'**
+  String get deepLinkUnavailable;
 }
 
 class _AppLocalizationsDelegate

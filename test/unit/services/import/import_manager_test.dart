@@ -10,6 +10,9 @@ import 'package:butlery/services/import/import_strategy.dart'
     as import_strategy;
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
+import 'package:butlery/services/import/archive_import_strategy.dart';
+import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -137,6 +140,42 @@ void main() {
       test('should return empty for input no strategy handles', () {
         final strategies = importManager.getCompatibleStrategies('');
         expect(strategies, isEmpty);
+      });
+
+      // BUT-1572: every other test builds the manager via withStrategies, so
+      // nothing pins what the DEFAULT constructor actually registers. This
+      // guards the real _initializeStrategies() registry — in particular that
+      // PhotoImportStrategy survived the BUT-1487 cleanup that removed
+      // FileImportStrategy (whose canHandle() is always false, so it was
+      // unreachable in the auto loops). A regression that drops the photo/OCR
+      // strategy or re-adds the dead file strategy would break silently
+      // otherwise.
+      test('default constructor registers the expected strategy set', () {
+        final defaultManager = ImportManager(mockPersonalOps);
+        final strategies = defaultManager.availableStrategies;
+
+        // The four strategies wired in _initializeStrategies, in priority order.
+        expect(strategies, hasLength(4));
+        expect(strategies[0], isA<ArchiveImportStrategy>());
+        expect(strategies[1], isA<UrlImportStrategy>());
+        expect(strategies[2], isA<TextImportStrategy>());
+        expect(strategies[3], isA<PhotoImportStrategy>());
+
+        // PhotoImportStrategy specifically must remain registered — it backs
+        // the OCR / handwritten photo import path.
+        expect(
+          strategies.whereType<PhotoImportStrategy>(),
+          isNotEmpty,
+          reason: 'PhotoImportStrategy must stay in the default registry',
+        );
+
+        // FileImportStrategy was deliberately unregistered in BUT-1487
+        // (unreachable in the auto loops) and must not creep back.
+        expect(
+          strategies.whereType<FileImportStrategy>(),
+          isEmpty,
+          reason: 'FileImportStrategy is intentionally not registered',
+        );
       });
     });
 

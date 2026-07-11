@@ -77,8 +77,12 @@ interface StoredRateLimit {
 /**
  * Rate limit configurations per operation type.
  * These mirror the client-side configurations for consistency.
+ *
+ * Exported (BUT-1573) so the production `dailyLimit` values are pinned by a
+ * test — deleting or weakening a per-user daily LLM cap now regresses
+ * rate-limiter-daily-cap.test.ts instead of shipping silently.
  */
-const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
+export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // LLM Operations (expensive - strict limits)
   // BUT-1477 dailyLimit rationale: the minute bucket alone permits ~4300
   // structureRecipe calls/day (3/min sustained). Daily caps bound a single
@@ -610,19 +614,13 @@ export function withRateLimit<TRequest, TResponse>(
 
     const userId = request.auth.uid;
 
-    // Check global aggregate limit before per-user limit
-    const globalAllowed = await checkGlobalLimit();
-    if (!globalAllowed) {
-      logger.warn(
-        `Global LLM limit exceeded for ${operationType} by user ${hashUid(userId)}`
-      );
-      throw new HttpsError(
-        "resource-exhausted",
-        "Systemets kapacitetsgräns har nåtts. Försök igen senare."
-      );
-    }
-
-    // Check per-user rate limit
+    // BUT-1577: check the PER-USER limit before touching the global counter.
+    // checkGlobalLimit atomically *increments* the shared hourly/daily LLM
+    // budget, so running it first let a user whose own limit denies the request
+    // still inflate that shared counter — a single abuser could exhaust the
+    // global budget for everyone with requests that never ran. The per-user
+    // gate runs first; the global increment happens only once the per-user
+    // check has allowed the request.
     const rateLimitResult = await checkRateLimit(userId, operationType, tokensRequired);
 
     if (!rateLimitResult.allowed) {
@@ -647,7 +645,19 @@ export function withRateLimit<TRequest, TResponse>(
       );
     }
 
-    // Rate limit passed - execute handler
+    // Per-user check passed — now consume the global aggregate budget.
+    const globalAllowed = await checkGlobalLimit();
+    if (!globalAllowed) {
+      logger.warn(
+        `Global LLM limit exceeded for ${operationType} by user ${hashUid(userId)}`
+      );
+      throw new HttpsError(
+        "resource-exhausted",
+        "Systemets kapacitetsgräns har nåtts. Försök igen senare."
+      );
+    }
+
+    // Both limits passed - execute handler
     logger.info(
       `Rate limit passed for ${operationType}: ${rateLimitResult.remainingTokens} tokens remaining`
     );
