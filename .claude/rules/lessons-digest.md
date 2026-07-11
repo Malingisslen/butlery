@@ -39,6 +39,7 @@ when the counts drift apart.
 - Data-writing Cloud Functions get the xhigh multi-agent review BEFORE commit — the single-specialist gate is necessary but not sufficient.
 - When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
 - Port per-repo configs from the RETIRED implementation's real paths/semantics — structurally different machinery keeps its native hook + opts out of the shared one.
+- Deny-rule-safe worktree cleanup uses non-destructive `git stash` (not `reset --hard`/`clean -f`, and don't script around the deny rule — the classifier catches the intent); and the Bash safety hook matches dangerous-command strings inside commit MESSAGES too, so `git commit -F <file>` for messages that quote them.
 - Step-0 premise check greps CURRENT main (not `git log`) at SELECTION time — a scanner ticket whose fix already shipped under another ID gets closed as a duplicate, never carried as buildable.
 - At ship time an `MM`/half-staged file is an explicit decision — `git diff` it and either review+test it into scope or `git checkout -- ` back to the reviewed staged version and file a follow-up with the reverted code; never let `git add -A` ship an unreviewed data-CF edit.
 
