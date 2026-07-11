@@ -2191,3 +2191,46 @@ If this ordering is ever tightened again, add a `firestoreForTest`-style seam to
 NOT auto-retry on a thrown `resource-exhausted` — so the double-consume-on-retry worry
 from the trigger idempotency rules does not apply here. The knowledge file's
 idempotency section is about Firestore triggers; this is a callable gate.
+
+### 2026-07-11 — BUT-1577 the missing ordering regression test [Pattern discovered]
+
+Reviewed `functions/src/__tests__/rate-limiter-withratelimit-ordering.test.ts` (+ its
+`test:rate-limiter-ordering` npm script) — the test that closes the "reorder has NO
+test" coverage gap flagged in the entry above. Clean, no findings. 2/2 pass, tsc clean,
+no emulator. Registered at package.json:118; `run-all-tests.js` auto-discovers it (not
+under `test:rules`/`test:integration:` excludes), and each suite runs as its own
+`npm run` child process so module-scope seam state (`firestoreForTest`,
+`cachedGlobalLimits`, `globalLimitsLoaderForTest`) can't leak across files regardless.
+
+**How it pins ordering without a counter seam.** `checkGlobalLimit` still has no
+injectable Firestore handle (only the *limits loader* is seam-injectable). The test
+turns that limitation into the probe: it installs a loader via
+`__resetGlobalLimitsCacheForTest(async () => { globalChecked = true; ... })`. Since
+`loadGlobalLimits()` is the FIRST line of `checkGlobalLimit`, the loader firing is that
+function's earliest observable side effect — so `globalChecked` is a clean spy for
+"was the global gate entered." Per-user doc is fed via `__setFirestoreForTest`.
+
+**Why case 1 genuinely bites a reverted order.** Per-user-DENIED (seed `dailyCount:100`
+== structureRecipe's `dailyLimit:100`, `dayKey` = live UTC key so the cap trips): asserts
+`globalChecked === false` + the per-user Swedish message (`för många förfrågningar`). Swap
+the order back (global first) and `checkGlobalLimit` runs before the per-user gate →
+loader fires → `globalChecked` true → case 1 goes RED. Proven by construction. Case 2
+(per-user-ALLOWED) is NOT an ordering guard on its own — with no test app,
+`checkGlobalLimit` fail-closes to the global denial in BOTH orders, so its
+`globalChecked === true` + global-message asserts pass either way — but it's not vacuous:
+it pins that a per-user *allow* actually REACHES the global gate and the handler stays
+unrun (would fail if the per-user gate wrongly denied, or if the handler leaked through).
+Case 1 carries the ordering claim; case 2 carries the pass-through claim.
+
+**No-app safety confirmed.** On the denied path `withRateLimit` calls
+`logRateLimitViolation` → `admin.firestore()` with no initialized app throws
+synchronously, but inside that helper's own try/catch → warn-logged, never propagates.
+`admin.firestore.Timestamp.now()/fromDate()` are static namespace accessors that need no
+app. So the suite is genuinely emulator-free.
+
+**Pattern — when only one collaborator in a sequence is seam-injectable, spy on its
+earliest side effect to pin ORDER even if you can't observe its full behavior.** You
+don't need a full counter seam to prove "A runs before B"; a boolean set on B's first
+line, plus which of the two error MESSAGES surfaces, is enough to make a reverted order
+go red. Keep the deny-side fixture at the exact cap boundary so the first gate is the one
+that trips.

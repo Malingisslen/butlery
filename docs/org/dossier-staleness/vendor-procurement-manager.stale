@@ -13,7 +13,8 @@
     "functions/src/cleanup/on-user-deleted.ts",
     "functions/src/__tests__/on-user-deleted.integration.test.ts",
     "functions/src/analytics/track-retention.ts",
-    "functions/src/__tests__/track-retention.test.ts"
+    "functions/src/__tests__/track-retention.test.ts",
+    "functions/src/__tests__/rate-limiter-withratelimit-ordering.test.ts"
   ],
   "last_stamped": "2026-07-11"
 }

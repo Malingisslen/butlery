@@ -115,6 +115,7 @@
     "test:integration:analyze-corrections-alias": "ts-node src/__tests__/analyze-corrections-alias.test.ts",
     "test:rate-limiter-refill": "ts-node src/__tests__/rate-limiter-refill.test.ts",
     "test:rate-limiter-daily-cap": "ts-node src/__tests__/rate-limiter-daily-cap.test.ts",
+    "test:rate-limiter-ordering": "ts-node src/__tests__/rate-limiter-withratelimit-ordering.test.ts",
     "test:validate-limit": "ts-node src/__tests__/validate-limit.test.ts",
     "test:winback-context": "ts-node src/__tests__/winback-context.test.ts",
     "test:rules:acquisition": "ts-node src/__tests__/acquisition-rules.test.ts",
