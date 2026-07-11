@@ -1,0 +1,8 @@
+{
+  "role": "Data Analyst / BI",
+  "stale_since": "2026-07-11",
+  "triggers": [
+    "functions/src/analytics/track-retention.ts"
+  ],
+  "last_stamped": "2026-07-11"
+}

@@ -9,7 +9,9 @@
     ".claude/agents/testing-specialist.knowledge.md",
     "CLAUDE.md",
     "functions/src/__tests__/collection-group-wildcards-rules.test.ts",
-    "functions/src/__tests__/on-user-deleted.integration.test.ts"
+    "functions/src/__tests__/on-user-deleted.integration.test.ts",
+    "functions/src/__tests__/track-retention.test.ts",
+    ".claude/agents/firebase-backend-security.knowledge.md"
   ],
   "last_stamped": "2026-07-11"
 }

@@ -11,7 +11,9 @@
     "functions/src/admin/backfill-parse-event-expiry.ts",
     "functions/src/__tests__/collection-group-wildcards-rules.test.ts",
     "functions/src/cleanup/on-user-deleted.ts",
-    "functions/src/__tests__/on-user-deleted.integration.test.ts"
+    "functions/src/__tests__/on-user-deleted.integration.test.ts",
+    "functions/src/analytics/track-retention.ts",
+    "functions/src/__tests__/track-retention.test.ts"
   ],
   "last_stamped": "2026-07-11"
 }
