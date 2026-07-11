@@ -19,6 +19,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics/acquisition_milestone.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/deep_link_service.dart';
 
 /// Deep link handler for processing incoming shared content.
 /// Handles various types of deep links including:
@@ -249,6 +250,25 @@ class DeepLinkHandler {
     final recipeId = params['id'];
 
     if (recipeId != null && _isValidFirestoreId(recipeId)) {
+      // BUT-1540: enforce shared-link expiry on the LIVE path. Shared recipe
+      // links carry a `timestamp` (ms since epoch) and expire after 7 days; an
+      // expired link must not open the recipe. Silent return matches this
+      // handler's existing failure convention (a not-found recipe below also
+      // returns quietly rather than surfacing a message).
+      //
+      // Fail-open on an ABSENT or non-numeric `timestamp` is deliberate: expiry
+      // is staleness hygiene, not access control, so an unparseable timestamp
+      // cannot widen access — the recipe read below is still gated by Firestore
+      // `memberPermissions` (a non-member gets null → no navigation). Failing
+      // closed would instead break every legacy link that predates timestamps.
+      // (A corrupt-but-numeric timestamp is taken at face value and may read as
+      // expired; acceptable since expiry isn't the security boundary.)
+      final linkTimestamp = int.tryParse(params['timestamp'].orEmpty());
+      if (DeepLinkService.isTimestampExpired(linkTimestamp)) {
+        AppLogger.info('Ignoring expired recipe deep link (older than 7 days)');
+        return;
+      }
+
       // Fetch full Recipe object — router expects Recipe, not String ID
       final recipeRepo = ServiceLocator.get<RecipeRepository>();
       final recipe = await recipeRepo.read(recipeId);

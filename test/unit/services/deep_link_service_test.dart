@@ -478,6 +478,70 @@ void main() {
       });
     });
 
+    group('isTimestampExpired — live-path expiry rule (BUT-1540)', () {
+      // The live deep-link handler gates recipe navigation on this shared rule
+      // (7-day expiry, matching isLinkExpired). An expired link must not open.
+      test('a fresh timestamp is not expired', () {
+        expect(
+          DeepLinkService.isTimestampExpired(
+            DateTime.now().millisecondsSinceEpoch,
+          ),
+          isFalse,
+        );
+      });
+
+      test('a timestamp older than 7 days is expired', () {
+        expect(
+          DeepLinkService.isTimestampExpired(
+            DateTime.now()
+                .subtract(const Duration(days: 8))
+                .millisecondsSinceEpoch,
+          ),
+          isTrue,
+        );
+      });
+
+      // Bracket the exact 7-day flip (Duration compare, not floored days): just
+      // under stays valid, just over expires. A tightening/loosening off-by-one
+      // fails one of these.
+      test('just under 7 days (6d23h) is not yet expired', () {
+        expect(
+          DeepLinkService.isTimestampExpired(
+            DateTime.now()
+                .subtract(const Duration(days: 6, hours: 23))
+                .millisecondsSinceEpoch,
+          ),
+          isFalse,
+        );
+      });
+
+      test('just over 7 days (7d12h) is expired', () {
+        expect(
+          DeepLinkService.isTimestampExpired(
+            DateTime.now()
+                .subtract(const Duration(days: 7, hours: 12))
+                .millisecondsSinceEpoch,
+          ),
+          isTrue,
+        );
+      });
+
+      test('a null timestamp is fail-open (legacy links, not expired)', () {
+        expect(DeepLinkService.isTimestampExpired(null), isFalse);
+      });
+
+      test('isLinkExpired delegates to the same rule', () {
+        final expired = DeepLinkData(
+          type: DeepLinkType.friendInvitation,
+          id: 'inv123',
+          timestamp: DateTime.now()
+              .subtract(const Duration(days: 8))
+              .millisecondsSinceEpoch,
+        );
+        expect(DeepLinkService.isLinkExpired(expired), isTrue);
+      });
+    });
+
     group('Link Expiration', () {
       test('should identify expired links', () {
         // Arrange

@@ -459,16 +459,23 @@ class DeepLinkService extends BaseService {
   }
 
   /// Check if a deep link is expired
-  static bool isLinkExpired(DeepLinkData deepLinkData) {
-    if (deepLinkData.timestamp == null) return false;
+  static bool isLinkExpired(DeepLinkData deepLinkData) =>
+      isTimestampExpired(deepLinkData.timestamp);
 
-    final linkTime = DateTime.fromMillisecondsSinceEpoch(
-      deepLinkData.timestamp!,
-    );
-    final now = clock.now();
-    final difference = now.difference(linkTime);
-
-    return difference.inDays > 7; // Links expire after 7 days
+  /// Whether a link created at [timestampMs] (ms since epoch) has passed the
+  /// 7-day expiry. Null → not expired: legacy links (and any link generated
+  /// before timestamps were added) have no timestamp and stay valid — expiry is
+  /// staleness hygiene, not an access control (the recipe read itself is gated
+  /// by Firestore `memberPermissions`). Shared with the live deep-link handler
+  /// (BUT-1540), which works with the raw `timestamp` URL param rather than a
+  /// parsed [DeepLinkData].
+  static bool isTimestampExpired(int? timestampMs) {
+    if (timestampMs == null) return false;
+    final linkTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+    // Exact 7-day window via Duration compare — matches [isLinkValid] and the
+    // documented "expires after 7 days". BUT-1540 fixed the legacy
+    // `.inDays > 7`, which truncated to whole days and let links live ~8 days.
+    return clock.now().difference(linkTime) > const Duration(days: 7);
   }
 
   /// Resolve short URL to original URL
