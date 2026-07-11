@@ -2097,3 +2097,46 @@ gate, add the update-target refs to that SAME `getAll` and skip the update when 
 Costs 2N reads on one round trip, removes the data-driven poison pill, and avoids the
 merge-set-resurrection trap. This is the general fix for any "update in a merged batch can
 NOT_FOUND-abort a delete cascade" hazard.
+
+### 2026-07-11 — BUT-1586 track-retention floor→ms boundary mirror [Pattern discovered]
+
+Reviewed the uncommitted `classifyLifecycleStageServer` change in
+`analytics/track-retention.ts` (+ 2 new boundary cases in
+`__tests__/track-retention.test.ts`). Clean — no findings, 13/13 green under
+`npx ts-node`. It mirrors the client BUT-1550 fix: replace
+`Math.floor((now - x)/MS_PER_DAY)` day-truncation with full-ms comparisons on the
+churned/dormant boundaries in BOTH the active and never-active branches.
+
+**Why floor was a real bug (not cosmetic):** `Math.floor` truncates toward zero,
+so `[30d, 31d)` collapsed onto day-30. A user last active 30d12h ago is elapsed
+`>30d` (churned) but floored to `30`, and `30 > 30` is false → fell through to
+`>= 14` → **dormant**. The app-emitted `lifecycle_stage` (already fixed client-side
+in BUT-1550) then disagreed with this server event in that whole window.
+
+**Boundary parity confirmed against the client classifier**
+(`lib/services/analytics/lifecycle_stage_classifier.dart`), operator-for-operator:
+churned `> 30d` (strict), dormant `>= 14d` (inclusive of 14). Server now matches on
+both branches. The 30d edge stays dormant (not churned) on both sides.
+
+**Scope call verified correct:** the server-only 7-day habitual/activated proxy
+(`daysSinceSignup > 7 && daysSinceActive <= 7`) is deliberately left on floored-day
+semantics — it's an approximation of the Dart side's `cooksLast14Days` (which the
+daily aggregator can't cheaply compute), NOT part of the BUT-1550 mirror. Both
+`daysSinceSignup` (line 70) and `daysSinceActive` (line 84) are still `Math.floor`
+and are now consumed ONLY by that proxy. Note `daysSinceSignup` is computed at the
+top so it's dead in the never-active path now (was used by that branch's old floored
+check) — a harmless single `Math.floor`, not worth flagging.
+
+**The two new tests genuinely bite the old code** (proved by construction, not run):
+30d12h on the active branch → old `floor(30.5)=30`, `30>30` false, `30>=14` true →
+returns `dormant`; the test asserts `churned`, so it would go RED on the pre-fix
+code. Same arithmetic on the never-active branch. A test at exactly 30d (no sub-day
+remainder) would NOT have bitten — the sub-day 12h remainder is load-bearing.
+
+**Pattern worth remembering — floored-day boundaries silently mis-bucket the
+sub-day remainder.** Any `> N` / `>= N` comparison on `Math.floor(elapsed/DAY)` or
+Dart's `Duration.inDays` mis-classifies the `[N, N+1)` window because truncation
+lands it on `N`. When two systems (client + server) must agree on a lifecycle/recency
+boundary, compare raw elapsed (`ms` / full `Duration`), not truncated days, and pin a
+regression test with a **sub-day remainder** (e.g. `N*DAY + 12h`) — a whole-day
+fixture passes under the buggy floor and proves nothing.

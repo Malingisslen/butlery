@@ -313,6 +313,31 @@ function lifecycleClassifier(): void {
     `got ${dormant}`
   );
 
+  // BUT-1586 (mirrors client BUT-1550): 30d12h since last active is elapsed
+  // >30d → churned. The old Math.floor collapsed it to 30 and returned dormant.
+  const boundaryActive = classifyLifecycleStageServer({
+    joinedAtMs: nowMs - 100 * MS_PER_DAY,
+    lastActiveAtMs: nowMs - (30 * MS_PER_DAY + 12 * 60 * 60 * 1000),
+    nowMs,
+  });
+  record(
+    "classifier: lastActive 30d12h ago → churned (sub-day, not floored to dormant)",
+    boundaryActive === "churned",
+    `got ${boundaryActive}`
+  );
+
+  // BUT-1586: same boundary on the never-active branch (signup 30d12h ago).
+  const boundaryNeverActive = classifyLifecycleStageServer({
+    joinedAtMs: nowMs - (30 * MS_PER_DAY + 12 * 60 * 60 * 1000),
+    lastActiveAtMs: null,
+    nowMs,
+  });
+  record(
+    "classifier: never active, signup 30d12h ago → churned (sub-day precision)",
+    boundaryNeverActive === "churned",
+    `got ${boundaryNeverActive}`
+  );
+
   const habitual = classifyLifecycleStageServer({
     joinedAtMs: nowMs - 60 * MS_PER_DAY,
     lastActiveAtMs: nowMs - 1 * MS_PER_DAY,

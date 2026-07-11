@@ -64,23 +64,32 @@ export function classifyLifecycleStageServer(args: {
   const { joinedAtMs, lastActiveAtMs, nowMs } = args;
   if (joinedAtMs == null) return "new";
 
-  const daysSinceSignup = Math.floor((nowMs - joinedAtMs) / MS_PER_DAY);
+  const msSinceSignup = nowMs - joinedAtMs;
+  // Floored days are kept ONLY for the 7-day habitual/activated proxy below
+  // (server-specific, unchanged). The churned/dormant boundaries use full ms.
+  const daysSinceSignup = Math.floor(msSinceSignup / MS_PER_DAY);
 
   if (lastActiveAtMs != null) {
-    const daysSinceActive = Math.floor((nowMs - lastActiveAtMs) / MS_PER_DAY);
-    if (daysSinceActive > 30) return "churned";
-    if (daysSinceActive >= 14) return "dormant";
-    // Recent activity. If user signed up more than a week ago and is
-    // still active in the last week, treat as habitual; if newer,
-    // count as activated (first cook within first week proxy).
+    const msSinceActive = nowMs - lastActiveAtMs;
+    // BUT-1586 (mirrors client BUT-1550): compare full milliseconds, not
+    // floored days. `Math.floor` truncates toward zero, collapsing the
+    // [30d,31d) window onto day-30 so a churned user (elapsed >30d, <31d) was
+    // misclassified as dormant — and the app-emitted `lifecycle_stage` (fixed
+    // in BUT-1550) then disagreed with this server event in that window.
+    if (msSinceActive > 30 * MS_PER_DAY) return "churned";
+    if (msSinceActive >= 14 * MS_PER_DAY) return "dormant";
+    // Recent activity. 7-day habitual/activated proxy is server-specific (the
+    // Dart classifier uses cooksLast14Days instead) and NOT part of the
+    // BUT-1550 mirror, so its floored-day semantics are left exactly as-is.
+    const daysSinceActive = Math.floor(msSinceActive / MS_PER_DAY);
     if (daysSinceSignup > 7 && daysSinceActive <= 7) return "habitual";
     if (daysSinceSignup <= 7) return "activated";
     return "activated";
   }
 
-  // Never active — only signup date informs the stage.
-  if (daysSinceSignup > 30) return "churned";
-  if (daysSinceSignup >= 14) return "dormant";
+  // Never active — only signup date informs the stage. Same ms comparison.
+  if (msSinceSignup > 30 * MS_PER_DAY) return "churned";
+  if (msSinceSignup >= 14 * MS_PER_DAY) return "dormant";
   return "new";
 }
 
