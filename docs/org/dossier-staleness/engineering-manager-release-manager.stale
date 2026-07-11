@@ -3,7 +3,8 @@
   "stale_since": "2026-07-09",
   "triggers": [
     ".claude/commands/morning-brief.md",
-    "CLAUDE.md"
+    "CLAUDE.md",
+    ".claude/rules/git-workflow.md"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-11"
 }
