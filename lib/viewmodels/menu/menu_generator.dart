@@ -432,20 +432,19 @@ class MenuGenerator {
     }
   }
 
-  /// Builds the per-generation personalisation context (BUT-1320 + BUT-1321):
-  /// pantry overlap, the user's favourite cuisines, and cooking skill. Every
-  /// signal is optional — a missing profile, an unregistered [PantryService],
-  /// or a pantry read failure simply yields an empty/partial context, so
-  /// generation degrades gracefully to the pre-personalisation behaviour.
+  /// Builds the per-generation personalisation context (BUT-1321): pantry
+  /// overlap. The signal is optional — an unregistered [PantryService] or a
+  /// pantry read failure simply yields an empty context, so generation degrades
+  /// gracefully to the pre-personalisation behaviour.
+  ///
+  /// (Cuisine-affinity + cooking-skill nudges were removed in BUT-1594 — the
+  /// menu is drawn from the user's own already-curated recipes, so weighting by
+  /// them double-counted taste.)
   ///
   /// The pantry overlap is fetched ONCE here (a single batch call over the
   /// whole [pool]) and memoised into a map, so the per-candidate weight
   /// function never touches async work.
   Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
-    final profile = _userService.currentUserProfile;
-    final affinities = profile?.cuisineAffinities?.toSet() ?? const <String>{};
-    final skill = profile?.cookingSkillLevel;
-
     final pantryMatch = <String, double>{};
     final pantryService = ServiceLocator.tryGet<PantryService>();
     final userId = _userService.currentUserId;
@@ -462,11 +461,7 @@ class MenuGenerator {
       }
     }
 
-    return MenuScoringContext(
-      pantryMatchByRecipeId: pantryMatch,
-      cuisineAffinities: affinities,
-      skill: skill,
-    );
+    return MenuScoringContext(pantryMatchByRecipeId: pantryMatch);
   }
 
   /// Filters or boosts recipes based on prompt keywords.

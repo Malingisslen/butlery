@@ -53,15 +53,15 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsAllergens),
                 ),
-                // BUT-1320: surface the weekly-menu tuning controls (cuisine
-                // affinities + cooking skill) where the user reads them as menu
-                // settings, not a social bio field.
+                // BUT-1594: household-size default that pre-sets recipe
+                // portions and scales the weekly menu. (Was "Meny och smak"
+                // with cuisine/skill tuning until BUT-1594 removed those.)
                 _SettingsTile(
-                  icon: Icons.tune,
-                  title: context.l10n.settingsMenuTasteTitle,
-                  subtitle: context.l10n.settingsMenuTasteSubtitle,
+                  icon: Icons.groups,
+                  title: context.l10n.settingsHouseholdSizeTitle,
+                  subtitle: context.l10n.settingsHouseholdSizeSubtitle,
                   onTap: () =>
-                      Navigator.pushNamed(context, Routes.settingsMenuTaste),
+                      Navigator.pushNamed(context, Routes.settingsHousehold),
                 ),
                 _SettingsTile(
                   icon: Icons.label_outline,

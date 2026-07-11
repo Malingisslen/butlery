@@ -2702,35 +2702,29 @@ abstract class AppLocalizations {
   /// **'Matpreferenser'**
   String get settingsSectionFood;
 
-  /// No description provided for @settingsMenuTasteTitle.
+  /// BUT-1594: title of the Settings > Household size screen and its hub row
   ///
   /// In sv, this message translates to:
-  /// **'Meny och smak'**
-  String get settingsMenuTasteTitle;
+  /// **'Hushållsstorlek'**
+  String get settingsHouseholdSizeTitle;
 
-  /// No description provided for @settingsMenuTasteSubtitle.
+  /// BUT-1594: settings-hub subtitle for the household-size screen
   ///
   /// In sv, this message translates to:
-  /// **'Kök och kunskapsnivå som formar veckomenyn'**
-  String get settingsMenuTasteSubtitle;
+  /// **'Standardantal portioner för dina recept'**
+  String get settingsHouseholdSizeSubtitle;
 
-  /// No description provided for @menuTasteIntro.
+  /// BUT-1594: point-of-use intro on the household-size screen
   ///
   /// In sv, this message translates to:
-  /// **'Det här styr dina veckomenyförslag.'**
-  String get menuTasteIntro;
+  /// **'Ställ in hur många du oftast lagar mat till, så förinställs dina recept på det antalet portioner.'**
+  String get householdSettingsIntro;
 
-  /// No description provided for @menuTasteSaved.
+  /// BUT-1594: success snackbar after saving the household size
   ///
   /// In sv, this message translates to:
   /// **'Inställningarna sparades.'**
-  String get menuTasteSaved;
-
-  /// BUT-1322: label for the household-size stepper in Settings > Menu & taste
-  ///
-  /// In sv, this message translates to:
-  /// **'Hushållets storlek'**
-  String get settingsHouseholdSize;
+  String get householdSettingsSaved;
 
   /// BUT-1322: explains the household-size default and that the manual scaler wins
   ///

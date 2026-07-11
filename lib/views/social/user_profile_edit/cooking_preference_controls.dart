@@ -1,12 +1,13 @@
-// Shared cooking-preference controls (skill level + cuisine affinities).
+// Cooking-preference controls (skill level + cuisine affinities).
 //
-// These two controls tune the weekly menu (BUT-1320): the scorer weights
-// recipes by `cookingSkillLevel` + `cuisineAffinities`. They are surfaced in
-// two places — the public profile-edit "cooking identity" section and the
-// Settings "Meny och smak" screen — and MUST stay a single implementation so
-// the two entry points can never diverge. Both consumers pass the same
-// [UserProfileViewModel] instance and rebuild on its notifications; persistence
-// stays with the viewModel (`saveProfile`), never duplicated here.
+// These live on the profile-edit "cooking identity" section as social "about
+// me" bio data. They once also tuned the weekly menu (BUT-1320) and were
+// mirrored into the Settings screen, but BUT-1594 removed the cuisine/skill
+// menu nudges (the menu is drawn from the user's own recipes, so weighting by
+// them double-counted taste) — so this is now a single-consumer widget. Kept
+// factored out (rather than inlined) so a future "suggest new recipes"
+// discovery feature can reuse it. Persistence stays with
+// [UserProfileViewModel.saveProfile], never duplicated here.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';

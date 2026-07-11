@@ -756,6 +756,45 @@ void main() {
         );
       });
 
+      test('BUT-1594: a household change on a not-yet-loaded profile arms Save '
+          '(the new-profile branch must inspect householdSize)', () {
+        // The default viewModel is loaded (_originalProfile set), which routes
+        // through _profileFieldsEqual. This pins the OTHER branch: when the
+        // profile has not loaded yet (_originalProfile == null, first run /
+        // offline) the VM holds a minimal editable shell. The Settings >
+        // Hushållsstorlek screen's ONLY control is householdSize and it gates
+        // Save on hasUnsavedChanges — so if that branch ignores householdSize,
+        // Save can never arm and the setting is unsaveable.
+        mockUserService.setUserState(
+          currentUser: null,
+          users: {},
+          isLoading: false,
+          error: null,
+        );
+        final vmNoProfile = UserProfileViewModel(
+          mockUserService,
+          mockImagePickerService,
+          uploadService: mockImageUploadService,
+        );
+        addTearDown(vmNoProfile.dispose);
+
+        expect(
+          vmNoProfile.hasUnsavedChanges,
+          isFalse,
+          reason: 'a fresh unloaded shell with nothing set has no changes',
+        );
+
+        vmNoProfile.updateHouseholdSize(4);
+
+        expect(
+          vmNoProfile.hasUnsavedChanges,
+          isTrue,
+          reason:
+              'a household-only edit on an unloaded profile must still arm '
+              'Save — otherwise the Hushållsstorlek screen locks up',
+        );
+      });
+
       test('save fires household_size_changed when the value changed, with '
           'the persisted before/after pair', () async {
         final analytics = registerAnalytics();

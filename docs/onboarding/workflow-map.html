@@ -4927,7 +4927,7 @@
   {
    "id": "flow-soc-2",
    "label": "profiler",
-   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/menu_taste_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder.",
+   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/household_size_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder.",
    "features": [
     "SOC-06",
     "SOC-07",

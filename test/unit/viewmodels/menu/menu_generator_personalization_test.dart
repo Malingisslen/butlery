@@ -1,11 +1,14 @@
 // test/unit/viewmodels/menu/menu_generator_personalization_test.dart
 //
-// BUT-1320/1321 personalisation-context plumbing. Verifies that MenuGenerator
-// assembles the pantry/cuisine/skill signals and threads them into
+// BUT-1321 personalisation-context plumbing. Verifies that MenuGenerator
+// assembles the pantry signal and threads it into
 // MenuService.generateMenuFromPrompt as a MenuScoringContext — and, crucially,
 // that a missing or failing PantryService degrades to an empty context instead
 // of blocking generation (the BUT-1279 "a failing/absent pantry must never
 // block generation" contract, applied to the pantry-aware scoring read).
+//
+// (BUT-1594 removed the cuisine-affinity + cooking-skill menu nudges, so the
+// scoring context now carries only the pantry map.)
 //
 // Kept in its own file (like menu_generator_present_aware_test.dart) because
 // the generator resolves PantryService via the global ServiceLocator; a
@@ -30,17 +33,12 @@ import '../../../test_support/base_unit_test.dart';
 
 class _MockPantryService extends Mock implements PantryService {}
 
-UserProfile _profile({
-  Set<String> affinities = const {},
-  CookingSkillLevel? skill,
-}) => UserProfile(
+UserProfile _profile() => UserProfile(
   uid: 'u1',
   displayName: 'Test',
   email: 'test@example.com',
   joinedAt: DateTime(2026),
   lastActiveAt: DateTime(2026),
-  cuisineAffinities: affinities.toList(),
-  cookingSkillLevel: skill,
 );
 
 void main() {
@@ -101,16 +99,10 @@ void main() {
     }
   });
 
-  group('MenuGenerator - personalisation context plumbing (BUT-1320/1321)', () {
+  group('MenuGenerator - pantry context plumbing (BUT-1321)', () {
     test(
-      'threads pantry overlap, cuisine affinities and skill into the service',
+      'memoises the pantry overlap by recipe id into the scoring context',
       () async {
-        when(() => userService.currentUserProfile).thenReturn(
-          _profile(
-            affinities: {'italiensk'},
-            skill: CookingSkillLevel.beginner,
-          ),
-        );
         final pantry = _MockPantryService();
         when(() => pantry.getMatchingRecipes(any(), any())).thenAnswer(
           (_) async => [
@@ -127,17 +119,7 @@ void main() {
         final ctx = menuService.lastScoringContext;
         expect(ctx, isNotNull);
         expect(
-          ctx!.cuisineAffinities,
-          contains('italiensk'),
-          reason: 'favourite cuisines must reach the scorer',
-        );
-        expect(
-          ctx.skill,
-          CookingSkillLevel.beginner,
-          reason: 'cooking skill must reach the scorer',
-        );
-        expect(
-          ctx.pantryMatchByRecipeId['r1'],
+          ctx!.pantryMatchByRecipeId['r1'],
           0.8,
           reason: 'the pantry overlap must be memoised by recipe id',
         );
@@ -148,12 +130,6 @@ void main() {
       'a failing pantry read degrades to an empty pantry map, generation '
       'still completes (BUT-1279 fail-open)',
       () async {
-        when(() => userService.currentUserProfile).thenReturn(
-          _profile(
-            affinities: {'italiensk'},
-            skill: CookingSkillLevel.beginner,
-          ),
-        );
         final pantry = _MockPantryService();
         when(
           () => pantry.getMatchingRecipes(any(), any()),
@@ -174,32 +150,23 @@ void main() {
           isEmpty,
           reason: 'the failed pantry read contributes no boost, not a crash',
         );
-        // The non-pantry signals survive the pantry failure.
-        expect(ctx.cuisineAffinities, contains('italiensk'));
-        expect(ctx.skill, CookingSkillLevel.beginner);
       },
     );
 
     test(
-      'no PantryService registered -> empty pantry map, other signals intact',
+      'no PantryService registered -> empty pantry map, generation completes',
       () async {
-        when(() => userService.currentUserProfile).thenReturn(
-          _profile(skill: CookingSkillLevel.advanced),
-        );
         // No PantryService registered (tearDown/absence). tryGet returns null.
-
         final result = await generator.generateMenuFromPrompt('veckomeny');
 
         expect(result, isNotEmpty);
         final ctx = menuService.lastScoringContext!;
         expect(ctx.pantryMatchByRecipeId, isEmpty);
-        expect(ctx.skill, CookingSkillLevel.advanced);
       },
     );
 
     test(
-      'a null profile yields an empty-but-non-null context (no signals, no '
-      'crash)',
+      'a null profile yields an empty-but-non-null context (no crash)',
       () async {
         when(() => userService.currentUserProfile).thenReturn(null);
 
@@ -207,8 +174,6 @@ void main() {
 
         expect(result, isNotEmpty);
         final ctx = menuService.lastScoringContext!;
-        expect(ctx.cuisineAffinities, isEmpty);
-        expect(ctx.skill, isNull);
         expect(ctx.pantryMatchByRecipeId, isEmpty);
       },
     );

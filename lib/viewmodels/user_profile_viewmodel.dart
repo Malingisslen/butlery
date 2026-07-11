@@ -80,11 +80,16 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   bool get hasUnsavedChanges {
     if (_originalProfile == null && _editedProfile == null) return false;
     if (_originalProfile == null && _editedProfile != null) {
-      // New profile scenario — has changes if any meaningful field is set
+      // New profile scenario — has changes if any meaningful field is set.
+      // householdSize matters here: the Settings > Hushållsstorlek screen's
+      // ONLY control is householdSize, and it gates Save on hasUnsavedChanges —
+      // without this a household change on a not-yet-loaded profile (first run /
+      // offline) would leave Save permanently disabled (BUT-1594 review).
       return displayName.isNotEmpty ||
           avatarUrl != null ||
           cookingSkillLevel != null ||
           cuisineAffinities.isNotEmpty ||
+          householdSize != null ||
           bio.isNotEmpty;
     }
     if (_originalProfile == null || _editedProfile == null) return false;

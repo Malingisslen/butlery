@@ -132,9 +132,10 @@ class MenuService extends BaseService {
 
     weight *= _ratingMultiplier(recipe);
 
-    // Personalisation nudges (BUT-1320 pantry/cuisine/skill). Gentle,
-    // multiplicative, never zero — identity (1.0) when no context is supplied,
-    // so the pre-personalisation behaviour is byte-for-byte preserved.
+    // Personalisation nudge (BUT-1321 pantry overlap; cuisine/skill nudges
+    // removed in BUT-1594). Gentle, multiplicative, never zero — identity (1.0)
+    // when no context is supplied, so the pre-personalisation behaviour is
+    // byte-for-byte preserved.
     weight *= context.multiplierFor(recipe);
 
     // Recent-use decay: strongly down-weight (not exclude) recently used

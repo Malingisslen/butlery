@@ -1575,21 +1575,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionFood => 'Food preferences';
 
   @override
-  String get settingsMenuTasteTitle => 'Menu & taste';
+  String get settingsHouseholdSizeTitle => 'Household size';
 
   @override
-  String get settingsMenuTasteSubtitle =>
-      'Cuisines and skill level that shape the weekly menu';
+  String get settingsHouseholdSizeSubtitle =>
+      'Default portion count for your recipes';
 
   @override
-  String get menuTasteIntro =>
-      'These preferences steer your weekly menu suggestions.';
+  String get householdSettingsIntro =>
+      'Set how many you usually cook for, and your recipes are pre-set to that many portions.';
 
   @override
-  String get menuTasteSaved => 'Your preferences have been saved.';
-
-  @override
-  String get settingsHouseholdSize => 'Household size';
+  String get householdSettingsSaved => 'Your settings have been saved.';
 
   @override
   String get settingsHouseholdSizeHint =>

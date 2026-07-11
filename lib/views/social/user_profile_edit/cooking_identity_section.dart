@@ -2,10 +2,10 @@
 // from user_profile_edit_view.dart to keep the parent under the 634-line
 // baseline.
 //
-// The skill + cuisine controls are shared with the Settings "Meny och smak"
-// screen via [CookingPreferenceControls] — one implementation so the two entry
-// points can never diverge (BUT-1320). This section keeps the profile-only bits
-// (section header + bio field) around that shared control.
+// The skill + cuisine controls live in [CookingPreferenceControls]. They are
+// profile "about me" bio data; they no longer tune the weekly menu (BUT-1594
+// removed the cuisine/skill menu nudges). This section keeps the profile-only
+// bits (section header + bio field) around that control.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
@@ -41,7 +41,7 @@ class CookingIdentitySection extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.spacingL),
 
-        // Skill level + cuisine affinities (shared with Settings > Meny och smak)
+        // Skill level + cuisine affinities (profile bio data; no longer menu-tuning)
         CookingPreferenceControls(viewModel: viewModel),
         const SizedBox(height: AppDimensions.spacingL),
 

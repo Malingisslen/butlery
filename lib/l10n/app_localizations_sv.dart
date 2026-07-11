@@ -1579,20 +1579,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsSectionFood => 'Matpreferenser';
 
   @override
-  String get settingsMenuTasteTitle => 'Meny och smak';
+  String get settingsHouseholdSizeTitle => 'Hushållsstorlek';
 
   @override
-  String get settingsMenuTasteSubtitle =>
-      'Kök och kunskapsnivå som formar veckomenyn';
+  String get settingsHouseholdSizeSubtitle =>
+      'Standardantal portioner för dina recept';
 
   @override
-  String get menuTasteIntro => 'Det här styr dina veckomenyförslag.';
+  String get householdSettingsIntro =>
+      'Ställ in hur många du oftast lagar mat till, så förinställs dina recept på det antalet portioner.';
 
   @override
-  String get menuTasteSaved => 'Inställningarna sparades.';
-
-  @override
-  String get settingsHouseholdSize => 'Hushållets storlek';
+  String get householdSettingsSaved => 'Inställningarna sparades.';
 
   @override
   String get settingsHouseholdSizeHint =>

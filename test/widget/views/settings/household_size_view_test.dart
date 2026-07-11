@@ -1,15 +1,11 @@
-// BUT-1320 (UI half): Settings > "Meny och smak".
+// BUT-1594: Settings > "Hushållsstorlek".
 //
-// Intent: prove the weekly-menu tuning controls (cooking skill + cuisine
-// affinities) are surfaced in Settings with copy that names their effect on the
-// menu, and that they drive the SAME shared [UserProfileViewModel] the
-// profile-edit section uses — so tuning here reaches the menu scorer.
-//
-// Three behaviours are pinned:
-//   1. The view renders both controls plus the explanatory intro line.
-//   2. Selecting a skill segment persists onto the shared ViewModel (proving
-//      the control is wired, not decorative).
-//   3. The Settings-hub row navigates to the menu-taste route.
+// Intent: prove the screen now surfaces ONLY the household-size stepper (its
+// intro copy + stepper), that the cuisine/skill tuning controls have LEFT this
+// screen (they moved off the menu in BUT-1594), that the stepper drives the
+// shared [UserProfileViewModel], and that the Settings-hub row navigates to the
+// renamed route. A final regression group proves the profile-edit "cooking
+// identity" section still carries the cuisine/skill controls.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,7 +24,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/views/settings/menu_taste_view.dart';
+import 'package:butlery/views/settings/household_size_view.dart';
 import 'package:butlery/views/settings/settings_hub_view.dart';
 import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -43,6 +39,24 @@ class _FakeUserService extends Fake implements UserService {
 
   @override
   UserProfile? get currentUserProfile => _profile;
+
+  // Lets saveProfile() succeed in the exit-dialog-Save test — a household-only
+  // edit skips the display-name availability check, so this is the only service
+  // call the save makes. Echoes the profile back so the VM syncs its baseline.
+  @override
+  Future<UserProfile?> createOrUpdateProfile({
+    required String displayName,
+    String? avatarUrl,
+    bool? isSearchable,
+    bool? allowEmailSearch,
+    CookingSkillLevel? cookingSkillLevel,
+    List<String>? cuisineAffinities,
+    String? bio,
+    bool? showOnlineStatus,
+    bool? shareActivityToFeed,
+    Map<String, bool>? activityFeedEventTypes,
+    Object? householdSize = UserService.householdSizeUntouched,
+  }) async => _profile;
 
   @override
   void addListener(VoidCallback listener) {}
@@ -95,8 +109,8 @@ void main() {
     return vm;
   }
 
-  group('MenuTasteView (BUT-1320)', () {
-    testWidgets('renders the intro line and both tuning controls', (
+  group('HouseholdSizeView (BUT-1594)', () {
+    testWidgets('renders the intro line and the household stepper only', (
       tester,
     ) async {
       registerVm();
@@ -104,59 +118,41 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MenuTasteView(),
+          child: const HouseholdSizeView(),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(
-        find.text(sv.menuTasteIntro),
+        find.text(sv.householdSettingsIntro),
         findsOneWidget,
-        reason: 'the point-of-use copy naming the menu effect must render',
+        reason: 'the point-of-use intro must render',
       );
+      // The household stepper is present (its null-state label).
+      expect(
+        find.text(sv.householdSizeRecipeDefault),
+        findsOneWidget,
+        reason: 'the household-size stepper must render',
+      );
+      // Regression: the cuisine/skill tuning controls must NOT be on this
+      // screen anymore — they left the menu in BUT-1594.
       expect(
         find.byType(SegmentedButton<CookingSkillLevel>),
-        findsOneWidget,
-        reason: 'the cooking-skill selector must render',
+        findsNothing,
+        reason: 'the cooking-skill selector must be gone from the menu screen',
       );
-      // A representative cuisine chip proves the affinity picker rendered.
       expect(
         find.widgetWithText(FilterChip, 'italiensk'),
-        findsOneWidget,
-        reason: 'the cuisine-affinity chips must render',
-      );
-    });
-
-    testWidgets('selecting a skill segment persists on the shared ViewModel', (
-      tester,
-    ) async {
-      final vm = registerVm();
-
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: const MenuTasteView(),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(vm.cookingSkillLevel, isNull, reason: 'precondition: unset');
-
-      await tester.tap(find.text(sv.profileCookingSkillAdvanced));
-      await tester.pump();
-
-      expect(
-        vm.cookingSkillLevel,
-        CookingSkillLevel.advanced,
-        reason: 'tapping a segment must update the shared ViewModel',
+        findsNothing,
+        reason: 'the cuisine-affinity chips must be gone from the menu screen',
       );
     });
 
     // Guards the point-of-use contract: a freshly-loaded profile has nothing to
-    // save, so the button is inert; a real tuning change must arm it. A
+    // save, so the button is inert; a real household change must arm it. A
     // regression that dropped the `hasUnsavedChanges` gate would either leave
     // the button permanently dead (change lost) or let an empty save fire.
-    testWidgets('Save button is disabled until a control changes', (
+    testWidgets('Save button is disabled until the household size changes', (
       tester,
     ) async {
       registerVm();
@@ -164,7 +160,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MenuTasteView(),
+          child: const HouseholdSizeView(),
         ),
       );
       await tester.pumpAndSettle();
@@ -178,14 +174,74 @@ void main() {
         reason: 'no unsaved changes yet → Save must be disabled',
       );
 
-      await tester.tap(find.text(sv.profileCookingSkillAdvanced));
+      final plus = find.byTooltip(sv.a11yIncreaseHouseholdSize);
+      await tester.ensureVisible(plus);
+      await tester.pumpAndSettle();
+      await tester.tap(plus);
       await tester.pump();
 
       expect(
         tester.widget<ElevatedButton>(saveButton).onPressed,
         isNotNull,
-        reason: 'a tuning change must arm the Save button',
+        reason: 'a household-size change must arm the Save button',
       );
+    });
+
+    // BUT-1594 review (finding 3): the unsaved-changes exit dialog's "Spara"
+    // must both persist AND leave the screen — like the profile-edit guard it
+    // mirrors — not save then strand the user on the screen (a second back
+    // press). Pushes the view onto a navigator so a successful save can pop it.
+    testWidgets('exit-dialog Save persists and leaves the screen', (
+      tester,
+    ) async {
+      registerVm();
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const HouseholdSizeView(),
+                    ),
+                  ),
+                  child: const Text('open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HouseholdSizeView), findsOneWidget);
+
+      // Make an unsaved change, then request back (system back → PopScope).
+      final plus = find.byTooltip(sv.a11yIncreaseHouseholdSize);
+      await tester.ensureVisible(plus);
+      await tester.pumpAndSettle();
+      await tester.tap(plus);
+      await tester.pump();
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      // The unsaved-changes dialog is up; tap Save.
+      expect(find.text(sv.profileUnsavedChanges), findsOneWidget);
+      await tester.tap(find.widgetWithText(ElevatedButton, sv.commonSave).last);
+      await tester.pumpAndSettle();
+
+      // The screen has left (successful save) — the caller is back on 'open'.
+      expect(
+        find.byType(HouseholdSizeView),
+        findsNothing,
+        reason: 'a successful exit-dialog Save must pop the screen',
+      );
+      expect(find.text('open'), findsOneWidget);
     });
   });
 
@@ -196,7 +252,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MenuTasteView(),
+          child: const HouseholdSizeView(),
         ),
       );
       await tester.pumpAndSettle();
@@ -230,7 +286,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MenuTasteView(),
+          child: const HouseholdSizeView(),
         ),
       );
       await tester.pumpAndSettle();
@@ -257,8 +313,8 @@ void main() {
     });
   });
 
-  group('SettingsHub row → MenuTaste route (BUT-1320)', () {
-    testWidgets('the "Meny och smak" tile navigates to the menu-taste route', (
+  group('SettingsHub row → Household-size route (BUT-1594)', () {
+    testWidgets('the "Hushållsstorlek" tile navigates to the new route', (
       tester,
     ) async {
       // SettingsHubView's own dependency graph (admin stream + embedded tiles).
@@ -290,26 +346,25 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.text(sv.settingsMenuTasteTitle));
+      await tester.tap(find.text(sv.settingsHouseholdSizeTitle));
       await tester.pump();
 
       expect(
         pushedRoute,
-        Routes.settingsMenuTaste,
-        reason: 'the hub row must push the menu-taste route',
+        Routes.settingsHousehold,
+        reason: 'the hub row must push the household-size route',
       );
     });
   });
 
-  // Refactor guard: BUT-1320 pulled the skill + cuisine controls OUT of the
-  // profile-edit "cooking identity" section into the shared
-  // CookingPreferenceControls. This proves the profile-edit entry point still
-  // renders BOTH the shared controls AND its own bio field (extraction didn't
-  // drop the profile-only bits), and that the shared control stays wired to the
-  // same ViewModel here — a toggle must reach cuisineAffinities. Without this,
-  // the extraction could have silently broken the profile side while the
-  // Settings side stayed green.
-  group('CookingIdentitySection after extraction (BUT-1320 regression)', () {
+  // Refactor guard: the skill + cuisine controls live in the shared
+  // CookingPreferenceControls, used by the profile-edit "cooking identity"
+  // section. BUT-1594 removed them from the Settings/menu screen but they MUST
+  // stay on profile-edit (social bio data). This proves the profile-edit entry
+  // point still renders the shared controls AND its own bio field, and that the
+  // shared control stays wired to the same ViewModel — a toggle must reach
+  // cuisineAffinities.
+  group('CookingIdentitySection keeps skill + cuisine (BUT-1594)', () {
     testWidgets(
       'keeps skill + cuisine controls and the bio field, wired to VM',
       (tester) async {
@@ -327,7 +382,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Shared control survived the extraction.
+        // Shared control still present on profile-edit.
         expect(
           find.byType(SegmentedButton<CookingSkillLevel>),
           findsOneWidget,
@@ -339,7 +394,7 @@ void main() {
           findsOneWidget,
           reason: 'cuisine chips must still render in the profile-edit section',
         );
-        // Profile-only bit that must NOT have been dropped by the extraction.
+        // Profile-only bit that must NOT have been dropped.
         expect(
           find.byType(StyledInput),
           findsOneWidget,

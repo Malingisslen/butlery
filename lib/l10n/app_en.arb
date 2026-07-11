@@ -1063,13 +1063,21 @@
   "commonSettings": "Settings",
   "settingsSubtitle": "Allergens, tags, notifications and more",
   "settingsSectionFood": "Food preferences",
-  "settingsMenuTasteTitle": "Menu & taste",
-  "settingsMenuTasteSubtitle": "Cuisines and skill level that shape the weekly menu",
-  "menuTasteIntro": "These preferences steer your weekly menu suggestions.",
-  "menuTasteSaved": "Your preferences have been saved.",
-  "settingsHouseholdSize": "Household size",
-  "@settingsHouseholdSize": {
-    "description": "BUT-1322: label for the household-size stepper in Settings > Menu & taste"
+  "settingsHouseholdSizeTitle": "Household size",
+  "@settingsHouseholdSizeTitle": {
+    "description": "BUT-1594: title of the Settings > Household size screen and its hub row"
+  },
+  "settingsHouseholdSizeSubtitle": "Default portion count for your recipes",
+  "@settingsHouseholdSizeSubtitle": {
+    "description": "BUT-1594: settings-hub subtitle for the household-size screen"
+  },
+  "householdSettingsIntro": "Set how many you usually cook for, and your recipes are pre-set to that many portions.",
+  "@householdSettingsIntro": {
+    "description": "BUT-1594: point-of-use intro on the household-size screen"
+  },
+  "householdSettingsSaved": "Your settings have been saved.",
+  "@householdSettingsSaved": {
+    "description": "BUT-1594: success snackbar after saving the household size"
   },
   "settingsHouseholdSizeHint": "Recipes open pre-set to this many portions. Portion choices on a recipe always take precedence.",
   "@settingsHouseholdSizeHint": {
