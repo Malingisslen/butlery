@@ -187,6 +187,10 @@ class ExportPaginationHelper {
     'notification_delivery': 1000,
     'notification_batches': 500,
     'notification_engagement': 1000,
+    // Explicit so the export cap is a defined contract, not a fallback
+    // coincidence — the truncation signal in PreferencesExportManager keys off
+    // this value (BUT-1562).
+    'user_notifications': 500,
     // Increment 5: pooled-rating events (one per pool the user voted in).
     'canonical_rating_events': 1000,
   };

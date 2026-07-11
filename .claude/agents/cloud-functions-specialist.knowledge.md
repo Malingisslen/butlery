@@ -2234,3 +2234,30 @@ don't need a full counter seam to prove "A runs before B"; a boolean set on B's 
 line, plus which of the two error MESSAGES surfaces, is enough to make a reverted order
 go red. Keep the deny-side fixture at the exact cap boundary so the first gate is the one
 that trips.
+
+### 2026-07-11 — BUT-1511 onFamilyRatingUpdated memberType-flip recompute [Pattern discovered]
+
+`onFamilyRatingUpdated` recompute gate extracted to
+`ratings/family-rating-recompute.ts` (`isProfileRating` +
+`shouldRecomputeOnFamilyRatingUpdate(before, after)`) so the decision is
+unit-testable without importing index.ts. New test
+`__tests__/family-rating-recompute.test.ts` (5 cases, uses `_unit-runner`;
+`test:family-rating-recompute` auto-discovered by both run-all + CI runners).
+Build + test green.
+
+The fix: an UPDATE that flips memberType `user`→`profile` with UNCHANGED stars
+used to skip recompute (old gate was `after-is-profile` then `before.stars !==
+after.stars`), so a row newly counting toward the public average never got
+folded in. New gate recomputes when stars changed OR memberType changed, still
+requiring `after` to be `profile`.
+
+**Residual asymmetry worth remembering (flagged Low, documented out-of-scope in
+the code):** the fix is one-directional. A DEMOTION `profile`→`user` is
+short-circuited by the `!isProfileRating(after)` guard, so the demoted row's
+stars stay folded into `recipe_social_stats` (aggregator queries
+`family_ratings where memberType == "profile"`) until the NEXT rating event on
+that recipe triggers a recompute. Self-heals, bounded, rare — but if promotion
+is worth handling, demotion is too. Fully-correct gate would be membership-XOR:
+`const w=isProfileRating(before), i=isProfileRating(after); if(!w&&!i) return
+false; if(w!==i) return true; return before?.stars!==after?.stars;`. Left as the
+ticket scoped only the recompute condition.

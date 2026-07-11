@@ -198,6 +198,20 @@ void main() {
         final result = await importManager.autoImport(input);
         expect(result.isSuccess, isTrue);
         expect(result.strategy, isNotNull);
+
+        // The auto-detected text strategy must actually parse the content, not
+        // just report success: the recipe carries the dish title from the first
+        // line and the measured ingredient lines. Assert by content + a lower
+        // bound on the count rather than an exact length — the parser currently
+        // also captures a couple of instruction fragments as ingredients (a
+        // known parse-quality quirk, out of scope here), so pinning an exact
+        // count would both cement that quirk and break on any future cleanup.
+        final recipe = result.recipe;
+        expect(recipe, isNotNull);
+        expect(recipe!.title, startsWith('Kottbullar'));
+        expect(recipe.ingredients.length, greaterThanOrEqualTo(3));
+        expect(recipe.ingredients, contains('1 dl mjolk'));
+        expect(recipe.ingredients, contains('2 msk strobrod'));
       });
 
       test('should try preferred strategy first', () async {

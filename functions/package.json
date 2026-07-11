@@ -88,6 +88,7 @@
     "test:but753-sharedwith-cascade": "ts-node src/__tests__/but753-legacy-sharedwith-cascade.test.ts",
     "test:but466-display-name-tombstone": "ts-node src/__tests__/share-display-name-tombstone.test.ts",
     "test:rating-aggregation": "ts-node src/__tests__/rating-aggregation.test.ts",
+    "test:family-rating-recompute": "ts-node src/__tests__/family-rating-recompute.test.ts",
     "test:canonical-rating-aggregation": "ts-node src/__tests__/canonical-rating-aggregation.test.ts",
     "test:pool-aggregation": "ts-node src/__tests__/pool-aggregation.test.ts",
     "test:pooled-ratings-flag": "ts-node src/__tests__/pooled-ratings-flag.test.ts",

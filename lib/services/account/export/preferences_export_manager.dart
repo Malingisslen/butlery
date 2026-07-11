@@ -43,9 +43,22 @@ class PreferencesExportManager {
     try {
       final notifications = <Map<String, dynamic>>[];
 
-      final entries = await _exports.exportUserNotifications(userId);
+      final limit = ExportPaginationHelper.getLimitForType(
+        'user_notifications',
+      );
+      // Fetch one past the cap so "exactly `limit` present" is distinguishable
+      // from "more than `limit`, some omitted". Keying `truncated` off
+      // `length >= limit` would falsely flag a complete export of exactly
+      // `limit` notifications as truncated — a wrong completeness claim on a
+      // GDPR data-portability export (BUT-1562).
+      final entries = await _exports.exportUserNotifications(
+        userId,
+        maxDocuments: limit + 1,
+      );
+      final truncated = entries.length > limit;
+      final included = truncated ? entries.take(limit) : entries;
 
-      for (final entry in entries) {
+      for (final entry in included) {
         final data = entry['data'] as Map<String, dynamic>;
         notifications.add({
           'notification_id': entry['id'],
@@ -63,7 +76,9 @@ class PreferencesExportManager {
       return {
         'total_count': notifications.length,
         'notifications': notifications,
-        'note': 'Limited to last 500 notifications for export size',
+        if (truncated) 'truncated': true,
+        if (truncated)
+          'note': 'Limited to the $limit most recent notifications',
         'summary': {
           'unread_count': notifications
               .where((n) => n['is_read'] == false)

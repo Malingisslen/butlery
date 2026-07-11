@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
@@ -860,6 +861,253 @@ void main() {
 
         expect(restored.isPartial, isTrue);
         expect(restored.tags.contains('test-tag'), isTrue);
+      });
+    });
+
+    // BUT-1492: The existing round-trip tests only exercise data written by the
+    // CURRENT schema (V2). These pin the read-time-only V0→V2 migration
+    // (_migrateSchema, invoked by fromFirestore/fromJson) — the path that reads
+    // OLD stored blobs — and the cross-user cache path, i.e. a TagResult one user
+    // computed being read back by another via the shared Firestore store (recipes
+    // and their tagResult are shared cross-user through the global recipe cache /
+    // recipe sharing, deserialized via TagResult.fromFirestore).
+    group('L12: schema migration V0→V2 (read-time-only)', () {
+      test(
+        'V0 Firestore blob (no schemaVersion) reads and re-stamps to current',
+        () {
+          // A blob written before schema versioning existed: no schemaVersion key.
+          final v0 = {
+            'tags': ['kyckling', 'gryta'],
+            'allergenStatus': {'gluten': 'free', 'mjölk': 'contains'},
+            'dietaryStatus': {'vegetarisk': 'contains'},
+            'coverage': 0.9,
+            'unknownIngredients': ['dill'],
+            'generatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+            'generatorVersion': '1.0.0',
+            // NOTE: intentionally no 'schemaVersion' → defaults to 0
+          };
+
+          final result = TagResult.fromFirestore(v0);
+
+          // Data survives the migration untouched (V0→V1 is a no-op transform).
+          expect(result.tags, {'kyckling', 'gryta'});
+          expect(result.allergenStatus['gluten'], TriState.free);
+          expect(result.allergenStatus['mjölk'], TriState.contains);
+          expect(result.dietaryStatus['vegetarisk'], TriState.contains);
+          expect(result.coverage, 0.9);
+          expect(result.unknownIngredients, ['dill']);
+
+          // Re-serializing stamps the current schema version, so a later reader
+          // sees a V2 blob and skips migration entirely.
+          expect(
+            result.toFirestore()['schemaVersion'],
+            kTagResultSchemaVersion,
+          );
+        },
+      );
+
+      test(
+        'V0 failed blob migrates the error out of unknownIngredients into '
+        'errorReason',
+        () {
+          // Pre-V2 failures misused unknownIngredients[0] as the error string
+          // and had no dedicated errorReason field.
+          final v0Failed = {
+            'tags': <String>[],
+            'allergenStatus': <String, String>{},
+            'dietaryStatus': <String, String>{},
+            'coverage': 0.0,
+            'unknownIngredients': ['Disk full during tagging'],
+            'generatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+            'generatorVersion': 'failed',
+            // no schemaVersion (V0), no errorReason
+          };
+
+          final result = TagResult.fromFirestore(v0Failed);
+
+          // V1→V2 migration lifts the error text into the explicit field.
+          expect(result.errorReason, 'Disk full during tagging');
+          // The legacy field is preserved for backward-compatible UI.
+          expect(result.unknownIngredients, ['Disk full during tagging']);
+        },
+      );
+
+      test(
+        'V1 failed blob (schemaVersion=1, no errorReason) extracts errorReason',
+        () {
+          final v1Failed = {
+            'tags': <String>[],
+            'allergenStatus': <String, String>{},
+            'dietaryStatus': <String, String>{},
+            'coverage': 0.0,
+            'unknownIngredients': ['Network timeout'],
+            'generatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+            'generatorVersion': 'failed',
+            'schemaVersion': 1,
+          };
+
+          final result = TagResult.fromFirestore(v1Failed);
+
+          expect(result.errorReason, 'Network timeout');
+        },
+      );
+
+      test(
+        'V1 non-failed blob is migrated without inventing an errorReason',
+        () {
+          final v1Ok = {
+            'tags': ['pasta'],
+            'allergenStatus': {'gluten': 'contains'},
+            'dietaryStatus': <String, String>{},
+            'coverage': 0.8,
+            'unknownIngredients': ['some unknown veg'],
+            'generatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+            'generatorVersion': '1.0.0',
+            'schemaVersion': 1,
+          };
+
+          final result = TagResult.fromFirestore(v1Ok);
+
+          // errorReason extraction only applies to 'failed' results — a normal
+          // recipe's unknownIngredients must NOT be reinterpreted as an error.
+          expect(result.errorReason, isNull);
+          expect(result.unknownIngredients, ['some unknown veg']);
+        },
+      );
+
+      test(
+        'a current (V2) blob is not re-migrated — an explicit errorReason is '
+        'not clobbered by unknownIngredients',
+        () {
+          // Idempotency guard: migration must early-return once at/above the
+          // current version, so a V2 blob whose errorReason differs from
+          // unknownIngredients[0] keeps its explicit value.
+          final v2 = {
+            'tags': <String>[],
+            'allergenStatus': <String, String>{},
+            'dietaryStatus': <String, String>{},
+            'coverage': 0.0,
+            'unknownIngredients': ['stale legacy text'],
+            'generatedAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
+            'generatorVersion': 'failed',
+            'errorReason': 'Explicit V2 reason',
+            'schemaVersion': kTagResultSchemaVersion,
+          };
+
+          final result = TagResult.fromFirestore(v2);
+
+          expect(result.errorReason, 'Explicit V2 reason');
+        },
+      );
+
+      test('the JSON read path migrates a V0 failed blob the same way', () {
+        // fromJson also routes through _migrateSchema; the difference from the
+        // Firestore path is only the date encoding (ISO string vs Timestamp).
+        final v0FailedJson = {
+          'tags': <String>[],
+          'allergenStatus': <String, String>{},
+          'dietaryStatus': <String, String>{},
+          'coverage': 0.0,
+          'unknownIngredients': ['Parser crash'],
+          'generatedAt': DateTime(2024, 1, 1).toIso8601String(),
+          'generatorVersion': 'failed',
+          // V0: no schemaVersion, no errorReason
+        };
+
+        final result = TagResult.fromJson(v0FailedJson);
+
+        expect(result.errorReason, 'Parser crash');
+      });
+    });
+
+    group('cross-user cache round-trip (shared Firestore store)', () {
+      test(
+        'a round-trip stamps the current schema version and is stable across a '
+        'second read (no re-migration for the next reader)',
+        () {
+          final original = TagResult(
+            tags: {'kyckling', 'gryta'},
+            allergenStatus: {'gluten': TriState.free},
+            dietaryStatus: {'vegetarisk': TriState.contains},
+            coverage: 0.9,
+            unknownIngredients: ['dill'],
+            generatedAt: DateTime(2024, 1, 15),
+            generatorVersion: '1.0.0',
+          );
+
+          final stored = original.toFirestore();
+          expect(stored['schemaVersion'], kTagResultSchemaVersion);
+
+          // User B reads the shared blob.
+          final readByOtherUser = TagResult.fromFirestore(stored);
+          expect(readByOtherUser.tags, original.tags);
+          expect(readByOtherUser.allergenStatus, original.allergenStatus);
+          expect(readByOtherUser.dietaryStatus, original.dietaryStatus);
+          expect(readByOtherUser.coverage, original.coverage);
+
+          // Re-writing what User B read keeps the schema at current — the
+          // round-trip is a fixed point, so it never triggers a migration loop.
+          expect(
+            readByOtherUser.toFirestore()['schemaVersion'],
+            kTagResultSchemaVersion,
+          );
+        },
+      );
+
+      test(
+        'safety verdicts survive crossing users, but the debug decision logs '
+        'are dropped (not persisted to the shared Firestore store)',
+        () {
+          final withDecisions = TagResult(
+            tags: {'lax'},
+            allergenStatus: {
+              'gluten': TriState.free,
+              'fisk': TriState.contains,
+            },
+            dietaryStatus: {'pescetarian': TriState.free},
+            coverage: 1.0,
+            generatedAt: DateTime(2024, 1, 15),
+            generatorVersion: '1.0.0',
+            decisions: [
+              TagDecision.allergen(
+                key: 'fisk',
+                result: TriState.contains,
+                reason: "Ingredient 'lax' has property 'fish'",
+                triggeringIngredients: ['lax'],
+              ),
+              TagDecision.dietary(
+                key: 'pescetarian',
+                result: TriState.free,
+                reason: 'No meat ingredients at 100% coverage',
+              ),
+            ],
+          );
+
+          // Default cross-user write omits decisions to avoid storage bloat.
+          final stored = withDecisions.toFirestore();
+          expect(stored.containsKey('decisions'), isFalse);
+
+          final readByOtherUser = TagResult.fromFirestore(stored);
+
+          // The allergen/dietary verdicts the other user relies on are intact.
+          expect(readByOtherUser.isAllergenFree('gluten'), isTrue);
+          expect(readByOtherUser.containsAllergen('fisk'), isTrue);
+          expect(readByOtherUser.isDietarySafe('pescetarian'), isTrue);
+          // But the explanatory decision logs did not cross the boundary.
+          expect(readByOtherUser.hasDecisions, isFalse);
+          expect(readByOtherUser.getAllergenDecision('fisk'), isNull);
+        },
+      );
+
+      test('errorReason crosses users intact through the shared store', () {
+        final failed = TagResult.failed(reason: 'Ingredient lookup timeout');
+
+        final stored = failed.toFirestore();
+        expect(stored['errorReason'], 'Ingredient lookup timeout');
+
+        final readByOtherUser = TagResult.fromFirestore(stored);
+        expect(readByOtherUser.errorReason, 'Ingredient lookup timeout');
+        expect(readByOtherUser.hasFailed, isTrue);
       });
     });
   });

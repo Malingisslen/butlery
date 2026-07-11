@@ -469,6 +469,35 @@ void main() {
       },
     );
 
+    test(
+      'exportPantryItems flags truncated only when the cap is reached '
+      '(BUT-1562)',
+      () async {
+        // The pantry cap is ExportPaginationHelper.getLimitForType('pantry_items')
+        // == 1000. Below the cap the `truncated` key must be absent; at the cap
+        // it must be true. The fake echoes whatever rows it is given, so we can
+        // drive both sides of the boundary directly.
+        Map<String, dynamic> row(int i) => {
+          'id': 'p$i',
+          'data': {'name': 'item$i'},
+        };
+
+        final belowCap = _manager(
+          pantry: List.generate(3, row),
+        );
+        final belowResult = await belowCap.exportPantryItems('user-uid');
+        expect(belowResult.containsKey('truncated'), isFalse);
+        expect(belowResult['total_count'], 3);
+
+        final atCap = _manager(
+          pantry: List.generate(1000, row),
+        );
+        final atResult = await atCap.exportPantryItems('user-uid');
+        expect(atResult['truncated'], isTrue);
+        expect(atResult['total_count'], 1000);
+      },
+    );
+
     test('exportActivityEvents includes activity-event records', () async {
       final manager = _manager(
         activityEvents: [

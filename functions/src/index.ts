@@ -33,6 +33,10 @@ import {
   POOL_EVENT_TRIGGER_PATH,
 } from "./ratings/pool-aggregation";
 import { updatePooledRatingStats } from "./ratings/update-pooled-rating-stats";
+import {
+  isProfileRating,
+  shouldRecomputeOnFamilyRatingUpdate,
+} from "./ratings/family-rating-recompute";
 
 setGlobalOptions({ region: "europe-west1" });
 
@@ -285,11 +289,8 @@ export const onRatingDeleted = onDocumentDeleted(
 // triggers schedule the SAME aggregation; the aggregator folds in profile rows.
 // Gated to `profile` rows so adult/proxy family writes (which don't affect the
 // public counter — adults go via recipe_ratings) don't spend a recompute.
-
-/** True when a family_ratings doc is a non-account diner-profile rating. */
-function isProfileRating(data: admin.firestore.DocumentData | undefined): boolean {
-  return data?.memberType === "profile";
-}
+// `isProfileRating` / `shouldRecomputeOnFamilyRatingUpdate` live in
+// ./ratings/family-rating-recompute so the update-gate is unit-testable.
 
 export const onFamilyRatingCreated = onDocumentCreated(
   "family_ratings/{id}",
@@ -308,14 +309,14 @@ export const onFamilyRatingUpdated = onDocumentUpdated(
   async (event) => {
     const before = event.data!.before.data();
     const after = event.data!.after.data();
-    if (!isProfileRating(after)) return;
+    // Recompute when the star value changed OR the memberType flipped into
+    // `profile` (a memberType-only flip changes public-counter membership,
+    // BUT-1511). The `after`-is-profile gate lives inside the helper.
+    if (!shouldRecomputeOnFamilyRatingUpdate(before, after)) return;
     const recipeId = after.recipeId as string;
     if (!recipeId) return;
-    // Only recompute when the stars actually changed.
-    if (before.stars !== after.stars) {
-      logger.info(`Family-diner rating updated for recipe ${recipeId}`);
-      await scheduleRatingAggregation(recipeId);
-    }
+    logger.info(`Family-diner rating updated for recipe ${recipeId}`);
+    await scheduleRatingAggregation(recipeId);
   }
 );
 
