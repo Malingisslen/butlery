@@ -8,7 +8,8 @@
     ".claude/agents/testing-specialist.knowledge.md",
     "CLAUDE.md",
     ".claude/rules/workflow-discipline.md",
-    ".claude/rules/lessons-digest.md"
+    ".claude/rules/lessons-digest.md",
+    "tasks/lessons.md"
   ],
   "last_stamped": "2026-07-11"
 }

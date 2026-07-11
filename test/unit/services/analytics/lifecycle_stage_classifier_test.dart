@@ -118,6 +118,20 @@ void main() {
     });
 
     test(
+      'BUT-1550: 30d12h since last cook → churned (sub-day precision, not '
+      'collapsed onto the day-30 boundary by inDays truncation)',
+      () {
+        final stage = classifyLifecycleStage(
+          signupAt: now.subtract(const Duration(days: 60)),
+          lastCookAt: now.subtract(const Duration(days: 30, hours: 12)),
+          cooksLast14Days: 0,
+          now: now,
+        );
+        expect(stage, LifecycleStage.churned);
+      },
+    );
+
+    test(
       'priority: 5 cooks but lastCookAt 40d ago → churned (recency wins)',
       () {
         // Spec-mandated: stale-but-prolific user must classify as churned.
@@ -164,6 +178,23 @@ void main() {
       );
       expect(stage, LifecycleStage.dormant);
     });
+
+    test(
+      'BUT-1550: never cooked, signed up 30d12h ago → churned (sub-day '
+      'precision on the never-cooked branch too, symmetric with last-cook)',
+      () {
+        // The never-cooked branch got the same .inDays → Duration fix; guard it
+        // so a bad merge reverting just this branch to truncation can't slip a
+        // 30d12h-since-signup churned user back to dormant undetected.
+        final stage = classifyLifecycleStage(
+          signupAt: now.subtract(const Duration(days: 30, hours: 12)),
+          lastCookAt: null,
+          cooksLast14Days: 0,
+          now: now,
+        );
+        expect(stage, LifecycleStage.churned);
+      },
+    );
 
     test('wireValue strips trailing underscore on new_', () {
       expect(LifecycleStage.new_.wireValue, 'new');

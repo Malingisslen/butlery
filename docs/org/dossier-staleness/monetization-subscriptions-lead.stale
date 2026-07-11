@@ -2,7 +2,8 @@
   "role": "Monetization / Subscriptions Lead",
   "stale_since": "2026-07-07",
   "triggers": [
-    "tasks/todo.md"
+    "tasks/todo.md",
+    "tasks/lessons.md"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-11"
 }

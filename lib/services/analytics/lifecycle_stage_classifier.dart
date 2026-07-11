@@ -55,23 +55,28 @@ LifecycleStage classifyLifecycleStage({
   // else because re-engagement messaging only makes sense for inactive
   // users — recency dominates frequency.
   if (lastCookAt != null) {
-    final daysSinceLastCook = now.difference(lastCookAt).inDays;
-    if (daysSinceLastCook > 30) {
+    // Compare full Durations (millisecond precision), not `.inDays`.
+    // `.inDays` truncates toward zero, so a last-cook 30d12h ago yields
+    // 30 and misclassifies a churned user (elapsed > 30d) as dormant —
+    // the whole [30d, 31d) window collapsed onto the boundary. Duration
+    // comparison keeps churned strictly >30d and dormant [14d, 30d].
+    final sinceLastCook = now.difference(lastCookAt);
+    if (sinceLastCook > const Duration(days: 30)) {
       return LifecycleStage.churned;
     }
     // Stage 2: dormant (14-30 days inclusive on the 14d boundary).
     // 14d is the same window as "habitual cooks last 14 days" — by
     // checking lastCookAt first we avoid the edge where cooksLast14Days
-    // is 0 but lastCookAt happens to be 13.5 days ago (rounds to 13).
-    if (daysSinceLastCook >= 14) {
+    // is 0 but lastCookAt happens to be 13.5 days ago.
+    if (sinceLastCook >= const Duration(days: 14)) {
       return LifecycleStage.dormant;
     }
   } else {
     // Never cooked — if signed up >30 days ago, treat as churned;
     // 14-30 days ago, dormant; otherwise fall through to new_.
-    final daysSinceSignup = now.difference(signupAt).inDays;
-    if (daysSinceSignup > 30) return LifecycleStage.churned;
-    if (daysSinceSignup >= 14) return LifecycleStage.dormant;
+    final sinceSignup = now.difference(signupAt);
+    if (sinceSignup > const Duration(days: 30)) return LifecycleStage.churned;
+    if (sinceSignup >= const Duration(days: 14)) return LifecycleStage.dormant;
   }
 
   // Stage 3: habitual (3+ cooks in the last 14 days). Checked AFTER
