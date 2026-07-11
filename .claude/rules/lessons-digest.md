@@ -44,6 +44,7 @@ when the counts drift apart.
 - At ship time an `MM`/half-staged file is an explicit decision — `git diff` it and either review+test it into scope or `git checkout -- ` back to the reviewed staged version and file a follow-up with the reverted code; never let `git add -A` ship an unreviewed data-CF edit.
 - Grade each SELECTED ticket against its OWN diff at ship — a batch "N landed, none failed" summary hides silent drops; a zero-diff ticket is dropped (carry forward) or obsolete (close citing the resolving commit), never Done.
 - A fresh parallel worktree without `.dart_tool` makes analyze report PHANTOM undefined-member errors (`package:<self>` resolves to the MAIN checkout) — run `dart pub get --offline`/`flutter pub get` in the worktree before trusting analyze.
+- lefthook `analyze` gate TIMEOUT (exit 124) while standalone `dart analyze` is clean = contention with VS Code's live analyzer — `taskkill //F //IM dart.exe` right before committing (not `LEFTHOOK_EXCLUDE` on a `.dart` diff); a saturated process table crashes the analysis server + blocks fork (restart, don't retry); background the commit so arch-guard's ~10-min compile outlives the shell ceiling.
 
 ## Testing
 
