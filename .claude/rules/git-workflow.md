@@ -13,6 +13,8 @@
 - Git pre-commit hooks (lefthook) exist in this project and may reformat files
 - After the first commit attempt, if it fails due to formatting, re-stage all changed files and commit again with the same message
 - Do not panic or start over
+- **NEVER `git commit --no-verify` / `-n`, and never `git commit --amend`.** `--no-verify` skips the ENTIRE lefthook layer (format, analyze, arch-guard, secret-scan) — the commit-gate hooks now refuse it outright (BUT-1533). The only legitimate way to skip a *single* hung gate is the documented `LEFTHOOK_EXCLUDE=<gate>` env prefix (Commit-Deadlock Ladder rung 4), never `--no-verify`.
+- **The commit is also gated by PreToolUse marker hooks** (`require-review-before-commit`, `require-simplify-before-commit` in the shared workflow-guards plugin): a `.dart`/`functions/src` change is blocked until the specialist-review markers under `.claude/state/` are fresh. These parse the commit's real argument list (BUT-1533) — a `--help`/`--no-verify`/`-h` sitting inside a `-m` message no longer disables the gate, and an env-prefixed `LEFTHOOK_EXCLUDE=… git commit` is still gated.
 
 ## Parallel Sessions
 - Another Claude Code session may be running in parallel in a worktree or on a different branch
