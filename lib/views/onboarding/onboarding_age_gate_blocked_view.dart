@@ -1,6 +1,5 @@
 /// Blocking screen for under-15 users (GDPR Art 8). Best-effort deletes the
 /// Firebase Auth record so no orphan remains, then signs out.
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -51,21 +50,11 @@ class _OnboardingAgeGateBlockedViewState
     final authService = ServiceLocator.get<AuthService>();
 
     // Best-effort: delete the Firebase Auth user so no orphan account remains
-    // for underage users. If reauth is required (session too old), swallow —
-    // session-expiry cleanup will handle it eventually.
-    try {
-      await FirebaseAuth.instance.currentUser?.delete();
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        AppLogger.info(
-          'Underage auth delete needs reauth; signing out instead',
-        );
-      } else {
-        AppLogger.warning('Underage auth delete failed: ${e.code}');
-      }
-    } catch (e) {
-      AppLogger.warning('Underage auth delete failed: $e');
-    }
+    // for underage users. Routed through the service (BUT-1551) so the view
+    // never touches FirebaseAuth directly; the service maps reauth-required and
+    // other failures internally, and we sign out regardless (session-expiry
+    // cleanup handles any leftover orphan).
+    await authService.deleteCurrentAuthUser();
 
     try {
       await authService.signOut();

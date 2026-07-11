@@ -464,6 +464,57 @@ void main() {
       });
     });
 
+    group('Delete Current Auth User (BUT-1551)', () {
+      test('delegates the delete to the repository', () async {
+        when(
+          () => mockAuthRepository.deleteCurrentUser(),
+        ).thenAnswer((_) async {});
+
+        await authService.deleteCurrentAuthUser();
+
+        verify(() => mockAuthRepository.deleteCurrentUser()).called(1);
+      });
+
+      test(
+        'requires-recent-login is handled quietly (no throw, no error surface)',
+        () async {
+          when(() => mockAuthRepository.deleteCurrentUser()).thenAnswer(
+            (_) async => throw FirebaseAuthException(
+              code: 'requires-recent-login',
+              message: 'Recent login required',
+            ),
+          );
+
+          // Never throws (the view awaits it before signOut), and — unlike
+          // deleteAccount — must NOT set a user-facing error; the age-gate flow
+          // signs out regardless.
+          await expectLater(authService.deleteCurrentAuthUser(), completes);
+          expect(authService.errorMessage, isNull);
+        },
+      );
+
+      test('any other FirebaseAuthException is handled quietly', () async {
+        when(() => mockAuthRepository.deleteCurrentUser()).thenAnswer(
+          (_) async =>
+              throw FirebaseAuthException(code: 'network-request-failed'),
+        );
+
+        await expectLater(authService.deleteCurrentAuthUser(), completes);
+        expect(authService.errorMessage, isNull);
+      });
+
+      test('a non-Firebase error (generic catch) is handled quietly', () async {
+        // Exercises the trailing `catch (e)` branch — a plain Exception, not a
+        // FirebaseAuthException — still swallowed quietly, no error surface.
+        when(
+          () => mockAuthRepository.deleteCurrentUser(),
+        ).thenAnswer((_) async => throw Exception('boom'));
+
+        await expectLater(authService.deleteCurrentAuthUser(), completes);
+        expect(authService.errorMessage, isNull);
+      });
+    });
+
     group('Clear Error', () {
       test('should clear error message', () async {
         // Arrange - Create an error state

@@ -365,6 +365,29 @@ class AuthService extends ChangeNotifier
     });
   }
 
+  /// Quiet, best-effort deletion of the current Firebase Auth user, for flows
+  /// that must clean up an auth account WITHOUT the user-facing error surface of
+  /// [deleteAccount] — the underage age-gate block, which signs out regardless.
+  /// Delegates to the repository so no caller touches `FirebaseAuth.instance`
+  /// directly (BUT-1551). Never throws — logs the outcome and returns; the
+  /// caller signs out regardless, so no result is surfaced.
+  Future<void> deleteCurrentAuthUser() async {
+    try {
+      await _authRepository.deleteCurrentUser();
+      _currentUser = null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        AppLogger.info(
+          'Auth-user delete needs reauth; caller signs out regardless',
+        );
+      } else {
+        AppLogger.warning('Auth-user delete failed: ${e.code}');
+      }
+    } catch (e) {
+      AppLogger.warning('Auth-user delete failed: $e');
+    }
+  }
+
   /// Change user password. Requires prior reauthentication.
   Future<bool> changePassword(String newPassword) async {
     try {
