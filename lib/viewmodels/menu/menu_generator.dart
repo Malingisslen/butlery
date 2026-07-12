@@ -107,9 +107,15 @@ class MenuGenerator {
   ///
   /// Defaults to TRUE (safety-by-default, BUT-1464): once a household exists,
   /// one member's allergy keeps those recipes out of everyone's menus without
-  /// any setup step. With no household this is a no-op (single-user
-  /// filtering, unchanged). A settings opt-out toggle is BUT-1465.
-  bool useHouseholdAllergens = true;
+  /// any setup step. With no household this is a no-op (single-user filtering,
+  /// unchanged).
+  ///
+  /// BUT-1465: now driven by the persisted per-user opt-out — read live from the
+  /// profile (like [_userService.allergenPreferences]) so the settings toggle
+  /// takes effect immediately. A missing/unreadable value reads as `true`
+  /// (fail-safe: never silently stop filtering a household member's allergens).
+  bool get useHouseholdAllergens =>
+      _userService.currentUserProfile?.useHouseholdAllergens ?? true;
 
   /// Present-aware allergen filtering (family Phase 4, opt-in). When set, the
   /// async menu pool is filtered against the UNION of just these present

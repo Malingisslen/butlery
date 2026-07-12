@@ -228,6 +228,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // in this settings sub-doc (toPrivateSettings) — merge it back or
             // the portion-scaling default always reads null.
             householdSize: UserProfile.parseHouseholdSize(s['householdSize']),
+            // BUT-1465: the household-allergen-filter opt-out is written to the
+            // settings sub-doc (setUseHouseholdAllergens) — merge it back or the
+            // opt-out never survives a reload. safeBool (not `as bool?`) so a
+            // non-bool stored value can't throw and skip the whole merge —
+            // fail-safe default TRUE (filtering on) on any missing/unreadable value.
+            useHouseholdAllergens: SerializationUtils.safeBool(
+              s,
+              'useHouseholdAllergens',
+              defaultValue: true,
+            ),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable
@@ -749,6 +759,30 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_auto_add_bought_to_pantry',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setUseHouseholdAllergens(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set use-household-allergens',
+    );
+
+    // BUT-1465: household-allergen-filter opt-out lives in the private settings
+    // sub-doc (toPrivateSettings). A merge:true single-field set touches only
+    // this field and never overwrites the public profile doc.
+    await _settingsDoc(userId).set({
+      'useHouseholdAllergens': enabled,
+    }, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_use_household_allergens',
       granted: true,
     );
   }

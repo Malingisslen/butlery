@@ -119,6 +119,12 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// set (same clobber-safety reasoning as [markActivityFeedHintSeen]).
   Future<void> setAutoAddBoughtToPantry(String userId, bool enabled);
 
+  /// BUT-1465: persist the household-allergen-filter opt-out with a targeted
+  /// single-field set on the private settings sub-doc (same clobber-safety
+  /// reasoning as [setAutoAddBoughtToPantry]). `enabled` = filter by the whole
+  /// household's allergens; false = owner's allergens only.
+  Future<void> setUseHouseholdAllergens(String userId, bool enabled);
+
   /// BUT-1050: persist that the one-time "add bought items to pantry?" prompt
   /// has been shown, with a targeted single-field set on the private settings
   /// sub-doc.

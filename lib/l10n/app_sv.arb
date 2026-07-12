@@ -1097,6 +1097,45 @@
   "@householdSizeUseRecipeDefault": {
     "description": "BUT-1322: button that clears the household size back to null"
   },
+  "householdAllergenFilterTitle": "Filtrera menyn på hela hushållet",
+  "@householdAllergenFilterTitle": {
+    "description": "BUT-1465: title of the household-allergen-filter opt-out toggle"
+  },
+  "householdAllergenFilterSubtitleOn": "Veckomenyn tar hänsyn till allergier och kost för alla i hushållet.",
+  "@householdAllergenFilterSubtitleOn": {
+    "description": "BUT-1465: toggle subtitle when household allergen filtering is ON"
+  },
+  "householdAllergenFilterSubtitleOff": "Menyn tar just nu bara hänsyn till dina egna allergier.",
+  "@householdAllergenFilterSubtitleOff": {
+    "description": "BUT-1465: warning-coloured toggle subtitle when the filter is OFF"
+  },
+  "householdAllergenOffTitle": "Stänga av hushållsfiltret?",
+  "@householdAllergenOffTitle": {
+    "description": "BUT-1465: confirm-dialog title shown when turning the household filter off"
+  },
+  "householdAllergenOffBody": "Då planeras veckomenyn bara utifrån dina egna allergier. Recept med {allergens} — som någon i hushållet, även ett barn, behöver undvika — kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.",
+  "@householdAllergenOffBody": {
+    "description": "BUT-1465: confirm-dialog body naming the household's tracked allergens",
+    "placeholders": {
+      "allergens": { "type": "String" }
+    }
+  },
+  "householdAllergenOffBodyGeneric": "Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.",
+  "@householdAllergenOffBodyGeneric": {
+    "description": "BUT-1465: confirm-dialog body fallback when the household tracks no allergens"
+  },
+  "commonTurnOff": "Stäng av",
+  "@commonTurnOff": {
+    "description": "Common action: turn a setting off"
+  },
+  "commonListAnd": "och",
+  "@commonListAnd": {
+    "description": "Conjunction joining the last two items of a natural-language list"
+  },
+  "settingsSaveFailed": "Det gick inte att spara. Försök igen.",
+  "@settingsSaveFailed": {
+    "description": "Error shown when persisting a settings toggle fails"
+  },
   "a11yDecreaseHouseholdSize": "Minska hushållets storlek",
   "@a11yDecreaseHouseholdSize": {
     "description": "BUT-1322: tooltip/semantics for the household-size minus button"

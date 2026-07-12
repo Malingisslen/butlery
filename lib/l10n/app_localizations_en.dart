@@ -1599,6 +1599,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdSizeUseRecipeDefault => 'Use recipe default';
 
   @override
+  String get householdAllergenFilterTitle =>
+      'Filter the menu for the whole household';
+
+  @override
+  String get householdAllergenFilterSubtitleOn =>
+      'The weekly menu accounts for everyone in the household\'s allergies and diet.';
+
+  @override
+  String get householdAllergenFilterSubtitleOff =>
+      'The menu currently accounts for only your own allergies.';
+
+  @override
+  String get householdAllergenOffTitle => 'Turn off the household filter?';
+
+  @override
+  String householdAllergenOffBody(String allergens) {
+    return 'Then the weekly menu is planned from your own allergies only. A recipe with $allergens — which someone in the household, including a child, needs to avoid — can then be planned into the menu. The filter can be turned back on at any time.';
+  }
+
+  @override
+  String get householdAllergenOffBodyGeneric =>
+      'Then the weekly menu is planned from your own allergies only. A recipe that someone else in the household — including a child — needs to avoid can then be planned into the menu. The filter can be turned back on at any time.';
+
+  @override
+  String get commonTurnOff => 'Turn off';
+
+  @override
+  String get commonListAnd => 'and';
+
+  @override
+  String get settingsSaveFailed => 'Couldn\'t save. Please try again.';
+
+  @override
   String get a11yDecreaseHouseholdSize => 'Decrease household size';
 
   @override

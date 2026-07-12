@@ -66,6 +66,14 @@ class UserProfile with JsonSerializableMixin {
   /// management until they turn it on.
   final bool autoAddBoughtToPantry;
 
+  /// BUT-1465: when true (the default), the weekly menu filters by the whole
+  /// household's tracked allergens/diet; when false, it filters by the account
+  /// owner's allergens only. Defaults TRUE and any missing/unreadable value
+  /// reads as true — a fail-safe, safety-by-default posture so filtering of a
+  /// household member's — including a child's — allergens is never silently
+  /// dropped. Per-account (only affects this user's own menu generation).
+  final bool useHouseholdAllergens;
+
   /// BUT-1050: whether the one-time "add bought items to your pantry?" prompt
   /// has been shown on the first shopping-checkoff. Flipped true after it fires
   /// once so it never re-nags. Defaults false.
@@ -130,6 +138,7 @@ class UserProfile with JsonSerializableMixin {
     this.activityFeedEventTypes = const {},
     this.hasSeenActivityFeedHint = false,
     this.autoAddBoughtToPantry = false,
+    this.useHouseholdAllergens = true,
     this.pantryAutoAddPrompted = false,
     this.householdSize,
     this.fcmToken,
@@ -196,6 +205,7 @@ class UserProfile with JsonSerializableMixin {
     Map<String, bool>? activityFeedEventTypes,
     bool? hasSeenActivityFeedHint,
     bool? autoAddBoughtToPantry,
+    bool? useHouseholdAllergens,
     bool? pantryAutoAddPrompted,
     Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
@@ -234,6 +244,8 @@ class UserProfile with JsonSerializableMixin {
           hasSeenActivityFeedHint ?? this.hasSeenActivityFeedHint,
       autoAddBoughtToPantry:
           autoAddBoughtToPantry ?? this.autoAddBoughtToPantry,
+      useHouseholdAllergens:
+          useHouseholdAllergens ?? this.useHouseholdAllergens,
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
       householdSize: householdSize == _sentinel
@@ -419,6 +431,7 @@ class UserProfile with JsonSerializableMixin {
       // both the settings doc and the profile doc.
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
+      'useHouseholdAllergens': useHouseholdAllergens,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
       // BUT-1322: portion-scaling default — private preference, so it lives
       // here (settings sub-doc), never on the public profile doc.
@@ -445,6 +458,7 @@ class UserProfile with JsonSerializableMixin {
       'activityFeedEventTypes': activityFeedEventTypes,
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
+      'useHouseholdAllergens': useHouseholdAllergens,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
       'householdSize': householdSize,
       // Notification fields
@@ -517,6 +531,12 @@ class UserProfile with JsonSerializableMixin {
       autoAddBoughtToPantry: utils.SerializationUtils.safeBool(
         data,
         'autoAddBoughtToPantry',
+      ),
+      // BUT-1465: fail-safe — missing/unreadable ⇒ true (household filtering on).
+      useHouseholdAllergens: utils.SerializationUtils.safeBool(
+        data,
+        'useHouseholdAllergens',
+        defaultValue: true,
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         data,
@@ -613,6 +633,12 @@ class UserProfile with JsonSerializableMixin {
       autoAddBoughtToPantry: utils.SerializationUtils.safeBool(
         json,
         'autoAddBoughtToPantry',
+      ),
+      // BUT-1465: fail-safe — missing/unreadable ⇒ true (household filtering on).
+      useHouseholdAllergens: utils.SerializationUtils.safeBool(
+        json,
+        'useHouseholdAllergens',
+        defaultValue: true,
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         json,

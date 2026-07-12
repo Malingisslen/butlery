@@ -9,6 +9,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -53,6 +54,9 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsAllergens),
                 ),
+                // BUT-1465: opt out of household-wide allergen filtering in
+                // menus. Self-gates on hasHousehold (hidden when no household).
+                const HouseholdAllergenFilterTile(),
                 // BUT-1594: household-size default that pre-sets recipe
                 // portions and scales the weekly menu. (Was "Meny och smak"
                 // with cuisine/skill tuning until BUT-1594 removed those.)

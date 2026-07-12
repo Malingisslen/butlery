@@ -124,12 +124,11 @@ class MenuViewModel extends BaseViewModel {
     return service?.hasHousehold ?? false;
   }
 
-  /// Whether menu generation should use household allergens.
+  /// Whether menu generation uses the whole household's allergens (BUT-1465:
+  /// now driven by the persisted per-user opt-out that the generator reads live
+  /// from the profile — the settings toggle persists via UserService, so there
+  /// is no in-memory setter here anymore).
   bool get useHouseholdAllergens => _generator.useHouseholdAllergens;
-  set useHouseholdAllergens(bool value) {
-    _generator.useHouseholdAllergens = value;
-    notifyListeners();
-  }
 
   /// Recipes hidden from the last generated pool by the family/household
   /// allergen+dietary filter (BUT-1464, PM condition 1 — a smaller menu must

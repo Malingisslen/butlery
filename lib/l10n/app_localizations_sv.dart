@@ -1603,6 +1603,38 @@ class AppLocalizationsSv extends AppLocalizations {
   String get householdSizeUseRecipeDefault => 'Använd receptets standard';
 
   @override
+  String get householdAllergenFilterTitle => 'Filtrera menyn på hela hushållet';
+
+  @override
+  String get householdAllergenFilterSubtitleOn =>
+      'Veckomenyn tar hänsyn till allergier och kost för alla i hushållet.';
+
+  @override
+  String get householdAllergenFilterSubtitleOff =>
+      'Menyn tar just nu bara hänsyn till dina egna allergier.';
+
+  @override
+  String get householdAllergenOffTitle => 'Stänga av hushållsfiltret?';
+
+  @override
+  String householdAllergenOffBody(String allergens) {
+    return 'Då planeras veckomenyn bara utifrån dina egna allergier. Recept med $allergens — som någon i hushållet, även ett barn, behöver undvika — kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.';
+  }
+
+  @override
+  String get householdAllergenOffBodyGeneric =>
+      'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.';
+
+  @override
+  String get commonTurnOff => 'Stäng av';
+
+  @override
+  String get commonListAnd => 'och';
+
+  @override
+  String get settingsSaveFailed => 'Det gick inte att spara. Försök igen.';
+
+  @override
   String get a11yDecreaseHouseholdSize => 'Minska hushållets storlek';
 
   @override

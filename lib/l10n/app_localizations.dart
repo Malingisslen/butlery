@@ -2744,6 +2744,60 @@ abstract class AppLocalizations {
   /// **'Använd receptets standard'**
   String get householdSizeUseRecipeDefault;
 
+  /// BUT-1465: title of the household-allergen-filter opt-out toggle
+  ///
+  /// In sv, this message translates to:
+  /// **'Filtrera menyn på hela hushållet'**
+  String get householdAllergenFilterTitle;
+
+  /// BUT-1465: toggle subtitle when household allergen filtering is ON
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomenyn tar hänsyn till allergier och kost för alla i hushållet.'**
+  String get householdAllergenFilterSubtitleOn;
+
+  /// BUT-1465: warning-coloured toggle subtitle when the filter is OFF
+  ///
+  /// In sv, this message translates to:
+  /// **'Menyn tar just nu bara hänsyn till dina egna allergier.'**
+  String get householdAllergenFilterSubtitleOff;
+
+  /// BUT-1465: confirm-dialog title shown when turning the household filter off
+  ///
+  /// In sv, this message translates to:
+  /// **'Stänga av hushållsfiltret?'**
+  String get householdAllergenOffTitle;
+
+  /// BUT-1465: confirm-dialog body naming the household's tracked allergens
+  ///
+  /// In sv, this message translates to:
+  /// **'Då planeras veckomenyn bara utifrån dina egna allergier. Recept med {allergens} — som någon i hushållet, även ett barn, behöver undvika — kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.'**
+  String householdAllergenOffBody(String allergens);
+
+  /// BUT-1465: confirm-dialog body fallback when the household tracks no allergens
+  ///
+  /// In sv, this message translates to:
+  /// **'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.'**
+  String get householdAllergenOffBodyGeneric;
+
+  /// Common action: turn a setting off
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng av'**
+  String get commonTurnOff;
+
+  /// Conjunction joining the last two items of a natural-language list
+  ///
+  /// In sv, this message translates to:
+  /// **'och'**
+  String get commonListAnd;
+
+  /// Error shown when persisting a settings toggle fails
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att spara. Försök igen.'**
+  String get settingsSaveFailed;
+
   /// BUT-1322: tooltip/semantics for the household-size minus button
   ///
   /// In sv, this message translates to:

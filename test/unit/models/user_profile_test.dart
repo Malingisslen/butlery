@@ -485,6 +485,33 @@ void main() {
         expect(json2['displayName'], equals(json['displayName']));
       });
 
+      test(
+        'BUT-1465: useHouseholdAllergens defaults TRUE when the field is absent '
+        '(fail-safe) and round-trips an explicit opt-out',
+        () {
+          // A stored profile predating the field (or an unreadable value) must
+          // read as true — household allergen filtering is never silently
+          // dropped for a household member (incl. a child).
+          final absent = UserProfile.fromJson({
+            'uid': 'u1',
+            'displayName': 'Test',
+            'email': 't@example.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          });
+          expect(
+            absent.useHouseholdAllergens,
+            isTrue,
+            reason: 'a missing field must fail safe to filtering ON',
+          );
+
+          // An explicit opt-out survives a serialization round-trip.
+          final off = absent.copyWith(useHouseholdAllergens: false);
+          final restored = UserProfile.fromJson(off.toJson());
+          expect(restored.useHouseholdAllergens, isFalse);
+        },
+      );
+
       test('should handle null fields in JSON', () {
         // Arrange
         final jsonWithNulls = {

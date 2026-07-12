@@ -1091,6 +1091,45 @@
   "@householdSizeUseRecipeDefault": {
     "description": "BUT-1322: button that clears the household size back to null"
   },
+  "householdAllergenFilterTitle": "Filter the menu for the whole household",
+  "@householdAllergenFilterTitle": {
+    "description": "BUT-1465: title of the household-allergen-filter opt-out toggle"
+  },
+  "householdAllergenFilterSubtitleOn": "The weekly menu accounts for everyone in the household's allergies and diet.",
+  "@householdAllergenFilterSubtitleOn": {
+    "description": "BUT-1465: toggle subtitle when household allergen filtering is ON"
+  },
+  "householdAllergenFilterSubtitleOff": "The menu currently accounts for only your own allergies.",
+  "@householdAllergenFilterSubtitleOff": {
+    "description": "BUT-1465: warning-coloured toggle subtitle when the filter is OFF"
+  },
+  "householdAllergenOffTitle": "Turn off the household filter?",
+  "@householdAllergenOffTitle": {
+    "description": "BUT-1465: confirm-dialog title shown when turning the household filter off"
+  },
+  "householdAllergenOffBody": "Then the weekly menu is planned from your own allergies only. A recipe with {allergens} — which someone in the household, including a child, needs to avoid — can then be planned into the menu. The filter can be turned back on at any time.",
+  "@householdAllergenOffBody": {
+    "description": "BUT-1465: confirm-dialog body naming the household's tracked allergens",
+    "placeholders": {
+      "allergens": { "type": "String" }
+    }
+  },
+  "householdAllergenOffBodyGeneric": "Then the weekly menu is planned from your own allergies only. A recipe that someone else in the household — including a child — needs to avoid can then be planned into the menu. The filter can be turned back on at any time.",
+  "@householdAllergenOffBodyGeneric": {
+    "description": "BUT-1465: confirm-dialog body fallback when the household tracks no allergens"
+  },
+  "commonTurnOff": "Turn off",
+  "@commonTurnOff": {
+    "description": "Common action: turn a setting off"
+  },
+  "commonListAnd": "and",
+  "@commonListAnd": {
+    "description": "Conjunction joining the last two items of a natural-language list"
+  },
+  "settingsSaveFailed": "Couldn't save. Please try again.",
+  "@settingsSaveFailed": {
+    "description": "Error shown when persisting a settings toggle fails"
+  },
   "a11yDecreaseHouseholdSize": "Decrease household size",
   "@a11yDecreaseHouseholdSize": {
     "description": "BUT-1322: tooltip/semantics for the household-size minus button"

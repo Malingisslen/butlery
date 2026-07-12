@@ -724,6 +724,31 @@ class UserService extends ChangeNotifier
     }
   }
 
+  /// BUT-1465: persist the household-allergen-filter opt-out. `enabled` = the
+  /// weekly menu filters by the whole household's allergens; false = the owner's
+  /// allergens only. Targeted single-field write, then updates the in-memory
+  /// profile + cache and notifies so the menu generator + the toggle reflect it.
+  Future<void> setUseHouseholdAllergens(bool enabled) async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning(
+        '⚠️ Cannot set use-household-allergens - no current user',
+      );
+      return;
+    }
+
+    try {
+      await _repository.setUseHouseholdAllergens(userId, enabled);
+      _currentUserProfile = profile.copyWith(useHouseholdAllergens: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to set use-household-allergens', e);
+      rethrow;
+    }
+  }
+
   /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,
   /// so it never re-nags across sessions/devices. Idempotent and best-effort —
   /// a no-op when there's no profile or the flag is already set.

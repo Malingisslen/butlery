@@ -16,6 +16,7 @@ import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
@@ -130,6 +131,56 @@ void main() {
       // PM condition 1: the hidden count feeding the UI hint is populated.
       expect(generator.lastPoolStats?.hiddenByAllergenFilter, 1);
       expect(generator.lastPoolStats?.trackedAllergenCount, 1);
+    },
+  );
+
+  test(
+    'BUT-1465: with useHouseholdAllergens OFF, a household user filters by the '
+    'OWNER allergens only — the household union is never consulted',
+    () async {
+      // A household exists, but the user has opted out via the settings toggle
+      // (profile.useHouseholdAllergens == false, which the generator reads live).
+      when(() => household.hasHousehold).thenReturn(true);
+      when(() => userService.currentUserProfile).thenReturn(
+        UserProfile(
+          uid: 'u1',
+          displayName: 'Test',
+          email: 't@example.com',
+          joinedAt: DateTime(2026),
+          lastActiveAt: DateTime(2026),
+          useHouseholdAllergens: false,
+        ),
+      );
+      // The OWNER tracks gluten. If the household union were (wrongly) consulted
+      // it would also hide gluten — so the discriminators are prefSource AND
+      // that getAggregatedAllergenPreferences is never called.
+      when(() => userService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten'},
+          trackedDietary: {},
+        ),
+      );
+
+      final safe = recipeWith('safe', tag({'gluten': TriState.free}));
+      recipeService.setRecipeState(
+        isInitialized: true,
+        recipes: [
+          recipeWith('unsafe', tag({'gluten': TriState.contains})),
+          safe,
+        ],
+      );
+      menuService.setGenerateMenuResult({
+        'middag': [safe],
+      });
+
+      await generator.generateMenuFromPrompt('veckomeny');
+
+      // The owner's own gluten allergy still hides the CONTAINS recipe...
+      expect(menuService.lastGenerateRecipes!.map((r) => r.id), ['safe']);
+      // ...but the filtering source is single-user (owner), NOT the household.
+      expect(generator.lastPoolStats?.prefSource, MenuPrefSource.singleUser);
+      // The household union must never be consulted when the user opts out.
+      verifyNever(() => household.getAggregatedAllergenPreferences());
     },
   );
 
