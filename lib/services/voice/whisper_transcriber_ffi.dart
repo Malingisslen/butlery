@@ -25,8 +25,13 @@ class WhisperGgmlTranscriber implements WhisperTranscriber {
         isNoTimestamps: true,
         // No voice-activity detection: push-to-talk utterances are short
         // and explicitly delimited, and VAD would pull in a second bundled
-        // model for no gain.
+        // model for no gain. vadModelPath MUST be '' (not omitted): with
+        // VAD disabled the plugin serializes a null vad_model_path, and the
+        // native nlohmann::json side demands a string — null throws
+        // type_error.302 ("Rösten kunde inte tolkas", found on-device
+        // 2026-07-12 Pixel 9a).
         vadMode: WhisperVadMode.disabled,
+        vadModelPath: '',
       ),
       modelPath: modelPath,
     );
