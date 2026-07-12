@@ -4,12 +4,12 @@ import 'package:butlery/services/parsing/_expected_model_hashes.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('verifyOnnxBytes (BUT-792)', () {
+  group('verifyModelBytes (BUT-792)', () {
     // Derive the canonical hash via the same code path under test so the
     // tamper assertion is always self-consistent across crypto-package
     // version drift.
     final canonicalBytes = utf8.encode('butlery-test-onnx-bytes-v1');
-    final canonicalHash = verifyOnnxBytes(
+    final canonicalHash = verifyModelBytes(
       modelBytes: canonicalBytes,
       version: 0,
       hashRegistry: const <int, String>{},
@@ -17,7 +17,7 @@ void main() {
 
     test('returns unverified=true when no hash is registered', () {
       final bytes = utf8.encode('butlery-test-onnx-bytes-v1');
-      final result = verifyOnnxBytes(
+      final result = verifyModelBytes(
         modelBytes: bytes,
         version: 99,
         hashRegistry: const <int, String>{},
@@ -37,7 +37,7 @@ void main() {
     });
 
     test('returns ok=true when bytes match the registered hash', () {
-      final result = verifyOnnxBytes(
+      final result = verifyModelBytes(
         modelBytes: canonicalBytes,
         version: 1,
         hashRegistry: <int, String>{1: canonicalHash},
@@ -53,7 +53,7 @@ void main() {
       // the actual hash must differ from the expected one.
       final tamperedBytes = utf8.encode('butlery-test-onnx-bytes-v1-TAMPERED');
 
-      final result = verifyOnnxBytes(
+      final result = verifyModelBytes(
         modelBytes: tamperedBytes,
         version: 1,
         hashRegistry: <int, String>{1: canonicalHash},

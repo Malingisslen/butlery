@@ -31,6 +31,7 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
+import 'package:butlery/widgets/menu/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
@@ -445,6 +446,20 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                           setState(() {});
                         },
                         onChanged: () => setState(() {}),
+                        // Voice prompt (kb-whisper plan): transcript lands
+                        // EDITABLE here — the user reviews before generating.
+                        voiceButton: VoicePromptButton(
+                          enabled: !viewModel.isGenerating,
+                          onTranscript: (text) {
+                            _promptController.text = text;
+                            _promptController.selection =
+                                TextSelection.collapsed(
+                                  offset: text.length,
+                                );
+                            _promptFocusNode.requestFocus();
+                            setState(() {});
+                          },
+                        ),
                       ),
                       SizedBox(
                         height: LayoutComponents.valueFor(

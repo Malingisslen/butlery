@@ -2120,6 +2120,66 @@ abstract class AppLocalizations {
   /// **'Ex: 3 middagar, 2 luncher och 1 frukost'**
   String get menuPromptHint;
 
+  /// No description provided for @voicePromptStart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in veckomenyn'**
+  String get voicePromptStart;
+
+  /// No description provided for @voicePromptStop.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klar, tolka det du sa'**
+  String get voicePromptStop;
+
+  /// No description provided for @voicePromptTranscribing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tolkar det du sa'**
+  String get voicePromptTranscribing;
+
+  /// No description provided for @voicePromptPreparing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbereder röstfunktionen, hämtar den svenska talmodellen'**
+  String get voicePromptPreparing;
+
+  /// No description provided for @voicePromptFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösten kunde inte tolkas den här gången. Det går bra att skriva i stället'**
+  String get voicePromptFailed;
+
+  /// No description provided for @voicePromptMicRationaleTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofon för veckomenyn'**
+  String get voicePromptMicRationaleTitle;
+
+  /// No description provided for @voicePromptMicRationaleBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery använder mikrofonen för att du ska kunna tala in din veckomeny. Ljudet tolkas direkt i telefonen och skickas aldrig vidare.'**
+  String get voicePromptMicRationaleBody;
+
+  /// No description provided for @voicePromptMicGrant.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt'**
+  String get voicePromptMicGrant;
+
+  /// No description provided for @voicePromptMicPermanentlyDenied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofonen är avstängd för Butlery. Den kan slås på i inställningarna'**
+  String get voicePromptMicPermanentlyDenied;
+
+  /// No description provided for @voicePromptOpenSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna inställningar'**
+  String get voicePromptOpenSettings;
+
   /// No description provided for @menuGenerating.
   ///
   /// In sv, this message translates to:

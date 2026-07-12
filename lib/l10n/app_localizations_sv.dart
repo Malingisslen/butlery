@@ -1228,6 +1228,40 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuPromptHint => 'Ex: 3 middagar, 2 luncher och 1 frukost';
 
   @override
+  String get voicePromptStart => 'Tala in veckomenyn';
+
+  @override
+  String get voicePromptStop => 'Klar, tolka det du sa';
+
+  @override
+  String get voicePromptTranscribing => 'Tolkar det du sa';
+
+  @override
+  String get voicePromptPreparing =>
+      'Förbereder röstfunktionen, hämtar den svenska talmodellen';
+
+  @override
+  String get voicePromptFailed =>
+      'Rösten kunde inte tolkas den här gången. Det går bra att skriva i stället';
+
+  @override
+  String get voicePromptMicRationaleTitle => 'Mikrofon för veckomenyn';
+
+  @override
+  String get voicePromptMicRationaleBody =>
+      'Butlery använder mikrofonen för att du ska kunna tala in din veckomeny. Ljudet tolkas direkt i telefonen och skickas aldrig vidare.';
+
+  @override
+  String get voicePromptMicGrant => 'Tillåt';
+
+  @override
+  String get voicePromptMicPermanentlyDenied =>
+      'Mikrofonen är avstängd för Butlery. Den kan slås på i inställningarna';
+
+  @override
+  String get voicePromptOpenSettings => 'Öppna inställningar';
+
+  @override
   String get menuGenerating => 'Genererar...';
 
   @override

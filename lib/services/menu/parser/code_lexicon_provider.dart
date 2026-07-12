@@ -142,6 +142,10 @@ class CodeLexiconProvider implements LexiconProvider {
     'vegansk': 'vegansk',
     'veganskt': 'vegansk',
     'vegana': 'vegansk',
+    // Plural/definite inflection — was missing, so "tre veganska middagar"
+    // lost its dietary constraint (Levenshtein fallback bails as ambiguous
+    // between 'vegansk'/'veganskt'). Found by the spoken-prompt golden set.
+    'veganska': 'vegansk',
     'vegan': 'vegansk',
     'växtbaserat': 'vegansk',
     'vaxtbaserat': 'vegansk',
@@ -496,6 +500,17 @@ class CodeLexiconProvider implements LexiconProvider {
     'gor en': 'strip',
     'gör mig': 'strip',
     'gor mig': 'strip',
+    // Lead-in verbs, common in SPOKEN prompts ("kan du fixa tre middagar").
+    // Head-only stripping keeps mid-prompt verbs untouched ("vi lagar wok
+    // på fredag"), and none of these are verbObjectMap keys, so the
+    // verb-object sweep is unaffected.
+    'fixa': 'strip',
+    'ordna': 'strip',
+    'laga': 'strip',
+    'gör': 'strip',
+    'gor': 'strip',
+    'göra': 'strip',
+    'gora': 'strip',
   };
 
   // Skip-frukost markers — substring presence in the prompt suppresses the

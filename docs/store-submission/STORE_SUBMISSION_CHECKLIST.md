@@ -26,6 +26,8 @@ runbook to its filing artefact.
 | App review demo + reviewer notes | `docs/ops/app-review-demo.md` | App Store Connect → App Review Information; Play Console → Store listing → App access | n/a | Pending user action (BUT-416) | — |
 | iOS PrivacyInfo manifest | `docs/ops/ios-privacy-manifest-audit.md` + `ios/Runner/PrivacyInfo.xcprivacy` | Bundled with iOS build (no separate filing) | n/a | Code complete; ships with binary (BUT-568/587/596/603) | n/a |
 | Pre-login privacy/ToS reachability | tested in `auth_view_legal_links_test.dart` | n/a (in-app) | n/a | Code complete (BUT-563) | n/a |
+| RECORD_AUDIO permission declaration (voice menu prompt) | Declare in the Play Console permissions form: microphone used for on-device speech-to-text of the user's menu request; audio never leaves the device, never stored. Must match `AndroidManifest.xml` comment + `docs/legal/privacy_policy.md` §5 word-for-word in substance. | Play Console → App content → Permissions declaration (+ update Data Safety form: NO audio collection — on-device only) | `docs/store-submission/play-data-safety/YYYY-MM-DD-record-audio.png` | Pending user action (kb-whisper plan, 2026-07-12) | — |
+| Apple mic purpose string + privacy label (voice menu prompt) | `NSMicrophoneUsageDescription` ships in `ios/Runner/Info.plist` (on-device-only wording). App Privacy label: audio is NOT collected (on-device processing, never leaves device) — verify against Guideline 5.1.1 at submission. Denial fallback (typed input) is implemented + tested. | App Store Connect → App Privacy | n/a (App Store Connect captures internally) | Code complete 2026-07-12; filing pending user action | — |
 
 ## Why this file exists
 

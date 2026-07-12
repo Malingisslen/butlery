@@ -1225,6 +1225,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuPromptHint => 'E.g. 3 dinners, 2 lunches and 1 breakfast';
 
   @override
+  String get voicePromptStart => 'Speak your weekly menu';
+
+  @override
+  String get voicePromptStop => 'Done, interpret what you said';
+
+  @override
+  String get voicePromptTranscribing => 'Interpreting what you said';
+
+  @override
+  String get voicePromptPreparing =>
+      'Preparing the voice feature, fetching the Swedish speech model';
+
+  @override
+  String get voicePromptFailed =>
+      'Your voice couldn\'t be interpreted this time. Typing works just as well';
+
+  @override
+  String get voicePromptMicRationaleTitle => 'Microphone for the weekly menu';
+
+  @override
+  String get voicePromptMicRationaleBody =>
+      'Butlery uses the microphone so you can speak your weekly menu. The audio is interpreted directly on your phone and never sent anywhere.';
+
+  @override
+  String get voicePromptMicGrant => 'Allow';
+
+  @override
+  String get voicePromptMicPermanentlyDenied =>
+      'The microphone is turned off for Butlery. It can be enabled in settings';
+
+  @override
+  String get voicePromptOpenSettings => 'Open settings';
+
+  @override
   String get menuGenerating => 'Generating...';
 
   @override

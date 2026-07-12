@@ -83,6 +83,13 @@ dependencies:
   csv: ^8.0.0                 # BUT-435: bumped to 8.x with Dart 3.10
   xml: ">=6.5.0 <7.0.0"       # .xlsx import parsing (XlsxReader) — replaces excel (BUT-503); 7.x needs Dart 3.11
   flutter_onnxruntime: ^1.7.0  # On-device BERT NER inference (MIT licensed)
+  # Voice prompts (kb-whisper plan, tasks/kb-whisper-voice-menu-plan.md):
+  # whisper.cpp FFI binding for on-device Swedish STT (MIT; ships whisper.cpp
+  # 1.8.3 as compilable source; custom modelPath API for KB-Whisper GGML).
+  # Exact pin per Security panel condition. `record` captures the 16 kHz
+  # mono WAV whisper.cpp expects.
+  whisper_ggml_plus: 1.5.2
+  record: ^6.1.1
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1

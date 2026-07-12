@@ -36,6 +36,7 @@ class MenuContentWidgets {
     required VoidCallback onClear,
     required VoidCallback onChanged,
     FocusNode? focusNode,
+    Widget? voiceButton,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -73,17 +74,26 @@ class MenuContentWidgets {
             enabled: !isGenerating,
             hint: context.l10n.menuPromptHint,
             prefixIcon: const Icon(Icons.edit),
-            suffixIcon: controller.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(
-                      Icons.clear,
-                      size: AppDimensions.iconSizeAction,
-                      color: cs.onSurface.withValues(
-                        alpha: AppDimensions.opacityDark,
-                      ),
-                    ),
-                    onPressed: onClear,
-                    tooltip: context.l10n.commonClear,
+            suffixIcon: (controller.text.isNotEmpty || voiceButton != null)
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (controller.text.isNotEmpty)
+                        IconButton(
+                          icon: Icon(
+                            Icons.clear,
+                            size: AppDimensions.iconSizeAction,
+                            color: cs.onSurface.withValues(
+                              alpha: AppDimensions.opacityDark,
+                            ),
+                          ),
+                          onPressed: onClear,
+                          tooltip: context.l10n.commonClear,
+                        ),
+                      // Voice prompt (kb-whisper plan): push-to-talk mic —
+                      // transcript lands editable in this same field.
+                      ?voiceButton,
+                    ],
                   )
                 : null,
             textInputAction: TextInputAction.done,

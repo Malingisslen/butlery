@@ -1,24 +1,28 @@
 import 'package:crypto/crypto.dart';
 
-// BUT-792: integrity hashes for ONNX models downloaded from Firebase Storage.
+// BUT-792: integrity hashes for ML model artifacts downloaded from Firebase
+// Storage — regardless of format (ONNX graphs, CRF weight JSON, GGML blobs).
 //
-// Each model version below maps to the SHA-256 of the exact `model.onnx`
-// bytes shipped to production. The hash is verified after download in the
-// model manager — a mismatch means either an attacker swapped the file at
-// rest, a TLS MITM corrupted the bytes during transport, or someone
-// replaced a published version (which is itself a process violation).
+// Each model version below maps to the SHA-256 of the exact bytes shipped
+// to production. The hash is verified after download in the model manager —
+// a mismatch means either an attacker swapped the file at rest, a TLS MITM
+// corrupted the bytes during transport, or someone replaced a published
+// version (which is itself a process violation).
 //
 // **When publishing a new model version (every step MANDATORY):**
-// 1. Build the .onnx, then compute its hash:
+// 1. Build (or fetch) the artifact, then compute its hash:
 //    ```bash
-//    shasum -a 256 model.onnx
-//    # OR (Windows): certutil -hashfile model.onnx SHA256
+//    shasum -a 256 <artifact>
+//    # OR (Windows): certutil -hashfile <artifact> SHA256
 //    ```
 // 2. Add the version → SHA-256 entry to the matching map below — in the
 //    SAME PR as the Storage upload. CI does not have model-bytes access so
 //    this is a manual gate; a forgotten entry bricks the new version (see
 //    fail-close contract below), it does not silently ship unverified.
-// 3. Upload `model.onnx` to Firebase Storage at the new
+//    ALSO extend tools/ci/check_model_versions.py when adding a NEW model
+//    FAMILY — its FAMILIES/REGISTRY_MAPS lists are per-family, and a family
+//    it doesn't know gets zero nightly drift protection.
+// 3. Upload the artifact to Firebase Storage at the new
 //    `models/<family>/v<N>/` path.
 // 4. Ship the client release containing the new registry entry.
 // 5. Bump `latest_version.txt` in Storage so clients pull the new version
@@ -33,8 +37,9 @@ import 'package:crypto/crypto.dart';
 // The parser then falls back gracefully (rule-based classifier / LLM
 // tier); it is never stranded without a parsing path.
 //
-// SCOPE: the contract covers all three Storage→parser inputs — the two
-// ONNX loaders and the CRF weight JSON (RemoteWeightLoader, BUT-1238).
+// SCOPE: the contract covers all four Storage→model inputs — the two ONNX
+// loaders, the CRF weight JSON (RemoteWeightLoader, BUT-1238), and the
+// KB-Whisper GGML speech model (WhisperModelManager, voice prompts).
 
 /// SHA-256 hashes of the BERT NER ONNX model, keyed by Firebase Storage
 /// version directory (`models/ingredient_ner/v{N}/model.onnx`).
@@ -73,6 +78,17 @@ const Map<int, String> kExpectedLineClassifierModelHashes = <int, String>{
 /// here in the same PR as the upload, or every client refuses the download
 /// (empty/absent registry fail-closes; the bundled weights keep parsing).
 const Map<int, String> kExpectedCrfWeightHashes = <int, String>{};
+
+/// SHA-256 hashes of the KB-Whisper Swedish speech model (GGML, whisper.cpp
+/// format), keyed by Firebase Storage version directory
+/// (`models/whisper_sv/v{N}/ggml-model.bin`).
+const Map<int, String> kExpectedWhisperModelHashes = <int, String>{
+  // v1 = KBLab/kb-whisper-base, quantized q5_0 (Apache-2.0). Hash computed
+  // 2026-07-12 from huggingface.co/KBLab/kb-whisper-base ggml-model-q5_0.bin
+  // (size: 55,295,450 B, GGML magic verified). The Storage upload MUST be
+  // this exact file — publishing different bytes fail-closes every client.
+  1: 'aead29b356bca8840e72a8dc2286e2d69e6702639751a1e60cb3c8eacefec546',
+};
 
 /// Thrown when a downloaded ONNX model fails its SHA-256 integrity check.
 /// Caller is expected to delete the cached file and treat the model as
@@ -143,8 +159,10 @@ class ModelIntegrityResult {
 }
 
 /// Verify [modelBytes] against the registered SHA-256 for [version] in
-/// [hashRegistry]. Pure function — model managers and unit tests both call it.
-ModelIntegrityResult verifyOnnxBytes({
+/// [hashRegistry]. Pure function — model managers and unit tests both call
+/// it. Format-agnostic: the bytes may be an ONNX graph, CRF JSON, or a GGML
+/// blob (renamed from `verifyOnnxBytes` when the whisper family joined).
+ModelIntegrityResult verifyModelBytes({
   required List<int> modelBytes,
   required int version,
   required Map<int, String> hashRegistry,

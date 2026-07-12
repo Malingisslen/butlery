@@ -54,6 +54,11 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
 
+	<!-- Voice prompts (kb-whisper plan): on-device transcription only —
+	     audio never leaves the phone. Keep this string honest about that. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Butlery använder mikrofonen för att du ska kunna tala in din veckomeny. Ljudet tolkas direkt i telefonen och skickas aldrig vidare</string>
+
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 

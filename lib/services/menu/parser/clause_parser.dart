@@ -49,6 +49,15 @@ const _stopWords = {
   'minst',
   'dagar',
   'dag',
+  // Spoken-register correction markers: an unresolved stray marker (no
+  // same-vocabulary pair for last-wins) carries no constraint meaning and
+  // must not pollute the not-understood trace. Deliberately NOT included:
+  // 'vänta'/'jag'/'menar' — they carry meaning in typed prompts ("vänta med
+  // fisken till fredag") and suppressing them would hide legitimate
+  // not-understood feedback.
+  'nej',
+  'förlåt',
+  'ursäkta',
 };
 
 const _softMarkers = {'helst', 'gärna', 'garna', 'minst'};

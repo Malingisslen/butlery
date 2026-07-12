@@ -138,6 +138,8 @@ import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_se
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 
 // Cooking-mode substitution suggestions (canonical-ID based, BUT-202)
+import 'package:butlery/services/voice/voice_capture_service.dart';
+import 'package:butlery/services/voice/whisper_model_manager.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
@@ -542,6 +544,18 @@ class ContentModule implements DIModule {
         () => NeuralLineClassifier(
           classifierService: container<OnnxLineClassifierService>(),
           modelManager: container<LineClassifierModelManager>(),
+        ),
+        dispose: (s) => s.dispose(),
+      );
+
+      // On-device Swedish speech-to-text (KB-Whisper via whisper.cpp) —
+      // voice prompts for menu generation (kb-whisper plan)
+      container.registerLazySingleton<WhisperModelManager>(
+        () => WhisperModelManager(storage: container<FirebaseStorage>()),
+      );
+      container.registerLazySingleton<VoiceCaptureService>(
+        () => VoiceCaptureService(
+          modelManager: container<WhisperModelManager>(),
         ),
         dispose: (s) => s.dispose(),
       );

@@ -23,7 +23,7 @@ If you have questions, contact: malin.kallen1@gmail.com.
 | Crash diagnostics | Stack traces, device model, OS version | App |
 | Cooking activity | Recipes cooked, timestamps (used to surface "recent cooks" UI) | App |
 
-We do NOT collect: precise geolocation, payment data (no monetization yet), microphone, contacts, or photo library beyond what you explicitly import.
+We do NOT collect: precise geolocation, payment data (no monetization yet), microphone audio, contacts, or photo library beyond what you explicitly import. Voice input (see Section 5) uses the microphone but the audio is processed entirely on your device and is never collected, stored, or transmitted.
 
 ## 3. Allergens and dietary preferences
 
@@ -41,12 +41,13 @@ Allergen and dietary preference data may be treated as health-adjacent data unde
 
 ## 5. On-device AI processing
 
-We use on-device ONNX machine learning models for:
+We use on-device machine learning models for:
 
 - **Ingredient recognition (NER):** identifying ingredient names in free-text recipes.
 - **Recipe line classification:** distinguishing ingredient lines from instruction lines during import.
+- **Voice input (speech-to-text):** when you use the microphone to speak your weekly-menu request, the audio is transcribed on your device by the KB-Whisper Swedish speech model (KBLab / National Library of Sweden). The audio is held only in temporary app storage for the duration of the transcription, is excluded from device backups, is deleted immediately afterwards, and is **never uploaded, stored, or sent to our servers**. Only the resulting text — which you can review and edit — is used, exactly as if you had typed it.
 
-These models run locally on your device. The input text and images processed by these models are **not transmitted to our servers** as part of model inference. The models themselves are downloaded from our content delivery network (Firebase Storage) once per version and verified by SHA-256 hash before use.
+These models run locally on your device. The input text, images, and audio processed by these models are **not transmitted to our servers** as part of model inference. The models themselves are downloaded from our content delivery network (Firebase Storage) once per version and verified by SHA-256 hash before use.
 
 Cloud-based AI processing (Mistral via Vertex AI) is used for recipe parsing from URLs, OCR enhancement, and menu generation. When you trigger these features, the input is sent to Google Cloud's Vertex AI in the `europe-west1` region. We do not retain the model inputs beyond the call.
 

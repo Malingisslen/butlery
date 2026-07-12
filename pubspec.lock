@@ -1024,6 +1024,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.34"
+  flutter_riverpod:
+    dependency: transitive
+    description:
+      name: flutter_riverpod
+      sha256: "9255e1e3ad6e38906a1b4f8287678f95f378744c5b46b1985588543f3f19046e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.2"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -1090,6 +1098,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.0.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: "7294967ff0a6d98638e7acb774aac3af2550777accd8149c90af5b014e6d44d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -1692,6 +1708,78 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  record:
+    dependency: "direct main"
+    description:
+      name: record
+      sha256: "10911465138fafacef459a780564e883e01bd48eabf87ab20543684884492870"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.1"
+  record_android:
+    dependency: transitive
+    description:
+      name: record_android
+      sha256: eb1732e42d0d2a1895b8db86e4fc917287e6d8491b6ed59918aea8bed6c69de4
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.2"
+  record_ios:
+    dependency: transitive
+    description:
+      name: record_ios
+      sha256: c051fb48edd7a0e265daafb9108730dc827c27b551728a3fdfb3ef69efd89c73
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
+  record_linux:
+    dependency: transitive
+    description:
+      name: record_linux
+      sha256: "31181787bf7eccb0e298835836b69b3cd0a903863b75d70e937de3dec71cd8f3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.1"
+  record_macos:
+    dependency: transitive
+    description:
+      name: record_macos
+      sha256: cfe1b61435e27db418bf513dc36820d10c9f7eb1843786c2c9a52e07e2f4f627
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.2"
+  record_platform_interface:
+    dependency: transitive
+    description:
+      name: record_platform_interface
+      sha256: "8e56cbe06c6984137fb86132ff03459f29938d927496d9b2d0962e2d6345d488"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
+  record_web:
+    dependency: transitive
+    description:
+      name: record_web
+      sha256: "7e9846981c1f2d111d86f0ae3309071f5bba8b624d1c977316706f08fc31d16d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
+  record_windows:
+    dependency: transitive
+    description:
+      name: record_windows
+      sha256: "223258060a1d25c62bae18282c16783f28581ec19401d17e56b5205b9f039d78"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.7"
+  riverpod:
+    dependency: transitive
+    description:
+      name: riverpod
+      sha256: "17100416c51db7810c71a7bb2c34d1f881faa0074fd452afb0c4db6f8f126c76"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.2"
   rx:
     dependency: transitive
     description:
@@ -1937,6 +2025,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  state_notifier:
+    dependency: transitive
+    description:
+      name: state_notifier
+      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:
@@ -2041,6 +2137,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      sha256: f63cbc48103236abf48e345e07a03ce5757ea86285ed313a6a032596ed9301e2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.1"
   url_launcher:
     dependency: "direct main"
     description:
@@ -2201,6 +2305,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  whisper_ggml_plus:
+    dependency: "direct main"
+    description:
+      name: whisper_ggml_plus
+      sha256: "484950d7767078bd3256fbb256d663322e33de359537a3f3ae0c82607ebebc5c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.2"
   win32:
     dependency: transitive
     description:

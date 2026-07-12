@@ -11,12 +11,13 @@
       "cadence": "weekly",
       "authority": "auto-ticket",
       "watch_signals": [
-        "New/updated CVE or GitHub Advisory affecting a pinned dependency (freerasp, http_certificate_pinning, firebase_app_check, dio, http, crypto, flutter_onnxruntime) or any transitive Firebase/Dart pub package",
+        "New/updated CVE or GitHub Advisory affecting a pinned dependency (freerasp, http_certificate_pinning, firebase_app_check, dio, http, crypto, flutter_onnxruntime, whisper_ggml_plus, record) or any transitive Firebase/Dart pub package",
         "freeRASP (Talsec) release: changes to root/jailbreak/Frida/hook/tamper detection thresholds, new attack-class coverage, or breaking callback API changes requiring re-review (cf. BUT-1218)",
         "Firebase/GCP security bulletin or advisory touching Auth, App Check, Firestore/RTDB rules, Storage, or Cloud Functions (e.g. CVE-2025-0838-class fixes forcing a firebase_core bump)",
         "New OWASP MASVS/MASTG/MASWE control, version bump, or test case that changes our mobile baseline (cert pinning, secure storage, anti-tampering, on-device-model integrity)",
         "New mobile attack class or technique (Frida/Magisk bypass, emulator/bot evasion, instrumentation, model-extraction against on-device ONNX/CRF, TLS pin bypass) that defeats a current control",
-        "App Store Review Guideline or Google Play policy change with a security/privacy/data-sharing or target-API/permission deadline that gates a release"
+        "App Store Review Guideline or Google Play policy change with a security/privacy/data-sharing or target-API/permission deadline that gates a release",
+        "whisper.cpp (ggml-org) release/advisory: memory-safety fixes in GGML/model parsing or WAV decoding — native FFI attack surface for the on-device KB-Whisper voice feature (added 2026-07-12, kb-whisper plan)"
       ],
       "sources": [
         {
@@ -53,6 +54,11 @@
           "name": "Dart pub security advisories documentation",
           "url": "https://dart.dev/tools/pub/security-advisories",
           "type": "docs"
+        },
+        {
+          "name": "whisper.cpp — GitHub Releases (ggml-org)",
+          "url": "https://github.com/ggml-org/whisper.cpp/releases.atom",
+          "type": "release-notes"
         }
       ],
       "lastScan": "2026-07-04",

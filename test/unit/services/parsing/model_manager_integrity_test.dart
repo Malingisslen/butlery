@@ -1,6 +1,6 @@
 /// BUT-823: Integration tests for `_verifyModelIntegrity` short-circuit.
 ///
-/// Pure-function coverage of `verifyOnnxBytes` already lives in
+/// Pure-function coverage of `verifyModelBytes` already lives in
 /// `expected_model_hashes_test.dart`. This file proves the **wiring** — that
 /// `NerModelManager._downloadModel` and `LineClassifierModelManager._downloadModel`
 /// abort BEFORE any disk write when the SHA-256 of the downloaded bytes does

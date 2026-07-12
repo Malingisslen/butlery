@@ -125,6 +125,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | MENU-13 | Collaborative shopping view | Verified |
 | MENU-14 | Browse shared shopping lists | Partial |
 | MENU-15 | Share an existing shopping list | Verified |
+| MENU-16 | Voice menu prompt (Tala in veckomenyn) | Verified |
 
 ### Social
 | ID | Feature | Tests |
@@ -642,6 +643,13 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **Expected behavior:** Loads friends; multi-select + custom message; shares with each selected friend, logs analytics, reports partial failures. Provides a sharing summary.
 - **Edge cases:** Blocks with no selection; per-friend failures mark partial failure.
 - **Test coverage:** Verified — `shopping_share_viewmodel_test.dart`, `shopping_share_operations_test.dart`, `shopping_social_share_module_test.dart`.
+
+#### MENU-16: Voice menu prompt ("Tala in veckomenyn")
+- **Entry:** Mic button in the Veckomeny prompt field (`VoicePromptButton`).
+- **User story:** As a home cook with my hands or head full, I want to speak my weekly-menu request so that I don't have to type it.
+- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription (Swedish; model OTA-delivered + SHA-256 fail-closed) → transcript lands EDITABLE in the prompt field → normal generation. Spoken register handled by the parser (filler strip, last-wins self-corrections). Audio deleted after transcription on every exit path, never uploaded.
+- **Edge cases:** Denied/permanently-denied mic → rationale/settings snackbar, typed input untouched; missing model or failed transcription → quiet snackbar pointing back to typing; silence hallucinations parse to empty, never a garbage menu; hidden on web.
+- **Test coverage:** Verified — `voice_capture_service_test.dart` (all-exit-path audio cleanup), `whisper_model_manager_test.dart` (fail-close delivery), `voice_prompt_button_test.dart` (states + degradation), `spoken_prompt_golden_test.dart` (29 spoken transcripts). Real-device latency check pending (founder).
 
 ### Social
 

@@ -54,6 +54,7 @@ MENU-12,Create shared shopping list,Menu & Shopping,Verified,"User creates a lis
 MENU-13,Collaborative shopping view,Menu & Shopping,Verified,"Co-shoppers claim items, see who's live, and split the list",
 MENU-14,Browse shared shopping lists,Menu & Shopping,Partial,"User sees all collaborative lists they participate in","No dedicated VM test"
 MENU-15,Share an existing shopping list,Menu & Shopping,Verified,"List owner shares their existing list with selected friends",
+MENU-16,Voice menu prompt (Tala in veckomenyn),Menu & Shopping,Verified,"User speaks the weekly-menu request; on-device Swedish transcription lands editable in the prompt field","kb-whisper plan 2026-07-12; unit+widget tested (service cleanup paths, spoken golden set, button states); on-device model, audio never uploaded; real-device latency check pending (Malin)"
 SOC-01,Send friend request,Social,Verified,"User searches for and sends a friend request to connect",
 SOC-02,Accept / reject / cancel request,Social,Verified,"User accepts, rejects or cancels friend requests",
 SOC-03,Friends list & remove friend,Social,Verified,"User views friends and removes someone to curate their network",

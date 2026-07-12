@@ -528,6 +528,16 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
         <div style="background:var(--green-pale);width:80px;height:80px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;position:relative"><div class="overlay-btn" style="position:absolute;top:4px;right:4px"><span class="mi-sm">clear</span></div></div>
       </div>
     </div>
+    <div class="lib-item">
+      <div class="lib-label">Voice prompt mic (idle / recording / busy)</div>
+      <div class="lib-class">VoicePromptButton (kb-whisper, MENU-16) &middot; lib/widgets/menu/voice_prompt_button.dart</div>
+      <div class="lib-demo" style="display:flex;gap:20px;align-items:center">
+        <span class="mi" style="color:var(--green)" title="idle: Tala in veckomenyn">mic_none</span>
+        <span class="mi" style="color:var(--rust)" title="recording: Klar, tolka det du sa">stop</span>
+        <span class="mi" style="color:var(--green);opacity:0.6" title="busy: LoadingIndicator (f&ouml;rbereder/tolkar)">progress_activity</span>
+      </div>
+      <div style="font-size:11px;color:var(--ink-2,#666);margin-top:6px">Sits in the StyledInput suffix row of the veckomeny prompt field. States: idle mic (green) &rarr; recording stop (error red) &rarr; LoadingIndicator while preparing/transcribing. Hidden on web.</div>
+    </div>
   </div>
 </div>
 

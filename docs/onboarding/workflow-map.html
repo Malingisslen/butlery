@@ -199,6 +199,12 @@
    "path": "lib/views/veckomeny_view.dart"
   },
   {
+   "id": "svc-voice-capture",
+   "label": "Röstinmatning (KB-Whisper på enheten)",
+   "context": "service",
+   "path": "lib/services/voice/voice_capture_service.dart"
+  },
+  {
    "id": "v-share-dialogs",
    "label": "Delningsdialoger (vän/grupp/universal)",
    "context": "view",
@@ -2410,8 +2416,15 @@
   {
    "id": "flow2",
    "label": "generera veckomeny",
-   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool. BUT-1465 (2026-07-11): hushållsunionen går nu att stänga av per användare (Inställningar > household_allergen_filter_tile.dart), med ett child-safety-bekräftelsesteg som namnger allergenerna som slutar filtreras — av faller tillbaka till den egna användarens preferenser, aldrig ofiltrerat. BUT-1594 (samma sprint) tog bort kök/skicklighet som viktningssignaler i poängsättningen — se flow-menu-1 för den nuvarande formeln.",
+   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool. BUT-1465 (2026-07-11): hushållsunionen går nu att stänga av per användare (Inställningar > household_allergen_filter_tile.dart), med ett child-safety-bekräftelsesteg som namnger allergenerna som slutar filtreras — av faller tillbaka till den egna användarens preferenser, aldrig ofiltrerat. BUT-1594 (samma sprint) tog bort kök/skicklighet som viktningssignaler i poängsättningen — se flow-menu-1 för den nuvarande formeln. Röstinmatning (MENU-16, kb-whisper-planen 2026-07-12): en mikrofonknapp i promptfältet (VoicePromptButton → VoiceCaptureService, lib/services/voice/) spelar in push-to-talk, transkriberar PÅ ENHETEN med KB-Whisper (GGML via whisper.cpp, modellen OTA-levererad + SHA-256-fail-closed av WhisperModelManager) och lägger texten REDIGERBAR i samma fält — därefter identisk väg som skriven text. Ljudet raderas efter transkribering och laddas aldrig upp; nekad mikrofon lämnar skrivvägen orörd. Talspråksstöd i parsern: utfyllnadsord strippas och självrättelser (”tre, nej fyra middagar”) löses sist-vinner i text_normalizer.dart, pinnat av spoken_prompt_golden_test.dart.",
    "steps": [
+    {
+     "from": "v-veckomeny",
+     "to": "svc-voice-capture",
+     "payload": "(valfri röstväg, MENU-16) push-to-talk → 16 kHz WAV → KB-Whisper på enheten (modell OTA via WhisperModelManager, fail-closed hashregister) → transkriptet läggs REDIGERBART i promptfältet; ljudfilen raderas i finally på alla utfallsvägar och laddas aldrig upp",
+     "transport": "method call",
+     "verified": true
+    },
     {
      "from": "v-veckomeny",
      "to": "vm-menu",
@@ -2493,6 +2506,7 @@
    "area": "meny & inköp",
    "features": [
     "MENU-01",
+    "MENU-16",
     "ENG-12"
    ]
   },

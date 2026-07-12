@@ -23,6 +23,20 @@ class MenuConstraintParser {
     if (prompt.trim().isEmpty) return ParsedMenuRequest.empty(prompt);
 
     var working = normalize(prompt);
+    // Spoken-register passes (voice prompts, but harmless for typed text):
+    // fillers out first so they can't mask a correction marker, then
+    // last-wins self-correction resolution within same-vocabulary tokens.
+    working = stripSpokenFillers(working);
+    working = resolveSelfCorrections(
+      working,
+      exactVocabularies: [lexicon.of(LexiconCategory.numbers).keys],
+      stemVocabularies: [
+        lexicon.of(LexiconCategory.dietaryStems).keys,
+        lexicon.of(LexiconCategory.allergenFreeStems).keys,
+        lexicon.of(LexiconCategory.cuisineStems).keys,
+        lexicon.of(LexiconCategory.mealStems).keys,
+      ],
+    );
     working = stripPolitePreamble(
       working,
       lexicon.of(LexiconCategory.politePreamble).keys,

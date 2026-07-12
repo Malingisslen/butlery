@@ -7,11 +7,13 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_onnxruntime
   flutter_secure_storage_linux
   gtk
+  record_linux
   sqlcipher_flutter_libs
   url_launcher_linux
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  whisper_ggml_plus
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

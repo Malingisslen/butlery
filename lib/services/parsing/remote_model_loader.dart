@@ -56,6 +56,14 @@ abstract class RemoteModelLoader {
     _checking = false;
   }
 
+  /// Ends a check WITHOUT arming the throttle. For user-initiated download
+  /// attempts (voice model on mic tap): a transient failure must not lock
+  /// the feature for [checkInterval] — the user's next tap should retry.
+  /// Background update checks keep using [endCheck] so failures still
+  /// back off.
+  @protected
+  void abortCheck() => _checking = false;
+
   /// Lazy-initialized local cache directory under app support.
   @protected
   Future<Directory> getCacheDir() async {
@@ -69,8 +77,8 @@ abstract class RemoteModelLoader {
   @protected
   bool get canCacheLocally => !kIsWeb;
 
-  /// BUT-792 / BUT-877 — verify downloaded ONNX bytes against the
-  /// registered SHA-256. Fail-close contract: returns true ONLY when the
+  /// BUT-792 / BUT-877 — verify downloaded model bytes (any format) against
+  /// the registered SHA-256. Fail-close contract: returns true ONLY when the
   /// bytes match the registry entry for [version]. A version absent from
   /// the registry (or an empty registry) refuses to load — publishing a
   /// new model version REQUIRES adding its hash to the registry in the
@@ -98,7 +106,7 @@ abstract class RemoteModelLoader {
     }
 
     final result = await Isolate.run(
-      () => verifyOnnxBytes(
+      () => verifyModelBytes(
         modelBytes: modelBytes,
         version: version,
         hashRegistry: hashRegistry,

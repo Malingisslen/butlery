@@ -1,6 +1,6 @@
 /// BUT-1238: integrity wiring for `RemoteWeightLoader`.
 ///
-/// Pure-function coverage of `verifyOnnxBytes` lives in
+/// Pure-function coverage of `verifyModelBytes` lives in
 /// `expected_model_hashes_test.dart`; the manager equivalents live in
 /// `model_manager_integrity_test.dart`. This file proves the CRF loader
 /// honours the same fail-close contract: downloaded weight JSON whose

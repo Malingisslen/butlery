@@ -53,6 +53,12 @@ Other licenses
 
   - sqlcipher_flutter_libs / sqlcipher (BSD-style — Zetetic LLC).
   - flutter_onnxruntime (MIT).
+  - whisper_ggml_plus 1.5.2 (MIT; bundles whisper.cpp 1.8.3, MIT, (c) Georgi
+    Gerganov — pinned exactly per the kb-whisper voice plan's supply-chain
+    condition; selection rationale in tasks/kb-whisper-voice-menu-plan.md).
+  - record (BSD-3, Flutter ecosystem).
+  - KB-Whisper Swedish speech model (Apache-2.0, KBLab / National Library of
+    Sweden — downloaded at runtime, not bundled).
   - freerasp (proprietary; see https://github.com/talsec/Free-RASP-Community).
   - http_certificate_pinning (Apache-2.0).
   - feature flags via GrowthBook SDK (MIT).

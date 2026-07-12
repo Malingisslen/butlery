@@ -25,6 +25,13 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Voice prompts (kb-whisper plan): push-to-talk capture for the
+         weekly-menu prompt. Transcription is ON-DEVICE (whisper.cpp) — audio
+         never leaves the phone and is deleted after transcription. The Play
+         Console declaration at submission time must state this same use
+         (see STORE_SUBMISSION_CHECKLIST.md). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:label="Butlery"
         android:name="${applicationName}"
