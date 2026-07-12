@@ -1,9 +1,0 @@
-{
-  "role": "Data Analyst / BI",
-  "stale_since": "2026-07-11",
-  "triggers": [
-    "functions/src/analytics/track-retention.ts",
-    "lib/repositories/firebase/firebase_user_repository.dart"
-  ],
-  "last_stamped": "2026-07-12"
-}

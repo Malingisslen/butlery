@@ -45,6 +45,7 @@ when the counts drift apart.
 - Grade each SELECTED ticket against its OWN diff at ship — a batch "N landed, none failed" summary hides silent drops; a zero-diff ticket is dropped (carry forward) or obsolete (close citing the resolving commit), never Done.
 - A fresh parallel worktree without `.dart_tool` makes analyze report PHANTOM undefined-member errors (`package:<self>` resolves to the MAIN checkout) — run `dart pub get --offline`/`flutter pub get` in the worktree before trusting analyze.
 - lefthook `analyze` gate TIMEOUT (exit 124) while standalone `dart analyze` is clean = contention with VS Code's live analyzer — `taskkill //F //IM dart.exe` right before committing (not `LEFTHOOK_EXCLUDE` on a `.dart` diff); a saturated process table crashes the analysis server + blocks fork (restart, don't retry); background the commit so arch-guard's ~10-min compile outlives the shell ceiling.
+- A clean-tree gate must judge dirt BY KIND: auto-generated role-org bookkeeping churn (`.stale` markers, metrics/janitor/world-watch/role-paths JSON) is not in-flight work — fix the gate (`delivery.cleanTreeIgnore` regex allowlist + Phase-0 filter), don't paper over it by committing the churn.
 
 ## Testing
 

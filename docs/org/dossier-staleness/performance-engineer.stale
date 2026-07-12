@@ -1,8 +1,0 @@
-{
-  "role": "Performance Engineer",
-  "stale_since": "2026-07-12",
-  "triggers": [
-    "lib/repositories/firebase/firebase_user_repository.dart"
-  ],
-  "last_stamped": "2026-07-12"
-}
