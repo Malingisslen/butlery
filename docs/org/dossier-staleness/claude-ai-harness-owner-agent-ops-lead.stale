@@ -11,7 +11,9 @@
     ".claude/rules/lessons-digest.md",
     "tasks/lessons.md",
     ".claude/agents/firebase-backend-security.knowledge.md",
-    ".claude/rules/git-workflow.md"
+    ".claude/rules/git-workflow.md",
+    "tasks/whos-eating-design.md",
+    "tasks/whos-eating-plan.md"
   ],
-  "last_stamped": "2026-07-11"
+  "last_stamped": "2026-07-12"
 }

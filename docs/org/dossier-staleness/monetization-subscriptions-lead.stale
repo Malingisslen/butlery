@@ -3,7 +3,10 @@
   "stale_since": "2026-07-07",
   "triggers": [
     "tasks/todo.md",
-    "tasks/lessons.md"
+    "tasks/lessons.md",
+    "lib/models/user_profile.dart",
+    "tasks/whos-eating-design.md",
+    "tasks/whos-eating-plan.md"
   ],
-  "last_stamped": "2026-07-11"
+  "last_stamped": "2026-07-12"
 }

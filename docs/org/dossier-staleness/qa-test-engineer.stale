@@ -14,5 +14,5 @@
     ".claude/agents/firebase-backend-security.knowledge.md",
     "functions/src/__tests__/rate-limiter-withratelimit-ordering.test.ts"
   ],
-  "last_stamped": "2026-07-11"
+  "last_stamped": "2026-07-12"
 }

@@ -166,6 +166,15 @@
     "competitors": ["Paprika", "Samsung Food (Whisk)", "Mela", "KptnCook", "Yummly"],
     "roadmapDocs": ["docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md", "docs/FEATURE_INVENTORY.md"],
     "scanNight": { "dir": ".claude/scan-night" },
-    "patchSubdir": "sprint-patches"
+    "patchSubdir": "sprint-patches",
+    "cleanTreeIgnore": [
+      "\\.stale$",
+      "docs/org/dossier-staleness/",
+      "docs/org/metrics/events\\.jsonl$",
+      "docs/org/metrics/retro-schedule\\.json$",
+      "docs/org/janitor/last-run\\.json$",
+      "docs/org/world-watch/state\\.json$",
+      "docs/org/role-paths\\.json$"
+    ]
   }
 }

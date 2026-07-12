@@ -6,7 +6,18 @@
     "lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart",
     "functions/src/cleanup/on-user-deleted.ts",
     "lib/services/auth_service.dart",
-    "lib/core/bootstrap/handlers/deep_link_handler.dart"
+    "lib/core/bootstrap/handlers/deep_link_handler.dart",
+    "lib/services/account/export/export_pagination_helper.dart",
+    "lib/services/account/export/preferences_export_manager.dart",
+    "lib/services/menu/menu_scoring.dart",
+    "lib/viewmodels/menu/menu_generator.dart",
+    "lib/views/settings/settings_hub_view.dart",
+    "lib/views/social/user_profile_edit/cooking_preference_controls.dart",
+    "lib/views/social/user_profile_edit/cooking_identity_section.dart",
+    "lib/viewmodels/user_profile_viewmodel.dart",
+    "lib/repositories/firebase/firebase_user_repository.dart",
+    "lib/services/user_service.dart",
+    "lib/viewmodels/menu_viewmodel.dart"
   ],
-  "last_stamped": "2026-07-11"
+  "last_stamped": "2026-07-12"
 }

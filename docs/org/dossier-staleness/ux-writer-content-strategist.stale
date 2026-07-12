@@ -3,7 +3,10 @@
   "stale_since": "2026-07-09",
   "triggers": [
     ".claude/hooks/preview-gate.sh",
-    "CLAUDE.md"
+    "CLAUDE.md",
+    "lib/l10n/app_sv.arb",
+    "lib/l10n/app_en.arb",
+    "docs/design/previews/household-size-view-preview.html"
   ],
-  "last_stamped": "2026-07-10"
+  "last_stamped": "2026-07-12"
 }

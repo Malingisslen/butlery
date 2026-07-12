@@ -30,3 +30,11 @@
 {"ts":"2026-07-09T20:44:38.264Z","type":"trigger","fired":true,"signals":"billing,delete,deletion","ran":null}
 {"ts":"2026-07-09T20:51:15.129Z","type":"trigger","fired":true,"signals":"billing,delete,deletion,llm","ran":null}
 {"ts": "2026-07-09", "type": "memory-curation", "repo": "butlery", "mined": 58, "rejectedByQuoteGate": 12, "judgedNoOp": 40, "applied": 6, "outcome": "committed", "approxTokens": 1600000, "via": "supervised-first-run"}
+{"ts":"2026-07-11T21:53:58.638Z","type":"trigger","fired":true,"signals":"delete","ran":null}
+{"ts":"2026-07-11T21:57:51.721Z","type":"trigger","fired":true,"signals":"delete","ran":null}
+{"ts":"2026-07-11T23:13:20.207Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-07-11T23:13:41.485Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-07-12T06:23:48.003Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-07-12T06:23:54.996Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-07-12T08:58:51.408Z","type":"trigger","fired":true,"signals":"allergen,destructive,trust & safety","ran":null}
+{"ts":"2026-07-12T08:58:54.924Z","type":"trigger","fired":true,"signals":"allergen,destructive,trust & safety","ran":null}
