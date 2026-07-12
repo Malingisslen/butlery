@@ -9,6 +9,9 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/rating/canonical_pool_key.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
@@ -445,6 +448,23 @@ class MenuGenerator {
   /// whole [pool]) and memoised into a map, so the per-candidate weight
   /// function never touches async work.
   Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
+    // The pantry and pooled reads are independent I/O — start both before
+    // awaiting either so generation waits for the slower one, not their sum.
+    final pantryFuture = _buildPantryMatch(pool);
+    final pooledFuture = _buildPooledStats(pool);
+    final pantryMatch = await pantryFuture;
+    final pooledStats = await pooledFuture;
+
+    return MenuScoringContext(
+      pantryMatchByRecipeId: pantryMatch,
+      pooledStatsByRecipeId: pooledStats,
+    );
+  }
+
+  /// Reads pantry ingredient overlap for the candidate [pool] (BUT-1321), keyed
+  /// by recipeId. Fail-open: an unregistered [PantryService] or a read failure
+  /// yields an empty map and generation proceeds without the pantry boost.
+  Future<Map<String, double>> _buildPantryMatch(List<Recipe> pool) async {
     final pantryMatch = <String, double>{};
     final pantryService = ServiceLocator.tryGet<PantryService>();
     final userId = _userService.currentUserId;
@@ -460,8 +480,60 @@ class MenuGenerator {
         AppLogger.warning('Pantry-aware menu scoring skipped: $e');
       }
     }
+    return pantryMatch;
+  }
 
-    return MenuScoringContext(pantryMatchByRecipeId: pantryMatch);
+  /// Reads pooled "Butlery-betyget" community stats for the candidate [pool]
+  /// (BUT-1516), keyed by recipeId, so the scorer can apply the shrinkage boost.
+  /// Gated on the `enable_pooled_ratings` flag, so it issues ZERO Firestore
+  /// reads while the feature is dark. Fail-open: any error (or an unregistered
+  /// repository) yields an empty map and generation proceeds unweighted, exactly
+  /// like the pantry read.
+  Future<Map<String, PooledStats>> _buildPooledStats(List<Recipe> pool) async {
+    final pooledOn =
+        ServiceLocator.tryGet<FeatureFlagService>()?.isEnabled(
+          FeatureFlags.enablePooledRatings,
+        ) ??
+        false;
+    if (!pooledOn || pool.isEmpty) return const {};
+
+    final ratingsRepo = ServiceLocator.tryGet<RatingsRepository>();
+    if (ratingsRepo == null) return const {};
+
+    try {
+      // Derive each candidate's poolKey — the pre-stamped hint, else compute it
+      // (older recipes saved before the flag went live carry no hint). Both may
+      // be null for a generic/no-anchor dish; those simply get no pooled signal.
+      final poolKeyByRecipeId = <String, String>{};
+      for (final recipe in pool) {
+        final key =
+            recipe.core.ratingPoolKey ??
+            CanonicalPoolKey.compute(
+              title: recipe.core.title,
+              ingredients: recipe.core.ingredients,
+            );
+        if (key != null && key.isNotEmpty) {
+          poolKeyByRecipeId[recipe.id] = key;
+        }
+      }
+      if (poolKeyByRecipeId.isEmpty) return const {};
+
+      // getBulkPooledStats de-dupes + drops empties internally, so pass the
+      // per-recipe keys directly (duplicate dishes collapse to one query).
+      final statsByKey = await ratingsRepo.getBulkPooledStats(
+        poolKeyByRecipeId.values.toList(),
+      );
+      final byRecipeId = <String, PooledStats>{};
+      poolKeyByRecipeId.forEach((recipeId, key) {
+        final stats = statsByKey[key];
+        if (stats != null) byRecipeId[recipeId] = stats;
+      });
+      return byRecipeId;
+    } catch (e) {
+      // Never let a pooled-ratings read block menu generation.
+      AppLogger.warning('Pooled-rating menu scoring skipped: $e');
+      return const {};
+    }
   }
 
   /// Filters or boosts recipes based on prompt keywords.

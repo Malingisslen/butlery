@@ -8,6 +8,8 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart'
+    show PooledStats;
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
@@ -178,6 +180,139 @@ void main() {
           );
         },
       );
+    });
+
+    // BUT-1516: the pooled "Butlery-betyget" community score nudges the menu
+    // toward well-rated dishes via Bayesian shrinkage (ranking only; the
+    // displayed average is untouched). No-op below the n≥5 floor / no pool.
+    group('Pooled Butlery-betyget boost (BUT-1516)', () {
+      test(
+        'a well-rated pool lifts the recipe above an identical unrated one',
+        () {
+          final rated = _dinner('rated');
+          final plain = _dinner('plain');
+          final context = const MenuScoringContext(
+            pooledStatsByRecipeId: {
+              'rated': PooledStats(count: 50, average: 4.7),
+            },
+          );
+          expect(
+            _weight(rated, context: context),
+            greaterThan(_weight(plain, context: context)),
+          );
+          expect(
+            _weight(rated, context: context),
+            greaterThan(_weight(rated)),
+            reason: 'a well-rated community pool is a genuine lift, not parity',
+          );
+        },
+      );
+
+      test('no pool, below the n≥5 floor, or a null average is a no-op', () {
+        final r = _dinner('r');
+        // Absent from the map.
+        expect(
+          _weight(
+            r,
+            context: const MenuScoringContext(
+              pooledStatsByRecipeId: {
+                'other': PooledStats(count: 99, average: 5.0),
+              },
+            ),
+          ),
+          equals(_weight(r)),
+        );
+        // Present but below the display floor (count 4).
+        expect(
+          _weight(
+            r,
+            context: const MenuScoringContext(
+              pooledStatsByRecipeId: {'r': PooledStats(count: 4, average: 5.0)},
+            ),
+          ),
+          equals(_weight(r)),
+          reason: 'below the n≥5 floor the pooled signal is inert',
+        );
+        // Empty pool (null average) even with a high count.
+        expect(
+          _weight(
+            r,
+            context: const MenuScoringContext(
+              pooledStatsByRecipeId: {
+                'r': PooledStats(count: 10, average: null),
+              },
+            ),
+          ),
+          equals(_weight(r)),
+        );
+      });
+
+      test('shrinkage bites: a 5★/n=5 dish ranks BELOW a 4.6★/n=200 dish', () {
+        final fewFive = _dinner('few5');
+        final manyHigh = _dinner('many46');
+        final context = const MenuScoringContext(
+          pooledStatsByRecipeId: {
+            'few5': PooledStats(count: 5, average: 5.0),
+            'many46': PooledStats(count: 200, average: 4.6),
+          },
+        );
+        expect(
+          context.multiplierFor(manyHigh),
+          greaterThan(context.multiplierFor(fewFive)),
+          reason:
+              'Bayesian shrinkage: a few enthusiastic votes must not outrank a '
+              'large, only-slightly-lower pool — the whole point of the prior',
+        );
+        // Both are above the prior, so both still get *some* lift.
+        expect(context.multiplierFor(fewFive), greaterThan(1.0));
+      });
+
+      test(
+        'the boost stays within [minFactor, maxBoost] and centres on the prior',
+        () {
+          final top = _dinner('top');
+          final bottom = _dinner('bottom');
+          final mid = _dinner('mid');
+          final context = const MenuScoringContext(
+            pooledStatsByRecipeId: {
+              'top': PooledStats(count: 10000, average: 5.0),
+              'bottom': PooledStats(count: 10000, average: 1.0),
+              'mid': PooledStats(
+                count: 10000,
+                average: MenuScoringContext.pooledPriorMean,
+              ),
+            },
+          );
+          // A huge, perfect pool approaches the ceiling; a huge, awful one the floor.
+          expect(
+            context.multiplierFor(top),
+            lessThanOrEqualTo(MenuScoringContext.pooledMaxBoost),
+          );
+          expect(
+            context.multiplierFor(top),
+            closeTo(MenuScoringContext.pooledMaxBoost, 0.01),
+          );
+          expect(
+            context.multiplierFor(bottom),
+            greaterThanOrEqualTo(MenuScoringContext.pooledMinFactor),
+          );
+          expect(
+            context.multiplierFor(bottom),
+            closeTo(MenuScoringContext.pooledMinFactor, 0.01),
+          );
+          // A pool sitting exactly at the prior mean is neutral.
+          expect(context.multiplierFor(mid), closeTo(1.0, 0.001));
+          // Even the worst-rated dish stays selectable (never excluded).
+          expect(_weight(bottom, context: context), greaterThan(0));
+        },
+      );
+
+      test('the pooled ceiling stays at/below the rating ceiling', () {
+        expect(
+          MenuScoringContext.maxPooledBoost,
+          lessThanOrEqualTo(MenuService.debugMaxRatingBoost),
+        );
+      });
     });
   });
 
