@@ -2410,7 +2410,7 @@
   {
    "id": "flow2",
    "label": "generera veckomeny",
-   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool.",
+   "description": "Svensk prompt → deterministisk parser → viktad slumpdragning. Sedan BUT-1464 (2026-07-02) är poolen allergensäker på riktigt: hushållsunionen filtrerar som STANDARD när ett hushåll finns, manuella taggkorrigeringar respekteras via MenuAllergenTrust (stale FREE nedgraderas till UNKNOWN), och UI:t förklarar en krympt pool med hint-rad + ”allergener okända”-chips. Omslag (swap) och sektions-omgenerering drar från samma säkra pool. BUT-1465 (2026-07-11): hushållsunionen går nu att stänga av per användare (Inställningar > household_allergen_filter_tile.dart), med ett child-safety-bekräftelsesteg som namnger allergenerna som slutar filtreras — av faller tillbaka till den egna användarens preferenser, aldrig ofiltrerat. BUT-1594 (samma sprint) tog bort kök/skicklighet som viktningssignaler i poängsättningen — se flow-menu-1 för den nuvarande formeln.",
    "steps": [
     {
      "from": "v-veckomeny",
@@ -2429,7 +2429,7 @@
     {
      "from": "vm-menu-generator",
      "to": "svc-household",
-     "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN (opt-out kommer i BUT-1465); när ”vem äter” är valt unioneras i stället de närvarandes allergener via familjerostern (konton OCH matgästprofiler)",
+     "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN, men läses bara när useHouseholdAllergens är true (BUT-1465 opt-out-reglage i Inställningar, live sedan 2026-07-11 — av faller tillbaka till egna preferenser); när ”vem äter” är valt unioneras i stället de närvarandes allergener via familjerostern (konton OCH matgästprofiler), vilket alltid går FÖRE hushålls-toggeln",
      "transport": "method call",
      "verified": true
     },
@@ -2443,14 +2443,14 @@
     {
      "from": "vm-menu-generator",
      "to": "svc-menu",
-     "payload": "prompt + allergenfiltrerad pool + nyligen-använda recept-id:n (veckodedup) + scoringContext (skafferi/köksaffinitet/skicklighet) → generateMenuFromPrompt",
+     "payload": "prompt + allergenfiltrerad pool + nyligen-använda recept-id:n (veckodedup) + scoringContext (skafferi + poolat betyg) → generateMenuFromPrompt. BUT-1594 tog bort köksaffinitet/skicklighet som signaler — menyn dras redan ur användarens egna, smakkurerade recept, så de dubbelräknade smak. BUT-1516 lade till en Bayesian-krympt boost från det poolade ”Butlery-betyget”, men den är helt vilande (enable_pooled_ratings AV i produktion)",
      "transport": "method call",
      "verified": true
     },
     {
      "from": "svc-menu",
      "to": "vm-menu-generator",
-     "payload": "MenuConstraintParser (lexikon, ej LLM) → viktad dragning: recency × säsong 1.5 × betyg × skafferi × kök × skicklighet → köksdiversitetstak → Map<String, List<Recipe>>",
+     "payload": "MenuConstraintParser (lexikon, ej LLM) → viktad dragning: recency × säsong 1.5 × betyg × skafferi × poolat betyg (BUT-1516, vilande bakom flagga) → köksdiversitetstak (post-urval spärr på kök+proteinkategori, BUT-359/1324 — oförändrad, skild från den borttagna kök-viktningen) → Map<String, List<Recipe>>",
      "transport": "in-memory return",
      "verified": true
     },
@@ -3031,7 +3031,7 @@
   {
    "id": "flow-auth-4",
    "label": "onboarding",
-   "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Inställningar > Meny och smak.",
+   "description": "Val av allergener och kostpreferenser i guiden, slutförande med sparade preferenser, samt möjlighet att återuppta en avbruten guide i en senare session. BUT-1322: completeOnboardingWithPreferences skriver nu saveProfile(..., writeHouseholdSize:false) — onboarding redigerar aldrig hushållsstorlek, och flaggan utelämnar nyckeln ur settings-merget så en degraderad in-memory-profil inte kan skriva över en hushållsstorlek som satts via Inställningar > Hushållsstorlek (döpt om från ”Meny och smak” i BUT-1594, som samtidigt flyttade kök/skicklighet-reglagen till profilredigeringens ”cooking identity”-sektion — denna vy hette tidigare menu_taste_view.dart, nu lib/views/settings/household_size_view.dart och rymmer bara hushållsstorlek).",
    "features": [
     "AUTH-07",
     "AUTH-08"
@@ -4356,7 +4356,7 @@
     {
      "from": "vm-menu",
      "to": "svc-menu-scoring",
-     "payload": "poängsätt kandidater (cuisine/kategori/säsong), slumpa vid oavgjort",
+     "payload": "poängsätt kandidater (recency/säsong/betyg/skafferi/poolat betyg — se flow2 för formeln; cuisine/skicklighet-nudges togs bort i BUT-1594), slumpa vid oavgjort",
      "transport": "method call",
      "verified": true
     },
