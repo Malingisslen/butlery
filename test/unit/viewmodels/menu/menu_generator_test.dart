@@ -1391,11 +1391,11 @@ void main() {
     );
   });
 
-  // BUT-1455: a single-section re-roll must reuse the scoring context built by
-  // the last full generation instead of re-reading the pantry (and pooled
-  // stats) over the whole library on every tap. The pantry read is the
-  // observable hot-path I/O, so we assert its call count.
-  group('MenuGenerator - Re-roll scoring-context reuse (BUT-1455)', () {
+  // A single-section re-roll rebuilds its scoring context from scratch so it
+  // scores against the LIVE pantry (founder decision 2026-07-12, reverting the
+  // BUT-1455 within-session cache): every re-roll re-reads the pantry. The
+  // pantry read is the observable hot-path I/O, so we assert its call count.
+  group('MenuGenerator - Re-roll reads the live pantry', () {
     late _MockPantryService mockPantry;
 
     setUp(() {
@@ -1423,8 +1423,7 @@ void main() {
     });
 
     test(
-      're-roll after a full generation reuses the cached pantry context '
-      '(no second pantry read)',
+      're-roll after a full generation re-reads the pantry (live, not cached)',
       () async {
         final menu = await menuGenerator.generateMenuFromPrompt('veckomeny');
         // The full generation builds the context once.
@@ -1432,20 +1431,20 @@ void main() {
 
         await menuGenerator.regenerateMenuSection('Monday', menu);
 
-        // The re-roll reused the cached context — no fresh pantry read.
-        verifyNever(() => mockPantry.getMatchingRecipes(any(), any()));
+        // The re-roll rebuilt the context against the live pantry — a fresh
+        // read fired even though the pool is unchanged.
+        verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
       },
     );
 
     test(
-      're-roll rebuilds the context when the recipe pool changed since '
-      'generation',
+      're-roll re-reads the pantry after the recipe pool changed',
       () async {
         final menu = await menuGenerator.generateMenuFromPrompt('veckomeny');
         verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
 
-        // A new recipe enters the library — the cache no longer covers the
-        // re-roll pool, so the context must be rebuilt (fresh pantry read).
+        // A new recipe enters the library; the re-roll rebuilds against the
+        // live pantry regardless (fresh pantry read).
         mockRecipeService.setRecipeState(
           isInitialized: true,
           recipes: [
@@ -1465,8 +1464,8 @@ void main() {
     test(
       're-roll without a prior generation builds a fresh context',
       () async {
-        // No generation ran this session → nothing cached → the re-roll must
-        // still build its own context (unchanged pre-BUT-1455 behaviour).
+        // No generation ran this session → the re-roll builds its own context
+        // against the live pantry.
         await menuGenerator.regenerateMenuSection('Monday', createTestMenu());
 
         verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
