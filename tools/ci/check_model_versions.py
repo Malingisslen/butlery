@@ -53,7 +53,8 @@ REGISTRY_MAPS = {
 # REMOVE a family from this set the moment its first upload lands —
 # for an already-published family a missing pointer is a loud failure
 # (deleted object, typo'd path, wrong bucket), never a silent OK.
-PREPUBLISH_FAMILIES = {"whisper"}
+# (whisper_sv v1 published 2026-07-12 — set is empty until the next new family.)
+PREPUBLISH_FAMILIES: set[str] = set()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_FILE = REPO_ROOT / "lib" / "services" / "parsing" / "_expected_model_hashes.dart"
