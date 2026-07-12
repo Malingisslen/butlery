@@ -112,3 +112,20 @@ ungated — intentional.** Do NOT file a "missing age gate on cook_snaps/activit
 against `firestore.rules` (create paths ~1137-1153 and ~1230-1242).
 **Why:** the age gate governs the account-creation boundary; these two paths are downstream
 activity of an already-gated account and don't re-open the age surface. Decided scope call. — 2026-07-04
+
+### [Privacy/GDPR] `socialFeatures` consent is intentionally NOT a gate — social runs on contract basis (BUT-1523 closed, honoring BUT-1395)
+The `socialFeatures` field on `ConsentPurposes` (`lib/models/account/user_consent.dart`) exists but
+gates NOTHING, and that is deliberate. BUT-1395 removed the social-features toggle from the consent
+UI (`lib/views/account/consent_management_view.dart` ~L297) because social features (comments,
+sharing, friends, ratings) run on the GDPR **contract** basis — they are part of the service the
+user signs up for — not on consent. The field is kept only for Firestore back-compat
+deserialization (and its viewmodel getter/setter round-trip stays test-covered for that).
+**Malin decided 2026-07-11 (BUT-1523): close it — do NOT wire social writes to
+`ConsentService.checkSafely(socialFeatures)`.** Wiring it would (a) re-introduce the
+"misleading-consent" pattern IMY (Swedish DPA) has fined for, and (b) — because the consent
+defaults FALSE and `checkSafely` fails CLOSED — block all social features for every existing user
+until they flipped a toggle that no longer exists in the UI.
+**Why:** a control shown as consent for something provided on a contract basis is the consent-theatre
+anti-pattern; BUT-1395 already resolved the original "visible control does nothing" risk by removing
+the control. Do NOT re-file "socialFeatures gates nothing / wire the consent gate / consent theatre"
+against the consent model or social write paths — it is a decided product+legal call. — 2026-07-12
