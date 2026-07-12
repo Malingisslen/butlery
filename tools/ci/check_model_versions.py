@@ -38,13 +38,22 @@ BUCKET = "butlery-app-1.firebasestorage.app"
 FAMILIES = {
     "ner": "ingredient_ner",
     "line_classifier": "line_classifier",
+    "whisper": "whisper_sv",
 }
 
 # Registry map names, keyed by the family used in FAMILIES.
 REGISTRY_MAPS = {
     "ner": "kExpectedNerModelHashes",
     "line_classifier": "kExpectedLineClassifierModelHashes",
+    "whisper": "kExpectedWhisperModelHashes",
 }
+
+# Families whose FIRST Storage publish hasn't happened yet: a missing
+# latest_version.txt is the expected registry-first state, not drift.
+# REMOVE a family from this set the moment its first upload lands —
+# for an already-published family a missing pointer is a loud failure
+# (deleted object, typo'd path, wrong bucket), never a silent OK.
+PREPUBLISH_FAMILIES = {"whisper"}
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_FILE = REPO_ROOT / "lib" / "services" / "parsing" / "_expected_model_hashes.dart"
@@ -82,10 +91,13 @@ def parse_local_max_versions(dart_source: str) -> dict[str, int]:
     return result
 
 
-def read_published_version(family_path: str) -> int:
+def read_published_version(family_path: str) -> int | None:
     """gsutil cat the family's latest_version.txt and parse the int.
 
-    Strips an optional leading 'v' (handles both `5` and `v5`).
+    Strips an optional leading 'v' (handles both `5` and `v5`). Returns
+    None when the object doesn't exist yet — a registry that is ahead of
+    Storage is the intended publish order (hash lands first), so a family
+    awaiting its first upload must not fail the guard.
     """
     uri = f"gs://{BUCKET}/models/{family_path}/latest_version.txt"
     try:
@@ -105,10 +117,13 @@ def read_published_version(family_path: str) -> int:
         raise GuardError(f"gsutil cat timed out reading {uri}.") from exc
 
     if proc.returncode != 0:
+        stderr = proc.stderr.strip()
+        if "No URLs matched" in stderr or "NotFoundException" in stderr:
+            return None
         raise GuardError(
             f"gsutil cat failed for {uri} (exit {proc.returncode}). "
             "Check that the object exists and that gcloud is authenticated "
-            f"with read access.\n--- gsutil stderr ---\n{proc.stderr.strip()}"
+            f"with read access.\n--- gsutil stderr ---\n{stderr}"
         )
 
     raw = proc.stdout.strip()
@@ -150,6 +165,22 @@ def main() -> int:
         for family, family_path in FAMILIES.items():
             published = read_published_version(family_path)
             local = local_max[family]
+            if published is None:
+                if family in PREPUBLISH_FAMILIES:
+                    print(
+                        f"OK: {family} ({family_path}) — awaiting first "
+                        f"publish (local registry max={local}; registry-"
+                        f"first is the intended order). Remove from "
+                        f"PREPUBLISH_FAMILIES once uploaded."
+                    )
+                    continue
+                failures.append(
+                    f"{family} ({family_path}): latest_version.txt is "
+                    f"MISSING from Storage for an already-published family "
+                    f"— clients can no longer discover model versions "
+                    f"(deleted object? typo'd path? wrong bucket?)."
+                )
+                continue
             if published > local:
                 failures.append(
                     f"{family} ({family_path}): published latest_version="
