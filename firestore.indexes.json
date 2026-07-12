@@ -100,6 +100,14 @@
       ]
     },
     {
+      "collectionGroup": "social_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "sentAt", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "shared_recipes",
       "queryScope": "COLLECTION",
       "fields": [

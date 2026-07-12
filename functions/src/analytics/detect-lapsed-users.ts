@@ -58,6 +58,18 @@ const MS_PER_DAY = 24 * MS_PER_HOUR;
  *  is safe to overwrite. */
 const WINBACK_ATTRIBUTION_WINDOW_MS = 7 * MS_PER_DAY;
 
+/** BUT-1567: on the very first run (no stored cursor) we don't want to sweep
+ *  every dormant user who ever crossed a threshold in one giant backfill.
+ *  Default the cursor to one scheduling interval back so the first run
+ *  behaves like a normal daily run; every subsequent run reads the real
+ *  stored cursor. */
+const DEFAULT_CURSOR_LOOKBACK_MS = MS_PER_DAY;
+
+/** BUT-1567: the cursor doc holding `lastRunAt` — the parent of the
+ *  lapsed-user events subcollection (a Firestore doc can carry fields AND
+ *  own subcollections). */
+const CURSOR_DOC = { collection: "analytics", doc: "lapsed_users" } as const;
+
 interface LapsedThreshold {
   days: number;
   type: string;
@@ -130,24 +142,51 @@ export async function runDetectLapsedUsers(
 
   logger.info("detect_lapsed_users_start");
 
+  // BUT-1567: read the last-run cursor. The old predicate matched a fixed
+  // ±12h band centred on each threshold, so a run that was skipped (outage,
+  // schedule drift) left a permanent gap — any user whose lastActiveAt fell
+  // in that day's band was never detected. We instead detect users who
+  // CROSSED a threshold since the previous run, covering the whole gap and
+  // catching irregular users the point-in-time band missed. First run (no
+  // cursor) falls back to a bounded one-interval lookback.
+  const cursorRef = db.collection(CURSOR_DOC.collection).doc(CURSOR_DOC.doc);
+  const cursorSnap = await cursorRef.get();
+  const storedCursor = cursorSnap.exists
+    ? (cursorSnap.data()?.lastRunAt as admin.firestore.Timestamp | undefined)
+    : undefined;
+  const lastRunMs = storedCursor?.toMillis() ?? nowMs - DEFAULT_CURSOR_LOOKBACK_MS;
+
   let totalDetected = 0;
   let totalPushSuccess = 0;
   let totalPushSkippedOptOut = 0;
   let totalPushSkippedQuietHours = 0;
 
   for (const threshold of THRESHOLDS) {
-    const targetMs = nowMs - threshold.days * MS_PER_DAY;
-    const windowStart = admin.firestore.Timestamp.fromMillis(
-      targetMs - 12 * MS_PER_HOUR,
+    // A user has crossed the N-day inactivity threshold once their last
+    // activity is older than N days: lastActiveAt <= now - N*days. To catch
+    // every crosser exactly once — including those from a skipped run — pick
+    // only users who were NOT yet past the threshold at the previous run:
+    // window = (lastRun - N*days, now - N*days]. The upper bound is inclusive
+    // (just-crossed) and the lower bound exclusive (already handled last run,
+    // so no double-notify).
+    const crossedByNow = admin.firestore.Timestamp.fromMillis(
+      nowMs - threshold.days * MS_PER_DAY,
     );
-    const windowEnd = admin.firestore.Timestamp.fromMillis(
-      targetMs + 12 * MS_PER_HOUR,
+    const alreadyCrossedAtLastRun = admin.firestore.Timestamp.fromMillis(
+      lastRunMs - threshold.days * MS_PER_DAY,
     );
+
+    // Degenerate window (cursor at/after now — clock moved backwards, or a
+    // duplicate same-instant run) → nothing newly crossed; skip.
+    if (alreadyCrossedAtLastRun.toMillis() >= crossedByNow.toMillis()) {
+      logger.info("lapsed_window_empty", { days: threshold.days });
+      continue;
+    }
 
     const usersSnapshot = await db
       .collection("users")
-      .where("lastActiveAt", ">=", windowStart)
-      .where("lastActiveAt", "<=", windowEnd)
+      .where("lastActiveAt", ">", alreadyCrossedAtLastRun)
+      .where("lastActiveAt", "<=", crossedByNow)
       .get();
 
     if (usersSnapshot.empty) {
@@ -374,6 +413,12 @@ export async function runDetectLapsedUsers(
       contextBreakdown: countContexts(perUser),
     });
   }
+
+  // BUT-1567: advance the cursor only after every threshold has been
+  // processed. If a threshold threw, we never reach here and the cursor
+  // stays put, so the next run re-covers the gap — deliberately favouring
+  // occasional re-coverage over silently missing a lapse.
+  await cursorRef.set({ lastRunAt: now }, { merge: true });
 
   logger.info("detect_lapsed_users_complete", {
     totalDetected,

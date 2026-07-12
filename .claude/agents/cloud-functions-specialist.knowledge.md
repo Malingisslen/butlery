@@ -2261,3 +2261,102 @@ is worth handling, demotion is too. Fully-correct gate would be membership-XOR:
 `const w=isProfileRating(before), i=isProfileRating(after); if(!w&&!i) return
 false; if(w!==i) return true; return before?.stars!==after?.stars;`. Left as the
 ticket scoped only the recompute condition.
+
+### 2026-07-12 — BUT-1567 crossed-since-last-run window can overlap across thresholds [Pattern discovered]
+
+`analytics/detect-lapsed-users.ts` replaced the old fixed ±12h band per
+threshold with a cursor-driven "crossed since last run" window
+`(lastRun − N·days, now − N·days]` for N ∈ {7,14,30}. The window WIDTH equals
+the cursor gap `(now − lastRun)`. Normal daily runs → ~1-day windows that never
+overlap. **But on outage recovery — precisely the scenario the change targets —
+the gap can exceed 7 days, and the 7/14/30 windows then OVERLAP.** A single user
+(e.g. `lastActiveAt = now−15d` with a 10-day-stale cursor) legitimately crossed
+both 7d and 14d during the outage and matches BOTH windows in one run → they get
+stacked mild + moderate win-back notification docs + duplicate analytics events
+in the same run. The old ±12h bands (24h wide, ≥6 days apart) were structurally
+immune to this, so it is a REGRESSION introduced by BUT-1567. There is no
+per-run dedup across thresholds.
+
+Mitigations already present (why it's Medium not High): the BUT-1428 bridge gate
+protects the A/B attribution field (only the first-processed threshold writes
+`lastWinBack*`, later ones see it fresh and skip); and the push fatigue rate-cap
+(`evaluateSendGate` + recorded send-event) likely suppresses the second/third
+PUSH within the same run. What is NOT suppressed: the extra in-app notification
+docs and the extra analytics `events` rows. Fix if pursued: track processed uids
+across thresholds within the run and skip already-notified users, or select each
+user's single highest crossed threshold.
+
+Other notes from the same review:
+- **Unbounded users scan + sequential per-user context reads.** `db.collection("users").where(...).get()` has no `.limit()`, and each matched user is awaited through `resolveContext` (a Firestore read) in a serial for-loop. On a wide catch-up window the matched set can be large — memory + the default 60s `onSchedule` timeout are both at risk. `onSchedule` here sets no `timeoutSeconds`/`memory`. Consider a `__name__`-cursor page loop (`shared/batch-update.ts`) + parallelizing the context reads.
+- **`notificationSent: true` on the analytics event is written unconditionally** (batch, before the push gate). The push may still be dropped (opt-out / quiet-hours / rate-cap), so the field overstates delivery — it really means "in-app notification doc written".
+- **Test-fake doc-id collision:** in `makeFakeDb`, auto doc ids use `store.writeCount`, which only increments on `commit`, not on `.doc()` creation. Multiple analytics-event docs created inside one batch therefore share the same `auto_<n>` path and overwrite each other in the store Map. Harmless for current single-user-per-batch assertions, but it would mask any future test that asserts on multiple analytics events. Fix: bump a counter at `.doc()` time.
+
+### 2026-07-12 — cleanup-pagination: self-advancing drain vs `__name__` cursor [Pattern discovered]
+
+Reviewed `cleanup/cleanup-old-notifications.ts` (limit→loop pagination) +
+`firestore.indexes.json` (added `social_requests (status ASC, sentAt ASC)`).
+
+- **Self-advancing drain is the correct pagination for a delete/filter-mutating
+  sweep, and it is NOT the same primitive as `batchUpdateQueryPaginated`.**
+  cleanup-old-notifications now loops `where(ts<cutoff).limit(BATCH_LIMIT).get()`
+  → `batchDeleteDocs` → repeat until `snapshot.size < BATCH_LIMIT`. No
+  `startAfter` cursor: the delete removes the doc from the filter, so the next
+  page returns fresh rows. This is the ONLY safe paginator when the loop body
+  changes a field the base query filters on. `batchUpdateQueryPaginated`
+  (`shared/batch-update.ts`) orders by `__name__` with a `startAfter` cursor and
+  its own docstring warns "the update must not change a field the base query
+  filters on, otherwise the cursor could skip or revisit docs." So for a drain
+  that flips the filtered field, use the self-advancing bounded loop, never the
+  `__name__`-cursor helper.
+
+- **`cleanup-expired-social-requests.ts` is the remaining pagination gap this
+  sprint's index serves but did NOT fix.** It flips `status pending→expired` via
+  `batchUpdateQuery` — a single unbounded `query.get()` (no `.limit()`), loading
+  every matching doc into memory. It legitimately can't use
+  `batchUpdateQueryPaginated` (it mutates the filtered `status` field → cursor
+  skip). The right fix is the same self-advancing bounded loop
+  cleanup-old-notifications now uses (query `.limit(BATCH_LIMIT)` → update →
+  repeat; expired rows drop out of `status == pending`). Out of the reviewed
+  two-file scope; flagged for the sprint owner.
+
+- **The added `social_requests (status ASC, sentAt ASC)` composite is correct AND
+  was genuinely missing.** The query `where("status","==","pending")
+  .where("sentAt","<",cutoff)` is equality + range on DIFFERENT fields ⇒ needs a
+  composite (not an equality-only case). `queryScope: COLLECTION` is right (it's
+  a top-level `db.collection(...)`, not a collectionGroup). Since the CF landed
+  in BUT-772 without this index, the weekly job has been throwing
+  FAILED_PRECONDITION on every non-empty run — masked only by pre-launch ~0 data.
+  Index addition is a real fix, not decoration.
+
+- **LOW nit carried in cleanup-old-notifications:** `logger.error("Notification
+  cleanup failed", e)` passes the raw Error as the structured second arg. House
+  convention is `logger.error("...", { err: e })` so Cloud Logging keeps the
+  stack/fields as structured data. Not a behavior bug.
+
+### 2026-07-12 — BUT-1592 closed the demotion gap (membership-XOR shipped) [Pattern discovered]
+
+The residual asymmetry flagged Low in the 2026-07-11 BUT-1511 entry is now
+fixed. `shouldRecomputeOnFamilyRatingUpdate` is the exact membership-XOR gate
+that entry predicted: `if(!wasProfile && !isProfile) return false; if(wasProfile
+!== isProfile) return true; return before?.stars !== after?.stars;`. A demotion
+`profile`→`user` with unchanged stars now recomputes immediately, so the demoted
+row drops out of `recipe_social_stats` without waiting for the next rating event
+on that recipe. `onFamilyRatingUpdated` reads `after.recipeId` for the schedule
+target — safe because `family_ratings` doc id is `recipeId|memberId`
+(`FamilyRating.buildId`), so an update never changes the row's `recipeId`.
+
+Reviewed the two-file diff clean (no Critical/High). Test grew to 6 cases and
+BOTH regression guards bite against the old `after`-only gate: the promotion case
+(#1) and the demotion case (#5) each go RED if the gate reverts. 6/6 green,
+`ts-node` run confirmed.
+
+**Minor notes (not blockers):**
+- The `runTests` label is still the stale `"BUT-1511: family-rating recompute
+  gate"` even though the suite now proves BUT-1592 too. Cosmetic — the label is
+  only console output, not a test key. Worth a one-word update next touch.
+- Two edges uncovered by the 6 cases: a simultaneous flip + star change (e.g.
+  `user(3)`→`profile(5)` — handled by the flip branch, returns true) and
+  `undefined` `before`/`after` (the `Data` type admits undefined;
+  `isProfileRating(undefined)` is false, so undefined/undefined → false). Both
+  behave correctly by construction; adding them would harden against a future
+  refactor of the branch order. Low.

@@ -22,6 +22,7 @@ import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -33,11 +34,17 @@ class ImportManager {
   final PersonalRecipeOperations _personalOperations;
   final List<ImportStrategy> _strategies = [];
 
+  /// BUT-1470: server-side parse-event logger. Injectable so the logging can
+  /// be exercised in unit tests without a live Firebase app. Lazy on Firebase
+  /// at construction (see ParseEventLogger), so the default is test-safe too.
+  final ParseEventLogger _eventLogger;
+
   /// Lazily initialized cache reference
   GlobalRecipeCache? _cache;
   UrlNormalizer? _urlNormalizer;
 
-  ImportManager(this._personalOperations) {
+  ImportManager(this._personalOperations, {ParseEventLogger? eventLogger})
+    : _eventLogger = eventLogger ?? ParseEventLogger() {
     _initializeStrategies();
   }
 
@@ -46,8 +53,9 @@ class ImportManager {
   @visibleForTesting
   ImportManager.withStrategies(
     this._personalOperations,
-    List<ImportStrategy> strategies,
-  ) {
+    List<ImportStrategy> strategies, {
+    ParseEventLogger? eventLogger,
+  }) : _eventLogger = eventLogger ?? ParseEventLogger() {
     _strategies.addAll(strategies);
   }
 
@@ -657,9 +665,15 @@ class ImportManager {
     String input,
     Map<String, dynamic>? options,
   ) async {
+    final stopwatch = Stopwatch()..start();
     try {
       // Execute import strategy to parse recipe
       final importResult = await strategy.import(input, options: options);
+
+      // BUT-1470: log a server-side parse event for every import path at this
+      // shared choke point, so photo/text/social imports are measured the way
+      // URL imports already are.
+      _logParseEvent(strategy, importResult, stopwatch.elapsedMilliseconds);
 
       // Tier-7 recovery: a strategy can return `needsAssistance` (extracted
       // text the parser couldn't structure) instead of a recipe. This is NOT
@@ -721,6 +735,31 @@ class ImportManager {
         strategy: strategy.strategyName,
       );
     }
+  }
+
+  /// BUT-1470: emit a fire-and-forget parse event for a strategy outcome.
+  ///
+  /// [UrlImportStrategy] already logs its own per-tier parse events (and its
+  /// enhanced-parser tier logs again via RecipeParserService), so it is skipped
+  /// here to avoid double-counting the most common import path. Every other
+  /// strategy (photo/OCR, text, archive, and the social pipelines) had no
+  /// parse-event coverage before this — this is the single choke point that
+  /// closes that gap. Never throws: ParseEventLogger swallows its own errors.
+  void _logParseEvent(
+    ImportStrategy strategy,
+    ImportResult result,
+    int parseTimeMs,
+  ) {
+    if (strategy is UrlImportStrategy) return;
+
+    _eventLogger.logEvent(
+      // The input for these paths is raw text / image bytes / a file id, not a
+      // fetchable URL, so there is no meaningful `url` to record.
+      url: null,
+      source: _sourceTypeFromStrategy(strategy.strategyName),
+      success: result.isSuccess && result.recipe != null,
+      parseTimeMs: parseTimeMs,
+    );
   }
 
   double _calculateConfidence(ImportStrategy strategy, String input) {

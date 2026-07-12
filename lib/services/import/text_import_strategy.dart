@@ -55,7 +55,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final normalized = normalizeText(input);
       final preprocessed = TextImportNormalizer.preprocessText(normalized);
 
-      final parsed = _parseTextToRecipe(preprocessed);
+      // Title from `normalized` (pre-preprocess), NOT `preprocessed`: the
+      // ingredient/instruction splitters in preprocessText mangle a compound
+      // title — "Köttbullar med gräddsås" is torn into "grädd"/"sås" (the
+      // section-header suffix split) and "graddsas" into "gr"/"addsas" (the
+      // English "Add" instruction cue matched inside the word). The original
+      // first line is the real title; the body still parses from `preprocessed`.
+      final parsed = _parseTextToRecipe(preprocessed, normalized);
 
       if (parsed == null) {
         return ImportResult.failure(
@@ -157,6 +163,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final letters = s.replaceAll(RegExp(r'[^a-zåäöA-ZÅÄÖ]'), '');
     return letters.length >= 2 && s == s.toUpperCase() && s != s.toLowerCase();
   }
+
+  /// Comparison key for the leading-title-fragment skip: letters/digits only,
+  /// lower-cased, so "Köttbullar med grädd" + "sås" re-joins to the same key as
+  /// "Köttbullar med gräddsås" regardless of the spaces/colons preprocessing
+  /// left behind.
+  String _titleKey(String s) =>
+      s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9åäö]'), '');
 
   /// Extract title from Instagram-style text
   String _extractTitleFromText(String text) {
@@ -293,13 +306,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return name;
   }
 
-  Recipe? _parseTextToRecipe(String text) {
+  /// [text] is the preprocessed body used for ingredient/instruction parsing.
+  /// [titleSource] is the pre-preprocess text used ONLY for the title, so the
+  /// ingredient/instruction splitters can't truncate a compound title.
+  Recipe? _parseTextToRecipe(String text, String titleSource) {
     final lines = text
         .split('\n')
         .where((line) => line.trim().isNotEmpty)
         .toList();
 
     if (lines.isEmpty) return null;
+
+    final titleLines = titleSource
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
 
     String recipeName = '';
     String description = '';
@@ -315,12 +336,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       capturedAsIngredient.add(ing.toLowerCase());
     }
 
-    // STAGE 2: EXTRACT TITLE
-    recipeName = _extractTitleFromText(text);
+    // STAGE 2: EXTRACT TITLE (from titleSource — the un-mangled original)
+    recipeName = _extractTitleFromText(titleSource);
 
     if (recipeName.isEmpty) {
-      for (int i = 0; i < lines.length && i < 3; i++) {
-        final line = lines[i].trim();
+      for (int i = 0; i < titleLines.length && i < 3; i++) {
+        final line = titleLines[i].trim();
         final lowerLine = line.toLowerCase();
 
         if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
@@ -359,12 +380,35 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     String? currentSection;
     final sectionByKey = <String, String>{};
 
+    // The title now comes from the un-mangled `titleSource`, but the body still
+    // carries the preprocessed title — possibly split into fragments
+    // ("Köttbullar med grädd" + "sås"). Consume those leading fragments so they
+    // don't leak into the description/ingredients: while no real content has
+    // been seen, skip lines that keep spelling out the title (letters/digits
+    // only, case- and whitespace-insensitive). Bounded to the top, so it can
+    // never eat a mid-recipe ingredient that merely echoes a title word.
+    final titleKey = _titleKey(recipeName);
+    final titleBuffer = StringBuffer();
+    bool titleConsumed = titleKey.isEmpty;
+
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
 
       if (line.isEmpty) continue;
       if (line == recipeName) continue;
+
+      if (!titleConsumed) {
+        final lineKey = _titleKey(line);
+        if (lineKey.isEmpty) continue; // punctuation-only leftover (":", ".")
+        final candidate = titleBuffer.toString() + lineKey;
+        if (titleKey == candidate || titleKey.startsWith(candidate)) {
+          titleBuffer.write(lineKey);
+          if (titleBuffer.toString() == titleKey) titleConsumed = true;
+          continue;
+        }
+        titleConsumed = true; // first non-title line — fall through to parse it
+      }
 
       // Check section headers BEFORE isGarbage. The garbage detector
       // filters short section-header-like strings ("Steg", "Instruktion")

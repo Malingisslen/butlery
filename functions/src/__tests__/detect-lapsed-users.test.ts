@@ -286,23 +286,41 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
     }),
   }));
 
-  function makeUsersQuery(filter?: { startMs: number; endMs: number }) {
+  function makeUsersQuery(filter?: {
+    startMs: number;
+    startExclusive: boolean;
+    endMs: number;
+  }) {
     return {
       where(_field: string, op: string, value: unknown) {
         const v = value as { toMillis: () => number };
         const ms = v.toMillis();
         const next = filter
           ? { ...filter }
-          : { startMs: -Infinity, endMs: Infinity };
-        if (op === ">=") next.startMs = ms;
+          : { startMs: -Infinity, startExclusive: false, endMs: Infinity };
+        // BUT-1567: the crossed-since-last-run window uses an exclusive
+        // lower bound (`>`) and inclusive upper bound (`<=`).
+        if (op === ">=") {
+          next.startMs = ms;
+          next.startExclusive = false;
+        }
+        if (op === ">") {
+          next.startMs = ms;
+          next.startExclusive = true;
+        }
         if (op === "<=") next.endMs = ms;
         return makeUsersQuery(next);
       },
       async get() {
         const docs = userDocs.filter((d) => {
           if (!filter) return true;
-          const lam = (d.data().lastActiveAt as { toMillis: () => number }).toMillis();
-          return lam >= filter.startMs && lam <= filter.endMs;
+          const lam = (
+            d.data().lastActiveAt as { toMillis: () => number }
+          ).toMillis();
+          const aboveLower = filter.startExclusive
+            ? lam > filter.startMs
+            : lam >= filter.startMs;
+          return aboveLower && lam <= filter.endMs;
         });
         return { empty: docs.length === 0, docs };
       },
@@ -347,6 +365,7 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
   function makeAnalyticsRoot() {
     return {
       doc(docId: string) {
+        const docPath = `analytics/${docId}`;
         return {
           collection(sub: string) {
             return {
@@ -357,6 +376,24 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
                 };
               },
             };
+          },
+          // BUT-1567: the last-run cursor lives on this doc as `lastRunAt`.
+          async get() {
+            const data = store.data.get(docPath);
+            return {
+              exists: data !== undefined,
+              data: () => data,
+            };
+          },
+          async set(
+            data: Record<string, unknown>,
+            options?: { merge?: boolean },
+          ) {
+            const existing = options?.merge
+              ? (store.data.get(docPath) ?? {})
+              : {};
+            store.data.set(docPath, { ...existing, ...data });
+            store.writeCount++;
           },
         };
       },
@@ -770,6 +807,119 @@ const integrationCases: IntCase[] = [
       if (!userDoc || typeof userDoc.lastWinBackVariant !== "string") {
         throw new Error(
           "user bridge fields should still be written even when push is gated",
+        );
+      }
+    },
+  },
+  {
+    // BUT-1567: the crux. A run was skipped (cursor is 5 days stale); a user
+    // crossed the 7-day threshold 2 days ago (lastActiveAt = now-9d), so
+    // TODAY they sit outside the old ±12h band centred on now-7d and the
+    // point-in-time predicate would miss them forever. The crossed-since-
+    // last-run window (now-12d, now-7d] catches them.
+    name: "BUT-1567: irregular user caught after a skipped run (wide catch-up window)",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const nowMs = now.getTime();
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      // Cursor 5 days stale — the daily run was down for several days.
+      store.data.set("analytics/lapsed_users", {
+        lastRunAt: tsFromMillis(nowMs - 5 * MS_PER_DAY),
+      });
+      const db = makeFakeDb([{ id: "user-irregular", daysInactive: 9 }], now, store);
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      const userDoc = store.data.get("users/user-irregular");
+      if (!userDoc) {
+        throw new Error(
+          "user who crossed the 7-day threshold during the outage was missed — " +
+            "this is exactly the point-in-time gap BUT-1567 fixes",
+        );
+      }
+      if (userDoc.lastWinBackBucket !== "win_back_mild") {
+        throw new Error(
+          `expected bucket=win_back_mild (crossed 7d), got ${userDoc.lastWinBackBucket}`,
+        );
+      }
+    },
+  },
+  {
+    // BUT-1567: no daily re-notification. A user already well past every
+    // threshold at the last run must NOT be re-detected on subsequent runs —
+    // they were handled when they first crossed. Window lower bound is
+    // exclusive, so a long-dormant user produces zero writes.
+    name: "BUT-1567: user already past thresholds at last run is NOT re-notified",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const nowMs = now.getTime();
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      // Yesterday's run already covered up to now-1d minus each threshold.
+      store.data.set("analytics/lapsed_users", {
+        lastRunAt: tsFromMillis(nowMs - 1 * MS_PER_DAY),
+      });
+      // Inactive 20 days — was already 19 days inactive at the last run, so
+      // it crossed 7/14 long ago and hasn't reached 30.
+      const db = makeFakeDb([{ id: "user-dormant", daysInactive: 20 }], now, store);
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      const userWrites = [...store.data.keys()].filter(
+        (k) => k === "users/user-dormant" || k.startsWith("users/user-dormant/"),
+      );
+      if (userWrites.length !== 0) {
+        throw new Error(
+          `long-dormant user should not be re-notified, got writes: ${userWrites.join(", ")}`,
+        );
+      }
+    },
+  },
+  {
+    // BUT-1567: first run (no cursor) uses a bounded one-day lookback, so it
+    // does NOT backfill every historically-dormant user. A user who crossed
+    // 7 days exactly is caught; one who crossed 3 days before that (now-10d)
+    // is out of the first-run window.
+    name: "BUT-1567: first run applies a bounded lookback (no giant backfill)",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      const db = makeFakeDb(
+        [
+          { id: "user-just-crossed", daysInactive: 7 },
+          { id: "user-old-crosser", daysInactive: 10 },
+        ],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      if (!store.data.get("users/user-just-crossed")) {
+        throw new Error("boundary crosser (7d exact) should be detected on first run");
+      }
+      if (store.data.get("users/user-old-crosser")) {
+        throw new Error(
+          "user who crossed 3 days before the run window should NOT be backfilled",
+        );
+      }
+    },
+  },
+  {
+    // BUT-1567: the cursor is advanced to `now` after a successful run so the
+    // next run starts where this one ended.
+    name: "BUT-1567: run persists the last-run cursor",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      const db = makeFakeDb([{ id: "user-cursor", daysInactive: 7 }], now, store);
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      const cursor = store.data.get("analytics/lapsed_users") as
+        | { lastRunAt?: { toMillis: () => number } }
+        | undefined;
+      if (!cursor?.lastRunAt) {
+        throw new Error("cursor doc lastRunAt not persisted after run");
+      }
+      if (cursor.lastRunAt.toMillis() !== now.getTime()) {
+        throw new Error(
+          `cursor should equal run 'now' (${now.getTime()}), got ${cursor.lastRunAt.toMillis()}`,
         );
       }
     },

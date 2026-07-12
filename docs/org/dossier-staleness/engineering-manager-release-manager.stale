@@ -4,7 +4,8 @@
   "triggers": [
     ".claude/commands/morning-brief.md",
     "CLAUDE.md",
-    ".claude/rules/git-workflow.md"
+    ".claude/rules/git-workflow.md",
+    ".claude/shared-plugin.json"
   ],
-  "last_stamped": "2026-07-11"
+  "last_stamped": "2026-07-12"
 }

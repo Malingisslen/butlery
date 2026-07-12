@@ -13,6 +13,9 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/core/di/di_container.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
@@ -21,6 +24,8 @@ import '../../../infrastructure/di/test_service_locator.dart';
 
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
+
+class _MockPantryService extends Mock implements PantryService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -1382,6 +1387,89 @@ void main() {
         await generator.regenerateMenuSection('Monday', createTestMenu());
 
         expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+      },
+    );
+  });
+
+  // BUT-1455: a single-section re-roll must reuse the scoring context built by
+  // the last full generation instead of re-reading the pantry (and pooled
+  // stats) over the whole library on every tap. The pantry read is the
+  // observable hot-path I/O, so we assert its call count.
+  group('MenuGenerator - Re-roll scoring-context reuse (BUT-1455)', () {
+    late _MockPantryService mockPantry;
+
+    setUp(() {
+      registerFallbackValue(<Recipe>[]);
+      mockPantry = _MockPantryService();
+      when(
+        () => mockPantry.getMatchingRecipes(any(), any()),
+      ).thenAnswer((_) async => const []);
+      // The pantry read only fires when a user id is present.
+      when(() => mockUserService.currentUserId).thenReturn('u1');
+      // The generator resolves PantryService through the PRODUCTION
+      // ServiceLocator (a DIContainer over the shared GetIt.instance), so both
+      // register the mock into that GetIt and point the production locator at
+      // it. Reset afterwards so other groups see an uninitialized locator.
+      TestServiceLocator.registerSingleton<PantryService>(mockPantry);
+      prod.ServiceLocator.initialize(DIContainer());
+      addTearDown(() {
+        prod.ServiceLocator.reset();
+        TestServiceLocator.unregister<PantryService>();
+      });
+
+      mockMenuService.setGenerateMenuResult({
+        'Monday': [RecipeFactory.build(title: 'New Monday')],
+      });
+    });
+
+    test(
+      're-roll after a full generation reuses the cached pantry context '
+      '(no second pantry read)',
+      () async {
+        final menu = await menuGenerator.generateMenuFromPrompt('veckomeny');
+        // The full generation builds the context once.
+        verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
+
+        await menuGenerator.regenerateMenuSection('Monday', menu);
+
+        // The re-roll reused the cached context — no fresh pantry read.
+        verifyNever(() => mockPantry.getMatchingRecipes(any(), any()));
+      },
+    );
+
+    test(
+      're-roll rebuilds the context when the recipe pool changed since '
+      'generation',
+      () async {
+        final menu = await menuGenerator.generateMenuFromPrompt('veckomeny');
+        verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
+
+        // A new recipe enters the library — the cache no longer covers the
+        // re-roll pool, so the context must be rebuilt (fresh pantry read).
+        mockRecipeService.setRecipeState(
+          isInitialized: true,
+          recipes: [
+            RecipeFactory.build(id: 'recipe_1', title: 'Pasta'),
+            RecipeFactory.build(id: 'recipe_2', title: 'Soup'),
+            RecipeFactory.build(id: 'recipe_3', title: 'Salad'),
+            RecipeFactory.build(id: 'recipe_4', title: 'Tacos'),
+          ],
+        );
+
+        await menuGenerator.regenerateMenuSection('Monday', menu);
+
+        verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
+      },
+    );
+
+    test(
+      're-roll without a prior generation builds a fresh context',
+      () async {
+        // No generation ran this session → nothing cached → the re-roll must
+        // still build its own context (unchanged pre-BUT-1455 behaviour).
+        await menuGenerator.regenerateMenuSection('Monday', createTestMenu());
+
+        verify(() => mockPantry.getMatchingRecipes(any(), any())).called(1);
       },
     );
   });

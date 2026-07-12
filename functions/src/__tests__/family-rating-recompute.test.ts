@@ -1,11 +1,14 @@
 /**
- * BUT-1511: onFamilyRatingUpdated recompute gate.
+ * BUT-1511 / BUT-1592: onFamilyRatingUpdated recompute gate.
  *
  * Proves the public-aggregation recompute decision
- * (`shouldRecomputeOnFamilyRatingUpdate`) fires on a memberType-only flip —
- * not only on a star change. The regression the ticket fixes: a row promoted
- * INTO `profile` with unchanged stars used to skip recompute even though it
- * newly counts toward the public average.
+ * (`shouldRecomputeOnFamilyRatingUpdate`) fires on a memberType flip in EITHER
+ * direction — not only on a star change:
+ *  - BUT-1511: a row promoted INTO `profile` with unchanged stars must
+ *    recompute (it newly counts toward the public average);
+ *  - BUT-1592: a row demoted OUT OF `profile` with unchanged stars must also
+ *    recompute (it leaves the public average, which was left stale by the old
+ *    `after`-only gate).
  *
  * Run with: npx ts-node src/__tests__/family-rating-recompute.test.ts
  */
@@ -66,15 +69,24 @@ const cases: UnitCase[] = [
       ),
   },
   {
-    name: "demotion profile → user is gated out (documented residual, out of scope)",
+    name: "demotion profile → user (stars unchanged) → recompute (BUT-1592)",
     fn: () =>
       assertEqual(
         shouldRecomputeOnFamilyRatingUpdate(
           row("profile", 4),
           row("user", 4)
         ),
+        true,
+        "a row leaving profile must drop out of the public average"
+      ),
+  },
+  {
+    name: "both non-profile (user → guest) → no recompute",
+    fn: () =>
+      assertEqual(
+        shouldRecomputeOnFamilyRatingUpdate(row("user", 2), row("guest", 5)),
         false,
-        "after-is-profile guard short-circuits demotion — BUT-1511 targets only the condition"
+        "neither side counts toward the public average"
       ),
   },
 ];

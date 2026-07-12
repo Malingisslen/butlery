@@ -181,37 +181,52 @@ void main() {
 
     group('Auto Import', () {
       test('should auto-detect text strategy and parse', () async {
+        // BUT-1493 golden / BUT-1593 fix. Realistic Swedish caption (diacritics,
+        // standard headers) whose compound title ("Köttbullar med gräddsås")
+        // exercises the two regressions the parser had:
+        //   1. the title truncated to "Köttbullar med grädd" because the
+        //      ingredient/instruction splitters ran on the title line;
+        //   2. an instruction line leaked into ingredients and displaced a real
+        //      ingredient in dedup.
+        // Both are fixed, so this now pins EXACT values instead of the old
+        // loose "startsWith / contains / count >= 3" that hid the quirk.
         const input = '''
-        Kottbullar med graddsas
+Köttbullar med gräddsås
 
-        Ingredienser:
-        500 g kottfars
-        1 dl mjolk
-        2 msk strobrod
+Ingredienser:
+500 g köttfärs
+1 dl mjölk
+2 msk ströbröd
 
-        Gor sa har:
-        1. Blanda kottfars med mjolk
-        2. Forma till bollar
-        3. Stek i smor
-        ''';
+Gör så här:
+1. Blanda köttfärs med mjölk
+2. Forma till bollar
+3. Stek i smör
+''';
 
         final result = await importManager.autoImport(input);
         expect(result.isSuccess, isTrue);
         expect(result.strategy, isNotNull);
 
-        // The auto-detected text strategy must actually parse the content, not
-        // just report success: the recipe carries the dish title from the first
-        // line and the measured ingredient lines. Assert by content + a lower
-        // bound on the count rather than an exact length — the parser currently
-        // also captures a couple of instruction fragments as ingredients (a
-        // known parse-quality quirk, out of scope here), so pinning an exact
-        // count would both cement that quirk and break on any future cleanup.
         final recipe = result.recipe;
         expect(recipe, isNotNull);
-        expect(recipe!.title, startsWith('Kottbullar'));
-        expect(recipe.ingredients.length, greaterThanOrEqualTo(3));
-        expect(recipe.ingredients, contains('1 dl mjolk'));
-        expect(recipe.ingredients, contains('2 msk strobrod'));
+        // Title survives intact — no truncation on the "gräddsås" tail.
+        expect(recipe!.title, equals('Köttbullar med gräddsås'));
+        // Exactly the three measured ingredient lines, in order: no dropped
+        // "500 g köttfärs", no leaked instruction fragment.
+        expect(
+          recipe.ingredients,
+          equals(['500 g köttfärs', '1 dl mjölk', '2 msk ströbröd']),
+        );
+        // Exactly the three numbered steps, sentence-cased and terminated.
+        expect(
+          recipe.instructions,
+          equals([
+            'Blanda köttfärs med mjölk.',
+            'Forma till bollar.',
+            'Stek i smör.',
+          ]),
+        );
       });
 
       test('should try preferred strategy first', () async {

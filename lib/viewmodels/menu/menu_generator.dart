@@ -163,6 +163,42 @@ class MenuGenerator {
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
   MenuPoolStats? lastPoolStats;
 
+  /// Scoring context from the last full generation, reused by single-section
+  /// re-rolls (BUT-1455). A re-roll tap otherwise rebuilds the whole
+  /// personalisation context — a pantry read over the full library plus a
+  /// pooled-stats fetch — even though it only replaces one slot. The cache is
+  /// keyed by [_cachedScoringPoolIds] (the recipe ids the context was built
+  /// over): a re-roll reuses it only when the cache still covers every
+  /// candidate in the re-roll pool, so a fresh import or a keyword-filtered
+  /// generation (which covers a subset) falls through to a rebuild. Mid-session
+  /// pantry drift is the accepted staleness — a re-roll is an alternative
+  /// *within* the just-generated menu, not a fresh snapshot.
+  MenuScoringContext? _cachedScoringContext;
+  Set<String>? _cachedScoringPoolIds;
+
+  void _cacheScoringContext(List<Recipe> pool, MenuScoringContext context) {
+    _cachedScoringContext = context;
+    _cachedScoringPoolIds = pool.map((r) => r.id).toSet();
+  }
+
+  /// Returns a scoring context for [pool], reusing the cached one from the last
+  /// full generation when it still covers every candidate (BUT-1455), otherwise
+  /// building a fresh context and refreshing the cache.
+  Future<MenuScoringContext> _reuseOrBuildScoringContext(
+    List<Recipe> pool,
+  ) async {
+    final cached = _cachedScoringContext;
+    final cachedIds = _cachedScoringPoolIds;
+    if (cached != null &&
+        cachedIds != null &&
+        pool.every((r) => cachedIds.contains(r.id))) {
+      return cached;
+    }
+    final context = await _buildScoringContext(pool);
+    _cacheScoringContext(pool, context);
+    return context;
+  }
+
   /// Async version of availableRecipes that supports household allergen aggregation.
   Future<List<Recipe>> getAvailableRecipesAsync() async {
     if (!_recipeService.isInitialized) return [];
@@ -375,6 +411,9 @@ class MenuGenerator {
 
     final recentIds = await _recentlyUsedRecipeIds();
     final scoringContext = await _buildScoringContext(pool);
+    // Cache for single-section re-rolls (BUT-1455) so a re-roll tap reuses this
+    // full-pool context instead of re-reading the pantry + pooled stats.
+    _cacheScoringContext(pool, scoringContext);
 
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
@@ -601,7 +640,11 @@ class MenuGenerator {
     // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
     // generation — a refresh must not reintroduce a filtered-out recipe.
     final pool = await getAvailableRecipesAsync();
-    final scoringContext = await _buildScoringContext(pool);
+    // BUT-1455: reuse the last full generation's scoring context when it still
+    // covers this pool, so a re-roll tap doesn't rebuild the whole pantry +
+    // pooled-stats context. Falls back to a fresh build (and refreshes the
+    // cache) when the pool changed or no generation ran this session.
+    final scoringContext = await _reuseOrBuildScoringContext(pool);
 
     final newRecipes = await _menuService.generateMenuFromPrompt(
       prompt,

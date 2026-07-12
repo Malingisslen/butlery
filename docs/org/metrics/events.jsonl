@@ -38,3 +38,4 @@
 {"ts":"2026-07-12T06:23:54.996Z","type":"trigger","fired":true,"signals":"llm","ran":null}
 {"ts":"2026-07-12T08:58:51.408Z","type":"trigger","fired":true,"signals":"allergen,destructive,trust & safety","ran":null}
 {"ts":"2026-07-12T08:58:54.924Z","type":"trigger","fired":true,"signals":"allergen,destructive,trust & safety","ran":null}
+{"type": "review", "tier": "full", "panel": ["Privacy/DPO", "Security Architect", "Release/App-Store Compliance", "Software Architect", "Data/ML Engineer", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 30, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "approx_tokens": 493000, "via": "manual", "plan": "KB-Whisper voice menu prompt (Tala in veckomenyn) v1", "ts": "2026-07-12T18:20:19.662068+00:00"}
