@@ -173,16 +173,25 @@ void main() {
     const knownTsOnly = {'shellfish', 'processed'};
 
     Set<String> tsValidProperties() {
+      // BUT-1467 moved the definition from sync-ingredients.ts into the
+      // pure logic module sync-ingredients-core.ts, typed the Set, and
+      // split the allergen block into ALLERGEN_BLOCK_PROPERTIES which is
+      // spread into VALID_PROPERTIES — this gate must union both literals
+      // at the definition site.
       final src = File(
-        'functions/src/admin/sync-ingredients.ts',
+        'functions/src/admin/sync-ingredients-core.ts',
       ).readAsStringSync();
-      final block = RegExp(
-        r'const VALID_PROPERTIES = new Set\(\[(.*?)\]\)',
+      final setBlock = RegExp(
+        r'const VALID_PROPERTIES = new Set(?:<string>)?\(\[(.*?)\]\)',
+        dotAll: true,
+      ).firstMatch(src)!.group(1)!;
+      final allergenBlock = RegExp(
+        r'const ALLERGEN_BLOCK_PROPERTIES = \[(.*?)\]',
         dotAll: true,
       ).firstMatch(src)!.group(1)!;
       return RegExp(
         r'"([^"]+)"',
-      ).allMatches(block).map((m) => m.group(1)!).toSet();
+      ).allMatches('$setBlock $allergenBlock').map((m) => m.group(1)!).toSet();
     }
 
     test('TS sync gate and Dart registry differ only by the known set', () {

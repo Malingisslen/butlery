@@ -23,6 +23,7 @@ import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/services/menu/menu_scoring.dart';
 
 // Local pure-Mock MenuService — the centralized one has concrete @override
 // methods that prevent mocktail stubbing with when().
@@ -93,6 +94,10 @@ void main() {
           shareMessage: '',
         ),
       );
+      // generateMenuFromPrompt gained named params (23f3a586c re-rolls
+      // against the live pantry) — stubs need matchable fallback values.
+      registerFallbackValue(MenuScoringContext.empty);
+      registerFallbackValue(const <String>{});
     });
 
     setUp(() async {
@@ -125,7 +130,12 @@ void main() {
       );
 
       when(
-        () => mockMenuService.generateMenuFromPrompt(any(), any()),
+        () => mockMenuService.generateMenuFromPrompt(
+          any(),
+          any(),
+          recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+          scoringContext: any(named: 'scoringContext'),
+        ),
       ).thenAnswer((_) async => testMenuSnapshot);
 
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
@@ -171,7 +181,12 @@ void main() {
       test('should generate menu with valid prompt', () async {
         const prompt = 'Vegetarisk veckomeny';
         when(
-          () => mockMenuService.generateMenuFromPrompt(prompt, any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            prompt,
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
 
         await viewModel.generateMenu(prompt);
@@ -182,7 +197,12 @@ void main() {
         expect(viewModel.totalRecipeCount, equals(2));
         expect(viewModel.lastPrompt, equals(prompt));
         verify(
-          () => mockMenuService.generateMenuFromPrompt(prompt, any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            prompt,
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).called(1);
       });
 
@@ -191,7 +211,14 @@ void main() {
 
         expect(viewModel.hasMenu, isFalse);
         expect(viewModel.error, equals('Ange vad du vill ha för meny'));
-        verifyNever(() => mockMenuService.generateMenuFromPrompt(any(), any()));
+        verifyNever(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        );
       });
 
       test('should reject whitespace-only prompt', () async {
@@ -199,12 +226,24 @@ void main() {
 
         expect(viewModel.hasMenu, isFalse);
         expect(viewModel.error, equals('Ange vad du vill ha för meny'));
-        verifyNever(() => mockMenuService.generateMenuFromPrompt(any(), any()));
+        verifyNever(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        );
       });
 
       test('should handle generation error', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenThrow(Exception('Generation failed'));
 
         await viewModel.generateMenu('Valid prompt');
@@ -220,7 +259,12 @@ void main() {
         });
 
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
 
         await viewModel.generateMenu('Valid prompt');
@@ -231,7 +275,12 @@ void main() {
 
       test('should regenerate section', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Initial prompt');
 
@@ -241,7 +290,12 @@ void main() {
           'Middag': [testRecipe2],
         };
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => regenerated);
 
         await viewModel.regenerateSection('Middag');
@@ -254,7 +308,14 @@ void main() {
         await viewModel.regenerateSection('Middag');
 
         expect(viewModel.hasMenu, isFalse);
-        verifyNever(() => mockMenuService.generateMenuFromPrompt(any(), any()));
+        verifyNever(
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
+        );
       });
     });
 
@@ -263,7 +324,12 @@ void main() {
     group('Menu Saving', () {
       test('should save menu with name and comment', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
@@ -287,7 +353,12 @@ void main() {
 
       test('should reject saving with empty name', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
@@ -322,7 +393,12 @@ void main() {
     group('Menu Management', () {
       test('should clear current menu', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
         expect(viewModel.hasMenu, isTrue);
@@ -382,7 +458,12 @@ void main() {
 
       test('should track menu state after generation', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
         await viewModel.generateMenu('Valid prompt');
 
@@ -407,7 +488,12 @@ void main() {
 
       test('should handle concurrent operations', () async {
         when(
-          () => mockMenuService.generateMenuFromPrompt(any(), any()),
+          () => mockMenuService.generateMenuFromPrompt(
+            any(),
+            any(),
+            recentlyUsedRecipeIds: any(named: 'recentlyUsedRecipeIds'),
+            scoringContext: any(named: 'scoringContext'),
+          ),
         ).thenAnswer((_) async => testMenuSnapshot);
 
         final future1 = viewModel.generateMenu('First prompt');

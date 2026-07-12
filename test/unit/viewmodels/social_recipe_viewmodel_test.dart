@@ -32,7 +32,10 @@ UserProfile _user({
     displayName: displayName,
     email: email,
     avatarUrl: avatarUrl,
-    joinedAt: now,
+    // MATURED account: the BUT-1419 comment gate blocks accounts younger
+    // than 60 min, and this suite tests posting behavior, not the gate
+    // (the gate's own contract lives in social_comments_manager_test).
+    joinedAt: now.subtract(const Duration(hours: 2)),
     lastActiveAt: now,
   );
 }
