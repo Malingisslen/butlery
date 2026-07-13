@@ -140,6 +140,7 @@ import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.
 // Cooking-mode substitution suggestions (canonical-ID based, BUT-202)
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/services/voice/whisper_model_manager.dart';
+import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
@@ -231,6 +232,8 @@ class ContentModule implements DIModule {
     NeuralLineClassifier,
     // Cooking-mode substitution suggestions (BUT-202)
     SubstitutionSuggestionService,
+    // Köksbutlern (tasks/koksbutlern-plan.md): OS TTS readouts
+    TtsService,
     // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
     StepTimerService,
     LocalTimerNotificationService,
@@ -557,6 +560,13 @@ class ContentModule implements DIModule {
         () => VoiceCaptureService(
           modelManager: container<WhisperModelManager>(),
         ),
+        dispose: (s) => s.dispose(),
+      );
+
+      // Köksbutlern (tasks/koksbutlern-plan.md): OS-native TTS for
+      // cooking-mode readouts. No deps — wraps flutter_tts directly.
+      container.registerLazySingleton<TtsService>(
+        () => TtsService(),
         dispose: (s) => s.dispose(),
       );
 

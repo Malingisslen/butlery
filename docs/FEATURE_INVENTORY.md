@@ -180,6 +180,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | COOK-10 | Auto-add bought items to pantry | Verified |
 | COOK-11 | Ingredient-set recipe search | Verified |
 | COOK-12 | Ingredient lookup / normalization | Partial |
+| COOK-13 | Köksbutlern voice assistant (cooking mode) | Verified |
 
 ### Settings, Legal & Admin
 | ID | Feature | Tests |
@@ -965,6 +966,13 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **Expected behavior:** Searches user-defined ingredients first, then global DB by exact name → alias → fuzzy variations (compound splits, plural/definite forms, adjective stripping). Swedish char normalization. LRU-caches 500 lookups. Parses quantity/unit out of raw lines; resolves taxonomy IDs to Swedish names.
 - **Edge cases:** Empty after cleaning → null (no cache pollution); cache version bumped on clear; offline repo failures caught.
 - **Test coverage:** Partial — `firebase_ingredient_repository_offline_degrade_test.dart` covers offline; the lookup/variation/cache logic has no dedicated test (exercised indirectly).
+
+#### COOK-13: Köksbutlern voice assistant (cooking mode)
+- **Entry:** Big mic button in cooking mode (bottom-right over the instructions panel), plus an auto talk-window that opens for ~6 s right after every readout finishes.
+- **User story:** As a cook with hands covered in dough or busy at the stove, I want to hear the current step and ingredients read aloud and steer cooking mode by voice — "nästa", "läs igen", "sätt timer tio minuter" — so that I never have to touch the screen mid-cook.
+- **Expected behavior:** Command set — step navigation (nästa/föregående), re-read the current step, read the ingredient list, set a timer (Swedish number words + digits + "en kvart"/"en halvtimme"), ask how much time is left on a timer, and a "tyst" stop command. Readouts use the phone's built-in Swedish OS voice (on-device, $0); recognition is 100% on-device via the shipped KB-Whisper stack, routed through a deterministic command interpreter (no LLM). After each readout the mic auto-opens for a short talk-window so a follow-up command needs no touch; a big mic button is always available for push-to-talk too. Speaker and microphone are strictly sequential — the butler's voice is always stopped before the mic opens, and the talk-window only opens after the readout's completion callback. A speaker/mute toggle in the app bar silences readouts and closes the talk-window without disabling button commands. Timer commands confirm aloud before the timer starts.
+- **Edge cases:** Misheard command → the butler says "Jag uppfattade inte" and the transcript shows in a transient heard-chip; two consecutive misses add a spoken hint that the ordinary step buttons still work. Talk-window silence closes it quietly with no error. No Swedish TTS voice installed on the device → text-only degrade (readouts skipped), but spoken commands keep working. Muted → no readouts and no auto talk-window (button push-to-talk still available). Portion scaling is deliberately excluded from voice commands — a misheard number there would silently change amounts.
+- **Test coverage:** Verified — `test/unit/services/voice/tts_service_test.dart` (TTS wrapper + sv-SE degrade), `test/unit/services/voice/cooking_command_interpreter_test.dart` (golden suite of spoken-command transcripts), `test/unit/viewmodels/cooking/cooking_voice_controller_test.dart` (state-machine + sequential speaker/mic invariants), `test/widget/widgets/cooking/voice_assist_button_test.dart` (button states, mute toggle). Real-device kitchen noise test pending (Malin).
 
 ### Settings, Legal & Admin
 

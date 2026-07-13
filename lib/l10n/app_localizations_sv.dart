@@ -1314,6 +1314,98 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeVoiceImport => 'Tala in recept';
 
   @override
+  String voiceAssistStepPrefix(int step, int total) {
+    return 'Steg $step av $total. ';
+  }
+
+  @override
+  String get voiceAssistNoNextStep =>
+      'Det finns inget nästa steg. Receptet är klart';
+
+  @override
+  String get voiceAssistNoPreviousStep => 'Det här är första steget';
+
+  @override
+  String get voiceAssistNoIngredients => 'Ingredienslistan är tom';
+
+  @override
+  String voiceAssistTimerStarted(String duration) {
+    return 'Timer $duration startad';
+  }
+
+  @override
+  String get voiceAssistNoTimers => 'Ingen timer är igång';
+
+  @override
+  String voiceAssistTimeLeft(String duration) {
+    return '$duration kvar';
+  }
+
+  @override
+  String get voiceAssistMissed =>
+      'Jag uppfattade inte. Säg till exempel nästa, eller läs igen';
+
+  @override
+  String get voiceAssistMissedTwice =>
+      'Jag uppfattade inte den här gången heller. Knapparna fungerar som vanligt';
+
+  @override
+  String voiceAssistHours(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n timmar',
+      one: '1 timme',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voiceAssistMinutes(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n minuter',
+      one: '1 minut',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voiceAssistSeconds(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n sekunder',
+      one: '1 sekund',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get voiceAssistAnd => 'och';
+
+  @override
+  String get voiceAssistWindowHint => 'Säg ett kommando…';
+
+  @override
+  String voiceAssistHeard(String text) {
+    return 'Hörde: $text';
+  }
+
+  @override
+  String get voiceAssistMicTooltip => 'Tala med köksbutlern';
+
+  @override
+  String get voiceAssistMuteTooltip => 'Tysta uppläsningen';
+
+  @override
+  String get voiceAssistUnmuteTooltip => 'Slå på uppläsningen';
+
+  @override
+  String get voiceAssistMicRationaleTitle => 'Mikrofon för köksbutlern';
+
+  @override
   String get menuGenerating => 'Genererar...';
 
   @override

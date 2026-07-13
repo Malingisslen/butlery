@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -13,8 +16,11 @@ import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/voice/tts_service.dart';
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/duration_parser.dart';
+import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -24,6 +30,8 @@ import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
+import 'package:butlery/widgets/cooking/voice_assist_button.dart';
+import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -44,6 +52,10 @@ class _CookingModeViewState extends State<CookingModeView> {
   // session broadcast lifecycle alongside wakelock/orientation setup.
   late final CookingModeViewModel _vm;
 
+  // Köksbutlern (tasks/koksbutlern-plan.md, Batch D): the voice layer's
+  // state machine, scoped to this cooking session exactly like `_vm`.
+  late final CookingVoiceController _voiceController;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +71,18 @@ class _CookingModeViewState extends State<CookingModeView> {
     // BUT-408: broadcast "lagar just nu" to friend groups. Fire-and-forget
     // — the VM swallows errors so a failed broadcast never blocks the cook.
     _vm.onEnter();
+
+    _voiceController = CookingVoiceController(
+      voiceCapture: ServiceLocator.get<VoiceCaptureService>(),
+      tts: ServiceLocator.get<TtsService>(),
+      timers: ServiceLocator.get<StepTimerService>(),
+      cookingVm: _vm,
+    );
+    // TtsService.init() is idempotent-safe (re-probes Swedish-voice
+    // availability); the controller notifies when it resolves, so the
+    // app-bar toggle reveals through its own ListenableBuilder — a
+    // setState here couldn't reach it past the const content subtree.
+    _voiceController.init();
   }
 
   @override
@@ -66,6 +90,9 @@ class _CookingModeViewState extends State<CookingModeView> {
     // BUT-408: clear broadcast BEFORE disposing the VM. onExit() reads no
     // VM state, so the ordering is purely about signalling intent.
     _vm.onExit();
+    // The voice controller reads the VM during teardown of an in-flight
+    // capture — dispose it before the VM it depends on.
+    _voiceController.dispose();
     _vm.dispose();
     // Restore all orientations and screen sleep
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
@@ -76,8 +103,16 @@ class _CookingModeViewState extends State<CookingModeView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<CookingModeViewModel>.value(
-      value: _vm,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CookingModeViewModel>.value(value: _vm),
+        // ChangeNotifierProvider, NOT plain Provider: the controller is a
+        // Listenable and provider's debug assert rejects it otherwise
+        // (debugCheckInvalidValueType — crashes every debug build).
+        ChangeNotifierProvider<CookingVoiceController>.value(
+          value: _voiceController,
+        ),
+      ],
       child: const _CookingModeContent(),
     );
   }
@@ -90,6 +125,7 @@ class _CookingModeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final vm = context.watch<CookingModeViewModel>();
+    final voiceController = context.watch<CookingVoiceController>();
 
     // A recipe with no steps would render a broken "Step 1 of 0" cooking UI —
     // show a clear empty state with a way out instead.
@@ -143,25 +179,51 @@ class _CookingModeContent extends StatelessWidget {
             // Self-hides (SizedBox.shrink) when online, so the split layout is
             // untouched with a connection.
             LayoutComponents.offlineIndicator(),
-            _buildTopBar(context, vm),
+            _buildTopBar(context, vm, voiceController),
             Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  // Left panel: ingredients (~35%)
-                  Expanded(
-                    flex: 35,
-                    child: _IngredientsPanel(vm: vm),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left panel: ingredients (~35%)
+                      Expanded(
+                        flex: 35,
+                        child: _IngredientsPanel(vm: vm),
+                      ),
+                      // Vertical divider
+                      Container(
+                        width: 1,
+                        color: cs.surface.withValues(alpha: 0.2),
+                      ),
+                      // Right panel: instructions (~65%)
+                      Expanded(
+                        flex: 65,
+                        child: _InstructionsPanel(vm: vm),
+                      ),
+                    ],
                   ),
-                  // Vertical divider
-                  Container(
-                    width: 1,
-                    color: cs.surface.withValues(alpha: 0.2),
-                  ),
-                  // Right panel: instructions (~65%)
-                  Expanded(
-                    flex: 65,
-                    child: _InstructionsPanel(vm: vm),
+                  // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
+                  // heard-chip overlay the instructions panel, bottom-right.
+                  Positioned(
+                    right: AppDimensions.spacingMd,
+                    // Clear the _StepNavigation bar (~56 px row + padding):
+                    // the next-step arrow lives in this exact corner and must
+                    // stay tappable under the overlay (review finding #1).
+                    bottom: 72,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        VoiceHeardChip(controller: voiceController),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        VoiceAssistButton(
+                          controller: voiceController,
+                          onEnsurePermission: () =>
+                              _ensureVoicePermission(context),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -172,7 +234,39 @@ class _CookingModeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, CookingModeViewModel vm) {
+  /// Mic permission (rationale-first via [OsPermissionHelper]) + first-use
+  /// model prepare, mirroring [VoicePromptButton]'s established flow.
+  /// Returns false — quietly — on any denial or failure; the ordinary
+  /// buttons keep working either way.
+  Future<bool> _ensureVoicePermission(BuildContext context) async {
+    final granted = await OsPermissionHelper.requestWithRationale(
+      context: context,
+      permission: Permission.microphone,
+      rationaleTitle: context.l10n.voiceAssistMicRationaleTitle,
+      rationaleBody: context.l10n.voicePromptMicRationaleBody,
+      grantLabel: context.l10n.voicePromptMicGrant,
+      permanentlyDeniedMessage: context.l10n.voicePromptMicPermanentlyDenied,
+      openSettingsLabel: context.l10n.voicePromptOpenSettings,
+      gateway: const DefaultPermissionGateway(),
+    );
+    if (!granted || !context.mounted) return false;
+
+    final modelReady = await ServiceLocator.get<VoiceCaptureService>()
+        .prepareModel();
+    if (!modelReady) {
+      if (context.mounted) {
+        SnackBarUtils.showInfo(context, context.l10n.voicePromptFailed);
+      }
+      return false;
+    }
+    return true;
+  }
+
+  Widget _buildTopBar(
+    BuildContext context,
+    CookingModeViewModel vm,
+    CookingVoiceController voiceController,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
@@ -205,6 +299,8 @@ class _CookingModeContent extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          _buildSpeakerToggle(context, voiceController),
+          const SizedBox(width: AppDimensions.spacingXs),
           // Font size toggle
           ColoredBox(
             color: cs.surface,
@@ -240,6 +336,33 @@ class _CookingModeContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Mute toggle for the butler's readouts. Hidden entirely until
+  /// [TtsService.init] confirms a Swedish voice is available — muting a
+  /// voice that can never speak would be a dead control.
+  Widget _buildSpeakerToggle(
+    BuildContext context,
+    CookingVoiceController voiceController,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return ListenableBuilder(
+      listenable: voiceController,
+      builder: (context, _) {
+        if (!voiceController.ttsAvailable) return const SizedBox.shrink();
+        final muted = voiceController.muted;
+        return IconButton(
+          icon: Icon(
+            muted ? Icons.volume_off : Icons.volume_up,
+            color: cs.onPrimary,
+          ),
+          tooltip: muted
+              ? context.l10n.voiceAssistUnmuteTooltip
+              : context.l10n.voiceAssistMuteTooltip,
+          onPressed: () => voiceController.muted = !muted,
+        );
+      },
     );
   }
 }

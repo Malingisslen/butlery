@@ -211,6 +211,12 @@
    "path": "lib/services/voice/voice_capture_service.dart"
   },
   {
+   "id": "svc-cooking-voice",
+   "label": "Köksbutlern (röststyrning + uppläsning)",
+   "context": "service",
+   "path": "lib/viewmodels/cooking/cooking_voice_controller.dart"
+  },
+  {
    "id": "v-share-dialogs",
    "label": "Delningsdialoger (vän/grupp/universal)",
    "context": "view",
@@ -2450,6 +2456,38 @@
     }
    ],
    "area": "import"
+  },
+  {
+   "id": "flow-koksbutlern",
+   "label": "köksbutlern (röst i matlagningsläget)",
+   "description": "Köksbutlern lägger ett röstlager ovanpå matlagningsläget (ingen ny vy — additiv UI, inget preview-gate). En stor mikrofonknapp (nedre höger, kvadratisk, ≥56 px) startar push-to-talk, och efter varje uppläsning öppnas ett ~6 s talfönster automatiskt (synlig pulsering + ”Säg ett kommando…”-rad) så nästa kommando inte kräver beröring. Taligenkänning sker HELT PÅ ENHETEN via svc-voice-capture (samma KB-Whisper-stack som röstimport/röstprompt), kommandoinspelningar tak:as till ~6–8 s (maxDuration-parameter) så talfönstret aldrig hänger öppet. Uppläsning (steg, ingredienslista, kvittenser) sker med telefonens inbyggda svenska OS-röst (flutter_tts, gratis, offline); saknas sv-SE-röst degraderar funktionen tyst till text-only — kommandona fungerar ändå. CookingVoiceController äger regeln att högtalare och mikrofon är STRIKT SEKVENTIELLA: TTS stoppas alltid innan mikrofonen öppnas, och talfönstret öppnas först efter uppläsningens completion-callback — aldrig samtidig inspelning och tal. CookingCommandInterpreter är en REN, deterministisk funktion (ingen LLM, kostnadsregeln) som matchar normaliserad svensk text mot ett hårdkodat variant-register: navigering (”nästa”/”föregående”/”gå vidare”/”backa”), ”läs steget igen”, ”läs ingredienserna”, ”sätt timer …” (svenska talord + siffror + ”en kvart”/”en halvtimme”) som startar timers via StepTimerService (samma tjänst som styr timer-raden), ”hur lång tid kvar”, och ”tyst” som stoppar allt. En mute-knapp i app-baren stänger av uppläsning och talfönster helt utan att stänga av knappkommandon. Feltolkning ger ett talat ”Jag uppfattade inte” + en synlig chip med vad som hördes; två missar i rad ger en talad påminnelse om att knapparna alltid fungerar.",
+   "features": [
+    "COOK-13"
+   ],
+   "steps": [
+    {
+     "from": "v-cooking-mode",
+     "to": "svc-cooking-voice",
+     "payload": "mikrofonknapp (tryck) eller auto-talfönster (~6 s efter uppläsning) → kommando",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-cooking-voice",
+     "to": "svc-voice-capture",
+     "payload": "kort kommando-inspelning (maxDuration-tak ~6–8 s) → transkript på enheten",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-cooking-voice",
+     "to": "vm-cooking-mode",
+     "payload": "nästa/föregående/läs-kommandon exekveras mot befintlig fjärrstyrnings-API (nextStep/previousStep/currentStepIndex)",
+     "transport": "method call",
+     "verified": true
+    }
+   ],
+   "area": "matlagning & skafferi"
   },
   {
    "id": "flow2",

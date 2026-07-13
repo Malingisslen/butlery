@@ -68,6 +68,7 @@ Other licenses
   - workmanager (MIT).
   - google_fonts (Apache-2.0).
   - flutter_local_notifications (BSD-3).
+  - flutter_tts (MIT — OS-native TTS passthrough for Köksbutlern readouts).
 
 ================================================================================
 Regenerating this file

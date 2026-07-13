@@ -90,6 +90,13 @@ dependencies:
   # mono WAV whisper.cpp expects.
   whisper_ggml_plus: 1.5.2
   record: ^6.1.1
+  # Köksbutlern (tasks/koksbutlern-plan.md): OS-native text-to-speech
+  # passthrough (Android TextToSpeech / iOS AVSpeechSynthesizer) for cooking-
+  # mode readouts. Caret pin deliberately — unlike whisper_ggml_plus, this
+  # bundles no native inference engine or model weights, just a Dart→OS
+  # bridge (same category as image_picker), so the exact-pin discipline
+  # above does not apply (vendor panel condition, 2026-07-13).
+  flutter_tts: ^4.2.5
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1

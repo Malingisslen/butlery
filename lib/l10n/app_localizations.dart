@@ -2276,6 +2276,120 @@ abstract class AppLocalizations {
   /// **'Tala in recept'**
   String get recipeVoiceImport;
 
+  /// No description provided for @voiceAssistStepPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {step} av {total}. '**
+  String voiceAssistStepPrefix(int step, int total);
+
+  /// No description provided for @voiceAssistNoNextStep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns inget nästa steg. Receptet är klart'**
+  String get voiceAssistNoNextStep;
+
+  /// No description provided for @voiceAssistNoPreviousStep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är första steget'**
+  String get voiceAssistNoPreviousStep;
+
+  /// No description provided for @voiceAssistNoIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienslistan är tom'**
+  String get voiceAssistNoIngredients;
+
+  /// No description provided for @voiceAssistTimerStarted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer {duration} startad'**
+  String voiceAssistTimerStarted(String duration);
+
+  /// No description provided for @voiceAssistNoTimers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen timer är igång'**
+  String get voiceAssistNoTimers;
+
+  /// No description provided for @voiceAssistTimeLeft.
+  ///
+  /// In sv, this message translates to:
+  /// **'{duration} kvar'**
+  String voiceAssistTimeLeft(String duration);
+
+  /// No description provided for @voiceAssistMissed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag uppfattade inte. Säg till exempel nästa, eller läs igen'**
+  String get voiceAssistMissed;
+
+  /// No description provided for @voiceAssistMissedTwice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag uppfattade inte den här gången heller. Knapparna fungerar som vanligt'**
+  String get voiceAssistMissedTwice;
+
+  /// No description provided for @voiceAssistHours.
+  ///
+  /// In sv, this message translates to:
+  /// **'{n, plural, =1{1 timme} other{{n} timmar}}'**
+  String voiceAssistHours(int n);
+
+  /// No description provided for @voiceAssistMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{n, plural, =1{1 minut} other{{n} minuter}}'**
+  String voiceAssistMinutes(int n);
+
+  /// No description provided for @voiceAssistSeconds.
+  ///
+  /// In sv, this message translates to:
+  /// **'{n, plural, =1{1 sekund} other{{n} sekunder}}'**
+  String voiceAssistSeconds(int n);
+
+  /// No description provided for @voiceAssistAnd.
+  ///
+  /// In sv, this message translates to:
+  /// **'och'**
+  String get voiceAssistAnd;
+
+  /// No description provided for @voiceAssistWindowHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Säg ett kommando…'**
+  String get voiceAssistWindowHint;
+
+  /// No description provided for @voiceAssistHeard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hörde: {text}'**
+  String voiceAssistHeard(String text);
+
+  /// No description provided for @voiceAssistMicTooltip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala med köksbutlern'**
+  String get voiceAssistMicTooltip;
+
+  /// No description provided for @voiceAssistMuteTooltip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tysta uppläsningen'**
+  String get voiceAssistMuteTooltip;
+
+  /// No description provided for @voiceAssistUnmuteTooltip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på uppläsningen'**
+  String get voiceAssistUnmuteTooltip;
+
+  /// No description provided for @voiceAssistMicRationaleTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofon för köksbutlern'**
+  String get voiceAssistMicRationaleTitle;
+
   /// No description provided for @menuGenerating.
   ///
   /// In sv, this message translates to:

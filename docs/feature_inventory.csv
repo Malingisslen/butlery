@@ -98,6 +98,7 @@ COOK-09,Pantry multi-select bulk delete,Cooking/Pantry/Search,Verified,"User sel
 COOK-10,Auto-add bought items to pantry,Cooking/Pantry/Search,Verified,"Bought shopping items flow automatically into the pantry",
 COOK-11,Ingredient-set recipe search,Cooking/Pantry/Search,Verified,"User picks ingredients they have and sees recipes they can make",
 COOK-12,Ingredient lookup / normalization,Cooking/Pantry/Search,Partial,"Fuzzy Swedish ingredient matching resolves names to the right item","Lookup/variation/cache logic has no dedicated test"
+COOK-13,Köksbutlern voice assistant (cooking mode),Cooking/Pantry/Search,Verified,"Cook steers cooking mode by voice — hear steps and ingredients read aloud, navigate, and set timers hands-free","kb-whisper roadmap #3, shipped 2026-07-13; interpreter golden suite + controller state-machine tests + widget tests; OS Swedish TTS; real-device kitchen test pending (Malin)"
 SET-01,Settings hub,Settings/Legal/Admin,Partial,"User finds food, notification, account, language and legal options",
 SET-02,Allergen & dietary preferences,Settings/Legal/Admin,Verified,"Allergic user chooses which allergens/diets to track and display",
 SET-03,Notification preferences,Settings/Legal/Admin,Partial,"User controls notification categories, digest, quiet hours, sound","View untested"

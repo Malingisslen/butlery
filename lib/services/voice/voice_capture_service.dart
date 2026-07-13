@@ -99,13 +99,20 @@ class VoiceCaptureService {
   /// OsPermissionHelper); a denied permission surfaces here as a failed
   /// start, not a prompt.
   ///
-  /// [onAutoStopped] fires if [maxRecordingDuration] caps this capture.
-  /// The cap is enforced HERE regardless of the callback: the recorder is
-  /// stopped so the WAV never grows past the ceiling, and a later
-  /// [stopAndTranscribe] transcribes the capped audio exactly like a
-  /// manual stop — callers that pass no callback (menu prompt button)
-  /// simply discover the stop when the user taps.
-  Future<bool> startRecording({void Function()? onAutoStopped}) async {
+  /// [onAutoStopped] fires if the cap ends this capture. The cap is
+  /// enforced HERE regardless of the callback: the recorder is stopped so
+  /// the WAV never grows past the ceiling, and a later [stopAndTranscribe]
+  /// transcribes the capped audio exactly like a manual stop — callers that
+  /// pass no callback (menu prompt button) simply discover the stop when
+  /// the user taps.
+  ///
+  /// [maxDuration] overrides [maxRecordingDuration] downward for short
+  /// captures (Köksbutlern commands cap at seconds, not minutes, so a
+  /// talk-window can never hang open).
+  Future<bool> startRecording({
+    void Function()? onAutoStopped,
+    Duration? maxDuration,
+  }) async {
     if (_activeRecordingPath != null) return false;
 
     final tempDir = await getTempDir();
@@ -129,7 +136,7 @@ class VoiceCaptureService {
       );
       _activeRecordingPath = path;
       _onAutoStopped = onAutoStopped;
-      _maxDurationTimer = Timer(maxRecordingDuration, () async {
+      _maxDurationTimer = Timer(maxDuration ?? maxRecordingDuration, () async {
         if (_activeRecordingPath != path) return;
         AppLogger.debug('VoiceCaptureService: max duration auto-stop');
         String? capStopped;

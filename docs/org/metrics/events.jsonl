@@ -42,3 +42,4 @@
 {"ts":"2026-07-12T19:18:43.552Z","type":"trigger","fired":true,"signals":"subscription","ran":null}
 {"ts":"2026-07-12T19:23:53.144Z","type":"trigger","fired":true,"signals":"security rule,subscription","ran":null}
 {"type": "review", "tier": "single", "panel": ["Data/Integrations Engineer"], "outcome": "approve-with-conditions", "must_haves": 3, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "approx_tokens": 109000, "via": "manual", "plan": "Voice recipe import (kb-whisper roadmap #2)", "ts": "2026-07-12T21:50:40.893655+00:00"}
+{"type": "review", "tier": "single", "panel": ["Vendor/Procurement (+Release lens)"], "outcome": "approve-with-conditions", "must_haves": 3, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "approx_tokens": 69000, "via": "manual", "plan": "Koksbutlern v1 (kb-whisper roadmap #3) — flutter_tts dependency", "ts": "2026-07-13T18:27:20.332026+00:00"}

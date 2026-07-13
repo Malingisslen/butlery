@@ -1311,6 +1311,99 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeVoiceImport => 'Speak in a recipe';
 
   @override
+  String voiceAssistStepPrefix(int step, int total) {
+    return 'Step $step of $total. ';
+  }
+
+  @override
+  String get voiceAssistNoNextStep =>
+      'There is no next step. The recipe is done';
+
+  @override
+  String get voiceAssistNoPreviousStep => 'This is the first step';
+
+  @override
+  String get voiceAssistNoIngredients => 'The ingredient list is empty';
+
+  @override
+  String voiceAssistTimerStarted(String duration) {
+    return 'Timer $duration started';
+  }
+
+  @override
+  String get voiceAssistNoTimers => 'No timer is running';
+
+  @override
+  String voiceAssistTimeLeft(String duration) {
+    return '$duration left';
+  }
+
+  @override
+  String get voiceAssistMissed =>
+      'I didn\'t catch that. Try saying next, or read it again';
+
+  @override
+  String get voiceAssistMissedTwice =>
+      'I didn\'t catch that this time either. The buttons work as usual';
+
+  @override
+  String voiceAssistHours(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voiceAssistMinutes(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voiceAssistSeconds(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n seconds',
+      one: '1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get voiceAssistAnd => 'and';
+
+  @override
+  String get voiceAssistWindowHint => 'Say a command…';
+
+  @override
+  String voiceAssistHeard(String text) {
+    return 'Heard: $text';
+  }
+
+  @override
+  String get voiceAssistMicTooltip => 'Talk to the kitchen butler';
+
+  @override
+  String get voiceAssistMuteTooltip => 'Mute readouts';
+
+  @override
+  String get voiceAssistUnmuteTooltip => 'Unmute readouts';
+
+  @override
+  String get voiceAssistMicRationaleTitle =>
+      'Microphone for the kitchen butler';
+
+  @override
   String get menuGenerating => 'Generating...';
 
   @override

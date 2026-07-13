@@ -548,6 +548,18 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       </div>
       <div style="font-size:11px;color:var(--ink-2,#666);margin-top:6px">Sits in the StyledInput suffix row of the veckomeny prompt field. States: idle mic (green) &rarr; recording stop (error red) &rarr; LoadingIndicator while preparing/transcribing. Hidden on web.</div>
     </div>
+    <div class="lib-item">
+      <div class="lib-label">Voice assist button (cooking mode)</div>
+      <div class="lib-class">VoiceAssistButton (K&ouml;ksbutlern, COOK-13) &middot; lib/widgets/cooking/voice_assist_button.dart</div>
+      <div class="lib-demo" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div style="width:56px;height:56px;background:var(--green);color:var(--cream);display:flex;align-items:center;justify-content:center" title="idle: tryck f&ouml;r push-to-talk"><span class="mi">mic</span></div>
+        <div style="width:56px;height:56px;background:var(--rust);color:var(--cream);display:flex;align-items:center;justify-content:center;animation:pulse-dot 1.4s ease-in-out infinite" title="lyssnar: push-to-talk eller auto-talf&ouml;nster efter uppl&auml;sning"><span class="mi">stop</span></div>
+        <div style="width:56px;height:56px;background:var(--green);opacity:0.6;color:var(--cream);display:flex;align-items:center;justify-content:center" title="tolkar transkriptet p&aring; enheten"><span class="mi">progress_activity</span></div>
+        <div style="width:56px;height:56px;background:var(--cream-darker);color:var(--text);display:flex;align-items:center;justify-content:center" title="uppl&auml;sningston p&aring;/av"><span class="mi">volume_up</span></div>
+        <div class="chip" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">H&ouml;rde: &rdquo;s&auml;tt timer tio minuter&rdquo;</div>
+      </div>
+      <div style="font-size:11px;color:var(--ink-2,#666);margin-top:6px">Big knuckle-friendly square (&ge;56px) over the instructions panel; a &rdquo;S&auml;g ett kommando&hellip;&rdquo; strip hints the auto talk-window above it. The heard-chip is transient feedback (also the misheard-debug aid) &mdash; shows what the on-device KB-Whisper transcript resolved to before the deterministic command interpreter acts on it.</div>
+    </div>
   </div>
 </div>
 

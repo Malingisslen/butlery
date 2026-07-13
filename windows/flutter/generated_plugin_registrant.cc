@@ -19,6 +19,7 @@
 #include <flutter_inappwebview_windows/flutter_inappwebview_windows_plugin_c_api.h>
 #include <flutter_onnxruntime/flutter_onnxruntime_plugin.h>
 #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
+#include <flutter_tts/flutter_tts_plugin.h>
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
 #include <record_windows/record_windows_plugin_c_api.h>
 #include <share_plus/share_plus_windows_plugin_c_api.h>
@@ -52,6 +53,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FlutterOnnxruntimePlugin"));
   FlutterSecureStorageWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
+  FlutterTtsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterTtsPlugin"));
   PermissionHandlerWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
   RecordWindowsPluginCApiRegisterWithRegistrar(

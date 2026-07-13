@@ -284,3 +284,25 @@ single-role stakeholder review approve-with-conditions, conditions implemented i
 No architecture-changing unknowns — assumptions: `record` package for capture (already
 shipped in v1), success→SkrivSjalvReceptView review navigation (photo precedent),
 assistance→assisted-import dialog (existing terminal path).
+
+---
+
+# Köksbutlern v1 — EXECUTING (2026-07-13, Malin's go; plan: tasks/koksbutlern-plan.md)
+
+Orchestration: Fable main loop = interpreter + controller + integration; sonnet executors =
+TtsService batch, UI batch, bookkeeping; opus gates at the end (Malin's model-by-blast-radius rule).
+
+- [ ] A (sonnet executor): flutter_tts ^4.2.5 + manifest <queries> + TtsService (SpeechSynthesizer seam,
+      sv-SE availability degrade, awaitSpeakCompletion, audio focus) + tests + NOTICE + DI
+- [ ] B (main loop): CookingCommandInterpreter (sealed commands, Swedish variant map, duration parsing,
+      Unicode-safe boundaries) + golden transcript tests
+- [ ] C (main loop): CookingVoiceController state machine + VoiceCaptureService maxDuration param +
+      sequencing-invariant tests
+- [ ] D (sonnet executor): cooking-mode UI wiring (mic button, talk-window indicator, heard-chip,
+      speaker toggle) + l10n + widget tests
+- [ ] E (sonnet executor): feature inventory COOK-13, workflow-map flow, component library, memory
+- [ ] F: /code-review high + specialist gates + commit + push
+
+## Open questions
+No architecture-changing unknowns — all interview decisions recorded in the plan (both-mode
+listening, OS Swedish voice, three command families, no portion scaling).
