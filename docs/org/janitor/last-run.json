@@ -1,10 +1,8 @@
 {
-  "lastRun": "2026-07-06",
-  "dossiersRefreshed": 28,
-  "worldWatchRoles": 0,
-  "retroFired": false,
-  "acceptRate": 0.728,
-  "scratchCleared": 31,
-  "via": "manual-session",
-  "notes": "Manual /janitor run (founder-invoked, Sunday night). 28 dossiers refreshed incl. pipeline-P0-resolved discovery (BUT-1464) + 3 unlisted >500-line files; world-watch all current (07-04 run); retro not due (full due 2026-07-25); accept-rate 72.8% (551 commits/30d, 150 reworked); swept 27 aged state artifacts + 3 tasks/ dumps + 1 shipped preview, archived pooled-ratings-plan. Pending founder approval: bulk-delete 1144 ~/.claude/security state files. NOTE: today's SCHEDULED run (Mon ~05:00Z) is verified separately by looking for ITS pushes/stamps \u2014 this manual stamp must not be read as schedule proof."
+  "lastRun": "2026-07-13",
+  "dossiersRefreshed": 15,
+  "worldWatchRoles": 2,
+  "retroDue": true,
+  "acceptRate": 0.795,
+  "notes": "Scheduled weekly janitor (cross-repo, butlery+binge+synat). 15/15 stale dossiers refreshed in ROLE_RESPONSIBILITY_MAP.md (Claude AI-Harness Owner, Data/Integrations Engineer, Data/ML Engineer, Database Administrator, Engineering Manager, Financial Controller, Growth Marketer, Legal Counsel, Monetization, Privacy/DPO, QA/Test Engineer, Security Architect, Software Architect, Technical Writer, Vendor/Procurement), all markers deleted. World-watch: 2/2 due weekly roles scanned (Security Architect, Release/App-Store Compliance Manager) via background agents — no material findings, no issues filed; existing tracked issue #215 (Apple Social Media Time Allowance) confirmed still current, not duplicated. Retro: shakedown (due since 2026-07-01, afterDays=4 past goLive 2026-06-27) has NEVER been run in butlery — flagged, retros are interactive by design. accept-rate 79.5% (44 autonomous commits/30d, 9 reworked) — healthy, appended to accept-rate.jsonl. Cruft sweep: tasks/ has only lessons.md + todo.md, nothing to archive."
 }

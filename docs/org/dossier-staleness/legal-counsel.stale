@@ -1,9 +1,0 @@
-{
-  "role": "Legal Counsel",
-  "stale_since": "2026-07-11",
-  "triggers": [
-    "lib/services/account/export/export_pagination_helper.dart",
-    "lib/services/account/export/preferences_export_manager.dart"
-  ],
-  "last_stamped": "2026-07-11"
-}

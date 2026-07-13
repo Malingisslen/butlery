@@ -1,9 +1,0 @@
-{
-  "role": "Monetization / Subscriptions Lead",
-  "stale_since": "2026-07-12",
-  "triggers": [
-    "tasks/todo.md",
-    "tasks/kb-whisper-voice-menu-plan.md"
-  ],
-  "last_stamped": "2026-07-12"
-}
