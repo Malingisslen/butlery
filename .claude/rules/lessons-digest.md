@@ -35,6 +35,7 @@ when the counts drift apart.
 - An iOS-native pin's staleness needs the iOS Build Validation gate to prove — a changelog read is not enough.
 - When the user asks for a new mode, deliver ONE mode — no "normal + extra", no spare variants.
 - Staging doesn't survive parallel sessions — pathspec-commit in one call and re-verify the index after any gate block.
+- Two-session single-checkout contention: `git commit -- <paths>` is immune to the other session's staged index; a lock with NO live git/lefthook process is stale (remove it — an until-loop otherwise spins to timeout); an analyze gate dying at exactly ~300s during their gate run is contention, not findings.
 - "Map the workflows" means full coverage against a stated universe — never silently curate a sample.
 - Data-writing Cloud Functions get the xhigh multi-agent review BEFORE commit — the single-specialist gate is necessary but not sufficient.
 - When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
@@ -63,6 +64,7 @@ when the counts drift apart.
 - After changing a class's constructor, run its EXISTING test suites — not just the new test you wrote.
 - A parallel-sprint's own "verified/done" is a claim, not a fact — on any salvage, verify from git, run the workflow /code-review (cross-file) on the staged diff BEFORE the specialist gates, then re-review the fixes; here it caught 8 bugs (incl. cross-file integration regressions) the per-ticket adversarial verify + file-scoped specialists both missed.
 - Plan-threshold-guard evidence comes from the /review-plan skill → ExitPlanMode block→pass cycle (stamps `plan-approved-<session>.marker`), NOT a hand-rolled audit agent; if blocked despite an approved plan, re-enter plan mode + ExitPlanMode to stamp it — never SKIP_PLAN_GUARD for a feature, never clobber another session's tasks/todo.md.
+- An audit report's "unfiled finding" is a repo-grep guess that can't see the tracker — before filing, re-check current code (may be fixed) AND search Linear (prior triage often consolidates many findings into one batch ticket whose title won't match).
 
 ## Firebase
 
