@@ -47,6 +47,7 @@ when the counts drift apart.
 - lefthook `analyze` gate TIMEOUT (exit 124) while standalone `dart analyze` is clean = contention with VS Code's live analyzer — `taskkill //F //IM dart.exe` right before committing (not `LEFTHOOK_EXCLUDE` on a `.dart` diff); a saturated process table crashes the analysis server + blocks fork (restart, don't retry); background the commit so arch-guard's ~10-min compile outlives the shell ceiling.
 - A clean-tree gate must judge dirt BY KIND: auto-generated role-org bookkeeping churn (`.stale` markers, metrics/janitor/world-watch/role-paths JSON) is not in-flight work — fix the gate (`delivery.cleanTreeIgnore` regex allowlist + Phase-0 filter), don't paper over it by committing the churn.
 - The parallel-sprint ship phase can force a commit past the marker review-gate (fresh `.marker` mtime proves a touch, not a review) — on ANY sprint completion re-run the commit-gate specialists against the actual committed diff before trusting `review.gates:ok`; push≠deploy so unreviewed code on main is fixable forward.
+- Shared-plugin (malin-plugins) installs are sha-pinned at LOCAL scope — after committing to C:/claude-plugins run `claude plugin update <plugin>@malin-plugins --scope local` from EACH repo and verify the cache sha, else the change never ships (new sessions only).
 
 ## Testing
 

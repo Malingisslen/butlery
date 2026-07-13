@@ -369,3 +369,9 @@ Date: 2026-07-13
 Trigger: Run Tests had zero green runs in 40+ attempts and nobody noticed (sprint gates watch other signals). Inside that redness, the seafood/allergen property-lockstep SAFETY GATE had been failing since 2026-07-03 — meaning the Sheet-sync vocabulary could have drifted from the app's allergen registry for 10 days with no guard.
 Rule: A failing safety-gate test is a DISARMED gate, not just a red row. When any CI job is chronically red, triage it to zero promptly — new real regressions and dead safety nets hide behind "it's always red". After shipping a refactor that moves a definition (file/const), grep tests for hardcoded paths/regexes pointing at the old site.
 Example: tag_phase1_seafood_safety_test read VALID_PROPERTIES from sync-ingredients.ts; BUT-1467 moved it to sync-ingredients-core.ts (typed Set + spread block) and the gate returned null-check crashes for 10 days. Fixed 2026-07-13 by parsing the definition site and unioning both literal blocks.
+
+### [Workflow] Shared-plugin (malin-plugins) changes ship only via per-repo --scope local update
+- **Date:** 2026-07-13
+- **Trigger:** Committed the /docs-sweep skill to C:/claude-plugins; `claude plugin update workflow-guards@malin-plugins` failed twice with "not installed at scope user" — the plugin is installed at LOCAL scope, once per repo, sha-pinned in the cache.
+- **Rule:** After committing to C:/claude-plugins, run `claude plugin update <plugin>@malin-plugins --scope local` from EACH of the three repo directories, then verify the cache sha in `~/.claude/plugins/installed_plugins.json` equals `git -C C:/claude-plugins rev-parse --short=12 HEAD`. Changes appear in NEW sessions only. Without this, a committed plugin change silently never ships.
+- **Example:** docs-sweep skill (ab954c3) reached the repos only after three `--scope local` updates; the plan's original single `claude plugin update` would have left all repos pinned to 74d2545f4aa6.
