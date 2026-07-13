@@ -84,6 +84,12 @@
     "lessonsFile": "tasks/lessons.md",
     "digestFile": ".claude/rules/lessons-digest.md"
   },
+  "docsSweep": {
+    "exemptGlobs": ["docs/org/**", "docs/design/mockups/**", "tasks/lessons.md", "tasks/todo.md", ".claude/**"],
+    "navigationDocs": ["docs/onboarding/workflow-map.html", "docs/architecture/RECIPE_PIPELINE.md", "docs/FEATURE_INVENTORY.md", "docs/architecture/ROLE_RESPONSIBILITY_MAP.md"],
+    "forMalinDocs": ["docs/onboarding/butlery-academy.html"],
+    "docLinters": ["python tools/check_workflow_map.py"]
+  },
   "roleOrg": {
     "worldWatchStatePath": "docs/org/world-watch/state.json",
     "janitorStampPath": "docs/org/janitor/last-run.json",

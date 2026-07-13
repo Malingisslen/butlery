@@ -47,7 +47,7 @@ when mapped code is edited. **If that marker exists:** re-trace ONLY the flows w
 the marker's `triggers`, update the map's `<script id="data">` JSON (nothing else), run the
 linter, delete the marker, commit both. Don't rebuild the map; don't ignore the marker.
 
-See `.claude/rules/code-style.md` for file size limits, service access, syntax, commenting.
+See `.claude/rules/code-style.md` for file size limits, service access, syntax, commenting, documentation.
 See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, lefthook.
 See `.claude/rules/workflow-discipline.md` for plan mode, verification, self-improvement.
 See `.claude/rules/ui-conventions.md` for responsive design, mockup comparison.
