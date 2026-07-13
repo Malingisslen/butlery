@@ -1,0 +1,10 @@
+{
+  "map": "docs/onboarding/workflow-map.html",
+  "stale_since": "2026-07-12",
+  "triggers": [
+    "lib/viewmodels/menu/menu_generator.dart",
+    "lib/repositories/firebase/firebase_family_rating_repository.dart",
+    "lib/services/family/family_rating_service.dart"
+  ],
+  "last_stamped": "2026-07-13"
+}
