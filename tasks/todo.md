@@ -263,3 +263,24 @@ State UUIDs: Todo 5a6d3faa · InProgress f8a3cf05 · InReview 9929b3b0 · Done 5
 
 ---
 (prior sprint plans archived in git history: commit 0db2fbca4 and earlier)
+
+---
+
+# Voice recipe import — "Tala in recept" (appended 2026-07-13, separate session)
+
+Full plan: tasks/voice-import-plan.md (approved flow: Malin's "continue with the next phase"
++ interview decision guided-sections + directions pick "B med A:s stora mikrofon" 2026-07-13;
+single-role stakeholder review approve-with-conditions, conditions implemented in Batch A+B).
+
+- [x] Batch A+B: SourceArtefactType.voiceDictation, VoiceCaptureService timeout+maxDuration,
+      VoiceImportStrategy, voice_transcript_assembler, ImportManager.importVoiceTranscript,
+      source-tag 'voice', 27 tests green
+- [ ] Batch C (IN PROGRESS): VoiceImportViewModel + voice_import_view (direction B, big mic
+      in active card) + route /voiceImport + tile + l10n + widget tests; preview marker stamped
+- [ ] Batch D: feature inventory IMP-12, workflow-map flow, component library
+- [ ] Batch E: /code-review high + specialist gates + commit + push
+
+## Open questions
+No architecture-changing unknowns — assumptions: `record` package for capture (already
+shipped in v1), success→SkrivSjalvReceptView review navigation (photo precedent),
+assistance→assisted-import dialog (existing terminal path).

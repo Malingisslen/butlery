@@ -23,6 +23,8 @@ import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -341,6 +343,14 @@ class UIModule implements DIModule {
       container.registerFactory<PhotoImportViewModel>(
         () => PhotoImportViewModel(
           importManager: container<ImportManager>(),
+        ),
+      );
+
+      // Voice Import ViewModel (kb-whisper voice plan, roadmap #2)
+      container.registerFactory<VoiceImportViewModel>(
+        () => VoiceImportViewModel(
+          importManager: container<ImportManager>(),
+          voiceCapture: container<VoiceCaptureService>(),
         ),
       );
 

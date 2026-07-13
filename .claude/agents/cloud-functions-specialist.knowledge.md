@@ -2360,3 +2360,60 @@ BOTH regression guards bite against the old `after`-only gate: the promotion cas
   `isProfileRating(undefined)` is false, so undefined/undefined → false). Both
   behave correctly by construction; adding them would harden against a future
   refactor of the branch order. Low.
+
+### 2026-07-12 — SALVAGE re-review of force-committed 6f0942408: both FAIL votes were false positives [Pattern discovered]
+
+Commit `6f0942408` was force-landed on main by refreshing the review markers 44s
+before commit, with no specialist re-review of the final diff (harness raised a
+security warning). Code is on main but NOT deployed (functions deploy is manual),
+so it was re-reviewed fix-forward. Two fresh verification voters had marked
+CORRECTNESS:FAIL on `detect-lapsed-users.ts` and INTENT:FAIL on the
+`cleanup-old-notifications.ts` drain loop. **Both refuted — nothing blocking.**
+Build clean; `detect-lapsed-users` 25/25 green; `family-rating-recompute` 6/6
+green; both suites re-run under ts-node.
+
+- **detect-lapsed CORRECTNESS:FAIL is a false positive.** Traced the
+  crossed-since-last-run window math: a user crosses threshold N at
+  `lastActiveAt + N·days`; catching crossers since `lastRun` gives
+  `lastActiveAt ∈ (lastRun − N·days, now − N·days]`, which is exactly the code
+  (`> alreadyCrossedAtLastRun` exclusive, `<= crossedByNow` inclusive). In steady
+  daily runs these intervals tile perfectly per threshold — no gap, no daily
+  re-notify (proven by the "already past thresholds … NOT re-notified" test). The
+  degenerate guard reduces to `lastRun >= now` (clock-back / same-instant) → skip,
+  correct for all thresholds. First run bounded by `DEFAULT_CURSOR_LOOKBACK_MS`
+  (proven by the "bounded lookback / no backfill" test). The only real issues are
+  the two already-documented NON-blocking ones from the same-day entries above:
+  the >7-day-outage threshold-overlap burst (Medium) and unbounded users scan
+  during wide recovery (Medium). Neither is a wrong result.
+
+- **cleanup drain INTENT:FAIL is a false positive.** The self-advancing loop
+  satisfies BUT-1563 (drain past the old 10k cap). Termination: `cutoff` is fixed
+  at function start so new docs (`sentAt ≈ now > cutoff`) never enter the matching
+  set — it only shrinks; loop ends on empty page or `size < BATCH_LIMIT`. No skip:
+  no `orderBy`/cursor, but every read doc is deleted so the next page is always
+  fresh smaller-timestamp rows (delete-advances-window is CORRECT precisely
+  because the loop body flips the filtered field). No 500-op overflow:
+  `limit(BATCH_LIMIT)` ⇒ snapshot ≤ 500 ⇒ one `batchDeleteDocs` commit of ≤500.
+  Self-heals across weekly runs on a mid-drain timeout. Only genuine gap is
+  "no test" — already filed BUT-1595, not a code defect.
+
+- **The task's index premise was inverted — worth remembering.** The added
+  `social_requests (status ASC, sentAt ASC)` index does NOT correspond to any
+  query in `cleanup-old-notifications.ts` (that file's `where(ts<cutoff)` is a
+  single-field inequality needing only the automatic index). It serves
+  `cleanup-expired-social-requests.ts` (`status == pending` + `sentAt < cutoff`),
+  and there it is fully correct (COLLECTION scope; equality field before range;
+  `sentAt` ASC matches the implicit ascending sort of a no-orderBy range). The
+  commit message misfiles it under the BUT-1563 bullet. When a review task hands
+  you an index-to-query mapping, verify the mapping itself — the commit narrative
+  can point at the wrong file.
+
+- **Region/cold-start/cost all clean** across the three files: all inherit
+  `europe-west1` from `setGlobalOptions` (no per-function region), no new SDK,
+  one extra cursor read+write per lapsed-users run (negligible).
+
+- **Deploy-order note (non-blocking):** `cleanupExpiredSocialRequests` has been
+  throwing `FAILED_PRECONDITION` on every non-empty run since BUT-772 (index was
+  missing); the new index fixes it, but deploy the index before/with the
+  functions so the weekly job stops erroring. Strictly an improvement over the
+  current broken state.

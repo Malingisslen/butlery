@@ -51,6 +51,7 @@ when the counts drift apart.
 ## Testing
 
 - Red CI on an unrelated test = suspect a pre-existing flake; fix the flake at root (seed the RNG) — never rerun-until-green.
+- Chronic-red CI disarms safety-gate tests silently — triage any always-red job to zero promptly, and after moving a definition, grep tests for hardcoded paths/regexes aimed at the old site.
 - `architecture_test.dart` guards are NOT in `dart analyze` — analyze-clean ≠ CI-green for `lib/widgets/`.
 - Adding a named param to a mocked service silently un-matches every old mocktail stub — update the stubs.
 - cloud_firestore's FieldValue caches the platform factory statically — fake batches can throw subtype errors.

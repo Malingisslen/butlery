@@ -199,6 +199,12 @@
    "path": "lib/views/veckomeny_view.dart"
   },
   {
+   "id": "v-voice-import",
+   "label": "Tala in recept (guidad diktering)",
+   "context": "view",
+   "path": "lib/views/voice_import_view.dart"
+  },
+  {
    "id": "svc-voice-capture",
    "label": "Röstinmatning (KB-Whisper på enheten)",
    "context": "service",
@@ -2412,6 +2418,38 @@
     "ENG-08",
     "ENG-17"
    ]
+  },
+  {
+   "id": "flow-voice-import",
+   "label": "tala in recept (röstimport)",
+   "description": "IMP-12 (kb-whisper-planen, riktning B beslutad 2026-07-13): tre guidade sektioner (namn → ingredienser → gör så här) dikteras i valfri ordning i voice_import_view; varje sektion transkriberas PÅ ENHETEN av KB-Whisper via VoiceCaptureService (ljudet raderas på alla utfallsvägar), texten är alltid redigerbar. voice_transcript_assembler bygger kanonisk svensk recepttext (Ingredienser:/Gör så här:-rubriker, ingrediensuppräkning splittras per rad) så den deterministiska textparsern klarar jobbet utan LLM. ImportManager.importVoiceTranscript är ingången: rate-limit + parse_events med källtagg 'voice' (aldrig 'text' — mätbarhetsvillkor från integrationsgranskningen), VoiceImportStrategy stämplar SourceArtefactType.voiceDictation. Lyckad parse → SkrivSjalvReceptView-granskning; svag parse → assisted-import-dialogen.",
+   "features": [
+    "IMP-12"
+   ],
+   "steps": [
+    {
+     "from": "v-voice-import",
+     "to": "svc-voice-capture",
+     "payload": "per sektion: push-to-talk (3 min-tak, auto-stopp) → 16 kHz WAV → KB-Whisper på enheten (120 s transkriberings-deadline) → redigerbart transkript i sektionskortet",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "v-voice-import",
+     "to": "svc-import-manager",
+     "payload": "importVoiceTranscript(assemblerad kanonisk recepttext) — rate-limit basic('auto') + parse_events source='voice' via _parseWithStrategy-chokepointen",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-import-manager",
+     "to": "v-recipe-form",
+     "payload": "lyckad parse → Recipe med SourceArtefactType.voiceDictation → granska + spara (samma väg som alla importer); svag parse → assisted-import-dialogen",
+     "transport": "navigation",
+     "verified": true
+    }
+   ],
+   "area": "import"
   },
   {
    "id": "flow2",

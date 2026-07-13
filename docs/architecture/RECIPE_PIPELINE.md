@@ -13,7 +13,7 @@
 ## The chain at a glance
 
 ```
-  URL │ photo │ pasted text │ file │ Instagram │ TikTok │ YouTube │ OS share sheet
+  URL │ photo │ pasted text │ voice dictation │ file │ Instagram │ TikTok │ YouTube │ OS share sheet
         │
         ▼
 ┌── IMPORT (lib/services/import/) ─────────────────────────────────────────────┐

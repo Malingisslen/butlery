@@ -191,6 +191,18 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: spacing),
+              // Row 3: voice dictation (kb-whisper plan) — green continues
+              // the diagonal rust/green alternation from row 2's rust.
+              _AddRecipeButton(
+                key: const ValueKey('test-lagg-till-voice-import'),
+                semanticIdentifier: 'btn-voice-import',
+                label: context.l10n.recipeVoiceImport,
+                icon: Icons.mic_none,
+                color: Theme.of(context).colorScheme.primary,
+                size: size,
+                onTap: () => _navigate(context, '/voiceImport'),
+              ),
             ],
           ),
         );

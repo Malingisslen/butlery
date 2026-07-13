@@ -2180,6 +2180,102 @@ abstract class AppLocalizations {
   /// **'Öppna inställningar'**
   String get voicePromptOpenSettings;
 
+  /// No description provided for @voiceImportTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in recept'**
+  String get voiceImportTitle;
+
+  /// No description provided for @voiceImportIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in receptet i tre delar, i valfri ordning. Texten går alltid att ändra innan receptet importeras'**
+  String get voiceImportIntro;
+
+  /// No description provided for @voiceImportSectionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rättens namn'**
+  String get voiceImportSectionTitle;
+
+  /// No description provided for @voiceImportSectionIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get voiceImportSectionIngredients;
+
+  /// No description provided for @voiceImportSectionSteps.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör så här'**
+  String get voiceImportSectionSteps;
+
+  /// No description provided for @voiceImportPromptTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad heter rätten?'**
+  String get voiceImportPromptTitle;
+
+  /// No description provided for @voiceImportPromptIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läs upp ingredienserna, en i taget'**
+  String get voiceImportPromptIngredients;
+
+  /// No description provided for @voiceImportPromptSteps.
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta hur man gör'**
+  String get voiceImportPromptSteps;
+
+  /// No description provided for @voiceImportRecordingHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spelar in. Tryck när du är klar'**
+  String get voiceImportRecordingHint;
+
+  /// No description provided for @voiceImportTypeHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Eller skriv här'**
+  String get voiceImportTypeHint;
+
+  /// No description provided for @voiceImportSubmit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera receptet'**
+  String get voiceImportSubmit;
+
+  /// No description provided for @voiceImportImporting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerar'**
+  String get voiceImportImporting;
+
+  /// No description provided for @voiceImportSubmitHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Knappen låses upp när alla tre delar har text'**
+  String get voiceImportSubmitHint;
+
+  /// No description provided for @voiceImportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte tolkas den här gången. Texten går att justera och prova igen'**
+  String get voiceImportFailed;
+
+  /// No description provided for @voiceImportMicRationaleTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofon för receptinläsning'**
+  String get voiceImportMicRationaleTitle;
+
+  /// No description provided for @recipeVoiceImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in recept'**
+  String get recipeVoiceImport;
+
   /// No description provided for @menuGenerating.
   ///
   /// In sv, this message translates to:
@@ -2491,6 +2587,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Text från foto'**
   String get recipeSourceTypePhotoOcr;
+
+  /// No description provided for @recipeSourceTypeVoiceDictation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Intalat recept'**
+  String get recipeSourceTypeVoiceDictation;
 
   /// No description provided for @recipeSourceReextract.
   ///

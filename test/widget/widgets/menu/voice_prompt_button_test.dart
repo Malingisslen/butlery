@@ -41,7 +41,8 @@ class _FakeVoiceCaptureService extends Fake implements VoiceCaptureService {
   Future<bool> prepareModel() async => modelReady;
 
   @override
-  Future<bool> startRecording() async => startSucceeds;
+  Future<bool> startRecording({void Function()? onAutoStopped}) async =>
+      startSucceeds;
 
   @override
   Future<String?> stopAndTranscribe() async => transcript;

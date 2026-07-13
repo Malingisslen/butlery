@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/import_via_url_view.dart' deferred as import_url;
 import 'package:butlery/views/smart_import_view.dart' deferred as smart_import;
 import 'package:butlery/views/photo_import_view.dart' deferred as photo_import;
+import 'package:butlery/views/voice_import_view.dart' deferred as voice_import;
 import 'package:butlery/views/file_import_view.dart' deferred as file_import;
 import 'package:butlery/views/importera_fran_arkiv_view.dart'
     deferred as arkiv_import;
@@ -28,6 +29,7 @@ class ExtractionDeferredModule implements DeferredModule {
     Routes.importViaUrl,
     Routes.smartImport,
     Routes.photoImport,
+    Routes.voiceImport,
     Routes.fileImport,
     Routes.importFromArchive,
   };
@@ -42,6 +44,7 @@ class ExtractionDeferredModule implements DeferredModule {
         import_url.loadLibrary(),
         smart_import.loadLibrary(),
         photo_import.loadLibrary(),
+        voice_import.loadLibrary(),
         file_import.loadLibrary(),
         arkiv_import.loadLibrary(),
       ]);
@@ -76,6 +79,9 @@ class ExtractionDeferredModule implements DeferredModule {
               ? settings.arguments as List<String>
               : null,
         );
+
+      case Routes.voiceImport:
+        return voice_import.VoiceImportView();
 
       case Routes.fileImport:
         return file_import.FileImportView();

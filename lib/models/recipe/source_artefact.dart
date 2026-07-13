@@ -36,6 +36,13 @@ enum SourceArtefactType {
   /// original image would need the raw bytes, which we don't store —
   /// the OCR result is the practical re-extract source).
   photoOcr,
+
+  /// Voice dictation (on-device KB-Whisper transcription, guided
+  /// sections). `payload` is the assembled transcript text — the audio
+  /// itself is never stored, so like [photoOcr] the transcript is the
+  /// practical re-extract source. Distinct from [textPaste] so parse
+  /// telemetry and provenance never mix dictated and pasted text.
+  voiceDictation,
 }
 
 class SourceArtefact {

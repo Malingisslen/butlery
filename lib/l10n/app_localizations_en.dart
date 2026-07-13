@@ -1259,6 +1259,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voicePromptOpenSettings => 'Open settings';
 
   @override
+  String get voiceImportTitle => 'Speak in a recipe';
+
+  @override
+  String get voiceImportIntro =>
+      'Dictate the recipe in three parts, in any order. The text can always be edited before the recipe is imported';
+
+  @override
+  String get voiceImportSectionTitle => 'Dish name';
+
+  @override
+  String get voiceImportSectionIngredients => 'Ingredients';
+
+  @override
+  String get voiceImportSectionSteps => 'Instructions';
+
+  @override
+  String get voiceImportPromptTitle => 'What is the dish called?';
+
+  @override
+  String get voiceImportPromptIngredients =>
+      'Read out the ingredients, one at a time';
+
+  @override
+  String get voiceImportPromptSteps => 'Describe how it\'s made';
+
+  @override
+  String get voiceImportRecordingHint => 'Recording. Tap when you\'re done';
+
+  @override
+  String get voiceImportTypeHint => 'Or type here';
+
+  @override
+  String get voiceImportSubmit => 'Import the recipe';
+
+  @override
+  String get voiceImportImporting => 'Importing';
+
+  @override
+  String get voiceImportSubmitHint =>
+      'The button unlocks when all three parts have text';
+
+  @override
+  String get voiceImportFailed =>
+      'The recipe couldn\'t be interpreted this time. The text can be adjusted and tried again';
+
+  @override
+  String get voiceImportMicRationaleTitle => 'Microphone for recipe dictation';
+
+  @override
+  String get recipeVoiceImport => 'Speak in a recipe';
+
+  @override
   String get menuGenerating => 'Generating...';
 
   @override
@@ -1461,6 +1513,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSourceTypePhotoOcr => 'Photo text';
+
+  @override
+  String get recipeSourceTypeVoiceDictation => 'Spoken recipe';
 
   @override
   String get recipeSourceReextract => 'Re-extract from source';

@@ -1262,6 +1262,58 @@ class AppLocalizationsSv extends AppLocalizations {
   String get voicePromptOpenSettings => 'Öppna inställningar';
 
   @override
+  String get voiceImportTitle => 'Tala in recept';
+
+  @override
+  String get voiceImportIntro =>
+      'Tala in receptet i tre delar, i valfri ordning. Texten går alltid att ändra innan receptet importeras';
+
+  @override
+  String get voiceImportSectionTitle => 'Rättens namn';
+
+  @override
+  String get voiceImportSectionIngredients => 'Ingredienser';
+
+  @override
+  String get voiceImportSectionSteps => 'Gör så här';
+
+  @override
+  String get voiceImportPromptTitle => 'Vad heter rätten?';
+
+  @override
+  String get voiceImportPromptIngredients =>
+      'Läs upp ingredienserna, en i taget';
+
+  @override
+  String get voiceImportPromptSteps => 'Berätta hur man gör';
+
+  @override
+  String get voiceImportRecordingHint => 'Spelar in. Tryck när du är klar';
+
+  @override
+  String get voiceImportTypeHint => 'Eller skriv här';
+
+  @override
+  String get voiceImportSubmit => 'Importera receptet';
+
+  @override
+  String get voiceImportImporting => 'Importerar';
+
+  @override
+  String get voiceImportSubmitHint =>
+      'Knappen låses upp när alla tre delar har text';
+
+  @override
+  String get voiceImportFailed =>
+      'Receptet kunde inte tolkas den här gången. Texten går att justera och prova igen';
+
+  @override
+  String get voiceImportMicRationaleTitle => 'Mikrofon för receptinläsning';
+
+  @override
+  String get recipeVoiceImport => 'Tala in recept';
+
+  @override
   String get menuGenerating => 'Genererar...';
 
   @override
@@ -1464,6 +1516,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeSourceTypePhotoOcr => 'Text från foto';
+
+  @override
+  String get recipeSourceTypeVoiceDictation => 'Intalat recept';
 
   @override
   String get recipeSourceReextract => 'Återhämta från källa';

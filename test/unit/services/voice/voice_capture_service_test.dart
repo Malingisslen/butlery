@@ -11,6 +11,7 @@ library;
 import 'dart:io';
 
 import 'package:clock/clock.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:record/record.dart';
@@ -108,6 +109,117 @@ void main() {
     await action();
     return File(expectedWavPath()).existsSync();
   }
+
+  group('3-min cap is service-enforced (review finding #3)', () {
+    test(
+      'the cap timer stops the RECORDER itself, even with no callback',
+      () async {
+        when(() => modelManager.ensureModelAvailable()).thenAnswer(
+          (_) async =>
+              const WhisperModelFile(modelPath: '/models/ggml.bin', version: 1),
+        );
+        final transcriber = _FakeTranscriber(result: 'takad diktering');
+        final svc = service(transcriber);
+
+        await withClock(Clock.fixed(fixedTime), () async {
+          fakeAsync((async) {
+            // No onAutoStopped callback — the menu prompt button's usage.
+            svc.startRecording();
+            async.flushMicrotasks();
+            expect(svc.isRecording, isTrue);
+
+            async.elapse(VoiceCaptureService.maxRecordingDuration);
+            async.flushMicrotasks();
+
+            // The recorder was stopped BY THE SERVICE at the cap.
+            verify(() => recorder.stop()).called(1);
+          });
+        });
+      },
+    );
+
+    test('auto-stop fires the per-capture callback and the follow-up '
+        'stopAndTranscribe still returns the transcript', () async {
+      when(() => modelManager.ensureModelAvailable()).thenAnswer(
+        (_) async =>
+            const WhisperModelFile(modelPath: '/models/ggml.bin', version: 1),
+      );
+      when(() => recorder.stop()).thenAnswer((_) async => null);
+      final transcriber = _FakeTranscriber(result: 'takad diktering');
+      final svc = service(transcriber);
+
+      var autoStopped = false;
+      await withClock(Clock.fixed(fixedTime), () async {
+        // Fake time ONLY for the cap timer; the transcription that follows
+        // does real file I/O, which never pumps inside fakeAsync.
+        fakeAsync((async) {
+          svc.startRecording(onAutoStopped: () => autoStopped = true);
+          async.flushMicrotasks();
+          async.elapse(VoiceCaptureService.maxRecordingDuration);
+          async.flushMicrotasks();
+        });
+      });
+      expect(autoStopped, isTrue);
+
+      // The capped WAV must still transcribe like a manual stop.
+      await withClock(Clock.fixed(fixedTime), () async {
+        await File(expectedWavPath()).writeAsBytes(const [1, 2, 3]);
+      });
+      final transcript = await svc.stopAndTranscribe();
+
+      expect(transcript, 'takad diktering');
+      expect(
+        File(expectedWavPath()).existsSync(),
+        isFalse,
+        reason: 'capped audio is deleted like any other capture',
+      );
+    });
+
+    test('a cap-stopped recording at a recorder-relocated path transcribes '
+        'THAT file and deletes both (privacy contract)', () async {
+      // The cap timer's recorder.stop() may return a relocated path; a
+      // second stop() after the recorder is already stopped returns null.
+      // If stopAndTranscribe re-stopped instead of using the cap-stored
+      // path, it would transcribe the wrong file AND leak the real WAV.
+      when(() => modelManager.ensureModelAvailable()).thenAnswer(
+        (_) async =>
+            const WhisperModelFile(modelPath: '/models/ggml.bin', version: 1),
+      );
+      final altPath = '${tempDir.path}/relocated_by_plugin.wav';
+      var stopCalls = 0;
+      when(
+        () => recorder.stop(),
+      ).thenAnswer((_) async => ++stopCalls == 1 ? altPath : null);
+      final transcriber = _FakeTranscriber(result: 'takad diktering');
+      final svc = service(transcriber);
+
+      await withClock(Clock.fixed(fixedTime), () async {
+        fakeAsync((async) {
+          svc.startRecording();
+          async.flushMicrotasks();
+          async.elapse(VoiceCaptureService.maxRecordingDuration);
+          async.flushMicrotasks();
+        });
+        await File(expectedWavPath()).writeAsBytes(const [1, 2, 3]);
+        await File(altPath).writeAsBytes(const [4, 5, 6]);
+      });
+
+      final transcript = await svc.stopAndTranscribe();
+
+      expect(transcript, 'takad diktering');
+      expect(
+        transcriber.seenAudioPath,
+        altPath,
+        reason: 'the cap-stored recorder path holds the audio',
+      );
+      expect(File(expectedWavPath()).existsSync(), isFalse);
+      expect(
+        File(altPath).existsSync(),
+        isFalse,
+        reason: 'the relocated capped WAV must not outlive the capture',
+      );
+    });
+  });
 
   group('happy path', () {
     test(

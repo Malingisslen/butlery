@@ -201,3 +201,43 @@ in this session). Mark for In-Review manual smoke test.
 
 **Device class measured**: not yet measured on device (headless session).
 Numbers to fill in after manual profiling.
+
+### 2026-07-12 — executeAsync* guards only at ENTRY: subscription created after internal awaits leaks on dispose-during-startup (BUT-1461)
+
+**Pattern (Critical / dangling Firestore listener):** a fire-and-forget async
+initializer (`..startListening()` from `initState`) that awaits one or more reads
+BEFORE assigning its `StreamSubscription` can leak the subscription if the view is
+disposed during those awaits.
+
+`BaseViewModel.executeAsync` / `executeAsyncVoid` check `_isDisposed` **only once at
+entry** (`base_viewmodel.dart:213` / `:175`) — they do NOT re-check across the awaits
+inside the operation closure. So this sequence leaks:
+
+1. `startListening()` parks on `await ensureForUser()` / `await getRoster()` (real
+   network round-trips on a cold open).
+2. User navigates away → `dispose()` runs `_subscription?.cancel()` while
+   `_subscription` is still `null` → no-op. `_isDisposed = true`.
+3. Awaits resolve; the closure keeps running (no re-check) and creates
+   `service.watch(...).listen(...)`, assigning a **live snapshots() subscription to an
+   already-disposed VM**. Nothing ever cancels it → ongoing per-listener Firestore read
+   cost + the `.listen` closure retains the VM in memory.
+
+The emission callback's `if (isDisposed) return` does NOT save you — it makes each
+emission a no-op but the subscription stays open and billing reads.
+
+**Fix:** re-guard the async gap right after the last pre-subscription await, before
+creating/assigning the subscription:
+```dart
+_roster = await _rosterService.getRoster(household.id);
+if (isDisposed) return;            // bail if disposed during the reads
+await _subscription?.cancel();
+_subscription = service.watch(...).listen(...);
+```
+
+**Generalization:** any subscription/timer/controller whose creation sits AFTER an
+`await` inside an `executeAsync*` body needs an explicit `if (isDisposed) return;`
+immediately before the creation — the base-class entry guard is not enough. Grep target:
+`.listen(` or `Timer(` that follows an `await` inside an `executeAsync`/`executeAsyncVoid`
+closure. (Found by review; not yet profiled on device — the cost is an uncancelled
+Firestore listener, confirmable in DevTools Memory by push/pop of a recipe detail with a
+throttled network so the reads are slow.)

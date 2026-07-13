@@ -22,6 +22,9 @@ class Routes {
   /// Photo import route
   static const String photoImport = '/photoImport';
 
+  /// Voice dictation import route (kb-whisper voice plan)
+  static const String voiceImport = '/voiceImport';
+
   /// Quick capture route (title-only recipe save)
   static const String quickCapture = '/quickCapture';
 
@@ -115,6 +118,7 @@ class Routes {
     addRecipe,
     importViaUrl,
     photoImport,
+    voiceImport,
     quickCapture,
     manualEntry,
     fromSocialMedia,
@@ -158,6 +162,7 @@ class Routes {
   static const Set<String> bottomSlideRoutes = {
     importViaUrl,
     photoImport,
+    voiceImport,
     quickCapture,
     manualEntry,
     fromSocialMedia,
@@ -251,6 +256,7 @@ class Routes {
     addRecipe,
     importViaUrl,
     photoImport,
+    voiceImport,
     quickCapture,
     manualEntry,
     fromSocialMedia,
@@ -331,6 +337,7 @@ class Routes {
       addRecipe,
       importViaUrl,
       photoImport,
+      voiceImport,
       quickCapture,
       manualEntry,
       fromSocialMedia,

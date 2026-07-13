@@ -101,6 +101,8 @@ String _sourceTypeLabel(BuildContext context, SourceArtefactType type) {
       context.l10n.recipeSourceTypeInstagram,
     SourceArtefactType.textPaste => context.l10n.recipeSourceTypeTextPaste,
     SourceArtefactType.photoOcr => context.l10n.recipeSourceTypePhotoOcr,
+    SourceArtefactType.voiceDictation =>
+      context.l10n.recipeSourceTypeVoiceDictation,
   };
 }
 

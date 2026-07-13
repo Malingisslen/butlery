@@ -363,3 +363,9 @@ Date: 2026-07-12
 Trigger: Spoken-prompt correction regexes used \b anchors; code-reviewer probe showed "Tre, nej två middagar" parsed to FOUR dinners — \b silently fails after å/ä/ö (ECMAScript \w is [A-Za-z0-9_]), and inverts INSIDE words ("åtta" matches inside "råtta").
 Rule: Never use \b in a regex that must bound Swedish (or any non-ASCII) words. Use explicit lookarounds: (?<![a-zåäö0-9]) before, (?![a-zåäö0-9]) after. Add golden cases whose values START and END with å/ä/ö whenever pattern-matching Swedish tokens.
 Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfter; pinned by "Tre, nej två middagar." → 2 and "Åtta, nej nio middagar." → 9 in spoken_prompt_golden_test.dart.
+
+### [Testing] Chronic-red CI silently disarms safety-gate tests
+Date: 2026-07-13
+Trigger: Run Tests had zero green runs in 40+ attempts and nobody noticed (sprint gates watch other signals). Inside that redness, the seafood/allergen property-lockstep SAFETY GATE had been failing since 2026-07-03 — meaning the Sheet-sync vocabulary could have drifted from the app's allergen registry for 10 days with no guard.
+Rule: A failing safety-gate test is a DISARMED gate, not just a red row. When any CI job is chronically red, triage it to zero promptly — new real regressions and dead safety nets hide behind "it's always red". After shipping a refactor that moves a definition (file/const), grep tests for hardcoded paths/regexes pointing at the old site.
+Example: tag_phase1_seafood_safety_test read VALID_PROPERTIES from sync-ingredients.ts; BUT-1467 moved it to sync-ingredients-core.ts (typed Set + spread block) and the gate returned null-check crashes for 10 days. Fixed 2026-07-13 by parsing the definition site and unioning both literal blocks.

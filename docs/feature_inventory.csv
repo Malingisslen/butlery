@@ -39,6 +39,7 @@ IMP-08,File import (CSV/Excel),Recipe Import,Verified,"User uploads a spreadshee
 IMP-09,Import from archive (restore),Recipe Import,Partial,"Returning user re-imports recipes they previously archived",
 IMP-10,Assisted import wizard,Recipe Import,Partial,"User taps which lines are ingredients vs instructions for messy content","No dedicated assisted-import VM test"
 IMP-11,Ingredient-line parsing (CRF/NER/ONNX),Recipe Import,Partial,"Ingredient lines split into quantity/unit/name for scaling and lists","Engine view in ENG-09"
+IMP-12,Voice recipe import (Tala in recept),Recipe Import,Verified,"User dictates a recipe in three guided sections; on-device Swedish transcription feeds the normal import review","kb-whisper roadmap #2, shipped 2026-07-13; VM+widget+strategy+assembler tests; direction B UI (Malin's pick); real-device dictation check pending"
 MENU-01,Generate weekly menu from prompt,Menu & Shopping,Verified,"Planner types a request and gets a full week auto-distributed",
 MENU-02,Manual menu placement mode,Menu & Shopping,Verified,"Planner hand-places each generated recipe onto specific days",
 MENU-03,Edit weekly menu calendar,Menu & Shopping,Verified,"Planner adds, drags and removes recipes on the week grid",

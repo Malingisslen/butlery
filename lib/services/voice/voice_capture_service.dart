@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:clock/clock.dart';
@@ -60,6 +61,29 @@ class VoiceCaptureService {
 
   bool get isRecording => _activeRecordingPath != null;
 
+  /// Hard ceiling on one capture. Guided dictation sections run ≤ ~90 s of
+  /// speech; 3 min is generous headroom while capping the WAV (~5.5 MB at
+  /// 16 kHz mono PCM16) and the transcription cost of a forgotten-open mic.
+  static const Duration maxRecordingDuration = Duration(minutes: 3);
+
+  /// Deadline on the native whisper.cpp call. Sized to the capped 3-min
+  /// WAV with generous slow-device headroom (>1.3x realtime) — a fired
+  /// timeout silently discards the dictation, so it must only catch true
+  /// hangs, never a slow success (review finding, 2026-07-13).
+  static const Duration transcriptionTimeout = Duration(seconds: 240);
+
+  Timer? _maxDurationTimer;
+
+  /// Set when the cap timer already stopped the recorder: the recorder's
+  /// returned path, kept so a later stopAndTranscribe/cancel still
+  /// transcribes/deletes the capped file.
+  String? _capStoppedPath;
+
+  /// Per-capture auto-stop notification, passed to [startRecording] and
+  /// cleared by the service when the capture ends — never a long-lived
+  /// field, so one screen's ViewModel can't clobber another's wiring.
+  void Function()? _onAutoStopped;
+
   /// Ensures the speech model is present (downloads ~55 MB on first use).
   /// Returns false when the model can't be obtained — callers keep typed
   /// input as the path of record and surface a quiet notice, never an error
@@ -74,7 +98,14 @@ class VoiceCaptureService {
   /// The OS permission must already be granted (UI layer responsibility via
   /// OsPermissionHelper); a denied permission surfaces here as a failed
   /// start, not a prompt.
-  Future<bool> startRecording() async {
+  ///
+  /// [onAutoStopped] fires if [maxRecordingDuration] caps this capture.
+  /// The cap is enforced HERE regardless of the callback: the recorder is
+  /// stopped so the WAV never grows past the ceiling, and a later
+  /// [stopAndTranscribe] transcribes the capped audio exactly like a
+  /// manual stop — callers that pass no callback (menu prompt button)
+  /// simply discover the stop when the user taps.
+  Future<bool> startRecording({void Function()? onAutoStopped}) async {
     if (_activeRecordingPath != null) return false;
 
     final tempDir = await getTempDir();
@@ -97,6 +128,24 @@ class VoiceCaptureService {
         path: path,
       );
       _activeRecordingPath = path;
+      _onAutoStopped = onAutoStopped;
+      _maxDurationTimer = Timer(maxRecordingDuration, () async {
+        if (_activeRecordingPath != path) return;
+        AppLogger.debug('VoiceCaptureService: max duration auto-stop');
+        String? capStopped;
+        try {
+          capStopped = await _recorder.stop() ?? path;
+        } catch (e) {
+          AppLogger.debug('VoiceCaptureService: cap stop failed: $e');
+          capStopped = path;
+        }
+        // Re-check after the await: a manual stop can interleave with the
+        // recorder.stop() above, and a stale write here would leak into
+        // the NEXT capture (reviewer's millisecond-race hardening).
+        if (_activeRecordingPath != path) return;
+        _capStoppedPath = capStopped;
+        _onAutoStopped?.call();
+      });
       return true;
     } catch (e) {
       AppLogger.warning('VoiceCaptureService: recording start failed: $e');
@@ -114,6 +163,11 @@ class VoiceCaptureService {
     final path = _activeRecordingPath;
     if (path == null) return null;
     _activeRecordingPath = null;
+    _maxDurationTimer?.cancel();
+    _maxDurationTimer = null;
+    _onAutoStopped = null;
+    final capStopped = _capStoppedPath;
+    _capStoppedPath = null;
 
     // Kept outside the try so the finally can delete BOTH candidate files:
     // the recorder may return a normalized/relocated path different from the
@@ -121,7 +175,9 @@ class VoiceCaptureService {
     // actually holds the audio.
     String? stoppedPath;
     try {
-      stoppedPath = await _recorder.stop();
+      // A cap-stopped recorder is already stopped — stopping again would
+      // return null and lose the real path.
+      stoppedPath = capStopped ?? await _recorder.stop();
       final audioPath = stoppedPath ?? path;
 
       final model = await _modelManager.ensureModelAvailable();
@@ -130,10 +186,9 @@ class VoiceCaptureService {
         return null;
       }
 
-      final text = await _transcriber.transcribe(
-        audioPath: audioPath,
-        modelPath: model.modelPath,
-      );
+      final text = await _transcriber
+          .transcribe(audioPath: audioPath, modelPath: model.modelPath)
+          .timeout(transcriptionTimeout);
       final trimmed = text?.trim();
       return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
     } catch (e) {
@@ -152,6 +207,11 @@ class VoiceCaptureService {
     final path = _activeRecordingPath;
     if (path == null) return;
     _activeRecordingPath = null;
+    _maxDurationTimer?.cancel();
+    _maxDurationTimer = null;
+    _onAutoStopped = null;
+    final capStopped = _capStoppedPath;
+    _capStoppedPath = null;
 
     try {
       await _recorder.cancel();
@@ -159,6 +219,9 @@ class VoiceCaptureService {
       AppLogger.debug('VoiceCaptureService: cancel failed: $e');
     } finally {
       await _deleteQuietly(path);
+      if (capStopped != null && capStopped != path) {
+        await _deleteQuietly(capStopped);
+      }
     }
   }
 

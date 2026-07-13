@@ -12,6 +12,7 @@ import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
+import 'package:butlery/services/import/voice_import_strategy.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
@@ -148,6 +149,11 @@ class ImportManager {
       ), // 2. Try URL import (web scraping)
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
       PhotoImportStrategy(), // 4. Photo import (OCR extraction)
+      // 5. Voice dictation — canHandle() always false (explicitly launched
+      // from the voice wizard, never auto-selected); registered so
+      // importVoiceTranscript flows through _parseWithStrategy and gets
+      // parse-event telemetry under its own 'voice' source tag.
+      VoiceImportStrategy(),
     ]);
   }
 
@@ -380,6 +386,54 @@ class ImportManager {
 
       // Return the terminal result directly — no fallback loop to swallow it.
       return await _parseWithStrategy(strategy, input, options);
+    } catch (e) {
+      return ImportManagerResult.failure(
+        'Import manager error: $e',
+        availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+      );
+    }
+  }
+
+  /// Voice-dictation entry point (voice plan, roadmap #2). [input] is the
+  /// ASSEMBLED transcript text from voice_transcript_assembler.dart.
+  ///
+  /// Mirrors [importSinglePhoto]: rate-limit check up front (structured
+  /// denial survives to the ViewModel), then straight to the voice
+  /// strategy via [_parseWithStrategy] — the telemetry choke point — so
+  /// dictated imports are rate-limited AND logged under source 'voice'
+  /// (the direct TextImportStrategy call would silently skip both).
+  Future<ImportManagerResult> importVoiceTranscript(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
+    try {
+      final rateLimiter = _rateLimiter;
+      if (rateLimiter != null) {
+        final limitResult = await rateLimiter.checkLimit(
+          ImportOperation.basic('auto'),
+        );
+        if (limitResult is RateLimitDenied) {
+          return ImportManagerResult.rateLimit(limitResult);
+        }
+      }
+
+      final strategy = _strategies.whereType<VoiceImportStrategy>().firstOrNull;
+      if (strategy == null) {
+        return ImportManagerResult.failure(
+          'No voice import strategy is available',
+          availableStrategies: _strategies.map((s) => s.strategyName).toList(),
+        );
+      }
+
+      final result = await _parseWithStrategy(strategy, input, options);
+      // Unlike photo (metered on its LLM-vision bucket), voice consumes no
+      // metered downstream resource — the basic bucket IS its quota, so a
+      // successful import must record usage or the checkLimit above is
+      // inert (review finding #6: unlimited voice imports).
+      if (result.isSuccess) {
+        await _recordImportUsage('voice');
+      }
+      return result;
     } catch (e) {
       return ImportManagerResult.failure(
         'Import manager error: $e',
@@ -924,6 +978,9 @@ class ImportManager {
     if (lower.contains('tiktok')) return 'tiktok';
     if (lower.contains('instagram')) return 'instagram';
     if (lower.contains('photo') || lower.contains('ocr')) return 'ocr';
+    // Voice before text: dictated transcripts must never blend into the
+    // pasted-text telemetry bucket (Data/Integrations panel condition).
+    if (lower.contains('voice')) return 'voice';
     if (lower.contains('text')) return 'text';
     if (lower.contains('archive')) return 'archive';
 
