@@ -10,6 +10,7 @@ import 'package:butlery/services/import/import_strategy.dart'
     as import_strategy;
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
+import 'package:butlery/services/import/voice_import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
@@ -154,12 +155,16 @@ void main() {
         final defaultManager = ImportManager(mockPersonalOps);
         final strategies = defaultManager.availableStrategies;
 
-        // The four strategies wired in _initializeStrategies, in priority order.
-        expect(strategies, hasLength(4));
+        // The five strategies wired in _initializeStrategies, in priority
+        // order. VoiceImportStrategy (IMP-12) is registered last with
+        // canHandle()==false — reachable only via importVoiceTranscript,
+        // never the auto loops.
+        expect(strategies, hasLength(5));
         expect(strategies[0], isA<ArchiveImportStrategy>());
         expect(strategies[1], isA<UrlImportStrategy>());
         expect(strategies[2], isA<TextImportStrategy>());
         expect(strategies[3], isA<PhotoImportStrategy>());
+        expect(strategies[4], isA<VoiceImportStrategy>());
 
         // PhotoImportStrategy specifically must remain registered — it backs
         // the OCR / handwritten photo import path.
