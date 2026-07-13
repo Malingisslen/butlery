@@ -23,20 +23,6 @@ lib/widgets/common/buttons/
 | Overlay on image/card (remove, edit)             | `OverlayButton`                |
 | Custom press animation around any tap target     | `AnimatedPressable`            |
 
-## Removed — historical reference
-
-- **`lib/widgets/styled/styled_button.dart`** (`StyledButton`): deleted in
-  BUT-867 (2026-05-19 wave 4) after all 28 production call-sites migrated to
-  `ActionButtons.primaryButton` / `.secondaryButton`. The `StyledButtons`
-  static helper class (`.cancel`, `.save`, `.delete`, etc.) was also removed —
-  it had zero call-sites at the time of the audit.
-
-## Why a separate family was retired
-
-`StyledButton` predated the `common/buttons/` consolidation. It carried its
-own press-animation logic and a parallel style enum (`StyledButton.primary`,
-`.secondary`, `.destructive`). `ActionButtons` covers the live surface
-(`primary`, `secondary`) with consistent loading-state + a11y handling.
-
-Bringing every site under `common/buttons/` lets one design-system change
-propagate without `grep` and parallel implementations to diff.
+Reach for one of these four — don't hand-roll a button. The retired
+`StyledButton`/`StyledButtons` family (removed BUT-867) is gone precisely so one
+design-system change propagates without parallel implementations to diff.

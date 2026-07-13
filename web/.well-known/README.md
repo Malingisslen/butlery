@@ -1,8 +1,6 @@
 # .well-known — deep-link verification files
 
 These files must be served from `https://butlery.app/.well-known/`.
-Full hosting instructions, placeholder fill-in steps, and verification
-commands live in [`docs/ops/deep-link-setup.md`](../../docs/ops/deep-link-setup.md).
 
 - `assetlinks.json` — Android App Links verification (Google Digital
   Asset Links). Unblocks `autoVerify=true` in `AndroidManifest.xml`.

@@ -6,6 +6,11 @@ paths:
 
 # UI Conventions
 
+> Sibling design-system decisions not covered here — square-FAB primary-action placement
+> (BUT-964), the favourite/featured/saved icon convention (BUT-944), date/time formatting
+> tiers (BUT-961), web hover (BUT-710), and platform-adaptive top bars (BUT-706) — live in
+> [`docs/design-system/CROSS_CUTTING_RULES.md`](../../docs/design-system/CROSS_CUTTING_RULES.md).
+
 ## Responsive Design
 - Center + ConstrainedBox with responsive max width
 - See `responsive-layout-validator` skill for breakpoints and patterns

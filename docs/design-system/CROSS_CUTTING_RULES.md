@@ -6,45 +6,18 @@ machine-checkable a11y/tap-target rules and the full copy of each pattern live i
 [`.claude/rules/ui-conventions.md`](../../.claude/rules/ui-conventions.md) — this file is the
 human-facing summary + decision trees, and points at the canonical Dart implementations.
 
-> **When you build or change a view, conform to all five rules below.** If a screen needs a
+> **When you build or change a view, conform to every rule below.** If a screen needs a
 > deliberate exception, add a one-line `// BUT-<id> exception:` comment at the call site and
 > note it here.
 
 ---
 
-## 1. Destructive-action confirmation (BUT-954)
+## 1. Destructive-action confirmation (BUT-954) · 2. Long-press semantics (BUT-948)
 
-Pick the friction pattern by **recoverability**, not by how scary the verb sounds.
-
-| Class | When | Pattern |
-| --- | --- | --- |
-| **Reversible-destructive** | item is trivially recreatable/restorable (pantry row, image attachment, own comment) | delete immediately + "Ångra" snackbar (7s, `SnackBarUtils.showSuccessWithAction` + restore path). **No confirm dialog.** |
-| **Hard-destructive** | user-authored content gone after the undo window (recipe delete, bulk delete, personal-tag delete) | confirm dialog **and**, where a restore path exists, a 5–7s snackbar undo |
-| **Light action** | reversible state flip with an obvious inverse (claim/release shopping item, mark step done, favourite) | **no friction at all** — never a dialog or undo |
-
-Canonical: `mina_recept/recipe_card_widget.dart` + `recipe_delete_manager.dart` (hard),
-`pantry/pantry_item_card.dart` (reversible), `collaborative_shopping_items.dart` claim flow
-(light). If undo is impossible for a hard-destructive action, say so in the dialog body
-("Detta går inte att ångra").
-
----
-
-## 2. Long-press semantics (BUT-948)
-
-On **list-selection surfaces**, long-press enters multi-select (long-press → `enterSelection`,
-then a bulk-action bar replaces the FAB). Canonical: `pantry/pantry_item_card.dart`,
-`unified_shopping/widgets/shopping_item_tiles.dart`, `personal_tags/personal_tag_widgets.dart`,
-`social/group_detail/group_member_card.dart`.
-
-**Documented exceptions** (long-press is a contextual menu or feature affordance, NOT
-multi-select — each carries a `// BUT-948 exception:` comment):
-- **Conversations list** / **chat messages** — opens the message/conversation action menu.
-- **Cooking mode** — long-press an ingredient opens substitutions; an instruction step opens
-  the step timer.
-
-Rule for new long-presses: selectable list → multi-select; otherwise add a `// BUT-948
-exception:` comment explaining the contextual/feature intent. A user must never get a
-different long-press meaning without a documented reason.
+These two rules are canonical in [`.claude/rules/ui-conventions.md`](../../.claude/rules/ui-conventions.md)
+(auto-loaded every session, with the full class tables, exception lists, and canonical Dart
+sites). Not repeated here to avoid drift — read them there. The rules below (§3–§5, hover,
+top bars) are the decisions that live **only** here.
 
 ---
 
@@ -117,8 +90,8 @@ comment explaining why.
 
 ## Status of the BUT-1159 children
 
-- **BUT-954** (destructive-confirm) — rule documented (§1), applied across the canonical sites.
-- **BUT-948** (long-press) — rule + exceptions documented (§2).
+- **BUT-954** (destructive-confirm) — rule canonical in `ui-conventions.md`; applied across the canonical sites.
+- **BUT-948** (long-press) — rule + exceptions canonical in `ui-conventions.md`.
 - **BUT-964** (primary-action placement) — rule documented (§3); Friends FAB completed in BUT-1357.
 - **BUT-944** (icon convention) — shipped; documented (§4).
 - **BUT-961** (date/time) — shipped; documented (§5).
