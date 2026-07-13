@@ -134,6 +134,29 @@ class FirebaseFamilyRatingRepository
   }
 
   @override
+  Stream<List<FamilyRating>> watchForRecipe(
+    String householdId,
+    String recipeId,
+  ) async* {
+    // Same membership gate as getForRecipe — a non-member yields an empty
+    // breakdown (and _isCallerMember logs the denial) rather than leaking a
+    // raw permission-denied stream error. Equality-only filter → no composite
+    // index needed. Firestore rules remain the authoritative isolation layer.
+    if (!await _isCallerMember(householdId)) {
+      yield const [];
+      return;
+    }
+    yield* collection
+        .where('householdId', isEqualTo: householdId)
+        .where('recipeId', isEqualTo: recipeId)
+        // Deterministic doc id (recipeId|memberId) caps this at the household's
+        // member count; .limit is defence-in-depth on the live listener (BUT-478).
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs.map(fromFirestore).toList());
+  }
+
+  @override
   Future<List<FamilyRating>> getForHousehold(String householdId) async {
     if (!await _isCallerMember(householdId)) return [];
     final snap = await collection

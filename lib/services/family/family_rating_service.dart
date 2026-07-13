@@ -265,6 +265,18 @@ class FamilyRatingService extends BaseService {
     return _memberRatings(householdId, recipeId);
   }
 
+  /// Live stream of every member's verdict on one recipe, so the detail-page
+  /// breakdown refreshes when another member rates on their own device
+  /// (BUT-1461). Direct passthrough: the Future-shaped executeServiceOperation
+  /// wrapper doesn't fit a Stream return, and the repository already applies the
+  /// membership gate; stream errors propagate to the viewmodel's error state.
+  Stream<List<FamilyRating>> watchMemberRatings({
+    required String householdId,
+    required String recipeId,
+  }) {
+    return _ratings.watchForRecipe(householdId, recipeId);
+  }
+
   Future<List<FamilyRating>> _memberRatings(
     String householdId,
     String recipeId,

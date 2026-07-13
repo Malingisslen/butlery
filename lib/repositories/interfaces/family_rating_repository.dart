@@ -13,6 +13,15 @@ abstract class FamilyRatingRepository extends Repository<FamilyRating> {
   /// caller is not a member). Used to compute the family-average summary.
   Future<List<FamilyRating>> getForRecipe(String householdId, String recipeId);
 
+  /// Live stream of every family rating for [recipeId] within [householdId], so
+  /// the detail-page breakdown updates when another member rates on their own
+  /// device (BUT-1461). Emits `[]` for a non-member (same membership gate as
+  /// [getForRecipe]); the stream stays open until cancelled.
+  Stream<List<FamilyRating>> watchForRecipe(
+    String householdId,
+    String recipeId,
+  );
+
   /// All family ratings within [householdId] (empty for a non-member).
   Future<List<FamilyRating>> getForHousehold(String householdId);
 }

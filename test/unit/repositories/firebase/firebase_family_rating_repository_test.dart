@@ -312,6 +312,33 @@ void main() {
       },
     );
 
+    test(
+      'watchForRecipe streams the recipe rows and is membership-gated',
+      () async {
+        final fs = FakeFirebaseFirestore();
+        await _seedHousehold(fs);
+        final repo = _repo(fs);
+        await repo.create(_rating(recipeId: 'r1', memberId: 'liam'));
+        await repo.create(_rating(recipeId: 'r1', memberId: 'emma'));
+        await repo.create(_rating(recipeId: 'r2', memberId: 'liam'));
+
+        // Member: the first emission carries exactly the two r1 ratings.
+        final rows = await repo.watchForRecipe(_hh, 'r1').first;
+        expect(rows, hasLength(2));
+        expect(rows.every((x) => x.recipeId == 'r1'), isTrue);
+
+        // Outsider gets an empty stream (membership gate) — never a raw
+        // permission-denied error leaking through the stream.
+        expect(
+          await _repo(
+            fs,
+            authedUserId: _stranger,
+          ).watchForRecipe(_hh, 'r1').first,
+          isEmpty,
+        );
+      },
+    );
+
     test('createBatch persists valid ratings for a member', () async {
       final fs = FakeFirebaseFirestore();
       await _seedHousehold(fs);

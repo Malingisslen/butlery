@@ -34,7 +34,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   @override
   void initState() {
     super.initState();
-    _vm = FamilyRatingBreakdownViewModel(recipeId: widget.recipe.id)..load();
+    _vm = FamilyRatingBreakdownViewModel(recipeId: widget.recipe.id)
+      ..startListening();
   }
 
   @override
@@ -64,7 +65,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       recipeTitle: widget.recipe.title,
       presentMemberIds: [memberId],
     );
-    await _vm.load(); // reflect any change made on the entry screen
+    // The live family_ratings listener refreshes the breakdown automatically
+    // once the entry write lands — no manual reload needed (BUT-1461).
   }
 
   Widget _section(BuildContext context, FamilyRatingBreakdownViewModel vm) {

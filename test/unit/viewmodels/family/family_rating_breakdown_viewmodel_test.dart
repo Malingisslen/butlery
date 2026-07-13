@@ -177,7 +177,7 @@ void main() {
 
   test('no ratings → section hidden (hasFamilyRatings false)', () async {
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
     expect(vm.hasFamilyRatings, isFalse);
     expect(vm.rows, isEmpty);
   });
@@ -189,7 +189,7 @@ void main() {
     // Johan present in the household but unrated → no row.
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
 
     expect(vm.rows.map((r) => r.member.memberId), [_malin, emma]);
     expect(vm.rows.map((r) => r.stars), [4, 3]);
@@ -202,7 +202,7 @@ void main() {
     await rate(emma, HouseholdMemberType.profile, 3);
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
 
     expect(vm.familyCount, 3);
     expect(vm.familyAverageDisplay, '4,0'); // (4+5+3)/3, Swedish comma
@@ -214,7 +214,7 @@ void main() {
     await rate(_johan, HouseholdMemberType.user, 5, enteredBy: _malin);
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
 
     final johanRow = vm.rows.firstWhere((r) => r.member.memberId == _johan);
     expect(johanRow.isProxy, isTrue);
@@ -225,7 +225,7 @@ void main() {
     await rate(_malin, HouseholdMemberType.user, 4);
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
 
     final malinRow = vm.rows.firstWhere((r) => r.member.memberId == _malin);
     expect(malinRow.isProxy, isFalse);
@@ -241,7 +241,7 @@ void main() {
       await rate(_johan, HouseholdMemberType.user, 5, enteredBy: 'ghost-uid');
 
       final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-      await vm.load();
+      await vm.startListening();
 
       final johanRow = vm.rows.firstWhere((r) => r.member.memberId == _johan);
       expect(johanRow.isProxy, isTrue);
@@ -258,7 +258,7 @@ void main() {
       await rate(_johan, HouseholdMemberType.user, 0, enteredBy: _malin);
 
       final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-      await vm.load();
+      await vm.startListening();
 
       expect(vm.familyCount, 1);
       expect(vm.rows.map((r) => r.member.memberId), [_malin]);
@@ -270,19 +270,93 @@ void main() {
     await rate(_johan, HouseholdMemberType.user, 5, enteredBy: _malin);
 
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    await vm.load();
+    await vm.startListening();
 
     expect(vm.familyAverageDisplay, '4,5'); // (4+5)/2, comma not dot
   });
 
-  test('load notifies listeners so the detail section repaints', () async {
+  test(
+    'startListening notifies listeners so the detail section repaints',
+    () async {
+      await rate(_malin, HouseholdMemberType.user, 4);
+      final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
+      var notifications = 0;
+      vm.addListener(() => notifications++);
+
+      await vm.startListening();
+
+      expect(notifications, greaterThanOrEqualTo(1));
+    },
+  );
+
+  // BUT-1461 Gap 2: the breakdown listens live, so a rating entered on another
+  // member's device appears without re-opening the screen (no second load).
+  test('a rating written after listening starts updates rows live', () async {
+    final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
+    await vm.startListening();
+    expect(vm.familyCount, 0);
+    expect(vm.hasFamilyRatings, isFalse);
+
+    // Another member rates — the live listener must reflect it with no further
+    // call into the viewmodel.
+    await rate(_malin, HouseholdMemberType.user, 4);
+    await pumpEventQueue();
+
+    expect(vm.familyCount, 1);
+    expect(vm.rows.map((r) => r.member.memberId), [_malin]);
+  });
+
+  // Regression guard: the count/average and the rows must stay consistent when
+  // the household roster changes mid-view. The old cached-roster path counted a
+  // new member's rating in the summary but had no row for them → "2 betyg" over
+  // one row.
+  test('a member added mid-view shows a row with a matching count', () async {
     await rate(_malin, HouseholdMemberType.user, 4);
     final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
-    var notifications = 0;
-    vm.addListener(() => notifications++);
+    await vm.startListening();
+    expect(vm.familyCount, 1);
+    expect(vm.rows.map((r) => r.member.memberId), [_malin]);
 
-    await vm.load();
+    // A new child diner joins the household, then is rated on another device.
+    final emma = await addChild('Emma');
+    await rate(emma, HouseholdMemberType.profile, 5);
+    await pumpEventQueue();
 
-    expect(notifications, greaterThanOrEqualTo(1));
+    expect(vm.familyCount, vm.rows.length); // never a phantom count
+    expect(vm.familyCount, 2);
+    expect(vm.rows.map((r) => r.member.memberId), containsAll([_malin, emma]));
+  });
+
+  test('no state update after dispose (late rating is ignored)', () async {
+    await rate(_malin, HouseholdMemberType.user, 4);
+    final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
+    await vm.startListening();
+    expect(vm.familyCount, 1);
+
+    vm.dispose();
+
+    // A rating that lands after dispose must not reach the disposed viewmodel
+    // (cancelled subscription → no notifyListeners-after-dispose, count frozen).
+    await rate(_johan, HouseholdMemberType.user, 5, enteredBy: _malin);
+    await pumpEventQueue();
+
+    expect(vm.familyCount, 1);
+  });
+
+  // Disposing mid-setup (before the subscription is opened) must complete
+  // cleanly and never open a listener — the isDisposed guard after the roster
+  // fetch. State assertions can't observe the private subscription; this proves
+  // the guarded path doesn't throw and leaves the VM inert.
+  test('dispose during startListening setup completes without error', () async {
+    await rate(_malin, HouseholdMemberType.user, 4);
+    final vm = FamilyRatingBreakdownViewModel(recipeId: _recipe);
+
+    final future = vm.startListening(); // do not await — tear down mid-setup
+    vm.dispose();
+    await expectLater(future, completes);
+
+    await rate(_johan, HouseholdMemberType.user, 5, enteredBy: _malin);
+    await pumpEventQueue();
+    expect(vm.hasFamilyRatings, isFalse);
   });
 }
