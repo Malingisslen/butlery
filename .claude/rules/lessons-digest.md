@@ -65,6 +65,7 @@ when the counts drift apart.
 - A parallel-sprint's own "verified/done" is a claim, not a fact — on any salvage, verify from git, run the workflow /code-review (cross-file) on the staged diff BEFORE the specialist gates, then re-review the fixes; here it caught 8 bugs (incl. cross-file integration regressions) the per-ticket adversarial verify + file-scoped specialists both missed.
 - Plan-threshold-guard evidence comes from the /review-plan skill → ExitPlanMode block→pass cycle (stamps `plan-approved-<session>.marker`), NOT a hand-rolled audit agent; if blocked despite an approved plan, re-enter plan mode + ExitPlanMode to stamp it — never SKIP_PLAN_GUARD for a feature, never clobber another session's tasks/todo.md.
 - An audit report's "unfiled finding" is a repo-grep guess that can't see the tracker — before filing, re-check current code (may be fixed) AND search Linear (prior triage often consolidates many findings into one batch ticket whose title won't match).
+- A sprint specialist-review gate scores `ok` on any result, even a STUB finding (`issue:"test"`) — for data-writing/deleting code, open the gate's actual payload and re-run the real specialist on the COMMITTED diff; adversarial verify passing too is not a substitute (refuters miss the same structural fail-open).
 
 ## Firebase
 
