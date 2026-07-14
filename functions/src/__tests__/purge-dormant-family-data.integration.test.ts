@@ -128,6 +128,118 @@ async function seedReconcileHousehold(
     .set({ core: { familyAverage: 3, familyRatingCount: 2 } });
 }
 
+// BUT-1600 fail-closed guard: a household whose roster reads EMPTY (no
+// memberUserIds, no diner profiles) but still holds a rating must NOT have that
+// rating deleted. An empty keep-set means an under-populated read, not "everyone
+// left" — deleting on it would irreversibly wipe every rating.
+async function seedEmptyRosterHousehold(id: string): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    members: [],
+    memberUserIds: [],
+    createdBy: "system",
+    updatedAt: recent,
+  });
+  await db.collection("family_ratings").doc(`${id}|stranded`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|someone`,
+    memberType: "profile",
+    stars: 5,
+    enteredByUid: "system",
+    lastUpdatedAt: recent,
+  });
+}
+
+// BUT-1600: the `memberUserIds` half of the keep-set is load-bearing — an
+// ACCOUNT-HOLDER orphan (memberType user, uid no longer in memberUserIds) must
+// be deleted. Guards against a regression dropping the `...memberUserIds` spread
+// in rosterMemberIds, which would silently keep departed-account ratings.
+async function seedAccountOrphanHousehold(
+  id: string,
+  member: string
+): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    members: [{ userId: member, permission: "admin" }],
+    memberUserIds: [member],
+    createdBy: member,
+    updatedAt: recent,
+  });
+  await db.collection("family_ratings").doc(`${id}|acct-valid`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: member,
+    memberType: "user",
+    stars: 5,
+    enteredByUid: member,
+    lastUpdatedAt: recent,
+  });
+  await db.collection("family_ratings").doc(`${id}|acct-orphan`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|gone`,
+    memberType: "user",
+    stars: 1,
+    enteredByUid: member,
+    lastUpdatedAt: recent,
+  });
+}
+
+// BUT-1600 asymmetric fail-closed: `memberUserIds` empty/missing WHILE a diner
+// profile still exists. `roster` is non-empty (the diner id) so the empty-roster
+// guard does NOT fire — but the account-id half has collapsed, so an
+// account-holder (user-type) rating must still be KEPT, not deleted, because the
+// account projection can't be trusted. (A diner-type orphan in the same household
+// is still correctly reaped — the diner query is authoritative.)
+async function seedEmptyAccountHalfHousehold(id: string): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    members: [],
+    memberUserIds: [], // account half collapsed...
+    createdBy: "system",
+    updatedAt: recent,
+  });
+  await db.collection("diner_profiles").doc(`${id}|dp`).set({
+    householdId: id, // ...but a diner profile survives → roster.size > 0
+    name: "Emma",
+    createdBy: "system",
+    updatedAt: recent,
+  });
+  await db.collection("family_ratings").doc(`${id}|acct-rating`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|adult`, // a uid, absent from the (empty) memberUserIds
+    memberType: "user",
+    stars: 4,
+    enteredByUid: `${id}|adult`,
+    lastUpdatedAt: recent,
+  });
+}
+
+// BUT-1600 unknown-type fail-closed: a rating whose memberType is missing or
+// unrecognised (legacy/corrupt doc) whose memberId is off the roster must be
+// KEPT, not deleted — the sweep only reaps ratings it can positively attribute
+// to a trusted keep-half. Populated roster so only the type ambiguity is tested.
+async function seedUnknownTypeHousehold(id: string, member: string): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    members: [{ userId: member, permission: "admin" }],
+    memberUserIds: [member],
+    createdBy: member,
+    updatedAt: recent,
+  });
+  await db.collection("family_ratings").doc(`${id}|untyped`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|mystery`, // off the roster...
+    // memberType intentionally omitted → unrecognised → must fail closed
+    stars: 3,
+    enteredByUid: member,
+    lastUpdatedAt: recent,
+  });
+}
+
 async function main(): Promise<void> {
   console.log("family-data dormancy sweep integration\n");
 
@@ -156,6 +268,14 @@ async function main(): Promise<void> {
   });
   const reconcile = `hh-reconcile-${RUN}`;
   await seedReconcileHousehold(reconcile, `m-reconcile-${RUN}`);
+  const emptyRoster = `hh-emptyroster-${RUN}`;
+  await seedEmptyRosterHousehold(emptyRoster);
+  const acctOrphan = `hh-acctorphan-${RUN}`;
+  await seedAccountOrphanHousehold(acctOrphan, `m-acct-${RUN}`);
+  const emptyAcctHalf = `hh-emptyaccthalf-${RUN}`;
+  await seedEmptyAccountHalfHousehold(emptyAcctHalf);
+  const untyped = `hh-untyped-${RUN}`;
+  await seedUnknownTypeHousehold(untyped, `m-untyped-${RUN}`);
 
   await runDormantFamilyPurge(db, NOW);
 
@@ -232,6 +352,35 @@ async function main(): Promise<void> {
     reconcileCard?.core?.familyRatingCount === 1 &&
       reconcileCard?.core?.familyAverage === 4,
     "reconcile: recipe-card family pill recomputed to the surviving rating"
+  );
+
+  // Empty-roster fail-closed guard: rating survives (never diff-deleted against ∅).
+  assert(
+    await exists("family_ratings", `${emptyRoster}|stranded`),
+    "empty-roster: rating kept (fail closed, not wiped on an empty keep-set)"
+  );
+
+  // Account-holder orphan: memberUserIds half of the keep-set is enforced.
+  assert(
+    !(await exists("family_ratings", `${acctOrphan}|acct-orphan`)),
+    "account-orphan: departed-account rating (uid off memberUserIds) deleted"
+  );
+  assert(
+    await exists("family_ratings", `${acctOrphan}|acct-valid`),
+    "account-orphan: current-account rating kept"
+  );
+
+  // Asymmetric fail-closed: empty memberUserIds + a live diner must NOT wipe the
+  // account-holder rating (account half untrusted while diner half keeps roster non-empty).
+  assert(
+    await exists("family_ratings", `${emptyAcctHalf}|acct-rating`),
+    "empty-account-half: account rating kept (account projection untrusted, diner half alive)"
+  );
+
+  // Unknown/missing memberType must fail closed: kept despite being off-roster.
+  assert(
+    await exists("family_ratings", `${untyped}|untyped`),
+    "unknown-type: off-roster rating with no memberType kept (fail closed)"
   );
 
   console.log(`\n${failed === 0 ? "ALL PASS" : `${failed} FAILED`}`);

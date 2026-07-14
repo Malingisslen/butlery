@@ -163,9 +163,44 @@ async function reconcileDepartedMemberRatings(
 ): Promise<admin.firestore.QueryDocumentSnapshot[]> {
   if (ratings.empty) return ratings.docs;
   const roster = rosterMemberIds(memberUserIds, diners);
+  // Fail closed on a fully-empty keep-set (BOTH id-space halves collapsed). A
+  // rating's existence proves a member once existed, so an empty roster means the
+  // read was empty/under-populated, NOT that everyone left. Diff-deleting against
+  // ∅ would delete EVERY rating — irreversible, silent (strict:false), and it
+  // also corrupts public aggregates via onFamilyRatingDeleted. Skip; the orphans
+  // re-detect next sweep once the roster reads correctly.
+  if (roster.size === 0) {
+    logger.warn("family-retention: skipped orphan reconcile (empty roster)", {
+      householdId: (ratings.docs[0].data().householdId as string) ?? "unknown",
+      ratingCount: ratings.docs.length,
+    });
+    return ratings.docs;
+  }
+  // The keep-set has two INDEPENDENT halves with different trust properties:
+  //  - Diner ids come from an authoritative equality query: an empty result is
+  //    the genuine "all diner profiles deleted" signal, so a profile-type rating
+  //    absent from it is a real orphan even when the diner set is empty.
+  //  - Account ids come from `memberUserIds`, a DENORMALISED projection that can
+  //    read empty/missing on a corrupt or partially-written household doc. An
+  //    empty projection is "unknown", not "no members" — trusting it would delete
+  //    EVERY account-holder rating at once (same fault as the total wipe above,
+  //    but hidden because live diners keep `roster` non-empty). So only treat a
+  //    user-type rating as orphaned when the account half is non-empty; otherwise
+  //    defer it to a sweep that reads a real roster.
+  const accountRosterTrusted = memberUserIds.length > 0;
   const orphans = ratings.docs.filter((r) => {
-    const mid = r.data().memberId;
-    return typeof mid === "string" && !roster.has(mid);
+    const data = r.data();
+    const mid = data.memberId;
+    if (typeof mid !== "string" || roster.has(mid)) return false;
+    // Delete only when the rating positively belongs to a TRUSTED keep-half.
+    // Fail closed on anything else: a user-type rating whose account half is
+    // untrusted, and any rating whose memberType is missing/unrecognised (legacy
+    // or corrupt doc), is kept rather than deleted — a stale count is cheap; an
+    // irreversible wrong delete of a member's/child's rating is not.
+    const type = data.memberType;
+    if (type === "user") return accountRosterTrusted;
+    if (type === "profile") return true; // diner half is authoritative
+    return false;
   });
   if (orphans.length === 0) return ratings.docs;
 
