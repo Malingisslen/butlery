@@ -21,7 +21,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
-import 'package:butlery/widgets/menu/voice_prompt_button.dart';
+import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -285,6 +285,52 @@ void main() {
       reason: 'rationale must state the on-device-only promise (DPO condition)',
     );
   });
+
+  testWidgets(
+    'surface-specific copy overrides the weekly-menu defaults for tooltip '
+    'AND rationale (a permission dialog naming the wrong purpose misstates '
+    'data use — Store/DPO condition)',
+    (tester) async {
+      wire(_FakeVoiceCaptureService());
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: VoicePromptButton(
+            onTranscript: (_) {},
+            permissionGateway: _FakeGateway(
+              PermissionStatus.denied,
+              requestOutcome: PermissionStatus.denied,
+            ),
+            startTooltip: 'Tala in din sökning',
+            rationaleTitle: 'Mikrofon för sökning',
+            rationaleBody: 'Rationale för söksurfacen',
+          ),
+        ),
+      );
+
+      expect(
+        find.byTooltip('Tala in din sökning'),
+        findsOneWidget,
+        reason: 'idle tooltip must use the caller\'s copy when provided',
+      );
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Mikrofon för sökning'),
+        findsOneWidget,
+        reason: 'rationale dialog title must use the caller\'s copy',
+      );
+      expect(find.text('Rationale för söksurfacen'), findsOneWidget);
+      expect(
+        find.textContaining('veckomeny'),
+        findsNothing,
+        reason:
+            'the weekly-menu default copy must NOT leak onto a surface '
+            'that provided its own — this is the ?? fallback regressing',
+      );
+    },
+  );
 
   testWidgets('disabled while the menu generates', (tester) async {
     wire(_FakeVoiceCaptureService());

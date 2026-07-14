@@ -91,6 +91,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | REC-13 | Re-extract recipe from source | Verified |
 | REC-14 | Personal tags & collections | Partial |
 | REC-15 | Tag detail + automation rules | Partial |
+| REC-16 | Voice recipe search (Tala in din sökning) | Verified |
 
 ### Recipe Import
 | ID | Feature | Tests |
@@ -148,6 +149,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | SOC-16 | Cook-snaps (social surface) | Verified |
 | SOC-17 | Activity feed | Verified |
 | SOC-18 | Report content / user | Untested |
+| SOC-19 | Voice comment on recipes (Tala in en kommentar) | Verified |
 
 ### Groups & Messaging
 | ID | Feature | Tests |
@@ -450,6 +452,13 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **Expected behavior:** Tag header + usage + rules. Inline name edit; add/edit/delete/toggle automation rules; "Tillämpa regler" applies to existing recipes (progress → result). Share tag. Delete shows cascade preview (how many recipes lose the tag).
 - **Edge cases:** Loading/not-found; rule + tag delete need confirmation.
 - **Test coverage:** Partial — VM + rule model covered (`personal_tag_rule_test.dart`, `personal_tag_viewmodel_test.dart`); `TagDetailView` widget untested.
+
+#### REC-16: Voice recipe search ("Tala in din sökning")
+- **Entry:** Mic in the Mina recept search field (`SearchFilterWidget.enableVoiceInput` → `VoicePromptButton`).
+- **User story:** As a home cook, I want to speak a search query so that I can find a recipe without typing.
+- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript lands in the search box as if typed (same onSearchChanged path; Algolia/Firestore routing untouched). Opt-in per surface — other lists sharing the search facade show no mic. Audio deleted after transcription, never uploaded.
+- **Edge cases:** Denied mic → typed search untouched; model missing → "inte tillgänglig" notice with typing pointer; hidden on web.
+- **Test coverage:** Verified — `search_filter_widget_test.dart` (spoken query → onSearchChanged; no mic by default), plus the shared `voice_prompt_button_test.dart` degradation suite.
 
 ### Recipe Import
 
@@ -786,6 +795,13 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **Expected behavior:** A report dialog takes a content type + id and submits to the moderation pipeline.
 - **Test coverage:** **Untested** at the dialog level. *(Pairs with SOC-04 block filtering and SOC-13 profanity filtering.)*
 
+
+#### SOC-19: Voice comment on recipes ("Tala in en kommentar")
+- **Entry:** Mic on the recipe comment form (`CommentFormWidget` → `VoicePromptButton`).
+- **User story:** As a user, I want to dictate a comment so that I can share a note about a recipe without typing.
+- **Expected behavior:** Push-to-talk → on-device KB-Whisper transcription → transcript APPENDS editable to the comment field and flows through the same onChanged path as typing — draft persistence, the profanity gate (BUT-1393) and the account-maturity gate (BUT-1419) all see it as typed text. Nothing posts automatically. Audio deleted after transcription, never uploaded.
+- **Edge cases:** Denied mic → typed text untouched; busy states (posting/uploading) disable the mic; hidden on web.
+- **Test coverage:** Verified — `comment_form_widget_test.dart` (append+editable+draft parity, denied-mic fallback), plus the shared `voice_prompt_button_test.dart` degradation suite.
 ### Groups & Messaging
 
 #### GRP-01: Create social group (friend category)

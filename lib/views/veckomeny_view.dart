@@ -31,7 +31,7 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
-import 'package:butlery/widgets/menu/voice_prompt_button.dart';
+import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 

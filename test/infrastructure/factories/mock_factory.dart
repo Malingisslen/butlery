@@ -412,6 +412,10 @@ class MockFactory {
     return production.MockImagePickerService();
   }
 
+  static production.MockVoiceCaptureService createVoiceCaptureService() {
+    return production.MockVoiceCaptureService();
+  }
+
   /// Create fake XFile for image picker testing
   static production.FakeXFile createXFile(
     String path, {

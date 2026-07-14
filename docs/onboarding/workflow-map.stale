@@ -1,8 +1,0 @@
-{
-  "map": "docs/onboarding/workflow-map.html",
-  "stale_since": "2026-07-14",
-  "triggers": [
-    "lib/views/cooking_mode_view.dart"
-  ],
-  "last_stamped": "2026-07-14"
-}

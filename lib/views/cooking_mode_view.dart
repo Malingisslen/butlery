@@ -243,7 +243,8 @@ class _CookingModeContent extends StatelessWidget {
       context: context,
       permission: Permission.microphone,
       rationaleTitle: context.l10n.voiceAssistMicRationaleTitle,
-      rationaleBody: context.l10n.voicePromptMicRationaleBody,
+      // Generic body — the menu-specific one misstates purpose here.
+      rationaleBody: context.l10n.voiceMicRationaleBody,
       grantLabel: context.l10n.voicePromptMicGrant,
       permanentlyDeniedMessage: context.l10n.voicePromptMicPermanentlyDenied,
       openSettingsLabel: context.l10n.voicePromptOpenSettings,

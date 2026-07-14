@@ -7,10 +7,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 // Focused Components
+import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
+import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 
 // Export models for backward compatibility
 export 'search_filter/filter_models.dart';
@@ -77,6 +79,16 @@ class SearchFilterWidget extends StatefulWidget {
   final bool autofocus;
   final EdgeInsetsGeometry? padding;
 
+  /// Opt-in mic in the search field: a spoken query lands in the box exactly
+  /// as if typed (same onSearchChanged path — Algolia/Firestore routing
+  /// untouched). Off by default so list surfaces that share this facade
+  /// don't all sprout microphones.
+  final bool enableVoiceInput;
+
+  /// Injectable per OsPermissionHelper's contract — tests stub permission
+  /// statuses without touching plugin channels.
+  final PermissionGateway voicePermissionGateway;
+
   const SearchFilterWidget({
     super.key,
     required this.searchQuery,
@@ -123,6 +135,10 @@ class SearchFilterWidget extends StatefulWidget {
     this.searchOnly = false,
     this.autofocus = false,
     this.padding,
+
+    // Voice input (optional)
+    this.enableVoiceInput = false,
+    this.voicePermissionGateway = const DefaultPermissionGateway(),
   });
 
   /// Factory: Full search + filter functionality
@@ -142,6 +158,8 @@ class SearchFilterWidget extends StatefulWidget {
     required VoidCallback onClearAllFilters,
     int? resultCount,
     bool showStats = true,
+    bool enableVoiceInput = false,
+    PermissionGateway voicePermissionGateway = const DefaultPermissionGateway(),
   }) {
     return SearchFilterWidget(
       searchQuery: searchQuery,
@@ -159,6 +177,8 @@ class SearchFilterWidget extends StatefulWidget {
       onClearAllFilters: onClearAllFilters,
       resultCount: resultCount,
       showStats: showStats,
+      enableVoiceInput: enableVoiceInput,
+      voicePermissionGateway: voicePermissionGateway,
     );
   }
 
@@ -171,6 +191,8 @@ class SearchFilterWidget extends StatefulWidget {
     EdgeInsetsGeometry? padding,
     bool showStats = false,
     int? resultCount,
+    bool enableVoiceInput = false,
+    PermissionGateway voicePermissionGateway = const DefaultPermissionGateway(),
   }) {
     return SearchFilterWidget(
       searchQuery: searchQuery,
@@ -181,6 +203,8 @@ class SearchFilterWidget extends StatefulWidget {
       padding: padding,
       showStats: showStats,
       resultCount: resultCount,
+      enableVoiceInput: enableVoiceInput,
+      voicePermissionGateway: voicePermissionGateway,
     );
   }
 
@@ -230,6 +254,54 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
     _searchFocusNode.unfocus();
   }
 
+  /// Keeps the mic's State alive when the field's suffix RESTRUCTURES —
+  /// SearchInputWidget wraps the trailing slot in a Row only while the
+  /// clear button is visible, so an empty↔non-empty flip would otherwise
+  /// recreate VoicePromptButton mid-recording and its dispose() would
+  /// silently cancel the capture (review finding, 2026-07-14).
+  final GlobalKey _voiceButtonKey = GlobalKey();
+
+  /// Whisper renders utterances as sentences ("Köttbullar."); the search
+  /// filter is an exact-substring match that normalizes case/diacritics
+  /// but NOT punctuation, so the sentence dressing must come off here.
+  static final _edgePunctuationRe = RegExp(r'^[\s.,!?…]+|[\s.,!?…]+$');
+
+  /// Spoken query lands as if typed: the controller listener fires
+  /// onSearchChanged, so the normal search routing takes over. Selection
+  /// is restored explicitly — the bare text setter leaves an invalid
+  /// (-1,-1) selection that breaks continued typing.
+  void _onVoiceTranscript(String transcript) {
+    final query = transcript.replaceAll(_edgePunctuationRe, '');
+    _searchController.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+  }
+
+  Widget? _buildVoiceButton() {
+    if (!widget.enableVoiceInput) return null;
+    return VoicePromptButton(
+      key: _voiceButtonKey,
+      onTranscript: _onVoiceTranscript,
+      permissionGateway: widget.voicePermissionGateway,
+      startTooltip: context.l10n.voiceSearchStart,
+      rationaleTitle: context.l10n.voiceSearchMicRationaleTitle,
+      rationaleBody: context.l10n.voiceMicRationaleBody,
+      // The suffix can stack clear + mic + filter toggle on narrow phones —
+      // compact density keeps the editable region usable.
+      compact: true,
+    );
+  }
+
+  /// Composes the field's single trailing slot from the optional mic and an
+  /// optional extra control (the filter toggle in full mode).
+  Widget? _composeTrailing(Widget? extra) {
+    final voice = _buildVoiceButton();
+    if (voice == null) return extra;
+    if (extra == null) return voice;
+    return Row(mainAxisSize: MainAxisSize.min, children: [voice, extra]);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Search-only mode: just return search bar
@@ -241,6 +313,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         autofocus: widget.autofocus,
         onClear: _onSearchCleared,
         padding: widget.padding,
+        trailing: _composeTrailing(null),
       );
     }
 
@@ -285,13 +358,15 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         focusNode: _searchFocusNode,
         hintText: widget.searchHint,
         onClear: _onSearchCleared,
-        trailing: _hasFilters() && widget.onToggleFilters != null
-            ? FilterToggleButton(
-                showFilters: widget.showFilters ?? false,
-                hasActiveFilters: widget.hasActiveFilters ?? false,
-                onToggle: widget.onToggleFilters!,
-              )
-            : null,
+        trailing: _composeTrailing(
+          _hasFilters() && widget.onToggleFilters != null
+              ? FilterToggleButton(
+                  showFilters: widget.showFilters ?? false,
+                  hasActiveFilters: widget.hasActiveFilters ?? false,
+                  onToggle: widget.onToggleFilters!,
+                )
+              : null,
+        ),
       ),
     );
   }

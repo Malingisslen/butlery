@@ -35,6 +35,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -417,6 +418,12 @@ class TestServiceLocator {
     // Image Picker Service
     getIt.registerSingleton<ImagePickerService>(
       MockFactory.createImagePickerService(),
+    );
+
+    // Voice Capture Service (VoicePromptButton resolves it in initState —
+    // needed by any tree containing a mic, e.g. the comment form)
+    getIt.registerSingleton<VoiceCaptureService>(
+      MockFactory.createVoiceCaptureService(),
     );
 
     // Dialog Service

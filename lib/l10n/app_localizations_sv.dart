@@ -1249,6 +1249,22 @@ class AppLocalizationsSv extends AppLocalizations {
       'Röstfunktionen är inte tillgänglig just nu. Det går bra att skriva i stället';
 
   @override
+  String get voiceSearchStart => 'Tala in din sökning';
+
+  @override
+  String get voiceCommentStart => 'Tala in en kommentar';
+
+  @override
+  String get voiceSearchMicRationaleTitle => 'Mikrofon för sökning';
+
+  @override
+  String get voiceCommentMicRationaleTitle => 'Mikrofon för kommentarer';
+
+  @override
+  String get voiceMicRationaleBody =>
+      'Butlery använder mikrofonen för att du ska kunna tala i stället för att skriva. Ljudet tolkas direkt i telefonen och skickas aldrig vidare.';
+
+  @override
   String get voiceAssistUnavailable =>
       'Röstfunktionen är inte tillgänglig just nu';
 

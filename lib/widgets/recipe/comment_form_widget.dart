@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -14,6 +15,7 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -32,12 +34,17 @@ class CommentFormWidget extends StatefulWidget {
   final Function(String message, {bool isError}) onShowMessage;
   final VoidCallback? onCommentPosted;
 
+  /// Injectable per OsPermissionHelper's contract — tests stub mic
+  /// permission statuses without touching plugin channels.
+  final PermissionGateway voicePermissionGateway;
+
   const CommentFormWidget({
     super.key,
     required this.socialViewModel,
     required this.recipeId,
     required this.onShowMessage,
     this.onCommentPosted,
+    this.voicePermissionGateway = const DefaultPermissionGateway(),
   });
 
   @override
@@ -107,6 +114,28 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     setState(() => _selectedImages.removeAt(index));
   }
 
+  /// A dictated comment lands EDITABLE in the field, appended to whatever
+  /// was already typed (typed text is never mutated — a separator space is
+  /// added only when one is missing), and flows through _onChanged — so
+  /// the send-button state, the draft persistence, and (on post) the
+  /// profanity + account-maturity gates all see it exactly as if it had
+  /// been typed.
+  void _onVoiceTranscript(String transcript) {
+    final existing = _controller.text;
+    final needsSeparator =
+        existing.isNotEmpty &&
+        !existing.endsWith(' ') &&
+        !existing.endsWith('\n');
+    final combined = existing.isEmpty
+        ? transcript
+        : '$existing${needsSeparator ? ' ' : ''}$transcript';
+    _controller.value = TextEditingValue(
+      text: combined,
+      selection: TextSelection.collapsed(offset: combined.length),
+    );
+    _onChanged(combined);
+  }
+
   /// Uploads the selected images to the contract path. Returns the download
   /// URLs, or null if ANY upload failed — the caller must then NOT post the
   /// comment (we never publish a comment referencing images that didn't land).
@@ -151,15 +180,31 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       }
     }
 
+    // Snapshot what is being SENT: text arriving while the post is in
+    // flight (a dictation finishing, more typing) must survive the
+    // success cleanup — clearing blindly would silently discard it.
+    final sentText = _controller.text;
     try {
       await widget.socialViewModel.postComment(
         widget.recipeId,
         imageUrls: imageUrls,
       );
-      // Post-success: VM cleared its newCommentText; mirror that on the
-      // controller + drop the persisted draft + clear selected images.
-      _controller.clear();
-      await _draftManager.clear();
+      // Post-success: remove exactly what was sent; keep anything that
+      // landed in the field during the post.
+      final current = _controller.text;
+      if (current == sentText) {
+        _controller.clear();
+        await _draftManager.clear();
+      } else {
+        final remainder = current.startsWith(sentText)
+            ? current.substring(sentText.length).trimLeft()
+            : current;
+        _controller.value = TextEditingValue(
+          text: remainder,
+          selection: TextSelection.collapsed(offset: remainder.length),
+        );
+        _onChanged(remainder);
+      }
       if (mounted) {
         setState(() => _selectedImages.clear());
         widget.onShowMessage(context.l10n.commentPosted);
@@ -251,6 +296,14 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingS),
+            VoicePromptButton(
+              onTranscript: _onVoiceTranscript,
+              enabled: !_isBusy,
+              permissionGateway: widget.voicePermissionGateway,
+              startTooltip: context.l10n.voiceCommentStart,
+              rationaleTitle: context.l10n.voiceCommentMicRationaleTitle,
+              rationaleBody: context.l10n.voiceMicRationaleBody,
+            ),
             if (!_atImageCap)
               IconButton(
                 tooltip: context.l10n.commentAttachImage,

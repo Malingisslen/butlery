@@ -1246,6 +1246,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'The voice feature isn\'t available right now. Typing works just as well';
 
   @override
+  String get voiceSearchStart => 'Speak your search';
+
+  @override
+  String get voiceCommentStart => 'Speak a comment';
+
+  @override
+  String get voiceSearchMicRationaleTitle => 'Microphone for search';
+
+  @override
+  String get voiceCommentMicRationaleTitle => 'Microphone for comments';
+
+  @override
+  String get voiceMicRationaleBody =>
+      'Butlery uses the microphone so you can speak instead of typing. The audio is interpreted directly on your phone and never sent anywhere.';
+
+  @override
   String get voiceAssistUnavailable =>
       'The voice feature isn\'t available right now';
 

@@ -128,7 +128,9 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
       context: context,
       permission: Permission.microphone,
       rationaleTitle: context.l10n.voiceImportMicRationaleTitle,
-      rationaleBody: context.l10n.voicePromptMicRationaleBody,
+      // Generic body — the menu-specific one misstates purpose here
+      // (same finding class as the search/comment mics, fixed 2026-07-14).
+      rationaleBody: context.l10n.voiceMicRationaleBody,
       grantLabel: context.l10n.voicePromptMicGrant,
       permanentlyDeniedMessage: context.l10n.voicePromptMicPermanentlyDenied,
       openSettingsLabel: context.l10n.voicePromptOpenSettings,

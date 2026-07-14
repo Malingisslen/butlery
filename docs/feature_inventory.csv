@@ -28,6 +28,7 @@ REC-12,Cook-snap gallery (recipe surface),Recipe Management,Untested,"Cook attac
 REC-13,Re-extract recipe from source,Recipe Management,Verified,"Cook re-parses a recipe from its captured source after a bad parse",
 REC-14,Personal tags & collections,Recipe Management,Partial,"Home cook creates and automates personal tags (collections)","View untested"
 REC-15,Tag detail + automation rules,Recipe Management,Partial,"Home cook defines rules that auto-apply a tag to matching recipes","View untested"
+REC-16,Voice recipe search (Tala in din sökning),Recipe Management,Verified,"User speaks a search query; on-device Swedish transcription lands in the search box as typed text","voice plan Phase 2a, shipped 2026-07-14; widget-tested (transcript → onSearchChanged, opt-in default off); reuses VoicePromptButton + on-device KB-Whisper, audio never uploaded"
 IMP-01,URL import (single + batch),Recipe Import,Verified,"Home cook pastes one or several recipe links to import them",
 IMP-02,Recipe-index (listing-page) expansion,Recipe Import,Partial,"User pasting a category page imports every recipe it links to","No dedicated expander test"
 IMP-03,Smart (unified) import,Recipe Import,Verified,"User pastes a URL or text and the app figures out what to do",
@@ -74,6 +75,7 @@ SOC-15,Rate recipes (1-5 stars),Social,Verified,"User rates a recipe and contrib
 SOC-16,Cook-snaps (social surface),Social,Verified,"User posts photos of a dish they cooked for friends to see",
 SOC-17,Activity feed,Social,Verified,"User sees a feed of friends' cooking activity with photos",
 SOC-18,Report content / user,Social,Untested,"User reports a profile or content so it can be moderated","Dialog untested"
+SOC-19,Voice comment on recipes (Tala in en kommentar),Social,Verified,"User dictates a recipe comment; the editable transcript passes the same profanity and account-maturity gates as typed text","voice plan Phase 2b, shipped 2026-07-14; widget-tested (append+editable, draft persistence, denied-mic fallback); audio deleted after transcription"
 GRP-01,Create social group,Groups & Messaging,Partial,"User creates a named friend group and invites initial friends",
 GRP-02,Group detail - manage & share,Groups & Messaging,Verified,"Group member views members/stats and (admin) manages and shares",
 GRP-03,Leave group / transfer ownership,Groups & Messaging,Verified,"Member leaves a group with safe ownership succession",

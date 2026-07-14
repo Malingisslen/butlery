@@ -126,8 +126,7 @@
   </section>
 </div>
 
-<script id="data" type="application/json">
-{
+<script id="data" type="application/json">{
  "columns": [
   {
    "key": "view",
@@ -3334,12 +3333,13 @@
   {
    "id": "flow-rec-1",
    "label": "bläddra & sök recept",
-   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Rost: den Algolia-kapabla sökroutern finns och är byggd men har ingen anropande part i receptlistan (kill-switchad av förvalt AV feature-flaggan); dess enda produktionsanvändning idag är ID-uppslag, inte textsökning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning. Nytt (Increment E2): vid varje listförändring (sök/sortering/filter/loadMore) körs en batchad pooled-ratings-läsning för “Butlery-betyget”-pillen, men den är bakom feature-flaggan enable_pooled_ratings som är AV — anropet till repo-ratings nås därför aldrig i produktion.",
+   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Rost: den Algolia-kapabla sökroutern finns och är byggd men har ingen anropande part i receptlistan (kill-switchad av förvalt AV feature-flaggan); dess enda produktionsanvändning idag är ID-uppslag, inte textsökning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning. Nytt (Increment E2): vid varje listförändring (sök/sortering/filter/loadMore) körs en batchad pooled-ratings-läsning för “Butlery-betyget”-pillen, men den är bakom feature-flaggan enable_pooled_ratings som är AV — anropet till repo-ratings nås därför aldrig i produktion. Röstsökning (REC-16, röstplanen fas 2a, 2026-07-14): mikrofon i sökfältet — transkriptet landar i sökrutan som om det skrivits (samma onSearchChanged-väg, samma lokala filtrering); nekad mikrofon lämnar skrivvägen orörd.",
    "features": [
     "REC-01",
     "REC-02",
     "REC-03",
-    "ENG-11"
+    "ENG-11",
+    "REC-16"
    ],
    "steps": [
     {
@@ -3399,6 +3399,13 @@
      "transport": "method call (bakom feature-flagga, AV)",
      "verified": true,
      "status": "dead"
+    },
+    {
+     "from": "v-mina-recept",
+     "to": "svc-voice-capture",
+     "payload": "tal → transkript till sökrutan",
+     "transport": "VoicePromptButton (lib/widgets/voice/voice_prompt_button.dart, opt-in via SearchFilterWidget.enableVoiceInput)",
+     "verified": true
     }
    ],
    "area": "recept"
@@ -5100,7 +5107,7 @@
   {
    "id": "flow-soc-3",
    "label": "kommentarer & betyg",
-   "description": "Kommentera recept (trådat, gilla), betygsätt 1–5 stjärnor. Betygskedjan delar SAMMA debounce-aggregator som familjebetyg (cf-rating-agg, redan kartlagd i flow4) men har en EGEN triggerfunktion — familjebetyg triggas på family_ratings (endast memberType profile), sociala 1–5-betyg triggas separat på recipe_ratings. Debounce-motorn är nu GENERALISERAD till en delad modul (shared/debounce-queue.ts) — samma beteende, ingen regression. Nytt sedan förra verifieringen: recipe_ratings speglas server-sidigt till en poolad betygsaggregator (\"Butlery-betyget\", canonical_recipe_stats) via en tvåstegs Stage A/B-pipeline plus en klientläsning i receptvyn — helt byggd och enhetstestad men BAKOM feature-flaggan enable_pooled_ratings (AV i produktion). Enda undantaget är raderings-/retraktionsvägen i Stage A, som körs ALLTID oavsett flagga (ingen orphanad poströst).",
+   "description": "Kommentera recept (trådat, gilla), betygsätt 1–5 stjärnor. Betygskedjan delar SAMMA debounce-aggregator som familjebetyg (cf-rating-agg, redan kartlagd i flow4) men har en EGEN triggerfunktion — familjebetyg triggas på family_ratings (endast memberType profile), sociala 1–5-betyg triggas separat på recipe_ratings. Debounce-motorn är nu GENERALISERAD till en delad modul (shared/debounce-queue.ts) — samma beteende, ingen regression. Nytt sedan förra verifieringen: recipe_ratings speglas server-sidigt till en poolad betygsaggregator (\"Butlery-betyget\", canonical_recipe_stats) via en tvåstegs Stage A/B-pipeline plus en klientläsning i receptvyn — helt byggd och enhetstestad men BAKOM feature-flaggan enable_pooled_ratings (AV i produktion). Enda undantaget är raderings-/retraktionsvägen i Stage A, som körs ALLTID oavsett flagga (ingen orphanad poströst). Röstkommentar (SOC-19, röstplanen fas 2b, 2026-07-14): mikrofon på kommentarsformuläret — transkriptet läggs REDIGERBART till i fältet och går genom exakt samma väg som skriven text (utkasts-sparning, profanitets- och kontomognadsgrindarna ser identisk input); ljudet raderas efter transkribering.",
    "steps": [
     {
      "from": "v-recipe-detail",
@@ -5275,13 +5282,21 @@
      "transport": "Firestore read",
      "verified": true,
      "status": "dead"
+    },
+    {
+     "from": "v-recipe-detail",
+     "to": "svc-voice-capture",
+     "payload": "tal → transkript till kommentarsfältet",
+     "transport": "VoicePromptButton i CommentFormWidget (lib/widgets/recipe/comment_form_widget.dart)",
+     "verified": true
     }
    ],
    "area": "socialt",
    "features": [
     "SOC-13",
     "SOC-14",
-    "SOC-15"
+    "SOC-15",
+    "SOC-19"
    ]
   },
   {
@@ -7100,8 +7115,7 @@
    "area": "övrigt"
   }
  ]
-}
-</script>
+}</script>
 
 <script>
 const DATA = JSON.parse(document.getElementById('data').textContent);

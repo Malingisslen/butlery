@@ -2156,6 +2156,36 @@ abstract class AppLocalizations {
   /// **'Röstfunktionen är inte tillgänglig just nu. Det går bra att skriva i stället'**
   String get voiceUnavailable;
 
+  /// No description provided for @voiceSearchStart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in din sökning'**
+  String get voiceSearchStart;
+
+  /// No description provided for @voiceCommentStart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tala in en kommentar'**
+  String get voiceCommentStart;
+
+  /// No description provided for @voiceSearchMicRationaleTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofon för sökning'**
+  String get voiceSearchMicRationaleTitle;
+
+  /// No description provided for @voiceCommentMicRationaleTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mikrofon för kommentarer'**
+  String get voiceCommentMicRationaleTitle;
+
+  /// No description provided for @voiceMicRationaleBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery använder mikrofonen för att du ska kunna tala i stället för att skriva. Ljudet tolkas direkt i telefonen och skickas aldrig vidare.'**
+  String get voiceMicRationaleBody;
+
   /// No description provided for @voiceAssistUnavailable.
   ///
   /// In sv, this message translates to:

@@ -57,6 +57,7 @@ import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -4208,6 +4209,13 @@ class MockConnectivityMonitoringService extends Mock
 
 /// Mock implementation of ImagePickerService
 class MockImagePickerService extends Mock implements ImagePickerService {
+  // All methods left without implementation to allow stubbing with when()
+}
+
+/// Mock implementation of VoiceCaptureService (VoicePromptButton resolves it
+/// from the ServiceLocator in initState, so any widget tree containing a mic
+/// needs it registered even when the mic is never tapped)
+class MockVoiceCaptureService extends Mock implements VoiceCaptureService {
   // All methods left without implementation to allow stubbing with when()
 }
 

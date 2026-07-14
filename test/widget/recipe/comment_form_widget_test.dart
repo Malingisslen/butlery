@@ -10,6 +10,7 @@
 /// getters and records two calls (`updateNewCommentText`, `postComment`).
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -28,6 +31,8 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/fake_permission_gateways.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
 
 class _FakeSocialRecipeViewModel extends Mock
@@ -79,11 +84,179 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  CommentFormWidget buildWidget(String recipeId) => CommentFormWidget(
+  CommentFormWidget buildWidget(
+    String recipeId, {
+    PermissionGateway? voiceGateway,
+  }) => CommentFormWidget(
     socialViewModel: vm,
     recipeId: recipeId,
     onShowMessage: (_, {bool isError = false}) {},
+    voicePermissionGateway: voiceGateway ?? const DefaultPermissionGateway(),
   );
+
+  /// Stubs the shared MockVoiceCaptureService for a successful dictation
+  /// round trip.
+  void stubVoiceCapture(String transcript) {
+    final voice =
+        production.ServiceLocator.get<VoiceCaptureService>()
+            as MockVoiceCaptureService;
+    when(voice.prepareModel).thenAnswer((_) async => true);
+    when(
+      () => voice.startRecording(
+        onAutoStopped: any(named: 'onAutoStopped'),
+        maxDuration: any(named: 'maxDuration'),
+      ),
+    ).thenAnswer((_) async => true);
+    when(voice.stopAndTranscribe).thenAnswer((_) async => transcript);
+  }
+
+  group('voice notes (voice plan Phase 2b)', () {
+    testWidgets(
+      'dictated text lands APPENDED and EDITABLE, flowing through the same '
+      'onChanged path as typing (draft + VM + gates see identical input)',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        stubVoiceCapture('gott men lite salt');
+
+        await tester.pumpWidget(
+          _wrap(
+            buildWidget(
+              'r1',
+              voiceGateway: GrantedPermissionGateway(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byTooltip('Tala in en kommentar'),
+          findsOneWidget,
+          reason:
+              'the comment surface must carry its OWN copy, not the '
+              'weekly-menu default (per-surface mic purpose, Store/DPO)',
+        );
+
+        await tester.enterText(find.byType(TextField), 'Provade igår.');
+        await tester.pumpAndSettle();
+
+        // Record → stop (the mic toggles like the other voice surfaces).
+        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.stop));
+        await tester.pumpAndSettle();
+
+        const combined = 'Provade igår. gott men lite salt';
+        expect(
+          find.text(combined),
+          findsOneWidget,
+          reason:
+              'the transcript must append to typed text in the EDITABLE '
+              'field — dictation never replaces or posts on its own',
+        );
+        verify(() => vm.updateNewCommentText(combined)).called(1);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('${_kDraftPrefix}r1'),
+          combined,
+          reason:
+              'a dictated draft persists exactly like a typed one — the '
+              'downstream profanity/maturity gates see it as typed text',
+        );
+      },
+    );
+
+    testWidgets(
+      'a transcript arriving while a post is in flight SURVIVES the '
+      'post-success cleanup (only what was sent is removed)',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        // Transcription resolves only when the test says so — lets us land
+        // the transcript while postComment is still awaiting.
+        final transcriptGate = Completer<String?>();
+        final voice =
+            production.ServiceLocator.get<VoiceCaptureService>()
+                as MockVoiceCaptureService;
+        when(voice.prepareModel).thenAnswer((_) async => true);
+        when(
+          () => voice.startRecording(
+            onAutoStopped: any(named: 'onAutoStopped'),
+            maxDuration: any(named: 'maxDuration'),
+          ),
+        ).thenAnswer((_) async => true);
+        when(voice.stopAndTranscribe).thenAnswer((_) => transcriptGate.future);
+
+        final postGate = Completer<void>();
+        when(() => vm.newCommentText).thenReturn('Skickas nu');
+        when(
+          () => vm.postComment(any(), imageUrls: any(named: 'imageUrls')),
+        ).thenAnswer((_) => postGate.future);
+
+        await tester.pumpWidget(
+          _wrap(buildWidget('r1', voiceGateway: GrantedPermissionGateway())),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextField), 'Skickas nu');
+        await tester.pumpAndSettle();
+
+        // Start dictation, then hit send while transcription is pending.
+        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.stop));
+        await tester.pump();
+        await tester.tap(find.byIcon(Icons.send));
+        await tester.pump();
+
+        // Transcript lands while the post is in flight...
+        transcriptGate.complete('och lite till');
+        await tester.pump();
+        // ...then the post succeeds.
+        postGate.complete();
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('och lite till'),
+          findsOneWidget,
+          reason:
+              'the dictated text must survive the success cleanup — only '
+              'the sent text is removed, never what arrived during the post',
+        );
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('${_kDraftPrefix}r1'),
+          'och lite till',
+          reason: 'the surviving remainder stays draft-persisted',
+        );
+      },
+    );
+
+    testWidgets('denied mic leaves the typed text untouched', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+
+      await tester.pumpWidget(
+        _wrap(
+          buildWidget(
+            'r1',
+            voiceGateway: PermanentlyDeniedPermissionGateway(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Skrivet för hand');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.mic_none));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Skrivet för hand'),
+        findsOneWidget,
+        reason: 'voice denial never clears or alters typed input',
+      );
+    });
+  });
 
   testWidgets('load on mount: seeds TextField from prefs and syncs VM', (
     tester,

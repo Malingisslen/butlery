@@ -419,6 +419,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 searchQuery: viewModel.searchQuery,
                 onSearchChanged: viewModel.updateSearch,
                 searchHint: context.l10n.recipeSearchHint,
+                // Spoken search query lands as if typed (voice plan Phase 2a).
+                enableVoiceInput: true,
                 activeTimeFilters: viewModel.activeTimeFilters,
                 activeMealTypeFilters: viewModel.activeMealTypeFilters,
                 activeRatingFilters: viewModel.activeRatingFilters,

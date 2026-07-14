@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 
+import '../../infrastructure/helpers/fake_permission_gateways.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -513,4 +519,184 @@ void main() {
       });
     });
   });
+
+  group('voice search (voice plan Phase 2a)', () {
+    setUp(() async {
+      await GetIt.instance.reset();
+      production.ServiceLocator.reset();
+    });
+
+    tearDown(() async {
+      await GetIt.instance.reset();
+      production.ServiceLocator.reset();
+    });
+
+    void wireVoice(_FakeVoiceCaptureService service) {
+      GetIt.instance.registerSingleton<VoiceCaptureService>(service);
+      production.ServiceLocator.initialize(DIContainer());
+    }
+
+    testWidgets(
+      'spoken query lands in the search field through the SAME '
+      'onSearchChanged path as typing (routing untouched) — with '
+      'Whisper\'s sentence punctuation stripped and a valid caret',
+      (tester) async {
+        // Whisper renders utterances as sentences; the raw 'Köttbullar.'
+        // would match nothing in the exact-substring filter.
+        wireVoice(_FakeVoiceCaptureService(transcript: 'Köttbullar.'));
+        String? lastQuery;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: SearchFilterWidget(
+              searchQuery: '',
+              onSearchChanged: (q) => lastQuery = q,
+              searchOnly: true,
+              enableVoiceInput: true,
+              voicePermissionGateway: GrantedPermissionGateway(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byIcon(Icons.mic_none),
+          findsOneWidget,
+          reason: 'opt-in mic renders in the search field',
+        );
+        expect(
+          find.byTooltip('Tala in din sökning'),
+          findsOneWidget,
+          reason:
+              'the search surface must carry its OWN copy, not the '
+              'weekly-menu default — a mic labeled for the wrong purpose '
+              'is the Store/DPO misstatement the per-surface params exist '
+              'to prevent',
+        );
+
+        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.stop));
+        await tester.pumpAndSettle();
+
+        expect(
+          lastQuery,
+          'Köttbullar',
+          reason:
+              'trailing sentence punctuation must be stripped — the '
+              'substring filter does not normalize punctuation',
+        );
+        expect(find.text('Köttbullar'), findsOneWidget);
+
+        final editable = tester.widget<EditableText>(
+          find.byType(EditableText),
+        );
+        expect(
+          editable.controller.selection.baseOffset,
+          'Köttbullar'.length,
+          reason:
+              'the caret must be valid and at the end so continued typing '
+              'appends instead of glitching (bare .text setter leaves -1)',
+        );
+      },
+    );
+
+    testWidgets(
+      'mic keeps recording when typing flips the field empty→non-empty '
+      '(suffix restructure must not recreate the mic State mid-capture)',
+      (tester) async {
+        final service = _FakeVoiceCaptureService(transcript: 'Köttbullar.');
+        wireVoice(service);
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: SearchFilterWidget(
+              searchQuery: '',
+              onSearchChanged: (_) {},
+              searchOnly: true,
+              enableVoiceInput: true,
+              voicePermissionGateway: GrantedPermissionGateway(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.mic_none));
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.stop), findsOneWidget);
+
+        // Typing mid-recording makes the clear button appear, which
+        // rebuilds the trailing slot as a Row — without the GlobalKey the
+        // mic's State is recreated and its dispose() silently cancels the
+        // live capture (review finding, 2026-07-14).
+        await tester.enterText(find.byType(TextFormField), 'Kött');
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byIcon(Icons.stop),
+          findsOneWidget,
+          reason:
+              'the mic must still show the stop control after the suffix '
+              'restructures — a reset to idle means the State was recreated',
+        );
+        expect(
+          service.cancelCalls,
+          0,
+          reason:
+              'the live capture must survive — a dispose-triggered '
+              'cancelRecording means the recording was silently thrown away',
+        );
+
+        // The same capture still completes normally.
+        await tester.tap(find.byIcon(Icons.stop));
+        await tester.pumpAndSettle();
+        expect(find.text('Köttbullar'), findsOneWidget);
+      },
+    );
+
+    testWidgets('no mic when voice input is not enabled (default)', (
+      tester,
+    ) async {
+      wireVoice(_FakeVoiceCaptureService(transcript: 'x'));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: SearchFilterWidget.searchOnly(
+            searchQuery: '',
+            onSearchChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byIcon(Icons.mic_none),
+        findsNothing,
+        reason:
+            'voice input is opt-in per surface — shared list screens must '
+            'not sprout microphones by default',
+      );
+    });
+  });
+}
+
+class _FakeVoiceCaptureService extends Fake implements VoiceCaptureService {
+  _FakeVoiceCaptureService({required this.transcript});
+
+  final String? transcript;
+  int cancelCalls = 0;
+
+  @override
+  Future<bool> prepareModel() async => true;
+
+  @override
+  Future<bool> startRecording({
+    void Function()? onAutoStopped,
+    Duration? maxDuration,
+  }) async => true;
+
+  @override
+  Future<String?> stopAndTranscribe() async => transcript;
+
+  @override
+  Future<void> cancelRecording() async {
+    cancelCalls++;
+  }
 }

@@ -27,6 +27,10 @@ class VoicePromptButton extends StatefulWidget {
     required this.onTranscript,
     this.enabled = true,
     this.permissionGateway = const DefaultPermissionGateway(),
+    this.startTooltip,
+    this.rationaleTitle,
+    this.rationaleBody,
+    this.compact = false,
   });
 
   /// Receives the transcribed text. The caller decides what field it fills.
@@ -38,6 +42,22 @@ class VoicePromptButton extends StatefulWidget {
   /// Injectable per OsPermissionHelper's contract — tests stub statuses
   /// without touching plugin channels.
   final PermissionGateway permissionGateway;
+
+  /// Idle-state tooltip naming what will be dictated ("Tala in
+  /// veckomenyn" / "Tala in din sökning"). Defaults to the weekly-menu
+  /// copy, the button's original home.
+  final String? startTooltip;
+
+  /// Mic-permission rationale dialog copy. MUST name the actual surface —
+  /// a permission dialog stating the wrong purpose ("för veckomenyn" on a
+  /// search field) misstates data use exactly where the Store/DPO
+  /// degradation contract cares. Defaults to the weekly-menu copy.
+  final String? rationaleTitle;
+  final String? rationaleBody;
+
+  /// Compact visual density for tight suffix rows (search field stacks
+  /// clear + mic + filter toggle on narrow phones).
+  final bool compact;
 
   @override
   State<VoicePromptButton> createState() => _VoicePromptButtonState();
@@ -81,8 +101,10 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
     final granted = await OsPermissionHelper.requestWithRationale(
       context: context,
       permission: Permission.microphone,
-      rationaleTitle: context.l10n.voicePromptMicRationaleTitle,
-      rationaleBody: context.l10n.voicePromptMicRationaleBody,
+      rationaleTitle:
+          widget.rationaleTitle ?? context.l10n.voicePromptMicRationaleTitle,
+      rationaleBody:
+          widget.rationaleBody ?? context.l10n.voicePromptMicRationaleBody,
       grantLabel: context.l10n.voicePromptMicGrant,
       permanentlyDeniedMessage: context.l10n.voicePromptMicPermanentlyDenied,
       openSettingsLabel: context.l10n.voicePromptOpenSettings,
@@ -154,6 +176,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
 
     final recording = _state == _VoiceState.recording;
     return IconButton(
+      visualDensity: widget.compact ? VisualDensity.compact : null,
       icon: Icon(
         recording ? Icons.stop : Icons.mic_none,
         size: AppDimensions.iconSizeAction,
@@ -161,7 +184,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
       ),
       tooltip: recording
           ? context.l10n.voicePromptStop
-          : context.l10n.voicePromptStart,
+          : (widget.startTooltip ?? context.l10n.voicePromptStart),
       // STOP must stay tappable even when the surrounding flow disables the
       // button (menu starts generating mid-recording) — a hot mic with a
       // dead stop control would contradict the privacy posture.
