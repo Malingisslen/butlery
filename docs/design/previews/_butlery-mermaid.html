@@ -186,48 +186,6 @@ flowchart TD
     </pre>
   </div>
 
-  <!-- EXAMPLE: Recipe Import State -->
-  <div class="diagram-title">recipe import flow</div>
-  <div class="diagram-section">
-    <pre class="mermaid">
-stateDiagram-v2
-    [*] --> EnterURL: User pastes URL
-    EnterURL --> Fetching: Submit
-    Fetching --> Parsing: Success
-    Fetching --> Error: Failed
-    Parsing --> Analyzing: Ingredients found
-    Parsing --> Error: Parse failed
-    Analyzing --> Saving: Allergens tagged
-    Saving --> Done: Saved
-    Saving --> Error: Save failed
-    Error --> EnterURL: Retry
-    Error --> ManualEntry: Write manually
-    Done --> [*]
-    </pre>
-  </div>
-
-  <!-- EXAMPLE: Data Flow -->
-  <div class="diagram-title">mvvm data flow</div>
-  <div class="diagram-section">
-    <pre class="mermaid">
-flowchart LR
-    V["View<br/>(Widget)"] -->|"watches"| VM["ViewModel<br/>(ChangeNotifier)"]
-    VM -->|"calls"| S["Service<br/>(Business Logic)"]
-    S -->|"reads/writes"| R["Repository<br/>(Data Access)"]
-    R -->|"CRUD"| F["Firebase<br/>(Firestore)"]
-
-    V -.->|"Provider.of"| VM
-    VM -.->|"ServiceLocator"| S
-    S -.->|"Constructor DI"| R
-
-    style V fill:#E8F0EA,stroke:#4A7C59,stroke-width:2px
-    style VM fill:#E8F0EA,stroke:#4A7C59,stroke-width:2px
-    style S fill:#F8F4E8,stroke:#8B5A3C,stroke-width:2px
-    style R fill:#F8F4E8,stroke:#8B5A3C,stroke-width:2px
-    style F fill:#E8E2D6,stroke:#D8D2C6,stroke-width:2px
-    </pre>
-  </div>
-
 </div>
 
 </body>

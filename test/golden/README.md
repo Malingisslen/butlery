@@ -7,11 +7,10 @@ of expected-shape assertions.
 
 ## Why this exists
 
-The parsing pipeline has four tiers (SchemaOrg → SiteConfig → RuleBased →
-LLM). A model bump on Gemini, a prompt edit, or a regex tweak in the
-rule-based parser can silently regress extraction quality with no other
-test signal. This suite locks the user-visible contract: given input X,
-the tier produces a recipe with title containing Y, ≥N ingredients, etc.
+A model bump on Gemini, a prompt edit, or a regex tweak in the rule-based parser
+can silently regress extraction quality with no other test signal. This suite locks
+the user-visible contract: given input X, the tier produces a recipe with title
+containing Y, ≥N ingredients, etc. (Tier architecture: `docs/parser/PARSER_ARCHITECTURE.md`.)
 
 Assertions are intentionally **loose** (substring contains / count
 greater-than) so the suite survives:
@@ -60,11 +59,10 @@ counts, substrings — not implementation details.
 | `LlmTier` | Inline plaintext (`text`) + canned `ExtractedRecipe` (`mockResponse`) | `_GoldenMockLlmService` replaces `LlmService.structureRecipe` |
 
 The LLM mock seam is at the **service level**, not the HTTP/Cloud Functions
-level. We don't exercise the `FirebaseFunctions.httpsCallable` envelope or
-`LlmException.fromFirebase` — those are covered by
-`test/unit/services/llm/llm_service_test.dart`. This suite locks the
-**tier-level** contract: given a known LLM response, does `LlmTier`
-validate, normalize, and shape it into the right `ParsedRecipe`?
+level — the `httpsCallable` envelope and `LlmException.fromFirebase` are covered
+separately by `test/unit/services/llm/llm_service_test.dart`. This suite locks the
+**tier-level** contract: given a known LLM response, does `LlmTier` validate,
+normalize, and shape it into the right `ParsedRecipe`?
 
 ## Recording a new LLM fixture from real Gemini
 

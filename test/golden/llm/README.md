@@ -2,23 +2,8 @@
 
 Closed-loop quality measurement for the 6 LLM-driven flows in Butlery (BUT-784).
 
-## What lives here
-
-```
-test/golden/llm/
-├── README.md                    ← this file
-├── _golden_runner.dart          ← case loader + scoring contract (foundation only)
-├── categorize_ingredient/
-│   └── cases.json               ← 10 seed cases (Swedish ingredient → category)
-├── adversarial/
-│   └── cases.json               ← 10 attack cases (injection / jailbreak / structural)
-├── ner/
-│   └── cases.json               ← 5 seed cases (Swedish sentence → entity spans)
-├── recipe_from_url/             ← deferred — see BUT-XXX (file follow-up)
-├── ocr_recipe/                  ← deferred
-├── enhance_recipe/              ← deferred
-└── generate_menu/               ← deferred
-```
+`_golden_runner.dart` is the case loader + scoring contract. Live corpora: `categorize_ingredient/`,
+`adversarial/`, `ner/` (each a `cases.json`). The model-driven corpora are deferred — see Follow-ups.
 
 ## Case schema
 
