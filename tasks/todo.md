@@ -306,3 +306,4 @@ TtsService batch, UI batch, bookkeeping; opus gates at the end (Malin's model-by
 ## Open questions
 No architecture-changing unknowns — all interview decisions recorded in the plan (both-mode
 listening, OS Swedish voice, three command families, no portion scaling).
+
