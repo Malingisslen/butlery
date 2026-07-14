@@ -2354,6 +2354,54 @@ abstract class AppLocalizations {
   /// **'Ingen timer är igång'**
   String get voiceAssistNoTimers;
 
+  /// No description provided for @voiceAssistSubstitutions.
+  ///
+  /// In sv, this message translates to:
+  /// **'{ingredient} kan ersättas med: {suggestions}'**
+  String voiceAssistSubstitutions(String ingredient, String suggestions);
+
+  /// No description provided for @voiceAssistNoSubstitutions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag hittade inga ersättningar för {ingredient}'**
+  String voiceAssistNoSubstitutions(String ingredient);
+
+  /// No description provided for @voiceAssistQuantityNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag hittade inte {ingredient} bland ingredienserna'**
+  String voiceAssistQuantityNotFound(String ingredient);
+
+  /// No description provided for @voiceAssistStepOutOfRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet har {count} steg'**
+  String voiceAssistStepOutOfRange(int count);
+
+  /// No description provided for @voiceAssistRatioHalf.
+  ///
+  /// In sv, this message translates to:
+  /// **'halva mängden'**
+  String get voiceAssistRatioHalf;
+
+  /// No description provided for @voiceAssistRatioDouble.
+  ///
+  /// In sv, this message translates to:
+  /// **'dubbla mängden'**
+  String get voiceAssistRatioDouble;
+
+  /// No description provided for @voiceAssistRatioOneAndHalf.
+  ///
+  /// In sv, this message translates to:
+  /// **'en och en halv gånger mängden'**
+  String get voiceAssistRatioOneAndHalf;
+
+  /// No description provided for @voiceAssistRatioTimes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{ratio} gånger mängden'**
+  String voiceAssistRatioTimes(String ratio);
+
   /// No description provided for @voiceAssistTimeLeft.
   ///
   /// In sv, this message translates to:

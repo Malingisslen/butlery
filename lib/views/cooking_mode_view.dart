@@ -77,6 +77,7 @@ class _CookingModeViewState extends State<CookingModeView> {
       tts: ServiceLocator.get<TtsService>(),
       timers: ServiceLocator.get<StepTimerService>(),
       cookingVm: _vm,
+      substitutions: ServiceLocator.get<SubstitutionSuggestionService>(),
     );
     // TtsService.init() is idempotent-safe (re-probes Swedish-voice
     // availability); the controller notifies when it resolves, so the

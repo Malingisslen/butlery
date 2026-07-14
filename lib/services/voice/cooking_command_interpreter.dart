@@ -53,6 +53,28 @@ class StopCommand extends CookingCommand {
   const StopCommand();
 }
 
+/// "Vad kan jag ersätta grädde med?" — the Q&A half of Köksbutlern
+/// (voice-consolidation plan Phase 3). Carries the RAW ingredient span the
+/// cook spoke; resolution (canonical lookup, fuzzy matching) happens in the
+/// controller layer — the interpreter stays pure.
+class SubstitutionQuery extends CookingCommand {
+  const SubstitutionQuery(this.ingredient);
+  final String ingredient;
+}
+
+/// "Hur mycket mjölk behöver jag?" — answered from the portion-scaled
+/// ingredient list. Raw span, same purity rule as [SubstitutionQuery].
+class QuantityQuery extends CookingCommand {
+  const QuantityQuery(this.ingredient);
+  final String ingredient;
+}
+
+/// "Gå till steg fyra" / "läs steg två". [step] is 1-based as spoken.
+class GoToStep extends CookingCommand {
+  const GoToStep(this.step);
+  final int step;
+}
+
 class Unrecognized extends CookingCommand {
   const Unrecognized(this.heard);
 
@@ -144,6 +166,52 @@ final RegExp _compoundHalfRe = RegExp(
 // "tre kvart" before "kvart" (ordered alternation).
 final RegExp _quarterRe = _phrase('tre kvart|en kvart|kvart');
 final RegExp _halfHourRe = _phrase('en halvtimme|halvtimme|en halv timme');
+
+// Q&A frames (voice-consolidation plan Phase 3). Each frame captures ONE
+// free-text ingredient span from a fixed sentence shape. Ordered most- to
+// least-specific; the first match wins. All run on the normalized
+// (lowercased, punctuation-stripped, filler-stripped) utterance, so `$`
+// anchors are safe.
+final List<RegExp> _substitutionFrames = <RegExp>[
+  RegExp(r'vad kan jag ersätta (.+?) med'),
+  RegExp(r'vad kan jag byta ut (.+?) mot'),
+  RegExp(r'vad kan jag använda i ?stället för (.+)$'),
+  RegExp(r'(?:finns det|har du) (?:någon |nån )?ersättning för (.+)$'),
+  RegExp(r'ersättning för (.+)$'),
+  RegExp(r'(?:jag )?har (?:ingen|inget|inga) (.+)$'),
+  RegExp(r'(?:kan jag|går det att) ersätta (.+?)(?: med (?:något|nåt))?$'),
+];
+
+final List<RegExp> _quantityFrames = <RegExp>[
+  RegExp(
+    r'hur (?:mycket|många) (.+?) '
+    r'(?:behöver jag|behövs|ska jag ha|ska det vara|ska jag använda)',
+  ),
+  RegExp(r'hur (?:mycket|många) (.+)$'),
+];
+
+final RegExp _goToStepRe = RegExp(
+  '$_nb(?:gå till |hoppa till |läs |visa )?steg\\s+'
+  '((?:\\d{1,2})|(?:$_numberWordAlt))$_na',
+);
+
+// Spoken utterances often trail context words after the ingredient
+// ("jag har ingen grädde kvar", "hur mycket mjölk behöver jag nu") —
+// strip the tail so the span is just the ingredient. The group REPEATS so
+// stacked tails ("kvar hemma", "hemma just nu") all come off, not just the
+// last one (review finding, 2026-07-14).
+final RegExp _spanTailRe = RegExp(
+  r'(?:\s+(?:kvar|hemma|längre|just nu|nu|då|här))+$',
+);
+
+String? _matchIngredientSpan(String normalized, List<RegExp> frames) {
+  for (final frame in frames) {
+    final match = frame.firstMatch(normalized);
+    final span = match?.group(1)?.replaceAll(_spanTailRe, '').trim();
+    if (span != null && span.isNotEmpty) return span;
+  }
+  return null;
+}
 
 int? _numberValue(String token) {
   final direct = _numberWords[token];
@@ -248,6 +316,30 @@ CookingCommand interpretCookingCommand(String transcript) {
     return Unrecognized(transcript.trim());
   }
   if (_timerQueryRe.hasMatch(normalized)) return const TimerQuery();
+
+  // Q&A before readouts/navigation: "hur mycket mjölk behöver jag" must
+  // never fall through to the ingredient readout, and "läs steg två" must
+  // beat the bare navigation words. Timer queries above already own
+  // "hur mycket tid kvar".
+  final substitutionSpan = _matchIngredientSpan(
+    normalized,
+    _substitutionFrames,
+  );
+  if (substitutionSpan != null) return SubstitutionQuery(substitutionSpan);
+
+  // "Hur många ingredienser …" asks for the READOUT, not a quantity — fall
+  // through so _ingredientsRe keeps the phrasing it always owned (review
+  // finding, 2026-07-14).
+  final quantitySpan = _matchIngredientSpan(normalized, _quantityFrames);
+  if (quantitySpan != null && !quantitySpan.startsWith('ingrediens')) {
+    return QuantityQuery(quantitySpan);
+  }
+
+  final goTo = _goToStepRe.firstMatch(normalized);
+  if (goTo != null) {
+    final step = _numberValue(goTo.group(1)!);
+    if (step != null && step > 0) return GoToStep(step);
+  }
 
   if (_ingredientsRe.hasMatch(normalized)) return const ReadIngredients();
   if (_repeatRe.hasMatch(normalized)) return const RepeatStep();

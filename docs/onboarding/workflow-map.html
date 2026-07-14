@@ -2459,9 +2459,10 @@
   {
    "id": "flow-koksbutlern",
    "label": "köksbutlern (röst i matlagningsläget)",
-   "description": "Köksbutlern lägger ett röstlager ovanpå matlagningsläget (ingen ny vy — additiv UI, inget preview-gate). En stor mikrofonknapp (nedre höger, kvadratisk, ≥56 px) startar push-to-talk, och efter varje uppläsning öppnas ett ~6 s talfönster automatiskt (synlig pulsering + ”Säg ett kommando…”-rad) så nästa kommando inte kräver beröring. Taligenkänning sker HELT PÅ ENHETEN via svc-voice-capture (samma KB-Whisper-stack som röstimport/röstprompt), kommandoinspelningar tak:as till ~6–8 s (maxDuration-parameter) så talfönstret aldrig hänger öppet. Uppläsning (steg, ingredienslista, kvittenser) sker med telefonens inbyggda svenska OS-röst (flutter_tts, gratis, offline); saknas sv-SE-röst degraderar funktionen tyst till text-only — kommandona fungerar ändå. CookingVoiceController äger regeln att högtalare och mikrofon är STRIKT SEKVENTIELLA: TTS stoppas alltid innan mikrofonen öppnas, och talfönstret öppnas först efter uppläsningens completion-callback — aldrig samtidig inspelning och tal. CookingCommandInterpreter är en REN, deterministisk funktion (ingen LLM, kostnadsregeln) som matchar normaliserad svensk text mot ett hårdkodat variant-register: navigering (”nästa”/”föregående”/”gå vidare”/”backa”), ”läs steget igen”, ”läs ingredienserna”, ”sätt timer …” (svenska talord + siffror + ”en kvart”/”en halvtimme”) som startar timers via StepTimerService (samma tjänst som styr timer-raden), ”hur lång tid kvar”, och ”tyst” som stoppar allt. En mute-knapp i app-baren stänger av uppläsning och talfönster helt utan att stänga av knappkommandon. Feltolkning ger ett talat ”Jag uppfattade inte” + en synlig chip med vad som hördes; två missar i rad ger en talad påminnelse om att knapparna alltid fungerar.",
+   "description": "Köksbutlern lägger ett röstlager ovanpå matlagningsläget (ingen ny vy — additiv UI, inget preview-gate). En stor mikrofonknapp (nedre höger, kvadratisk, ≥56 px) startar push-to-talk, och efter varje uppläsning öppnas ett ~6 s talfönster automatiskt (synlig pulsering + ”Säg ett kommando…”-rad) så nästa kommando inte kräver beröring. Taligenkänning sker HELT PÅ ENHETEN via svc-voice-capture (samma KB-Whisper-stack som röstimport/röstprompt), kommandoinspelningar tak:as till ~6–8 s (maxDuration-parameter) så talfönstret aldrig hänger öppet. Uppläsning (steg, ingredienslista, kvittenser) sker med telefonens inbyggda svenska OS-röst (flutter_tts, gratis, offline); saknas sv-SE-röst degraderar funktionen tyst till text-only — kommandona fungerar ändå. CookingVoiceController äger regeln att högtalare och mikrofon är STRIKT SEKVENTIELLA: TTS stoppas alltid innan mikrofonen öppnas, och talfönstret öppnas först efter uppläsningens completion-callback — aldrig samtidig inspelning och tal. CookingCommandInterpreter är en REN, deterministisk funktion (ingen LLM, kostnadsregeln) som matchar normaliserad svensk text mot ett hårdkodat variant-register: navigering (”nästa”/”föregående”/”gå vidare”/”backa”), ”läs steget igen”, ”läs ingredienserna”, ”sätt timer …” (svenska talord + siffror + ”en kvart”/”en halvtimme”) som startar timers via StepTimerService (samma tjänst som styr timer-raden), ”hur lång tid kvar”, och ”tyst” som stoppar allt. En mute-knapp i app-baren stänger av uppläsning och talfönster helt utan att stänga av knappkommandon. Feltolkning ger ett talat ”Jag uppfattade inte” + en synlig chip med vad som hördes; två missar i rad ger en talad påminnelse om att knapparna alltid fungerar. Q&A (COOK-14, röstplanen fas 3, 2026-07-14): butlern SVARAR nu också — 'vad kan jag ersätta grädde med?' går via SubstitutionSuggestionService (kanoniskt uppslag, max 3, uppläses med mängdkvalificerare som 'halva mängden'), 'hur mycket mjölk behöver jag?' besvaras med receptets egen portionsskalade ingrediensrad (med bestämd-form-stamning), och 'gå till steg fyra' hoppar + läser upp. Sluten deterministisk grammatik, ingen LLM; okänd ingrediens ⇒ ärligt 'hittade inte'-svar; talfönstret öppnas efter varje svar.",
    "features": [
-    "COOK-13"
+    "COOK-13",
+    "COOK-14"
    ],
    "steps": [
     {
@@ -2483,6 +2484,13 @@
      "to": "vm-cooking-mode",
      "payload": "nästa/föregående/läs-kommandon exekveras mot befintlig fjärrstyrnings-API (nextStep/previousStep/currentStepIndex)",
      "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-cooking-voice",
+     "to": "svc-substitution-suggestion",
+     "payload": "rått ingrediens-spann → kanoniskt uppslag → max 3 ersättningar",
+     "transport": "SubstitutionQuery-kommandot (Q&A, fas 3)",
      "verified": true
     }
    ],

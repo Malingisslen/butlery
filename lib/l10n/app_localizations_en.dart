@@ -1358,6 +1358,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceAssistNoTimers => 'No timer is running';
 
   @override
+  String voiceAssistSubstitutions(String ingredient, String suggestions) {
+    return '$ingredient can be replaced with: $suggestions';
+  }
+
+  @override
+  String voiceAssistNoSubstitutions(String ingredient) {
+    return 'I found no substitutes for $ingredient';
+  }
+
+  @override
+  String voiceAssistQuantityNotFound(String ingredient) {
+    return 'I couldn\'t find $ingredient among the ingredients';
+  }
+
+  @override
+  String voiceAssistStepOutOfRange(int count) {
+    return 'The recipe has $count steps';
+  }
+
+  @override
+  String get voiceAssistRatioHalf => 'half the amount';
+
+  @override
+  String get voiceAssistRatioDouble => 'double the amount';
+
+  @override
+  String get voiceAssistRatioOneAndHalf => 'one and a half times the amount';
+
+  @override
+  String voiceAssistRatioTimes(String ratio) {
+    return '$ratio times the amount';
+  }
+
+  @override
   String voiceAssistTimeLeft(String duration) {
     return '$duration left';
   }

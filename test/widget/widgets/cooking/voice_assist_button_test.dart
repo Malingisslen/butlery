@@ -15,7 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
@@ -111,6 +113,13 @@ Recipe _recipe() => RecipeFactory.build(
   instructions: ['Blanda smeten.', 'Rulla bollar.'],
 );
 
+class _FakeSubstitutions extends Fake implements SubstitutionSuggestionService {
+  @override
+  Future<List<IngredientSubstitution>> suggestFor(
+    String ingredientName,
+  ) async => const [];
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -130,6 +139,7 @@ void main() {
       tts: tts,
       timers: timers,
       cookingVm: cookingVm,
+      substitutions: _FakeSubstitutions(),
     );
   });
 

@@ -2,7 +2,9 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/voice/cooking_command_interpreter.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
@@ -31,10 +33,12 @@ class CookingVoiceController extends ChangeNotifier {
     required TtsService tts,
     required StepTimerService timers,
     required CookingModeViewModel cookingVm,
+    required SubstitutionSuggestionService substitutions,
   }) : _voice = voiceCapture,
        _tts = tts,
        _timers = timers,
-       _cookingVm = cookingVm;
+       _cookingVm = cookingVm,
+       _substitutions = substitutions;
 
   /// Command captures are seconds, not minutes — the service cap doubles
   /// as the talk-window length, so the window can never hang open.
@@ -44,6 +48,7 @@ class CookingVoiceController extends ChangeNotifier {
   final TtsService _tts;
   final StepTimerService _timers;
   final CookingModeViewModel _cookingVm;
+  final SubstitutionSuggestionService _substitutions;
 
   VoiceAssistState _state = VoiceAssistState.idle;
   VoiceListenSource? _listenSource;
@@ -239,6 +244,48 @@ class CookingVoiceController extends ChangeNotifier {
       case StopCommand():
         await _tts.stop();
         _notify();
+      case SubstitutionQuery(:final ingredient):
+        // The service resolves the raw span itself (canonical-ID lookup with
+        // the tagging spine's fuzzy tolerance) and never throws.
+        final suggestions = await _substitutions.suggestFor(ingredient);
+        if (_isDisposed) return;
+        if (suggestions.isEmpty) {
+          await _speakThenWindow(
+            AppLocale.current.voiceAssistNoSubstitutions(ingredient),
+          );
+        } else {
+          await _speakThenWindow(
+            AppLocale.current.voiceAssistSubstitutions(
+              ingredient,
+              suggestions.map(_speakableSubstitution).join('. '),
+            ),
+          );
+        }
+      case QuantityQuery(:final ingredient):
+        // "hur mycket mjölk och smör" — answer each part; a part with no
+        // matching line gets its own honest miss instead of sinking the
+        // whole compound question (review finding, 2026-07-14).
+        final parts = ingredient.split(RegExp(r'\s+och\s+'));
+        final answers = <String>[];
+        for (final part in parts) {
+          final lines = _matchingIngredientLines(part);
+          answers.add(
+            lines.isEmpty
+                ? AppLocale.current.voiceAssistQuantityNotFound(part)
+                : lines.take(2).join('. '),
+          );
+        }
+        await _speakThenWindow(answers.join('. '));
+      case GoToStep(:final step):
+        final steps = _cookingVm.instructions;
+        if (step < 1 || step > steps.length) {
+          await _speakThenWindow(
+            AppLocale.current.voiceAssistStepOutOfRange(steps.length),
+          );
+        } else {
+          _cookingVm.goToStep(step - 1);
+          await readCurrentStep();
+        }
       case Unrecognized():
         // Handled by the caller; unreachable here but the sealed switch
         // must stay exhaustive.
@@ -277,6 +324,60 @@ class CookingVoiceController extends ChangeNotifier {
       _state = VoiceAssistState.idle;
       _notify();
     }
+  }
+
+  /// "yoghurt, halva mängden, i bakning" — name, then the ratio only when
+  /// it isn't 1:1 (a "same amount" qualifier on every row is noise), then
+  /// the optional context hint.
+  String _speakableSubstitution(IngredientSubstitution s) {
+    final l10n = AppLocale.current;
+    final ratio = s.ratio;
+    String? qualifier;
+    if ((ratio - 1.0).abs() < 0.001) {
+      qualifier = null;
+    } else if ((ratio - 0.5).abs() < 0.001) {
+      qualifier = l10n.voiceAssistRatioHalf;
+    } else if ((ratio - 2.0).abs() < 0.001) {
+      qualifier = l10n.voiceAssistRatioDouble;
+    } else if ((ratio - 1.5).abs() < 0.001) {
+      qualifier = l10n.voiceAssistRatioOneAndHalf;
+    } else {
+      // Swedish decimal comma reads naturally in TTS ("noll komma sju
+      // fem"); a whole number drops its ".0" so 3.0 speaks as "3", not
+      // "tre komma noll".
+      qualifier = l10n.voiceAssistRatioTimes(
+        ratio
+            .toString()
+            .replaceFirst(RegExp(r'\.0$'), '')
+            .replaceFirst('.', ','),
+      );
+    }
+    final context = s.context;
+    return [
+      s.name,
+      ?qualifier,
+      if (context != null && context.isNotEmpty) context,
+    ].join(', ');
+  }
+
+  /// Scaled ingredient lines mentioning the spoken span — the answer to
+  /// "hur mycket X behöver jag" is the recipe's own (portion-scaled) line.
+  /// Falls back to a definite/plural-stripped stem ("champinjonerna" →
+  /// "champinjon") so Whisper's rendering of casual speech still matches.
+  List<String> _matchingIngredientLines(String ingredient) {
+    final needle = ingredient.trim().toLowerCase();
+    if (needle.isEmpty) return const [];
+    List<String> containing(String s) => _cookingVm.scaledIngredients
+        .where((line) => line.toLowerCase().contains(s))
+        .toList();
+    final direct = containing(needle);
+    if (direct.isNotEmpty) return direct;
+    final stem = needle.replaceFirst(
+      RegExp(r'(?:erna|arna|orna|en|et|er|ar|or|n)$'),
+      '',
+    );
+    if (stem.length < 3 || stem == needle) return const [];
+    return containing(stem);
   }
 
   String _timerStatusAnnouncement() {

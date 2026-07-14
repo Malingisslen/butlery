@@ -183,6 +183,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | COOK-11 | Ingredient-set recipe search | Verified |
 | COOK-12 | Ingredient lookup / normalization | Partial |
 | COOK-13 | Köksbutlern voice assistant (cooking mode) | Verified |
+| COOK-14 | Köksbutlern Q&A (substitutions/quantities/step jumps) | Verified |
 
 ### Settings, Legal & Admin
 | ID | Feature | Tests |
@@ -990,6 +991,13 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **Edge cases:** Misheard command → the butler says "Jag uppfattade inte" and the transcript shows in a transient heard-chip; two consecutive misses add a spoken hint that the ordinary step buttons still work. Talk-window silence closes it quietly with no error. No Swedish TTS voice installed on the device → text-only degrade (readouts skipped), but spoken commands keep working. Muted → no readouts and no auto talk-window (button push-to-talk still available). Portion scaling is deliberately excluded from voice commands — a misheard number there would silently change amounts.
 - **Test coverage:** Verified — `test/unit/services/voice/tts_service_test.dart` (TTS wrapper + sv-SE degrade), `test/unit/services/voice/cooking_command_interpreter_test.dart` (golden suite of spoken-command transcripts), `test/unit/viewmodels/cooking/cooking_voice_controller_test.dart` (state-machine + sequential speaker/mic invariants), `test/widget/widgets/cooking/voice_assist_button_test.dart` (button states, mute toggle). Real-device kitchen noise test pending (Malin).
 
+
+#### COOK-14: Köksbutlern Q&A (substitutions, quantities, step jumps)
+- **Entry:** Same mic as COOK-13 (cooking-mode voice assistant) — question phrasings route to answers.
+- **User story:** As a cook mid-recipe, I want to ask the butler "vad kan jag ersätta grädde med?", "hur mycket mjölk behöver jag?" or "gå till steg fyra" so that I get answers without touching the screen.
+- **Expected behavior:** Closed deterministic grammar (no LLM, zero running cost). Substitutions: raw spoken span → SubstitutionSuggestionService (canonical lookup, max 3) read aloud with ratio qualifiers ("halva mängden") and context hints. Quantities: answered with the recipe's own portion-scaled ingredient line (definite-form stemming, "köttfärsen" finds "köttfärs"). Step jumps: word or digit numbers, out-of-range speaks the step count. Talk-window reopens after every answer.
+- **Edge cases:** Unknown ingredient → honest "hittade inte" naming what was heard; no extractable span → unrecognized (heard-chip); existing commands keep precedence (timer query owns "hur mycket tid kvar").
+- **Test coverage:** Verified — interpreter Q&A golden group (frames × ingredients incl. crème fraiche/multi-word, precedence guards) + 7 controller arm tests (raw-span pass-through, ratio speech, scaled-line answers, stemming, out-of-range).
 ### Settings, Legal & Admin
 
 #### SET-01: Settings hub

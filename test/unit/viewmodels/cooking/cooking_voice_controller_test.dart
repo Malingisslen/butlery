@@ -13,8 +13,10 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
@@ -118,6 +120,19 @@ class _FakeCapture extends Fake implements VoiceCaptureService {
   bool get isRecording => _recording;
 }
 
+/// Canned substitution answers keyed by the RAW span the controller passes
+/// through — proves the span reaches the service unresolved.
+class _FakeSubstitutions extends Fake implements SubstitutionSuggestionService {
+  final Map<String, List<IngredientSubstitution>> canned = {};
+  final List<String> asked = [];
+
+  @override
+  Future<List<IngredientSubstitution>> suggestFor(String ingredientName) async {
+    asked.add(ingredientName);
+    return canned[ingredientName.trim().toLowerCase()] ?? const [];
+  }
+}
+
 Recipe _recipe() => RecipeFactory.build(
   id: 'r1',
   title: 'Köttbullar',
@@ -132,18 +147,21 @@ void main() {
   late _FakeCapture capture;
   late StepTimerService timers;
   late CookingModeViewModel cookingVm;
+  late _FakeSubstitutions substitutions;
   late CookingVoiceController controller;
 
   setUp(() {
     tts = _FakeTts();
     capture = _FakeCapture(tts);
     timers = StepTimerService();
+    substitutions = _FakeSubstitutions();
     cookingVm = CookingModeViewModel(recipe: _recipe());
     controller = CookingVoiceController(
       voiceCapture: capture,
       tts: tts,
       timers: timers,
       cookingVm: cookingVm,
+      substitutions: substitutions,
     );
   });
 
@@ -363,6 +381,7 @@ void main() {
           tts: tts,
           timers: timers,
           cookingVm: cookingVm,
+          substitutions: substitutions,
         );
       },
     );
@@ -416,7 +435,157 @@ void main() {
         tts: tts,
         timers: timers,
         cookingVm: cookingVm,
+        substitutions: substitutions,
       );
+    });
+  });
+
+  group('Köksbutlern Q&A (voice-consolidation plan Phase 3)', () {
+    test('substitution question reaches the service with the RAW span and '
+        'the suggestions are read aloud with ratio + context', () async {
+      substitutions.canned['grädde'] = const [
+        IngredientSubstitution(name: 'yoghurt', ratio: 1.0),
+        IngredientSubstitution(
+          name: 'crème fraiche',
+          ratio: 0.5,
+          context: 'i bakning',
+        ),
+      ];
+
+      await speakCommand('Vad kan jag ersätta grädde med?');
+
+      expect(
+        substitutions.asked,
+        ['grädde'],
+        reason:
+            'the interpreter must hand the service the raw span — the '
+            'service owns canonical resolution',
+      );
+      final answer = tts.spoken.last;
+      expect(answer, contains('grädde kan ersättas med'));
+      expect(
+        answer,
+        contains('yoghurt'),
+        reason: 'a 1:1 substitute is read without a ratio qualifier',
+      );
+      expect(answer, isNot(contains('yoghurt, ')));
+      expect(
+        answer,
+        contains('crème fraiche, halva mängden, i bakning'),
+        reason: 'ratio 0.5 speaks as "halva mängden", context rides along',
+      );
+    });
+
+    test(
+      'no substitutes found → the butler admits it, naming the span',
+      () async {
+        await speakCommand('Jag har ingen vaniljstång hemma.');
+        expect(
+          tts.spoken.last,
+          contains('Jag hittade inga ersättningar för vaniljstång'),
+        );
+      },
+    );
+
+    test('quantity question answers with the recipe own SCALED line', () async {
+      await speakCommand('Hur mycket mjölk behöver jag?');
+      expect(
+        tts.spoken.last,
+        contains('2 dl mjölk'),
+        reason:
+            'the answer is the portion-scaled ingredient line, not a '
+            'generic amount',
+      );
+    });
+
+    test('quantity answer follows a mid-cook portion change — the scaled '
+        'line is spoken, never the recipe base line', () async {
+      // Base 4 portions → 8: the milk line must double. At the default
+      // scale the scaled list is byte-identical to recipe.ingredients, so
+      // only a non-1.0 factor can catch a regression to the unscaled list.
+      cookingVm.updatePortions(8);
+      final scaledLine = cookingVm.scaledIngredients.firstWhere(
+        (l) => l.contains('mjölk'),
+      );
+      expect(
+        scaledLine,
+        isNot(contains('2 dl')),
+        reason: 'premise: the viewmodel really rescaled the milk line',
+      );
+
+      await speakCommand('Hur mycket mjölk behöver jag?');
+
+      expect(tts.spoken.last, contains(scaledLine));
+      expect(
+        tts.spoken.last,
+        isNot(contains('2 dl mjölk')),
+        reason:
+            'the base (unscaled) amount would misportion the cook — the '
+            'answer must come from scaledIngredients',
+      );
+    });
+
+    test('quantity matching survives a definite-form span '
+        '("köttfärsen" → "köttfärs" line)', () async {
+      await speakCommand('Hur mycket köttfärsen ska jag ha?');
+      expect(tts.spoken.last, contains('500 g köttfärs'));
+    });
+
+    test('ratio branches speak their Swedish qualifiers (2.0, 1.5, and the '
+        'decimal-comma fallback)', () async {
+      substitutions.canned['smör'] = const [
+        IngredientSubstitution(name: 'margarin', ratio: 2.0),
+        IngredientSubstitution(name: 'kokosolja', ratio: 1.5),
+        IngredientSubstitution(name: 'olja', ratio: 0.75),
+      ];
+
+      await speakCommand('Vad kan jag ersätta smör med?');
+
+      final answer = tts.spoken.last;
+      expect(answer, contains('margarin, dubbla mängden'));
+      expect(answer, contains('kokosolja, en och en halv gånger mängden'));
+      expect(
+        answer,
+        contains('olja, 0,75 gånger mängden'),
+        reason: 'the fallback uses a Swedish decimal comma for TTS',
+      );
+    });
+
+    test('compound quantity question answers each part, missing parts get '
+        'their own honest miss', () async {
+      await speakCommand('Hur mycket mjölk och saffran behöver jag?');
+      final answer = tts.spoken.last;
+      expect(answer, contains('2 dl mjölk'));
+      expect(
+        answer,
+        contains('Jag hittade inte saffran bland ingredienserna'),
+        reason: 'one unknown part must not sink the whole compound question',
+      );
+    });
+
+    test('unknown ingredient in a quantity question → honest miss', () async {
+      await speakCommand('Hur mycket saffran behöver jag?');
+      expect(
+        tts.spoken.last,
+        contains('Jag hittade inte saffran bland ingredienserna'),
+      );
+    });
+
+    test(
+      '"gå till steg tre" jumps the real viewmodel and reads that step',
+      () async {
+        expect(cookingVm.currentStepIndex, 0);
+        await speakCommand('Gå till steg tre.');
+        expect(cookingVm.currentStepIndex, 2);
+        expect(tts.spoken.last, contains('Stek i smör'));
+      },
+    );
+
+    test('out-of-range step → the butler states the step count instead of '
+        'jumping', () async {
+      await speakCommand('Gå till steg nio.');
+      expect(cookingVm.currentStepIndex, 0);
+      expect(tts.spoken.last, contains('Receptet har 3 steg'));
     });
   });
 }

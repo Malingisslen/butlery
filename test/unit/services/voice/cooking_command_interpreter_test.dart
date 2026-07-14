@@ -161,4 +161,104 @@ void main() {
       );
     });
   });
+
+  group('Q&A grammar (voice-consolidation plan Phase 3)', () {
+    SubstitutionQuery sub(String t) =>
+        interpretCookingCommand(t) as SubstitutionQuery;
+    QuantityQuery qty(String t) => interpretCookingCommand(t) as QuantityQuery;
+    GoToStep step(String t) => interpretCookingCommand(t) as GoToStep;
+
+    test('substitution frames extract the ingredient span', () {
+      expect(sub('Vad kan jag ersätta grädde med?').ingredient, 'grädde');
+      expect(sub('Vad kan jag byta ut smöret mot?').ingredient, 'smöret');
+      expect(
+        sub('Vad kan jag använda i stället för bakpulver?').ingredient,
+        'bakpulver',
+      );
+      expect(sub('Ersättning för ägg.').ingredient, 'ägg');
+      expect(
+        sub('Finns det någon ersättning för vetemjöl?').ingredient,
+        'vetemjöl',
+      );
+    });
+
+    test('"jag har ingen X kvar" frames strip the trailing context words', () {
+      expect(sub('Jag har ingen grädde kvar.').ingredient, 'grädde');
+      expect(sub('Har inget bakpulver hemma.').ingredient, 'bakpulver');
+      expect(sub('Jag har inga champinjoner.').ingredient, 'champinjoner');
+      // STACKED tails must all come off, not just the last one.
+      expect(sub('Jag har ingen grädde kvar hemma.').ingredient, 'grädde');
+      expect(sub('Har inget smör hemma just nu.').ingredient, 'smör');
+    });
+
+    test('"hur många ingredienser" stays a READOUT, never a quantity miss', () {
+      expect(
+        interpretCookingCommand('Hur många ingredienser behöver jag?'),
+        isA<ReadIngredients>(),
+      );
+      expect(
+        interpretCookingCommand('Hur mycket ingredienser är det?'),
+        isA<ReadIngredients>(),
+      );
+    });
+
+    test('multi-word and non-a-zåäö ingredients survive the span capture', () {
+      expect(
+        sub('Vad kan jag ersätta crème fraiche med?').ingredient,
+        'crème fraiche',
+      );
+      expect(
+        sub('Jag har ingen färsk koriander kvar.').ingredient,
+        'färsk koriander',
+      );
+    });
+
+    test('fillers are stripped before the frame match', () {
+      expect(
+        sub('Öh, vad kan jag typ ersätta grädde med då?').ingredient,
+        'grädde',
+      );
+    });
+
+    test('quantity frames extract the ingredient span', () {
+      expect(qty('Hur mycket mjölk behöver jag?').ingredient, 'mjölk');
+      expect(qty('Hur många ägg ska jag ha?').ingredient, 'ägg');
+      expect(qty('Hur mycket socker?').ingredient, 'socker');
+      expect(qty('Hur mycket smör ska jag använda nu?').ingredient, 'smör');
+    });
+
+    test('go-to-step parses word and digit numbers', () {
+      expect(step('Gå till steg fyra.').step, 4);
+      expect(step('Läs steg två.').step, 2);
+      expect(step('Steg 7.').step, 7);
+      expect(step('Hoppa till steg tolv.').step, 12);
+    });
+
+    test('Q&A precedence never steals the existing commands', () {
+      // Timer query owns "hur mycket tid kvar".
+      expect(
+        interpretCookingCommand('Hur mycket tid kvar?'),
+        isA<TimerQuery>(),
+      );
+      // Bare navigation stays navigation ("steg" without a number).
+      expect(interpretCookingCommand('Nästa steg.'), isA<NextStep>());
+      // The ingredient READOUT keeps its phrasing.
+      expect(
+        interpretCookingCommand('Vad behöver jag?'),
+        isA<ReadIngredients>(),
+      );
+      // "läs steget igen" is a repeat, not a go-to.
+      expect(
+        interpretCookingCommand('Läs steget igen.'),
+        isA<RepeatStep>(),
+      );
+    });
+
+    test('a substitution ask with no extractable span stays honest', () {
+      expect(
+        interpretCookingCommand('Kan jag ersätta?'),
+        isA<Unrecognized>(),
+      );
+    });
+  });
 }
