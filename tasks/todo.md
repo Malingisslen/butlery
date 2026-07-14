@@ -273,45 +273,6 @@ State UUIDs: Todo 5a6d3faa · InProgress f8a3cf05 · InReview 9929b3b0 · Done 5
 ---
 (prior sprint plans archived in git history: commit 0db2fbca4 and earlier)
 
----
-
-# Voice recipe import — "Tala in recept" (appended 2026-07-13, separate session)
-
-Full plan: tasks/voice-import-plan.md (approved flow: Malin's "continue with the next phase"
-+ interview decision guided-sections + directions pick "B med A:s stora mikrofon" 2026-07-13;
-single-role stakeholder review approve-with-conditions, conditions implemented in Batch A+B).
-
-- [x] Batch A+B: SourceArtefactType.voiceDictation, VoiceCaptureService timeout+maxDuration,
-      VoiceImportStrategy, voice_transcript_assembler, ImportManager.importVoiceTranscript,
-      source-tag 'voice', 27 tests green
-- [ ] Batch C (IN PROGRESS): VoiceImportViewModel + voice_import_view (direction B, big mic
-      in active card) + route /voiceImport + tile + l10n + widget tests; preview marker stamped
-- [ ] Batch D: feature inventory IMP-12, workflow-map flow, component library
-- [ ] Batch E: /code-review high + specialist gates + commit + push
-
-## Open questions
-No architecture-changing unknowns — assumptions: `record` package for capture (already
-shipped in v1), success→SkrivSjalvReceptView review navigation (photo precedent),
-assistance→assisted-import dialog (existing terminal path).
-
----
-
-# Köksbutlern v1 — EXECUTING (2026-07-13, Malin's go; plan: tasks/koksbutlern-plan.md)
-
-Orchestration: Fable main loop = interpreter + controller + integration; sonnet executors =
-TtsService batch, UI batch, bookkeeping; opus gates at the end (Malin's model-by-blast-radius rule).
-
-- [ ] A (sonnet executor): flutter_tts ^4.2.5 + manifest <queries> + TtsService (SpeechSynthesizer seam,
-      sv-SE availability degrade, awaitSpeakCompletion, audio focus) + tests + NOTICE + DI
-- [ ] B (main loop): CookingCommandInterpreter (sealed commands, Swedish variant map, duration parsing,
-      Unicode-safe boundaries) + golden transcript tests
-- [ ] C (main loop): CookingVoiceController state machine + VoiceCaptureService maxDuration param +
-      sequencing-invariant tests
-- [ ] D (sonnet executor): cooking-mode UI wiring (mic button, talk-window indicator, heard-chip,
-      speaker toggle) + l10n + widget tests
-- [ ] E (sonnet executor): feature inventory COOK-13, workflow-map flow, component library, memory
-- [ ] F: /code-review high + specialist gates + commit + push
-
-## Open questions
-No architecture-changing unknowns — all interview decisions recorded in the plan (both-mode
-listening, OS Swedish voice, three command families, no portion scaling).
+<!-- Voice recipe import (IMP-12) and Köksbutlern v1 (COOK-13/COOK-14) plans removed
+     2026-07-14 — both shipped; full plans in tasks/voice-import-plan.md,
+     tasks/koksbutlern-plan.md, and git history. -->
