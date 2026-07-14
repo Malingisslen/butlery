@@ -205,3 +205,7 @@ tools/validate-claude-config.js
 # /brag skill output (local launch video + share copy — never commit the mp4 blob)
 brag-output/
 brag-output-*/
+
+# Role-org dossier-freshness markers (auto-written by the dossier-freshness hook,
+# consumed + deleted by /refresh-dossiers or the weekly /janitor — never committed)
+docs/org/dossier-staleness/*.stale
