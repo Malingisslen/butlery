@@ -784,6 +784,19 @@ class ImportManager {
         metadata: importResult.metadata,
       );
     } catch (e) {
+      // BUT-1597: an exception thrown before a result is returned is still a
+      // parse outcome — log it (success=false) so exception failures are
+      // measured, not just the success/needsAssistance/failure return paths.
+      // Mirrors _logParseEvent's UrlImportStrategy skip (it self-logs per-tier)
+      // to avoid double-counting. Never throws: ParseEventLogger swallows errors.
+      if (strategy is! UrlImportStrategy) {
+        _eventLogger.logEvent(
+          url: null,
+          source: _sourceTypeFromStrategy(strategy.strategyName),
+          success: false,
+          parseTimeMs: stopwatch.elapsedMilliseconds,
+        );
+      }
       return ImportManagerResult.failure(
         'Parse execution error: $e',
         strategy: strategy.strategyName,

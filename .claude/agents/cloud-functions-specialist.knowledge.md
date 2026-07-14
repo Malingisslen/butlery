@@ -2417,3 +2417,91 @@ green; both suites re-run under ts-node.
   missing); the new index fixes it, but deploy the index before/with the
   functions so the weekly job stops erroring. Strictly an improvement over the
   current broken state.
+
+### 2026-07-14 — BUT-1595 drain tests + BUT-1592 family-rating demotion gate [Pattern discovered]
+
+Follow-up sprint landing the tests the prior salvage entry flagged as the only
+real gap, plus a family-rating gate correctness fix. Reviewed clean — no
+Critical/High/Medium. `cleanup-old-notifications` 4/4 and
+`cleanup-expired-social-requests` 2/2 green under ts-node; both wired into
+package.json (`test:cleanup-old-notifications`, `test:cleanup-expired-social-requests`)
+so `run-all-tests.js` auto-discovers them.
+
+- **`cleanupCollection` got a bounded-iteration backstop (`MAX_DRAIN_ITERATIONS
+  = 20000`) + was exported for testing, with `maxIterations` as an injectable
+  last param.** Real value of the cap: a non-shrinking page would otherwise loop
+  to the ~60s scheduled-function timeout, and a *timeout is a failure* that can
+  trigger a retry — the graceful logged `break` converts a retry-prone crash into
+  a clean partial-and-resume. Not merely cosmetic. The cap is a total-pass count,
+  not a shrink-detector (20000×500 = 10M docs backstop), which is the right
+  trade: simpler, and a legit drain never approaches it.
+
+- **Test fidelity is good but deletedCount counts docs ATTEMPTED, not removed.**
+  In the non-shrinking guard test the fake's `ref.delete()` is a no-op yet
+  `batchDeleteDocs` still returns `snapshot.docs.length`, so `deletedCount ==
+  BATCH_LIMIT*5`. Mirrors production: in the pathological silent-delete-failure
+  case the reported `totalDeleted` (and the `system_events` doc) would be
+  inflated. Bounded to the pathological path and logged as ERROR — accepted, not
+  a finding.
+
+- **BUT-1592 family-rating gate now recomputes on memberType flip in BOTH
+  directions.** `shouldRecomputeOnFamilyRatingUpdate` (in
+  `ratings/family-rating-recompute.ts`, imported by index.ts:38) was `after`-only
+  (promotion INTO `profile`, BUT-1511); the demotion case (row leaving `profile`)
+  short-circuited and left the public average stale. Fix: `wasProfile !==
+  isProfile ⇒ recompute`. Verified NO double-count: the aggregator
+  `updateRecipeRatingStats` re-reads `family_ratings where memberType=="profile"`
+  in full and `set(merge)`s one stats doc, so a demoted row simply stops matching
+  and drops out — idempotent by construction (consistent with the 2026-06-29
+  aggregator entry). Both-non-profile updates still cost zero recompute. Correct.
+
+- **Pre-existing (NOT in this diff, noted for the next editor):**
+  `cleanupOldNotifications`'s catch does `logger.error("Notification cleanup
+  failed", e)` — passes the raw Error as the structured second arg instead of the
+  house `{ err: e }` shape (loses the queryable object wrapper). Low; leave unless
+  touching that block.
+
+### 2026-07-14 — BUT-1600 family-rating orphan reconciliation in the dormancy sweep [Pattern discovered]
+
+`family/purge-dormant-family-data.ts` gained a per-household, per-sweep orphan
+reconciliation (`reconcileDepartedMemberRatings` + `recomputeDenormalisedAverages`)
+that runs BEFORE the dormancy judgement, deletes `family_ratings` whose `memberId`
+is no longer in the roster (`memberUserIds` ∪ diner-profile doc ids), recomputes the
+denormalised `core.familyAverage`/`core.familyRatingCount` on each member's own
+recipe copy from the survivors, and returns the survivor set so dormancy/purge act on
+the pruned data. Build clean (tsc --noEmit exit 0). Reviewed patterns/risks:
+
+- **Recompute robust to both share models via the `.exists` filter.** It iterates
+  `users/{eachMember}/recipes/{recipeId}` but filters `s.exists && hasDenormFamilyValue`,
+  so it correctly patches only copies that actually hold a family pill — mirroring the
+  client denorm (`family_rating_service.dart:154` `if (!snap.exists) return`). Works
+  whether the household recipe is a shared single doc (only owner's subcollection has it)
+  or per-member copies. No wrong-doc-id bug. Star validity `stars<1||stars>5` matches
+  the client's `hasValidStars` (family_rating.dart:88), and it aggregates all memberTypes
+  like `FamilyRatingSummary.fromRatings` (not profile-only). Verified consistent.
+
+- **RISK (Medium): the orphan delete is ungated + destructive + irreversible, keyed
+  solely on two query snapshots.** Unlike the dormancy purge (warn + 30d grace +
+  strict), reconciliation deletes regulated family-rating data the instant a memberId
+  isn't in the roster, every sweep, strict:false. A transiently empty/incomplete
+  `memberUserIds` (mid-migration, bad read) or a diner_profile with a missing
+  `householdId` (dropped from the `where(householdId==)` query) would mark legitimate
+  ratings as orphans and delete them permanently, recomputing averages down. There is
+  NO defensive guard. Recommend: skip reconciliation when `rosterMemberIds` is empty
+  (roster.size===0 with ratings present is almost certainly a bad read), and/or require
+  memberUserIds non-empty. Pattern: a destructive delete driven by "not present in a
+  live query" must guard against the query itself being under-populated.
+
+- **RISK (Low): warn-before-stamp idempotency inversion (pre-existing, unchanged).**
+  `warnMembers` runs before the `familyDataPurgeScheduledAt` stamp; if the stamp write
+  fails the run throws → scheduler retries → the still-unscheduled household re-warns
+  (duplicate `user_notifications`). Best-effort, low impact, but the knowledge-file
+  send-then-guard rule prefers the guard first.
+
+- **Test gap (Medium): the memberUserIds roster branch is untested.** The integration
+  test's only orphan is a profile-type `ghost`, matched out via the DINER half of
+  `rosterMemberIds`; the valid rating is also a diner. So the `memberUserIds` spread in
+  `rosterMemberIds` is never the deciding matcher — a regression dropping it would keep
+  the test green while deleting real account-holder (user-type) ratings, which is the
+  headline BUT-1600 "departed account holder" scenario. Also untested: recompute
+  clearing the pill to null (all-orphan recipe) and multi-recipe orphans.

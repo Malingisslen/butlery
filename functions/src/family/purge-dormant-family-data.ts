@@ -21,6 +21,18 @@
  *
  * Dormancy signal: the newest of the household's `updatedAt`, its diner
  * profiles' `updatedAt`, and its family ratings' `lastUpdatedAt`.
+ *
+ * BUT-1600 — orphan reconciliation (runs first, every household, every sweep,
+ * regardless of dormancy): a `family_ratings` doc whose `memberId` is no longer
+ * in the household roster (a deleted diner profile, or a departed account
+ * holder) still counts toward the recipe-detail breakdown total and the
+ * denormalised recipe-card family average, even though no roster row renders for
+ * it — so the count can exceed the visible rows. Diner-profile deletion does not
+ * cascade to its ratings, so this janitor is the catch-all: it deletes such
+ * orphaned ratings (each delete fires `onFamilyRatingDeleted` → public
+ * aggregation recompute) and recomputes the denormalised
+ * `core.familyAverage`/`core.familyRatingCount` on each household member's own
+ * recipe copy from the surviving ratings.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -38,6 +50,139 @@ export interface PurgeRunResult {
   warned: number;
   purged: number;
   reactivated: number;
+  /** BUT-1600: family_ratings deleted because their rater left the household. */
+  orphansReconciled: number;
+}
+
+/** String memberIds still present in the household roster (accounts + diners). */
+function rosterMemberIds(
+  memberUserIds: string[],
+  diners: admin.firestore.QuerySnapshot
+): Set<string> {
+  return new Set<string>([...memberUserIds, ...diners.docs.map((d) => d.id)]);
+}
+
+/** Firestore's getAll rejects an empty arg list; page it so an unbounded
+ * candidate set (a heavy rater leaving) never builds one oversized read. */
+async function getAllChunked(
+  db: admin.firestore.Firestore,
+  refs: admin.firestore.DocumentReference[]
+): Promise<admin.firestore.DocumentSnapshot[]> {
+  const CHUNK = 300;
+  const out: admin.firestore.DocumentSnapshot[] = [];
+  for (let i = 0; i < refs.length; i += CHUNK) {
+    out.push(...(await db.getAll(...refs.slice(i, i + CHUNK))));
+  }
+  return out;
+}
+
+/** A recipe copy already carries a denormalised family pill worth refreshing. */
+function hasDenormFamilyValue(data: admin.firestore.DocumentData | undefined): boolean {
+  const core = data?.core as Record<string, unknown> | undefined;
+  return core != null &&
+    (core.familyRatingCount != null || core.familyAverage != null);
+}
+
+/**
+ * BUT-1600: recompute the denormalised recipe-card family average on every
+ * household member's own recipe copy for each recipe an orphan rating touched.
+ * Uses the SURVIVING ratings (simple unweighted mean, matching the client's
+ * `FamilyRatingSummary.fromRatings`); clears the pill (null) when no rating
+ * remains. Only patches copies that already hold a family value — never adds the
+ * fields to a copy that never had a family pill. Best-effort: a failure here
+ * leaves the pill to self-heal on the next in-app rating.
+ */
+async function recomputeDenormalisedAverages(
+  db: admin.firestore.Firestore,
+  orphans: admin.firestore.QueryDocumentSnapshot[],
+  survivors: admin.firestore.QueryDocumentSnapshot[],
+  memberUserIds: string[]
+): Promise<void> {
+  const affectedRecipeIds = new Set<string>();
+  for (const o of orphans) {
+    const rid = o.data().recipeId;
+    if (typeof rid === "string" && rid) affectedRecipeIds.add(rid);
+  }
+  if (affectedRecipeIds.size === 0 || memberUserIds.length === 0) return;
+
+  const byRecipe = new Map<string, { sum: number; count: number }>();
+  for (const s of survivors) {
+    const d = s.data();
+    const rid = d.recipeId;
+    const stars = d.stars;
+    if (typeof rid !== "string" || !affectedRecipeIds.has(rid)) continue;
+    if (typeof stars !== "number" || stars < 1 || stars > 5) continue;
+    const agg = byRecipe.get(rid) ?? { sum: 0, count: 0 };
+    agg.sum += stars;
+    agg.count += 1;
+    byRecipe.set(rid, agg);
+  }
+
+  const refs: admin.firestore.DocumentReference[] = [];
+  for (const uid of memberUserIds) {
+    for (const rid of affectedRecipeIds) {
+      refs.push(
+        db.collection("users").doc(uid).collection("recipes").doc(rid)
+      );
+    }
+  }
+  const snaps = await getAllChunked(db, refs);
+  const patchable = snaps.filter(
+    (s) => s.exists && hasDenormFamilyValue(s.data())
+  );
+  if (patchable.length === 0) return;
+
+  await commitInChunks(
+    db,
+    patchable,
+    (batch, snap) => {
+      const agg = byRecipe.get(snap.ref.id);
+      const hasRatings = agg != null && agg.count > 0;
+      batch.update(snap.ref, {
+        "core.familyAverage": hasRatings ? agg!.sum / agg!.count : null,
+        "core.familyRatingCount": hasRatings ? agg!.count : null,
+      });
+    },
+    { label: "recomputeFamilyCardAverage", strict: false }
+  );
+}
+
+/**
+ * BUT-1600: delete family_ratings whose rater left the roster and recompute the
+ * affected recipe cards. Reuses the already-fetched `diners`/`ratings`
+ * snapshots (no extra household reads). Returns the surviving rating docs so the
+ * dormancy pass below judges activity + purges on the reconciled set. Idempotent:
+ * a re-run finds no orphans (set difference) and the recompute is deterministic.
+ */
+async function reconcileDepartedMemberRatings(
+  db: admin.firestore.Firestore,
+  memberUserIds: string[],
+  diners: admin.firestore.QuerySnapshot,
+  ratings: admin.firestore.QuerySnapshot,
+  result: PurgeRunResult
+): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  if (ratings.empty) return ratings.docs;
+  const roster = rosterMemberIds(memberUserIds, diners);
+  const orphans = ratings.docs.filter((r) => {
+    const mid = r.data().memberId;
+    return typeof mid === "string" && !roster.has(mid);
+  });
+  if (orphans.length === 0) return ratings.docs;
+
+  const orphanIds = new Set(orphans.map((o) => o.id));
+  const survivors = ratings.docs.filter((d) => !orphanIds.has(d.id));
+
+  // Best-effort (strict:false): an orphan left behind is re-detected next sweep,
+  // and this is hygiene, not a legal-retention guarantee (that is the purge pass
+  // below, which stays strict).
+  await commitInChunks(db, orphans, (batch, doc) => batch.delete(doc.ref), {
+    label: "reconcileDepartedFamilyRatings",
+    strict: false,
+  });
+  result.orphansReconciled += orphans.length;
+
+  await recomputeDenormalisedAverages(db, orphans, survivors, memberUserIds);
+  return survivors;
 }
 
 /** Millis of a Firestore Timestamp-ish value, or 0 if absent/!Timestamp. */
@@ -86,14 +231,30 @@ async function processHousehold(
   result.scanned++;
   const data = hh.data();
   const hid = hh.id;
+  const memberUserIds = Array.isArray(data.memberUserIds)
+    ? (data.memberUserIds as unknown[]).filter(
+        (id): id is string => typeof id === "string"
+      )
+    : [];
 
   const [diners, ratings] = await Promise.all([
     db.collection("diner_profiles").where("householdId", "==", hid).get(),
     db.collection("family_ratings").where("householdId", "==", hid).get(),
   ]);
 
+  // BUT-1600: prune ratings whose rater left the roster (and refresh the
+  // affected recipe cards) before any dormancy judgement — an orphan's activity
+  // must not keep a household alive, and the purge pass acts on the pruned set.
+  const liveRatings = await reconcileDepartedMemberRatings(
+    db,
+    memberUserIds,
+    diners,
+    ratings,
+    result
+  );
+
   // Nothing to purge → don't carry a stale schedule.
-  if (diners.empty && ratings.empty) {
+  if (diners.empty && liveRatings.length === 0) {
     if (data.familyDataPurgeScheduledAt) {
       await hh.ref.update({
         familyDataPurgeScheduledAt: admin.firestore.FieldValue.delete(),
@@ -106,7 +267,7 @@ async function processHousehold(
   diners.forEach((d) => {
     lastActivityMs = Math.max(lastActivityMs, millisOf(d.data().updatedAt));
   });
-  ratings.forEach((r) => {
+  liveRatings.forEach((r) => {
     lastActivityMs = Math.max(lastActivityMs, millisOf(r.data().lastUpdatedAt));
   });
 
@@ -126,11 +287,6 @@ async function processHousehold(
     | admin.firestore.Timestamp
     | undefined;
   if (!scheduledAt) {
-    const memberUserIds = Array.isArray(data.memberUserIds)
-      ? (data.memberUserIds as unknown[]).filter(
-          (id): id is string => typeof id === "string"
-        )
-      : [];
     await warnMembers(db, memberUserIds, now);
     await hh.ref.update({
       familyDataPurgeScheduledAt: admin.firestore.Timestamp.fromDate(
@@ -147,7 +303,7 @@ async function processHousehold(
   // Grace elapsed and still dormant → purge the family data. strict:true so a
   // failed chunk throws (run recorded failed + retried), never a silent partial
   // purge of children's data.
-  const childDocs = [...diners.docs, ...ratings.docs];
+  const childDocs = [...diners.docs, ...liveRatings];
   await commitInChunks(db, childDocs, (batch, doc) => batch.delete(doc.ref), {
     label: "purgeDormantFamilyData",
     strict: true,
@@ -174,6 +330,7 @@ export async function runDormantFamilyPurge(
     warned: 0,
     purged: 0,
     reactivated: 0,
+    orphansReconciled: 0,
   };
   const dormancyCutoffMs = now.getTime() - DORMANCY_DAYS * DAY_MS;
 

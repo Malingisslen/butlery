@@ -309,9 +309,11 @@ export const onFamilyRatingUpdated = onDocumentUpdated(
   async (event) => {
     const before = event.data!.before.data();
     const after = event.data!.after.data();
-    // Recompute when the star value changed OR the memberType flipped into
-    // `profile` (a memberType-only flip changes public-counter membership,
-    // BUT-1511). The `after`-is-profile gate lives inside the helper.
+    // Recompute when the star value changed OR the memberType flips in EITHER
+    // direction — promotion INTO `profile` (BUT-1511) or demotion OUT OF
+    // `profile` (BUT-1592) — because either flip changes whether the row counts
+    // toward the public average, even with unchanged stars. The direction-aware
+    // gate lives inside the helper.
     if (!shouldRecomputeOnFamilyRatingUpdate(before, after)) return;
     const recipeId = after.recipeId as string;
     if (!recipeId) return;

@@ -14,16 +14,31 @@ import { BATCH_LIMIT } from "../shared/batch-update";
 
 const RETENTION_DAYS = 90;
 
+/**
+ * Upper bound on drain passes per collection. The loop normally terminates
+ * because each committed delete drops rows out of the `< cutoff` filter, so a
+ * healthy drain shrinks the window every pass. This cap is a safety net for the
+ * pathological case where a full page keeps coming back without shrinking (a
+ * delete that silently fails to remove matching rows) — without it the `for(;;)`
+ * loop would spin until the platform timeout, re-issuing the same query and
+ * re-committing writes. 20 000 passes × BATCH_LIMIT (500) = 10M docs, far beyond
+ * any realistic weekly residue, so a legitimate large drain never hits it; only
+ * a non-shrinking page does. On hit we log and stop (partial cleanup is fine —
+ * the next weekly run resumes from whatever remains).
+ */
+const MAX_DRAIN_ITERATIONS = 20000;
+
 interface CleanupResult {
   collection: string;
   deletedCount: number;
 }
 
-async function cleanupCollection(
+export async function cleanupCollection(
   db: admin.firestore.Firestore,
   collectionName: string,
   timestampField: string,
   cutoffTimestamp: admin.firestore.Timestamp,
+  maxIterations: number = MAX_DRAIN_ITERATIONS,
 ): Promise<CleanupResult> {
   // Drain every expired doc, not just the first page. Because each page is
   // deleted before the next query runs, the same `timestampField < cutoff`
@@ -36,8 +51,22 @@ async function cleanupCollection(
   // batch's worth of docs in memory; a platform-timeout mid-drain is self-healing
   // because committed deletes drop out of the filter before the next weekly run.
   let deletedCount = 0;
+  let iterations = 0;
 
   for (;;) {
+    // Bounded-iteration guard: a non-shrinking full page (deletes not removing
+    // matching rows) would otherwise loop until the platform timeout.
+    if (iterations >= maxIterations) {
+      logger.error(
+        `cleanupCollection(${collectionName}): hit max drain iterations ` +
+          `(${maxIterations}) — page not shrinking, aborting to avoid an ` +
+          `unbounded loop`,
+        { deletedCount }
+      );
+      break;
+    }
+    iterations++;
+
     const snapshot = await db
       .collection(collectionName)
       .where(timestampField, "<", cutoffTimestamp)

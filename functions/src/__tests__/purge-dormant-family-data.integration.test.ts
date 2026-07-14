@@ -78,6 +78,56 @@ async function exists(coll: string, id: string): Promise<boolean> {
   return (await db.collection(coll).doc(id).get()).exists;
 }
 
+// BUT-1600: an ACTIVE household (never purged) with a valid in-roster rating,
+// an ORPHAN rating whose rater left the roster, and a member recipe copy whose
+// denormalised family pill still counts the orphan. Both ratings are on the same
+// recipe so the recompute is a clean count 2 → 1.
+async function seedReconcileHousehold(
+  id: string,
+  member: string
+): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    members: [{ userId: member, permission: "admin" }],
+    memberUserIds: [member],
+    createdBy: member,
+    updatedAt: recent,
+  });
+  await db.collection("diner_profiles").doc(`${id}|dp`).set({
+    householdId: id,
+    name: "Emma",
+    createdBy: member,
+    updatedAt: recent,
+  });
+  // Valid: rater is the existing diner profile → kept.
+  await db.collection("family_ratings").doc(`${id}|valid`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|dp`,
+    memberType: "profile",
+    stars: 4,
+    enteredByUid: member,
+    lastUpdatedAt: recent,
+  });
+  // Orphan: rater `ghost` is neither an account nor an existing diner → deleted.
+  await db.collection("family_ratings").doc(`${id}|orphan`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|ghost`,
+    memberType: "profile",
+    stars: 2,
+    enteredByUid: member,
+    lastUpdatedAt: recent,
+  });
+  // Member's own recipe copy, denormalised pill still counting both ratings.
+  await db
+    .collection("users")
+    .doc(member)
+    .collection("recipes")
+    .doc("r1")
+    .set({ core: { familyAverage: 3, familyRatingCount: 2 } });
+}
+
 async function main(): Promise<void> {
   console.log("family-data dormancy sweep integration\n");
 
@@ -104,6 +154,8 @@ async function main(): Promise<void> {
     scheduledAt: ts(5 * DAY), // ...but a purge was pending from a prior pass
     member: `m-react-${RUN}`,
   });
+  const reconcile = `hh-reconcile-${RUN}`;
+  await seedReconcileHousehold(reconcile, `m-reconcile-${RUN}`);
 
   await runDormantFamilyPurge(db, NOW);
 
@@ -157,6 +209,29 @@ async function main(): Promise<void> {
     reactHh?.familyDataPurgeScheduledAt === undefined &&
       (await exists("family_ratings", `${reactivated}|fr`)),
     "reactivated: scheduled purge cancelled, data kept"
+  );
+
+  // BUT-1600 reconciliation: orphan deleted, valid rating kept, card recomputed.
+  assert(
+    !(await exists("family_ratings", `${reconcile}|orphan`)),
+    "reconcile: orphaned rating (departed rater) deleted"
+  );
+  assert(
+    await exists("family_ratings", `${reconcile}|valid`),
+    "reconcile: in-roster rating kept"
+  );
+  const reconcileCard = (
+    await db
+      .collection("users")
+      .doc(`m-reconcile-${RUN}`)
+      .collection("recipes")
+      .doc("r1")
+      .get()
+  ).data();
+  assert(
+    reconcileCard?.core?.familyRatingCount === 1 &&
+      reconcileCard?.core?.familyAverage === 4,
+    "reconcile: recipe-card family pill recomputed to the surviving rating"
   );
 
   console.log(`\n${failed === 0 ? "ALL PASS" : `${failed} FAILED`}`);

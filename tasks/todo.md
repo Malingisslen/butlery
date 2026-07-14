@@ -1,205 +1,214 @@
-# Sprint 2026-07-12 — parser/backend correctness burndown + backlog hygiene
+# Sprint 2026-07-14 — this-week follow-up burndown + carried GDPR fix
+
+`/sprint-execute` Phase 1 selection. 6 tickets across 3 disjoint-file batches (parallel-safe).
+State UUIDs: Todo 5a6d3faa · InProgress f8a3cf05 · InReview 9929b3b0 · Done 57dc8a84
+
+**Step-0 grep-of-main sweep:** every candidate's target file/symbol was re-read on current
+`main` before selection (not just `git log`). Confirmed still-live: BUT-1598's missing test
+(index config genuinely un-asserted), BUT-1595's missing test (no test file exists for
+`cleanupCollection`'s drain loop), BUT-1596's stale comment (index.ts:312-314 still only
+describes the promotion case), BUT-1597's unlogged catch path (`_parseWithStrategy`'s
+`catch (e)` block does not call `_logParseEvent`), BUT-1600's data gap (no member/diner-removal
+reconciliation exists anywhere in `lib/services` or `functions/src`), and BUT-1544's two gaps
+(no TTL/purge for `deletion_audit_logs.expireAt`; the consent-row starvation half was
+independently confirmed already fixed by commit `3a01d8fcd`/BUT-1404, per the ticket's own
+comment thread — so BUT-1544 in this sprint is narrower than its original text: TTL bullet
+only). No candidate turned out to be obsolete.
+
+**Backlog note:** Linear Backlog/Todo/Triage/In Progress was read (Todo had 2, Triage/In
+Progress empty, Backlog ~large — 47 tickets carry the `autonomous` label). Per the standing
+precedent from the 2026-07-11c/07-12 sprints, the broad autonomous tech-debt/refactor backlog
+(god-object splits, ServiceLocator migrations, dead-flag cleanups, etc.) was scored at a title
+level but not re-litigated — those were already triaged in prior passes and haven't changed.
+Selection instead focused on this week's freshest, most concrete candidates: five follow-up
+tickets filed against code that shipped in the last 48h (so Step-0 grep is maximally reliable),
+plus one carried-forward real GDPR gap that a prior sprint's batch-drop left genuinely unbuilt
+(BUT-1544, see its comment thread — re-laned `need-malin` not because it's speculative but
+because the drop wasn't disclosed as a decision).
+
+## Batch A — Backend cleanup + GDPR hygiene (functions/src, gate: cloud-functions-specialist)
+
+### BUT-1598 — test gap: no index-config assertion for the social_requests (status, sentAt) composite [Tier A, build, router: single]
+Step-0 confirmed: commit `6f0942408` added the composite (`firestore.indexes.json:102-109`,
+status ASC + sentAt ASC) that `cleanupExpiredSocialRequests` needs, but no test pins it — a
+future refactor could silently drop the line and nothing would fail until the weekly job
+throws in production again.
+- [ ] Add a test that parses `firestore.indexes.json` and asserts the `social_requests`
+      (status, sentAt) composite is present with the correct field order/directions
+- Acceptance: (1) new test asserts the exact composite (fields + directions) is present;
+  (2) test fails if the index line is removed/altered — not a tautological always-pass check;
+  (3) no production code changed, this is test-gap-only; (4) existing
+  cleanup-expired-social-requests tests stay green
+- Files: `functions/src/__tests__/cleanup-expired-social-requests.test.ts` (new)
+- Gates: cloud-functions-specialist. Close: Done.
+
+### BUT-1595 — test gap: cleanup-old-notifications pagination drain loop is untested (follow-up to BUT-1563) [Tier A, build, router: single]
+Step-0 confirmed: `cleanupCollection` (`cleanup-old-notifications.ts:22-59`) has the
+BUT-1563 drain loop live but genuinely no test file exists under `functions/src/__tests__/`
+for it. The ticket's own 2026-07-12 salvage-review note adds a real edge: the loop only exits
+on `snapshot.size < BATCH_LIMIT`, so a delete that silently returns fewer deletions than
+requested (partial-batch/permission edge, not the normal atomic-batch case) could re-return a
+full page indefinitely.
+- [ ] Test: seeds > BATCH_LIMIT expired docs, asserts multi-page drain to zero
+- [ ] Test: a sub-full final page terminates the loop; an empty collection fast-exits
+- [ ] Test + fix: a fake `batchDeleteDocs` that deletes fewer docs than requested must not spin
+      forever — add a bounded-iteration safety net if the current loop lacks one
+- Acceptance: (1) multi-page happy-path drain is proven by a test; (2) short-final-page and
+  empty-collection exits are proven; (3) a non-shrinking-page scenario is proven bounded (test
+  + guard, not just a comment); (4) don't change the RETENTION_DAYS/collections list, only the
+  drain loop's termination safety
+- Files: `functions/src/__tests__/cleanup-old-notifications.test.ts` (new),
+  `functions/src/cleanup/cleanup-old-notifications.ts` (only if the iteration-cap guard is
+  needed)
+- Gates: cloud-functions-specialist. Close: Done.
+
+### BUT-1596 — stale comment at functions/src/index.ts:312-314 after ratings profile change (follow-up to BUT-1592) [Tier A, build, router: single]
+Step-0 confirmed: the comment at `index.ts:312-314` still only describes the promotion
+("flipped into profile") case; BUT-1592 (shipped in `6f0942408`) widened
+`shouldRecomputeOnFamilyRatingUpdate` to also cover demotion, but deliberately left index.ts
+untouched to avoid a cross-batch apply conflict at the time.
+- [ ] Update the comment to describe both promotion and demotion as recompute triggers
+- Acceptance: (1) comment accurately reflects current `shouldRecomputeOnFamilyRatingUpdate`
+  behavior (both directions); (2) no logic/behavior change — comment-only edit; (3) doesn't
+  touch any other export in this file
+- Files: `functions/src/index.ts`
+- Gates: cloud-functions-specialist. Close: Done.
+
+### BUT-1544 — GDPR audit-log purge: unverified 180-day TTL on deletion_audit_logs [Tier A, build, router: FULL-PANEL (GDPR/high-stakes)]
+Carried forward — a prior sprint selected this and it was silently dropped mid-run (see the
+ticket's own post-sprint comment, `need-malin` label was added to surface the drop, not because
+the fix is a product decision). Narrowed scope this pass: the ticket's second bullet
+(general-category purge starving behind consent rows) is independently confirmed ALREADY FIXED
+by commit `3a01d8fcd`/BUT-1404 (per the ticket's own 2026-07-11 comment) — only bullet 1
+remains live: `deletion_audit_logs.expireAt` sets a 180-day value but nothing has been
+confirmed to actually reap it.
+- [ ] Phase 1.4 full-panel blind critique (GDPR/Privacy/Legal/Security) → fold must-haves
+      BEFORE implementing
+- [ ] Confirm whether a Firestore TTL policy or a CF purge exists for
+      `deletion_audit_logs.expireAt`; if neither, add one (TTL policy declaration or a purge
+      pass), with evidence cited in the commit
+- [ ] Test proving the mechanism actually removes an expired doc (not just that the field is
+      set)
+- Acceptance: (1) `deletion_audit_logs` docs are provably reaped at 180 days by a real,
+  verified mechanism — not just a field nothing reads; (2) evidence for which mechanism (TTL
+  config or CF) is cited in the commit; (3) don't touch the consent-row retention query (already
+  fixed by BUT-1404) or any other retention policy, only this one collection's enforcement;
+  (4) full-panel review ran and its must-haves are folded in before commit
+- Files: `functions/src/account/request-account-deletion.ts` (only if a purge CF is the chosen
+  mechanism — read first, TTL-policy-only fix may need no code change), plus a new/updated test
+- Gates: firebase-backend-security (+ full Phase 1.4 panel). Close: Done (Tier A) unless the
+  panel raises a sign-off item, in which case In Review.
+
+## Batch B — Import parse-event exception logging (lib/services/import, gate: code-reviewer+testing-specialist)
+
+### BUT-1597 — parse failures (exception path) are not logged as parse events (follow-up to BUT-1470) [Tier A, build, router: single]
+Step-0 confirmed: `_parseWithStrategy`'s `catch (e)` block (`import_manager.dart:786-791`)
+returns a failure result without calling `_logParseEvent` — BUT-1470 deliberately scoped
+logging to the try-block outcomes only. Consequence: analytics on parse-event volume undercount
+hard failures (exceptions surface via AppLogger but not the parse-event pipeline).
+- [ ] Add one `_logParseEvent`-equivalent call on the catch path so exceptions are captured as
+      parse events too (reuse the existing logger — no new plumbing)
+- [ ] New test in a DEDICATED new test file (not `import_manager_test.dart`, to avoid
+      conflicting with any other in-flight edits to that golden file) proving the logger fires
+      when a strategy throws
+- Acceptance: (1) an exception in `_parseWithStrategy` now produces a parse event, not just an
+  AppLogger entry; (2) existing success/needsAssistance/failure logging (BUT-1470) is
+  unchanged; (3) new test lives in a new file, `import_manager_test.dart` is not modified;
+  (4) no new logging plumbing/CF/dashboard — reuses `ParseEventLogger`
+- Files: `lib/services/import/import_manager.dart`,
+  `test/unit/services/import/import_manager_parse_event_exception_test.dart` (new)
+- Gates: code-reviewer, testing-specialist. Close: Done.
+
+## Batch C — Family-rating membership reconciliation (lib/services/family + functions/src/family, gate: firebase-backend-security)
+
+### BUT-1600 — family-rating breakdown count can exceed visible rows when a rater left the household [Tier A, build, router: single]
+Step-0 confirmed: no member/diner-removal reconciliation exists anywhere in `lib/services` or
+`functions/src` — `Household.removeMember()` (`lib/models/household.dart:203`) is a pure model
+method with no data-side cleanup of that member's `family_ratings` docs, so the recipe-detail
+summary (derived from the FULL `family_ratings` set) can show a count that exceeds the number of
+rendered breakdown rows once a rater leaves the household. Pre-existing gap, not introduced by
+BUT-1461 Gap 2.
+- [ ] Reconcile `family_ratings` docs for a removed member/diner (delete or reattribute) and
+      recompute the denormalised recipe-card average, either via the removal call path in
+      `HouseholdService` or as an added step in the existing weekly
+      `purgeDormantFamilyData` sweep
+- [ ] Test: a rater removed from the roster after rating no longer produces a header count
+      exceeding rendered rows
+- [ ] Test: denormalised recipe-card average reflects the reconciled set (no stale over-count)
+- Acceptance: (1) header count never exceeds rendered breakdown rows after a member/diner
+  removal, proven by a test; (2) denormalised recipe-card average is recomputed to match;
+  (3) don't add a new exported Cloud Function to `functions/src/index.ts` — Batch A's BUT-1596
+  edits that same file in this sprint, so implement via the existing removal call path or an
+  addition inside an already-exported scheduled job, not a new top-level export; (4) don't
+  change dormancy-purge behavior (24-month sweep) for still-active households
+- Files: `lib/services/household_service.dart`,
+  `functions/src/family/purge-dormant-family-data.ts` (only if the sweep-extension approach is
+  chosen), plus a new/updated test
+- Gates: firebase-backend-security. Close: Done.
+
+## Needs you (Tier D / needs-approval — not built this sprint)
+
+- **BUT-1601** (inline ingredient quantities in cooking-mode steps — "tärna tomaterna" →
+  "tärna 4 stora tomater") — labeled `idea`, not `autonomous`; a genuine new-feature/UX call
+  (how quantities get parsed into step text, scaling behavior), not a correctness fix.
+  Recommendation: worth exploring — it's a nice differentiator per the ticket's own framing —
+  but wants a product look (parsing risk, scaling edge cases) before building, not an autonomous
+  default.
+- **BUT-1599** (sprint engine force-commits past the marker review-gate) — the code that needs
+  fixing (`sprint-execute-parallel.js`) lives in the shared `C:/claude-plugins/plugins/delivery`
+  repo, not this one; already labeled `need-malin`. Recommendation: real and worth fixing (this
+  sprint itself runs on that engine), but out of scope for a Butlery-repo sprint — needs a
+  session in the plugin repo.
+- **BUT-1570** (enable parse_events TTL policy + run expiry backfill) — ops action requiring
+  Firebase console / gcloud access (Tier D), already labeled `need-malin`. Recommendation: do
+  it — it's a already-scoped, already-approved follow-up (BUT-1478), just needs you to run the
+  two RUNBOOK steps.
+- **BUT-1323** ("Who's eating": per-day household presence + per-member preferences, epic) — the
+  ticket's own text flags it "Large — may warrant splitting into sub-tickets" and it's the
+  marquee differentiator, i.e. a strategic commitment call, not a bug fix. Recommendation: high
+  payoff or I would not have carried it forward at all, but it should be broken into the four
+  sub-pieces the ticket already outlines (per-member dislikes, per-day presence toggle,
+  generator scoping, per-day portions) and sequenced deliberately rather than auto-built as one
+  large Tier-C change.
+- **BUT-1454** (minor default-private search-suppression + searchable opt-in, BUT-674 remainder)
+  — carried from the 2026-07-12 plan; still unresolved. Minors-adjacent opt-in copy/framing is a
+  UX call. Recommendation: worth doing (documented remainder of already-approved work), wants a
+  copy look first given the minors context.
+- **BUT-1500** (Algolia search router has zero callers — enable or remove) — carried from
+  2026-07-12; still framed as a keep-vs-delete decision in its own title. Recommendation: low
+  stakes either way, your call on which is faster.
+
+## Deviation log
+
+(none yet — filled during Phase 2 execution)
+
+---
+# Sprint 2026-07-12 — parser/backend correctness burndown + backlog hygiene [ARCHIVED — mostly shipped]
 
 `/sprint-execute` Phase 1 selection. 8 tickets across 8 disjoint-file batches (parallel-safe).
 State UUIDs: Todo 5a6d3faa · InProgress f8a3cf05 · InReview 9929b3b0 · Done 57dc8a84
+
+Verified 2026-07-14: BUT-1592 (rating recompute demotion), BUT-1593 (parser truncation),
+BUT-1455 (menu re-roll pantry), BUT-1470 (parse-event logging), BUT-1567 (lapsed-user window),
+BUT-1563 (notification cleanup pagination), and BUT-1575 (bulk-verify hygiene) all shipped —
+confirmed Done/archived in Linear and/or present on current `main`. BUT-1544 (GDPR audit-log
+purge, Batch F) was selected but its code batch was silently dropped mid-run (see its own
+2026-07-12 comment) — carried forward into the new sprint above as a narrower, confirmed-live
+gap.
 
 **Step-0 grep-of-main sweep:** no open ticket in the scanned range matched a symbol/behavior
 already fixed on main under a different id — nothing obsolete this pass. Two near-duplicate
 pairs were found among the freshest tickets (both filed same day by different scan passes) and
 are closed as Linear duplicates below rather than built twice.
 
-**Backlog note:** the full open pool (Backlog + Todo + Triage + In Progress, ~150 tickets,
-paginated to completion) was read this pass. The great majority already carry a `deferred` or
-`need-malin` lane label from prior sprints/role-org scans (post-beta epics, launch-gated ops,
-already-surfaced product decisions) — those prior triage calls were treated as still standing,
-not re-litigated ticket-by-ticket this sprint. Selection focused mandate judgement on
-`autonomous`-labeled and freshly-filed candidates. Three borderline ones are flagged below under
-Needs You rather than re-buried silently.
-
-## Batch A — Family-rating recompute demotion gap (functions/src/ratings, gate: cloud-functions-specialist)
-
-### BUT-1592 — family-rating recompute doesn't fire on profile→non-profile demotion (BUT-1511 residual) [Tier A, build, router: single]
-`functions/src/ratings/family-rating-recompute.ts` (`shouldRecomputeOnFamilyRatingUpdate`).
-Step-0 confirmed: the JSDoc and code both still short-circuit on `isProfileRating(after)` before
-checking `before`, so a `profile`→non-profile demotion never triggers recompute — the row stays
-folded into the public average under its old classification. Real, current, undisputed gap
-(BUT-1511 explicitly scoped it out, documented in a comment + a negative test).
-- [ ] Widen `shouldRecomputeOnFamilyRatingUpdate` to also recompute when `before` was `profile`
-      and `after` is not (demotion), alongside the existing promotion/star-change checks
-- [ ] New unit test: recompute fires on a profile→non-profile demotion with stars unchanged
-- [ ] Existing promotion + star-change tests still pass unmodified
-- Acceptance: (1) demotion transition triggers recompute; (2) new test proves it; (3) existing
-  promotion/star-change tests unmodified and green; (4) don't touch the trigger's other gates
-  (this is a condition widen only, not a rewrite)
-- Files: `functions/src/ratings/family-rating-recompute.ts`, `functions/src/__tests__/family-rating-recompute.test.ts`
-- Gates: cloud-functions-specialist. Close: Done.
-
-## Batch B — Recipe parser: title truncation + ingredient misclassification (lib/services/import, gate: code-reviewer+testing-specialist)
-
-### BUT-1593 — recipe parser truncates Swedish titles + misclassifies ingredients ('Köttbullar med gräddsås' case) [Tier A, build, router: single]
-Discovered writing the BUT-1493 golden test (shipped, current `import_manager_test.dart:183-214`
-confirmed on Step-0 read — it deliberately asserts `startsWith('Kottbullar')` and a `>=3`
-ingredient-count lower bound specifically so it wouldn't cement these bugs). Real, current,
-core-USP-pipeline defects: multi-word Swedish titles with a "med …" tail get truncated, and
-instruction-sentence fragments leak into the ingredient list while a real measured ingredient
-line gets dropped.
-- [ ] Trace and fix the title-truncation logic in the text-import title extractor so the full
-      title survives (no premature cutoff on "med …" tails)
-- [ ] Trace and fix the ingredient/instruction line-classification so instruction fragments
-      aren't captured as ingredients and genuine measured lines (e.g. "500 g köttfärs") aren't dropped
-- [ ] Tighten the BUT-1493 golden test (`import_manager_test.dart`) to the exact expected title
-      and ingredient set now that the underlying bugs are fixed
-- Acceptance: (1) the Köttbullar-fixture title is NOT truncated; (2) no instruction fragment
-  appears in the parsed ingredient list for that fixture; (3) the golden test pins exact values
-  (no more `startsWith`/`>=` loosening); (4) no other import strategy's existing tests regress
-- Files: `lib/services/import/text_import_strategy.dart` (title/line-classification logic —
-  exact culprit confirmed at Step-0 implementation time), `test/unit/services/import/import_manager_test.dart`
-- Gates: code-reviewer, testing-specialist. Close: Done.
-
-## Batch C — Menu re-roll pantry re-fetch (lib/viewmodels/menu, gate: code-reviewer+testing-specialist)
-
-### BUT-1455 — menu section re-roll rebuilds the full pantry scoring context every tap (hot-path I/O) [Tier A, build, router: single]
-CONFIRMED `/code-review high` finding (2026-07-01), Step-0 re-read confirms it's still live:
-`regenerateMenuSection` (`menu_generator.dart:586-611`) calls `getAvailableRecipesAsync()` (full
-library) then `_buildScoringContext(pool)` on every single-section re-roll tap — identical full
-pantry read + ingredient-overlap match as a full generation, for one meal slot.
-- [ ] Cache/reuse the scoring context (or at least `pantryMatchByRecipeId`) from the last full
-      generation for section re-rolls, refreshing only when pantry/library actually changed —
-      OR scope the pantry read to the section's candidate pool instead of the whole library
-- [ ] New test asserting a single-section re-roll does not perform a full-library pantry read
-      on every tap (pantry-read-count or scoped-input assertion)
-- Acceptance: (1) re-roll no longer re-reads/re-scores the whole library on every tap (proven by
-  a test); (2) full-generation behavior is unchanged (existing menu tests stay green); (3) don't
-  change what recipes a re-roll can surface, only how the context is computed
-- Files: `lib/viewmodels/menu/menu_generator.dart`, `test/unit/viewmodels/menu/menu_generator_test.dart`
-- Gates: code-reviewer, testing-specialist. Close: Done.
-
-## Batch D — Parse-event logging for every import path (lib/services/import, gate: code-reviewer+testing-specialist)
-
-### BUT-1470 — log parse events for every import path, not just URL [Tier A, build, router: single, requiresPlanMode]
-Step-0 confirmed: `_parseWithStrategy` (`import_manager.dart:655`) is the single choke point
-called from all ~8 import paths (URL, photo, text, Instagram, TikTok, YouTube, etc. — grep
-confirms every call site funnels through it). Obvious-benefit instrumentation: reuses the
-existing `ParseEventLogger` + CF + dashboard, no new plumbing, no product ambiguity.
-- [ ] One `ParseEventLogger` call at the end of `_parseWithStrategy` logging strategy, success,
-      needsAssistance, elapsed — for every import path, not just URL
-- [ ] New FOCUSED test file (do NOT add to `import_manager_test.dart` — Batch B tightens that
-      file's golden-test assertions in parallel; a second batch editing it would conflict)
-      asserting the logger fires for a non-URL path (e.g. text import)
-- Acceptance: (1) every import path now logs a parse event, not just URL; (2) no new
-  plumbing/CF/dashboard added — reuses the existing logger; (3) a dedicated new test file (not
-  `import_manager_test.dart`) proves it fires on a non-URL path; (4) existing import behavior
-  (success/failure results returned to callers) is unchanged
-- Files: `lib/services/import/import_manager.dart`, new
-  `test/unit/services/import/import_manager_parse_event_logging_test.dart`
-- Gates: code-reviewer, testing-specialist. Close: Done.
-
-## Batch E — Lapsed-user win-back window fix (functions/src/analytics, gate: cloud-functions-specialist)
-
-### BUT-1567 — lapsed-user detection is point-in-time; irregular users escape all win-back windows [Tier A, build, router: single]
-Step-0 confirmed: `runDetectLapsedUsers` (`detect-lapsed-users.ts:138-145`) still queries an
-exact ±12h window around each of the 7/14/30-day thresholds — a user whose `lastActiveAt` skips
-past all three exact windows (irregular check-in pattern) never enters any win-back flow. Clear
-correctness fix to a scheduled CF, no UI surface, no product-intent ambiguity (behavior is
-strictly "catch more of the users the feature already intends to catch," not a new targeting
-policy).
-- [ ] Replace the point-in-time ±12h window predicate with a crossed-threshold-since-last-run
-      check per threshold (needs a stored last-run cursor so a user isn't re-notified every run
-      once they've crossed a threshold)
-- [ ] New/updated unit test: a user whose `lastActiveAt` falls between two scheduled runs (skips
-      the old exact window) still gets detected once they cross a threshold
-- [ ] Existing threshold tests still pass; a user is not notified twice for the same threshold
-- Acceptance: (1) a user who would have skipped the old ±12h window is now detected; (2) same
-  user is not double-notified for one threshold across runs; (3) existing win-back tests green;
-  (4) don't change which thresholds exist (7/14/30) or the copy/variant resolution, only the
-  detection predicate
-- Files: `functions/src/analytics/detect-lapsed-users.ts`, `functions/src/__tests__/detect-lapsed-users.test.ts`
-- Gates: cloud-functions-specialist. Close: Done.
-
-## Batch F — GDPR audit-log TTL + purge query split (functions/src/account+audit_logs, gate: firebase-backend-security)
-
-### BUT-1544 — GDPR audit-log purge: unverified 180-day TTL + general-category purge starves behind consent rows [Tier A, build, router: FULL-PANEL (high-stakes GDPR files)]
-Two sub-items, both correctness/compliance, no product-intent call: (1) `deletion_audit_logs`
-sets a 180-day `expireAt` but Step-0 needs to confirm whether a Firestore TTL policy or a CF
-purge actually exists for it — currently unverified; (2) the general-category audit-log purge in
-`purge-expired.ts` fetches-then-filters in the same query as long-retained consent rows, so it
-starves behind them — split by an indexed retention-tier field.
-- [ ] Phase 1.4 full-panel blind critique (GDPR/security-adjacent) → fold must-haves
-- [ ] Confirm/create the TTL policy (or CF purge) for `deletion_audit_logs.expireAt`; state which
-      one, with evidence
-- [ ] Split the general-category purge query by an indexed retention-tier field so it no longer
-      starves behind consent-row retention
-- [ ] Tests for both behaviors
-- Acceptance: (1) `deletion_audit_logs` docs actually expire at 180 days by a real, verified
-  mechanism (not just a field that nothing reads); (2) general-category purge is provably no
-  longer blocked by consent-row volume (test asserts independent progress); (3) no change to
-  what data is retained/deleted, only to whether the stated retention actually executes;
-  (4) don't touch the consent-row retention policy itself, only the query structure
-- Files: `functions/src/account/request-account-deletion.ts`, `functions/src/audit_logs/purge-expired.ts`
-- Gates: firebase-backend-security. Close: Done (Tier A) unless panel raises a sign-off item.
-
-## Batch G — DB cleanup pagination + index verify (functions/src/cleanup, gate: firebase-backend-security)
-
-### BUT-1563 — DBA low batch: cleanupOldNotifications pagination + cleanupExpiredSocialRequests index verify [Tier A, build, router: FULL-PANEL (high-stakes: touches account/GDPR-adjacent cleanup)]
-Same gap class as the already-fixed BUT-1372 (paginate past the 10k cap): `cleanupOldNotifications`
-(`cleanup-old-notifications.ts:22-40`) caps at 10k docs with no pagination loop, so a backlog
-past 10k never fully drains. `cleanupExpiredSocialRequests` (`cleanup-expired-social-requests.ts:32-35`)
-likely needs a `(status, sentAt)` composite index — verify against the actual index config, add
-only if genuinely missing.
-- [ ] Phase 1.4 full-panel blind critique → fold must-haves
-- [ ] Wrap `cleanupOldNotifications` in a `startAfter` pagination loop past the 10k cap
-- [ ] Verify `cleanupExpiredSocialRequests`'s query against `firestore.indexes.json`; add the
-      composite only if actually missing — state the finding either way, don't add a redundant index
-- [ ] Tests for the pagination loop
-- Acceptance: (1) `cleanupOldNotifications` provably drains past 10k docs (test with >10k-doc
-  scenario or an equivalent pagination-loop assertion); (2) index finding is stated explicitly
-  (added because missing, or confirmed already present — cite the config); (3) no change to what
-  counts as "expired" for either cleanup, only to how much of the backlog a single run clears;
-  (4) don't touch unrelated cleanup jobs
-- Files: `functions/src/cleanup/cleanup-old-notifications.ts`, `functions/src/cleanup/cleanup-expired-social-requests.ts`
-- Gates: firebase-backend-security. Close: Done (Tier A) unless panel raises a sign-off item.
-
-## Batch H — Backlog Hygiene (Linear-only, no production files, gate: none)
-
-### BUT-1575 — bulk-verify remaining 2026-07-04 org-scan tickets against current code; close false positives [Tier A meta, build, router: n/a]
-Already in Todo (selected by the prior sprint but not completed — no evidence of execution
-found). Carried forward as-is: re-verify every still-open BUT-1521–1568-range ticket against
-current code (grep/blame), close false positives citing the resolving commit, correctly lane
-survivors.
-- [ ] Re-verify every still-open BUT-1521–1568-range ticket against current code (grep/blame)
-- [ ] Close false positives citing the specific resolving commit
-- [ ] Correctly lane survivors (autonomous/need-malin/deferred) for future sprint trust
-- Acceptance: (1) every open ticket in range has been re-verified or closed; (2) each closure
-  cites commit/blame evidence; (3) survivors carry a correct lane label
-- Gates: none (no code diff). Close: Done.
-
 ## Duplicate closures (this session — same-day scan pairs, not built twice)
 
-- **BUT-1590** — duplicate of BUT-1592 (identical finding, filed 90 minutes apart by two scan
-  passes; BUT-1592 has the fuller writeup + explicit gate). Close as Duplicate → BUT-1592.
-- **BUT-1591** — duplicate of BUT-1593 (identical Köttbullar-fixture finding, same root cause,
-  filed same session; BUT-1593 has the fuller writeup). Close as Duplicate → BUT-1593.
+- **BUT-1590** — duplicate of BUT-1592. Close as Duplicate → BUT-1592.
+- **BUT-1591** — duplicate of BUT-1593. Close as Duplicate → BUT-1593.
 
-## Needs you (Tier D / needs-approval — not built this sprint)
-
-- **BUT-1461** (family rating: no push notification on new rating + no realtime refresh) — the
-  ticket itself flags Gap 1 as needing a decision first ("could be noise in a same-kitchen
-  household"). Gap 2 (realtime stream on the breakdown view) is a clean, undebatable bug fix on
-  its own. Recommendation: decide on the push notification (yes/no) first; if the answer is easy,
-  split into two tickets so Gap 2 can ship without waiting on the Gap 1 call.
-- **BUT-1454** (minor default-private search-suppression + searchable opt-in + group-DM CF,
-  BUT-674 remainder) — security+account+minors-adjacent, and "searchable opt-in" is a genuine
-  user-facing UX/copy decision, not just a backend toggle. Recommendation: worth doing (it's the
-  documented remainder of an already-approved slice), but the opt-in framing/copy wants a look
-  before building, given the minors context.
-- **BUT-1500** (Algolia search router has zero callers — enable the flag or remove the path) —
-  literally framed as a keep-vs-delete decision in its own title; not something to guess at.
-  Recommendation: low stakes either way (it's dead code today), so whichever is faster is fine —
-  but it's your call, not an autonomous default.
-
+## Needs you (Tier D / needs-approval — not built this sprint) — historical, see new plan above
 ## Deviation log
-
-(none yet — filled during Phase 2 execution)
+(none recorded)
 
 ---
 # Sprint 2026-07-11c — backend/test-gap hardening + backlog hygiene [ARCHIVED — shipped]
@@ -306,4 +315,3 @@ TtsService batch, UI batch, bookkeeping; opus gates at the end (Malin's model-by
 ## Open questions
 No architecture-changing unknowns — all interview decisions recorded in the plan (both-mode
 listening, OS Swedish voice, three command families, no portion scaling).
-
