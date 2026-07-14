@@ -2150,6 +2150,18 @@ abstract class AppLocalizations {
   /// **'Rösten kunde inte tolkas den här gången. Det går bra att skriva i stället'**
   String get voicePromptFailed;
 
+  /// No description provided for @voiceUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röstfunktionen är inte tillgänglig just nu. Det går bra att skriva i stället'**
+  String get voiceUnavailable;
+
+  /// No description provided for @voiceAssistUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röstfunktionen är inte tillgänglig just nu'**
+  String get voiceAssistUnavailable;
+
   /// No description provided for @voicePromptMicRationaleTitle.
   ///
   /// In sv, this message translates to:

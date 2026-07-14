@@ -62,6 +62,24 @@ const _stopWords = {
 
 const _softMarkers = {'helst', 'gärna', 'garna', 'minst'};
 
+/// Whether [text] holds anything worth reporting as not understood — any
+/// token that is neither a stopword nor a bare digit. A clause reduced to
+/// only stopwords (the stray correction marker left by "Tre middagar,
+/// nej.") carries no constraint meaning and must not pollute the trace.
+///
+/// Deliberately LOOSER than the token loop in [_buildSlot], which also
+/// drops tokens under 3 characters: at clause level a short real word IS
+/// the whole utterance ("och öl" → clause "öl") and silently ignoring it
+/// would remove the only feedback the user gets.
+bool _hasReportableToken(String text) => text
+    .split(_tokenSplitRe)
+    .any(
+      (tok) =>
+          tok.isNotEmpty &&
+          !_stopWords.contains(tok) &&
+          !_digitOnlyRe.hasMatch(tok),
+    );
+
 SlotRequest? parseClause(
   String clause,
   Lexicon lexicon,
@@ -96,7 +114,7 @@ SlotRequest? parseClause(
         warnings,
       );
     }
-    if (rest.isNotEmpty) notUnderstood.add(clause);
+    if (_hasReportableToken(rest)) notUnderstood.add(clause);
     return null;
   }
 

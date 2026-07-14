@@ -171,6 +171,13 @@ void main() {
 
     expect(delivered, isNull);
     expect(
+      find.textContaining('inte tillgänglig just nu'),
+      findsOneWidget,
+      reason:
+          'nothing was heard yet — the copy must say the feature is '
+          'unavailable, not that the voice could not be interpreted',
+    );
+    expect(
       find.textContaining('Det går bra att skriva i stället'),
       findsOneWidget,
       reason: 'failure copy must point back to typed input',
@@ -192,7 +199,7 @@ void main() {
 
     expect(delivered, isNull);
     expect(
-      find.textContaining('Det går bra att skriva i stället'),
+      find.textContaining('inte tillgänglig just nu'),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.mic_none), findsOneWidget);
@@ -215,6 +222,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(delivered, isNull);
+    expect(
+      find.textContaining('kunde inte tolkas'),
+      findsOneWidget,
+      reason:
+          'a transcription miss means something WAS heard — it keeps the '
+          '"couldn\'t interpret" copy, distinct from the unavailable-model '
+          'string (both end in the typing pointer, so only this substring '
+          'discriminates)',
+    );
     expect(
       find.textContaining('Det går bra att skriva i stället'),
       findsOneWidget,

@@ -842,6 +842,8 @@
   "voicePromptTranscribing": "Interpreting what you said",
   "voicePromptPreparing": "Preparing the voice feature, fetching the Swedish speech model",
   "voicePromptFailed": "Your voice couldn't be interpreted this time. Typing works just as well",
+  "voiceUnavailable": "The voice feature isn't available right now. Typing works just as well",
+  "voiceAssistUnavailable": "The voice feature isn't available right now",
   "voicePromptMicRationaleTitle": "Microphone for the weekly menu",
   "voicePromptMicRationaleBody": "Butlery uses the microphone so you can speak your weekly menu. The audio is interpreted directly on your phone and never sent anywhere.",
   "voicePromptMicGrant": "Allow",

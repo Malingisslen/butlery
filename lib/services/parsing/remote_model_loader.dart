@@ -78,19 +78,32 @@ abstract class RemoteModelLoader {
   bool get canCacheLocally => !kIsWeb;
 
   /// BUT-792 / BUT-877 — verify downloaded model bytes (any format) against
-  /// the registered SHA-256. Fail-close contract: returns true ONLY when the
-  /// bytes match the registry entry for [version]. A version absent from
-  /// the registry (or an empty registry) refuses to load — publishing a
-  /// new model version REQUIRES adding its hash to the registry in the
-  /// same PR as the Storage upload (see `_expected_model_hashes.dart`).
+  /// the registered SHA-256. Fail-close contract: returns the verified
+  /// bytes ONLY when they match the registry entry for [version], null
+  /// otherwise. A version absent from the registry (or an empty registry)
+  /// refuses to load — publishing a new model version REQUIRES adding its
+  /// hash to the registry in the same PR as the Storage upload (see
+  /// `_expected_model_hashes.dart`).
   ///
   /// SHA-256 of a 25 MB blob takes ~200-400 ms in pure Dart, enough to
   /// drop frames on the main isolate. Verification runs in `Isolate.run`
   /// when the registry has entries; an empty registry short-circuits to
   /// refusal without hashing (every version is unverifiable anyway).
+  ///
+  /// Memory contract: the caller wraps the downloaded blob in a
+  /// [TransferableTypedData] and DROPS its own reference to the original
+  /// before calling (see `VersionedModelManager._downloadModel`) — from
+  /// then on the transferable's internal buffer is the only long-lived
+  /// copy. `TransferableTypedData.fromList` COPIES (one brief 2× window at
+  /// wrap time — it does not detach the source), but the transfer to the
+  /// hash isolate and `Isolate.run`'s exit-path back are both moves, so
+  /// hashing and the subsequent disk write run at single residency and the
+  /// bytes the caller writes are the exact bytes that were hashed. A plain
+  /// closure capture instead would hold TWO 55 MB whisper copies for the
+  /// full hash duration.
   @protected
-  Future<bool> verifyModelDownload({
-    required List<int> modelBytes,
+  Future<Uint8List?> verifyModelDownload({
+    required TransferableTypedData model,
     required int version,
     required Map<int, String> hashRegistry,
     required String modelName,
@@ -102,16 +115,19 @@ abstract class RemoteModelLoader {
         'so no version can be verified. Populate it to allow downloads.',
         StateError('$modelName hash registry is empty'),
       );
-      return false;
+      return null;
     }
 
-    final result = await Isolate.run(
-      () => verifyModelBytes(
-        modelBytes: modelBytes,
+    final outcome = await Isolate.run(() {
+      final bytes = model.materialize().asUint8List();
+      final result = verifyModelBytes(
+        modelBytes: bytes,
         version: version,
         hashRegistry: hashRegistry,
-      ),
-    );
+      );
+      return (result: result, bytes: bytes);
+    });
+    final result = outcome.result;
 
     if (result.unverified) {
       AppLogger.error(
@@ -120,9 +136,9 @@ abstract class RemoteModelLoader {
         'Computed: ${result.actualHash}.',
         StateError('$modelName hash registry missing entry for v$version'),
       );
-      return false;
+      return null;
     }
-    if (result.ok) return true;
+    if (result.ok) return outcome.bytes;
 
     final failure = ModelIntegrityCheckFailure(
       modelName: modelName,
@@ -131,6 +147,6 @@ abstract class RemoteModelLoader {
       actual: result.actualHash,
     );
     AppLogger.error('$serviceName: $failure', failure);
-    return false;
+    return null;
   }
 }

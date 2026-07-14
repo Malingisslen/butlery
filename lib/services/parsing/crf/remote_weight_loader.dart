@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -168,16 +169,20 @@ class RemoteWeightLoader extends RemoteModelLoader {
       // cached — mirrors the BUT-877 contract on the ONNX loaders. Refused
       // bytes never reach CrfWeights.fromJson or disk; the bundled weights
       // keep parsing.
+      // Small-payload exemption from the drop-your-reference memory
+      // contract: weights are ≤5 MB JSON, so keeping `data` live across
+      // the verify await costs nothing (the 2× discipline matters for the
+      // 55 MB model blobs in VersionedModelManager).
       final verified = await verifyModelDownload(
-        modelBytes: data,
+        model: TransferableTypedData.fromList([data]),
         version: remoteVersion,
         hashRegistry: weightHashRegistry,
         modelName: 'crf_ingredient_weights',
         registryConstantName: 'kExpectedCrfWeightHashes',
       );
-      if (!verified) return null;
+      if (verified == null) return null;
 
-      final jsonString = utf8.decode(data);
+      final jsonString = utf8.decode(verified);
       final weights = CrfWeights.fromJson(jsonString);
       final decoder = CrfViterbiDecoder(weights: weights);
 

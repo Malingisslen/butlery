@@ -1242,6 +1242,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your voice couldn\'t be interpreted this time. Typing works just as well';
 
   @override
+  String get voiceUnavailable =>
+      'The voice feature isn\'t available right now. Typing works just as well';
+
+  @override
+  String get voiceAssistUnavailable =>
+      'The voice feature isn\'t available right now';
+
+  @override
   String get voicePromptMicRationaleTitle => 'Microphone for the weekly menu';
 
   @override

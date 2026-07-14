@@ -255,7 +255,9 @@ class _CookingModeContent extends StatelessWidget {
         .prepareModel();
     if (!modelReady) {
       if (context.mounted) {
-        SnackBarUtils.showInfo(context, context.l10n.voicePromptFailed);
+        // Cooking mode has no typed fallback — the bare string, without
+        // the "typing works instead" pointer the text-field surfaces get.
+        SnackBarUtils.showInfo(context, context.l10n.voiceAssistUnavailable);
       }
       return false;
     }

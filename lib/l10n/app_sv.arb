@@ -848,6 +848,8 @@
   "voicePromptTranscribing": "Tolkar det du sa",
   "voicePromptPreparing": "Förbereder röstfunktionen, hämtar den svenska talmodellen",
   "voicePromptFailed": "Rösten kunde inte tolkas den här gången. Det går bra att skriva i stället",
+  "voiceUnavailable": "Röstfunktionen är inte tillgänglig just nu. Det går bra att skriva i stället",
+  "voiceAssistUnavailable": "Röstfunktionen är inte tillgänglig just nu",
   "voicePromptMicRationaleTitle": "Mikrofon för veckomenyn",
   "voicePromptMicRationaleBody": "Butlery använder mikrofonen för att du ska kunna tala in din veckomeny. Ljudet tolkas direkt i telefonen och skickas aldrig vidare.",
   "voicePromptMicGrant": "Tillåt",

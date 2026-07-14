@@ -31,6 +31,10 @@ class _Case {
   final Set<String> allergenFree;
   final int? maxTime;
 
+  /// When set, the not-understood trace must contain this entry — pins that
+  /// genuinely un-parseable content is REPORTED, not silently dropped.
+  final String? notUnderstoodContains;
+
   const _Case(
     this.transcript,
     this.mealType,
@@ -38,6 +42,7 @@ class _Case {
     this.dietary = const {},
     this.allergenFree = const {},
     this.maxTime,
+    this.notUnderstoodContains,
   });
 }
 
@@ -69,6 +74,14 @@ const _golden = <_Case>[
   _Case('Tre, nej förlåt, fyra middagar.', 'middag', 4),
   _Case('3, nej 4 middagar.', 'middag', 4),
   _Case('Fem, nej vänta, tre middagar och två luncher.', 'middag', 3),
+  // A TRAILING marker with nothing after it has no same-vocabulary pair to
+  // resolve against — the count stands, and the stray "nej" clause must not
+  // leak into the not-understood trace (the hygiene check below pins that).
+  _Case('Tre middagar, nej.', 'middag', 3),
+  // Contrast case: a SHORT real word is a whole clause of its own — it must
+  // stay in the not-understood trace (only stopword/digit-only clauses are
+  // filtered), or the user gets zero feedback that "öl" was ignored.
+  _Case('Tre middagar och öl.', 'middag', 3, notUnderstoodContains: 'öl'),
   _Case(
     'Två, eller nej, tre veganska middagar.',
     'middag',
@@ -180,6 +193,16 @@ void main() {
             constraints.any((r) => r.maxTimeMinutes == c.maxTime),
             isTrue,
             reason: 'expected max time ${c.maxTime} for "${c.transcript}"',
+          );
+        }
+
+        if (c.notUnderstoodContains != null) {
+          expect(
+            result.trace.notUnderstood,
+            contains(c.notUnderstoodContains),
+            reason:
+                'un-parseable content must be reported to the user for '
+                '"${c.transcript}"',
           );
         }
 

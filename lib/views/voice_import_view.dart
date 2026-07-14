@@ -139,7 +139,9 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
     final started = await vm.startRecording(section);
     if (!mounted) return;
     if (!started) {
-      SnackBarUtils.showInfo(context, context.l10n.voicePromptFailed);
+      // Model missing / mic busy — nothing was heard yet, so this is
+      // "unavailable", not a failed interpretation.
+      SnackBarUtils.showInfo(context, context.l10n.voiceUnavailable);
     }
   }
 

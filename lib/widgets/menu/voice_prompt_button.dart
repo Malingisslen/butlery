@@ -94,8 +94,9 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
     final modelReady = await _voice.prepareModel();
     if (!mounted) return;
     if (!modelReady) {
+      // Nothing was heard yet — "couldn't interpret" would be misleading.
       setState(() => _state = _VoiceState.idle);
-      _showQuietNotice(context.l10n.voicePromptFailed);
+      _showQuietNotice(context.l10n.voiceUnavailable);
       return;
     }
 
@@ -106,7 +107,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
     }
     if (!started) {
       setState(() => _state = _VoiceState.idle);
-      _showQuietNotice(context.l10n.voicePromptFailed);
+      _showQuietNotice(context.l10n.voiceUnavailable);
       return;
     }
     setState(() => _state = _VoiceState.recording);

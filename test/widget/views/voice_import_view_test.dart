@@ -264,8 +264,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
+      find.textContaining('inte tillgänglig just nu'),
+      findsOneWidget,
+      reason:
+          'model missing = feature unavailable, not a failed '
+          'interpretation (nothing was heard yet)',
+    );
+    expect(
       find.textContaining('Det går bra att skriva i stället'),
       findsOneWidget,
+      reason: 'failure copy must point back to typed input',
     );
     expect(
       find.text('Redan skrivet'),

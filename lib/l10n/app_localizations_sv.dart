@@ -1245,6 +1245,14 @@ class AppLocalizationsSv extends AppLocalizations {
       'Rösten kunde inte tolkas den här gången. Det går bra att skriva i stället';
 
   @override
+  String get voiceUnavailable =>
+      'Röstfunktionen är inte tillgänglig just nu. Det går bra att skriva i stället';
+
+  @override
+  String get voiceAssistUnavailable =>
+      'Röstfunktionen är inte tillgänglig just nu';
+
+  @override
   String get voicePromptMicRationaleTitle => 'Mikrofon för veckomenyn';
 
   @override
