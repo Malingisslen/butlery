@@ -182,6 +182,32 @@ class FirebaseIngredientRepository
     }
   }
 
+  /// BUT-1498: Writes a normalized key→ingredientId mapping into [index],
+  /// logging when it silently overrides a DIFFERENT ingredient. A name/alias
+  /// shared by two ingredient docs resolves to whichever the cache-load loop
+  /// reached last — i.e. Firestore doc-ID order — which is invisible and can
+  /// swing an allergen lookup to the wrong ingredient. Surface it so the
+  /// duplicate gets deduplicated in the Sheet; the last-writer-wins behaviour
+  /// itself is unchanged. Same-id re-indexing (an alias equal to the doc's own
+  /// name, etc.) is not a collision and is not logged.
+  void _indexIngredientKey(
+    Map<String, String> index,
+    String key,
+    IngredientData ingredient,
+    String indexName,
+  ) {
+    final existingId = index[key];
+    if (existingId != null && existingId != ingredient.id) {
+      AppLogger.warning(
+        'Ingredient $indexName collision on "$key": doc "${ingredient.id}" '
+            'overrides "$existingId" (doc-ID order decides the winner; '
+            'deduplicate the name/alias in the ingredient Sheet)',
+        'FirebaseIngredientRepository',
+      );
+    }
+    index[key] = ingredient.id;
+  }
+
   /// Adds an ingredient to all cache indexes.
   void _addToCache(IngredientData ingredient) {
     _cache[ingredient.id] = ingredient;
@@ -189,20 +215,25 @@ class FirebaseIngredientRepository
     // Index Swedish name
     final swedishNorm = _normalize(ingredient.swedish);
     if (swedishNorm.isNotEmpty) {
-      _swedishNameIndex[swedishNorm] = ingredient.id;
+      _indexIngredientKey(_swedishNameIndex, swedishNorm, ingredient, 'name');
     }
 
     // Index English name
     final englishNorm = _normalize(ingredient.english);
     if (englishNorm.isNotEmpty) {
-      _englishNameIndex[englishNorm] = ingredient.id;
+      _indexIngredientKey(
+        _englishNameIndex,
+        englishNorm,
+        ingredient,
+        'English name',
+      );
     }
 
     // Index Swedish aliases
     for (final alias in ingredient.aliasesSv) {
       final aliasNorm = _normalize(alias);
       if (aliasNorm.isNotEmpty) {
-        _aliasIndex[aliasNorm] = ingredient.id;
+        _indexIngredientKey(_aliasIndex, aliasNorm, ingredient, 'alias');
       }
     }
 
@@ -210,7 +241,7 @@ class FirebaseIngredientRepository
     for (final alias in ingredient.aliasesEn) {
       final aliasNorm = _normalize(alias);
       if (aliasNorm.isNotEmpty) {
-        _aliasIndex[aliasNorm] = ingredient.id;
+        _indexIngredientKey(_aliasIndex, aliasNorm, ingredient, 'alias');
       }
     }
 
@@ -218,7 +249,7 @@ class FirebaseIngredientRepository
     for (final term in ingredient.searchTerms) {
       final termNorm = _normalize(term);
       if (termNorm.isNotEmpty) {
-        _aliasIndex[termNorm] = ingredient.id;
+        _indexIngredientKey(_aliasIndex, termNorm, ingredient, 'search term');
       }
     }
 
@@ -226,7 +257,12 @@ class FirebaseIngredientRepository
     for (final alias in ingredient.learnedAliasesSv) {
       final aliasNorm = _normalize(alias);
       if (aliasNorm.isNotEmpty) {
-        _aliasIndex[aliasNorm] = ingredient.id;
+        _indexIngredientKey(
+          _aliasIndex,
+          aliasNorm,
+          ingredient,
+          'learned alias',
+        );
       }
     }
 

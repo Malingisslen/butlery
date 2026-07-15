@@ -1,6 +1,7 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
+import 'package:butlery/services/tagging/config/valid_properties.dart';
 
 /// C1: Registry of valid ingredient properties.
 ///
@@ -10,56 +11,12 @@ class PropertyRegistry {
   PropertyRegistry._();
 
   /// All valid ingredient properties from the ingredient database.
-  /// Update this list when adding new properties to ingredients.
-  static const Set<String> validProperties = {
-    // Allergens (EU mandatory 14)
-    'dairy',
-    'egg',
-    'fish',
-    'crustacean',
-    'mollusc',
-    'peanut',
-    'tree-nut',
-    'wheat',
-    'contains-gluten',
-    'soy',
-    'sesame',
-    'celery',
-    'mustard',
-    'lupin',
-    'sulfites',
-
-    // Lactose (separate from dairy protein)
-    'contains-lactose',
-
-    // Meat types
-    'meat',
-    'pork',
-    'beef',
-    'poultry',
-    'lamb',
-    'game',
-
-    // Seafood
-    'seafood',
-    'high-mercury',
-
-    // Other animal products
-    'animal-product',
-
-    // Diet-related
-    'contains-alcohol',
-    'is-spicy',
-    'plant-based',
-
-    // Special diet properties
-    'nightshade', // Tomato, potato, peppers, eggplant, chili
-    // Practical
-    'vegan-friendly',
-    'needs-cooking',
-    'doesnt-freeze-well',
-    'raw-safe',
-  };
+  ///
+  /// The vocabulary itself lives in the import-free
+  /// `valid_properties.dart` so the standalone `migrate_tag_configs.dart`
+  /// seed-generator shares this exact list (single source of truth). Update
+  /// the vocabulary there when adding new properties to ingredients.
+  static const Set<String> validProperties = kValidIngredientProperties;
 
   /// Checks if a property name is valid.
   static bool isValid(String property) => validProperties.contains(property);

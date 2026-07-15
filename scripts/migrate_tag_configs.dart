@@ -20,6 +20,8 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:butlery/services/tagging/config/valid_properties.dart';
+
 void main() async {
   print('=== Tag Config Migration Script ===\n');
 
@@ -1050,47 +1052,12 @@ Map<String, dynamic> _cuisine({
 Future<void> _migrateProperties(Directory outputDir) async {
   print('Migrating properties...');
 
-  final validProperties = [
-    // Allergens (EU mandatory 14)
-    'dairy',
-    'egg',
-    'fish',
-    'crustacean',
-    'mollusc',
-    'peanut',
-    'tree-nut',
-    'wheat',
-    'contains-gluten',
-    'soy',
-    'sesame',
-    'celery',
-    'mustard',
-    'lupin',
-    'sulfites',
-    // Lactose (separate from dairy protein)
-    'contains-lactose',
-    // Meat types
-    'meat',
-    'pork',
-    'beef',
-    'poultry',
-    'lamb',
-    'game',
-    // Seafood
-    'seafood',
-    'high-mercury',
-    // Other animal products
-    'animal-product',
-    // Diet-related
-    'contains-alcohol',
-    'is-spicy',
-    'plant-based',
-    // Special diet properties
-    'nightshade',
-    // Practical
-    'doesnt-freeze-well',
-    'raw-safe',
-  ];
+  // Single source of truth: the same import-free vocabulary the runtime config
+  // gate (PropertyRegistry.validProperties) uses. Deriving it here stops the
+  // generated properties.json — seeded to the prod tag_configs/properties doc
+  // and consumed by FirebaseTagConfig.validate() — from drifting away from the
+  // gate (the BUT-1498 wheat/shellfish drift this replaces).
+  final validProperties = kValidIngredientProperties.toList();
 
   final document = {
     'schemaVersion': 1,

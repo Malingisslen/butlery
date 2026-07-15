@@ -164,13 +164,34 @@ void main() {
   });
 
   group('property-vocabulary lockstep (Security panel condition)', () {
-    // Three hand-maintained copies exist: PROPERTIES.csv (Sheet vocabulary),
-    // sync-ingredients.ts VALID_PROPERTIES (data gate), and Dart
-    // PropertyRegistry.validProperties (config gate). Historical drift is
-    // pinned exactly; ANY new divergence fails here. Reconciliation of the
+    // Three hand-maintained copies exist, all pinned here: PROPERTIES.csv
+    // (Sheet vocabulary), sync-ingredients.ts VALID_PROPERTIES (data gate),
+    // and Dart PropertyRegistry.validProperties (config gate). Historical
+    // drift is pinned exactly; ANY new divergence in any pair fails here. Reconciliation of the
     // historical set is a roadmap cleanup item — don't grow it.
-    const knownDartOnly = {'wheat', 'raw-safe'};
-    const knownTsOnly = {'shellfish', 'processed'};
+    // BUT-1498 (2026-07-14) reconciled the shellfish/wheat pair: 'wheat' was a
+    // phantom (removed from the registry) and 'shellfish' was added to the
+    // registry to match the data gate. Only 'raw-safe' / 'processed' remain.
+    const knownDartOnly = {'raw-safe'};
+    const knownTsOnly = {'processed'};
+    // The Sheet vocabulary (PROPERTIES.csv) tracks the TS data gate exactly:
+    // it carries 'processed' and omits 'raw-safe', same split as TS-vs-Dart.
+    const knownCsvOnly = {'processed'};
+
+    Set<String> csvProperties() {
+      // PROPERTIES.csv is the Sheet vocabulary export: column 0 is the
+      // property id, row 0 is the `id,...` header. This is the third
+      // hand-maintained copy — without reading it here a Sheet-side rename
+      // (e.g. reviving a bare 'wheat') would drift silently, and an
+      // ingredient could then carry a property the config gate never sees.
+      final lines = File(
+        'docs/tagging/data/Butlery_Ingredients_PROPERTIES.csv',
+      ).readAsLinesSync();
+      return lines
+          .map((l) => l.split(',').first.trim())
+          .where((id) => id.isNotEmpty && id != 'id')
+          .toSet();
+    }
 
     Set<String> tsValidProperties() {
       // BUT-1467 moved the definition from sync-ingredients.ts into the
@@ -213,6 +234,28 @@ void main() {
       );
     });
 
+    test(
+      'Sheet CSV vocabulary and Dart registry differ only by the known set',
+      () {
+        final csv = csvProperties();
+        final dart = PropertyRegistry.validProperties;
+        expect(
+          dart.difference(csv),
+          knownDartOnly,
+          reason:
+              'new Dart-only property — add it to PROPERTIES.csv or the Sheet '
+              'can never supply an ingredient that carries it',
+        );
+        expect(
+          csv.difference(dart),
+          knownCsvOnly,
+          reason:
+              'new Sheet-only property (e.g. a revived bare "wheat") — add it '
+              'to PropertyRegistry or config validation cannot see it',
+        );
+      },
+    );
+
     test('every allergen/dietary trigger property passes both gates', () {
       final ts = tsValidProperties();
       final dart = PropertyRegistry.validProperties;
@@ -220,6 +263,9 @@ void main() {
       final used = <String>{
         for (final a in seeded.allergens.enabledEntries) ...a.triggerProperties,
         for (final d in seeded.dietary.enabledEntries) ...d.excludedProperties,
+        // requiredProperties drive verdicts too (pescetarian requires
+        // fish/crustacean/mollusc); production validateAllConfigs checks them.
+        for (final d in seeded.dietary.enabledEntries) ...d.requiredProperties,
       };
       for (final prop in used) {
         expect(
