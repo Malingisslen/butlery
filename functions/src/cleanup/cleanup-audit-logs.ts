@@ -25,6 +25,30 @@ import { batchDeleteDocs } from "../shared/batch-delete";
 import { requireAdmin } from "../shared/require-admin";
 
 /**
+ * Reap `deletion_audit_logs` entries whose `expireAt` TTL is in the past.
+ *
+ * GDPR Art. 5: each doc carries an `expireAt` Timestamp set at write time
+ * (BUT-1544 stamps it 180 days out); this helper deletes every doc already
+ * past that TTL. Extracted from `cleanupOldAuditLogs` so the delete side is
+ * unit-testable without the scheduler wrapper. `now` is injectable so a test
+ * can pin the cutoff.
+ *
+ * Returns the number of expired docs deleted.
+ */
+export async function purgeExpiredDeletionAuditLogs(
+  db: admin.firestore.Firestore,
+  now: admin.firestore.Timestamp = admin.firestore.Timestamp.now()
+): Promise<number> {
+  const snapshot = await db
+    .collection("deletion_audit_logs")
+    .where("expireAt", "<", now)
+    .limit(10000)
+    .get();
+
+  return snapshot.empty ? 0 : await batchDeleteDocs(db, snapshot);
+}
+
+/**
  * Weekly cleanup of expired `deletion_audit_logs` (NOT `audit_logs` — see
  * file docstring for the BUT-808 reconcile).
  *
@@ -40,18 +64,7 @@ export const cleanupOldAuditLogs = onSchedule(
     logger.info("Starting deletion_audit_logs TTL cleanup...");
 
     try {
-      // GDPR Art. 5: deletion_audit_logs carries an `expireAt` TTL set at
-      // write time. Delete entries past their TTL.
-      const deletionAuditRef = db.collection("deletion_audit_logs");
-      const now = admin.firestore.Timestamp.now();
-      const deletionAuditSnapshot = await deletionAuditRef
-        .where("expireAt", "<", now)
-        .limit(10000)
-        .get();
-
-      const deletionAuditCount = deletionAuditSnapshot.empty
-        ? 0
-        : await batchDeleteDocs(db, deletionAuditSnapshot);
+      const deletionAuditCount = await purgeExpiredDeletionAuditLogs(db);
 
       if (deletionAuditCount > 0) {
         logger.info(
