@@ -12,28 +12,32 @@
 
 | Area | Features | Verified | Partial | Untested |
 |---|---|---|---|---|
-| Auth & Onboarding (AUTH) | 14 | 10 | 1 | 3 |
+| Auth & Onboarding (AUTH) | 14 | 12 | 1 | 1 |
 | Recipe Management (REC) | 15 | 1 | 11 | 3 |
-| Recipe Import (IMP) | 11 | 5 | 5 | 1 |
+| Recipe Import (IMP) | 11 | 5 | 6 | 0 |
 | Menu & Shopping (MENU) | 15 | 13 | 2 | 0 |
 | Social (SOC) | 18 | 12 | 3 | 3 |
 | Groups & Messaging (GRP) | 12 | 7 | 4 | 1 |
 | Cooking, Pantry & Search (COOK) | 12 | 9 | 3 | 0 |
 | Settings, Legal & Admin (SET) | 14 | 7 | 3 | 4 |
 | Engine & Background (ENG) | 26 | 16 | 8 | 2 |
-| **Total** | **137** | **80** | **40** | **17** |
+| **Total** | **137** | **82** | **41** | **14** |
 
-**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. And a handful of security/compliance-sensitive features have no tests at all (see below).
+> _Partial refresh 2026-07-14:_ the AUTH and IMP rows above were re-verified against the current test suite (AUTH-11, AUTH-14 now Verified; IMP-06 now Partial — see the Tier-1 list below). The other rows still reflect the 2026-06-21 audit and have not been re-run wholesale.
+
+**Reading the pattern:** the back-end engines and the menu/shopping flows are well-tested. The thinnest coverage is at the *screen* layer of recipe management — the create/edit forms have solid logic tests but almost no tests that drive the actual UI. The security/compliance-sensitive gaps flagged at build time have since been largely closed (MFA, client-side account deletion, receive-share, social extraction all now have tests — see the refreshed Tier-1 list); allergen/dietary filtering (REC-03) remains the one safety-sensitive item still lacking dedicated assertions.
 
 ## Gaps worth ticketing
 
 Prioritized by risk, not by count. These are the candidates to turn into Linear tickets; the existing sprint loop can then fix them through its normal sign-off tiers.
 
 **Tier 1 — safety / security / compliance, currently untested:**
-- **AUTH-11 / SET-05 — Multi-factor authentication (SMS).** No test on enrollment, unenrollment, or the sign-in challenge. Security-sensitive.
-- **AUTH-14 / ENG-23 — Account deletion.** The server-side cascade (ENG-23) *is* tested, but the client-side deletion path (AUTH-14) that triggers it has no dedicated test. GDPR right-to-erasure.
-- **REC-03 — Allergen/dietary recipe filtering (Partial).** The high-risk "only show allergen-free at 100% coverage" safety logic lives here; it has VM-level coverage but deserves dedicated assertions given the safety stakes.
-- **IMP-06 — Receive-share (share-intent from other apps)** and **IMP-07 — Instagram/TikTok extraction.** No tests; these are common real-world entry points.
+- **REC-03 — Allergen/dietary recipe filtering (Partial).** The high-risk "only show allergen-free at 100% coverage" safety logic lives here; it has VM-level coverage but still lacks dedicated filter-path assertions given the safety stakes. **Still open — the one remaining Tier-1 gap.**
+
+_Closed since the 2026-06-21 build (verified 2026-07-14):_
+- **AUTH-11 / SET-05 — MFA (SMS).** Service logic now covered by `auth_mfa_service_test.dart` + `mfa_types_test.dart` (BUT-1333: enroll, code delivery, sign-in resolution, error mapping). Residual: the `MfaSettingsView` enrollment screen (SET-05) is still untested at the view layer — a Tier-2 UI gap, not a Tier-1 safety one.
+- **AUTH-14 — Account deletion (client trigger).** Now has a dedicated path test — `account_deletion_journey_test.dart` drives `ProfileViewModel` → `AccountDeletionService` through the UI-triggered flow (cancel-does-nothing, confirm-fires-once).
+- **IMP-06 — Receive-share** and **IMP-07 — Instagram/TikTok extraction.** Handler decision-logic is covered by `incoming_share_handler_test.dart` (BUT-941); extraction by `social_media_extractor_test.dart`, `extraction_manager_test.dart`, `platform_detector_test.dart`, `content_detector_service_test.dart`. IMP-06 remains **Partial** (no device-level share-intent E2E).
 
 **Tier 2 — user-facing flows with logic tested but no UI test:**
 - **REC-07 Quick capture, REC-08 Add-recipe hub, REC-09/REC-10 create & edit forms** — form submission, swipe gestures, and hub navigation untested at the screen layer.
@@ -68,10 +72,10 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | AUTH-08 | Onboarding completion, resume & seeding | Verified |
 | AUTH-09 | Change password | Verified |
 | AUTH-10 | Change email | Verified |
-| AUTH-11 | Multi-factor authentication (SMS) | Untested |
+| AUTH-11 | Multi-factor authentication (SMS) | Verified |
 | AUTH-12 | GDPR consent management | Verified |
 | AUTH-13 | GDPR data export | Verified |
-| AUTH-14 | Account deletion (client trigger) | Untested |
+| AUTH-14 | Account deletion (client trigger) | Verified |
 
 ### Recipe Management
 | ID | Feature | Tests |
@@ -101,7 +105,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 | IMP-03 | Smart (unified) import | Verified |
 | IMP-04 | Photo / OCR import (multi-page) | Verified |
 | IMP-05 | Text / paste import | Verified |
-| IMP-06 | Receive-share (share intent) | Untested |
+| IMP-06 | Receive-share (share intent) | Partial |
 | IMP-07 | Social-media URL extraction | Partial |
 | IMP-08 | File import (CSV/Excel) | Verified |
 | IMP-09 | Import from archive (restore) | Partial |
@@ -319,7 +323,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **User story:** As a security-conscious user, I want a phone-based second factor so that my account is protected even if my password leaks.
 - **Expected behavior:** AuthMfaService handles enroll (session → verify phone → SMS code → enroll, with auto-verify), unenroll, and sign-in resolution. Logs `mfa_enrolled`/`mfa_unenrolled`/MFA login.
 - **Edge cases:** No user → false / `user-not-found`. Status reads default to "no MFA" on error. Various FirebaseAuthExceptions mapped. 60s SMS timeout.
-- **Test coverage:** **Untested** — no test for AuthMfaService or MfaSettingsView. Notable gap given security sensitivity.
+- **Test coverage:** Verified (service) — `auth_mfa_service_test.dart` (BUT-1333) proves enroll start, SMS-code delivery to caller, sign-in resolution, and error→l10n mapping; `mfa_types_test.dart` covers the model. Residual: `MfaSettingsView` (the SET-05 enrollment screen) is still untested at the view layer.
 
 #### AUTH-12: GDPR consent management (Article 7)
 - **Entry:** ConsentManagementView; also a consent-renewal dialog.
@@ -341,7 +345,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **User story:** As a user, I want to permanently delete my account and all associated data so that I can exercise my GDPR right to erasure.
 - **Expected behavior:** Cleans search indexes + offline cache client-side, then invokes the `requestAccountDeletion` Cloud Function (which cascades server-side — see ENG-23) and deletes the Auth user last; resets local notification state and signs out.
 - **Edge cases:** No user → error. Token older than 5 min → `requiresReauth`, caller must re-auth and retry. No client-side `user.delete()` (removed to avoid an auth race, BUT-788).
-- **Test coverage:** **Untested** — no dedicated test for the client deletion path (the server cascade ENG-23 is tested).
+- **Test coverage:** Verified — `account_deletion_journey_test.dart` drives the UI-triggered path (`ProfileViewModel.deleteAccount` → `AccountDeletionService.deleteUserAccount`), asserting the confirm-dialog seam (cancel does nothing, confirm fires once with the userId's context + reason). The server cascade ENG-23 is tested separately.
 
 ---
 
@@ -507,14 +511,14 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **User story:** As a user, I want to share a link or text from another app into Butlery and have it routed to the right importer so that importing is one tap from where I found the recipe.
 - **Expected behavior:** Classifies the shared content (social URL / recipe URL / recipe text / plain) + platform, renders an adaptive screen routing each to the right importer with a manual-copy fallback. Threads import-funnel analytics.
 - **Edge cases:** Extraction failure → inline error + retry + manual copy. No URL → text import.
-- **Test coverage:** **Untested** — no dedicated test; underlying SocialMediaExtractor/ContentDetector and the Instagram/TikTok pipelines lack visible unit tests.
+- **Test coverage:** Partial — `incoming_share_handler_test.dart` (BUT-941) proves the routing decision logic (auth-gate, hold-until-routable, never break startup); `social_media_extractor_test.dart` + `content_detector_service_test.dart` cover the underlying extraction/classification. No device-level share-intent E2E (OS share sheet → app) yet.
 
 #### IMP-07: Social-media URL extraction (Instagram/TikTok/YouTube)
 - **Entry:** ReceiveShare auto-extract + URL-import suggestion.
 - **User story:** As a user, I want to pull recipe text out of an Instagram/TikTok/YouTube post so that I can import recipes that live inside social posts.
 - **Expected behavior:** Detects platform, selects a strategy, returns extracted text + metadata. YouTube has a tiered strategy (video-ID → metadata → transcript → LLM), falling back to user-assisted import with the transcript, then a manual-screenshot state.
 - **Edge cases:** Failure carries a `reason` for analytics; YouTube with no transcript → manual fallback; paywalled posts → extraction error.
-- **Test coverage:** Partial — `youtube_import_strategy_test.dart` covers YouTube; Instagram/TikTok pipelines + the facade untested.
+- **Test coverage:** Partial — `youtube_import_strategy_test.dart` covers YouTube; `social_media_extractor_test.dart` covers the facade, `extraction_manager_test.dart` the strategy dispatch, and `platform_detector_test.dart` platform detection. Instagram/TikTok live-network scraping is still not exercised end-to-end.
 
 #### IMP-08: File import (CSV/Excel)
 - **Entry:** `/fileImport`.

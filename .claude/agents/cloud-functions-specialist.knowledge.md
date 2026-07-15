@@ -2505,3 +2505,34 @@ the pruned data. Build clean (tsc --noEmit exit 0). Reviewed patterns/risks:
   the test green while deleting real account-holder (user-type) ratings, which is the
   headline BUT-1600 "departed account holder" scenario. Also untested: recompute
   clearing the pill to null (all-orphan recipe) and multi-recipe orphans.
+
+### 2026-07-14 — BUT-1604 deletion_audit_logs TTL purge extracted for testability [Pattern discovered]
+
+`cleanup/cleanup-audit-logs.ts` — the inline `deletion_audit_logs` TTL reap
+inside the `cleanupOldAuditLogs` scheduler was extracted to
+`purgeExpiredDeletionAuditLogs(db, now = Timestamp.now())`, a pure DI-seam
+delete function returning the count. New test `__tests__/cleanup-audit-logs.test.ts`
+(4 cases, green) with a fake db modelling `where('expireAt','<',now).limit(n).get()`
++ `batch().delete()/commit()`. Wired `test:cleanup-audit-logs` into package.json;
+run-all-tests.js AND run-ci-unit-tests.js both auto-discover it (no CI_EXCLUDE),
+so it lands in the cloud-functions-unit CI gate. tsc clean. No Critical/High.
+
+Reviewed clean; only latent/cosmetic notes (recorded so a future reviewer
+doesn't re-flag them as bugs):
+- **`.limit(10000)` cap is self-healing here, unlike the family-purge starvation.**
+  This weekly reap re-queries `expireAt < now` each run; any overflow beyond 10k
+  in one week stays expired and is caught next week — no shifting-subset starve
+  (contrast `purge-dormant-family-data`'s `.limit(200)` no-cursor scan, which
+  can starve overflow permanently). At beta scale deletion_audit_logs volume is
+  tiny. Low/latent, not a fix.
+- **`system_events.add` runs AFTER the delete inside the same try.** If the
+  observability `add` throws, the CF rethrows → scheduler retries → purge re-runs
+  (idempotent, deletes remaining/0) and writes a second, lower-count row. Cosmetic
+  observability skew only; the data delete is idempotent. Not worth reordering.
+- **`logger.error("...", e)` (lines ~86, ~145) passes the raw error as the 2nd
+  arg** rather than the house `{ err: e }` structured object. Pre-existing (outside
+  this diff), so not filed against this change, but flag it if the file is touched
+  again — the convention loses queryable structure otherwise.
+- firestore-rules.yml + test:rules:all also gained `functions/src/family/**` and
+  `purge-dormant-family-data.integration.test.ts` triggers in the same commit —
+  correct missing-wiring backfill, unrelated to the audit-log extraction.

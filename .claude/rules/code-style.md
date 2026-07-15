@@ -3,7 +3,7 @@
 ## File Size
 - 500 lines max. Use facade pattern for larger files.
 - Exemplary: `recipe_form_viewmodel.dart` - delegates to 6 focused managers
-- **170 files currently >500 lines** (re-counted 2026-06-28; was 148 on 2026-06-21) — see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for the rationale per file. ⚠️ ~53 of these have **no individual rationale row yet** (reconciliation pending, BUT-1420), so a large-file finding on an unlisted file may still be in scope. Don't refactor *listed* files without reviewing the rationale first. Run `bash tools/count_large_files.sh` to recount (`--list` to spot unlisted files).
+- **177 files currently >500 lines** (live count, `tools/count_large_files.sh`, 2026-07-14) — see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for the rationale per file. The inventory was reconciled to a **complete, 0-unlisted** state on 2026-07-01 at 171 files (BUT-1420); ~6 files have drifted above the threshold since then and may not have a rationale row yet, so a large-file finding on a genuinely *unlisted* file can still be in scope — confirm with `--list` before filing. Don't refactor *listed* files without reviewing the rationale first. Run `bash tools/count_large_files.sh` to recount (`--list` to spot unlisted files).
 
 ## Service Access
 - `ServiceLocator.get<T>()` — constructor injection in DI modules, ServiceLocator in widgets/ViewModels

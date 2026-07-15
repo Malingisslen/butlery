@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-07-01 (171 files >500 lines, re-counted; inventory NOW COMPLETE — 0 unlisted)
+**Last Updated**: 2026-07-01 (inventory reconciled COMPLETE at 171 files — 0 unlisted). **Live count 2026-07-14: 177** (`tools/count_large_files.sh`) — ~6 files have drifted above the threshold since the reconciliation and may still need a rationale row; spot them with `--list`.
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -10,7 +10,7 @@ Recount with `bash tools/count_large_files.sh` to keep this header honest.
 
 - **31 files refactored** across 10 batches (latest two: facade-extract `mina_recept_view`, module-extract `firebase_recipe_repository`)
 - **~9,500 lines reduced** total (cumulative across the program)
-- **171 files currently >500 lines** in lib/. This list is now a **complete inventory** — every file has an individual rationale row. Run `bash tools/count_large_files.sh --list` to see the full set and spot any newly drifted files. Expect ±2 churn as new module extractions land helper files above the threshold. (Prior note: the 2026-06-21 +13 drift was largely the WS10 privacy log-masking sweep adding a `log_sanitizer` import to ~44 files, nudging a few from 499 over the line.)
+- **177 files currently >500 lines** in lib/ (live count 2026-07-14). This list was reconciled to a **complete inventory** (every file with an individual rationale row, 0 unlisted) on 2026-07-01 at 171 files; ~6 files have drifted above the threshold since then, so it is no longer guaranteed 0-unlisted — run `bash tools/count_large_files.sh --list` to see the full set and spot the newly drifted files that still need a row. Expect ±2 churn as new module extractions land helper files above the threshold. (Prior note: the 2026-06-21 +13 drift was largely the WS10 privacy log-masking sweep adding a `log_sanitizer` import to ~44 files, nudging a few from 499 over the line.)
 
 ## Generated / Data Files
 
