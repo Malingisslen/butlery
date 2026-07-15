@@ -26908,6 +26908,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Innehållet är inte längre tillgängligt.'**
   String get deepLinkUnavailable;
+
+  /// Section title in the family-member form for the soft disliked-ingredients preference (distinct from allergies). Butler voice, lowercase like the sibling section headers (BUT-1610)
+  ///
+  /// In sv, this message translates to:
+  /// **'ogillade ingredienser'**
+  String get familyDislikesSectionTitle;
+
+  /// Helper text under the disliked-ingredients picker clarifying it is a soft preference, not an allergy/safety constraint (BUT-1610)
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätter med dessa undviks när det går. En smakpreferens, inte en säkerhetsgräns som allergier.'**
+  String get familyDislikesNote;
 }
 
 class _AppLocalizationsDelegate

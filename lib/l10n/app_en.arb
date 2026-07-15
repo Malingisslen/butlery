@@ -11243,5 +11243,7 @@
   "a11yEditMemberRating": "Edit rating for {name}",
   "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}},
   "deepLinkExpired": "This link has expired and can no longer be opened.",
-  "deepLinkUnavailable": "This content is no longer available."
+  "deepLinkUnavailable": "This content is no longer available.",
+  "familyDislikesSectionTitle": "disliked ingredients",
+  "familyDislikesNote": "Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies."
 }

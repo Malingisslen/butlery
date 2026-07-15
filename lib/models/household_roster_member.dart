@@ -38,6 +38,11 @@ class HouseholdRosterMember {
   /// members; may be `null` when none are recorded.
   final UserAllergenPreferences? allergenPreferences;
 
+  /// Ingredients this member dislikes — a soft preference (not a safety
+  /// constraint). Resolved from the diner profile for non-account members;
+  /// empty when none are recorded. Menu generation does not yet consume it.
+  final Set<String> dislikedIngredients;
+
   const HouseholdRosterMember({
     required this.memberId,
     required this.type,
@@ -46,6 +51,7 @@ class HouseholdRosterMember {
     this.ageBand,
     this.avatarColor,
     this.allergenPreferences,
+    this.dislikedIngredients = const {},
   });
 
   bool get isUser => type == HouseholdMemberType.user;
@@ -55,6 +61,7 @@ class HouseholdRosterMember {
     required String userId,
     required String displayName,
     UserAllergenPreferences? allergenPreferences,
+    Set<String> dislikedIngredients = const {},
     String? avatarColor,
   }) => HouseholdRosterMember(
     memberId: userId,
@@ -62,6 +69,7 @@ class HouseholdRosterMember {
     displayName: displayName,
     isMinor: false,
     allergenPreferences: allergenPreferences,
+    dislikedIngredients: dislikedIngredients,
     avatarColor: avatarColor,
   );
 
@@ -74,5 +82,6 @@ class HouseholdRosterMember {
         ageBand: profile.ageBand,
         avatarColor: profile.avatarColor,
         allergenPreferences: profile.allergenPreferences,
+        dislikedIngredients: profile.dislikedIngredients,
       );
 }

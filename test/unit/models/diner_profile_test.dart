@@ -156,6 +156,45 @@ void main() {
       });
     });
 
+    group('Disliked ingredients', () {
+      // Intent: dislikes are edited via copyWith on the VM's update path
+      // (existing.copyWith(dislikedIngredients: ...)). These pin the two
+      // behaviours that path depends on: an update replaces the set, and an
+      // omitted arg leaves the stored dislikes untouched. Dislikes are ordinary
+      // personal data, so none of this is gated behind consent.
+      test('copyWith replaces disliked ingredients when provided', () {
+        final profile = DinerProfile.create(
+          householdId: 'hh_1',
+          name: 'Liam',
+          ageBand: DinerAgeBand.child,
+          createdBy: 'parent_1',
+          dislikedIngredients: const {'svamp'},
+        );
+
+        final updated = profile.copyWith(
+          dislikedIngredients: {'lök', 'oliver'},
+        );
+        expect(updated.dislikedIngredients, {'lök', 'oliver'});
+
+        // Passing an explicit empty set clears them (the deselect-all path).
+        final cleared = profile.copyWith(dislikedIngredients: const {});
+        expect(cleared.dislikedIngredients, isEmpty);
+      });
+
+      test('copyWith without the arg preserves disliked ingredients', () {
+        final profile = DinerProfile.create(
+          householdId: 'hh_1',
+          name: 'Liam',
+          ageBand: DinerAgeBand.child,
+          createdBy: 'parent_1',
+          dislikedIngredients: const {'svamp', 'lök'},
+        );
+
+        final renamed = profile.copyWith(name: 'Liam B');
+        expect(renamed.dislikedIngredients, {'svamp', 'lök'});
+      });
+    });
+
     group('Firestore round-trip', () {
       test('preserves allergens and consent', () {
         final original = DinerProfile(
@@ -205,9 +244,39 @@ void main() {
         expect(map.containsKey('allergenPreferences'), isFalse);
         expect(map.containsKey('guardianConsent'), isFalse);
         expect(map.containsKey('avatarColor'), isFalse);
+        // Dislikes default to empty and are omitted, keeping the doc minimal.
+        expect(map.containsKey('dislikedIngredients'), isFalse);
 
         final restored = DinerProfile.fromMap('gäst_1', map);
         expect(restored.allergenPreferences, isNull);
+        expect(restored.guardianConsent, isNull);
+        expect(restored.dislikedIngredients, isEmpty);
+      });
+
+      test('preserves disliked ingredients without any consent', () {
+        // Intent: dislikes are a soft preference (ordinary personal data), so
+        // an adult guest with no consent record still round-trips them — the
+        // field is NOT gated behind allergen (Art. 9) consent.
+        final original = DinerProfile.create(
+          householdId: 'hh_1',
+          name: 'Mormor',
+          ageBand: DinerAgeBand.adult,
+          createdBy: 'parent_1',
+          dislikedIngredients: const {'svamp', 'oliver'},
+        );
+
+        final map = original.toFirestore();
+        expect(
+          map['dislikedIngredients'],
+          containsAll(<String>['svamp', 'oliver']),
+        );
+        expect(map.containsKey('guardianConsent'), isFalse);
+
+        final restored = DinerProfile.fromMap('mormor_1', map);
+        expect(
+          restored.dislikedIngredients,
+          containsAll(<String>['svamp', 'oliver']),
+        );
         expect(restored.guardianConsent, isNull);
       });
     });
@@ -228,6 +297,26 @@ void main() {
         expect(restored.name, 'Emma');
         expect(restored.ageBand, DinerAgeBand.teen);
         expect(restored.guardianConsent!.includesAllergenConsent, isTrue);
+      });
+
+      test('preserves disliked ingredients through the cache', () {
+        // Intent: the JSON cache path (toJson/fromJson) is separate from the
+        // Firestore path and — unlike toFirestore — always emits the field.
+        // A regression in _parseStringSet(json['dislikedIngredients']) would
+        // silently drop dislikes from a cached profile.
+        final original = DinerProfile.create(
+          householdId: 'hh_1',
+          name: 'Emma',
+          ageBand: DinerAgeBand.teen,
+          createdBy: 'parent_1',
+          dislikedIngredients: const {'koriander', 'oliver'},
+        );
+
+        final restored = DinerProfile.fromJson(original.toJson());
+        expect(
+          restored.dislikedIngredients,
+          containsAll(<String>['koriander', 'oliver']),
+        );
       });
     });
 

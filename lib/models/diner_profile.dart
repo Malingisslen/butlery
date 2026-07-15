@@ -141,6 +141,13 @@ class DinerProfile {
   /// (see [GuardianConsent.includesAllergenConsent]).
   final UserAllergenPreferences? allergenPreferences;
 
+  /// Ingredients this diner dislikes — a *soft* meal-planning preference, NOT a
+  /// safety constraint and NOT special-category health data. Unlike
+  /// [allergenPreferences] it needs no unbundled Art. 9 consent (it rides on the
+  /// base profile consent a minor already requires). Empty when none recorded.
+  /// Menu generation is deliberately untouched by this slice.
+  final Set<String> dislikedIngredients;
+
   /// Lawful-basis record. Required for minor age bands before the profile may
   /// be persisted; the repository enforces this.
   final GuardianConsent? guardianConsent;
@@ -157,6 +164,7 @@ class DinerProfile {
     required this.ageBand,
     this.avatarColor,
     this.allergenPreferences,
+    this.dislikedIngredients = const {},
     this.guardianConsent,
     required this.createdBy,
     DateTime? createdAt,
@@ -172,6 +180,7 @@ class DinerProfile {
     required String createdBy,
     String? avatarColor,
     UserAllergenPreferences? allergenPreferences,
+    Set<String> dislikedIngredients = const {},
     GuardianConsent? guardianConsent,
   }) {
     return DinerProfile(
@@ -181,6 +190,7 @@ class DinerProfile {
       ageBand: ageBand,
       avatarColor: avatarColor,
       allergenPreferences: allergenPreferences,
+      dislikedIngredients: dislikedIngredients,
       guardianConsent: guardianConsent,
       createdBy: createdBy,
     );
@@ -194,6 +204,9 @@ class DinerProfile {
   bool get hasAllergenConsent =>
       guardianConsent?.includesAllergenConsent ?? false;
 
+  static Set<String> _parseStringSet(dynamic value) =>
+      value is List ? value.map((e) => e.toString()).toSet() : const <String>{};
+
   /// Sentinel distinguishing "argument omitted" from "explicitly set to null"
   /// for the nullable fields below — required so the consent-revocation flow
   /// can CLEAR [allergenPreferences]/[guardianConsent], not just overwrite them.
@@ -205,6 +218,7 @@ class DinerProfile {
     DinerAgeBand? ageBand,
     Object? avatarColor = _unset,
     Object? allergenPreferences = _unset,
+    Set<String>? dislikedIngredients,
     Object? guardianConsent = _unset,
     String? createdBy,
     DateTime? updatedAt,
@@ -220,6 +234,7 @@ class DinerProfile {
       allergenPreferences: identical(allergenPreferences, _unset)
           ? this.allergenPreferences
           : allergenPreferences as UserAllergenPreferences?,
+      dislikedIngredients: dislikedIngredients ?? this.dislikedIngredients,
       guardianConsent: identical(guardianConsent, _unset)
           ? this.guardianConsent
           : guardianConsent as GuardianConsent?,
@@ -237,6 +252,8 @@ class DinerProfile {
     if (avatarColor != null) 'avatarColor': avatarColor,
     if (allergenPreferences != null)
       'allergenPreferences': allergenPreferences!.toFirestore(),
+    if (dislikedIngredients.isNotEmpty)
+      'dislikedIngredients': dislikedIngredients.toList(),
     if (guardianConsent != null)
       'guardianConsent': guardianConsent!.toFirestore(),
     'createdBy': createdBy,
@@ -259,6 +276,7 @@ class DinerProfile {
       allergenPreferences: allergens is Map<String, dynamic>
           ? UserAllergenPreferences.fromFirestore(allergens)
           : null,
+      dislikedIngredients: _parseStringSet(data['dislikedIngredients']),
       guardianConsent: consent is Map<String, dynamic>
           ? GuardianConsent.fromMap(consent)
           : null,
@@ -286,6 +304,7 @@ class DinerProfile {
     // UserAllergenPreferences has no toJson(); toFirestore() output is plain
     // JSON-safe primitives, so the two paths are currently equivalent.
     'allergenPreferences': allergenPreferences?.toFirestore(),
+    'dislikedIngredients': dislikedIngredients.toList(),
     'guardianConsent': guardianConsent?.toJson(),
     'createdBy': createdBy,
     'createdAt': createdAt.toIso8601String(),
@@ -307,6 +326,7 @@ class DinerProfile {
       allergenPreferences: allergens is Map<String, dynamic>
           ? UserAllergenPreferences.fromFirestore(allergens)
           : null,
+      dislikedIngredients: _parseStringSet(json['dislikedIngredients']),
       guardianConsent: consent is Map<String, dynamic>
           ? GuardianConsent.fromJson(consent)
           : null,

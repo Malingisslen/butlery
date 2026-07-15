@@ -43,6 +43,28 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   late bool _guardianConsent;
   late bool _allergenConsent;
   late Set<String> _allergens;
+  late Set<String> _dislikes;
+
+  /// Common disliked ingredients offered as quick-pick chips. A soft
+  /// meal-planning preference (not health data), so labels live here as plain
+  /// data — the same pattern as [AllergenPreferenceOptions]. Keys are the
+  /// lowercase Swedish token stored on the profile; values are the chip labels.
+  static const Map<String, String> _dislikeOptions = {
+    'svamp': 'Svamp',
+    'lök': 'Lök',
+    'vitlök': 'Vitlök',
+    'oliver': 'Oliver',
+    'koriander': 'Koriander',
+    'tomat': 'Tomat',
+    'paprika': 'Paprika',
+    'aubergine': 'Aubergine',
+    'rödbetor': 'Rödbetor',
+    'blåmögelost': 'Blåmögelost',
+    'lever': 'Lever',
+    'inlagd sill': 'Inlagd sill',
+    'chili': 'Chili',
+    'russin': 'Russin',
+  };
 
   bool get _isEdit => widget.existing != null;
   bool get _isMinor => _band.isMinor;
@@ -65,6 +87,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     _color = e?.avatarColor ?? _palette.first;
     _band = e?.ageBand ?? DinerAgeBand.child;
     _allergens = {...?e?.allergenPreferences?.trackedAllergens};
+    _dislikes = {...?e?.dislikedIngredients};
     // Never pre-ticked for a new member; reflects the stored state on edit.
     _guardianConsent = e?.guardianConsent != null;
     _allergenConsent = e?.hasAllergenConsent ?? false;
@@ -89,6 +112,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
       guardianConsentGiven: _guardianConsent,
       allergenConsentGiven: _allergenConsent,
       allergenKeys: _allergens,
+      dislikedKeys: _dislikes,
     );
     if (ok && mounted) Navigator.of(context).pop(true);
   }
@@ -154,6 +178,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     const SizedBox(height: AppDimensions.spacingL),
                     if (_isMinor) _guardianConsentCard(context),
                     _allergenCard(context),
+                    _dislikesCard(context),
                     if (_isEdit && widget.existing?.guardianConsent != null)
                       _consentGivenInfo(context),
                     const SizedBox(height: AppDimensions.spacingL),
@@ -470,6 +495,85 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             label,
             style: AppTextStyles.captionText.copyWith(
               color: selected ? cs.error : cs.outline,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Disliked-ingredients picker. A soft preference with no consent friction —
+  /// always shown, no checkbox gate (unlike the allergen card).
+  Widget _dislikesCard(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        border: Border(
+          left: BorderSide(color: cs.outlineVariant, width: 3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _consentHeader(
+            l10n.familyDislikesSectionTitle,
+            l10n.familyOptionalBadge,
+            cs.outline,
+            titleColor: cs.secondary,
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            l10n.familyDislikesNote,
+            style: AppTextStyles.captionText.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final entry in _dislikeOptions.entries)
+                _dislikeChip(context, entry.key, entry.value),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dislikeChip(BuildContext context, String key, String label) {
+    final cs = Theme.of(context).colorScheme;
+    final selected = _dislikes.contains(key);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        onTap: () => setState(() {
+          if (selected) {
+            _dislikes.remove(key);
+          } else {
+            _dislikes.add(key);
+          }
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected ? cs.secondary.withValues(alpha: 0.1) : cs.surface,
+            border: Border.all(
+              color: selected ? cs.secondary : cs.outlineVariant,
+            ),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.captionText.copyWith(
+              color: selected ? cs.secondary : cs.outline,
               fontWeight: FontWeight.w600,
             ),
           ),

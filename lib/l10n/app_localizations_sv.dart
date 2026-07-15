@@ -16162,4 +16162,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get deepLinkUnavailable => 'Innehållet är inte längre tillgängligt.';
+
+  @override
+  String get familyDislikesSectionTitle => 'ogillade ingredienser';
+
+  @override
+  String get familyDislikesNote =>
+      'Rätter med dessa undviks när det går. En smakpreferens, inte en säkerhetsgräns som allergier.';
 }

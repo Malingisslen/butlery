@@ -103,6 +103,7 @@ class MinFamiljViewModel extends BaseViewModel {
     required bool guardianConsentGiven,
     required bool allergenConsentGiven,
     Set<String> allergenKeys = const {},
+    Set<String> dislikedKeys = const {},
   }) async {
     return executeAsyncVoid(() async {
       final householdId = _household?.id;
@@ -142,6 +143,10 @@ class MinFamiljViewModel extends BaseViewModel {
             )
           : null;
 
+      // Dislikes are a soft preference (ordinary personal data), so they are
+      // stored with no separate consent gate — unlike allergens (Art. 9).
+      final dislikes = dislikedKeys.toSet();
+
       if (existing == null) {
         await _dinerProfileRepository.create(
           DinerProfile.create(
@@ -151,6 +156,7 @@ class MinFamiljViewModel extends BaseViewModel {
             createdBy: uid,
             avatarColor: avatarColor,
             allergenPreferences: prefs,
+            dislikedIngredients: dislikes,
             guardianConsent: consent,
           ),
         );
@@ -161,6 +167,7 @@ class MinFamiljViewModel extends BaseViewModel {
             ageBand: ageBand,
             avatarColor: avatarColor,
             allergenPreferences: prefs,
+            dislikedIngredients: dislikes,
             guardianConsent: consent,
           ),
         );

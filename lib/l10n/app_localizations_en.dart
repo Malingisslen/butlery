@@ -16120,4 +16120,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deepLinkUnavailable => 'This content is no longer available.';
+
+  @override
+  String get familyDislikesSectionTitle => 'disliked ingredients';
+
+  @override
+  String get familyDislikesNote =>
+      'Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies.';
 }

@@ -11297,5 +11297,13 @@
   "deepLinkUnavailable": "Innehållet är inte längre tillgängligt.",
   "@deepLinkUnavailable": {
     "description": "Butler-voice snackbar shown when a shared deep link is valid but its target content is gone or no longer accessible to this user (BUT-1587)"
+  },
+  "familyDislikesSectionTitle": "ogillade ingredienser",
+  "@familyDislikesSectionTitle": {
+    "description": "Section title in the family-member form for the soft disliked-ingredients preference (distinct from allergies). Butler voice, lowercase like the sibling section headers (BUT-1610)"
+  },
+  "familyDislikesNote": "Rätter med dessa undviks när det går. En smakpreferens, inte en säkerhetsgräns som allergier.",
+  "@familyDislikesNote": {
+    "description": "Helper text under the disliked-ingredients picker clarifying it is a soft preference, not an allergy/safety constraint (BUT-1610)"
   }
 }
