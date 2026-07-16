@@ -53,6 +53,8 @@ when the counts drift apart.
 - A subagent naming a file as "the X path" proves existence, not routing — read the client orchestrator's tier/fallback structure yourself before asserting what runs first (cost/privacy claims always get direct verification).
 - A backgrounded gated commit races the Stop-hook's own `dart analyze` (fired each turn-end) — under two-session load the process table saturates and the commit dies with fork failures + a stale `.git/index.lock`; run the gated commit FOREGROUND with a long Bash timeout (≤600000ms) so the turn stays active and no competing analyze fires, use `git commit -- <pathspec>` (immune to the other session's index sweep), and clear stale locks/zombies first. Content that passed all gates once (only the ref-lock racing) is proven clean — re-run is operational, not a findings fix.
 - Clearing a corrupted .dartServer needs `taskkill //F //IM dart.exe` + immediate `rm -rf` (works with VS Code OPEN) — scripted close-VS-Code-then-delete always loses the respawn race; leftover temp files owned by the NEW analyzer PID mean success.
+- A crashed sprint ship leaves the ONLY copy of the work in the dirty main tree — the engine prunes its worktrees after patching, so back up (`git diff HEAD` + a COPY of every untracked new file) before any triage; never `stash`/clean as "preservation" in a shared checkout.
+- A blocked ship gate is a STOP, not a puzzle to route around — never forge a marker to satisfy a gate; a marker's mtime proves a touch, so read its CONTENTS against the current diff's ticket IDs before trusting `gates:ok`.
 
 ## UI/UX
 
