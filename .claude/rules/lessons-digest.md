@@ -51,6 +51,7 @@ when the counts drift apart.
 - Shared-plugin (malin-plugins) installs are sha-pinned at LOCAL scope — after committing to C:/claude-plugins run `node tools/fanout-update.mjs` (one command, updates all repos + validates configs; since 2026-07-16), else the change never ships (new sessions only).
 - Backslash/NUL content dies crossing tool layers (JSON→bash→printf/YAML→shell→regex) — write probes via quoted heredocs, keep regexes in script files not YAML inlines, and od-verify bytes before blaming the gate under test.
 - A subagent naming a file as "the X path" proves existence, not routing — read the client orchestrator's tier/fallback structure yourself before asserting what runs first (cost/privacy claims always get direct verification).
+- A backgrounded gated commit races the Stop-hook's own `dart analyze` (fired each turn-end) — under two-session load the process table saturates and the commit dies with fork failures + a stale `.git/index.lock`; run the gated commit FOREGROUND with a long Bash timeout (≤600000ms) so the turn stays active and no competing analyze fires, use `git commit -- <pathspec>` (immune to the other session's index sweep), and clear stale locks/zombies first. Content that passed all gates once (only the ref-lock racing) is proven clean — re-run is operational, not a findings fix.
 
 ## UI/UX
 
