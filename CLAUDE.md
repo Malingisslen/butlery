@@ -76,7 +76,7 @@ When stop hook blocks with a `reason`, fix it immediately — don't ask the user
 
 Session-aware: only blocks on errors in files THIS session modified. Ignore errors from parallel sessions.
 
-**Analyzer false positives:** a block whose message is truncated right after "Analyzing butlery..." (no findings listed) while this session touched no `.dart` files is the analysis server crashing (contention or bloated `.dartServer` cache), not a real finding. Verify with one fresh `dart analyze` run: if clean, state that and continue — do not "fix" anything. If the analyzer keeps crashing: kill `dart.exe` zombies; the durable fix is clearing `%LOCALAPPDATA%\.dartServer` with VS Code closed (IDE holds the lock).
+**Analyzer false positives:** a block whose message is truncated right after "Analyzing butlery..." (no findings listed) while this session touched no `.dart` files is the analysis server crashing (contention or bloated `.dartServer` cache), not a real finding. Verify with one fresh `dart analyze` run: if clean, state that and continue — do not "fix" anything. If the analyzer keeps crashing, clear the cache — VS Code does NOT need to be closed (proven 2026-07-16, BUT-1622): `taskkill //F //IM dart.exe` then immediately `rm -rf "%LOCALAPPDATA%\.dartServer"`. The old stale cache deletes fine; the only survivors are temp files owned by the instantly-respawned NEW analyzer — that's the desired end state (fresh rebuild). The close-VS-Code-first route actually FAILS (analyzer respawns and re-locks within seconds of any scripted delete). Verify after: `dart analyze` clean + cache dir small and freshly recreated.
 
 ## Pre-commit /code-review effort
 
