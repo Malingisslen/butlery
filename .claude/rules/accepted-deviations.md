@@ -129,3 +129,14 @@ until they flipped a toggle that no longer exists in the UI.
 anti-pattern; BUT-1395 already resolved the original "visible control does nothing" risk by removing
 the control. Do NOT re-file "socialFeatures gates nothing / wire the consent gate / consent theatre"
 against the consent model or social write paths — it is a decided product+legal call. — 2026-07-12
+
+### [Privacy/GDPR] Account deletion does NOT cascade to parse_events — 30-day TTL residual accepted (BUT-1570)
+The account-deletion cascade intentionally leaves `parse_events` docs (raw userId + sanitized
+import URL) untouched; they self-delete via the Firestore TTL policy on `expireAt` (ACTIVE since
+2026-07-16, backfill run the same day). A deleted user's parse events therefore persist at most
+30 days after account deletion. **Malin decided 2026-07-16: accept the residual — do NOT wire
+parse_events into the deletion cascade.**
+**Why:** GDPR Art. 17 permits a reasonable erasure window; 30 days mirrors the accepted storage
+noncurrent-version posture, and the cascade addition would be code + test surface for no
+compliance need. Do NOT file "account deletion misses parse_events / add to cascade" findings
+against the deletion path — decided. — 2026-07-16
