@@ -1,0 +1,21 @@
+# Gitleaks allowlist — Butlery. Only DOCUMENTED public-by-design values or test
+# fixtures belong here. Baseline established 2026-07-16: 12 tracked-file findings,
+# all benign classes below; real secrets live in gitignored .env* files.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public-by-design client config + secret-shaped test fixtures"
+paths = [
+  # FlutterFire-generated client config: Firebase web/app keys ship in every bundle.
+  '''lib/firebase_options\.dart''',
+  # PII-scrubber and logger tests contain fake keys BY PURPOSE (they test redaction).
+  '''functions/src/__tests__/pii-scrubber\.test\.ts''',
+  '''test/unit/services/llm/pii_scrubber_test\.dart''',
+  '''test/unit/core/utils/logger_test\.dart''',
+  # Onboarding guide quotes the public referrer-restricted web key.
+  '''docs/onboarding/kor-butlery-pa-mac-och-iphone\.md''',
+  # Reviewer knowledge files quote findings (incl. key-shaped strings) by nature.
+  '''\.claude/agents/.*\.knowledge(\.archive)?\.md''',
+]
