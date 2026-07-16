@@ -22,7 +22,7 @@ abstract class SearchRepository {
   /// that scans the full corpus. False for the Firestore fallback, which
   /// applies a client-side filter on a 200-row prefix.
   ///
-  /// [RecipeSearchRouter] uses this to decide whether to bypass the legacy
+  /// Callers use this to decide whether to bypass the legacy
   /// `RecipeRepository.searchRecipes` 200-cap path.
   bool get usesExternalSearch => false;
 

@@ -1,6 +1,5 @@
 // lib/services/unified/modules/service_adapters/recipe_service_adapter.dart
 
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
@@ -9,7 +8,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/search/recipe_search_router.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -229,19 +227,14 @@ class RecipeServiceAdapter {
     }
   }
 
-  /// Search recipes using repository pattern.
+  /// Search recipes using the repository's client-side title filter.
   ///
-  /// BUT-475: prefers `RecipeSearchRouter` when registered — that service
-  /// flips between Algolia (no 200-cap) and the legacy Firestore
-  /// client-side filter based on credentials and feature-flag state.
-  /// Falls back to direct repository search if the router isn't wired
-  /// (test environments / partial DI bring-up).
+  /// An empty/whitespace query short-circuits to `[]` and never hits the
+  /// repository — a bare `contains('')` would otherwise match every title and
+  /// perform a needless 200-doc read.
   Future<List<Recipe>> searchRecipes(String query) async {
+    if (query.trim().isEmpty) return const <Recipe>[];
     try {
-      final router = ServiceLocator.tryGet<RecipeSearchRouter>();
-      if (router != null) {
-        return await router.searchRecipes(query);
-      }
       return await _recipeRepository.searchRecipes(query);
     } catch (e) {
       AppLogger.error('❌ Failed to search recipes via repository', e);

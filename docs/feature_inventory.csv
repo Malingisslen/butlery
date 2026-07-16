@@ -126,7 +126,7 @@ ENG-07,Tiered recipe parsing (import engine),Engine & Background,Verified,"Impor
 ENG-08,Selective ingredient-line LLM enhancement,Engine & Background,Partial,"AI fixes only the few uncertain lines, not the whole recipe","~6x fewer tokens; no dedicated test"
 ENG-09,On-device parsing cascade (CRF->NER->LLM),Engine & Background,Partial,"Ingredients parsed on-device first, cloud only when uncertain","ONNX NER path untested"
 ENG-10,Parse-correction feedback (active learning),Engine & Background,Verified,"User corrections to bad imports improve future parsing",
-ENG-11,Recipe search routing (Algolia/Firestore),Engine & Background,Verified,"Search finds matches across the whole library (Algolia or Firestore)",
+ENG-11,Recipe search (local on-device matching),Engine & Background,Verified,"Search matches instantly across the loaded recipe library, on-device",
 ENG-12,Allergen filtering in menu generation,Engine & Background,Verified,"Menu generator never proposes recipes with the user's allergens",
 ENG-13,Offline sync & connectivity monitoring,Engine & Background,Verified,"App works offline and syncs changes automatically on reconnect",
 ENG-14,Image optimization & progressive loading,Engine & Background,Partial,"Recipe images load fast and smoothly without blowing data/memory","No dedicated loader test"

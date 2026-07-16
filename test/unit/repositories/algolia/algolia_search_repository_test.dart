@@ -687,17 +687,17 @@ void main() {
   }
 
   group('usesExternalSearch contract', () {
-    test('reports true so RecipeSearchRouter bypasses the 200-cap path', () {
+    test('reports true so callers can bypass the 200-cap Firestore path', () {
       final repo = newRepo();
 
       expect(
         repo.usesExternalSearch,
         isTrue,
         reason:
-            'AlgoliaSearchRepository MUST advertise external search so that '
-            'RecipeSearchRouter skips RecipeRepository.searchRecipes (200-row '
-            'prefix). If this asserts false, the inherited default from '
-            'SearchRepository (false) is leaking through — check the override.',
+            'AlgoliaSearchRepository MUST advertise external search so callers '
+            'can skip RecipeRepository.searchRecipes (200-row prefix). If this '
+            'asserts false, the inherited default from SearchRepository (false) '
+            'is leaking through — check the override.',
       );
     });
   });

@@ -258,6 +258,20 @@ void main() {
         // Assert
         expect(result, isEmpty);
       });
+
+      test(
+        'empty or whitespace query short-circuits without hitting the repository',
+        () async {
+          // Act
+          final emptyResult = await adapter.searchRecipes('');
+          final whitespaceResult = await adapter.searchRecipes('   ');
+
+          // Assert
+          expect(emptyResult, isEmpty);
+          expect(whitespaceResult, isEmpty);
+          verifyNever(() => mockRecipeRepository.searchRecipes(any()));
+        },
+      );
     });
 
     group('Notification Operations', () {

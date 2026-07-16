@@ -684,12 +684,6 @@
    "path": "lib/services/search_service.dart"
   },
   {
-   "id": "svc-recipe-search-router",
-   "label": "RecipeSearchRouter — Algolia/Firestore-routning",
-   "context": "service",
-   "path": "lib/services/search/recipe_search_router.dart"
-  },
-  {
    "id": "svc-tag-editing",
    "label": "TagEditingService — effektiv allergenstatus",
    "context": "service",
@@ -3341,7 +3335,7 @@
   {
    "id": "flow-rec-1",
    "label": "bläddra & sök recept",
-   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Rost: den Algolia-kapabla sökroutern finns och är byggd men har ingen anropande part i receptlistan (kill-switchad av förvalt AV feature-flaggan); dess enda produktionsanvändning idag är ID-uppslag, inte textsökning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning. Nytt (Increment E2): vid varje listförändring (sök/sortering/filter/loadMore) körs en batchad pooled-ratings-läsning för “Butlery-betyget”-pillen, men den är bakom feature-flaggan enable_pooled_ratings som är AV — anropet till repo-ratings nås därför aldrig i produktion. Röstsökning (REC-16, röstplanen fas 2a, 2026-07-14): mikrofon i sökfältet — transkriptet landar i sökrutan som om det skrivits (samma onSearchChanged-väg, samma lokala filtrering); nekad mikrofon lämnar skrivvägen orörd.",
+   "description": "Sökrutan och sorteringen filtrerar helt lokalt över redan inlästa recept — ingen nätverksanrop per tangenttryckning. Allergenfria filter är säkerhetsspärrade — kräver 100% taggtäckning. Nytt (Increment E2): vid varje listförändring (sök/sortering/filter/loadMore) körs en batchad pooled-ratings-läsning för “Butlery-betyget”-pillen, men den är bakom feature-flaggan enable_pooled_ratings som är AV — anropet till repo-ratings nås därför aldrig i produktion. Röstsökning (REC-16, röstplanen fas 2a, 2026-07-14): mikrofon i sökfältet — transkriptet landar i sökrutan som om det skrivits (samma onSearchChanged-väg, samma lokala filtrering); nekad mikrofon lämnar skrivvägen orörd.",
    "features": [
     "REC-01",
     "REC-02",
@@ -3391,14 +3385,6 @@
      "payload": "butlery_search_history — senaste 10 sökningar, läs vid start / skriv vid ny sökning",
      "transport": "method call",
      "verified": true
-    },
-    {
-     "from": "v-mina-recept",
-     "to": "svc-recipe-search-router",
-     "payload": "sökfältets query — ANROPAS ALDRIG härifrån. Algolia/Firestore-routningen (repo-search) existerar och är enhetstestad, men receptlistans sökruta går aldrig via den",
-     "transport": "method call (aldrig anropad från receptbläddring)",
-     "verified": true,
-     "status": "dead"
     },
     {
      "from": "vm-recipe-list",

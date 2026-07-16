@@ -220,7 +220,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | ENG-08 | Selective ingredient-line LLM enhancement | Partial |
 | ENG-09 | On-device parsing cascade (CRF→NER→LLM) | Partial |
 | ENG-10 | Parse-correction feedback (active learning) | Verified |
-| ENG-11 | Recipe search routing (Algolia↔Firestore) | Verified |
+| ENG-11 | Recipe search (local, on-device matching) | Verified |
 | ENG-12 | Allergen filtering in menu generation | Verified |
 | ENG-13 | Offline sync & connectivity monitoring | Verified |
 | ENG-14 | Image optimization & progressive loading | Partial |
@@ -1174,12 +1174,12 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Fans a correction into per-field jobs (from/to, truncated to 500 chars) uploaded via `logParseCorrection` for server-side aggregation.
 - **Test coverage:** Verified — `parse_correction_uploader_test.dart`, `parsing_correction_repository_test.dart`. *(Feeds the corpus that trains CRF/NER.)*
 
-#### ENG-11: Recipe search routing (Algolia ↔ Firestore)
+#### ENG-11: Recipe search (local, on-device matching)
 - **Entry:** Automatic as the user types in recipe search.
-- **User story:** As a user with many recipes, I want search to find matches across my whole library so that older recipes aren't silently missed.
-- **Expected behavior:** Routes to Algolia (full-corpus) when its flag + credentials are live; otherwise the Firestore client-side filter (200-recipe cap). Auto-falls back to Firestore on Algolia error.
-- **Edge cases:** Empty query short-circuits; Firestore-fallback users with >200 recipes miss older matches; a user-property records the active path.
-- **Test coverage:** Verified — `search_service_test.dart`, `search_repository_test.dart`. *(Algolia is a runtime kill-switchable cost.)*
+- **User story:** As a user browsing recipes, I want search to match instantly across my loaded library without a network round-trip per keystroke.
+- **Expected behavior:** Substring matching over already-cached recipes (title/description/ingredients/instructions/personal tags) via `SearchService`, sorted locally — no per-keystroke network call. *(BUT-1500: the dead Algolia-routing path was removed; Algolia infrastructure remains for indexing / user search.)*
+- **Edge cases:** Empty query short-circuits; search covers only recipes already loaded into the list.
+- **Test coverage:** Verified — `search_service_test.dart`, `search_repository_test.dart`.
 
 #### ENG-12: Allergen / dietary filtering in menu generation
 - **Entry:** Automatic when generating a weekly menu (opt-in toggles, off by default).
