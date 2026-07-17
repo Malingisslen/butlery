@@ -12,13 +12,45 @@ import 'package:butlery/views/family/family_widgets.dart';
 /// Outcome of the who's-eating picker.
 ///
 /// [skipped] = "hoppa över": log the cook with no attendance (historical
-/// behavior). Otherwise [attendeeMemberIds] holds the members who ate.
+/// behavior); the presence flow treats it as "no change". Otherwise
+/// [attendeeMemberIds] holds the selected members. [applyToWholeDay] is a
+/// BUT-1611 presence signal — "Hela dagen" sets both meal slots, "Denna
+/// måltid" sets one; it is always false in the cook-log flow.
 class WhoAteResult {
   final bool skipped;
   final List<String> attendeeMemberIds;
+  final bool applyToWholeDay;
 
-  const WhoAteResult.attended(this.attendeeMemberIds) : skipped = false;
-  const WhoAteResult.skipped() : skipped = true, attendeeMemberIds = const [];
+  const WhoAteResult.attended(
+    this.attendeeMemberIds, {
+    this.applyToWholeDay = false,
+  }) : skipped = false;
+  const WhoAteResult.skipped()
+    : skipped = true,
+      attendeeMemberIds = const [],
+      applyToWholeDay = false;
+}
+
+/// Presentation config for the shared roster picker — lets the cook-log flow
+/// and the BUT-1611 presence flow reuse one sheet with their own copy.
+class _PickerConfig {
+  final String title;
+  final String subtitle;
+  final IconData subtitleIcon;
+  final String Function(int count) confirmLabel;
+  final String? skipLabel; // null → no skip action (presence)
+  final String? wholeDayLabel; // null → no whole-day action (cook-log)
+  final bool allowEmpty; // presence permits an explicit "nobody home"
+
+  const _PickerConfig({
+    required this.title,
+    required this.subtitle,
+    required this.subtitleIcon,
+    required this.confirmLabel,
+    this.skipLabel,
+    this.wholeDayLabel,
+    this.allowEmpty = false,
+  });
 }
 
 /// Present the "vem åt?" picker on a "lagat idag" tap.
@@ -31,24 +63,74 @@ class WhoAteResult {
 Future<WhoAteResult?> showWhoIsEatingSheet(
   BuildContext context, {
   required String recipeTitle,
+}) {
+  final l10n = context.l10n;
+  return _showRosterPicker(
+    context,
+    allowCreateHousehold: true,
+    config: _PickerConfig(
+      title: l10n.whoAteTitle,
+      subtitle: recipeTitle,
+      subtitleIcon: Icons.restaurant_outlined,
+      confirmLabel: l10n.whoAteConfirm,
+      skipLabel: l10n.whoAteSkip,
+    ),
+  );
+}
+
+/// BUT-1611: present the "vem är hemma?" picker for one meal [slotLabel]
+/// (e.g. "lunch på måndag"), seeded with that slot's current [seedMemberIds]
+/// (empty = nobody, absent-selection callers pass the whole roster). Read-only
+/// roster resolution — opening the menu never creates a household. Returns
+/// `null`/skipped on dismiss/solo, [WhoAteResult.attended] with
+/// `applyToWholeDay` distinguishing "Denna måltid" from "Hela dagen".
+Future<WhoAteResult?> showWhoIsHomeSheet(
+  BuildContext context, {
+  required String slotLabel,
+  required List<String> seedMemberIds,
+}) {
+  final l10n = context.l10n;
+  return _showRosterPicker(
+    context,
+    seedMemberIds: seedMemberIds,
+    allowCreateHousehold: false,
+    config: _PickerConfig(
+      title: l10n.menuPresenceSheetTitle,
+      subtitle: slotLabel,
+      subtitleIcon: Icons.home_outlined,
+      confirmLabel: (_) => l10n.menuPresenceThisMeal,
+      wholeDayLabel: l10n.menuPresenceWholeDay,
+      allowEmpty: true,
+    ),
+  );
+}
+
+Future<WhoAteResult?> _showRosterPicker(
+  BuildContext context, {
+  required bool allowCreateHousehold,
+  required _PickerConfig config,
+  List<String>? seedMemberIds,
 }) async {
   final vm = WhoIsEatingViewModel();
-  await vm.load();
+  await vm.load(
+    seedMemberIds: seedMemberIds,
+    allowCreateHousehold: allowCreateHousehold,
+  );
   if (!context.mounted) {
     vm.dispose();
     return null;
   }
 
   // A roster-load blip must not be mistaken for "no family": both recover by
-  // logging without attendance, but keep the reasons distinct so a transient
-  // failure on a real household reads as a degraded load, not a solo account.
+  // making no change, but keep the reasons distinct so a transient failure on a
+  // real household reads as a degraded load, not a solo account.
   if (vm.hasError) {
     vm.dispose();
     return const WhoAteResult.skipped();
   }
 
-  // Solo account (just the owner) → log without attendance, exactly as before
-  // the picker existed. The feature stays invisible until family is added.
+  // Solo account (just the owner) → no picker, exactly as before the feature
+  // existed. It stays invisible until family is added.
   if (vm.roster.length <= 1) {
     vm.dispose();
     return const WhoAteResult.skipped();
@@ -60,7 +142,7 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
     isScrollControlled: true,
     builder: (_) => ChangeNotifierProvider<WhoIsEatingViewModel>.value(
       value: vm,
-      child: _WhoIsEatingSheet(recipeTitle: recipeTitle),
+      child: _WhoIsEatingSheet(config: config),
     ),
   );
   vm.dispose();
@@ -68,15 +150,15 @@ Future<WhoAteResult?> showWhoIsEatingSheet(
 }
 
 class _WhoIsEatingSheet extends StatelessWidget {
-  final String recipeTitle;
+  final _PickerConfig config;
 
-  const _WhoIsEatingSheet({required this.recipeTitle});
+  const _WhoIsEatingSheet({required this.config});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final vm = context.watch<WhoIsEatingViewModel>();
     final cs = Theme.of(context).colorScheme;
+    final canConfirm = config.allowEmpty || vm.selectedCount > 0;
 
     return SafeArea(
       child: Padding(
@@ -94,21 +176,17 @@ class _WhoIsEatingSheet extends StatelessWidget {
               ),
             ),
             Text(
-              l10n.whoAteTitle,
+              config.title,
               style: AppTextStyles.headlineSmall.copyWith(color: cs.primary),
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                Icon(
-                  Icons.restaurant_outlined,
-                  size: 15,
-                  color: cs.secondary,
-                ),
+                Icon(config.subtitleIcon, size: 15, color: cs.secondary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    recipeTitle,
+                    config.subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
@@ -139,14 +217,14 @@ class _WhoIsEatingSheet extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: vm.selectedCount == 0
-                    ? null
-                    : () => Navigator.pop(
+                onPressed: canConfirm
+                    ? () => Navigator.pop(
                         context,
                         WhoAteResult.attended(vm.selectedMemberIds),
-                      ),
+                      )
+                    : null,
                 icon: const Icon(Icons.how_to_reg, size: 18),
-                label: Text(l10n.whoAteConfirm(vm.selectedCount)),
+                label: Text(config.confirmLabel(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   backgroundColor: cs.primary,
@@ -154,19 +232,44 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () =>
-                    Navigator.pop(context, const WhoAteResult.skipped()),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size.fromHeight(40),
-                  foregroundColor: cs.outline,
+            if (config.wholeDayLabel != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: canConfirm
+                      ? () => Navigator.pop(
+                          context,
+                          WhoAteResult.attended(
+                            vm.selectedMemberIds,
+                            applyToWholeDay: true,
+                          ),
+                        )
+                      : null,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    foregroundColor: cs.primary,
+                    side: BorderSide(color: cs.primary),
+                  ),
+                  child: Text(config.wholeDayLabel!),
                 ),
-                child: Text(l10n.whoAteSkip),
               ),
-            ),
+            ],
+            if (config.skipLabel != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () =>
+                      Navigator.pop(context, const WhoAteResult.skipped()),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(40),
+                    foregroundColor: cs.outline,
+                  ),
+                  child: Text(config.skipLabel!),
+                ),
+              ),
+            ],
           ],
         ),
       ),

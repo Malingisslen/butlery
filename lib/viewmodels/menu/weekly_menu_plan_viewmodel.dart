@@ -76,6 +76,58 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     return _plan?.entriesAt(day, slot) ?? const [];
   }
 
+  /// BUT-1611: the explicit "who's home" selection for [day]/[slot], or null
+  /// when the slot has none (= everyone, the default).
+  List<String>? presentMemberIdsFor(DayOfWeek day, MealSlot slot) =>
+      _plan?.presentMemberIdsFor(day, slot);
+
+  /// BUT-1611: persist who's home for a single meal [slot] on [day]. Null
+  /// clears the slot back to the "everyone" default.
+  Future<void> setSlotPresence(
+    DayOfWeek day,
+    MealSlot slot,
+    List<String>? memberIds,
+  ) async {
+    await executeAsyncVoid(
+      () async {
+        final updated = await _service.setSlotPresence(
+          weekStart: currentWeekStart,
+          day: day,
+          slot: slot,
+          memberIds: memberIds,
+        );
+        if (isDisposed) return;
+        _plan = updated;
+        notifyListeners();
+      },
+      errorPrefix: 'Kunde inte spara vilka som är hemma',
+    );
+  }
+
+  /// BUT-1611 "Hela dagen": set the same selection on both meal slots of
+  /// [day]. Null clears both back to the "everyone" default.
+  Future<void> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
+    await executeAsyncVoid(
+      () async {
+        final updated = await _service.setDayPresence(
+          weekStart: currentWeekStart,
+          day: day,
+          memberIds: memberIds,
+        );
+        if (isDisposed) return;
+        _plan = updated;
+        notifyListeners();
+      },
+      errorPrefix: 'Kunde inte spara vilka som är hemma',
+    );
+  }
+
+  // BUT-1611 note: presence intentionally does NOT scope menu generation.
+  // A present-diner union would filter allergens below the whole-household
+  // baseline (övrigt is eaten by everyone; single-section re-rolls reuse a
+  // stale set), so generation keeps the safe household-aggregated filtering
+  // (BUT-1464). Safe present-aware generation is deferred to BUT-1625.
+
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>
       _recipeService.getRecipeById(recipeId);

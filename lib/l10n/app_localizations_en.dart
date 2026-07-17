@@ -2707,6 +2707,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ruleCategoryOther => 'Other';
 
   @override
+  String rulePropertyRetired(String property) {
+    return '$property – no longer valid';
+  }
+
+  @override
   String get tagResultNoAllergens => 'No allergens to display';
 
   @override
@@ -15352,6 +15357,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moderatorReporterLabel => 'Reported by';
 
   @override
+  String get moderatorMinorAccountBadge => 'Minor account';
+
+  @override
   String get moderatorActionAdvance => 'Advance';
 
   @override
@@ -16002,6 +16010,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yToggleDiner(String name) {
     return 'Toggle whether $name ate';
+  }
+
+  @override
+  String get menuPresenceSheetTitle => 'who\'s home?';
+
+  @override
+  String get menuPresenceThisMeal => 'this meal';
+
+  @override
+  String get menuPresenceWholeDay => 'whole day';
+
+  @override
+  String get menuPresenceNobody => 'nobody home';
+
+  @override
+  String menuPresencePortions(int count) {
+    return '$count serv';
+  }
+
+  @override
+  String menuPresenceSlotSubtitle(String slot, String day) {
+    return '$slot on $day';
+  }
+
+  @override
+  String get menuPresenceAfterGenerateNotice =>
+      'presence updated — planned meals stay put';
+
+  @override
+  String get menuPresenceSummaryTitle => 'who\'s home?';
+
+  @override
+  String get menuPresenceSummaryAllHome => 'everyone home all week';
+
+  @override
+  String menuPresenceSummaryAway(String names) {
+    return '$names away part of the week';
+  }
+
+  @override
+  String a11yMenuSlotPresence(String slot, String day) {
+    return 'Choose who\'s home for $slot $day';
   }
 
   @override

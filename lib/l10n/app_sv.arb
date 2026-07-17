@@ -1735,6 +1735,15 @@
   "ruleCategoryAnimal": "Animaliskt",
   "ruleCategoryDiet": "Kost",
   "ruleCategoryOther": "Övrigt",
+  "rulePropertyRetired": "{property} – inte längre giltig",
+  "@rulePropertyRetired": {
+    "description": "Dropdown entry for a rule's stored property value that is no longer in the valid vocabulary (e.g. retired 'wheat')",
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
   "tagResultNoAllergens": "Inga allergener att visa",
   "tagResultOutdated": "Taggarna kan uppdateras",
   "tagResultCoverage": "Täckning",
@@ -10435,6 +10444,10 @@
   "@moderatorReporterLabel": {
     "description": "BUT-417: label prefix for the reporter's user id."
   },
+  "moderatorMinorAccountBadge": "Minderårigt konto",
+  "@moderatorMinorAccountBadge": {
+    "description": "BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor."
+  },
   "moderatorActionAdvance": "Nästa steg",
   "@moderatorActionAdvance": {
     "description": "BUT-417: button that advances report status to the next state."
@@ -11250,6 +11263,21 @@
   "whoAteSkip": "hoppa över",
   "a11yToggleDiner": "Växla om {name} åt",
   "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}},
+  "menuPresenceSheetTitle": "vem är hemma?",
+  "menuPresenceThisMeal": "denna måltid",
+  "menuPresenceWholeDay": "hela dagen",
+  "menuPresenceNobody": "ingen hemma",
+  "menuPresencePortions": "{count} port",
+  "@menuPresencePortions": {"placeholders": {"count": {"type": "int"}}},
+  "menuPresenceSlotSubtitle": "{slot} på {day}",
+  "@menuPresenceSlotSubtitle": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "menuPresenceAfterGenerateNotice": "närvaron uppdaterad — planerade rätter ligger kvar",
+  "menuPresenceSummaryTitle": "vem är hemma?",
+  "menuPresenceSummaryAllHome": "alla hemma hela veckan",
+  "menuPresenceSummaryAway": "{names} borta delar av veckan",
+  "@menuPresenceSummaryAway": {"placeholders": {"names": {"type": "String"}}},
+  "a11yMenuSlotPresence": "Välj vilka som är hemma på {slot} {day}",
+  "@a11yMenuSlotPresence": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
   "familyRatingTitle": "vad tyckte ni?",
   "familyRatingIntro": "Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.",
   "familyRatingYou": "du",

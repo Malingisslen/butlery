@@ -11,17 +11,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/household_roster_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
+import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
 
 /// Embeddable calendar widget. Reads `WeeklyMenuPlanViewModel` from the
@@ -39,6 +46,17 @@ class CalendarWeeklyMenuWidget extends StatefulWidget {
 class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   bool _initialLoadStarted = false;
 
+  // BUT-1611: household roster for the per-slot presence faces + overview.
+  // Empty for a solo account, which hides all presence UI.
+  List<HouseholdRosterMember> _roster = const [];
+  bool _overviewExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRoster();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -48,6 +66,26 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       if (!mounted) return;
       context.read<WeeklyMenuPlanViewModel>().loadWeek(clock.now());
     });
+  }
+
+  /// Read-only roster resolution (mirrors the generator's `getForUser` path —
+  /// opening the menu must never CREATE a household). Any failure keeps the
+  /// presence UI hidden; presence is an optional layer, never a blocker.
+  Future<void> _loadRoster() async {
+    try {
+      final permission = ServiceLocator.tryGet<PermissionService>();
+      final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
+      final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
+      final uid = permission?.currentUserId;
+      if (uid == null || householdRepo == null || rosterService == null) return;
+      final households = await householdRepo.getForUser(uid);
+      if (households.isEmpty || !mounted) return;
+      final roster = await rosterService.getRoster(households.first.id);
+      if (!mounted) return;
+      setState(() => _roster = roster);
+    } catch (_) {
+      // Solo / failed loads render nothing — presence stays invisible.
+    }
   }
 
   @override
@@ -131,6 +169,16 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           ),
         chipsWidget,
         if (vm.hasOverflow) OverflowTray(overflow: vm.overflow),
+        // BUT-1611: "vem är hemma?" overview — only for a household with family,
+        // and never while multi-select is active (that owns the header row).
+        if (_roster.length > 1 && !vm.selectionMode)
+          PresenceOverview(
+            roster: _roster,
+            plan: plan,
+            expanded: _overviewExpanded,
+            onToggleExpanded: () =>
+                setState(() => _overviewExpanded = !_overviewExpanded),
+          ),
         for (final day in DayOfWeek.values)
           DayCell(
             vm: vm,
@@ -139,6 +187,8 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             isToday: day.index == todayIndex,
             onTapEmptySlot: (d, s) => _onTapEmptySlot(context, vm, d, s),
             onTapRecipe: (id) => _navigateToRecipe(context, id),
+            roster: _roster,
+            onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
           ),
       ],
     );
@@ -302,6 +352,49 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     } else {
       await vm.assignRecipe(day: day, slot: slot, recipe: picked.first);
     }
+  }
+
+  /// BUT-1611: tap a slot's presence faces → the seeded "vem är hemma?" sheet,
+  /// then persist (one slot, or both on "Hela dagen"). Selecting the whole
+  /// roster stores null (the "everyone" default) to keep the map sparse. When
+  /// the week already has a generated menu, a discreet notice explains that
+  /// placed dishes stay put — presence never reshuffles an existing menu.
+  Future<void> _onTapPresence(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+    DayOfWeek day,
+    MealSlot slot,
+  ) async {
+    final allIds = _roster.map((m) => m.memberId).toList();
+    final seed = vm.presentMemberIdsFor(day, slot) ?? allIds;
+    final slotLabel = context.l10n.menuPresenceSlotSubtitle(
+      slot.displayLabel,
+      day.displayLabel,
+    );
+    final result = await showWhoIsHomeSheet(
+      context,
+      slotLabel: slotLabel,
+      seedMemberIds: seed,
+    );
+    if (result == null || result.skipped || !context.mounted) return;
+
+    final hadMenu = vm.hasEntries;
+    final picked = result.attendeeMemberIds;
+    // Full roster selected = the "everyone" default → store null (unset).
+    final everyone =
+        picked.length == allIds.length && picked.toSet().containsAll(allIds);
+    final toStore = everyone ? null : picked;
+
+    if (result.applyToWholeDay) {
+      await vm.setDayPresence(day, toStore);
+    } else {
+      await vm.setSlotPresence(day, slot, toStore);
+    }
+    if (!context.mounted || !hadMenu) return;
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.menuPresenceAfterGenerateNotice,
+    );
   }
 
   Future<void> _navigateToRecipe(

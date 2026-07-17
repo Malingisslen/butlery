@@ -1336,5 +1336,50 @@ void main() {
         },
       );
     });
+
+    group('BUT-1611 per-slot presence', () {
+      final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+
+      Future<void> loadPlanWith(
+        Map<DayOfWeek, Map<MealSlot, List<String>>> presence,
+      ) async {
+        final plan = _plan(weekStart: weekStart).copyWith(
+          presenceBySlot: presence,
+        );
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        await viewModel.loadWeek(weekStart);
+      }
+
+      test('setSlotPresence delegates and adopts the returned plan', () async {
+        await loadPlanWith(const {});
+        final updated = _plan(weekStart: weekStart).copyWith(
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: ['m1'],
+            },
+          },
+        );
+        when(
+          () => mockService.setSlotPresence(
+            weekStart: any(named: 'weekStart'),
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            memberIds: ['m1'],
+          ),
+        ).thenAnswer((_) async => updated);
+
+        await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
+
+        expect(
+          viewModel.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
+          ['m1'],
+        );
+      });
+
+      // Note: presence deliberately does NOT scope menu generation (that would
+      // filter allergens below the household baseline — see BUT-1625). There is
+      // therefore no presentUnionForGeneration to test; generation always uses
+      // the safe household-aggregated filtering, covered in the generator suite.
+    });
   });
 }

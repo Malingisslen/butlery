@@ -42,25 +42,57 @@ class WhoIsEatingViewModel extends BaseViewModel {
   int get selectedCount => _selected.length;
   List<String> get selectedMemberIds => _selected.toList();
 
-  /// Load the roster and seed the selection from the "remember last time" rule.
-  Future<void> load() async {
+  /// Load the roster and seed the selection.
+  ///
+  /// Cook-log flow (default): resolves the household with `ensureForUser`
+  /// (creating one if absent) and seeds from the "remember last time" rule —
+  /// last cook event's attendees intersected with today's roster, else everyone.
+  ///
+  /// Presence flow (BUT-1611): pass an explicit [seedMemberIds] (that meal
+  /// slot's current selection; empty list = nobody, null-argument absent =
+  /// everyone) and set [allowCreateHousehold] to false so opening the weekly
+  /// menu never CREATES a household — it uses the read-only `getForUser` path
+  /// the menu already relies on, and renders nothing for a solo/absent account.
+  Future<void> load({
+    List<String>? seedMemberIds,
+    bool allowCreateHousehold = true,
+  }) async {
     await executeAsyncVoid(() async {
       final uid = _permissionService.currentUserId;
       if (uid == null) {
         throw StateError('Ingen inloggad användare');
       }
-      final household = await _householdRepository.ensureForUser(uid);
-      _roster = await _rosterService.getRoster(household.id);
+
+      final String householdId;
+      if (allowCreateHousehold) {
+        householdId = (await _householdRepository.ensureForUser(uid)).id;
+      } else {
+        final households = await _householdRepository.getForUser(uid);
+        if (households.isEmpty) {
+          _roster = const [];
+          return; // solo / no household — caller keeps the feature invisible
+        }
+        householdId = households.first.id;
+      }
+      _roster = await _rosterService.getRoster(householdId);
       final rosterIds = _roster.map((m) => m.memberId).toSet();
 
-      // Intersect last-time's attendees with today's roster so a since-removed
-      // member never reappears as "eating"; fall back to everyone when there's
-      // no prior attendance or none of the prior set is still present.
-      final last = await _cookEventRepository.recentAttendeeMemberIds(uid);
-      final seed = last.where(rosterIds.contains).toSet();
+      Set<String> seed;
+      if (seedMemberIds != null) {
+        // Presence: honor the caller's exact selection (including a deliberate
+        // empty = "nobody home"), intersected with the live roster.
+        seed = seedMemberIds.where(rosterIds.contains).toSet();
+      } else {
+        // Cook-log: intersect last-time's attendees with today's roster so a
+        // since-removed member never reappears; fall back to everyone when
+        // there's no prior attendance or none of the prior set is still present.
+        final last = await _cookEventRepository.recentAttendeeMemberIds(uid);
+        final remembered = last.where(rosterIds.contains).toSet();
+        seed = remembered.isEmpty ? rosterIds : remembered;
+      }
       _selected
         ..clear()
-        ..addAll(seed.isEmpty ? rosterIds : seed);
+        ..addAll(seed);
     }, errorPrefix: 'Kunde inte ladda hushållet');
   }
 

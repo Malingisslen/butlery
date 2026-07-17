@@ -239,4 +239,76 @@ void main() {
     vm.toggle(guest);
     expect(vm.isSelected(guest), isTrue);
   });
+
+  // BUT-1611: the presence flow reuses this VM with an explicit seed and the
+  // read-only (no-create) roster path.
+  group('BUT-1611 presence seed', () {
+    test(
+      'an explicit seed pre-selects exactly that set, not cook history',
+      () async {
+        final present = await addGuest('Mormor');
+        final absent = await addGuest('Farfar');
+        // Cook history would pre-tick Malin + Mormor — an explicit seed must win.
+        await seedCookEvent(DateTime(2026, 6, 20), [_malin, present]);
+
+        final vm = WhoIsEatingViewModel();
+        await vm.load(seedMemberIds: [absent], allowCreateHousehold: false);
+
+        expect(vm.isSelected(absent), isTrue);
+        expect(vm.isSelected(_malin), isFalse);
+        expect(vm.isSelected(present), isFalse);
+        expect(vm.selectedCount, 1);
+      },
+    );
+
+    test('an empty seed selects nobody (deliberate "nobody home")', () async {
+      await addGuest('Mormor');
+      final vm = WhoIsEatingViewModel();
+      await vm.load(seedMemberIds: const [], allowCreateHousehold: false);
+      expect(vm.selectedCount, 0);
+    });
+
+    test('a seed member no longer in the roster is dropped', () async {
+      final guest = await addGuest('Mormor');
+      final vm = WhoIsEatingViewModel();
+      await vm.load(
+        seedMemberIds: [guest, 'ghost-diner-id'],
+        allowCreateHousehold: false,
+      );
+      expect(vm.isSelected(guest), isTrue);
+      expect(vm.isSelected('ghost-diner-id'), isFalse);
+      expect(vm.selectedCount, 1);
+    });
+
+    test(
+      'read-only load for a household-less account creates NO household',
+      () async {
+        // BUT-1611's defining safety property: opening the weekly menu must
+        // never CREATE a household. A fresh account with no household loads an
+        // empty roster (feature stays invisible) and — critically — no household
+        // is written as a side effect of the read.
+        const loner = 'user-loner';
+        TestServiceLocator.registerSingleton<PermissionService>(
+          MockFactory.createPermissionService(currentUserId: loner),
+        );
+        expect(
+          await householdRepo.getForUser(loner),
+          isEmpty,
+          reason: 'precondition: the loner has no household',
+        );
+
+        final vm = WhoIsEatingViewModel();
+        await vm.load(seedMemberIds: const ['x'], allowCreateHousehold: false);
+
+        expect(vm.hasError, isFalse);
+        expect(vm.roster, isEmpty);
+        expect(vm.selectedCount, 0);
+        expect(
+          await householdRepo.getForUser(loner),
+          isEmpty,
+          reason: 'opening the menu must not create a household on read',
+        );
+      },
+    );
+  });
 }

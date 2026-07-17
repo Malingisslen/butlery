@@ -140,3 +140,17 @@ parse_events into the deletion cascade.**
 noncurrent-version posture, and the cascade addition would be code + test surface for no
 compliance need. Do NOT file "account deletion misses parse_events / add to cascade" findings
 against the deletion path — decided. — 2026-07-16
+
+### [Tagging/Safety] Weekly-menu presence does NOT scope menu generation (BUT-1611 → BUT-1625)
+BUT-1611 added per-meal "who's home" presence to the weekly menu. It deliberately drives
+**display, portions, and the who's-eating record only** — it does NOT feed the menu generator
+a present-diner set to scope the candidate pool. A high-effort /code-review (2026-07-17) proved
+that scoping generation by a present-diner union **narrows allergen filtering below the
+whole-household baseline**: övrigt (snacks/baking) is eaten by everyone regardless of who's
+present for lunch/middag, and single-section re-rolls reuse a stale union. On a children's
+allergen app that is unacceptable, so generation always keeps the safe household-aggregated
+filtering (BUT-1464). Safe present-aware generation (per-slot, övrigt-exempt, re-roll-fresh) is
+deferred to **BUT-1625**.
+**Why:** presence must never under-filter an allergen for a member who might eat. Do NOT file a
+"presence should scope generation" / "presentUnionForGeneration missing" / "menu ignores who's
+home" finding against the weekly-menu or generator code — it is a decided safety call. — 2026-07-17

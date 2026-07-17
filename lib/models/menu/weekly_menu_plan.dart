@@ -35,6 +35,12 @@ enum MealSlot {
       SerializationUtils.safeEnumByName(MealSlot.values, name, MealSlot.middag);
 }
 
+/// BUT-1611: the meal slots "who's home" applies to. Övrigt (snacks/baking)
+/// has no presence concept, so presence — and the "Hela dagen" shortcut —
+/// span lunch + middag only. Canonical: the service, viewmodel, and calendar
+/// UI all reference this one list so the set can never drift between them.
+const List<MealSlot> kPresenceSlots = [MealSlot.lunch, MealSlot.middag];
+
 /// Day of the week. ISO order — Monday is index 0.
 enum DayOfWeek {
   mon,
@@ -185,6 +191,16 @@ class WeeklyMenuPlan {
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
 
+  /// BUT-1611: who's home per (weekday, meal-slot), as roster memberIds
+  /// (accounts AND diner profiles — same key space as
+  /// `HouseholdRosterMember.memberId`). Presence is per meal, not per day:
+  /// a diner can be home for middag but away at lunch on the same day. A slot
+  /// WITHOUT an entry has no explicit selection, which downstream consumers
+  /// treat as "everyone" (default whole-household filtering). An explicitly
+  /// emptied slot is stored as an empty list and must NOT be read as "no
+  /// filtering". Additive: docs saved before this field parse to an empty map.
+  final Map<DayOfWeek, Map<MealSlot, List<String>>> presenceBySlot;
+
   const WeeklyMenuPlan({
     required this.id,
     required this.userId,
@@ -193,6 +209,7 @@ class WeeklyMenuPlan {
     required this.createdAt,
     required this.updatedAt,
     this.schemaVersion = 1,
+    this.presenceBySlot = const {},
   });
 
   /// Creates an empty plan for the ISO week containing [date].
@@ -235,10 +252,30 @@ class WeeklyMenuPlan {
   bool get isEmpty => entries.isEmpty;
   bool get isNotEmpty => entries.isNotEmpty;
 
+  /// Explicit presence selection for [day]/[slot], or null when the slot has
+  /// none (= "everyone", the default). Never returns an empty list as a
+  /// selection distinct from null — an explicitly-emptied slot is stored and
+  /// returned as an empty list, which consumers must NOT read as "no filtering".
+  List<String>? presentMemberIdsFor(DayOfWeek day, MealSlot slot) =>
+      presenceBySlot[day]?[slot];
+
+  /// BUT-1611: whether [memberId] is present for BOTH real meal slots of [day]
+  /// — a slot with no explicit selection counts as "everyone present" (the
+  /// default). The single owner of the "present the whole day" rule so the
+  /// week-overview never drifts from the per-slot cells.
+  bool isPresentWholeDay(DayOfWeek day, String memberId) {
+    for (final slot in kPresenceSlots) {
+      final ids = presentMemberIdsFor(day, slot);
+      if (ids != null && !ids.contains(memberId)) return false;
+    }
+    return true;
+  }
+
   WeeklyMenuPlan copyWith({
     List<WeeklyMenuPlanEntry>? entries,
     DateTime? updatedAt,
     int? schemaVersion,
+    Map<DayOfWeek, Map<MealSlot, List<String>>>? presenceBySlot,
   }) {
     return WeeklyMenuPlan(
       id: id,
@@ -248,6 +285,7 @@ class WeeklyMenuPlan {
       createdAt: createdAt,
       updatedAt: updatedAt ?? clock.now(),
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      presenceBySlot: presenceBySlot ?? this.presenceBySlot,
     );
   }
 
@@ -259,6 +297,13 @@ class WeeklyMenuPlan {
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'schemaVersion': schemaVersion,
+      if (presenceBySlot.isNotEmpty)
+        'presenceBySlot': presenceBySlot.map(
+          (day, bySlot) => MapEntry(
+            day.name,
+            bySlot.map((slot, memberIds) => MapEntry(slot.name, memberIds)),
+          ),
+        ),
     };
   }
 
@@ -281,6 +326,34 @@ class WeeklyMenuPlan {
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
+      presenceBySlot: _parsePresenceBySlot(data['presenceBySlot']),
     );
+  }
+
+  /// Tolerant parse of the per-(day, slot) presence map. Malformed keys/values
+  /// are dropped rather than corrupting another slot's selection; an unknown
+  /// day or slot name is skipped (not defaulted onto another key). An empty
+  /// inner map for a day is not retained.
+  static Map<DayOfWeek, Map<MealSlot, List<String>>> _parsePresenceBySlot(
+    dynamic raw,
+  ) {
+    if (raw is! Map) return const {};
+    final result = <DayOfWeek, Map<MealSlot, List<String>>>{};
+    raw.forEach((dayKey, bySlot) {
+      if (dayKey is! String || bySlot is! Map) return;
+      final day = DayOfWeek.values.where((d) => d.name == dayKey).firstOrNull;
+      if (day == null) return;
+      final slots = <MealSlot, List<String>>{};
+      bySlot.forEach((slotKey, value) {
+        if (slotKey is! String || value is! List) return;
+        final slot = MealSlot.values
+            .where((s) => s.name == slotKey)
+            .firstOrNull;
+        if (slot == null) return;
+        slots[slot] = value.whereType<String>().toList();
+      });
+      if (slots.isNotEmpty) result[day] = slots;
+    });
+    return result;
   }
 }

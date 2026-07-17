@@ -2710,6 +2710,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ruleCategoryOther => 'Övrigt';
 
   @override
+  String rulePropertyRetired(String property) {
+    return '$property – inte längre giltig';
+  }
+
+  @override
   String get tagResultNoAllergens => 'Inga allergener att visa';
 
   @override
@@ -15391,6 +15396,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moderatorReporterLabel => 'Rapporterat av';
 
   @override
+  String get moderatorMinorAccountBadge => 'Minderårigt konto';
+
+  @override
   String get moderatorActionAdvance => 'Nästa steg';
 
   @override
@@ -16044,6 +16052,48 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String a11yToggleDiner(String name) {
     return 'Växla om $name åt';
+  }
+
+  @override
+  String get menuPresenceSheetTitle => 'vem är hemma?';
+
+  @override
+  String get menuPresenceThisMeal => 'denna måltid';
+
+  @override
+  String get menuPresenceWholeDay => 'hela dagen';
+
+  @override
+  String get menuPresenceNobody => 'ingen hemma';
+
+  @override
+  String menuPresencePortions(int count) {
+    return '$count port';
+  }
+
+  @override
+  String menuPresenceSlotSubtitle(String slot, String day) {
+    return '$slot på $day';
+  }
+
+  @override
+  String get menuPresenceAfterGenerateNotice =>
+      'närvaron uppdaterad — planerade rätter ligger kvar';
+
+  @override
+  String get menuPresenceSummaryTitle => 'vem är hemma?';
+
+  @override
+  String get menuPresenceSummaryAllHome => 'alla hemma hela veckan';
+
+  @override
+  String menuPresenceSummaryAway(String names) {
+    return '$names borta delar av veckan';
+  }
+
+  @override
+  String a11yMenuSlotPresence(String slot, String day) {
+    return 'Välj vilka som är hemma på $slot $day';
   }
 
   @override

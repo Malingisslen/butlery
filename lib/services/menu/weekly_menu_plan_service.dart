@@ -107,7 +107,12 @@ class WeeklyMenuPlanService extends BaseService {
           userId: userId,
           weekStart: normalizedFrom,
         );
-        if (source == null || source.entries.isEmpty) return 0;
+        // Presence can be set BEFORE a menu is generated, so a source week
+        // with no entries but explicit presence must still carry that presence
+        // forward (acceptance criterion 5). Only a truly empty source (no
+        // entries AND no presence) short-circuits, via the guard below.
+        if (source == null) return 0;
+        if (source.entries.isEmpty && source.presenceBySlot.isEmpty) return 0;
 
         final destFetched = await _repository.fetchForWeek(
           userId: userId,
@@ -136,15 +141,53 @@ class WeeklyMenuPlanService extends BaseService {
             ),
           );
         }
-        if (newEntries.isEmpty) return 0;
 
-        dest = dest.copyWith(entries: [...dest.entries, ...newEntries]);
+        // BUT-1611: presence travels with the week. The destination keeps any
+        // explicit selection it already had; the source only fills empty slots.
+        final (mergedPresence, presenceAdded) = _mergePresenceForward(
+          dest.presenceBySlot,
+          source.presenceBySlot,
+        );
+
+        if (newEntries.isEmpty && !presenceAdded) return 0;
+
+        dest = dest.copyWith(
+          entries: [...dest.entries, ...newEntries],
+          presenceBySlot: mergedPresence,
+        );
         await _repository.save(dest);
         return newEntries.length;
       },
       operationName: 'copyWeek',
     );
     return result ?? 0;
+  }
+
+  /// Deep-merges [source] presence into [dest], with dest winning on any
+  /// (day, slot) it already holds. Returns the merged map and whether any
+  /// source slot was actually copied in.
+  static (Map<DayOfWeek, Map<MealSlot, List<String>>>, bool)
+  _mergePresenceForward(
+    Map<DayOfWeek, Map<MealSlot, List<String>>> dest,
+    Map<DayOfWeek, Map<MealSlot, List<String>>> source,
+  ) {
+    final merged = {
+      for (final entry in dest.entries)
+        entry.key: {
+          for (final slot in entry.value.entries)
+            slot.key: List<String>.unmodifiable(slot.value),
+        },
+    };
+    var added = false;
+    source.forEach((day, bySlot) {
+      final target = merged.putIfAbsent(day, () => <MealSlot, List<String>>{});
+      bySlot.forEach((slot, memberIds) {
+        if (target.containsKey(slot)) return; // dest wins
+        target[slot] = List<String>.unmodifiable(memberIds);
+        added = true;
+      });
+    });
+    return (merged, added);
   }
 
   /// BUT-1043: move multiple entries to the same (toDay, toSlot) in one
@@ -451,6 +494,81 @@ class WeeklyMenuPlanService extends BaseService {
     // raw error surface for the snackbar handler, mock-friendly in tests.
     await _repository.save(plan);
     return unique.length;
+  }
+
+  /// BUT-1611: persist who's home for [day]/[slot] of the week containing
+  /// [weekStart]. [memberIds] are roster memberIds; passing null CLEARS the
+  /// slot's explicit selection (back to the "everyone" default), while an
+  /// empty list is a deliberate "nobody home" selection and is kept.
+  ///
+  /// Returns the updated plan so the caller can adopt it in memory without
+  /// a re-read. Uses `_repository.save` directly for the same raw error
+  /// surface / mock-friendliness as the other targeted write paths.
+  Future<WeeklyMenuPlan> setSlotPresence({
+    required DateTime weekStart,
+    required DayOfWeek day,
+    required MealSlot slot,
+    required List<String>? memberIds,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw StateError('No authenticated user for setSlotPresence');
+    }
+    final plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
+    final updated = plan.copyWith(
+      presenceBySlot: _withSlotPresence(
+        plan.presenceBySlot,
+        day,
+        slot,
+        memberIds,
+      ),
+    );
+    await _repository.save(updated);
+    return updated;
+  }
+
+  /// BUT-1611 "Hela dagen": set the same selection on BOTH real meal slots of
+  /// [day] in one write. Null clears both back to the "everyone" default.
+  Future<WeeklyMenuPlan> setDayPresence({
+    required DateTime weekStart,
+    required DayOfWeek day,
+    required List<String>? memberIds,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw StateError('No authenticated user for setDayPresence');
+    }
+    final plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
+    var presence = plan.presenceBySlot;
+    for (final slot in kPresenceSlots) {
+      presence = _withSlotPresence(presence, day, slot, memberIds);
+    }
+    final updated = plan.copyWith(presenceBySlot: presence);
+    await _repository.save(updated);
+    return updated;
+  }
+
+  /// Returns a copy of [presence] with [day]/[slot] set to [memberIds] (null
+  /// removes the slot's explicit selection). Prunes a day whose inner map is
+  /// left empty, so the "no selection = everyone" invariant round-trips.
+  static Map<DayOfWeek, Map<MealSlot, List<String>>> _withSlotPresence(
+    Map<DayOfWeek, Map<MealSlot, List<String>>> presence,
+    DayOfWeek day,
+    MealSlot slot,
+    List<String>? memberIds,
+  ) {
+    final result = {
+      for (final entry in presence.entries)
+        entry.key: Map<MealSlot, List<String>>.from(entry.value),
+    };
+    final slots = result.putIfAbsent(day, () => <MealSlot, List<String>>{});
+    if (memberIds == null) {
+      slots.remove(slot);
+    } else {
+      slots[slot] = List.unmodifiable(memberIds);
+    }
+    if (slots.isEmpty) result.remove(day);
+    return result;
   }
 
   /// Shared write-path loader for the bulk operations: fetch the week's

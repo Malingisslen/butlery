@@ -4525,6 +4525,12 @@ abstract class AppLocalizations {
   /// **'Övrigt'**
   String get ruleCategoryOther;
 
+  /// Dropdown entry for a rule's stored property value that is no longer in the valid vocabulary (e.g. retired 'wheat')
+  ///
+  /// In sv, this message translates to:
+  /// **'{property} – inte längre giltig'**
+  String rulePropertyRetired(String property);
+
   /// No description provided for @tagResultNoAllergens.
   ///
   /// In sv, this message translates to:
@@ -25715,6 +25721,12 @@ abstract class AppLocalizations {
   /// **'Rapporterat av'**
   String get moderatorReporterLabel;
 
+  /// BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minderårigt konto'**
+  String get moderatorMinorAccountBadge;
+
   /// BUT-417: button that advances report status to the next state.
   ///
   /// In sv, this message translates to:
@@ -26734,6 +26746,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Växla om {name} åt'**
   String a11yToggleDiner(String name);
+
+  /// No description provided for @menuPresenceSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'vem är hemma?'**
+  String get menuPresenceSheetTitle;
+
+  /// No description provided for @menuPresenceThisMeal.
+  ///
+  /// In sv, this message translates to:
+  /// **'denna måltid'**
+  String get menuPresenceThisMeal;
+
+  /// No description provided for @menuPresenceWholeDay.
+  ///
+  /// In sv, this message translates to:
+  /// **'hela dagen'**
+  String get menuPresenceWholeDay;
+
+  /// No description provided for @menuPresenceNobody.
+  ///
+  /// In sv, this message translates to:
+  /// **'ingen hemma'**
+  String get menuPresenceNobody;
+
+  /// No description provided for @menuPresencePortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} port'**
+  String menuPresencePortions(int count);
+
+  /// No description provided for @menuPresenceSlotSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{slot} på {day}'**
+  String menuPresenceSlotSubtitle(String slot, String day);
+
+  /// No description provided for @menuPresenceAfterGenerateNotice.
+  ///
+  /// In sv, this message translates to:
+  /// **'närvaron uppdaterad — planerade rätter ligger kvar'**
+  String get menuPresenceAfterGenerateNotice;
+
+  /// No description provided for @menuPresenceSummaryTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'vem är hemma?'**
+  String get menuPresenceSummaryTitle;
+
+  /// No description provided for @menuPresenceSummaryAllHome.
+  ///
+  /// In sv, this message translates to:
+  /// **'alla hemma hela veckan'**
+  String get menuPresenceSummaryAllHome;
+
+  /// No description provided for @menuPresenceSummaryAway.
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} borta delar av veckan'**
+  String menuPresenceSummaryAway(String names);
+
+  /// No description provided for @a11yMenuSlotPresence.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj vilka som är hemma på {slot} {day}'**
+  String a11yMenuSlotPresence(String slot, String day);
 
   /// No description provided for @familyRatingTitle.
   ///

@@ -214,4 +214,110 @@ void main() {
       expect(restored.entries, isEmpty);
     });
   });
+
+  group('WeeklyMenuPlan per-slot presence (BUT-1611)', () {
+    WeeklyMenuPlan planWithPresence(
+      Map<DayOfWeek, Map<MealSlot, List<String>>> presence,
+    ) => WeeklyMenuPlan(
+      id: 'u1_2026-W02',
+      userId: 'u1',
+      weekStartDate: DateTime.utc(2026, 1, 5),
+      entries: const [],
+      createdAt: DateTime.utc(2026, 1, 5),
+      updatedAt: DateTime.utc(2026, 1, 5),
+      presenceBySlot: presence,
+    );
+
+    test('presence round-trips through Firestore serialization', () {
+      // Intent: the per-(day, slot) selection a user makes must come back
+      // exactly — including a diner home for middag but away at lunch on the
+      // same day, and an explicitly-emptied slot ("nobody home"), which is a
+      // real selection distinct from an unset slot.
+      final plan = planWithPresence({
+        DayOfWeek.mon: {
+          MealSlot.lunch: ['m1'],
+          MealSlot.middag: ['m1', 'm2'],
+        },
+        DayOfWeek.fri: {MealSlot.lunch: []},
+      });
+      final restored = WeeklyMenuPlan.fromMap(
+        'u1_2026-W02',
+        plan.toFirestore(),
+      );
+      expect(restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch), [
+        'm1',
+      ]);
+      expect(restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
+        'm1',
+        'm2',
+      ]);
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.fri, MealSlot.lunch),
+        isEmpty,
+      );
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.ovrigt),
+        isNull,
+      );
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.tue, MealSlot.lunch),
+        isNull,
+      );
+    });
+
+    test('docs saved before the field parse to no presence', () {
+      final legacy = planWithPresence(const {});
+      final map = legacy.toFirestore();
+      expect(map.containsKey('presenceBySlot'), isFalse);
+      final restored = WeeklyMenuPlan.fromMap('u1_2026-W02', map);
+      expect(restored.presenceBySlot, isEmpty);
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch),
+        isNull,
+      );
+    });
+
+    test('malformed presence values are dropped, not corrupted', () {
+      final restored = WeeklyMenuPlan.fromMap('u1_2026-W02', {
+        ...planWithPresence(const {}).toFirestore(),
+        'presenceBySlot': {
+          'mon': {
+            'lunch': ['m1', 42],
+            'notaslot': ['m9'],
+            'middag': 'not-a-list',
+          },
+          'notaday': {
+            'lunch': ['m9'],
+          },
+          'tue': 'not-a-map',
+        },
+      });
+      expect(restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch), [
+        'm1',
+      ]);
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
+        isNull,
+      );
+      expect(
+        restored.presentMemberIdsFor(DayOfWeek.tue, MealSlot.lunch),
+        isNull,
+      );
+      expect(restored.presenceBySlot.keys, [DayOfWeek.mon]);
+    });
+
+    test('copyWith(entries:) preserves the presence map', () {
+      // Intent: every existing plan mutation (add/move/clear entries) goes
+      // through copyWith — a presence selection must survive them all.
+      final plan = planWithPresence({
+        DayOfWeek.wed: {
+          MealSlot.middag: ['m1'],
+        },
+      });
+      final mutated = plan.copyWith(entries: const []);
+      expect(mutated.presentMemberIdsFor(DayOfWeek.wed, MealSlot.middag), [
+        'm1',
+      ]);
+    });
+  });
 }

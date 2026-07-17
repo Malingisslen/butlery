@@ -12,11 +12,13 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
 import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
@@ -56,6 +58,10 @@ typedef SlotTapCallback = void Function(DayOfWeek day, MealSlot slot);
 /// owns navigation routing.
 typedef RecipeNavCallback = void Function(String recipeId);
 
+/// BUT-1611: fired when a lunch/middag cell's presence faces are tapped —
+/// orchestrator owns the "vem är hemma?" sheet + persistence + notice flow.
+typedef PresenceTapCallback = void Function(DayOfWeek day, MealSlot slot);
+
 class DayCell extends StatelessWidget {
   final WeeklyMenuPlanViewModel vm;
   final WeeklyMenuPlan plan;
@@ -63,6 +69,11 @@ class DayCell extends StatelessWidget {
   final bool isToday;
   final SlotTapCallback onTapEmptySlot;
   final RecipeNavCallback onTapRecipe;
+
+  /// BUT-1611: household roster for the present-diner faces. Empty for a solo
+  /// account, which hides the presence row entirely.
+  final List<HouseholdRosterMember> roster;
+  final PresenceTapCallback onTapPresence;
 
   const DayCell({
     super.key,
@@ -72,6 +83,8 @@ class DayCell extends StatelessWidget {
     required this.isToday,
     required this.onTapEmptySlot,
     required this.onTapRecipe,
+    required this.roster,
+    required this.onTapPresence,
   });
 
   @override
@@ -99,6 +112,8 @@ class DayCell extends StatelessWidget {
                     slot: MealSlot.lunch,
                     onTapEmptySlot: onTapEmptySlot,
                     onTapRecipe: onTapRecipe,
+                    roster: roster,
+                    onTapPresence: onTapPresence,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -110,6 +125,8 @@ class DayCell extends StatelessWidget {
                     slot: MealSlot.middag,
                     onTapEmptySlot: onTapEmptySlot,
                     onTapRecipe: onTapRecipe,
+                    roster: roster,
+                    onTapPresence: onTapPresence,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -191,6 +208,8 @@ class _SingleSlotCell extends StatelessWidget {
   final MealSlot slot;
   final SlotTapCallback onTapEmptySlot;
   final RecipeNavCallback onTapRecipe;
+  final List<HouseholdRosterMember> roster;
+  final PresenceTapCallback onTapPresence;
 
   const _SingleSlotCell({
     required this.vm,
@@ -199,6 +218,8 @@ class _SingleSlotCell extends StatelessWidget {
     required this.slot,
     required this.onTapEmptySlot,
     required this.onTapRecipe,
+    required this.roster,
+    required this.onTapPresence,
   });
 
   @override
@@ -216,12 +237,132 @@ class _SingleSlotCell extends StatelessWidget {
             isSelected: vm.isSelected(entry.id),
             onToggleSelection: vm.toggleSelection,
           );
-    return wrapAsDropTarget(
+    final cell = wrapAsDropTarget(
       context: context,
       vm: vm,
       day: day,
       slot: slot,
       child: inner,
+    );
+    // BUT-1611: presence lives per meal — a dedicated faces row below the slot,
+    // its own tap target so the dish area keeps navigate/add. Hidden for a solo
+    // account (roster ≤ 1), and suppressed during multi-select to avoid two tap
+    // meanings on one cell. Faces show even on an empty slot so presence can be
+    // set before a dish exists. Presence drives display, portions and the
+    // who's-eating record only — never menu generation (that would under-filter
+    // allergens; see BUT-1625).
+    if (roster.length <= 1 || vm.selectionMode) return cell;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        cell,
+        _SlotPresenceRow(
+          roster: roster,
+          presentIds: plan.presentMemberIdsFor(day, slot),
+          onTap: () => onTapPresence(day, slot),
+          semanticsLabel: context.l10n.a11yMenuSlotPresence(
+            slot.displayLabel,
+            day.displayLabel,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// BUT-1611: the per-slot present-diner faces row. Shows the faces of whoever
+/// is home for this meal (all of them when the slot has no explicit selection
+/// = everyone), plus a portion count = number present (B's "portionssiffran"
+/// graft — cook for who's actually there). Tapping opens the presence sheet.
+class _SlotPresenceRow extends StatelessWidget {
+  final List<HouseholdRosterMember> roster;
+  final List<String>? presentIds;
+  final VoidCallback onTap;
+  final String semanticsLabel;
+
+  const _SlotPresenceRow({
+    required this.roster,
+    required this.presentIds,
+    required this.onTap,
+    required this.semanticsLabel,
+  });
+
+  static const int _maxFaces = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    // null selection = everyone home (the default); an explicit list is honored
+    // exactly, including an empty "nobody home".
+    final present = presentIds == null
+        ? roster
+        : roster.where((m) => presentIds!.contains(m.memberId)).toList();
+    final shown = present.take(_maxFaces).toList();
+    final overflow = present.length - shown.length;
+
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: Border(
+              bottom: BorderSide(color: cs.outlineVariant),
+              left: BorderSide(color: cs.outlineVariant),
+              right: BorderSide(color: cs.outlineVariant),
+            ),
+          ),
+          child: Row(
+            children: [
+              if (present.isEmpty)
+                Text(
+                  context.l10n.menuPresenceNobody,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 8,
+                    color: cs.outline,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else
+                for (var i = 0; i < shown.length; i++)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(start: i == 0 ? 0 : 2),
+                    child: FamilyAvatar(
+                      name: shown[i].displayName,
+                      color: parseAvatarColor(shown[i].avatarColor),
+                      size: 16,
+                    ),
+                  ),
+              if (overflow > 0)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 3),
+                  child: Text(
+                    '+$overflow',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      fontSize: 9,
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              const Spacer(),
+              if (present.isNotEmpty)
+                Text(
+                  context.l10n.menuPresencePortions(present.length),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 8,
+                    color: cs.secondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              Icon(Icons.expand_more, size: 12, color: cs.outline),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

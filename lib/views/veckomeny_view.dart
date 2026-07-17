@@ -146,6 +146,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       if (!confirmed || !mounted) return;
     }
 
+    // BUT-1611: presence (who's home per meal) drives DISPLAY, portions and
+    // the who's-eating record — it deliberately does NOT scope the generation
+    // pool. Narrowing the pool to present diners would filter allergens below
+    // the whole-household baseline (övrigt is eaten by everyone; a single
+    // re-roll would reuse a stale set), so generation always keeps the safe
+    // household-aggregated filtering (BUT-1464). Safe present-aware generation
+    // is a follow-up (BUT-1625).
     await menuVm.generateMenu(_promptController.text);
     if (!mounted) return;
 
@@ -491,6 +498,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                     padding: AppDimensions.responsiveHorizontalPadding(context),
                     child: _viewMode == VeckomenyViewMode.kalender
                         ? SingleChildScrollView(
+                            // BUT-1611: per-meal "who's home" lives inside the
+                            // calendar (faces on each slot + a collapsible
+                            // week overview), not a separate strip.
                             child: CalendarWeeklyMenuWidget(
                               onRefinePrompt: _promptFocusNode.requestFocus,
                             ),

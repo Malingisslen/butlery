@@ -1729,6 +1729,15 @@
   "ruleCategoryAnimal": "Animal",
   "ruleCategoryDiet": "Diet",
   "ruleCategoryOther": "Other",
+  "rulePropertyRetired": "{property} – no longer valid",
+  "@rulePropertyRetired": {
+    "description": "Dropdown entry for a rule's stored property value that is no longer in the valid vocabulary (e.g. retired 'wheat')",
+    "placeholders": {
+      "property": {
+        "type": "String"
+      }
+    }
+  },
   "tagResultNoAllergens": "No allergens to display",
   "tagResultOutdated": "Tags can be updated",
   "tagResultCoverage": "Coverage",
@@ -10387,6 +10396,10 @@
   "@moderatorReporterLabel": {
     "description": "BUT-417: label prefix for the reporter's user id."
   },
+  "moderatorMinorAccountBadge": "Minor account",
+  "@moderatorMinorAccountBadge": {
+    "description": "BUT-1609: badge on a moderation report card when the reported content's owner account belongs to a minor."
+  },
   "moderatorActionAdvance": "Advance",
   "@moderatorActionAdvance": {
     "description": "BUT-417: button that advances report status to the next state."
@@ -11202,6 +11215,21 @@
   "whoAteSkip": "skip",
   "a11yToggleDiner": "Toggle whether {name} ate",
   "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}},
+  "menuPresenceSheetTitle": "who's home?",
+  "menuPresenceThisMeal": "this meal",
+  "menuPresenceWholeDay": "whole day",
+  "menuPresenceNobody": "nobody home",
+  "menuPresencePortions": "{count} serv",
+  "@menuPresencePortions": {"placeholders": {"count": {"type": "int"}}},
+  "menuPresenceSlotSubtitle": "{slot} on {day}",
+  "@menuPresenceSlotSubtitle": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "menuPresenceAfterGenerateNotice": "presence updated — planned meals stay put",
+  "menuPresenceSummaryTitle": "who's home?",
+  "menuPresenceSummaryAllHome": "everyone home all week",
+  "menuPresenceSummaryAway": "{names} away part of the week",
+  "@menuPresenceSummaryAway": {"placeholders": {"names": {"type": "String"}}},
+  "a11yMenuSlotPresence": "Choose who's home for {slot} {day}",
+  "@a11yMenuSlotPresence": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
   "familyRatingTitle": "what did you think?",
   "familyRatingIntro": "Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.",
   "familyRatingYou": "you",

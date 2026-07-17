@@ -1017,4 +1017,135 @@ void main() {
       );
     });
   });
+
+  // BUT-1611: the per-day "who's home" selection persists on the week's plan
+  // document. Contract: an explicit list (even empty) is stored per day, null
+  // clears the day back to the "everyone" default, other days' selections are
+  // untouched, and the write goes through the normal save path.
+  group('setSlotPresence / setDayPresence — BUT-1611', () {
+    setUpAll(() {
+      registerFallbackValue(_FakeWeeklyMenuPlan());
+    });
+
+    setUp(() {
+      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+      when(() => repo.save(any())).thenAnswer((_) async {});
+    });
+
+    test(
+      'setSlotPresence stores the selection on one meal and persists it',
+      () async {
+        when(
+          () => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        final updated = await service.setSlotPresence(
+          weekStart: mon,
+          day: DayOfWeek.wed,
+          slot: MealSlot.middag,
+          memberIds: ['m1', 'm2'],
+        );
+
+        expect(
+          updated.presentMemberIdsFor(DayOfWeek.wed, MealSlot.middag),
+          ['m1', 'm2'],
+        );
+        // Only the targeted slot is set — lunch stays "everyone" (unset).
+        expect(
+          updated.presentMemberIdsFor(DayOfWeek.wed, MealSlot.lunch),
+          isNull,
+        );
+        final saved =
+            verify(() => repo.save(captureAny())).captured.single
+                as WeeklyMenuPlan;
+        expect(
+          saved.presentMemberIdsFor(DayOfWeek.wed, MealSlot.middag),
+          ['m1', 'm2'],
+        );
+      },
+    );
+
+    test(
+      'setDayPresence ("Hela dagen") writes both lunch and middag',
+      () async {
+        when(
+          () => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ),
+        ).thenAnswer((_) async => null);
+
+        final updated = await service.setDayPresence(
+          weekStart: mon,
+          day: DayOfWeek.thu,
+          memberIds: ['m1'],
+        );
+
+        expect(updated.presentMemberIdsFor(DayOfWeek.thu, MealSlot.lunch), [
+          'm1',
+        ]);
+        expect(
+          updated.presentMemberIdsFor(DayOfWeek.thu, MealSlot.middag),
+          ['m1'],
+        );
+      },
+    );
+
+    test(
+      'null clears one slot, leaving the day\'s other meal intact',
+      () async {
+        final existing = _emptyPlan(mon).copyWith(
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.lunch: ['m1'],
+              MealSlot.middag: ['m2'],
+            },
+          },
+        );
+        when(
+          () => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ),
+        ).thenAnswer((_) async => existing);
+
+        final updated = await service.setSlotPresence(
+          weekStart: mon,
+          day: DayOfWeek.mon,
+          slot: MealSlot.lunch,
+          memberIds: null,
+        );
+
+        expect(
+          updated.presentMemberIdsFor(DayOfWeek.mon, MealSlot.lunch),
+          isNull,
+        );
+        expect(
+          updated.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag),
+          ['m2'],
+        );
+      },
+    );
+
+    test('throws without an authenticated user', () async {
+      when(() => userService.currentUserProfile).thenReturn(null);
+      expect(
+        () => service.setSlotPresence(
+          weekStart: mon,
+          day: DayOfWeek.mon,
+          slot: MealSlot.lunch,
+          memberIds: const [],
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    // Note: copyWeek's presence carry-forward (acceptance criterion 5) is
+    // covered in weekly_menu_plan_copyweek_presence_test.dart — copyWeek runs
+    // through the auth-gated executeServiceOperation, which needs the DI
+    // ServiceLocator harness this raw-mock file deliberately avoids.
+  });
 }
