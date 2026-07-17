@@ -69,6 +69,9 @@ const ADMIN_EXEMPT: ReadonlySet<string> = new Set([
   "getAuditLogStats", // cleanup/cleanup-audit-logs.ts — requireAdmin
   "getDeletedIngredientStats", // cleanup/cleanup-deleted-ingredients.ts
   "backfillRecipeCommentsDenorm", // migrations/ — one-shot admin migration
+  "reviewLearnedAlias", // analytics/review-learned-alias.ts — requireAdmin (BUT-1468 alias review)
+  "revokeLearnedAlias", // analytics/review-learned-alias.ts — requireAdmin (BUT-1468 alias undo)
+  "backfillCanonicalRatings", // migrations/backfill-canonical-ratings.ts — requireAdmin one-shot backfill
 ]);
 
 interface CallableDecl {
