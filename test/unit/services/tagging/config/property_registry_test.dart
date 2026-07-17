@@ -11,6 +11,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/tagging/config/property_registry.dart';
+import 'package:butlery/services/tagging/config/valid_properties.dart';
 
 void main() {
   group('isValid', () {
@@ -49,6 +50,44 @@ void main() {
     test('returns true for a valid property, false otherwise', () {
       expect(PropertyRegistry.validateOrWarn('dairy', 'test'), isTrue);
       expect(PropertyRegistry.validateOrWarn('bogus', 'test'), isFalse);
+    });
+  });
+
+  group('category partition (rule-dialog dropdown source, BUT-1618)', () {
+    test('every valid property appears in exactly one category', () {
+      final all = kIngredientPropertyCategories.values
+          .expand((properties) => properties)
+          .toList();
+      expect(
+        all.length,
+        all.toSet().length,
+        reason:
+            'a property listed in two categories gives the rule dialog '
+            'dropdown two items with the same value — a DropdownButton '
+            'assertion crash when editing a rule that stores that value',
+      );
+      expect(all.toSet(), kValidIngredientProperties);
+    });
+
+    test('retired wheat stays out of the vocabulary (BUT-1498)', () {
+      expect(PropertyRegistry.isValid('wheat'), isFalse);
+      expect(PropertyRegistry.isValid('shellfish'), isTrue);
+    });
+
+    test('the category id set is fixed — a new one needs a dialog label', () {
+      // The rule dialog's `_categoryLabel` switch maps these ids to localized
+      // headers. It is parallel to this map, so a new category id here would
+      // silently render its raw English id as a Swedish-UI header. Pinning the
+      // set forces whoever adds a category to also add the label case.
+      expect(kIngredientPropertyCategories.keys.toSet(), {
+        'allergens',
+        'lactose',
+        'meat',
+        'seafood',
+        'animal',
+        'diet',
+        'other',
+      });
     });
   });
 

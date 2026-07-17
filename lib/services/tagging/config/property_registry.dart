@@ -16,7 +16,7 @@ class PropertyRegistry {
   /// `valid_properties.dart` so the standalone `migrate_tag_configs.dart`
   /// seed-generator shares this exact list (single source of truth). Update
   /// the vocabulary there when adding new properties to ingredients.
-  static const Set<String> validProperties = kValidIngredientProperties;
+  static final Set<String> validProperties = kValidIngredientProperties;
 
   /// Checks if a property name is valid.
   static bool isValid(String property) => validProperties.contains(property);

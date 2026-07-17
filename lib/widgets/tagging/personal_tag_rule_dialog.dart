@@ -8,10 +8,68 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
+import 'package:butlery/services/tagging/config/valid_properties.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+
+/// Prefix marking a disabled category-header dropdown item; its value is a
+/// sentinel that is never a real property.
+const String _kHeaderPrefix = '__header_';
+
+/// BUT-1618: a stored condition value the vocabulary no longer recognises
+/// (e.g. the retired 'wheat'). Excludes the header sentinels so a malformed
+/// stored value shaped like one can't be both a retired item AND a header.
+@visibleForTesting
+bool isRetiredProperty(String value) =>
+    value.isNotEmpty &&
+    !value.startsWith(_kHeaderPrefix) &&
+    !PropertyRegistry.isValid(value);
+
+/// One entry in the property dropdown: a category header (disabled), a
+/// selectable property, or the flagged retired stored value. The widget builds
+/// its `DropdownMenuItem`s directly from this list, so a test over it exercises
+/// the REAL dropdown — not a parallel copy.
+typedef PropertyDropdownEntry = ({
+  String value,
+  bool isHeader,
+  bool isRetired,
+  String? categoryId,
+});
+
+/// The dropdown's `initialValue` for [storedValue]: the value itself only when
+/// it matches a selectable item — a valid property, or a retired value (the
+/// flagged item). Any OTHER non-empty value (a corrupted/imported/legacy value,
+/// e.g. one shaped like a `__header_` sentinel) matches zero items, so this
+/// returns null (unselected) rather than let DropdownButtonFormField assert on
+/// open. Shares [isRetiredProperty]/[PropertyRegistry] with the item builder.
+@visibleForTesting
+String? dropdownInitialValue(String storedValue) =>
+    (PropertyRegistry.isValid(storedValue) || isRetiredProperty(storedValue))
+    ? storedValue
+    : null;
+
+/// The ordered dropdown entries for [storedValue]: a retired stored value first
+/// (flagged), then each category header followed by its properties.
+/// `DropdownButtonFormField.initialValue` (= storedValue) must match exactly
+/// one entry — a retired value that fell out is the "editing a rule with a
+/// retired property crashes the dropdown" bug.
+@visibleForTesting
+List<PropertyDropdownEntry> propertyDropdownEntries(String storedValue) => [
+  if (isRetiredProperty(storedValue))
+    (value: storedValue, isHeader: false, isRetired: true, categoryId: null),
+  for (final entry in kIngredientPropertyCategories.entries) ...[
+    (
+      value: '$_kHeaderPrefix${entry.key}',
+      isHeader: true,
+      isRetired: false,
+      categoryId: entry.key,
+    ),
+    for (final prop in entry.value)
+      (value: prop, isHeader: false, isRetired: false, categoryId: null),
+  ],
+];
 
 /// Result from rule dialog including apply to existing choice.
 class PersonalTagRuleResult {
@@ -735,90 +793,64 @@ class _ConditionRow extends StatelessWidget {
     }
   }
 
-  Widget _buildPropertyDropdown(BuildContext context) {
-    // Organize properties by category for better UX
-    final categories = <String, List<String>>{
-      context.l10n.ruleCategoryAllergens: [
-        'dairy',
-        'egg',
-        'fish',
-        'crustacean',
-        'mollusc',
-        'peanut',
-        'tree-nut',
-        'wheat',
-        'contains-gluten',
-        'soy',
-        'sesame',
-        'celery',
-        'mustard',
-        'lupin',
-        'sulfites',
-      ],
-      context.l10n.ruleCategoryLactose: ['contains-lactose'],
-      context.l10n.ruleCategoryMeat: [
-        'meat',
-        'pork',
-        'beef',
-        'poultry',
-        'lamb',
-        'game',
-      ],
-      context.l10n.ruleCategorySeafood: [
-        'seafood',
-        'fish',
-        'crustacean',
-        'mollusc',
-        'high-mercury',
-      ],
-      context.l10n.ruleCategoryAnimal: ['animal-product'],
-      context.l10n.ruleCategoryDiet: [
-        'contains-alcohol',
-        'is-spicy',
-        'plant-based',
-        'nightshade',
-      ],
-      context.l10n.ruleCategoryOther: ['doesnt-freeze-well', 'raw-safe'],
-    };
-
-    // Build grouped dropdown items
-    final items = <DropdownMenuItem<String>>[];
-    for (final entry in categories.entries) {
-      // Category header (disabled)
-      items.add(
-        DropdownMenuItem<String>(
-          enabled: false,
-          value: '__header_${entry.key}',
-          child: Text(
-            entry.key,
-            style: AppTextStyles.badgeLarge.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-      // Properties in category
-      for (final prop in entry.value) {
-        if (PropertyRegistry.isValid(prop)) {
-          items.add(
-            DropdownMenuItem<String>(
-              value: prop,
-              child: Padding(
-                padding: AppDimensions.paddingOnlyStart8,
-                child: Text(prop, style: AppTextStyles.formOption),
-              ),
-            ),
-          );
-        }
-      }
+  /// Localized labels for the shared vocabulary's category ids.
+  String _categoryLabel(BuildContext context, String categoryId) {
+    switch (categoryId) {
+      case 'allergens':
+        return context.l10n.ruleCategoryAllergens;
+      case 'lactose':
+        return context.l10n.ruleCategoryLactose;
+      case 'meat':
+        return context.l10n.ruleCategoryMeat;
+      case 'seafood':
+        return context.l10n.ruleCategorySeafood;
+      case 'animal':
+        return context.l10n.ruleCategoryAnimal;
+      case 'diet':
+        return context.l10n.ruleCategoryDiet;
+      case 'other':
+        return context.l10n.ruleCategoryOther;
+      default:
+        return categoryId;
     }
+  }
+
+  Widget _buildPropertyDropdown(BuildContext context) {
+    final storedValue = condition.value;
+    // Built from the shared, tested [propertyDropdownEntries] seam so the
+    // dropdown-value invariant (a retired stored value stays selectable exactly
+    // once, or DropdownButtonFormField's initialValue asserts) is exercised by
+    // its unit test on the SAME code path this renders. A retired stored value
+    // (e.g. 'wheat', BUT-1498) appears first, flagged — blanking it would hide
+    // that the rule matches nothing until a live property is picked.
+    final items = [
+      for (final e in propertyDropdownEntries(storedValue))
+        DropdownMenuItem<String>(
+          enabled: !e.isHeader,
+          value: e.value,
+          child: e.isHeader
+              ? Text(
+                  _categoryLabel(context, e.categoryId!),
+                  style: AppTextStyles.badgeLarge.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : e.isRetired
+              ? Text(
+                  context.l10n.rulePropertyRetired(e.value),
+                  style: AppTextStyles.formOption.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                )
+              : Padding(
+                  padding: AppDimensions.paddingOnlyStart8,
+                  child: Text(e.value, style: AppTextStyles.formOption),
+                ),
+        ),
+    ];
 
     return DropdownButtonFormField<String>(
-      initialValue:
-          condition.value.isNotEmpty &&
-              PropertyRegistry.isValid(condition.value)
-          ? condition.value
-          : null,
+      initialValue: dropdownInitialValue(storedValue),
       decoration: InputDecoration(
         isDense: true,
         contentPadding: AppDimensions.paddingAll12,
@@ -829,7 +861,7 @@ class _ConditionRow extends StatelessWidget {
       items: items,
       onChanged: enabled
           ? (value) {
-              if (value != null && !value.startsWith('__header_')) {
+              if (value != null && !value.startsWith(_kHeaderPrefix)) {
                 onValueChanged(value);
               }
             }
