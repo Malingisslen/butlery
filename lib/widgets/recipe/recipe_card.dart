@@ -17,6 +17,7 @@ import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -511,7 +512,7 @@ class RecipeCard extends StatelessWidget {
         else if (hasPersonal)
           _buildRatingPill(context, demoted: showPool),
         if (showPool)
-          _buildPooledPill(context, pooled)
+          ButleryBetygPill(stats: pooled)
         else if (hasAlla)
           _buildAllaPill(context, allaAvg),
         if (hasMatchPercent) _buildMatchBadge(context, matchPercent!),
@@ -520,7 +521,6 @@ class RecipeCard extends StatelessWidget {
   }
 
   /// Swedish one-decimal with a decimal comma (e.g. 4.2 -> "4,2").
-  String _fmt(double v) => v.toStringAsFixed(1).replaceAll('.', ',');
 
   /// Green "familj X,X" pill \u2014 the household's private verdict (the default).
   Widget _buildFamilyPill(
@@ -536,7 +536,7 @@ class RecipeCard extends StatelessWidget {
     // variant (a filled neutral pill would fail AA contrast in dark mode).
     final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
     return Semantics(
-      label: context.l10n.a11yFamilyRatingPill(_fmt(avg)),
+      label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: demoted
@@ -548,44 +548,10 @@ class RecipeCard extends StatelessWidget {
             Icon(Icons.groups_outlined, size: 12, color: fg),
             const SizedBox(width: 3),
             Text(
-              context.l10n.recipeFamilyRatingPill(_fmt(avg)),
+              context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: fg,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Green filled "Butlery-betyget" community pill: `★ X,X · N betyg`. Shown on
-  /// cards instead of the per-copy 'alla' pill once the pool clears the floor
-  /// (decision 8/9). Always carries the vote count. Warm star on brand green.
-  Widget _buildPooledPill(BuildContext context, PooledStats stats) {
-    final cs = Theme.of(context).colorScheme;
-    final avg = _fmt(stats.average ?? 0);
-    return Semantics(
-      label: context.l10n.a11yButleryBetygPill(avg, stats.count),
-      child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
-        decoration: BoxDecoration(
-          color: cs.primary,
-          borderRadius: BorderRadius.zero,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Decorative star uses the app-wide starGold token (as every other
-            // star pill does) — NOT the warning/status colour.
-            Icon(Icons.star, size: 12, color: context.butleryColors.starGold),
-            const SizedBox(width: 3),
-            Text(
-              '$avg · ${context.l10n.butleryBetygCount(stats.count)}',
-              style: AppTextStyles.badge.copyWith(
-                color: cs.onPrimary,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -598,7 +564,7 @@ class RecipeCard extends StatelessWidget {
   Widget _buildAllaPill(BuildContext context, double avg) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yAllaRatingPill(_fmt(avg)),
+      label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(color: cs.secondary),
@@ -608,7 +574,7 @@ class RecipeCard extends StatelessWidget {
             Icon(Icons.star, size: 12, color: cs.surface),
             const SizedBox(width: 3),
             Text(
-              context.l10n.recipeAllaRatingPill(_fmt(avg)),
+              context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: cs.surface,
                 fontWeight: FontWeight.w600,

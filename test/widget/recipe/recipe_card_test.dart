@@ -954,6 +954,22 @@ void main() {
       );
 
       testWidgets(
+        'a whole-number pooled average keeps its decimal, Swedish comma (4,0)',
+        (tester) async {
+          // ButleryBetygPill's documented contract: always one decimal with a
+          // decimal comma — deliberately NOT formatFractional (which would
+          // render "4"). This pins the sv-SE "4,0" shape.
+          await pump(
+            tester,
+            withCore(testRecipe, averageRating: null),
+            pooledStats: const PooledStats(count: 12, average: 4.0),
+          );
+          expect(find.textContaining('4,0'), findsOneWidget);
+          expect(find.textContaining('4.0'), findsNothing);
+        },
+      );
+
+      testWidgets(
         'below the floor (n<5) shows no community pill — per-copy fallback intact',
         (tester) async {
           await pump(

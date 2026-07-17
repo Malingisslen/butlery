@@ -12,6 +12,7 @@ import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
+import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/rating/canonical_pool_key.dart';
@@ -314,7 +315,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   /// Swedish one-decimal with a decimal comma (4.3 -> "4,3"). Deliberately NOT
   /// TextFormatting.formatFractional: the pills always keep one decimal (4,0),
   /// whereas formatFractional drops it for whole numbers.
-  String _fmt(double v) => v.toStringAsFixed(1).replaceAll('.', ',');
 
   /// The two labelled pooled pills. Community (green, with count) leads; the
   /// household's own rating (quiet slate) follows as context. Returns null when
@@ -341,7 +341,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         _buildLabelledPill(
           context,
           label: context.l10n.pooledCommunityLabel,
-          pill: _buildCommunityPill(context, stats),
+          // meetsDisplayFloor (checked in _loadPooledStats before this renders)
+          // guarantees average is non-null here.
+          pill: ButleryBetygPill(stats: stats),
         ),
         if (hasHousehold)
           _buildLabelledPill(
@@ -377,38 +379,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     );
   }
 
-  /// Green filled community pill `★ X,X · N betyg` — mirrors the card's pill.
-  Widget _buildCommunityPill(BuildContext context, PooledStats stats) {
-    final cs = Theme.of(context).colorScheme;
-    // meetsDisplayFloor (checked in _loadPooledStats before this renders)
-    // guarantees average is non-null here.
-    final avg = _fmt(stats.average!);
-    return Semantics(
-      label: context.l10n.a11yButleryBetygPill(avg, stats.count),
-      child: Container(
-        padding: AppDimensions.paddingSymmetric6x2,
-        decoration: BoxDecoration(
-          color: cs.primary,
-          borderRadius: BorderRadius.zero,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.star, size: 12, color: context.butleryColors.starGold),
-            const SizedBox(width: 3),
-            Text(
-              '$avg · ${context.l10n.butleryBetygCount(stats.count)}',
-              style: AppTextStyles.badge.copyWith(
-                color: cs.onPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Quiet slate household pill `★ X,X` (no count) — the OUTLINED neutral
   /// treatment (transparent fill + hairline outline + secondary text) that the
   /// card uses for its demoted per-copy pill, so it stays AA-safe in dark mode
@@ -416,7 +386,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   Widget _buildHouseholdPill(BuildContext context, double avg) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yPooledHouseholdPill(_fmt(avg)),
+      label: context.l10n.a11yPooledHouseholdPill(formatRatingComma(avg)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(
@@ -429,7 +399,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             Icon(Icons.star, size: 12, color: cs.onSurfaceVariant),
             const SizedBox(width: 3),
             Text(
-              _fmt(avg),
+              formatRatingComma(avg),
               style: AppTextStyles.badge.copyWith(
                 color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
