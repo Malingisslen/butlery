@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -95,12 +97,21 @@ class ReportService extends BaseService {
         .doc(userId)
         .snapshots()
         .map((snap) => snap.exists)
-        .handleError((Object error) {
-          AppLogger.warning(
-            '[ReportService] watchIsAdmin error (treating as non-admin): $error',
-          );
-          return false;
-        });
+        // NOT handleError: its callback cannot emit, so an error (e.g. the
+        // permission-denied every non-admin gets from rules) would end the
+        // stream with no event and strand the UI on a spinner. The transformer
+        // converts the error into an explicit `false` so the view can render
+        // its not-authorized state.
+        .transform(
+          StreamTransformer<bool, bool>.fromHandlers(
+            handleError: (error, stackTrace, sink) {
+              AppLogger.warning(
+                '[ReportService] watchIsAdmin error (treating as non-admin): $error',
+              );
+              sink.add(false);
+            },
+          ),
+        );
   }
 
   /// Stream open reports (status != 'closed') ordered by newest first.
@@ -118,6 +129,32 @@ class ReportService extends BaseService {
               .whereType<ContentReport>()
               .toList(),
         );
+  }
+
+  /// Whether [userId]'s account is flagged as a minor. Reads the
+  /// server-authoritative `isMinor` field on `users/{uid}` (written only by
+  /// the `verifySignupAge` Cloud Function; admin-readable by rules).
+  ///
+  /// Returns `true`/`false` for a resolved account (a missing doc or
+  /// absent/non-bool field reads as `false` — a confirmed non-minor), and
+  /// `null` when the lookup itself FAILED (network/permission blip). The null
+  /// case is deliberately distinct from a confirmed adult so the caller can
+  /// retry rather than lock in a wrong "not a minor" for the session — the
+  /// display still fails closed (a null renders no badge). Confirmed results
+  /// are cached 30 min (minority never changes mid-session); a failure is not
+  /// cached, so it retries cheaply.
+  Future<bool?> isMinorAccount(String userId) {
+    return getCachedOrExecute<bool>(
+      'isMinorAccount_$userId',
+      () async {
+        final snap = await _firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .get();
+        return snap.data()?['isMinor'] == true;
+      },
+      cacheDuration: const Duration(minutes: 30),
+    );
   }
 
   /// Advance a report's status one step forward. Returns `true` on success.

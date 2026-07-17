@@ -1,3 +1,7 @@
+// Mocking Firestore's sealed reference types is the repo-standard way to force
+// a snapshot error the in-memory fake cannot produce (see fallback_values.dart).
+// ignore_for_file: subtype_of_sealed_class
+
 /// Intent-driven unit tests for `ReportService` — trust/safety surface.
 ///
 /// Behaviours covered (Intent-Test Sprint batch 13):
@@ -55,6 +59,17 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
 
 class _MockReportRepository extends Mock implements FirebaseReportRepository {}
+
+/// Only used to force a snapshot ERROR on admins/{uid} — FakeFirebaseFirestore
+/// has no rules engine, so it cannot reproduce the permission-denied every
+/// non-admin actually gets in production.
+class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
+class _MockCollectionReference extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDocumentReference extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
 
 class _FakeContentReport extends Fake implements ContentReport {}
 
@@ -323,6 +338,125 @@ void main() {
       final first = await service.watchIsAdmin().first;
 
       expect(first, isFalse);
+    });
+
+    /// A snapshot error must EMIT `false`, not merely swallow the error.
+    /// rules restrict admins/{uid} reads to admins, so every signed-in
+    /// NON-admin gets permission-denied here — that is the normal path, not
+    /// an exotic one. `.handleError` cannot emit from its callback, so it
+    /// would end the stream with zero events and strand the moderator screen's
+    /// StreamBuilder in ConnectionState.waiting forever (infinite spinner,
+    /// _NotAuthorized unreachable). The fake can't produce a rules error, so
+    /// the repository chain is mocked to return an error stream.
+    test(
+      'emits false (not an empty stream) when the snapshot errors',
+      () async {
+        fakeAuth.setAuthState(userId: 'not-admin-uid');
+        final erroringRepo = _MockFirestoreRepository();
+        final collection = _MockCollectionReference();
+        final doc = _MockDocumentReference();
+        when(() => erroringRepo.collection('admins')).thenReturn(collection);
+        when(() => collection.doc(any())).thenReturn(doc);
+        when(doc.snapshots).thenAnswer(
+          (_) => Stream<DocumentSnapshot<Map<String, dynamic>>>.error(
+            FirebaseException(plugin: 'firestore', code: 'permission-denied'),
+          ),
+        );
+        final erroringService = ReportService(
+          reportRepository: mockReportRepo,
+          authRepository: fakeAuth,
+          firestoreRepository: erroringRepo,
+        );
+
+        final emitted = await erroringService.watchIsAdmin().first.timeout(
+          const Duration(seconds: 2),
+        );
+
+        expect(
+          emitted,
+          isFalse,
+          reason:
+              'the error must be converted into an explicit non-admin event so '
+              'the view can render its not-authorized state',
+        );
+      },
+    );
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // isMinorAccount (BUT-1609) — the child-safety signal behind the badge
+  // ──────────────────────────────────────────────────────────────────
+  group('isMinorAccount', () {
+    // isMinorAccount runs through the auth-gated executeServiceOperation, and
+    // it is only ever called from the (authenticated) moderator dashboard.
+    setUp(() => fakeAuth.setAuthState(userId: adminUid));
+
+    Future<void> seedUser(String uid, Map<String, dynamic> data) =>
+        fakeFirestore.collection(FirestoreCollections.users).doc(uid).set(data);
+
+    test('true only when the account doc has isMinor == true', () async {
+      await seedUser('u-minor', {'isMinor': true});
+      expect(await service.isMinorAccount('u-minor'), isTrue);
+    });
+
+    test('false (confirmed adult) when isMinor is absent', () async {
+      await seedUser('u-adult', {'displayName': 'Adult'});
+      expect(await service.isMinorAccount('u-adult'), isFalse);
+    });
+
+    test('false when the account doc is missing', () async {
+      expect(await service.isMinorAccount('u-ghost'), isFalse);
+    });
+
+    test(
+      'false when isMinor is a non-bool value (only literal true flags)',
+      () async {
+        // A future data glitch writing the string 'true' must NOT flag a minor.
+        await seedUser('u-weird', {'isMinor': 'true'});
+        expect(await service.isMinorAccount('u-weird'), isFalse);
+      },
+    );
+
+    test('null (retryable), not false, when the read FAILS', () async {
+      // A failed lookup must be distinguishable from a confirmed adult so the
+      // caller can retry rather than lock in a wrong "not a minor" — the fake
+      // can't produce a rules error, so the get() is mocked to throw.
+      final erroringRepo = _MockFirestoreRepository();
+      final collection = _MockCollectionReference();
+      final doc = _MockDocumentReference();
+      when(
+        () => erroringRepo.collection(FirestoreCollections.users),
+      ).thenReturn(collection);
+      when(() => collection.doc(any())).thenReturn(doc);
+      when(doc.get).thenThrow(
+        FirebaseException(plugin: 'firestore', code: 'permission-denied'),
+      );
+      final erroringService = ReportService(
+        reportRepository: mockReportRepo,
+        authRepository: fakeAuth,
+        firestoreRepository: erroringRepo,
+      );
+
+      expect(
+        await erroringService.isMinorAccount('u'),
+        isNull,
+        reason:
+            'a failed read must not collapse into a confirmed-adult false — '
+            'that would hide a real minor for the whole session',
+      );
+    });
+
+    test('caches a confirmed result within the 30-min window', () async {
+      final users = fakeFirestore.collection(FirestoreCollections.users);
+      await users.doc('u-cache').set({'isMinor': true});
+      expect(await service.isMinorAccount('u-cache'), isTrue);
+      // A later change would read false if the cache were bypassed.
+      await users.doc('u-cache').set({'isMinor': false});
+      expect(
+        await service.isMinorAccount('u-cache'),
+        isTrue,
+        reason: 'served from the 30-minute cache, not re-read',
+      );
     });
   });
 

@@ -6,10 +6,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// Reusable admin badge indicator for groups and collaborative content.
 class AdminBadge extends StatelessWidget {
   final String? label;
+  final IconData icon;
 
   const AdminBadge({
     super.key,
     this.label,
+    this.icon = Icons.admin_panel_settings,
   });
 
   @override
@@ -28,7 +30,7 @@ class AdminBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.admin_panel_settings,
+            icon,
             size: AppDimensions.iconSizeS,
             color: cs.primary,
           ),

@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
+import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:flutter/material.dart';
@@ -181,6 +182,15 @@ class _ReportCard extends StatelessWidget {
                 color: cs.outline,
               ),
             ),
+            // BUT-1609: moderation on a minor's account carries extra care
+            // (GDPR/child-safety) — surface it before any action is taken.
+            if (vm.isMinorOwner(report)) ...[
+              const SizedBox(height: AppDimensions.spacingXs),
+              AdminBadge(
+                label: context.l10n.moderatorMinorAccountBadge,
+                icon: Icons.shield_outlined,
+              ),
+            ],
             const SizedBox(height: AppDimensions.spacingSm),
             Wrap(
               spacing: AppDimensions.spacingSm,
