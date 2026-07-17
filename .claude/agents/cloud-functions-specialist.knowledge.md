@@ -924,3 +924,77 @@ doesn't re-flag them as bugs):
 - firestore-rules.yml + test:rules:all also gained `functions/src/family/**` and
   `purge-dormant-family-data.integration.test.ts` triggers in the same commit —
   correct missing-wiring backfill, unrelated to the audit-log extraction.
+
+### 2026-07-16 — C10/BUT-1518 repool telemetry review: re-fire on every touch + backfill fingerprint drift [Pattern discovered]
+
+Reviewed the uncommitted C10 diff (`ratings/canonical-rating-aggregation.ts` repool
+telemetry + `ingredientsFingerprint` stamping, its test suite, app-check exemptions).
+tsc clean; 22/22 + 14/14 green. Two Medium findings, both proven, not merely reasoned:
+
+- **MEDIUM — transition telemetry keyed on a FROZEN artifact re-fires forever.** The
+  old pool event is never deleted (frozen semantics, decided), and it keeps carrying
+  the same `recipeId` — so the "prior event for this recipeId at a different poolKey"
+  detection matches on EVERY subsequent rating write after one edit-repool, not just at
+  the transition (probe: touch3/touch4 both logged `anchor_only_title_change` again).
+  An abuse counter inflates per innocent touch. General rule: when detecting a
+  TRANSITION by querying immutable history, also check whether the DESTINATION state
+  already exists (`priorSnap.docs.some((d) => d.id === poolKey)` — doc-id IS the
+  poolKey) and skip when it does; the test suite's "plain re-rate → no telemetry" case
+  only covered the no-prior-repool variant, so the re-fire was structurally untested.
+- **MEDIUM — adding a stamped field to a shared derivation helper silently strands its
+  OTHER consumer.** `recipeContentToKey` now returns `ingredientsFingerprint`, the live
+  mirror stamps it — but `migrations/backfill-canonical-ratings.ts` (which imports the
+  helper precisely to avoid drift) still writes events WITHOUT it, and its non-merge
+  `batch.set({poolKey, ratingValue, recipeId, createdAt})` would STRIP a fingerprint
+  the live mirror already stamped when overwriting a non-identical event. Backfill is
+  hard-gated/never-run, so fix before first run. Rule: when a shared helper gains a
+  returned/stamped field, grep every importer and reconcile their write shapes +
+  identical-skip comparisons in the same change.
+- Low notes: the prior-events query also runs on CREATE writes where it provably
+  returns empty (delete branch always retracts by recipeId) — 1 wasted billed read on
+  the most common path, gate on `input.before !== null`; and
+  `logger.info(JSON.stringify({...}))` claims to be "the idiom of this pipeline's
+  counters" but the live pipeline's trigger logs use the house
+  `logger.info("stable.string", {fields})` shape — only the migrations use
+  JSON.stringify. recipeId+hashUid in the log payload are GDPR-clean.
+- App-check exemption additions verified genuine: `reviewLearnedAlias`/
+  `revokeLearnedAlias`/`backfillCanonicalRatings` all call `requireAdmin(request)`
+  first thing (read the handlers, not just the header comments).
+- Gotcha rediscovered: `backfill-canonical-ratings.ts` contains a literal U+0000 in a
+  Map-key template (`${uid}<NUL>${poolKey}` as a raw byte) — ripgrep treats the whole
+  file as BINARY and silently skips it. Grep-based sweeps miss this file; use
+  node/Read. Prefer the backslash-u0000 escape sequence in source.
+
+### 2026-07-17 — BUT-1623 App-Check ADMIN_EXEMPT classification confirmed sound [Pattern discovered]
+
+Independently confirmed (not just "test green") that adding `reviewLearnedAlias`,
+`revokeLearnedAlias` (analytics/review-learned-alias.ts:216/235) and
+`backfillCanonicalRatings` (migrations/backfill-canonical-ratings.ts:373) to
+`ADMIN_EXEMPT` in `app-check-enforcement.test.ts` is the CORRECT classification, and the
+exemption is SAFE. No findings — classification sound.
+
+Why exempting an admin-claim callable from App Check is correct, and the established
+pattern: **App Check attests the app binary; the admin custom claim attests the caller's
+authorization** — they guard orthogonal threats. An admin-only callable that fails closed
+for non-admins doesn't need app attestation (admin ops run from a console / ops scripts
+where App Check adds friction with no matching threat reduction; the guard's own docstring
+at lines 55-61 states exactly this). The safety hinges on `requireAdmin` actually blocking:
+confirmed in `shared/require-admin.ts` it throws `unauthenticated` when `!request.auth` and
+`permission-denied` unless `token.admin === true || token.role === "admin"` — fails closed,
+no fall-through. All three new callables call `requireAdmin(request)` as the FIRST executed
+statement inside the handler (before any read/side effect), so a non-admin is rejected
+before anything runs; `backfillCanonicalRatings` adds a second hard gate (refuses a real run
+unless `enable_pooled_ratings` is ON).
+
+The three follow the identical convention as every existing ADMIN_EXEMPT entry —
+spot-checked `getCorrectionStats`, `getAuditLogStats`, `getUnmatchedIngredientStats`,
+`getRetagStatus` all open with `requireAdmin(request)`; `bulkMarkForRetagging` inlines the
+equivalent `token.admin === true` check. None of the exempt callables carry
+`enforceAppCheck: true` — admin-claim gating is the exemption basis, by design. No
+accepted-deviations entry touches App Check, so nothing to reconcile.
+
+**Rule for classifying a new onCall into this guard:** ADMIN_EXEMPT is justified iff the
+handler's FIRST statement is `requireAdmin(request)` (or the inline `token.admin === true`
+equivalent) — read the handler body, never trust the header/inline comment. A callable
+reachable by an ordinary authenticated user belongs in USER_FACING with
+`enforceAppCheck: true`, not ADMIN_EXEMPT.
