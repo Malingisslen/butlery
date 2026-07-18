@@ -244,6 +244,23 @@ service cloud.firestore {
         || creatorIsFriendOf(otherParticipant(participantIds));
     }
 
+    // BUT-1626 (BUT-674): server-side hard-deny of minor discoverability.
+    // A compliant 15–17-year-old (isMinor:true on the CF-set users/{uid} doc)
+    // must never be searchable. BUT-1454 item #1 already keeps a minor out of
+    // search on every ordinary write — UserProfile.toFirestore forces
+    // public_profiles.isSearchable:false for minors — but that is CLIENT-side
+    // only; a tampered client could still write isSearchable:true. This helper
+    // closes the hole at the rules layer. Cost: one get() on users/{uid}, and the
+    // callers short-circuit so it fires ONLY when a write actually SETS
+    // isSearchable:true — ordinary minor saves (isSearchable:false) pay nothing.
+    // A missing users/{uid} doc or absent/false isMinor reads as non-minor
+    // (adults unaffected).
+    function accountIsMinor(userId) {
+      let userPath = /databases/$(database)/documents/users/$(userId);
+      return exists(userPath)
+        && get(userPath).data.get('isMinor', false) == true;
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -597,6 +614,12 @@ service cloud.firestore {
       allow create: if isOwner(userId)
         && hasRequiredFields(['displayName', 'email'])
         && request.resource.data.isSearchable is bool
+        // BUT-1626: a minor may not create a searchable public profile. The
+        // legitimate minor opt-in (deferred) writes via a trusted Cloud
+        // Function (admin SDK bypasses rules); every CLIENT create that sets
+        // isSearchable:true for a minor is denied here.
+        && (request.resource.data.isSearchable != true
+          || !accountIsMinor(userId))
         && !request.resource.data.keys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
           'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale'
@@ -617,6 +640,13 @@ service cloud.firestore {
           // so a hidden user cannot un-hide themselves.
           'isHidden', 'hiddenAt'
         ])
+        // BUT-1626: block a client update that flips a minor's profile to
+        // searchable. Gated on the DIFF (only when isSearchable is being SET to
+        // true), so a minor with a legacy true value can still edit their name /
+        // avatar, and a normal minor save (isSearchable:false) still corrects it.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isSearchable'])
+          || request.resource.data.isSearchable != true
+          || !accountIsMinor(userId))
       ) || (
         isAuthenticated() &&
         // Only friendsCount field is being changed
@@ -1472,16 +1502,31 @@ service cloud.firestore {
       // friend. This is the chokepoint for 1:1 DMs — participantIds is set at
       // create and immutable after, so message access is decided here.
       //
-      // GROUP conversations (size > 2) are intentionally NOT gated: Firestore
-      // rules cannot iterate the participant list to find the minor. Group
-      // minor-protection is instead provided by the default-private profile
-      // (a non-friend can't discover the minor to add them) plus a planned
-      // Cloud Function follow-up — NOT this rule. The get() cost is bounded:
+      // GROUP conversations (size > 2) are intentionally NOT gated here:
+      // Firestore rules cannot iterate the participant list to find the minor.
+      // Group minor-protection is instead provided by the default-private
+      // profile (a non-friend can't discover the minor to add them) plus the
+      // enforceGroupMinorMembership Cloud Function (BUT-1626), which removes a
+      // minor added to a group by a non-friend. That CF trusts
+      // metadata.creatorId as the "who added them" identity, so the create rule
+      // below binds it to the caller. The get() cost is bounded:
       // otherIsMinor()/creatorIsFriendOf() only fire on a 1:1 create.
       allow create: if isAuthenticated()
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['participantIds', 'createdAt'])
         && passesMinorDmGate(request.resource.data.participantIds)
+        // BUT-1626: bind the recorded creator to the caller so the group
+        // minor-safety CF can trust metadata.creatorId. Without this a tampered
+        // client could add a non-friend minor to a group and set creatorId to
+        // the minor's own uid (hitting the uid===creatorId skip) or to any
+        // friend of the minor, defeating the friend check. A conversation that
+        // records no creator stays safe — the CF fails closed and removes the
+        // minor when creatorId is absent.
+        && (
+          !('metadata' in request.resource.data)
+          || !('creatorId' in request.resource.data.metadata)
+          || request.resource.data.metadata.creatorId == request.auth.uid
+        )
         && rateLimitWrite('conversations', 10);
 
       // Can update if you're a participant (but cannot modify participantIds or createdAt)

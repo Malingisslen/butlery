@@ -186,7 +186,10 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> setLifecycleStage(LifecycleStage stage) async {
+  Future<void> setLifecycleStage(
+    LifecycleStage stage, {
+    required bool isMinor,
+  }) async {
     // No-op: Analytics not supported
   }
 }

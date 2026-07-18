@@ -159,7 +159,10 @@ void main() {
       test(
         'new_ stage emits as "new" (trailing underscore stripped)',
         () async {
-          await repository.setLifecycleStage(LifecycleStage.new_);
+          await repository.setLifecycleStage(
+            LifecycleStage.new_,
+            isMinor: false,
+          );
 
           verify(
             () => mockAnalytics.setUserProperty(
@@ -171,10 +174,22 @@ void main() {
       );
 
       test('all other stages emit their bare enum name', () async {
-        await repository.setLifecycleStage(LifecycleStage.activated);
-        await repository.setLifecycleStage(LifecycleStage.habitual);
-        await repository.setLifecycleStage(LifecycleStage.dormant);
-        await repository.setLifecycleStage(LifecycleStage.churned);
+        await repository.setLifecycleStage(
+          LifecycleStage.activated,
+          isMinor: false,
+        );
+        await repository.setLifecycleStage(
+          LifecycleStage.habitual,
+          isMinor: false,
+        );
+        await repository.setLifecycleStage(
+          LifecycleStage.dormant,
+          isMinor: false,
+        );
+        await repository.setLifecycleStage(
+          LifecycleStage.churned,
+          isMinor: false,
+        );
 
         verify(
           () => mockAnalytics.setUserProperty(
@@ -201,6 +216,23 @@ void main() {
           ),
         ).called(1);
       });
+
+      test(
+        'BUT-1626: a minor is suppressed — no lifecycle_stage is emitted',
+        () async {
+          await repository.setLifecycleStage(
+            LifecycleStage.habitual,
+            isMinor: true,
+          );
+
+          verifyNever(
+            () => mockAnalytics.setUserProperty(
+              name: 'lifecycle_stage',
+              value: any(named: 'value'),
+            ),
+          );
+        },
+      );
     });
   });
 }

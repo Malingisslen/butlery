@@ -516,7 +516,15 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   @override
-  Future<void> setLifecycleStage(LifecycleStage stage) async {
+  Future<void> setLifecycleStage(
+    LifecycleStage stage, {
+    required bool isMinor,
+  }) async {
+    // BUT-1626 (BUT-674): minors get analytics minimization — the lifecycle
+    // stage is a behavioral profiling signal and is never emitted for a
+    // compliant 15–17-year-old. Defense-in-depth mirror of the same gate in
+    // UserPropertyBootstrap.emitLifecycle, so this raw setter can't bypass it.
+    if (isMinor) return;
     await setUserProperty(
       name: AnalyticsUserProperties.lifecycleStage,
       value: stage.wireValue,

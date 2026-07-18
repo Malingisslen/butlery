@@ -63,6 +63,11 @@ export { moderateUpload } from "./storage/moderate-upload";
 // create/update/delete and updates the parent conversation atomically.
 export { syncConversationLastMessage } from "./messaging/sync-conversation-last-message";
 
+// BUT-1626 (BUT-674): group-conversation minor-safety gate. Removes a minor who
+// was added to a group by a non-friend — the group backstop for the 1:1 DM gate
+// that firestore.rules enforces (rules can't iterate a group participant list).
+export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-membership";
+
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 

@@ -194,6 +194,43 @@ test("conversations: non-friend CAN create a group (size 3) conversation includi
   );
 });
 
+// C6: DENY — a create whose metadata.creatorId is NOT the caller. BUT-1626 binds
+// the recorded creator to the caller so the group minor-safety Cloud Function
+// (enforceGroupMinorMembership) can trust metadata.creatorId. Without this a
+// client could forge creatorId to a friend of a minor (or the minor's own uid)
+// and slip a non-friend group add past the CF's friend check. Adult 1:1 target
+// so this isolates the creatorId binding, not the minor-DM gate.
+test("conversations: cannot create with metadata.creatorId set to another uid", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/c-creator-forge-${RUN}`)
+      .set(
+        convBody([STRANGER_UID, ADULT_UID], {
+          metadata: { creatorId: FRIEND_UID },
+        })
+      )
+  );
+});
+
+// C7: ALLOW — a create whose metadata.creatorId IS the caller. This is the
+// legitimate client shape: Conversation.group()/direct both stamp
+// creatorId = self, so the binding never blocks a real create.
+test("conversations: can create with metadata.creatorId equal to the caller", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/c-creator-self-${RUN}`)
+      .set(
+        convBody([STRANGER_UID, ADULT_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
 async function run(): Promise<void> {
   console.log("conversations 1:1 minor-DM gate rules tests (BUT-674)\n");
   console.log("========================================\n");

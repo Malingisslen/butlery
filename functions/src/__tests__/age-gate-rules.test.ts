@@ -556,6 +556,93 @@ test(
 );
 
 // ============================================================================
+// PUBLIC_PROFILES — BUT-1626 minor searchability hard-deny
+// (5 assertions across 5 tests)
+//
+// A compliant 15–17-year-old (users/{uid}.isMinor:true) must never write a
+// searchable public profile from the client. The rule reads users/{uid}.isMinor
+// via get() and denies any client create/update that SETS isSearchable:true for
+// a minor. Adults are unaffected; a minor's non-searchable writes still pass.
+// ============================================================================
+
+function publicProfileBody(
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    displayName: "Anna",
+    email: "anna@example.com",
+    isSearchable: false,
+    ...extra,
+  };
+}
+
+// PP1: an ADULT can create a searchable public profile.
+test("public_profiles: adult can create isSearchable:true", async () => {
+  const uid = `pp-adult-${RUN}`;
+  const ctx = env.authenticatedContext(uid);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set(publicProfileBody({ isSearchable: true }))
+  );
+});
+
+// PP2: a MINOR cannot create a searchable public profile (hard-deny).
+test("public_profiles: minor CANNOT create isSearchable:true", async () => {
+  const uid = `pp-minor-create-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  const ctx = env.authenticatedContext(uid);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set(publicProfileBody({ isSearchable: true }))
+  );
+});
+
+// PP3: a MINOR CAN create a non-searchable public profile (default-private).
+test("public_profiles: minor can create isSearchable:false", async () => {
+  const uid = `pp-minor-create-false-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  const ctx = env.authenticatedContext(uid);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set(publicProfileBody({ isSearchable: false }))
+  );
+});
+
+// PP4: a MINOR cannot flip an existing profile to searchable via update.
+test("public_profiles: minor CANNOT update to isSearchable:true", async () => {
+  const uid = `pp-minor-update-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+  const ctx = env.authenticatedContext(uid);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ isSearchable: true }, { merge: true })
+  );
+});
+
+// PP5: a MINOR can still edit other fields (isSearchable untouched, stays false).
+test("public_profiles: minor can edit displayName while non-searchable", async () => {
+  const uid = `pp-minor-edit-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+  const ctx = env.authenticatedContext(uid);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ displayName: "Anna B" }, { merge: true })
+  );
+});
+
+// ============================================================================
 // isAgeCompliant() MATRIX on the four UGC create paths
 // (12 assertions across 12 tests)
 //

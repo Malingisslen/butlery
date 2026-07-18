@@ -152,5 +152,13 @@ abstract class AnalyticsRepository {
   Future<void> setPlatformUserProperty();
 
   /// Emit the `lifecycle_stage` user property (BUT-639).
-  Future<void> setLifecycleStage(LifecycleStage stage);
+  ///
+  /// BUT-1626 (BUT-674 minor minimization): [isMinor] is REQUIRED and the gate
+  /// is defense-in-depth. `lifecycle_stage` is a behavioral profiling signal, so
+  /// it must never be emitted for a compliant 15–17-year-old — the same rule
+  /// `UserPropertyBootstrap.emitLifecycle` enforces. Making the flag a required
+  /// parameter (rather than trusting callers to route through the bootstrap gate)
+  /// means any future direct caller of this raw setter cannot silently bypass the
+  /// minimization: implementations early-return when [isMinor] is true.
+  Future<void> setLifecycleStage(LifecycleStage stage, {required bool isMinor});
 }
