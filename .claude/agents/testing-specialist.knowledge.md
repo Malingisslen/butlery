@@ -1952,3 +1952,32 @@ asserts, and deleted a green-no-op "should extract difficulty" test (no such fie
 rationale comment. These characterize real parser behavior incl. current English-metadata gaps ("Serves 4" → null
 portions, "Prep 15, Cook 30" → 15 not summed) — honest characterization, documented; mild note that a future
 parser *improvement* will break them, which is acceptable for behavior-pinning tests on a Swedish-first parser.
+
+---
+
+### 2026-07-18 — BUT-1594 fix landed, tests still didn't close the gap the 2026-07-18 review flagged [Coverage review — gaps still open]
+**Trigger:** coverage check on the uncommitted `UserService.createOrUpdateProfile` / `UserProfileViewModel` /
+`household_size_view.dart` change described as "household-size-only settings screen can save without a display
+name." The production fix is exactly what the earlier same-day "armed-but-unsaveable" entry above prescribed
+(`isFormValid` now ORs `_householdSizeEdited`; `UserService` keeps `existingProfile.displayName` when the incoming
+one is empty; `_handleUserError` now sets `_operationError` so `viewModel.error` is non-null) — but **no test was
+added for any of the three legs**, so the fix shipped provably untested:
+- No test calls `updateHouseholdSize(n)` (with displayName left empty / on an unloaded shell) then `saveProfile()`
+  and asserts `true` — the one existing related test
+  (`user_profile_viewmodel_test.dart:759`, "a household change on a not-yet-loaded profile arms Save") still only
+  checks `hasUnsavedChanges`, never calls `saveProfile()`. This is the exact gap the prior entry named, still open.
+- No test in `user_service_test.dart` passes `displayName: ''` to `createOrUpdateProfile` and asserts the saved
+  profile keeps `existingProfile.displayName` — every existing call in that suite passes a non-empty name.
+- No test asserts `viewModel.error` is non-null after the invalid-form save path
+  (`user_profile_viewmodel_test.dart:623`, "should reject save with invalid form" checks only the boolean `result`).
+- The new `isSaving` getter/re-entrancy guard (`if (_isSaving) return false;` in `saveProfile()`) has **zero**
+  references anywhere in `user_profile_viewmodel_test.dart` — the double-tap guard the fix moved from the view's
+  local `State` field onto the VM has no test proving a second concurrent `saveProfile()` call short-circuits
+  (needs a `Completer`-backed mock answer to hold the first call in flight).
+- `household_size_view_test.dart`'s `_FakeUserService.createOrUpdateProfile` resolves synchronously
+  (`async => _profile`, no delay) — even a widget-level double-tap test can't observe `viewModel.isSaving` mid-save
+  with today's fake; it needs a controllable delay (e.g. a `Completer`) to pin the button's `isLoading`/`canSave`
+  wiring to `viewModel.isSaving` instead of the deleted local `_saving` flag.
+**Pattern:** a same-day review can name the exact missing test and the fix can still land without it — grep the
+suite for the new getter/state name (`isSaving`, the new UserService branch) before trusting "existing suites
+pass" as evidence of coverage for a just-landed fix.
