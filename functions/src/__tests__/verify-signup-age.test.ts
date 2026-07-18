@@ -279,6 +279,8 @@ test("BUT-674 compliant adult: both docs get isMinor:false and NO isSearchable a
     );
 
     assert(result.compliant === true, `expected compliant:true for birthYear ${birthYear}`);
+    // BUT-1454: the response threads isMinor back to the onboarding client.
+    assert(result.isMinor === false, `adult response must carry isMinor:false (birthYear ${birthYear})`);
 
     const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
     assert(userWrite !== undefined, `users/${uid} write missing for birthYear ${birthYear}`);
@@ -323,6 +325,8 @@ test("BUT-674 compliant minor: both docs get isMinor:true and NO isSearchable an
     );
 
     assert(result.compliant === true, `age ${age} must be compliant (≥15)`);
+    // BUT-1454: the response threads isMinor:true so onboarding can suppress search.
+    assert(result.isMinor === true, `age ${age} response must carry isMinor:true`);
     assert(authState.deleteUserCallCount === 0, `age ${age} is compliant — must not be deleted`);
 
     const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
@@ -364,6 +368,7 @@ test("BUT-674 idempotent retry for minor: still writes isMinor:true to both docs
   );
 
   assert(result.compliant === true, "retry of a compliant minor must return compliant:true");
+  assert(result.isMinor === true, "retry response for a minor must carry isMinor:true");
   assert(authState.setClaimsCallCount === 0, "retry must NOT re-set the claim");
 
   const userWrite = dbState.setWrites.find((w) => w.path === `users/${uid}`);
@@ -402,6 +407,7 @@ test("<15 rejected: deleteUser called, no claim, non-identifying rejection audit
   );
 
   assert(result.compliant === false, "under-15 must return compliant:false");
+  assert(result.isMinor === false, "rejected (deleted) path must report isMinor:false");
   assert(authState.deleteUserCallCount === 1, "under-15 must trigger auth.deleteUser");
   assert(authState.deleteUserUid === uid, "deleteUser must target the caller's uid");
   assert(authState.setClaimsCallCount === 0, "rejected minor must NOT get any custom claim");

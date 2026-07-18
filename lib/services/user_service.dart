@@ -805,6 +805,13 @@ class UserService extends ChangeNotifier
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,
+    // BUT-1454: when the verifySignupAge CF flagged this account as a compliant
+    // 15–17-year-old, stamp `isMinor` so the profile's public_profiles write
+    // serializes `isSearchable:false` (default-private search-suppression). ORed
+    // with the existing value so it never DOWNGRADES a server-set minor flag
+    // that a resumed session already merged in; the client never writes isMinor
+    // itself (CF-authoritative) — it only drives the derived isSearchable.
+    bool isMinor = false,
   }) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
@@ -816,6 +823,7 @@ class UserService extends ChangeNotifier
           preferences ?? _currentUserProfile!.allergenPreferences,
       hasCompletedOnboarding: true,
       onboardingSkippedAt: onboardingSkippedAt,
+      isMinor: isMinor || _currentUserProfile!.isMinor,
     );
     await _repository.saveProfile(
       updated,

@@ -88,6 +88,14 @@ class OnboardingViewModel extends BaseViewModel {
   // completion belt only fires when a birth year is held this session AND
   // the gate handler hasn't already verified it.
   bool _ageVerifiedThisSession = false;
+  // BUT-1454: captured from the verifySignupAge CF response when the gate (or
+  // the belt-and-suspenders re-check) confirms compliance this session. A
+  // compliant 15–17-year-old is a minor and is stamped onto the profile at
+  // completion so `public_profiles.isSearchable` serializes false (default-
+  // private search-suppression). Only meaningful once age is verified this
+  // session; on a resumed session it stays false and the already-persisted
+  // server value on the profile carries the minor status instead.
+  bool _isMinor = false;
   // BUT-545: tracks whether the onboarding import page actually landed a
   // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
   // when the user advances past the import page without importing.
@@ -163,16 +171,18 @@ class OnboardingViewModel extends BaseViewModel {
     setLoading(true);
     _ageRejected = false;
     try {
-      final compliant = await ServiceLocator.get<AgeVerificationService>()
+      final result = await ServiceLocator.get<AgeVerificationService>()
           .verifyAge(year)
           .timeout(_completionTimeout);
       if (isDisposed) return AgeGateAdvanceResult.error;
-      if (!compliant) {
+      if (!result.compliant) {
         AppLogger.info('Age gate rejected the account as under-15');
         _ageRejected = true;
         return AgeGateAdvanceResult.rejected;
       }
       _ageVerifiedThisSession = true;
+      // BUT-1454: remember the minor status so completion can suppress search.
+      _isMinor = result.isMinor;
       return AgeGateAdvanceResult.compliant;
     } catch (e) {
       AppLogger.error('Age gate verification failed', e);
@@ -301,20 +311,22 @@ class OnboardingViewModel extends BaseViewModel {
       //     Flag the rejection and bail BEFORE seeding/marking onboarding done.
       //   - throws => infrastructure failure: return false for a retry error.
       if (_selectedBirthYear != null && !_ageVerifiedThisSession) {
-        final bool compliant;
+        final AgeVerificationResult ageResult;
         try {
-          compliant = await ServiceLocator.get<AgeVerificationService>()
+          ageResult = await ServiceLocator.get<AgeVerificationService>()
               .verifyAge(_selectedBirthYear!)
               .timeout(_completionTimeout);
         } catch (e) {
           AppLogger.error('Age verification failed', e);
           return false;
         }
-        if (!compliant) {
+        if (!ageResult.compliant) {
           AppLogger.info('Age verification rejected the account (under-15)');
           _ageRejected = true;
           return false;
         }
+        // BUT-1454: capture minor status on this rare belt path too.
+        _isMinor = ageResult.isMinor;
       }
 
       final userService = ServiceLocator.get<UserService>();
@@ -335,6 +347,9 @@ class OnboardingViewModel extends BaseViewModel {
           .completeOnboardingWithPreferences(
             prefs,
             onboardingSkippedAt: isSkip ? clock.now() : null,
+            // BUT-1454: stamp the minor flag onto the completion write so the
+            // public_profiles doc serializes isSearchable:false immediately.
+            isMinor: _isMinor,
           )
           .timeout(_completionTimeout);
 

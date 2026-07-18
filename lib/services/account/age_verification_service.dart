@@ -23,6 +23,24 @@ import 'package:butlery/services/auth_service.dart';
 /// Infrastructure errors (HttpsError: invalid-argument / resource-exhausted /
 /// internal) propagate as [FirebaseFunctionsException] so the caller can
 /// surface a generic retry error and NOT proceed into the app.
+
+/// Outcome of a [AgeVerificationService.verifyAge] call.
+///
+/// BUT-1454: carries [isMinor] alongside [compliant] so onboarding can stamp a
+/// compliant 15–17-year-old's profile as a minor at completion — which makes
+/// `public_profiles.isSearchable` serialize false (default-private search). On
+/// a rejection the account is already deleted, so [isMinor] is meaningless and
+/// reported false.
+class AgeVerificationResult {
+  const AgeVerificationResult({
+    required this.compliant,
+    required this.isMinor,
+  });
+
+  final bool compliant;
+  final bool isMinor;
+}
+
 class AgeVerificationService extends BaseService {
   @override
   String get serviceName => 'AgeVerificationService';
@@ -40,21 +58,25 @@ class AgeVerificationService extends BaseService {
 
   /// Verify [birthYear] against Butlery's age floor via the CF.
   ///
-  /// Returns `true` when the account is compliant (>= 15). On compliance the
-  /// ID token is force-refreshed so the `ageCompliant` claim lands before any
-  /// UGC write. Returns `false` when the CF rejected the account as under-15
-  /// (it has already deleted the Auth record server-side).
+  /// Returns [AgeVerificationResult.compliant] `true` when the account is
+  /// compliant (>= 15). On compliance the ID token is force-refreshed so the
+  /// `ageCompliant` claim lands before any UGC write, and
+  /// [AgeVerificationResult.isMinor] reports whether the caller is a compliant
+  /// 15–17-year-old (BUT-1454, so onboarding can suppress search). Returns
+  /// `compliant: false` when the CF rejected the account as under-15 (it has
+  /// already deleted the Auth record server-side).
   ///
   /// Rethrows [FirebaseFunctionsException] / other errors so the caller can
   /// distinguish an infrastructure failure (retry) from a definite under-15
   /// rejection.
-  Future<bool> verifyAge(int birthYear) async {
+  Future<AgeVerificationResult> verifyAge(int birthYear) async {
     final callable = _functions.httpsCallable(_callableName);
     final response = await callable.call<Map<dynamic, dynamic>>({
       'birthYear': birthYear,
     });
 
     final compliant = response.data['compliant'] == true;
+    final isMinor = response.data['isMinor'] == true;
 
     if (compliant) {
       // Force-refresh so the freshly-minted `ageCompliant:true` claim is in the
@@ -70,6 +92,6 @@ class AgeVerificationService extends BaseService {
       }
     }
 
-    return compliant;
+    return AgeVerificationResult(compliant: compliant, isMinor: isMinor);
   }
 }

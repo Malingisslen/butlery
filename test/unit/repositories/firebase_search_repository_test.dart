@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_search_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/models/user_profile.dart';
 
 /// BUT-840: user search must read the canonical `public_profiles` doc (kept
 /// fresh on every profile save, including rename), not the bare `users/{uid}`
@@ -119,6 +120,68 @@ void main() {
     expect(
       result.hits.map((h) => h.displayName),
       unorderedEquals(['Anna', 'Bob']),
+    );
+  });
+
+  // BUT-1454: default-private search-suppression for minors. A minor
+  // (verifySignupAge CF sets `isMinor:true`) must be absent from user search
+  // even though their in-memory profile carries `isSearchable:true` — the
+  // `UserProfile.toFirestore` chokepoint serializes `isSearchable:false`, so the
+  // profile written to `public_profiles` never surfaces. Writes real profiles
+  // through `toFirestore()` (as the repository does) to prove the wiring, not a
+  // hand-set flag.
+  test('excludes a minor from search even when isSearchable is true', () async {
+    UserProfile profile({
+      required String uid,
+      required String displayName,
+      required bool isMinor,
+    }) => UserProfile(
+      uid: uid,
+      displayName: displayName,
+      email: '$uid@example.com',
+      // Both users have the searchable toggle ON in memory — only the minor's
+      // serialization must flip it off.
+      isSearchable: true,
+      isMinor: isMinor,
+      joinedAt: DateTime(2024),
+      lastActiveAt: DateTime(2024),
+    );
+
+    await firestore
+        .collection(FirestoreCollections.publicProfiles)
+        .doc('adult')
+        .set(
+          profile(
+            uid: 'adult',
+            displayName: 'Adult Alva',
+            isMinor: false,
+          ).toFirestore(),
+        );
+    await firestore
+        .collection(FirestoreCollections.publicProfiles)
+        .doc('minor')
+        .set(
+          profile(
+            uid: 'minor',
+            displayName: 'Minor Mina',
+            isMinor: true,
+          ).toFirestore(),
+        );
+
+    // The minor is absent from a name search that would otherwise match them.
+    expect((await repo.searchUsers('mina')).hits, isEmpty);
+
+    // The adult with the same searchable flag is still found — suppression is
+    // scoped to minors, not a blanket search break.
+    expect(
+      (await repo.searchUsers('alva')).hits.map((h) => h.displayName),
+      ['Adult Alva'],
+    );
+
+    // And a broad (empty-query) search returns the adult but never the minor.
+    expect(
+      (await repo.searchUsers('')).hits.map((h) => h.id),
+      ['adult'],
     );
   });
 }

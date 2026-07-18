@@ -73,6 +73,12 @@ export interface VerifySignupAgeResponse {
   /** True when the caller is ≥15 and the `ageCompliant` claim was set. When
    *  false, the caller's Auth account has been deleted server-side. */
   compliant: boolean;
+  /** BUT-1454: true when the caller is a compliant 15–17-year-old. Threaded
+   *  back to the onboarding client so it can stamp the profile as a minor at
+   *  completion — which makes `public_profiles.isSearchable` serialize false
+   *  (default-private search-suppression) without waiting for the private
+   *  settings doc to be re-read. Always false on the rejected (deleted) path. */
+  isMinor: boolean;
 }
 
 /**
@@ -200,7 +206,7 @@ export async function runVerifySignupAgeWithDeps(
       );
     }
     logger.info("[verifySignupAge] rejected under-15 + account deleted");
-    return { compliant: false };
+    return { compliant: false, isMinor: false };
   }
 
   // Idempotency: if the claim is already set, this is a retry.
@@ -217,7 +223,7 @@ export async function runVerifySignupAgeWithDeps(
     logger.info("[verifySignupAge] idempotent retry — artifacts re-ensured", {
       uid_prefix: hashUid(uid),
     });
-    return { compliant: true };
+    return { compliant: true, isMinor };
   }
 
   // First successful pass. Claim first (the gate) so that if anything fails the
@@ -230,7 +236,7 @@ export async function runVerifySignupAgeWithDeps(
   logger.info("[verifySignupAge] admitted ≥15 + claim set", {
     uid_prefix: hashUid(uid),
   });
-  return { compliant: true };
+  return { compliant: true, isMinor };
 }
 
 /**
@@ -257,12 +263,13 @@ export async function runVerifySignupAgeWithDeps(
  *    client's `isMinor` would always be false and the minimization would be inert.
  * Both writes are idempotent-retry-safe (derived value, merge-set).
  *
- * NOTE — default-private search-suppression is deliberately NOT done here. User
- * search reads `public_profiles.isSearchable`, and setting that correctly for a
- * minor requires threading `isMinor` through onboarding profile creation so the
- * client never re-enables it. That + the searchable opt-in + a group-DM CF are a
- * tracked follow-up; until they land a minor is no less discoverable than today
- * (no regression), and the 1:1 DM gate + analytics minimization already apply.
+ * NOTE — this CF still never writes `public_profiles.isSearchable`. BUT-1454
+ * threads `isMinor` back through the CF RESPONSE (not a new write here) so the
+ * onboarding client stamps the profile as a minor at completion; the client's
+ * `UserProfile.toFirestore` then serializes `isSearchable:false` for any minor,
+ * which is where default-private search-suppression is enforced. The remaining
+ * BUT-674 follow-ups (a searchable opt-in toggle, a group-DM CF gate,
+ * `setLifecycleStage` defense-in-depth) stay tracked separately.
  */
 async function writeComplianceArtifacts(
   database: admin.firestore.Firestore,

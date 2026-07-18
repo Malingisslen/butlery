@@ -364,7 +364,15 @@ class UserProfile with JsonSerializableMixin {
       'displayName': displayName,
       'email': email,
       'avatarUrl': avatarUrl,
-      'isSearchable': isSearchable,
+      // BUT-1454 (BUT-674): default-private search-suppression for minors. A
+      // compliant 15–17-year-old (`isMinor`, set server-authoritatively by the
+      // verifySignupAge CF) is never discoverable in user search, which reads
+      // `public_profiles.isSearchable`. Deriving it HERE — the single
+      // public_profiles serialization chokepoint — means a minor is kept out of
+      // search on EVERY write, so no ordinary profile save (rename, avatar, a
+      // toggled searchable flag) can re-enable discoverability. isMinor itself
+      // stays CF-only; the client only ever writes the derived isSearchable.
+      'isSearchable': isMinor ? false : isSearchable,
       'allowEmailSearch': allowEmailSearch,
       'publicRecipeCount': publicRecipeCount,
       'friendsCount': friendsCount,

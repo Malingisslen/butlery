@@ -313,7 +313,9 @@ void main() {
     // age-verification CF before completing. Default to compliant.
     when(
       () => mockAgeVerificationService.verifyAge(any()),
-    ).thenAnswer((_) async => true);
+    ).thenAnswer(
+      (_) async => const AgeVerificationResult(compliant: true, isMinor: false),
+    );
 
     // Stub analytics tracker getters so any nested lookups don't null-crash.
     when(
@@ -341,6 +343,7 @@ void main() {
       () => mockUserService.completeOnboardingWithPreferences(
         any(),
         onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+        isMinor: any(named: 'isMinor'),
       ),
     ).thenAnswer((_) async {});
 
@@ -459,6 +462,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             captureAny(),
             onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
+            isMinor: any(named: 'isMinor'),
           ),
         ).captured;
         final prefs = captured[0] as UserAllergenPreferences?;
@@ -501,7 +505,10 @@ void main() {
         // pages are never reachable.
         when(
           () => mockAgeVerificationService.verifyAge(any()),
-        ).thenAnswer((_) async => false);
+        ).thenAnswer(
+          (_) async =>
+              const AgeVerificationResult(compliant: false, isMinor: false),
+        );
 
         await tester.pumpWidget(
           _testApp(
@@ -554,6 +561,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             any(),
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            isMinor: any(named: 'isMinor'),
           ),
         );
       },
@@ -592,6 +600,7 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           captureAny(),
           onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
+          isMinor: any(named: 'isMinor'),
         ),
       ).captured;
       expect(

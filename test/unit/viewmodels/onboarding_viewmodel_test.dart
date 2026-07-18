@@ -87,7 +87,10 @@ void main() {
       // a birth year was selected, so age-agnostic tests never hit it.
       when(
         () => mockAgeVerificationService.verifyAge(any()),
-      ).thenAnswer((_) async => true);
+      ).thenAnswer(
+        (_) async =>
+            const AgeVerificationResult(compliant: true, isMinor: false),
+      );
 
       // Stub tracker getters so production code can access them if needed
       when(
@@ -110,6 +113,7 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           any(),
           onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          isMinor: any(named: 'isMinor'),
         ),
       ).thenAnswer((_) async {});
 
@@ -155,6 +159,7 @@ void main() {
             () => mockUserService.completeOnboardingWithPreferences(
               captureAny(),
               onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              isMinor: any(named: 'isMinor'),
             ),
           ).captured;
           final prefs = captured.first as UserAllergenPreferences;
@@ -171,6 +176,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             null,
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            isMinor: any(named: 'isMinor'),
           ),
         ).called(1);
       });
@@ -180,6 +186,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             any(),
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            isMinor: any(named: 'isMinor'),
           ),
         ).thenThrow(Exception('Firestore write failed'));
 
@@ -278,13 +285,74 @@ void main() {
         );
 
         test(
+          'BUT-1454: a minor gate-pass threads isMinor:true into completion so '
+          'the profile is saved default-private (search-suppressed)',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 16); // 16 → minor
+            when(
+              () => mockAgeVerificationService.verifyAge(any()),
+            ).thenAnswer(
+              (_) async =>
+                  const AgeVerificationResult(compliant: true, isMinor: true),
+            );
+
+            expect(
+              await viewModel.verifyAgeGate(),
+              AgeGateAdvanceResult.compliant,
+            );
+            final result = await viewModel.completeOnboarding();
+
+            expect(result, isTrue);
+            final captured = verify(
+              () => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                isMinor: captureAny(named: 'isMinor'),
+              ),
+            ).captured;
+            expect(
+              captured.single,
+              isTrue,
+              reason:
+                  'the minor flag from the CF must reach the completion write '
+                  'that stamps the profile',
+            );
+          },
+        );
+
+        test(
+          'an adult gate-pass threads isMinor:false into completion',
+          () async {
+            viewModel.setBirthYear(DateTime.now().year - 30);
+
+            expect(
+              await viewModel.verifyAgeGate(),
+              AgeGateAdvanceResult.compliant,
+            );
+            await viewModel.completeOnboarding();
+
+            final captured = verify(
+              () => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                isMinor: captureAny(named: 'isMinor'),
+              ),
+            ).captured;
+            expect(captured.single, isFalse);
+          },
+        );
+
+        test(
           'an under-15 rejection at the gate flags ageRejected and returns '
           'rejected (the CF already deleted the account)',
           () async {
             viewModel.setBirthYear(DateTime.now().year - 30);
             when(
               () => mockAgeVerificationService.verifyAge(any()),
-            ).thenAnswer((_) async => false);
+            ).thenAnswer(
+              (_) async =>
+                  const AgeVerificationResult(compliant: false, isMinor: false),
+            );
 
             final result = await viewModel.verifyAgeGate();
 
@@ -331,7 +399,10 @@ void main() {
             clearInteractions(mockAgeVerificationService);
             when(
               () => mockAgeVerificationService.verifyAge(any()),
-            ).thenAnswer((_) async => true);
+            ).thenAnswer(
+              (_) async =>
+                  const AgeVerificationResult(compliant: true, isMinor: false),
+            );
 
             final result = await viewModel.completeOnboarding();
 
@@ -357,6 +428,7 @@ void main() {
               () => mockUserService.completeOnboardingWithPreferences(
                 any(),
                 onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                isMinor: any(named: 'isMinor'),
               ),
             ).called(1);
           },
@@ -381,6 +453,7 @@ void main() {
               () => mockUserService.completeOnboardingWithPreferences(
                 any(),
                 onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                isMinor: any(named: 'isMinor'),
               ),
             ).called(1);
           },
@@ -402,7 +475,10 @@ void main() {
             viewModel.setBirthYear(DateTime.now().year - 30);
             when(
               () => mockAgeVerificationService.verifyAge(any()),
-            ).thenAnswer((_) async => false);
+            ).thenAnswer(
+              (_) async =>
+                  const AgeVerificationResult(compliant: false, isMinor: false),
+            );
 
             final result = await viewModel.completeOnboarding();
 
@@ -412,6 +488,7 @@ void main() {
               () => mockUserService.completeOnboardingWithPreferences(
                 any(),
                 onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                isMinor: any(named: 'isMinor'),
               ),
             );
           },
@@ -486,6 +563,7 @@ void main() {
             () => mockUserService.completeOnboardingWithPreferences(
               any(),
               onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+              isMinor: any(named: 'isMinor'),
             ),
           ).thenAnswer((_) => Completer<void>().future);
 
@@ -771,6 +849,7 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           any(),
           onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          isMinor: any(named: 'isMinor'),
         ),
       ).thenAnswer((_) async {});
       when(() => mockUserService.currentUserId).thenReturn('u1');
