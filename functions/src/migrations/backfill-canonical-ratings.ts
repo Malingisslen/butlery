@@ -272,7 +272,12 @@ export async function runCanonicalRatingsBackfill(
           : admin.firestore.FieldValue.serverTimestamp();
 
       // Later doc-id overwrites earlier ⇒ last-write winner for this pool.
-      winners.set(`${uid} ${poolKey}`, {
+      // Key delimiter is "/": both uid and poolKey are Firestore document IDs,
+      // which cannot contain "/", so the composite key is collision-free (and
+      // the string is never parsed back — only its uniqueness matters). It
+      // replaces an earlier NUL (\0) separator that made this whole file a git
+      // BINARY blob — undiffable and unreviewable (BUT-1624).
+      winners.set(`${uid}/${poolKey}`, {
         ref: db
           .collection("users")
           .doc(uid)

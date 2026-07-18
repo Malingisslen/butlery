@@ -142,14 +142,42 @@ function dishAnchor(title: string): string | null {
   return anchor;
 }
 
+/** Deterministic decomposition of a pool key into the pieces a telemetry
+ *  consumer needs to distinguish an anchor-only title change from a real dish
+ *  change (BUT-1518). */
+export interface PoolKeyComponents {
+  /** The full pool key (`VERSION:hash` of anchor + ingredient names). */
+  poolKey: string;
+  /** The dish anchor — the longest significant title token the key is built on;
+   *  the cheap "rating-laundering" lever is editing the title to move THIS.
+   *  NEVER log this in cleartext: a Swedish dish title can carry a personal name
+   *  ("Farmors köttbullar") and telemetry is a log-only tier that must not see
+   *  PII. Log `anchorSig` instead — laundering detection only needs to know the
+   *  anchor CHANGED, which inequality of the hash proves exactly as well. */
+  anchor: string;
+  /** 8-hex sha256 of the anchor — the log-safe stand-in for `anchor`. Two events
+   *  with the SAME anchorSig share a dish anchor; a moved anchorSig alongside a
+   *  held ingredientSig is the anchor-only-title-change (laundering) signal. */
+  anchorSig: string;
+  /** 8-hex signature of the sorted, strengthened ingredient names ONLY (the
+   *  anchor is excluded). Two of a recipe's events with the SAME ingredientSig
+   *  but a DIFFERENT poolKey mean the ingredient set held while the anchor
+   *  moved — an anchor-only title change — as opposed to a genuine dish change,
+   *  where ingredientSig also shifts. */
+  ingredientSig: string;
+}
+
 /**
- * Compute the pool key for a recipe, or null if it must not pool (no ingredient
- * names survive, or no usable dish anchor — fail closed).
+ * Decompose a recipe into its pool-key components, or null in EXACTLY the cases
+ * `computePoolKey` returns null (no surviving ingredient names, or no usable
+ * dish anchor — fail closed). `computePoolKey` delegates here so the key stays
+ * single-sourced: the aggregation path can log the anchor + ingredient
+ * signature without forking the normalization (the C5 drift risk).
  */
-export function computePoolKey(
+export function poolKeyComponents(
   title: string,
   ingredients: string[]
-): string | null {
+): PoolKeyComponents | null {
   if (!ingredients || ingredients.length === 0) return null;
 
   const names = Array.from(
@@ -162,7 +190,29 @@ export function computePoolKey(
   const anchor = dishAnchor(title);
   if (anchor === null) return null;
 
-  const raw = anchor + "::" + names.slice(0, 12).join("|");
-  const hash = createHash("sha256").update(raw, "utf8").digest("hex").substring(0, 16);
-  return VERSION + ":" + hash;
+  const joinedNames = names.slice(0, 12).join("|");
+  const hash = createHash("sha256")
+    .update(anchor + "::" + joinedNames, "utf8")
+    .digest("hex")
+    .substring(0, 16);
+  const ingredientSig = createHash("sha256")
+    .update(joinedNames, "utf8")
+    .digest("hex")
+    .substring(0, 8);
+  const anchorSig = createHash("sha256")
+    .update(anchor, "utf8")
+    .digest("hex")
+    .substring(0, 8);
+  return { poolKey: VERSION + ":" + hash, anchor, anchorSig, ingredientSig };
+}
+
+/**
+ * Compute the pool key for a recipe, or null if it must not pool (no ingredient
+ * names survive, or no usable dish anchor — fail closed).
+ */
+export function computePoolKey(
+  title: string,
+  ingredients: string[]
+): string | null {
+  return poolKeyComponents(title, ingredients)?.poolKey ?? null;
 }

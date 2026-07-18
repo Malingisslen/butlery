@@ -51,8 +51,9 @@
 
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
-import { computePoolKey } from "./canonical-pool-key";
+import { computePoolKey, poolKeyComponents } from "./canonical-pool-key";
 import { isPooledRatingsEnabled } from "./pooled-ratings-flag";
+import { hashUid } from "../shared/hash-uid";
 
 /** Firestore path this mirror is bound to. Bound to recipe_ratings ONLY — the
  *  structural guarantee that family ratings never pool (decision 7). */
@@ -141,14 +142,23 @@ export async function recipeContentToKey(
   uid: string,
   recipeId: string,
   computeKey: (title: string, ingredients: string[]) => string | null
-): Promise<{ found: boolean; poolKey: string | null }> {
+): Promise<{
+  found: boolean;
+  poolKey: string | null;
+  // The content the key was derived from, passed through so the caller can emit
+  // anchor / ingredient-signature telemetry (BUT-1518) WITHOUT a second recipe
+  // read. Empty defaults when the recipe is absent.
+  title: string;
+  ingredients: string[];
+}> {
   const snap = await db
     .collection("users")
     .doc(uid)
     .collection("recipes")
     .doc(recipeId)
     .get();
-  if (!snap.exists) return { found: false, poolKey: null };
+  if (!snap.exists)
+    return { found: false, poolKey: null, title: "", ingredients: [] };
   const core = (snap.data()?.core ?? {}) as {
     title?: unknown;
     ingredients?: unknown;
@@ -157,7 +167,7 @@ export async function recipeContentToKey(
   const ingredients = Array.isArray(core.ingredients)
     ? (core.ingredients.filter((s) => typeof s === "string") as string[])
     : [];
-  return { found: true, poolKey: computeKey(title, ingredients) };
+  return { found: true, poolKey: computeKey(title, ingredients), title, ingredients };
 }
 
 /**
@@ -186,7 +196,7 @@ export async function isAccountMatured(
     const code = (err as { code?: string })?.code;
     if (code === "auth/user-not-found") return false; // terminal: account gone
     logger.warn("pool_mirror maturity lookup failed transiently; will retry", {
-      uid,
+      uidHash: hashUid(uid),
       err,
     });
     throw err; // transient → propagate so the trigger retries
@@ -296,5 +306,31 @@ export async function mirrorRatingToPool(
     // accept last-write (rename updatedAt) or preserve first-create (merge-if-absent).
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+
+  // ── Rating-laundering visibility (C10 / BUT-1518) ──
+  // Emit the pool key's two orthogonal dimensions — the dish `anchor` and an
+  // ingredient-only `ingredientSig` — as a structured telemetry line. Because a
+  // rating is frozen to its dish (no edit-triggered detachment, decision 6) and
+  // this mirror does not see recipe edits, the CF cannot compare a poolKey to
+  // its own past value without a hot-path read (rejected on cost) or a stored
+  // field (out of scope). Logging the dimensions instead makes the two cases
+  // separable OFFLINE: across a recipeId's events, an anchor-only title change
+  // shows a STABLE ingredientSig with a moved anchor/poolKey (the cheap
+  // laundering lever), whereas a genuine dish change also moves ingredientSig.
+  // Deterministic, no LLM, no new field or collection, no extra Firestore read
+  // (recipeContentToKey already read this content). Reuses computePoolKey's own
+  // normalization (poolKeyComponents), so it can never drift from the key.
+  const dims = poolKeyComponents(keyed.title, keyed.ingredients);
+  logger.info(
+    JSON.stringify({
+      tag: "pool_key_dimensions",
+      uidHash: hashUid(uid),
+      recipeId,
+      poolKey,
+      anchorSig: dims?.anchorSig ?? null,
+      ingredientSig: dims?.ingredientSig ?? null,
+    })
+  );
+
   return { action: "upserted", uid, poolKey, ratingValue: rating };
 }

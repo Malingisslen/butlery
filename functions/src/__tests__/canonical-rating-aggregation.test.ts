@@ -36,11 +36,13 @@ import {
   POOL_MIRROR_TRIGGER_PATH,
   __resetMaturedMemoForTests,
 } from "../ratings/canonical-rating-aggregation";
-import { computePoolKey } from "../ratings/canonical-pool-key";
+import { computePoolKey, poolKeyComponents } from "../ratings/canonical-pool-key";
+import { hashUid } from "../shared/hash-uid";
 import {
   isPooledRatingsEnabled,
   __resetPooledFlagCacheForTests,
 } from "../ratings/pooled-ratings-flag";
+import { logger } from "firebase-functions/logger";
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -548,6 +550,67 @@ async function deleteRetractsVote(): Promise<void> {
   record("delete with no matching event → delete_noop", res2.action === "delete_noop", JSON.stringify(res2));
 }
 
+async function anchorOnlyChangeTelemetry(): Promise<void> {
+  // BUT-1518 (C10): each pooled event logs the pool key's two orthogonal
+  // dimensions — the dish `anchor` and an ingredient-only `ingredientSig` — so
+  // an anchor-only title change (the cheap rating-laundering lever) is separable
+  // in telemetry from a genuine dish change. Invariant: same ingredient set +
+  // different anchor ⇒ same ingredientSig, different poolKey; a real dish change
+  // moves ingredientSig too.
+  const ingredients = ["500 g nötfärs", "1 dl grädde", "2 msk ströbröd"];
+  const a = poolKeyComponents("Köttbullar", ingredients)!;
+  const b = poolKeyComponents("Frikadeller", ingredients)!; // anchor-only change
+  const c = poolKeyComponents("Köttbullar", ["mjöl", "socker", "ägg"])!; // dish change
+  record(
+    "C10 anchor-only change → stable ingredientSig, moved anchor + poolKey",
+    a.ingredientSig === b.ingredientSig &&
+      a.anchor !== b.anchor &&
+      a.poolKey !== b.poolKey,
+    JSON.stringify({ a, b })
+  );
+  record(
+    "C10 genuine dish change → ingredientSig also moves",
+    c.ingredientSig !== a.ingredientSig && c.poolKey !== a.poolKey,
+    JSON.stringify({ a, c })
+  );
+
+  // End-to-end: the mirror EMITS the dimensions (structured JSON) on an upsert.
+  __resetMaturedMemoForTests();
+  const db = new FakeFirestore();
+  seedRecipe(db, "u1", "r1", { title: "Köttbullar", ingredients });
+  const captured: Array<Record<string, unknown>> = [];
+  const originalInfo = logger.info;
+  (logger as unknown as { info: (m: unknown) => void }).info = (m: unknown) => {
+    try {
+      const o = JSON.parse(String(m)) as Record<string, unknown>;
+      if (o && o.tag === "pool_key_dimensions") captured.push(o);
+    } catch {
+      /* non-JSON log line — ignore */
+    }
+  };
+  try {
+    await mirrorRatingToPool(
+      { ratingId: "r1_u1", before: null, after: { userId: "u1", recipeId: "r1", rating: 4 } },
+      baseDeps(db)
+    );
+  } finally {
+    (logger as unknown as { info: typeof originalInfo }).info = originalInfo;
+  }
+  const line = captured[0] ?? {};
+  record(
+    "C10 mirror emits pool_key_dimensions on upsert (uid/recipeId/anchor/ingredientSig)",
+    captured.length === 1 &&
+      line.uidHash === hashUid("u1") &&
+      line.uid === undefined &&
+      line.recipeId === "r1" &&
+      line.poolKey === a.poolKey &&
+      line.anchorSig === a.anchorSig &&
+      line.anchor === undefined &&
+      line.ingredientSig === a.ingredientSig,
+    JSON.stringify(captured)
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("Pooled ratings Stage A — mirror CF tests\n");
   console.log("==============================================\n");
@@ -566,6 +629,7 @@ async function runAll(): Promise<void> {
   await failClosedKey();
   await missingOwnRecipe();
   await deleteRetractsVote();
+  await anchorOnlyChangeTelemetry();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +
