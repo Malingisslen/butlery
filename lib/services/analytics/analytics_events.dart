@@ -95,6 +95,16 @@ abstract final class AnalyticsEvents {
 
   // --- Menu / meal plan ---
   static const menuGenerated = 'menu_generated';
+  // BUT-1474: fired when a user swaps a single recipe in a generated menu
+  // (the "byt ut" action) and a replacement is actually chosen. Powers the
+  // swap-rate-per-menu signal — the core "is the menu getting better" metric.
+  // Parameter: `category` (the meal category swapped within).
+  static const menuRecipeSwapped = 'menu_recipe_swapped';
+  // BUT-1464 follow-up: fired once per generation when household allergen
+  // filtering shrinks the candidate pool, carrying the hidden-count and the
+  // preference source — the "how often does allergen filtering bite" signal.
+  static const menuRecipesHiddenByHousehold =
+      'menu_recipes_hidden_by_household';
   static const menuGenerationStarted = 'menu_generation_started';
   static const menuGenerationFailed = 'menu_generation_failed';
   static const menuSaved = 'menu_saved';

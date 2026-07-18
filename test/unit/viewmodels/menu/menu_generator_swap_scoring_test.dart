@@ -16,7 +16,10 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -71,6 +74,13 @@ void main() {
   setUpAll(() async {
     registerFallbackValue(DateTime(2026));
     await TestServiceLocator.initialize();
+    // The production DIContainer reads off the same GetIt that
+    // TestServiceLocator populates. Bridging it lets production code's
+    // `AnalyticsService.tryLog` (which resolves via the production
+    // ServiceLocator) see mocks we register — needed to observe the
+    // BUT-1474 swap event. Safe here: every test only exercises the swap
+    // path, which never touches the scoring context / feature flags.
+    production.ServiceLocator.initialize(DIContainer());
   });
 
   setUp(() {
@@ -94,6 +104,7 @@ void main() {
   });
 
   tearDownAll(() async {
+    production.ServiceLocator.reset();
     await TestServiceLocator.reset();
   });
 
@@ -332,5 +343,62 @@ void main() {
         );
       });
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // BUT-1474: swap-rate analytics chokepoint
+  // -------------------------------------------------------------------------
+  //
+  // These tests prove that a completed single-recipe swap emits exactly one
+  // `menu_recipe_swapped` event carrying the swapped category, and that an
+  // exhausted swap (no eligible replacement) emits nothing — so the swap-rate
+  // metric counts real swaps only. They fail if the tryLog call is dropped,
+  // the `category` param is renamed, or the event leaks onto the exhausted
+  // path. (registerSingleton unregisters-first, so each test gets a fresh
+  // capture with no cross-test bleed.)
+  group('BUT-1474 — menu_recipe_swapped analytics', () {
+    test(
+      'a completed swap fires menu_recipe_swapped once with the category',
+      () async {
+        final analytics = MockAnalyticsService();
+        TestServiceLocator.registerSingleton<AnalyticsService>(analytics);
+
+        final current = _recipe('current', mealType: 'Middag');
+        final replacement = _recipe('replacement', mealType: 'Middag');
+
+        final result = await doSwap(current, [replacement]);
+
+        expect(result.recipe, isNotNull);
+        final events = analytics.capturedEvents
+            .where((e) => e.name == 'menu_recipe_swapped')
+            .toList();
+        expect(events, hasLength(1));
+        expect(events.single.parameters, {'category': 'Middag'});
+      },
+    );
+
+    test(
+      'an exhausted swap (no eligible replacement) fires no event',
+      () async {
+        final analytics = MockAnalyticsService();
+        TestServiceLocator.registerSingleton<AnalyticsService>(analytics);
+
+        // The only candidate is a breakfast recipe — ineligible for a Middag
+        // swap — so the pool is exhausted and no replacement is produced.
+        final current = _recipe('current', mealType: 'Middag');
+        final wrongCategory = _recipe('breakfast', mealType: 'Frukost');
+
+        final result = await doSwap(current, [wrongCategory]);
+
+        expect(result.recipe, isNull);
+        expect(
+          analytics.capturedEvents.where(
+            (e) => e.name == 'menu_recipe_swapped',
+          ),
+          isEmpty,
+          reason: 'no swap happened, so the swap-rate metric must not count it',
+        );
+      },
+    );
   });
 }

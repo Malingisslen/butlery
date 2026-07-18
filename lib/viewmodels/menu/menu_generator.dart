@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/menu/menu_allergen_trust.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/menu_scoring.dart';
@@ -401,7 +402,7 @@ class MenuGenerator {
     final stats = lastPoolStats;
     if (stats == null) return;
     AnalyticsService.tryLog(
-      'menu_recipes_hidden_by_household',
+      AnalyticsEvents.menuRecipesHiddenByHousehold,
       parameters: {
         'hidden_count': stats.hiddenByAllergenFilter,
         'tracked_allergen_count': stats.trackedAllergenCount,
@@ -667,6 +668,15 @@ class MenuGenerator {
       eligibleRecipes.shuffle();
       chosen = eligibleRecipes.first;
     }
+
+    // BUT-1474: a swap actually produced a replacement — this is the single
+    // chokepoint for every user-initiated recipe swap (MenuViewModel.swapRecipe
+    // is the only caller), so the swap-rate signal is emitted here. Fire-and-
+    // forget via tryLog (BUT-766) so analytics can never throw or delay a swap.
+    AnalyticsService.tryLog(
+      AnalyticsEvents.menuRecipeSwapped,
+      parameters: {'category': category},
+    );
 
     return SwapResult(
       recipe: chosen,
