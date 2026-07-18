@@ -998,3 +998,182 @@ handler's FIRST statement is `requireAdmin(request)` (or the inline `token.admin
 equivalent) — read the handler body, never trust the header/inline comment. A callable
 reachable by an ordinary authenticated user belongs in USER_FACING with
 `enforceAppCheck: true`, not ADMIN_EXEMPT.
+
+### 2026-07-18 — BUT-1518/1624 pool-key dimensions telemetry + binary-blob CI guard [Bug fixed / Pattern discovered]
+
+Reviewed the C10 rating-laundering-visibility change across 5 files (pool-key
+component split, mirror telemetry line, backfill key-delimiter fix, CI binary
+guard, test). tsc clean, `canonical-rating-aggregation.test.ts` 21/21 green, CI
+glob verified to match all 218 `functions/src/` files, backfill file no longer
+carries a NUL.
+
+**The good (positive changes, no finding):**
+- `computePoolKey` refactor to delegate to a new `poolKeyComponents(title,ings)`
+  keeps the key byte-identical (`anchor + "::" + names.slice(0,12).join("|")`
+  hashed the same) → **TS↔Dart parity holds**, `ingredientSig` is a NEW
+  server-only 8-hex sig of the ingredient-names-only hash; Dart twin needs no
+  change (parity is only on `computePoolKey`'s output). Single-sourced, no C5
+  drift.
+- Backfill winners-Map key `${uid}/${poolKey}` replaces a NUL (`\0`) separator
+  that had made the whole file a git BINARY blob (undiffable/unreviewable).
+  `/` is collision-free: both are Firestore doc IDs (uid alphanumeric, poolKey
+  = `v1:hex`), neither contains `/`, and the string is never parsed back. Correct
+  fix.
+- CI `functions-binary-guard` in test.yml (`git ls-files -z 'functions/src/**' |
+  xargs -0 -r grep -laP '\x00'`) automates the lesson "a new source file can land
+  as a git binary blob." Glob `functions/src/**` == `functions/src` (both 218
+  files) — works. Cheap, no toolchain. Good.
+
+**MEDIUM — logging convention violated (queryability + no precedent).** The
+telemetry line is `logger.info(JSON.stringify({tag:"pool_key_dimensions", uid,
+recipeId, poolKey, anchor, ingredientSig}))` — everything crammed into the
+message STRING. The knowledge convention is first-arg = stable string, second-arg
+= structured object; a stringified JSON is NOT a queryable `jsonPayload` in Cloud
+Logging, so the feature's own stated goal ("separable OFFLINE" by querying
+anchor/ingredientSig/poolKey) is undercut. No precedent in the codebase — the
+sibling `ratings/update-pooled-rating-stats.ts:96` already does it right
+(`logger.info("pool_aggregation.updated", {…})`). Fix:
+`logger.info("pool_key_dimensions", { uid, recipeId, poolKey, anchor,
+ingredientSig })`. NB the test parses the message as JSON, so it must change with
+the code (couples test to the wrong impl).
+
+**MEDIUM — cleartext `anchor` is title-derived and can be a personal name.**
+`anchor` = the longest significant title token (diacritics-folded, lowercased).
+Swedish recipe titles routinely lead with a name ("Annas paj" → `annas`,
+"Mormors …" → `mormors`), so the logged token can be a given name attached to a
+`uid` in the same line — the exact "recipe titles that might contain user names"
+the logging convention forbids. And the cleartext anchor is NOT needed for the
+laundering signal: the detection invariant is stable `ingredientSig` + moved
+`poolKey` across a recipeId's events (anchor-only change) vs moved `ingredientSig`
+(real dish change) — both computable without cleartext. Fix: log an
+`anchorSig` (hash) instead of, or drop, the cleartext `anchor` — grouping/change
+detection survives, PII does not leak.
+
+**LOW/INFO — double key computation + injected-computeKey inconsistency.** Per
+upsert the normalization+hash now runs twice (once via `computeKey`→
+`computePoolKey`→`poolKeyComponents` inside `recipeContentToKey`, once directly as
+`poolKeyComponents(keyed.title, keyed.ingredients)` for telemetry), and
+`computePoolKey` now always computes the extra `ingredientSig` sha256 even for
+callers that discard it. Negligible CPU (sha256 of short strings). Also the
+telemetry calls `poolKeyComponents` directly rather than the injected
+`deps.computeKey`, so under a test-injected custom `computeKey` the logged
+`poolKey` (from the override) and `anchor`/`ingredientSig` (from real
+`poolKeyComponents`) could disagree — prod-safe (computeKey === computePoolKey),
+test-seam only.
+
+### 2026-07-18 — BUT-1454 verifySignupAge threads isMinor back in the response [Pattern discovered]
+
+Reviewed the uncommitted BUT-1454 slice: `verify-signup-age.ts` now adds an
+`isMinor: boolean` field to `VerifySignupAgeResponse` and returns it on all four
+exit paths (rejected → `false`; idempotent-retry → the derived `isMinor`; first
+pass → the derived `isMinor`). `isMinor` is derived ONCE at the top
+(`compliant && age < AGE_OF_MAJORITY_YEARS`) so it is in scope in the idempotent
+branch — verified. CF side is clean: no new write, so zero idempotency/retry
+surface added (it is a response field only, not a Firestore mutation); no
+per-function region added; no secrets. `tsc --noEmit` clean, `verify-signup-age.test.ts`
+10/10, with new assertions pinning `result.isMinor` on adult / minor / retry /
+rejected paths.
+
+The design (verified end-to-end): the CF still does NOT write
+`public_profiles.isSearchable`. Instead the minor flag rides the response →
+`AgeVerificationService.verifyAge` returns a new `AgeVerificationResult(compliant,
+isMinor)` (was a bare `bool`) → onboarding VM captures `_isMinor` at the gate AND on
+the belt-path re-check → `completeOnboardingWithPreferences(isMinor: …)` ORs it with
+the in-memory profile's existing value (monotonic, never downgrades a server-set
+flag) → `UserProfile.toFirestore` derives `'isSearchable': isMinor ? false :
+isSearchable`. That serializer is the single `public_profiles` chokepoint: both the
+create path (`firebase_user_repository:159 toFirestore()`) and the edit path
+(`:172 toFirestoreEditable()` → built from `toFirestore()`) run through it, so a
+minor is kept out of search on EVERY profile write. Search reads
+`public_profiles.where('isSearchable', ==, true)`, so the minor's doc never surfaces.
+Test wiring solid — all 11 `onboarding_viewmodel_test` + 4 `onboarding_journey_test`
+mocktail stub/verify sites updated with `isMinor: any(named:'isMinor')` (a missed
+one would fail to match the now-parametrized call), and the search-repo test writes
+REAL profiles through `toFirestore()` to prove the wiring, not a hand-set flag.
+
+**Residual (Low, handed to firebase-backend-security, pre-existing + BUT-674-accepted):**
+suppression only takes effect when the CLIENT writes `public_profiles` with
+`isMinor:true` — i.e. at onboarding completion. The initial profile creation
+(`user_service.dart:200`, `isSearchable: isSearchable ?? true`, isMinor defaulting
+false) happens before onboarding completes, so a 15–17 minor is discoverable in the
+window between initial profile write and completion, and PERMANENTLY if onboarding is
+abandoned after the initial write. This matches the CF comment's "no regression"
+framing (the CF deliberately doesn't write public_profiles to dodge the follow-up),
+so it's an accepted residual of the BUT-674 phasing, not a defect in this diff — but
+it partially limits the feature's stated "default-private" intent. A full close needs
+either the CF writing `public_profiles.isSearchable:false` for minors, or the initial
+onboarding profile creation to carry isMinor.
+
+### 2026-07-18 — BUT-1518/1624 telemetry salvage: hash the anchor, not just the ingredients [Bug fixed / Pattern discovered]
+
+Reviewed the uncommitted BUT-1518 (rating-laundering telemetry) + BUT-1624 (binary-blob
+delimiter) salvage batch. tsc clean, `canonical-rating-aggregation.test.ts` 21/21.
+
+**Verified clean:**
+- `computePoolKey` byte-identical after the `poolKeyComponents` refactor: the sha256 input
+  is still `anchor + "::" + names.slice(0,12).join("|")` → hex[:16] → `VERSION+":"+hash`.
+  `ingredientSig` (sha256 of `joinedNames` only, hex[:8]) is ADDITIVE and never feeds
+  poolKey. TS↔Dart parity intact — `ingredientSig`/`poolKeyComponents` is server-only
+  telemetry, Dart never computes it, so no Dart twin is owed.
+- uid-hash fix resolves the raw-uid PII leak: both the maturity `logger.warn` and the new
+  `pool_key_dimensions` line emit `uidHash: hashUid(uid)` (sha256 12-hex, one-way) with no
+  raw `uid`. Test pins `line.uidHash === hashUid("u1")` AND `line.uid === undefined`.
+- BUT-1624 delimiter `NUL→"/"` is collision-free: the Map key `${uid}/${poolKey}` composes
+  two values that are both used as Firestore doc IDs (uid; poolKey = `canonical_rating_events/{poolKey}`),
+  and doc IDs cannot contain `/`. Key is never parsed back — only uniqueness matters.
+  Diff touches ONLY the delimiter; cursor/commit/500-op batching unchanged (already-reviewed
+  backfill). Migration is manual ts-node (admin family) → region/idempotency/retry N/A.
+- CI `functions-binary-guard` (test.yml): `git ls-files -z 'functions/src/**' | xargs -0 -r
+  grep -laP '\x00'` captured into a var so xargs-split exit codes can't be masked. Sound.
+
+**HIGH (flagged, one-line fix) — the dish `anchor` is logged in CLEARTEXT while the
+ingredients are hashed.** The `pool_key_dimensions` line emits `anchor: dims.anchor` (a
+recipe-title-derived token) next to `recipeId`, but `ingredientSig` is already an 8-hex
+sha256. That asymmetry is backwards: the anchor is the field MORE likely to carry a personal
+name (Swedish dish titles: "Farmors …", "Annas …", occasionally anchoring on the name), and
+the logging convention explicitly forbids "recipe titles that might contain user names" in
+logs. Decoupling from the raw uid dropped it from Critical to High but didn't clear it —
+`recipeId` still correlates events and the anchor is human-readable to log-only access (a
+tier that, by design, must not see PII even though a DB-holder could resolve recipeId).
+**The cleartext anchor adds ZERO detection power:** anchor-only-change detection only needs
+to know the anchor *changed* while ingredientSig held, which a hashed `anchorSig` proves by
+inequality exactly like ingredientSig does. Fix = add `anchorSig` (sha256(anchor) hex[:8]) to
+`PoolKeyComponents`, emit `anchorSig` instead of `anchor`, update the test to assert
+`line.anchorSig === a.anchorSig` + `line.anchor === undefined` (keep the pure-function
+`a.anchor !== b.anchor` component assertion). Feature fully preserved.
+
+**Pattern — when a telemetry line hashes one title/PII-derived dimension, hash them ALL.**
+A mixed line (hashed ingredientSig + cleartext anchor) is a tell that the cleartext field
+was left for human eyeballing convenience. If inequality-across-events is all the detection
+needs (drift/laundering signals), a hash gives it while removing the leak. Check every
+field on a structured log line derived from user free-text/titles against the same standard
+the uid hashing set.
+
+### 2026-07-18 — BUT-1473 tag_overrides_log GDPR cascade delete [Pattern discovered]
+
+Reviewed the uncommitted salvage adding `deleteTagOverridesLog(db, uid)` to the
+account-deletion cascade (`account/account-deletion-cascade.ts` + wired in
+`account/request-account-deletion.ts`). **COMMIT-READY, no Critical/High.** `tsc --noEmit`
+clean (exit 0).
+
+`tag_overrides_log` is a top-level, `userId`-keyed collection (allergen tag-override
+corrections: userId, recipeId, tag, direction, triggeringIngredients — linked PII, no TTL,
+so Art. 17 needs an explicit cascade delete). The new deleter is byte-shape-identical to the
+sibling `deleteCookSnaps`/`deleteActivityEvents`: `where("userId","==",uid).get()` →
+`batchDeleteAll` (commitInChunks, strict:false, 450 ops/batch, early-return on empty).
+
+All five review axes verified:
+1. **Correct identity field — cross-checked all three legs** (the realtime_recipes
+   wrong-field trap): model `lib/models/tagging/tag_override_log_entry.dart:50` writes
+   `'userId': userId` in `toFirestore`; `firestore.rules:2053` gates create/read on
+   `resource.data.userId`; deleter + probe both query `userId`. Consistent — a `userId==uid`
+   filter genuinely matches the docs, not silently zero.
+2. **Same 500-op-safe pattern** as every sibling deleter (batchDeleteAll, chunked at 450).
+3. **Wired consistently in BOTH surfaces** — the cascade sequence (between
+   `personal_tag_groups` and `cook_snaps`) AND the `probeResidualData` userId-scoped probe
+   list (correct list, since it IS top-level userId-scoped — not the subcollection or
+   two-field probe class).
+4. **Idempotent/retry-safe** — userId-scoped `where` deleter, so a second run reads an empty
+   snapshot and no-ops (immune to the shared/parent-handle ordering hazard from the 2026-06-29
+   entry; those apply only to householdId/arrayRemove-keyed steps).
+5. **No region/secret surface** — plain helper, region inherited from setGlobalOptions.

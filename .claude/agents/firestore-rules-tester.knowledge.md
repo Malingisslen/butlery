@@ -824,3 +824,39 @@ pre-seeded docs, per-run tokens/clearFirestore are unnecessary.
 - `recipes` catch-all is read-only but has no negative write/delete test proving
   an admin CANNOT write via it (rule comment claims "admins never write here"). A
   regression opening write would go unpinned. Low.
+
+### 2026-07-18 — tag-overrides-log-rules.test.ts created (BUT-1473, 14/14 green)
+
+New top-level collection `/tag_overrides_log/{entryId}` (own-data, append-only
+allergen tag-override log feeding the tagging learning loop). Rule is a byte-for-byte
+CONTRACT MIRROR of `/parsing_corrections/{correctionId}` directly above it
+(firestore.rules L2022–2072): read = owner (`auth.uid == resource.data.userId`) OR
+`isAdmin()`; create = authed + `auth.uid == request.resource.data.userId` +
+`hasRequiredFields(['id','userId','recipeId','type','tag','direction','timestamp'])`;
+`update: if false`; delete = owner only (GDPR Art. 17). Only diff from
+parsing_corrections is the required-field list (`recipeId,type,tag,direction` vs
+`source`). New test file (14 tests), wired as `test:rules:tag-overrides-log`,
+appended to `test:rules:all` (after collection-group-wildcards), and added to BOTH
+path-filter blocks in `firestore-rules.yml`. Project id
+`butlery-tag-overrides-log-test`.
+
+Map row to add:
+
+| `/tag_overrides_log/{entryId}` (own-data, append-only, admin-read) | `tag-overrides-log-rules.test.ts` | `test:rules:tag-overrides-log` |
+
+**Coverage shape (reusable for any parsing_corrections-style own-data append-only
+log):** create {owner-allow, cross-user-deny, unauth-deny, missing-field-deny ×2
+different required keys}; read {owner-allow, admin-allow, stranger-deny,
+unauth-deny}; update {partial-update-deny, set-on-existing-deny — both, since a
+buggy client retry hits the set path}; delete {owner-allow, stranger-deny,
+unauth-deny}. Two missing-field denies (tag + direction) so `hasRequiredFields`
+covers more than one anchor. Admin seeded via `/admins/{ADMIN_UID}` in setup.
+
+**RULES-SOUND — no gap.** Deny logs pin each write-deny to the exact new rule lines
+(create L2061, update L2066, delete L2070) paired with the L2482 global default-deny.
+Union-safety: single-segment top-level path can't match any `{path=**}/<name>/{id}`
+collection-group catch-all (all end in a named subcollection segment), so no
+accidental allow union — the only other matching rule is the L2482 global default.
+Create-allow doc ids use a per-RUN `Date.now().toString(36)` token; read/update/
+delete tests re-seed via `withSecurityRulesDisabled`, so the suite is re-run-safe
+on the persistent emulator without a namespace clear. No firestore.rules edits.

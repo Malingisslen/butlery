@@ -1565,3 +1565,204 @@ Reviewed the behaviour-preserving extraction of `lib/widgets/recipe/butlery_bety
 - **Demotion/slate is a CARD concern, already covered — not a pill gap.** The ticket's "demotion" (family pill text recedes from onPrimary → cs.onSurfaceVariant when a floored pool co-exists) lives in the card, not the pill, and IS theme-resolved-pinned at `recipe_card_test.dart:994-1015`. The pill itself has no demotion state. Don't add a pill demotion test.
 - **`average==null` 0-fallback (widget L29 `stats.average ?? 0` → "0,0") — deliberately leave UNTESTED.** The widget comment + all callers gate on `meetsDisplayFloor` (average non-null), so the fallback is unreachable in production; a test would pin an accidental "0,0" render as if it were contract. This is the correct call — don't test a guard the callers prove can't fire.
 - Rule reinforced: **`find.textContaining(<bare number>)` never pins a format contract — it pins a substring.** For a composed label (`avg · N unit`), assert the exact `find.text(...)` of the single rendered string; that catches separator, unit-word, and decimal-shape regressions in one line, where a digit-substring catches none of them.
+
+### 2026-07-18 — [Review, clean] ShoppingSelectionManager (tech-debt-viewmodels) — selection-manager family base-class drift
+Reviewed `lib/viewmodels/shopping/shopping_selection_manager.dart`. State machine is byte-identical to `pantry_selection_manager.dart` (enter/toggle/auto-exit/selectAll-guards-mode/clear), analyze clean, and `test/unit/viewmodels/shopping/shopping_selection_manager_test.dart` pins all five behaviours non-vacuously (asserts `isSelectionMode`+`selectedIds` state, not topology). No correctness bug, no test change needed.
+- **Family base-class inconsistency (the only real finding).** The doc comment says it "Mirrors pantry_selection_manager / recipe_selection_manager", but this one `extends BaseViewModel` while BOTH named mirrors `extends ChangeNotifier`. A pure selection state-holder inherits BaseViewModel's whole loading/error/executeAsync/validation surface (~410 lines) it never uses. Not a bug (BaseViewModel guards post-dispose notify, so it's if anything safer), but it breaks the stated mirror contract. Pick one base for the family — either drop this to `ChangeNotifier` or migrate the two siblings up. Flag as Low.
+- **Non-finding (don't re-flag):** `selectedIds => Set.unmodifiable(_selectedIds)` allocates per call, and `toggleSelection` can add an id while `isSelectionMode==false` if called cold (only `selectAll` guards the mode) — both are IDENTICAL to the accepted pantry/recipe siblings, so they're family design, not a regression introduced here.
+- **Testing posture for these managers:** a plain `ChangeNotifier` selection state-holder needs NO ServiceLocator/BaseUnitTest setup — the existing test's `setUp(() => manager = ShoppingSelectionManager())` + `tearDown(dispose)` is the right minimal harness. Don't add executeAsync/loading-state tests for the inherited BaseViewModel surface: it's dead in this class (nothing writes `super._error`/`_isLoading`), so such tests would be vacuous.
+
+### 2026-07-18 — [Review — gaps] tagging sprint: delta-refresh, override-log, tag scorecard eval
+Reviewed `firebase_ingredient_repository.dart` (BUT-1475 delta refresh) + its test, `tag_overrides_log_repository.dart` / `tag_override_log_entry.dart` / `tag_editing_service.dart` (BUT-1473 correction capture), `tag_scorecard_eval_test.dart` (BUT-1489), and `tagging_module.dart`.
+- **The delta-refresh test proves CONVERGENCE, not DELTA — the core BUT-1475 optimization is unguarded.** `firebase_ingredient_repository_delta_refresh_test.dart` asserts only `count()`/`findByName` after a TTL cross; every assertion still passes if someone reverts `_deltaRefreshOrFull` to a full `.get()` every hour (the thing the ticket exists to avoid). FakeFirebaseFirestore doesn't expose read counts, so wrap the collection in a counting spy (or count `.get()` calls via a query interceptor) and assert the delta path fetches 1 doc, not the whole set. Pattern for any "we fetch less now" optimization: the test MUST observe the read count, or it's testing the wrong contract.
+- **`tag_overrides_log` has NO Firestore rule** (grep of `firestore.rules` = empty). The repo comment acknowledges "writes default-deny harmlessly until the rule ships" — but that means BUT-1473 captures NOTHING in production today, and `save()` swallows the permission-denied, so there is no signal it's dormant. There is no test/gate ensuring the rule ships before the feature is relied on. Flag Medium whenever a write path is shipped that is guaranteed to fail in prod with a silent catch.
+- **Shared `_inFlightLoad` lets `forceRefresh()` silently degrade to a partial delta.** `loadCache(forceReload:true)` returns any in-flight future (L224-225); if a background delta refresh is running, a forced FULL reload returns that delta instead, then still fires `_notifyCacheInvalidated()`. A `forceReload` should not coalesce onto a non-force in-flight load. Low-Medium.
+- **Delta refresh can't see deletions or newly-added legacy (no-`updatedAt`) docs.** Once any doc has `updatedAt`, `_maxUpdatedAt` is non-null so the full-reload fallback never runs again; admin-deleted ingredients linger until app restart/forceRefresh. Inherent to timestamp delta sync + acceptable for an admin collection, but note Low.
+- **Eval test scores GENERATION on pre-matched golden ingredients — it does NOT exercise ingredient lookup/matching.** `generator.generate(ingredients: lookup, ...)` is fed hardcoded `matched`/`unmatched` from the JSON, so a regression in the repository's name/alias matching is invisible here (the binary golden test complements). Correct by design (mirrors corpus harness); note the scope so nobody assumes it guards matching.
+- **Non-findings (don't re-flag):** `TagOverridesLogRepository` bypassing BaseFirebaseRepository/PermissionValidationMixin is the accepted BUT-886 own-data pattern (mirrors ParsingCorrectionRepository); `isGreaterThan` (not `>=`) on the baseline is the right re-fetch-avoidance tradeoff; `TagEditingService` sync methods not using `executeServiceOperation` is fine (that's for async ops); `TagTriState.fromString(null)` is null-safe.
+
+### 2026-07-18 — BUT-1454 minor search-suppression: chokepoint-serialization test pattern
+- **Trigger:** reviewed the `isMinor` threading (verifySignupAge CF response → AgeVerificationResult → OnboardingViewModel._isMinor → completeOnboardingWithPreferences → copyWith → UserProfile.toFirestore).
+- **Good pattern to reuse:** the search-repo test (`firebase_search_repository_test.dart`) proves search-suppression by writing REAL profiles through `UserProfile.toFirestore()` into FakeFirebaseFirestore and asserting the minor is absent from `searchUsers()` — behavioral, survives a refactor of where the derivation lives. Do NOT replace with a `toFirestore()['isSearchable'] == false` getter assert; the end-to-end search test is strictly stronger.
+- **Coverage gap noted:** the belt-and-suspenders completion branch (`OnboardingViewModel.completeOnboarding`, `_selectedBirthYear != null && !_ageVerifiedThisSession`) captures `_isMinor` from the CF but has NO minor-path test — only the gate path does. A rare-but-real branch.
+- **Defense-in-depth note:** suppression is client-derived (`toFirestore`); a minor controlling their own client can still write `public_profiles.isSearchable:true` directly. Rules-level enforcement is tracked as a BUT-674 follow-up (accepted), not a regression — don't re-file as Critical.
+
+### 2026-07-18 — BUT-1469 import-correction snapshot: zero-diff symmetry breaks on name-less ingredient lines
+Trigger: reviewing the import-correction-snapshot widening (text/photo/voice/archive now feed
+the parser feedback loop via `ImportCorrectionSnapshot` → `ParsedRecipeCache`, keyed by
+recipe id).
+Bug caught (real, Medium): the feature's core promise — "import + save with NO edits must
+train nothing" — is violated for any recipe containing a quantity+unit-only ingredient line
+(e.g. `"2 dl"`). `IngredientParser.parseIngredient("2 dl")` returns `name == ""` (unit-first
+match consumes the whole tail). `RecipeDiffCalculator._namesMatch` returns false whenever
+either name is empty, so the identical line can't self-match → phantom `removed` + `added`
+= 2 fabricated corrections on an unedited save. Verified live: `totalCorrections == 2`.
+Root cause spans `import_correction_snapshot.dart` (`_toParsedIngredient` stores empty name)
+and `recipe_diff_calculator.dart` (`_diffIngredients` has no originalLine fallback). Fix
+belongs in the diff calculator: when both parsed names are empty, match on `originalLine`
+equality before declaring add/remove.
+Test pattern that catches it: build a snapshot from a recipe whose ingredients include a
+name-less line, diff against the SAME recipe, assert `correction == null`. Pinned as a
+`skip:`-tagged test (honest known-bug marker, NOT a weakened green assertion).
+Second (Low) find: URL imports that fall through to the text-fallback tiers
+(`_tryWebScraperFallback` / `_tryHtmlTextParse` in `url_import_strategy.dart`) inherit the
+inner `TextImportStrategy`'s snapshot tagged `ImportSource.text` — URL never re-tags it, so
+those corrections are mis-attributed as `text` in training data (photo/voice DO re-tag).
+Helper note: `ImportCorrectionSnapshot.capture(recipe, source:, cache:)` takes an explicit
+`ParsedRecipeCache` seam — pass a real `ParsedRecipeCache()` to unit-test capture→retrieve
+wiring without DI/ServiceLocator. Retrieve is one-time-use (removes on read).
+
+### 2026-07-18 — BUT-1469 fix landed + over-correction guard (commit-gate review)
+Trigger: reviewing the fix that un-skipped the name-less zero-diff test.
+Fix (`recipe_diff_calculator.dart`): when `_bothNameless(a,b)`, pair the lines by
+`_rawLinesEqual(originalLine, correctedLine)` before declaring add/remove, and treat two empty
+names as NOT a name change in `_compareIngredient`. Confirmed the un-skipped test is
+non-vacuous: old `_namesMatch` short-circuits `false` on any empty name (line ~352), so the
+identical `"2 dl"` self-pair fabricated removed+added → the `isNull` assert fails on old code.
+Review-added test (the missing coverage): the fix makes matching MORE lenient, so the real
+regression vector is the opposite direction — a future refactor dropping the `_rawLinesEqual`
+guard would let `"2 dl"` match `"3 dl"` and SILENTLY SWALLOW a genuine name-less edit on a
+training-data feature. Pinned with a test that edits one of two distinct name-less lines
+(`"3 dl"→"4 dl"`) and asserts the correction is still captured while the untouched `"2 dl"`
+isn't dragged into a phantom merge. Rule: when a diff/matching fix widens what counts as a
+match to kill phantoms, always add the paired test proving a REAL change on that same shape
+still surfaces — the phantom-suppression test alone can't catch over-suppression.
+
+---
+
+## 2026-07-18 — Analytics chokepoint events need capture-tests; the GetIt→DIContainer bridge gotcha
+
+Trigger: reviewed the "menu" sprint diff (`lib/services/analytics/analytics_events.dart` +
+`lib/viewmodels/menu/menu_generator.dart`, BUT-1474 — swap-rate event `menu_recipe_swapped`
+fired via `AnalyticsService.tryLog` in `MenuGenerator.swapSingleRecipe`).
+
+The diff added a new analytics event at a "single chokepoint" but shipped with ZERO test
+coverage. A dropped/renamed event or a renamed param silently kills the funnel with no
+compile error — exactly the failure mode `AnalyticsEvents` (BUT-737) exists to prevent, but
+constants don't protect the CALL SITE firing. Rule: any new `AnalyticsService.tryLog(...)`
+at a behavioural chokepoint gets a capture-test — fires-once-with-params on the happy path,
+fires-nothing on the negative path (here: exhausted swap). Pattern:
+`MockAnalyticsService().capturedEvents.where((e) => e.name == '<event>')`.
+
+GetIt-vs-DIContainer bridge gotcha (cost me one red run): `AnalyticsService.tryLog` resolves
+via the PRODUCTION `ServiceLocator` (`lib/core/providers/application_provider.dart`), which is
+a `DIContainer`, NOT the test `ServiceLocator`/GetIt that `TestServiceLocator.initialize()`
+(the E2E locator) populates. A `MockAnalyticsService` registered only via
+`TestServiceLocator.registerSingleton` is INVISIBLE to `tryLog` — capturedEvents stays empty
+and the test false-fails. Fix: bridge them in setUpAll with
+`production.ServiceLocator.initialize(DIContainer())` (import `application_provider` aliased +
+`core/di/di_container.dart`); the real DIContainer reads off the same GetIt the test locator
+fills, so registered mocks become visible. (Files that use `BaseUnitTest.setupUnitWithProductionLocator()`
+already do this bridge — the plain `TestServiceLocator.initialize()` files do not.)
+`TestServiceLocator.registerSingleton` unregisters-first, so per-test re-registration of a
+fresh capture mock is safe (no cross-test bleed). Bridging was safe in the swap file only
+because every test exercises the swap path, which never builds the scoring context / reads
+FeatureFlagService (that read is OUTSIDE a try/catch in `_buildPooledStats` and an unstubbed
+mock would throw) — check the code path before bridging a broad locator into an existing file.
+
+Convention drift noted (pre-existing, already logged in ROLE_RESPONSIBILITY_MAP): the sibling
+event `MenuGenerator._logHiddenByHouseholdEvent()` (line ~405) still uses a RAW string literal
+`'menu_recipes_hidden_by_household'` instead of an `AnalyticsEvents` constant — the one untyped
+event in the menu domain. Now more glaring since BUT-1474 added its neighbour the right way.
+
+### 2026-07-18 — Base-class migration (ChangeNotifier → BaseViewModel) non-vacuous check [trigger: BUT-1607/BUT-520 commit-gate]
+`ShoppingSelectionManager` migrated `extends ChangeNotifier` → `extends BaseViewModel`.
+Existing suite (test/unit/viewmodels/shopping/shopping_selection_manager_test.dart, 6 tests)
+passed unchanged and non-vacuously — asserts real state (isSelectionMode, selectedIds,
+selectedCount, isSelected), no widget topology. The "base-class change un-matches mocktail
+stubs" lesson did NOT bite here: the manager has no service dependencies, so the test uses a
+bare `ShoppingSelectionManager()` and no `when()` stubs exist to silently break. Reusable check
+for these BUT-520 base-class swaps: (1) BaseViewModel is an abstract ChangeNotifier, no required
+ctor args, dispose() calls super.dispose() — so a no-arg test constructor + tearDown dispose()
+stays valid; (2) only flag if the migrated VM takes mocked services (then re-verify stubs match).
+COMMIT-READY.
+
+### 2026-07-18 — Minor search-suppression proven at the serialization chokepoint [trigger: BUT-1454 commit-gate]
+Reviewed BUT-1454 salvage batch (3 test files). The critical test in
+firebase_search_repository_test.dart proves the CONTRACT the right way: it writes TWO real
+profiles (minor + non-minor, both with `isSearchable:true` in memory) through
+`UserProfile.toFirestore()` into FakeFirebaseFirestore, then asserts the minor is ABSENT from
+`searchUsers('mina')`, the adult IS present, and an empty-query search returns only the adult.
+This is non-vacuous: the suppression is one line — `toFirestore()` writes
+`'isSearchable': isMinor ? false : isSearchable` (user_profile.dart:375) and the repo queries
+`.where('isSearchable', isEqualTo: true)` — so removing either the derive-off in toFirestore OR
+the query filter turns the minor visible and fails the test. This is the correct pattern for a
+"serialized-derived field" contract: drive the REAL serializer, don't assert the getter.
+Onboarding VM tests prove isMinor threads gate→completion (minor captures isMinor:true, adult
+isMinor:false into completeOnboardingWithPreferences). Note: the "OR-monotonic, server-true
+never downgraded" property is NOT in the client VM (it does a plain `_isMinor = result.isMinor`;
+the belt path only runs when the gate didn't verify) — that monotonicity lives in
+UserService/CF and is out of scope for these 3 files. The always-suppress-on-write monotonicity
+that DOES matter (isMinor:true forces isSearchable:false regardless of the user's toggle) is
+exactly what the repo test's "isSearchable:true minor still absent" assertion proves. 44/44 pass.
+COMMIT-READY.
+
+---
+
+### 2026-07-18 — Delta-refresh discriminator tests + tag-scorecard CI gate (BUT-1475 / BUT-1489)
+**Trigger:** commit-gate review of a salvage batch. A prior review had flagged the
+BUT-1475 delta-refresh suite as WEAK: it proved convergence but stayed green even
+if the refresh secretly reverted to a full-collection reload, so it did not guard
+the read-cost win the feature exists for.
+
+**Pattern — "discriminator" test for a cost/perf optimisation:** when a feature's
+value is "does LESS work" (here: a `where('updatedAt', isGreaterThan: baseline)`
+delta query instead of a full `.get()`), a convergence test is not enough — both the
+optimised and the naive path converge. Add a test that only the OPTIMISED path can
+pass: seed a doc that a full reload WOULD pull in but the filtered query MUST skip
+(an `updatedAt` OLDER than the load baseline), then assert it is absent
+(`count()==1`, `findByName(...) isNull`). This flips red the moment the filter is
+dropped or the delta query is replaced by a full reload. Mirror it with the inverse
+(`forceRefresh` must pick that same older-than-baseline doc up — proving forceRefresh
+is genuinely full, not a delta). Verified both against `firebase_ingredient_repository.dart`:
+delta path is `_deltaRefreshOrFull` (empty-delta restamps freshness, count unchanged);
+forceRefresh routes through `loadCache(forceReload:true)`→`_doLoadCache` (full `.get()`).
+
+**fake_cloud_firestore background-op draining:** the TTL refresh is fire-and-forget
+(unawaited in `_ensureCacheLoaded`), so you cannot `await` it. `_drainMicrotasks()`
+= two `await Future<void>.delayed(Duration.zero)` yields the event loop enough for the
+fake `.get()` to resolve. This is NOT the banned `Future.delayed(Duration(seconds:N))`
+real-wait — it is zero-duration event-loop yielding and is deterministic (5/5 green).
+TTL staleness driven by an injected `now:` callback (a local mutable `_Clock`), so no
+real time is involved.
+
+**Vacuity check for eval/scorecard gates:** `scoreTriStateMap` iterates GOLD keys only,
+so an empty answer key scores a vacuous 1.0 accuracy / 0 falseFree — a green gate that
+proves nothing. Before trusting a scorecard floor test, confirm the committed golden set
+actually populates the graded maps. Verified `test/golden/tagging_golden_dataset.json`:
+20 recipes, 60 allergen + 33 dietary verdicts. The load-bearing assertion is the absolute
+`falseFree <= 0` safety gate (never claim FREE where gold says CONTAINS/UNKNOWN), not the
+accuracy floors (0.90/0.85, deliberately generous headroom below the current 100% so
+legitimate golden edits don't flake while a broad regression still trips). Eval is pure
+Dart + committed data, no network/clock → deterministic.
+
+**Verdict:** COMMIT-READY. Both files analyze-clean; delta suite 5/5; eval 20 recipes,
+60/60 allergens, 33/33 dietary, 0 false-FREE.
+
+### 2026-07-18 — Fire-and-forget capture (BUT-1473 tag_overrides_log) needs a capture-test [trigger: commit-gate coverage of TagEditingService._logAllergenOverride]
+BUT-1473 added an unawaited `ServiceLocator.tryGet<TagOverridesLogRepository>()?.save(entry)`
+in `TagEditingService.applyAllergenOverride` — shipped with ZERO tests. Same failure mode as
+the analytics-chokepoint entry above: a dropped field, wrong `direction` string, or a broken
+`triggeringIngredients` lookup silently kills the learning-loop signal with no compile error.
+Added 3 tests to `test/unit/services/tagging/tag_editing_service_test.dart`:
+1. **Non-vacuous field assertions** — register a real `TagOverridesLogRepository(firestore:
+   FakeFirebaseFirestore())`, apply a confirmed contains→free override, drain, then read the
+   fake collection and assert EVERY field: userId==editedBy, recipeId, type=='allergen',
+   tag, `direction=='contains->free'` (the load-bearing one), and triggeringIngredients pulled
+   from the matching `TagDecision`. A bare "one doc landed" would be vacuous.
+2. **tryGet-null no-op** — DIContainer initialized but repo NOT registered → edit still succeeds,
+   nothing thrown.
+3. **Non-blocking** — a `_NeverCompletingLogRepository extends TagOverridesLogRepository` whose
+   `save` returns `Completer().future`; assert the edit result returns synchronously without
+   draining. Proves capture can't block the edit. (Subclassing the CONCRETE repo with an
+   `@override` body is fine — the DO-NOT rule is about `@override` bodies on mocktail `Mock`s.)
+
+Bridge gotcha (same as the analytics entry): the service reads the PRODUCTION `ServiceLocator`
+(`application_provider`, a DIContainer over `GetIt.instance`), not the test locator. Register the
+real repo via `GetIt.instance.registerSingleton<TagOverridesLogRepository>(...)` AFTER
+`prod.ServiceLocator.initialize(DIContainer())`; tearDown = `await GetIt.instance.reset()` +
+`prod.ServiceLocator.reset()`. Fire-and-forget writes to FakeFirebaseFirestore land after two
+`await Future.delayed(Duration.zero)`. Bridging was safe because applyAllergenOverride's ONLY
+locator touch is this repo (checked the path first, per the bridge rule). Existing tests were
+unaffected — they never initialize the prod locator, so tryGet returns null and the capture is a
+silent no-op for them.
