@@ -56,6 +56,10 @@ when the counts drift apart.
 - A crashed sprint ship leaves the ONLY copy of the work in the dirty main tree — the engine prunes its worktrees after patching, so back up (`git diff HEAD` + a COPY of every untracked new file) before any triage; never `stash`/clean as "preservation" in a shared checkout.
 - A blocked ship gate is a STOP, not a puzzle to route around — never forge a marker to satisfy a gate; a marker's mtime proves a touch, so read its CONTENTS against the current diff's ticket IDs before trusting `gates:ok`.
 
+## Architecture
+
+- `BaseViewModel.executeAsync` fails LOUD (throws `StateError`) on a disposed VM BY DESIGN — its non-nullable `Future<T>` can't return a fake `null`; the fail-silent siblings (`executeAsyncVoid`→false, setters→no-op) differ only because their return types allow it. Don't "harmonise" it; guard callers with `if (isDisposed) return;` instead (BUT-1462, sweep in BUT-1628).
+
 ## UI/UX
 
 - Heuristic/LLM-derived visible content (headings, tags, parsed amounts) ships WITH its correction UI in the MVP — "display now, correct later" is never a valid phasing.

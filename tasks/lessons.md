@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Architecture] BaseViewModel.executeAsync fails LOUD on a disposed VM by design — the return type forces it
+- **Date**: 2026-07-18
+- **Trigger**: BUT-1462 asked whether `executeAsync`'s throw-`StateError`-on-disposed behavior is a bug — it looks asymmetric with `executeAsyncVoid`'s silent `return false` and the state setters' silent no-op. Reading the code, the doc comment even claimed it "returns null … if ViewModel is disposed", but the code actually throws. So the doc was inaccurate AND the asymmetry read like an oversight.
+- **Rule**: The asymmetry is intentional and forced by the return type — this is a "keep it, don't fix it" decision. `executeAsync<T>` promises a non-nullable `Future<T>`; on a disposed ViewModel it cannot fabricate a valid `T`, and returning a fake `null` would silently violate the type contract every caller `await`s. So it throws: awaiting a result from a disposed ViewModel is a caller lifecycle bug (an async gap that outlived the widget) and must surface loudly, not be masked. `executeAsyncVoid` returns `bool` (can safely no-op with `false`) and the setters return `void` (can no-op), so those fail silent. Do NOT "harmonise" `executeAsync` to return null on disposed. Callers that may legitimately complete after dispose guard with `if (isDisposed) return;` before awaiting, or use `executeAsyncVoid`. And correct the stale "returns null on disposed" doc wherever it appears — it describes behavior the code never had.
+- **Example**: BUT-1462 recorded the decision as a WHY comment on `executeAsync` and fixed its doc to "Sets error state and rethrows if [operation] throws." The broader sweep of subclass `clearError`/`setError`/`setLoading` overrides for consistent disposed-guards was deferred to BUT-1628 rather than attempted in the same change (scope discipline).
+
 ### [Workflow] A gate's block message may only name remedies that ship WITH the gate
 - **Date**: 2026-07-05
 - **Trigger**: A synat session hit the shared plan-review gate's high-stakes block, which instructed "run /review-plan" — a command that exists only as a Butlery-local file. The session got "Unknown skill: review-plan" and had to improvise the auditor by hand. The gate had been ported to all three repos; its remedy hadn't.

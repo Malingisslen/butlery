@@ -860,3 +860,79 @@ accidental allow union — the only other matching rule is the L2482 global defa
 Create-allow doc ids use a per-RUN `Date.now().toString(36)` token; read/update/
 delete tests re-seed via `withSecurityRulesDisabled`, so the suite is re-run-safe
 on the persistent emulator without a namespace clear. No firestore.rules edits.
+
+### 2026-07-18 — BUT-1626 public_profiles minor searchability hard-deny + group-minor CF
+
+Reviewed the BUT-1626 (BUT-674 follow-up) diff. Two rule surfaces on
+`public_profiles/{userId}`, both fully covered by 5 new tests appended to
+`age-gate-rules.test.ts` (all 38/38 green on emulator):
+- create: `&& (request.resource.data.isSearchable != true || !accountIsMinor(userId))`.
+- update: `&& (!diff.affectedKeys().hasAny(['isSearchable']) || isSearchable != true || !accountIsMinor(userId))`
+  — gated on the DIFF so a minor with a legacy true value can still edit name/avatar,
+  and a normal isSearchable:false save still corrects.
+
+New helper `accountIsMinor(userId)` = `exists(users/{userId}) && get(...).data.get('isMinor', false)==true`
+— the SAME exists-guarded fail-open-on-missing-doc pattern as `otherIsMinor` in the
+conversations 1:1 gate (2026-07-01). Missing users doc / absent isMinor reads as
+non-minor (adults unaffected). Deny logs pin PP2/PP4 to `false for create @ L614` /
+`false for update @ L635` — genuine gate denies, not eval-errors. **PP3 (minor +
+isSearchable:false → ALLOW) is the load-bearing contrast** that proves the deny is
+the isSearchable:true+minor combination, not a blanket "minor can't write."
+
+**Coverage table addition:** the friendsCount OR-branch (L650) and admin-update
+branch (L664) both use `hasOnly([...])` that excludes isSearchable, so neither can
+be used to bypass the minor gate — verified by reading, not pinned as a test (Low,
+the `hasOnly` makes it structurally impossible).
+
+**Group-minor CF (`enforceGroupMinorMembership`, onDocumentCreated conversations/{id}):**
+rules can't iterate a group participant list, so a Cloud Function backstops the 1:1
+`passesMinorDmGate`. Pure decision core `computeMinorsToRemove` is unit-tested 6/6
+(`test:enforce-group-minor-membership`, auto-discovered by `npm test` via
+run-all-tests.js — properly wired). Verified the CF's `data.metadata.creatorId`
+field assumption matches the client: `Conversation.group` writes
+`metadata:{'creatorId':creatorId}` (conversation.dart L255) — so the fail-safe
+"unknown creator → remove all minors" branch is only reachable for legacy/tampered
+docs. Friend direction (`users/{minor}/friends/{creator}`) matches the rules gate.
+
+**GAP (Medium):** the CF's I/O wrapper (group-size early return, remaining<2 →
+delete vs update, participantDisplayNames/AvatarUrls/lastReadTimestamps FieldValue.delete
+cleanup, per-user membership-mirror cleanup) has NO emulator integration test — only
+the who-gets-removed core is covered. The safety decision IS tested; the write
+mechanics are not. Sibling `sync-conversation-last-message` has the same
+pure-core-only shape, so this matches existing convention (not a regression).
+
+Non-rules items in the same diff (verified, no bug): `setLifecycleStage(stage,
+{required bool isMinor})` — interface change consistent across firebase/noop/interface
++ test mocks; e2e `_MockAnalyticsRepository` uses `noSuchMethod` so no compile break;
+raw setter has NO production caller (real suppression is `UserPropertyBootstrap.emitLifecycle`
+gating `profile?.isMinor`), so the required-param gate is pure defense-in-depth.
+Feature-flag `audit_log_retention_days` + `auditLogRetentionDays` removal (BUT-1560)
+is clean — repo-wide grep finds zero remaining refs beyond the two explanatory comments.
+
+### 2026-07-18 — BUT-1626 follow-up: conversations create binds metadata.creatorId to caller (spoof fix)
+
+Supersedes the "only verified the CF's field assumption" note in the prior 2026-07-18
+entry — the create rule now ENFORCES the binding, and it is proven. New clause on
+`conversations/{id}` create (firestore.rules ~L1522):
+```
+&& (!('metadata' in request.resource.data)
+    || !('creatorId' in request.resource.data.metadata)
+    || request.resource.data.metadata.creatorId == request.auth.uid)
+```
+Closes a spoof: a tampered client could forge `metadata.creatorId` to a friend of a
+minor (or the minor's own uid, hitting the CF's uid===creator skip) and slip a
+non-friend group-add past `enforceGroupMinorMembership`'s friend check. Absent
+metadata/creatorId → allowed (CF fails closed, removes minor when creatorId absent).
+
+Two tests appended to `conversations-rules.test.ts` (now 7/7 green):
+- **C6 (deny):** STRANGER creates `[STRANGER, ADULT]` with `metadata.creatorId=FRIEND` → DENY.
+- **C7 (allow):** identical body but `creatorId=STRANGER` (the caller) → ALLOW.
+
+**The C6/C7 pair IS the fail-closed proof** — adult 1:1 target means `passesMinorDmGate`
+passes for both, so the ONLY variable is creatorId, isolating the deny to the binding
+(not the minor-DM gate or rate limit). C6 deny log pins `false for 'create' @ L1514`
+(clean gate deny, not an eval-error). RULES-SOUND, no gap.
+
+The public_profiles minor-searchability tests (PP1–PP5) from the prior entry re-ran
+green in the same age-gate run (38/38): PP2 deny `@ L614`, PP4 deny `@ L635`+`@ L664`
+(isSearchable-update branch AND admin branch both deny), PP1/PP3/PP5 the allow contrasts.

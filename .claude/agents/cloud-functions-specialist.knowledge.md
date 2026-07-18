@@ -1177,3 +1177,78 @@ All five review axes verified:
    snapshot and no-ops (immune to the shared/parent-handle ordering hazard from the 2026-06-29
    entry; those apply only to householdId/arrayRemove-keyed steps).
 5. **No region/secret surface** — plain helper, region inherited from setGlobalOptions.
+
+### 2026-07-18 — BUT-1626 group-conversation minor-safety trigger + public_profiles hard-deny [Pattern discovered]
+
+New `messaging/enforce-group-minor-membership.ts` (`onDocumentCreated` on
+`conversations/{id}`) backstops the 1:1 minor-DM rule for GROUP conversations
+(rules can't iterate `participantIds`). Reviewed with firestore.rules
+`accountIsMinor` + the age-gate PP1–PP5 tests. Wiring is correct: exported in
+index.ts, `test:enforce-group-minor-membership` added to package.json (auto-picked
+by run-all-tests). Region inherited (no per-fn region). Firestore trigger, not
+onCall, so no app-check-enforcement.test.ts entry needed. Idempotent under
+re-delivery (recomputes from the created snapshot, re-reads live user/friend docs,
+re-applies the same removal; delete-below-2 is a no-op on a gone doc).
+
+**MEDIUM — the trigger trusts client-controlled `metadata.creatorId` for its
+friendship decision, and the create rule never pins it to `request.auth.uid`.**
+`computeMinorsToRemove` keeps a minor when `users/{minor}/friends/{creatorId}`
+exists, where `creatorId = data.metadata.creatorId`. The conversations create rule
+(firestore.rules ~1511) only requires `request.auth.uid in participantIds` — it
+does NOT constrain `metadata.creatorId`. So the exact adversary this backstop
+targets (a tampered client adding a minor) can also set `metadata.creatorId` to any
+known friend F of the target minor and the gate keeps the minor. Residual friction:
+attacker must know one friend of a default-private minor. Surgical fix (cheap, no
+client break): add to the create rule
+`&& (!('creatorId' in request.resource.data.get('metadata', {})) || request.resource.data.metadata.creatorId == request.auth.uid)`
+— absent creatorId still routes to the CF fail-safe (removes all minors), a present
+one can't be spoofed to another uid.
+
+**LOW — retry defaults false ⇒ a transient read blip fails OPEN on a child-safety
+gate.** Handler is verified idempotent, so `{ retry: true }` in the trigger options
+would let a dropped read re-run instead of silently leaving a minor in the group.
+Worth it for a safety control even though it's defense-in-depth.
+
+**LOW — test covers only the pure core.** The destructive I/O branches
+(`remaining < 2 ⇒ snap.ref.delete()`, participant map-field `FieldValue.delete()`,
+membership-mirror cleanup, metadata parsing) are untested. Convention allows
+pure-core-only, but the delete-below-2 branch is destructive; a `fn.run(event)`
+emulator test (per the BUT-839 pattern) would earn its keep.
+
+firestore.rules `accountIsMinor` (public_profiles create+update hard-deny of a
+minor setting `isSearchable:true`) is correct and cost-bounded: the `get()` fires
+only when `isSearchable` is actually being SET to true (short-circuit `||`), on
+update also gated on the `affectedKeys().hasAny(['isSearchable'])` diff. Missing/
+false `isMinor` reads as adult. PP1–PP5 cover the core matrix; small untested gaps:
+adult UPDATE→searchable, and a minor with a legacy `isSearchable:true` preserving it
+while editing other fields (the update rule's stated allowance). Analytics side:
+`AnalyticsRepository.setLifecycleStage` gained a REQUIRED `isMinor` (early-returns
+for minors) — defense-in-depth mirror of `UserPropertyBootstrap.emitLifecycle`'s
+gate; no production caller of the raw setter exists (only the bootstrap, which calls
+`setUserProperty` directly), so it's a test-only guard. Feature-flag removal of
+`audit_log_retention_days`/`auditLogRetentionDays` (BUT-1560) is clean — grep
+confirms zero remaining references; retention is code-constant in the CFs.
+
+### 2026-07-18 — BUT-1626 commit-gate re-review: the creatorId-spoof MEDIUM is CLOSED [Bug fixed]
+
+The MEDIUM flagged in the 2026-07-18 entry above (trigger trusted client-controlled
+`metadata.creatorId` because the create rule never pinned it) has been FIXED with the
+exact surgical rule suggested. `firestore.rules` conversations `allow create`
+(~1525–1529) now carries:
+`(!('metadata' in request.resource.data) || !('creatorId' in request.resource.data.metadata) || request.resource.data.metadata.creatorId == request.auth.uid)`.
+So a present `creatorId` is bound to `auth.uid` (can't be spoofed to a friend of the
+target minor), and an absent one routes to the CF's fail-safe (all minors removed).
+With that binding, the CF's trust of `metadata.creatorId` is now sound, and the friend
+check is directional-correct — `readCreatorFriendships` reads
+`users/{minor}/friends/{creatorId}` (creator in the MINOR's friends subcollection),
+matching the rules' `passesMinorDmGate` directionality.
+
+Re-verified all three review axes on the uncommitted diff: `tsc --noEmit` clean;
+`test:enforce-group-minor-membership` 6/6 (fail-safe on null creator asserted directly);
+`computeMinorsToRemove` fail-safe confirmed (null creator ⇒ push every minor; non-friend
+⇒ push; creator + adults never removed). Idempotent under re-delivery (create-snapshot
+payload → recompute same set → re-`set(participantIds:remaining)` + `FieldValue.delete()`
+on already-absent map fields + `snap.ref.delete()` on a gone doc are all no-ops). Region
+inherited, logs carry only counts/booleans/conversationId (no uids/names). The two
+residual LOWs stand (retry defaults false ⇒ transient-read fail-open; I/O branches
+untested) — neither blocks. **Verdict: COMMIT-READY.**

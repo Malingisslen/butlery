@@ -1,292 +1,257 @@
 # tasks/todo.md
 
-## 2026-07-18 sprint — Selection (Phase 1)
+## 2026-07-18 sprint (second pass) — Selection (Phase 1)
 
-**Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (119 open
-tickets total: 4 Todo, 0 In Progress, 0 Triage, ~115 Backlog). `onboarding-reserved` label:
-none present this round. Recent `git log` (7 days) mapped against the backlog to find
-already-done tickets — see Obsolete below.
+**Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (111 Backlog
++ 3 Todo/parent, 0 In Progress, 0 Triage). `onboarding-reserved` label: BUT-677, BUT-722 present
+— excluded entirely, not scored. Recent `git log` (7 days, 9 salvage commits from this morning's
+crashed-then-salvaged sprint) mapped against the backlog — confirms the 9 salvaged tickets are
+correctly absent from the open backlog.
 
-**Lane convention honored:** only tickets labeled `autonomous` (never `deferred`) were
-considered as build candidates, per `memory/project_linear_lane_labels.md`. `deferred`-lane
-tickets (macOS sandbox, nutrition, cookbooks epic, tablet layouts, etc. — ~15 tickets) were
-left untouched in Backlog; they are deliberately parked, not re-scored.
+**Lane convention honored:** `deferred`-lane tickets (~90, epics/launch-gated/nice-to-haves) left
+untouched in Backlog — deliberately parked, not re-scored. `need-malin`-lane tickets (8) stay
+parked; the handful with live decision relevance are surfaced under Needs Malin below rather than
+re-litigated individually.
 
-### Batch A — backend-ratings (functions/src, disjoint files)
-- [ ] **[Tier A] BUT-1624** — A data-writing CF is a git binary blob (one NUL byte) →
-  unreviewable. disposition: build. requiresPlanMode: false. router: single
-  (Database Administrator, Vendor/Procurement).
-  Files: `functions/src/migrations/backfill-canonical-ratings.ts`, its test, a new
-  binary-file CI guard wired into `.github/workflows/test.yml` (or equivalent check script).
+**Step-0 premise checks (mandatory, ran before selecting) caught 2 obsolete tickets and 1
+half-stale ticket that a text-only read would have missed** — see Obsolete and the BUT-1459
+re-scope note.
+
+### Batch A — docs-workflow-map (mechanical, isolated)
+- [ ] **[Tier A] BUT-1627** — Re-trace 11 workflow-map trigger flows stale since 2026-07-16 +
+  fix the Phase-0 untracked-marker gap note. disposition: build. requiresPlanMode: false.
+  router: skip.
+  Files: `docs/onboarding/workflow-map.html` (data JSON only), delete
+  `docs/onboarding/workflow-map.stale`.
   Acceptance:
-  1. `functions/src/migrations/backfill-canonical-ratings.ts` is git-recognized as text
-     (`git grep -I . -- <file>` matches; `git diff` renders a normal diff, not "Binary file differs").
-  2. The NUL-byte Map-key separator is replaced with a printable delimiter or a nested map —
-     a test proves the same (uid, poolKey) pairs stay distinguishable as before.
-  3. A CI check exists that fails on any binary file detected under `functions/src/`.
-  4. Backfill behavior/output is unchanged for the same input (regression test) — don't
-     change what the migration computes, only how the key is encoded.
+  1. Each of the 11 trigger files' flows in the `<script id="data">` JSON are re-traced against
+     current code (BUT-1609, BUT-1611, BUT-1473, BUT-1518, BUT-1475 trigger sets).
+  2. `docs/onboarding/workflow-map.stale` is deleted after the re-trace.
+  3. `tools/check_workflow_map.py` exits clean.
+  4. **Don't** touch anything in workflow-map.html beyond the flow JSON (per CLAUDE.md: "update
+     the map's JSON, nothing else").
 
-- [ ] **[Tier A] BUT-1518** — Pooled ratings C10: anchor-only title-change telemetry
-  (rating-laundering visibility). disposition: build. requiresPlanMode: false. router: single
-  (Privacy/DPO, Vendor/Procurement).
-  Files: `functions/src/ratings/canonical-rating-aggregation.ts`, its test.
+### Batch B — import-test-gap
+- [ ] **[Tier A] BUT-1614** — Test gap: correction-capture on text/photo/url import strategies
+  (follow-up to shipped BUT-1469). disposition: build. requiresPlanMode: false. router: single
+  (Data/Integrations Engineer, FinOps, Monetization). Step-0 verified: zero test coverage for
+  `cacheCorrectionSnapshot`/`buildCorrectionSnapshot` still holds (grepped `test/`, no hits).
+  Files: `test/unit/services/import/text_import_strategy_test.dart`,
+  `photo_import_strategy_test.dart`, `url_import_strategy_test.dart`.
   Acceptance:
-  1. An anchor-only title change (dish-anchor token changes, ingredient set unchanged) is
-     logged distinctly from a genuine dish change, via a structured JSON log line — test
-     proves both cases produce distinguishable log output.
-  2. No new Firestore collection or field is added — log-only, matching the ticket's stated
-     scope. **Don't** add an `ingredientsFingerprint` field or any new pool-event schema
-     field (a prior uncommitted attempt over-scoped into a data-writing change — stay log-only).
-  3. Deterministic string/token comparison only — no LLM call.
-  4. Existing pooled-ratings Stage-A aggregation behavior is unchanged — existing tests
-     still pass.
+  1. A snapshot is cached on import for each of text / photo / url (test per strategy).
+  2. A subsequent edited parse produces a correction record; an identical unchanged parse
+     produces no false correction (test per strategy).
+  3. The `options['skipCorrectionCache']` opt-out on photo/url's internal `text.import()`
+     sub-parse is covered — each user-facing import caches exactly one correctly-attributed
+     snapshot, not two.
+  4. Existing `*_import_strategy_test.dart` suites still pass — no regression to shipped
+     BUT-1469 behavior.
 
-### Batch B — import-correction-capture
-- [ ] **[Tier A] BUT-1469** — Widen correction capture from 1 of 8 import paths to all.
-  disposition: build. requiresPlanMode: **true** (single tier, priority High ≤2). router:
-  single (Data/Integrations Engineer, FinOps, Monetization).
-  Files: `lib/services/import/photo_import_strategy.dart`,
-  `lib/services/import/text_import_strategy.dart`,
-  `lib/services/import/archive_import_strategy.dart`,
-  `lib/services/import/voice_import_strategy.dart`, `lib/services/recipe_persistence_manager.dart`,
-  `lib/services/import/url_import_strategy.dart` (tiers 2-7), plus tests.
+### Batch C — menu-tagging-quality
+- [ ] **[Tier A] BUT-1458** — Protein-tag drift guard is a hardcoded mirror; make it real + drop
+  unused `allTags`. disposition: build. requiresPlanMode: false. router: single (Data/ML
+  Engineer — parsing & tagging integrity, Product Manager). Step-0 verified: the hardcoded
+  `_tagToCategory` map and the test's separate hardcoded drift-guard copy both still exist
+  unchanged.
+  Files: `lib/services/menu/protein_category.dart`, `lib/services/tagging/tag_phase1_nutrition.dart`,
+  `test/unit/services/menu_service_test.dart`, optionally new
+  `test/unit/services/menu/protein_category_test.dart`.
   Acceptance:
-  1. Photo/OCR, text-paste, and at least one social/URL-tier-2-7 path each write a pre-edit
-     snapshot (equivalent to today's Tier-1 `ParsedRecipeCache`) keyed by recipe id and
-     tagged with source — not only Tier-1 URL imports.
-  2. A diff/correction-capture record is produced when any imported recipe (regardless of
-     source) is edited post-import — test per newly-covered strategy.
-  3. Existing Tier-1 URL-import correction-capture behavior is unchanged (no regression on
-     the one working path).
-  4. **Don't** touch parsing accuracy or the recipe RESULT itself — this ticket is
-     capture/telemetry only.
+  1. The protein-tag vocabulary in `tag_phase1_nutrition.dart` is extracted into one shared
+     const both the tagger and `ProteinCategory`/the guard read.
+  2. A test proves the guard now genuinely fails when a tag is added to the tagger without a
+     `ProteinCategory` mapping (mutation-style regression, not just green-by-coincidence).
+  3. `ProteinCategory.allTags` is removed, or documented/derived from the shared source instead
+     of standing as an unused "production API".
+  4. **Don't** change protein-cap generation behavior — test-integrity fix only; existing menu
+     tests stay green.
 
-### Batch C — account-security (standalone: firestore.rules touched, full-panel review)
-- [ ] **[Tier C] BUT-1454 (item 1 only — search-suppression)** — Minor default-private
-  search-suppression. disposition: build. requiresPlanMode: **true** (router: full-panel —
-  Security Architect, Trust & Safety, Legal, Privacy/DPO, Product Manager, Software Architect
-  + 3 more). Scope for THIS sprint is item 1 of the ticket only (items 2-4 — opt-in toggle,
-  group-DM CF gate, defense-in-depth on `setLifecycleStage` — stay in the ticket as
-  follow-up scope, not this pass).
-  Files: `functions/src/` (the `verifySignupAge` CF), `lib/services/user_service.dart`,
-  the user profile model's `toFirestore`/`toFirestoreEditable`, the onboarding
-  profile-completion viewmodel, `firestore.rules`/search test, plus tests.
-  Acceptance:
-  1. `verifySignupAge` CF response returns `isMinor`; onboarding sets
-     `public_profiles.isSearchable = false` for a minor at profile-completion time (test).
-  2. `toFirestore`/`toFirestoreEditable` omit `isSearchable` for minors so a general profile
-     save cannot clobber the CF-set `false` value (test).
-  3. A firestore-rules-tester/search test proves a minor with a fresh `public_profiles` doc
-     is absent from `searchUsers` results.
-  4. **Don't** implement items 2-4 from the ticket in this pass (opt-in toggle, group-DM CF
-     gate, `setLifecycleStage` defense-in-depth) — file a follow-up ticket for them if not
-     completed; this slice is search-suppression only.
-
-### Batch D — tagging
-- [ ] **[Tier A] BUT-1475** — Stop full-collection ingredients fetch per session + hourly.
-  disposition: build. requiresPlanMode: false. router: single (Software Architect, Product
-  Manager).
-  Files: `lib/repositories/firebase_ingredient_repository.dart`, plus tests.
-  Acceptance:
-  1. The ingredient repository no longer fetches the full ~5.6k-doc collection on first use
-     each session — a version-stamped Storage snapshot or delta-fetch mechanism replaces it.
-  2. The hourly full-collection re-fetch is removed/replaced.
-  3. Ingredient data served to callers (tagging, search, etc.) is unchanged in content — a
-     test proves parity between the old full-fetch result and the new snapshot/delta result
-     for a sample set.
-  4. **Don't** change the ingredient register's write path — read-path only.
-
-- [ ] **[Tier A] BUT-1489** — CI-gate the tag scorecard. disposition: build.
-  requiresPlanMode: false. router: single (DevOps/SRE, QA, Release Manager).
-  Files: `.github/workflows/test.yml`, reads `test/corpus/tag_scorecard_test.dart`.
-  Acceptance:
-  1. `test/corpus/tag_scorecard_test.dart` runs in the CI suite matrix — visible as a CI job.
-  2. A numeric accuracy floor gate is enforced (mirroring the BUT-1443 CRF golden-gate
-     pattern) — CI fails if the scorecard drops below the floor.
-  3. The floor value is documented (comment or config) so a future regression is traceable
-     to a specific threshold, not a magic number.
-
-- [ ] **[Tier A] BUT-1473** — Capture tagging corrections (allergen overrides first).
-  disposition: build. requiresPlanMode: false. router: single (Data/ML Engineer — parsing &
-  tagging integrity).
-  Files: `lib/services/tagging/tag_editing_service.dart`,
-  `lib/services/tagging/tag_resolution_service.dart`, new `tag_overrides_log` write path,
-  plus tests.
-  Acceptance:
-  1. Saving an allergen tag override writes a `tag_overrides_log` doc capturing tag,
-     direction, and the triggering ingredients from `TagDecision` (test).
-  2. The override save's existing display behavior (badge changes) is unchanged — capture is
-     additive telemetry only.
-  3. **Don't** implement dietary/other tag capture yet — allergen overrides first, per the
-     ticket.
-
-### Batch E — menu-signals
-- [ ] **[Tier A] BUT-1474** — Log menu engagement (swap-rate signal). disposition: build.
-  requiresPlanMode: false. router: single (Data Analyst/BI, Growth, Monetization, Product
-  Manager). **Step-0 finding: `menu_generated` already fires** (`firebase_analytics_repository.dart:400`,
-  `winback_attribution_service.dart`, `analytics_service.dart`) — the ticket's premise is
-  half-stale. Only `menu_recipe_swapped` is genuinely missing (zero hits repo-wide).
-  Files: `lib/services/analytics/analytics_events.dart`, the recipe-swap call site
-  (`lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` or `menu_generator.dart`'s
-  `swapSingleRecipe`), plus tests.
-  Acceptance:
-  1. A `menu_recipe_swapped` Firebase Analytics event fires on a recipe swap in the weekly
-     menu (test).
-  2. The swap event carries enough context (menu id or week reference) to compute a
-     swap-rate-per-menu metric later.
-  3. **Don't** re-add `menu_generated` — verify it already fires and leave it as-is; adding a
-     duplicate call site is a regression, not a fix.
-
-- [ ] **[Tier A] BUT-1613 (BUT-1323 slice 4)** — Per-day portion adjustment by present count.
-  disposition: build. requiresPlanMode: false. router: single (Product Manager). Verified
-  premise still holds: no `servings`/`portion` adjustment tied to `presentMemberIdsFor` exists
-  in `menu_generator.dart` today.
+### Batch D — presence-portions-ui (build-review: UI/interaction call)
+- [ ] **[Tier B] BUT-1615** — Per-day presence selector UI + generator wiring + preview gate
+  (the real remainder of BUT-1611 — its own Linear ticket closed on data-model-only, per BUT-1615's
+  own text). disposition: build-review. requiresPlanMode: false (single tier, Medium priority,
+  formula doesn't fire — flagged manually as substantial: new UI + generator wiring + preview
+  gate). router: single (Product Manager).
+  signoffReason: where the per-day "who's present" selector sits in the calendar UI and how it's
+  toggled — a visual/interaction call for Malin before it ships.
   Files: `lib/viewmodels/menu/menu_generator.dart`, `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`,
+  `lib/services/menu/weekly_menu_plan_service.dart`, `lib/widgets/menu/calendar_weekly_menu_widget.dart`,
+  `lib/views/veckomeny_view.dart`, a `/preview --directions` artifact under `tasks/previews/`,
   plus tests.
   Acceptance:
-  1. A day with a present count set (per slice 2's per-weekday presence) generates that
-     day's portions/servings scaled to the present count (test: 3 present → 3 servings).
-  2. A day with no presence selection keeps today's current default serving behavior
-     unchanged (test).
-  3. **Don't** touch allergen filtering or generation-pool scoping — this ticket is
-     presentation/serving-size only, per BUT-1625's explicit boundary between safe presence
-     uses (display/portions) and unsafe uses (allergen filtering).
+  1. A per-day "who's present" selector exists in the weekly-menu calendar UI and persists to
+     `WeeklyMenuPlan.presenceByDay` via a plan-VM save method.
+  2. `menu_generator.dart`'s day-generation path reads that day's own presence selection and
+     sets `presentMemberIds` per generated day (wiring only).
+  3. A `/preview --directions` marker exists for the new selector before implementation, per
+     the repo's preview gate.
+  4. **Don't** widen this into allergen-filtering/generation-pool scoping — matches the accepted
+     display/portions-safe boundary in `accepted-deviations.md` (BUT-1625's boundary). Existing
+     weekly-menu allergen-filtering tests stay unchanged.
 
-### Batch F — tech-debt-viewmodels
-- [ ] **[Tier A] BUT-1607** — Migrate a slice of the remaining ~56 ChangeNotifier ViewModels
-  to BaseViewModel (BUT-520 continuation). disposition: build. requiresPlanMode: false.
-  router: single (Software Architect, Product Manager).
-  Files: 2-3 ViewModels under `lib/viewmodels/shopping/` (chosen to stay file-disjoint from
-  every other batch this sprint), plus their existing test suites.
+### Batch E — profile-save-flag (re-scoped at Step-0 — half the original ticket already shipped)
+- [ ] **[Tier A] BUT-1459** — Hoist save-in-flight flag into UserProfileViewModel. disposition:
+  build. requiresPlanMode: false. router: single (Software Architect, Product Manager).
+  **Step-0 finding: the ticket's premise is half-stale.** `menu_taste_view.dart` no longer
+  exists — BUT-1594 (2026-07-12) renamed it to `household_size_view.dart` and, per its own
+  commit body, ALREADY added the back-nav/unsaved-changes widget test (finding #2 of this
+  ticket) — verified present at `test/widget/views/settings/household_size_view_test.dart`
+  L190-238. Only finding #1 (the local `_saving` bool band-aid, still present at
+  `household_size_view.dart:71`) remains open.
+  Files: `lib/viewmodels/user_profile_viewmodel.dart`, `lib/views/settings/household_size_view.dart`,
+  plus tests.
   Acceptance:
-  1. At least 2 ViewModels currently `extends ChangeNotifier` are migrated to
-     `extends BaseViewModel`.
-  2. Each migrated ViewModel's existing test suite is re-run and passes after the constructor
-     change (a base-class change un-matches mocktail stubs — re-run, don't just skip).
-  3. No user-visible behavior change — confirmed by unchanged test assertions beyond the
-     base-class swap.
-  4. Ticket stays open afterward (partial slice of ~56) — don't close it Done; note progress
-     in a comment instead.
+  1. `UserProfileViewModel.saveProfile()` exposes an in-flight `isSaving` flag.
+  2. `household_size_view.dart`'s local `_saving` bool is replaced with the VM's flag (double-tap
+     double-write guard behavior unchanged — test: two rapid taps produce one write).
+  3. **Don't** re-add a back-nav/unsaved-changes widget test — already shipped and covered;
+     this pass is the save-in-flight hoist only.
 
-## Obsolete (git/code shows the premise gone — close, don't build)
-- **BUT-1612** ("BUT-1323 slice 3: apply per-member dislikes in the present-scoped menu
-  filter") — its dependency (`presentMemberIds` fed from `presentUnionForGeneration()`) was
-  deliberately **removed** in BUT-1611's rebuild (`ca4ba8b70`, 2026-07-17) after a
-  high-effort review found it narrowed allergen filtering below the household baseline.
-  Verified via grep: `menu_generator.dart`'s `presentMemberIds` field is never set from
-  outside the class today. Building dislikes-filtering on top of a disconnected feed would
-  ship dead code. The proper redesign track (if wanted) is **BUT-1625**, which itself needs
-  Malin's go/no-go (see below) before any implementation.
+### Batch F — recipe-scaling-race
+- [ ] **[Tier A] BUT-1515** — Household-size default skipped on cold deep-link into a recipe
+  (boot race). disposition: build. requiresPlanMode: false. router: single (Accessibility
+  Specialist, Creative Director/Brand Lead — trivial UI touch flagged by file path, not a
+  design decision). Step-0 verified: `initializeScaling` still reads `currentUserProfile`
+  synchronously; the race is live.
+  Files: `lib/views/recipe_detail/recipe_detail_actions.dart`,
+  `lib/viewmodels/cooking_mode_viewmodel.dart`, plus tests.
+  Acceptance:
+  1. A recipe opened via cold deep-link, once `UserService`'s profile finishes loading after
+     mount, re-applies the household-size default to the scaler (test simulates
+     profile-loads-after-mount).
+  2. A manual portion override the user already made on that screen is never clobbered by the
+     late-arriving default (test).
+  3. Normal (non-cold-start) navigation keeps its current behavior unchanged.
 
-## Needs Malin (speculative / contestable / ops-blocked / out of mechanism — not built)
-- **BUT-1625** — Safe present-aware menu generation. The ticket is explicitly framed as
-  "IF product wants generation tuned to who's present" — a real product decision on a
-  children's-allergen-safety surface, not a mechanical fix. The safe household-wide baseline
-  already ships (BUT-1611/BUT-1464); this only matters if you want menu generation itself
-  (not just display/portions) narrowed to who's present on a given day. Recommend: leave
-  parked unless you specifically want this; if you do, it needs a dedicated plan-mode pass
-  against the ticket's 4 written safety requirements, not a routine autonomous slice.
-- **BUT-1499** — Collaborative weekly menu (realtime edit + slot voting) is fully coded but
-  never wired to a live view. The ticket's own acceptance criterion #1 is "Decide: wire it up
-  or park it." Wiring up a dormant social/realtime feature adds real support surface
-  pre-launch; parking it means downgrading MENU-07/08/09 in the feature inventory from
-  Verified. Genuinely your call either way — recommend picking one explicitly rather than
-  leaving it dormant-but-marked-Verified (that's a live accuracy gap in the feature inventory
-  today).
-- **BUT-1472** — `parse_corrections_v2`/`llm_response_samples` have no consumer; the ticket
-  itself offers two forks — build a consumer (admin export + dashboard metric) or turn off
-  the write path. Recommend the cheap "turn off" path per the cost-minimization principle,
-  unless you actually want the corrections-mining tool built — that's a real investment
-  decision, not a bug fix.
-- **BUT-1176** — Optional `custom_lint`/AST upgrade for subscription-disposal linting. The
-  ticket self-describes as "pick up only if custom_lint is being added for other reasons" —
-  that condition isn't met. Recommend: drop or leave parked; zero production leaks found by
-  the original audit, arch-test guard already covers the common regression.
-- **BUT-880** — PITR restore drill against a non-prod Firebase project. Already labeled
-  `need-malin` in Linear. Ops-blocked: needs either the BUT-451 staging project or a
-  throwaway project + your time for a multi-hour manual drill — not autonomously buildable.
-  Recommend: do it, but it's an ops task for you, not a sprint pick.
-- **BUT-1619 / BUT-1620 / BUT-1621** — Delivery-engine hardening tickets. Their target files
-  (`plugins/delivery/workflows/sprint-execute-parallel.js`, the workflow-guards hook) live in
-  **C:/claude-plugins**, a different git repo from this Butlery checkout, shipped via
-  `node tools/fanout-update.mjs` from that repo — not this sprint's commit/worktree
-  mechanism. Recommend: pick these up from a claude-plugins-specific session (or the janitor
-  routine there), not a Butlery app sprint.
+### Batch G — viewmodel-dispose-decision (narrowed scope)
+- [ ] **[Tier A] BUT-1462** — Decide `BaseViewModel.executeAsync` post-dispose semantics.
+  disposition: build. requiresPlanMode: false. router: single (Software Architect, Product
+  Manager). **Scoped down from the ticket's full ask** — the "sweep all migrated VMs'
+  `clearError` overrides" half is a 32-file undertaking (grepped: 32 files override
+  `clearError()`), too large for this slice; carried as a filed follow-up instead.
+  Files: `lib/viewmodels/base_viewmodel.dart` (doc comment), `tasks/lessons.md` +
+  `.claude/rules/lessons-digest.md`.
+  Acceptance:
+  1. A documented decision (code comment on `executeAsync` + a lessons.md/digest line) states
+     the fail-loud-on-disposed behavior is accepted/intended, not a bug.
+  2. A follow-up Linear ticket is filed for the full `clearError`-override sweep across the 32
+     files — **don't** attempt the full sweep in this pass.
+  3. No behavior change to `executeAsync` itself — decision-and-document only.
+
+### Batch H — trust-safety-hardening (full-panel: both touch firestore.rules, merged to stay
+file-disjoint from every other batch)
+- [ ] **[Tier C] BUT-1626** — Minor privacy: searchable opt-in + group-DM minor gate + lifecycle
+  guard (BUT-1454 remainder — item 1 shipped 2026-07-18 salvage, this is items 2-4).
+  disposition: build-review. requiresPlanMode: **true** (full-panel — Security Architect, Trust
+  & Safety, Legal, Privacy/DPO, Product Manager, Software Architect + 4 more; `high_stakes_hits:
+  firestore.rules`).
+  signoffReason: the group-DM CF gate's reject-vs-remove behavior and the searchable opt-in's
+  copy/placement are Malin's calls on a minors-safety surface.
+  Files: `functions/src/` (new group-membership CF trigger), a privacy-settings toggle (view +
+  viewmodel, TBD exact file at Step-0 of implementation), `firestore.rules`,
+  `lib/services/analytics/analytics_repository.dart`, plus tests.
+  Acceptance:
+  1. A dedicated "sökbarhet" opt-in toggle writes `public_profiles.isSearchable:true` for a
+     minor, distinct from the general profile save (which still omits the field for minors).
+  2. A new CF trigger validates group-conversation membership adds: a non-friend adding an
+     `isMinor` participant to a GROUP conversation is rejected/removed (emulator test).
+  3. `firestore.rules` hard-denies a minor writing `isSearchable:true` directly, except through
+     the gated opt-in path.
+  4. `AnalyticsRepository.setLifecycleStage` routes through (or is guarded by) the
+     `emitLifecycle` minor gate.
+
+- [ ] **[Tier A] BUT-1560** — Ops/Support observability batch: silent failures + missing
+  escalation signals (role-org scan #14). disposition: build. requiresPlanMode: **true**
+  (bumped to full-panel by the `firestore.rules` touch — merged into Batch H to stay
+  file-disjoint rather than run parallel firestore.rules edits in two worktrees).
+  Files: `functions/src/notifications/on-feedback-created.ts`, `firestore.rules`,
+  `lib/services/monitoring/app_monitoring_service.dart`,
+  `lib/services/feature_flags/feature_flag_service.dart`, plus tests.
+  Acceptance:
+  1. Feedback-email send failure writes a `system_events` doc (test: forced failure asserts
+     the doc).
+  2. `feedback` create rule gets `keys().hasOnly` + size caps (rules test: oversized/extra-field
+     payload rejected).
+  3. `AppMonitoringService.recordError` forwards to `WebErrorReporter` when `kIsWeb`.
+  4. The stale `audit_log_retention_days` Remote Config default is removed/deprecated. **Don't**
+     touch the BUT-665 tiered retention policy itself — only the stale flag.
+
+## Obsolete (Step-0 code/test read shows the premise gone — close, don't build)
+- **BUT-1612** ("BUT-1323 slice 3: apply per-member dislikes in the present-scoped menu filter")
+  — re-confirmed this round: `menu_generator.dart`'s `presentMemberIds` field is still never set
+  from outside the class (grepped `.presentMemberIds =` repo-wide, zero hits). Dependency
+  removed in BUT-1611's rebuild (`ca4ba8b70`). Close citing that commit.
+- **BUT-1463** ("Menu-generation VM tests red on main — 7 failures") — ran
+  `flutter test test/unit/viewmodels/menu_viewmodel_test.dart` directly: **30/30 green**, zero
+  failures. The 7 failures the ticket describes no longer exist on current main. Close citing
+  this run (2026-07-18) as the resolving evidence — the fix landed incidentally in a later
+  commit, not traceable to one specific commit.
+- **BUT-1456** ("Menu scorer duplicates recipe-complexity heuristic vs
+  `RecipeOperations.getComplexityScore`") — read the current `menu_scoring.dart`: the
+  cuisine-affinity/cooking-skill fields, the `_Complexity` enum, and the `_complexityOf`
+  skill-bias method the ticket describes were **deleted entirely** by BUT-1594
+  (`b3c7cb872`, 2026-07-12, "remove cuisine/skill menu weighting"). The file's own docstring
+  now states this. Nothing left to dedupe. Close citing `b3c7cb872`.
 
 ## Excluded this round (sequencing, not rejection)
-- **BUT-1501** (CRF/NER cascade + assisted-import correction capture) — overlaps file-wise
-  and in spirit with BUT-1469 (both widen correction capture beyond URL imports). Selecting
-  both risks two agents editing the same import-strategy files in parallel. BUT-1469 is
-  broader scope + higher priority; revisit BUT-1501 next sprint once BUT-1469 has landed —
-  some of its acceptance may already be covered.
+- **BUT-1613** ("BUT-1323 slice 4: per-day portion adjustment by present count") — its stated
+  blocker (slice 2 / BUT-1611 shipping the per-day presence selector) is NOT actually satisfied
+  yet: BUT-1615 (Batch D above) reveals BUT-1611 shipped only the dead data-model field, not the
+  UI/wiring that lets a user actually set a day's presence. Building 1613's portion-scaling logic
+  now would be unreachable dead code (nothing ever populates the presence it reads). Revisit
+  immediately after Batch D (BUT-1615) lands — the real dependency, not the closed ticket. Left
+  in its current Todo state (not reverted) since it's queued, just sequenced behind D.
+
+## Needs Malin (speculative / contestable / ops-blocked / wrong-repo — not built)
+- **BUT-1619 / BUT-1620 / BUT-1621** — Delivery-engine hardening tickets (review-marker content
+  verification, stub-finding rejection, worktree dep-resolution). Target files live in
+  `C:/claude-plugins`, a different git repo, shipped via `node tools/fanout-update.mjs` — not
+  buildable from a Butlery app sprint. Recommend: pick up from a claude-plugins-specific session.
+- **BUT-880** — PITR restore drill against a non-prod project. Already `need-malin`-labeled;
+  ops-blocked (needs BUT-451 staging project or a throwaway project + your time). Recommend: do
+  it, but it's an ops task for you.
+- **BUT-1176** — Optional custom_lint/AST upgrade. Self-describes "pick up only if custom_lint
+  is being added for other reasons" — condition unmet. Recommend: drop or leave parked.
+- **BUT-1472** — `parse_corrections_v2`/`llm_response_samples` have no consumer. Two forks (build
+  a consumer vs turn off the write path) — a real investment decision, not a bug fix. Recommend
+  the cheap "turn off" path per cost-minimization, unless you want the corrections-mining tool.
+- **BUT-1499** — Collaborative weekly menu is fully coded but never wired to a live view. The
+  ticket's own acceptance #1 is "decide: wire it up or park it" — genuinely your call; wiring adds
+  real support surface, parking downgrades 3 feature-inventory rows from Verified.
+- **BUT-1625** — Safe present-aware menu generation. Explicitly framed as "IF product wants
+  generation tuned to who's present" — a real product decision on a children's-allergen-safety
+  surface. The safe household-wide baseline already ships. Recommend: leave parked unless
+  specifically wanted.
+- **BUT-1601** — Inline ingredient quantities in cooking-mode steps ("tärna tomaterna" → "tärna
+  4 stora tomater"). No `autonomous` label, tagged `idea` — a genuine feature idea with real NLP
+  complexity (matching a free-text instruction token to a structured ingredient amount) and no
+  mockup. Recommend: worth doing eventually, needs a product/UX pass first, not an autonomous pick.
+- **BUT-1617** — Triage 35 non-blocking specialist findings from the 2026-07-14 sprint. The
+  findings text lived in that sprint's scratch review artifacts, which are very likely gone by
+  now (scratch space is disposable per the docs taxonomy). Recommend: close as stale unless you
+  know the findings survive somewhere; re-deriving them would mean re-running a full review pass
+  on old code, which isn't what this ticket asks for.
+- **BUT-1616** — Reconcile `raw-safe`/`processed` property-vocabulary drift (follow-up to
+  BUT-1498). Genuinely needs a decision on which side is canonical for each property — tagging
+  vocabulary is safety-adjacent, not mine to guess. Recommend: a 2-minute decision from you
+  (both/neither/one side per property), then this becomes a trivial follow-up build.
+- **8 pre-existing `need-malin`-labeled tickets** (BUT-1557, BUT-1599, BUT-1502, BUT-1179,
+  BUT-1368, BUT-863, BUT-1445, BUT-1229) remain parked in Backlog, already flagged by earlier
+  scans — no new judgment added this round; surfaced here only as a reminder they're waiting.
+
+## Excluded from scoring entirely
+- **BUT-677, BUT-722** — carry the `onboarding-reserved` label; per standing instruction, never
+  scored, selected, transitioned, or implemented.
+- **~90 `deferred`-labeled tickets** (epics, launch-gated, tablet/macOS, monetization ideas, etc.)
+  — left untouched in Backlog per the lane convention; deliberately parked, not re-scored.
 
 ## Deviation log
 (none yet — Phase 1 only, no implementation this pass)
 
 ---
 
-## 2026-07-16 parallel-sprint pile — status (archived)
-
-**Shipped to main this session (each reviewed cold + fixed, tests green):**
-- BUT-1611 — per-meal weekly-menu presence (rebuilt from the wrong per-day design; removed
-  the allergen-unsafe generation-scoping → BUT-1625). `ca4ba8b70`
-- BUT-1618 — rule-dialog property dropdown derives from the shared vocabulary. `20e68a79a`
-- BUT-1609 — "Minderårigt konto" moderation badge (+ a real watchIsAdmin spinner-strand fix). `f0b046b8e`
-- BUT-1519 — one shared Butlery-betyget rating pill + shared formatter. `3b0364475`
-- BUT-1623 — 3 admin onCall callables classified; app-check guard green (14/14). `919569e1a`
-
-**Remaining 3 — deliberately NOT landed tonight (need fresh, careful attention):**
-- [x] **BUT-1518** — re-selected this sprint (Batch A), scoped strictly to the ticket's
-  log-only intent this time (prior uncommitted attempt over-scoped into a data field — lost,
-  tree was clean at Phase 1 start).
-- [x] **BUT-1612** — closed as obsolete this sprint; see Obsolete section above.
-- [x] **BUT-1469** — re-selected this sprint (Batch B).
-
-## Follow-ups filed this session (2026-07-16)
-- BUT-1624 — a data-writing CF is an unreviewable git binary blob (one NUL byte). Re-selected
-  this sprint (Batch A).
-- BUT-1625 — safe present-aware menu generation (deferred from BUT-1611; also the home for
-  BUT-1612's dislikes redesign). Parked pending Malin's go/no-go — see Needs Malin above.
-
----
-
-## ⚠️ 2026-07-18 sprint OUTCOME — died on session usage limit (resets 4:20am), NOT shipped
-
-The sprint implemented ~9 tickets and its REVIEW gates passed (code-reviewer/testing/
-firebase-security/cloud-functions all ok), but the adversarial-VERIFY + completeness + ship
-phases all died on the usage limit. So: **commit=null, pushed=false** — nothing committed.
-
-- **done (verified true):** BUT-1518 (correctly scoped LOG-ONLY telemetry this time).
-- **inReview (implemented, review-gates-passed, but UNVERIFIED + UNCOMMITTED in the tree):**
-  BUT-1624, 1469, 1454, 1475, 1489, 1473, 1474, 1607.
-- **obsolete:** BUT-1612, 1613.
-- **needsApproval (product decisions — parked, correct):** 1625, 1499, 1472, 1176, 880, 1619/1620/1621.
-
-**The pile is uncommitted (partly half-staged) in the main tree. Backed up to
-scratchpad/sprint-2026-07-18-backup/ (full-diff.patch + newfiles/).**
-
-### SALVAGE (do this AFTER 4:20am reset, before any new sprint — the dirty tree will abort one):
-1. Ground-truth from git + the backup; do NOT trust the sprint's gates:ok (it can push past
-   forged markers — proven twice this session).
-2. Per ticket: re-run the real commit-gate specialists on its actual diff + /code-review; the
-   backend/CF ones (1518 done, 1624/1454 touch functions/src + firestore.rules) need cloud-functions
-   + firestore-rules-tester; 1454 is a minor-privacy full-panel ticket — treat as high-stakes.
-3. Fix findings, then pathspec-commit each ticket separately.
-4. 1454 touches firestore.rules → needs firestore-rules-tester (the sprint's rules-tester gate
-   showed ok:false — i.e. NOT satisfied). Verify rules carefully.
-
-### 2026-07-18 — PII-in-logs finding ADDRESSED on the uncommitted BUT-1518 pile
-Background security review flagged raw `uid` in the `pool_key_dimensions` info log in
-functions/src/ratings/canonical-rating-aggregation.ts. Fixed BOTH raw-uid log lines
-(the info telemetry + the transient-maturity warn) to `uidHash: hashUid(uid)`; test
-`test:canonical-rating-aggregation` green (21/21), C10 assertion now checks
-`line.uidHash === hashUid("u1")` AND `line.uid === undefined`. Do NOT re-flag at salvage —
-already closed. (Still needs the cloud-functions-specialist gate at commit time.)
-
----
-
-## ✅ SALVAGE COMPLETE — 2026-07-18 (all 7 batches shipped to main)
+## 2026-07-18 sprint (first pass) — SALVAGE COMPLETE (all 7 batches shipped to main)
 
 The 2026-07-18 sprint pile was salvaged ticket-by-ticket, each with fresh
 commit-gate specialist reviews on the ACTUAL diff (never trusting the sprint's
@@ -305,9 +270,47 @@ gates:ok), findings fixed, tests green, committed + pushed:
    phantom-diff bug (polluted USP training data). Un-skipped the pinned test + over-correction guard. 2 specialists.
 
 ### Follow-ups (not blocking):
-- **workflow-map.stale** — re-trace the 11 trigger flows (session-wide, incl. 1611/1609 +
-  1473/1518/1475) and update docs/onboarding/workflow-map.html JSON. Deferred to a dedicated pass.
+- **workflow-map.stale** — carried forward as BUT-1627 above (this second-pass sprint).
 - **BUT-1454**: enforcement is client-side; firestore.rules still permits minor isSearchable:true
-  (future discovery opt-in) — rules-layer follow-up.
+  (future discovery opt-in) — carried forward as BUT-1626 above.
 - **BUT-1469**: some URL structured/user-assisted fallback tiers don't re-tag source (accepted Low).
 - **BUT-1475**: delta refresh can't observe deletions until next forceRefresh/restart (documented in code).
+
+---
+
+## 2026-07-16 parallel-sprint pile — status (archived)
+
+**Shipped to main this session (each reviewed cold + fixed, tests green):**
+- BUT-1611 — per-meal weekly-menu presence (rebuilt from the wrong per-day design; removed
+  the allergen-unsafe generation-scoping → BUT-1625). `ca4ba8b70`
+- BUT-1618 — rule-dialog property dropdown derives from the shared vocabulary. `20e68a79a`
+- BUT-1609 — "Minderårigt konto" moderation badge (+ a real watchIsAdmin spinner-strand fix). `f0b046b8e`
+- BUT-1519 — one shared Butlery-betyget rating pill + shared formatter. `3b0364475`
+- BUT-1623 — 3 admin onCall callables classified; app-check guard green (14/14). `919569e1a`
+
+---
+
+## ⚠️ 2026-07-18 SPRINT PASS-2 (wf_bf9e87eb-ee1) — SHIP BLOCKED, uncommitted pile #2
+
+Second consecutive sprint whose ship phase was **blocked by the safety classifier**
+("No reason provided") → committed NOTHING (HEAD still 1c69dc9f9). 54 agents, ~5M tokens,
+~85 min. Its OWN completeness critic said "should not ship — 8 gaps." Pile is 39 dirty files
+(staged index INCOMPLETE — misses a large unstaged body of load-bearing fixes), backed up to
+scratchpad/sprint-2026-07-18-pass2-backup/ (3899-line patch).
+
+- **verified:true (salvageable):** BUT-1627, 1614, 1458, 1515, 1462, 1626.
+- **FAILED verification (do NOT ship):** BUT-1459 (correctness:fail + data-safety:fail).
+- **partial/dropped:** BUT-1560 (1 of 4 criteria), BUT-1615 (ZERO code — needs /preview + Malin sign-off).
+- **obsolete:** 1612, 1463, 1456, 1615. **needsApproval:** many (1619/1620/1621 wrong-repo=claude-plugins, 880 ops, 1176, 1472, 1499, 1625, 1601, 1617, 1616).
+- **entanglement:** unstaged fixes (user_service household-size, base_viewmodel retry guard,
+  portion_scaler, BUT-1626 firestore.rules creatorId, conversations-rules.test.ts) modified
+  16:22-16:35 — committing the staged-only index would DROP these + half-ship tickets.
+
+### SYSTEMIC ISSUE (root cause — fix before more sprints):
+The engine's ship phase is safety-classifier-blocked every run (overnight + this). Auto-looping
+it is a treadmill: each run costs ~5M tokens + leaves a pile. FIX the ship step (why the
+classifier blocks its commit — likely the LEFTHOOK_EXCLUDE-prefixed commit or a forced marker
+touch) in C:/claude-plugins .../sprint-execute-parallel.js before running more. Loop STOPPED.
+
+### If salvaging pass-2: ship ONLY the 6 verified-clean tickets, reconcile staged-vs-unstaged
+per file first (staged index is incomplete), EXCLUDE 1459 (unsafe), park 1560/1615.

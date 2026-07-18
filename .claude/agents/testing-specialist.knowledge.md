@@ -1766,3 +1766,189 @@ real repo via `GetIt.instance.registerSingleton<TagOverridesLogRepository>(...)`
 locator touch is this repo (checked the path first, per the bridge rule). Existing tests were
 unaffected — they never initialize the prod locator, so tryGet returns null and the capture is a
 silent no-op for them.
+
+### 2026-07-18 — executeAsync's fail-loud fix exposes a dead retry loop in AsyncOperationMixin.executeWithRetry [trigger: review of base_viewmodel.dart doc-comment diff]
+BUT-1462 corrected `executeAsync`'s doc from "returns null on failure" to "rethrows" (the code
+always threw). Reviewing that diff surfaced a latent bug the correction implicates:
+`AsyncOperationMixin.executeWithRetry` (base_viewmodel.dart:327-353) was written against the OLD
+(false) null-return contract. It does `final result = await executeAsync(...); if (result != null
+|| attempt == maxRetries) return result; await Future.delayed(delay);` — but executeAsync RETHROWS
+on failure, so the first thrown exception propagates straight out of the `for` loop. The retry /
+`Future.delayed` backoff path is only reachable when the operation RETURNS null without throwing —
+impossible for a non-nullable `T`. Net: the mixin never retries a throwing op (the sole reason
+retry exists), yet CLAUDE.md advertises it "with exponential backoff." Currently no production
+caller (only the test + a same-named-but-different mixin in lib/core/mixins), so it's a latent
+trap, not an active outage.
+Test smell that hid it: test/unit/viewmodels/base_viewmodel_test.dart:443 "should retry on failure
+and eventually succeed" was WEAKENED to `expect(attemptCount, greaterThanOrEqualTo(1))` (vacuous —
+any op runs once) with a comment excusing that executeWithRetry "may not complete all retries." The
+assertion was softened to go green instead of flagging the bug — exactly the anti-pattern. The
+right move: either fix executeWithRetry to `try/catch` around executeAsync and restore
+`expect(attemptCount, 3)`, or (if keeping current behavior) rename the test to state it does NOT
+retry-on-throw. Also executeWithRetry's own doc (line ~316 "Returns operation result or null if all
+attempts fail") is stale the same way executeAsync's was — the lesson's "correct the stale null doc
+wherever it appears" wasn't applied here. The BUT-1462/BUT-1628 lesson should note executeWithRetry
+is broken-by-the-same-fact so the sweep doesn't leave a silently-inert retry.
+
+---
+
+### 2026-07-18 — Review pattern: "armed-but-unsaveable" gate divergence (UserProfileViewModel / HouseholdSizeView, BUT-1594/BUT-1322)
+Trigger: reviewing lib/viewmodels/user_profile_viewmodel.dart + lib/views/settings/household_size_view.dart (settings sprint).
+Pattern to watch for whenever a save-only screen shares a multi-field ViewModel's `saveProfile()`:
+the Save button's ENABLE predicate and the save's INTERNAL VALIDATION gate can disagree.
+- HouseholdSizeView arms Save on `hasUnsavedChanges`, which has a special new-profile branch
+  (VM lines 90-102) that returns true when `householdSize != null` even on a not-yet-loaded /
+  first-run / offline profile (`_originalProfile == null`, `_editedProfile` = a shell with
+  `displayName: ''`).
+- But `saveProfile()` gates on `isFormValid` (`_displayNameError == null && displayName.isNotEmpty`,
+  line 108). The shell's empty displayName makes it false → save returns false immediately,
+  logging only via `_handleUserError` (which is a PRIVATE method that does NOT override the mixin's
+  `handleUserError` and never sets `_operationError`). So `viewModel.error` stays null and the
+  household screen shows the generic `profileCouldNotSave` — the setting is unsaveable, i.e. the
+  exact "screen locks up" outcome BUT-1594 tried to prevent, just moved from a disabled button to a
+  silent failing save.
+- The VM test (test/unit/viewmodels/user_profile_viewmodel_test.dart:759) only asserts
+  `hasUnsavedChanges` ARMS in this scenario; it never drives `saveProfile()` through it, so the gap
+  is invisible in green. Whenever you see a hasUnsavedChanges/canSave special case, write the
+  companion test that calls saveProfile() in that same state and asserts a MEANINGFUL result
+  (success OR a non-null `error`), not just that the button armed.
+Secondary note: `ErrorHandlingMixin.safeExecute` catches and returns `defaultValue` WITHOUT setting
+any error field — a VM using it for a write must set its own user-facing error, or the view's
+`vm.error ?? fallback` always shows the fallback. And this VM extends `ChangeNotifier` (not
+`BaseViewModel`), so `notifyListeners()` in the new save `finally` is unguarded against disposal.
+
+---
+
+### 2026-07-18 — Drift guards: a one-directional "all → mapped" check is NOT a two-way drift guard (menu-tagging-quality sprint)
+**Trigger:** reviewed the `ProteinTags` extraction refactor (`tag_phase1_nutrition.dart` +
+`protein_category.dart` + `menu_service_test.dart`, BUT-1324 follow-up). The refactor moved the
+protein vocabulary into a shared `ProteinTags.all` constant set and replaced the test's
+**set-equality** drift guard (`ProteinCategory.allTags == handKeptEmittedSet`) with a loop
+asserting each `ProteinTags.all` member maps to a non-null category.
+**Pattern:** A drift guard that only walks `vocabulary → mapExists` catches *forward* drift
+(a vocab entry with no mapping) but silently drops *reverse* drift (a mapping/vocab entry the
+producer no longer emits — a dead mapping still compiles and still returns non-null). The new
+doc comments claimed "reverse drift caught by the compiler" — **false**: the compiler only
+catches deleting the *constant*; deleting the *emission branch* (`tags.add(ProteinTags.lax)`)
+while keeping the constant/map/`all` entry compiles clean and passes the loop. The real
+producer↔vocabulary coupling ("the tagger emits exactly `ProteinTags.all`") had ZERO test —
+it was pure discipline. When you see a drift guard, ask both directions and ask whether the
+*producer* is ever actually exercised. The durable fix is a **positive** test that drives the
+real producer (build `IngredientLookupResult` fixtures per group → run `calculateProteinTags`
+→ assert the emitted union == `ProteinTags.all` and each maps to a category), not a static
+walk over a hand-maintained set.
+**Second pattern (indexOf(-1) precedence trap):** `ProteinCategory.categoryOf` starts
+`bestRank = _categoryPrecedence.length` and takes `rank = indexOf(category)`. A category present
+in `_tagToCategory` but missing from `_categoryPrecedence` yields `-1`, and `-1 < length` is
+always true → that category outranks EVERY real protein in a multi-protein dish. Latent today
+(all 9 listed) but unguarded, and the non-null drift guard can't catch it. Guard with
+`if (rank < 0) continue;` or assert `_tagToCategory.values ⊆ _categoryPrecedence` via a
+`@visibleForTesting` accessor.
+**Coverage gap noted:** the entire emission surface of `tag_phase1_nutrition.dart`
+(group lookups, `räk` + `crustacean` gate, all of `calculateCarbTags` incl. the `grain/pasta-bread`
+token) has NO direct test anywhere — protein tags are only tested by hand-setting `TagResult.tags`.
+
+---
+
+### 2026-07-18 — Review pattern: two independent owners of the same household-default scaling logic (BUT-1322/BUT-1515)
+Trigger: reviewing lib/views/recipe_detail/recipe_detail_actions.dart + lib/viewmodels/cooking_mode_viewmodel.dart
+(recipe-scaling sprint). Both files independently re-implement the SAME three-step behaviour —
+resolve the household-size default, pre-scale ingredients from the recipe's own portions as base,
+and log `logPortionScalingApplied(source: 'household_default'|'manual_override')` once per open —
+plus the BUT-1515 boot-race re-apply with a manual-override latch. The test file's own header comment
+admits it ("a separate copy of the logic in CookingModeViewModel"). The copies have ALREADY diverged:
+`CookingModeViewModel._resolveHouseholdDefault` rejects out-of-range sizes (`< minPortions || > maxPortions`,
+1–50), while `RecipeDetailActions._resolveHouseholdDefault` has NO range guard and trusts the
+`UserProfile` 1–12 constructor invariant. Safe today, but a fix/relaxation in one won't reach the other.
+Pattern to watch: when two surfaces (detail view + cooking mode) must agree on a derived value that
+feeds a THIRD consumer (add-to-shopping reads `currentPortions`), a shared helper is the correctness
+guarantee — duplicated resolve+scale+log is a latent split-brain. When reviewing such duplication,
+check the guards line-by-line for drift, not just that both have tests.
+Coverage gap found: both suites test the boot-race fallback→apply and the same-value idempotent no-op,
+but NEITHER tests a household-size CHANGE to a *new* value while a default is ALREADY applied (the
+`household == _currentPortions` guard's re-scale branch). A regression re-scaling from the wrong base,
+or silently mutating amounts under a mid-cook user who never touched the scaler, would stay green.
+
+### 2026-07-18 — BUT-1626 group-minor CF + analytics minimization review [Pattern — reviewed / correctness]
+
+Reviewed `enforce-group-minor-membership.ts`, its pure-fn test, `firestore.rules` conversation gate,
+and the analytics `setLifecycleStage` isMinor gate. Pure `computeMinorsToRemove` is well tested (6 cases,
+adult/creator/unknown-creator fail-safe/mixed all pinned) and passes.
+
+**Correctness — client-controlled `metadata.creatorId` defeats the CF's stated purpose.** The trigger keys
+its whole "was this minor added by a friend" decision on `data.metadata.creatorId`, but the conversations
+create rule (firestore.rules ~L1511) only requires `hasRequiredFields(['participantIds','createdAt'])` — it
+NEVER validates `metadata.creatorId == request.auth.uid`. A tampered client (the exact threat the CF header
+says it backstops) adds a minor to a group and sets `metadata.creatorId` to the *minor's own uid*: in the
+handler `candidates = participantIds.filter(u => u !== creatorId)` drops the minor before any read, and
+`computeMinorsToRemove` skips them via `if (uid === creatorId) continue`. Minor kept, gate bypassed. Lesson:
+**a defense-in-depth CF that trusts a doc field is only as strong as the rule validating that field** — before
+crediting a "backstop for tampered clients" gate, check the rules actually pin the field the gate reads. Fix
+belongs in rules (require creatorId==auth.uid on create), not the CF (onDocumentCreated has no auth context).
+
+**Testing gap — the safety-critical I/O branches are untested.** The pure fn is covered but the branch that
+actually cuts access (strip from `participantIds`, `remaining.length < 2 ⇒ delete whole conversation`, the
+per-uid `FieldValue.delete()` cleanup, membership-mirror cleanup) has ZERO coverage. For a child-safety trigger
+this is the wrong half to leave dark. Owes a `test:integration:enforce-group-minor-membership` (emulator lane):
+seed a >2 group with a non-friend-added minor, assert the minor leaves participantIds and read access is cut.
+Delete-branch also orphans the KEPT participants' `conversation_memberships` mirrors (only removed uids are
+cleaned) — ghost list entry.
+
+**Analytics — two independent minor-minimization gates that can drift.** `AnalyticsRepository.setLifecycleStage`
+gained `required bool isMinor` (early-returns when true) and is tested, BUT it has NO production call site: the
+live path is `UserPropertyBootstrap.emitLifecycle`, which duplicates the suppression inline (`if (profile?.isMinor
+== true) return`, L80) and calls `setUserProperty` directly. No safety gap today (both suppress), but the test
+exercises a dead-in-prod setter while the live gate is a separate line — changing the minor policy in one place
+silently leaves the other. When you see a "defense-in-depth mirror" setter, confirm which gate is actually on the
+live path before trusting the test that covers the other.
+
+### 2026-07-18 — BUT-1462 executeAsync rethrow: prove rethrow via retry attemptCount, not the swallowed direct test [Pattern discovered]
+
+Reviewed the `base_viewmodel_test.dart` salvage for BUT-1462 (executeAsync now RETHROWS
+on failure instead of returning null; executeWithRetry repaired to catch-and-retry).
+
+- The *direct* failure test (`should handle async operation failure`) wraps the call in
+  `try { ... } catch (_) {}` and only asserts `hasError, isTrue`. That is **vacuous with
+  respect to the rethrow contract** — it passes whether executeAsync rethrows OR regresses
+  to returning null. Don't rely on it to guard the rethrow.
+- The rethrow contract is actually guarded — non-vacuously — by the retry tests:
+  `attemptCount == 3` + `result == 'Success on attempt 3'` is only reachable if executeAsync
+  rethrows (a return-null regression stops after attempt 1, giving attemptCount==1). So the
+  retry group is the real guard for "executeAsync rethrows." Useful idiom: **prove a rethrow
+  indirectly by counting side-effect iterations of a caller that only loops on throw.**
+- Disposed→StateError is proven directly and correctly via `throwsStateError` (not swallowed).
+- Gap noted (non-blocking): the documented invariant "a legitimate `null` operation result
+  returns immediately without exhausting retries" (explicit in the production comment) has
+  **no test** — no case where the operation returns null and asserts `attemptCount == 1`.
+  A regression that treats null as a retry trigger would go uncaught. One cheap test owed.
+
+---
+
+## 2026-07-18 — BUT-1614 correction-capture tests (photo/text/url import strategies)
+
+**Trigger:** commit-gate review of salvage tests proving each non-URL import path captures a pre-edit
+`ImportCorrectionSnapshot` (the BUT-1469 widening of the parser feedback loop). Verdict: COMMIT-READY.
+
+**Pattern — testing `ImportCorrectionSnapshot.capture` wiring.** The strategies capture via
+`ServiceLocator.tryGet<ParsedRecipeCache>()` (no cache arg). To read the snapshot back through a real import,
+wire a real cache into the production locator in `setUp`:
+`ServiceLocator.reset(); ServiceLocator.initialize(DIContainer());` then
+`GetIt.instance.registerSingleton<ParsedRecipeCache>(cache)` (unregister first if present); tearDown unregisters
++ `ServiceLocator.reset()`. Confirmed the chain: `ServiceLocator.tryGet` → `DIContainer.get` → `GetIt.instance`,
+so the test's GetIt registration is what the strategy resolves. `ParsedRecipeCache.retrieve` is **one-time-use**
+(removes on read) — retrieve once per test, no cross-test bleed.
+
+**Non-vacuous asserts that mattered:** don't stop at `snapshot != null`. Assert `metadata.source` is the
+strategy's own `ImportSource` (photo/text/url), `parserVersion == ImportCorrectionSnapshot.snapshotParserVersion`
+(the sentinel proving it's a produced-recipe anchor, not a real parse), and for URL `metadata.domain == '8.8.8.8'`.
+The load-bearing test is **last-write-wins**: photo/url delegate to the inner TextImportStrategy which stores a
+`text`-tagged snapshot under the same recipe id first; the outer tier re-captures as photo/url and must overwrite —
+seed a `text` snapshot, run the import, assert the final tag is photo/url. Best-effort path also pinned: with the
+locator reset (no reachable cache) import still succeeds and nothing is stored.
+
+**Bonus (good):** the text-strategy diff also converted ~9 pre-existing vacuous escape-hatch asserts
+(`if (ingredients == ['Ingen ingrediensinformation']) { expect(...placeholder) } else {...}`) into hard behavioral
+asserts, and deleted a green-no-op "should extract difficulty" test (no such field/extractor exists) with a
+rationale comment. These characterize real parser behavior incl. current English-metadata gaps ("Serves 4" → null
+portions, "Prep 15, Cook 30" → 15 not summed) — honest characterization, documented; mild note that a future
+parser *improvement* will break them, which is acceptable for behavior-pinning tests on a Swedish-first parser.
