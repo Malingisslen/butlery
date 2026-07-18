@@ -2519,7 +2519,7 @@
     {
      "from": "vm-menu-generator",
      "to": "svc-household",
-     "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN, men läses bara när useHouseholdAllergens är true (BUT-1465 opt-out-reglage i Inställningar, live sedan 2026-07-11 — av faller tillbaka till egna preferenser); när ”vem äter” är valt unioneras i stället de närvarandes allergener via familjerostern (konton OCH matgästprofiler), vilket alltid går FÖRE hushålls-toggeln",
+     "payload": "getAggregatedAllergenPreferences — hushållsunionen är STANDARDVÄGEN, men läses bara när useHouseholdAllergens är true (BUT-1465 opt-out-reglage i Inställningar, live sedan 2026-07-11 — av faller tillbaka till egna preferenser); generatorn har DESSUTOM en opt-in-väg (presentMemberIds) som filtrerar mot enbart de närvarandes allergener via familjerostern (konton OCH matgästprofiler) och går då FÖRE hushålls-toggeln — men den är BYGGD MEN OWIRAD: ingen vy sätter presentMemberIds i dag, och veckomenyns per-pass-närvaro ”vem är hemma” (BUT-1611) matar den avsiktligt INTE. Närvaro styr visning/portioner/vem-åt-loggen, aldrig generationens pool — säker närvaro-styrd generering är uppskjuten (accepted-deviation BUT-1611 → BUT-1625)",
      "transport": "method call",
      "verified": true
     },
@@ -2883,7 +2883,7 @@
     {
      "from": "cf-request-deletion",
      "to": "ds-users",
-     "payload": "Tier 1 parallellt (recept, menyer, listor, taggar, snaps, skafferi, familj, delat, notiser, Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
+     "payload": "Tier 1 parallellt (recept, menyer, listor, taggar, taggkorrigeringar (tag_overrides_log, BUT-1473), snaps, skafferi, familj, delat, notiser, Storage) → Tier 2/3 sekventiellt → users/{uid} SIST · audit-logg {emailHash, deletedCollections, expireAt +180 d}",
      "transport": "Admin SDK delete + write",
      "verified": true
     },
@@ -4422,7 +4422,7 @@
   {
    "id": "flow-menu-1",
    "label": "Redigera veckomenyn",
-   "description": "Byter ut ett recept mot ett poängsatt alternativ, placerar det genererade förslaget manuellt i kalendern, lägger till/drar/tar bort recept i celler, flyttar flera markerade i klump och kopierar hela veckan till nästa.",
+   "description": "Byter ut ett recept mot ett poängsatt alternativ, placerar det genererade förslaget manuellt i kalendern, lägger till/drar/tar bort recept i celler, flyttar flera markerade i klump och kopierar hela veckan till nästa. BUT-1611: närvaro (”vem är hemma”) sätts nu PER PASS — lunch och middag var för sig — direkt i kalendern (ansikten + portionsantal på varje cell, plus en hopfällbar medlem×dag-veckoöversikt); arket är det återanvända ”vem är hemma?”-arket med en seedad, skrivskyddad roster (att öppna menyn skapar aldrig ett hushåll). setSlotPresence/setDayPresence sparar (”Hela dagen” sätter båda passen) och copyWeek bär närvaron vidare. Närvaron styr DISPLAY, portioner och vem-åt-loggen — den scope:ar avsiktligt INTE menygenereringen (accepted-deviation BUT-1611 → BUT-1625); en diskret notis visas om närvaron ändras efter att menyn genererats.",
    "features": [
     "MENU-02",
     "MENU-03",
@@ -4524,7 +4524,7 @@
     {
      "from": "vm-weekly-plan",
      "to": "svc-weekly-plan",
-     "payload": "copyWeek: kopierar varje post med nytt id, hoppar över redan befintliga dubbletter",
+     "payload": "copyWeek: kopierar varje post med nytt id, hoppar över redan befintliga dubbletter, och bär per-pass-närvaron vidare (även från en närvaro-endast källvecka) — BUT-1611",
      "transport": "method call",
      "verified": true
     }
@@ -5232,7 +5232,7 @@
     {
      "from": "ds-recipe-ratings",
      "to": "cf-pool-mirror",
-     "payload": "onDocumentWritten(recipe_ratings/{ratingId}) — mirrorRatingToPool: härleder poolKey servercentralt ur RATARENS EGEN receptkopia (aldrig en klientskickad nyckel), mognadsspärr (60 min/verifierad e-post), skriver ETT poolevent per uid+pool. Create/update är feature-flagg-spärrat (enable_pooled_ratings, AV i produktion) — radering/retraktion körs ALLTID (annars föräldralösa poströster)",
+     "payload": "onDocumentWritten(recipe_ratings/{ratingId}) — mirrorRatingToPool: härleder poolKey servercentralt ur RATARENS EGEN receptkopia (aldrig en klientskickad nyckel), mognadsspärr (60 min/verifierad e-post), skriver ETT poolevent per uid+pool. Create/update är feature-flagg-spärrat (enable_pooled_ratings, AV i produktion) — radering/retraktion körs ALLTID (annars föräldralösa poströster). Varje upsert loggar dessutom en strukturerad telemetrirad (tag: pool_key_dimensions med anchorSig + ingredientSig, BUT-1518) så att ”pool-key-tvätt” — en anchor-only titeländring — går att skilja OFFLINE från ett äkta rättbyte (stabil ingredientSig men flyttad anchor); ren logg, inget nytt fält, ingen ny collection, ingen extra Firestore-läsning",
      "transport": "Firestore trigger",
      "verified": true,
      "status": "dead"
@@ -5452,7 +5452,7 @@
   {
    "id": "flow-soc-6",
    "label": "rapportera & moderering",
-   "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt men e-postutskick till moderator är fortfarande stubbat (BUT-417).",
+   "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt men e-postutskick till moderator är fortfarande stubbat (BUT-417). BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
    "features": [
     "SOC-18",
     "SET-13",
@@ -6282,7 +6282,7 @@
     {
      "from": "vm-pantry",
      "to": "repo-ingredient",
-     "payload": "searchIngredients(query, limit: 10)",
+     "payload": "searchIngredients(query, limit: 10) — rankad sökning i minnet mot ingrediens-cachen (BUT-1475 delta-refresh), ingen Firestore-läsning per tangenttryck",
      "transport": "service-call",
      "verified": true,
      "status": "live"
@@ -6369,7 +6369,7 @@
     {
      "from": "vm-ingredient-search",
      "to": "repo-ingredient",
-     "payload": "searchIngredients(query, limit: 10)",
+     "payload": "searchIngredients(query, limit: 10) — rankad sökning i minnet mot ingrediens-cachen (BUT-1475 delta-refresh), ingen Firestore-läsning per tangenttryck",
      "transport": "service-call",
      "verified": true,
      "status": "live"
@@ -6377,7 +6377,7 @@
     {
      "from": "repo-ingredient",
      "to": "ds-ingredients",
-     "payload": "ingredient text search",
+     "payload": "sökningen körs I MINNET mot den cachade ingrediens-collectionen (~5,6k dok); Firestore läses bara för att fylla/uppdatera cachen — sedan BUT-1475 hämtar en bakgrundsrefresh bara dok med updatedAt > baslinjen (stale-while-revalidate, 1 h TTL), inte hela collectionen per session",
      "transport": "firestore-read",
      "verified": true,
      "status": "live"
