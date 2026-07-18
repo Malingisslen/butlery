@@ -164,7 +164,7 @@
     "tierCTriggers": ["cross-module reworks", "base-class propagation", ">500-line decomposition", "cold-start/bootstrap changes"],
     "tierDExamples": ["prod/console access", "functions deploy", "store/Play submission", "MFA/auth-provider config", "secrets"],
     "decisionQueue": { "source": "label", "label": "need-malin" },
-    "ship": { "commitEnvPrefix": "LEFTHOOK_EXCLUDE=analyze ", "pushTriggersDeploy": false },
+    "ship": { "commitEnvPrefix": "", "pushTriggersDeploy": false },
     "monitors": {
       "ciWatcher": "bash .claude/hooks/monitors/ci-watcher.sh",
       "testStreamer": "bash .claude/hooks/monitors/test-streamer.sh"
