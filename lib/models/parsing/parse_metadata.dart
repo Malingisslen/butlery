@@ -22,6 +22,9 @@ enum ImportSource {
   /// Photo/image (OCR).
   photo,
 
+  /// Voice-dictated recipe (on-device transcription).
+  voice,
+
   /// File import (CSV, Excel).
   file,
 

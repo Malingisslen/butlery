@@ -18,9 +18,11 @@
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/data/archived_recipes.dart' as archive;
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 /// Strategy for importing recipes from the Butlery archive
 /// Handles:
@@ -123,6 +125,13 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (!isValidIngredients(importedRecipe.ingredients)) {
         warnings.add('Ingredients validation failed');
       }
+
+      // BUT-1469: capture a pre-edit snapshot so edits to archive-imported
+      // recipes feed the parser feedback loop like URL imports do.
+      ImportCorrectionSnapshot.capture(
+        importedRecipe,
+        source: ImportSource.archive,
+      );
 
       return ImportResult.success(
         importedRecipe,

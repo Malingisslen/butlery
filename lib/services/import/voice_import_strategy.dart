@@ -1,8 +1,10 @@
 import 'package:clock/clock.dart';
 
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 /// Import strategy for voice-dictated recipes (guided sections, on-device
 /// KB-Whisper transcription — see the voice plan).
@@ -51,14 +53,21 @@ class VoiceImportStrategy implements ImportStrategy {
     // Override the text strategy's textPaste artefact: the transcript is
     // the practical re-extract source (audio is never stored), same
     // pattern as PhotoImportStrategy's photoOcr override (BUT-922).
-    return ImportResult.success(
-      result.recipe!.copyWith(
-        sourceArtefact: SourceArtefact(
-          type: SourceArtefactType.voiceDictation,
-          payload: input,
-          fetchedAt: clock.now(),
-        ),
+    final recipe = result.recipe!.copyWith(
+      sourceArtefact: SourceArtefact(
+        type: SourceArtefactType.voiceDictation,
+        payload: input,
+        fetchedAt: clock.now(),
       ),
+    );
+
+    // BUT-1469: re-tag the correction snapshot the inner text strategy stored
+    // as `voice` (same recipe id — copyWith preserves it — so this overwrites),
+    // keeping dictation corrections out of the pasted-text training bucket.
+    ImportCorrectionSnapshot.capture(recipe, source: ImportSource.voice);
+
+    return ImportResult.success(
+      recipe,
       warnings: result.warnings,
       metadata: result.metadata,
     );

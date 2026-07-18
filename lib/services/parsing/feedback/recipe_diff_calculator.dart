@@ -109,11 +109,20 @@ class RecipeDiffCalculator {
       for (var j = 0; j < correctedParsed.length; j++) {
         if (matchedCorrected.contains(j)) continue;
 
-        if (_namesMatch(
-          original[i].name,
-          correctedParsed[j].parsed.name,
-          threshold: 0.9,
-        )) {
+        // BUT-1469: a quantity+unit-only line ("2 dl") parses to an EMPTY name,
+        // so _namesMatch can never pair it with its identical self — which would
+        // fabricate a phantom removed+added pair on an unedited save. Fall back
+        // to raw-line equality for name-less lines; distinct name-less lines
+        // ("2 dl" vs "3 dl") differ by raw line and stay unmatched.
+        final namelessSelfMatch =
+            _bothNameless(original[i].name, correctedParsed[j].parsed.name) &&
+            _rawLinesEqual(original[i].originalLine, correctedParsed[j].line);
+        if (namelessSelfMatch ||
+            _namesMatch(
+              original[i].name,
+              correctedParsed[j].parsed.name,
+              threshold: 0.9,
+            )) {
           matchedOriginal.add(i);
           matchedCorrected.add(j);
 
@@ -211,11 +220,12 @@ class RecipeDiffCalculator {
       original.unit,
       correctedParsed.unit,
     );
-    final nameChanged = !_namesMatch(
-      original.name,
-      correctedParsed.name,
-      threshold: 0.9,
-    );
+    // Two empty names (both name-less "2 dl"-style lines paired by raw line,
+    // BUT-1469) are NOT a name change — otherwise the matched pair fabricates a
+    // phantom "modified" correction on an unedited save.
+    final nameChanged = _bothNameless(original.name, correctedParsed.name)
+        ? false
+        : !_namesMatch(original.name, correctedParsed.name, threshold: 0.9);
 
     // Check if only position changed
     final positionChanged = originalIndex != correctedIndex;
@@ -356,6 +366,19 @@ class RecipeDiffCalculator {
     final similarity = _calculateSimilarity(normalizedA, normalizedB);
     return similarity >= threshold;
   }
+
+  /// True when both ingredient names are absent — a quantity+unit-only line
+  /// like "2 dl" whose parse yields an empty name (BUT-1469). Such lines can
+  /// only be paired by their raw text, not by name.
+  bool _bothNameless(String? a, String? b) =>
+      (a == null || a.trim().isEmpty) && (b == null || b.trim().isEmpty);
+
+  /// Whitespace/case-insensitive equality of two raw ingredient lines, used to
+  /// self-match name-less lines so an unedited save fabricates no correction
+  /// (BUT-1469). Distinct lines ("2 dl" vs "3 dl") still differ here.
+  bool _rawLinesEqual(String a, String b) =>
+      a.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ') ==
+      b.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   /// Check if two instruction texts match.
   bool _textsMatch(String a, String b, {required double threshold}) {

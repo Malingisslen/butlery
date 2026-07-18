@@ -35,6 +35,7 @@ import 'dart:typed_data';
 
 import 'package:clock/clock.dart';
 
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -43,6 +44,7 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/photo_llm_vision.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 /// Strategy for importing recipes from photos using OCR technology.
 /// **Extraction Workflow:**
@@ -168,11 +170,13 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       // also drops the handwriting tuning (review BUG 1).
       final isHandwritten = options?['isHandwritten'] == true;
       if (isHandwritten) {
-        return await _llmVision.handwrittenImport(
-          bytesToOcr,
-          options?['sourceType'] as String?,
-          formatBefore: formatBefore,
-          formatAfter: formatAfter,
+        return _captureSnapshot(
+          await _llmVision.handwrittenImport(
+            bytesToOcr,
+            options?['sourceType'] as String?,
+            formatBefore: formatBefore,
+            formatAfter: formatAfter,
+          ),
         );
       }
 
@@ -191,7 +195,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           formatAfter: formatAfter,
         );
         if (llmResult != null) {
-          return llmResult;
+          return _captureSnapshot(llmResult);
         }
 
         // LLM also unavailable or failed
@@ -217,7 +221,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           formatAfter: formatAfter,
         );
         if (llmResult != null) {
-          return llmResult;
+          return _captureSnapshot(llmResult);
         }
 
         // LLM also unavailable or failed
@@ -245,7 +249,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           formatAfter: formatAfter,
         );
         if (llmResult != null) {
-          return llmResult;
+          return _captureSnapshot(llmResult);
         }
 
         // LLM also unavailable or failed
@@ -278,19 +282,21 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           fetchedAt: clock.now(),
         ),
       );
-      return ImportResult.success(
-        recipeWithArtefact,
-        warnings: _buildWarnings(
-          ocrResult: ocrResult,
-          textResult: textResult,
-        ),
-        metadata: _buildMetadata(
-          ocrResult: ocrResult,
-          imageBytes: imageBytes,
-          textResult: textResult,
-          sourceType: options?['sourceType'] as String?,
-          formatBefore: formatBefore,
-          formatAfter: formatAfter,
+      return _captureSnapshot(
+        ImportResult.success(
+          recipeWithArtefact,
+          warnings: _buildWarnings(
+            ocrResult: ocrResult,
+            textResult: textResult,
+          ),
+          metadata: _buildMetadata(
+            ocrResult: ocrResult,
+            imageBytes: imageBytes,
+            textResult: textResult,
+            sourceType: options?['sourceType'] as String?,
+            formatBefore: formatBefore,
+            formatAfter: formatAfter,
+          ),
         ),
       );
     } catch (e) {
@@ -302,6 +308,20 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         },
       );
     }
+  }
+
+  /// BUT-1469: capture a pre-edit correction snapshot for a successful photo
+  /// import (OCR→text and every LLM-vision route), then pass the result
+  /// through unchanged. Keyed by recipe id, tagged `photo`; overwrites the
+  /// snapshot the inner text strategy stored (same recipe id).
+  ImportResult _captureSnapshot(ImportResult result) {
+    if (result.isSuccess && result.recipe != null) {
+      ImportCorrectionSnapshot.capture(
+        result.recipe!,
+        source: ImportSource.photo,
+      );
+    }
+    return result;
   }
 
   /// Extract image bytes from options parameter

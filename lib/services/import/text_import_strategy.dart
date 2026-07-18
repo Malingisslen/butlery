@@ -4,9 +4,11 @@ import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
@@ -89,6 +91,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (!isValidInstructions(recipe.instructions)) {
         warnings.add('No valid instructions found');
       }
+
+      // BUT-1469: capture a pre-edit snapshot so text-import corrections feed
+      // the parser feedback loop. Photo/voice delegate here and then re-tag the
+      // snapshot with their own source (same recipe id, last write wins).
+      ImportCorrectionSnapshot.capture(recipe, source: ImportSource.text);
 
       return ImportResult.success(
         recipe,

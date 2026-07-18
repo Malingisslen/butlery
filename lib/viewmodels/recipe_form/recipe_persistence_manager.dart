@@ -478,8 +478,11 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// Aggregate doc → `parsing_corrections` (alias learning); per-field docs →
   /// `parse_corrections_v2` via logParseCorrection callable (BUT-595).
   void _trackParsingCorrectionsInBackground(Recipe savedRecipe) {
-    if (savedRecipe.sourceUrl == null || savedRecipe.sourceUrl!.isEmpty) return;
-    final originalParsed = _state.originalParsedRecipe;
+    // BUT-1469: diff off the import-correction snapshot, which is populated for
+    // EVERY import path (text/photo/voice/archive/url), not just URL. The old
+    // `sourceUrl != null` gate was a URL-era assumption; the snapshot's
+    // presence is the real signal that this save started from an import.
+    final originalParsed = _state.importCorrectionSnapshot;
     if (originalParsed == null) return;
 
     Future(() async {
@@ -514,6 +517,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       }
     });
 
+    // Clear both slots so a second save on the same form can't re-diff.
+    _state.setImportCorrectionSnapshot(null);
     _state.setOriginalParsedRecipe(null);
   }
 

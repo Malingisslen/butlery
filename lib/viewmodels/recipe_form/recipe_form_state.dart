@@ -44,6 +44,12 @@ class RecipeFormState extends ChangeNotifier {
   // Core state
   Recipe? _originalRecipe;
   ParsedRecipe? _originalParsedRecipe;
+
+  // BUT-1469: pre-edit parse snapshot used ONLY to diff user corrections on
+  // save (all import paths). Kept separate from _originalParsedRecipe so it
+  // never drives the per-ingredient confidence UI or import-source analytics —
+  // heuristic snapshots carry no genuine per-field confidence.
+  ParsedRecipe? _importCorrectionSnapshot;
   bool _isSaving = false;
   bool _isForking = false;
   String? _error;
@@ -218,6 +224,15 @@ class RecipeFormState extends ChangeNotifier {
   /// Called when importing a recipe to enable diff calculation on save
   void setOriginalParsedRecipe(ParsedRecipe? parsed) {
     _originalParsedRecipe = parsed;
+  }
+
+  /// BUT-1469: pre-edit snapshot diffed against the saved recipe to capture
+  /// corrections as training data, for every import path (not only URL).
+  ParsedRecipe? get importCorrectionSnapshot => _importCorrectionSnapshot;
+
+  /// Set the correction snapshot (called from the viewmodel after import).
+  void setImportCorrectionSnapshot(ParsedRecipe? snapshot) {
+    _importCorrectionSnapshot = snapshot;
   }
 
   bool get isSaving => _isSaving;

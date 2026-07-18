@@ -38,6 +38,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 
 // Import for feedback loop
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Import for per-ingredient confidence review (BUT-925)
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -151,17 +152,28 @@ class RecipeFormViewModel extends BaseViewModel
     // Register lifecycle observer for auto-save on app background/kill
     WidgetsBinding.instance.addObserver(this);
 
-    // Feedback loop: Retrieve original ParsedRecipe for imported recipes
-    // This enables diff calculation when user saves, capturing corrections
-    // as training data for parser improvement.
-    if (initialRecipe?.sourceUrl != null && isTemplate) {
+    // Feedback loop: Retrieve the pre-edit parse snapshot for imported recipes
+    // so saving captures the user's corrections as training data.
+    // BUT-1469: keyed by recipe id (not sourceUrl) so EVERY import path
+    // participates — text, photo, voice and archive imports, not just URL.
+    if (initialRecipe != null && isTemplate) {
       final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
       if (cache != null) {
-        final parsed = cache.retrieve(initialRecipe!.sourceUrl!);
+        final parsed = cache.retrieve(initialRecipe.id);
         if (parsed != null) {
-          _state.setOriginalParsedRecipe(parsed);
+          // Diff-on-save applies to every import path.
+          _state.setImportCorrectionSnapshot(parsed);
+          // The per-ingredient confidence UI + import-source analytics only
+          // apply to genuine multi-tier parses (URL today), not the lighter
+          // snapshots the other strategies store.
+          final isGenuineParse =
+              parsed.metadata.parserVersion !=
+              ImportCorrectionSnapshot.snapshotParserVersion;
+          if (isGenuineParse) {
+            _state.setOriginalParsedRecipe(parsed);
+          }
           AppLogger.debug(
-            '📊 Retrieved ParsedRecipe for feedback loop: ${initialRecipe.sourceUrl}',
+            '📊 Retrieved parse snapshot for feedback loop: ${initialRecipe.id}',
           );
         }
       }

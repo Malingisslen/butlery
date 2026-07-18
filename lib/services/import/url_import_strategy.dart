@@ -14,6 +14,8 @@ import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -269,6 +271,16 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         fetchedAt: clock.now(),
       ),
     );
+    // BUT-1469: the inner TextImportStrategy already stored a correction
+    // snapshot tagged ImportSource.text with no domain. Re-tag it url+domain
+    // (same recipe id, last write wins) — mirrors the photo/voice override — so
+    // corrections from a URL never pollute the pasted-text training bucket and
+    // keep their domain attribution for URL alias-learning.
+    ImportCorrectionSnapshot.capture(
+      recipe,
+      source: ImportSource.url,
+      domain: _extractDomain(url),
+    );
     return ImportResult.success(
       recipe,
       warnings: [
@@ -313,6 +325,13 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         payload: url,
         fetchedAt: clock.now(),
       ),
+    );
+    // BUT-1469: re-tag the inner text snapshot as url+domain (see
+    // _tryWebScraperFallback) — same recipe id, last write wins.
+    ImportCorrectionSnapshot.capture(
+      recipe,
+      source: ImportSource.url,
+      domain: _extractDomain(url),
     );
     return ImportResult.success(
       recipe,
@@ -450,11 +469,17 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     String url,
   ) {
     final parsed = parseResult.recipe!;
+    final recipeId = _uuid.v4();
 
+    // BUT-1469: key the correction-capture snapshot by recipe id (not sourceUrl)
+    // so every import path shares one cache scheme. URL keeps its rich, genuine
+    // ParsedRecipe here — the other strategies store a lighter snapshot.
     final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
     if (cache != null) {
-      cache.store(url, parsed);
-      AppLogger.debug('Stored ParsedRecipe in cache for: $url');
+      cache.store(recipeId, parsed);
+      AppLogger.debug(
+        'Stored ParsedRecipe in cache for import correction: $recipeId',
+      );
     }
 
     final parsedIngredients = parsed.ingredients.value;
@@ -464,7 +489,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     final recipe = Recipe(
       core: RecipeCore(
-        id: _uuid.v4(),
+        id: recipeId,
         title: parsed.title.value ?? 'Imported Recipe',
         description: parsed.description.orEmpty(),
         ingredients: ingredients,
