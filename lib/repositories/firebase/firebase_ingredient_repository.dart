@@ -30,8 +30,21 @@ class FirebaseIngredientRepository
   /// When the cache was last populated. `null` means uninitialized.
   DateTime? _cacheLoadedAt;
 
+  /// BUT-1475: highest server `updatedAt` seen across the loaded ingredients.
+  /// The delta-refresh baseline — a background refresh only re-fetches docs
+  /// changed since this timestamp (server-sourced on both sides, so it is
+  /// immune to client clock skew). `null` when no loaded doc carried an
+  /// `updatedAt` (legacy docs), which forces a full reload instead.
+  Timestamp? _maxUpdatedAt;
+
   /// In-flight refresh so concurrent callers coalesce to one fetch.
   Future<void>? _inFlightLoad;
+
+  /// Whether [_inFlightLoad] is a FULL reload (true) vs a delta/TTL refresh
+  /// (false). A [forceRefresh] may coalesce onto an in-flight full load, but
+  /// must never settle for an in-flight delta — it guarantees a complete
+  /// re-fetch (BUT-1475). Only meaningful while [_inFlightLoad] is non-null.
+  bool _inFlightIsFull = false;
 
   final DateTime Function() _now;
 
@@ -123,12 +136,96 @@ class FirebaseIngredientRepository
     }
   }
 
+  /// BUT-1475: the TTL-driven background refresh fetches ONLY the ingredients
+  /// changed since the last load (a delta query on `updatedAt`), instead of
+  /// re-downloading the whole ~5.6k-doc collection every hour. In steady state
+  /// (an admin-managed collection that changes rarely) the delta query returns
+  /// zero docs, collapsing the hourly refresh from thousands of reads to one
+  /// empty query. Coalesced through [_inFlightLoad] so concurrent stale reads
+  /// fire a single refresh.
   Future<void> _refreshCacheInBackground() async {
     if (_inFlightLoad != null) return;
+    final future = _deltaRefreshOrFull();
+    _inFlightLoad = future;
+    _inFlightIsFull = false;
     try {
-      await loadCache(forceReload: true);
+      await future;
     } catch (_) {
-      // loadCache already logged. Stale data continues to serve.
+      // _deltaRefreshOrFull already logged. Stale data continues to serve.
+    } finally {
+      _inFlightLoad = null;
+    }
+  }
+
+  /// Re-fetches only ingredients with `updatedAt` newer than [_maxUpdatedAt]
+  /// and merges them into the cache. Falls back to a full reload when there is
+  /// no server-timestamp baseline, so a collection of legacy docs without
+  /// `updatedAt` never silently stops refreshing. On any error the existing
+  /// (stale) cache keeps serving — the same degrade-not-crash contract as the
+  /// full load (BUT-1331).
+  ///
+  /// KNOWN LIMITATION (BUT-1475): a delta query on `updatedAt` cannot observe
+  /// DELETED docs — once a baseline is set, every background refresh is a delta,
+  /// so a removed ingredient lingers in the cache until the next `forceRefresh`
+  /// or app restart (which do a full reload). Acceptable for this rarely-mutated,
+  /// admin-managed collection; if ingredient deletions become routine, add a
+  /// periodic full reload (e.g. every Nth refresh).
+  Future<void> _deltaRefreshOrFull() async {
+    final baseline = _maxUpdatedAt;
+    if (baseline == null) {
+      await _doLoadCache();
+      return;
+    }
+    try {
+      final snapshot = await _collection
+          .where('updatedAt', isGreaterThan: baseline)
+          .get();
+      if (snapshot.docs.isEmpty) {
+        // Nothing changed since the last load — restamp freshness so the TTL
+        // window resets without another delta query until it lapses again.
+        _cacheLoadedAt = _now();
+        return;
+      }
+      var maxTs = baseline;
+      for (final doc in snapshot.docs) {
+        final ingredient = IngredientData.fromFirestore(doc);
+        _cache[ingredient.id] = ingredient;
+        final ts = _readUpdatedAt(doc.data());
+        if (ts != null && ts.compareTo(maxTs) > 0) maxTs = ts;
+      }
+      // Rebuild the lookup indexes from the merged cache: an edited doc's old
+      // name/alias keys must not linger, and index rebuild off the in-memory
+      // map costs no extra reads.
+      _rebuildIndexes();
+      _maxUpdatedAt = maxTs;
+      _cacheLoadedAt = _now();
+      AppLogger.info(
+        'Ingredient cache delta refresh: ${snapshot.docs.length} changed doc(s)',
+      );
+    } catch (e, stack) {
+      AppLogger.error(
+        'Ingredient delta refresh failed; serving stale cache: $e',
+        stack,
+      );
+    }
+  }
+
+  /// Reads a doc's server `updatedAt` timestamp, or `null` when absent/typed
+  /// otherwise (a not-yet-resolved `serverTimestamp` sentinel included).
+  Timestamp? _readUpdatedAt(Map<String, dynamic>? data) {
+    final value = data?['updatedAt'];
+    return value is Timestamp ? value : null;
+  }
+
+  /// Clears and repopulates every lookup index from the current [_cache]. Used
+  /// after a delta merge so edited docs don't leave stale index entries.
+  void _rebuildIndexes() {
+    _swedishNameIndex.clear();
+    _englishNameIndex.clear();
+    _aliasIndex.clear();
+    _compoundNames.clear();
+    for (final ingredient in _cache.values) {
+      _addToCache(ingredient);
     }
   }
 
@@ -139,14 +236,28 @@ class FirebaseIngredientRepository
   Future<void> loadCache({bool forceReload = false}) async {
     if (_cacheLoaded && !forceReload) return;
     final inFlight = _inFlightLoad;
-    if (inFlight != null) return inFlight;
+    // A plain (non-forced) load coalesces onto ANY in-flight fetch. A
+    // forceReload coalesces only onto an in-flight FULL load; if a delta
+    // refresh is in flight it waits for that to drain, then runs its own full
+    // load — it must never return a partial delta to a caller that asked for a
+    // complete re-fetch (BUT-1475).
+    if (inFlight != null && (!forceReload || _inFlightIsFull)) return inFlight;
+    if (inFlight != null) {
+      try {
+        await inFlight;
+      } catch (_) {
+        // The in-flight fetch logged its own failure; proceed to a full load.
+      }
+    }
 
     final future = _doLoadCache();
     _inFlightLoad = future;
+    _inFlightIsFull = true;
     try {
       await future;
     } finally {
       _inFlightLoad = null;
+      _inFlightIsFull = false;
     }
   }
 
@@ -160,9 +271,16 @@ class FirebaseIngredientRepository
       _englishNameIndex.clear();
       _aliasIndex.clear();
       _compoundNames.clear();
+      Timestamp? maxTs;
       for (final doc in snapshot.docs) {
         _addToCache(IngredientData.fromFirestore(doc));
+        final ts = _readUpdatedAt(doc.data());
+        if (ts != null && (maxTs == null || ts.compareTo(maxTs) > 0)) {
+          maxTs = ts;
+        }
       }
+      // BUT-1475: record the delta baseline for the next background refresh.
+      _maxUpdatedAt = maxTs;
       _cacheLoadedAt = _now();
       stopwatch.stop();
       AppLogger.info(
@@ -589,6 +707,7 @@ class FirebaseIngredientRepository
     _aliasIndex.clear();
     _compoundNames.clear();
     _cacheLoadedAt = null;
+    _maxUpdatedAt = null;
   }
 
   /// Disposes resources.
