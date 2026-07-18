@@ -22,6 +22,7 @@ import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dar
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -72,6 +73,7 @@ class TaggingModule implements DIModule {
     PersonalTagService,
     TagEditingService,
     TagResolutionService,
+    TagOverridesLogRepository,
   ];
 
   @override
@@ -175,6 +177,12 @@ class TaggingModule implements DIModule {
         () => FirebasePersonalTagGroupRepository(
           authRepository: container<AuthRepository>(),
         ),
+      );
+
+      // BUT-1473: fire-and-forget log of allergen tag-override corrections,
+      // consumed by TagEditingService via ServiceLocator.tryGet.
+      container.registerLazySingleton<TagOverridesLogRepository>(
+        () => TagOverridesLogRepository(),
       );
 
       // Tag editing service for user-driven tag overrides

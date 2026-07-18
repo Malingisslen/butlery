@@ -2041,6 +2041,37 @@ service cloud.firestore {
     }
 
     // ========================================
+    // TAG OVERRIDES LOG (BUT-1473) — allergen tag-override corrections
+    // ========================================
+    // Own-data, append-only capture of allergen verdict overrides feeding the
+    // tagging learning loop. Same ownership + immutability contract as
+    // parsing_corrections above (GDPR read/delete of own data; admins read all
+    // for the learning-loop dashboard). Writes are the caller's OWN data
+    // (userId == auth.uid), enforced here — the only thing that makes the
+    // client's fire-and-forget TagOverridesLogRepository.save() land instead of
+    // default-denying.
+    match /tag_overrides_log/{entryId} {
+      // Users read their own corrections (GDPR); admins read across all.
+      allow read: if (isAuthenticated()
+        && request.auth.uid == resource.data.userId)
+        || isAdmin();
+
+      // Users can only create corrections for themselves.
+      // SECURITY: prevents cross-user data-poisoning of the learning loop.
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
+        && hasRequiredFields(['id', 'userId', 'recipeId', 'type', 'tag', 'direction', 'timestamp']);
+
+      // Immutable — corrections are an append-only log.
+      allow update: if false;
+
+      // Users can delete their own corrections (GDPR Article 17). The account-
+      // deletion cascade (deleteTagOverridesLog) also removes them server-side.
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+    }
+
+    // ========================================
     // PARSE CORRECTIONS V2 (BUT-595) — server-write-only per-field log
     // ========================================
     // Per-field correction telemetry. Documents are written by the

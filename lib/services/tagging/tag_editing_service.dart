@@ -1,9 +1,13 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_decision.dart';
+import 'package:butlery/models/tagging/tag_override_log_entry.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 
 /// Service for user-driven tag editing with safety controls.
 ///
@@ -65,7 +69,61 @@ class TagEditingService extends BaseService {
       '✏️ Applied allergen override: $allergenKey → ${newStatus.name}',
     );
 
+    // BUT-1473: capture the correction for the tagging learning loop.
+    // Fire-and-forget; a logging failure must never block the edit.
+    _logAllergenOverride(
+      recipe: recipe,
+      allergenKey: allergenKey,
+      autoStatus: autoStatus,
+      newStatus: newStatus,
+      editedBy: editedBy,
+    );
+
     return TagEditResult.success(updatedRecipe);
+  }
+
+  /// Writes a small `tag_overrides_log` doc recording an allergen override:
+  /// the allergen, the `auto->user` direction, and the ingredients the
+  /// auto-tagger cited (pulled from the [TagResult] decision log). No-op when
+  /// the log repository isn't registered (e.g. in tests), and never throws.
+  void _logAllergenOverride({
+    required Recipe recipe,
+    required String allergenKey,
+    required TriState? autoStatus,
+    required TriState newStatus,
+    required String editedBy,
+  }) {
+    final repository = ServiceLocator.tryGet<TagOverridesLogRepository>();
+    if (repository == null) return;
+
+    final triggering =
+        recipe.tagResult?.decisions
+            ?.firstWhere(
+              (d) => d.type == 'allergen' && d.key == allergenKey,
+              orElse: () => const TagDecision(
+                type: 'allergen',
+                key: '',
+                result: TriState.unknown,
+                reason: '',
+              ),
+            )
+            .triggeringIngredients ??
+        const <String>[];
+
+    final now = clock.now();
+    final entry = TagOverrideLogEntry(
+      id: '${recipe.id}_${allergenKey}_${now.microsecondsSinceEpoch}',
+      userId: editedBy,
+      recipeId: recipe.id,
+      type: 'allergen',
+      tag: allergenKey,
+      direction: '${autoStatus?.name ?? 'unknown'}->${newStatus.name}',
+      triggeringIngredients: List<String>.from(triggering),
+      timestamp: now,
+    );
+
+    // Fire-and-forget: the repository swallows its own errors.
+    repository.save(entry);
   }
 
   /// Applies a dietary status override to a recipe.

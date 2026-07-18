@@ -1,10 +1,31 @@
+import 'dart:async';
+
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/tagging/tag_decision.dart';
+import 'package:butlery/models/tagging/tag_override_log_entry.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/repositories/tag_overrides_log_repository.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
+
+/// A real [TagOverridesLogRepository] subclass whose `save` never resolves, used
+/// to prove the fire-and-forget capture can't block the synchronous edit result.
+/// (A test double subclassing the concrete repo — NOT a mocktail Mock — so the
+/// overridden body is legitimate.)
+class _NeverCompletingLogRepository extends TagOverridesLogRepository {
+  _NeverCompletingLogRepository() : super(firestore: FakeFirebaseFirestore());
+
+  @override
+  Future<void> save(TagOverrideLogEntry entry) => Completer<void>().future;
+}
 
 void main() {
   late TagEditingService service;
@@ -128,6 +149,147 @@ void main() {
         expect(
           result.updatedRecipe!.tagOverrides?.lastEditedAt,
           isNotNull,
+        );
+      });
+
+      // BUT-1473: fire-and-forget capture of the correction into
+      // `tag_overrides_log` via ServiceLocator.tryGet<TagOverridesLogRepository>.
+      group('override capture (BUT-1473)', () {
+        // The service reads the PRODUCTION ServiceLocator (DIContainer over
+        // GetIt.instance). Bridging is safe here: applyAllergenOverride's only
+        // locator touch is this repository.
+        setUp(() {
+          prod.ServiceLocator.initialize(DIContainer());
+        });
+
+        tearDown(() async {
+          await GetIt.instance.reset();
+          prod.ServiceLocator.reset();
+        });
+
+        Future<void> drainFireAndForget() async {
+          await Future<void>.delayed(Duration.zero);
+          await Future<void>.delayed(Duration.zero);
+        }
+
+        test(
+          'captures ONE log entry with the correct correction fields',
+          () async {
+            final fake = FakeFirebaseFirestore();
+            GetIt.instance.registerSingleton<TagOverridesLogRepository>(
+              TagOverridesLogRepository(firestore: fake),
+            );
+
+            final recipe = RecipeBuilder()
+                .withId('recipe-42')
+                .withTagResult(
+                  TagResult(
+                    tags: const {'test-tag'},
+                    allergenStatus: const {'gluten': TriState.contains},
+                    dietaryStatus: const {},
+                    coverage: 1.0,
+                    unknownIngredients: const [],
+                    generatorVersion: '3.0.0',
+                    generatedAt: DateTime.now(),
+                    decisions: const [
+                      TagDecision(
+                        type: 'allergen',
+                        key: 'gluten',
+                        result: TriState.contains,
+                        reason: "Ingredient 'vetemjöl' has property 'gluten'",
+                        triggeringIngredients: ['vetemjöl', 'ströbröd'],
+                      ),
+                    ],
+                  ),
+                )
+                .build();
+
+            final result = service.applyAllergenOverride(
+              recipe: recipe,
+              allergenKey: 'gluten',
+              newStatus: TriState.free,
+              editedBy: 'chef_anna',
+              userConfirmed: true,
+            );
+
+            expect(result.success, isTrue);
+
+            await drainFireAndForget();
+
+            final snapshot = await fake
+                .collection(TagOverridesLogRepository.collectionName)
+                .get();
+            expect(snapshot.docs, hasLength(1));
+
+            final data = snapshot.docs.first.data();
+            expect(data['userId'], 'chef_anna');
+            expect(data['recipeId'], 'recipe-42');
+            expect(data['type'], 'allergen');
+            expect(data['tag'], 'gluten');
+            expect(data['direction'], 'contains->free');
+            expect(
+              data['triggeringIngredients'],
+              ['vetemjöl', 'ströbröd'],
+            );
+          },
+        );
+
+        test(
+          'is a no-op that never throws when no repository is registered',
+          () async {
+            // DIContainer initialized but no TagOverridesLogRepository → tryGet
+            // resolves null (the fire-and-forget guard path).
+            final recipe = RecipeBuilder()
+                .withTagResult(createTagResult())
+                .build();
+
+            final result = service.applyAllergenOverride(
+              recipe: recipe,
+              allergenKey: 'gluten',
+              newStatus: TriState.free,
+              editedBy: 'chef_anna',
+              userConfirmed: true,
+            );
+
+            await drainFireAndForget();
+
+            // The edit still applies; the missing logger is silently skipped.
+            expect(result.success, isTrue);
+            expect(
+              result.updatedRecipe!.tagOverrides?.allergenOverrides['gluten'],
+              TriState.free,
+            );
+          },
+        );
+
+        test(
+          'never blocks the edit — result returns without awaiting capture',
+          () {
+            // A repository whose save future never completes. If the edit
+            // awaited capture, applyAllergenOverride could not return here.
+            GetIt.instance.registerSingleton<TagOverridesLogRepository>(
+              _NeverCompletingLogRepository(),
+            );
+
+            final recipe = RecipeBuilder()
+                .withTagResult(createTagResult())
+                .build();
+
+            final result = service.applyAllergenOverride(
+              recipe: recipe,
+              allergenKey: 'gluten',
+              newStatus: TriState.free,
+              editedBy: 'chef_anna',
+              userConfirmed: true,
+            );
+
+            expect(result.success, isTrue);
+            expect(result.updatedRecipe, isNotNull);
+            expect(
+              result.updatedRecipe!.tagOverrides?.allergenOverrides['gluten'],
+              TriState.free,
+            );
+          },
         );
       });
     });
