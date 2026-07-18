@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// BUT-948: multi-select state for shopping-list bulk operations. Mirrors
 /// `pantry_selection_manager.dart` / `recipe_selection_manager.dart`
 /// (long-press to enter, tap to toggle, auto-exit on last deselect).
-class ShoppingSelectionManager extends ChangeNotifier {
+class ShoppingSelectionManager extends BaseViewModel {
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
 
