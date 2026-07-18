@@ -188,6 +188,91 @@ void main() {
       expect(actions.scaledIngredients, const ['4 dl mjol']);
     });
 
+    // BUT-1515: on a cold deep-link the UserService profile can still be null
+    // when initializeScaling runs. refreshHouseholdDefault re-applies the
+    // household default once the profile loads.
+    test('BUT-1515: re-applies the household default when the profile loads '
+        'after init (boot race)', () {
+      // Cold deep-link — no profile yet at init → falls back to recipe portions.
+      final actions = RecipeDetailActions()..initializeScaling(testRecipe);
+      expect(actions.currentPortions, 4);
+
+      // Profile finishes loading with a household size of 6.
+      registerUserService(6);
+      final analytics = registerAnalytics();
+
+      final changed = actions.refreshHouseholdDefault(testRecipe);
+
+      expect(changed, isTrue);
+      expect(actions.currentPortions, 6);
+      // '2 dl mjol' scaled from 4 → 6 (×1.5) = '3 dl mjol'.
+      expect(actions.scaledIngredients.first, contains('3'));
+      expect(actions.scaledIngredients.first, contains('dl'));
+      verify(
+        () => analytics.logPortionScalingApplied(
+          recipeId: 'recipe-1',
+          source: 'household_default',
+          fromPortions: 4,
+          toPortions: 6,
+        ),
+      ).called(1);
+    });
+
+    test('BUT-1515: a manual override during the boot race is never clobbered '
+        'by the late profile load', () {
+      final actions = RecipeDetailActions()..initializeScaling(testRecipe);
+      // User scales by hand before the profile loads.
+      actions.onPortionChanged(2, const ['1 dl mjol']);
+      expect(actions.currentPortions, 2);
+
+      registerUserService(6);
+      final changed = actions.refreshHouseholdDefault(testRecipe);
+
+      expect(changed, isFalse);
+      expect(actions.currentPortions, 2);
+      expect(actions.scaledIngredients, const ['1 dl mjol']);
+    });
+
+    test('BUT-1515: refresh is an idempotent no-op when the household default '
+        'was already applied at init', () {
+      registerUserService(6);
+      final analytics = registerAnalytics();
+      final actions = RecipeDetailActions()..initializeScaling(testRecipe);
+      clearInteractions(analytics); // drop the init household_default event
+
+      final changed = actions.refreshHouseholdDefault(testRecipe);
+
+      expect(changed, isFalse);
+      expect(actions.currentPortions, 6);
+      verifyNever(
+        () => analytics.logPortionScalingApplied(
+          recipeId: any(named: 'recipeId'),
+          source: any(named: 'source'),
+          fromPortions: any(named: 'fromPortions'),
+          toPortions: any(named: 'toPortions'),
+        ),
+      );
+    });
+
+    test('BUT-1515: refresh never auto-scales a null-portions recipe', () {
+      final noPortions = RecipeFactory.build(
+        id: 'recipe-2',
+        title: 'No portions',
+        portions: null,
+        ingredients: const ['2 dl mjol', '3 st agg'],
+        instructions: const ['Step 1'],
+      );
+      final actions = RecipeDetailActions()..initializeScaling(noPortions);
+      expect(actions.currentPortions, 1);
+
+      registerUserService(6);
+      final changed = actions.refreshHouseholdDefault(noPortions);
+
+      expect(changed, isFalse);
+      expect(actions.currentPortions, 1);
+      expect(actions.scaledIngredients, noPortions.ingredients);
+    });
+
     test('a recipe with NO portion count is never auto-scaled — amounts stay '
         'as printed and no analytics fires (BUT-1322 review)', () {
       registerUserService(6);

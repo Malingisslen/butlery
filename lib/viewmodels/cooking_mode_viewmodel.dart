@@ -38,6 +38,12 @@ class CookingModeViewModel extends ChangeNotifier {
   double _fontScale = 1.0;
   double get fontScale => _fontScale;
 
+  // BUT-1515: UserService reference kept so the boot-race listener can be
+  // removed on dispose. `_manualPortionOverride` latches once the user scales
+  // by hand so a late profile-load re-apply never clobbers their choice.
+  UserService? _userService;
+  bool _manualPortionOverride = false;
+
   CookingModeViewModel({required this.recipe}) {
     // BUT-1322: open pre-scaled to the household default when one is set and
     // differs from the recipe. The recipe's own portions stay the scaling
@@ -72,6 +78,44 @@ class CookingModeViewModel extends ChangeNotifier {
     // (after any household pre-scaling above).
     _rebuildIngredientRows();
     _loadFontScale();
+
+    // BUT-1515: on a cold deep-link the profile can still be loading when this
+    // VM is constructed, so _resolveHouseholdDefault() returned null above and
+    // we fell back to the recipe's own portions. Watch UserService and re-apply
+    // the household default once the profile loads.
+    try {
+      _userService = ServiceLocator.tryGet<UserService>();
+      _userService?.addListener(_onUserServiceChanged);
+    } catch (_) {}
+  }
+
+  /// BUT-1515: re-apply the household-size default after the user profile
+  /// finishes loading (boot race). A manual override always wins, and the
+  /// null/0-portions guard from the constructor is preserved. Idempotent — a
+  /// no-op once the state already matches the household default, so unrelated
+  /// UserService notifications (online status, FCM token, allergen prefs)
+  /// don't re-scale or re-log.
+  void _onUserServiceChanged() {
+    if (_manualPortionOverride) return;
+    final declared = recipe.portions;
+    if (declared == null || declared <= 0) return;
+    final household = _resolveHouseholdDefault();
+    if (household == null || household == _currentPortions) return;
+
+    _currentPortions = household;
+    _scaledIngredients = PortionScalerLogic.scaleEntries(
+      recipe.structuredIngredients,
+      declared,
+      _currentPortions,
+      false,
+    );
+    _rebuildIngredientRows();
+    _logScalingApplied(
+      source: 'household_default',
+      fromPortions: declared,
+      toPortions: _currentPortions,
+    );
+    notifyListeners();
   }
 
   void _rebuildIngredientRows() {
@@ -233,6 +277,10 @@ class CookingModeViewModel extends ChangeNotifier {
     if (newPortions < minPortions || newPortions > maxPortions) return;
     if (newPortions == _currentPortions) return;
 
+    // BUT-1515: latch the override so a late profile-load re-apply can't
+    // overwrite the user's hand-scaled choice.
+    _manualPortionOverride = true;
+
     if (!_manualOverrideLogged) {
       _manualOverrideLogged = true;
       _logScalingApplied(
@@ -332,5 +380,12 @@ class CookingModeViewModel extends ChangeNotifier {
     } catch (e) {
       AppLogger.warning('Cooking session onExit cleanup failed: $e');
     }
+  }
+
+  @override
+  void dispose() {
+    // BUT-1515: drop the boot-race listener before tearing down.
+    _userService?.removeListener(_onUserServiceChanged);
+    super.dispose();
   }
 }

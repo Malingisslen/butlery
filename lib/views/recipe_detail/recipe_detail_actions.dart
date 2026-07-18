@@ -35,6 +35,10 @@ class RecipeDetailActions {
   String _recipeId = '';
   bool _manualOverrideLogged = false;
 
+  // BUT-1515: true once the user has scaled by hand this open. The boot-race
+  // re-apply ([refreshHouseholdDefault]) must never clobber a manual choice.
+  bool _manualOverride = false;
+
   // Getters
   List<String> get scaledIngredients => _scaledIngredients;
   bool get isCommentsExpanded => _isCommentsExpanded;
@@ -50,6 +54,7 @@ class RecipeDetailActions {
   void initializeScaling(Recipe recipe) {
     _recipeId = recipe.id;
     _manualOverrideLogged = false;
+    _manualOverride = false;
     _isCommentsExpanded = false;
     // Guard (review): only auto-apply the household default when the recipe
     // declares a REAL portion count (> 0). A null/0-portions recipe has no
@@ -89,6 +94,42 @@ class RecipeDetailActions {
     } catch (_) {
       return null;
     }
+  }
+
+  /// BUT-1515: re-resolve and re-apply the household-size default after the
+  /// user profile finishes loading. On a cold deep-link into a recipe the
+  /// profile can still be null when [initializeScaling] runs (boot race), so
+  /// the household default silently falls back to the recipe's own portions.
+  /// The view calls this when UserService notifies that the profile loaded.
+  /// Returns true when the portion state changed (so the view can rebuild).
+  ///
+  /// A manual override always wins: once the user has scaled by hand we never
+  /// clobber their choice. Idempotent — a no-op once the state already matches
+  /// the household default, so repeated UserService notifications (online
+  /// status, FCM token, etc.) don't re-scale or re-log.
+  bool refreshHouseholdDefault(Recipe recipe) {
+    if (_manualOverride) return false;
+    if (recipe.id != _recipeId) return false;
+    // Mirror the [initializeScaling] guard: a null/0-portions recipe has no
+    // meaningful base, so it is never auto-scaled to the household size.
+    final declared = recipe.portions;
+    if (declared == null || declared <= 0) return false;
+    final household = _resolveHouseholdDefault();
+    if (household == null || household == _currentPortions) return false;
+
+    _currentPortions = household;
+    _scaledIngredients = PortionScalerLogic.scaleEntries(
+      recipe.structuredIngredients,
+      declared,
+      _currentPortions,
+      false,
+    );
+    _logScalingApplied(
+      source: 'household_default',
+      fromPortions: declared,
+      toPortions: _currentPortions,
+    );
+    return true;
   }
 
   /// BUT-1322 (binding monetization condition): scaling telemetry.
@@ -265,13 +306,18 @@ class RecipeDetailActions {
     // BUT-1322: a real portion change is an explicit override of the
     // household default — record it once per recipe-open. The unit-conversion
     // toggle re-fires this callback with unchanged portions; skip those.
-    if (newPortions != _currentPortions && !_manualOverrideLogged) {
-      _manualOverrideLogged = true;
-      _logScalingApplied(
-        source: 'manual_override',
-        fromPortions: _currentPortions,
-        toPortions: newPortions,
-      );
+    if (newPortions != _currentPortions) {
+      // BUT-1515: latch the override so a late profile-load re-apply can't
+      // overwrite the user's hand-scaled choice.
+      _manualOverride = true;
+      if (!_manualOverrideLogged) {
+        _manualOverrideLogged = true;
+        _logScalingApplied(
+          source: 'manual_override',
+          fromPortions: _currentPortions,
+          toPortions: newPortions,
+        );
+      }
     }
     _currentPortions = newPortions;
     _scaledIngredients = newIngredients;
@@ -287,6 +333,7 @@ class RecipeDetailActions {
     _scaledIngredients = [];
     _isCommentsExpanded = false;
     _currentPortions = 1;
+    _manualOverride = false;
   }
 
   /// Dispose resources

@@ -156,9 +156,20 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// [operation] The async operation to execute with automatic state management
   /// [errorPrefix] Optional prefix for error messages to provide context
   /// [clearErrorOnStart] Whether to clear existing errors before operation (default: true)
-  /// Returns the operation result or null if operation fails or ViewModel is disposed.
+  /// Returns the operation result. Sets error state and rethrows if [operation] throws.
   /// Automatically manages loading state, error handling, and UI notifications for consistent
   /// user experience across all async operations in the application.
+  ///
+  /// Disposed semantics are intentionally fail-loud: this throws [StateError] on a disposed
+  /// ViewModel, deliberately NOT symmetric with the fail-silent siblings ([executeAsyncVoid]
+  /// returns false; the state setters no-op). The asymmetry is forced by the return type — this
+  /// method's contract is a non-nullable `Future<T>`, so on a disposed ViewModel it cannot
+  /// fabricate a valid `T` and must not return a fake `null` that would break the type. Awaiting
+  /// a result from a disposed ViewModel is a caller lifecycle bug (an async gap that outlived the
+  /// widget), and throwing surfaces it rather than masking it. Callers that may legitimately
+  /// complete after dispose should guard with `if (isDisposed) return;` before awaiting, or use
+  /// [executeAsyncVoid]. Decision recorded in tasks/lessons.md (BUT-1462); the broader
+  /// clearError-override / disposed-guard sweep across subclasses is tracked in BUT-1628.
   /// **Usage Example:**
   /// ```dart
   /// final products = await executeAsync(
@@ -322,20 +333,27 @@ mixin AsyncOperationMixin on BaseViewModel {
     if (isDisposed) return null;
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
-      final result = await executeAsync<T>(
-        operation,
-        errorPrefix: attempt == maxRetries
-            ? errorPrefix
-            : null, // Only show error on final attempt
-        clearErrorOnStart: attempt == 1,
-      );
-
-      if (result != null || attempt == maxRetries) {
-        return result;
+      final isFinalAttempt = attempt == maxRetries;
+      try {
+        // executeAsync rethrows on failure, so each attempt must be guarded or
+        // the first throw escapes and no retry ever happens. A successful
+        // result — including a legitimate null — returns here immediately and is
+        // never mistaken for a failure to retry.
+        return await executeAsync<T>(
+          operation,
+          errorPrefix: isFinalAttempt
+              ? errorPrefix
+              : null, // Only surface the error on the final attempt
+          clearErrorOnStart: attempt == 1,
+        );
+      } catch (_) {
+        // executeAsync already logged the failure and set the error state (with
+        // [errorPrefix] on the final attempt). Give up after the last attempt;
+        // otherwise clear the transient error and wait before retrying.
+        if (isFinalAttempt) return null;
+        clearError();
+        await Future.delayed(delay);
       }
-
-      // Wait before retry
-      await Future.delayed(delay);
     }
 
     return null;

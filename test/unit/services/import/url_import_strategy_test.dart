@@ -61,10 +61,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import 'package:get_it/get_it.dart';
+
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 /// Helper to make ImportValidationMixin testable in isolation.
 class _ValidationHelper with ImportValidationMixin {}
@@ -749,6 +757,123 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
         // so we land in the "no html, no assist" failure path — html_fetched
         // is false there.
         expect(result.metadata?['html_fetched'], isFalse);
+      },
+    );
+  });
+
+  // -----------------------------------------------------------------------
+  // Correction-capture wiring (BUT-1469 / BUT-1614)
+  //
+  // The URL strategy's text-fallback tiers (Tier 4 web-scraper, Tier 5
+  // html-text-parse) delegate to a REAL inner TextImportStrategy, which stores
+  // its own `text`-tagged snapshot; the URL tier then re-captures the same
+  // recipe id as `url` + domain (last write wins) so URL corrections never
+  // pollute the pasted-text bucket and keep their domain attribution. These
+  // tests wire a real ParsedRecipeCache into the production ServiceLocator
+  // (the other groups leave it uninitialized, so Tier 1 stays null) and read
+  // the final snapshot back through the whole import.
+  // -----------------------------------------------------------------------
+  group('UrlImportStrategy correction-capture (BUT-1469 / BUT-1614)', () {
+    late ParsedRecipeCache cache;
+
+    setUp(() {
+      cache = ParsedRecipeCache();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<ParsedRecipeCache>()) {
+        getIt.unregister<ParsedRecipeCache>();
+      }
+      getIt.registerSingleton<ParsedRecipeCache>(cache);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<ParsedRecipeCache>()) {
+        getIt.unregister<ParsedRecipeCache>();
+      }
+      app_provider.ServiceLocator.reset();
+    });
+
+    /// Registering only ParsedRecipeCache (not RecipeParserService) must not
+    /// accidentally enable Tier 1 — the html-text page must still land on
+    /// Tier 5 exactly as it does with an uninitialized ServiceLocator.
+    const recipeHtml = '''
+<!doctype html>
+<html><head><title>Pannkakor</title></head>
+<body>
+<h1>Pannkakor</h1>
+<h2>Ingredienser</h2>
+<ul>
+  <li>3 ägg</li>
+  <li>5 dl mjölk</li>
+  <li>3 dl vetemjöl</li>
+  <li>1 krm salt</li>
+  <li>2 msk smör</li>
+</ul>
+<h2>Gör så här</h2>
+<ol>
+  <li>Vispa ihop ägg och mjölk i en bunke.</li>
+  <li>Tillsätt vetemjöl och salt under omrörning tills smeten är slät.</li>
+  <li>Hetta upp smör i en stekpanna och stek pannkakor på medelvärme.</li>
+</ol>
+</body>
+</html>
+''';
+
+    test(
+      'Tier 5 html-text-parse stores a snapshot tagged ImportSource.url with '
+      'the source domain, overriding the inner text snapshot (last write wins)',
+      () async {
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(recipeHtml),
+        );
+
+        final result = await strategy.import('http://8.8.8.8/pannkakor');
+
+        expect(result.isSuccess, isTrue);
+        expect(result.metadata?['extraction_method'], 'html_text_parse');
+
+        final snapshot = cache.retrieve(result.recipe!.id);
+        expect(
+          snapshot,
+          isNotNull,
+          reason: 'a URL text-fallback import must anchor the feedback loop',
+        );
+        expect(
+          snapshot!.metadata.source,
+          ImportSource.url,
+          reason:
+              'the inner TextImportStrategy stored `text` first; the URL tier '
+              're-captures the same id as `url` and must win',
+        );
+        expect(
+          snapshot.metadata.domain,
+          '8.8.8.8',
+          reason: 'URL captures keep domain attribution for alias-learning',
+        );
+        expect(
+          snapshot.metadata.parserVersion,
+          ImportCorrectionSnapshot.snapshotParserVersion,
+        );
+      },
+    );
+
+    /// Positive/negative pairing: a prose page falls through to Tier 7
+    /// (user-assistance) with no produced recipe, so there is no `url`-tagged
+    /// anchor to retrieve. Pins that the capture rides on a produced recipe,
+    /// not on every import attempt.
+    test(
+      'prose page reaching Tier 7 produces no url-tagged snapshot',
+      () async {
+        final strategy = _strategyWith(
+          (req) async => _htmlResponse(_unstructuredHtml()),
+        );
+
+        final result = await strategy.import('http://8.8.8.8/blog');
+
+        expect(result.needsAssistance, isTrue);
+        expect(result.recipe, isNull);
       },
     );
   });

@@ -81,6 +81,28 @@ class _PortionScalerState extends State<PortionScaler>
   }
 
   @override
+  void didUpdateWidget(PortionScaler oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // BUT-1515: on a cold deep-link the profile is null at init, so the parent
+    // seeds initialPortions from recipe.portions; when the profile loads it
+    // pushes the household-scaled target down as a NEW initialPortions. Without
+    // this re-sync the stepper would keep showing the stale boot value while the
+    // ingredient rows already display the household-scaled amounts, and the next
+    // +/- tap would step from the stale number. Only react to an actual
+    // initialPortions change (not a local stepper edit, which leaves the widget
+    // field untouched), and don't echo onPortionChanged back — the parent
+    // already holds this value and rescaled the rows itself.
+    final target = widget.initialPortions ?? widget.originalPortions;
+    if (widget.initialPortions != oldWidget.initialPortions &&
+        target != _currentPortions) {
+      setState(() {
+        _currentPortions = target;
+        _scaledIngredients = _scale(target);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
     super.dispose();

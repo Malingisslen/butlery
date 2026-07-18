@@ -305,6 +305,86 @@ void main() {
     });
   });
 
+  // BUT-1515: on a cold deep-link the profile is null at init, so the scaler
+  // boots from recipe.portions; when the profile loads the parent pushes the
+  // household-scaled target down as a NEW initialPortions. The stepper must
+  // follow it (didUpdateWidget re-sync) instead of showing the stale boot value
+  // while the ingredient rows already display the household-scaled amounts.
+  group('Post-boot household refresh (BUT-1515)', () {
+    testWidgets(
+      'stepper re-syncs when the parent pushes a new initialPortions after init',
+      (tester) async {
+        int? initial = 4; // boot value; profile not yet loaded
+        late StateSetter setOuter;
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                setOuter = setState;
+                return PortionScaler(
+                  originalPortions: 4,
+                  originalIngredients: testIngredients,
+                  initialPortions: initial,
+                  onPortionChanged: (_, __) {},
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Boots showing the recipe default.
+        expect(find.text('4'), findsOneWidget);
+
+        // Profile loads -> parent recomputes the household default and pushes it
+        // down as a new initialPortions (6).
+        setOuter(() => initial = 6);
+        await tester.pumpAndSettle();
+
+        // The stepper follows the new target instead of showing the stale 4.
+        expect(find.text('6'), findsOneWidget);
+        expect(find.text('4'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'a local stepper edit is not clobbered by an unrelated rebuild',
+      (tester) async {
+        const int initial = 4;
+        late StateSetter setOuter;
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                setOuter = setState;
+                return PortionScaler(
+                  originalPortions: 4,
+                  originalIngredients: testIngredients,
+                  initialPortions: initial,
+                  onPortionChanged: (_, __) {},
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // User steps 4 -> 5 locally.
+        await tester.tap(findControlIcon(Icons.add));
+        await tester.pumpAndSettle();
+        expect(find.text('5'), findsOneWidget);
+
+        // A parent rebuild with the SAME initialPortions must not reset the
+        // user's choice — didUpdateWidget only reacts to an actual change.
+        setOuter(() {});
+        await tester.pumpAndSettle();
+        expect(find.text('5'), findsOneWidget);
+      },
+    );
+  });
+
   group('Edge Cases', () {
     testWidgets('handles empty ingredients list', (tester) async {
       bool called = false;

@@ -443,59 +443,61 @@ void main() {
     test('should retry on failure and eventually succeed', () async {
       int attemptCount = 0;
 
-      // executeWithRetry rethrows intermediate failures via executeAsync
-      try {
-        await viewModel.testExecuteWithRetry(
-          operation: () async {
-            attemptCount++;
-            if (attemptCount < 3) {
-              throw Exception('Attempt $attemptCount failed');
-            }
-            return 'Success on attempt $attemptCount';
-          },
-          maxRetries: 3,
-          delay: const Duration(milliseconds: 10),
-        );
-      } catch (_) {}
+      final result = await viewModel.testExecuteWithRetry(
+        operation: () async {
+          attemptCount++;
+          if (attemptCount < 3) {
+            throw Exception('Attempt $attemptCount failed');
+          }
+          return 'Success on attempt $attemptCount';
+        },
+        maxRetries: 3,
+        delay: const Duration(milliseconds: 10),
+      );
 
-      // executeAsync rethrows, so executeWithRetry may not complete all retries
-      expect(attemptCount, greaterThanOrEqualTo(1));
+      // Intermediate failures are swallowed and retried; the third attempt
+      // succeeds and its value is returned, with no lingering error.
+      expect(result, equals('Success on attempt 3'));
+      expect(attemptCount, equals(3));
+      expect(viewModel.hasError, isFalse);
     });
 
     test('should show error only on final retry attempt', () async {
       int attemptCount = 0;
 
-      try {
-        await viewModel.testExecuteWithRetry(
-          operation: () async {
-            attemptCount++;
-            throw Exception('Always fails');
-          },
-          maxRetries: 3,
-          delay: const Duration(milliseconds: 10),
-          errorPrefix: 'Operation failed',
-        );
-      } catch (_) {}
+      final result = await viewModel.testExecuteWithRetry(
+        operation: () async {
+          attemptCount++;
+          throw Exception('Always fails');
+        },
+        maxRetries: 3,
+        delay: const Duration(milliseconds: 10),
+        errorPrefix: 'Operation failed',
+      );
 
-      expect(attemptCount, greaterThanOrEqualTo(1));
+      // Every attempt fails: all retries run, null is returned, and the error is
+      // surfaced with the prefix (only after the final attempt).
+      expect(result, isNull);
+      expect(attemptCount, equals(3));
       expect(viewModel.hasError, isTrue);
+      expect(viewModel.error, equals('Operation failed'));
     });
 
     test('should respect custom retry count and delay', () async {
       int attemptCount = 0;
 
-      try {
-        await viewModel.testExecuteWithRetry(
-          operation: () async {
-            attemptCount++;
-            throw Exception('Fail');
-          },
-          maxRetries: 2,
-          delay: const Duration(milliseconds: 50),
-        );
-      } catch (_) {}
+      final result = await viewModel.testExecuteWithRetry(
+        operation: () async {
+          attemptCount++;
+          throw Exception('Fail');
+        },
+        maxRetries: 2,
+        delay: const Duration(milliseconds: 50),
+      );
 
-      expect(attemptCount, greaterThanOrEqualTo(1));
+      // Exactly maxRetries attempts run, then null is returned.
+      expect(result, isNull);
+      expect(attemptCount, equals(2));
     });
 
     test('should return null when disposed', () async {

@@ -174,6 +174,7 @@ class _RecipeDetailViewContent extends StatefulWidget {
 
 class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   late RecipeDetailActions _actions;
+  UserService? _userService;
 
   @override
   void initState() {
@@ -185,6 +186,27 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     // renders the right amounts and the PortionScaler mounts with the right
     // initial value. Replaces the old post-frame onPortionChanged bootstrap.
     _actions.initializeScaling(widget.recipe);
+
+    // BUT-1515: on a cold deep-link into a recipe the user profile can still be
+    // loading when initializeScaling runs above, so the household-size default
+    // falls back to the recipe's own portions. Re-apply it once the profile
+    // finishes loading (UserService notifies), unless the user has meanwhile
+    // scaled by hand.
+    _userService = ServiceLocator.get<UserService>();
+    _userService!.addListener(_onUserServiceChanged);
+  }
+
+  void _onUserServiceChanged() {
+    if (!mounted) return;
+    if (_actions.refreshHouseholdDefault(widget.recipe)) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _userService?.removeListener(_onUserServiceChanged);
+    super.dispose();
   }
 
   @override

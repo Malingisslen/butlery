@@ -27,6 +27,9 @@ import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
@@ -1047,6 +1050,115 @@ void main() {
           expect(result.recipe?.title, 'Mormors bullar');
           expect(fakeLlm.extractFromImageCalls, 1);
           verifyNever(() => mockOcrService.extractText(any()));
+        },
+      );
+    });
+
+    group('BUT-1469/BUT-1614 correction-capture wiring', () {
+      // A successful photo import must store a correction snapshot tagged
+      // ImportSource.photo (OCR→text and every LLM-vision route), overriding
+      // any snapshot the inner text strategy stored under the same recipe id
+      // (last write wins) so OCR corrections never land in the pasted-text
+      // training bucket. The strategy resolves the cache from the production
+      // ServiceLocator, so we wire a real one in here.
+      late ParsedRecipeCache cache;
+
+      setUp(() {
+        cache = ParsedRecipeCache();
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+        getIt.registerSingleton<ParsedRecipeCache>(cache);
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      test(
+        'OCR→text success stores a snapshot tagged ImportSource.photo, keyed '
+        'by the produced recipe id',
+        () async {
+          when(() => mockOcrService.extractText(any())).thenAnswer(
+            (_) async => _createOCRResult(
+              text: 'Pannkakor\n3 ägg\n5 dl mjölk',
+              confidence: 0.9,
+              processingMethod: 'ocr_space',
+              isSuccessful: true,
+            ),
+          );
+          when(
+            () =>
+                mockTextStrategy.import(any(), options: any(named: 'options')),
+          ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+
+          final result = await strategy.import(
+            'photo',
+            options: {'imageBytes': testImageBytes},
+          );
+
+          expect(result.isSuccess, isTrue);
+          final snapshot = cache.retrieve(result.recipe!.id);
+          expect(snapshot, isNotNull);
+          expect(snapshot!.metadata.source, ImportSource.photo);
+          expect(
+            snapshot.metadata.parserVersion,
+            ImportCorrectionSnapshot.snapshotParserVersion,
+          );
+        },
+      );
+
+      test(
+        'photo capture overrides a text snapshot already stored under the same '
+        'recipe id (last write wins over the inner sub-parse)',
+        () async {
+          // The mocked TextImportStrategy does not itself capture, so simulate
+          // the inner text snapshot the real delegate would have stored first.
+          final inner = _createTestRecipe(
+            title: 'Pannkakor',
+            ingredients: ['3 ägg', '5 dl mjölk'],
+            instructions: ['Vispa', 'Stek'],
+          );
+          ImportCorrectionSnapshot.capture(
+            inner,
+            source: ImportSource.text,
+            cache: cache,
+          );
+          expect(cache.contains(inner.id), isTrue);
+
+          when(() => mockOcrService.extractText(any())).thenAnswer(
+            (_) async => _createOCRResult(
+              text: 'Pannkakor\n3 ägg\n5 dl mjölk',
+              confidence: 0.9,
+              processingMethod: 'ocr_space',
+              isSuccessful: true,
+            ),
+          );
+          when(
+            () =>
+                mockTextStrategy.import(any(), options: any(named: 'options')),
+          ).thenAnswer((_) async => ImportResult.success(inner));
+
+          final result = await strategy.import(
+            'photo',
+            options: {'imageBytes': testImageBytes},
+          );
+
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.id, inner.id);
+          final snapshot = cache.retrieve(inner.id);
+          expect(
+            snapshot!.metadata.source,
+            ImportSource.photo,
+            reason: 'the photo re-capture must overwrite the inner text tag',
+          );
         },
       );
     });

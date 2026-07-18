@@ -12,10 +12,17 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 
 // Production imports
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
@@ -425,43 +432,24 @@ För såsen:
             equals('Importerat recept'), // Default fallback
           ]),
         );
-        // Portions extraction looks for specific patterns - may be null
-        if (recipe.portions != null) {
-          expect(recipe.portions, equals(4));
-        }
-        // Time extraction only finds single time values, not combined
-        if (recipe.timeMinutes != null) {
-          expect(recipe.timeMinutes, equals(30)); // Will extract "30 minuter"
-        }
+        // "För 4 portioner, 30 minuter" — both metadata values are extracted.
+        expect(recipe.portions, equals(4));
+        expect(recipe.timeMinutes, equals(30));
 
-        // Check Swedish measurements preserved - but implementation may fail to parse
-        if (recipe.ingredients.length == 1 &&
-            recipe.ingredients[0] == 'Ingen ingrediensinformation') {
-          // No ingredients were parsed - this is a known limitation
-          expect(recipe.ingredients[0], equals('Ingen ingrediensinformation'));
-        } else {
-          // If ingredients were parsed, check for Swedish content
-          expect(
-            recipe.ingredients.any(
-              (i) => i.contains('dl') || i.contains('köttfärs'),
-            ),
-            isTrue,
-            reason: 'Should have at least some Swedish ingredients',
-          );
-        }
+        // Ingredients parse from the "Ingredienser:" block. CRIT-12 removed the
+        // placeholder string, so an unparsed result is an empty list — this
+        // asserts real Swedish content, not a "did nothing" escape.
+        expect(recipe.ingredients, isNotEmpty);
+        expect(
+          recipe.ingredients.any(
+            (i) => i.contains('dl') || i.contains('köttfärs'),
+          ),
+          isTrue,
+          reason: 'Should have at least some Swedish ingredients',
+        );
 
-        // Check instructions parsed - but may fail
-        if (recipe.instructions.length == 1 &&
-            recipe.instructions[0] == 'Ingen instruktionsinformation') {
-          // No instructions were parsed
-          expect(
-            recipe.instructions[0],
-            equals('Ingen instruktionsinformation'),
-          );
-        } else {
-          expect(recipe.instructions, isNotEmpty);
-          // May or may not contain specific words depending on parsing
-        }
+        // Instructions parse from the "Gör så här:" block.
+        expect(recipe.instructions, isNotEmpty);
       });
 
       test('should handle Swedish measurement abbreviations', () async {
@@ -645,22 +633,16 @@ Ingredients:
         expect(result.isSuccess, isTrue);
         final ingredients = result.recipe!.ingredients;
 
-        // The implementation may not correctly parse all ingredients
-        // It defaults to ['Ingen ingrediensinformation'] when none detected
-        if (ingredients.length == 1 &&
-            ingredients[0] == 'Ingen ingrediensinformation') {
-          // No ingredients were detected - this is expected behavior
-          expect(ingredients[0], equals('Ingen ingrediensinformation'));
-        } else {
-          // If ingredients were detected, check for some expected ones
-          expect(ingredients.length, greaterThan(0));
-          // At least some ingredients should be found
-          final foundSomeIngredients =
-              ingredients.any((i) => i.contains('flour')) ||
-              ingredients.any((i) => i.contains('salt')) ||
-              ingredients.any((i) => i.contains('eggs'));
-          expect(foundSomeIngredients, isTrue);
-        }
+        // Ingredients are extracted from the "Ingredients:" block. CRIT-12
+        // removed the placeholder string, so this asserts real content.
+        expect(ingredients, isNotEmpty);
+        final foundSomeIngredients =
+            ingredients.any((i) => i.contains('flour')) ||
+            ingredients.any((i) => i.contains('salt')) ||
+            ingredients.any((i) => i.contains('eggs')) ||
+            ingredients.any((i) => i.contains('milk')) ||
+            ingredients.any((i) => i.contains('butter'));
+        expect(foundSomeIngredients, isTrue);
       });
 
       test('should handle ingredient sections', () async {
@@ -686,16 +668,17 @@ Mix everything
         expect(result.isSuccess, isTrue);
         final ingredients = result.recipe!.ingredients;
 
-        // The implementation may not handle multiple ingredient sections well
-        // It might only capture from recognized ingredient sections
-        if (ingredients.length == 1 &&
-            ingredients[0] == 'Ingen ingrediensinformation') {
-          // No ingredients detected - expected for this edge case
-          expect(ingredients[0], equals('Ingen ingrediensinformation'));
-        } else {
-          // At least some ingredients should be found
-          expect(ingredients.length, greaterThan(0));
-        }
+        // Both "Base:" and "Filling:" measured ingredients are captured
+        // measurement-first; the flat list carries the ingredient content
+        // (sub-group headings live only on the structured entries).
+        expect(ingredients, isNotEmpty);
+        expect(
+          ingredients.any((i) => i.contains('flour')) ||
+              ingredients.any((i) => i.contains('sugar')) ||
+              ingredients.any((i) => i.contains('cream')) ||
+              ingredients.any((i) => i.contains('chocolate')),
+          isTrue,
+        );
       });
 
       test('should normalize ingredient amounts', () async {
@@ -717,23 +700,16 @@ Ingredients:
         expect(result.isSuccess, isTrue);
         final ingredients = result.recipe!.ingredients;
 
-        // The implementation may normalize fractions or fail to detect ingredients
-        if (ingredients.length == 1 &&
-            ingredients[0] == 'Ingen ingrediensinformation') {
-          // No ingredients detected
-          expect(ingredients[0], equals('Ingen ingrediensinformation'));
-        } else {
-          // Check that something was extracted
-          expect(ingredients.length, greaterThan(0));
-          // Fractions might be converted to ½
-          final hasFraction = ingredients.any(
-            (i) => i.contains('1/2') || i.contains('½'),
-          );
-          expect(
-            hasFraction || ingredients.any((i) => i.contains('pinch')),
-            isTrue,
-          );
-        }
+        // Ingredients are extracted and fractions are normalized to ½ (or the
+        // unit-less "a pinch of salt" line is kept). Asserts real content.
+        expect(ingredients, isNotEmpty);
+        final hasFraction = ingredients.any(
+          (i) => i.contains('1/2') || i.contains('½'),
+        );
+        expect(
+          hasFraction || ingredients.any((i) => i.contains('pinch')),
+          isTrue,
+        );
       });
     });
 
@@ -758,20 +734,11 @@ Instructions:
         expect(result.isSuccess, isTrue);
         final instructions = result.recipe!.instructions;
 
-        // The implementation may not correctly parse instructions
-        if (instructions.length == 1 &&
-            instructions[0] == 'Ingen instruktionsinformation') {
-          // No instructions detected - this can happen with the current implementation
-          expect(instructions[0], equals('Ingen instruktionsinformation'));
-        } else {
-          // If instructions were parsed, check basic structure
-          expect(instructions.length, greaterThan(0));
-          if (instructions.length >= 3) {
-            expect(instructions[0], contains('First step'));
-            expect(instructions[1], contains('Second step'));
-            expect(instructions[2], contains('Third step'));
-          }
-        }
+        // Numbered steps under "Instructions:" are parsed in order.
+        expect(instructions.length, greaterThanOrEqualTo(3));
+        expect(instructions[0], contains('First step'));
+        expect(instructions[1], contains('Second step'));
+        expect(instructions[2], contains('Third step'));
       });
 
       test('should handle Swedish instruction keywords', () async {
@@ -795,22 +762,15 @@ Grädda i ugn 200 grader
         expect(result.isSuccess, isTrue);
         final instructions = result.recipe!.instructions;
 
-        // The implementation may not detect instructions without proper headers
-        if (instructions.length == 1 &&
-            instructions[0] == 'Ingen instruktionsinformation') {
-          // No instructions detected
-          expect(instructions[0], equals('Ingen instruktionsinformation'));
-        } else {
-          // At least some instructions should be found
-          expect(instructions.length, greaterThan(0));
-          // Check for at least one Swedish instruction word
-          final hasSwedishInstruction =
-              instructions.any((i) => i.contains('Blanda')) ||
-              instructions.any((i) => i.contains('Vispa')) ||
-              instructions.any((i) => i.contains('Tillsätt')) ||
-              instructions.any((i) => i.contains('Grädda'));
-          expect(hasSwedishInstruction, isTrue);
-        }
+        // The "Gör så här:" header opens the instruction block; its Swedish
+        // action lines are parsed.
+        expect(instructions, isNotEmpty);
+        final hasSwedishInstruction =
+            instructions.any((i) => i.contains('Blanda')) ||
+            instructions.any((i) => i.contains('Vispa')) ||
+            instructions.any((i) => i.contains('Tillsätt')) ||
+            instructions.any((i) => i.contains('Grädda'));
+        expect(hasSwedishInstruction, isTrue);
       });
 
       test('should separate instruction paragraphs', () async {
@@ -835,15 +795,16 @@ Finally, assemble and bake for 30 minutes.
         expect(result.isSuccess, isTrue);
         final instructions = result.recipe!.instructions;
 
-        // The implementation may not properly separate paragraphs
-        if (instructions.length == 1 &&
-            instructions[0] == 'Ingen instruktionsinformation') {
-          // No instructions detected
-          expect(instructions[0], equals('Ingen instruktionsinformation'));
-        } else {
-          // At least one instruction should be found
-          expect(instructions.length, greaterThanOrEqualTo(1));
-        }
+        // The "Method:" header opens the instruction block; at least one
+        // instruction paragraph is captured.
+        expect(instructions, isNotEmpty);
+        expect(
+          instructions.any((i) => i.toLowerCase().contains('flour')) ||
+              instructions.any((i) => i.toLowerCase().contains('filling')) ||
+              instructions.any((i) => i.toLowerCase().contains('bake')) ||
+              instructions.any((i) => i.toLowerCase().contains('assemble')),
+          isTrue,
+        );
       });
     });
 
@@ -947,38 +908,39 @@ Full recipe: www.blog.com/full-recipe
 
     group('Metadata Extraction', () {
       test('should extract servings information', () async {
-        // Arrange
-        final servingsTests = [
-          'Recipe\nServes 4\nIngredients:\n- Item',
-          'Recipe\nFor 6 people\nIngredients:\n- Item',
-          'Recipe\n4 portioner\nIngredients:\n- Item',
-          'Recipe\nYield: 8 servings\nIngredients:\n- Item',
-        ];
+        // Arrange — each input mapped to the portions the parser actually
+        // extracts today (null where no pattern matches). The extractor keys on
+        // "N portion..." / "för N" / "N pers"; "Serves N", "For N people" and
+        // "Yield: N servings" have no matching pattern, so they yield null.
+        final servingsTests = <String, int?>{
+          'Recipe\nServes 4\nIngredients:\n- Item': null,
+          'Recipe\nFor 6 people\nIngredients:\n- Item': null,
+          'Recipe\n4 portioner\nIngredients:\n- Item': 4,
+          'Recipe\nYield: 8 servings\nIngredients:\n- Item': null,
+        };
 
         // Act & Assert
-        for (final text in servingsTests) {
-          final fullText = '$text\nInstructions:\nMix';
+        for (final entry in servingsTests.entries) {
+          final fullText = '${entry.key}\nInstructions:\nMix';
           final result = await strategy.import(fullText);
 
-          if (result.isSuccess && result.recipe != null) {
-            // Portions extraction is limited to specific patterns
-            // May be null if pattern doesn't match exactly
-            if (result.recipe!.portions != null) {
-              expect(
-                result.recipe!.portions,
-                greaterThan(0),
-                reason: 'Should extract servings from: ${text.split('\n')[1]}',
-              );
-            }
-          }
+          expect(result.isSuccess, isTrue);
+          expect(
+            result.recipe!.portions,
+            equals(entry.value),
+            reason: 'Portions mismatch for: ${entry.key.split('\n')[1]}',
+          );
         }
       });
 
       test('should extract time information', () async {
-        // Arrange
-        final timeTests = {
-          'Recipe\nPrep: 15 min, Cook: 30 min': 45,
-          'Recipe\nTotal time: 1 hour': 60,
+        // Arrange — each input mapped to the minutes the parser actually
+        // extracts today. It matches the FIRST "N min"/"N timm" pattern and does
+        // NOT sum multiple values, so "Prep: 15 min, Cook: 30 min" yields 15;
+        // "1 hour" has no matching pattern (only "min"/"timm"), so it yields null.
+        final timeTests = <String, int?>{
+          'Recipe\nPrep: 15 min, Cook: 30 min': 15,
+          'Recipe\nTotal time: 1 hour': null,
           'Recipe\n20 minuter': 20,
           'Recipe\nReady in 45 minutes': 45,
         };
@@ -988,45 +950,20 @@ Full recipe: www.blog.com/full-recipe
           final text = '${entry.key}\nIngredients:\n- Item\nInstructions:\nMix';
           final result = await strategy.import(text);
 
-          if (result.isSuccess && result.recipe != null) {
-            // Time extraction only finds single time values
-            // Complex time patterns like "Prep: 15 min, Cook: 30 min" won't sum
-            final totalTime = result.recipe!.timeMinutes;
-            if (entry.key.contains('Prep:') && entry.key.contains('Cook:')) {
-              // Will only extract first time found (15 min)
-              expect(totalTime, anyOf([equals(15), equals(30), isNull]));
-            } else if (totalTime != null) {
-              // For simple time patterns, should match expected
-              expect(
-                totalTime,
-                equals(entry.value),
-                reason: 'Should extract time from: ${entry.key}',
-              );
-            }
-          }
+          expect(result.isSuccess, isTrue);
+          expect(
+            result.recipe!.timeMinutes,
+            equals(entry.value),
+            reason: 'Time mismatch for: ${entry.key}',
+          );
         }
       });
 
-      test('should extract difficulty level', () async {
-        // Arrange
-        final difficultyTests = {
-          'Easy Recipe': 'Lätt',
-          'Recipe (Medium difficulty)': 'Medel',
-          'Advanced Recipe': 'Svår',
-          'Beginner-friendly dish': 'Lätt',
-        };
-
-        // Act & Assert
-        for (final entry in difficultyTests.entries) {
-          final text = '${entry.key}\nIngredients:\n- Item\nInstructions:\nMix';
-          final result = await strategy.import(text);
-
-          if (result.isSuccess && result.recipe != null) {
-            // Difficulty extraction might be implemented
-            expect(result.recipe, isNotNull);
-          }
-        }
-      });
+      // NOTE: there is no difficulty-level extraction in TextImportStrategy and
+      // the Recipe model carries no difficulty field, so a "should extract
+      // difficulty" test could only ever be a green no-op. It was removed rather
+      // than left implying coverage that does not exist. If difficulty parsing
+      // is added later, add a test asserting the mapped Swedish value per input.
     });
 
     group('Edge Cases', () {
@@ -1095,14 +1032,14 @@ Yesterday I made something delicious.
         // Act
         final result = await strategy.import(nonRecipe);
 
-        // Assert
-        // Should either fail or create minimal recipe
-        expect(result, isNotNull);
-        if (result.isSuccess) {
-          expect(result.recipe, isNotNull);
-        } else {
-          expect(result.errorMessage, isNotEmpty);
-        }
+        // Assert — import always produces a recipe when the text has any
+        // non-empty lines (it only fails on empty input or a parse exception),
+        // so blog prose succeeds with a near-empty recipe rather than failing.
+        expect(result.isSuccess, isTrue);
+        expect(result.recipe, isNotNull);
+        // No ingredient measurements present, so the flat ingredient list is
+        // empty (CRIT-12: empty list, never a placeholder string).
+        expect(result.recipe!.ingredients, isEmpty);
       });
 
       test('should handle mixed languages', () async {
@@ -1218,6 +1155,116 @@ Instructions:
 
           expect(result.recipe!.ingredients, isEmpty);
           expect(result.recipe!.core.structuredIngredients, isNull);
+        },
+      );
+    });
+
+    group('BUT-1469/BUT-1614 correction-capture wiring', () {
+      // A successful text import must anchor the parser feedback loop: it
+      // stores an ImportCorrectionSnapshot in the shared ParsedRecipeCache,
+      // keyed by the produced recipe id and tagged ImportSource.text. The
+      // strategy resolves that cache from the production ServiceLocator (no
+      // cache arg), so these tests wire a real cache in and read it back.
+      late ParsedRecipeCache cache;
+
+      setUp(() {
+        cache = ParsedRecipeCache();
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+        getIt.registerSingleton<ParsedRecipeCache>(cache);
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<ParsedRecipeCache>()) {
+          getIt.unregister<ParsedRecipeCache>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      const validText =
+          'Pannkakor\n'
+          'Ingredienser:\n'
+          '3 dl vetemjöl\n'
+          '2 ägg\n'
+          'Gör så här:\n'
+          'Vispa ihop och stek i smör.';
+
+      test(
+        'stores a snapshot keyed by the produced recipe id, tagged '
+        'ImportSource.text with the snapshot sentinel version',
+        () async {
+          final result = await strategy.import(validText);
+          expect(result.isSuccess, isTrue);
+
+          final snapshot = cache.retrieve(result.recipe!.id);
+          expect(
+            snapshot,
+            isNotNull,
+            reason: 'text import must anchor the feedback loop in the cache',
+          );
+          expect(snapshot!.metadata.source, ImportSource.text);
+          expect(
+            snapshot.metadata.parserVersion,
+            ImportCorrectionSnapshot.snapshotParserVersion,
+            reason:
+                'the anchor is built from a produced recipe, not a real parse',
+          );
+          expect(
+            snapshot.metadata.domain,
+            isNull,
+            reason: 'a pasted-text import has no source domain',
+          );
+        },
+      );
+
+      test(
+        'the stored snapshot mirrors the produced recipe (real recipe fed in, '
+        'so an unedited save diffs to zero)',
+        () async {
+          final result = await strategy.import(validText);
+          final recipe = result.recipe!;
+          expect(
+            recipe.ingredients,
+            isNotEmpty,
+            reason: 'this fixture must parse to a real ingredient list',
+          );
+
+          final snapshot = cache.retrieve(recipe.id)!;
+          // Mirrors ImportCorrectionSnapshot.build: a non-empty title becomes a
+          // success FieldResult, an empty one degrades to failed (value null).
+          final expectedTitle = recipe.title.trim().isNotEmpty
+              ? recipe.title
+              : null;
+          expect(snapshot.title.value, expectedTitle);
+          // Snapshot ingredients are built from the produced recipe's flat
+          // ingredient lines (blank lines skipped).
+          final nonBlank = recipe.ingredients
+              .where((l) => l.trim().isNotEmpty)
+              .length;
+          expect(snapshot.ingredients.value, hasLength(nonBlank));
+        },
+      );
+
+      test(
+        'capture is best-effort: with no cache registered, import still '
+        'succeeds and nothing is stored',
+        () async {
+          // Drop the production container so tryGet<ParsedRecipeCache> returns
+          // null — the capture path must swallow that and never fail import.
+          app_provider.ServiceLocator.reset();
+
+          final result = await strategy.import(validText);
+          expect(result.isSuccess, isTrue);
+          expect(
+            cache.contains(result.recipe!.id),
+            isFalse,
+            reason: 'no cache was reachable, so nothing should be stored',
+          );
         },
       );
     });

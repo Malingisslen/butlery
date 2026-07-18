@@ -58,7 +58,12 @@ class FeatureFlagService {
     'permission_cache_max_size': 1000,
 
     // Operational Flags
-    'audit_log_retention_days': 90,
+    // BUT-1560: `audit_log_retention_days` removed — it was a dead RC default (90)
+    // that contradicted the BUT-665 tiered retention policy, which is enforced by
+    // code constants in the Cloud Functions (consent audit 730d in
+    // `purge-expired.ts`, general audit 180d in `request-account-deletion.ts`),
+    // not by this flag. Nothing read it; a stale 90 here only risked misleading a
+    // future operator into thinking it governed retention.
     'enable_performance_monitoring': true,
 
     // Pooled ratings "Butlery-betyget" — OFF until the full pipeline (incr 1–6)
@@ -312,7 +317,8 @@ abstract final class FeatureFlags {
   static const permissionCacheMaxSize = 'permission_cache_max_size';
 
   // Operational Flags
-  static const auditLogRetentionDays = 'audit_log_retention_days';
+  // BUT-1560: `auditLogRetentionDays` removed — see the defaults map above. Audit
+  // retention is code-constant in the Cloud Functions, not an RC flag.
   static const enablePerformanceMonitoring = 'enable_performance_monitoring';
 
   // Pooled ratings "Butlery-betyget" display + contribution kill switch.

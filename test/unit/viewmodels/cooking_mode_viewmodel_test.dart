@@ -1,6 +1,7 @@
 // test/unit/viewmodels/cooking_mode_viewmodel_test.dart
 
 import 'package:clock/clock.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
@@ -904,6 +905,124 @@ void main() {
       vm.dispose();
     });
   });
+
+  // BUT-1515: cold deep-link boot race. When the VM is constructed before the
+  // user profile has loaded, the household default falls back to the recipe's
+  // portions; it must re-apply once UserService notifies that the profile
+  // loaded — unless the user has already scaled by hand.
+  group('CookingModeViewModel - BUT-1515 boot-race re-apply', () {
+    UserProfile profileWith(int? size) => UserProfile(
+      uid: 'u1',
+      displayName: 'Test',
+      email: 't@t.se',
+      joinedAt: DateTime(2024, 1, 1),
+      lastActiveAt: DateTime(2024, 1, 1),
+      householdSize: size,
+    );
+
+    _FakeUserService registerFake() {
+      final fake = _FakeUserService();
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      getIt.registerSingleton<UserService>(fake);
+      return fake;
+    }
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+    });
+
+    test('re-applies the household default when the profile loads after '
+        'construction', () {
+      final fake = registerFake(); // profile null at construction
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      expect(vm.currentPortions, 4, reason: 'fell back to recipe portions');
+
+      var notified = 0;
+      vm.addListener(() => notified++);
+
+      // Profile finishes loading with a household size of 6.
+      fake.setProfile(profileWith(6));
+
+      expect(vm.currentPortions, 6);
+      // '2 dl mjol' scaled from 4 → 6 (×1.5) = '3 dl mjol'.
+      expect(vm.scaledIngredients.first, contains('3'));
+      expect(vm.scaledIngredients.first, contains('dl'));
+      expect(notified, greaterThanOrEqualTo(1));
+
+      vm.dispose();
+    });
+
+    test('a manual override during the boot race is never clobbered by the '
+        'late profile load', () {
+      final fake = registerFake();
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      vm.updatePortions(2); // user scales by hand while profile still loading
+
+      fake.setProfile(profileWith(6));
+
+      expect(vm.currentPortions, 2);
+      // Base stays the recipe's portions (4): '2 dl mjol' × 0.5 = '1 dl mjol'.
+      expect(vm.scaledIngredients.first, contains('1'));
+
+      vm.dispose();
+    });
+
+    test('an unrelated notification with an unchanged household is an '
+        'idempotent no-op', () {
+      final fake = registerFake();
+      fake.setProfileSilently(profileWith(6)); // present at construction
+
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      expect(vm.currentPortions, 6);
+
+      var notified = 0;
+      vm.addListener(() => notified++);
+
+      // e.g. an online-status write notifies but the household is unchanged.
+      fake.setProfile(profileWith(6));
+
+      expect(vm.currentPortions, 6);
+      expect(notified, 0, reason: 'no re-scale, so no rebuild');
+
+      vm.dispose();
+    });
+  });
 }
 
 class _MockUserService extends Mock implements UserService {}
+
+/// A real [ChangeNotifier] fake so tests can fire notifyListeners() (mocktail
+/// mocks stub addListener into a no-op). Only [currentUserProfile] is needed by
+/// CookingModeViewModel's boot-race path; everything else routes to
+/// noSuchMethod.
+class _FakeUserService extends ChangeNotifier implements UserService {
+  UserProfile? _profile;
+
+  void setProfile(UserProfile? profile) {
+    _profile = profile;
+    notifyListeners();
+  }
+
+  void setProfileSilently(UserProfile? profile) {
+    _profile = profile;
+  }
+
+  @override
+  UserProfile? get currentUserProfile => _profile;
+
+  // UserService overrides ChangeNotifier.dispose to return Future<void>; match
+  // it so the interface is satisfied.
+  @override
+  Future<void> dispose() async => super.dispose();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
