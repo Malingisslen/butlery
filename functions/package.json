@@ -110,6 +110,7 @@
     "test:cleanup-expired-social-requests": "ts-node src/__tests__/cleanup-expired-social-requests.test.ts",
     "test:cleanup-old-notifications": "ts-node src/__tests__/cleanup-old-notifications.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",
+    "test:set-profile-searchability": "ts-node src/__tests__/set-profile-searchability.test.ts",
     "test:feedback-email-failure": "ts-node src/__tests__/feedback-email-failure.test.ts",
     "test:structure-recipe-empty": "ts-node src/__tests__/structure-recipe-empty.test.ts",
     "test:locale-instruction": "ts-node src/__tests__/locale-instruction.test.ts",

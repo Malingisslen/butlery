@@ -314,6 +314,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   // Private helpers
   @override
   void clearError() {
+    // dispose() disposes _itemOperationsManager, so an unguarded call after
+    // disposal notifies a dead ChangeNotifier and throws.
+    if (isDisposed) return;
+
     _itemOperationsManager.clearError();
     super.clearError();
   }

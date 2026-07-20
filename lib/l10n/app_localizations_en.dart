@@ -443,6 +443,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get errorCouldNotUpdateSearchability =>
+      'Search visibility could not be updated. Please try again.';
+
+  @override
   String errorCouldNotDelete(String itemType) {
     return 'Could not delete $itemType';
   }

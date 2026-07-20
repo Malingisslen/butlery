@@ -486,6 +486,24 @@ void main() {
         expect(viewModel.hasError, isFalse);
       });
 
+      // BUT-1628: dispose() disposes _stateManager before super.dispose(), and
+      // MenuStateManager.clearError() notifies unconditionally. A late
+      // clearError() from a view teardown must be an inert no-op, not a crash.
+      test('clearError after dispose is a no-op instead of throwing', () {
+        final disposable = MenuViewModel(
+          recipeService: mockRecipeService,
+          menuService: mockMenuService,
+          analyticsService: mockAnalyticsService,
+        );
+        var notified = 0;
+        disposable.addListener(() => notified++);
+
+        disposable.dispose();
+
+        expect(disposable.clearError, returnsNormally);
+        expect(notified, 0);
+      });
+
       test('should handle concurrent operations', () async {
         when(
           () => mockMenuService.generateMenuFromPrompt(

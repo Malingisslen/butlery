@@ -638,6 +638,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
   @override
   void clearError() {
+    // _shoppingService outlives this ViewModel — clearing its error after
+    // disposal would wipe an error another live listener is still showing.
+    if (isDisposed) return;
+
     _shoppingService.clearError();
   }
 

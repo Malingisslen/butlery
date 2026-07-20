@@ -412,8 +412,15 @@ class UniversalShareDialogViewModel extends ChangeNotifier
   }
 
   /// Clear any error messages
-  void clearError() {
-    _clearError();
+  void clearError() => _clearError();
+
+  /// The share flows outlive the dialog: a user can dismiss it mid-share and
+  /// the awaiting continuation still lands in [_setError] / [_clearError].
+  /// Guarding here rather than at each call site covers every notifier on the
+  /// class at once — same pattern as RealtimeMenuViewModel.
+  @override
+  void notifyListeners() {
+    if (!isStreamDisposed) super.notifyListeners();
   }
 
   // Private methods

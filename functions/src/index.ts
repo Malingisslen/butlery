@@ -103,6 +103,11 @@ export { onProfileUpdated } from "./social/on-profile-updated";
 // themselves into a victim's friends list and read private cook_snaps.
 export { acceptFriendRequest } from "./social/accept-friend-request";
 
+// BUT-1629: the only path by which a minor can become searchable. The rules
+// hard-deny (BUT-1626) blocks every CLIENT write of isSearchable:true for a
+// minor; this Admin-SDK callable is the audited server-side exception.
+export { setProfileSearchability } from "./social/set-profile-searchability";
+
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
 

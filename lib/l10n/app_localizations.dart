@@ -788,6 +788,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte uppdatera {itemType}'**
   String errorCouldNotUpdate(String itemType);
 
+  /// Shown when the server-side searchability opt-in for a minor could not be written
+  ///
+  /// In sv, this message translates to:
+  /// **'Synligheten i sökningar kunde inte uppdateras. Försök igen.'**
+  String get errorCouldNotUpdateSearchability;
+
   /// No description provided for @errorCouldNotDelete.
   ///
   /// In sv, this message translates to:

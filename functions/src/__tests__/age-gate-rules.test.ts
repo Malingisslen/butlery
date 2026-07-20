@@ -642,6 +642,57 @@ test("public_profiles: minor can edit displayName while non-searchable", async (
   );
 });
 
+// PP6 (BUT-1629): the deliberate opt-in path. A privileged (Admin-SDK) write
+// of isSearchable:true for a minor SURVIVES — that is exactly what the
+// `setProfileSearchability` callable does — while the minor's own CLIENT can
+// only ever move the flag back to false. This is the pair that proves the
+// hard-deny constrains clients only, not the audited server path.
+test("public_profiles: server write of minor isSearchable:true survives; client may opt out but not back in", async () => {
+  const uid = `pp-minor-optin-${RUN}`;
+  await seedDoc(`users/${uid}`, { uid, isMinor: true });
+  await seedDoc(`public_profiles/${uid}`, publicProfileBody());
+
+  // The callable's write, modelled by a rules-bypassing (Admin-SDK) context.
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ isSearchable: true }, { merge: true });
+  });
+
+  // It stuck.
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const snap = await ctx.firestore().doc(`public_profiles/${uid}`).get();
+    if (snap.data()?.isSearchable !== true) {
+      throw new Error(
+        "server-written isSearchable:true did not persist for the minor"
+      );
+    }
+  });
+
+  // The client can still opt back OUT — that is the safe direction, and the
+  // rule only constrains writes that CHANGE isSearchable to true.
+  const clientCtx = env.authenticatedContext(uid);
+  await assertSucceeds(
+    clientCtx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ isSearchable: false }, { merge: true })
+  );
+
+  // But the minor cannot opt themselves back IN from the client — only the
+  // callable can. Note the rule is DIFF-gated: it fires on the false->true
+  // transition, so a no-op re-write of an already-true value would not be
+  // denied (nothing lands in affectedKeys). That is why this assertion has to
+  // follow the opt-out above rather than re-writing true on top of true.
+  await assertFails(
+    clientCtx
+      .firestore()
+      .doc(`public_profiles/${uid}`)
+      .set({ isSearchable: true }, { merge: true })
+  );
+});
+
 // ============================================================================
 // isAgeCompliant() MATRIX on the four UGC create paths
 // (12 assertions across 12 tests)

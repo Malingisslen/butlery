@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -38,6 +40,7 @@ class UserProfileBuilder {
     CookingSkillLevel? cookingSkillLevel,
     List<String>? cuisineAffinities,
     String? bio,
+    bool isMinor = false,
   }) {
     final now = DateTime.now();
     return UserProfile(
@@ -58,6 +61,7 @@ class UserProfileBuilder {
       cookingSkillLevel: cookingSkillLevel,
       cuisineAffinities: cuisineAffinities,
       bio: bio,
+      isMinor: isMinor,
     );
   }
 }
@@ -572,6 +576,66 @@ void main() {
     });
 
     group('Profile Saving', () {
+      // BUT-1459: the in-flight guard now lives on the viewmodel, so a
+      // double-tap on ANY save screen (not just the ones that remembered to add
+      // a local bool) can never fire two concurrent profile writes.
+      test(
+        'rejects a re-entrant save while one is in flight, writing only once',
+        () async {
+          viewModel.updateDisplayName('Erik Svensson');
+
+          final gate = Completer<UserProfile?>();
+          when(
+            () => mockUserService.createOrUpdateProfile(
+              displayName: any(named: 'displayName'),
+              avatarUrl: any(named: 'avatarUrl'),
+              isSearchable: any(named: 'isSearchable'),
+              allowEmailSearch: any(named: 'allowEmailSearch'),
+              cookingSkillLevel: any(named: 'cookingSkillLevel'),
+              cuisineAffinities: any(named: 'cuisineAffinities'),
+              bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
+              activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+              householdSize: any(named: 'householdSize'),
+            ),
+          ).thenAnswer((_) => gate.future);
+
+          final first = viewModel.saveProfile();
+          // The write is parked in `gate`, so the VM is mid-save here.
+          expect(viewModel.isSaving, isTrue);
+
+          final second = await viewModel.saveProfile();
+          expect(
+            second,
+            isFalse,
+            reason: 'a re-entrant save must be rejected, not queued',
+          );
+
+          gate.complete(
+            UserProfileBuilder.build(displayName: 'Erik Svensson'),
+          );
+          expect(await first, isTrue);
+          expect(viewModel.isSaving, isFalse);
+
+          verify(
+            () => mockUserService.createOrUpdateProfile(
+              displayName: any(named: 'displayName'),
+              avatarUrl: any(named: 'avatarUrl'),
+              isSearchable: any(named: 'isSearchable'),
+              allowEmailSearch: any(named: 'allowEmailSearch'),
+              cookingSkillLevel: any(named: 'cookingSkillLevel'),
+              cuisineAffinities: any(named: 'cuisineAffinities'),
+              bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
+              activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+              householdSize: any(named: 'householdSize'),
+            ),
+          ).called(1);
+        },
+      );
+
       test('should save new profile successfully', () async {
         viewModel.updateDisplayName('Erik Svensson');
         viewModel.updateIsSearchable(false);
@@ -1238,6 +1302,210 @@ void main() {
         expect(notificationCount, greaterThan(0));
 
         expect(() => testViewModel.dispose(), returnsNormally);
+      });
+    });
+
+    // BUT-1629: search discoverability for a 15–17-year-old. The client can
+    // never write it (firestore.rules denies it and UserProfile.toFirestore
+    // zeroes it), so the toggle routes through the server callable via
+    // UserService. Every branch below asserts the same property: the switch
+    // ends up showing what the SERVER holds, never what was requested — a
+    // privacy toggle that renders the opposite of reality is the failure that
+    // matters here.
+    group('minor searchability opt-in (BUT-1629)', () {
+      UserProfileViewModel buildFor(UserProfile profile) {
+        mockUserService.setUserState(
+          currentUser: profile,
+          users: {},
+          isLoading: false,
+          error: null,
+        );
+        final vm = UserProfileViewModel(
+          mockUserService,
+          mockImagePickerService,
+          uploadService: mockImageUploadService,
+        );
+        addTearDown(vm.dispose);
+        return vm;
+      }
+
+      void stubSave(Future<UserProfile?> Function() answer) {
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
+            householdSize: any(named: 'householdSize'),
+          ),
+        ).thenAnswer((_) => answer());
+      }
+
+      test(
+        'an adult toggle stays a local edit — no callable involved',
+        () async {
+          final vm = buildFor(
+            UserProfileBuilder.build(uid: testUserId, isSearchable: true),
+          );
+
+          expect(await vm.setSearchableOptIn(false), isTrue);
+
+          expect(vm.isSearchable, isFalse);
+          expect(
+            vm.hasUnsavedChanges,
+            isTrue,
+            reason: 'the adult path persists on Save, so it is a pending edit',
+          );
+          verifyNever(() => mockUserService.setMinorSearchable(any()));
+        },
+      );
+
+      test('an accepted minor opt-in leaves nothing unsaved', () async {
+        final vm = buildFor(
+          UserProfileBuilder.build(
+            uid: testUserId,
+            isMinor: true,
+            isSearchable: false,
+          ),
+        );
+        when(
+          () => mockUserService.setMinorSearchable(any()),
+        ).thenAnswer((_) async => true);
+
+        expect(await vm.setSearchableOptIn(true), isTrue);
+
+        expect(vm.isSearchable, isTrue);
+        expect(vm.error, isNull);
+        expect(
+          vm.hasUnsavedChanges,
+          isFalse,
+          reason:
+              'the callable already persisted it — a later Save must not try '
+              'to write it again',
+        );
+        verify(() => mockUserService.setMinorSearchable(true)).called(1);
+      });
+
+      test('the server answer wins over the requested one', () async {
+        final vm = buildFor(
+          UserProfileBuilder.build(
+            uid: testUserId,
+            isMinor: true,
+            isSearchable: false,
+          ),
+        );
+        // Server refuses: stores false even though true was asked for.
+        when(
+          () => mockUserService.setMinorSearchable(any()),
+        ).thenAnswer((_) async => false);
+
+        expect(await vm.setSearchableOptIn(true), isFalse);
+
+        expect(
+          vm.isSearchable,
+          isFalse,
+          reason: 'the toggle must render the stored value, not the tap',
+        );
+        expect(vm.error, isNotNull);
+      });
+
+      test(
+        'a failed call leaves the toggle put and surfaces an error',
+        () async {
+          final vm = buildFor(
+            UserProfileBuilder.build(
+              uid: testUserId,
+              isMinor: true,
+              isSearchable: false,
+            ),
+          );
+          when(
+            () => mockUserService.setMinorSearchable(any()),
+          ).thenAnswer((_) async => null);
+
+          expect(await vm.setSearchableOptIn(true), isFalse);
+
+          expect(vm.isSearchable, isFalse);
+          expect(
+            vm.error,
+            isNotNull,
+            reason:
+                'a privacy control that fails silently is the worst outcome for '
+                'the one control this feature exists to give a minor',
+          );
+        },
+      );
+
+      test(
+        'a save whose re-assert failed reports it instead of claiming the opt-in',
+        () async {
+          final vm = buildFor(
+            UserProfileBuilder.build(
+              uid: testUserId,
+              isMinor: true,
+              isSearchable: true,
+            ),
+          );
+          vm.updateBio('Hej');
+          // UserService compensates for the toFirestore chokepoint; when the
+          // callable leg fails it hands back the server's real false.
+          stubSave(
+            () async => UserProfileBuilder.build(
+              uid: testUserId,
+              isMinor: true,
+              isSearchable: false,
+            ),
+          );
+
+          expect(await vm.saveProfile(), isTrue);
+
+          expect(
+            vm.isSearchable,
+            isFalse,
+            reason: 'the toggle must not claim an opt-in the server dropped',
+          );
+          expect(vm.error, isNotNull);
+        },
+      );
+
+      test('the toggle is rejected while a save is in flight', () async {
+        final vm = buildFor(
+          UserProfileBuilder.build(
+            uid: testUserId,
+            isMinor: true,
+            isSearchable: true,
+          ),
+        );
+        vm.updateBio('Hej');
+        final gate = Completer<UserProfile?>();
+        stubSave(() => gate.future);
+
+        final save = vm.saveProfile();
+        expect(vm.isSaving, isTrue);
+
+        expect(
+          await vm.setSearchableOptIn(false),
+          isFalse,
+          reason:
+              'both writers touch isSearchable; interleaving them could '
+              're-enable discoverability right after a deliberate opt-out',
+        );
+        verifyNever(() => mockUserService.setMinorSearchable(any()));
+
+        gate.complete(
+          UserProfileBuilder.build(
+            uid: testUserId,
+            isMinor: true,
+            isSearchable: true,
+          ),
+        );
+        await save;
       });
     });
   });

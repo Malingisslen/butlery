@@ -644,7 +644,10 @@ class RecipeDetailViewModel extends BaseViewModel {
   /// and consistency with other ViewModels for comprehensive error management patterns.
   @override
   void clearError() {
-    // Clear any error state if needed
+    if (isDisposed) return;
+
+    // This ViewModel exposes no error state of its own (error => null), so the
+    // notify exists only to keep listeners in sync with the base contract.
     notifyListeners();
   }
 }

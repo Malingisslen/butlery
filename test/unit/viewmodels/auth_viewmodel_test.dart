@@ -636,6 +636,20 @@ void main() {
         expect(viewModel.errorMessage, isNull);
       });
 
+      // BUT-1628: _authService OUTLIVES this ViewModel, so a late clearError()
+      // cannot throw — the discriminating assertion is that the shared auth
+      // error SURVIVES, i.e. a dead ViewModel can't wipe an error another live
+      // listener is still showing. `returnsNormally` alone would be vacuous.
+      test('clearError after dispose leaves the shared auth error intact', () {
+        final disposable = AuthViewModel(authService: mockAuthService);
+        disposable.dispose();
+        mockAuthService.setAuthState(error: 'Test error');
+
+        disposable.clearError();
+
+        expect(mockAuthService.errorMessage, equals('Test error'));
+      });
+
       test('should notify listeners when validation errors occur', () {
         // Arrange
         var notificationCount = 0;

@@ -859,6 +859,20 @@ void main() {
       expect(viewModel.error, isNull);
     });
 
+    // BUT-1628: _shoppingService OUTLIVES this ViewModel, so a late clearError()
+    // cannot throw — the discriminating assertion is that the shared service is
+    // never touched, i.e. a dead ViewModel can't wipe an error another live
+    // listener is still showing. `returnsNormally` alone would be vacuous.
+    test('clearError after dispose never reaches the shared service', () {
+      final disposable = UnifiedShoppingViewModel();
+      disposable.dispose();
+      clearInteractions(mockShoppingService);
+
+      disposable.clearError();
+
+      verifyNever(() => mockShoppingService.clearError());
+    });
+
     test(
       'a failed initialize rethrows and still surfaces the SERVICE error, not '
       "BaseViewModel's generic fallback",

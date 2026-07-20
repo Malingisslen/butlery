@@ -441,6 +441,34 @@ void main() {
       expect(viewModel.categories, contains('Huvudrätt'));
       expect(viewModel.menuWithOptimisticChanges, isMap);
     });
+
+    // BUT-1628: dispose() disposes _state, and RealtimeMenuState.clearError()
+    // notifies whenever an error IS set — so an unguarded late call from a view
+    // teardown notifies a dead ChangeNotifier and throws. The pre-existing
+    // error is what makes this discriminating: on a clean VM the state's own
+    // "only notify if changed" short-circuit would hide a missing guard.
+    test('clearError after dispose is a no-op instead of throwing', () async {
+      final disposable = RealtimeMenuViewModel(
+        menuService: mockMenuService,
+        syncService: mockSyncService,
+        authService: mockAuthService,
+      );
+      // Put the state into the error condition a user would be looking at when
+      // they close the screen.
+      await disposable.addRecipeToCategory(
+        categoryName: 'Förrätt',
+        recipe: testRecipe1,
+      );
+      expect(disposable.errorMessage, isNotNull);
+
+      var notified = 0;
+      disposable.addListener(() => notified++);
+
+      disposable.dispose();
+
+      expect(disposable.clearError, returnsNormally);
+      expect(notified, 0);
+    });
   });
 
   group('Connection & Permissions', () {

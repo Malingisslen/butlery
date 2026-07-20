@@ -2061,3 +2061,94 @@ so with the permission gate deleted AND compression bailing, the test still pass
 **Rule:** any "denied ⇒ null / no side effect" test must first (or last) run the *identical fixture*
 against an allowed path and assert it SUCCEEDS. Only then is the null attributable to the gate.
 Applies to every repository permission test, not just storage.
+
+---
+
+### 2026-07-20 — BUT-1629 minor searchability opt-in: whole client path shipped with ZERO tests + silent-failure bug
+**Trigger:** reviewed the `setProfileSearchability` slice (CF + `ProfileSearchabilityService` +
+`UserProfileViewModel.setSearchableOptIn` + `privacy_section` toggle).
+
+**Coverage fact worth the grep:** `grep -rn "setSearchableOptIn\|ProfileSearchabilityService" test/`
+returns **zero hits**. The only new Dart test in the diff is the BUT-1459 `isSaving` re-entrancy
+guard. The safety-critical method (the ONLY path a minor can become discoverable) and its
+post-save re-assert are entirely unexercised. Same failure family as the 2026-07-18 BUT-1594
+entry: a slice lands, the *adjacent* new test passes, and "existing suites green" is mistaken
+for coverage. **Always grep the suite for the new method NAME, not the file.**
+
+**Bug caught — `safeExecute` swallows the error unless `customErrorMessage` is passed.**
+`error_handling_mixin.dart:133-137` only calls `handleUserError` when `customErrorMessage != null`.
+`setSearchableOptIn` (`user_profile_viewmodel.dart:143-155`) passes none, and
+`privacy_section.dart:46` discards the returned `false`. Result: a minor's opt-in that fails
+(offline, `resource-exhausted` from the new 10-token bucket, App Check, `failed-precondition`)
+snaps the switch back with **no message at all**. Reusable rule: any VM method wrapping a
+user-initiated network action in `safeExecute` needs `customErrorMessage:` or the caller must
+render the `false`; a test asserting only the returned bool will not catch the missing feedback —
+assert `viewModel.error`/`hasError` too.
+
+**Bug caught — swallowed failure followed by an unconditional optimistic copyWith.**
+`user_profile_viewmodel.dart:410-414`: `_reassertMinorSearchability()` catches and logs
+(`:170-175`), then lines 411-414 force `isSearchable: true` onto BOTH profiles regardless. On a
+failed re-assert the server holds `false` while the UI renders ON and `hasUnsavedChanges` is
+false, so nothing retries. **Pattern: a best-effort side effect must return its success and gate
+the local state sync on it** — "best-effort" applies to the WRITE, never to the state mirror.
+
+**Missing in-flight guard asymmetry.** The same commit added a re-entrancy guard to `saveProfile`
+but not to `setSearchableOptIn`, which is the one calling a rate-limited CF, from an always-enabled
+`SwitchListTile`. Rapid toggles race and last-response-wins. When reviewing a diff that introduces
+an in-flight guard, check the OTHER new async entry points in the same file for the same need.
+
+**Rate-limit budget sharing (cost/behaviour, invisible to unit tests):** every ordinary profile
+save by an opted-in minor spends one `setProfileSearchability` token (`:409`) from the same
+10-token/5-per-min bucket as the deliberate toggle. Exhaustion is swallowed ⇒ silent loss of
+discoverability. When a new rate-limiter key is added, enumerate ALL call sites of the limited
+callable, not just the user-facing one.
+
+**Verified-good, do not re-flag:** (a) the CI lane IS wired — `test:set-profile-searchability`
+carries neither the `test:rules` nor `test:integration:` prefix, so `run-ci-unit-tests.js`
+auto-discovers it (checked against the 2026-07-19 trap entry). (b) The PP6 rules test in
+`age-gate-rules.test.ts` is a strong pair: Admin-SDK write of `isSearchable:true` for a minor
+survives, and the same minor's CLIENT write of the *identical already-stored* value is still
+denied — proving the deny is diff-gated on the new value, not the old. Reuse that
+privileged-write-then-client-write-same-value shape for any "server path is the audited
+exception" rule.
+
+**Gap in the CF suite:** `set-profile-searchability.test.ts` covers only
+`setProfileSearchabilityWithDeps`. The `onCall` wrapper's `unauthenticated`, the
+`typeof searchable !== "boolean"` → `invalid-argument` guard, and `enforceRateLimit` are
+untested — the boolean guard matters because a string `"true"` would otherwise merge into
+`public_profiles`. Also the "idempotent" case asserts convergence but never `writes.length`,
+so it cannot distinguish idempotent from wrote-twice.
+
+### 2026-07-20 — BUT-1628 clearError disposal-guard sweep: two quadrants, only one of which `returnsNormally` can test [trigger: review of the 11-VM clearError guard sweep]
+Reviewed the `if (isDisposed) return;` sweep across 11 viewmodels' `clearError()`. The guards are
+correct and analyze/tests are green, but the sweep shipped with **zero regression tests** — none of
+the 11 test files was touched, and every existing `clearError` test only exercises the alive path.
+
+**The load-bearing insight: the 11 VMs split into two quadrants that need DIFFERENT assertions.**
+- **Quadrant A — delegate is disposed by `dispose()`** (menu→`_stateManager`, archive_import→
+  `_importManager`, collaborative_shopping→`_itemOperationsManager`, realtime_menu→`_state`,
+  add_members/universal_share→managers). The delegates' `clearError()` call `notifyListeners()`
+  unconditionally (verified: `menu_state_manager.dart:68-71`, `archive_import_operations_manager.dart:92-95`),
+  so an unguarded post-dispose call THROWS. Test = `dispose()` → `expect(vm.clearError, returnsNormally)`
+  + `expect(notified, 0)`. Non-vacuous.
+- **Quadrant B — delegate is a SERVICE that OUTLIVES the VM** (recipe_list, unified_recipe,
+  unified_shopping, auth). Nothing throws here — the service is alive. **`returnsNormally` is VACUOUS
+  in quadrant B.** The discriminating assertion is that the SHARED service error SURVIVES: seed
+  `service.error`, dispose the VM, call `clearError()`, assert the error is still set. That pins the
+  actual behaviour change (a dead VM must not wipe an error another live listener is still showing).
+Mutation-verified: deleting the three guard lines turns exactly the three added tests red, 0 collateral.
+
+**Harness note:** these test files' `tearDown` disposes the shared `viewModel`, so a disposal test
+MUST construct its own local VM (a second `dispose()` in tearDown trips ChangeNotifier's
+double-dispose FlutterError). Reuse the setUp mocks; the local VM's own subscriptions die with it.
+
+**Production finding worth carrying:** `menu_viewmodel.dart` and `recipe_list_viewmodel.dart` each
+keep a LOCAL `_isDisposed` set at the START of `dispose()` precisely because (per menu's own comment
+at L38-44) `BaseViewModel.isDisposed` only flips inside `super.dispose()`, which those VMs call LAST —
+after the delegates are already disposed. The new guards use the BASE `isDisposed`, so they do not
+cover the intra-dispose window the local flag exists for. Same shape for the `isStreamDisposed` users
+(archive_import, unified_recipe): `disposeStreamResources()` runs AFTER the managers are disposed.
+Post-dispose calls (the real-world case) ARE covered; the window is narrow. `realtime_menu_viewmodel`
+is the one that got it right — it guards on `_isDisposed`. **Rule: when a class carries both a local
+and an inherited disposal flag, a new guard must use the one the class's own callbacks use, or it
+silently guards a later moment than intended.**

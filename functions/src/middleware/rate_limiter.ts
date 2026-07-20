@@ -130,6 +130,16 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
   },
 
+  // BUT-1629: minor searchability opt-in callable. A privacy toggle is flipped
+  // a handful of times ever, so this is purely an abuse/retry-storm bound —
+  // tight enough that a scripted loop can't hammer the Admin-SDK write path,
+  // loose enough that a user flipping the switch back and forth never notices.
+  setProfileSearchability: {
+    maxTokens: 10,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
+
   // Analytics/Logging Operations (moderate limits)
   logParseEvent: {
     maxTokens: 30,

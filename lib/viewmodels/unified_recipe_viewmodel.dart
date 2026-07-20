@@ -259,6 +259,10 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
 
   /// Clear error state
   void clearError() {
+    // _recipeService outlives this ViewModel — clearing its error after
+    // disposal would wipe an error another live listener is still showing.
+    if (isStreamDisposed) return;
+
     _recipeService.clearError();
   }
 

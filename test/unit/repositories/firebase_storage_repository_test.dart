@@ -6,7 +6,9 @@
 /// call sequencing.
 library;
 
+import 'dart:async';
 import 'dart:typed_data';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:mocktail/mocktail.dart';
@@ -179,15 +181,103 @@ void main() {
           );
         },
       );
+    });
 
-      // NOT COVERED HERE (BUT-1558 progress-subscription cancel): proving the
-      // snapshotEvents listener is cancelled needs a TaskSnapshot the listener
-      // can read, and firebase_storage_mocks' MockTaskSnapshot exposes no
-      // `bytesTransferred` — attaching any onProgress callback makes the fake
-      // throw, so a unit test here could only ever pass for the wrong reason.
-      // Carried as a follow-up: cover it where a real/controllable UploadTask
-      // exists (integration lane) rather than assert it against a fake that
-      // cannot emit progress.
+    // BUT-1635: backfills the progress-subscription-cancel coverage BUT-1558
+    // shipped without. firebase_storage_mocks' MockTaskSnapshot has no
+    // `bytesTransferred`/`totalBytes` (noSuchMethod), so attaching onProgress
+    // to the stock fake makes the listener throw — which is why the original
+    // attempt was abandoned. The fix is a purpose-built UploadTask fake whose
+    // snapshot stream we own: `hasListener` on that controller is then a direct,
+    // non-vacuous read of whether the repository's subscription outlived the
+    // upload.
+    group('Upload progress subscription lifecycle (BUT-1558)', () {
+      late _ProgressStorage progressStorage;
+      late FirebaseStorageRepository progressRepository;
+
+      setUp(() {
+        progressStorage = _ProgressStorage();
+        progressRepository = FirebaseStorageRepository(
+          storage: progressStorage,
+          uuid: mockUuid,
+          authRepository: mockAuthRepository,
+        );
+      });
+
+      test('cancels the snapshot subscription after a successful upload', () async {
+        final progressValues = <double>[];
+
+        final result = await progressRepository.uploadImageData(
+          imageData: Uint8List.fromList([1, 2, 3, 4]),
+          userId: testUserId,
+          path: 'users/$testUserId/recipes/progress.jpg',
+          onProgress: progressValues.add,
+        );
+
+        expect(result, isNotNull, reason: 'upload itself must still succeed');
+
+        // POSITIVE CONTROL: without this, `hasListener == false` below would
+        // also pass if no listener was ever attached — proving nothing about
+        // the cancel.
+        expect(
+          progressValues,
+          isNotEmpty,
+          reason: 'a listener must actually have been attached and fired',
+        );
+
+        // The controller is deliberately left OPEN, so an uncancelled
+        // subscription would still be registered here.
+        expect(
+          progressStorage.task.controller.hasListener,
+          isFalse,
+          reason:
+              'the progress subscription must not outlive the upload — a leaked '
+              'listener keeps the TaskSnapshot stream and the uploaded bytes alive',
+        );
+      });
+
+      test(
+        'cancels the snapshot subscription even when the upload fails',
+        () async {
+          // The `finally` block is what makes this true: on the throwing path
+          // the cancel must still run, otherwise every failed upload leaks.
+          progressStorage.failUpload = true;
+          final progressValues = <double>[];
+
+          final result = await progressRepository.uploadImageData(
+            imageData: Uint8List.fromList([1, 2, 3, 4]),
+            userId: testUserId,
+            path: 'users/$testUserId/recipes/progress-fail.jpg',
+            onProgress: progressValues.add,
+          );
+
+          expect(result, isNull, reason: 'a failed upload returns null');
+          expect(
+            progressValues,
+            isNotEmpty,
+            reason: 'a listener must actually have been attached and fired',
+          );
+          expect(
+            progressStorage.task.controller.hasListener,
+            isFalse,
+            reason: 'a failed upload must not leak its progress subscription',
+          );
+        },
+      );
+
+      test(
+        'attaches no subscription at all when no onProgress is given',
+        () async {
+          final result = await progressRepository.uploadImageData(
+            imageData: Uint8List.fromList([1, 2, 3, 4]),
+            userId: testUserId,
+            path: 'users/$testUserId/recipes/no-progress.jpg',
+          );
+
+          expect(result, isNotNull);
+          expect(progressStorage.task.controller.hasListener, isFalse);
+        },
+      );
     });
 
     group('Multiple Image Upload', () {
@@ -307,4 +397,125 @@ void main() {
 
 void _stubUuid(MockUuid mock, String value) {
   when(() => mock.v4()).thenReturn(value);
+}
+
+/// Minimal FirebaseStorage fake whose UploadTask emits a real TaskSnapshot.
+///
+/// firebase_storage_mocks cannot do this (its MockTaskSnapshot resolves
+/// `bytesTransferred` through noSuchMethod), and the progress-cancel behaviour
+/// is invisible without a snapshot stream we control.
+class _ProgressStorage implements FirebaseStorage {
+  final _ProgressReference _root = _ProgressReference();
+
+  /// When true the upload future completes with an error, exercising the
+  /// `finally`-cancel path rather than the happy path.
+  bool get failUpload => _root.failUpload;
+  set failUpload(bool value) => _root.failUpload = value;
+
+  _ProgressUploadTask get task => _root.lastTask!;
+
+  @override
+  Reference ref([String? path]) => _root;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _ProgressReference implements Reference {
+  bool failUpload = false;
+  _ProgressUploadTask? lastTask;
+
+  @override
+  Reference child(String path) => this;
+
+  @override
+  Future<String> getDownloadURL() async => 'https://example.test/download';
+
+  @override
+  UploadTask putData(Uint8List data, [SettableMetadata? metadata]) {
+    final task = _ProgressUploadTask(this, failUpload: failUpload);
+    lastTask = task;
+    // Runs after the repository has synchronously attached its listener
+    // (nothing awaits between `putData` and `.listen`).
+    scheduleMicrotask(() async {
+      task.controller.add(task.snapshot);
+      // Let the stream event reach the listener before the task resolves,
+      // so onProgress is genuinely invoked.
+      await Future<void>.delayed(Duration.zero);
+      if (failUpload) {
+        task.completer.completeError(Exception('upload failed'));
+      } else {
+        task.completer.complete(task.snapshot);
+      }
+    });
+    return task;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _ProgressUploadTask implements UploadTask {
+  final controller = StreamController<TaskSnapshot>();
+  final completer = Completer<TaskSnapshot>();
+
+  @override
+  final _ProgressSnapshot snapshot;
+
+  _ProgressUploadTask(Reference ref, {required bool failUpload})
+    : snapshot = _ProgressSnapshot(ref) {
+    // An error delivered through `then` must not also surface as an unhandled
+    // async error from the raw future.
+    if (failUpload) completer.future.catchError((Object _) => snapshot);
+  }
+
+  @override
+  Stream<TaskSnapshot> get snapshotEvents => controller.stream;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(TaskSnapshot) onValue, {
+    Function? onError,
+  }) => completer.future.then(onValue, onError: onError);
+
+  @override
+  Stream<TaskSnapshot> asStream() => completer.future.asStream();
+
+  @override
+  Future<TaskSnapshot> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) => completer.future.catchError(onError, test: test);
+
+  @override
+  Future<TaskSnapshot> whenComplete(FutureOr<void> Function() action) =>
+      completer.future.whenComplete(action);
+
+  @override
+  Future<TaskSnapshot> timeout(
+    Duration timeLimit, {
+    FutureOr<TaskSnapshot> Function()? onTimeout,
+  }) => completer.future.timeout(timeLimit, onTimeout: onTimeout);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _ProgressSnapshot implements TaskSnapshot {
+  @override
+  final Reference ref;
+
+  _ProgressSnapshot(this.ref);
+
+  @override
+  int get bytesTransferred => 2;
+
+  @override
+  int get totalBytes => 4;
+
+  @override
+  TaskState get state => TaskState.running;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

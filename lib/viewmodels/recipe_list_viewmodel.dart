@@ -877,6 +877,10 @@ class RecipeListViewModel extends BaseViewModel {
   /// error recovery and clean user experience after error resolution.
   @override
   void clearError() {
+    // _recipeService outlives this ViewModel — clearing its error after
+    // disposal would wipe an error another live listener is still showing.
+    if (isDisposed) return;
+
     _recipeService.clearError();
   }
 

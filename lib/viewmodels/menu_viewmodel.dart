@@ -300,7 +300,13 @@ class MenuViewModel extends BaseViewModel {
   /// Delegates to MenuStateManager for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
   @override
-  void clearError() => _stateManager.clearError();
+  void clearError() {
+    // dispose() disposes _stateManager, so an unguarded call after disposal
+    // notifies a dead ChangeNotifier and throws.
+    if (isDisposed) return;
+
+    _stateManager.clearError();
+  }
 
   /// Loads menu content from a SharedMenu for viewing/editing.
   /// Used when navigating to VeckomenyView with a shared menu from social features.

@@ -443,6 +443,10 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get errorCouldNotUpdateSearchability =>
+      'Synligheten i sökningar kunde inte uppdateras. Försök igen.';
+
+  @override
   String errorCouldNotDelete(String itemType) {
     return 'Kunde inte ta bort $itemType';
   }

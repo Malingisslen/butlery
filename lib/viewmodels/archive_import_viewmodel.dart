@@ -99,6 +99,10 @@ class ArchiveImportViewModel extends ChangeNotifier
   }
 
   void clearError() {
+    // dispose() disposes _importManager, so an unguarded call after disposal
+    // notifies a dead ChangeNotifier and throws.
+    if (isStreamDisposed) return;
+
     _importManager.clearError();
   }
 

@@ -357,6 +357,8 @@ class AuthViewModel extends ChangeNotifier
   /// across the entire authentication system and clean user experience during flow transitions.
   @override
   void clearError() {
+    if (isDisposed) return;
+
     _validationError = null;
     super.clearError(); // Clear mixin error from StateNotifierMixin
     _authService.clearError();

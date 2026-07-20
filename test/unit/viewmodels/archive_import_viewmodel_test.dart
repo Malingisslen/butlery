@@ -453,6 +453,23 @@ void main() {
     });
 
     group('Clear and Reset', () {
+      // BUT-1628: dispose() disposes _importManager before the stream-mixin
+      // flag flips, and ArchiveImportOperationsManager.clearError() notifies
+      // unconditionally. A late clearError() must not throw.
+      test('clearError after dispose is a no-op instead of throwing', () {
+        final disposable = ArchiveImportViewModel(
+          recipeService: mockRecipeService,
+          searchService: SearchService(),
+        );
+        var notified = 0;
+        disposable.addListener(() => notified++);
+
+        disposable.dispose();
+
+        expect(disposable.clearError, returnsNormally);
+        expect(notified, 0);
+      });
+
       test('clearError and clearFilters reset state', () async {
         await viewModel.importSelectedRecipes(); // triggers error
         expect(viewModel.hasError, isTrue);

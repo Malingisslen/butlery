@@ -35,6 +35,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // UI-only state (not part of UserProfile model)
   bool _isUploadingAvatar = false;
+  bool _isSaving = false;
   String? _displayNameError;
   String? _operationError;
 
@@ -62,6 +63,13 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _editedProfile?.isActivityEventTypeEnabled(type.name) ?? true;
   bool get isLoading => _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
+
+  /// BUT-1459: save round-trip in flight. Hoisted here so every save entry
+  /// point (profile-edit, household-size, …) shares one in-flight source of
+  /// truth instead of each re-implementing a local double-tap guard.
+  /// Deliberately NOT folded into [isLoading] — that drives the avatar-upload
+  /// spinner, and widening it would spin unrelated UI during a profile save.
+  bool get isSaving => _isSaving;
   String? get displayNameError => _displayNameError;
   String? get error => _operationError ?? _displayNameError;
   bool get hasError => _operationError != null || _displayNameError != null;
@@ -106,9 +114,59 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     notifyListeners();
   }
 
+  /// True for a compliant 15–17-year-old (server-authoritative, written only by
+  /// `verifySignupAge`). Drives which searchability write path applies.
+  bool get isMinor => _editedProfile?.isMinor ?? false;
+
   void updateIsSearchable(bool value) {
     _editedProfile = _editedProfile?.copyWith(isSearchable: value);
     notifyListeners();
+  }
+
+  /// BUT-1629: set search discoverability, routing a MINOR through the
+  /// server-side opt-in instead of the ordinary profile save.
+  ///
+  /// A minor's client write of `isSearchable:true` is denied by firestore.rules
+  /// and independently zeroed by [UserProfile.toFirestore], so the ordinary
+  /// save can never make them discoverable — deliberately, since a tampered
+  /// client must not be able to. The `setProfileSearchability` callable is the
+  /// audited exception, and this is the only place the app calls it.
+  ///
+  /// Unlike the adult path (a local edit persisted by Save) this takes effect
+  /// immediately, because the write is the callable itself. Returns false and
+  /// sets [error] if the call fails, so the caller can tell the user — a
+  /// privacy control that fails silently is the failure that matters here.
+  Future<bool> setSearchableOptIn(bool value) async {
+    if (!isMinor) {
+      updateIsSearchable(value);
+      return true;
+    }
+    // Serialised against a save in flight: both write isSearchable, and the
+    // save re-asserts the value that was persisted when it started — letting
+    // them interleave could re-enable discoverability right after a
+    // deliberate opt-out. The view disables the toggle while [isSaving] too;
+    // this is the backstop for any other caller.
+    if (_isSaving) return false;
+
+    final stored = await _userService.setMinorSearchable(value);
+    if (stored == null) {
+      _operationError =
+          _userService.error ??
+          AppLocale.current.errorCouldNotUpdateSearchability;
+      notifyListeners();
+      return false;
+    }
+
+    // Trust the server's answer over the requested one, and sync BOTH
+    // profiles: the value is already persisted, so it must not linger as an
+    // unsaved change that a later Save would try to write again.
+    _originalProfile = _originalProfile?.copyWith(isSearchable: stored);
+    _editedProfile = _editedProfile?.copyWith(isSearchable: stored);
+    _operationError = stored == value
+        ? null
+        : AppLocale.current.errorCouldNotUpdateSearchability;
+    notifyListeners();
+    return stored == value;
   }
 
   void updateAllowEmailSearch(bool value) {
@@ -266,7 +324,23 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Saves profile changes with validation and service coordination.
   /// Returns true if profile save succeeds, false if validation fails or save operation errors.
+  ///
+  /// BUT-1459: re-entrant calls are rejected while a save is in flight, so a
+  /// double-tap can never fire two concurrent writes — callers no longer need
+  /// their own guard, they just read [isSaving] to disable the button.
   Future<bool> saveProfile() async {
+    if (_isSaving) return false;
+    _isSaving = true;
+    notifyListeners();
+    try {
+      return await _performSave();
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _performSave() async {
     if (!isFormValid) {
       _handleUserError(AppLocale.current.errorFillRequiredFieldsCorrectly);
       return false;
@@ -326,6 +400,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             // Sync both profiles to the fresh server response
             _originalProfile = updatedProfile;
             _editedProfile = updatedProfile;
+            // BUT-1629: the save serialized isSearchable:false for an opted-in
+            // minor (toFirestore chokepoint) and UserService re-asserted it
+            // through the callable. The returned profile always carries the
+            // server's real answer, so we only have to report a failed
+            // re-assert — the toggle already renders the truth.
+            if (edited.isMinor &&
+                edited.isSearchable &&
+                !updatedProfile.isSearchable) {
+              _operationError =
+                  AppLocale.current.errorCouldNotUpdateSearchability;
+            }
             AppLogger.success(
               'Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}',
             );

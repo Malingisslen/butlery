@@ -338,6 +338,34 @@ void main() {
       expect(viewModel.errorMessage, isNull);
     });
 
+    // BUT-1628: the share flows outlive the dialog — a user can dismiss it
+    // mid-share and the awaiting continuation still lands in _setError /
+    // _clearError, both of which notify. Guarding only the public clearError()
+    // would leave those three async paths crashing, so the guard lives on
+    // notifyListeners(); this pins BOTH entry points.
+    test('error mutations after dispose are no-ops instead of throwing', () {
+      final disposable = UniversalShareDialogViewModel(
+        socialRecipeCoordinator: mockSocialRecipeCoordinator,
+        shoppingService: mockShoppingService,
+      );
+      var notified = 0;
+      disposable.addListener(() => notified++);
+
+      disposable.dispose();
+
+      expect(disposable.clearError, returnsNormally);
+      // The private _setError path, reached through a public stub caller.
+      expect(
+        () => disposable.sharePersonalTag(
+          tagId: 't1',
+          tagName: 'Tag',
+          friendUserIds: const [],
+        ),
+        returnsNormally,
+      );
+      expect(notified, 0);
+    });
+
     test('should clear previous error before new operation', () async {
       // Create an error
       await viewModel.shareRecipe(

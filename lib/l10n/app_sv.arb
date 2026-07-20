@@ -378,6 +378,10 @@
       }
     }
   },
+  "errorCouldNotUpdateSearchability": "Synligheten i sökningar kunde inte uppdateras. Försök igen.",
+  "@errorCouldNotUpdateSearchability": {
+    "description": "Shown when the server-side searchability opt-in for a minor could not be written"
+  },
   "errorCouldNotDelete": "Kunde inte ta bort {itemType}",
   "@errorCouldNotDelete": {
     "placeholders": {

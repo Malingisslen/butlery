@@ -52,6 +52,7 @@ import 'package:butlery/core/providers/locale_provider.dart';
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
+import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
@@ -110,6 +111,7 @@ class CoreModule implements DIModule {
       InAppReviewService,
       AccountDeletionService,
       AgeVerificationService,
+      ProfileSearchabilityService,
       DataExportService,
       ConsentService,
       // Core providers
@@ -317,6 +319,16 @@ class CoreModule implements DIModule {
       container.registerLazySingleton<AgeVerificationService>(() {
         return AgeVerificationService(
           authService: container<AuthService>(),
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        );
+      });
+
+      // BUT-1629: wrapper for the `setProfileSearchability` callable — the one
+      // server-side path a minor can use to opt into people-search (the rules
+      // hard-deny blocks every client write of isSearchable:true for a minor).
+      // Region pin matches the CF deployment.
+      container.registerLazySingleton<ProfileSearchabilityService>(() {
+        return ProfileSearchabilityService(
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         );
       });

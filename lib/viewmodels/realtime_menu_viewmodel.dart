@@ -300,7 +300,14 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   void selectCategory(String? categoryName) =>
       _state.selectCategory(categoryName);
   void toggleParticipants() => _state.toggleParticipants();
-  void clearError() => _state.clearError();
+  void clearError() {
+    // dispose() disposes _state, so an unguarded call after disposal notifies
+    // a dead ChangeNotifier and throws.
+    if (_isDisposed) return;
+
+    _state.clearError();
+  }
+
   void refreshConnection() => _connectionMonitor.forceConnectionCheck();
   Map<String, List<Recipe>>? createPersonalCopy() {
     if (currentMenu == null) return null;

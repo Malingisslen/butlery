@@ -841,6 +841,27 @@ void main() {
         // Assert - clearError is a concrete method that sets error to null
         expect(mockRecipeService.error, isNull);
       });
+
+      // BUT-1628: _recipeService OUTLIVES this ViewModel, so a late clearError()
+      // cannot throw — the discriminating assertion is that the shared service
+      // error SURVIVES, i.e. a dead ViewModel can't wipe an error another live
+      // listener is still showing. `returnsNormally` alone would be vacuous here.
+      test(
+        'clearError after dispose leaves the shared service error intact',
+        () {
+          final disposable = RecipeListViewModel(
+            recipeService: mockRecipeService,
+            searchService: mockSearchService,
+            tagEditingService: TagEditingService(),
+          );
+          disposable.dispose();
+          mockRecipeService.setRecipeState(error: 'Test error');
+
+          disposable.clearError();
+
+          expect(mockRecipeService.error, equals('Test error'));
+        },
+      );
     });
 
     group('State Accessors', () {

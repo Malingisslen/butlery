@@ -337,6 +337,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   /// Rensa fel - overrides StateNotifierMixin to also clear invitation error
   @override
   void clearError() {
+    if (isDisposed) return;
+
     super.clearError();
     _clearInvitationError();
   }

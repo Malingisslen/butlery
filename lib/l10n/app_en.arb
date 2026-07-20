@@ -372,6 +372,10 @@
       }
     }
   },
+  "errorCouldNotUpdateSearchability": "Search visibility could not be updated. Please try again.",
+  "@errorCouldNotUpdateSearchability": {
+    "description": "Shown when the server-side searchability opt-in for a minor could not be written"
+  },
   "errorCouldNotDelete": "Could not delete {itemType}",
   "@errorCouldNotDelete": {
     "placeholders": {

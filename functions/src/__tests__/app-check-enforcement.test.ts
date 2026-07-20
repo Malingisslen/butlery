@@ -50,6 +50,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "sendNotificationBatch", // notifications/send-notification.ts
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
+  "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
 ]);
 
 /**

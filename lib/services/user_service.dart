@@ -13,6 +13,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -229,20 +230,90 @@ class UserService extends ChangeNotifier
         writeHouseholdSize: !identical(householdSize, _unset),
       );
 
-      _currentUserProfile = profile;
-      _cacheProfile(user.uid, profile);
+      // BUT-1629: [UserProfile.toFirestore] forces `isSearchable:false` for a
+      // minor — deliberately, so no client write can make one discoverable.
+      // The side effect is that EVERY full-document profile save silently
+      // revokes an opted-in minor's discoverability, whatever the save was
+      // actually about (bio, avatar, household size…). Compensate here, at the
+      // same layer as the chokepoint, so all three call sites inherit it
+      // instead of each having to remember.
+      var savedProfile = profile;
+      if (profile.isMinor) {
+        // Gated on what was ALREADY persisted: this restores an existing
+        // opt-in, it never grants a new one — a caller that hardcodes
+        // `isSearchable: true` (the social handler does) must not be able to
+        // flip a minor who deliberately opted out back on.
+        final wasOptedIn = existingProfile?.isSearchable == true;
+        final actuallySearchable =
+            wasOptedIn && await _callSetSearchable(true) == true;
+        // Carry the server's real answer, never the requested one: a privacy
+        // toggle that renders the opposite of reality is worse than the
+        // revocation itself.
+        savedProfile = profile.copyWith(isSearchable: actuallySearchable);
+        if (wasOptedIn && !actuallySearchable) {
+          _setError(AppLocale.current.errorCouldNotUpdateSearchability);
+        }
+      }
+
+      _currentUserProfile = savedProfile;
+      _cacheProfile(user.uid, savedProfile);
 
       // Profile propagation handled by Cloud Function (on-profile-updated.ts)
 
       AppLogger.success('Profil sparad: ${profile.displayName.maskedName}');
       notifyListeners();
-      return profile;
+      return savedProfile;
     } catch (e) {
       AppLogger.error('❌ Kunde inte spara profil: $e');
       _setError(extractUserMessage(e));
       return null;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// BUT-1629: set a MINOR's search discoverability through the audited
+  /// `setProfileSearchability` callable — the only path that works, since
+  /// firestore.rules denies the client write and [UserProfile.toFirestore]
+  /// zeroes the field. Keeps the cached profile in step with the server so a
+  /// later save re-asserts the right value rather than a stale one.
+  ///
+  /// Returns the value the server stored, or null when the call failed (the
+  /// caller should leave the toggle where it was and surface [error]).
+  Future<bool?> setMinorSearchable(bool value) async {
+    final stored = await _callSetSearchable(value);
+    if (stored == null) {
+      _setError(AppLocale.current.errorCouldNotUpdateSearchability);
+      return null;
+    }
+
+    final profile = _currentUserProfile;
+    if (profile != null) {
+      final updated = profile.copyWith(isSearchable: stored);
+      _currentUserProfile = updated;
+      _cacheProfile(updated.uid, updated);
+    }
+    notifyListeners();
+    return stored;
+  }
+
+  /// Invokes the searchability callable. Returns the stored value, or null on
+  /// any failure (offline, rate-limited, App Check, service unregistered) —
+  /// the distinction between "server said false" and "we never reached the
+  /// server" is what lets callers avoid reporting a state they don't hold.
+  Future<bool?> _callSetSearchable(bool value) async {
+    final service = ServiceLocator.tryGet<ProfileSearchabilityService>();
+    if (service == null) {
+      AppLogger.warning(
+        'ProfileSearchabilityService unavailable — searchability left unchanged',
+      );
+      return null;
+    }
+    try {
+      return await service.setSearchable(value);
+    } catch (e) {
+      AppLogger.error('setProfileSearchability failed: $e');
+      return null;
     }
   }
 

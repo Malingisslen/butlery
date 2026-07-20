@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Four privacy toggles: search visibility, email search, online status,
 /// activity feed.
@@ -35,11 +36,29 @@ class PrivacySettingsSection extends StatelessWidget {
         BorderedContainer(
           child: Column(
             children: [
+              // BUT-1629: for a minor this toggle is the deliberate opt-in and
+              // routes through the server-side callable (the ordinary save can
+              // never make a minor discoverable — see setSearchableOptIn); for
+              // an adult it is the same local edit as before, persisted on Save.
               SwitchListTile(
                 title: Text(context.l10n.profileVisibleInSearch),
                 subtitle: Text(context.l10n.profileVisibleInSearchDescription),
                 value: viewModel.isSearchable,
-                onChanged: viewModel.updateIsSearchable,
+                // Disabled during a save: for a minor both this toggle and the
+                // save write isSearchable, and letting them interleave could
+                // re-enable discoverability just after a deliberate opt-out.
+                onChanged: viewModel.isSaving
+                    ? null
+                    : (value) async {
+                        final ok = await viewModel.setSearchableOptIn(value);
+                        if (!ok && context.mounted) {
+                          SnackBarUtils.showError(
+                            context,
+                            viewModel.error ??
+                                context.l10n.errorCouldNotUpdateSearchability,
+                          );
+                        }
+                      },
                 secondary: const Icon(Icons.search),
               ),
               const Divider(height: 1),

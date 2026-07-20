@@ -511,6 +511,23 @@ void main() {
         viewModel.clearError();
         expect(viewModel.hasError, isFalse);
       });
+
+      // BUT-1628: dispose() disposes _itemOperationsManager, and that manager's
+      // clearError() notifies unconditionally — so an unguarded late call from
+      // a view teardown notifies a dead ChangeNotifier and throws.
+      test('clearError after dispose is a no-op instead of throwing', () {
+        final disposable = CollaborativeShoppingViewModel(
+          listId: testListId,
+          shoppingService: mockShoppingService,
+        );
+        var notified = 0;
+        disposable.addListener(() => notified++);
+
+        disposable.dispose();
+
+        expect(disposable.clearError, returnsNormally);
+        expect(notified, 0);
+      });
     });
 
     group('Lifecycle', () {

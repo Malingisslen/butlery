@@ -644,6 +644,23 @@ void main() {
         expect(viewModel.hasError, isFalse);
       });
 
+      // BUT-1628: _recipeService OUTLIVES this ViewModel, so a late clearError()
+      // cannot throw — the discriminating assertion is that the shared service
+      // error SURVIVES, i.e. a dead ViewModel can't wipe an error another live
+      // listener is still showing. `returnsNormally` alone would be vacuous.
+      test(
+        'clearError after dispose leaves the shared service error intact',
+        () {
+          final disposable = UnifiedRecipeViewModel();
+          disposable.dispose();
+          mockRecipeService.setRecipeState(error: 'Test error');
+
+          disposable.clearError();
+
+          expect(mockRecipeService.error, equals('Test error'));
+        },
+      );
+
       test('should notify listeners on service changes', () {
         // Arrange
         var notificationCount = 0;

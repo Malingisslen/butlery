@@ -1500,3 +1500,63 @@ backend INVALID_ARGUMENT (docs say only "valid UTF-8"; NUL technically is). If i
 `retry:true` poison pill on a child-safety gate. Not blocking, unproven either way; a one-line
 control-character rejection (regex over U+0000-U+001F plus U+007F) would close the whole class
 for free if the file is touched again.
+
+### 2026-07-20 — BUT-1629 setProfileSearchability: minor opt-in callable review [Bug fixed / Pattern discovered]
+
+New callable `functions/src/social/set-profile-searchability.ts` — the Admin-SDK
+exception to the BUT-1626 rules hard-deny that blocks every CLIENT write of
+`public_profiles/{uid}.isSearchable:true` while `users/{uid}.isMinor == true`.
+Server side is well shaped: no `uid` param (target is always `request.auth.uid`),
+never touches `isMinor`/`birthYear`, `enforceAppCheck: true`, region inherited,
+merge-set is idempotent, fails closed (`failed-precondition`) on a missing
+profile so a merge-set can't mint a nameless half-profile that people-search
+would surface. `enforceRateLimit` (not `withRateLimit`) is correct — no LLM spend,
+so the global budget must not be consumed. DI-core test suite 5/5, `tsc` clean,
+`test:set-profile-searchability` registered in package.json (avoids the
+invisible-suite trap).
+
+**HIGH — the recurring app-check-guard trap fired again.** `setProfileSearchability`
+was NOT added to `USER_FACING` in `__tests__/app-check-enforcement.test.ts`, so the
+"every onCall callable is classified" trip-wire goes RED (reproduced: 13/14) and
+`cloud-functions-unit.yml` fails (`CI_EXCLUDE` is empty). This is the third time
+this exact miss has landed. The guard's regex `/export\s+const\s+(\w+)\s*=\s*onCall\b/`
+DOES match the multi-line `export const X =\n  onCall<T>(` form, so the miss is
+always a red suite, never a silent gap. **Checklist item: adding an `onCall` export
+is a TWO-file change — the function plus the guard's set.**
+
+**HIGH (Flutter-side, handed to firebase-backend-security) — the opt-in is revoked
+by unrelated saves.** `UserProfile.toFirestore` (`lib/models/user_profile.dart:375`)
+serializes `'isSearchable': isMinor ? false : isSearchable`, so ANY full-document
+profile save silently un-opts a minor. `UserProfileViewModel.saveProfile` bolts on a
+`_reassertMinorSearchability()` re-call of the callable, but two other call sites of
+`UserService.createOrUpdateProfile` have no such compensation:
+`lib/viewmodels/profile/profile_viewmodel.dart:123` and
+`lib/views/recipe_detail/handlers/recipe_social_handler.dart:130` (the latter even
+passes `isSearchable: true`, which serializes to false for a minor). Compensating at
+ONE call site for a chokepoint that lives in the model is structurally leaky — the
+re-assert belongs in `UserService.createOrUpdateProfile` (or the repository's
+saveProfile), i.e. at the same layer as the chokepoint it compensates for.
+
+**MEDIUM — the compensating write's failure path leaves the UI lying.**
+`saveProfile` sets `_originalProfile/_editedProfile` to `isSearchable: true`
+unconditionally after `_reassertMinorSearchability()`, which swallows its error. On
+failure the server says false, the toggle shows on, and `hasUnsavedChanges` is false
+so nothing re-syncs. Rule: when a best-effort compensating write is swallowed, the
+local optimistic state must follow the FAILURE, not the intent.
+
+**Pattern — a rules hard-deny plus an Admin-SDK escape hatch needs its client-side
+serializer audited too.** The rules deny and the model's `toFirestore` coercion are
+two independent guards; the callable only exempts the first. Every code path that
+runs the serializer still silently reverts the opted-in state, so enumerate the
+serializer's call sites (not just the rules' write paths) before declaring the
+opt-in durable.
+
+**Also noted (Low/Info):** no `audit_logs` row is written for a minor's
+discoverability change, unlike the sibling `verifySignupAge` age-gate decisions;
+`enforceRateLimit` fails CLOSED, so a Firestore blip also blocks opting OUT (safe
+direction for opt-in, wrong direction for withdrawal); `setSearchableOptIn` has no
+in-flight guard, so rapid toggling races two callables with no ordering guarantee;
+the merge-set fires `onProfileUpdated`, which early-returns (name/avatar unchanged)
+— one cold-start per toggle, negligible. Rules-side pairing in
+`age-gate-rules.test.ts` (PP6: privileged write survives, client write of the same
+value still denied) is a good shape — it proves the deny constrains clients only.

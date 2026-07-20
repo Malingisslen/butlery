@@ -64,22 +64,18 @@ class _HouseholdSizeContent extends StatefulWidget {
 }
 
 class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
-  // Local in-flight guard: UserProfileViewModel.isLoading tracks avatar upload
-  // only, not saveProfile(), so without this a double-tap during the save
-  // round-trip would fire two concurrent writes. Profile-edit masks this by
-  // popping on success; this screen stays put, so it guards locally.
-  bool _saving = false;
-
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<UserProfileViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    // Enabled when there are unsaved changes and no save is in flight. A save
+    // Enabled when there are unsaved changes and no save is in flight. The
+    // in-flight state is the viewmodel's own (BUT-1459) — saveProfile() also
+    // rejects re-entrant calls, so a double-tap can't double-write. A save
     // that can't succeed (e.g. a rare empty-displayName profile) surfaces an
     // error via _save's failure branch rather than being silently disabled;
     // backing out with unsaved changes is caught by the PopScope below.
-    final canSave = viewModel.hasUnsavedChanges && !_saving;
+    final canSave = viewModel.hasUnsavedChanges && !viewModel.isSaving;
 
     return PopScope(
       canPop: false,
@@ -132,7 +128,7 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
                     context,
                     label: context.l10n.commonSave,
                     onPressed: canSave ? _save : null,
-                    isLoading: _saving,
+                    isLoading: viewModel.isSaving,
                     isExpanded: true,
                   ),
                 ],
@@ -145,24 +141,22 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
   }
 
   Future<void> _save() async {
-    if (_saving) return; // in-flight guard: one save per tap, no double write
     final viewModel = context.read<UserProfileViewModel>();
-    setState(() => _saving = true);
-    try {
-      final success = await viewModel.saveProfile();
-      if (!mounted) return;
-      if (success) {
-        SnackBarUtils.showSuccess(context, context.l10n.householdSettingsSaved);
-      } else {
-        // Mirror the profile-edit save path — surface the failure instead of
-        // leaving the user with un-saved changes and no explanation.
-        SnackBarUtils.showError(
-          context,
-          viewModel.error ?? context.l10n.profileCouldNotSave,
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
+    // BUT-1459: the in-flight guard lives in saveProfile() itself — a
+    // re-entrant call returns false without writing. Bail early so that
+    // rejection isn't mistaken for a failed save and reported as an error.
+    if (viewModel.isSaving) return;
+    final success = await viewModel.saveProfile();
+    if (!mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, context.l10n.householdSettingsSaved);
+    } else {
+      // Mirror the profile-edit save path — surface the failure instead of
+      // leaving the user with un-saved changes and no explanation.
+      SnackBarUtils.showError(
+        context,
+        viewModel.error ?? context.l10n.profileCouldNotSave,
+      );
     }
   }
 
