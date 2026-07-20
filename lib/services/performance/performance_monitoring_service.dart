@@ -406,15 +406,23 @@ class PerformanceMonitoringService extends BaseService {
       final analytics = FirebaseAnalytics.instance;
 
       // Log key metrics
+      final parameters = <String, Object>{
+        'cache_hit_rate': report.summary['cacheHitRate'],
+        'network_requests': report.summary['networkRequests'],
+        'session_duration': report.duration.inSeconds,
+      };
+      // Only emit frame metrics when real timings were captured. Frame
+      // monitoring is disabled in release (SchedulerBinding callback is not
+      // registered), so `_frameCount` stays 0 and the summary reports a
+      // fabricated 0.0 fps / 0 dropped frames — don't ship that to analytics.
+      if (_frameCount > 0) {
+        parameters['frame_rate'] = report.summary['frameRate'] as Object;
+        parameters['dropped_frames'] =
+            report.summary['droppedFrames'] as Object;
+      }
       analytics.logEvent(
         name: AnalyticsEvents.performanceReport,
-        parameters: {
-          'frame_rate': report.summary['frameRate'],
-          'dropped_frames': report.summary['droppedFrames'],
-          'cache_hit_rate': report.summary['cacheHitRate'],
-          'network_requests': report.summary['networkRequests'],
-          'session_duration': report.duration.inSeconds,
-        },
+        parameters: parameters,
       );
 
       // Log warnings if any

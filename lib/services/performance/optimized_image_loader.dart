@@ -204,6 +204,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   bool _isLoadingFull = true;
   bool _hasError = false;
   bool _hasRecordedCacheMiss = false;
+  bool _hasRecordedCacheHit = false;
 
   // Thumbnail for progressive loading
   String? _thumbnailUrl;
@@ -410,8 +411,17 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           });
         }
 
-        // Record cache hit
-        _cacheManager.recordCacheAccess(true, 0);
+        // Record a cache hit once per load — imageBuilder is re-invoked on
+        // every rebuild, so an ungated call double-counts hits.
+        // `!_hasRecordedCacheMiss` is the other half: a load that went through
+        // progressIndicatorBuilder was a DOWNLOAD, and counting it as a hit too
+        // put a hard 50% floor under the reported hit rate (every true miss
+        // scored 1 miss + 1 hit), which is exactly the number this is meant to
+        // make trustworthy.
+        if (!_hasRecordedCacheHit && !_hasRecordedCacheMiss) {
+          _hasRecordedCacheHit = true;
+          _cacheManager.recordCacheAccess(true, 0);
+        }
 
         return Image(
           image: imageProvider,

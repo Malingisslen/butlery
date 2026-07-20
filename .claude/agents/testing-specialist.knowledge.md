@@ -1981,3 +1981,83 @@ added for any of the three legs**, so the fix shipped provably untested:
 **Pattern:** a same-day review can name the exact missing test and the fix can still land without it — grep the
 suite for the new getter/state name (`isSaving`, the new UserService branch) before trusting "existing suites
 pass" as evidence of coverage for a just-landed fix.
+
+---
+
+### 2026-07-19 — Trigger: emulator integration test wired to nothing CI runs
+**Context:** BUT-1633 added `enforce-group-minor-membership.integration.test.ts` (child-safety
+group-minor gate) + a `test:integration:enforce-group-minor-membership` npm script.
+**Bug caught:** the new test executes in ZERO CI lanes. Two CI runners
+(`functions/scripts/run-ci-unit-tests.js` for cloud-functions-unit.yml, and
+`functions/scripts/run-all-tests.js` for `npm test`) both auto-discover `test:*` but EXCLUDE
+the `test:integration:` and `test:rules` prefixes. The only lane that runs emulator-bound
+integration tests is `firestore-rules.yml`, which runs `npm run test:rules:all` — a
+HARDCODED chain. New integration tests are invisible to it unless explicitly appended.
+**Rule:** when adding a `functions/` emulator integration test, appending the granular
+`test:integration:*` script is NOT enough — you MUST also append
+`&& ts-node src/__tests__/<name>.integration.test.ts` to the `test:rules:all` script in
+functions/package.json (the 6 sibling integration tests are already chained there) AND add the
+file to firestore-rules.yml's `paths:` trigger lists (both pull_request and push). Otherwise
+the safety test ships green-forever and never guards. Same failure family as the digest lesson
+"adding the granular script, forgot to extend the composite chain."
+**Also noted:** in an integration test, `const after = (await ref.get()).data()!;` followed by
+`after.participantIds` and only THEN `assert(after !== undefined, ...)` makes the friendly
+assert dead — a missing doc throws a raw TypeError one line earlier. Order the existence assert
+BEFORE the first dereference and drop the `!`.
+
+---
+
+### 2026-07-19 — Trigger: review of BUT-1631 protein-tag fallbacks (menu/tagging)
+**Context:** BUT-1631 broadened `Phase1NutritionCalculator.calculateProteinTags` to add an
+unconditional generic tag for the WHOLE group (`fågel` for any `protein/meat/poultry`,
+`växtprotein` for any `protein/plant-based`), mirroring the pre-existing `fisk` fallback, so an
+unrecognised protein still counts toward the weekly protein-balance cap (BUT-1324).
+**Correctness concern caught (not a test bug — a design regression a test can't see):** the
+"whole group is center-of-plate protein" assumption holds for `protein/seafood/fish` and
+`protein/meat/poultry`, but is FALSE for `protein/plant-based`. In the live register
+(`docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv`) that group also contains vegan
+DAIRY-ALTERNATIVES + seasonings — kokosyoghurt, havre/soja-yoghurt, näringsjäst, and the whole
+`vegansk ost/grädde/crème fraîche/gräddfil/kvarg/fetaost/vispgrädde` family. A recipe using any
+of these as a splash/topping now emits `växtprotein` → `ProteinCategory` buckets the whole dish
+as a plant-based-protein dinner, polluting the balance nudge. Before the change these emitted no
+protein tag. Soft-nudge system so Medium, not safety-critical, but a genuine regression.
+**Reusable rule:** when a tagger adds a GENERIC group-wide fallback tag, verify against the real
+register that the Firestore `group` is homogeneous for the concept being tagged — grep
+`awk -F, '$4=="<group>"{print $2}' docs/tagging/data/Butlery_Ingredients_INGREDIENTS.csv`. A
+catch-all group (`protein/plant-based`) is NOT the same as a tight one (`protein/seafood/fish`).
+A unit test with a synthetic ingredient can't catch this — the test author picks a genuine
+protein (ärtprotein) as the "unrecognised" case and never a dairy-alt, so the false-positive
+class stays invisible. When reviewing group-fallback changes, enumerate the group from the CSV.
+**Also (Low):** the broadened duck branch uses `contains('ank')` checked BEFORE the `kalkon`
+branch — order-fragile. Safe against today's register (only real duck items contain 'ank') but a
+future poultry name with an 'ank' substring (a "…skank"/shank cut) mis-tags as duck. Check
+species branches before a broad stem, or anchor the stem.
+**Positive:** the drift-guard test (`menu_service_test.dart:1711`) reads the real
+`Phase1NutritionCalculator.proteinTags` const and compares to `ProteinCategory.allTags` (derived
+from the map, not hand-copied) — correct shape; a vocabulary drift fails the build. Verified both
+sets = 24 identical tags by hand.
+
+### 2026-07-20 — Substring-containment tag guards need an adversarial name probe, not a curated name list
+**Trigger:** Reviewing the BUT-1631 salvage tests for `Phase1NutritionCalculator.calculateProteinTags`.
+The new plant-dairy-alternative guard and its 8 test cases were both derived from the same
+hand-picked list of register names ("vegansk vispgrädde", "kokosyoghurt", …), so the suite could
+not fail — it enumerated exactly what the implementation was written to handle.
+**Pattern:** for any `contains()`-based classifier, do not review by reading the curated cases.
+Write a throwaway probe test that feeds every *sibling* name from `lib/constants/known_ingredients.dart`
+through the real function and prints the emitted tags. That took ~2 minutes here and surfaced a
+real bug the curated suite missed: `växtfärskost` (plant cream cheese) emits `växtfärs` because the
+specifics loop matches `växtfärs` as a substring — the identical trap the author had already guarded
+for bare `'ost'` inside `'rostad'`, one loop lower. Also surfaced: the guard requires the literal
+word `vegansk`, so `växtcreme` / `växtfeta` / `sojaqvarg` / `sojagurt` / `havregurt` / `kokosgurt` /
+`jästflingor` / `inaktiv jäst` / `veganskt smör` all still emit `växtprotein`.
+**Rule:** a containment guard ships with (a) at least one test whose input was NOT in the list the
+guard was written from, and (b) a pinned negative for the substring family (`X` vs `…X…`).
+
+### 2026-07-20 — A "returns null on permission denial" test needs a positive control in the same test
+**Trigger:** BUT-1558 removed `uploadImage`'s duplicate `_validateUploadPermission`, relying on the
+inner `uploadImageData` check. The regression test asserted `uploadImage(foreignPath) == null` + no
+bytes stored. But `uploadImage` also returns null when `compressImage` fails on the fake `MockFile` —
+so with the permission gate deleted AND compression bailing, the test still passes, proving nothing.
+**Rule:** any "denied ⇒ null / no side effect" test must first (or last) run the *identical fixture*
+against an allowed path and assert it SUCCEEDS. Only then is the null attributable to the gate.
+Applies to every repository permission test, not just storage.

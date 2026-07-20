@@ -31,9 +31,10 @@ class ProteinCategory {
   static const String plantBased = 'plant-based';
   static const String egg = 'egg';
 
-  /// Fine-grained protein tag → balancing category. The keys are exactly the
-  /// tags emitted by `Phase1NutritionCalculator.calculateProteinTags`; keep the
-  /// two in sync if new protein tags are added there.
+  /// Fine-grained protein tag → balancing category. The keys must be exactly
+  /// `Phase1NutritionCalculator.proteinTags` (the tagger's single-source
+  /// vocabulary) — the drift-guard test enforces that equality, so a new protein
+  /// tag added to the tagger fails the build until it gets a category here.
   static const Map<String, String> _tagToCategory = {
     // Red meat
     'nötkött': beef,
@@ -41,7 +42,8 @@ class ProteinCategory {
     'lamm': lamb,
     'vilt': game,
 
-    // Poultry
+    // Poultry (generic fallback + species)
+    'fågel': poultry,
     'kyckling': poultry,
     'anka': poultry,
     'kalkon': poultry,
@@ -71,7 +73,11 @@ class ProteinCategory {
     'ägg': egg,
   };
 
-  /// All recognised protein tags, for fast membership tests.
+  /// The set of protein tags this classifier can bucket — derived from
+  /// [_tagToCategory], never hand-listed. Consumed by the drift-guard test,
+  /// which asserts it equals `Phase1NutritionCalculator.proteinTags` so a tagger
+  /// tag with no balancing category (or a dead category key the tagger no longer
+  /// emits) fails the build (BUT-1458). Not used in production.
   static final Set<String> allTags = _tagToCategory.keys.toSet();
 
   /// "Center of plate" precedence for a multi-protein dish: the primary protein

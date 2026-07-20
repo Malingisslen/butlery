@@ -18,7 +18,8 @@ class ReservedTags {
     'under-15-min', 'under-30-min', 'under-45-min', 'under-60-min',
     'över-60-min',
     // Phase 1: Protein
-    'kyckling', 'anka', 'kalkon', 'nötkött', 'fläskkött', 'lamm', 'vilt',
+    'kyckling', 'anka', 'kalkon', 'fågel', 'nötkött', 'fläskkött', 'lamm',
+    'vilt',
     'fisk', 'lax', 'torsk', 'sill', 'skaldjur', 'räkor',
     'tofu', 'tempeh', 'seitan', 'quorn', 'växtfärs', 'bönprotein', 'oumph',
     'växtprotein', 'baljväxter', 'ägg',

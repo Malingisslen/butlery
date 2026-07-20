@@ -122,6 +122,72 @@ void main() {
           expect(mockStorage.storedDataMap.get(path), isNull);
         },
       );
+
+      test(
+        'uploadImage still rejects a foreign path after the duplicate '
+        'permission check was removed (BUT-1558)',
+        () async {
+          // BUT-1558 deleted uploadImage's own _validateUploadPermission call
+          // because uploadImageData re-runs the identical (audit-logged) check.
+          // That is only safe while the inner check actually still gates the
+          // write — this pins it. If someone later bypasses uploadImageData or
+          // moves the validation, this test fails instead of silently opening
+          // writes into another user's directory.
+          final file = MockFile();
+          when(() => file.path).thenReturn('/tmp/photo.jpg');
+          when(
+            () => file.readAsBytes(),
+          ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+          when(() => file.lengthSync()).thenReturn(3);
+
+          const foreignPath = 'users/someone-else/recipes/intruder.jpg';
+
+          final result = await repository.uploadImage(
+            imageFile: file,
+            userId: 'someone-else',
+            path: foreignPath,
+          );
+
+          expect(
+            mockStorage.storedDataMap.get(foreignPath),
+            isNull,
+            reason: 'no bytes may reach another user directory',
+          );
+          expect(
+            result,
+            isNull,
+            reason: 'foreign-path upload must not succeed',
+          );
+
+          // POSITIVE CONTROL: the same fixture DOES upload to the user's own
+          // path. Without this, a future change that makes compression bail on
+          // this payload would short-circuit uploadImage before it ever reaches
+          // the permission check — and the assertions above would still pass,
+          // proving nothing. This makes such a regression fail loudly here.
+          const ownPath = 'users/$testUserId/recipes/own.jpg';
+          final ownResult = await repository.uploadImage(
+            imageFile: file,
+            userId: testUserId,
+            path: ownPath,
+          );
+          expect(
+            ownResult,
+            isNotNull,
+            reason:
+                'control upload must succeed, else the denial above is '
+                'not evidence the permission check ran',
+          );
+        },
+      );
+
+      // NOT COVERED HERE (BUT-1558 progress-subscription cancel): proving the
+      // snapshotEvents listener is cancelled needs a TaskSnapshot the listener
+      // can read, and firebase_storage_mocks' MockTaskSnapshot exposes no
+      // `bytesTransferred` — attaching any onProgress callback makes the fake
+      // throw, so a unit test here could only ever pass for the wrong reason.
+      // Carried as a follow-up: cover it where a real/controllable UploadTask
+      // exists (integration lane) rather than assert it against a fake that
+      // cannot emit progress.
     });
 
     group('Multiple Image Upload', () {

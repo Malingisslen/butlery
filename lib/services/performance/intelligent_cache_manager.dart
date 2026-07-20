@@ -10,6 +10,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
+import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -489,11 +490,16 @@ class IntelligentCacheManager {
   /// Start periodic prefetching
   void _startPrefetchTimer() {
     _prefetchTimer?.cancel();
-    _prefetchTimer = Timer.periodic(_prefetchInterval, (_) async {
+    _prefetchTimer = Timer.periodic(_prefetchInterval, (_) {
       final userId = _permissionService?.currentUserId;
-      if (userId != null) {
-        await preloadLikelyContent(userId);
-      }
+      if (userId == null) return;
+      // Idle-gate: defer predictive prefetch to a `Priority.idle` scheduler
+      // slot so it never competes with active UI work (scrolling, animations)
+      // for the main isolate. Prefetch is best-effort; running it late is fine.
+      SchedulerBinding.instance.scheduleTask(
+        () => preloadLikelyContent(userId),
+        Priority.idle,
+      );
     });
   }
 

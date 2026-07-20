@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -229,8 +230,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
       // storage_deletion_operations.dart on account deletion — no per-feature
       // cascade needed for heirloom scans or any other user-scoped upload.
 
-      // 🔒 SECURITY: Validate upload permission before proceeding
-      await _validateUploadPermission(userId, path);
+      // 🔒 SECURITY: upload permission is validated by uploadImageData below;
+      // no second check here (it would re-run the same audit-logged validation).
 
       // Compress image first
       final compressedBytes = await compressImage(imageFile: imageFile);
@@ -272,6 +273,10 @@ class FirebaseStorageRepository extends BaseStorageRepository
   }) async {
     return await FirebasePerformanceService.traceImageUpload(
       (trace) async {
+        // Progress listener is cancelled in `finally` so it never outlives the
+        // upload (leaked subscriptions keep the TaskSnapshot stream — and the
+        // uploaded bytes — alive after the caller has moved on).
+        StreamSubscription<TaskSnapshot>? progressSub;
         try {
           // 🔒 SECURITY: Validate upload permission before proceeding
           await _validateUploadPermission(userId, path);
@@ -299,7 +304,9 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
           // Listen to progress if callback provided
           if (onProgress != null) {
-            uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+            progressSub = uploadTask.snapshotEvents.listen((
+              TaskSnapshot snapshot,
+            ) {
               final progress = snapshot.bytesTransferred / snapshot.totalBytes;
               onProgress(progress);
             });
@@ -330,6 +337,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
           final typed = mapFirebaseStorageException(e);
           if (typed != null) throw typed;
           return null;
+        } finally {
+          await progressSub?.cancel();
         }
       },
       imageSize: imageData.length,

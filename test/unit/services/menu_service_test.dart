@@ -13,6 +13,7 @@ import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/menu/protein_category.dart';
+import 'package:butlery/services/tagging/phases/tag_phase1_nutrition.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -1710,40 +1711,25 @@ void main() {
     test(
       'maps every protein tag Phase1NutritionCalculator can emit (drift guard)',
       () {
-        // Canonical list of the protein tags emitted by
-        // Phase1NutritionCalculator.calculateProteinTags
-        // (lib/services/tagging/phases/tag_phase1_nutrition.dart). If a protein
-        // tag is added to the tagger, add it here AND to ProteinCategory —
-        // otherwise a whole protein silently escapes the weekly-balance cap.
-        // Asserting set EQUALITY also catches a dead mapping (a ProteinCategory
-        // key the tagger no longer emits).
-        const taggerEmittedProteinTags = {
-          // Poultry
-          'kyckling', 'anka', 'kalkon',
-          // Red meat
-          'nötkött', 'fläskkött', 'lamm', 'vilt',
-          // Fish (generic + species)
-          'fisk', 'lax', 'torsk', 'sill',
-          // Shellfish
-          'skaldjur', 'räkor',
-          // Plant-based
-          'tofu', 'tempeh', 'seitan', 'quorn', 'växtfärs', 'bönprotein',
-          'oumph', 'växtprotein', 'baljväxter',
-          // Egg
-          'ägg',
-        };
-
+        // The tagger declares its full protein-tag vocabulary as one shared
+        // const — `Phase1NutritionCalculator.proteinTags`. This guard reads that
+        // real const (not a hand-copied duplicate) on one side and
+        // `ProteinCategory.allTags` (derived from the balancing map) on the
+        // other, so it genuinely fails when the tagger's vocabulary drifts from
+        // ProteinCategory: a newly emitted protein with no category, or a dead
+        // category key the tagger no longer emits (BUT-1458).
         expect(
           ProteinCategory.allTags,
-          equals(taggerEmittedProteinTags),
+          equals(Phase1NutritionCalculator.proteinTags),
           reason:
               'ProteinCategory and calculateProteinTags have drifted — every '
               'emitted protein tag must map to a balancing category, and no '
               'category may map a tag the tagger never emits.',
         );
 
-        // Every mapped tag must resolve to a real, non-empty category.
-        for (final tag in taggerEmittedProteinTags) {
+        // Every tag in the vocabulary must resolve to a real, non-empty
+        // category.
+        for (final tag in Phase1NutritionCalculator.proteinTags) {
           final recipe = Recipe(
             core: RecipeFactory.build(id: tag, title: tag).core.copyWith(
               tagResult: TagResult(

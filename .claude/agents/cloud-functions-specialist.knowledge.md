@@ -1252,3 +1252,251 @@ on already-absent map fields + `snap.ref.delete()` on a gone doc are all no-ops)
 inherited, logs carry only counts/booleans/conversationId (no uids/names). The two
 residual LOWs stand (retry defaults false ⇒ transient-read fail-open; I/O branches
 untested) — neither blocks. **Verdict: COMMIT-READY.**
+
+### 2026-07-19 — enforceGroupMinorMembership retry:true follow-up + NOT_FOUND poison-pill [Pattern discovered]
+
+The 2026-07-18 residual LOW ("retry defaults false ⇒ transient-read fail-open") was
+addressed: the diff adds `{ ..., retry: true }` to the `onDocumentCreated` options plus a
+7-line comment arguing every write is idempotent. `tsc --noEmit` clean (so `retry` is a
+valid `DocumentOptions` field in firebase-functions 7.2.5). A new emulator integration test
+(`enforce-group-minor-membership.integration.test.ts`, BUT-1633) exercises the update /
+delete / keep branches via `CloudFunction.run(event)`; its `test:integration:*` script was
+added to package.json (correctly excluded from the no-emulator `run-all-tests.js` runner).
+
+**MEDIUM — the idempotency comment is incomplete: `snap.ref.update()` is NOT idempotent on
+a deleted doc, so retry:true introduces a NOT_FOUND poison pill.** The comment claims "every
+write is idempotent," but Firestore `update()` throws NOT_FOUND (grpc code 5) when the doc no
+longer exists. If the conversation is deleted between the create (which fires the trigger) and
+the trigger reaching `snap.ref.update()` — the async window is the cold start + N `users/{uid}`
+reads + friend-doc reads, a real race under a rage-delete or a cleanup job — the update throws
+a DETERMINISTIC error that, under the new retry:true, retries for the whole retry window,
+re-billing the read fan-out + a failing write each attempt and never succeeding. Under the old
+retry:false this threw once and was dropped (cheap). So the fail-open fix trades a rare
+transient-drop for a rare retry storm. `snap.ref.delete()` (collapse branch) is genuinely
+idempotent (delete is a no-op on a missing doc in the Admin SDK) — only the update branch is
+exposed. Fix: wrap the update and swallow NOT_FOUND (the access cut is moot if the doc is
+already gone):
+```ts
+try { await snap.ref.update(update); }
+catch (e) {
+  if ((e as { code?: number }).code === 5) return; // NOT_FOUND: conversation already gone
+  throw e;
+}
+```
+
+**MEDIUM — test gap: the change's whole purpose is safe-under-retry idempotency, yet nothing
+fires the trigger twice.** The integration test runs each branch once. Add a double-fire case
+(run `.run(event)` twice on the same create snapshot) asserting the second run is a clean
+no-op and does not throw — the natural regression guard for a retry:true change, and it would
+have surfaced the NOT_FOUND gap had the second run been preceded by an external delete.
+
+**Pattern — adding retry:true to a v2 event trigger requires each write to be idempotent
+*including on a missing doc*.** `set`/`delete`/`set(merge)` are safe-on-missing; `update()` is
+NOT (throws NOT_FOUND) and becomes a permanent retry loop the moment the target doc is gone.
+Audit every `.update()` in a retry:true handler for a "doc could be deleted before we run"
+race and catch code 5. (Task note: the review request named `functions/src/social/set-profile-
+searchability.ts` + test, which do NOT exist in the tree; the real functions/src change under
+review was this retry:true addition. The two named Flutter files exist but are unmodified and
+server-side scope excludes them.)
+
+### 2026-07-19 — BUT-1633 enforceGroupMinorMembership retry:true + integration test [Bug fixed / Pattern discovered]
+
+Reviewed the diff adding `{ retry: true }` to `enforceGroupMinorMembership`
+(`functions/src/messaging/enforce-group-minor-membership.ts`) plus a new
+`enforce-group-minor-membership.integration.test.ts`. The idempotency reasoning for
+retry:true is sound for the *transient* case (participantIds set to absolute `remaining`,
+FieldValue.delete()/snap.ref.delete() no-op on re-run, membership mirror deletes are
+best-effort/caught). Two gaps:
+
+**HIGH — retry:true amplifies an unvalidated-uid poison pill AND defeats the very gate.**
+`participantIds` is filtered only by `typeof v === "string"`, so `""` (or a uid containing
+`/`) survives. `readIsMinor` then calls `db.doc("users/" + "")` which throws SYNCHRONOUSLY
+(invalid resource path) before any removal is computed — so the minor is never stripped
+(fail-OPEN), and with retry:true the same non-transient throw now repeats every retry
+(billing + eventarc retry storm) instead of being logged-and-dropped once. This is exactly
+the tampered/legacy-client adversary the trigger's own header names, who controls
+participantIds. The idempotency comment justifies retry only for *transient* failures and
+silently assumes all failures are transient. Fix: harden the filter to
+`typeof v === "string" && v.length > 0 && !v.includes("/")`, and apply the same non-empty/
+no-slash guard when deriving `creatorId` from `metadata.creatorId`. (Knowledge rule already
+on file: "Input validation belongs in the calling CF … a malformed doc's TypeError inside a
+trigger = retry storm" — retry:true makes it worse.)
+
+**MEDIUM — the new integration test runs in NO CI lane despite its docstring.** Its header
+says "unless CI is set, where a missing emulator is a hard failure (the CI lane starts it
+explicitly)", but `test:integration:enforce-group-minor-membership` was added to package.json
+WITHOUT being appended to `test:rules:all` (the string firestore-rules.yml:171 actually runs —
+it enumerates the sibling `*.integration.test.ts` suites explicitly), and the test file is
+absent from both the pull_request and push `paths:` lists in firestore-rules.yml. Editing the
+`messaging/**` source does trigger that workflow (source-dir filter), but the workflow never
+runs this suite, so the `process.env.CI` hard-fail branch is dead code and the coverage does
+not gate. Fix: append `&& ts-node src/__tests__/enforce-group-minor-membership.integration.test.ts`
+to `test:rules:all`, and add the file to both `paths:` lists in firestore-rules.yml. Recurring
+trap (BUT-1392/1477): grep `test:rules:all` + the workflow path filters, not just for a
+`test:*` script, when reviewing any new integration suite.
+
+**LOW — delete branch orphans the surviving member's membership mirror.** When the group
+collapses <2 and `snap.ref.delete()` fires, only the removed minors' `conversation_memberships`
+mirrors are cleaned; the lone remaining creator's mirror is left dangling at a now-deleted
+conversation. Hygiene only.
+
+### 2026-07-20 — BUT-1626 enforceGroupMinorMembership retry:true salvage review [Bug fixed / Pattern discovered]
+
+Reviewed the salvage diff adding `retry: true` + a NOT_FOUND catch to the group
+minor-safety trigger (`messaging/enforce-group-minor-membership.ts`).
+
+**The NOT_FOUND catch is correct.** `admin.firestore()` is `@google-cloud/firestore`,
+whose errors carry the NUMERIC grpc status on `.code` (verified empirically:
+INVALID_ARGUMENT surfaces as `code=3`). So `e.code === 5` is the right NOT_FOUND check —
+there is no string-code (`"not-found"`) variant to also match on this SDK. `ref.update()`
+raises NOT_FOUND only for a missing document, so the catch is correctly narrow and does
+not mask transient failures. Swallowing it is right: under `retry:true` a deleted-doc
+update is a DETERMINISTIC poison pill that would re-bill the read fan-out forever, and the
+access cut is moot once the doc is gone. Wart found: the catch `return`s, skipping the
+per-user `conversation_memberships` mirror cleanup that the sibling collapse branch falls
+through to — drop the `return` (the mirror deletes are idempotent no-ops).
+
+**HIGH — "reject empty + slash" is NOT sufficient uid validation.** Probed against the
+emulator: the JS client does NOT validate doc ids at `db.doc()` time; the SERVER rejects
+them. `getAll(db.doc("users/.."))` → `code=3 INVALID_ARGUMENT ... resource path segment ".."`;
+`users/__foo__` → `INVALID_ARGUMENT: Resource id "__foo__" is invalid because it is reserved`.
+A 1600-char id PASSED on the emulator (prod enforces 1500 bytes — emulator is lax, so that
+leg is untestable locally). Reachability confirmed from firestore.rules:1514-1530: the
+conversation create rule binds only `request.auth.uid in participantIds` and
+`metadata.creatorId == request.auth.uid`; every OTHER `participantIds` entry is free-form
+attacker text. So a tampered client creating `[me, "..", victimMinor]` makes the read throw
+BEFORE any removal is computed — fail-OPEN on a child-safety gate AND a deterministic
+retry-storm under `retry:true`.
+
+**Pattern — the full hostile-uid validator for any client-supplied string interpolated into
+a doc path.** Non-empty, ≤1500 utf8 bytes, no `/`, not `.`, not `..`, not `/^__.*__$/`.
+"Not empty and no slash" only closes the two cases a reviewer thinks of first; `.`/`..`/
+reserved `__x__` are equally deterministic and equally attacker-reachable. This matters
+DOUBLE on a `retry:true` trigger, where every deterministic input-derived throw is a poison
+pill, and TRIPLE when the throw precedes the safety decision (fail-open). Corollary for
+reviewing any `retry:true` addition: audit the READ path for input-derived deterministic
+throws, not just the write path — this diff hardened the write (NOT_FOUND) while leaving
+the read fan-out exposed.
+
+**Integration-test convention confirmed.** `test:integration:*` prefix keeps an
+emulator-bound suite out of BOTH `run-all-tests.js` and `scripts/run-ci-unit-tests.js`
+while `test:rules:all` + both `firestore-rules.yml` path lists carry it — correct wiring,
+don't file "not in the composite chain" for a `test:integration:` script.
+
+### 2026-07-20 — BUT-1633 re-review: sanitise-then-gate reopened the minor gate [Bug fixed / Pattern discovered]
+
+Re-reviewed the fixes to `messaging/enforce-group-minor-membership.ts` (added
+`isValidDocId`, made the NOT_FOUND catch fall through). The NOT_FOUND fall-through is
+**correct** — nothing after `snap.ref.update()` reads the update's result, the mirror
+deletes are independent and individually `.catch()`-ed so `Promise.all` can never reject,
+and the sibling `snap.ref.delete()` branch cannot NOT_FOUND (delete is a no-op on a
+missing doc). But the uid-validation fix introduced a **Critical** bypass and is
+**incomplete**.
+
+**Critical — sanitising BEFORE the group-size gate lets a padded array evade both
+layers.** `participantIds` is filtered through `isValidDocId`, then the *filtered* length
+drives `if (!isGroup || participantIds.length <= 2) return;`. firestore.rules'
+`passesMinorDmGate` fires ONLY at `participantIds.size() == 2` (raw). So a tampered
+client posting `["attacker", "minorUid", "__x__"]` gets raw size 3 (rules skip the 1:1
+minor gate) and sanitised size 2 (this trigger returns early) — the minor is protected by
+neither layer. Pre-fix the same payload at least poison-pilled loudly (see below); the
+filter converted a noisy fail-open into a SILENT one. Fix = gate on the RAW count, iterate
+the sanitised list:
+```ts
+const rawParticipantIds: unknown[] = Array.isArray(data?.participantIds)
+  ? (data.participantIds as unknown[]) : [];
+const participantIds: string[] = rawParticipantIds.filter(isValidDocId);
+const isGroup = data?.isGroup === true || rawParticipantIds.length > 2;
+if (!isGroup || rawParticipantIds.length <= 2) return;
+```
+`remaining` still derives from the sanitised list (junk entries are dropped from the
+written array — desirable), and if it falls below 2 the conversation is deleted. Safe.
+
+**Pattern — never let input sanitisation shrink the value a security gate's THRESHOLD is
+computed from.** Sanitise for the *use* (path building), gate on the *raw* shape. When two
+layers (rules + CF) split a check by size, an attacker only needs a payload each layer
+counts differently.
+
+**High — the doc-id rule set is missing the 1500-BYTE length cap.** Probed the real SDK
+(`db.doc('users/'+uid)`, @google-cloud/firestore): it throws SYNCHRONOUSLY only for `''`
+and a uid containing `/` (validateResourcePath = non-empty + no `//`, then an
+even-component check). `.`, `..`, `__x__`, a 3000-char uid, a lone surrogate, a newline
+and a 1600-byte multibyte uid are ALL accepted client-side — the first three are rejected
+by the BACKEND with INVALID_ARGUMENT when `getAll()` runs, i.e. an async rejection that
+throws out of the trigger and, under `retry:true`, loops deterministically forever
+(poison pill, fail-OPEN on a child-safety gate). So the `.`/`..`/`__x__` checks are right
+and necessary — but over-length has the identical failure mode and is uncovered. Add
+`Buffer.byteLength(v, "utf8") <= 1500` (bytes, not `.length` — a multibyte uid busts the
+limit at ~500 chars). Surrogates/control chars are NOT a throw path and need no rule: a
+mangled uid simply reads a nonexistent doc, and it cannot alias a real minor's uid.
+
+**Medium — the hostile-uid regression test is vacuous.** The case named "a malformed uid
+alongside a minor does not stop the removal" filters `["creator","minorA","adult"]` —
+which contains no malformed uid. It passes identically with the filter removed. Put a real
+hostile entry in the fixture (`"__x__"`), and cover the padding bypass at the trigger
+level (the emulator suite has no malformed/padding case at all).
+
+**Reusable probe technique:** to settle "would this doc id throw?", require the SDK
+directly and call `db.doc()` on a table of hostile ids with no credentials — sync
+validation runs without a network call, which cleanly separates client-side throws from
+backend INVALID_ARGUMENT rejections. Reasoning from the Firestore docs' doc-id rules gets
+this wrong: the docs list constraints the CLIENT does not enforce.
+
+### 2026-07-20 — BUT-1633 final pre-commit verification: fixes correct, Critical left untested [Pattern discovered]
+
+Re-reviewed `messaging/enforce-group-minor-membership.ts` + both suites after the three
+fixes from the previous entry were applied. **Production code verdict: all three correct.**
+
+**CRITICAL (raw-vs-sanitised gate) — genuinely closed, and the raw/filtered split introduces
+no new inconsistency.** Verified each way it could:
+- *No hole at the handoff.* `passesMinorDmGate` (firestore.rules:241) fires at exactly
+  `size()==2` and does NOT consult `isGroup`, so the trigger's `rawParticipantIds.length <= 2`
+  early return is fully covered by rules — including an `isGroup:true` 2-participant doc.
+  Raw size 0/1 cannot hold attacker+minor because the create rule requires
+  `request.auth.uid in participantIds`. Raw >=3 ⇒ rules skipped the DM gate ⇒ trigger engages.
+  The two layers now partition the space with no gap.
+- *`remaining` cannot wrongly collapse.* It drops only real removed minors plus entries that
+  failed `isValidDocId` — and a rejected entry can never be a real account (Firebase Auth uids
+  are 28-char alphanumeric) nor confer membership (rules test `uid in participantIds`, so junk
+  grants nobody access). Therefore `remaining.length < 2` iff fewer than 2 real members remain,
+  so the delete branch is correct.
+- *No mutation of legitimate conversations.* All writes sit behind `if (toRemove.length === 0)
+  return;`, so junk is only ever stripped from a doc already being cut for child safety.
+- *Retry-safe.* The event snapshot is the create-time doc, so the raw gate and `toRemove`
+  recompute identically on every retry; `participantIds` is set to an absolute value, the
+  `FieldValue.delete()`s and mirror deletes are no-ops on re-run, and NOT_FOUND (code 5) is
+  caught rather than handed to `retry:true`.
+
+**HIGH (1500-byte cap) — correct as written.** `Buffer.byteLength(v,"utf8") <= 1500` is the
+right primitive (bytes, not `.length`) and is pinned by three cases incl. `"a-umlaut".repeat(800)`.
+
+**MEDIUM (vacuous hostile-uid test) — fixed for the *uid filter*, but the same vacuity class
+reappeared on the CRITICAL itself.** THE finding of this pass: **the raw-count gate has zero
+regression coverage.** Both new "padding bypass" cases are vacuous w.r.t. the SUT — one asserts
+`["attacker","minorA","__x__"].length > 2` (a fact about a JS literal, not about the trigger);
+the other calls the pure core with an already-filtered list. The unit suite never imports the
+trigger at all (only `computeMinorsToRemove` + `isValidDocId`), and all three emulator cases use
+three well-formed participants, where raw length == filtered length == 3 and both gate versions
+evaluate identically. **Reverting `rawParticipantIds` to `participantIds` on the gate leaves all
+27 tests green** — proven by inspection, no run needed. Fix: one emulator case with a padded
+1:1 (`participantIds: [attacker, minor, "__x__"]`, no friend doc) asserting the conversation is
+deleted; that case is red on the pre-fix code and is the only construction that bites.
+
+**Pattern — a fix that lives in the I/O wrapper cannot be pinned by the pure-core suite.**
+When a security decision is split into a pure core plus a handler-level *gate*, the pure-core
+tests are structurally incapable of covering the gate. Check which side of that seam the fix
+landed on before crediting a suite with covering it. Corollary: a test whose assertion operates
+on a literal you constructed in the test file (`paddedRaw.length > 2`) or on an input you
+pre-transformed the same way the SUT would (`.filter(isValidDocId)` before calling the core)
+is testing your fixture, not the code — the same vacuity class as the earlier all-well-formed
+fixture, wearing a hostile-looking costume.
+
+**Superseded/confirmed:** re-probed the SDK today (`ResourcePath.EMPTY.append` on space, `__`,
+NUL, embedded NUL, newline, lone surrogate, DEL, `*`) — ALL accepted client-side, confirming the
+previous entry's finding that the SDK validates only empty and slash. The previous entry's ruling
+that control chars/surrogates need no rule (they read a nonexistent doc; they cannot alias a real
+minor's uid) still stands. The one residual it does not fully settle is whether a NUL byte is a
+backend INVALID_ARGUMENT (docs say only "valid UTF-8"; NUL technically is). If it is, it is a
+`retry:true` poison pill on a child-safety gate. Not blocking, unproven either way; a one-line
+control-character rejection (regex over U+0000-U+001F plus U+007F) would close the whole class
+for free if the file is touched again.

@@ -11,11 +11,43 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_allergen.dart';
 
 import '../../../../infrastructure/helpers/tagging_test_helper.dart';
+
+/// Builds a [FirebaseTagConfig] whose allergen document carries [entries].
+///
+/// Only the allergen document is meaningful for these tests; the other four
+/// config documents deserialize from empty maps (safe defaults). `displayOrder`
+/// mirrors the entry keys because `enabledEntries` (and therefore
+/// simple/combined classification) is driven off displayOrder.
+FirebaseTagConfig _configWithAllergens(List<Map<String, dynamic>> entries) {
+  return FirebaseTagConfig.fromDocuments(
+    allergensData: {
+      'schemaVersion': 1,
+      'version': 1,
+      'updatedBy': 'test',
+      'displayOrder': entries.map((e) => e['key']).toList(),
+      'entries': entries,
+    },
+    dietaryData: const {},
+    cuisinesData: const {},
+    propertiesData: const {},
+    displayData: const {},
+  );
+}
+
+Map<String, dynamic> _allergenEntry(
+  String key,
+  List<String> triggerProperties,
+) => {
+  'key': key,
+  'triggerProperties': triggerProperties,
+  'enabled': true,
+};
 
 void main() {
   group('Phase1AllergenCalculator (static fallback, firebaseConfig=null)', () {
@@ -147,5 +179,126 @@ void main() {
         expect(result.status['nötter'], TriState.free);
       },
     );
+  });
+
+  // The BUT-1401 coverage only exercised the static-fallback (firebaseConfig =
+  // null) branch. These pin the admin-editable path: when a live Firebase config
+  // IS present, the calculator derives allergen keys/trigger-properties from it
+  // instead of the hardcoded static config. Uses arbitrary keys ('X-allergen')
+  // to prove the keys come from the passed config, not the static fallback.
+  group('Phase1AllergenCalculator (Firebase config provided)', () {
+    test('simple allergen from config: CONTAINS at full coverage', () {
+      final config = _configWithAllergens([
+        _allergenEntry('X-allergen', ['prop-x']),
+      ]);
+      final lookup = IngredientLookupResult(
+        matched: [
+          TaggingTestHelper.ingredient('xfood', 'test', {'prop-x'}),
+        ],
+        unmatched: const [],
+        coverage: 1.0,
+      );
+
+      final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+      expect(result.status['X-allergen'], TriState.contains);
+      final decision = result.decisions.firstWhere(
+        (d) => d.key == 'X-allergen',
+      );
+      expect(decision.triggeringIngredients, contains('xfood'));
+    });
+
+    test('simple allergen from config: FREE at full coverage, no trigger', () {
+      final config = _configWithAllergens([
+        _allergenEntry('X-allergen', ['prop-x']),
+      ]);
+      final lookup = IngredientLookupResult(
+        matched: [TaggingTestHelper.ingredient('ris', 'grain', const {})],
+        unmatched: const [],
+        coverage: 1.0,
+      );
+
+      final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+      expect(result.status['X-allergen'], TriState.free);
+    });
+
+    test('simple allergen from config: coverage < 1.0 → UNKNOWN', () {
+      final config = _configWithAllergens([
+        _allergenEntry('X-allergen', ['prop-x']),
+      ]);
+      final lookup = IngredientLookupResult(
+        matched: [
+          TaggingTestHelper.ingredient('xfood', 'test', {'prop-x'}),
+        ],
+        unmatched: const ['okänd'],
+        coverage: 0.5,
+      );
+
+      final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+      expect(result.status['X-allergen'], TriState.unknown);
+    });
+
+    test(
+      'simple allergen with EMPTY triggerProperties is skipped (CRIT-1), not '
+      'emitted as FREE',
+      () {
+        // Safety-critical: a misconfigured allergen with no trigger property
+        // must NOT silently resolve to FREE — it is dropped entirely so nothing
+        // claims "fritt från" without evidence.
+        final config = _configWithAllergens([
+          _allergenEntry('broken', const []),
+          _allergenEntry('X-allergen', ['prop-x']),
+        ]);
+        final lookup = IngredientLookupResult(
+          matched: [TaggingTestHelper.ingredient('ris', 'grain', const {})],
+          unmatched: const [],
+          coverage: 1.0,
+        );
+
+        final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+        expect(result.status.containsKey('broken'), isFalse);
+        expect(result.status.containsKey('X-allergen'), isTrue);
+      },
+    );
+
+    test(
+      'combined allergen from config (OR logic): one trigger → CONTAINS',
+      () {
+        final config = _configWithAllergens([
+          _allergenEntry('X-combined', ['prop-a', 'prop-b']),
+        ]);
+        final lookup = IngredientLookupResult(
+          matched: [
+            TaggingTestHelper.ingredient('bfood', 'test', {'prop-b'}),
+          ],
+          unmatched: const [],
+          coverage: 1.0,
+        );
+
+        final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+        expect(result.status['X-combined'], TriState.contains);
+      },
+    );
+
+    test('combined allergen from config: coverage < 1.0 → UNKNOWN', () {
+      final config = _configWithAllergens([
+        _allergenEntry('X-combined', ['prop-a', 'prop-b']),
+      ]);
+      final lookup = IngredientLookupResult(
+        matched: [
+          TaggingTestHelper.ingredient('bfood', 'test', {'prop-b'}),
+        ],
+        unmatched: const ['okänd'],
+        coverage: 0.5,
+      );
+
+      final result = Phase1AllergenCalculator.calculate(lookup, config);
+
+      expect(result.status['X-combined'], TriState.unknown);
+    });
   });
 }
