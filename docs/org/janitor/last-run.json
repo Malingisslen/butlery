@@ -1,8 +1,7 @@
 {
-  "lastRun": "2026-07-13",
-  "dossiersRefreshed": 15,
-  "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": 0.795,
-  "notes": "Scheduled weekly janitor (cross-repo, butlery+binge+synat). 15/15 stale dossiers refreshed in ROLE_RESPONSIBILITY_MAP.md (Claude AI-Harness Owner, Data/Integrations Engineer, Data/ML Engineer, Database Administrator, Engineering Manager, Financial Controller, Growth Marketer, Legal Counsel, Monetization, Privacy/DPO, QA/Test Engineer, Security Architect, Software Architect, Technical Writer, Vendor/Procurement), all markers deleted. World-watch: 2/2 due weekly roles scanned (Security Architect, Release/App-Store Compliance Manager) via background agents — no material findings, no issues filed; existing tracked issue #215 (Apple Social Media Time Allowance) confirmed still current, not duplicated. Retro: shakedown (due since 2026-07-01, afterDays=4 past goLive 2026-06-27) has NEVER been run in butlery — flagged, retros are interactive by design. accept-rate 79.5% (44 autonomous commits/30d, 9 reworked) — healthy, appended to accept-rate.jsonl. Cruft sweep: tasks/ has only lessons.md + todo.md, nothing to archive."
+  "lastRun": "2026-07-20",
+  "dossiersRefreshed": 0,
+  "acceptRate": 0.932,
+  "scratchCleared": 0,
+  "notes": "Repo-bound weekly janitor sweep (butlery only, no MCP connectors — no Linear/Telegram, world-watch and retro out of scope for this run). Step 1: no docs/org/dossier-staleness/*.stale markers present — nothing to refresh. Step 2: accept-rate 93.2% (44 autonomous commits/30d, 3 reworked) — healthy; the accept-rate.jsonl line for today was already appended by an earlier partial run this morning (commit a1faf24), not duplicated. Step 3: .claude/state/ does not exist in this fresh checkout (ephemeral, git-ignored) — nothing to sweep; tasks/todo.md has 9 unchecked items so left in place, tasks/archive/ already holds the one shipped plan. Note: .claude/commands/janitor.md (referenced by the routine prompt) does not exist in this checkout — proceeded from the routine's inline instructions only."
 }
