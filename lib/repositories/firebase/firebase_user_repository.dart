@@ -256,6 +256,22 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     return profile;
   }
 
+  @override
+  Future<bool> fetchPersistedSearchable(String userId) async {
+    // BUT-1637: authoritative, SERVER-source read of the caller's current
+    // discoverability — deliberately NOT cache-first. UserService gates the
+    // post-save re-assert of a minor's opt-in on this: a cache-first read could
+    // report a stale `true` after the user opted out on another device (no
+    // snapshot listener keeps the local cache synced), which would let an
+    // unrelated profile save silently re-grant discoverability they turned off.
+    // Reading from the server closes that hole; on an unreachable server this
+    // throws and the caller fails closed (treats the minor as not searchable).
+    final doc = await getCollectionRef()
+        .doc(userId)
+        .get(const GetOptions(source: Source.server));
+    return doc.data()?['isSearchable'] == true;
+  }
+
   /// Fetch multiple profiles in batches (Firestore `whereIn` cap).
   @override
   Future<List<UserProfile>> fetchProfiles(List<String> userIds) async {

@@ -111,10 +111,36 @@ class ExtractionManager extends BaseService {
 
         // Step 3: Perform extraction with retry — share-extract is read-only
         // (idempotent), so it's safe to retry transient network failures.
-        return withRetry<ExtractionResult>(
-          () => _webScraper.performExtraction(webUrl, platform),
-          maxAttempts: 3,
-        );
+        // A full headless-browser scrape is expensive; two attempts (one
+        // retry) covers the common transient blip without a long tail of
+        // repeated heavyweight scrapes on a hard failure.
+        //
+        // performExtraction never THROWS on a transient blip — a timeout or
+        // an onReceivedError completes the scrape with a success:false /
+        // reason:'network' result. withRetry only retries THROWN errors, so
+        // we translate that transient result into a throw of a retryable
+        // marker to make the scrape re-run, then convert the marker back to
+        // its carried result if the retry is also exhausted.
+        try {
+          return await withRetry<ExtractionResult>(
+            () async {
+              final extraction = await _webScraper.performExtraction(
+                webUrl,
+                platform,
+              );
+              if (_isTransientFailure(extraction)) {
+                throw _RetryableExtractionFailure(extraction);
+              }
+              return extraction;
+            },
+            maxAttempts: 2,
+            isRetryable: (e) => e is _RetryableExtractionFailure,
+          );
+        } on _RetryableExtractionFailure catch (failure) {
+          // Both attempts hit a transient network failure — surface the last
+          // failing result rather than letting the marker escape as a throw.
+          return failure.result;
+        }
       },
       operationName: 'Extract from URL',
     );
@@ -145,4 +171,21 @@ class ExtractionManager extends BaseService {
   Future<void> onDispose() async {
     _webScraper.dispose();
   }
+}
+
+/// True when [result] is a failure the scrape reported as a transient network
+/// blip (timeout / load error), i.e. one worth a retry. [WebScraper]
+/// signals these via a success:false / reason:'network' result rather than a
+/// thrown exception, so this is the predicate that drives the retry-by-result
+/// translation in [ExtractionManager.extractFromUrl].
+bool _isTransientFailure(ExtractionResult result) =>
+    !result.success && result.metadata['reason'] == 'network';
+
+/// Marker thrown inside the retry wrapper to make [withRetry] re-run a scrape
+/// whose result reported a transient network failure. It carries the failing
+/// [result] so the caller can surface it once retries are exhausted, instead
+/// of the marker escaping as an uncaught throw.
+class _RetryableExtractionFailure implements Exception {
+  const _RetryableExtractionFailure(this.result);
+  final ExtractionResult result;
 }

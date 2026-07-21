@@ -1560,3 +1560,78 @@ the merge-set fires `onProfileUpdated`, which early-returns (name/avatar unchang
 — one cold-start per toggle, negligible. Rules-side pairing in
 `age-gate-rules.test.ts` (PP6: privileged write survives, client write of the same
 value still denied) is a good shape — it proves the deny constrains clients only.
+
+### 2026-07-20 — BUT-1629 set-profile-searchability CF + DI test review [Pattern discovered]
+
+Reviewed `social/set-profile-searchability.ts` + `__tests__/set-profile-searchability.test.ts`
+(sprint "social") plus the Dart re-assert side. **Production CF is clean, no
+findings** — all wiring verified present: `index.ts` export (L109), `test:set-profile-searchability`
+script in package.json (L113), `setProfileSearchability` in `app-check-enforcement.test.ts`
+USER_FACING set (L53), `enforceAppCheck:true`, region inherited (no per-fn region),
+idempotent merge-set, fail-closed `failed-precondition` on missing profile (blocks a
+nameless half-profile), `hashUid` in logs (no PII), no `uid` param (target is always
+`request.auth.uid`), never writes `isMinor`/`birthYear`, `enforceRateLimit` (not
+`withRateLimit`, correct — no LLM budget) before the write.
+
+**One test-hygiene finding (Low): `set-profile-searchability.test.ts` is the ONLY one of
+the 19 `_unit-runner` consumers that calls `runTests` TWICE** (DI-core suite + onCall-wrapper
+suite), and both are `void`-prefixed fire-and-forget — so the two suites run CONCURRENTLY.
+`_unit-runner.runTests` calls `process.exit(1)` on any failure, so if the first suite fails
+it tears the process down mid-run and truncates the second suite's PASS/FAIL reporting; on
+success you get interleaved output + TWO "N/N passed" footers (the knowledge note's
+"trailing N/N passed is source of truth" becomes ambiguous). NOT a false-green (exit code
+is still non-zero on any failure, 0 only when both fully pass), and the wrapper suite never
+touches real Firestore (all 3 wrapper cases reject before the write; the rate-limit case
+swaps `rateLimiter.enforceRateLimit` and restores in `finally`, and DI-core never calls it
+so no cross-contamination). **Convention: `_unit-runner` consumers call `runTests` exactly
+once.** Fix = sequential await in an async IIFE:
+`void (async () => { await runTests("…DI core", […]); await runTests("…wrapper", […]); })();`
+or merge into one call.
+
+Dart re-assert side (`user_service.dart` createOrUpdateProfile minor branch +
+`fetchPersistedSearchable`) is Flutter-side → owned by firebase-backend-security; reviewed
+for CF-interaction correctness and it's SOUND: server-source read (`Source.server`, not
+cache-first) gated to `isMinor && isSearchable != false`, fail-closed to `false` on read
+error, restores an existing opt-in only (never grants), carries the server's real answer not
+the requested one. Well covered by the BUT-1637 test group (5 cases pinning "a save can
+never make a minor MORE discoverable than the server says").
+
+### 2026-07-21 — BUT-1638 setProfileSearchability onCall-wrapper tests: non-vacuity verified [Pattern discovered]
+
+Reviewed the working-tree diff that adds the `onCall wrapper` suite (unauth / non-boolean /
+rate-limit) + a write-count strengthening on the idempotency DI case. **All three wrapper
+tests are genuinely NON-VACUOUS** — the key insight is that each gate, if broken, produces a
+*different observable error* and reddens the test, because the wrapper runs against the real
+module-level `db = admin.firestore()` and a non-existent `public_profiles/caller-uid`:
+- unauth: a missing auth guard makes `request.auth.uid` throw `TypeError` (code `undefined` ≠
+  `"unauthenticated"`) → fail.
+- non-boolean (`"true"`): a missing type guard lets the string flow past `enforceRateLimit`
+  (real, passes) to the write → `failed-precondition` on the missing profile ≠
+  `"invalid-argument"` → fail.
+- rate-limit: if the `rateLimiter.enforceRateLimit` property-swap DIDN'T take effect, the real
+  limiter passes and the code reaches the write → `failed-precondition` ≠ `"resource-exhausted"`
+  → fail. So green *proves* the swap works. (The swap works because TS compiles the named
+  import `enforceRateLimit(...)` to `(0, rate_limiter_1.enforceRateLimit)(...)` — a property
+  lookup on the cached required module object at call time, which the test mutates + restores in
+  `finally`. The source uses a named import, but the compiled call-shape is a property read, so
+  the test comment is accurate.)
+
+None of the three wrapper cases reaches the real Firestore (all reject before the write), so no
+emulator write escapes. The DI-core suite owns the positive write-count/path/field contract
+(incl. the safety negatives `!("isMinor" in data)` / `!("birthYear" in data)`); the wrapper
+suite correctly asserts only the reject (result `undefined` + error code) — a write-count
+assertion isn't available there without injecting a fake into the module-level `db`, and the
+control-flow ordering (auth→type→rate-limit→write) plus the different-error non-vacuity make the
+"never reaches the write" claim sound. Verdict: **tests are sound, no Critical/High/Medium.**
+
+**LOW (carried, not fixed by this diff):** the added wrapper block is a SECOND `void
+runTests(...)` call, so the DI-core and wrapper suites now run CONCURRENTLY fire-and-forget —
+exactly the hygiene issue the 2026-07-20 entry above flagged. `_unit-runner.runTests` calls
+`process.exit(1)` on any failure, so a DI-core failure can tear down the process and truncate
+the wrapper suite's reporting; on all-pass you get two interleaved "N/N passed" footers. NOT a
+false-green (exit code is still non-zero on any failure). The recommended fix (single async IIFE
+awaiting both suites sequentially, or one merged `runTests` call) was not applied in BUT-1638.
+
+Wiring confirmed present (unchanged, existing file): `test:set-profile-searchability` in
+package.json (L113) + `setProfileSearchability` in `app-check-enforcement.test.ts` USER_FACING
+(L53).

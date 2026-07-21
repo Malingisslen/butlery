@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -18,6 +19,9 @@ import '../../infrastructure/di/test_service_locator.dart';
 /// Local mocktail subclass — the production [FakeAuthRepository] extends
 /// [Fake] (BUT-1074) and cannot be used with `when(...)`.
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockProfileSearchabilityService extends Mock
+    implements ProfileSearchabilityService {}
 
 /// Convenience translator that maps the old `setAuthState(...)` API onto
 /// the new local mocktail-based [_MockAuthRepository]. Stubs the
@@ -1015,6 +1019,199 @@ void main() {
         userService.clearError();
         expect(userService.hasError, isFalse);
       });
+    });
+
+    // BUT-1637: a minor's full-document profile save clobbers
+    // public_profiles.isSearchable to false (the toFirestore chokepoint), so
+    // UserService re-asserts a genuine opt-in through the Admin-SDK callable.
+    // The re-assert must read the AUTHORITATIVE server value, never the
+    // possibly-stale in-memory profile — otherwise an unrelated save (a bio
+    // edit) could silently re-grant discoverability the user turned off on
+    // another device. Every test pins the same invariant: a save can never
+    // make a minor MORE discoverable than the server currently says they are.
+    group('minor searchability cross-device safety (BUT-1637)', () {
+      late _MockProfileSearchabilityService mockSearchability;
+
+      UserProfile minor({required bool isSearchable}) => UserProfile(
+        uid: 'test_user_123',
+        displayName: 'Anna',
+        email: 'anna@example.com',
+        isSearchable: isSearchable,
+        isMinor: true,
+        isOnline: false,
+        joinedAt: DateTime.now(),
+        lastActiveAt: DateTime.now(),
+      );
+
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((_) async {});
+
+        mockSearchability = _MockProfileSearchabilityService();
+        when(
+          () => mockSearchability.setSearchable(any()),
+        ).thenAnswer((_) async => true);
+        TestServiceLocator.registerMock<ProfileSearchabilityService>(
+          mockSearchability,
+        );
+      });
+
+      test(
+        'an unrelated save does NOT re-grant a minor who opted out on another '
+        'device — the fresh server value wins over the stale in-memory copy',
+        () async {
+          // The stale local/cached profile still says searchable:true …
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: true));
+          // … but the authoritative server value is false (opted out elsewhere).
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenAnswer((_) async => false);
+
+          // A save about something else (a bio edit) — searchable not passed.
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            bio: 'Hej',
+          );
+
+          expect(
+            result?.isSearchable,
+            isFalse,
+            reason:
+                'the save must reflect the server opt-out, not the stale copy',
+          );
+          verifyNever(() => mockSearchability.setSearchable(any()));
+        },
+      );
+
+      test(
+        'an explicit isSearchable:false never re-grants and skips the server '
+        'read',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: true));
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            isSearchable: false,
+          );
+
+          expect(result?.isSearchable, isFalse);
+          verifyNever(
+            () => mockUserRepository.fetchPersistedSearchable(any()),
+          );
+          verifyNever(() => mockSearchability.setSearchable(any()));
+        },
+      );
+
+      test(
+        'a legitimate opt-in is restored after an unrelated save clobbers it',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: true));
+          // The server confirms the minor is currently opted in.
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenAnswer((_) async => true);
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            bio: 'Hej',
+          );
+
+          expect(result?.isSearchable, isTrue);
+          expect(userService.hasError, isFalse);
+          verify(() => mockSearchability.setSearchable(true)).called(1);
+        },
+      );
+
+      test(
+        'a failed re-assert surfaces an error instead of claiming the opt-in',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: true));
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenAnswer((_) async => true);
+          // The callable leg fails — the opt-in cannot be restored.
+          when(
+            () => mockSearchability.setSearchable(any()),
+          ).thenAnswer((_) async => false);
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            bio: 'Hej',
+          );
+
+          expect(
+            result?.isSearchable,
+            isFalse,
+            reason: 'the toggle must not claim an opt-in the server dropped',
+          );
+          expect(userService.hasError, isTrue);
+        },
+      );
+
+      test(
+        'a server-read failure fails closed, never re-grants, and (since the '
+        'stale value was opted-in) surfaces the revocation',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: true));
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenThrow(Exception('offline'));
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            bio: 'Hej',
+          );
+
+          expect(result?.isSearchable, isFalse);
+          verifyNever(() => mockSearchability.setSearchable(any()));
+          // BUT-1565 salvage (cross-file review): an opted-in minor whose
+          // server read fails must NOT be silently opted out — they get told,
+          // so they can re-enable rather than silently vanishing from search.
+          expect(userService.hasError, isTrue);
+        },
+      );
+
+      test(
+        'a server-read failure on an already-not-searchable minor surfaces NO '
+        'spurious error (ordinary bio edit stays clean)',
+        () async {
+          // Stale in-memory value says NOT searchable → a failed read must not
+          // pester a minor who never opted in with a discoverability error.
+          when(
+            () => mockUserRepository.fetchProfile('test_user_123'),
+          ).thenAnswer((_) async => minor(isSearchable: false));
+          when(
+            () => mockUserRepository.fetchPersistedSearchable('test_user_123'),
+          ).thenThrow(Exception('offline'));
+
+          final result = await userService.createOrUpdateProfile(
+            displayName: 'Anna',
+            bio: 'Hej',
+          );
+
+          expect(result?.isSearchable, isFalse);
+          expect(userService.hasError, isFalse);
+        },
+      );
     });
 
     group('Lifecycle Management', () {

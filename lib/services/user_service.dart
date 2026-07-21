@@ -223,6 +223,29 @@ class UserService extends ChangeNotifier
         );
       }
 
+      // BUT-1637 (data-safety): decide whether the post-save re-assert may
+      // restore this minor's discoverability BEFORE the save below clobbers it.
+      // Read the AUTHORITATIVE server value — not the possibly-stale in-memory
+      // `existingProfile` — so an opt-out made on another device can never be
+      // silently re-granted by an unrelated profile edit, and an explicit
+      // `isSearchable:false` on THIS save is honoured. Fail closed: a read the
+      // server can't answer (offline) leaves the minor not searchable.
+      var minorReassertSearchable = false;
+      var minorSearchabilityReadFailed = false;
+      if (profile.isMinor && isSearchable != false) {
+        try {
+          minorReassertSearchable = await _repository.fetchPersistedSearchable(
+            user.uid,
+          );
+        } catch (e) {
+          AppLogger.warning(
+            'Could not read persisted minor searchability; leaving it off: $e',
+          );
+          minorReassertSearchable = false;
+          minorSearchabilityReadFailed = true;
+        }
+      }
+
       // BUT-1322 (review): only write the householdSize key when the caller
       // deliberately set/cleared it — see UserRepository.saveProfile.
       await _repository.saveProfile(
@@ -239,18 +262,27 @@ class UserService extends ChangeNotifier
       // instead of each having to remember.
       var savedProfile = profile;
       if (profile.isMinor) {
-        // Gated on what was ALREADY persisted: this restores an existing
-        // opt-in, it never grants a new one — a caller that hardcodes
-        // `isSearchable: true` (the social handler does) must not be able to
-        // flip a minor who deliberately opted out back on.
-        final wasOptedIn = existingProfile?.isSearchable == true;
+        // Gated on [minorReassertSearchable] — the fresh, server-authoritative
+        // pre-save value. This restores an EXISTING opt-in, never grants a new
+        // one, and can never re-grant one the user disabled elsewhere.
         final actuallySearchable =
-            wasOptedIn && await _callSetSearchable(true) == true;
+            minorReassertSearchable && await _callSetSearchable(true) == true;
         // Carry the server's real answer, never the requested one: a privacy
         // toggle that renders the opposite of reality is worse than the
         // revocation itself.
         savedProfile = profile.copyWith(isSearchable: actuallySearchable);
-        if (wasOptedIn && !actuallySearchable) {
+        // Surface the revocation whenever it was NOT the user's intent on this
+        // save: either the re-assert callable failed, OR the pre-save server
+        // read failed while the (stale) in-memory value said they were opted in
+        // — otherwise an opted-in minor silently loses discoverability on an
+        // unrelated bio/avatar edit and must rediscover the toggle. A minor who
+        // was already not-searchable gets no spurious error (the stale-value
+        // guard), and the profile still saves fail-closed either way.
+        final staleOptedIn = existingProfile?.isSearchable == true;
+        final revokedUnintentionally =
+            (minorReassertSearchable && !actuallySearchable) ||
+            (minorSearchabilityReadFailed && staleOptedIn);
+        if (revokedUnintentionally) {
           _setError(AppLocale.current.errorCouldNotUpdateSearchability);
         }
       }

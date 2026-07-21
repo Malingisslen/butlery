@@ -22,6 +22,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 if (!admin.apps.length) {
   admin.initializeApp({ projectId: "butlery-test-set-searchability" });
 }
@@ -29,10 +30,42 @@ if (!admin.apps.length) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
   setProfileSearchabilityWithDeps,
+  setProfileSearchability,
 } = require("../social/set-profile-searchability");
+
+// The rate limiter is required (not imported) so a test can swap
+// `enforceRateLimit` on the live module object the CF resolves it from — the
+// CF calls `rate_limiter.enforceRateLimit(...)` as a property lookup at
+// invocation time, so mutating the property here (and restoring it after)
+// steers the wrapper's rate-limit branch without a Firestore emulator.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const rateLimiter = require("../middleware/rate_limiter");
+const realEnforceRateLimit = rateLimiter.enforceRateLimit;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { runTests, assertEqual } = require("./_unit-runner");
+
+/** Invoke the onCall wrapper's handler directly (bypasses platform auth/App
+ * Check verification, exactly the seam CallableFunction.run exists for). */
+async function runWrapper(
+  request: CallableRequest<{ searchable?: unknown }>
+): Promise<{ result?: { searchable: boolean }; error?: HttpsError }> {
+  try {
+    const result = await setProfileSearchability.run(request);
+    return { result };
+  } catch (e) {
+    return { error: e as HttpsError };
+  }
+}
+
+function authedRequest(
+  uid: string,
+  data: { searchable?: unknown }
+): CallableRequest<{ searchable?: unknown }> {
+  return { auth: { uid }, data } as unknown as CallableRequest<{
+    searchable?: unknown;
+  }>;
+}
 
 interface RecordedWrite {
   path: string;
@@ -88,7 +121,13 @@ function profileDocs(): Record<string, Record<string, unknown>> {
   };
 }
 
-void runTests("setProfileSearchability DI core", [
+// Run the two suites SEQUENTIALLY. _unit-runner calls process.exit(1) on any
+// failure, so a fire-and-forget concurrent second suite could be truncated (and
+// its footers interleaved) when the first fails. Awaiting keeps the output clean
+// while preserving the non-zero exit that reddens CI on any child-safety
+// regression.
+void (async () => {
+  await runTests("setProfileSearchability DI core", [
   {
     name: "opt-in merges isSearchable:true onto the caller's own profile",
     fn: async () => {
@@ -190,6 +229,65 @@ void runTests("setProfileSearchability DI core", [
         true,
         "stored value after re-run"
       );
+      // Each call performs exactly ONE merge-set — two calls, two writes.
+      // Without this the "converges" assertion alone can't tell an idempotent
+      // re-write apart from one that wrote twice per call (which would be 4).
+      assertEqual(fake.writes.length, 2, "one write per call, no double-write");
     },
   },
 ]);
+
+// The onCall wrapper's guard branches — the DI core above never exercises the
+// auth check, the argument-type check, or the rate limiter. These are the ONLY
+// path by which a minor becomes discoverable, so each pre-write gate is pinned:
+// a caller that is unauthenticated, sends a non-boolean, or is rate-limited
+// must be rejected BEFORE any write reaches public_profiles.
+  await runTests("setProfileSearchability onCall wrapper", [
+  {
+    name: "rejects an unauthenticated caller (no auth context)",
+    fn: async () => {
+      const { result, error } = await runWrapper({
+        auth: undefined,
+        data: { searchable: true },
+      } as unknown as CallableRequest<{ searchable?: unknown }>);
+
+      assertEqual(result, undefined, "no result on the reject path");
+      assertEqual(error?.code, "unauthenticated", "error code");
+    },
+  },
+  {
+    name: "rejects a non-boolean searchable argument (a truthy string)",
+    fn: async () => {
+      // "true" is truthy — the guard must reject the TYPE, not coerce it, or a
+      // string would merge into public_profiles.isSearchable.
+      const { result, error } = await runWrapper(
+        authedRequest("caller-uid", { searchable: "true" })
+      );
+
+      assertEqual(result, undefined, "no result on the reject path");
+      assertEqual(error?.code, "invalid-argument", "error code");
+    },
+  },
+  {
+    name: "surfaces a rate-limit rejection and never reaches the write",
+    fn: async () => {
+      rateLimiter.enforceRateLimit = async () => {
+        throw new HttpsError(
+          "resource-exhausted",
+          "Rate limit exceeded for setProfileSearchability."
+        );
+      };
+      try {
+        const { result, error } = await runWrapper(
+          authedRequest("caller-uid", { searchable: true })
+        );
+
+        assertEqual(result, undefined, "no result when rate-limited");
+        assertEqual(error?.code, "resource-exhausted", "error code");
+      } finally {
+        rateLimiter.enforceRateLimit = realEnforceRateLimit;
+      }
+    },
+  },
+  ]);
+})();

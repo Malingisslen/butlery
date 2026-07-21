@@ -61,7 +61,7 @@ void main() {
         'in_app_review_happy_cook_count_v1': priorHappyCount,
       };
       if (lastPromptDaysAgo != null) {
-        values['last_in_app_review_prompt_at'] = now
+        values['in_app_review_last_prompt_at_v1'] = now
             .subtract(Duration(days: lastPromptDaysAgo))
             .millisecondsSinceEpoch;
       }
@@ -89,7 +89,7 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       expect(
-        prefs.getInt('last_in_app_review_prompt_at'),
+        prefs.getInt('in_app_review_last_prompt_at_v1'),
         now.millisecondsSinceEpoch,
         reason: 'last-prompt-at must persist on success',
       );
@@ -202,10 +202,39 @@ void main() {
 
         final prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getInt('last_in_app_review_prompt_at'),
+          prefs.getInt('in_app_review_last_prompt_at_v1'),
           isNull,
           reason: 'Failed prompt must not start the 90-day cooldown',
         );
+      },
+    );
+
+    test(
+      'honors the pre-v1 last-prompt key so upgraders keep their cooldown',
+      () async {
+        // A user prompted 30 days ago on a build that used the legacy,
+        // un-versioned key. After the rename the versioned key is absent, so
+        // the read-fallback must still see the cooldown and NOT re-prompt.
+        final now = DateTime(2026, 1, 30);
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'in_app_review_first_seen_at_v1': now
+              .subtract(const Duration(days: 200))
+              .millisecondsSinceEpoch,
+          'in_app_review_happy_cook_count_v1': 10,
+          'last_in_app_review_prompt_at': now
+              .subtract(const Duration(days: 30))
+              .millisecondsSinceEpoch,
+        });
+        final svc = InAppReviewService(
+          inAppReview: review,
+          analytics: analytics,
+          now: () => now,
+        );
+
+        final fired = await svc.maybeRequest(rating: 5.0);
+
+        expect(fired, isFalse);
+        verifyNever(() => review.requestReview());
       },
     );
 

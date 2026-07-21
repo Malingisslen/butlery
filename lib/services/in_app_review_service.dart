@@ -32,7 +32,13 @@ class InAppReviewService {
   static const String _prefsHappyCookCountKey =
       'in_app_review_happy_cook_count_v1';
   static const String _prefsFirstSeenAtKey = 'in_app_review_first_seen_at_v1';
-  static const String _prefsLastPromptAtKey = 'last_in_app_review_prompt_at';
+  static const String _prefsLastPromptAtKey = 'in_app_review_last_prompt_at_v1';
+
+  /// Pre-`_v1` key for the last-prompt timestamp. Read-only fallback so an
+  /// existing user's 90-day cooldown survives the rename — without it the
+  /// versioned key would read null on upgrade and re-prompt immediately.
+  static const String _prefsLegacyLastPromptAtKey =
+      'last_in_app_review_prompt_at';
 
   /// Minimum 4–5★ cook count (this rating included) before prompting.
   static const int minHappyCookCount = 3;
@@ -97,8 +103,11 @@ class InAppReviewService {
     final daysSinceInstall = (nowMs - firstSeen) ~/ _msPerDay;
     if (daysSinceInstall < minDaysSinceInstall) return false;
 
-    // Criterion 4: > 90 days since last prompt.
-    final lastPromptMs = prefs.getInt(_prefsLastPromptAtKey);
+    // Criterion 4: > 90 days since last prompt. Fall back to the pre-`_v1`
+    // key so a mid-cooldown user upgrading isn't immediately re-prompted.
+    final lastPromptMs =
+        prefs.getInt(_prefsLastPromptAtKey) ??
+        prefs.getInt(_prefsLegacyLastPromptAtKey);
     if (lastPromptMs != null) {
       final daysSinceLast = (nowMs - lastPromptMs) ~/ _msPerDay;
       if (daysSinceLast < minDaysBetweenPrompts) return false;

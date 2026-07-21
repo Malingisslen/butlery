@@ -2152,3 +2152,121 @@ Post-dispose calls (the real-world case) ARE covered; the window is narrow. `rea
 is the one that got it right — it guards on `_isDisposed`. **Rule: when a class carries both a local
 and an inherited disposal flag, a new guard must use the one the class's own callbacks use, or it
 silently guards a later moment than intended.**
+
+---
+
+### 2026-07-20 — trigger: sprint review of minor-searchability (BUT-1629/BUT-1637) user-service slice
+
+Reviewing `lib/services/user_service.dart`, `lib/repositories/firebase/firebase_user_repository.dart`
+and their tests. Production logic is coherent (verified: `UserProfile.toFirestore()` forces
+`isSearchable:false` when `isMinor`, and `toFirestoreEditable()` inherits that — so the
+BUT-1637 "full save clobbers a minor's opt-in, re-assert via callable" premise holds). No
+production correctness bug found.
+
+**Pattern caught — safety-critical service methods tested only at the ViewModel mock layer.**
+Two children's-data paths had NO test at their own layer:
+- `UserService.setMinorSearchable(bool)` — the deliberate minor opt-in path (the whole point of
+  BUT-1629). It is *mocked* in `user_profile_viewmodel_test.dart` (`verify(() => mockUserService.setMinorSearchable(true))`),
+  which proves the VM CALLS it but never exercises its contract: returns the SERVER's stored
+  value (not the requested one), updates `_currentUserProfile`/cache to that server value,
+  returns null + sets `error` when the callable fails, notifies.
+- `FirebaseUserRepository.fetchPersistedSearchable(uid)` — the server-authoritative read the
+  entire cross-device safety hinges on. Mocked in every service test, so a regression in the
+  impl (dropping `Source.server`, or loosening `data()?['isSearchable'] == true` to a truthy
+  check, or not throwing offline) is invisible.
+
+Lesson: when a service method wraps a Cloud-Function callable for a safety gate, grep for a test
+at the SERVICE/REPO layer, not just a `mockService.method` verify in the caller's test. A mock
+`verify` proves wiring, never the wrapped contract.
+
+### 2026-07-20 — optimized_image_loader_test review (perf-cache-test-backfill) [trigger: reviewing a legacy widget-test backfill around the BUT-1639 cache-recorder]
+The `ImageLoadCacheRecorder` group (BUT-1639 hit-rate 50%-floor guard) is the one genuinely
+good part — it pins a domain invariant (a download must never also score a hit) via singleton
+delta assertions, and would go red if either guard were removed. Reuse that before/after-delta
+shape for tests against the process-global `ImageMemoryCacheManager` singleton (it has no reset).
+But the rest of the file is a catalogue of the BUT-368 anti-patterns:
+- **Named-for-behaviour, asserts-only-topology.** "should show error widget on image load
+  failure" / "should show default error widget" / "should show placeholder when provided" all
+  assert `find.byType(Stack), findsWidgets` and never trigger the error/placeholder path
+  (CachedNetworkImage never resolves in a unit test, so `_hasError`/placeholder opacity never
+  change). They pass green while proving nothing the name claims — false confidence. To actually
+  test the error path you must pump a fake `HttpClient` that 404s (or extract the error-widget
+  selection to a pure function and test that).
+- **Vestigial tests kept green after the code was gutted.** `getOptimizedUrl` is now a one-line
+  pass-through, yet there are 6 near-duplicate tests (Cloudinary/imgix/query-param/"unsupported
+  provider") all asserting the same identity, plus "should not add progressive parameter when
+  disabled" which asserts `isNot(contains('progressive'))` on a URL that never contained it —
+  vacuously true regardless of the `progressive` flag. One identity test is enough; delete the
+  rest instead of renaming removed-feature tests to fit the stub.
+- **Dead `MockBuildContext extends Mock implements BuildContext`** declared and never used;
+  mocking BuildContext is itself discouraged.
+Rule reaffirmed: after a production method is reduced to a stub/pass-through, DELETE its old
+behaviour tests — don't keep them green by asserting the trivial new contract N times.
+
+### 2026-07-20 — data-integrations retry review: two "retries" that never retry [trigger: review of retry_helper.dart + extraction_manager.dart]
+Reviewed `lib/core/utils/retry_helper.dart`, `lib/services/extraction/extraction_manager.dart`,
+and `test/unit/core/utils/retry_helper_test.dart`. Two silent no-op retry bugs, both hidden by
+tests that only exercise the success path.
+
+- **`ExtractionManager.extractFromUrl` (extraction_manager.dart:117-120) — retry is inert.** It wraps
+  `withRetry(() => _webScraper.performExtraction(...), maxAttempts: 2)`. But `withRetry`
+  (`lib/utils/retry_policy.dart`) only retries when `op()` THROWS a `defaultIsRetryable` exception.
+  `WebScraper.performExtraction` (web_scraper.dart) NEVER throws on transient failure — every error
+  path (timeout timer, `onReceivedError` network error, parse catch, outer catch) completes its
+  Completer with `ExtractionResult(success:false, reason:'network')` and returns a RESOLVED future.
+  So `withRetry` sees success and returns on attempt 1; a transient network blip is never retried.
+  The lesson: **a retry wrapper keyed on thrown exceptions is dead over an API that signals failure by
+  return value.** Fix = inspect `result.success`/`reason` and loop, OR make the scraper throw a
+  transient exception. A test that mocks WebScraper to return two network-failure results then a
+  success and asserts `performExtraction` was called twice would have caught it (currently no
+  extraction_manager test exists).
+- **`RetryableOperation` extension (retry_helper.dart:384-417) — can't retry.** It wraps `() => this`
+  where `this` is an already-started `Future`. Re-awaiting a completed Future replays its cached
+  error; the operation never re-runs. So `apiCall().retryWithBackoff()` (the exact usage the class
+  doc advertises at line 41) burns the backoff delays but can never recover. Unused in prod today
+  (all prod callers use the STATIC `RetryHelper.retryWithBackoff(() async {...})`), but it's public
+  API. The existing tests (retry_helper_test.dart:296-316) only pass `Future.value(42)` — success
+  passthrough — so they green-light a broken retry. **Rule: an extension-on-Future can never be a
+  real retry primitive; retry needs a factory `() => op()`, not a live Future.**
+- Minor, same file: `maxRetries` is really "max total attempts" (`while attempt < maxRetries`,
+  attempt starts 0 → maxRetries=3 gives 3 executions = 2 retries), diverging from retry_policy.dart's
+  correctly-named `maxAttempts`; the class docstring at line 97-98 still claims "Deterministic delays"
+  though jitter was added at 151-159; and `retryNetworkOperation` matches error strings case-sensitively
+  while `retryFirebaseOperation` lowercases first.
+
+---
+
+### 2026-07-20 — [trigger: reviewed a SharedPreferences key-rename migration] Fallback-read precedence needs its own test
+`InAppReviewService` renamed `last_in_app_review_prompt_at` → `..._v1` with a read fallback
+`prefs.getInt(newKey) ?? prefs.getInt(legacyKey)`. The added test only covers legacy-key-present-
+within-cooldown (negative). It does NOT pin the **precedence when BOTH keys exist**: a swapped `??`
+order (`legacy ?? new`) would let a stale legacy timestamp win over a recent new-key prompt and
+re-spam the OS dialog — and no existing test catches it, because every test sets only one of the two
+keys. **Rule: any `newKey ?? legacyKey` migration fallback needs a both-keys-present test asserting
+the new key wins (recent new-key value must block even with an old legacy value present), plus the
+positive direction (legacy-only, past-cooldown → DOES fire).** Cheap, and it's the exact refactor a
+future cleanup is likely to break.
+
+### 2026-07-21 — [trigger: salvage review of BUT-1637 + BUT-1640 disposed-guard tests] The "clearError-after-dispose is a no-op" test is triple-guarded and cannot fail
+`BaseViewModel` already guards disposal in TWO independent places: `clearError()` itself opens with
+`if (_isDisposed) return;` (base_viewmodel.dart:136) AND the overridden `notifyListeners()` is
+`if (!_isDisposed) super.notifyListeners()` (base_viewmodel.dart:246). A subclass that adds its own
+`clearError` override with a third `if (isDisposed) return` (recipe_detail_viewmodel L646,
+add_members_to_group_viewmodel L339) is pure defense-in-depth. A test that disposes a local VM then
+asserts `clearError` `returnsNormally` + `notified == 0` therefore **cannot go red by removing the
+subclass guard** — the base clearError guard returns before `notifyListeners`, and even if that were
+gone the base notify guard swallows it. To fail, all THREE guards must be deleted at once, at which
+point dozens of other suites red first. These tests are **vacuous** (LOW severity — not harmful, just
+zero-sensitivity coverage of a contract the base class already enforces process-wide). The
+recipe_detail comment overclaims ("without the notifyListeners guard this would throw") — false, the
+clearError guard short-circuits first; the add_members comment is honest ("locks the observable no-op
+contract rather than catching a live crash today").
+**Rule: a disposed-guard no-op test only earns its keep when the guarded call has an OBSERVABLE side
+effect that a disposed VM must NOT perform and that is NOT already blocked by a base-class guard.** The
+sound shape is the sibling test — `RecipeDetailViewModel` "late shared-service emission after dispose
+never touches the dead VM": it disposes, then pushes a `stateStream` emission and asserts
+`recipe.title` is UNCHANGED. That one WILL go red if `_recipeServiceSubscription?.cancel()` is dropped
+from `dispose()`, because `_onRecipeServiceUpdate` mutates `_recipe = updatedRecipe` (L196) BEFORE the
+guarded notify — the state mutation, not the notify, is the load-bearing assertion (notify is guarded
+so `notified==0` proves nothing there). Prefer that pattern; delete or upgrade the bare clearError
+no-op tests.

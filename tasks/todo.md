@@ -1,5 +1,250 @@
 # tasks/todo.md
 
+## 2026-07-20 sprint (second pass) — Selection (Phase 1)
+
+**Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (107 Backlog +
+2 Todo, 0 In Progress, 0 Triage). `onboarding-reserved` label: BUT-677, BUT-722 present —
+excluded entirely, not scored.
+
+**Context — the prior "2026-07-20 sprint" pass below already ran.** Its commit `2a3fcaef4`
+("minor-searchability opt-in writer + disposed-guard sweep + perf-cleanup tests") shipped 4 of
+its 7 selected tickets clean: BUT-1459, BUT-1628, BUT-1635 all closed **Done**; BUT-1629 (the
+minor-searchability opt-in toggle) is **In Review** awaiting Malin's copy/placement sign-off
+(build-review, as planned). Its Phase-3 follow-ups are already filed and visible in this
+round's backlog: BUT-1637–1643. The remaining three selected tickets (BUT-1632, BUT-1615,
+BUT-1553) do **not** appear in this round's live Backlog/Todo/Triage scan — Linear shows them
+**archived** despite a `status` of Todo/Backlog (a Canceled→reopened bounce in their state
+history around 18:06–18:11 today). That doesn't match any documented ship outcome for them
+(no commit references them), so this is very likely a mid-flight artifact of concurrent
+tooling rather than a deliberate close. **Not resurrected here** — archived issues are outside
+this round's live-backlog scope by definition, and touching another pass's in-flight ticket
+lifecycle without knowing what produced the bounce risks fighting a parallel process. Flagged
+under Needs Malin below as a data-hygiene check, not re-selected.
+
+**Step-0 grep-of-main premise check:** git status is clean; `2a3fcaef4` is confirmed on `main`
+via `git show --stat`. `docs/onboarding/workflow-map.stale` exists (mandatory re-trace per
+CLAUDE.md — the exact scope BUT-1643 already carries).
+
+**Lane convention honored:** `deferred`-lane tickets (~85, epics/launch-gated/nice-to-haves)
+left untouched in Backlog. `need-malin`-lane tickets stay parked; live-relevance ones surfaced
+under Needs Malin below (mostly unchanged from the prior pass — not re-litigated).
+
+**New candidates this round (all filed by the prior pass's own Phase-3 follow-up rule):**
+BUT-1637–1643 (7 tickets, all follow-ups to the batch that shipped in `2a3fcaef4`). Also
+re-considered two previously-deprioritized-but-valid `autonomous`/`tech-debt` tickets from the
+"Not selected" pool (BUT-1566, BUT-1565) to round out the batch — both re-verified clean at
+Step-0 (files still match, no overlap with anything else selected this round).
+
+**File-overlap check (mandatory before batching):** BUT-1637 (Flutter client) and BUT-1638 (CF
+test-only) both trace back to the same BUT-1629 feature but touch disjoint files
+(`lib/services/user_service.dart` + `lib/services/social/profile_searchability_service.dart` +
+`lib/viewmodels/user_profile_viewmodel.dart` vs. `functions/src/__tests__/set-profile-searchability.test.ts`
+only) — batched together as one cohesive area, not split, since neither touches the other's
+files. No other candidate this round shares a file with any other. Router
+(`tools/stakeholder_router.py`) run for real on every batch's touched paths — tiers below are
+its actual output.
+
+### Batch A — minor-searchability-hardening (single: security label on BUT-1637)
+- [ ] **[Tier A] BUT-1637** — Fix 4 real defects the review caught in the just-shipped minor
+  "sökbarhet" (searchability) opt-in client path: swallowed error feedback, an unconditional
+  local-state sync on re-assert (UI can show ON while server holds OFF), no in-flight guard on
+  the toggle (rate-limiter risk), and a cross-device stale-revert where an unrelated profile
+  save on one device can silently re-grant discoverability a minor turned off on another device
+  (the data-safety-relevant one). disposition: build. requiresPlanMode: **true** (router:
+  single, panel: QA/Test, Security Architect, Vendor/Procurement — priority High=2 triggers the
+  `single + priority ≤ 2` clause; also carries the `Bug`+`security` labels).
+  Files: `lib/services/user_service.dart`, `lib/services/social/profile_searchability_service.dart`,
+  `lib/viewmodels/user_profile_viewmodel.dart`, plus new Dart tests.
+  Acceptance:
+  1. A failed opt-in call surfaces a user-visible error (`viewModel.hasError` test on the
+     failure path) instead of silently snapping the switch back.
+  2. Local UI state only flips to "searchable: true" when the re-assert call actually succeeds
+     (gated, not unconditional) — test proves a failed re-assert leaves state unchanged.
+  3. `setSearchableOptIn` has an in-flight guard preventing a rapid double-toggle from firing
+     the Cloud Function's rate limiter twice.
+  4. A cross-device regression test proves: minor opts out on device A, then an unrelated
+     profile save (e.g. avatar edit) on device B never re-grants `isSearchable:true` — the
+     re-assert reads the persisted/authoritative value, not a possibly-stale in-memory copy.
+- [ ] **[Tier A] BUT-1638** — Cover 4 untested branches of the `setProfileSearchability` Cloud
+  Function's `onCall` wrapper (only the internal `WithDeps` function had tests). disposition:
+  build. requiresPlanMode: false (router: single, panel: QA/Test, Security Architect,
+  Vendor/Procurement — priority Medium, no security label on this ticket itself).
+  Files: `functions/src/__tests__/set-profile-searchability.test.ts` only (test-only).
+  Acceptance:
+  1. An unauthenticated call is rejected (test).
+  2. A non-boolean `searchable` argument returns `invalid-argument` (test) — guards against a
+     string `"true"` silently merging into `public_profiles`.
+  3. The rate-limit-exhausted path is rejected (test).
+  4. The idempotent-write case asserts `writes.length` (not just end-state convergence) so it
+     can actually distinguish "wrote once" from "wrote twice".
+
+### Batch B — perf-cache-test-backfill (single, no production files)
+- [ ] **[Tier A] BUT-1639** — Add the one BUT-1635 acceptance criterion that didn't land: a
+  regression test proving repeated rebuilds of an already-loaded image record exactly one cache
+  HIT, not N. disposition: build. requiresPlanMode: false (router: single, panel: Performance
+  Engineer; priority Medium, no security label).
+  Files: `test/unit/services/performance/optimized_image_loader_test.dart` (new) or
+  `intelligent_cache_manager_test.dart`; a minimal `@visibleForTesting` seam on
+  `OptimizedImageLoader` only if genuinely required for the HIT path to be observable.
+  Acceptance:
+  1. A test asserts exactly one cache HIT across N rebuilds of a loaded image, OR — if the
+     seam is judged not worth adding pre-launch — a dated `accepted-deviations.md` entry
+     explains why, per the ticket's own fallback.
+  2. **Don't** change `OptimizedImageLoader`'s production cache-hit behavior — test-only (a
+     testability seam is fine; a behavior change is not).
+
+### Batch C — viewmodel-dispose-test-backfill (single, test-only)
+- [ ] **[Tier A] BUT-1640** — Backfill the two-quadrant disposed-guard regression tests for the
+  2 of 11 viewmodels that landed the guard without one in the prior pass's sweep
+  (`add_members_to_group_viewmodel.dart`, `recipe_detail_viewmodel.dart`). disposition: build.
+  requiresPlanMode: false (router: single, panel: Software Architect, Product Manager; priority
+  Low).
+  Files: `test/unit/viewmodels/add_members_to_group_viewmodel_test.dart`,
+  `test/unit/viewmodels/recipe_detail_viewmodel_test.dart` (test-only, no production changes —
+  the guards already shipped).
+  Acceptance:
+  1. `add_members_to_group_viewmodel.dart`'s disposed-guard has a
+     delegate-disposed-returns-normally + `notified == 0` test.
+  2. `recipe_detail_viewmodel.dart`'s disposed-guard has the same two-quadrant coverage
+     (including a shared-service-error-survives case if applicable).
+  3. **Don't** touch production code — this is a test-only backfill.
+
+### Batch D — ci-alias-wiring (single, config-only)
+- [ ] **[Tier A] BUT-1642** — `run-ci-unit-tests.js`'s `EXCLUDE_PREFIXES` skips the whole
+  `test:integration:` prefix, which incidentally also skips `test:integration:analyze-corrections-alias`
+  even though that suite needs no emulator. disposition: build. requiresPlanMode: false (router:
+  single, panel: DevOps/SRE, Engineering Manager, QA/Test, Release Compliance; priority Low).
+  Files: `functions/scripts/run-ci-unit-tests.js` (rename the alias or tighten the exclude
+  match — implementer's call which is cleaner).
+  Acceptance:
+  1. `test:integration:analyze-corrections-alias` actually runs in the CI unit-test job
+     (verified via a pushed commit's `gh run list`/logs, not just local reasoning).
+  2. Emulator-dependent `test:integration:` suites remain excluded — the fix doesn't
+     over-include and break CI by trying to run something that needs the emulator.
+
+### Batch E — workflow-map-retrace (skip tier, mechanical, mandatory per CLAUDE.md)
+- [ ] **[Tier A] BUT-1643** — Re-trace the workflow-map flows the stale marker names (privacy/
+  profile-edit + searchability, and the storage-repository image path) — the mandatory
+  maintenance CLAUDE.md's workflow-map-freshness rule requires whenever the marker exists.
+  disposition: build. requiresPlanMode: false (router: skip — pure docs file).
+  Files: `docs/onboarding/workflow-map.html` (`<script id="data">` JSON only),
+  `docs/onboarding/workflow-map.stale` (deleted at the end).
+  Acceptance:
+  1. Only the 4 flagged-trigger flows are re-traced (`lib/services/user_service.dart`,
+     `lib/viewmodels/user_profile_viewmodel.dart`,
+     `lib/views/social/user_profile_edit/privacy_section.dart`,
+     `lib/repositories/firebase/firebase_storage_repository.dart`) — not a full map rebuild.
+  2. `python tools/check_workflow_map.py` passes.
+  3. The stale marker file is deleted in the same commit.
+
+### Batch F — widget-housekeeping (single, broad low-stakes panel)
+- [ ] **[Tier A] BUT-1566** — Housekeeping micro-cleanups from 6 role-org scans: a dead
+  `centerContent` branch + `Icons.clear`-sentinel empty-state suppression hack, a hardcoded
+  Swedish a11y label, a tap-target audit-script regex gap, an unversioned review-prompt storage
+  key, stale CLAUDE.md/docs references, and a mockup-reference color drift. disposition: build.
+  requiresPlanMode: false (router: single, wide low-stakes panel — no high-stakes hit; priority
+  Low, no security label).
+  Files: `lib/widgets/state_widget.dart`, `lib/widgets/empty_states.dart`,
+  `lib/widgets/styled_input.dart`, `tools/audit_unwrapped_tap_targets.dart`,
+  `lib/services/in_app_review_service.dart`, `CLAUDE.md`,
+  `docs/design/butlery-mockup-reference.md`, `docs/architecture/ROLE_RESPONSIBILITY_MAP.md`.
+  Acceptance:
+  1. The dead `centerContent` no-op branch in `state_widget.dart` is removed or made to
+     actually do something — no orphan dead code left behind.
+  2. Empty-state illustration suppression routes through `useIllustration` instead of the
+     `Icons.clear` sentinel hack.
+  3. The hardcoded Swedish "(obligatorisk)" label in `styled_input.dart` is localized (ARB key,
+     both `en` and `sv`).
+  4. **Don't** expand into unrelated widget redesign — this is a cleanup batch, not a visual
+     change; existing widget tests stay green.
+
+### Batch G — import-retry-consolidation (single, no security hit)
+- [ ] **[Tier A] BUT-1565** — Consolidate 3 competing retry helpers onto the jittered
+  rethrow-on-unknown `retry_policy.dart#withRetry`, and trim `ExtractionManager`'s full headless
+  scrape retry from 3 attempts (~45s) down to 2 (or skip the retry after an already-handled 15s
+  timeout). disposition: build. requiresPlanMode: false (router: single, panel: Data/
+  Integrations Engineer, FinOps, Monetization — no high-stakes hit; priority Low).
+  Files: `lib/utils/retry_policy.dart`, `lib/core/utils/retry_helper.dart`,
+  `lib/services/upload/upload_retry_manager.dart`, `lib/services/extraction/extraction_manager.dart`.
+  Acceptance:
+  1. The three retry helpers are consolidated onto `retry_policy.dart#withRetry`'s
+     jittered/rethrow-on-unknown behavior — callers migrated, no regression on
+     known-retryable-error handling.
+  2. `ExtractionManager`'s full-scrape retry count drops from 3 to 2, or skips the retry when
+     the failure was already an explicit 15s timeout.
+  3. **Don't** change retry behavior for import paths outside this scope — existing import
+     tests stay green.
+
+## Needs Malin (speculative / contestable / ops-blocked / wrong-repo / data-hygiene — not built)
+- **Data hygiene: BUT-1632, BUT-1615, BUT-1553 archived-but-not-closed.** These three were
+  selected+scoped by the prior "2026-07-20 sprint" pass but never shipped. They're absent from
+  this round's live Backlog/Todo/Triage Linear scan (archived), yet their raw `status` field
+  reads Todo/Backlog with a Canceled→reopened bounce in their history around 18:06–18:11 today —
+  no commit references any of the three. This doesn't match a normal ship outcome and looks like
+  a mid-flight artifact of concurrent tooling rather than a deliberate close. Recommend: check
+  Linear directly for these three IDs — if they're sitting in an odd archived-but-open limbo,
+  either unarchive them for a future pass or confirm they were meant to be cancelled.
+- **BUT-1636** — Supersede the stale `accepted-deviations.md` entry saying cook_snaps/
+  activity_events aren't age-gated (they ARE, since BUT-1418). Decision-record edit, genuinely
+  Malin's call per the doc's own contract. Recommend: quick confirm-and-edit, low effort.
+- **BUT-1616** — Reconcile `raw-safe`/`processed` property-vocabulary drift. Tagging vocabulary
+  is safety-adjacent, not mine to guess which side is canonical. Recommend: a 2-minute decision,
+  then a trivial follow-up build.
+- **BUT-1617** — Triage 35 non-blocking specialist findings from the 2026-07-14 sprint; that
+  sprint's scratch review artifacts are very likely gone. Recommend: close as stale unless the
+  findings survive somewhere you know of.
+- **BUT-1601** — Inline ingredient quantities in cooking-mode steps. No `autonomous` label,
+  tagged `idea`; real NLP complexity, no mockup. Recommend: worth doing eventually, needs a
+  product/UX pass first.
+- **BUT-1499** — Collaborative weekly menu fully coded but never wired to a live view. The
+  ticket's own acceptance #1 is "decide: wire it up or park it" — genuinely your call.
+- **BUT-1472** — `parse_corrections_v2`/`llm_response_samples` have no consumer. A real
+  investment decision (build a consumer vs turn off the write path). Recommend the cheap
+  "turn off" path per cost-minimization, unless you want the corrections-mining tool.
+- **BUT-1176** — Optional custom_lint/AST upgrade. Self-describes "pick up only if custom_lint
+  is being added for other reasons" — condition unmet. Recommend: drop or leave parked.
+- **BUT-1555** — Deploy safety hardening (post-deploy smoke gate, rollback path, wider
+  health-alert coverage). Real DevOps investment better done alongside BUT-451 (staging
+  project) than built blind against prod pre-launch. Recommend: revisit before first real
+  release, not urgent now.
+- **BUT-1619 / BUT-1620 / BUT-1621 / BUT-1634 / BUT-1630 / BUT-1599** — Delivery-engine (sprint
+  machinery) hardening tickets targeting `C:/claude-plugins/...`, a different git repo shipped
+  via `node tools/fanout-update.mjs`, not buildable from a Butlery sprint. Recommend: batch into
+  one claude-plugins-specific session.
+- **BUT-880** — PITR restore drill against a non-prod project. Already `need-malin`-labeled;
+  ops-blocked. Recommend: do it, but it's an ops task for you.
+- **9 other standing `need-malin`-labeled tickets** (BUT-1557, BUT-1502, BUT-1179, BUT-1368,
+  BUT-863, BUT-1445, BUT-1229, BUT-1608, BUT-1453) remain parked in Backlog — no new judgment
+  added this round.
+
+## Not selected this round — needs-approval judgment call (not built, not a Malin decision either)
+- **BUT-1641** — "Leaf-level disposal guards for 5 state-holders (optional)." The ticket's own
+  text says this is a judgement call, not a required fix — the crash risk is already handled at
+  the parent-viewmodel level (per BUT-1628's deliberate design), and it names its own
+  no-code resolution ("close as parent guards sufficient"). Speculative defense-in-depth with
+  no concrete failure it currently prevents. Recommend: close as "parent guards sufficient"
+  unless you specifically want the extra layer — not selected as build this round.
+
+## Excluded from scoring entirely
+- **BUT-677, BUT-722** — carry the `onboarding-reserved` label; per standing instruction, never
+  scored, selected, transitioned, or implemented.
+- **~85 `deferred`-labeled tickets** (epics, launch-gated, tablet/macOS, monetization ideas,
+  etc.) — left untouched in Backlog per the lane convention; deliberately parked, not re-scored.
+
+## Not selected this round (scored but below the cut / lower urgency)
+Low-priority `autonomous` batches that remain valid, clean-build candidates for a future sprint:
+BUT-1504, BUT-1501, BUT-1476, BUT-1488, BUT-1508 (78-file ServiceLocator→constructor-injection
+refactor — large, Tier C candidate on its own), BUT-1507 (god-object refactor — large, Tier C
+candidate on its own), BUT-1513 (rewrite ~120 bulk-skipped integration tests — large, Tier C
+candidate on its own), BUT-1510, BUT-1509, BUT-1514, BUT-1480, BUT-1486, BUT-1485, BUT-1484,
+BUT-1482, BUT-1471, BUT-1490, BUT-1240, BUT-945, BUT-1441, BUT-1452, BUT-1561 (its "cap-trip
+alert" sub-item may need console access, scope down at Step-0).
+
+## Deviation log
+(none yet — Phase 1 only, no implementation this pass)
+
+---
+
 ## 2026-07-20 sprint — Selection (Phase 1)
 
 **Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (102 Backlog +
@@ -496,3 +741,32 @@ Full detail (fixes landed, cross-file review findings, deliberately-not-papered-
 is preserved in git history for this file as of commit `b7e66bf1a` — condensed here since the
 work is shipped and the residual scope is now tracked by fresh tickets (BUT-1632, BUT-1635) in
 the current pass above.
+
+---
+
+## 2026-07-21 — Salvage of crashed sprint wxe0xnfys (usage-limit death)
+
+The sprint died mid-ship on the WEEKLY usage limit (ship + completeness-sweep +
+final-verify all aborted). Its review gates HAD passed; only verification+ship died,
+leaving ~6 tickets' work uncommitted in the tree. Backed up the full 1878-line diff before
+triage. Verified against LIVE code (not the crash report's own claims) and re-reviewed the
+actual diff with 5 opus specialists.
+
+Shipped this pass (all re-reviewed clean/SHIP on the real diff):
+- **BUT-1637** (child-safety): server-authoritative `fetchPersistedSearchable` read before a
+  minor's profile save, fails closed, honors a cross-device opt-out — firebase-backend-security
+  verdict SHIP, no path to more-discoverable.
+- **BUT-1565**: retry-helper consolidation (behaviourally sound, actually more resilient).
+- **BUT-1566**: housekeeping micro-cleanups (all behaviour-preserving).
+- **BUT-1638**: CF searchability test — 4 gate branches, proven non-vacuous. Fixed the LOW
+  hygiene finding (two suites now run SEQUENTIALLY, not fire-and-forget).
+- **BUT-1639/1640**: perf + disposed-guard tests. Removed 2 VACUOUS disposed-guard tests the
+  testing-specialist caught (BaseViewModel triple-guards disposal, so they couldn't fail);
+  kept the sound state-mutation emission test.
+- **BUT-1643**: workflow-map re-trace (linter OK, marker cleared).
+
+Follow-up filed: **BUT-1644** — direct service-layer test for the `setMinorSearchable` writer
+(both reviewers flagged; not a blocker, the risky re-assert path is fully tested).
+
+Verified green: dart analyze --fatal-infos clean; 218 + 76 + 33 Dart tests; tsc clean;
+CF 5/5 + 3/3.

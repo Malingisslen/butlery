@@ -528,6 +528,13 @@ void main() {
       expect(() => vm.dispose(), returnsNormally);
     });
   });
+
+  // NOTE: a "clearError after dispose is a no-op" test was intentionally NOT
+  // added here. BaseViewModel triple-guards disposal (clearError's own
+  // `if (isDisposed) return`, the `if (!isDisposed)` notify guard, and the
+  // subclass override), so such a test cannot fail without deleting all three
+  // at once — it would assert the framework, not this VM. The `dispose()
+  // returnsNormally` test above covers this VM's own teardown.
 }
 
 UserProfile _profile(String uid, String name, {String email = ''}) {

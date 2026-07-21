@@ -818,6 +818,46 @@ void main() {
       });
     });
 
+    // BUT-1640 (BUT-1628 follow-up): the VM cancels its shared-service stream
+    // subscription in dispose(). This pins the disposed-guard quadrant that has
+    // real sensitivity — a late emission from the shared recipe service, which
+    // OUTLIVES the VM, must never reach or mutate the dead VM. (A bare
+    // "clearError after dispose" test was dropped as vacuous: BaseViewModel
+    // triple-guards disposal, so it can't fail without deleting all three
+    // guards at once — it asserted the framework, not this VM.)
+    group('Disposed-guard (BUT-1628 / BUT-1640)', () {
+      test(
+        'a late shared-service emission after dispose never touches the dead VM',
+        () async {
+          final disposable = RecipeDetailViewModel(
+            recipe: testRecipe,
+            recipeService: mockRecipeService,
+            analyticsService: mockAnalyticsService,
+            cookingService: mockCookingService,
+          );
+          var notified = 0;
+          disposable.addListener(() => notified++);
+
+          disposable.dispose();
+
+          // The shared recipe service outlives the VM; a post-dispose state
+          // push must not resurrect it. Without the subscription cancel in
+          // dispose(), the disposed VM would swap in `updatedRecipe`.
+          mockRecipeService.setRecipeState(recipes: [updatedRecipe]);
+          expect(
+            () => mockRecipeService.emitState(
+              RecipeStateData(recipes: [updatedRecipe]),
+            ),
+            returnsNormally,
+          );
+          await Future.delayed(Duration.zero);
+
+          expect(disposable.recipe.title, equals('Köttbullar med lingonsylt'));
+          expect(notified, 0);
+        },
+      );
+    });
+
     group('Edge Cases', () {
       test('should handle recipe with empty arrays', () {
         // Arrange

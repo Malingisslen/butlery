@@ -12,12 +12,48 @@ import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart' as app;
+import 'package:butlery/core/di/di_container.dart';
 
 // Test infrastructure
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/factories/mock_factory.dart';
 
 // No local mocks needed - using real ExtractionManager implementation
+
+/// Fake scraper that returns a scripted sequence of results and counts calls,
+/// so tests can prove the retry-by-result translation actually re-runs the
+/// scrape. Extends the real [WebScraper] (its constructor only wires up
+/// pure-compute extractors — no I/O) and overrides the network-touching parts.
+class _ScriptedWebScraper extends WebScraper {
+  _ScriptedWebScraper(this._results);
+
+  final List<ExtractionResult> _results;
+  int callCount = 0;
+
+  @override
+  Future<ExtractionResult> performExtraction(
+    String url,
+    SourcePlatform platform,
+  ) async {
+    // Clamp to the last scripted result so an unexpected extra call is
+    // visible via callCount rather than throwing a range error.
+    final index = callCount < _results.length ? callCount : _results.length - 1;
+    callCount++;
+    return _results[index];
+  }
+
+  @override
+  void dispose() {}
+}
+
+ExtractionResult _networkFailure() => ExtractionResult(
+  success: false,
+  error: 'Timeout: Could not load page',
+  metadata: const {'reason': 'network'},
+);
 
 void main() {
   group('ExtractionManager', () {
@@ -533,6 +569,97 @@ void main() {
         // Should complete batch within reasonable time
         expect(stopwatch.elapsedMilliseconds, lessThan(5000));
       });
+    });
+
+    group('Transient-failure retry', () {
+      // ica.se is detected as a supported recipesite by the real
+      // PlatformDetector, so extraction reaches the scrape+retry stage.
+      const supportedUrl = 'https://www.ica.se/recept/retry-test';
+
+      setUp(() {
+        // extractFromUrl runs through executeServiceOperation with
+        // requiresAuth: true, which reads AuthRepository.currentUserId via the
+        // PRODUCTION ServiceLocator. Two things are needed so the scrape stage
+        // is actually reached (otherwise the auth pre-flight fails closed and
+        // the op returns the auth fallback, never touching the scraper):
+        //   1. an authenticated AuthRepository in the shared GetIt, and
+        //   2. the production ServiceLocator pointed at that GetIt — the test
+        //      harness intentionally skips wiring it (DIContainer wraps the
+        //      same GetIt.instance the harness registers into).
+        TestServiceLocator.registerMock<AuthRepository>(
+          MockFactory.createAuthRepository(
+            isAuthenticated: true,
+            userId: 'test_user_123',
+          ),
+        );
+        app.ServiceLocator.initialize(DIContainer());
+      });
+
+      tearDown(app.ServiceLocator.reset);
+
+      test(
+        'retries the scrape when the first attempt fails with reason:network',
+        () async {
+          final scraper = _ScriptedWebScraper([
+            _networkFailure(),
+            ExtractionResult(
+              success: true,
+              extractedText: 'recipe body',
+            ),
+          ]);
+          final retryingManager = ExtractionManager(webScraper: scraper);
+          addTearDown(retryingManager.dispose);
+
+          final result = await retryingManager.extractFromUrl(supportedUrl);
+
+          // The second attempt fired and its success result is surfaced.
+          expect(scraper.callCount, equals(2));
+          expect(result.success, isTrue);
+          expect(result.extractedText, equals('recipe body'));
+        },
+      );
+
+      test(
+        'surfaces the last network failure after the retry is also exhausted',
+        () async {
+          final scraper = _ScriptedWebScraper([
+            _networkFailure(),
+            _networkFailure(),
+          ]);
+          final retryingManager = ExtractionManager(webScraper: scraper);
+          addTearDown(retryingManager.dispose);
+
+          final result = await retryingManager.extractFromUrl(supportedUrl);
+
+          // maxAttempts=2: one retry, then the carried failure is returned
+          // (the marker does not escape as a throw).
+          expect(scraper.callCount, equals(2));
+          expect(result.success, isFalse);
+          expect(result.metadata['reason'], equals('network'));
+        },
+      );
+
+      test(
+        'does NOT retry a non-network failure (e.g. reason:no_content)',
+        () async {
+          final scraper = _ScriptedWebScraper([
+            ExtractionResult(
+              success: false,
+              error: 'No text could be extracted from the page',
+              metadata: const {'reason': 'no_content'},
+            ),
+          ]);
+          final retryingManager = ExtractionManager(webScraper: scraper);
+          addTearDown(retryingManager.dispose);
+
+          final result = await retryingManager.extractFromUrl(supportedUrl);
+
+          // Only one attempt — a content failure is not transient.
+          expect(scraper.callCount, equals(1));
+          expect(result.success, isFalse);
+          expect(result.metadata['reason'], equals('no_content'));
+        },
+      );
     });
   });
 }

@@ -41,6 +41,12 @@ class EmptyStates {
     final shouldUseIllustration =
         useIllustration ?? emptyConfig.illustration != null;
 
+    // Passing [icon] == Icons.clear is a sentinel meaning "render no leading
+    // visual at all" — neither illustration nor icon. Used by compact empty
+    // states embedded in already-decorated surfaces. Named here so the
+    // suppression is explicit rather than a silent magic-value check.
+    final suppressLeadingVisual = icon == Icons.clear;
+
     return Center(
       child: Padding(
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
@@ -49,7 +55,7 @@ class EmptyStates {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Illustration or Icon
-              if (icon != Icons.clear) ...[
+              if (!suppressLeadingVisual) ...[
                 if (shouldUseIllustration && emptyConfig.illustration != null)
                   VegetableIllustration(
                     type: emptyConfig.illustration!,

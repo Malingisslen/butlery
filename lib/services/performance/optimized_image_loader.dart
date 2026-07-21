@@ -112,6 +112,39 @@ class ImageMemoryCacheManager {
   }
 }
 
+/// Records image cache access for a single widget load lifecycle, guaranteeing
+/// at most one hit and one miss.
+///
+/// `imageBuilder` is re-invoked on every rebuild, so an ungated hit call would
+/// double-count. And a load that already went through `progressIndicatorBuilder`
+/// was a DOWNLOAD (a miss): counting it as a hit too would put a hard 50% floor
+/// under the reported hit rate (every true miss scoring 1 miss + 1 hit) — which
+/// is exactly the number this is meant to make trustworthy. Extracted from the
+/// widget state so the once-per-load guard is directly unit-testable (BUT-1639).
+@visibleForTesting
+class ImageLoadCacheRecorder {
+  ImageLoadCacheRecorder(this._cacheManager);
+
+  final ImageMemoryCacheManager _cacheManager;
+  bool _recordedMiss = false;
+  bool _recordedHit = false;
+
+  /// Records a network-download miss, at most once per load.
+  void recordMissOnce(int sizeBytes) {
+    if (_recordedMiss) return;
+    _recordedMiss = true;
+    _cacheManager.recordCacheAccess(false, sizeBytes);
+  }
+
+  /// Records a cache hit, at most once per load — and never for a load that
+  /// already recorded a miss (that was a download, not a hit).
+  void recordHitOnce() {
+    if (_recordedHit || _recordedMiss) return;
+    _recordedHit = true;
+    _cacheManager.recordCacheAccess(true, 0);
+  }
+}
+
 /// Optimized image loader widget
 class OptimizedImageLoader extends StatefulWidget {
   final String imageUrl;
@@ -198,13 +231,14 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   final ImageMemoryCacheManager _cacheManager = ImageMemoryCacheManager();
+  late final ImageLoadCacheRecorder _cacheRecorder = ImageLoadCacheRecorder(
+    _cacheManager,
+  );
   bool _reduceMotion = false;
 
   // Loading states
   bool _isLoadingFull = true;
   bool _hasError = false;
-  bool _hasRecordedCacheMiss = false;
-  bool _hasRecordedCacheHit = false;
 
   // Thumbnail for progressive loading
   String? _thumbnailUrl;
@@ -388,10 +422,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
         }
 
         // Record cache miss once per load, not on every progress tick
-        if (!_hasRecordedCacheMiss) {
-          _hasRecordedCacheMiss = true;
-          _cacheManager.recordCacheAccess(false, _estimateImageSize(cacheSize));
-        }
+        _cacheRecorder.recordMissOnce(_estimateImageSize(cacheSize));
 
         return const SizedBox.shrink(); // Thumbnail handles loading state
       },
@@ -411,17 +442,9 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           });
         }
 
-        // Record a cache hit once per load — imageBuilder is re-invoked on
-        // every rebuild, so an ungated call double-counts hits.
-        // `!_hasRecordedCacheMiss` is the other half: a load that went through
-        // progressIndicatorBuilder was a DOWNLOAD, and counting it as a hit too
-        // put a hard 50% floor under the reported hit rate (every true miss
-        // scored 1 miss + 1 hit), which is exactly the number this is meant to
-        // make trustworthy.
-        if (!_hasRecordedCacheHit && !_hasRecordedCacheMiss) {
-          _hasRecordedCacheHit = true;
-          _cacheManager.recordCacheAccess(true, 0);
-        }
+        // Record a cache hit once per load (see ImageLoadCacheRecorder for why
+        // the once-per-load and not-after-a-miss guards both matter).
+        _cacheRecorder.recordHitOnce();
 
         return Image(
           image: imageProvider,

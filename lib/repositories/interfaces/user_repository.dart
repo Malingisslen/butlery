@@ -57,6 +57,18 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Fetch a profile by id.
   Future<UserProfile?> fetchProfile(String userId);
 
+  /// Authoritative SERVER read of a user's current `isSearchable` flag from
+  /// public_profiles — deliberately NOT cache-first (see the implementation).
+  ///
+  /// BUT-1637: [UserService.createOrUpdateProfile] uses this to decide whether
+  /// to restore a minor's opt-in after a full-document save clobbers
+  /// `public_profiles.isSearchable` (the [UserProfile.toFirestore] chokepoint).
+  /// A cache-first read could report a stale `true` after the user opted out on
+  /// another device, which would let an unrelated save silently re-grant
+  /// discoverability they turned off. Returns false for a missing doc; throws
+  /// on an unreachable server (callers fail closed → treat as not searchable).
+  Future<bool> fetchPersistedSearchable(String userId);
+
   /// Fetch multiple profiles by their ids.
   Future<List<UserProfile>> fetchProfiles(List<String> userIds);
 

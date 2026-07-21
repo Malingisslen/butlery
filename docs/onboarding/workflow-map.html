@@ -2320,6 +2320,18 @@
    "label": "window.print()",
    "context": "external",
    "path": "Browser Print API"
+  },
+  {
+   "id": "svc-searchability",
+   "label": "ProfileSearchabilityService — sökbarhets-opt-in (minderårig)",
+   "context": "service",
+   "path": "lib/services/social/profile_searchability_service.dart"
+  },
+  {
+   "id": "cf-set-searchability",
+   "label": "setProfileSearchability (Admin SDK — enda vägen för minderårig)",
+   "context": "cloud-function",
+   "path": "functions/src/social/set-profile-searchability.ts"
   }
  ],
  "actions": [
@@ -5018,7 +5030,7 @@
   {
    "id": "flow-soc-2",
    "label": "profiler",
-   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/household_size_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder.",
+   "description": "Visa offentlig/vän-profil och redigera egen profil inkl. de fyra sekretessreglagen (sökbarhet, e-postsökning, online-status, dela till aktivitetsflöde + per-händelsetyp). Vänprofilen återanvänder FriendsViewModel snarare än en egen visnings-VM. BUT-1322: saveProfile() skickar numera även ett hushållsstorlek-sentinelvärde till svc-user, men profilredigeringsvyn saknar UI-kontroll för fältet så det förblir alltid opåverkat här — fältet redigeras istället via en separat inställningsvy (lib/views/settings/household_size_view.dart) som delar samma vm-profile-edit/svc-user/repo-user-kedja men ligger utanför detta flödes vynoder. BUT-1629: sökbarhetsreglaget har två helt olika skrivvägar beroende på ålder. För en VUXEN är det som förr en lokal ändring som sparas med profilen (repo-user-vägen). För en MINDERÅRIG (15–17, serverbekräftad) kan varken en klientskrivning eller den vanliga profilsparningen göra kontot sökbart — firestore.rules nekar klientskrivningen och UserProfile.toFirestore nollar isSearchable för varje minderårig-sparning — så reglaget routas i stället genom setSearchableOptIn → svc-user.setMinorSearchable → svc-searchability → den Admin-SDK-callable cf-set-searchability som kringgår reglerna (enda tillåtna opt-in-vägen, riktad enbart mot inloggat konto, App Check + rate limit, fail-closed om profil saknas). Effekten är omedelbar (skrivningen ÄR callablen), inte fördröjd till Spara. Eftersom varje helprofilsparning nollar fältet gör svc-user.saveProfile dessutom en villkorad återförsäkran efteråt: en minderårig som REDAN opt-in:at får sitt val återställt via samma callable (en ny opt-in kan aldrig självbeviljas), och serverns faktiska svar bärs tillbaka — aldrig det begärda. Reglaget är avstängt medan en sparning pågår (vm.isSaving) så de två skrivvägarna inte kan varva och återaktivera sökbarhet direkt efter en medveten opt-out.",
    "features": [
     "SOC-06",
     "SOC-07",
@@ -5070,7 +5082,7 @@
     {
      "from": "v-profile-edit",
      "to": "vm-profile-edit",
-     "payload": "saveProfile() — displayName, bio, isSearchable, shareActivityToFeed, activityEventTypes{cooked,shared,startedCooking,pinged}. Denna vy anropar ALDRIG updateHouseholdSize() (BUT-1322), så _householdSizeEdited är alltid false här",
+     "payload": "saveProfile() — displayName, bio, isSearchable, shareActivityToFeed, activityEventTypes{cooked,shared,startedCooking,pinged}. Denna vy anropar ALDRIG updateHouseholdSize() (BUT-1322), så _householdSizeEdited är alltid false här. BUT-1629: själva sökbarhetsreglaget (privacy_section) går inte via saveProfile utan anropar setSearchableOptIn(value), och reglaget är avstängt medan vm.isSaving är true",
      "transport": "method call",
      "verified": true
     },
@@ -5084,7 +5096,7 @@
     {
      "from": "svc-user",
      "to": "repo-user",
-     "payload": "saveProfile(profile, writeHouseholdSize: false) — sentinel otouched i detta flöde, så nyckeln householdSize utelämnas ur settings-merget och en ev. tidigare sparad hushållsstorlek skrivs inte över",
+     "payload": "saveProfile(profile, writeHouseholdSize: false) — sentinel otouched i detta flöde, så nyckeln householdSize utelämnas ur settings-merget och en ev. tidigare sparad hushållsstorlek skrivs inte över. BUT-1629: för en minderårig nollar UserProfile.toFirestore isSearchable vid varje sparning; svc-user gör därför en villkorad återförsäkran (setMinorSearchable) efter lyckad sparning som återställer en BEFINTLIG opt-in men aldrig beviljar en ny",
      "transport": "method call",
      "verified": true
     },
@@ -5093,6 +5105,34 @@
      "to": "ds-public-profiles",
      "payload": "uppdatera public_profiles/{uid} (toFirestoreEditable — innehåller inte householdSize, det fältet lever bara i users/{uid}/settings/preferences)",
      "transport": "Firestore write",
+     "verified": true
+    },
+    {
+     "from": "vm-profile-edit",
+     "to": "svc-user",
+     "payload": "BUT-1629 (endast minderårig): setSearchableOptIn(value) → setMinorSearchable(value). Vuxen tar i stället updateIsSearchable() ovan (lokal ändring som sparas med profilen). Serialiseras mot en pågående sparning via isSaving-gaten",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-user",
+     "to": "svc-searchability",
+     "payload": "_callSetSearchable(value) via ServiceLocator.tryGet → ProfileSearchabilityService.setSearchable(value). Returnerar serverns lagrade värde, eller null vid fel (offline, rate limit, App Check, otillgänglig tjänst) så reglaget kan lämnas orört och fel visas",
+     "transport": "method call",
+     "verified": true
+    },
+    {
+     "from": "svc-searchability",
+     "to": "cf-set-searchability",
+     "payload": "httpsCallable('setProfileSearchability').call({searchable}) — inget uid, alltid riktad mot inloggat konto",
+     "transport": "Cloud Function call",
+     "verified": true
+    },
+    {
+     "from": "cf-set-searchability",
+     "to": "ds-public-profiles",
+     "payload": "Admin-SDK merge-set av public_profiles/{uid}.isSearchable (kringgår firestore.rules-hard-deny). Fail-closed om profilen inte finns; rör aldrig isMinor/birthYear. Svaret {searchable} är auktoritativt över det begärda värdet",
+     "transport": "Firestore write (Admin SDK)",
      "verified": true
     }
    ],

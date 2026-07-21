@@ -25,7 +25,6 @@ class StateWidget extends StatelessWidget {
   final Color? iconColor;
   final double? iconSize;
   final EdgeInsets? padding;
-  final bool centerContent;
 
   const StateWidget({
     super.key,
@@ -43,7 +42,6 @@ class StateWidget extends StatelessWidget {
     this.iconColor,
     this.iconSize,
     this.padding,
-    this.centerContent = true,
   });
 
   /// Loading state with pea pod animation.
@@ -71,7 +69,6 @@ class StateWidget extends StatelessWidget {
       type: StateType.loading,
       loadingVariant: LoadingVariant.skeletonRecipeList,
       skeletonItemCount: itemCount,
-      centerContent: false,
     );
   }
 
@@ -80,7 +77,6 @@ class StateWidget extends StatelessWidget {
     return const StateWidget(
       type: StateType.loading,
       loadingVariant: LoadingVariant.skeletonRecipeCard,
-      centerContent: false,
     );
   }
 
@@ -303,16 +299,8 @@ class StateWidget extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    if (centerContent) {
-      return LoadingStates.buildLoadingState(
-        context,
-        variant: loadingVariant,
-        message: message,
-        skeletonItemCount: skeletonItemCount,
-      );
-    }
-
-    // For skeleton lists that shouldn't be centered
+    // LoadingStates owns its own per-variant centering; the state facade adds
+    // no centering of its own here.
     return LoadingStates.buildLoadingState(
       context,
       variant: loadingVariant,

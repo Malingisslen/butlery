@@ -86,3 +86,4 @@ when the counts drift apart.
 
 - Firestore `sum()`/`average()` with a filter on a DIFFERENT field needs a COMPOSITE index (filter field first, aggregated field included); `count()` doesn't. In-memory fakes can't catch it — assert the declared index config in a test.
 - Salvaging a crashed sprint pile: rebuild the ticket→file map from the run JOURNAL, re-verify each ticket on its own diff (never trust the sprint's gates:ok), and commit `.dart` in a QUIET WINDOW (no review agents running `flutter test`, `taskkill dart.exe` first) or the analyze gate deadlocks on two-analyzer contention.
+- Verify a ticket's done/dropped status against CURRENT code (grep the working tree / `git show HEAD:<path>`), never a per-commit `git show`/`git log` — parallel work jumbles which commit carries what.

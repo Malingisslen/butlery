@@ -256,6 +256,80 @@ void main() {
     });
   });
 
+  group('ImageLoadCacheRecorder (cache-HIT-once guard, BUT-1639)', () {
+    late ImageMemoryCacheManager manager;
+
+    setUp(() {
+      manager = ImageMemoryCacheManager();
+    });
+
+    test(
+      'repeated rebuilds of an already-loaded image record exactly one HIT',
+      () {
+        // imageBuilder re-fires on every rebuild; the guard must count one hit.
+        final before = manager.getCacheStats()['hits'] as int;
+        final recorder = ImageLoadCacheRecorder(manager);
+
+        recorder.recordHitOnce(); // initial build
+        recorder.recordHitOnce(); // rebuild
+        recorder.recordHitOnce(); // rebuild
+        recorder.recordHitOnce(); // rebuild
+
+        final after = manager.getCacheStats()['hits'] as int;
+        expect(after - before, equals(1));
+      },
+    );
+
+    test('a download (miss recorded first) is never also counted as a HIT', () {
+      // progressIndicatorBuilder ran → it was a download; the later imageBuilder
+      // hit call must be suppressed, or every miss scores a phantom +1 hit.
+      final beforeHits = manager.getCacheStats()['hits'] as int;
+      final beforeMisses = manager.getCacheStats()['misses'] as int;
+      final recorder = ImageLoadCacheRecorder(manager);
+
+      recorder.recordMissOnce(1024);
+      recorder.recordHitOnce();
+
+      final afterHits = manager.getCacheStats()['hits'] as int;
+      final afterMisses = manager.getCacheStats()['misses'] as int;
+      expect(
+        afterHits - beforeHits,
+        equals(0),
+        reason: 'a download is not a hit',
+      );
+      expect(afterMisses - beforeMisses, equals(1));
+    });
+
+    test('repeated progress ticks record exactly one MISS', () {
+      // progressIndicatorBuilder fires on every progress tick during a download.
+      final before = manager.getCacheStats()['misses'] as int;
+      final recorder = ImageLoadCacheRecorder(manager);
+
+      recorder.recordMissOnce(2048);
+      recorder.recordMissOnce(2048);
+      recorder.recordMissOnce(2048);
+
+      final after = manager.getCacheStats()['misses'] as int;
+      expect(after - before, equals(1));
+    });
+
+    test('each load lifecycle tracks its hit independently', () {
+      // A fresh recorder per widget load must be free to record its own hit —
+      // the guard is per-load, not process-global.
+      final before = manager.getCacheStats()['hits'] as int;
+
+      ImageLoadCacheRecorder(manager)
+        ..recordHitOnce()
+        ..recordHitOnce();
+      ImageLoadCacheRecorder(manager)
+        ..recordHitOnce()
+        ..recordHitOnce();
+
+      final after = manager.getCacheStats()['hits'] as int;
+      expect(after - before, equals(2));
+    });
+  });
+
   group('OptimizedImageLoader Widget', () {
     late MockImageConfig mockConfig;
 
@@ -710,44 +784,75 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should show error widget on image load failure', (
+    // CachedNetworkImage never resolves or fails inside a plain widget test,
+    // so the error path can't be driven by pumping a bad URL. Instead these
+    // tests invoke the production errorWidget builder the widget hands to
+    // CachedNetworkImage (lib errorWidget: (context, url, error) => ...),
+    // which is exactly the code that selects custom-vs-default on failure.
+    // enableThumbnail: false leaves a single CachedNetworkImage (the full
+    // image) in the tree so its builder is unambiguous.
+    testWidgets('should show custom error widget on image load failure', (
       WidgetTester tester,
     ) async {
       // Arrange
       const customError = Icon(Icons.error_outline, key: Key('custom_error'));
-
-      // Act
       await tester.pumpWidget(
         TestApp(
           child: OptimizedImageLoader(
-            imageUrl: 'https://invalid-url-that-will-fail.com/image.jpg',
+            imageUrl: 'https://example.com/image.jpg',
             config: mockConfig,
             targetSize: const Size(200, 150),
             errorWidget: customError,
+            enableThumbnail: false,
           ),
         ),
       );
 
-      // Assert - Stack should be present for layered content
-      expect(find.byType(Stack), findsWidgets);
+      // Act - drive the real error path via the widget's errorWidget builder
+      final cachedImage = tester.widget<CachedNetworkImage>(
+        find.byType(CachedNetworkImage),
+      );
+      final context = tester.element(find.byType(CachedNetworkImage));
+      final builtOnError = cachedImage.errorWidget!(
+        context,
+        'https://example.com/image.jpg',
+        Exception('load failed'),
+      );
+
+      // Assert - the caller's custom widget is chosen verbatim
+      expect(builtOnError, same(customError));
     });
 
     testWidgets(
       'should show default error widget when no custom error provided',
       (WidgetTester tester) async {
-        // Arrange & Act
+        // Arrange
         await tester.pumpWidget(
           TestApp(
             child: OptimizedImageLoader(
-              imageUrl: 'https://invalid-url.com/image.jpg',
+              imageUrl: 'https://example.com/image.jpg',
               config: mockConfig,
               targetSize: const Size(200, 150),
+              enableThumbnail: false,
             ),
           ),
         );
 
-        // Assert - Should have stack for layered content
-        expect(find.byType(Stack), findsWidgets);
+        // Act - drive the real error path, then render what it produced
+        final cachedImage = tester.widget<CachedNetworkImage>(
+          find.byType(CachedNetworkImage),
+        );
+        final context = tester.element(find.byType(CachedNetworkImage));
+        final builtOnError = cachedImage.errorWidget!(
+          context,
+          'https://example.com/image.jpg',
+          Exception('load failed'),
+        );
+
+        await tester.pumpWidget(TestApp(child: builtOnError));
+
+        // Assert - the default broken-image fallback is shown
+        expect(find.byIcon(Icons.broken_image), findsOneWidget);
       },
     );
   });

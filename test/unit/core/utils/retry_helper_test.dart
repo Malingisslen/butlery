@@ -86,7 +86,7 @@ void main() {
       });
     });
 
-    test('applies exponential backoff up to maxDelay', () {
+    test('applies jittered exponential backoff up to maxDelay', () {
       fakeAsync((async) {
         var attempts = 0;
         final delays = <int>[];
@@ -107,11 +107,13 @@ void main() {
         async.elapse(const Duration(seconds: 5));
 
         expect(attempts, 4);
-        // First attempt: ~0 delay. Then 100ms, 200ms, 300ms (capped from 400).
+        // First attempt: ~0 delay. Then exponential 100/200/400→capped-300,
+        // each with ±25% symmetric jitter, so assert the jitter bounds rather
+        // than exact values (matches retry_policy.dart's jittered backoff).
         expect(delays.length, 4);
-        expect(delays[1], 100);
-        expect(delays[2], 200);
-        expect(delays[3], 300);
+        expect(delays[1], inInclusiveRange(75, 125)); // 100 ±25%
+        expect(delays[2], inInclusiveRange(150, 250)); // 200 ±25%
+        expect(delays[3], inInclusiveRange(225, 375)); // 300 (capped) ±25%
       });
     });
   });
@@ -160,23 +162,23 @@ void main() {
       });
     });
 
-    test('retries on unknown error (default true)', () {
+    test('does NOT retry on unknown error (rethrow-on-unknown)', () {
       fakeAsync((async) {
         var attempts = 0;
-        late final Future<String> future = RetryHelper.retryNetworkOperation(
-          () async {
-            attempts++;
-            if (attempts < 2) throw Exception('mystery');
-            return 'ok';
+        Object? thrown;
+        RetryHelper.retryNetworkOperation(() async {
+          attempts++;
+          throw Exception('mystery');
+        }).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
           },
         );
-
-        String? result;
-        future.then((v) => result = v);
         async.elapse(const Duration(seconds: 10));
 
-        expect(attempts, 2);
-        expect(result, 'ok');
+        expect(attempts, 1);
+        expect(thrown, isNotNull);
       });
     });
   });
@@ -197,6 +199,48 @@ void main() {
         future.then((v) => result = v);
         async.elapse(const Duration(seconds: 10));
 
+        expect(attempts, 2);
+        expect(result, 'ok');
+      });
+    });
+
+    // BUT-1565 salvage (cross-file review): resource-exhausted and raw
+    // network/socket drops are genuinely transient and MUST stay retryable —
+    // offline-sync (the only production caller) relies on in-pass retry, and
+    // the rethrow-on-unknown default would otherwise silently strip it.
+    test('retries on resource-exhausted', () {
+      fakeAsync((async) {
+        var attempts = 0;
+        late final Future<String> future = RetryHelper.retryFirebaseOperation(
+          () async {
+            attempts++;
+            if (attempts < 2) throw Exception('RESOURCE-EXHAUSTED: quota');
+            return 'ok';
+          },
+        );
+        String? result;
+        future.then((v) => result = v);
+        async.elapse(const Duration(seconds: 10));
+        expect(attempts, 2);
+        expect(result, 'ok');
+      });
+    });
+
+    test('retries on a raw SocketException (offline drop)', () {
+      fakeAsync((async) {
+        var attempts = 0;
+        late final Future<String> future = RetryHelper.retryFirebaseOperation(
+          () async {
+            attempts++;
+            if (attempts < 2) {
+              throw Exception('SocketException: Failed host lookup');
+            }
+            return 'ok';
+          },
+        );
+        String? result;
+        future.then((v) => result = v);
+        async.elapse(const Duration(seconds: 10));
         expect(attempts, 2);
         expect(result, 'ok');
       });

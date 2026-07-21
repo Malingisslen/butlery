@@ -71,6 +71,15 @@ class RetryHelper {
   /// while maintaining progressive backoff benefits for resilience.
   static const int maxDelayMs = 30000;
 
+  /// ±fraction of jitter applied to each backoff delay.
+  /// Standardized on the same ±25% symmetric jitter as `lib/utils/retry_policy.dart`
+  /// so synchronized clients don't retry in lockstep and stampede a recovering backend.
+  static const double _jitterFraction = 0.25;
+
+  /// Random source for jitter. A single shared instance is sufficient — jitter
+  /// only spreads delay timing, it never influences which errors are retryable.
+  static final Random _random = Random();
+
   /// Executes async operations with intelligent exponential backoff retry strategy and configurable error handling.
   /// This method implements sophisticated retry logic with exponential backoff algorithm, providing progressive
   /// delay increase with each retry attempt. It includes intelligent error classification, configurable retry
@@ -133,13 +142,21 @@ class RetryHelper {
           rethrow;
         }
 
-        // Calculate delay with exponential backoff
-        final delayMs = min(
+        // Calculate delay with jittered exponential backoff
+        final cappedMs = min(
           baseDelay.inMilliseconds * pow(2, attempt - 1).toInt(),
           maxDelay.inMilliseconds,
         );
 
-        final actualDelay = Duration(milliseconds: delayMs);
+        // ±25% symmetric jitter — matches lib/utils/retry_policy.dart.
+        final jitterRange = (cappedMs * _jitterFraction).round();
+        final jitterOffset = jitterRange == 0
+            ? 0
+            : ((_random.nextDouble() * 2 - 1) * jitterRange).round();
+
+        final actualDelay = Duration(
+          milliseconds: max(0, cappedMs + jitterOffset),
+        );
 
         AppLogger.info(
           'Retrying operation (attempt $attempt/$maxRetries) after ${actualDelay.inSeconds}s delay',
@@ -165,7 +182,7 @@ class RetryHelper {
   /// - **Retryable Errors**: SocketException, TimeoutException, HandshakeException, network unavailable
   /// - **Connection Issues**: connection-failed, deadline-exceeded, service unavailable errors
   /// - **Non-Retryable Errors**: permission-denied, unauthenticated, invalid-argument (immediate rethrow)
-  /// - **Default Behavior**: Unknown errors default to retryable for maximum resilience
+  /// - **Default Behavior**: Unknown errors rethrow immediately (not proven transient)
   /// **Network-Specific Features:**
   /// - **Intelligent Classification**: Automatic detection of network vs authentication errors
   /// - **Exponential Backoff**: Standard exponential backoff algorithm for network resilience
@@ -205,7 +222,10 @@ class RetryHelper {
         if (error.toString().contains('unauthenticated')) return false;
         if (error.toString().contains('invalid-argument')) return false;
 
-        return true; // Default to retry
+        // Rethrow-on-unknown (matches lib/utils/retry_policy.dart): an
+        // unclassified error is not proven transient, so retrying just burns
+        // the user's quota and time. Add a case above to opt an error in.
+        return false;
       },
     );
   }
@@ -222,7 +242,7 @@ class RetryHelper {
   /// - **Retryable Errors**: unavailable, deadline-exceeded, internal, aborted, cancelled (transient issues)
   /// - **Non-Retryable Errors**: permission-denied, unauthenticated, invalid-argument, not-found, already-exists
   /// - **Permanent Failures**: failed-precondition, out-of-range (immediate rethrow without retry)
-  /// - **Default Behavior**: Unknown Firebase errors default to retryable for maximum resilience
+  /// - **Default Behavior**: Unknown Firebase errors rethrow immediately (not proven transient)
   /// **Firebase-Specific Features:**
   /// - **Intelligent Classification**: Automatic detection of transient vs permanent Firebase errors
   /// - **Database Optimization**: Specialized handling for Firestore and Realtime Database operations
@@ -257,6 +277,16 @@ class RetryHelper {
         if (errorString.contains('internal')) return true;
         if (errorString.contains('aborted')) return true;
         if (errorString.contains('cancelled')) return true;
+        // resource-exhausted is a quota/rate-limit signal whose defined
+        // response IS back-off-and-retry; and a raw network/socket drop (the
+        // offline-sync case) is transient by nature — the sibling
+        // retryNetworkOperation already treats these as retryable. Classify
+        // them here so the rethrow-on-unknown default below doesn't silently
+        // strip in-pass retry from offline sync (its only production caller).
+        if (errorString.contains('resource-exhausted')) return true;
+        if (errorString.contains('socketexception')) return true;
+        if (errorString.contains('network-request-failed')) return true;
+        if (errorString.contains('network error')) return true;
 
         // Don't retry on permanent errors
         if (errorString.contains('permission-denied')) return false;
@@ -267,7 +297,10 @@ class RetryHelper {
         if (errorString.contains('failed-precondition')) return false;
         if (errorString.contains('out-of-range')) return false;
 
-        return true; // Default to retry for unknown errors
+        // Rethrow-on-unknown (matches lib/utils/retry_policy.dart): an
+        // unclassified error is not proven transient, so retrying just burns
+        // the user's quota and time. Add a case above to opt an error in.
+        return false;
       },
     );
   }
