@@ -113,7 +113,7 @@ The hook blocks `git commit` until a fresh marker exists at `.claude/state/<name
 | `functions/src/` (incl. `__tests__/`) | `cloud-functions-specialist` | `cloud-functions-done.marker` |
 | `firestore.rules`, `functions/src/__tests__/*-rules.test.ts` | `firestore-rules-tester` | `rules-tester-done.marker` |
 
-**Marker workflow:** dispatch the named agent against the staged diff → after it reports clean, run `touch .claude/state/<marker>` → retry commit. Hook is silent when no triggers match (doc-only commits, etc.). Per `memory/feedback_agent_timeout.md`, agents stall on >3 files — split commits or run in batches.
+**Marker workflow:** dispatch the named agent against the staged diff → after it reports clean, record the reviewed paths (exactly as they appear in `git status`) into the marker: `printf '%s\n' <reviewed-path>… > .claude/state/<marker>` → retry commit. A bare `touch` no longer passes — the gate now requires the marker to NAME every staged file it protects (BUT-1599/BUT-1619), so a fresh timestamp alone can't stand in for a review. If it blocks, the message lists the exact `printf` command with the unreviewed paths. Hook is silent when no triggers match (doc-only commits, etc.). Per `memory/feedback_agent_timeout.md`, agents stall on >3 files — split commits or run in batches.
 
 **Tier 3 — On Request:**
 - **uiux-designer**, **performance-optimizer**, **flutter-developer** — invoke explicitly when the diff warrants a specialist beyond Tier 2.
