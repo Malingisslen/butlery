@@ -1214,6 +1214,94 @@ void main() {
       );
     });
 
+    // BUT-1644 (follow-up to BUT-1637): direct service-layer coverage for the
+    // setMinorSearchable writer itself — the audited-callable path a minor's
+    // discoverability toggle goes through. Two branches matter: the callable
+    // failed (stored == null → error, cache left untouched) and the callable
+    // stored a value (cache advanced to the SERVER value + listeners notified).
+    group('setMinorSearchable writer (BUT-1644)', () {
+      late _MockProfileSearchabilityService mockSearchability;
+
+      setUp(() async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.ensureBaseUserDocument('test_user_123'),
+        ).thenAnswer((_) async {});
+        // Seed a NOT-searchable cached profile so a successful opt-in is an
+        // observable change, and a failed call leaving it false is too.
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => testProfile.copyWith(isSearchable: false),
+        );
+        await userService.initialize();
+
+        mockSearchability = _MockProfileSearchabilityService();
+        TestServiceLocator.registerMock<ProfileSearchabilityService>(
+          mockSearchability,
+        );
+      });
+
+      test(
+        'a failed callable (stored == null) surfaces an error, leaves the '
+        'cached profile untouched, and returns null',
+        () async {
+          // The audited callable could not reach the server (offline / App
+          // Check / rate-limited); the writer maps that thrown failure to a
+          // null "stored" value, distinct from "server said false".
+          when(
+            () => mockSearchability.setSearchable(any()),
+          ).thenThrow(Exception('offline'));
+
+          final result = await userService.setMinorSearchable(true);
+
+          expect(result, isNull);
+          expect(userService.hasError, isTrue);
+          expect(
+            userService.currentUserProfile?.isSearchable,
+            isFalse,
+            reason:
+                'a failed write must not advance the cached searchability flag',
+          );
+          verify(() => mockSearchability.setSearchable(true)).called(1);
+        },
+      );
+
+      test(
+        'a stored value advances the cached profile to the server value and '
+        'notifies listeners',
+        () async {
+          // The server accepted and stored the opt-in.
+          when(
+            () => mockSearchability.setSearchable(any()),
+          ).thenAnswer((_) async => true);
+
+          var notified = false;
+          userService.addListener(() => notified = true);
+
+          final result = await userService.setMinorSearchable(true);
+
+          expect(result, isTrue);
+          expect(
+            userService.currentUserProfile?.isSearchable,
+            isTrue,
+            reason: 'the cache must track the value the server actually stored',
+          );
+          expect(userService.hasError, isFalse);
+          expect(
+            notified,
+            isTrue,
+            reason: 'the toggle change must rebuild any listening UI',
+          );
+        },
+      );
+    });
+
     group('Lifecycle Management', () {
       test('should dispose properly', () async {
         // Act

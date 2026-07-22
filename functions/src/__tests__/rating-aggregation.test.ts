@@ -22,6 +22,7 @@ import {
   drainRatingAggregationQueue,
   __test__,
 } from "../ratings/rating-aggregation";
+import { DRAIN_LIMIT } from "../shared/debounce-queue";
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -247,8 +248,37 @@ async function drainerProcessesReadyMarkers(): Promise<void> {
       xDeleted &&
       yKept &&
       result.processed === 1 &&
-      result.failed === 0,
-    `aggregated=${JSON.stringify(aggregated)} xDel=${xDeleted} yKept=${yKept} processed=${result.processed} failed=${result.failed}`
+      result.failed === 0 &&
+      result.capped === false,
+    `aggregated=${JSON.stringify(aggregated)} xDel=${xDeleted} yKept=${yKept} processed=${result.processed} failed=${result.failed} capped=${result.capped}`
+  );
+}
+
+async function drainerSignalsSaturationAtCap(): Promise<void> {
+  const db = new FakeFirestore();
+  const t0 = 5_000_000;
+
+  // Seed exactly DRAIN_LIMIT ready markers → the drain scan comes back full.
+  for (let i = 0; i < DRAIN_LIMIT; i++) {
+    await db.doc(`_internal/rating_debounce/markers/recipe-${i}`).set({
+      recipeId: `recipe-${i}`,
+      pendingUntil: ts(t0 - 1000),
+      scheduledAt: ts(t0 - 6000),
+    });
+  }
+
+  const result = await drainRatingAggregationQueue({
+    db: db as never,
+    now: () => new Date(t0),
+    aggregate: async () => {},
+  });
+
+  record(
+    "full drain scan (500) raises capped=true so saturation is observable",
+    result.processed === DRAIN_LIMIT &&
+      result.failed === 0 &&
+      result.capped === true,
+    `processed=${result.processed} failed=${result.failed} capped=${result.capped}`
   );
 }
 
@@ -306,6 +336,7 @@ async function runAll(): Promise<void> {
   await debounceCoalescesBurst();
   await newWindowAfterExpiry();
   await drainerProcessesReadyMarkers();
+  await drainerSignalsSaturationAtCap();
   await drainerSurvivesAggregatorFailure();
   await emptyRecipeIdShortCircuits();
 

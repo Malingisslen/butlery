@@ -1635,3 +1635,181 @@ awaiting both suites sequentially, or one merged `runTests` call) was not applie
 Wiring confirmed present (unchanged, existing file): `test:set-profile-searchability` in
 package.json (L113) + `setProfileSearchability` in `app-check-enforcement.test.ts` USER_FACING
 (L53).
+
+### 2026-07-22 — BUT-1509 debounce-queue drain saturation signal [Pattern discovered]
+
+Reviewed the uncommitted `capped`/`drain_saturated` addition to
+`shared/debounce-queue.ts` (+ `ratings/rating-aggregation.ts` return type + the
+`drainerSignalsSaturationAtCap` test). `DRAIN_LIMIT = 500` extracted as a const;
+`capped = snap.size >= DRAIN_LIMIT`; a `${logPrefix}.drain_saturated` warn fires
+when the scan comes back full. **Core change is correct — tsc clean, 6/6 tests pass.**
+
+Verified NOT a starvation bug (the knowledge note about `.limit(N)`-no-cursor
+starvation does NOT apply here): the drain claim-by-DELETES each processed marker,
+so overflow stays matched and is picked up next run — same self-heal shape as the
+weekly `expireAt < now` reap, not the starved bounded-scan. Firestore also
+auto-orders by the `pendingUntil` inequality field, so oldest-due drains first
+(FIFO-ish, fair). `snap.size >= DRAIN_LIMIT` ⟺ `=== DRAIN_LIMIT` under `.limit()`;
+the `>=` is harmless defensive. No new writes/triggers/imports; warn payload is
+`{limit, scanned}` ints only (no PII); region N/A.
+
+**Twin-drift (LOW, carried — not in the 3 reviewed files but caused by this change):**
+the pooled-rating twin `ratings/pool-aggregation.ts` `drainPoolAggregationQueue`
+still declares its return type as `{processed, failed, durationMs}` WITHOUT `capped`
+(L75). Saturation observability is NOT lost for pools — the `drain_saturated` warn
+fires inside the shared `drainDebounceQueue` for BOTH namespaces (logPrefix
+`pool_aggregation`) automatically. Only the wrapper's public TS return-type surface
+drifted: the rating twin was widened to expose `capped`, the pool twin was not.
+Cosmetic type-surface asymmetry between two adapters the knowledge file says to keep
+in lockstep — worth a one-line follow-up, not a blocker.
+
+**index.ts dead-field (INFO):** the sole prod caller `drainRatingAggregations`
+(index.ts L360-369) logs `drain_complete` with processed/failed/durationMs but NOT
+`capped`, so the new return field is consumed only by the test. Not a real gap —
+saturation alerting rides the separate `drain_saturated` warn, which works — but the
+returned `capped` is effectively test-only in production.
+
+**Benign false-positive (INFO, documented in-code):** at exactly 500 ready-and-no-
+more, `capped` is true though nothing overflowed. Warn-level, low frequency,
+acknowledged in the code comment. `scanned` is always exactly 500 when capped (a
+`.limit()` can't report true backlog depth without a billed `.count()`) — accepted
+cost tradeoff.
+
+### 2026-07-22 — BUT-1486 parse-tier vocabulary single-sourcing [Pattern discovered]
+
+`events/log-parse-correction.ts` `VALID_TIERS` now re-exports the shared
+`VALID_CORRECTION_TIERS` from `shared/parse-tier-vocabulary.ts` (SERVER_TIER_IDS +
+LEGACY `["regex"]`) instead of a hand-synced inline list. Verified behavior-preserving:
+old inline set (10 ids) == new set as a SET (9 canonical server ids + legacy `regex`),
+so no server-contract narrowing — the callable still accepts exactly what it did. tsc
+`--noEmit` clean; `test:parse-tier-vocabulary` 6/6 and `test:parse-correction` 11/11
+green. New `test:*` script added to package.json ⇒ auto-discovered by BOTH
+`run-all-tests.js` (dev) and `run-ci-unit-tests.js` (CI, no emulator) — correct wiring,
+no CI_EXCLUDE needed. Hand-rolled harness convention followed (console.log +
+`process.exit(1)`, no jest). Dart client `_dartToServerTier` (9 pairs, no `regex`) pinned
+to the same canonical contract by `parse_correction_uploader_test.dart`; matches.
+
+**LOW / carried gap — copy #3 (`events/log-parse-event.ts`) is still an unpinned
+duplicate.** Its `const VALID_TIERS` (CamelCase, NOT exported) is byte-identical to the
+new `DART_TIER_NAMES` today, so no live drift — but nothing in the new test suite (or
+anywhere) asserts that equality, which is the exact single-source guarantee BUT-1486
+exists to provide. The module docstring acknowledges copy #3 as deliberately not migrated
+(a follow-up folds it in via `DART_TIER_NAMES`). Cheap durable guard if the follow-up
+slips: export `log-parse-event`'s list and add a `parse-tier-vocabulary.test.ts` case
+asserting it deep-equals `DART_TIER_NAMES`. Not a regression introduced by this diff —
+the duplicate pre-existed; flagging so the next editor closes it.
+
+No idempotency/region/secrets surface touched (callable unchanged, no new triggers,
+region inherited from setGlobalOptions).
+
+### 2026-07-22 — BUT-1510 onProfileUpdated cursor-pagination review [Bug fixed]
+
+Reviewed the uncommitted rework of `social/on-profile-updated.ts` (extracted a testable
+`propagateProfileUpdate` DI core, migrated every unbounded fan-out from single-`.get()` to
+`batchUpdateQueryPaginated` documentId-cursor paging) + its new
+`__tests__/on-profile-updated.test.ts`. Core logic is sound; findings below.
+
+**HIGH — the new test suite is DEAD (never runs in `npm test`/CI).** `on-profile-updated.test.ts`
+has NO matching `test:*` script in `functions/package.json`, so `run-all-tests.js`'s
+`test:*` auto-discovery never picks it up (and neither does `run-ci-unit-tests.js`). The
+5 cases pass when run by hand (`npx ts-node src/__tests__/on-profile-updated.test.ts` →
+`5/5 passed`) but are invisible to the gate — exactly the BUT-1392/BUT-1477 recurring trap.
+Fix: add `"test:profile-updated": "ts-node src/__tests__/on-profile-updated.test.ts"` to the
+scripts block. (Grep package.json for a `test:*` FIRST on any new `__tests__/*.test.ts`.)
+
+**LOW (defensive, not currently firing) — undefined in the update map would throw and be
+silently swallowed.** No `ignoreUndefinedProperties` is set (only `admin.initializeApp()` in
+index.ts). If `after.displayName`/`after.avatarUrl` were ever *field-absent* (undefined),
+`nameChanged`/`avatarChanged` goes true and the update map carries `undefined`, which
+firebase-admin rejects synchronously at `batch.update` → the per-collection `.catch` swallows
+it (returns 0) → those denorm copies stay stale, no signal. NOT active today: the client write
+path (`UserProfile.toFirestore`, ~L366/456) always writes `'avatarUrl': avatarUrl` (null when
+cleared, never omitted) and displayName is a required field — so the doc carries `null`, not
+undefined, and `batch.update({...: null})` is valid. Cheap hardening: coerce
+`newName ?? null` / `newAvatar ?? null` when building the maps (and the friends
+`displayNameLower`), or set `ignoreUndefinedProperties`.
+
+**LOW — logging deviates from the file's own convention.** `logger.info(\`Profile updated
+for ${userHash}: name=${nameChanged}...\`)` interpolates dynamic values into the message
+string (non-queryable, one distinct message per hash) instead of a stable message + a
+structured 2nd-arg object; and the `.catch` handlers pass the raw error as the 2nd arg
+(`logger.error(\`Failed to update messages for ${userHash}\`, e)`) rather than `{ err: e }`.
+
+**Verified CLEAN (not findings):**
+- Idempotency: v2 `onDocumentUpdated` defaults retry=false and every write is an idempotent
+  field-set (no increments/aggregates) — safe under duplicate delivery.
+- No composite-index need: single-equality/array-contains + ascending `orderBy(__name__)`
+  (added by `batchUpdateQueryPaginated`) rides the auto single-field index. The author
+  correctly kept the two-equality `group_invitations` query on the plain `batchUpdateQuery`
+  (no orderBy) so it doesn't require a `(fromUserId,status,__name__)` composite.
+- Cursor stability: every paged update touches only denorm fields, never the field its query
+  filters on nor the doc id — no skip/revisit. `paginatedDualUpdate` runs owner + last-editor
+  passes concurrently on disjoint fields; an overlap doc is written once per pass (double
+  count is intentional, documented).
+- Friends denorm is complete vs schema: friend docs store only `addedAt` +
+  `displayNameLower` (`friend_relationship_repository.dart` ~L252/259), and the CF writes
+  `displayNameLower: newName?.toLowerCase()` (lowercased, matching the client) under
+  nameChanged — no avatar/cased-name field exists to go stale. Realtime/shopping/friends/
+  group_invitations being name-only matches pre-refactor behavior (denorms hold no avatar).
+- Region inherited from `setGlobalOptions`; no secrets surface; `hashUid` used for GDPR-safe
+  logging (no raw name/uid logged).
+
+**Test coverage gaps (once wired):** avatar-denorm propagation is only asserted for messages
+(members/conversations/comments avatar untested); no case for the null/absent-avatar path
+(the finding above); dual-field double-write count not asserted.
+
+### 2026-07-22 — BUT-1509/1510/1486 crashed-sprint salvage review [Pattern discovered]
+
+Verified three uncommitted CF changes whose adversarial-verify phase died on a session
+limit. tsc + all four suites green going in; job was logic/cost defects tests miss.
+
+**BUT-1509 (drain saturation alert) — CLEAN.** `drainDebounceQueue` (shared/debounce-queue.ts)
+computes `capped = snap.size >= DRAIN_LIMIT` after a `.limit(DRAIN_LIMIT).get()`. Because the
+query caps at 500, `size` can never exceed 500, so `capped ⟺ size === 500` — no false positive
+below cap, no false negative at cap. rating-aggregation.ts stayed a thin adapter (500 limit and
+core aggregation untouched). Test now pins BOTH sides (capped=false below, capped=true at 500).
+Only inherent semantic: exactly-500-and-no-more still fires capped — accepted "at/over capacity"
+definition, not a defect.
+
+**BUT-1510 (profile fan-out pagination rewrite, on-profile-updated.ts) — CLEAN, no correctness
+defect.** Compared against `git show HEAD:` of the old file. Preserved: best-effort per-step
+(every step still `.catch(()=>0)`, still `Promise.all` — NOT regressed to hard-fail); displayName/
+avatar-only fields; the friends + group_invitations single-read paths. Changed: unbounded
+collections moved from `.get()` (batchUpdateQuery/Docs) to `batchUpdateQueryPaginated`
+(orderBy `__name__` + startAfter cursor), and mergedDualUpdate→paginatedDualUpdate. Pagination is
+skip/revisit-safe because every update touches only denorm fields, never the query-filter field
+or the doc id, so the `__name__` cursor is stable (batch-update.ts docstring states this
+precondition and it holds for all callers). Each page ≤ BATCH_LIMIT=500 = one commit — 500-op cap
+respected. The conversations change from a per-doc callback to a STATIC update map is equivalent:
+the denorm keys are `participantDisplayNames.${userId}` where userId is constant per invocation,
+so every matched doc gets the identical map. paginatedDualUpdate's double-write of an owner==editor
+doc (once per field-pass, two parallel passes) is documented, idempotent, disjoint-field →
+same final state; extra write is a rare-event cost, accepted.
+- Pattern for reviewing a "paginate the fan-out" rewrite: (1) diff against `git show HEAD:` to
+  confirm best-effort `.catch` survived on EVERY step; (2) for each paginated query, check the
+  update map cannot touch the filter field or `__name__` (else cursor skips/revisits); (3) a
+  per-doc-callback→static-map swap is safe ONLY when the map is invocation-constant (userId here).
+- LOW, pre-existing (NOT introduced): the friends step's `batchUpdateRefs`→`batch.update` on
+  `users/{friendId}/friends/{userId}` throws NOT_FOUND if a reverse friendship doc is missing,
+  rolling back that whole (≤500) friends batch. Caught by the step's `.catch`, so other
+  collections are unaffected, but all friends-propagation for that user is lost. Identical to the
+  old code — flagged only because the file was near-fully rewritten.
+
+**BUT-1486 (tier-vocabulary unification) — vocab half CLEAN + behavior-preserving; observability
+half ABSENT.** New shared/parse-tier-vocabulary.ts is the source of truth (DART_TIER_NAMES ↔
+SERVER_TIER_IDS index-aligned + VALID_CORRECTION_TIERS = server ids + legacy `regex`).
+log-parse-correction.ts's VALID_TIERS now re-exports VALID_CORRECTION_TIERS. Behavior-change
+check: old inline set {site_config, regex, llm, schema_org, rule_based, selective_enhance,
+structured_extraction, web_scraper, html_text_parse, user_assisted} == new set exactly (order
+differs, membership identical) → no tier newly accepted/rejected. Two gaps:
+- MEDIUM — the ticket's observability requirement ("unknown-tier and salt-not-loaded drops must
+  emit a metric, not just a debug log") is NOT in this diff. log-parse-correction.ts's only change
+  is the VALID_TIERS swap; an unknown tier still `throw`s HttpsError invalid-argument (not a
+  metric-emitting drop), there is no salt concept in the correction path, its test file is
+  unchanged, and `grep` finds no new `logger.warn`/metric under events/. Either the crashed sprint
+  dropped this scope or it was misattributed — reconcile against the ticket before marking done.
+- LOW/MEDIUM — only copy #2 migrated. Copy #3 (log-parse-event.ts VALID_TIERS, CamelCase) still
+  hardcodes its own list, does NOT import DART_TIER_NAMES, and no test pins it against the
+  canonical vocabulary, so it can still silently drift — the exact bug class BUT-1486 targets. The
+  module docstring calls this a deferred follow-up, so it's a conscious partial delivery; cheap
+  tripwire = a test asserting log-parse-event's VALID_TIERS deep-equals DART_TIER_NAMES.

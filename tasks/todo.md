@@ -1,5 +1,247 @@
 # tasks/todo.md
 
+## 2026-07-22 sprint — Selection (Phase 1)
+
+**Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (102 Backlog +
+3 Todo, 0 In Progress, 0 Triage). `onboarding-reserved` label: BUT-677, BUT-722 present —
+excluded entirely, not scored.
+
+**Linear tooling-bounce artifact resolved itself.** The prior pass flagged BUT-1632/1615/1553
+as archived-but-not-closed data hygiene. Direct `get_issue` checks this round show: BUT-1632 and
+BUT-1553 are genuinely **Done** (their state history shows the same Backlog→Todo→Canceled→Backlog
+bounce on 2026-07-20, but both later completed cleanly — BUT-1632's observability-remainder work
+and BUT-1553's CI wiring are done). BUT-1615 bounced the same way but is legitimately still open
+(never shipped) — carried forward again below. **BUT-1558 bounced back to Backlog too, but its
+underlying premise is actually gone** — re-verified (see Obsolete below) and re-closed.
+
+**Step-0 grep-of-main premise check:** git status clean; `2c2e48f34` (crashed-sprint salvage,
+2026-07-21) confirmed on `main`. Re-verified BUT-1558's 5 production items directly against
+current code (not just commit citations) — all present. `docs/onboarding/workflow-map.stale`
+does not exist (BUT-1643 already cleared it).
+
+**New candidates this round:** BUT-1642 (CI EXCLUDE_PREFIXES naming collision, self-flagged while
+reading BUT-1553) and BUT-1644 (BUT-1637 follow-up: direct service-layer test for
+`setMinorSearchable`, filed by the crashed-sprint salvage's own reviewers). Both passed the
+mandate gate as clear, low-risk fixes.
+
+**Backlog is heavily pre-triaged.** After four prior passes, the remaining ~95 open tickets are
+overwhelmingly: `deferred`-lane (epics/launch-gated/monetization, ~85), standing `need-malin`
+decisions already surfaced repeatedly, wrong-repo (claude-plugins delivery-engine tickets), or
+Tier-C-sized refactors correctly left for a dedicated pass. Rather than force volume, this round
+also pulled 3 well-scoped, single-file `autonomous`/Low-priority backend tickets that have sat
+untouched since 2026-07-03 off the perpetual "not selected" list (BUT-1509, BUT-1510, BUT-1486)
+to make real progress on the backlog instead of re-scoring the same parked items a fifth time.
+
+**Lane convention honored:** `deferred`-lane tickets left untouched in Backlog. `need-malin`-lane
+tickets stay parked; live-relevance ones surfaced under Needs Malin below (mostly unchanged from
+prior passes — not re-litigated).
+
+**File-overlap check (mandatory before batching):** all 6 selected tickets touch fully disjoint
+files/subsystems (menu, account/security-test, CI script, ratings CF, social CF, parsing+analytics
+CF) — no merges needed. Router (`tools/stakeholder_router.py`) run for real on every batch's
+touched paths — tiers below are its actual output.
+
+### Batch A — presence-selector-ui (build-review: UI/interaction call, 4th carry-forward)
+- [ ] **[Tier B] BUT-1615** — Per-day presence selector UI + generator wiring + preview gate (the
+  real remainder of BUT-1611 — its own ticket shipped only the dead data-model field). This is the
+  fourth pass carrying this ticket forward without it landing; prioritized this round. disposition:
+  build-review. requiresPlanMode: false (router: single, panel: Product Manager only — no
+  high-stakes hit — flagged manually as substantial: new UI + generator wiring + preview gate).
+  signoffReason: where the per-day "who's present" selector sits in the calendar UI and how it's
+  toggled — a visual/interaction call for Malin before it ships.
+  Files: `lib/viewmodels/menu/menu_generator.dart`, `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`,
+  `lib/services/menu/weekly_menu_plan_service.dart`, `lib/widgets/menu/calendar_weekly_menu_widget.dart`,
+  `lib/views/veckomeny_view.dart`, a `/preview --directions` artifact under `tasks/previews/`, plus
+  tests.
+  Acceptance:
+  1. A per-day "who's present" selector exists in the weekly-menu calendar UI and persists to
+     `WeeklyMenuPlan.presenceByDay` via a plan-VM save method.
+  2. `menu_generator.dart`'s day-generation path reads that day's own presence selection and sets
+     `presentMemberIds` per generated day (wiring only).
+  3. A `/preview --directions` marker exists for the new selector before implementation, per the
+     repo's preview gate.
+  4. **Don't** widen this into allergen-filtering/generation-pool scoping — matches the accepted
+     display/portions-safe boundary in `accepted-deviations.md` (BUT-1625's boundary). Existing
+     weekly-menu allergen-filtering tests stay unchanged.
+
+### Batch B — minor-searchability-writer-test (single, security-labeled)
+- [ ] **[Tier A] BUT-1644** — Add a direct service-layer test for `UserService.setMinorSearchable`
+  (the actual opt-in writer) — both the firebase-backend-security and testing-specialist reviews of
+  the just-shipped BUT-1637 fix independently flagged that only the re-assert path is tested, not
+  the writer itself. disposition: build. requiresPlanMode: **true** (router: single, panel: Software
+  Architect, Product Manager — `security` label triggers the `single + security label` clause).
+  Files: `test/unit/services/user_service_test.dart` (test-only; `lib/services/user_service.dart`
+  read as reference, not edited unless the audit finds a real gap).
+  Acceptance:
+  1. A test proves `stored == null` (callable/read returns no persisted value) surfaces an error
+     and does NOT update the local cache.
+  2. A test proves `stored` present updates the cache and calls `notifyListeners`.
+  3. **Don't** touch the re-assert path in `createOrUpdateProfile` — already fully tested by
+     BUT-1637; this is writer-level coverage only, test-only diff.
+
+### Batch C — ci-alias-wiring (single, config-only)
+- [ ] **[Tier A] BUT-1642** — `run-ci-unit-tests.js`'s `EXCLUDE_PREFIXES` skips the whole
+  `test:integration:` prefix, which incidentally also skips `test:integration:analyze-corrections-alias`
+  even though that suite needs no emulator. Confirmed still live at Step-0 (`EXCLUDE_PREFIXES =
+  ["test:rules", "test:integration:"]` unchanged in current `run-ci-unit-tests.js`). disposition:
+  build. requiresPlanMode: false (router: single, panel: Vendor/Procurement; priority Low, no
+  security label).
+  Files: `functions/scripts/run-ci-unit-tests.js` (rename the alias or tighten the exclude match —
+  implementer's call which is cleaner).
+  Acceptance:
+  1. `test:integration:analyze-corrections-alias` actually runs in the CI unit-test job (verified
+     via a pushed commit's `gh run list`/logs, not just local reasoning).
+  2. Emulator-dependent `test:integration:` suites remain excluded — the fix doesn't over-include
+     and break CI by trying to run something that needs the emulator.
+  3. **Don't** touch `firestore.rules` or unrelated CI workflow files — naming/filter fix only.
+
+### Batch D — ratings-queue-observability (single, backend)
+- [ ] **[Tier A] BUT-1509** — `drainRatingAggregationQueue`'s 1-minute scheduled drain caps its
+  queue query at `.limit(500)`; nothing alerts when a drain saturates. disposition: build.
+  requiresPlanMode: false (router: single, panel: Privacy/DPO, Vendor/Procurement; priority Low, no
+  security label).
+  Files: `functions/src/ratings/rating-aggregation.ts`, plus a CF test.
+  Acceptance:
+  1. A drain that hits the 500-recipe cap emits a counter/log signal (test proves it fires at the
+     cap boundary).
+  2. A below-cap drain does NOT emit the cap-hit signal (test proves no false positive).
+  3. **Don't** change the drain's core aggregation logic or the 500 limit itself — monitoring only,
+     per the ticket's own suggested fix (cursor-pagination looping is future work if the cap signal
+     ever actually fires).
+
+### Batch E — profile-fanout-pagination (single, backend/social)
+- [ ] **[Tier A] BUT-1510** — `onProfileUpdated` fans a displayName/avatar change out to ~10
+  collections with no per-query pagination cap — bounded only by the 540s function timeout and
+  per-step best-effort `.catch()`. disposition: build. requiresPlanMode: false (router: single,
+  panel: Vendor/Procurement; priority Low, no security label).
+  Files: `functions/src/social/on-profile-updated.ts`, plus a CF test.
+  Acceptance:
+  1. The fan-out to each of the ~10 collections is chunked/paginated (cursor per collection)
+     instead of one unbounded query each — test proves a collection with more docs than one page
+     still completes across chunks.
+  2. The existing best-effort per-step behavior (a failure in one collection doesn't abort the
+     others) is preserved, not regressed into a hard failure.
+  3. **Don't** change what gets propagated (still displayName/avatar only) — pagination/chunking
+     hardening only.
+
+### Batch F — correction-upload-observability (single, parsing/analytics)
+- [ ] **[Tier A] BUT-1486** — Unknown-tier and salt-not-loaded correction-upload drops in
+  `ParseCorrectionUploader` are silent today (debug log + `return 0`); mirror the
+  `parseEventLogFailed` pattern (BUT-616). Also unify the 3 hand-synced tier vocabularies (the
+  Dart client map + 2 server allowlists). Confirmed still live at Step-0 — both silent-drop sites
+  (`unknown tier`, `salt not loaded`) still just `AppLogger.debug` + `return 0`, no metric.
+  disposition: build. requiresPlanMode: false (router: single, panel: Data/ML Engineer, Data
+  Analyst/BI, Growth Marketer/ASO, Vendor/Procurement; priority Low, no security label).
+  Files: `lib/services/parsing/feedback/parse_correction_uploader.dart`,
+  `functions/src/events/log-parse-correction.ts`, `functions/src/analytics/analyze-corrections.ts`,
+  plus tests.
+  Acceptance:
+  1. An unknown-tier correction-upload drop emits a metric (not just a debug log) — test proves the
+     metric call fires.
+  2. A salt-not-loaded correction-upload drop also emits a metric.
+  3. The 3 hand-synced tier vocabularies are unified into one source of truth, OR — if full
+     unification is judged out of scope for this pass — a follow-up ticket is filed explicitly
+     stating what's deferred, not silently dropped.
+  4. **Don't** change which tiers are accepted — this centralizes the existing allowlist and adds
+     observability, not a behavior change to what's valid.
+
+## Obsolete (Step-0 grep-of-main this round — closed in Linear with resolving evidence)
+- **BUT-1558** — CLOSED (Canceled), second time. Bounced back to Backlog on 2026-07-20 as part of
+  the same Linear tooling artifact that affected BUT-1632/1553/1615/1629's state history — not a
+  deliberate reopen (no commit or product decision reinstated it). Re-verified all 5 production
+  items directly against current `main` (not just trusting the prior pass's commit citation):
+  `progressSub?.cancel()` present (`firebase_storage_repository.dart:341`), duplicate permission
+  check removed (single validation path via `uploadImageData`), cache-HIT-once gate present
+  (`optimized_image_loader.dart`), predictive-prefetch idle-gate present
+  (`intelligent_cache_manager.dart:496`), frame-timing fabricated-`0.0` fix present
+  (`performance_monitoring_service.dart:417`). All shipped in `b7e66bf1a`; test backfill done via
+  BUT-1635 (Done) + BUT-1639 (shipped in `2c2e48f34`). Nothing left to build. (Linear comment
+  attempt failed — "Could not find referenced Issue" on an archived issue, an MCP quirk; the state
+  transition to Canceled itself succeeded.)
+
+## Needs Malin (speculative / contestable / ops-blocked / wrong-repo — not built)
+- **BUT-1636** — Supersede the stale `accepted-deviations.md` entry saying cook_snaps/
+  activity_events aren't age-gated (they ARE, since BUT-1418). Decision-record edit, genuinely
+  Malin's call per the doc's own contract. Recommend: quick confirm-and-edit, low effort. (Standing
+  since 2026-07-20.)
+- **BUT-1616** — Reconcile `raw-safe`/`processed` property-vocabulary drift. Tagging vocabulary is
+  safety-adjacent, not mine to guess which side is canonical. Recommend: a 2-minute decision, then
+  a trivial follow-up build. (Standing since 2026-07-18.)
+- **BUT-1617** — Triage 35 non-blocking specialist findings from the 2026-07-14 sprint; that
+  sprint's scratch review artifacts are very likely gone. Recommend: close as stale unless the
+  findings survive somewhere you know of. (Standing since 2026-07-18.)
+- **BUT-1601** — Inline ingredient quantities in cooking-mode steps. No `autonomous` label, tagged
+  `idea`; real NLP complexity, no mockup. Recommend: worth doing eventually, needs a product/UX
+  pass first.
+- **BUT-1499** — Collaborative weekly menu fully coded but never wired to a live view. The ticket's
+  own acceptance #1 is "decide: wire it up or park it" — genuinely your call.
+- **BUT-1472** — `parse_corrections_v2`/`llm_response_samples` have no consumer. A real investment
+  decision (build a consumer vs turn off the write path). Recommend the cheap "turn off" path per
+  cost-minimization, unless you want the corrections-mining tool.
+- **BUT-1176** — Optional custom_lint/AST upgrade. Self-describes "pick up only if custom_lint is
+  being added for other reasons" — condition unmet. Recommend: drop or leave parked.
+- **BUT-1555** — Deploy safety hardening (post-deploy smoke gate, rollback path, wider health-alert
+  coverage). Real DevOps investment better done alongside BUT-451 (staging project) than built
+  blind against prod pre-launch. Recommend: revisit before first real release, not urgent now.
+- **BUT-1619 / BUT-1620 / BUT-1621 / BUT-1634 / BUT-1630 / BUT-1599** — Delivery-engine (sprint
+  machinery) hardening tickets targeting `C:/claude-plugins/...`, a different git repo shipped via
+  `node tools/fanout-update.mjs`, not buildable from a Butlery sprint. Recommend: batch into one
+  claude-plugins-specific session.
+- **BUT-1625** — Safe present-aware menu generation. Explicitly framed as "IF product wants
+  generation tuned to who's present" on a children's-allergen-safety surface — matches the decided,
+  documented boundary in `accepted-deviations.md`. Recommend: leave parked unless specifically
+  wanted. Note: once BUT-1615 (selected this round) lands the display/wiring half, this ticket is
+  the only remaining path to change generation-pool scoping — still requires your explicit go-ahead
+  per the accepted deviation.
+- **BUT-1441** — Backfill zoneless `feedback.createdAt` docs to UTC. Self-describes as Tier-D-ish
+  (needs a prod data migration / console-or-script access), and pre-launch the feedback collection
+  is near-empty so the impact is low. Recommend: fold into a future prod-maintenance pass, not
+  urgent.
+- **BUT-880** — PITR restore drill against a non-prod project. Already `need-malin`-labeled;
+  ops-blocked. Recommend: do it, but it's an ops task for you.
+- **9 other standing `need-malin`-labeled tickets** (BUT-1557, BUT-1502, BUT-1179, BUT-1368,
+  BUT-863, BUT-1445, BUT-1229, BUT-1608, BUT-1453) remain parked in Backlog — no new judgment added
+  this round.
+
+## Not selected this round — needs-approval judgment call (not built, not a Malin decision either)
+- **BUT-1641** — "Leaf-level disposal guards for 5 state-holders (optional)." The ticket's own text
+  says this is a judgement call, not a required fix — the crash risk is already handled at the
+  parent-viewmodel level (per BUT-1628's deliberate design), and it names its own no-code
+  resolution ("close as parent guards sufficient"). Speculative defense-in-depth with no concrete
+  failure it currently prevents. Recommend: close as "parent guards sufficient" unless you
+  specifically want the extra layer. (Standing since 2026-07-20.)
+
+## Excluded from scoring entirely
+- **BUT-677, BUT-722** — carry the `onboarding-reserved` label; per standing instruction, never
+  scored, selected, transitioned, or implemented.
+- **~85 `deferred`-labeled tickets** (epics, launch-gated, tablet/macOS, monetization ideas, etc.)
+  — left untouched in Backlog per the lane convention; deliberately parked, not re-scored.
+
+## Excluded this round (sequencing, not rejection)
+- **BUT-1613** ("BUT-1323 slice 4: per-day portion adjustment by present count") — still blocked on
+  BUT-1615's UI/wiring (Batch A this round). Revisit immediately after Batch A lands.
+- **BUT-1323** — parent EPIC of BUT-1613/BUT-1615/BUT-1611; not itself buildable, sits in Todo as a
+  container. No action.
+
+## Not selected this round (scored but below the cut / lower urgency — same pool, minus this
+round's picks)
+Low-priority `autonomous` batches that remain valid, clean-build candidates for a future sprint:
+BUT-1504, BUT-1501, BUT-1476, BUT-1488, BUT-1508 (78-file ServiceLocator→constructor-injection
+refactor — large, Tier C candidate on its own), BUT-1507 (god-object refactor — large, Tier C
+candidate on its own), BUT-1513 (rewrite ~120 bulk-skipped integration tests — large, Tier C
+candidate on its own), BUT-1514 (unify dual ServiceLocator test containers — touches ~125 test
+files, Tier C candidate on its own), BUT-1480, BUT-1485, BUT-1484, BUT-1482 (tag config-change
+invalidation — includes a "design a server-side batch retag" architectural decision, not a clean
+single-pass fix), BUT-1471 (CRF retrain deploy+measure links — touches shell script + Storage
+upload path + hash-registry versioning, needs more scoping than a single pass), BUT-1490, BUT-1240,
+BUT-945, BUT-1452, BUT-1561 (its "cap-trip alert" sub-item may need console access, scope down at
+Step-0).
+
+## Deviation log
+(none yet — Phase 1 only, no implementation this pass)
+
+---
+
 ## 2026-07-20 sprint (second pass) — Selection (Phase 1)
 
 **Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage (107 Backlog +

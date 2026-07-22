@@ -299,6 +299,52 @@ void main() {
     );
   });
 
+  group('ParseCorrectionUploader tier vocabulary (BUT-1486)', () {
+    // Pins the client copy of the canonical Dart→server tier mapping against
+    // the server-side source of truth in
+    // functions/src/shared/parse-tier-vocabulary.ts (DART_TO_SERVER_TIER).
+    // Dart can't import the TypeScript module, so this literal contract is the
+    // drift guard: if either side changes a tier name/id without updating the
+    // other, this test (and the TS parse-tier-vocabulary suite) goes red.
+    const canonicalMapping = <String, String>{
+      'SchemaOrg': 'schema_org',
+      'SiteConfig': 'site_config',
+      'RuleBased': 'rule_based',
+      'LLM': 'llm',
+      'SelectiveEnhance': 'selective_enhance',
+      'StructuredExtraction': 'structured_extraction',
+      'WebScraper': 'web_scraper',
+      'HtmlTextParse': 'html_text_parse',
+      'UserAssisted': 'user_assisted',
+    };
+
+    test('client map matches the canonical Dart→server contract exactly', () {
+      expect(ParseCorrectionUploader.dartToServerTier, canonicalMapping);
+    });
+
+    test('every mapped tier round-trips through upload as its server id', () {
+      for (final entry in canonicalMapping.entries) {
+        final calls = <Map<String, dynamic>>[];
+        final uploader = ParseCorrectionUploader(
+          invoker: (_, body) async => calls.add(body),
+        );
+        final correction = makeCorrection(
+          successfulTier: entry.key,
+          title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
+        );
+
+        final n = uploader.upload(correction: correction, salt: 's');
+
+        expect(n, 1, reason: '${entry.key} should map and upload');
+        expect(
+          calls.single['sourceTier'],
+          entry.value,
+          reason: '${entry.key} must send server id ${entry.value}',
+        );
+      }
+    });
+  });
+
   group('ParseCorrectionUploader.isWhitespaceOrCaseOnly', () {
     test('whitespace collapse', () {
       expect(

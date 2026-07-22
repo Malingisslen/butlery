@@ -178,6 +178,13 @@ abstract final class AnalyticsEvents {
   // fails, so we can measure parse-event loss rate. Params: error_code
   // (Firebase Functions code or 'unknown'), cause (truncated message).
   static const parseEventLogFailed = 'parse_event_log_failed';
+  // BUT-1486: emitted when ParseCorrectionUploader drops a correction upload
+  // before it reaches the callable (unknown tier, no analytics salt, or a
+  // payload/prefs error) — mirrors parseEventLogFailed so the correction
+  // feedback loop's silent losses are measurable. Params: reason
+  // (unknown_tier | no_salt | payload_error | salt_error), tier (offending
+  // Dart tier name, unknown_tier only), cause (truncated message, error paths).
+  static const parseCorrectionUploadDropped = 'parse_correction_upload_dropped';
   // BUT-655: emitted from notification settings when a category toggle
   // changes. Params: category (e.g. friend_request, comment, chat),
   // enabled (bool).

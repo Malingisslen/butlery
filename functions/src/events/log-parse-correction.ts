@@ -36,21 +36,16 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, redactionRatio } from "../llm/pii-scrubber";
+import { VALID_CORRECTION_TIERS } from "../shared/parse-tier-vocabulary";
 
 const getDb = () => admin.firestore();
 
-export const VALID_TIERS = [
-  "site_config",
-  "regex",
-  "llm",
-  "schema_org",
-  "rule_based",
-  "selective_enhance",
-  "structured_extraction",
-  "web_scraper",
-  "html_text_parse",
-  "user_assisted",
-];
+/**
+ * BUT-1486: the accepted `sourceTier` set is now sourced from the canonical
+ * tier vocabulary (functions/src/shared/parse-tier-vocabulary.ts) instead of a
+ * hand-synced inline list. Re-exported so existing importers keep working.
+ */
+export const VALID_TIERS = VALID_CORRECTION_TIERS;
 
 export const VALID_FIELDS = [
   "title",

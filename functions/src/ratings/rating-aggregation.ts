@@ -68,7 +68,13 @@ export async function scheduleRatingAggregation(
  */
 export async function drainRatingAggregationQueue(
   deps: DrainDeps = {}
-): Promise<{ processed: number; failed: number; durationMs: number }> {
+): Promise<{
+  processed: number;
+  failed: number;
+  durationMs: number;
+  /** True when the drain scan hit the 500-marker cap — queue is saturated. */
+  capped: boolean;
+}> {
   return drainDebounceQueue(RATING_DEBOUNCE, {
     db: deps.db,
     now: deps.now,

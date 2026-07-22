@@ -27,6 +27,14 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 
+/**
+ * Max markers a single scheduled drain claims. When a scan comes back full, the
+ * queue is at/over capacity: the overflow waits for the next minute's run (the
+ * drain self-corrects across runs). That silent self-correction hides a
+ * sustained backlog, so a full scan raises `capped` + a warn log — BUT-1509.
+ */
+export const DRAIN_LIMIT = 500;
+
 export interface DebounceConfig {
   /** Firestore collection path holding markers, e.g. "_internal/rating_debounce/markers". */
   markerCollection: string;
@@ -128,7 +136,12 @@ export async function scheduleDebounced(
 export async function drainDebounceQueue(
   config: DebounceConfig,
   deps: DrainDeps = {}
-): Promise<{ processed: number; failed: number; durationMs: number }> {
+): Promise<{
+  processed: number;
+  failed: number;
+  durationMs: number;
+  capped: boolean;
+}> {
   const start = Date.now();
   const db = deps.db ?? admin.firestore();
   const now = (deps.now ?? (() => new Date()))();
@@ -141,8 +154,21 @@ export async function drainDebounceQueue(
   const snap = await db
     .collection(config.markerCollection)
     .where("pendingUntil", "<=", admin.firestore.Timestamp.fromDate(now))
-    .limit(500)
+    .limit(DRAIN_LIMIT)
     .get();
+
+  // A full scan means more ready markers may be waiting for the next run. Emit a
+  // warn-level structured signal so a saturated queue is observable (a log-based
+  // metric/alert can watch `${logPrefix}.drain_saturated`) instead of silently
+  // self-correcting one minute at a time (BUT-1509).
+  const capped = snap.size >= DRAIN_LIMIT;
+  if (capped) {
+    logger.warn(`${config.logPrefix}.drain_saturated`, {
+      event: `${config.logPrefix}.drain_saturated`,
+      limit: DRAIN_LIMIT,
+      scanned: snap.size,
+    });
+  }
 
   let processed = 0;
   let failed = 0;
@@ -172,5 +198,5 @@ export async function drainDebounceQueue(
       });
     }
   }
-  return { processed, failed, durationMs: Date.now() - start };
+  return { processed, failed, durationMs: Date.now() - start, capped };
 }

@@ -8,6 +8,8 @@ import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Maximum chars for fromValue/toValue. Server enforces the same limit
 /// (defence in depth). Long ingredient/instruction blocks are truncated
@@ -17,6 +19,12 @@ const int kMaxCorrectionValueChars = 500;
 /// Server-side accepted tier identifiers. The server callable rejects
 /// anything outside this set. Dart uses CamelCase tier names — we map
 /// here so the contract lives in one place.
+///
+/// This is the client copy of the canonical tier vocabulary; the server-side
+/// source of truth is `functions/src/shared/parse-tier-vocabulary.ts`
+/// (`DART_TO_SERVER_TIER`). Dart cannot import the TypeScript module, so the
+/// two are kept in sync by the pinned mapping test in
+/// `parse_correction_uploader_test.dart` — update both together (BUT-1486).
 const Map<String, String> _dartToServerTier = {
   'SchemaOrg': 'schema_org',
   'SiteConfig': 'site_config',
@@ -67,6 +75,32 @@ class ParseCorrectionUploader {
 
   ParseCorrectionUploader({CallableInvoker? invoker})
     : _invoker = invoker ?? _defaultInvoker;
+
+  /// The canonical Dart→server tier mapping. Exposed so the drift-guard test
+  /// can pin it against the server-side source of truth (BUT-1486).
+  static Map<String, String> get dartToServerTier =>
+      Map.unmodifiable(_dartToServerTier);
+
+  /// BUT-1486: surface a correction-upload drop so dashboards can measure the
+  /// loss rate against successful uploads — mirrors ParseEventLogger's
+  /// `_emitFailureMetric`. Best-effort; [AnalyticsService.tryLog] never throws.
+  static void _emitDropMetric(
+    String reason, {
+    String? tier,
+    Object? error,
+  }) {
+    final params = <String, Object>{'reason': reason};
+    if (tier != null) params['tier'] = tier;
+    if (error != null) {
+      final cause = error.toString();
+      // Firebase Analytics param values cap at 100 chars; truncate well under.
+      params['cause'] = cause.length > 50 ? cause.substring(0, 50) : cause;
+    }
+    AnalyticsService.tryLog(
+      AnalyticsEvents.parseCorrectionUploadDropped,
+      parameters: params,
+    );
+  }
 
   static Future<void> _defaultInvoker(
     String name,
@@ -189,12 +223,14 @@ class ParseCorrectionUploader {
 
       final serverTier = _dartToServerTier[correction.successfulTier];
       // Gracefully drop if the tier isn't on the allowlist — we'd just get
-      // an invalid-argument back from the server.
+      // an invalid-argument back from the server. Surface the drop so the loss
+      // is measurable instead of silent (BUT-1486).
       if (serverTier == null) {
         AppLogger.debug(
           '📊 ParseCorrectionUploader: unknown tier '
           '${correction.successfulTier}; skipping ${payloads.length} corrections',
         );
+        _emitDropMetric('unknown_tier', tier: correction.successfulTier);
         return 0;
       }
 
@@ -228,8 +264,10 @@ class ParseCorrectionUploader {
       );
       return payloads.length;
     } catch (e) {
-      // Telemetry must never block the user — swallow & log.
+      // Telemetry must never block the user — swallow & log, but surface the
+      // drop so the loss is measurable (BUT-1486).
       AppLogger.debug('ParseCorrectionUploader: payload error: $e');
+      _emitDropMetric('payload_error', error: e);
       return 0;
     }
   }
@@ -252,6 +290,7 @@ class ParseCorrectionUploader {
         AppLogger.debug(
           '📊 No analytics salt available yet — skipping per-field upload',
         );
+        _emitDropMetric('no_salt');
         return 0;
       }
       return upload(
@@ -261,6 +300,7 @@ class ParseCorrectionUploader {
       );
     } catch (e) {
       AppLogger.debug('ParseCorrectionUploader.uploadWithSharedSalt: $e');
+      _emitDropMetric('salt_error', error: e);
       return 0;
     }
   }

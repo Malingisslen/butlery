@@ -2270,3 +2270,46 @@ from `dispose()`, because `_onRecipeServiceUpdate` mutates `_recipe = updatedRec
 guarded notify — the state mutation, not the notify, is the load-bearing assertion (notify is guarded
 so `notified==0` proves nothing there). Prefer that pattern; delete or upgrade the bare clearError
 no-op tests.
+
+### 2026-07-22 — [trigger: review of BUT-1486 parse-tier vocabulary single-sourcing + parse_correction_uploader]
+Two durable patterns from this sprint's "parsing" review:
+
+1. **New telemetry-loss behaviour shipped with zero tests.** `ParseCorrectionUploader` (BUT-1486)
+   added a `parseCorrectionUploadDropped` analytics event on FOUR drop paths (`unknown_tier`,
+   `no_salt`, `payload_error`, `salt_error`) — the whole point being "silent losses are measurable."
+   The 46 new test lines only covered the tier map; not one asserts a drop metric fires. It IS
+   testable: `AnalyticsService.tryLog` resolves via `ServiceLocator.tryGet<AnalyticsService>()`
+   (analytics_service.dart:82), so register a mock AnalyticsService and `verify(() => mock.logEvent(
+   name: AnalyticsEvents.parseCorrectionUploadDropped, parameters: any(named:'parameters')))`. The
+   `unknown_tier` path is the trivial one (pure sync, no salt/prefs): build a correction with a
+   diffed field + a bogus `successfulTier`, call `upload`, assert the drop fires with
+   `reason:'unknown_tier'` and the offending tier. **Rule: when a diff's stated purpose is "make X
+   measurable," the emit-on-X path is the load-bearing behaviour — test it, not just the happy map.**
+
+2. **Cross-language "single source of truth" that leaves one copy unguarded is not single-sourced.**
+   `functions/src/shared/parse-tier-vocabulary.ts` was created to kill three hand-synced tier copies,
+   and it exports `DART_TIER_NAMES` explicitly "for" copy #3 (`log-parse-event.ts`). But
+   log-parse-event.ts STILL declares its own private CamelCase `VALID_TIERS` (L50-53), does not import
+   the shared module, and — being unexported — cannot be pinned by the new
+   `parse-tier-vocabulary.test.ts`. So copy #3 can still drift silently, which is the exact bug
+   BUT-1486 set out to remove. **Rule: a consistency-test suite proving "single-sourcing" must import
+   and pin EVERY copy it claims to unify; a copy the test can't reach isn't guarded. Verify by
+   grepping for other declarations of the same vocabulary before trusting the suite's green.** Also:
+   the Dart drift guard and the TS drift guard each pin their own side against a hand-written literal
+   (`canonicalMapping` / `CANONICAL`) — cross-language drift is only caught while those two literals
+   stay byte-identical by hand; there is no mechanical link between them (inherent to Dart-can't-
+   import-TS, documented, accepted).
+
+### 2026-07-22 — AnalyticsService.tryLog IS testable via the ServiceLocator seam (BUT-1486 review)
+Trigger: reviewing salvaged BUT-1486 tests for `ParseCorrectionUploader`. Production added
+four `_emitDropMetric` call sites (`unknown_tier` / `no_salt` / `payload_error` / `salt_error`)
+via `AnalyticsService.tryLog(...)` — the whole point of the ticket being "make the loss
+measurable instead of silent" — but ZERO tests asserted any emission fired. The tempting
+excuse "static telemetry, no seam to intercept" is FALSE: `AnalyticsService.tryLog` resolves
+its target with `ServiceLocator.tryGet<AnalyticsService>()` and calls `logEvent(name:, parameters:)`.
+So a `MockAnalyticsService` registered via `TestServiceLocator.registerMock<AnalyticsService>(...)`
++ `verify(() => mock.logEvent(name: AnalyticsEvents.parseCorrectionUploadDropped, parameters: any(named:'parameters')))`
+covers every drop path — including asserting the `reason` param value. Rule: when a ticket's
+deliverable IS a fire-and-forget metric emitted through `AnalyticsService.tryLog`/`logEvent`,
+that emission is a testable contract (event name + reason param), not "just telemetry" —
+assert it fires, or the silent-loss it was built to prevent can regress unnoticed.
