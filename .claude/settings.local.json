@@ -51,7 +51,15 @@
       "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/firebase-security-done.marker .claude/state/rules-tester-done.marker .claude/state/simplify-done.marker)",
       "Bash(/c/tools/flutter/bin/dart test *)",
       "Workflow(sprint-execute-parallel)",
-      "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/simplify-done.marker)"
+      "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/simplify-done.marker)",
+      "Read(//c/claude-plugins/**)",
+      "Bash(python -c \"import json,sys; d=json.load\\(open\\('/c/Butlery/butlery/.claude/shared-plugin.json'\\)\\); rg=d.get\\('delivery',{}\\).get\\('reviewGates'\\) or d.get\\('reviewGates'\\); print\\(json.dumps\\(rg, indent=1\\)[:1200] if rg else 'not at those keys'\\); print\\('---codeReviewGate---'\\); print\\(json.dumps\\(d.get\\('delivery',{}\\).get\\('codeReviewGate'\\) or d.get\\('codeReviewGate'\\), indent=1\\)\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(marker)",
+      "Bash(gate)",
+      "Bash(commit)",
+      "Bash(quality_engine)",
+      "Bash(deadlock\")"
     ]
   },
   "enabledPlugins": {

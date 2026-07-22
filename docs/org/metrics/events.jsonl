@@ -48,3 +48,5 @@
 {"ts":"2026-07-15T20:05:52.372Z","type":"trigger","fired":true,"signals":"age gate,delete,functions/src,llm","ran":null}
 {"ts":"2026-07-16T22:13:19.955Z","type":"trigger","fired":true,"signals":"allergen,delete,firestore.rules,functions/src","ran":null}
 {"ts":"2026-07-16T22:21:14.920Z","type":"trigger","fired":true,"signals":"allergen,delete,firestore.rules,functions/src","ran":null}
+{"ts":"2026-07-22T17:58:55.906Z","type":"trigger","fired":true,"signals":"cloud function,functions/src","ran":null}
+{"ts":"2026-07-22T18:06:17.738Z","type":"trigger","fired":true,"signals":"cloud function,functions/src","ran":null}
