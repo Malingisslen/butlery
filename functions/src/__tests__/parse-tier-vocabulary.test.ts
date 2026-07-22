@@ -18,6 +18,7 @@ import {
   VALID_CORRECTION_TIERS,
 } from "../shared/parse-tier-vocabulary";
 import { VALID_TIERS } from "../events/log-parse-correction";
+import { VALID_TIERS as PARSE_EVENT_VALID_TIERS } from "../events/log-parse-event";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { runTests, assertEqual } = require("./_unit-runner");
 
@@ -71,6 +72,15 @@ const CANONICAL: Record<string, string> = {
           JSON.stringify(VALID_TIERS),
           JSON.stringify(VALID_CORRECTION_TIERS),
           "log-parse-correction VALID_TIERS is not sourced from the shared module"
+        ),
+    },
+    {
+      name: "BUT-1646: parse-event callable VALID_TIERS is the shared DART_TIER_NAMES",
+      fn: () =>
+        assertEqual(
+          JSON.stringify(PARSE_EVENT_VALID_TIERS),
+          JSON.stringify([...DART_TIER_NAMES]),
+          "log-parse-event VALID_TIERS is not sourced from the shared module"
         ),
     },
     {

@@ -3,14 +3,18 @@
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
 import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
@@ -19,6 +23,18 @@ import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 /// Uses TextImportNormalizer for text preprocessing and RecipeSectionDetector for section classification.
 class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   static const _uuid = Uuid();
+
+  // BUT-1501: the shared CRF → BERT NER ingredient cascade (the same one URL
+  // imports get via RecipeParserService). Resolved lazily and best-effort:
+  // absent (tests / early boot) → fall back to the deterministic regex deriver.
+  bool _strategyResolved = false;
+  IngredientParsingStrategy? _cachedStrategy;
+  IngredientParsingStrategy? get _ingredientStrategy {
+    if (_strategyResolved) return _cachedStrategy;
+    _strategyResolved = true;
+    _cachedStrategy = ServiceLocator.tryGet<IngredientParsingStrategy>();
+    return _cachedStrategy;
+  }
 
   @override
   String get strategyName => 'Text Import';
@@ -63,7 +79,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // section-header suffix split) and "graddsas" into "gr"/"addsas" (the
       // English "Add" instruction cue matched inside the word). The original
       // first line is the real title; the body still parses from `preprocessed`.
-      final parsed = _parseTextToRecipe(preprocessed, normalized);
+      final parsed = await _parseTextToRecipe(preprocessed, normalized);
 
       if (parsed == null) {
         return ImportResult.failure(
@@ -316,7 +332,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// [text] is the preprocessed body used for ingredient/instruction parsing.
   /// [titleSource] is the pre-preprocess text used ONLY for the title, so the
   /// ingredient/instruction splitters can't truncate a compound title.
-  Recipe? _parseTextToRecipe(String text, String titleSource) {
+  Future<Recipe?> _parseTextToRecipe(String text, String titleSource) async {
     final lines = text
         .split('\n')
         .where((line) => line.trim().isNotEmpty)
@@ -569,6 +585,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final rating = extractRating(text);
     final mealType = _guessMealType(text);
 
+    final structuredIngredients = await _structuredIngredients(
+      cleanedIngredients,
+      sectionByKey,
+    );
+
     return Recipe(
       core: RecipeCore(
         id: _uuid.v4(),
@@ -577,15 +598,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // CRIT-12: Use empty list instead of fake placeholder
         // Tagging system will handle empty ingredients correctly via TagResult.empty()
         ingredients: cleanedIngredients,
-        // BUT-1232: derive structured form (amount/unit/name) from the final
-        // cleaned strings so text imports get scaling/aggregation data, same
-        // as URL imports (BUT-1216). Index-aligned, raw == ingredients[i].
-        structuredIngredients: cleanedIngredients.isEmpty
-            ? null
-            : StructuredIngredientDeriver.deriveAll(
-                cleanedIngredients,
-                sections: _sectionsFor(cleanedIngredients, sectionByKey),
-              ),
+        structuredIngredients: structuredIngredients,
         instructions: cleanedInstructions,
         imageUrls: [],
         mealType: mealType,
@@ -691,6 +704,71 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       for (final ing in ingredients) sectionByKey[ing.toLowerCase()],
     ];
     return sections.any((s) => s != null) ? sections : null;
+  }
+
+  /// BUT-1501: structured (amount/unit/name) form for the final cleaned
+  /// ingredient strings. Runs the shared CRF → BERT NER cascade — the SAME
+  /// parser URL imports get (BUT-1216) — when [IngredientParsingStrategy] is
+  /// registered, so pasted / photo / voice imports (which delegate here) reach
+  /// model-quality parsing instead of only the regex deriver (BUT-1232).
+  ///
+  /// SAFETY: this only ever populates the ADDITIVE `structuredIngredients`
+  /// field. The flat `ingredients` list that allergen tagging reads is passed
+  /// through untouched by the caller — the cascade never sees it. The
+  /// `raw == ingredients[i]` alignment invariant is preserved by forcing each
+  /// entry's `raw` to the exact cleaned string, and sub-group sections are
+  /// stamped identically to the deriver path. Best-effort: any absence or
+  /// failure falls back to the deterministic, synchronous regex deriver, so
+  /// behaviour is never worse than before.
+  Future<List<RecipeIngredient>?> _structuredIngredients(
+    List<String> cleaned,
+    Map<String, String> sectionByKey,
+  ) async {
+    if (cleaned.isEmpty) return null;
+
+    final sections = _sectionsFor(cleaned, sectionByKey);
+
+    final strategy = _ingredientStrategy;
+    if (strategy != null) {
+      try {
+        // Lines are already OCR-corrected during extraction — don't re-correct
+        // (would drift `raw` off the flat `ingredients[i]` string).
+        final field = await strategy.parseLines(cleaned);
+        final parsed = field.value;
+        if (parsed != null && parsed.length == cleaned.length) {
+          // Fold in BERT NER for low-confidence CRF lines (mutates in place).
+          final growable = List<ParsedIngredient>.from(parsed);
+          await strategy.getUncertainLines(growable, cleaned);
+          return [
+            for (var i = 0; i < cleaned.length; i++)
+              _structuredFrom(growable[i], cleaned[i], sections?[i]),
+          ];
+        }
+      } catch (e) {
+        AppLogger.debug('TextImportStrategy: CRF/NER cascade skipped: $e');
+      }
+    }
+
+    return StructuredIngredientDeriver.deriveAll(cleaned, sections: sections);
+  }
+
+  /// Convert one cascade result to a persisted entry, forcing [raw] to the
+  /// exact flat-list string (alignment invariant) and stamping the caption
+  /// [section] (authoritative over any section the parser inferred).
+  RecipeIngredient _structuredFrom(
+    ParsedIngredient parsed,
+    String raw,
+    String? section,
+  ) {
+    final base = RecipeIngredient.fromParsed(parsed);
+    return RecipeIngredient(
+      amount: base.amount,
+      unit: base.unit,
+      name: base.name,
+      note: base.note,
+      raw: raw,
+      section: RecipeIngredient.normalizeSection(section),
+    );
   }
 
   String? _parseIngredientLine(String line) {

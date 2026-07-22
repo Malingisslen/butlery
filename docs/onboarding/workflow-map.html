@@ -4247,7 +4247,7 @@
   {
    "id": "flow-imp-5",
    "label": "Assisterad import",
-   "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster). Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX → selektiv LLM) som pipeline-kartan beskriver lever uteslutande i svc-recipe-parser/UrlImportStrategy och är INTE kopplad till den här guiden, till foto/OCR eller till klistra in-flödet — bekräftat genom att söka alla anropsställen till IngredientParsingStrategy/CrfIngredientParser (endast tre parser-tiers under UrlImportStrategy). På samma sätt loggar guiden ingen korrigering för aktivt lärande; enligt pipeline-revisionen är endast Tier-1 URL-importer kopplade till parsing_corrections.",
+   "description": "En 3-stegsguide där användaren TRYCKER FRAM ingrediens- och instruktionsrader från extraherad/OCR:ad/inklistrad text, styrd av rena regel-heuristiker (nyckelord, radmönster) — själva radplockningen i guiden är fortfarande ren heuristik. Den ML-baserade ingrediensrad-kaskaden (CRF → NER/ONNX → selektiv LLM) körs sedan BUT-1501 även för klistra in-/foto-/röst-importer via TextImportStrategy (den fyller BARA det additiva structuredIngredients-fältet; den platta ingredienslistan som allergimärkningen läser rörs aldrig), men matas inte av guidens manuella radval. Sedan BUT-1501 ankrar guiden dessutom en PII-skrubbad korrigeringssnapshot (BUT-1469-loopen) från det färdiga receptet, så senare redigeringar diffas till aktivt lärande — tidigare var endast Tier-1 URL-importer kopplade till parsing_corrections.",
    "features": [
     "IMP-10",
     "IMP-11",
@@ -4320,7 +4320,7 @@
     {
      "from": "vm-assisted-import",
      "to": "svc-crf-ingredient-parser",
-     "payload": "INGEN koppling — guiden använder enbart regel-heuristik, CRF/NER/ONNX-kaskaden körs bara i UrlImportStrategy",
+     "payload": "Guidens radplockning använder enbart regel-heuristik; CRF/NER/ONNX-kaskaden körs i UrlImportStrategy och (sedan BUT-1501) TextImportStrategy, men inte från guidens manuella radval",
      "transport": "method-call",
      "verified": true,
      "status": "dead"
@@ -4328,10 +4328,10 @@
     {
      "from": "vm-assisted-import",
      "to": "ds-parse-corrections",
-     "payload": "INGEN skrivning — assisterad import matar inget till det aktiva lärandet",
+     "payload": "Ankrar en PII-skrubbad korrigeringssnapshot (BUT-1501); redigerings-diffen matar den till aktivt lärande",
      "transport": "method-call",
      "verified": true,
-     "status": "dead"
+     "status": "dormant"
     }
    ],
    "area": "import"

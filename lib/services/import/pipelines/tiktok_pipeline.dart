@@ -157,7 +157,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
     Map<String, dynamic>? options,
   }) async {
     final resultV2 = await importV2(input, options: options);
-    return _convertToLegacyResult(resultV2);
+    return resultV2.toLegacyResult();
   }
 
   /// Import using V2 result types.
@@ -455,49 +455,6 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
     }
 
     return null;
-  }
-
-  /// Convert V2 result to legacy ImportResult.
-  ImportResult _convertToLegacyResult(ImportResultV2 resultV2) {
-    return switch (resultV2) {
-      final ImportSuccess success => ImportResult.success(
-        success.recipe,
-        metadata: {
-          'pipeline': success.pipeline,
-          'tier': success.tier,
-          'method': success.method,
-          'usedLlm': success.usedLlm,
-          ...?success.metadata,
-        },
-      ),
-      final ImportNeedsAssistance assistance => ImportResult.assistance(
-        extractedText: assistance.extractedText,
-        suggestedTitle: assistance.suggestedTitle,
-        metadata: assistance.partialData,
-      ),
-      final ImportNeedsScreenshot screenshot => ImportResult.failure(
-        screenshot.message,
-        metadata: {
-          'platform': screenshot.platform,
-          'url': screenshot.url,
-          'thumbnailUrl': screenshot.thumbnailUrl,
-          'needsScreenshot': true,
-        },
-      ),
-      final ImportPartial partial => ImportResult.assistance(
-        extractedText: partial.extractedText.orEmpty(),
-        suggestedTitle: partial.title,
-        metadata: partial.partialData,
-      ),
-      final ImportFailure failure => ImportResult.failure(
-        failure.message,
-        metadata: {
-          'errorCode': failure.errorCode.name,
-          'pipeline': failure.pipeline,
-          'tier': failure.tier,
-        },
-      ),
-    };
   }
 
   void dispose() {

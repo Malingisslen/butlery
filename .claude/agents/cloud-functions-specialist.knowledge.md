@@ -1813,3 +1813,91 @@ differs, membership identical) → no tier newly accepted/rejected. Two gaps:
   canonical vocabulary, so it can still silently drift — the exact bug class BUT-1486 targets. The
   module docstring calls this a deferred follow-up, so it's a conscious partial delivery; cheap
   tripwire = a test asserting log-parse-event's VALID_TIERS deep-equals DART_TIER_NAMES.
+
+### 2026-07-22 — BUT-1646 copy #3 fold-in verified clean (closes the LOW/MEDIUM above) [Bug fixed]
+
+Reviewed the change that closes the copy-#3 drift gap flagged in the BUT-1486 entry
+directly above. `log-parse-event.ts` now does `export const VALID_TIERS: readonly string[]
+= DART_TIER_NAMES` (imported from `shared/parse-tier-vocabulary.ts`) instead of its own
+inline CamelCase list, and `parse-tier-vocabulary.test.ts` gains the exact tripwire that
+was recommended ("BUT-1646: parse-event callable VALID_TIERS is the shared
+DART_TIER_NAMES", deep-equals). Verdict: **clean, no findings.**
+
+Verified:
+- **Byte-identical replacement.** Old inline list = the same 9 names in the same order as
+  `DART_TIER_NAMES` (`SchemaOrg…UserAssisted`), so zero behavioral change to the two
+  membership checks (`successfulTier` validate at L254, per-entry `tierAttempts.tier` at
+  L233). `tsc --noEmit` clean; `test:parse-tier-vocabulary` 7/7.
+- **Correctness premise holds (traced the Dart producer).** The parse-event logger sends
+  the raw Dart `tierName`, which is each tier's `static const tierIdentifier` — `'SchemaOrg'`,
+  `'SiteConfig'`, `'LLM'`, `'RuleBased'`, etc. (lib/services/parsing/tiers/*_tier.dart) —
+  and `successfulTier` in recipe_parser_service.dart is `successfulTier?.tierName`. These
+  match `DART_TIER_NAMES` exactly, so the server still accepts exactly what the client emits.
+  The Dart→server *mapping* (copy #1) is a separate concern pinned by the Dart test; this
+  path only needs the CamelCase names, which is what it validates.
+- **Widening is sound.** `DART_TIER_NAMES` is `as const` (`readonly [...]`); assigning to
+  `readonly string[]` widens the element type so `.includes(entry.tier: string)` typechecks
+  without a cast — the comment explains this correctly.
+- Test wired: `test:parse-tier-vocabulary` script exists in package.json (unchanged), so the
+  new case runs in the composite chain.
+
+Info (not filed): the new tripwire is an identity by construction — `VALID_TIERS` IS
+`DART_TIER_NAMES` (same reference), so `JSON.stringify(PARSE_EVENT_VALID_TIERS) ===
+JSON.stringify([...DART_TIER_NAMES])` can only fail if a future editor re-points the
+`export const VALID_TIERS = …` line at a different value. That is exactly the re-inlining
+drift the guard exists to catch, so it is legitimate though narrow — DART_TIER_NAMES's own
+content is guarded separately by the CANONICAL literal test + the Dart mapping test.
+
+Out of diff, not re-filed (pre-existing, inherent to callable telemetry): `logParseEvent`
+is an `onCall`, not a Firestore trigger, so the non-idempotent `parse_events.add()` +
+`site_configs` counter `increment(1)` on a client retry is a known telemetry property, not
+introduced here — the platform does not auto-retry callables. No idempotency story is owed
+by this refactor.
+
+### 2026-07-22 — CRF retrain export + orchestrator (export-corrections.ts / retrain_with_corrections.sh) [Pattern discovered]
+
+Reviewed the parsing-area CRF retraining pipeline. Schema alignment verified clean: the
+export's `.where("correctedField","==","ingredients")` + reads of `toValue`/`domain`/
+`sourceTier` match the writer's stored doc (`events/log-parse-correction.ts`
+`validateAndPreparePayload`), and "ingredients" IS in `VALID_FIELDS` — so the query is not
+a silent-zero. Downstream path wiring is consistent: export default output
+`scripts/crf/data/corrections.json` == what `export_corrections.dart` reads == what the
+shell Stage 3 merges. `__dirname/../../..` resolves to repo root from both `src/admin`
+(ts-node) and `lib/admin` (compiled). Findings:
+
+- **MEDIUM — truncated final ingredient line becomes a training target.** The writer
+  truncates `toValue` at `MAX_VALUE_CHARS = 500` (`truncate()`, applied to ALL fields incl.
+  ingredients) BEFORE scrub. `export-corrections.ts` `splitLines(data.toValue)` then splits
+  the whole block on `\n`; when an ingredients block exceeded 500 chars the final split line
+  is a partial fragment ("2 dl vetemj") fed to CRF as a complete `correctedLine`. Ingredient
+  blocks routinely exceed 500 chars, so this is not rare. Bounded (Dart side's `hasName`
+  B-NAME gate drops some), but pollutes the target set. Fix: when `data.toValue.length >=
+  MAX_VALUE_CHARS` drop the last split line. Honest caveat: scrub runs after truncate so the
+  stored length isn't reliably 500 when PII was replaced — the `=== 500` heuristic only
+  catches the common no-PII case; a fully clean fix would require the writer to store a
+  `truncated: true` flag.
+- **MEDIUM — Stage-6 version parse aborts the whole script under `set -euo pipefail` when
+  the remote weights object exists but has no `version` custom-metadata.** `CURRENT=$(printf
+  ... | grep -iE '^…version:' | head | awk | tr)`: if `grep` finds no version line it exits
+  1, pipefail propagates it (tr's 0 doesn't mask the rightmost non-zero), and `set -e` on the
+  assignment kills the script — defeating the author's explicit `CURRENT=${CURRENT:-0}`
+  fallback (that line never runs). Reachable on a first/console upload lacking the meta key.
+  Fix: end the pipeline with `|| true` (or `grep ... || echo`).
+- **LOW — dedup winner is nondeterministic for domain/successfulTier.** The query has no
+  `orderBy`, so among duplicate lowercased `correctedLine`s the FIRST-seen doc's `domain`/
+  `sourceTier` is retained in Firestore's arbitrary return order — varies run-to-run. The
+  final `.sort()` only makes line ORDER deterministic, not the attached metadata. Harmless
+  downstream (Dart trains on `correctedLine` only) but undercuts the "deterministic output"
+  comment. Fix: `.orderBy(FieldPath.documentId())` (free single-field index) for a stable
+  winner.
+- **LOW/Info — Stage-3 `cat training.conll corrections_training.conll` assumes
+  training.conll ends with a blank line.** The Dart writer terminates every sequence with a
+  trailing blank line, so corrections_training.conll is internally safe; but if the frozen
+  training.conll lacks a trailing blank the last training sequence merges with the first
+  correction sequence (CoNLL sentence-boundary loss). Defensive: emit a blank line between
+  the two files rather than a bare `cat`.
+
+Non-findings confirmed: `console.error` for progress is correct for an admin ts-node script
+(not a deployed function, so the logger rule doesn't apply); `originalLine = correctedLine`
+is documented (no reliable from/to line pairing); equality-only query needs no composite
+index; region/idempotency/secrets N/A for manual ts-node + bash.

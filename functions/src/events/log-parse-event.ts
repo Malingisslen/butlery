@@ -10,6 +10,7 @@ import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
+import { DART_TIER_NAMES } from "../shared/parse-tier-vocabulary";
 
 // Note: db is accessed lazily to ensure initializeApp() has been called
 const getDb = () => admin.firestore();
@@ -46,11 +47,15 @@ export function computeExpireAt(nowMs: number): admin.firestore.Timestamp {
  */
 const VALID_SOURCES = ["url", "text", "instagram", "tiktok", "youtube", "ocr"];
 
-/** Valid parsing tier names (must match Dart-side tier identifiers). */
-const VALID_TIERS = [
-  "SchemaOrg", "SiteConfig", "RuleBased", "LLM", "SelectiveEnhance",
-  "StructuredExtraction", "WebScraper", "HtmlTextParse", "UserAssisted",
-];
+/**
+ * BUT-1646/BUT-1486: valid parsing tier names — the raw CamelCase Dart
+ * identifiers the parse-event logger sends. Sourced from the canonical shared
+ * vocabulary (DART_TIER_NAMES) so this third tier-name copy can never drift
+ * from the correction path or the Dart client; a tripwire in
+ * parse-tier-vocabulary.test.ts goes red if it does. Widened to readonly
+ * string[] so the membership checks below accept an arbitrary string argument.
+ */
+export const VALID_TIERS: readonly string[] = DART_TIER_NAMES;
 
 /**
  * Sanitize URL by removing sensitive query parameters

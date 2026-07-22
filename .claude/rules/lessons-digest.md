@@ -56,6 +56,7 @@ when the counts drift apart.
 - Clearing a corrupted .dartServer needs `taskkill //F //IM dart.exe` + immediate `rm -rf` (works with VS Code OPEN) — scripted close-VS-Code-then-delete always loses the respawn race; leftover temp files owned by the NEW analyzer PID mean success.
 - A crashed sprint ship leaves the ONLY copy of the work in the dirty main tree — the engine prunes its worktrees after patching, so back up (`git diff HEAD` + a COPY of every untracked new file) before any triage; never `stash`/clean as "preservation" in a shared checkout.
 - A blocked ship gate is a STOP, not a puzzle to route around — never forge a marker to satisfy a gate; a marker's mtime proves a touch, so read its CONTENTS against the current diff's ticket IDs before trusting `gates:ok`.
+- A ticket that CANNOT ship autonomously (build-review/need-malin UI sign-off) gets starved-and-dropped every autonomous sprint (it's re-selected, never started behind the Tier-A cluster) — the moment a Step-0 read shows a ticket needs the founder's eyes, re-label it need-malin/deferred (or schedule it as an explicit first batch); don't let it ride the autonomous queue as a perpetual carry-forward (BUT-1615 hit its 5th consecutive drop).
 
 ## Architecture
 

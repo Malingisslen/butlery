@@ -2313,3 +2313,44 @@ covers every drop path — including asserting the `reason` param value. Rule: w
 deliverable IS a fire-and-forget metric emitted through `AnalyticsService.tryLog`/`logEvent`,
 that emission is a testable contract (event name + reason param), not "just telemetry" —
 assert it fires, or the silent-loss it was built to prevent can regress unnoticed.
+
+### 2026-07-22 — ImportManager.batchImport circuit breaker discards completed in-batch successes + assisted-import metering is source-inconsistent (review)
+Trigger: correctness review of `lib/services/import/import_manager.dart` (import sprint, working-tree file review, no diff).
+- **Circuit-breaker mid-batch drop (batchImport, ~L541-579):** the method processes `_batchConcurrencyLimit` (5) inputs in parallel via `Future.wait`, THEN walks `batchResults` sequentially feeding the rolling failure window. When the breaker trips (`aborted=true; break`) partway through a batch, the remaining already-computed `batchResults` are never added to `results`/`recipes` — so a SUCCESSFUL import sitting after the trip point in the same parallel batch is silently discarded even though `autoImport` already ran it AND recorded its rate-limit usage (`_saveToCacheIfUrl→_recordImportUsage`). Quota consumed, recipe lost. Test that would fail today: 10 inputs where positions 0-8 fail and 9 succeeds, tuned so the breaker trips on index 8 of a batch containing index 9 → assert the index-9 recipe appears in `successfulRecipes`. Rule when reviewing parallel-batch + circuit-breaker code: the abort must not drop results already materialised by the in-flight `Future.wait`.
+- **Assisted-import (needsAssistance) metering is source-dependent:** in `autoImport`, YouTube/TikTok/Instagram assisted results go through `_saveToCacheIfUrl` (which calls `_recordImportUsage` unconditionally at its top), but the preferred-strategy (~L313) and generic-loop (~L327) assisted results `return result` early WITHOUT `_saveToCacheIfUrl` → no usage recorded. Same user-visible outcome (an assisted import) is charged against the basic bucket for social sources but free for URL/text/photo sources. A rate-limit metering test should cover the assisted path per source, not just the success path.
+- **Cache-hit imports never record usage** (`_checkCacheForUrl` returns before `_saveToCacheIfUrl`) — they pass the top-of-`autoImport` rate-limit CHECK but never increment counters, so per-minute/hour/day limits do not constrain repeated cached-URL imports. Likely intentional (cache hit is cheap) but untested and undocumented as a deliberate exemption.
+- Non-bug confirmed: the check-vs-record "bucket mismatch" I initially suspected is NOT real — `ImportRateLimiter` keys usage by time window on a single per-user doc; `ImportOperation.sourceType` is telemetry-only, never part of the counter key. So `checkLimit(basic('auto'))` and `recordUsage(basic('website'/'voice'))` hit the SAME counters. The voice `_recordImportUsage('voice')` comment ("basic bucket IS its quota") is correct.
+
+---
+### 2026-07-22 — [review] Import V2→legacy adapter silently drops fields (BUT-1485 shared adapter)
+Trigger: reviewing import_result_v2.dart `toLegacyResult()` + instagram/tiktok/youtube pipelines.
+Pattern: the shared `ImportResultV2LegacyAdapter.toLegacyResult()` is the single mapping all three
+URL pipelines funnel through, so a missing field there loses that signal for every platform at once.
+Found drops: (1) `ImportSuccess.requiresReview` (set true by all 3 LLM success paths) is NOT mapped
+into the legacy metadata, while the sibling `llm_extraction_fallback.dart` DOES thread
+`'requiresReview': true` — inconsistent. (2) `ImportNeedsAssistance.likelyIngredientLines` is dropped
+even though `ImportResult.assistance` has the param and the UI consumes it (voice_import_view:164,
+smart_import_view:333, import_manager:741) — latent for these 3 (none populate it) but a real adapter gap.
+Test to add: table-driven test over `toLegacyResult()` for all 5 sealed variants asserting each
+carried field survives the conversion (requiresReview→metadata, likelyIngredientLines, needsScreenshot+url+thumbnailUrl).
+Also: tiktok_pipeline re-calls the paid LLM at tier-3 (line 237) even when the tier-2 emoji LLM
+already returned rateLimited — wasted paid call; guard the rate-limit case before the second call.
+
+---
+### 2026-07-22 — [review] AssistedImportViewModel.buildRecipe hardcodes ImportSource.url for ALL modalities (BUT-1501)
+Trigger: correctness review of `lib/viewmodels/assisted_import_viewmodel.dart` (import sprint, working-tree, no diff).
+`buildRecipe()` (~L325) unconditionally calls `ImportCorrectionSnapshot.capture(recipe, source: ImportSource.url, domain: _domainOf(sourceUrl))`
+with an inline comment "Assisted import is always the URL Tier-7 fallback." That premise is FALSE: the
+SAME `AssistedImportViewModel`/`AssistedImportDialog` is reached from (a) photo/OCR — `photo_llm_vision.dart:177`
+returns `ImportResult.assistance` with NO sourceUrl → `smart_import_view:_showAssistedImportDialog` passes
+`helpResult.sourceUrl == null`; (b) voice — `voice_import_view.dart:160` shows the dialog with no sourceUrl;
+(c) pasted-text manual import — `smart_import_view:290` passes `sourceUrl: null` for non-URL input. In every
+non-URL case the correction snapshot is stamped `ImportSource.url` with `domain: null`, mis-attributing
+photo/voice/text corrections into the URL training bucket — the exact cross-bucket contamination BUT-1469's
+per-source re-tagging (text strategy re-tags photo/voice with their OWN source) was built to prevent, and
+url is the bucket that feeds domain alias-learning. Fix: derive source — when `_domainOf(sourceUrl) != null`
+→ `ImportSource.url` + domain, else `ImportSource.text` (or thread the true origin through the dialog).
+Test that would fail today: build a VM with `sourceUrl: null`, `buildRecipe()`, then read back the cached
+`ParsedRecipe` snapshot (inject a `ParsedRecipeCache`) and assert `metadata.source != ImportSource.url`.
+Rule: any capture/attribution call that hardcodes a modality on a widget/VM SHARED across import sources is
+a mislabel waiting to happen — assert the tag per entry point, not just the happy URL path.

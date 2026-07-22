@@ -1,8 +1,17 @@
 /**
  * Exports ingredient corrections from Firestore to JSON for CRF retraining.
  *
- * Reads parsing_corrections collection, extracts ingredient corrections with
- * correctedLine data, deduplicates by originalLine, and outputs JSON.
+ * Reads the `parse_corrections_v2` collection (per-field, server-side
+ * PII-scrubbed by logParseCorrection), keeps only the `ingredients` field
+ * corrections, splits each scrubbed `toValue` block back into individual
+ * ingredient lines, deduplicates, and outputs JSON.
+ *
+ * BUT-1471: source switched from `parsing_corrections` (the legacy
+ * aggregate-per-recipe schema, whose lines were never PII-scrubbed) to
+ * `parse_corrections_v2`. The v2 collection is the append-only, per-field
+ * log where the server already ran `scrubPii()` on both values and dropped
+ * PII-heavy diffs — so the training targets exported here inherit that
+ * scrub for free instead of shipping raw user text into the model.
  *
  * Prerequisites:
  *   1. Login: firebase login
@@ -28,13 +37,17 @@ interface ExportedCorrection {
   originalLine: string;
   correctedLine: string;
   type: string;
-  quantityChanged: boolean;
-  unitChanged: boolean;
-  nameChanged: boolean;
-  originalName?: string;
-  correctedName?: string;
   domain?: string;
   successfulTier?: string;
+}
+
+/** Split a scrubbed ingredients-field value into trimmed, non-empty lines. */
+function splitLines(value: unknown): string[] {
+  if (typeof value !== "string") return [];
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 async function main(): Promise<void> {
@@ -46,43 +59,37 @@ async function main(): Promise<void> {
       ? path.resolve(args[outputIdx + 1])
       : path.resolve(__dirname, "../../..", "scripts/crf/data/corrections.json");
 
-  console.error("Fetching parsing corrections from Firestore...");
+  console.error("Fetching parse_corrections_v2 from Firestore...");
 
-  const snapshot = await db.collection("parsing_corrections").get();
-  console.error(`Found ${snapshot.size} correction documents`);
+  const snapshot = await db
+    .collection("parse_corrections_v2")
+    .where("correctedField", "==", "ingredients")
+    .get();
+  console.error(`Found ${snapshot.size} ingredient correction documents`);
 
   const corrections: ExportedCorrection[] = [];
   const seen = new Set<string>();
 
   let skippedNoLine = 0;
-  let skippedReordered = 0;
   let skippedDuplicate = 0;
-  let totalIngredientCorrections = 0;
+  let totalLines = 0;
 
   for (const doc of snapshot.docs) {
     const data = doc.data();
     const domain = data.domain as string | undefined;
-    const successfulTier = data.successfulTier as string | undefined;
-    const ingredientCorrections =
-      (data.ingredientCorrections as Array<Record<string, unknown>>) || [];
+    const sourceTier = data.sourceTier as string | undefined;
 
-    for (const ic of ingredientCorrections) {
-      totalIngredientCorrections++;
+    const correctedLines = splitLines(data.toValue);
+    if (correctedLines.length === 0) {
+      skippedNoLine++;
+      continue;
+    }
 
-      // Skip reordered — no training value
-      if (ic.type === "reordered") {
-        skippedReordered++;
-        continue;
-      }
-
-      const correctedLine = ic.correctedLine as string | undefined;
-      if (!correctedLine) {
-        skippedNoLine++;
-        continue;
-      }
+    for (const correctedLine of correctedLines) {
+      totalLines++;
 
       // Deduplicate by correctedLine (the training target)
-      const key = correctedLine.toLowerCase().trim();
+      const key = correctedLine.toLowerCase();
       if (seen.has(key)) {
         skippedDuplicate++;
         continue;
@@ -90,18 +97,15 @@ async function main(): Promise<void> {
       seen.add(key);
 
       corrections.push({
-        originalLine: (ic.originalLine as string) || correctedLine,
+        // The per-field diff has no reliable line-to-line pairing between
+        // fromValue and toValue (edits add/remove lines), and downstream
+        // (export_corrections.dart) only trains on correctedLine — so we do
+        // not fabricate an originalLine mapping.
+        originalLine: correctedLine,
         correctedLine,
-        type: ic.type as string,
-        quantityChanged: (ic.quantityChanged as boolean) || false,
-        unitChanged: (ic.unitChanged as boolean) || false,
-        nameChanged: (ic.nameChanged as boolean) || false,
-        ...(ic.originalName ? { originalName: ic.originalName as string } : {}),
-        ...(ic.correctedName
-          ? { correctedName: ic.correctedName as string }
-          : {}),
+        type: "ingredients",
         ...(domain ? { domain } : {}),
-        ...(successfulTier ? { successfulTier } : {}),
+        ...(sourceTier ? { successfulTier: sourceTier } : {}),
       });
     }
   }
@@ -115,24 +119,11 @@ async function main(): Promise<void> {
   fs.writeFileSync(outputPath, JSON.stringify(corrections, null, 2) + "\n");
 
   console.error(`\nExport summary:`);
-  console.error(`  Total correction docs: ${snapshot.size}`);
-  console.error(
-    `  Total ingredient corrections: ${totalIngredientCorrections}`
-  );
+  console.error(`  Ingredient correction docs: ${snapshot.size}`);
+  console.error(`  Total lines seen: ${totalLines}`);
   console.error(`  Exported: ${corrections.length}`);
-  console.error(`  Skipped (reordered): ${skippedReordered}`);
-  console.error(`  Skipped (no correctedLine): ${skippedNoLine}`);
+  console.error(`  Skipped (no scrubbed lines): ${skippedNoLine}`);
   console.error(`  Skipped (duplicate): ${skippedDuplicate}`);
-
-  // Type breakdown
-  const typeCounts = new Map<string, number>();
-  for (const c of corrections) {
-    typeCounts.set(c.type, (typeCounts.get(c.type) || 0) + 1);
-  }
-  console.error(`  By type:`);
-  for (const [type, count] of [...typeCounts.entries()].sort()) {
-    console.error(`    ${type}: ${count}`);
-  }
 
   console.error(`\nWritten to: ${outputPath}`);
 }

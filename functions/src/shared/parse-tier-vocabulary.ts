@@ -8,10 +8,10 @@
  *   3. `VALID_TIERS` in functions/src/events/log-parse-event.ts (CamelCase)
  *
  * This module is the canonical server-side definition. Copy #2 imports from
- * here (see log-parse-correction.ts). Copy #3 (the parse-event path, which
- * validates the raw CamelCase Dart names) is a separate file not migrated in
- * BUT-1486 — its follow-up folds it in via DART_TIER_NAMES below. The Dart
- * client map (#1) cannot import TypeScript; it is pinned against DART→server
+ * here (see log-parse-correction.ts); copy #3 (the parse-event path, which
+ * validates the raw CamelCase Dart names) imports DART_TIER_NAMES from here too
+ * (folded in by BUT-1646, the BUT-1486 follow-up). The Dart client map (#1)
+ * cannot import TypeScript; it is pinned against DART→server
  * drift by a mapping test
  * (test/unit/services/parsing/feedback/parse_correction_uploader_test.dart),
  * and this module keeps the two forms side by side so the contract is visible

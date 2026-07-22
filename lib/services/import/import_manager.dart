@@ -759,20 +759,30 @@ class ImportManager {
         );
       }
 
-      // HIGH-1: Generate preview tags for immediate allergen/dietary display
+      // HIGH-1: Generate preview tags for immediate allergen/dietary display.
+      // Preview tagging is an optional enhancement — it must NEVER fail an
+      // already-parsed recipe. Wrap it in its own guard (mirrors
+      // _retagCachedRecipe) so a tagging throw falls back to the untagged
+      // recipe instead of discarding the parse and double-logging the parse
+      // event (BUT-1470 telemetry) via the outer catch.
       var recipeWithPreview = importResult.recipe!;
-      if (_taggingService != null && recipeWithPreview.tagResult == null) {
-        final previewTags = await _taggingService!.generatePhase1Preview(
-          recipeWithPreview,
-        );
-        if (previewTags != null) {
-          recipeWithPreview = Recipe(
-            core: recipeWithPreview.core.copyWith(tagResult: previewTags),
-            type: recipeWithPreview.type,
-            socialData: recipeWithPreview.socialData,
-            realtimeData: recipeWithPreview.realtimeData,
-            offlineData: recipeWithPreview.offlineData,
+      final taggingService = _taggingService;
+      if (taggingService != null && recipeWithPreview.tagResult == null) {
+        try {
+          final previewTags = await taggingService.generatePhase1Preview(
+            recipeWithPreview,
           );
+          if (previewTags != null) {
+            recipeWithPreview = Recipe(
+              core: recipeWithPreview.core.copyWith(tagResult: previewTags),
+              type: recipeWithPreview.type,
+              socialData: recipeWithPreview.socialData,
+              realtimeData: recipeWithPreview.realtimeData,
+              offlineData: recipeWithPreview.offlineData,
+            );
+          }
+        } catch (e) {
+          AppLogger.warning('Preview tagging failed, saving untagged: $e');
         }
       }
 
@@ -947,12 +957,23 @@ class ImportManager {
     try {
       final recipeData = result.recipe!.toJson();
 
-      // Create extraction metadata
+      // BUT-1484: thread the pipeline's actually-computed tier + confidence
+      // (carried in the strategy result metadata) into the cache entry instead
+      // of hardcoding, so cross-user cache analytics reflect real extraction
+      // quality. `tier` is the strategy's numeric tier (some paths emit a
+      // non-int marker like 'multi'); confidence comes from the parser's
+      // `overallQuality` score (0.0–1.0). Both fall back to the prior defaults
+      // when a strategy doesn't emit them.
+      final meta = result.metadata;
+      final computedTier = meta?['tier'];
+      final computedConfidence = meta?['overallQuality'];
       final extractionMeta = ExtractionMeta(
         pipeline: sourceType,
-        tier: 0, // Phase 4 will add proper tier tracking
+        tier: computedTier is int ? computedTier : 0,
         method: result.strategy ?? 'unknown',
-        confidence: 0.8, // Default confidence for now
+        confidence: computedConfidence is num
+            ? computedConfidence.toDouble()
+            : 0.8,
       );
 
       await cache.save(

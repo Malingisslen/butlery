@@ -1,11 +1,26 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/ingredient_correction.dart';
 import 'package:butlery/models/parsing/instruction_correction.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
+
+class _MockAnalyticsRepo extends Mock implements AnalyticsRepository {}
+
+class _MockConsent extends Mock implements ConsentService {}
 
 /// BUT-595: client-side fan-out + redaction-skip + error-swallow tests.
 ///
@@ -33,6 +48,12 @@ void main() {
       instructionCorrections: instructions,
     );
   }
+
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    registerFallbackValue(<String, Object>{});
+    registerFallbackValue(ConsentPurpose.analytics);
+  });
 
   group('ParseCorrectionUploader.expandFields', () {
     test('one diffed field expands to one payload', () {
@@ -363,6 +384,157 @@ void main() {
         ParseCorrectionUploader.isWhitespaceOrCaseOnly('foo', 'bar'),
         isFalse,
       );
+    });
+  });
+
+  // BUT-1645 (BUT-1486 follow-up): every silent drop must emit the
+  // `parse_correction_upload_dropped` metric with the correct `reason`, so the
+  // dashboard can measure the correction loss rate. This asserts all four drop
+  // sites fire the metric via the static `AnalyticsService.tryLog` sink.
+  group('BUT-1645: drop metric fires at all 4 silent-drop sites', () {
+    const dropEvent = AnalyticsEvents.parseCorrectionUploadDropped;
+    const spChannel = MethodChannel('plugins.flutter.io/shared_preferences');
+
+    // Captures the parameter maps logged for the drop event so each test can
+    // assert the `reason` (and `tier`) without depending on the nondeterministic
+    // truncated `cause` string the error sites attach.
+    late List<Map<String, Object>> dropped;
+
+    void registerCapturingAnalytics() {
+      final repo = _MockAnalyticsRepo();
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((invocation) async {
+        final name = invocation.namedArguments[const Symbol('name')] as String;
+        final params =
+            invocation.namedArguments[const Symbol('parameters')]
+                as Map<String, Object>?;
+        if (name == dropEvent && params != null) {
+          dropped.add(params);
+        }
+      });
+
+      final consent = _MockConsent();
+      when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
+
+      final service = AnalyticsService(repository: repo);
+      service.setConsentService(consent);
+
+      prod.ServiceLocator.initialize(DIContainer());
+      GetIt.instance.registerSingleton<AnalyticsService>(service);
+    }
+
+    // `tryLog` fires the event without awaiting; the consent check and
+    // `executeServiceOperation` add several async hops. Flush the microtask
+    // queue enough times for the whole chain to reach the repository stub.
+    Future<void> flush() async {
+      for (var i = 0; i < 10; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+
+    void setSharedPreferencesHandler(
+      Future<Object?> Function(MethodCall call)? handler,
+    ) {
+      TestWidgetsFlutterBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(spChannel, handler);
+    }
+
+    setUp(() {
+      dropped = <Map<String, Object>>[];
+      registerCapturingAnalytics();
+    });
+
+    tearDown(() async {
+      setSharedPreferencesHandler(null);
+      // Clear the cached SharedPreferences instance so each test resolves the
+      // salt fresh through its own mock channel handler. We never call
+      // setMockInitialValues, so the platform store stays the method-channel
+      // one both handlers drive.
+      SharedPreferences.resetStatic();
+      prod.ServiceLocator.reset();
+      await GetIt.instance.reset();
+    });
+
+    test('unknown_tier: unmapped server tier drops and emits reason', () async {
+      final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
+      final correction = makeCorrection(
+        successfulTier: 'NonExistentTier',
+        title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
+      );
+
+      final n = uploader.upload(correction: correction, salt: 's');
+      await flush();
+
+      expect(n, 0);
+      expect(dropped, hasLength(1));
+      expect(dropped.single['reason'], 'unknown_tier');
+      expect(dropped.single['tier'], 'NonExistentTier');
+    });
+
+    test(
+      'payload_error: a throw inside upload drops and emits reason',
+      () async {
+        // A synchronously-throwing invoker makes the per-payload dispatch throw
+        // inside upload()'s try block, exercising the catch-all drop site.
+        final uploader = ParseCorrectionUploader(
+          invoker: (_, __) => throw StateError('sync dispatch boom'),
+        );
+        final correction = makeCorrection(
+          title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
+        );
+
+        final n = uploader.upload(correction: correction, salt: 's');
+        await flush();
+
+        expect(n, 0);
+        expect(dropped, hasLength(1));
+        expect(dropped.single['reason'], 'payload_error');
+      },
+    );
+
+    test(
+      'salt_error: a SharedPreferences failure drops and emits reason',
+      () async {
+        // Must run while the platform store is still the method-channel one (no
+        // setMockInitialValues anywhere in this file), so this throwing handler
+        // reaches getInstance() and trips uploadWithSharedSalt()'s catch block.
+        setSharedPreferencesHandler(
+          (_) async => throw PlatformException(code: 'prefs_unavailable'),
+        );
+
+        final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
+        final correction = makeCorrection(
+          title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
+        );
+
+        final n = await uploader.uploadWithSharedSalt(correction: correction);
+        await flush();
+
+        expect(n, 0);
+        expect(dropped, hasLength(1));
+        expect(dropped.single['reason'], 'salt_error');
+      },
+    );
+
+    test('no_salt: an empty analytics salt drops and emits reason', () async {
+      // Empty prefs → salt is unset → uploadWithSharedSalt skips before upload.
+      setSharedPreferencesHandler((_) async => <String, Object>{});
+
+      final uploader = ParseCorrectionUploader(invoker: (_, __) async {});
+      final correction = makeCorrection(
+        title: const FieldCorrection(originalValue: 'a', correctedValue: 'b'),
+      );
+
+      final n = await uploader.uploadWithSharedSalt(correction: correction);
+      await flush();
+
+      expect(n, 0);
+      expect(dropped, hasLength(1));
+      expect(dropped.single['reason'], 'no_salt');
     });
   });
 }

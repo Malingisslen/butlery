@@ -211,9 +211,17 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final parser = _recipeParser;
     if (parser == null || htmlContent == null) return null;
 
+    // BUT-1476: disable the parser's own LLM tier here so a failed URL import
+    // has a SINGLE Gemini escalation owner — the Tier 6 LlmExtractionFallback in
+    // import(). _tryEnhancedParser runs up to twice per import (HTTP HTML, then
+    // scraper HTML); left enabled, its internal LlmTier could fire Gemini on
+    // each pass and the Tier 6 fallback a third time — up to 3 full LLM calls
+    // for one failed import. The cheaper structured/scraper tiers still run;
+    // only the LLM escalation is funnelled to one point.
     final parseResult = await parser.parseFromUrl(
       url: url,
       htmlContent: htmlContent,
+      useLlm: false,
     );
     if (!parseResult.success || parseResult.recipe == null) return null;
 

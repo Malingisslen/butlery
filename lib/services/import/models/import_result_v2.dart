@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/import/import_strategy.dart';
 
 /// Sealed class hierarchy for import results.
 ///
@@ -333,5 +335,57 @@ extension ImportErrorCodeExtension on ImportErrorCode {
       case ImportErrorCode.cancelled:
         return l.importErrorCancelled;
     }
+  }
+}
+
+/// Shared ImportResultV2→legacy [ImportResult] adapter (BUT-1485).
+///
+/// The Instagram, TikTok and YouTube pipelines carried byte-identical private
+/// `_convertToLegacyResult` copies; they now all call this one adapter so the
+/// mapping cannot silently drift between platforms. (The photo-vision route
+/// keeps its own conversion — it has different, per-route metadata semantics.)
+extension ImportResultV2LegacyAdapter on ImportResultV2 {
+  /// Map this V2 result onto the legacy [ImportResult] the import facade
+  /// still returns to callers.
+  ImportResult toLegacyResult() {
+    return switch (this) {
+      final ImportSuccess success => ImportResult.success(
+        success.recipe,
+        metadata: {
+          'pipeline': success.pipeline,
+          'tier': success.tier,
+          'method': success.method,
+          'usedLlm': success.usedLlm,
+          ...?success.metadata,
+        },
+      ),
+      final ImportNeedsAssistance assistance => ImportResult.assistance(
+        extractedText: assistance.extractedText,
+        suggestedTitle: assistance.suggestedTitle,
+        metadata: assistance.partialData,
+      ),
+      final ImportNeedsScreenshot screenshot => ImportResult.failure(
+        screenshot.message,
+        metadata: {
+          'platform': screenshot.platform,
+          'url': screenshot.url,
+          'thumbnailUrl': screenshot.thumbnailUrl,
+          'needsScreenshot': true,
+        },
+      ),
+      final ImportPartial partial => ImportResult.assistance(
+        extractedText: partial.extractedText.orEmpty(),
+        suggestedTitle: partial.title,
+        metadata: partial.partialData,
+      ),
+      final ImportFailure failure => ImportResult.failure(
+        failure.message,
+        metadata: {
+          'errorCode': failure.errorCode.name,
+          'pipeline': failure.pipeline,
+          'tier': failure.tier,
+        },
+      ),
+    };
   }
 }

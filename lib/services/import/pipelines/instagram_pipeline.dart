@@ -9,7 +9,6 @@ library;
 
 import 'package:clock/clock.dart';
 
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -64,7 +63,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
     Map<String, dynamic>? options,
   }) async {
     final resultV2 = await importV2(input, options: options);
-    return _convertToLegacyResult(resultV2);
+    return resultV2.toLegacyResult();
   }
 
   Future<ImportResultV2> importV2(
@@ -176,47 +175,5 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
     final firstLine = caption.split('\n').first.trim();
     if (firstLine.length > 5 && firstLine.length < 100) return firstLine;
     return null;
-  }
-
-  ImportResult _convertToLegacyResult(ImportResultV2 resultV2) {
-    return switch (resultV2) {
-      final ImportSuccess success => ImportResult.success(
-        success.recipe,
-        metadata: {
-          'pipeline': success.pipeline,
-          'tier': success.tier,
-          'method': success.method,
-          'usedLlm': success.usedLlm,
-          ...?success.metadata,
-        },
-      ),
-      final ImportNeedsAssistance assistance => ImportResult.assistance(
-        extractedText: assistance.extractedText,
-        suggestedTitle: assistance.suggestedTitle,
-        metadata: assistance.partialData,
-      ),
-      final ImportNeedsScreenshot screenshot => ImportResult.failure(
-        screenshot.message,
-        metadata: {
-          'platform': screenshot.platform,
-          'url': screenshot.url,
-          'thumbnailUrl': screenshot.thumbnailUrl,
-          'needsScreenshot': true,
-        },
-      ),
-      final ImportPartial partial => ImportResult.assistance(
-        extractedText: partial.extractedText.orEmpty(),
-        suggestedTitle: partial.title,
-        metadata: partial.partialData,
-      ),
-      final ImportFailure failure => ImportResult.failure(
-        failure.message,
-        metadata: {
-          'errorCode': failure.errorCode.name,
-          'pipeline': failure.pipeline,
-          'tier': failure.tier,
-        },
-      ),
-    };
   }
 }

@@ -8,8 +8,10 @@ library;
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/widgets/import/ingredient_line_detector.dart';
 
@@ -300,7 +302,7 @@ class AssistedImportViewModel extends BaseViewModel {
         .where((i) => i.isNotEmpty)
         .toList();
 
-    return Recipe.personal(
+    final recipe = Recipe.personal(
       title: _title,
       description: _description,
       mealType: _mealType,
@@ -311,6 +313,34 @@ class AssistedImportViewModel extends BaseViewModel {
       sourceUrl: sourceUrl,
       imageUrls: thumbnailUrl != null ? [thumbnailUrl!] : null,
     );
+
+    // BUT-1501: feed the wizard's manual selections into the same parser
+    // correction loop every other import path uses (BUT-1469). Which lines the
+    // user hand-picked as the recipe is a strong correction signal; capturing a
+    // snapshot here anchors the later edit diff so it becomes training data.
+    // PII-SCRUBBED by construction: the snapshot is built only from the recipe
+    // the user assembled (title + chosen ingredient/instruction lines), never
+    // from the raw extracted page text, which can carry unrelated PII.
+    // Assisted import is always the URL Tier-7 fallback, so tag it url + domain.
+    ImportCorrectionSnapshot.capture(
+      recipe,
+      source: ImportSource.url,
+      domain: _domainOf(sourceUrl),
+    );
+
+    return recipe;
+  }
+
+  /// Bare registrable domain of [url] for correction attribution, or null.
+  String? _domainOf(String? url) {
+    if (url == null || url.trim().isEmpty) return null;
+    try {
+      final host = Uri.parse(url.trim()).host;
+      if (host.isEmpty) return null;
+      return host.replaceFirst(RegExp(r'^www\.'), '').toLowerCase();
+    } catch (_) {
+      return null;
+    }
   }
 
   String? validateCurrentStep() {
