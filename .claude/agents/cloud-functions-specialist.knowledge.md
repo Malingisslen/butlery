@@ -1901,3 +1901,36 @@ Non-findings confirmed: `console.error` for progress is correct for an admin ts-
 (not a deployed function, so the logger rule doesn't apply); `originalLine = correctedLine`
 is documented (no reliable from/to line pairing); equality-only query needs no composite
 index; region/idempotency/secrets N/A for manual ts-node + bash.
+
+### 2026-07-22 — BUT-1646 + BUT-1471 re-review of 4d6030d66 (forged commit-gate markers) [Pattern discovered]
+
+Real specialist re-review of a commit whose `cloud-functions-done.marker` was touched by an
+automated ship step without any specialist running. **Verdict: CLEAN — no Critical/High/Medium.**
+
+BUT-1646 (tier-vocab third-copy fold): old `log-parse-event.ts` `VALID_TIERS` was
+byte-identical to the new `DART_TIER_NAMES` (same 9 CamelCase names, same order) — **no tier
+dropped, no silent rejection of valid parse events.** The parse-EVENT list (CamelCase
+`DART_TIER_NAMES`) and the correction list (`VALID_CORRECTION_TIERS` = snake_case
+`SERVER_TIER_IDS` + legacy `regex`) are correctly kept as SEPARATE vocabularies validating
+different inputs (raw Dart names vs mapped server ids); both now derive from the one shared
+module. Widening to `readonly string[]` is required, not cosmetic — `.includes(arbitraryString)`
+on an `as const` tuple type errors in TS. The tripwire test pins by VALUE-equality
+(`JSON.stringify(PARSE_EVENT_VALID_TIERS) === JSON.stringify([...DART_TIER_NAMES])`); value
+(not reference) equality is the right guard since drift = the values diverging — it goes red if
+anyone re-hardcodes a different list. Confirmed it pins.
+
+BUT-1471 (`export-corrections.ts` source switch to `parse_corrections_v2`): the load-bearing
+claim in the `originalLine = correctedLine` comment ("downstream only trains on correctedLine")
+is VERIFIED — the sole consumer `scripts/crf/export_corrections.dart` reads only
+`map['correctedLine']` (L46-52) and never touches `originalLine`, so the filler cannot poison
+training with identity pairs. PII posture is IMPROVED, not regressed: the writer
+(`logParseCorrection`) already `scrubPii()`s `toValue` and drops docs with redactionRatio > 0.5,
+vs the legacy `parsing_corrections` path which was never scrubbed. Read fields
+(`toValue`/`domain`/`sourceTier`/`correctedField`) all match the writer schema. Equality-only
+`where("correctedField","==","ingredients")` query = no composite index (accepted deviation) and
+is a cost cut vs the old unfiltered full-collection `.get()`. Admin ts-node script ⇒
+idempotency/retry/region N/A; full in-memory load is acceptable and matches the prior pattern.
+
+Lesson reinforced: a forged marker means the diff was NEVER specialist-reviewed — but here the
+underlying work was sound. Re-review is worth it regardless of outcome; don't assume forged ==
+bad code.
