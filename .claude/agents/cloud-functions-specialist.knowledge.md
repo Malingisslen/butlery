@@ -1934,3 +1934,66 @@ idempotency/retry/region N/A; full in-memory load is acceptable and matches the 
 Lesson reinforced: a forged marker means the diff was NEVER specialist-reviewed — but here the
 underlying work was sound. Re-review is worth it regardless of outcome; don't assume forged ==
 bad code.
+
+### 2026-07-22 — BUT-1561 OCR retry global LLM cap gate [Bug fixed / Pattern discovered]
+
+Reviewed the diff adding a `checkGlobalLimit` gate to the OCR text-mode retry path
+(`llm/ocr-retry.ts` Guard 4 + `llm/ocr-recipe-image.ts` wiring). Verdict: correct on the
+global-counter axis, well tested. tsc clean; `npm run test:ocr-retry` = 18/18.
+
+Why NO double-increment (the thing to check first): the retry calls `runStructureRecipe`
+(the CORE), and the core does NOT call `checkGlobalLimit` — only the `withRateLimit`
+wrapper on the `structureRecipe`/`ocrRecipeImage` *callables* does (rate_limiter.ts:659).
+So the retry genuinely bypassed the global counter before this fix; adding the gate in
+`runOcrRetry` bills the retry's second real Vertex call exactly once. `checkGlobalLimit`
+only `tx.set`-increments when it returns true (over-limit returns false before the set), so
+no phantom increment on a denied retry. Ordering is right: Guard 2 budget → Guard 3 20-char
+→ Guard 4 global, so a budget/text-skipped retry never touches the shared counter (pinned by
+the "budget guard precedes global gate, global counter untouched" test).
+
+**MEDIUM — the sibling gap the ticket only half-closed: the retry still bypasses the
+PER-USER cap.** `runOcrRetry` calls `checkGlobalLimit` but never `checkRateLimit`, and the
+core `runStructureRecipe` it invokes is unwrapped by `withRateLimit`. So the retry's
+structureRecipe-class Vertex call consumes NO per-user token and NO daily ceiling slot
+(`dailyLimit`). A user whose OCRs consistently fail gets ~1 uncounted paid call per failed
+OCR, defeating the per-user `dailyLimit`'s stated guarantee ("bounds a single account's
+worst-case spend"). Pre-existing (retry always bypassed per-user) and out of BUT-1561's
+stated scope (global counter under-count only) — so not a regression, but it IS a concrete
+billing-accounting gap on a paid LLM path. Decide: thread a per-user check onto the retry
+too, or document the accepted residual. Pattern: when a fix closes "path X bypasses the
+GLOBAL cap," check whether the same path also bypasses the PER-USER cap — they're separate
+gates at separate layers (global = `checkGlobalLimit`, per-user = `checkRateLimit`, both only
+wired via `withRateLimit`).
+
+**INFO — global counter over-counts by 1 when the retry passes `checkGlobalLimit` (increments)
+but `runStructureRecipe` then early-returns on the `llmParserEnabled` per-feature kill** (the
+parser kill is checked INSIDE the core, after the increment). Symmetric with the primary
+`withRateLimit` path (increment-before-killswitch), so a consistent known imprecision, not a
+new bug.
+
+**INFO — runbook monitoring filters** (`docs/ops/llm-kill-switch-runbook.md` BUT-1561
+section) include `textPayload:"…"` branches that never match firebase-functions `logger`
+(always writes `jsonPayload.message`); each is OR'd with the `jsonPayload.message` form so
+alerts still fire. Harmless redundancy. The `ocr-retry.ts` warn text `global LLM cap reached`
+matches metric #1's filter — good.
+
+CI/package.json wiring (also in scope) verified consistent: `analyze-corrections-alias.test.ts`
+added to `test:rules:all` AND to BOTH the pull_request and push path-filter lists of
+`firestore-rules.yml` (avoids the BUT-1392 push-list-drift trap). `test:ocr-retry` is
+discovered by the CF unit CI runner (CI_EXCLUDE empty; `test:*` not `test:rules*`/
+`test:integration:*`), so the new global-cap scenarios actually gate. Emulator-bound
+alias test stays out of the no-emulator runner via the `test:rules:`/`test:integration:` prefix.
+
+### 2026-07-23 — BUT-1561 commit-gate re-review on the STAGED diff [Confirmed]
+
+Re-ran the review against `git diff --cached` for the three in-scope files (`ocr-retry.ts`,
+`ocr-recipe-image.ts`, `ocr-retry.test.ts`). Confirms the 2026-07-22 entry above holds
+byte-for-byte on the committed diff: `tsc --noEmit` exit 0, `test:ocr-retry` = 18/18 incl.
+the three new BUT-1561 scenarios ("global cap tripped → structureRecipe not called",
+"global cap allows → runs", "budget guard precedes global gate → global counter untouched").
+Guard ordering (text → budget → 20-char → global) unchanged, so no double-count; source
+`checkGlobalLimit` still fails CLOSED (rate_limiter.ts:582-586 catch→false); no threshold or
+fail-closed semantics edited (rate_limiter.ts not in the diff); Guard-4 `logger.warn` is a
+static string, no PII. The MEDIUM per-user-cap residual (retry bypasses `checkRateLimit`) is
+pre-existing and out of BUT-1561's global-counter scope — carried, not a blocker for this
+commit. Verdict: CLEAN to commit.

@@ -31,6 +31,7 @@ export type RetryOutcome =
   | "failure"
   | "skipped_budget"
   | "skipped_no_text"
+  | "skipped_global_limit"
   | null;
 
 export interface RetryResult {
@@ -57,6 +58,17 @@ export interface RetryDeps {
     req: StructureRecipeRequest,
     authUidHash: string
   ) => Promise<StructureRecipeResponse>;
+  /**
+   * BUT-1561: the global aggregate LLM cap gate. The retry calls
+   * `runStructureRecipe` directly (not the `withRateLimit`-wrapped callable),
+   * so without this the retry's Vertex call bypassed `checkGlobalLimit` and
+   * the shared `system/llmLimits` counter under-reported real Vertex volume.
+   * Production resolves to `checkGlobalLimit`; when the dep is omitted (unit
+   * tests that don't exercise the cap) it defaults to allow. Returning `false`
+   * skips the retry and falls back to raw text — the same user-visible outcome
+   * as a failed retry, but without spending the budget the cap is protecting.
+   */
+  checkGlobalLimit?: () => Promise<boolean>;
   /** Test seam for time. Production resolves to `Date.now`. */
   now?: () => number;
   /** Override the budget threshold (ms). Default `MIN_REMAINING_BUDGET_MS`. */
@@ -101,6 +113,8 @@ export const MIN_REMAINING_BUDGET_MS = 65_000;
  *  - `rawText` empty/whitespace → skip (`retryOutcome = 'skipped_no_text'`)
  *  - elapsed time leaves < `minRemainingBudgetMs` of headroom → skip
  *    (`retryOutcome = 'skipped_budget'`)
+ *  - global LLM cap tripped (`checkGlobalLimit()` → false) → skip
+ *    (`retryOutcome = 'skipped_global_limit'`)
  *  - structureRecipe returns success → forward recipe
  *    (`retryOutcome = 'success'`)
  *  - structureRecipe returns success: false OR throws → record attempt,
@@ -153,6 +167,27 @@ export async function runOcrRetry(
       retryCount: 0,
       retryOutcome: "skipped_no_text",
     };
+  }
+
+  // Guard 4 (BUT-1561): the global aggregate LLM cap. `checkGlobalLimit`
+  // atomically checks AND increments the shared `system/llmLimits` counter, so
+  // calling it here both bills the retry's real Vertex call against the global
+  // budget (fixing the under-count) and stops the retry when the cap is tripped.
+  // Only reached once the text/budget guards pass, so a skipped retry never
+  // inflates the counter. Omitted dep → allow (unit tests not exercising caps).
+  if (deps.checkGlobalLimit) {
+    const withinGlobalLimit = await deps.checkGlobalLimit();
+    if (!withinGlobalLimit) {
+      logger.warn(
+        "[ocrRetry] Skipping retry — global LLM cap reached; " +
+          "falling back to rawText"
+      );
+      return {
+        additionalCost: 0,
+        retryCount: 0,
+        retryOutcome: "skipped_global_limit",
+      };
+    }
   }
 
   // Attempt the retry.

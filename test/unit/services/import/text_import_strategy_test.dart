@@ -1159,6 +1159,85 @@ Instructions:
       );
     });
 
+    group('BUT-1501 structuredIngredients additive-field contract', () {
+      // The CRF→NER cascade (BUT-1501) may ONLY populate the ADDITIVE
+      // `structuredIngredients` field. The flat `ingredients` list — the one
+      // allergen tagging reads to ground "fritt från X" verdicts — must be
+      // passed through untouched: same content, same order, no headings, no
+      // drops. These pin that safety invariant, distinct from BUT-1232's
+      // per-entry amount parsing.
+      RecipeIngredient bySubstring(
+        List<RecipeIngredient> list,
+        String needle,
+      ) => list.firstWhere((e) => e.raw.toLowerCase().contains(needle));
+
+      test(
+        'structured.raw maps 1:1 onto the flat ingredients list (additive '
+        'projection — no drop, no reorder, no rewrite)',
+        () async {
+          const text =
+              'Kladdkaka\n'
+              'Ingredienser:\n'
+              'Deg:\n'
+              '2 dl socker\n'
+              '1 nypa salt\n'
+              'Fyllning:\n'
+              '100 g choklad\n'
+              'Gör så här:\n'
+              'Blanda och grädda i 20 min.';
+          final result = await strategy.import(text);
+          final recipe = result.recipe!;
+          final structured = recipe.structuredIngredients;
+
+          // Additive contract: the structured field is a faithful, index-aligned
+          // projection OF the flat list — one entry per flat line, same order,
+          // each entry's `raw` byte-equal to the flat string it derives from.
+          expect(
+            structured.map((e) => e.raw).toList(),
+            equals(recipe.ingredients),
+            reason:
+                'the structured field must mirror the flat allergen-read list '
+                'exactly — it may add structure, never alter the list',
+          );
+          expect(structured, hasLength(recipe.ingredients.length));
+        },
+      );
+
+      test(
+        'sub-group headings live ONLY on the additive .section metadata, never '
+        'in the flat allergen-read list',
+        () async {
+          const text =
+              'Kladdkaka\n'
+              'Deg:\n'
+              '2 dl socker\n'
+              'Fyllning:\n'
+              '100 g choklad\n'
+              'Gör så här:\n'
+              'Blanda och grädda.';
+          final result = await strategy.import(text);
+          final recipe = result.recipe!;
+          final flat = recipe.ingredients.map((e) => e.toLowerCase()).toList();
+
+          // The heading text is captured additively on the structured entry...
+          expect(
+            bySubstring(recipe.structuredIngredients, 'socker').section,
+            'Deg',
+          );
+          expect(
+            bySubstring(recipe.structuredIngredients, 'choklad').section,
+            'Fyllning',
+          );
+          // ...and must NOT have leaked into the flat list a false "fritt från"
+          // verdict could be grounded on.
+          expect(flat, isNot(contains('deg')));
+          expect(flat, isNot(contains('deg:')));
+          expect(flat, isNot(contains('fyllning')));
+          expect(flat, isNot(contains('fyllning:')));
+        },
+      );
+    });
+
     group('BUT-1469/BUT-1614 correction-capture wiring', () {
       // A successful text import must anchor the parser feedback loop: it
       // stores an ImportCorrectionSnapshot in the shared ParsedRecipeCache,

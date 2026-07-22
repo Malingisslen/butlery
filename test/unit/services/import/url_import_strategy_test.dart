@@ -62,17 +62,26 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
+import 'package:butlery/services/parsing/recipe_parser_service.dart';
+
+/// Records every `parseFromUrl` call so the single-escalation contract
+/// (BUT-1476) and the below-threshold fall-through (BUT-1650) can be asserted.
+class _MockRecipeParserService extends Mock implements RecipeParserService {}
 
 /// Helper to make ImportValidationMixin testable in isolation.
 class _ValidationHelper with ImportValidationMixin {}
@@ -1204,6 +1213,191 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
         ImportResult.failure('e', warnings: ['quality may vary']).hasWarnings,
         isTrue,
       );
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Tier 1 enhanced-parser escalation contract (BUT-1476 single escalation
+  // owner + BUT-1650 below-threshold fall-through).
+  //
+  // These wire a MOCK RecipeParserService into the production ServiceLocator so
+  // Tier 1 (`_tryEnhancedParser`) actually fires — the other groups leave the
+  // locator uninitialized, which forces Tier 1 to null. The mock lets us drive
+  // the parser's quality/outcome deterministically and observe how `import()`
+  // routes it.
+  // -----------------------------------------------------------------------
+  group('Tier 1 enhanced-parser escalation (BUT-1476 / BUT-1650)', () {
+    late _MockRecipeParserService parser;
+
+    setUp(() {
+      parser = _MockRecipeParserService();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<RecipeParserService>()) {
+        getIt.unregister<RecipeParserService>();
+      }
+      getIt.registerSingleton<RecipeParserService>(parser);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<RecipeParserService>()) {
+        getIt.unregister<RecipeParserService>();
+      }
+      app_provider.ServiceLocator.reset();
+    });
+
+    ParseResult parseWithQuality({required bool aboveThreshold}) {
+      final meta = ParseMetadata(
+        source: ImportSource.url,
+        tierResults: const [],
+        totalParseTime: Duration.zero,
+        parserVersion: 'test',
+        timestamp: DateTime(2026, 1, 1),
+      );
+      final recipe = ParsedRecipe(
+        // Weights: title .15, ingredients .40, instructions .30. Title +
+        // ingredients alone = 0.55 (< 0.65 threshold); adding instructions
+        // lifts it to 0.85 (>= threshold).
+        title: FieldResult.success('Rough Dish'),
+        portions: FieldResult.failed('no'),
+        ingredients: FieldResult.success(<ParsedIngredient>[
+          const ParsedIngredient(
+            name: 'mjöl',
+            originalLine: '2 dl mjöl',
+            quantity: '2',
+            unit: 'dl',
+            confidence: ParseConfidence.high,
+          ),
+        ]),
+        instructions: aboveThreshold
+            ? FieldResult.success(<String>['Blanda och grädda.'])
+            : FieldResult.failed('no'),
+        totalTime: FieldResult.failed('no'),
+        metadata: meta,
+      );
+      return ParseResult.success(recipe, totalTime: Duration.zero);
+    }
+
+    void stubParse(ParseResult Function() build) {
+      when(
+        () => parser.parseFromUrl(
+          url: any(named: 'url'),
+          htmlContent: any(named: 'htmlContent'),
+          qualityThreshold: any(named: 'qualityThreshold'),
+          useCache: any(named: 'useCache'),
+          useLlm: any(named: 'useLlm'),
+        ),
+      ).thenAnswer((_) async => build());
+    }
+
+    /// BUT-1476: the enhanced parser must ALWAYS be invoked with `useLlm:false`
+    /// so it can never fire its own Gemini tier — the Tier 6 LlmExtractionFallback
+    /// is the single escalation owner. If a refactor flips this back to true (the
+    /// up-to-3-LLM-calls-per-import regression), the captured args go non-false.
+    test('enhanced parser is always called with useLlm:false (single '
+        'escalation owner)', () async {
+      stubParse(() => ParseResult.failure('nope', totalTime: Duration.zero));
+
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      await strategy.import('http://8.8.8.8/recipe');
+
+      final captured = verify(
+        () => parser.parseFromUrl(
+          url: any(named: 'url'),
+          htmlContent: any(named: 'htmlContent'),
+          qualityThreshold: any(named: 'qualityThreshold'),
+          useCache: any(named: 'useCache'),
+          useLlm: captureAny(named: 'useLlm'),
+        ),
+      ).captured;
+
+      expect(
+        captured,
+        isNotEmpty,
+        reason: 'Tier 1 must actually run when the parser is registered',
+      );
+      expect(
+        captured,
+        everyElement(isFalse),
+        reason: 'every enhanced-parse pass must disable the parser LLM tier',
+      );
+    });
+
+    /// BUT-1650 regression: a below-threshold enhanced parse must NOT
+    /// short-circuit at Tier 1. Here the page carries valid Recipe JSON-LD, so
+    /// once the weak Tier 1 result is HELD (not shipped), Tier 2 structured
+    /// extraction fires and wins — `extraction_method` proves the fall-through.
+    /// Before the fix, the weak parse returned immediately as `enhanced_parser`.
+    test('below-threshold enhanced parse falls through — Tier 2 schema.org '
+        'supersedes it', () async {
+      stubParse(() => parseWithQuality(aboveThreshold: false));
+
+      final strategy = _strategyWith(
+        (req) async =>
+            _htmlResponse(_jsonLdRecipeHtml(title: 'Riktig maträtt')),
+      );
+      final result = await strategy.import('http://8.8.8.8/recipe');
+
+      expect(result.isSuccess, isTrue);
+      expect(
+        result.metadata?['extraction_method'],
+        'schema.org',
+        reason:
+            'BUT-1650: the weak Tier 1 parse must be held so a better tier '
+            '(structured schema.org) can supersede it — not shipped outright',
+      );
+      expect(result.recipe!.core.title, 'Riktig maträtt');
+    });
+
+    /// BUT-1650 floor: when NOTHING beats the below-threshold parse (prose page
+    /// with no JSON-LD, Tier 5 fails its own quality gate, no LLM reachable in
+    /// tests), the held parse is returned as the floor — never dropped to
+    /// user-assist or hard failure. It carries the real parsed structure.
+    test('below-threshold enhanced parse is the floor when no other tier '
+        'produces a recipe', () async {
+      stubParse(() => parseWithQuality(aboveThreshold: false));
+
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+      final result = await strategy.import('http://8.8.8.8/prose');
+
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'the held rough parse must be returned rather than lost',
+      );
+      expect(result.needsAssistance, isFalse);
+      expect(
+        result.metadata?['extraction_method'],
+        'enhanced_parser',
+        reason: 'the floor result is the Tier 1 parse itself',
+      );
+      expect(result.recipe!.core.title, 'Rough Dish');
+    });
+
+    /// Control: an ABOVE-threshold enhanced parse must still short-circuit at
+    /// Tier 1 (no wasted cascade). Even though the page has JSON-LD that Tier 2
+    /// could parse, the good Tier 1 result wins first — `enhanced_parser`.
+    test('above-threshold enhanced parse short-circuits at Tier 1', () async {
+      stubParse(() => parseWithQuality(aboveThreshold: true));
+
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_jsonLdRecipeHtml()),
+      );
+      final result = await strategy.import('http://8.8.8.8/recipe');
+
+      expect(result.isSuccess, isTrue);
+      expect(
+        result.metadata?['extraction_method'],
+        'enhanced_parser',
+        reason: 'a good Tier 1 parse must win immediately, before Tier 2',
+      );
+      expect(result.recipe!.core.title, 'Rough Dish');
     });
   });
 }

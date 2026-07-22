@@ -760,4 +760,102 @@ void main() {
       expect(s.estimatedExpiredPercent, 20.0);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // ExtractionMeta tier/confidence fallback (BUT-1647)
+  //
+  // ExtractionMeta feeds cache_save analytics (pipeline/tier). A partial or
+  // absent extractionMeta in a cache doc must degrade to safe defaults, never
+  // throw or surface a garbage tier/confidence. These pin the deserialization
+  // floor at both the model and the CacheEntry level.
+  // -------------------------------------------------------------------------
+  group('ExtractionMeta tier/confidence fallback', () {
+    test('empty() is the documented unknown baseline', () {
+      final meta = ExtractionMeta.empty();
+      expect(meta.pipeline, 'unknown');
+      expect(meta.tier, 0);
+      expect(meta.method, 'unknown');
+      expect(meta.confidence, 0.0);
+      expect(meta.usedLlm, isFalse);
+      expect(meta.requiresReview, isFalse);
+    });
+
+    test('fromMap({}) falls back to unknown/0/0.0 on every field', () {
+      final meta = ExtractionMeta.fromMap(const {});
+      expect(meta.pipeline, 'unknown');
+      expect(meta.tier, 0, reason: 'missing tier must default to 0, not throw');
+      expect(meta.method, 'unknown');
+      expect(
+        meta.confidence,
+        0.0,
+        reason: 'missing confidence must default to 0.0, not throw',
+      );
+    });
+
+    test(
+      'fromMap keeps present fields and defaults only the missing tier/'
+      'confidence',
+      () {
+        final meta = ExtractionMeta.fromMap(const {
+          'pipeline': 'website',
+          'method': 'json-ld',
+          // tier + confidence deliberately absent
+        });
+        expect(meta.pipeline, 'website');
+        expect(meta.method, 'json-ld');
+        expect(meta.tier, 0);
+        expect(meta.confidence, 0.0);
+      },
+    );
+
+    test(
+      'fromMap coerces wrong-typed tier/confidence to the numeric floor',
+      () {
+        final meta = ExtractionMeta.fromMap(const {
+          'pipeline': 'website',
+          'tier': 'not-an-int',
+          'confidence': 'not-a-double',
+        });
+        expect(
+          meta.tier,
+          0,
+          reason: 'a non-int tier must degrade to 0, never crash the read path',
+        );
+        expect(
+          meta.confidence,
+          0.0,
+          reason: 'a non-double confidence must degrade to 0.0',
+        );
+      },
+    );
+
+    test(
+      'CacheEntry.fromFirestore with NO extractionMeta falls back to empty()',
+      () async {
+        // Seed a doc that omits the extractionMeta block entirely, then read it
+        // back through the production path (findByUrl → CacheEntry.fromFirestore).
+        final hash = urlNormalizer.hash('https://example.com/no-meta')!;
+        await firestore.collection(_collectionName).doc(hash).set({
+          'urlHash': hash,
+          'contentFingerprint': 'nm-fp',
+          'sourceType': 'website',
+          'recipe': const {
+            'title': 'No Meta',
+            'ingredients': ['x'],
+            'instructions': ['y'],
+          },
+          // extractionMeta intentionally omitted
+          'cachedAt': Timestamp.fromDate(DateTime.utc(2026, 5, 20)),
+          'ttlDays': 90,
+          'accessCount': 1,
+        });
+
+        final entry = await cache.findByUrl('https://example.com/no-meta');
+        expect(entry, isNotNull);
+        expect(entry!.extractionMeta.pipeline, 'unknown');
+        expect(entry.extractionMeta.tier, 0);
+        expect(entry.extractionMeta.confidence, 0.0);
+      },
+    );
+  });
 }

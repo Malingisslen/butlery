@@ -112,9 +112,21 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}',
       );
 
+      // BUT-1650: a below-threshold enhanced parse (real ingredients but weak
+      // overall) is held here as a floor rather than shipped immediately, so the
+      // cascade — crucially the Tier 6 LLM escalation — still gets to produce a
+      // cleaner recipe. If nothing beats it, the held parse is returned at the
+      // end (never a regression: the old code shipped exactly this parse).
+      ImportResult? belowThresholdEnhanced;
+
       // Tier 1: Enhanced parser on HTTP HTML
-      final parserResult = await _tryEnhancedParser(url, httpHtml, options);
-      if (parserResult != null) return parserResult;
+      final parserOutcome = await _tryEnhancedParser(url, httpHtml, options);
+      if (parserOutcome != null) {
+        if (parserOutcome.quality >= defaultQualityThreshold) {
+          return parserOutcome.result;
+        }
+        belowThresholdEnhanced ??= parserOutcome.result;
+      }
 
       // Tier 2: Structured data on HTTP HTML
       if (httpHtml != null) {
@@ -132,12 +144,20 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'UrlImportStrategy: WebScraper HTML for $domain → ${scraperHtml == null ? "null" : "${scraperHtml.length} chars"}',
       );
       if (scraperHtml != null) {
-        final scraperParserResult = await _tryEnhancedParser(
+        // BUT-1650: same quality gate for the scraper-HTML enhanced parse — a
+        // JS-rendered page can beat the HTTP parse, but a still-weak result is
+        // held, not shipped, so the LLM escalation runs.
+        final scraperParserOutcome = await _tryEnhancedParser(
           url,
           scraperHtml,
           options,
         );
-        if (scraperParserResult != null) return scraperParserResult;
+        if (scraperParserOutcome != null) {
+          if (scraperParserOutcome.quality >= defaultQualityThreshold) {
+            return scraperParserOutcome.result;
+          }
+          belowThresholdEnhanced ??= scraperParserOutcome.result;
+        }
 
         final scraperStructuredResult = _tryStructuredExtraction(
           scraperHtml,
@@ -181,6 +201,21 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         }
       }
 
+      // BUT-1650: no tier beat the held below-threshold enhanced parse (the
+      // Tier 6 LLM included) — return it as the floor rather than dropping to
+      // user-assist/failure. It carries real parsed structure, so it is a
+      // better outcome than Tier 7 for the user.
+      if (belowThresholdEnhanced != null) {
+        _logImportEvent(
+          url,
+          domain,
+          'EnhancedParserBelowThreshold',
+          true,
+          stopwatch,
+        );
+        return belowThresholdEnhanced;
+      }
+
       // Tier 7: User-assisted import
       if (bestHtml != null && bestHtml.length > 100) {
         final assistedResult = _createUserAssistedResult(bestHtml, url);
@@ -203,7 +238,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
   }
 
-  Future<ImportResult?> _tryEnhancedParser(
+  /// Runs the multi-tier enhanced parser (LLM disabled — BUT-1476) and returns
+  /// both the converted [ImportResult] and the parse's [overallQuality] so the
+  /// caller can quality-gate it (BUT-1650). Null when the parser is unavailable
+  /// or produced no recipe.
+  Future<({ImportResult result, double quality})?> _tryEnhancedParser(
     String url,
     String? htmlContent,
     Map<String, dynamic>? options,
@@ -228,7 +267,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     AppLogger.info(
       'UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"',
     );
-    return _convertParsedRecipeToImportResult(parseResult, url);
+    return (
+      result: _convertParsedRecipeToImportResult(parseResult, url),
+      quality: parseResult.recipe!.overallQuality,
+    );
   }
 
   ImportResult? _tryStructuredExtraction(String html, String url) {

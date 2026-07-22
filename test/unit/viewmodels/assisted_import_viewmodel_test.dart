@@ -28,6 +28,14 @@
 /// No locator setup, no async test infrastructure.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 
 void main() {
@@ -440,6 +448,138 @@ Steg 2. Tillsätt kyckling och stek''';
     test('updateInstruction replaces the text at a valid index', () {
       vm.updateInstruction(0, 'Hetta upp pannan ordentligt');
       expect(vm.editedInstructions[0], equals('Hetta upp pannan ordentligt'));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // BUT-1501 correction-snapshot capture on wizard completion
+  //
+  // `buildRecipe()` must anchor the parser feedback loop the same way every
+  // other import path does (BUT-1469): it stores an ImportCorrectionSnapshot in
+  // the shared ParsedRecipeCache, keyed by the produced recipe id, tagged
+  // ImportSource.url (assisted import is always the URL Tier-7 fallback) with
+  // the source domain. These wire a real cache into the production
+  // ServiceLocator and read the snapshot back.
+  // ---------------------------------------------------------------------------
+  group('BUT-1501 correction-snapshot capture on completion', () {
+    late ParsedRecipeCache cache;
+
+    setUp(() {
+      cache = ParsedRecipeCache();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<ParsedRecipeCache>()) {
+        getIt.unregister<ParsedRecipeCache>();
+      }
+      getIt.registerSingleton<ParsedRecipeCache>(cache);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<ParsedRecipeCache>()) {
+        getIt.unregister<ParsedRecipeCache>();
+      }
+      app_provider.ServiceLocator.reset();
+    });
+
+    AssistedImportViewModel advanceToReview({
+      String title = 'Kycklingrätt',
+      String? sourceUrl = 'https://www.example.se/recept/kyckling',
+    }) {
+      final vm = AssistedImportViewModel(
+        extractedText: extractedText,
+        suggestedTitle: title,
+        sourceUrl: sourceUrl,
+      );
+      vm.setIngredientSelection({0, 1});
+      vm.nextStep();
+      vm.setInstructionSelection({3, 4});
+      vm.nextStep(); // → reviewEdit
+      return vm;
+    }
+
+    test(
+      'buildRecipe stores a snapshot keyed by recipe id, tagged url + domain '
+      'with the snapshot sentinel version',
+      () {
+        final vm = advanceToReview();
+        addTearDown(vm.dispose);
+
+        final recipe = vm.buildRecipe();
+
+        final snapshot = cache.retrieve(recipe.id);
+        expect(
+          snapshot,
+          isNotNull,
+          reason: 'assisted-import completion must anchor the feedback loop',
+        );
+        expect(
+          snapshot!.metadata.source,
+          ImportSource.url,
+          reason: 'assisted import is the URL Tier-7 fallback',
+        );
+        expect(
+          snapshot.metadata.domain,
+          'example.se',
+          reason: 'the www. prefix is stripped to the bare domain',
+        );
+        expect(
+          snapshot.metadata.parserVersion,
+          ImportCorrectionSnapshot.snapshotParserVersion,
+          reason:
+              'the anchor is built from a produced recipe, not a real parse',
+        );
+      },
+    );
+
+    test(
+      'the stored snapshot mirrors the wizard selections (title + chosen lines)',
+      () {
+        final vm = advanceToReview();
+        addTearDown(vm.dispose);
+
+        final recipe = vm.buildRecipe();
+        final snapshot = cache.retrieve(recipe.id)!;
+
+        expect(snapshot.title.value, 'Kycklingrätt');
+        // Snapshot ingredients are built from the produced recipe's flat lines
+        // (blank lines skipped) — the two ingredient lines the user picked.
+        expect(
+          snapshot.ingredients.value,
+          hasLength(recipe.ingredients.length),
+        );
+      },
+    );
+
+    test(
+      'no sourceUrl → snapshot captured with a null domain (still anchored)',
+      () {
+        final vm = advanceToReview(sourceUrl: null);
+        addTearDown(vm.dispose);
+
+        final recipe = vm.buildRecipe();
+        final snapshot = cache.retrieve(recipe.id);
+
+        expect(snapshot, isNotNull);
+        expect(
+          snapshot!.metadata.domain,
+          isNull,
+          reason: 'no source URL means no domain attribution',
+        );
+      },
+    );
+
+    test('capture is best-effort: with no cache registered, buildRecipe still '
+        'returns a recipe', () {
+      app_provider.ServiceLocator.reset(); // drop the container entirely
+
+      final vm = advanceToReview();
+      addTearDown(vm.dispose);
+
+      final recipe = vm.buildRecipe();
+      expect(recipe.title, 'Kycklingrätt');
+      expect(recipe.ingredients, hasLength(2));
     });
   });
 }

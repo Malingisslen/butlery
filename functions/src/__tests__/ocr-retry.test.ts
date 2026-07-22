@@ -296,6 +296,117 @@ async function testOrchestrator(): Promise<void> {
           }
     );
   }
+
+  // Scenario (BUT-1561): global LLM cap tripped → skipped_global_limit, and
+  // structureRecipe is NEVER called (the retry's Vertex spend is suppressed).
+  {
+    const calls: StructureRecipeRequest[] = [];
+    let globalChecked = 0;
+    const r = await runOcrRetry(
+      "Pannkakor 2 dl mjöl 4 dl mjölk 2 ägg blanda stek.",
+      0,
+      "uid-hash",
+      {
+        structureRecipe: async (req) => {
+          calls.push(req);
+          return { success: true, recipe: makeRecipe("x"), estimatedCost: 0.002 };
+        },
+        checkGlobalLimit: async () => {
+          globalChecked++;
+          return false;
+        },
+        now: () => 1000,
+      }
+    );
+    record(
+      "global cap tripped → skipped_global_limit, structureRecipe not called, no cost",
+      globalChecked === 1 &&
+        calls.length === 0 &&
+        r.retryCount === 0 &&
+        r.retryOutcome === "skipped_global_limit" &&
+        r.additionalCost === 0 &&
+        !r.recipe
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `checked=${globalChecked}, calls=${calls.length}, retryCount=${r.retryCount}, outcome=${r.retryOutcome}, cost=${r.additionalCost}`,
+          }
+    );
+  }
+
+  // Scenario (BUT-1561): global cap allows → retry proceeds normally. Proves
+  // the gate is checked (billing the retry against the counter) yet transparent
+  // when within budget.
+  {
+    const calls: StructureRecipeRequest[] = [];
+    let globalChecked = 0;
+    const recipe = makeRecipe("Våfflor");
+    const r = await runOcrRetry(
+      "Våfflor 3 dl mjöl 3 dl mjölk 2 ägg vispa och grädda.",
+      0,
+      "uid-hash",
+      {
+        structureRecipe: async (req) => {
+          calls.push(req);
+          return { success: true, recipe, estimatedCost: 0.003 };
+        },
+        checkGlobalLimit: async () => {
+          globalChecked++;
+          return true;
+        },
+        now: () => 1000,
+      }
+    );
+    record(
+      "global cap allows → retry runs, outcome=success (gate checked once, then transparent)",
+      globalChecked === 1 &&
+        calls.length === 1 &&
+        r.retryCount === 1 &&
+        r.retryOutcome === "success" &&
+        r.recipe === recipe
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `checked=${globalChecked}, calls=${calls.length}, retryCount=${r.retryCount}, outcome=${r.retryOutcome}`,
+          }
+    );
+  }
+
+  // Scenario (BUT-1561): the global gate runs AFTER the budget guard — an
+  // out-of-budget retry skips as skipped_budget WITHOUT consuming a global
+  // token (the gate increments the shared counter, so a skipped retry must
+  // never reach it).
+  {
+    let globalChecked = 0;
+    const startMs = 0;
+    const elapsedMs = OCR_FUNCTION_TIMEOUT_MS - MIN_REMAINING_BUDGET_MS + 1;
+    const r = await runOcrRetry(
+      "Pannkakor 2 dl mjöl 4 dl mjölk 2 ägg blanda stek.",
+      startMs,
+      "uid-hash",
+      {
+        structureRecipe: async () => ({
+          success: true,
+          recipe: makeRecipe("x"),
+          estimatedCost: 0,
+        }),
+        checkGlobalLimit: async () => {
+          globalChecked++;
+          return true;
+        },
+        now: () => startMs + elapsedMs,
+      }
+    );
+    record(
+      "budget guard precedes global gate → skipped_budget, global counter untouched",
+      globalChecked === 0 && r.retryOutcome === "skipped_budget"
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `checked=${globalChecked}, outcome=${r.retryOutcome}`,
+          }
+    );
+  }
 }
 
 // =============================================================================
@@ -324,6 +435,11 @@ function makeOcrSeams(opts: {
       return opts.retry(req);
     },
     isAiDisabled: async () => false,
+    // BUT-1561: default the global-cap seam to allow so retry-path assertions
+    // exercise the retry itself. Without this the production checkGlobalLimit
+    // would hit an unconnected Firestore, fail closed, and short-circuit every
+    // retry to skipped_global_limit.
+    checkGlobalLimit: async () => true,
     now: () => {
       if (opts.nowSeq) {
         const v = opts.nowSeq[Math.min(nowIdx, opts.nowSeq.length - 1)];

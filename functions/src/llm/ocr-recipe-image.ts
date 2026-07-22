@@ -28,7 +28,7 @@ import {
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
-import { withRateLimit } from "../middleware/rate_limiter";
+import { withRateLimit, checkGlobalLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
 import { captureLlmSample } from "./llm-sample-capture";
 import { runStructureRecipe, buildLocaleInstruction } from "./structure-recipe";
@@ -152,6 +152,12 @@ export interface OcrCoreOptions {
     url: string,
     authUidHash: string
   ) => Promise<OcrUrlValidationResult>;
+  /**
+   * BUT-1561: test seam for the global aggregate LLM cap gate on the
+   * structureRecipe retry path. Production resolves to `checkGlobalLimit`
+   * from the rate-limiter middleware.
+   */
+  checkGlobalLimit?: () => Promise<boolean>;
   /** Test seam: clock. Default `Date.now`. */
   now?: () => number;
 }
@@ -273,6 +279,7 @@ export async function runOcrRecipeImage(
   const isAiDisabled = opts.isAiDisabled ?? defaultIsAiDisabled;
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
   const validateImageUrl = opts.validateImageUrl ?? validateOcrImageUrl;
+  const globalLimitCheck = opts.checkGlobalLimit ?? checkGlobalLimit;
   const now = opts.now ?? Date.now;
 
   const ocrStartMs = now();
@@ -476,6 +483,7 @@ export async function runOcrRecipeImage(
 
     const retryResult = await runOcrRetry(content, ocrStartMs, authUidHash, {
       structureRecipe,
+      checkGlobalLimit: globalLimitCheck,
       now,
       locale,
     });

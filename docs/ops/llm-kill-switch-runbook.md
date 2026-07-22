@@ -163,22 +163,31 @@ gcloud firestore documents update system/config \
 
 **Fail-mode asymmetry to know about:** the BUT-439 master kill (`aiEnabled=false`) goes the *other* way during a Firestore outage — a missing/unreachable doc fails *open* for the kill-switch (AI proceeds), but the outer `runStructureRecipe` catch turns the Firestore error into an `internal` HttpsError (fail closed for the user). The new global-cap loader, by contrast, fails open against operator overrides on Firestore unreachable: caches the hardcoded defaults (1000/10000) and the per-user middleware proceeds. **Implication:** if you've tightened the global caps and the Firestore link drops, traffic surges back to the hardcoded numbers until the next cold start. Live with this trade-off because the master kill (`aiEnabled`) is the authoritative throttle during a real incident; the global caps are a soft cost-shaping lever, not an emergency brake.
 
-## Per-user cap (`llmMaxDailyInvocationsPerUser`)
+## Per-user cap (per-minute bucket + hard daily ceiling)
 
-**Status:** **already exists** — implemented in the existing rate
-limiter, no new infra needed.
+**Status:** **shipped.** Two independent per-user bounds now exist in
+`functions/src/middleware/rate_limiter.ts`:
 
-Lives in `lib/services/import/import_rate_limiter.dart` (client) and is
-enforced server-side via `functions/src/middleware/rate_limiter.ts`
-(`structureRecipe`: 10 tokens, refill 3/min; `ocrRecipeImage`: 5 tokens,
-refill 2/min). Daily caps are derived from the refill rate × 1440 min;
-to set a stricter daily cap that doesn't replenish, the rate-limiter
-schema would need a separate "daily ceiling" field.
+1. **Per-minute token bucket** (original): `structureRecipe` 10 tokens /
+   refill 3/min; `ocrRecipeImage` 5 tokens / refill 2/min. Bounds burst rate.
+2. **Hard daily ceiling** (BUT-1477): the `dailyLimit` field on
+   `RateLimitConfig` — a UTC-day counter stored on the *same*
+   `system_rate_limits/{userId}_{operation}` doc and checked in the same
+   transaction (a denied request does NOT consume a bucket token). Current
+   values: `structureRecipe` 100/day, `ocrRecipeImage` 50/day,
+   `importRecipe` 100/day. Resets at UTC midnight, matching
+   `checkGlobalLimit`'s day key. Absent `dailyLimit` → no daily enforcement
+   for that operation (bucket-only).
 
-If a hard daily cap separate from the per-minute bucket is required,
-that is **out of scope** for BUT-439 and would land as a follow-up
-ticket: extend `RateLimitConfig` with `dailyMaxInvocations` and store a
-24-h rolling counter on the same Firestore doc.
+The production `dailyLimit` values are pinned by
+`functions/src/__tests__/rate-limiter-daily-cap.test.ts` (BUT-1573) — weakening
+or deleting a per-user daily LLM cap regresses that test instead of shipping
+silently.
+
+Ops note: the daily ceiling is the per-user analogue of the global
+`globalDailyLimit`. The global cap bounds *aggregate* spend; the per-user
+`dailyLimit` bounds a *single* account's worst-case spend even while it stays
+under its minute bucket.
 
 ## Monitoring & alerting
 
@@ -191,6 +200,57 @@ Cloud Logging filters that surface kill-switch trips:
 
 Alert on either firing >100 times/hour (indicates user-visible incident
 that ops should ack).
+
+### Cap-trip / rate-limit-violation alert (BUT-1561)
+
+The global cap and per-user limits deny silently apart from a WARNING log —
+nothing pages ops when the app starts shedding LLM load. Two log-based metrics
+plus one alert policy close that gap. **This is a console/gcloud action (no IaC
+in the repo); create it once per environment.**
+
+Stable log signals emitted by `functions/src/middleware/rate_limiter.ts` and
+`functions/src/llm/ocr-retry.ts`:
+
+| Event | Severity | Log text substring | Meaning |
+|-------|----------|--------------------|---------|
+| Global aggregate cap tripped | WARNING | `Global LLM limit exceeded for` | `checkGlobalLimit` denied — hourly/daily aggregate ceiling hit. |
+| OCR retry suppressed by global cap | WARNING | `global LLM cap reached` | The OCR text-mode retry skipped to protect the budget. |
+| Per-user limit exceeded | WARNING | `Rate limit exceeded for user` | A single account hit its minute bucket or daily ceiling. |
+
+Per-user violations are also written to Firestore `system_events`
+(`type == "rate_limit_violation"`) — a durable audit trail independent of log
+retention.
+
+Create the metrics (values are counters over the function logs):
+
+```sh
+# 1. Global-cap trips (aggregate ceiling reached — a real capacity incident).
+gcloud logging metrics create llm_global_cap_trips \
+  --project="$PROJECT_ID" \
+  --description="Global LLM aggregate cap denied a call (checkGlobalLimit=false)" \
+  --log-filter='resource.type="cloud_function" severity=WARNING (textPayload:"Global LLM limit exceeded for" OR jsonPayload.message:"Global LLM limit exceeded for" OR jsonPayload.message:"global LLM cap reached")'
+
+# 2. Per-user rate-limit violations (abuse / retry-storm signal).
+gcloud logging metrics create llm_rate_limit_violations \
+  --project="$PROJECT_ID" \
+  --description="A user hit their per-minute bucket or daily LLM ceiling" \
+  --log-filter='resource.type="cloud_function" severity=WARNING (textPayload:"Rate limit exceeded for user" OR jsonPayload.message:"Rate limit exceeded for user")'
+```
+
+Recommended alert policy (Cloud Monitoring):
+
+- **`llm_global_cap_trips` > 0 sustained for 5 min → PAGE.** A single global-cap
+  trip means the whole app is shedding LLM load; that is always a user-visible
+  incident. Correlate with the Vertex cost line and decide raise-cap vs
+  investigate-abuse vs total-kill.
+- **`llm_rate_limit_violations` > 50 / hour → NOTIFY (non-paging).** A normal
+  user never approaches their cap; a sustained bulge is a scripted-abuse or
+  runaway-client signal. Cross-reference the `system_events` docs
+  (`type == "rate_limit_violation"`, `userIdHash`) to find the offending
+  account.
+
+Both thresholds are starting points — tune against real post-launch baselines
+(pre-launch traffic is ~0, so any trip is noteworthy).
 
 Cost dashboard:
 https://console.cloud.google.com/billing/_/reports?project=$PROJECT_ID

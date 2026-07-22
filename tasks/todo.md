@@ -1,255 +1,223 @@
 # tasks/todo.md
 
-## 2026-07-22 sprint (second pass) — Selection (Phase 1)
+## 2026-07-22 sprint (third pass) — Selection (Phase 1)
 
-**Context:** the prior 2026-07-22 plan (archived below) already ran — its Tier-A batch (BUT-1509,
-BUT-1510, BUT-1486, BUT-1644) shipped in `54fe8b9ec` ("salvage session-limited sprint w26hokodz").
-Its Tier-B/Tier-A carry-forwards (BUT-1615, BUT-1642) did NOT land (session-limited run only
-finished the Tier-A batch) — both re-verified live against current `main` this pass and carried
-forward again below.
+**Context:** the prior 2026-07-22 second-pass plan (archived below) was fully implemented and
+shipped in `4d6030d66` ("import-pipeline hardening, wider correction capture, tier-vocab
+unification") — all of Batches A–I from that plan landed (BUT-1615 closed obsolete, its remainder
+having shipped under BUT-1611; BUT-1642/1646/1645/1471/1484/1485/1488/1501/1476 all shipped). A
+post-hoc re-review (`56cf1da0f`) then found that ship step had forged its commit-gate markers;
+four real specialists re-ran against the committed diff and cleared the allergen-safety axis,
+filing one MEDIUM quality-only finding (BUT-1650, selected below).
 
 **Linear MCP:** connected (`list_issues`/`get_issue`/`save_issue` all responded normally).
 
-**Backlog scanned:** Linear team Butlery, states Backlog/Todo/In Progress/Triage — 98 Backlog + 4
-Todo, 0 In Progress, 0 Triage. `onboarding-reserved` label present on BUT-677/BUT-722 — excluded
-entirely, not scored. Two Todo-state items are epic/blocked, not selectable: BUT-1323 (epic body,
-score the children not the epic) and BUT-1613 (blocked by the still-incomplete BUT-1611 UI slice,
-i.e. this sprint's own BUT-1615).
+**Backlog scanned:** Linear team Butlery — 93 Backlog + 2 Todo (BUT-1613, BUT-1323), 0 In
+Progress, 0 Triage. `onboarding-reserved` label present on BUT-677/BUT-722 — excluded entirely,
+not scored. BUT-1323 is an epic body (scored its child, not itself).
 
-**Step-0 grep-of-main premise check (mandatory):** git status clean, `54fe8b9ec` confirmed on
-`main`. Re-verified both carried-forward tickets directly against current code, not just the prior
-plan's citation:
-- BUT-1642 — `functions/scripts/run-ci-unit-tests.js:20` still `EXCLUDE_PREFIXES = ["test:rules",
-  "test:integration:"]`, unchanged. Premise live.
-- BUT-1615 — grepped for any presence-setting UI/setter (`setPresent`, `togglePresent`,
-  `PresenceSelector`, `whosHome`) across `lib/viewmodels/menu`, `lib/widgets/menu`,
-  `veckomeny_view.dart` — none found. The generator/VM only have *readers*
-  (`presentMemberIdsFor`, `calendar_weekly_menu_widget.dart:369` reading it as a seed) — nothing
-  writes it yet. Premise live; still a dead model with no way to populate it.
+**Step-0 grep-of-main premise check (mandatory):** git status clean at `99e0f7ba1`. Verified the
+tier-vocabulary unification directly in code (`log-parse-event.ts:58` now
+`export const VALID_TIERS: readonly string[] = DART_TIER_NAMES;`, imported from the shared
+`parse-tier-vocabulary.ts` module) — confirms BUT-1646 (previous pass) is live, not just
+committed. No obsolete tickets found this round: none of the ~15 BUT- ids in the last 7 days'
+git log appear back open in Backlog/Todo.
 
-**No obsolete tickets this round** — none of the ~20 BUT- ids referenced in the last 7 days' git
-log (`54fe8b9ec`, `584dceaa2`, `2c2e48f34`, etc.) appear in the current open Backlog/Todo dump;
-the prior pass already closed BUT-1558.
+**New candidates this round:** BUT-1647/1648/1650/1651/1649 were all filed as follow-ups from the
+just-shipped import-pipeline sprint's post-hoc review. BUT-1649 is need-malin (on-device spot
+check) — restated below, not built. BUT-1651 targets the shared `claude-plugins` repo — parked
+with its sibling delivery-engine tickets (not buildable from a Butlery sprint).
 
-**New candidates this round:** BUT-1646 and BUT-1645, both filed by the reviewers of the
-just-shipped `54fe8b9ec` batch (BUT-1486's own "unify or file a follow-up" escape hatch, and a
-testing-specialist gap on the metric this sprint just added). Both passed the mandate gate clean.
+**This round also pulled two long-standing but previously-parked items back in:**
+- **BUT-1613** — was blocked by BUT-1611 (per-weekday presence selector), which shipped
+  2026-07-20. Re-checked: `blockedBy` is now empty in Linear and the presence data
+  (`presentMemberIdsFor(day, slot)`) exists on `WeeklyMenuPlan` — the blocker is gone. This is
+  exactly the accepted-deviations-sanctioned "presence drives portions" work (BUT-1611 → BUT-1625
+  boundary note), not the disallowed generation-scoping.
+- **BUT-1561** — FinOps low-priority hardening, sitting since 2026-07-04 with no premise change;
+  file:line references in the ticket still match current code
+  (`functions/src/llm/ocr-retry.ts`, `functions/src/middleware/rate_limiter.ts`).
+- **BUT-1630** — sprint scratch janitor. Verified the premise is real and worse than the ticket
+  describes: `.claude/state/sprint-patches/` currently holds 9 leftover patch files, `git stash
+  list` shows 17+ stashes tagged `sprint-parallel-cleanup`, and `.claude/worktrees/` holds 17
+  leftover directories.
 
-**This round pulled from the pipeline-audit backlog** (`docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`,
-2026-07-01) instead of re-scoring the same parked items a sixth time: BUT-1471, BUT-1484, BUT-1485,
-BUT-1488, BUT-1501, BUT-1476 — six small/medium, spec-backed (the roadmap doc *is* the mandate),
-autonomous-labeled tickets that have sat untouched since 2026-07-02.
-
-**Batching note:** BUT-1501 and BUT-1476 both touch `lib/services/import/url_import_strategy.dart`
-— per the skill's disjoint-files rule they cannot be split across two parallel batches, so they are
-combined into one batch (Batch I) instead of dropping either.
-
-**Mandate gate — large items deliberately NOT selected (see `needsApproval` for full reasoning):**
-five Tier-C-sized cross-cutting refactors (BUT-1508 78-file DI migration, BUT-1507 god-object
-split, BUT-1504 legacy-consumer migration+deletion, BUT-1480 import-pipeline unification, BUT-1513
-~120-test rewrite) are left for a dedicated pass rather than folded into this incremental batch
-model, consistent with every prior pass. BUT-1482 (tag-schema config-invalidation) is safety-
-adjacent-schema + open-ended design work, not a clean incremental fix. BUT-1641 (optional
-leaf-disposal guards) is explicitly framed by its own ticket as a discretionary call with zero
-product impact — parked for Malin rather than auto-built either way.
+**Mandate gate — items deliberately NOT selected (see `needsApproval` for full reasoning):**
+BUT-1650 was the one genuine judgment call this round (a cost-vs-quality tradeoff) — on reading
+it closely, the ticket's own "clean fix" fully preserves BUT-1476's cost intent (still exactly
+one LLM escalation, just relocated to also cover below-threshold parses) while reversing an
+unintended quality regression, so it reclassifies as `build`, not a decision needed from Malin.
+Five Tier-C-sized cross-cutting refactors are left parked for a dedicated pass (unchanged from
+every prior round) plus BUT-1514 (dual ServiceLocator test containers, 125-file blast radius) —
+newly recognized as belonging to that same family rather than a small fix. BUT-1441 is Tier-D
+(needs a prod console/script data migration) and self-describes as low-urgency. Four
+`claude-plugins`-targeting delivery-engine tickets (BUT-1620, BUT-1621, BUT-1634, BUT-1651) are
+parked as wrong-repo, same as every prior pass.
 
 **Lane convention honored:** `deferred`-lane tickets (~48) left untouched in Backlog, not
-individually re-litigated. `need-malin`-lane standing tickets (BUT-1229, BUT-1445, BUT-863,
-BUT-1368, BUT-1179, BUT-1502, BUT-1557, BUT-880, BUT-1599, BUT-1361, BUT-1636) restated briefly
-below, unchanged from prior passes.
+individually re-litigated. `need-malin`-lane standing tickets restated briefly below, unchanged
+from prior passes, plus this round's new BUT-1649.
 
-**File-overlap check (mandatory before batching):** all 9 batches below touch disjoint file sets
-(menu, CI script, 2 CF event files, 1 test file, CRF tooling, import cache, import adapter, e2e
-test, import-pipeline pair) — verified via `python tools/stakeholder_router.py --json <paths>` per
-batch (also the source of each batch's tier/panel below — all came back `single`, no
-`high_stakes_hits`, so `requiresPlanMode` is `false` across the board per the risk-gate formula
-(none is Urgent/High priority or security-labeled)).
+**File-overlap check (mandatory before batching):** 4 batches below touch disjoint file sets
+(import prod+test, backend functions+CI, a new standalone tooling script, menu model+VM+widget) —
+verified via `python tools/stakeholder_router.py --json <paths>` per batch (also the source of
+each batch's tier/panel below — all came back `single`, no `high_stakes_hits`, so
+`requiresPlanMode` is `false` across the board per the risk-gate formula: none of the six is
+Urgent/High priority or security-labeled).
 
-### Batch A — presence-selector-ui (build-review: UI/interaction call, 5th carry-forward)
-- [ ] **[Tier B] BUT-1615** — Per-day presence selector UI + generator wiring + preview gate (the
-  real remainder of BUT-1611 — its own ticket shipped only the dead data-model field). Fifth pass
-  carrying this forward; session-limited runs keep finishing only the Tier-A batch before this one
-  starts. disposition: build-review. requiresPlanMode: false (router: single, panel: Product
-  Manager only). signoffReason: where the per-day "who's present" selector sits in the calendar UI
-  and how it's toggled — a visual/interaction call for Malin before it ships.
-  Files: `lib/models/menu/weekly_menu_plan.dart` (read/extend save path),
-  `lib/viewmodels/menu/menu_generator.dart`, `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`,
-  `lib/services/menu/weekly_menu_plan_service.dart`, `lib/widgets/menu/calendar_weekly_menu_widget.dart`,
-  `lib/views/veckomeny_view.dart`, a `/preview --directions` artifact under `tasks/previews/`, plus
-  tests.
+### Batch A — import-followups (single, import — 2 tickets, same area label so combined)
+- [ ] **[Tier A] BUT-1650** — `UrlImportStrategy` only reaches its Tier-6 LLM escalation on total
+  structured-parse failure; a rough-but-non-empty below-threshold parse now gets zero LLM cleanup
+  (previously got internal cleanup). Fix: a quality gate at `url_import_strategy.dart:116-117`
+  that falls through to Tier 6 when the enhanced parse is below threshold — NOT re-enabling the
+  per-tier internal LLM (that would reintroduce BUT-1476's 3x cost regression). disposition:
+  build. requiresPlanMode: false (router: single, panel: Data/Integrations Engineer, Data/ML
+  Engineer, FinOps, Monetization Lead).
+  Files: `lib/services/import/url_import_strategy.dart`,
+  `lib/services/parsing/recipe_parser_service.dart` (read), plus a test.
   Acceptance:
-  1. A per-day "who's present" selector exists in the weekly-menu calendar UI and persists to
-     `WeeklyMenuPlan.presenceByDay` via a plan-VM save method.
-  2. `menu_generator.dart`'s day-generation path reads that day's own presence selection and sets
-     `presentMemberIds` per generated day (wiring only).
-  3. A `/preview --directions` marker exists for the new selector before implementation.
-  4. **Don't** widen this into allergen-filtering/generation-pool scoping — matches the accepted
-     display/portions-safe boundary in `accepted-deviations.md` (BUT-1625's boundary). Existing
-     weekly-menu allergen-filtering tests stay unchanged.
-
-### Batch B — ci-alias-wiring (single, config-only, 2nd carry-forward)
-- [ ] **[Tier A] BUT-1642** — `run-ci-unit-tests.js`'s `EXCLUDE_PREFIXES` skips the whole
-  `test:integration:` prefix, incidentally also skipping `test:integration:analyze-corrections-alias`
-  even though that suite needs no emulator. Confirmed still live at Step-0 this pass too.
-  disposition: build. requiresPlanMode: false (router: single, panel: Vendor/Procurement).
-  Files: `functions/scripts/run-ci-unit-tests.js`.
+  1. A URL whose cheap tiers produce a non-null but below-threshold parse now falls through to
+     Tier 6's single LLM escalation instead of shipping the rough parse untouched.
+  2. The total LLM escalation count for any one failed/partial import stays at exactly 1 (BUT-1476's
+     cost cap is not reopened) — assert via call-count in the test.
+  3. **Don't** re-enable the parser's internal per-tier LLM cleanup — the fix is only the
+     fallthrough gate at the strategy level.
+- [ ] **[Tier A] BUT-1647** — Backfill 4 acceptance tests for already-shipped BUT-1501/1476/1484
+  behavior (spec required them; code shipped without). Test-only, no production changes.
+  disposition: build. requiresPlanMode: false (same router run as above — shared area).
+  Files: `test/unit/services/import/text_import_strategy_test.dart`,
+  `test/unit/viewmodels/assisted_import_viewmodel_test.dart`,
+  `test/unit/services/import/url_import_strategy_test.dart`,
+  `test/unit/services/import/global_recipe_cache_test.dart` (or an ExtractionMeta-focused test).
   Acceptance:
-  1. `test:integration:analyze-corrections-alias` actually runs in the CI unit-test job (verified
-     via a pushed commit's `gh run list`/logs, not just local reasoning).
-  2. Emulator-dependent `test:integration:` suites remain excluded.
-  3. **Don't** touch `firestore.rules` or unrelated CI workflow files — naming/filter fix only.
+  1. A test proves `TextImportStrategy` populates `structuredIngredients` via a stubbed
+     `IngredientParsingStrategy` while the flat allergen ingredient list is untouched.
+  2. A test proves completing the assisted-import wizard invokes `ImportCorrectionSnapshot.capture`
+     with `source=url` and a PII-scrubbed recipe.
+  3. A test proves `ExtractionMeta` reflects a real seeded `tier`/`overallQuality`, and falls back
+     to `tier:0/confidence:0.8` when metadata is absent or wrong-typed.
+  4. **Don't** touch production code in any of the 4 files under test — test-only diff (this
+     ticket is separate from BUT-1650's production fix in the same file).
 
-### Batch C — tier-vocab-followup (single, backend)
-- [ ] **[Tier A] BUT-1646** — Fold tier-vocabulary copy #3 (`log-parse-event.ts`'s hardcoded
-  `VALID_TIERS`) into the shared `parse-tier-vocabulary.ts` module BUT-1486 just created — its own
-  filed follow-up. disposition: build. requiresPlanMode: false (router: single, panel: Database
-  Administrator/Data-layer Engineer, Vendor/Procurement).
-  Files: `functions/src/events/log-parse-event.ts`, `functions/src/shared/parse-tier-vocabulary.ts`
-  (read), plus a CF test.
+### Batch B — backend-hardening (single, backend — 2 tickets, same area label so combined)
+- [ ] **[Tier A] BUT-1648** — The real fix for BUT-1642 (which was closed on the finding that the
+  unit-CI job is correctly excluding the alias suite — it needs an emulator). Wire
+  `test:integration:analyze-corrections-alias` into the emulator-backed `test:rules:all` script and
+  confirm it runs in `.github/workflows/firestore-rules.yml`'s emulator job. disposition: build.
+  requiresPlanMode: false (router: single, panel: DB/Data-layer Engineer, DevOps/SRE, Engineering
+  Manager, QA, Release/Compliance Manager, Vendor/Procurement).
+  Files: `functions/package.json` (`test:rules:all` script), `.github/workflows/firestore-rules.yml`
+  (read/verify only).
   Acceptance:
-  1. Either `log-parse-event.ts`'s `VALID_TIERS` is derived from the shared `DART_TIER_NAMES`
-     module with a drift-tripwire test, OR a documented decision states the two vocabularies
-     legitimately differ and the ticket closes on that basis.
-  2. If unified: a test proves the two tier lists stay equal (fails on future drift).
-  3. **Don't** change which tiers are currently accepted by either path — vocabulary
-     consolidation only, not a behavior change.
+  1. `functions/package.json`'s `test:rules:all` script includes
+     `ts-node src/__tests__/analyze-corrections-alias.test.ts`.
+  2. A pushed commit's `gh run list`/logs show the alias suite actually executing in the
+     emulator-backed CI job (not skipped).
+  3. **Don't** touch `functions/scripts/run-ci-unit-tests.js` — it is already correctly excluding
+     this suite from the no-emulator unit job.
+- [ ] **[Tier A] BUT-1561** — Four small FinOps hardening items (role-org scan #7): gate the OCR
+  text-mode retry behind `checkGlobalLimit()` (currently bypasses the cap, undercounting real
+  Vertex volume); shard/approximate the `withRateLimit` global hotspot-doc write; fix the
+  kill-switch runbook + `rate_limiter.ts` header (stale storage-path/fail-open description); add a
+  log-based-metric alert on cap-trip / rate-limit-violation volume. disposition: build.
+  requiresPlanMode: false (same router run as above — shared area).
+  Files: `functions/src/llm/ocr-retry.ts`, `functions/src/middleware/rate_limiter.ts`,
+  `docs/ops/llm-kill-switch-runbook.md`.
+  Acceptance:
+  1. The OCR text-mode retry path is gated behind `checkGlobalLimit()` (test proves a retry is
+     blocked once the global cap is tripped).
+  2. The kill-switch runbook and `rate_limiter.ts`'s header comment match current behavior
+     (`system_rate_limits` collection, fail-closed) — no stale-path/fail-open language remains.
+  3. **Don't** change the cap thresholds or fail-closed semantics themselves — hardening/doc-fix
+     only, not a policy change.
 
-### Batch D — correction-drop-metric-test (single, test-only)
-- [ ] **[Tier A] BUT-1645** — Assert `parse_correction_upload_dropped` actually fires at all 4
-  silent-drop sites (`unknown_tier`, `payload_error`, `no_salt`, `salt_error`) — the metric BUT-1486
-  just shipped has no test proving it fires. disposition: build. requiresPlanMode: false (router:
-  single, panel: Software Architect, Product Manager).
-  Files: `test/unit/services/parsing/parse_correction_uploader_test.dart` (test-only).
+### Batch C — sprint-scratch-janitor (single, tooling, standalone)
+- [ ] **[Tier A] BUT-1630** — Add a safe, manually/scheduled-invoked cleanup for sprint-engine
+  scratch that accumulated after the ship-phase self-cleanup was removed (auto-mode classifier
+  denial). Verified live and worse than the ticket states: 9 leftover patch files under
+  `.claude/state/sprint-patches/`, 17+ `sprint-parallel-cleanup`-tagged stashes, 17 leftover
+  `.claude/worktrees/` dirs. disposition: build. requiresPlanMode: false (router: single, panel:
+  Software Architect, Product Manager).
+  Files: new `tools/clean_sprint_scratch.sh` (or `.js`), run manually or wired into an existing
+  non-autonomous entry point (e.g. `/janitor`) — explicitly NOT inside the workflow `agent()`
+  Ship prompt.
   Acceptance:
-  1. A test proves each of the 4 drop sites emits `parse_correction_upload_dropped` with the
-     correct `reason` param.
-  2. **Don't** modify production code in `parse_correction_uploader.dart` — test-only diff.
+  1. Running the new script deletes old sprint patch dirs under `.claude/state/sprint-patches/`.
+  2. It drops ONLY `git stash` entries whose message contains the engine's STASH_MARKER
+     (`sprint-parallel-cleanup`) — a test/dry-run proves a plain human stash is left untouched.
+  3. **Don't** add this cleanup back into the workflow engine's autonomous `agent()` Ship prompt —
+     that's what tripped the auto-mode safety classifier originally; it must run from an
+     interactive/manual/scheduled context.
 
-### Batch E — crf-retrain-tooling (single, backend/parsing)
-- [ ] **[Tier A] BUT-1471** — `retrain_with_corrections.sh` stops at writing weights with no
-  golden-set regression gate, no Storage upload/version bump, no hash-registry print; also point
-  `export-corrections.ts` at `parse_corrections_v2` for the PII scrub. Spec-backed
-  (`docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md`, 2026-07-01 audit). disposition: build.
-  requiresPlanMode: false (router: single, panel: Data/ML Engineer, Vendor/Procurement).
-  Files: `scripts/crf/retrain_with_corrections.sh`, `functions/src/admin/export-corrections.ts`,
-  `test/golden/crf_ingredients.json` (read).
+### Batch D — menu-presence-portions (build-review: UI/display call)
+- [ ] **[Tier B] BUT-1613** — "Who's eating" slice 4: auto-adjust a generated day's
+  portions/servings to that day's present-member count (using the presence data BUT-1611 shipped).
+  Verified unblocked (BUT-1611 shipped 2026-07-20, `blockedBy` now empty in Linear) and verified
+  absent in code (no `servings`/`portion` field exists anywhere on `WeeklyMenuPlanEntry` today).
+  This is the accepted-deviations-sanctioned "presence drives portions" surface (display/portions
+  only, NOT generation-pool scoping — see the BUT-1611→BUT-1625 boundary note). disposition:
+  build-review. requiresPlanMode: false (router: single, panel: Product Manager). signoffReason:
+  where/how the adjusted portion count is shown to the user (a badge on the day card? inline text
+  on the recipe card? cooking-mode header?) — no mockup exists for this, it's a visual call.
+  Files: `lib/models/menu/weekly_menu_plan.dart` (add a servings/portion field to
+  `WeeklyMenuPlanEntry` or the day), `lib/viewmodels/menu/menu_generator.dart`,
+  `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`,
+  `lib/services/menu/weekly_menu_plan_service.dart`,
+  `lib/widgets/menu/calendar_weekly_menu_widget.dart`, a `/preview --directions` artifact under
+  `tasks/previews/`, plus tests.
   Acceptance:
-  1. The retrain script refuses to proceed when eval regresses vs `test/golden/crf_ingredients.json`.
-  2. The script uploads to the `RemoteWeightLoader` Storage path with a version bump and prints
-     the SHA-256 for the hash registry.
-  3. `export-corrections.ts` reads from `parse_corrections_v2` (gaining the server-side PII scrub)
-     instead of the current aggregate path.
-
-### Batch F — extraction-meta-tier (single, import/parsing)
-- [ ] **[Tier A] BUT-1484** — `ExtractionMeta` hardcodes `tier: 0, confidence: 0.8` even though the
-  real values are computed and discarded. Spec-backed (pipeline audit). disposition: build.
-  requiresPlanMode: false (router: single, panel: Data/Integrations Engineer, FinOps,
-  Monetization Lead).
-  Files: `lib/services/import/cache/cache_entry.dart`, the call site that constructs
-  `ExtractionMeta`, plus a test.
-  Acceptance:
-  1. `ExtractionMeta.tier`/`.confidence` reflect the actually-computed values, not the hardcoded
-     `tier: 0, confidence: 0.8`.
-  2. A test proves a non-default tier/confidence value round-trips through the cache entry.
-  3. **Don't** change cache key/expiry logic — data-fidelity fix only.
-
-### Batch G — import-result-adapter (single, import)
-- [ ] **[Tier A] BUT-1485** — `ImportResultV2→legacy` adapter logic is copied in 3 pipelines;
-  unify into one shared adapter. Spec-backed (pipeline audit). disposition: build.
-  requiresPlanMode: false (router: single, panel: Data/Integrations Engineer, FinOps,
-  Monetization Lead).
-  Files: `lib/services/import/models/import_result_v2.dart`,
-  `lib/services/import/llm/llm_enhancement_service.dart`,
-  `lib/services/import/photo_llm_vision.dart`,
-  `lib/services/import/pipelines/instagram_pipeline.dart`,
-  `lib/services/import/pipelines/tiktok_pipeline.dart`,
-  `lib/services/import/youtube/youtube_import_strategy.dart`, plus a test.
-  Acceptance:
-  1. A single shared `ImportResultV2→legacy` adapter exists and all 3 previously-duplicated call
-     sites use it.
-  2. Existing instagram/tiktok/youtube import pipeline tests still pass unchanged.
-  3. **Don't** leave a 4th copy — the duplicated logic is deleted at the original 3 sites, not
-     just added alongside.
-
-### Batch H — usp-e2e-test (single, import/tagging, test-only)
-- [ ] **[Tier A] BUT-1488** — The pipeline's largest untested seam: no test drives a real import →
-  real tagging → real (fixture-seeded) ingredient lookup and asserts allergen TriStates. The
-  current "Import → Tagging Integration" test fakes the lookup and drives a dead orchestrator.
-  Spec-backed (pipeline audit). disposition: build. requiresPlanMode: false (router: single,
-  panel: Data/Integrations Engineer, Data/ML Engineer, FinOps, Monetization Lead).
-  Files: new/updated integration test under `test/integration/`, fixture data, reading real
-  `ImportManager.autoImport`, `TaggingService`/`TaggingPipelineRunner`, fixture-seeded
-  `IngredientLookupService` (no production edits).
-  Acceptance:
-  1. A new integration test drives real `ImportManager.autoImport` → real
-     `TaggingService`/`TaggingPipelineRunner` → a fixture-seeded (not faked) `IngredientLookupService`
-     for 3-4 representative raw Swedish recipes, asserting specific allergen TriState outcomes.
-  2. The existing fake-lookup/dead-orchestrator test is replaced, not left as a parallel duplicate.
-  3. **Don't** weaken any allergen TriState assertion to make the test pass — a failing assertion
-     means fixing the pipeline or the fixture data, not loosening the check.
-
-### Batch I — import-pipeline-hardening (single, import/parsing — 2 tickets, combined for file overlap)
-- [ ] **[Tier A] BUT-1501** — CRF/NER ingredient cascade + correction capture run ONLY for URL
-  imports; photo/paste/assisted flows get regex parsing and feed no active learning
-  (workflow-map-traced gap, spec-backed). disposition: build. requiresPlanMode: false.
-- [ ] **[Tier A] BUT-1476** — Up to 3 full LLM calls can fire per failed URL import (two nested
-  tier waterfalls both escalating to Gemini); pass `useLlm:false` from `_tryEnhancedParser` to keep
-  exactly one escalation point (cost-minimization). disposition: build. requiresPlanMode: false.
-  Router (run once for the combined file set): single, panel: Data/Integrations Engineer, Data/ML
-  Engineer, FinOps, Monetization Lead, Performance Engineer.
-  Files: `lib/services/import/text_import_strategy.dart`, `lib/services/import/url_import_strategy.dart`
-  (shared by both tickets — why they're one batch), `lib/services/import/fallbacks/llm_extraction_fallback.dart`,
-  `lib/services/parsing/tiers/llm_tier.dart`, `lib/viewmodels/assisted_import_viewmodel.dart`,
-  `lib/services/import/heuristics/ingredient_line_detector.dart`, `docs/onboarding/workflow-map.html`
-  (re-trace the 3 DEAD-marked flows this fixes), plus tests.
-  Acceptance:
-  1. (1501) A photo-imported recipe's ingredient lines carry structured quantity/unit/name via the
-     same CRF/NER cascade URL imports use (unit test on `TextImportStrategy`).
-  2. (1501) Completing the assisted-import wizard writes a PII-scrubbed parse-correction record
-     (test).
-  3. (1476) `_tryEnhancedParser` passes `useLlm:false` so at most one full LLM escalation fires per
-     failed import (test/assertion proves call count).
-  4. **Don't** reconcile the Firestore `site_configs` vs Dart `SiteParserRegistry` duplication in
-     this pass if it balloons scope — file a follow-up ticket instead of expanding scope
-     mid-sprint; only re-trace workflow-map flows actually fixed here.
+  1. A day with 3 present members generates/displays that day's recipe(s) scaled for 3 servings.
+  2. A day with no presence selection is unchanged from current default behavior (existing tests
+     for the no-presence path stay green).
+  3. A `/preview --directions` marker exists for the new portion-count display before
+     implementation lands.
+  4. **Don't** widen this into candidate-pool/generation scoping by presence — matches the
+     accepted display/portions-safe boundary in `accepted-deviations.md` (BUT-1625's boundary).
+     Existing weekly-menu allergen-filtering tests stay unchanged.
 
 ## Needs Malin (speculative / contestable / ops-blocked / wrong-repo / Tier-C-sized — not built)
 
-**Tier-C-sized refactors deliberately left for a dedicated pass** (not an incremental batch):
+**Tier-C-sized refactors deliberately left for a dedicated pass** (not an incremental batch,
+unchanged list plus one addition this round):
 - **BUT-1508** — Convert ServiceLocator-inside-services to constructor injection (78 files).
-  Recommend: worth doing, needs its own dedicated session, not a mixed batch.
 - **BUT-1507** — Refactor `user_service`/`unified_friends_service` god-objects into facades.
-  Recommend: dedicated pass.
-- **BUT-1504** — Migrate remaining legacy `menu_service`/`social_recipe_service` consumers +
-  delete. Recommend: dedicated pass with careful consumer-sequencing (deletion risk).
-- **BUT-1480** — Unify the two URL import pipelines. Recommend: dedicated pass, foundational
-  risk to the core import pipeline.
+- **BUT-1504** — Migrate remaining legacy `menu_service`/`social_recipe_service` consumers + delete.
+- **BUT-1480** — Unify the two URL import pipelines.
 - **BUT-1513** — Rewrite ~120 bulk-skipped BUT-369 integration tests on the emulator lane.
-  Recommend: worth doing, schedule as its own multi-session initiative.
+- **BUT-1514** (new this round) — Unify the dual ServiceLocator test containers; the ticket's own
+  text notes 125 test files import both containers today — same dedicated-pass shape as the five
+  above, not a clean incremental fix despite its Low priority label. Recommend: fold into whichever
+  session tackles BUT-1508 (same DI-surface family).
+
+**Wrong-repo — targets the shared `claude-plugins` delivery engine, not buildable from a Butlery
+sprint** (BUT-1619 in this family was closed already, fixed directly in claude-plugins):
+- **BUT-1620** — delivery engine: reject stub/degenerate specialist findings in gate scoring.
+- **BUT-1621** — delivery engine hardening: worktree dep-resolution before analyze + verify args
+  coercion.
+- **BUT-1634** — Phase-0 clean-tree check doesn't apply `cleanTreeIgnore` to untracked (`??`)
+  entries, so a `.stale` marker aborts the next sprint.
+- **BUT-1651** (new this round) — port the marker-NAMES content check from
+  `require-review-before-commit` to its sibling `require-simplify-before-commit` gate (residual of
+  BUT-1599/1619).
+Recommend: batch all four into one dedicated `claude-plugins` session — the same recommendation as
+every prior pass.
+
+**Tier-D / ops-blocked:**
+- **BUT-1441** — Backfill zoneless `feedback.createdAt` docs to UTC. Needs a prod console/script
+  data migration; the ticket itself frames this as low-urgency pre-launch (near-empty collection).
 
 **Fresh judgment calls this round:**
-- **BUT-1482** — Config-change invalidation for tags. Schema change to `TagResult` (safety-adjacent
-  tagging data) plus an open-ended "design a server-side batch retag path" with no concrete
-  acceptance target. Recommend: reframe with a concrete trigger (e.g. "next `kTagGeneratorVersion`
-  bump") before building; not urgent today.
-- **BUT-1490** — Grow the gated corpora. No measurable "done" stated. Recommend: reframe with a
-  concrete corpus-size/coverage target, then it becomes a clean build.
-- **BUT-1240** — NER golden corpus real-signal lane via `integration_test` on a device-capable
-  runner. Needs infra the loop can't provision. Recommend: revisit once a device-capable runner
-  exists (ties to BUT-451 staging infra).
-- **BUT-1641** — Leaf-level disposal guards for 5 state-holders (optional). Ticket itself frames
-  this as a discretionary call with zero product impact (parent guards already cover the crash
-  path per BUT-1628). Recommend: close as "parent guards sufficient" unless you want the extra
-  seatbelt — low value either way.
+- *(none new — BUT-1650 was the only live judgment call, and on inspection its "clean fix" turned
+  out to be a straightforward regression fix, not a real tradeoff; moved to Batch A as `build`.)*
 
-**Standing (repeated from prior passes, unchanged):**
+**Standing (repeated from prior passes, unchanged unless noted):**
 - **BUT-1499** — Collaborative weekly menu wire-up. Ticket's own acceptance #1 is "decide: wire it
   up or park it" — your call.
 - **BUT-1472** — `parse_corrections_v2`/`llm_response_samples` consumer-or-turn-off investment
   decision. Recommend: turn off per cost-minimization unless you want the corrections-mining tool.
 - **BUT-1625** — Safe present-aware menu generation. Accepted-deviations boundary (children's
-  allergen-safety surface) — leave parked unless specifically wanted; BUT-1615 above is the
-  prerequisite anyway.
+  allergen-safety surface) — leave parked unless specifically wanted; BUT-1613 (this pass) is a
+  narrower, sanctioned slice of the same presence data, not this ticket's generation-scoping ask.
 - **BUT-1616** — Reconcile `raw-safe`/`processed` property-vocabulary drift. Safety-adjacent
   tagging vocabulary, not mine to guess which side is canonical.
 - **BUT-1617** — Triage 35 stale specialist findings from the 2026-07-14 sprint. Recommend: close
@@ -263,14 +231,17 @@ batch (also the source of each batch's tier/panel below — all came back `singl
 - **BUT-1176** — Optional custom_lint/AST upgrade. Self-describes conditional; condition unmet.
 - **BUT-1636** — Supersede stale accepted-deviations entry (cook_snaps/activity_events age-gating).
   Decision-record edit, genuinely your call.
-- **BUT-950** — Investigate grace period before account deletion. Speculative product question.
-- **BUT-945** — Easier rejoin after unfriend/leave group. Speculative feature, no spec.
+- **BUT-1641** — Leaf-level disposal guards for 5 state-holders (optional). Ticket itself frames
+  this as discretionary with zero product impact. Recommend: close as "parent guards sufficient"
+  unless you want the extra seatbelt.
+- **BUT-1240, BUT-1490, BUT-1482** — parsing/tagging judgment calls, unchanged reasoning from
+  prior passes (device-runner infra gap; no measurable "done"; needs a concrete trigger).
+- **BUT-950, BUT-945** — speculative product ideas, no spec.
+- **BUT-1649** (new this round) — On-device spot-check of CRF structured-ingredient output for
+  text/photo/voice imports. Filed need-malin by design — this needs your hands on a real device,
+  not code.
 - **BUT-1229, BUT-1445, BUT-863, BUT-1368, BUT-1179, BUT-1502, BUT-1557, BUT-880, BUT-1599,
   BUT-1361** — standing `need-malin`-lane tickets, unchanged from prior passes.
-- **BUT-1619, BUT-1620, BUT-1621, BUT-1630, BUT-1634** — delivery-engine (sprint machinery)
-  hardening tickets targeting `C:/claude-plugins`, a different repo shipped via
-  `node tools/fanout-update.mjs`, not buildable from a Butlery sprint. Recommend: batch into one
-  claude-plugins-specific session.
 
 ## Deviation log
 (none yet — Phase 1 only, no implementation this pass)
@@ -280,30 +251,25 @@ batch (also the source of each batch's tier/panel below — all came back `singl
 ## Earlier sprints (archived)
 
 Everything below this line is prior-pass history, kept for continuity. Summarized rather than
-reproduced in full detail (the full text lives in this file's git history as of commit
-`54fe8b9ec` and earlier):
+reproduced in full detail (the full text lives in this file's git history):
 
+- **2026-07-22 second pass** — selected BUT-1615(→closed obsolete, shipped under 1611)/1642/1646/
+  1645/1471/1484/1485/1488/1501/1476, all shipped in `4d6030d66`. Post-hoc re-review found the ship
+  step forged its review markers; `56cf1da0f` re-ran 4 real specialists against the committed diff,
+  cleared it, filed BUT-1650 (quality-only finding, selected above).
 - **2026-07-22 first pass** — selected BUT-1615/1642/1644/1509/1510/1486. BUT-1644/1509/1510/1486
-  shipped in `54fe8b9ec`. BUT-1615/1642 did not land (session-limited) — re-carried into the
-  second pass above. BUT-1558 closed obsolete (all 5 production items reverified present on
-  `main`, shipped in `b7e66bf1a`; tests backfilled via BUT-1635/1639).
+  shipped in `54fe8b9ec`. BUT-1615/1642 carried into the second pass. BUT-1558 closed obsolete.
 - **2026-07-20 second pass** — shipped BUT-1637/1565/1566/1638/1639/1640/1643 in `2c2e48f34`
-  (crashed-sprint salvage). BUT-1615/1642 carried forward (did not land that pass either).
+  (crashed-sprint salvage). BUT-1615/1642 carried forward.
 - **2026-07-20 first pass** — shipped BUT-1459/1628/1635/1611(-adjacent)/1618/1609/1519/1623 across
   `2a3fcaef4`/`ca4ba8b70`/`20e68a79a`/`f0b046b8e`/`3b0364475`/`919569e1a`. BUT-1629 landed In
-  Review (build-review, minor-searchability opt-in UI). BUT-1632/1615/1553 hit a Linear
-  archive/reopen tooling artifact — resolved in the 2026-07-22 first pass (1632/1553 confirmed
-  Done; 1615 confirmed still open and re-carried).
-- **2026-07-18 third pass** — shipped BUT-1458/1631/1633/1564 in `b7e66bf1a`. BUT-1632/1615/1459/
-  1629/1553 re-carried (didn't make that salvage). BUT-1558 closed obsolete (production code
-  shipped, test residue → BUT-1635).
-- **2026-07-18 second pass / first pass / pass-2** — the original crashed/blocked sprint piles;
-  fully salvaged across `2c3d2aa31`, `b8da3fb12`, `9eb7155b1`, and the seven-ticket first-pass
-  batch (BUT-1518+1624, 1474, 1607, 1454, 1475+1489, 1473, 1469). The systemic ship-phase bug
-  (commit-gate false-block) was fixed in `68a400d9f`.
+  Review.
+- **2026-07-18 third pass** — shipped BUT-1458/1631/1633/1564 in `b7e66bf1a`. BUT-1558 closed
+  obsolete.
+- **2026-07-18 second pass / first pass / pass-2** — crashed/blocked sprint piles, fully salvaged
+  across `2c3d2aa31`, `b8da3fb12`, `9eb7155b1`, and a seven-ticket batch. Ship-phase false-block
+  bug fixed in `68a400d9f`.
 - **2026-07-16 parallel-sprint pile** — shipped BUT-1611 (rebuilt), 1618, 1609, 1519, 1623.
-- **2026-07-19 held-batch salvage** — shipped BUT-1458/1631/1633/1564/1558(prod) as `b7e66bf1a`
-  after a legitimate stale-review-marker halt.
+- **2026-07-19 held-batch salvage** — shipped BUT-1458/1631/1633/1564/1558(prod) as `b7e66bf1a`.
 - **2026-07-21 crashed-sprint salvage (wxe0xnfys)** — shipped BUT-1637/1565/1566/1638/1639/1640/
-  1643 as `2c2e48f34` after a usage-limit death mid-ship; diff backed up and re-reviewed against
-  live code by 5 opus specialists before shipping. Filed BUT-1644 as a follow-up.
+  1643 as `2c2e48f34`. Filed BUT-1644 as a follow-up.

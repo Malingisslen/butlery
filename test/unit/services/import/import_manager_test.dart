@@ -15,6 +15,9 @@ import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
+import 'package:butlery/services/import/cache/global_recipe_cache.dart';
+import 'package:butlery/services/import/cache/cache_entry.dart';
+import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -61,6 +64,30 @@ class _FakeLlmFailure extends Fake implements LlmEnhancementService {
       pipeline: 'photo',
       tier: 4,
     );
+  }
+}
+
+/// BUT-1484 / BUT-1647 acceptance #3: a Fake GlobalRecipeCache that captures the
+/// [ExtractionMeta] threaded into `save(...)` so a test can assert the tier /
+/// confidence the pipeline computed. It is a `Fake` (concrete `save`/`findByUrl`
+/// bodies), NOT a `Mock` — the test needs a real in-memory capture, not `when()`
+/// stubbing. `findByUrl` returns null so the cache-read short-circuit in
+/// autoImport is a clean miss and the import proceeds to the strategy + save.
+class _CapturingGlobalRecipeCache extends Fake implements GlobalRecipeCache {
+  ExtractionMeta? captured;
+
+  @override
+  Future<CacheEntry?> findByUrl(String url) async => null;
+
+  @override
+  Future<bool> save({
+    required String input,
+    required Map<String, dynamic> recipeData,
+    required ExtractionMeta extractionMeta,
+    required String sourceType,
+  }) async {
+    captured = extractionMeta;
+    return true;
   }
 }
 
@@ -747,6 +774,148 @@ Gör så här:
 
           expect(result.isSuccess, isFalse);
           expect(result.errorMessage, contains('No photo import strategy'));
+        },
+      );
+    });
+
+    // BUT-1484 / BUT-1647 acceptance #3: `_saveToCacheIfUrl` threads the
+    // pipeline's computed tier (`metadata['tier']`) and confidence
+    // (`metadata['overallQuality']`) from the strategy result INTO the cache
+    // ExtractionMeta, falling back to tier:0 / confidence:0.8 when they are
+    // absent or the wrong type. This is a DIFFERENT layer from
+    // ExtractionMeta.fromMap/empty (cache_entry.dart), whose confidence
+    // fallback is 0.0 — the threading fallback is 0.8. These tests pin the
+    // 0.8-layer contract; the fromMap 0.0-layer tests live in
+    // global_recipe_cache_test.dart.
+    group('cache tier/confidence threading (BUT-1484, acceptance #3)', () {
+      late _CapturingGlobalRecipeCache fakeCache;
+
+      setUp(() {
+        fakeCache = _CapturingGlobalRecipeCache();
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<GlobalRecipeCache>()) {
+          getIt.unregister<GlobalRecipeCache>();
+        }
+        if (getIt.isRegistered<UrlNormalizer>()) {
+          getIt.unregister<UrlNormalizer>();
+        }
+        getIt.registerSingleton<GlobalRecipeCache>(fakeCache);
+        getIt.registerSingleton<UrlNormalizer>(UrlNormalizer());
+        app_provider.ServiceLocator.reset();
+        app_provider.ServiceLocator.initialize(DIContainer());
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<GlobalRecipeCache>()) {
+          getIt.unregister<GlobalRecipeCache>();
+        }
+        if (getIt.isRegistered<UrlNormalizer>()) {
+          getIt.unregister<UrlNormalizer>();
+        }
+        app_provider.ServiceLocator.reset();
+      });
+
+      /// Drives a URL import through the preferred mock strategy carrying
+      /// [metadata], returning the ExtractionMeta the manager saved to cache.
+      Future<ExtractionMeta?> runUrlImport(
+        Map<String, dynamic>? metadata,
+      ) async {
+        when(() => mockStrategy.canHandle(any())).thenReturn(true);
+        mockStrategy.setStrategyState(strategyName: 'website');
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
+          (_) async => import_strategy.ImportResult.success(
+            testRecipe,
+            metadata: metadata,
+          ),
+        );
+
+        final mgr = ImportManager.withStrategies(
+          mockPersonalOps,
+          [textStrategy],
+        );
+        final result = await mgr.autoImport(
+          'https://example.com/recipe',
+          preferredStrategy: mockStrategy,
+        );
+
+        expect(
+          result.isSuccess,
+          isTrue,
+          reason: 'the URL import must succeed so the cache-save branch runs',
+        );
+        return fakeCache.captured;
+      }
+
+      test(
+        'seeded tier/overallQuality flow into the cache ExtractionMeta',
+        () async {
+          final meta = await runUrlImport({'tier': 5, 'overallQuality': 0.42});
+
+          expect(
+            meta,
+            isNotNull,
+            reason: 'a URL import must reach cache.save with an ExtractionMeta',
+          );
+          expect(
+            meta!.tier,
+            5,
+            reason:
+                'acceptance #3: a real seeded tier is threaded through, not hardcoded',
+          );
+          expect(
+            meta.confidence,
+            0.42,
+            reason:
+                'acceptance #3: overallQuality becomes the cache confidence verbatim',
+          );
+        },
+      );
+
+      test(
+        'absent tier/overallQuality fall back to tier 0 / confidence 0.8',
+        () async {
+          // Metadata present but without the tier/overallQuality keys.
+          final meta = await runUrlImport({'unrelated': 'value'});
+
+          expect(meta, isNotNull);
+          expect(
+            meta!.tier,
+            0,
+            reason: 'acceptance #3: a missing tier falls back to 0',
+          );
+          expect(
+            meta.confidence,
+            0.8,
+            reason:
+                'acceptance #3: a missing overallQuality falls back to 0.8 '
+                '(the threading-layer default, NOT the fromMap 0.0 default)',
+          );
+        },
+      );
+
+      test(
+        'wrong-typed tier/overallQuality fall back to tier 0 / confidence 0.8',
+        () async {
+          final meta = await runUrlImport(
+            {'tier': 'multi', 'overallQuality': 'high'},
+          );
+
+          expect(meta, isNotNull);
+          expect(
+            meta!.tier,
+            0,
+            reason:
+                'acceptance #3: a non-int tier marker like "multi" falls back to 0',
+          );
+          expect(
+            meta.confidence,
+            0.8,
+            reason:
+                'acceptance #3: a non-num overallQuality ("high") falls back to 0.8',
+          );
         },
       );
     });
