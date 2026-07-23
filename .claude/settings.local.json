@@ -61,7 +61,9 @@
       "Bash(quality_engine)",
       "Bash(deadlock\")",
       "Bash(python tools/stakeholder_router.py --json --plan lib/services/shopping/menu_shopping_list_generator.dart lib/services/shopping/menu_shopping_aggregator.dart lib/viewmodels/cooking_mode_viewmodel.dart lib/models/menu/weekly_menu_plan.dart lib/widgets/common/input/portion_scaler_logic.dart)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "Bash(python -c \"import json;d=json.load\\(open\\('.claude/shared-plugin.json'\\)\\);print\\(json.dumps\\(d.get\\('delivery',{}\\).get\\('cleanTreeIgnore','ABSENT'\\),indent=2\\)\\)\")",
+      "Bash(python -c \"import json;d=json.load\\(open\\('.claude/shared-plugin.json'\\)\\);print\\(list\\(d.get\\('delivery',{}\\).keys\\(\\)\\)\\)\")"
     ]
   },
   "enabledPlugins": {
