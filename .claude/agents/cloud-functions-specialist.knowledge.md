@@ -2049,3 +2049,32 @@ order, `--mode` is equality-only (no composite), and path resolution lands on re
 `scripts/`. `npx tsc --noEmit` exit 0. No Critical/High/Medium; the automated fixes introduced
 no new issue. The three low/info carries above are unchanged and remain accepted (shared with
 the `export-corrections.ts` sibling).
+
+### 2026-07-23 — BUT-1659 export-llm-samples.test.ts + package.json wiring [Reviewed clean]
+
+Reviewed the test file and its wiring (the net-new artifacts this pass; the SUT itself is
+covered by the two entries above). Verdict: **clean, no Critical/High/Medium.** `npx ts-node
+src/__tests__/export-llm-samples.test.ts` = 6/6, `tsc --noEmit` exit 0.
+
+- **Wiring correct.** `test:export-llm-samples` script is present (package.json:86), so
+  `run-all-tests.js` auto-discovers it (not `test:rules*`/`test:integration:*`). No emulator/
+  credentials needed: the test `require`s the SUT (whose `initializeAdminApp()` is guarded
+  behind `require.main === module`, so importing runs nothing) and stands up its own
+  `admin.initializeApp({projectId})`. Runs clean in the no-emulator CI unit runner too. Avoids
+  the BUT-1392 "invisible test" trap.
+- **Coverage is contract-focused, not structural.** Test 1 pins the privacy whitelist by
+  seeding raw PII-shaped fields (`rawUserId`/`unscrubbedInput`/`apiKey`) and asserting the
+  exported key set is EXACTLY `EXPORTED_KEYS` — a future source field can't silently leak.
+  Test 2 pins the null-last, id-tiebreak sort; Test 3 the equality mode filter; Test 4 the
+  Timestamp→ISO + missing→null; Test 5 empty→[]; Test 6 projectSample null-coalescing. Good
+  behavioral set.
+- **One fidelity Info (not a finding):** the fake `where()` defaults a SeedDoc's missing
+  `mode` to `"extract"` (in both `docData` and the filter), whereas real Firestore equality
+  would match NO doc lacking the field. Harmless because the writer always sets `mode`
+  (required in `LlmSampleInput`), so a mode-less doc can't exist in prod — but the fake
+  overstates fidelity on that one edge. If a "doc missing mode is dropped by --mode" contract
+  ever matters, the fake would need to stop defaulting.
+
+Pattern carry: for these DI-core admin exports, the highest-value test is the whitelist-key-set
+assertion with adversarial raw fields seeded — it's the one that guards the privacy boundary the
+script header promises, and it's cheap. Reuse it for any future `export-*.ts` sibling.

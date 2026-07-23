@@ -83,6 +83,7 @@
     "test:purge-audit-logs": "ts-node src/__tests__/purge-audit-logs.test.ts",
     "test:cleanup-audit-logs": "ts-node src/__tests__/cleanup-audit-logs.test.ts",
     "test:export-audit-logs": "ts-node src/__tests__/export-audit-logs.test.ts",
+    "test:export-llm-samples": "ts-node src/__tests__/export-llm-samples.test.ts",
     "test:moderate-upload": "ts-node src/__tests__/moderate-upload.test.ts",
     "test:sync-conversation-last-message": "ts-node src/__tests__/sync-conversation-last-message.test.ts",
     "test:enforce-group-minor-membership": "ts-node src/__tests__/enforce-group-minor-membership.test.ts",

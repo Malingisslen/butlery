@@ -3465,10 +3465,19 @@ void main() {
           isFalse,
           reason: 'static fallback must not emit a Firebase-only cuisine tag',
         );
+        // BUT-1482 AC#4: with no live config, the run resolves the null boot
+        // version, so the result stamps a null revision — never a stale
+        // non-null one.
+        expect(
+          beforeConfig.configRevision,
+          isNull,
+          reason: 'a run with no live config must stamp the null boot revision',
+        );
 
         // The remote config finishes loading mid-session — a real, non-null
         // combinedVersion, different from the null the generator was built with.
-        configService.arrive(_lateConfigWithMarkerCuisine());
+        final liveConfig = _lateConfigWithMarkerCuisine();
+        configService.arrive(liveConfig);
 
         final afterConfig = generator.generate(
           ingredients: lookup,
@@ -3480,6 +3489,32 @@ void main() {
           reason:
               'a newer config version must trigger a rebuild of the '
               'config-backed phases that picks up the late-loaded cuisine',
+        );
+        // BUT-1482 AC#4: generate() stamps the live combinedVersion resolved at
+        // this run's start, so a consumer can tell which config produced the
+        // tags. Premise-guard the live version so the assertion can't rot to a
+        // meaningless null==null.
+        expect(
+          liveConfig.combinedVersion,
+          isNotNull,
+          reason: 'premise: the arrived config has a real combinedVersion',
+        );
+        expect(
+          afterConfig.configRevision,
+          liveConfig.combinedVersion,
+          reason:
+              'generate() must stamp configRevision from the live '
+              'combinedVersion the run resolved',
+        );
+        // BUT-1482 AC#4: the stamp is frozen at each run's own start — the
+        // earlier result is NOT retroactively bumped to the later-arrived
+        // version. Two runs carry the version live when each began.
+        expect(
+          beforeConfig.configRevision,
+          isNull,
+          reason:
+              'a later config load must not mutate an earlier run\'s '
+              'frozen revision stamp',
         );
       },
     );

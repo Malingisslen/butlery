@@ -33,11 +33,7 @@ import * as path from "path";
 
 import { initializeAdminApp } from "./admin-init";
 
-initializeAdminApp();
-
-const db = admin.firestore();
-
-interface ExportedSample {
+export interface ExportedSample {
   id: string;
   mode: string;
   inputKind: string;
@@ -70,7 +66,73 @@ function orNull<T>(v: T | undefined): T | null {
   return v === undefined ? null : v;
 }
 
+/**
+ * Project a raw `llm_response_samples` doc down to the mining-useful,
+ * already-scrubbed field whitelist. Any field NOT on `ExportedSample` (a raw
+ * uid, an unscrubbed payload, an internal flag) is dropped here — this
+ * projection is the export's privacy boundary, so the set of keys is the thing
+ * the unit test pins.
+ */
+export function projectSample(
+  id: string,
+  data: admin.firestore.DocumentData
+): ExportedSample {
+  return {
+    id,
+    mode: (data.mode as string | undefined) ?? "",
+    inputKind: (data.inputKind as string | undefined) ?? "",
+    scrubbedInput: orNull(data.scrubbedInput as string | undefined),
+    scrubbedInputLength: orNull(data.scrubbedInputLength as number | undefined),
+    scrubbedOutput: orNull(data.scrubbedOutput as string | undefined),
+    outputLength: orNull(data.outputLength as number | undefined),
+    promptVersion: orNull(data.promptVersion as string | undefined),
+    promptSource: orNull(data.promptSource as string | undefined),
+    experimentBucket: orNull(data.experimentBucket as number | undefined),
+    promptVariant: orNull(data.promptVariant as string | undefined),
+    domain: orNull(data.domain as string | undefined),
+    authUidHash: orNull(data.authUidHash as string | undefined),
+    modelId: orNull(data.modelId as string | undefined),
+    promptTokenCount: orNull(data.promptTokenCount as number | undefined),
+    candidatesTokenCount: orNull(
+      data.candidatesTokenCount as number | undefined
+    ),
+    createdAt: toIso(data.createdAt),
+  };
+}
+
+/** Sort oldest-first for deterministic output (null createdAt sorts last). */
+export function sortSamples(samples: ExportedSample[]): ExportedSample[] {
+  return samples.sort((a, b) => {
+    if (a.createdAt === b.createdAt) return a.id.localeCompare(b.id);
+    if (a.createdAt === null) return 1;
+    if (b.createdAt === null) return -1;
+    return a.createdAt.localeCompare(b.createdAt);
+  });
+}
+
+/**
+ * Query + project + deterministically sort — the testable core, with the
+ * Firestore handle injected so a unit test can drive it against a fake db
+ * (mirrors `runExportAuditLogsWithDb`). Does no file/console IO; `main` owns
+ * argv parsing, the JSON write, and the summary log.
+ */
+export async function runExportLlmSamplesWithDb(
+  database: admin.firestore.Firestore,
+  opts: { mode?: string } = {}
+): Promise<ExportedSample[]> {
+  // Equality-only filter — no composite index needed (auto single-field index).
+  const query = opts.mode
+    ? database.collection("llm_response_samples").where("mode", "==", opts.mode)
+    : database.collection("llm_response_samples");
+  const snapshot = await query.get();
+  const samples = snapshot.docs.map((doc) => projectSample(doc.id, doc.data()));
+  return sortSamples(samples);
+}
+
 async function main(): Promise<void> {
+  initializeAdminApp();
+  const db = admin.firestore();
+
   const args = process.argv.slice(2);
 
   const outputIdx = args.indexOf("--output");
@@ -93,49 +155,8 @@ async function main(): Promise<void> {
       : "Fetching llm_response_samples from Firestore..."
   );
 
-  // Equality-only filter — no composite index needed (auto single-field index).
-  const query = modeFilter
-    ? db.collection("llm_response_samples").where("mode", "==", modeFilter)
-    : db.collection("llm_response_samples");
-  const snapshot = await query.get();
-  console.error(`Found ${snapshot.size} sample documents`);
-
-  const samples: ExportedSample[] = [];
-
-  for (const doc of snapshot.docs) {
-    const data = doc.data();
-    samples.push({
-      id: doc.id,
-      mode: (data.mode as string | undefined) ?? "",
-      inputKind: (data.inputKind as string | undefined) ?? "",
-      scrubbedInput: orNull(data.scrubbedInput as string | undefined),
-      scrubbedInputLength: orNull(
-        data.scrubbedInputLength as number | undefined
-      ),
-      scrubbedOutput: orNull(data.scrubbedOutput as string | undefined),
-      outputLength: orNull(data.outputLength as number | undefined),
-      promptVersion: orNull(data.promptVersion as string | undefined),
-      promptSource: orNull(data.promptSource as string | undefined),
-      experimentBucket: orNull(data.experimentBucket as number | undefined),
-      promptVariant: orNull(data.promptVariant as string | undefined),
-      domain: orNull(data.domain as string | undefined),
-      authUidHash: orNull(data.authUidHash as string | undefined),
-      modelId: orNull(data.modelId as string | undefined),
-      promptTokenCount: orNull(data.promptTokenCount as number | undefined),
-      candidatesTokenCount: orNull(
-        data.candidatesTokenCount as number | undefined
-      ),
-      createdAt: toIso(data.createdAt),
-    });
-  }
-
-  // Sort oldest-first for deterministic output (null createdAt sorts last).
-  samples.sort((a, b) => {
-    if (a.createdAt === b.createdAt) return a.id.localeCompare(b.id);
-    if (a.createdAt === null) return 1;
-    if (b.createdAt === null) return -1;
-    return a.createdAt.localeCompare(b.createdAt);
-  });
+  const samples = await runExportLlmSamplesWithDb(db, { mode: modeFilter });
+  console.error(`Found ${samples.length} sample documents`);
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(samples, null, 2) + "\n");
@@ -146,7 +167,7 @@ async function main(): Promise<void> {
   }
 
   console.error(`\nExport summary:`);
-  console.error(`  Sample docs: ${snapshot.size}`);
+  console.error(`  Sample docs: ${samples.length}`);
   console.error(`  Exported: ${samples.length}`);
   console.error("  By mode:");
   for (const [mode, count] of [...byMode.entries()].sort()) {
@@ -156,7 +177,11 @@ async function main(): Promise<void> {
   console.error(`\nWritten to: ${outputPath}`);
 }
 
-main().catch((e) => {
-  console.error("Error:", e);
-  process.exit(1);
-});
+// Guard the auto-run so importing this module (e.g. from the unit test) does
+// not execute the export or touch Firestore/the filesystem.
+if (require.main === module) {
+  main().catch((e) => {
+    console.error("Error:", e);
+    process.exit(1);
+  });
+}
