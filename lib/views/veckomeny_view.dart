@@ -360,6 +360,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       );
       return;
     }
+    // BUT-1613: when one or more meals were scaled to who's home, explain the
+    // adjusted quantities so a shrunk list doesn't read as a bug. Shown on the
+    // root messenger, so it rides over the navigation below.
+    if (result.scaledMeals > 0) {
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.menuShoppingScaledToPresence,
+      );
+    }
     // BUT-900 follow-on: navigate straight to the generated list (mirrors the
     // lista-mode FAB) instead of a toast-only "VISA" the user can miss — the
     // list view itself is the confirmation. (mounted already guarded above; only

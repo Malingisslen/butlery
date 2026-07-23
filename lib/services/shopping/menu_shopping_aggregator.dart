@@ -33,6 +33,13 @@ class AggregatedShoppingItem {
   });
 }
 
+/// BUT-1613: one recipe placement to aggregate, with the presence-derived
+/// [factor] its numeric amounts are multiplied by (1.0 = unchanged). The same
+/// recipe planned at two placements with different presence counts appears as
+/// two entries at two factors, so each scales independently before the shared
+/// name|unit merge sums them.
+typedef ScaledRecipe = ({Recipe recipe, double factor});
+
 /// BUT-956: pure aggregation of the week's recipe ingredients into shopping
 /// lines. Deterministic, no LLM, no IO.
 ///
@@ -43,6 +50,11 @@ class AggregatedShoppingItem {
 ///   "1 kg" + "300 g" → "1.3 kg"). Cross-FAMILY pairs never merge — "200 g" +
 ///   "1 dl" stay two honest lines (weight vs volume), and unit-less counts
 ///   like "st" only sum on an exact unit-string match.
+/// - BUT-1613: each placement's numeric amounts are multiplied by its [factor]
+///   before summing. Amount-less lines carry no quantity, so a factor can never
+///   scale one to zero or drop it — they always pass through present and
+///   un-summed. A positive amount times a positive factor stays positive, so a
+///   real ingredient never becomes a zero-quantity line.
 /// - Entries without a usable amount (ranges, "efter smak", legacy raw-only)
 ///   aggregate by name into a single amount-less line — present, un-summed.
 /// - Name key: [SwedishCharacterNormalizer] + lowercase/trim, so "Mjöl" and
@@ -53,8 +65,10 @@ class MenuShoppingAggregator {
   /// [excludeNames] (BUT-1279): normalized ingredient names to drop from the
   /// result — used to keep pantry staples off the generated list. Each name
   /// must already be passed through [SwedishCharacterNormalizer.normalize].
+  /// Retained as public API: since BUT-1613 the generator splits staples from
+  /// a single unfiltered pass, so the only current caller is the unit test.
   static List<AggregatedShoppingItem> aggregate(
-    List<Recipe> recipes, {
+    List<ScaledRecipe> placements, {
     Set<String> excludeNames = const {},
   }) {
     // Keyed by "<normalizedName>|<normalizedUnit>"; amount-less entries use
@@ -62,10 +76,11 @@ class MenuShoppingAggregator {
     // don't multiply into near-duplicate lines per recipe.
     final byKey = <String, _Accumulator>{};
 
-    for (final recipe in recipes) {
+    for (final placement in placements) {
+      final factor = placement.factor;
       // One entry per ingredient line, structured or raw-only — the facade
       // getter guarantees alignment and fallback.
-      for (final entry in recipe.structuredIngredients) {
+      for (final entry in placement.recipe.structuredIngredients) {
         final displayName = entry.name.trim();
         if (displayName.isEmpty) continue;
         final nameKey = SwedishCharacterNormalizer.normalize(displayName);
@@ -84,7 +99,10 @@ class MenuShoppingAggregator {
         );
         acc.sourceCount++;
         if (hasAmount) {
-          acc.sum += entry.amount!.toDouble();
+          // BUT-1613: scale the numeric amount by the placement factor. Never
+          // round here — the summed double is displayed downstream; a tiny
+          // fraction is honest, a zeroed line is not.
+          acc.sum += entry.amount!.toDouble() * factor;
           acc.hasAmount = true;
         }
       }

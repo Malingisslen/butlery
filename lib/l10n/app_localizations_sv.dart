@@ -1557,6 +1557,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte skapa inköpslistan – försök igen';
 
   @override
+  String get menuShoppingScaledToPresence =>
+      'Mängderna följer vilka som är hemma';
+
+  @override
   String get menuLoadSaved => 'Ladda sparad meny';
 
   @override

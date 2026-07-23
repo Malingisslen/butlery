@@ -5,6 +5,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -35,6 +37,12 @@ class MenuShoppingGenerationResult {
   /// utelämnade") rather than silently shrinking the list.
   final int excludedStaples;
 
+  /// BUT-1613: how many planned meals had their quantities scaled to who's
+  /// home (present count differs from the recipe's serving count). Surfaced so
+  /// the UI can explain why amounts changed instead of the shrink reading as a
+  /// bug. 0 = nothing was scaled (list matches authored amounts).
+  final int scaledMeals;
+
   const MenuShoppingGenerationResult({
     required this.listId,
     required this.listName,
@@ -42,6 +50,7 @@ class MenuShoppingGenerationResult {
     required this.recipeCount,
     required this.unresolvedRecipes,
     this.excludedStaples = 0,
+    this.scaledMeals = 0,
   });
 
   static const nothingToGenerate = MenuShoppingGenerationResult(
@@ -93,44 +102,59 @@ class MenuShoppingListGenerator extends BaseService {
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
 
         final plan = await menuService.getWeek(date);
-        final recipeIds = plan.entries.map((e) => e.recipeId).toSet().toList();
-        if (recipeIds.isEmpty) {
+        if (plan.entries.isEmpty) {
           return MenuShoppingGenerationResult.nothingToGenerate;
         }
 
-        final recipes = recipeIds
-            .map(recipeService.getRecipeById)
-            .nonNulls
-            .toList();
-        final unresolved = recipeIds.length - recipes.length;
+        // BUT-1613: resolve each DISTINCT recipe once (no repeat lookups), but
+        // scale + aggregate PER PLACEMENT. The same recipe planned at two
+        // (day, slot) cells contributes its ingredients twice — each scaled to
+        // that meal's present count — instead of the old week-level dedup that
+        // collapsed repeats into one line and under-bought.
+        final distinctIds = plan.entries.map((e) => e.recipeId).toSet();
+        final recipeById = <String, Recipe>{};
+        for (final id in distinctIds) {
+          final resolved = recipeService.getRecipeById(id);
+          if (resolved != null) recipeById[id] = resolved;
+        }
+        final unresolved = distinctIds.length - recipeById.length;
         if (unresolved > 0) {
           AppLogger.warning(
-            '$serviceName: $unresolved of ${recipeIds.length} menu recipes '
+            '$serviceName: $unresolved of ${distinctIds.length} menu recipes '
             'could not be resolved — list generated from the rest',
           );
         }
-        if (recipes.isEmpty) {
+        if (recipeById.isEmpty) {
           return MenuShoppingGenerationResult.nothingToGenerate;
         }
 
+        // One scaled placement per plan entry, in plan order.
+        var scaledMeals = 0;
+        final placements = <ScaledRecipe>[];
+        for (final entry in plan.entries) {
+          final recipe = recipeById[entry.recipeId];
+          if (recipe == null) continue; // unresolved — already counted above
+          final factor = _presenceFactor(plan, entry, recipe);
+          if (factor != 1.0) scaledMeals++;
+          placements.add((recipe: recipe, factor: factor));
+        }
+
         // BUT-1279: keep pantry staples (salt, olja, …) off the generated
-        // list. Resolve the user's flagged staples and exclude any aggregated
-        // line whose normalized name matches one. The count is surfaced so the
-        // UI can explain the omission instead of the list silently shrinking.
+        // list. Now that aggregation scales per placement, run it ONCE (no
+        // exclusion) and split the result into kept vs staple-matched lines —
+        // the excludedStaples count comes from the same pass rather than a
+        // second full aggregation.
         final stapleNames = await _stapleNames();
-        final aggregated = MenuShoppingAggregator.aggregate(
-          recipes,
-          excludeNames: stapleNames,
+        final fullAggregation = MenuShoppingAggregator.aggregate(placements);
+        bool isStaple(AggregatedShoppingItem line) => stapleNames.contains(
+          SwedishCharacterNormalizer.normalize(line.name),
         );
         final excludedStaples = stapleNames.isEmpty
             ? 0
-            : MenuShoppingAggregator.aggregate(recipes)
-                  .where(
-                    (line) => stapleNames.contains(
-                      SwedishCharacterNormalizer.normalize(line.name),
-                    ),
-                  )
-                  .length;
+            : fullAggregation.where(isStaple).length;
+        final aggregated = stapleNames.isEmpty
+            ? fullAggregation
+            : fullAggregation.where((line) => !isStaple(line)).toList();
         final weekKey = IsoWeekUtils.weekKeyOf(date);
         final listName = AppLocale.current.menuGeneratedShoppingListName(
           IsoWeekUtils.isoWeekNumber(date),
@@ -200,13 +224,40 @@ class MenuShoppingListGenerator extends BaseService {
           listId: listId,
           listName: list.name,
           itemCount: items.length,
-          recipeCount: recipes.length,
+          recipeCount: recipeById.length,
           unresolvedRecipes: unresolved,
           excludedStaples: excludedStaples,
+          scaledMeals: scaledMeals,
         );
       },
       operationName: 'generateForWeek',
     );
+  }
+
+  /// BUT-1613: the presence-derived scale factor for one plan entry. Returns
+  /// 1.0 (no scaling — buy/cook the authored amount) when:
+  /// - the slot is övrigt (snacks/baking have no presence concept and are eaten
+  ///   by the whole household regardless of who's home — the BUT-1611→BUT-1625
+  ///   exemption, applied to quantities here rather than candidate scoping);
+  /// - the recipe has no usable authored serving count (can't form a ratio —
+  ///   the same guard cooking mode uses, BUT-1322); or
+  /// - presence is unset/empty, so [WeeklyMenuPlan.servingsFor] falls back to
+  ///   the recipe's own portions (→ factor 1.0).
+  /// Otherwise factor = present count / authored portions.
+  double _presenceFactor(
+    WeeklyMenuPlan plan,
+    WeeklyMenuPlanEntry entry,
+    Recipe recipe,
+  ) {
+    if (entry.slot.isMulti) return 1.0; // övrigt
+    final portions = recipe.portions;
+    if (portions == null || portions <= 0) return 1.0;
+    final servings = plan.servingsFor(
+      entry.day,
+      entry.slot,
+      fallback: portions,
+    );
+    return servings / portions;
   }
 
   /// BUT-1279: normalized names of the current user's pantry staples, for

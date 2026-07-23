@@ -1555,6 +1555,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not create the shopping list – try again';
 
   @override
+  String get menuShoppingScaledToPresence => 'Amounts follow who\'s home';
+
+  @override
   String get menuLoadSaved => 'Load saved menu';
 
   @override

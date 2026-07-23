@@ -2594,6 +2594,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte skapa inköpslistan – försök igen'**
   String get menuShoppingListGenerationFailed;
 
+  /// BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängderna följer vilka som är hemma'**
+  String get menuShoppingScaledToPresence;
+
   /// No description provided for @menuLoadSaved.
   ///
   /// In sv, this message translates to:

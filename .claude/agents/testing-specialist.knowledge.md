@@ -2378,3 +2378,44 @@ The correct test (added to `import_manager_test.dart` group `cache tier/confiden
 
 ### 2026-07-23 — [trigger: gate re-review of BUT-1501 assisted_import_viewmodel test] A test that pins a KNOWN-buggy behavior as "expected" blocks the fix's own regression test
 `assisted_import_viewmodel_test.dart` group `BUT-1501 correction-snapshot capture` is non-vacuous and correct as coverage of the SHIPPED behavior — but its `no sourceUrl → snapshot captured with a null domain` case only asserts `metadata.domain == null` and leaves `metadata.source` unchecked, while the sibling case asserts `source == ImportSource.url` with reason "assisted import is the URL Tier-7 fallback". That premise is the exact bug my 2026-07-22 entry flagged: `buildRecipe()` hardcodes `ImportSource.url` for ALL modalities, so photo/voice/text-origin assisted imports get mis-attributed into the URL training bucket. By pinning `url` as expected and NOT asserting the null-sourceUrl case yields a non-url source, the test forecloses the one place that regression would surface — a stronger `expect(snapshot.metadata.source, isNot(ImportSource.url))` on the null-sourceUrl path would (correctly) FAIL today and reveal the production bug. **Rule: a test locking in a behavior a prior review already flagged as a bug is a coverage TRAP — it turns green into "regression can never be caught here." Gate verdict stays pass (the test faithfully covers current behavior, the defect is in production `buildRecipe`, pre-existing + tracked), but note the missed adversarial assertion so the fix ticket adds it rather than editing the test to match the bug.**
+
+### 2026-07-23 — [trigger: BUT-1613 presence-driven shopping-list quantity scaling — test authoring] ScaledRecipe signature + per-placement dedup-removal regression pin
+`MenuShoppingAggregator.aggregate` changed from `List<Recipe>` to
+`List<ScaledRecipe>` where `typedef ScaledRecipe = ({Recipe recipe, double factor})`
+(in `lib/services/shopping/menu_shopping_aggregator.dart`). Each placement's numeric
+`amount` is multiplied by `factor` BEFORE the name|unit merge sums. Migration pattern
+for the ~14 existing behaviour tests: add a file-local
+`ScaledRecipe _p(Recipe r, [double factor = 1.0]) => (recipe: r, factor: factor);`
+and wrap each recipe arg — the default 1.0 keeps every pre-existing expected value
+identical, so the old suite proves scaling is a pure superset (factor 1.0 == old math).
+- **Scale-then-merge is the load-bearing order.** The strongest aggregator test is the
+  SAME recipe object passed at two factors: `aggregate([_p(r,1.0), _p(r,0.5)])` for a
+  "4 dl mjölk" recipe must yield 6 dl — NOT 4 (merge-then-scale) and NOT 8 (one factor
+  applied twice). That single assertion pins the whole per-placement contract.
+- **Do NOT pin unit/exact value on a SMALL-factor line.** "1 dl" × 0.125 = 0.125 dl, but
+  `_mergeCompatibleUnits` re-displays it via `convertToReadableUnit` (→ 12.5 ml), so the
+  robust assertion is `amount, greaterThan(0)` + `hasLength(1)` — the intent ("positive
+  amount × positive factor stays positive, never zeroed/dropped"), not the display unit.
+- **Amount-less lines are factor-immune by construction** (`hasAmount==false` skips the
+  multiply): assert `amount isNull` + still present at any factor.
+- **Generator side (`menu_shopping_list_generator.dart`): the KEY regression is the removal
+  of the old `.toSet()` dedup.** Plan the SAME recipeId at two `(day,slot)` cells with
+  `portions:null` (→ factor 1.0 both, isolating the dedup from scaling) and assert the
+  ingredient amount ~doubles (2 dl → 4 dl) while `result.recipeCount == 1` (DISTINCT) and
+  `result.scaledMeals == 0`. `recipeCount` counts distinct recipes; `scaledMeals` counts
+  placements with factor ≠ 1.0 — a combined test (r1 scaled + r1 unscaled + r2) proves they
+  count different things.
+- **Presence plumbing for generator tests:** build plans with an explicit-entry helper +
+  `presenceBySlot: {DayOfWeek.mon: {MealSlot.middag: ['a','b','c']}}`. `servingsFor` returns
+  present-count only when the slot list is non-null AND non-empty; both `null` (unset) and
+  `[]` (nobody home) fall back to recipe portions → factor 1.0 (never under-buy). Övrigt is
+  exempt via `slot.isMulti` — even though `_parsePresenceBySlot` will happily store a
+  presence list against `ovrigt`, `_presenceFactor` short-circuits to 1.0, so an övrigt
+  recipe stays whole-household. `portions == null || <= 0` → factor 1.0 (no ratio).
+- **Harness note:** a single test can cover both null-and-empty presence by running
+  `generateForWeek` twice with `BaseUnitTest.resetMocks()` between the runs to clear the
+  `verify(updateList)` interaction — safe because `FakeAuthRepository` (from
+  `MockFactory.createAuthRepository`) is a **Fake** whose `setAuthState` fields survive
+  `resetMocktailState()`; only re-stub the mocktail Mocks (menu/shopping/pantry) after the reset.
+- No production surprises — behaviour matched the spec exactly. Both files: 38 tests green
+  (aggregator 19, generator 19).

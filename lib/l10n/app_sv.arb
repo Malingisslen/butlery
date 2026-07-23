@@ -994,6 +994,10 @@
   "@menuShoppingListGenerationEmpty": {
     "description": "BUT-956: warning when generation found no resolvable recipes on the week plan."
   },
+  "menuShoppingScaledToPresence": "Mängderna följer vilka som är hemma",
+  "@menuShoppingScaledToPresence": {
+    "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
+  },
   "menuLoadSaved": "Ladda sparad meny",
   "menuClear": "Rensa meny",
   "menuShared": "Veckomenyn är delad.",

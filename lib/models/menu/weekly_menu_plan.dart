@@ -271,6 +271,26 @@ class WeeklyMenuPlan {
     return true;
   }
 
+  /// BUT-1613: the effective serving count for [day]/[slot] — the number of
+  /// members present when the slot has an explicit, NON-EMPTY selection,
+  /// otherwise [fallback] (the recipe's own authored serving count).
+  ///
+  /// Both `null` (no selection = everyone/default) and `[]` (explicitly "nobody
+  /// home") fall back to [fallback]: the shopping list buys the full amount
+  /// rather than under-buying when presence was left unset or deliberately
+  /// emptied — decided 2026-07-23. The single owner of the "how many does this
+  /// meal cook for" rule, shared by the shopping-list scaler and cooking mode.
+  ///
+  /// Övrigt has no presence concept (`presenceBySlot` is never populated for it,
+  /// `kPresenceSlots` = lunch/middag only), so this returns [fallback] there —
+  /// but callers scaling quantities must skip övrigt explicitly rather than
+  /// relying on that, so the whole-household exemption reads at the call site.
+  int servingsFor(DayOfWeek day, MealSlot slot, {required int fallback}) {
+    final ids = presentMemberIdsFor(day, slot);
+    if (ids == null || ids.isEmpty) return fallback;
+    return ids.length;
+  }
+
   WeeklyMenuPlan copyWith({
     List<WeeklyMenuPlanEntry>? entries,
     DateTime? updatedAt,

@@ -101,6 +101,51 @@ WeeklyMenuPlan _plan(List<String> recipeIds) => WeeklyMenuPlan(
   updatedAt: DateTime(2026, 6, 8),
 );
 
+// BUT-1613: explicit-entry plan builder so tests can place the SAME recipe at
+// two (day, slot) cells and attach per-slot presence — the two things the
+// presence-scaling contract turns on.
+WeeklyMenuPlanEntry _entry(String recipeId, DayOfWeek day, MealSlot slot) =>
+    WeeklyMenuPlanEntry(
+      id: 'e-${day.name}-${slot.name}-$recipeId',
+      day: day,
+      slot: slot,
+      recipeId: recipeId,
+      recipeTitle: recipeId,
+    );
+
+WeeklyMenuPlan _planWith(
+  List<WeeklyMenuPlanEntry> entries, {
+  Map<DayOfWeek, Map<MealSlot, List<String>>> presenceBySlot = const {},
+}) => WeeklyMenuPlan(
+  id: 'plan-1',
+  userId: _testUserId,
+  weekStartDate: IsoWeekUtils.weekStartOf(_date),
+  entries: entries,
+  createdAt: DateTime(2026, 6, 8),
+  updatedAt: DateTime(2026, 6, 8),
+  presenceBySlot: presenceBySlot,
+);
+
+// BUT-1613: recipe carrying an authored serving count, the denominator of the
+// presence factor. `portions: null` models a recipe that can't form a ratio.
+Recipe _recipeWithPortions(
+  String id,
+  int? portions,
+  List<RecipeIngredient> entries,
+) => Recipe(
+  core: RecipeCore(
+    id: id,
+    title: id,
+    description: '',
+    ingredients: entries.map((e) => e.raw).toList(),
+    structuredIngredients: entries,
+    instructions: const ['x'],
+    mealType: 'Middag',
+    portions: portions,
+  ),
+  type: RecipeType.personal,
+);
+
 UnifiedShoppingList _list(
   String id,
   String name, {
@@ -201,6 +246,30 @@ void main() {
   UnifiedShoppingList capturedUpdate() =>
       verify(() => shoppingService.updateList(captureAny())).captured.single
           as UnifiedShoppingList;
+
+  // BUT-1613 harness: empty list collection → create → update, so a fresh
+  // week generates into "new-list-1". Presence-scaling tests only care about
+  // the WRITTEN items, so this hides the create/update plumbing.
+  void seedFreshListCreation() {
+    shoppingService.setShoppingState(lists: [], personalLists: []);
+    when(
+      () => shoppingService.createPersonalList(
+        any(),
+        items: any(named: 'items'),
+      ),
+    ).thenAnswer((_) async {
+      shoppingService.setShoppingState(
+        lists: [_list('new-list-1', _expectedListName)],
+        personalLists: [_list('new-list-1', _expectedListName)],
+      );
+      return 'new-list-1';
+    });
+    when(() => shoppingService.updateList(any())).thenAnswer((_) async => true);
+  }
+
+  Map<String, UnifiedShoppingItem> writtenByName() => {
+    for (final i in capturedUpdate().items) i.name: i,
+  };
 
   group('MenuShoppingListGenerator (BUT-956)', () {
     test('absent week list: creates "Inköpslista v.NN" and writes the '
@@ -864,6 +933,306 @@ void main() {
         capturedUpdate().items.map((i) => i.name),
         ['salt'],
         reason: 'with no staple data, every ingredient is kept',
+      );
+    });
+  });
+
+  group('MenuShoppingListGenerator presence scaling (BUT-1613)', () {
+    test('the SAME recipe planned at TWO placements contributes its '
+        'ingredients for BOTH (no week-level dedup)', () async {
+      // Regression pin for the removal of the old `.toSet()` dedup: r1 sits at
+      // Monday AND Tuesday middag. With portions null (no scaling — factor 1.0
+      // both times) each placement adds its 2 dl mjöl, so the list must show
+      // 4 dl — roughly double the single-placement 2 dl. A dedup regression
+      // would collapse the two back to one line (2 dl) and under-buy.
+      when(() => menuService.getWeek(any())).thenAnswer(
+        (_) async => _planWith([
+          _entry('r1', DayOfWeek.mon, MealSlot.middag),
+          _entry('r1', DayOfWeek.tue, MealSlot.middag),
+        ]),
+      );
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', null, const [
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'mjöl',
+              raw: '2 dl mjöl',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      seedFreshListCreation();
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(
+        result,
+        isNotNull,
+        reason: 'a repeated recipe must still generate',
+      );
+      expect(
+        writtenByName()['mjöl']!.amount,
+        4,
+        reason: 'two Monday+Tuesday placements of 2 dl mjöl must buy 4 dl',
+      );
+      expect(
+        result!.recipeCount,
+        1,
+        reason: 'recipeCount is DISTINCT recipes — r1 twice counts once',
+      );
+      expect(
+        result.scaledMeals,
+        0,
+        reason: 'portions null → factor 1.0 both placements, nothing scaled',
+      );
+    });
+
+    test('a meal with 3 members present scales a recipe authored for 6 down '
+        'to half (factor 3/6)', () async {
+      // Presence set for Monday middag = 3 diners; the recipe cooks for 6, so
+      // the shopping amount is halved: 6 dl mjölk → 3 dl.
+      when(() => menuService.getWeek(any())).thenAnswer(
+        (_) async => _planWith(
+          [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: ['anna', 'björn', 'cecilia'],
+            },
+          },
+        ),
+      );
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', 6, const [
+            RecipeIngredient(
+              amount: 6,
+              unit: 'dl',
+              name: 'mjölk',
+              raw: '6 dl mjölk',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      seedFreshListCreation();
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull);
+      expect(
+        writtenByName()['mjölk']!.amount,
+        3,
+        reason: '3 present / 6 authored = 0.5 factor → 6 dl becomes 3 dl',
+      );
+      expect(
+        result!.scaledMeals,
+        1,
+        reason: 'exactly one meal had a present-count ≠ its serving count',
+      );
+    });
+
+    test('övrigt is EXEMPT from scaling even when presence-like data exists — '
+        'snacks/baking stay whole-household', () async {
+      // The BUT-1611→BUT-1625 exemption applied to quantities: an övrigt-slot
+      // recipe is bought for the whole household regardless of who's home for
+      // the day's meals. Even with a 2-person selection stored against övrigt,
+      // the 6-portion recipe's 6 dl mjöl is NOT scaled to 2.
+      when(() => menuService.getWeek(any())).thenAnswer(
+        (_) async => _planWith(
+          [_entry('r1', DayOfWeek.mon, MealSlot.ovrigt)],
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.ovrigt: ['anna', 'björn'],
+            },
+          },
+        ),
+      );
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', 6, const [
+            RecipeIngredient(
+              amount: 6,
+              unit: 'dl',
+              name: 'mjöl',
+              raw: '6 dl mjöl',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      seedFreshListCreation();
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull);
+      expect(
+        writtenByName()['mjöl']!.amount,
+        6,
+        reason: 'övrigt is whole-household — 6 dl must stay 6 dl',
+      );
+      expect(
+        result!.scaledMeals,
+        0,
+        reason: 'övrigt never scales, so no meal counts as scaled',
+      );
+    });
+
+    test('null presence (no selection) and empty presence (nobody home) both '
+        'buy the FULL authored amount — never scaled down', () async {
+      // Both "everyone" (unset) and an explicitly-emptied slot fall back to the
+      // recipe portions so the shopper never under-buys. Two runs, one plan
+      // each, both must keep the authored 6 dl.
+      Future<UnifiedShoppingList> runWith(
+        Map<DayOfWeek, Map<MealSlot, List<String>>> presence,
+      ) async {
+        when(() => menuService.getWeek(any())).thenAnswer(
+          (_) async => _planWith(
+            [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+            presenceBySlot: presence,
+          ),
+        );
+        recipeService.setRecipeState(
+          recipes: [
+            _recipeWithPortions('r1', 6, const [
+              RecipeIngredient(
+                amount: 6,
+                unit: 'dl',
+                name: 'mjölk',
+                raw: '6 dl mjölk',
+              ),
+            ]),
+          ],
+          isInitialized: true,
+        );
+        seedFreshListCreation();
+        final result = await generator.generateForWeek(_date);
+        expect(result, isNotNull);
+        expect(result!.scaledMeals, 0, reason: 'fallback keeps factor 1.0');
+        return capturedUpdate();
+      }
+
+      // Null: no presenceBySlot at all.
+      final nullPresence = await runWith(const {});
+      expect(
+        {for (final i in nullPresence.items) i.name: i}['mjölk']!.amount,
+        6,
+        reason: 'no selection = everyone → full 6 dl',
+      );
+
+      // Empty: slot explicitly emptied.
+      BaseUnitTest.resetMocks();
+      when(() => pantryService.getAll(any())).thenAnswer((_) async => const []);
+      final emptyPresence = await runWith({
+        DayOfWeek.mon: {MealSlot.middag: const []},
+      });
+      expect(
+        {for (final i in emptyPresence.items) i.name: i}['mjölk']!.amount,
+        6,
+        reason: 'explicitly empty (nobody home) still buys the full 6 dl',
+      );
+    });
+
+    test('a recipe with portions == null is left unscaled regardless of '
+        'presence', () async {
+      // Without an authored serving count there is no ratio to form, so the
+      // meal is never scaled even with a 2-person present selection.
+      when(() => menuService.getWeek(any())).thenAnswer(
+        (_) async => _planWith(
+          [_entry('r1', DayOfWeek.mon, MealSlot.middag)],
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: ['anna', 'björn'],
+            },
+          },
+        ),
+      );
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', null, const [
+            RecipeIngredient(
+              amount: 4,
+              unit: 'dl',
+              name: 'mjölk',
+              raw: '4 dl mjölk',
+            ),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      seedFreshListCreation();
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull);
+      expect(
+        writtenByName()['mjölk']!.amount,
+        4,
+        reason: 'no authored portions → no ratio → unscaled 4 dl',
+      );
+      expect(result!.scaledMeals, 0);
+    });
+
+    test('recipeCount stays DISTINCT while scaledMeals counts only the '
+        'placements whose factor ≠ 1.0', () async {
+      // r1 sits at two placements: Monday middag is scaled (3 present / 6
+      // authored = 0.5) while Tuesday middag has no presence (factor 1.0). r2
+      // is a second distinct recipe, unscaled. So: 2 distinct recipes, exactly
+      // 1 scaled meal — proving recipeCount and scaledMeals count different
+      // things (recipes vs placements).
+      when(() => menuService.getWeek(any())).thenAnswer(
+        (_) async => _planWith(
+          [
+            _entry('r1', DayOfWeek.mon, MealSlot.middag),
+            _entry('r1', DayOfWeek.tue, MealSlot.middag),
+            _entry('r2', DayOfWeek.wed, MealSlot.middag),
+          ],
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: ['anna', 'björn', 'cecilia'],
+            },
+          },
+        ),
+      );
+      recipeService.setRecipeState(
+        recipes: [
+          _recipeWithPortions('r1', 6, const [
+            RecipeIngredient(
+              amount: 6,
+              unit: 'dl',
+              name: 'mjöl',
+              raw: '6 dl mjöl',
+            ),
+          ]),
+          _recipeWithPortions('r2', 4, const [
+            RecipeIngredient(amount: 2, unit: 'st', name: 'ägg', raw: '2 ägg'),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      seedFreshListCreation();
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull);
+      expect(
+        result!.recipeCount,
+        2,
+        reason: 'r1 (×2 placements) + r2 = 2 DISTINCT recipes',
+      );
+      expect(
+        result.scaledMeals,
+        1,
+        reason:
+            'only Monday r1 has factor ≠ 1.0; Tuesday r1 and r2 are unscaled',
+      );
+      // r1 mjöl: Monday 6 dl × 0.5 = 3 dl + Tuesday 6 dl × 1.0 = 6 dl → 9 dl.
+      expect(
+        writtenByName()['mjöl']!.amount,
+        9,
+        reason: 'per-placement scale then sum: 3 dl + 6 dl = 9 dl',
       );
     });
   });

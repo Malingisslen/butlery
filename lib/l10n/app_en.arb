@@ -988,6 +988,10 @@
   "@menuShoppingListGenerationEmpty": {
     "description": "BUT-956: warning when generation found no resolvable recipes on the week plan."
   },
+  "menuShoppingScaledToPresence": "Amounts follow who's home",
+  "@menuShoppingScaledToPresence": {
+    "description": "BUT-1613: info snackbar after generating the week shopping list when one or more meals had quantities scaled to the present-member count. Butler voice: states the action, no exclamation."
+  },
   "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared.",
