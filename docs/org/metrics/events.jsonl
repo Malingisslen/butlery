@@ -50,3 +50,7 @@
 {"ts":"2026-07-16T22:21:14.920Z","type":"trigger","fired":true,"signals":"allergen,delete,firestore.rules,functions/src","ran":null}
 {"ts":"2026-07-22T17:58:55.906Z","type":"trigger","fired":true,"signals":"cloud function,functions/src","ran":null}
 {"ts":"2026-07-22T18:06:17.738Z","type":"trigger","fired":true,"signals":"cloud function,functions/src","ran":null}
+{"ts":"2026-07-23T09:09:19.636Z","type":"trigger","fired":true,"signals":"allergen","ran":null}
+{"ts":"2026-07-23T09:22:41.003Z","type":"trigger","fired":true,"signals":"allergen,gdpr","ran":null}
+{"ts":"2026-07-23T09:23:10.529Z","type":"trigger","fired":true,"signals":"allergen,deletion,gdpr,personal data","ran":null}
+{"type": "review", "tier": "single-escalated-to-panel", "panel": ["Software Architect", "Product Manager", "Data/ML Engineer (tagging integrity)", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 14, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "via": "exit-plan", "plan": "BUT-1613 presence-driven serving size", "ts": "2026-07-23T09:26:48.691182+00:00"}

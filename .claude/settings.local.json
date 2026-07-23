@@ -59,7 +59,9 @@
       "Bash(gate)",
       "Bash(commit)",
       "Bash(quality_engine)",
-      "Bash(deadlock\")"
+      "Bash(deadlock\")",
+      "Bash(python tools/stakeholder_router.py --json --plan lib/services/shopping/menu_shopping_list_generator.dart lib/services/shopping/menu_shopping_aggregator.dart lib/viewmodels/cooking_mode_viewmodel.dart lib/models/menu/weekly_menu_plan.dart lib/widgets/common/input/portion_scaler_logic.dart)",
+      "Bash(git log *)"
     ]
   },
   "enabledPlugins": {
