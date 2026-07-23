@@ -1997,3 +1997,55 @@ fail-closed semantics edited (rate_limiter.ts not in the diff); Guard-4 `logger.
 static string, no PII. The MEDIUM per-user-cap residual (retry bypasses `checkRateLimit`) is
 pre-existing and out of BUT-1561's global-counter scope — carried, not a blocker for this
 commit. Verdict: CLEAN to commit.
+
+### 2026-07-23 — BUT-1472 export-llm-samples.ts admin consumer [Reviewed clean]
+
+`admin/export-llm-samples.ts` is the mining consumer for `llm_response_samples` (BUT-1451
+capture, previously reaped by the 30-day TTL with no reader). Faithful mirror of
+`export-corrections.ts`: `initializeAdminApp()` at import, read collection, project fields,
+deterministic sort, `fs.writeFileSync`, `main().catch(process.exit(1))`. Admin one-shot
+(manual ts-node, not deployed) so idempotency/region/retry are N/A per the admin-family rule.
+`tsc --noEmit` exit 0.
+
+Verified rigorously, no Critical/High/Medium:
+- **Field parity exact.** All 15 projected fields (mode, inputKind, scrubbedInput,
+  scrubbedInputLength, scrubbedOutput, outputLength, promptVersion, promptSource,
+  experimentBucket, promptVariant, domain, authUidHash, modelId, promptTokenCount,
+  candidatesTokenCount, createdAt) match `llm-sample-capture.ts`'s `.add()` byte-for-byte —
+  the classic admin-export bug class (candidateTokenCount vs candidatesTokenCount, wrong
+  timestamp field) is absent.
+- **Privacy inherited, no new surface.** Exports `scrubbedInput`/`scrubbedOutput` (scrubbed
+  upstream + re-scrubbed by the writer) and `authUidHash` (one-way SHA-256, never raw uid) —
+  matches the documented BUT-1451 posture; not a finding.
+- **Sort deterministic.** `createdAt` ISO strings sort lexicographically == chronologically;
+  null sorts last; `id.localeCompare` tiebreak. Total order, stable across runs.
+- **`--mode` filter** is equality-only (`where("mode","==",x)`) → auto single-field index, no
+  composite (matches the inline comment + accepted deviation).
+- **Output path** `resolve(__dirname,"../../..","scripts/llm-samples/data/...")` = repo-root/
+  scripts, identical resolution convention to the sibling (works from src via ts-node and
+  from lib after tsc — 3 levels up lands on repo root in both layouts).
+
+Two low/info carries (neither a blocker, both shared with the sibling):
+- **Unbounded `query.get()`** loads the whole collection into one array + `JSON.stringify`.
+  Each doc can hold two 50k-char fields (~100KB). TTL-bounds it to 30 days and it's a manual
+  tool where you WANT everything, so acceptable — but at production volume this could pressure
+  memory; a `.limit()` cursor or streamed write would harden it. Same posture as
+  `export-corrections.ts` — not introduced here.
+- **`--mode` not validated** against the known set (extract|enhance|spoken|ingredientLines|
+  ocr); a typo'd mode silently yields 0 docs. The "Found 0 sample documents" log is adequate
+  signal for a manual tool; not worth a guard.
+- **`outputLength` vs `scrubbedOutput` mismatch (data-shape note for the miner, not a bug):**
+  the writer stores `outputLength = rawLlmResponse.length` (pre-truncation) while
+  `scrubbedOutput` is truncated to 50k chars — so a mined doc with `outputLength > 50000` has
+  a truncated body. Faithfully carried by this export; flag for whoever mines the JSON.
+
+### 2026-07-23 — export-llm-samples.ts re-review after automated fixes [Reviewed clean]
+
+Re-reviewed the working-tree `admin/export-llm-samples.ts` after automated fixes were
+applied. State is byte-identical to the clean review above and re-verified end-to-end: 15
+projected fields still match `llm-sample-capture.ts`'s `.add()` exactly (no candidatesTokenCount
+drift), `toIso` only accepts a real `Timestamp` (null otherwise), the null-last sort is a total
+order, `--mode` is equality-only (no composite), and path resolution lands on repo-root
+`scripts/`. `npx tsc --noEmit` exit 0. No Critical/High/Medium; the automated fixes introduced
+no new issue. The three low/info carries above are unchanged and remain accepted (shared with
+the `export-corrections.ts` sibling).

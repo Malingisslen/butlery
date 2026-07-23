@@ -449,6 +449,42 @@ Steg 2. Tillsätt kyckling och stek''';
       vm.updateInstruction(0, 'Hetta upp pannan ordentligt');
       expect(vm.editedInstructions[0], equals('Hetta upp pannan ordentligt'));
     });
+
+    test(
+      'review-step edits survive a Back→Forward round-trip with unchanged '
+      'selections',
+      () {
+        // Regression (High): nextStep() used to rebuild the editable lists
+        // unconditionally on the step 2→3 transition, silently reverting every
+        // manual correction the moment the user stepped Back to step 2 and
+        // Forward again. The whole purpose of the wizard is manual correction,
+        // so those edits must be preserved when the selection did not change.
+        vm.addIngredient('salt');
+        vm.updateInstruction(0, 'Egen instruktion');
+
+        vm.previousStep(); // → step 2 (no selection change)
+        vm.nextStep(); // → step 3
+
+        expect(vm.editedIngredients, contains('salt'));
+        expect(vm.editedInstructions, contains('Egen instruktion'));
+      },
+    );
+
+    test(
+      'changing the selection on Back DOES re-derive the editable lists',
+      () {
+        // The guard must not over-freeze: if the user actually changes which
+        // lines are selected, the lists should be rebuilt from the new choice.
+        vm.addIngredient('salt');
+
+        vm.previousStep(); // → step 2
+        vm.setInstructionSelection({3, 4}); // was {3} — genuine change
+        vm.nextStep(); // → step 3 rebuilds
+
+        expect(vm.editedIngredients, isNot(contains('salt')));
+        expect(vm.editedInstructions, hasLength(2));
+      },
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -456,8 +492,8 @@ Steg 2. Tillsätt kyckling och stek''';
   //
   // `buildRecipe()` must anchor the parser feedback loop the same way every
   // other import path does (BUT-1469): it stores an ImportCorrectionSnapshot in
-  // the shared ParsedRecipeCache, keyed by the produced recipe id, tagged
-  // ImportSource.url (assisted import is always the URL Tier-7 fallback) with
+  // the shared ParsedRecipeCache, keyed by the produced recipe id, tagged with
+  // the ORIGIN strategy's ImportSource (BUT-1656 — no longer hardcoded url) and
   // the source domain. These wire a real cache into the production
   // ServiceLocator and read the snapshot back.
   // ---------------------------------------------------------------------------
@@ -486,11 +522,13 @@ Steg 2. Tillsätt kyckling och stek''';
     AssistedImportViewModel advanceToReview({
       String title = 'Kycklingrätt',
       String? sourceUrl = 'https://www.example.se/recept/kyckling',
+      ImportSource source = ImportSource.url,
     }) {
       final vm = AssistedImportViewModel(
         extractedText: extractedText,
         suggestedTitle: title,
         sourceUrl: sourceUrl,
+        source: source,
       );
       vm.setIngredientSelection({0, 1});
       vm.nextStep();
@@ -517,7 +555,7 @@ Steg 2. Tillsätt kyckling och stek''';
         expect(
           snapshot!.metadata.source,
           ImportSource.url,
-          reason: 'assisted import is the URL Tier-7 fallback',
+          reason: 'a URL-origin assisted import stays tagged url',
         );
         expect(
           snapshot.metadata.domain,
@@ -530,6 +568,49 @@ Steg 2. Tillsätt kyckling och stek''';
           reason:
               'the anchor is built from a produced recipe, not a real parse',
         );
+      },
+    );
+
+    test(
+      'BUT-1656: a voice-origin assisted import tags the snapshot voice, not url',
+      () {
+        // Proves buildRecipe no longer hardcodes ImportSource.url: a voice
+        // dictation reaching the wizard must be attributed to voice so the
+        // feedback analytics don't miscount it as a URL import. Voice has no
+        // source URL, hence no domain.
+        final vm = advanceToReview(
+          sourceUrl: null,
+          source: ImportSource.voice,
+        );
+        addTearDown(vm.dispose);
+
+        final recipe = vm.buildRecipe();
+        final snapshot = cache.retrieve(recipe.id);
+
+        expect(snapshot, isNotNull);
+        expect(
+          snapshot!.metadata.source,
+          ImportSource.voice,
+          reason: 'the origin strategy drives the snapshot source tag',
+        );
+        expect(snapshot.metadata.domain, isNull);
+      },
+    );
+
+    test(
+      'BUT-1656: a text-origin assisted import tags the snapshot text',
+      () {
+        // Proves the pasted-text (manual) path is attributed to text.
+        final vm = advanceToReview(
+          sourceUrl: null,
+          source: ImportSource.text,
+        );
+        addTearDown(vm.dispose);
+
+        final recipe = vm.buildRecipe();
+        final snapshot = cache.retrieve(recipe.id);
+
+        expect(snapshot!.metadata.source, ImportSource.text);
       },
     );
 

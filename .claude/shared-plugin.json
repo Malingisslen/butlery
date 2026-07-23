@@ -99,7 +99,8 @@
     "rolePathsFile": "docs/org/role-paths.json",
     "stalenessDir": "docs/org/dossier-staleness",
     "healthChecks": [
-      { "name": "tagcheck", "run": "/tagcheck", "headline": "allergen-accuracy scorecard (safety-first)" }
+      { "name": "tagcheck", "run": "/tagcheck", "headline": "allergen-accuracy scorecard (safety-first)" },
+      { "name": "sprint-scratch", "run": "bash tools/clean_sprint_scratch.sh", "headline": "sprint scratch swept (stale patches + engine-tagged worktree stashes; human stashes untouched)" }
     ],
     "memoryCuration": {
       "memoryDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery/memory",

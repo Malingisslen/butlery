@@ -155,6 +155,79 @@ void main() {
       });
     });
 
+    // BUT-1482: configRevision records which remote tag_configs revision
+    // produced these tags. It is persisted, so a future config-invalidation
+    // path can tell which recipes were tagged under a superseded revision.
+    group('BUT-1482: configRevision persistence', () {
+      TagResult buildWith({int? configRevision}) => TagResult(
+        tags: {'kyckling'},
+        allergenStatus: {'gluten': TriState.free},
+        dietaryStatus: {'vegetarisk': TriState.contains},
+        coverage: 1.0,
+        generatedAt: DateTime(2024, 6, 1),
+        generatorVersion: kTagGeneratorVersion,
+        configRevision: configRevision,
+      );
+
+      test('survives a Firestore write→read round-trip', () {
+        // Proves a stored revision is trustworthy after reload; would fail if
+        // the write or read of the key were dropped or mistyped.
+        final restored = TagResult.fromFirestore(
+          buildWith(configRevision: 42).toFirestore(),
+        );
+        expect(restored.configRevision, 42);
+      });
+
+      test('survives a JSON (Drift/SQLite) round-trip', () {
+        final restored = TagResult.fromJson(
+          buildWith(configRevision: 7).toJson(),
+        );
+        expect(restored.configRevision, 7);
+      });
+
+      test('is omitted from the map when null (static-fallback tagging)', () {
+        // Static fallback (no remote config) must not write a null key, and
+        // pre-BUT-1482 docs without the key must read back as null.
+        final map = buildWith(configRevision: null).toFirestore();
+        expect(map.containsKey('configRevision'), isFalse);
+        expect(TagResult.fromFirestore(map).configRevision, isNull);
+      });
+
+      test('participates in equality', () {
+        // The invalidation path compares results; a revision-only difference
+        // must not read as "equal", or a superseded retag could be skipped.
+        expect(
+          buildWith(configRevision: 1),
+          isNot(equals(buildWith(configRevision: 2))),
+        );
+        expect(
+          buildWith(configRevision: 1),
+          equals(buildWith(configRevision: 1)),
+        );
+      });
+
+      test('is folded into hashCode consistently with equality', () {
+        // Share the collection fields so configRevision is the only variable:
+        // equal results (same revision) must hash equal. (Isolates the field —
+        // TagResult.hashCode otherwise hashes its Set/Map fields by identity.)
+        final tags = {'kyckling'};
+        final allergen = {'gluten': TriState.free};
+        final dietary = {'vegetarisk': TriState.contains};
+        final at = DateTime(2024, 6, 1);
+        TagResult withRev(int? rev) => TagResult(
+          tags: tags,
+          allergenStatus: allergen,
+          dietaryStatus: dietary,
+          coverage: 1.0,
+          generatedAt: at,
+          generatorVersion: kTagGeneratorVersion,
+          configRevision: rev,
+        );
+        expect(withRev(1), equals(withRev(1)));
+        expect(withRev(1).hashCode, withRev(1).hashCode);
+      });
+    });
+
     group('allergen query helpers', () {
       late TagResult result;
 

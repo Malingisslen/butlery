@@ -15,6 +15,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
@@ -36,6 +37,7 @@ Future<Recipe?> showAssistedImportDialog({
   String? suggestedTitle,
   String? thumbnailUrl,
   String? sourceUrl,
+  ImportSource source = ImportSource.url,
   List<int>? preDetectedIngredientLines,
 }) {
   return showDialog<Recipe>(
@@ -46,6 +48,7 @@ Future<Recipe?> showAssistedImportDialog({
       suggestedTitle: suggestedTitle,
       thumbnailUrl: thumbnailUrl,
       sourceUrl: sourceUrl,
+      source: source,
       preDetectedIngredientLines: preDetectedIngredientLines,
     ),
   );
@@ -57,6 +60,7 @@ class AssistedImportDialog extends StatelessWidget {
   final String? suggestedTitle;
   final String? thumbnailUrl;
   final String? sourceUrl;
+  final ImportSource source;
   final List<int>? preDetectedIngredientLines;
 
   const AssistedImportDialog({
@@ -65,6 +69,7 @@ class AssistedImportDialog extends StatelessWidget {
     this.suggestedTitle,
     this.thumbnailUrl,
     this.sourceUrl,
+    this.source = ImportSource.url,
     this.preDetectedIngredientLines,
   });
 
@@ -76,6 +81,7 @@ class AssistedImportDialog extends StatelessWidget {
         suggestedTitle: suggestedTitle,
         thumbnailUrl: thumbnailUrl,
         sourceUrl: sourceUrl,
+        source: source,
         preDetectedIngredientLines: preDetectedIngredientLines,
       ),
       child: const _AssistedImportDialogContent(),

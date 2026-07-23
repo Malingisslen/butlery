@@ -122,7 +122,11 @@ void main() {
     // via the generator; give the mock a valid (boot) pair by default.
     when(
       () => mockTagGenerator.resolveConfigPhases(),
-    ).thenReturn((phase1: TagPhase1Base(), phase5: TagPhase5Cuisine()));
+    ).thenReturn((
+      phase1: TagPhase1Base(),
+      phase5: TagPhase5Cuisine(),
+      configVersion: null,
+    ));
 
     service = TaggingService(
       lookupService: mockLookupService,
@@ -204,6 +208,7 @@ void main() {
             phase5Result: any(named: 'phase5Result'),
             phase5PartialResult: any(named: 'phase5PartialResult'),
             isPartial: any(named: 'isPartial'),
+            configVersion: any(named: 'configVersion'),
           ),
         ).thenReturn(fakeAssemble);
 

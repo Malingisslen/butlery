@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
@@ -161,6 +162,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
         context: context,
         extractedText: result.extractedText!,
         suggestedTitle: result.suggestedTitle,
+        source: ImportSource.voice,
         preDetectedIngredientLines: result.likelyIngredientLines,
       );
       if (!mounted || assisted == null) return;

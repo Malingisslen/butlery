@@ -372,6 +372,10 @@ class TaggingPipelineRunner {
       phase5Result: phase5,
       phase5PartialResult: phase5Partial,
       isPartial: isPartial,
+      // BUT-1483: stamp the version resolved ONCE at run start (line ~238), not
+      // a fresh resolve inside assembleResult — the memoised cache may have
+      // advanced to a newer config during the awaited phases above.
+      configVersion: configPhases?.configVersion,
     );
 
     return TaggingPipelineResult(tagResult: tagResult, outcomes: outcomes);

@@ -94,16 +94,24 @@ if [[ "$dry_run" -eq 1 ]]; then
 else
   max_passes=1000
   while (( max_passes-- > 0 )); do
+    # `|| true`: once the tagged stashes are drained (or there were none), the
+    # grep matches nothing and exits 1; with `set -o pipefail` + `set -e` that
+    # non-zero pipeline would otherwise kill the script mid-sweep (the dry-run
+    # branch above guards its grep the same way).
     ref="$(git stash list --format='%gd %gs' 2>/dev/null \
           | grep -F "$STASH_MARKER" \
           | head -n1 \
-          | awk '{print $1}')"
+          | awk '{print $1}' || true)"
     [[ -z "$ref" ]] && break
     git stash drop "$ref" >/dev/null
     dropped_stashes=$((dropped_stashes + 1))
   done
 fi
 
-verb="removed"; [[ "$dry_run" -eq 1 ]] && verb="would remove"
-noun="entries"; [[ "$removed_patches" -eq 1 ]] && noun="entry"
+# Plain `[[ cond ]] && assign` would exit non-zero when the test is false, and
+# under `set -e` that kills the script right before the summary — so on a real
+# (non-dry) run the janitor would see exit 1 and flag a clean sweep as a failure.
+# Use explicit `if` so the status is always 0.
+if [[ "$dry_run" -eq 1 ]]; then verb="would remove"; else verb="removed"; fi
+if [[ "$removed_patches" -eq 1 ]]; then noun="entry"; else noun="entries"; fi
 echo "sprint scratch janitor: ${verb} ${removed_patches} patch ${noun}, ${dropped_stashes} tagged stash(es)"

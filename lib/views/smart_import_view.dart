@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/adaptive_app_bar.dart';
@@ -285,10 +286,12 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   ) async {
     if (!viewModel.canImport) return;
 
+    final isUrl = viewModel.detection?.isUrl == true;
     final recipe = await showAssistedImportDialog(
       context: context,
       extractedText: viewModel.input,
-      sourceUrl: viewModel.detection?.isUrl == true ? viewModel.input : null,
+      sourceUrl: isUrl ? viewModel.input : null,
+      source: isUrl ? ImportSource.url : ImportSource.text,
     );
 
     if (!context.mounted || recipe == null) return;
@@ -330,6 +333,12 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       suggestedTitle: helpResult.suggestedTitle,
       thumbnailUrl: helpResult.thumbnailUrl,
       sourceUrl: helpResult.sourceUrl,
+      // The needs-help fallback fires from the URL/video/social pipeline: a
+      // present sourceUrl means a URL-origin import; its absence means the
+      // extracted text came from a non-URL strategy (e.g. pasted text).
+      source: helpResult.sourceUrl != null
+          ? ImportSource.url
+          : ImportSource.text,
       preDetectedIngredientLines: helpResult.likelyIngredientLines,
     );
 

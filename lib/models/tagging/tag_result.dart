@@ -79,6 +79,17 @@ class TagResult {
   /// When true, allergen/dietary classifications may be less reliable.
   final bool hasDraftIngredients;
 
+  /// BUT-1482: Revision of the remote `tag_configs` (the [FirebaseTagConfig]
+  /// `combinedVersion`) these tags were generated under. Null when tagging ran
+  /// on the static fallback config (no remote config was loaded).
+  ///
+  /// Stamped at generation time so a future config-change invalidation path can
+  /// tell which recipes were tagged under a superseded config revision. This
+  /// field only RECORDS the revision — it does not yet drive [needsRetagging];
+  /// the server-side batch-retag design that would consume it is deferred to a
+  /// follow-up ticket.
+  final int? configRevision;
+
   /// Creates a TagResult with the given properties.
   ///
   /// CRIT-2: Coverage is validated to be in [0.0, 1.0] range.
@@ -96,6 +107,7 @@ class TagResult {
     this.decisions,
     this.errorReason,
     this.hasDraftIngredients = false,
+    this.configRevision,
     bool? hasCoverageAnomaly,
   }) : coverage = _validateAndClampCoverage(coverage),
        hasCoverageAnomaly =
@@ -323,6 +335,11 @@ class TagResult {
         'hasDraftIngredients',
         defaultValue: false,
       ),
+      // BUT-1482: read the config revision (absent on pre-BUT-1482 docs → null)
+      configRevision: SerializationUtils.safeNullableInt(
+        migratedData,
+        'configRevision',
+      ),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
     );
@@ -363,6 +380,11 @@ class TagResult {
       result['errorReason'] = errorReason;
     }
 
+    // BUT-1482: stamp the config revision when known (null = static fallback)
+    if (configRevision != null) {
+      result['configRevision'] = configRevision;
+    }
+
     // MED-1: Optionally include decisions for debugging/auditing
     if (includeDecisions && decisions != null && decisions!.isNotEmpty) {
       result['decisions'] = decisions!.map((d) => d.toJson()).toList();
@@ -397,6 +419,8 @@ class TagResult {
       'hasDraftIngredients': hasDraftIngredients,
       // V2: Include errorReason if present
       if (errorReason != null) 'errorReason': errorReason,
+      // BUT-1482: stamp the config revision when known (null = static fallback)
+      if (configRevision != null) 'configRevision': configRevision,
       // H3: Include decisions if present (for debugging)
       if (decisions != null && decisions!.isNotEmpty)
         'decisions': decisions!.map((d) => d.toJson()).toList(),
@@ -471,6 +495,11 @@ class TagResult {
         migratedData,
         'hasDraftIngredients',
         defaultValue: false,
+      ),
+      // BUT-1482: read the config revision (absent on pre-BUT-1482 docs → null)
+      configRevision: SerializationUtils.safeNullableInt(
+        migratedData,
+        'configRevision',
       ),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
@@ -786,6 +815,7 @@ class TagResult {
           isPartial == other.isPartial &&
           hasCoverageAnomaly == other.hasCoverageAnomaly && // CRIT-2
           hasDraftIngredients == other.hasDraftIngredients &&
+          configRevision == other.configRevision && // BUT-1482
           _decisionsEqual(decisions, other.decisions) &&
           errorReason == other.errorReason;
 
@@ -822,6 +852,7 @@ class TagResult {
     isPartial,
     hasCoverageAnomaly, // CRIT-2
     hasDraftIngredients,
+    configRevision, // BUT-1482
     decisions != null ? Object.hashAll(decisions!) : null,
     errorReason,
   );
@@ -845,6 +876,7 @@ class TagResult {
     String? errorReason,
     bool? hasCoverageAnomaly,
     bool? hasDraftIngredients,
+    int? configRevision,
   }) {
     return TagResult(
       tags: tags ?? this.tags,
@@ -859,6 +891,7 @@ class TagResult {
       errorReason: errorReason ?? this.errorReason,
       hasCoverageAnomaly: hasCoverageAnomaly ?? this.hasCoverageAnomaly,
       hasDraftIngredients: hasDraftIngredients ?? this.hasDraftIngredients,
+      configRevision: configRevision ?? this.configRevision,
     );
   }
 

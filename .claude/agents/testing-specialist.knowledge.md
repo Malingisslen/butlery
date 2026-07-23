@@ -2450,3 +2450,96 @@ lifecycle file — the late-load harness already lives in the main file's BUT-15
   falls to `present ?? household ?? base ?? 1 == 1`, ingredients unchanged, no crash.
 - No production surprises. `cooking_mode_viewmodel_test.dart` 51 green (+10 new BUT-1613),
   lifecycle 6 green — 57 total.
+
+## Discovered patterns
+
+### 2026-07-23 — [review, tagging BUT-1482] configRevision stamp re-resolves and defeats BUT-1483 once-per-run invariant
+Trigger: reviewing lib/services/tagging/tag_generator.dart + tag_result.dart configRevision stamping.
+Finding: `assembleResult` (tag_generator.dart:242) stamps `configRevision` by calling
+`resolveConfigPhases()` AGAIN, instead of receiving the version from the `ConfigBackedPhases`
+record the pipeline runner already resolved ONCE at the top of the run
+(tagging_pipeline_runner.dart:238). The runner awaits phases 1-5 between the initial resolve and
+`assembleResult`; a parallel retag batch sharing the same generator can advance the memoised
+config cache (`_cachedConfigVersion`) during those awaits. Result: tags produced by the OLD
+config phases get stamped with the NEWER config revision — the exact mid-run swap BUT-1483 was
+built to prevent, reintroduced through the stamp. The doc comment's claim ("re-reading is
+memoised, so the stamp matches") is false: memoisation pins to the LATEST version, not the
+run's. `generate()` (legacy path) does it correctly — captures `cfgPhases` once (line 293) and
+reuses `cfgPhases.configVersion` (464). Fix: thread `configVersion` into `assembleResult` as a
+param; runner passes `configPhases?.configVersion`. Test to add: two interleaved
+`assembleResult`/resolve calls with a config-version bump in between must NOT change an
+already-resolved run's stamp — a fakeAsync-interleave test at the runner level, asserting the
+stamped `TagResult.configRevision` equals the version resolved before the awaits.
+Note: field is RECORD-only today (doesn't drive needsRetagging), so no live allergen impact yet;
+the hazard lands when the deferred config-invalidation consumer reads it to decide retags.
+
+### 2026-07-23 — Assisted-import wizard: back-nav silently discards review-step edits [Bug found]
+Reviewing `lib/viewmodels/assisted_import_viewmodel.dart` (BUT-1656 source-tagging sprint,
+"import" area). `nextStep()` calls `_buildEditableLists()` **unconditionally** on every
+`selectInstructions → reviewEdit` transition (line ~156). `_buildEditableLists()` rebuilds
+`_editedIngredients`/`_editedInstructions` from the raw selected line indices, so the flow
+review → Back (to step 2) → Next silently wipes any `updateIngredient`/`addIngredient`/
+`removeIngredient`/`updateInstruction` the user made on the review step — reverting typo-fixes
+back to the raw extracted lines. Title/description/portions/time/mealType survive (separate
+fields); only the two editable lists are clobbered. This is silent data loss of the user's
+CORRECTIONS in a wizard whose entire purpose is manual correction. No existing test covers
+back-then-forward: the `buildRecipe` + `Editable list mutations` groups only ever advance
+forward once. Regression test to add: advance to review, `vm.addIngredient('salt')`,
+`vm.previousStep()`, `vm.nextStep()`, assert `vm.editedIngredients` still contains 'salt'
+(RED today). Correct fix is a guard — only rebuild when the selection set changed since the
+last build, or merge rather than overwrite. Lesson: any wizard that derives an editable buffer
+from a prior step in `nextStep()` needs a back-forward-preservation test; forward-only tests
+are structurally blind to it.
+
+### 2026-07-23 — BUT-1656 `source` attribution lives in the VIEW call sites, untested [Pattern discovered]
+The origin-strategy tag (voice/text/url) that `AssistedImportViewModel.buildRecipe()` stamps
+onto the correction snapshot is only as correct as the `source:` the caller passes to
+`showAssistedImportDialog`. The VM test proves "given source X, snapshot tags X", but the
+DERIVATION of X is in three view sites with NO test: `voice_import_view.dart:165`
+(`ImportSource.voice`), `smart_import_view.dart:294` (`isUrl ? url : text`, manual path), and
+`smart_import_view.dart:339` (`helpResult.sourceUrl != null ? url : text`, needs-help path).
+A flip in either ternary would mislabel every affected import and the VM suite stays green.
+This is the "CTA proves the LABEL not the ACTION" wire-level gap — cover the two ternaries by
+extracting them to a `@visibleForTesting static ImportSource sourceForAssisted(...)` pure
+helper (preferred over a full journey test for a 1-line decision).
+
+### 2026-07-23 — BUT-1656 re-review: both fixes land correctly [Verification]
+Re-reviewed the working tree after the automated fixes for the two 2026-07-23 findings above.
+Both are correct and covered:
+1. Back→Forward edit-loss fix — `nextStep()` now guards `_buildEditableLists()` behind
+   `_selectionChangedSinceLastBuild()`. The equality helper `_setEquals(Set<int>? a, Set<int> b)`
+   is a proper set-equality (null⇒changed, then length + `containsAll`), so a same-size
+   different-element reselection (`{3}`→`{4}`) correctly counts as changed. `_buildEditableLists`
+   snapshots `_builtFrom{Ingredient,Instruction}Indices` as fresh copies. Two regression tests
+   added (preserve-on-unchanged, rebuild-on-changed) — both green, RED before the guard.
+2. Source-attribution fix — `source` threaded VM→dialog→`showAssistedImportDialog`, defaulting
+   `ImportSource.url`; `buildRecipe` passes it to `ImportCorrectionSnapshot.capture` instead of a
+   hardcoded url. voice/text VM tests green. Enum values used (url/text/voice) all exist.
+All 36 tests pass, `flutter analyze` clean on the 5 files. No new Critical/High.
+STILL OPEN (unchanged by the fix): the three view-site `source:` derivations remain inline and
+untested — the 2026-07-23 wire-level gap above was NOT closed (no `@visibleForTesting` helper
+extracted). A flipped ternary in `smart_import_view.dart` still mislabels imports with the VM
+suite green. Low severity (analytics attribution, not user-facing safety), carried forward.
+Note: a social/video URL (instagram/tiktok/youtube) reaching the wizard is coarse-tagged
+`ImportSource.url` by both smart-import ternaries — pre-existing simplification, not introduced
+here, Info only.
+
+### 2026-07-23 — [Re-review: tagging configRevision (BUT-1482)] TagResult.hashCode identity-hashes its collection fields
+**Trigger:** re-reviewing `lib/models/tagging/tag_result.dart` + `tag_generator.dart` after the BUT-1482
+`configRevision` field was added; wrote a round-trip + equality/hashCode test for the new field.
+**Bug caught (pre-existing, NOT introduced by the change):** `TagResult.hashCode` (line ~845) passes
+`tags` (Set), `allergenStatus` (Map), `dietaryStatus` (Map) DIRECTLY to `Object.hash`, which hashes them
+by IDENTITY, while `==` compares them by CONTENT (`_setEquals`/`_mapEquals`). So two content-equal
+`TagResult`s built from distinct literals get different hashCodes — an equals/hashCode contract violation,
+despite the line-843 comment claiming consistency. Latent today: no `Set<TagResult>`/`Map<TagResult,_>`
+usage exists in `lib/`, so no live blast radius. Fix would be `Object.hashAllUnordered`/content hashing of
+the collections. **Test lesson:** a naive `expect(a.hashCode, aAgain.hashCode)` where a/aAgain use SEPARATE
+collection literals will fail on this class for reasons unrelated to the field under test — SHARE the
+collection instances across the two objects so the field-under-test is the only variable (see the
+"folded into hashCode consistently with equality" test).
+**Verdict on the BUT-1482 fixes themselves:** correct. `configRevision` round-trips through both
+`toFirestore`/`fromFirestore` and `toJson`/`fromJson` (via `safeNullableInt`), is omitted when null,
+is in `==`/`copyWith`, and the `ConfigBackedPhases.configVersion` is threaded once-per-run from
+`resolveConfigPhases()` through the runner's single `assembleResult(configVersion:)` call — avoiding the
+documented mid-run memoised-cache advance. No NEW Critical/High introduced. 209 existing tagging tests +
+5 new configRevision tests green, analyze clean.

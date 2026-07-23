@@ -17,7 +17,16 @@ import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 /// Phase 5) resolved for one tagging run. Captured once per run so a
 /// concurrent config rebuild can't swap them mid-run. See
 /// [TagGenerator.resolveConfigPhases].
-typedef ConfigBackedPhases = ({TagPhase1Base phase1, TagPhase5Cuisine phase5});
+///
+/// BUT-1482: [configVersion] is the `combinedVersion` of the config these
+/// phases were built from (null = static fallback). Resolved from the same
+/// decision that picks the phases, so the revision stamped onto a [TagResult]
+/// matches the config that actually produced its tags.
+typedef ConfigBackedPhases = ({
+  TagPhase1Base phase1,
+  TagPhase5Cuisine phase5,
+  int? configVersion,
+});
 
 /// Generator version for tracking changes.
 /// Bump on any tagging logic change so needsRetagging detects stale recipes.
@@ -112,12 +121,22 @@ class TagGenerator {
   /// [ServiceLocator] mirrors how [_createPhase3]/[_createPhase4] resolve
   /// [FeatureFlagService], keeping the wiring self-contained in this file.
   ConfigBackedPhases resolveConfigPhases() {
+    // BUT-1482: configVersion tracks the config revision each returned pair was
+    // built from, so [generate]/[assembleResult] can stamp it onto the result.
     if (!_canRebuildConfigPhases) {
-      return (phase1: _phase1, phase5: _phase5);
+      return (
+        phase1: _phase1,
+        phase5: _phase5,
+        configVersion: _bootConfigVersion,
+      );
     }
     final live = ServiceLocator.tryGet<TagConfigService>()?.configOrNull;
     if (live == null || live.combinedVersion == _bootConfigVersion) {
-      return (phase1: _phase1, phase5: _phase5);
+      return (
+        phase1: _phase1,
+        phase5: _phase5,
+        configVersion: _bootConfigVersion,
+      );
     }
     if (live.combinedVersion != _cachedConfigVersion) {
       _cachedPhase1 = TagPhase1Base(firebaseConfig: live);
@@ -129,7 +148,11 @@ class TagGenerator {
         'TagGenerator',
       );
     }
-    return (phase1: _cachedPhase1!, phase5: _cachedPhase5!);
+    return (
+      phase1: _cachedPhase1!,
+      phase5: _cachedPhase5!,
+      configVersion: live.combinedVersion,
+    );
   }
 
   // BUT-553: per-phase accessors expose individual phase calculation to
@@ -189,6 +212,7 @@ class TagGenerator {
     Phase5Result? phase5Result,
     Phase5ResultPartial? phase5PartialResult,
     required bool isPartial,
+    required int? configVersion,
   }) {
     final allTags = <String>{
       ...phase1Result.tags,
@@ -212,6 +236,13 @@ class TagGenerator {
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
+      // BUT-1482/BUT-1483: stamp the config version the CALLER resolved once for
+      // this run (runner: single [resolveConfigPhases] at run start). A second
+      // resolve here would re-read the memoised cache, which pins to the LATEST
+      // seen version — a parallel retag batch sharing this generator can advance
+      // it during the awaited phases, stamping OLD-config tags with a NEWER
+      // revision. Threading the run's own version avoids that mid-run swap.
+      configRevision: configVersion,
       decisions: phase1Result.decisions.isNotEmpty
           ? phase1Result.decisions
           : null,
@@ -432,6 +463,8 @@ class TagGenerator {
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
+      // BUT-1482: stamp the config revision resolved once for this run.
+      configRevision: cfgPhases.configVersion,
       // H3: Include decision logs from Phase 1
       decisions: phase1Result.decisions.isNotEmpty
           ? phase1Result.decisions
@@ -511,6 +544,8 @@ class TagGenerator {
       generatedAt: clock.now(),
       generatorVersion: '$kTagGeneratorVersion-phase1',
       isPartial: true, // C3: Phase 1 only is always partial
+      // BUT-1482: stamp the config revision resolved once for this run.
+      configRevision: cfgPhases.configVersion,
       // H3: Include decision logs from Phase 1
       decisions: phase1Result.decisions.isNotEmpty
           ? phase1Result.decisions

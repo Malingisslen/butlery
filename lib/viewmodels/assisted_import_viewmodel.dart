@@ -39,6 +39,12 @@ class AssistedImportViewModel extends BaseViewModel {
   final String? thumbnailUrl;
   final String? sourceUrl;
 
+  /// The origin strategy that fed this assisted-import wizard (URL, text paste,
+  /// voice dictation, photo/OCR …). Drives the correction-snapshot source tag
+  /// in [buildRecipe]. Defaults to [ImportSource.url] because the smart-import
+  /// URL pipeline is the historical Tier-7 fallback into this wizard.
+  final ImportSource source;
+
   /// Parsed lines from extracted text.
   late final List<String> lines;
 
@@ -79,6 +85,13 @@ class AssistedImportViewModel extends BaseViewModel {
   List<String> _editedInstructions = [];
   List<String> get editedInstructions => _editedInstructions;
 
+  /// The selection sets the current editable lists were last built from.
+  /// Null until the first build. Used to skip a rebuild (which would discard
+  /// the user's review-step edits) when they step Back to a selection screen
+  /// and Forward again without actually changing what lines are selected.
+  Set<int>? _builtFromIngredientIndices;
+  Set<int>? _builtFromInstructionIndices;
+
   // Loading and error states reserved for future async operations
 
   AssistedImportViewModel({
@@ -86,6 +99,7 @@ class AssistedImportViewModel extends BaseViewModel {
     this.suggestedTitle,
     this.thumbnailUrl,
     this.sourceUrl,
+    this.source = ImportSource.url,
     List<int>? preDetectedIngredientLines,
   }) {
     // Parse lines
@@ -146,7 +160,14 @@ class AssistedImportViewModel extends BaseViewModel {
         _currentStep = AssistedImportStep.selectInstructions;
         break;
       case AssistedImportStep.selectInstructions:
-        _buildEditableLists();
+        // Only (re)derive the editable lists from the raw selected lines when
+        // the selection actually changed since the last build. Rebuilding
+        // unconditionally would silently revert every correction the user made
+        // on the review step after stepping Back and Forward again — the exact
+        // manual fixes this wizard exists to capture.
+        if (_selectionChangedSinceLastBuild()) {
+          _buildEditableLists();
+        }
         _currentStep = AssistedImportStep.reviewEdit;
         break;
       case AssistedImportStep.reviewEdit:
@@ -266,6 +287,24 @@ class AssistedImportViewModel extends BaseViewModel {
     }
   }
 
+  /// True when either selection set differs from the one the current editable
+  /// lists were built from (or nothing has been built yet).
+  bool _selectionChangedSinceLastBuild() {
+    return !_setEquals(
+          _builtFromIngredientIndices,
+          _selectedIngredientIndices,
+        ) ||
+        !_setEquals(
+          _builtFromInstructionIndices,
+          _selectedInstructionIndices,
+        );
+  }
+
+  bool _setEquals(Set<int>? a, Set<int> b) {
+    if (a == null) return false;
+    return a.length == b.length && a.containsAll(b);
+  }
+
   void _buildEditableLists() {
     final sortedIngredientIndices = _selectedIngredientIndices.toList()..sort();
     _editedIngredients = sortedIngredientIndices
@@ -280,6 +319,11 @@ class AssistedImportViewModel extends BaseViewModel {
         .where((line) => line.isNotEmpty)
         .map(_cleanInstructionLine)
         .toList();
+
+    // Snapshot the selections these lists were derived from, so a Back→Forward
+    // round-trip with unchanged selections skips the rebuild (preserving edits).
+    _builtFromIngredientIndices = Set<int>.from(_selectedIngredientIndices);
+    _builtFromInstructionIndices = Set<int>.from(_selectedInstructionIndices);
   }
 
   String _cleanInstructionLine(String line) {
@@ -321,10 +365,13 @@ class AssistedImportViewModel extends BaseViewModel {
     // PII-SCRUBBED by construction: the snapshot is built only from the recipe
     // the user assembled (title + chosen ingredient/instruction lines), never
     // from the raw extracted page text, which can carry unrelated PII.
-    // Assisted import is always the URL Tier-7 fallback, so tag it url + domain.
+    // BUT-1656: tag the snapshot with the true origin strategy ([source]) rather
+    // than a hardcoded url, so voice/text/photo-origin corrections aren't
+    // mislabelled as URL imports in the feedback analytics. Domain attribution
+    // only applies when a source URL exists (null for voice/text/photo).
     ImportCorrectionSnapshot.capture(
       recipe,
-      source: ImportSource.url,
+      source: source,
       domain: _domainOf(sourceUrl),
     );
 
