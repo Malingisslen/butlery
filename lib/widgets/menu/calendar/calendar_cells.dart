@@ -55,8 +55,13 @@ Text _slotLabel(String text, Color color) => Text(
 typedef SlotTapCallback = void Function(DayOfWeek day, MealSlot slot);
 
 /// Callback fired when an assigned recipe cell is tapped — orchestrator
-/// owns navigation routing.
-typedef RecipeNavCallback = void Function(String recipeId);
+/// owns navigation routing. [presentServings] (BUT-1613) is the number of
+/// members home for this meal when the lunch/middag slot has an explicit,
+/// non-empty presence selection — carried through so cooking mode can open
+/// pre-scaled to who's home. Null for övrigt, solo accounts, and unset/empty
+/// presence (→ cooking mode falls back to its household default).
+typedef RecipeNavCallback =
+    void Function(String recipeId, {int? presentServings});
 
 /// BUT-1611: fired when a lunch/middag cell's presence faces are tapped —
 /// orchestrator owns the "vem är hemma?" sheet + persistence + notice flow.
@@ -230,6 +235,11 @@ class _SingleSlotCell extends StatelessWidget {
         : _AssignedSlot(
             entry: entry,
             onTap: onTapRecipe,
+            // BUT-1613: the number present for this meal (roster-filtered so it
+            // matches the portion count shown on the presence row), or null
+            // when there's no explicit non-empty selection — carried into the
+            // tap so cooking mode opens pre-scaled to who's home.
+            presentServings: _presentServings(),
             // BUT-1241: "NY" badge on entries from the latest generation.
             showNewBadge: vm.isRecentlyPlaced(entry.id),
             // BUT-1043: in multi-select mode, tap toggles selection.
@@ -267,6 +277,17 @@ class _SingleSlotCell extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// BUT-1613: members present for this meal, roster-filtered so it matches the
+  /// portion count shown on the presence row. Null when solo (roster ≤ 1), no
+  /// selection, or nobody home — cooking mode then uses its household default.
+  int? _presentServings() {
+    if (roster.length <= 1) return null;
+    final presentIds = plan.presentMemberIdsFor(day, slot);
+    if (presentIds == null || presentIds.isEmpty) return null;
+    final count = roster.where((m) => presentIds.contains(m.memberId)).length;
+    return count > 0 ? count : null;
   }
 }
 
@@ -430,6 +451,10 @@ class _AssignedSlot extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  /// BUT-1613: members home for this meal, forwarded into the recipe tap so
+  /// cooking mode opens pre-scaled. Null → cooking mode's household default.
+  final int? presentServings;
+
   // BUT-1043: multi-select state. When [selectionMode] is on, tap toggles
   // selection instead of navigating, a checkbox overlay appears, and the
   // cell is no longer draggable (selection and drag must not collide).
@@ -441,6 +466,7 @@ class _AssignedSlot extends StatelessWidget {
     required this.entry,
     required this.onTap,
     required this.onToggleSelection,
+    this.presentServings,
     this.showNewBadge = false,
     this.selectionMode = false,
     this.isSelected = false,
@@ -457,8 +483,9 @@ class _AssignedSlot extends StatelessWidget {
       button: true,
       selected: selectionMode ? isSelected : null,
       child: GestureDetector(
-        onTap: () =>
-            selectionMode ? onToggleSelection(entry.id) : onTap(entry.recipeId),
+        onTap: () => selectionMode
+            ? onToggleSelection(entry.id)
+            : onTap(entry.recipeId, presentServings: presentServings),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),

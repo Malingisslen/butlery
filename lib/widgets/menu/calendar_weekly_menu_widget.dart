@@ -186,7 +186,11 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             day: day,
             isToday: day.index == todayIndex,
             onTapEmptySlot: (d, s) => _onTapEmptySlot(context, vm, d, s),
-            onTapRecipe: (id) => _navigateToRecipe(context, id),
+            onTapRecipe: (id, {presentServings}) => _navigateToRecipe(
+              context,
+              id,
+              presentServings: presentServings,
+            ),
             roster: _roster,
             onTapPresence: (d, s) => _onTapPresence(context, vm, d, s),
           ),
@@ -399,14 +403,20 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
 
   Future<void> _navigateToRecipe(
     BuildContext context,
-    String recipeId,
-  ) async {
+    String recipeId, {
+    int? presentServings,
+  }) async {
     final vm = context.read<WeeklyMenuPlanViewModel>();
     final recipe = vm.resolveForNavigation(recipeId);
     if (recipe != null && context.mounted) {
       await Navigator.of(context).pushNamed(
         '/recipe-detail',
-        arguments: recipe,
+        // BUT-1613: carry the present count via the map form so recipe detail
+        // can forward it to cooking mode. Bare-Recipe form kept when there's no
+        // presence, so the 8+ other recipe-detail callers are untouched.
+        arguments: presentServings == null
+            ? recipe
+            : {'recipe': recipe, 'presentServings': presentServings},
       );
     }
   }

@@ -257,6 +257,7 @@ class AppRouter {
           bool scrollToComments = false;
           bool readOnly = false;
           SocialRequest? shareRequest;
+          int? presentServings;
           if (arguments is Recipe) {
             recipe = arguments;
           } else if (arguments is Map<String, dynamic>) {
@@ -264,6 +265,9 @@ class AppRouter {
             scrollToComments = arguments['scrollToComments'] as bool? ?? false;
             readOnly = arguments['readOnly'] as bool? ?? false;
             shareRequest = arguments['shareRequest'] as SocialRequest?;
+            // BUT-1613: present count from the weekly-menu calendar, forwarded
+            // to cooking mode so it opens pre-scaled to who's home.
+            presentServings = arguments['presentServings'] as int?;
           }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
@@ -274,6 +278,7 @@ class AppRouter {
               scrollToComments: scrollToComments,
               readOnly: readOnly,
               shareRequest: shareRequest,
+              presentServings: presentServings,
             ),
             settings,
             Routes.getAnimationType(routeName),
@@ -338,12 +343,23 @@ class AppRouter {
           );
 
         case Routes.cookingMode:
-          final recipe = settings.arguments as Recipe?;
+          // BUT-1613: accept either a bare Recipe (every existing caller) or a
+          // {recipe, presentServings} map (from a planned weekly-menu meal, so
+          // cooking mode opens pre-scaled to who's home).
+          final cookingArgs = settings.arguments;
+          Recipe? recipe;
+          int? presentServings;
+          if (cookingArgs is Recipe) {
+            recipe = cookingArgs;
+          } else if (cookingArgs is Map<String, dynamic>) {
+            recipe = cookingArgs['recipe'] as Recipe?;
+            presentServings = cookingArgs['presentServings'] as int?;
+          }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for cooking mode');
           }
           return _buildRoute(
-            CookingModeView(recipe: recipe),
+            CookingModeView(recipe: recipe, presentServings: presentServings),
             settings,
             Routes.getAnimationType(routeName),
           );

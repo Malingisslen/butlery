@@ -41,7 +41,16 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 class CookingModeView extends StatefulWidget {
   final Recipe recipe;
 
-  const CookingModeView({super.key, required this.recipe});
+  /// BUT-1613: members home for this meal when launched from a planned
+  /// weekly-menu slot — opens cooking mode pre-scaled to who's home. Null for
+  /// every other entry point (→ household default).
+  final int? presentServings;
+
+  const CookingModeView({
+    super.key,
+    required this.recipe,
+    this.presentServings,
+  });
 
   @override
   State<CookingModeView> createState() => _CookingModeViewState();
@@ -59,7 +68,10 @@ class _CookingModeViewState extends State<CookingModeView> {
   @override
   void initState() {
     super.initState();
-    _vm = CookingModeViewModel(recipe: widget.recipe);
+    _vm = CookingModeViewModel(
+      recipe: widget.recipe,
+      presentServings: widget.presentServings,
+    );
     // Force landscape and keep screen awake
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,

@@ -103,12 +103,18 @@ class RecipeDetailView extends StatefulWidget {
   // the requester.
   final SocialRequest? shareRequest;
 
+  /// BUT-1613: present count carried from a planned weekly-menu meal, forwarded
+  /// to cooking mode so it opens pre-scaled to who's home. Null for every other
+  /// entry point into recipe detail.
+  final int? presentServings;
+
   const RecipeDetailView({
     super.key,
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
     this.shareRequest,
+    this.presentServings,
   });
 
   @override
@@ -149,6 +155,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
         scrollToComments: widget.scrollToComments,
         readOnly: widget.readOnly,
         shareRequest: widget.shareRequest,
+        presentServings: widget.presentServings,
       ),
     );
   }
@@ -160,11 +167,15 @@ class _RecipeDetailViewContent extends StatefulWidget {
   final bool readOnly;
   final SocialRequest? shareRequest;
 
+  /// BUT-1613: present count forwarded to cooking mode (see RecipeDetailView).
+  final int? presentServings;
+
   const _RecipeDetailViewContent({
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
     this.shareRequest,
+    this.presentServings,
   });
 
   @override
@@ -377,7 +388,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         onPressed: () => Navigator.pushNamed(
                           context,
                           Routes.cookingMode,
-                          arguments: recipe,
+                          // BUT-1613: forward the present count (map form) when
+                          // this detail view was opened from a planned meal, so
+                          // cooking mode opens pre-scaled. Bare Recipe otherwise.
+                          arguments: widget.presentServings == null
+                              ? recipe
+                              : {
+                                  'recipe': recipe,
+                                  'presentServings': widget.presentServings,
+                                },
                         ),
                         tooltip: context.l10n.recipeStartCookingTooltip,
                       ),

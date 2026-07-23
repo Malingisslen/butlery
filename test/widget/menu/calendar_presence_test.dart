@@ -51,7 +51,7 @@ Widget _dayCell(
       day: DayOfWeek.mon,
       isToday: false,
       onTapEmptySlot: (_, _) {},
-      onTapRecipe: (_) {},
+      onTapRecipe: (_, {presentServings}) {},
       roster: roster,
       onTapPresence: (_, _) {},
     ),

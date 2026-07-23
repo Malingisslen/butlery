@@ -278,8 +278,12 @@ class WeeklyMenuPlan {
   /// Both `null` (no selection = everyone/default) and `[]` (explicitly "nobody
   /// home") fall back to [fallback]: the shopping list buys the full amount
   /// rather than under-buying when presence was left unset or deliberately
-  /// emptied — decided 2026-07-23. The single owner of the "how many does this
-  /// meal cook for" rule, shared by the shopping-list scaler and cooking mode.
+  /// emptied — decided 2026-07-23. This is the shopping-list scaler's serving
+  /// count (raw `ids.length`). Cooking mode derives its own count at the
+  /// calendar call site, roster-filtered so it matches the portion number shown
+  /// on the presence row; the two agree unless a member is removed from the
+  /// roster after being marked present (then the stale id counts here but not
+  /// there — a rare, bounded divergence).
   ///
   /// Övrigt has no presence concept (`presenceBySlot` is never populated for it,
   /// `kPresenceSlots` = lunch/middag only), so this returns [fallback] there —

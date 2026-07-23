@@ -44,45 +44,54 @@ class CookingModeViewModel extends ChangeNotifier {
   UserService? _userService;
   bool _manualPortionOverride = false;
 
-  CookingModeViewModel({required this.recipe}) {
-    // BUT-1322: open pre-scaled to the household default when one is set and
-    // differs from the recipe. The recipe's own portions stay the scaling
-    // BASE; the manual scaler (updatePortions) is the explicit override.
-    // householdSize null ⇒ this is byte-for-byte the pre-BUT-1322 init.
+  // BUT-1613: when cooking mode is opened from a planned weekly-menu meal, the
+  // number of members present for that (day, slot) — the effective serving
+  // size for this meal. It overrides the household-size default at construction
+  // and latches `_presenceSourced` so the boot-race re-apply can't pull a
+  // "cook for 3 tonight" back to the whole household when the profile loads
+  // late. Null when opened outside the weekly menu → household default, exactly
+  // as before.
+  final int? presentServings;
+  bool _presenceSourced = false;
+
+  CookingModeViewModel({required this.recipe, this.presentServings}) {
+    // BUT-1322/BUT-1613: open pre-scaled to the sharpest target available. The
+    // recipe's own portions stay the scaling BASE; the manual scaler
+    // (updatePortions) is the explicit override. Target priority (each clamped
+    // to [minPortions, maxPortions]): this meal's present count > household
+    // default > the recipe's own portions (no scaling).
     // Guard (review): only auto-apply when the recipe declares a REAL portion
     // count (> 0). A null/0-portions recipe has no meaningful base — scaling
-    // "from 1" would multiply the printed amounts by the household size, and
-    // scaling from 0 is a scaler no-op that would desync the portion header
-    // from the (unscaled) amounts and log a bogus analytics event.
+    // "from 1" would multiply the printed amounts, and scaling from 0 is a
+    // no-op that would desync the portion header from the (unscaled) amounts.
     final base = recipe.portions;
-    final household = (base != null && base > 0)
+    final canScale = base != null && base > 0;
+    final present = canScale ? _clampPortions(presentServings) : null;
+    final household = (canScale && present == null)
         ? _resolveHouseholdDefault()
         : null;
-    _currentPortions = household ?? base ?? 1;
-    if (_currentPortions != originalPortions) {
-      _scaledIngredients = PortionScalerLogic.scaleEntries(
-        recipe.structuredIngredients,
-        originalPortions,
+    _presenceSourced = present != null;
+    _currentPortions = present ?? household ?? base ?? 1;
+
+    if (canScale && _currentPortions != base) {
+      _scaledIngredients = _scaleTo(
+        base,
         _currentPortions,
-        false,
-      );
-      _logScalingApplied(
-        source: 'household_default',
-        fromPortions: originalPortions,
-        toPortions: _currentPortions,
+        present != null ? 'present_count' : 'household_default',
       );
     } else {
       _scaledIngredients = List.from(recipe.ingredients);
     }
     // PR #211: build the section-grouped rows from the FINAL scaled list
-    // (after any household pre-scaling above).
+    // (after any pre-scaling above).
     _rebuildIngredientRows();
     _loadFontScale();
 
     // BUT-1515: on a cold deep-link the profile can still be loading when this
     // VM is constructed, so _resolveHouseholdDefault() returned null above and
     // we fell back to the recipe's own portions. Watch UserService and re-apply
-    // the household default once the profile loads.
+    // the household default once the profile loads — unless a present count
+    // already set the target (the sharper signal, which must stick).
     try {
       _userService = ServiceLocator.tryGet<UserService>();
       _userService?.addListener(_onUserServiceChanged);
@@ -90,32 +99,38 @@ class CookingModeViewModel extends ChangeNotifier {
   }
 
   /// BUT-1515: re-apply the household-size default after the user profile
-  /// finishes loading (boot race). A manual override always wins, and the
-  /// null/0-portions guard from the constructor is preserved. Idempotent — a
-  /// no-op once the state already matches the household default, so unrelated
+  /// finishes loading (boot race). A manual override OR a present-count target
+  /// (BUT-1613) always wins, and the null/0-portions guard is preserved.
+  /// Idempotent — a no-op once the state already matches, so unrelated
   /// UserService notifications (online status, FCM token, allergen prefs)
   /// don't re-scale or re-log.
   void _onUserServiceChanged() {
-    if (_manualPortionOverride) return;
+    if (_manualPortionOverride || _presenceSourced) return;
     final declared = recipe.portions;
     if (declared == null || declared <= 0) return;
     final household = _resolveHouseholdDefault();
     if (household == null || household == _currentPortions) return;
 
     _currentPortions = household;
-    _scaledIngredients = PortionScalerLogic.scaleEntries(
+    _scaledIngredients = _scaleTo(declared, household, 'household_default');
+    _rebuildIngredientRows();
+    notifyListeners();
+  }
+
+  /// BUT-1613: scale [recipe]'s ingredients from its declared [base] portions to
+  /// [target] and log the [source]. The single scale-and-log step shared by the
+  /// three portion sources (present count, household default, boot-race
+  /// re-apply) so it isn't triplicated. The caller owns `_currentPortions`, the
+  /// row rebuild, and notify.
+  List<String> _scaleTo(int base, int target, String source) {
+    final scaled = PortionScalerLogic.scaleEntries(
       recipe.structuredIngredients,
-      declared,
-      _currentPortions,
+      base,
+      target,
       false,
     );
-    _rebuildIngredientRows();
-    _logScalingApplied(
-      source: 'household_default',
-      fromPortions: declared,
-      toPortions: _currentPortions,
-    );
-    notifyListeners();
+    _logScalingApplied(source: source, fromPortions: base, toPortions: target);
+    return scaled;
   }
 
   void _rebuildIngredientRows() {
@@ -127,19 +142,25 @@ class CookingModeViewModel extends ChangeNotifier {
 
   /// BUT-1322: household-size default from the user profile. `tryGet` keeps
   /// construction safe when UserService isn't registered (tests, degraded
-  /// boot); out-of-range values fall back to the recipe's own portions.
+  /// boot); out-of-range values fall back to null (→ recipe's own portions).
   int? _resolveHouseholdDefault() {
     try {
-      final size = ServiceLocator.tryGet<UserService>()
-          ?.currentUserProfile
-          ?.householdSize;
-      if (size == null || size < minPortions || size > maxPortions) {
-        return null;
-      }
-      return size;
+      return _clampPortions(
+        ServiceLocator.tryGet<UserService>()?.currentUserProfile?.householdSize,
+      );
     } catch (_) {
       return null;
     }
+  }
+
+  /// BUT-1613: a portion target is honored only when it's a real count inside
+  /// the cooking-mode scaling range; anything else → null (fall through to the
+  /// next-priority source).
+  int? _clampPortions(int? value) {
+    if (value == null || value < minPortions || value > maxPortions) {
+      return null;
+    }
+    return value;
   }
 
   Future<void> _loadFontScale() async {

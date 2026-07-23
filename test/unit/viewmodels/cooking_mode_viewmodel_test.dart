@@ -995,6 +995,265 @@ void main() {
       vm.dispose();
     });
   });
+
+  // BUT-1613 Slice 2: cooking mode opened from a planned weekly-menu meal is
+  // pre-scaled to the number of members present for that meal (presentServings),
+  // which outranks the household default and the recipe's own portions. The
+  // present count is the SHARPEST signal, so it must also survive the BUT-1515
+  // boot-race re-apply — a late profile load can't pull "cook for 3 tonight"
+  // back to the whole household.
+  group('CookingModeViewModel - BUT-1613 present-count target', () {
+    UserProfile profileWith(int? size) => UserProfile(
+      uid: 'u1',
+      displayName: 'Test',
+      email: 't@t.se',
+      joinedAt: DateTime(2024, 1, 1),
+      lastActiveAt: DateTime(2024, 1, 1),
+      householdSize: size,
+    );
+
+    _FakeUserService registerFake() {
+      final fake = _FakeUserService();
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      getIt.registerSingleton<UserService>(fake);
+      return fake;
+    }
+
+    _MockAnalyticsService registerMockAnalytics() {
+      final mockAnalytics = _MockAnalyticsService();
+      when(
+        () => mockAnalytics.logPortionScalingApplied(
+          recipeId: any(named: 'recipeId'),
+          source: any(named: 'source'),
+          fromPortions: any(named: 'fromPortions'),
+          toPortions: any(named: 'toPortions'),
+        ),
+      ).thenAnswer((_) async {});
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+      getIt.registerSingleton<AnalyticsService>(mockAnalytics);
+      return mockAnalytics;
+    }
+
+    // A recipe authored for 6 portions so present-count 3 gives a clean ×0.5.
+    Recipe recipeForSix() => RecipeFactory.build(
+      id: 'recipe-6',
+      title: 'Fisksoppa',
+      portions: 6,
+      ingredients: ['2 dl mjol', '3 st agg', '1 tsk salt'],
+      instructions: ['Step 1', 'Step 2', 'Step 3'],
+    );
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+    });
+
+    // Intent: a present count opens cooking mode pre-scaled to that count,
+    // scaling ingredients from the recipe's own portions as base.
+    test(
+      'opens pre-scaled to presentServings, scaling from recipe portions',
+      () {
+        final vm = CookingModeViewModel(
+          recipe: recipeForSix(),
+          presentServings: 3,
+        );
+
+        expect(vm.currentPortions, 3);
+        expect(vm.scaleFactor, 0.5, reason: '3 of 6 portions');
+        // '2 dl mjol' × 0.5 = '1 dl mjol'.
+        expect(vm.scaledIngredients.first, contains('1'));
+        expect(vm.scaledIngredients.first, contains('dl'));
+
+        vm.dispose();
+      },
+    );
+
+    // Intent: the present-count open logs scaling_applied with source
+    // 'present_count', distinguishing menu-driven scaling from the household
+    // default in the monetization funnel.
+    test(
+      'present-count open logs scaling_applied with source present_count',
+      () {
+        final mockAnalytics = registerMockAnalytics();
+
+        final vm = CookingModeViewModel(
+          recipe: recipeForSix(),
+          presentServings: 3,
+        );
+
+        verify(
+          () => mockAnalytics.logPortionScalingApplied(
+            recipeId: 'recipe-6',
+            source: 'present_count',
+            fromPortions: 6,
+            toPortions: 3,
+          ),
+        ).called(1);
+
+        vm.dispose();
+      },
+    );
+
+    // Intent (KEY REGRESSION GUARD): a present count latches, so a late profile
+    // load that would otherwise apply the household default does NOT clobber it.
+    // Contrast the BUT-1515 group above, where NO presentServings lets the late
+    // load apply the household default.
+    test('a late household-default load never clobbers the present count', () {
+      final fake = registerFake(); // profile null at construction
+
+      final vm = CookingModeViewModel(
+        recipe: recipeForSix(),
+        presentServings: 3,
+      );
+      expect(
+        vm.currentPortions,
+        3,
+        reason: 'present count wins at construction',
+      );
+
+      var notified = 0;
+      vm.addListener(() => notified++);
+
+      // Profile finishes loading with a household size of 5 — the exact signal
+      // that DOES re-scale in the no-presentServings case. Here it must not.
+      fake.setProfile(profileWith(5));
+
+      expect(vm.currentPortions, 3, reason: 'presence latch beats late load');
+      expect(notified, 0, reason: 'no re-scale, so no notification');
+
+      vm.dispose();
+    });
+
+    // Intent: a manual scaler tap still beats a present-count open and latches,
+    // so even a subsequent late profile load can't move it.
+    test('manual updatePortions wins over the present count and latches', () {
+      final fake = registerFake();
+
+      final vm = CookingModeViewModel(
+        recipe: recipeForSix(),
+        presentServings: 3,
+      );
+      vm.updatePortions(4); // explicit user choice
+
+      expect(vm.currentPortions, 4);
+
+      // A late profile load must not clobber the manual choice either.
+      fake.setProfile(profileWith(5));
+      expect(vm.currentPortions, 4, reason: 'manual override latch holds');
+
+      vm.dispose();
+    });
+
+    // Intent: presentServings null preserves the pre-BUT-1613 behaviour — the
+    // household default applies when present.
+    test('presentServings null falls through to the household default', () {
+      final fake = registerFake();
+      fake.setProfileSilently(profileWith(6));
+
+      final vm = CookingModeViewModel(
+        recipe: testRecipe, // portions 4
+        presentServings: null,
+      );
+
+      expect(vm.currentPortions, 6, reason: 'household default, not presence');
+      expect(vm.scaledIngredients.first, contains('3')); // 2 dl × 1.5 = 3 dl
+
+      vm.dispose();
+    });
+
+    // Intent: presentServings null with no household resolves to the recipe's
+    // own portions with no scaling — byte-for-byte the pre-BUT-1613 init.
+    test('presentServings null with no household keeps recipe portions', () {
+      final vm = CookingModeViewModel(
+        recipe: testRecipe,
+        presentServings: null,
+      );
+
+      expect(vm.currentPortions, 4);
+      expect(vm.scaledIngredients, testRecipe.ingredients);
+
+      vm.dispose();
+    });
+
+    // Intent: an out-of-range present count (0 or > maxPortions) is clamped to
+    // null and falls through to the household default — it never scales to the
+    // bad value.
+    test(
+      'out-of-range presentServings clamps to null, uses household default',
+      () {
+        final fake = registerFake();
+        fake.setProfileSilently(profileWith(6));
+
+        final tooLow = CookingModeViewModel(
+          recipe: testRecipe,
+          presentServings: 0,
+        );
+        expect(tooLow.currentPortions, 6, reason: '0 clamped → household');
+        tooLow.dispose();
+
+        final tooHigh = CookingModeViewModel(
+          recipe: testRecipe,
+          presentServings: 51, // > maxPortions (50)
+        );
+        expect(tooHigh.currentPortions, 6, reason: '51 clamped → household');
+        tooHigh.dispose();
+      },
+    );
+
+    // Intent: an out-of-range present count with NO household falls all the way
+    // through to the recipe's own portions — no crash, no scaling to the bad
+    // value, amounts untouched.
+    test(
+      'out-of-range presentServings with no household keeps recipe portions',
+      () {
+        final vm = CookingModeViewModel(
+          recipe: testRecipe, // portions 4
+          presentServings: 0,
+        );
+
+        expect(vm.currentPortions, 4);
+        expect(
+          vm.scaledIngredients,
+          testRecipe.ingredients,
+          reason: 'never scaled to the invalid 0',
+        );
+
+        vm.dispose();
+      },
+    );
+
+    // Intent: the portions>0 guard holds even with a present count — a recipe
+    // with no declared portions is left unscaled, no divide-by-nothing crash.
+    test('presentServings with a portionless recipe leaves it unscaled', () {
+      final noPortionsRecipe = RecipeFactory.build(
+        id: 'np-presence',
+        portions: null,
+        ingredients: ['2 dl mjol'],
+        instructions: ['Step 1'],
+      );
+
+      final vm = CookingModeViewModel(
+        recipe: noPortionsRecipe,
+        presentServings: 3,
+      );
+
+      expect(vm.currentPortions, 1, reason: 'no base → fall back to 1');
+      expect(vm.scaledIngredients, noPortionsRecipe.ingredients);
+
+      vm.dispose();
+    });
+  });
 }
 
 class _MockUserService extends Mock implements UserService {}

@@ -2419,3 +2419,34 @@ identical, so the old suite proves scaling is a pure superset (factor 1.0 == old
   `resetMocktailState()`; only re-stub the mocktail Mocks (menu/shopping/pantry) after the reset.
 - No production surprises — behaviour matched the spec exactly. Both files: 38 tests green
   (aggregator 19, generator 19).
+
+### 2026-07-23 — [trigger: BUT-1613 Slice 2 cooking mode opens pre-scaled to who's home — test authoring] present-count > household-default priority + the `_presenceSourced` latch
+`CookingModeViewModel` gained an optional `int? presentServings` ctor param (members home for a
+planned weekly-menu meal). Target priority at construction, each clamped to [minPortions=1,
+maxPortions=50] and only when `recipe.portions > 0`: **present count > household default > recipe's
+own portions (no scaling)**. Tests added to the existing `cooking_mode_viewmodel_test.dart` (NOT the
+lifecycle file — the late-load harness already lives in the main file's BUT-1515 group).
+- **The boot-race latch is the KEY regression guard, and its harness already existed.** The
+  top-level `_FakeUserService extends ChangeNotifier implements UserService` (with
+  `setProfile`/`setProfileSilently`) built for BUT-1515 is exactly what simulates the late
+  profile load. Reuse it — a present-count VM whose `_presenceSourced` latch is set must NOT
+  re-scale when `fake.setProfile(profileWith(5))` fires (assert `currentPortions` unchanged AND
+  `notified == 0`). Contrast the sibling BUT-1515 test where NO `presentServings` → the same late
+  load DOES apply the household default. That pair (latch-holds vs latch-absent, same stimulus) is
+  the strongest proof the latch works; a weaker single-sided test would pass even if the guard
+  regressed to household-only.
+- **Analytics `source` string is the cheap discriminator between the two auto-scale paths:**
+  present-count open logs `source: 'present_count'`, household open logs `'household_default'`,
+  manual logs `'manual_override'`. Pin it with the same `mockAnalytics.logPortionScalingApplied`
+  verify the BUT-1322 household test uses — it's the only externally-visible signal that
+  distinguishes menu-driven from household-default scaling in the monetization funnel.
+- **Clamp-to-null fall-through must be tested in BOTH quadrants (household present / absent).**
+  `presentServings: 0` or `> 50` → `_clampPortions` returns null → falls to household if present,
+  else to recipe portions with amounts UNTOUCHED. The "no household" quadrant is the load-bearing
+  one: assert `scaledIngredients == recipe.ingredients` to prove it never scaled to the bad value
+  (a naive clamp that fell back to 1 or to the raw bad value would still pass a currentPortions-only
+  check on the household quadrant).
+- **portions-null recipe + presentServings still no-scales** (`canScale` guard holds): currentPortions
+  falls to `present ?? household ?? base ?? 1 == 1`, ingredients unchanged, no crash.
+- No production surprises. `cooking_mode_viewmodel_test.dart` 51 green (+10 new BUT-1613),
+  lifecycle 6 green — 57 total.
