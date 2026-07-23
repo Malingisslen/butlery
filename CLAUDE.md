@@ -86,7 +86,7 @@ The `/code-review` built-in (renamed from `/simplify` in CLI 2.1.146) gates `git
 - `/code-review xhigh` — on Opus 4.7 when the diff touches `lib/repositories/`, `lib/services/{firebase|firestore|auth|user|gdpr}`, `functions/src/`, or `firestore.rules`
 - `/code-review` (no arg) — only for trivial single-file diffs
 
-Then `touch .claude/state/simplify-done.marker` and retry. The marker filename keeps the legacy `simplify-` prefix to avoid colliding with the `code-reviewer` agent's marker below — they are different reviewers gating different things.
+Then record the reviewed `.dart` paths into the marker and retry — a bare `touch` no longer passes (BUT-1651): `printf '%s\n' <reviewed-path>… > .claude/state/simplify-done.marker` (the gate names the exact paths in its block message). The marker filename keeps the legacy `simplify-` prefix to avoid colliding with the `code-reviewer` agent's marker below — they are different reviewers gating different things.
 
 If on CLI < 2.1.146, use `/simplify` (same effect, no effort param).
 
