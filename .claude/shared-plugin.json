@@ -14,15 +14,55 @@
   },
   "planTodoPath": "tasks/todo.md",
   "planReviewChecklistPath": ".claude/plan-review-checklist.md",
+  "acceptedDeviationsPath": "docs/architecture/ACCEPTED_DEVIATIONS.md",
+  "docTaxonomy": {
+    "rulePath": "docs/ops/doc-taxonomy.md",
+    "sweep": "/docs-sweep",
+    "exempt": ["^tasks/", "^docs/design/previews/", "^\\.claude/", "^docs/org/"]
+  },
   "highStakes": {
     "securityRegex": "(lib/repositories/|firestore\\.rules|firebase_auth|FirestoreRepository|GDPR|PermissionValidation)",
     "designRegex": "(lib/theme/|app_colors|app_dimensions|app_typography|BorderRadius\\.circular|widgets/CLAUDE\\.md)",
-    "lineThreshold": 100
+    "lineThreshold": 100,
+    "planTriggerRegex": "(^lib/repositories/|^firestore\\.rules$|^firestore\\.indexes\\.json$|^functions/src/(?!__tests__/)|^lib/services/(firebase|firestore|auth|user|gdpr|consent)|_auth|_gdpr)"
+  },
+  "contextDiet": {
+    "alwaysOn": [
+      "CLAUDE.md",
+      ".claude/rules/accepted-deviations.md",
+      ".claude/rules/code-style.md",
+      ".claude/rules/git-workflow.md",
+      ".claude/rules/lessons-digest.md",
+      ".claude/rules/workflow-discipline.md"
+    ],
+    "memoryIndex": "C:/Users/malla/.claude/projects/C--Butlery-butlery/memory/MEMORY.md",
+    "budgetChars": 27000,
+    "neverMove": [
+      "allergen", "TriState", "GDPR", "consent", "PermissionValidation",
+      "no-verify", "--amend", "destructive", "credential"
+    ],
+    "gateProbes": [
+      {
+        "name": "review markers still demanded, by name",
+        "command": "printf '{\"tool_input\":{\"command\":\"git commit -m x\"},\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/require-review-before-commit.mjs",
+        "expectStderr": "MISSING:"
+      },
+      {
+        "name": "lone sensitive-domain edit demands a plan",
+        "command": "printf '{\"session_id\":\"probe\",\"tool_input\":{\"file_path\":\"C:/Butlery/butlery/firestore.rules\"},\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/plan-threshold-guard.mjs",
+        "expectStderr": "sensitive domain"
+      },
+      {
+        "name": "lessons/digest drift tripwire still balances",
+        "command": "printf '{\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/knowledge-freshness.mjs",
+        "expectStderr": ""
+      }
+    ]
   },
   "codeReviewGate": {
     "filePattern": "\\.dart$",
     "marker": ".claude/state/simplify-done.marker",
-    "instructions": "For Dart-heavy diffs, prefer /code-review high (xhigh on Opus 4.7 if the diff touches lib/repositories/, lib/services/, or firestore.rules)."
+    "instructions": "Effort: /code-review high for Dart diffs; /code-review xhigh when the diff touches lib/repositories/, lib/services/{firebase|firestore|auth|user|gdpr}, functions/src/, or firestore.rules; bare /code-review only for a trivial single-file diff. Then record the reviewed .dart paths into the marker (the gate names them) and retry."
   },
   "reviewGates": [
     {
@@ -75,14 +115,20 @@
     "command": "dart analyze --fatal-infos",
     "filePattern": "\\.dart$",
     "errorPathRegex": "^\\s*\\S+\\s+-\\s+(\\S+\\.dart):\\d+:\\d+\\s+-\\s+",
-    "ticketAdvice": "create a Linear ticket with label 'bug' for this issue, then inform the user what was filed"
+    "ticketAdvice": "create a Linear ticket with label 'bug' for this issue, then inform the user what was filed",
+    "runbookPath": "docs/ops/analyzer-recovery.md"
   },
   "knowledge": {
     "agentsDir": ".claude/agents",
     "sizeLimit": 800,
     "windowDays": 30,
     "lessonsFile": "tasks/lessons.md",
-    "digestFile": ".claude/rules/lessons-digest.md"
+    "digestFiles": [
+      ".claude/rules/lessons-digest.md",
+      ".claude/rules/lessons-digest-delivery.md",
+      ".claude/rules/lessons-digest-testing.md"
+    ],
+    "digestCoreMaxChars": 7000
   },
   "docsSweep": {
     "exemptGlobs": ["docs/org/**", "docs/design/mockups/**", "tasks/lessons.md", "tasks/todo.md", ".claude/**"],
@@ -106,7 +152,9 @@
       "memoryDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery/memory",
       "projectDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery",
       "excludeFiles": ["current-state.md", "interview-decisions.md"],
-      "corpusCapMB": 4
+      "corpusCapMB": 4,
+      "pointerCharBudget": 110,
+      "memoryIndexMaxChars": 7000
     }
   },
   "preview": {
