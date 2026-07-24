@@ -117,6 +117,18 @@ against `firestore.rules` (create paths ~1137-1153 and ~1230-1242).
 **Why:** the age gate governs the account-creation boundary; these two paths are downstream
 activity of an already-gated account and don't re-open the age surface. Decided scope call. — 2026-07-04
 
+> ⚠️ **This entry contradicts the deployed code — flagged 2026-07-24, awaiting Malin's decision.**
+> `firestore.rules` gates BOTH creates with `isAgeCompliant()` today: `cook_snaps` create
+> (`isAuthenticated() && request.auth.uid == request.resource.data.userId && isAgeCompliant()`)
+> and `activity_events` create (same shape on `actorId`), each carrying a comment citing
+> BUT-1418/ADR-0002. Verified by reading the live rules file, twice, on 2026-07-24.
+>
+> So either the 2026-07-04 entry was written against a stale view of the rules, or the gate
+> landed afterwards and this decision is obsolete. Either way the *code* is the stricter of
+> the two. **Do not remove either gate citing this entry** — it protects minors and it is live.
+> Whichever way Malin decides, one of these two documents needs correcting; the deviation is
+> left standing rather than silently deleted, per this file's own append-and-supersede rule.
+
 ### [Privacy/GDPR] `socialFeatures` consent is intentionally NOT a gate — social runs on contract basis (BUT-1523 closed, honoring BUT-1395)
 The `socialFeatures` field on `ConsentPurposes` (`lib/models/account/user_consent.dart`) exists but
 gates NOTHING, and that is deliberate. BUT-1395 removed the social-features toggle from the consent

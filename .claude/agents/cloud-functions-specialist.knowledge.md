@@ -1,35 +1,51 @@
 # cloud-functions-specialist — accumulated knowledge
 
 This file is the agent's long-term memory across sessions. The agent **MUST**
-read it as Step 0 of every Cloud Functions task and **APPEND** to it on
+read it as Step 0 of every Cloud Functions task and **APPEND/EDIT** it on
 discovery, real-bug fix, or user correction.
 
 ## How to update this file
 
-- **Append-only** — supersede with a newer dated entry; never delete.
-- **Date every entry** — `### YYYY-MM-DD — short title`.
-- **Tag each entry** — [Pattern discovered] / [Bug fixed] / [User correction] /
-  [Cost finding].
+This file is a **principles document, not an incident log.** A new lesson is
+folded into the relevant Principles subsection (merge with what's already
+there; restate only to sharpen/supersede) — never a new dated entry here.
+The raw ticket-by-ticket narrative goes to
+`cloud-functions-specialist.knowledge.archive.md`: dated
+(`### YYYY-MM-DD — short title`, tagged [Pattern discovered] / [Bug fixed] /
+[User correction] / [Cost finding]), verbatim, append-only, never deleted.
+
+- **Archive = append-only log. This file = edited in place** — principles
+  merged/tightened, not stacked chronologically.
+- **A principle earns its place only if a future run would do something
+  DIFFERENT because of it.** Keep exact names, trigger types, config keys,
+  error signatures, index definitions. Cut the incident story.
+- **Bias toward detail** on data-writing/deleting functions, idempotency,
+  retry semantics, cost/quota, region pinning, GDPR paths — a miss there
+  costs money or user data.
 
 ---
 
 ## Function families (functions/src/index.ts)
 
-| Path | Concern | Trigger type | Test command |
+| Path | Concern | Trigger | Test command |
 |---|---|---|---|
-| `llm/` (Mistral) | Cost-sensitive (paid LLM), latency, prompt safety | callable / HTTPS | (covered by integration) |
-| `cleanup/` | Idempotent deletion cascades, batch limits | scheduled + onDocumentDeleted | `npm run test:lapsed-users` (the lapsed-users one) |
-| `social/` | Profile propagation across user trees | onDocumentUpdated | (none yet) |
-| `events/` | Telemetry append-only | onCall / HTTPS | `npm run test:parse-correction` |
-| `admin/` | Migration / one-shot scripts (run via ts-node, not deployed) | manual via ts-node | n/a |
-| `notifications/` | FCM push, batched, rate-limited | onCall + scheduled | `npm run test:send-notification`, `npm run test:activity-digest` |
-| `ingredients/` | Soft-delete cascade | onDocumentUpdated | (covered by integration) |
-| `feedback/` | Beta feedback intake (BUT-XXX) | onCall | (none yet) |
-| `analytics/` | Aggregation jobs | scheduled | (none yet) |
-| `middleware/` | Shared auth/validation wrappers | utility | (none yet) |
-| `shared/` | Pure helpers, no triggers | utility | (none yet) |
+| `llm/` (Gemini/Vertex) | Paid-LLM cost, latency, prompt safety | callable | `test:ocr-retry` |
+| `cleanup/` | Idempotent deletion cascades, batch limits | scheduled + onDocumentDeleted | `test:cleanup-*` |
+| `social/` | Profile propagation across user trees | onDocumentUpdated | `test:profile-updated`, `test:set-profile-searchability` |
+| `events/` | Telemetry append-only | onCall | `test:parse-correction`, `test:parse-tier-vocabulary` |
+| `admin/` | One-shot scripts, ts-node only, never deployed | manual | idempotency/region/retry N/A |
+| `notifications/` | FCM push, batched, rate-limited | onCall + scheduled | `test:send-notification`, `test:activity-digest` |
+| `ingredients/` | Soft-delete cascade | onDocumentUpdated | (integration) |
+| `analytics/` | Aggregation + lifecycle jobs | scheduled | `test:detect-lapsed-users`, `test:track-retention` |
+| `ratings/` | Pooled-rating aggregation, debounced | write + scheduled | `test:canonical-rating-aggregation`, `test:family-rating-recompute` |
+| `family/` | Household data lifecycle | scheduled | `test:purge-dormant-family-data` |
+| `messaging/` | Conversation/DM safety triggers | onDocumentCreated | `test:enforce-group-minor-membership` (+integration twin) |
+| `account/` | GDPR deletion + age verification | onCall + onDocumentDeleted | `test:verify-signup-age`, `test:request-account-deletion` |
+| `migrations/` | One-shot gated backfills | manual ts-node | n/a |
+| `middleware/` | Auth/validation/rate-limit wrappers | utility | `test:rate-limiter-*` |
+| `shared/` | Pure helpers, no triggers | utility | varies |
 
-When a new function family is added, append a row above + add a test command.
+New family → append a row + a test command.
 
 ## Region & global options
 
@@ -37,2044 +53,430 @@ When a new function family is added, append a row above + add a test command.
 setGlobalOptions({ region: "europe-west1" });
 admin.initializeApp();
 ```
-
-- All functions deploy to **europe-west1**. Do not introduce a function
-  in a different region without explicit approval — clients call by
-  function name + region, and a mismatch gives "function not found" with
-  no helpful error.
-- `admin.initializeApp()` runs once in `index.ts`. Do not re-init in a
-  module file; it throws on second call.
+All functions deploy to **europe-west1** — never a per-function region
+without approval (client calls by name+region; mismatch = silent "not
+found"). `admin.initializeApp()` runs once in `index.ts`; re-init throws.
 
 ## Firebase Functions v2 — what to use
 
-- Firestore triggers: `onDocumentCreated`, `onDocumentUpdated`,
-  `onDocumentDeleted` from `firebase-functions/v2/firestore`.
-- HTTP/callable: `onCall`, `onRequest` from `firebase-functions/v2/https`.
-- Scheduled: `onSchedule` from `firebase-functions/v2/scheduler`.
-- Logging: `logger` from `firebase-functions/logger` — NEVER `console.log`
-  in deployed functions (loses structured fields and request context).
+- Firestore triggers: `onDocumentCreated/Updated/Deleted` (`v2/firestore`).
+- HTTP/callable: `onCall`, `onRequest` (`v2/https`). Scheduled: `onSchedule`.
+- `logger` from `firebase-functions/logger`, never `console.log` — except in
+  `admin/` ts-node scripts (not deployed, no logger context to lose).
 
-## Idempotency rules (the most-bug-prone area)
+## Idempotency rules (the most bug-prone area)
 
-Firestore triggers retry on uncaught exception. Every trigger handler must
-be idempotent:
-
-1. **Aggregate writes** (rating counts, follower counts) → use
-   `FieldValue.increment(±1)` only when paired with an event-id guard:
-   write the event-id to a `processed-events/{id}` doc inside the same
-   transaction, abort the increment if the doc already exists.
-2. **Cascade deletes** → check whether the target still exists before
-   asserting "delete failed" — a retry will see it gone and that's fine.
-3. **External-API calls** → use the request-id pattern: derive a stable
-   request-id from the event payload, send it as an idempotency header
-   to the external service.
-4. **Email/push sends** → write a `sent-events/{id}` doc BEFORE the send;
-   if the send fails after the doc write, the next retry sees it as
-   "already sent" and skips.
-
-If a function legitimately can't be made idempotent, document why in a
-comment AND add a `processed-events`-style guard collection.
+Firestore triggers retry on uncaught exception; every handler must be
+idempotent:
+1. **Aggregate writes** → `FieldValue.increment` paired with an event-id
+   guard doc (`processed-events/{id}`) written in the same transaction.
+2. **Cascade deletes** → a target already gone on retry is success, not
+   failure.
+3. **External-API calls** → derive a stable idempotency-key from the event.
+4. **Sends** → write a `sent-events/{id}` guard BEFORE sending.
+5. **`retry:true` requires every write safe on a MISSING doc, not just safe
+   on re-delivery.** `set`/`delete`/`set(merge)` are safe-on-missing;
+   `.update()` is NOT — throws NOT_FOUND (grpc code numeric `5`, check
+   `(e as {code?:number}).code === 5`) the instant the doc is gone, turning
+   into a permanent retry loop under `retry:true` instead of the old
+   drop-once. Audit every `.update()` in a `retry:true` handler for this
+   race — the single most common gap when adding `retry:true`.
+6. **Any client-supplied string interpolated into a doc path is a
+   poison-pill/fail-open surface.** Full validator: non-empty, ≤1500 UTF-8
+   **bytes** (not `.length`), no `/`, not `.`/`..`, not `/^__.*__$/`
+   (reserved) — "non-empty, no slash" alone misses `.`/`..`/reserved ids,
+   equally deterministic throws, often BEFORE the safety decision (fail-open).
+7. **Sanitisation must never shrink the value a security gate's THRESHOLD is
+   computed from** — sanitise for the *use*, gate on the *raw* shape/count.
+8. Can't be idempotent? Document why + add a `processed-events`-style guard.
 
 ## Cost & cold-start
 
-- Functions are billed per ms × allocated memory + per-invocation.
-- Cold start ≈ 500–2000ms for Node TypeScript with these deps. Adding a
-  large SDK (e.g. another Firebase Admin module) tacks on ~200ms each.
-- Prefer narrow imports: `import { onCall } from "firebase-functions/v2/https"`
-  rather than `import * as functions`.
-- For LLM functions, set `timeoutSeconds: 540` (max for v2 callable) and
-  `memory: "1GiB"` only if measured — over-allocation is paid every call.
-- Scheduled cleanups: run hourly, not per-minute. Per-minute jobs run
-  43,200×/month and accumulate cost.
+- Billed per ms × memory + per-invocation. Cold start ≈500–2000ms; each
+  extra large SDK import adds ~200ms.
+- Narrow imports (`from "firebase-functions/v2/https"`), not `import *`.
+- LLM functions: `timeoutSeconds:540` (v2 callable max), `memory` sized to
+  measurement, not guessed.
+- Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
 
-- Use Firebase Secret Manager via `defineSecret("MY_KEY")` from
-  `firebase-functions/params` — NOT environment variables in code.
-- Never log a secret. `logger.info({ apiKey: secret })` will print it
-  unredacted to Cloud Logging and bill you for the storage.
-- The `.env` file in repo root is for the Flutter side only. Functions
-  read from Secret Manager.
+- `defineSecret("MY_KEY")` (`firebase-functions/params`), never env vars in
+  code. Never log a secret. Root `.env` is Flutter-only.
 
 ## Test commands (from `functions/`)
 
-- `npm run build` — TS compile (must pass before any commit).
-- `npm test` — runs the parity, lapsed-users, parse-correction, activity-digest, send-notification suites in sequence.
-- `npm run test:rules:all` — Firestore rules tests (owned by `firestore-rules-tester`).
-- `npm run serve` — local emulator with build step.
-
-The non-rules tests use the same hand-rolled `test()` harness as the rules
-tests. No jest. Don't introduce one.
+- `npm run build` — must pass before any commit.
+- `npm test` = `run-all-tests.js`: auto-discovers every `test:*` script
+  (excluding `test:rules*`/`test:integration:*`), runs ALL even after a
+  failure. **A new `__tests__/*.test.ts` is invisible until its `test:*`
+  script exists** — grep package.json FIRST when reviewing any new test
+  file; this is the single most recurring CI-wiring trap in this codebase.
+- `npm run test:rules:all` — rules + emulator integration (owned by
+  `firestore-rules-tester`). A `test:integration:*` suite must ALSO be
+  appended here AND to both `pull_request`/`push` `paths:` in
+  `firestore-rules.yml`, or it never runs in CI despite passing by hand.
+- `scripts/run-ci-unit-tests.js` — the real CI gate (Node 22, no emulator).
+  `CI_EXCLUDE` lists known-broken suites.
+- Hand-rolled `test()`/`_unit-runner` harness (console + `process.exit(1)`).
+  No jest. A `_unit-runner` file calls `runTests` exactly ONCE — two
+  concurrent `void runTests(...)` calls let a first-suite failure tear the
+  process down and truncate the second's reporting (exit code still
+  correct, but console output gets ambiguous).
 
 ## Logging conventions
 
 ```ts
 logger.info("descriptive event", { userId, recipeId, action });
-logger.error("operation failed", { err, userId });
 ```
-
-- First arg is a **stable string** (queryable in Cloud Logging).
-- Second arg is a **structured object** — no PII (no email, no message
-  bodies, no recipe titles that might contain user names).
-- For errors, include the actual error: `{ err }` works, `err.message` loses
-  the stack.
+- First arg: stable, queryable STRING. Second arg: structured object, no
+  PII. `logger.info(JSON.stringify({...}))` defeats Cloud Logging's
+  queryable `jsonPayload` even when "queryable telemetry" is the stated
+  goal — never crush structured data into the message string.
+- Errors: `{ err }`, not `err.message` (loses stack) or the raw `Error` as
+  2nd arg (loses structured wrapper).
+- **Hash ALL PII/title-derived log fields consistently, not just some** — a
+  mixed line (one hashed, a sibling cleartext) is a tell the cleartext one
+  was kept for eyeballing. Swedish dish titles often lead with a given name
+  ("Annas paj", "Mormors …"); if only inequality-across-events matters for
+  detection, a hash gives that signal without the leak. `hashUid(uid)`
+  everywhere a raw uid would sit near other identifying fields.
+- A literal NUL (or odd byte) in a source file makes `ripgrep` treat the
+  WHOLE file as binary and silently skip it in sweeps — use `Read`/Node to
+  inspect suspect files. CI backstop: `functions-binary-guard` in
+  `test.yml` (`git ls-files -z 'functions/src/**' | xargs -0 -r grep -laP
+  '\x00'`).
 
 ## What NOT to do
 
-- Do not deploy. User reserves `firebase deploy --only functions`.
-- Do not change region in `index.ts` without explicit approval.
-- Do not wire `console.log` — use `logger`.
-- Do not write triggers without an idempotency story.
-- Do not introduce a new test framework. Keep the hand-rolled harness.
-- Do not import from `firebase-functions` (v1) — use `firebase-functions/v2/*`.
+- Don't deploy — user reserves `firebase deploy --only functions`.
+- Don't change region without approval; don't wire `console.log` in a
+  deployed function; don't skip an idempotency story on a trigger.
+- Don't add `retry:true` without auditing every write for missing-doc safety.
+- Don't introduce a new test framework; don't import `firebase-functions` v1.
+- Don't trust a client-controlled field for a trigger's security decision
+  unless the Firestore create/update RULE independently pins it to
+  `request.auth.uid`.
 
 ---
 
-## Distilled principles (2026-07-04 consolidation — raw entries verbatim in cloud-functions-specialist.knowledge.archive.md)
+## Principles (distilled 2026-04-25 – 2026-07-24)
+
+Every lesson ever logged in this file's history is folded in below or
+superseded by a newer entry; the full ticket-by-ticket narrative for all of
+it lives verbatim in `cloud-functions-specialist.knowledge.archive.md` —
+see "When to consult the archive" at the end.
 
 ### Completion-event telemetry (`emitTiming` family)
-- Gemini/Vertex implicit caching: `usageMetadata.cachedContentTokenCount`, billed ~10% of input rate; cost = `((prompt - cached) + cached * CACHED_INPUT_DISCOUNT) / 1M * INPUT_COST_PER_M`, `cached` clamped to `[0, promptTokenCount]` (BUT-1032). Check the installed `.d.ts` before widening types locally.
-- Never coerce a missing telemetry field to 0 — log as-is; Cloud Logging DROPS undefined JSON fields, which is what distinguishes "not reported" from a real zero (BUT-1032/1222/626).
-- Widen a seam with an OPTIONAL field (`usage?`) over a side-channel log; existing test seams must compile untouched (BUT-1222).
-- Early-exit-capable functions: declare `let experimentBucket: number | undefined` BEFORE the `emitTiming` closure, assign after the async step (BUT-626/1222). Each experiment gets its OWN salt string (`:prompt_experiment` ≠ `:thresholdType`) (BUT-626).
-- Emitter contract test: assert EXACTLY ONE event per call via a module-scope logger-capture array cleared per case — catches try-path + catch-path double-emits (BUT-1222).
+- Gemini/Vertex implicit caching: `usageMetadata.cachedContentTokenCount`,
+  billed ~10% of input rate; cost = `((prompt-cached) + cached*DISCOUNT)/1M
+  * INPUT_COST_PER_M`, `cached` clamped to `[0, promptTokenCount]`. Check
+  the installed `.d.ts` before widening types locally.
+- Never coerce a missing telemetry field to 0 — log as-is; Cloud Logging
+  DROPS undefined JSON fields, which is what marks "not reported" vs a real
+  zero. Widen a seam with an OPTIONAL field over a side-channel log.
+- Declare `let experimentBucket: number | undefined` BEFORE the `emitTiming`
+  closure on any early-exit-capable function, assign after the async step.
+  Each experiment gets its OWN salt string.
+- Emitter contract test: assert EXACTLY ONE event per call via a
+  module-scope logger-capture array cleared per case — catches try-path +
+  catch-path double-emits.
 
-### Test seams & emulator integration infrastructure
-- `npm test` = `node scripts/run-all-tests.js`, auto-discovers every `test:*` script (excluding `test:rules*`/`test:integration:*`) and runs ALL even after a failure — a new suite needs only its `test:<name>` script (BUT-1223). Windows: `spawnSync` needs `shell: true` for `npm.cmd` (BUT-1223).
-- v2 exports carry `.run(event)` — call `fn.run(event)` with a typed payload to test STORAGE/FIRESTORE triggers without firebase-functions-test (BUT-839). Build `Change` payloads from REAL emulator snapshots (read-write-read); `.data()` on a missing snapshot returns undefined exactly like prod (BUT-839).
-- `onSchedule`/v1-auth bodies with no seam: extract an exported async core (`cleanupOldRateLimitsCore(db)`), wrapper stays a one-line delegate (BUT-1354). Module-level `db = admin.firestore()`: set `FIRESTORE_EMULATOR_HOST` before `admin.initializeApp`, `require()` after (BUT-1354).
-- Parent docs must be explicitly seeded for `orderBy("__name__")` parent scans — subcollection writes don't make the parent exist; the job silently processes zero (BUT-1354).
-
-### Callables, transactions, logging hygiene
-- `HttpsError` thrown by a DEEP helper still propagates to the client correctly (WS3).
-- In transactions, `tx.set(ref, data, { merge: true })` over `tx.update` for any aggregate doc that might not exist — `tx.update` throws NOT_FOUND (B1 acceptFriendRequest). Seeders that ALWAYS `seedProfile()` hide this failure class: add a variant omitting the seed (B1).
-- `onDocumentCreated` idempotency: stamp `notifiedAt` on success, `if (doc.notifiedAt) return;` at start — retries observe the stamp (WS3).
-- User free-text NEVER in `logger.info` message strings — only length/hash/count in the structured second arg (WS3).
+### Test seams, emulator infra & non-vacuity
+- v2 exports carry `.run(event)` — call it with a typed payload to test
+  triggers without firebase-functions-test. Build `Change` payloads from
+  REAL emulator snapshots; `.data()` on a missing snapshot returns
+  undefined exactly like prod.
+- `onSchedule`/v1-auth bodies with no seam: extract an exported async core,
+  wrapper stays a one-line delegate. Module-level `db = admin.firestore()`:
+  set `FIRESTORE_EMULATOR_HOST` before `admin.initializeApp`, `require()`
+  after. Parent docs must be explicitly seeded for `orderBy("__name__")`
+  scans — a subcollection write alone doesn't make the parent exist.
+- **When only one collaborator in a sequence is seam-injectable, spy on its
+  earliest side effect to pin ORDER** — a boolean flipped on its first line
+  is enough to redden a reverted order without a full seam.
+- **A wrapper/gate test is non-vacuous only if breaking the gate produces a
+  DIFFERENT observable result than any other failure mode** — check this
+  deliberately before trusting a green wrapper suite.
+- **A fix living in the I/O wrapper / handler-level gate can't be pinned by
+  a pure-core unit suite.** Check which side of the pure-core/handler seam a
+  fix landed on before crediting a suite with covering it. A test asserting
+  on a literal built in the test file, or on an input pre-transformed the
+  same way the SUT would, tests the fixture, not the code.
 
 ### PII scrubbing + GDPR cascade design
-- Cross-port heuristic vectors (TS↔Dart) live in a shared JSON fixture (`pii-heuristic-vectors.json`, `{_header:[...], vectors:[{name,input,expected}]}`) — the "Dart copies this" note goes in `_header` (BUT-694c).
-- JS `\b` misfires before å/ä/ö (non-word to `\w`) — use `(?<=^|[^A-Za-zÅÄÖåäö])`, never lead a Swedish-letter regex with `\b` (BUT-694c). Trigger-word-only case-insensitivity: per-letter classes (`[Mm]ormor`), not `/i` (BUT-694c). Possessive recipe titles ("Janssons frestelse") are pinned NEGATIVE vectors — never generalize to bare capitalized-word NER (BUT-694c).
-- Cascade purges: discover children via `rootRef.listCollections()`, not hard-coded names — survives renames + finds ghost-parent subcollections (BUT-838). Gate root-doc deletes on `exists` (truthful audit) (BUT-838). New cascade steps are BEST-EFFORT (catch + warn + partial) — a rethrow re-runs the whole `onUserDeleted`, double-applying non-idempotent steps like `friendsCount: increment(-1)` (BUT-838).
-
-### Scheduled analytics jobs
-- Region set ONCE via `setGlobalOptions({region: "europe-west1"})` — never per-function (daily-snapshots).
-- Don't assume a date field's type: `feedback.createdAt` is an ISO STRING (compare via `toISOString()` boundaries); siblings use real `Timestamp` — mixing silently returns zero rows (daily-snapshots).
-- Full-scan jobs need an explicit cap (`RECIPE_SCAN_CAP = 5000`) + `logger.warn` when hit (count becomes a floor) (daily-snapshots). Stagger same-purpose schedules away from existing big scans (daily-snapshots).
-- Anomaly gates: `baseline ≥ MIN_SAMPLES` AND `stddev > 0` AND `|z| > 3` AND `|today - mean| ≥ ABSOLUTE_FLOOR` — without the floor, 3σ on pre-launch counts (0→2) fires constantly (detectAnomalies). Use (n−1) sample stddev.
-- A consumer job reading a producer's output schedules strictly after the producer's slowest run and SKIPS (never assumes zero) on a missing producer doc (detectAnomalies).
-- `orderBy(FieldPath.documentId(), "desc")` gives a free trailing window on `yyyy-mm-dd`-keyed subcollections (lexicographic == chronological) (detectAnomalies).
-- Always write the output doc even when empty (`{date, anomalies: [], computedAt}`) — "ran, found nothing" ≠ "never ran" (detectAnomalies).
-
-### Fleet migration + CI gates + premise checks
-- `firebase deploy --only functions` aborts the WHOLE deploy at the FIRST gen1→gen2 conflict — one error name ≠ one affected function; audit the fleet (Gen1→Gen2). `functions:list --json`'s `version` only populates on DIRECT terminal invocation (null via execSync). v1 auth triggers (`firebase-functions/v1`) have NO Gen2 equivalent — correct to stay gcfv1. Delete-then-recreate gap risk: SCHEDULED/CALLABLE = safe gap; EVENT triggers = risky (Eventarc does NOT backfill) — migrate those one at a time, low traffic.
-- CI-gate logic = pure core (`promptChangelogViolation(changedFiles, diff)`) + thin CLI wrapper in `ci/` (excluded from index.ts). Diff-line token matching MISSES interior edits of multi-line template-literal prompts — also match hunk headers naming a prompt declaration. Match the shared suffix (`_SYSTEM_PROMPT`), not enumerated constants. PR base = `github.event.pull_request.base.sha`; push = `github.event.before` with `HEAD^` fallback; needs `fetch-depth: 0`. Verify end-to-end with a real violating commit, not just unit tests (BUT-1167).
-- "This repo has no jest" — reconcile a ticket's framework assumption against the hand-rolled `test()` harness before adding anything (BUT-1167).
-- OPS premise check: a client-side public/search key does NOT imply server write credentials — verify the dependency + Secret Manager secret exist at Step 0 (BUT-840, Algolia). "Scattered `.split()` calls" ≠ duplication — same intent on same input type at 2+ sites, proven by an evidence map, or no refactor (BUT-1352).
-
-### 2026-07-16 consolidation (2026-06-27 → 2026-07-07 raw entries verbatim in cloud-functions-specialist.knowledge.archive.md)
-
-#### GDPR deletion cascade (account-deletion-cascade.ts + on-user-deleted.ts)
-- A cascade step keyed on a shared/parent handle (e.g. `householdId` via `households where memberUserIds array-contains uid`) must perform the mutation that destroys the retry handle (the `arrayRemove(uid)` / household-doc delete) LAST, after all child cleanup commits with `strict:true` — otherwise a transient mid-step failure strands orphans a whole-cascade retry can no longer reach. Steps keyed `where(field,"==",uid)` are immune (`deleteFamilyData`, 2026-06-29).
-- Wrong-field filters delete NOTHING, silently: `realtime_recipes`' owner field is `ownerId`, NOT `userId` (BUT-1396 Art.17 leak). Deletion keys on the OWNER, never `participantIds`. Cross-check the identity field across the Dart model's `toFirestore`, the firestore.rules `resource.data.<field>`, and sibling deleters/exporters. Every GDPR-deletion test needs a POSITIVE "owned doc is gone" assertion (control-survives alone passes a no-op filter), and prove a new regression test bites by reverting the SUT once.
-- `probeResidualData` must mirror the deleter's field scoping per collection: `notification_delivery` needs BOTH `senderId` and `targetUserId` probes (two queries); `canonical_rating_events` needs a subcollection-shaped probe `.doc(uid).collection(...).count()`, never top-level `where("userId","==",uid)`. `count()` is the probe primitive; the probe never aborts the cascade — probe error ⇒ `residual += 1` (fail-toward-flagging) (BUT-1450).
-- Pure `users/{uid}/*` subcollections erase via the `subs` array in `deleteUserSubcollections` (inherently uid-scoped, retry sees empty snapshot). Canonical test triple: own-erased + other-kept + `failedCollections` empty (pooled-ratings Incr 5).
-- Deleting `canonical_rating_events` fires `onPooledRatingEventWritten` → debounced recompute writing a DIFFERENT collection (`canonical_recipe_stats`) — trigger separation carries GDPR erasure for free, no loop.
-- Emulator workflow: `bash .claude/hooks/ensure-firestore-emulator.sh` (127.0.0.1:8080), then `npx ts-node src/__tests__/request-account-deletion.integration.test.ts` (self-clears via REST DELETE).
-
-#### Retention / purge jobs
-- Unfiltered `limit(N)` + client-side filter = starvation: long-retention consent rows (730d) crowd expired general rows (180d) out of the window. Push the discriminant server-side: Admin SDK 13+ supports `operation not-in CONSENT_OPERATIONS` + `timestamp <` multi-inequality, needing a genuine composite `(operation ASC, timestamp ASC)` on `audit_logs` (range + in/not-in — not the equality-only deviation). Pin the `CONSENT_OPERATIONS` values exhaustively in a test (`not-in` max 10) (BUT-1404).
-- Retention buckets key off the `operation` prefix: `consent_*` ⇒ 730d, unprefixed (e.g. `age_verification_rejected`) ⇒ 180d (`audit_logs/purge-expired.ts`).
-- Warn-before-purge two-pass is the GDPR shape for any auto-deletion of user data: pass 1 stamps `familyDataPurgeScheduledAt = now + grace` + in-app warning; pass 2 deletes only when `now >= scheduledAt`; reactivation clears the stamp; the purge branch is structurally unreachable on first detection (purge-dormant-family-data).
-- A `.limit(200)` top-level scan with no cursor is "bounded, NOT paginating" — overflow is starved forever and the subset shifts between runs; use the `__name__`-cursor loop in `shared/batch-update.ts`. Contrast: a weekly reap re-querying `expireAt < now` under `.limit(10000)` self-heals (overflow stays matched next run).
-- `commitInChunks(db, docs, (b,d)=>b.delete(d.ref), {strict:true})` for must-be-complete deletes of regulated data; stamp the parent (`familyDataPurgedAt`) only AFTER the children commit. `batchDeleteAll` is strict:false and swallows chunk errors — never let it precede deleting the only re-derivation handle.
-- Dormancy = max(parent + all children timestamps) computed by reading the children (needed for the delete anyway) — not an `orderBy+limit(1)` probe that would force a composite per collection.
-- `warnMembers`-style self-notifications write `user_notifications` with `senderId == recipient`; best-effort per-member try/catch, never blocks the schedule stamp.
-
-#### verify-signup-age / account callables
-- Region is inherited from `setGlobalOptions({region:"europe-west1"})` in index.ts — never add a per-function `region`.
-- Write ordering claim → birthYear → audit deliberately favors "never able-to-post without a recorded-age decision"; a retry hits the idempotent `existingClaims.ageCompliant === true` branch. If ever tightened, re-check birthYear presence in the idempotent branch — don't reorder.
-- Abuse/IP caps on account gates fail CLOSED (Firestore error ⇒ deny); notification gates fail OPEN — both correct for their domain, don't harmonize. `request.rawRequest?.ip` may be a proxy/shared egress; the `"unknown"` fallback buckets all ip-less callers into one key.
-- Rejection audit rows are deliberately NOT deduped — each blocked attempt is a distinct security event; the per-IP cap is the cost bound.
-- `isMinor` on the `users/{uid}` root doc is load-bearing (firestore.rules `get()` gates 1:1 DMs to minors) and is mirrored to `users/{uid}/settings/preferences` (the doc the client hydrates `UserProfile` from). The `isSearchable:false` root write was removed as DEAD — search reads `public_profiles.isSearchable`. Rule: trace the CONSUMER (client/rules read path) of any "protection default" before trusting the write (BUT-674 correction). Jan-1 year-subtraction age cutoff over-protects — the safe direction.
-- Test patterns (verify-signup-age.test.ts): assert field ABSENCE for data-minimisation contracts (`!("birthYear" in row)`); `HttpsError.code` reads namespaced `"functions/resource-exhausted"` — accept both forms; derive age boundaries from `new Date().getFullYear()`, never hardcode; prove no-ops via call COUNTS on the injected fake, not the response envelope; rethrow-path tests assert the returned sentinel stayed `undefined`; fail-closed tests inject a transaction error and assert the deny. Logger error/info lines interleave with PASS output — the trailing `N/N passed` is the source of truth.
-
-#### Notification categories
-- A NEW `NotificationCategory` defaults on via unconditional `return true` on a missing field — never borrow a sibling category's stored boolean (BUT-1427 `digest`; `reEngagement`'s fallback to the `system` toggle is a legacy mapping, not a pattern). `isCategoryAllowed` is total ⇒ a typo'd/unknown category fails OPEN (sends).
-- The analytics `notificationType` (fed to `evaluateSendGate`) and the preference `category` literal are separate taxonomies; per-frequency (`digestFrequency`, enforced in the scheduler) vs per-channel (category boolean, enforced in the helper) are separate opt-outs at different layers — don't fold them.
-
-#### Pooled ratings + rating aggregation (ratings/ family)
-- Recipes are USER-SCOPED: `users/{ownerUid}/recipes/{recipeId}`. firestore.rules has NO top-level `match /recipes`; `bulk-retag.ts`'s top-level `collection("recipes")` is legacy/unverified. Confirm any server-side collection path from firestore.rules + the repository's mixin, never from an incidental `collection()` call elsewhere. Test fakes must mirror the REAL layout or a path bug is structurally invisible (xhigh correction 2026-07-03 — a "clean" single-specialist review endorsed a dead-on-arrival top-level read).
-- firebase-functions v2 event triggers default `retry=false` — a thrown error is logged and DROPPED. "throw ⇒ retry" requires `{retry:true}` in trigger options, and is safe only when the handler's sole mutation is idempotent (e.g. `onPooledRatingEventWritten` just schedules a coalescing marker; it recovers `poolKey` from `event.params`, which survives deletes).
-- Unbounded collection-group folds use `.aggregate({count: AggregateField.count(), average: AggregateField.average("ratingValue")})` (firebase-admin 13.8.0), never `.get()` — pin with a test tripwire asserting zero raw fold `.get()`s. A `collectionGroup` equality query needs a `fieldOverrides` entry with `queryScope: "COLLECTION_GROUP"` in firestore.indexes.json — auto single-field indexes are COLLECTION-scope only, the emulator hides the prod `FAILED_PRECONDITION`, and this is distinct from the equality-composite accepted-deviation. Same for composite entries backing `collectionGroup()` queries (pings). `average(f)` skips non-numeric `f` — the producer must validate the field or count/average denominators silently diverge.
-- A second debounced aggregator = a thin `DebounceConfig` adapter on `shared/debounce-queue.ts` with a distinct `markerCollection` (`_internal/pool_debounce/markers` vs `_internal/rating_debounce/markers`) + `logPrefix` — never a fork. Claim-by-delete BEFORE aggregating; aggregation is idempotent (full re-read + `set(merge)`), so a marker-race double-run is safe.
-- A marker/queue doc-FIELD rename is deploy-transition-safe ONLY if every reader falls back to `doc.id` and the doc ID equals the value (`data?.key ?? doc.id`); otherwise two-phase deploy (read-both, then write-new).
-- `updateRecipeRatingStats(recipeId, db?)` folds `recipe_ratings` + `family_ratings where memberType=="profile"` into `recipe_social_stats/{recipeId}`; no double-count because only genuine self-rates mirror to `recipe_ratings`. A family rating on a never-shared recipe creates an authed-readable anonymous stats doc (accepted Low). Empty pools are zeroed (count 0 / average null), not deleted — the reader gates on n≥5. The Stage-A mirror has NO `skipped_unchanged` gate and NO edit-detachment — decided (accepted-deviations 2026-07-03); don't re-file. Order free adversarial checks (maturity `auth.getUser`) BEFORE billed reads. `createdAt` semantics diverge between mirror (`serverTimestamp()`) and backfill (preserves original) — deliberate, unresolved for Stage-B weighting.
-- One-shot backfills: persist the cursor (`startAfter` in / `nextCursor` out) — a local cursor plus caps that count skipped-identical docs stall permanently above ~10k docs (`hasMore` forever). Two-cursor split: `lastDocId` (last FETCHED, drives the query) vs `lastProcessedId` (last PROCESSED, drives `nextCursor`) — they diverge only at the maxRatings cutoff, re-fetching the cutoff doc, no skip. Collect a batch's writes into ONE `commit()` after the loop so a mid-loop throw leaves zero committed writes and `batchStartCursor` resume is exact. Dedup winner = last-by-doc-id in a Map keyed `${uid} ${poolKey}` — deterministic, converges across runs. Clamp `maxRatings = Math.max(1, ...)` (0 ⇒ `nextCursor` falls back to `lastDocId` and silently skips a whole batch).
-- 3-segment doc paths in specs are traps (`_internal/rating_debounce/{recipeId}`, `audit/ping_rate_limit/{autoId}` — doc must be even segments): count segments; use `.../markers/{id}` and `audit/<event>/entries/{auto}`.
-- `.count()` over `.get()` whenever only cardinality matters (ping hourly rate-limit: one billed read regardless of volume).
-
-#### TS↔Dart parity twins (canonical-pool-key.ts et al.)
-- With no `unicode`/`u` flag, `\w`/`\b` are ASCII-only in BOTH Dart and JS — fold å/ä/ö→a/o FIRST, then run boundary regexes; adding the flag on one side breaks parity. Default sorts are UTF-16 code-unit ordinal in both (no locale comparator); `split(' ')` is literal in both; sha256 hex is lowercase in both; Set→Array preserves insertion order in both — dedup order is moot when you sort after.
-- Module-scope `/g` regexes are safe with `.replace` but stateful (`lastIndex`) with `.test()`/`.exec()` in long-lived CF isolates — keep global regexes to `.replace` or make them local.
-- Input validation belongs in the calling CF, not the pure helper: coerce `typeof === "string"` before `computePoolKey`, or a malformed doc's TypeError inside a trigger = retry storm.
-- Shared word/heuristic lists: compiled-in consts pinned by JSON-fixture parity tests on BOTH sides (`test/fixtures/pool_key_wordlists.json`, `pool_key_parity.json`) — NEVER a runtime JSON load; tsc does not copy `.json` under `src/` into `functions/lib`, so a runtime read crashes the deployed function. `src/__tests__/*` compiling into lib is the accepted convention, zero cold-start cost.
-
-#### LLM prompts & prompts-config
-- Compiled-in prompt edits are INERT while a valid `system/prompts` override doc is live — a prompt-content change must ship with a matching prod-doc update (or verified doc absence) as an explicit deploy step, else the stale doc silently wins (PR #211 section rule).
-- A NEW Firestore-backed prompt field must be OPTIONAL with per-field fallback (`typeof raw.x === "string" && raw.x.trim() ? raw.x : COMPILED_CONST`), never added to `requiredStringKeys` — validation is all-or-nothing (BUT-621), so a new required key silently reverts EVERY live override doc to compiled-in fallback on deploy (BUT-684 correction). Pin with a fixture LACKING the key asserting `source === "firestore"` + sibling override survives + new field == compiled const.
-- Mirroring a prompts-config field = 5 edit sites in `prompts-config.ts` (doc-shape docstring, interface, `buildFallback()`, `requiredStringKeys`, `validateRemoteDoc()` return). And grep ALL test fixtures constructing `system/prompts` docs (`grep -rn "imageOcrSystemPrompt:" src/__tests__/*.ts`) — a stale fixture flips to fallback and can pass vacuously while no longer testing the firestore path.
-- Any new/edited `*_SYSTEM_PROMPT` const trips the prompt-changelog CI guard: PROMPT_CHANGELOG.md entry + PROMPT_VERSION bump in the same change (MINOR for additive prompts; MAJOR only for schema+parser changes).
-- N prompts sharing ONE responseSchema: a behavioural instruction in only one prompt is a latent gap in the other N−1 — the schema constrains structure, not semantics. Extract a shared const (e.g. `INGREDIENT_GROUP_RULE`) interpolated into all, verify byte-identical rendering char-for-char. The schema `description` is the one prompt surface ALL schema callers share, and the schema is compiled-in (not Firestore-overridable — deploys atomically). responseSchema cannot enforce string length — server-side `trim().slice(0,max)` in `validateIngredient` is the enforcement point. `${INJECTION_DEFENSE}` stays the FIRST token of every prompt.
-- A/B `resolvePromptBucket` is analytics metadata only (experimentBucket/promptVariant on the timing log) — it never swaps the prompt string; prompt selection (e.g. `isHandwritten ?:`) is orthogonal.
-- Testing `runOcrRecipeImage` with no initialized admin app: capture `args.systemPrompt` inside the `performOcr` seam (runs first) and try/catch the call — `captureLlmSample` throws later; assert on the captured value.
-- Best-effort/never-throw helpers must resolve `admin.firestore()` INSIDE the try: a `= admin.firestore()` default param evaluates at call time BEFORE the body's try/catch and escapes the guard (kept the CF-unit CI red 4 days; BUT-1451 fix: `dbOverride?` + `const db = dbOverride ?? admin.firestore()` as the first line in the try).
-
-#### Rate limiting (middleware/rate_limiter.ts)
-- The per-user daily cap lives in the SAME doc + SAME transaction as the token bucket (no extra reads); denial is evaluated BEFORE token consumption and the deny path writes nothing (denials are free). `dayKey` uses 0-based `getUTCMonth()`, equality-only, never parsed back; pre-BUT-1477 docs (no dayKey) read as a fresh day; the 90-day-staleness weekly cleanup can't race an active user's doc. (The global-increment-before-per-user ordering wart flagged 2026-07-07 was fixed by BUT-1577 — see the retained 2026-07-11 entries.)
-
-#### Ingredient sync (admin/ family)
-- `admin/` scripts run `admin.initializeApp()` + `main()` at import — extract pure cores (`sync-ingredients-core.ts`: csvToFirestore, diff, mergePreservedFields, isResurrection) for the test harness. Idempotency/region/retry are N/A (manual ts-node, never deployed); separator/normalization changes cause a one-time reviewable churn wave in the first diff report, then converge — that's the fix working.
-- List splits use `/;|,(?!\d)/` — comma is a separator unless immediately followed by a digit (Swedish decimal `"0,5%"`); applied to aliases_sv AND aliases_en/search_terms (regex triplicated ~L194/207/208 — keep in lockstep or hoist to a `LIST_SEPARATOR` const). Safe against the loader only because `parseCsvLine` is quote-aware AND `loadCsv` fails closed (exit 1) on column-count mismatch — re-verify BOTH when widening separators. Only `[swedish, ...aliasesSv]` feeds `normalizedNames` (the allergen-gate surface); aliases_en/search_terms degrade search recall at worst — that scoping is what makes their split safe without the xhigh data-writing gate.
-- Normalization parity must hold across the THREE matching surfaces or the BUT-1468 gate-bypass class reopens (an ASCII alias like "jordnotter" passes the server gate yet matches "jordnötter" client-side): sync stamp (`shared/swedish-normalize.ts` stripDiacritics), server hold gate (`normalizeIngredientName` in `analyze-corrections.ts`), Dart client (`_normalize` in `firebase_ingredient_repository.dart`). Re-diff all three whenever the split or a normalizer changes. Any safety gate filtering strings the client later matches must run the SAME normalization as the client matcher.
-- Allergen lockstep triple — no automated pin, re-diff by hand when touching any of them: `VALID_PROPERTIES` (admin/sync-ingredients.ts), `ALLERGEN_RELEVANT_PROPERTIES` (shared/allergen-properties.ts), `triggerProperty` list (lib/services/tagging/config/allergen_config.dart — includes non-medical triggers like `contains-alcohol`/`meat` NOT in the shared TS list). Skaldjur trigger = crustacean OR mollusc OR seafood via plain OR — a detail property never clears CONTAINS (deliberate false-CONTAINS safety net); its value is making the specific allergen detectable.
-- Confirm-gated admin scripts: the human-review artifact (JSON diff report) writes BEFORE the confirmation prompt; the executed-marker Firestore row (`system_events`) writes AFTER the final commit — never before, or a cancelled/failed run leaves an audit row claiming the sync executed. Resurrection routing requires the Firestore fetch UNFILTERED (no status filter) so soft-deleted docs land in `toUpdate` and get `FieldValue.delete()` clears for `deletedAt`/`expireAt`.
-- `validateAllIngredients` counts warnings only under `--verbose` — a new warning is invisible on the standard dry-run unless the counting moves outside the verbose guard (gate only the printing).
-- Hold states in txn state machines: allowlist (`status === "pending"`), never blocklist (`!== "approved"`) — parked/terminal states (`held_for_review`/`rejected`/`revoked`) leak through blocklists. Hold-reason computed outside the txn is acceptable when inputs change only via rare admin paths and an admin revoke exists. Hoist per-event-constant reads (`isMatureAccount`) out of per-candidate loops. `learned_aliases` `status ==` + `orderBy count desc` needs a composite absent from firestore.indexes.json (emulator auto-creates and hides it).
-
-#### CI / test wiring / ops
-- A new `__tests__/*.test.ts` is INVISIBLE until a `test:*` script exists in package.json — `run-all-tests.js` auto-discovers `test:*` excluding `test:rules*`/`test:integration:*` (emulator-bound, run manually; don't file "not in the composite chain" for those). Recurring trap (BUT-1392, BUT-1477): grep package.json FIRST when reviewing any new test file.
-- Every new `onCall` export must be added to `app-check-enforcement.test.ts`'s `USER_FACING`/`ADMIN_EXEMPT` sets immediately, or that suite goes red.
-- Two runners: `run-all-tests.js` (dev, everything) vs `scripts/run-ci-unit-tests.js` (CI gate `cloud-functions-unit.yml`: Node 22, npm ci → build → runner, no emulator; `CI_EXCLUDE` lists known-broken suites — remove entries once fixed).
-- `firestore-rules.yml` path filters must list each rules test file in BOTH the `pull_request` AND `push` lists, plus source-dir triggers (`functions/src/social/**`, `functions/src/family/**`) — silent drift trap.
-- Post-deploy smoke (deploy-firebase.yml): `firebase functions:list --project butlery-app-1 --json` + fixed-string grep of 8 stable representative names (structureRecipe, ocrRecipeImage, sendNotification, onUserDeleted, verifySignupAge, requestAccountDeletion, cleanupExpiredCache, drainRatingAggregations; exclude migration-lifecycle functions). `firebase deploy` exit 0 does NOT prove functions are callable (DEPLOY_FAILED state) — only a control-plane query after deploy does. No error suppression on the check step.
-- A Firestore TTL field (`expireAt` on parse_events / llm_response_samples) is INERT without the `gcloud firestore fields ttls update` policy — demand the `functions/RUNBOOK.md` entry, or the retention claim is documentation fiction. Cloud Logging metric filters are GCP-console config, not code — RUNBOOK, not a code task.
-- Structured timing logs: ONE `emitTiming` closure declared at function top, called at every exit path with a per-exit `reason` field.
-- Pre-existing failures in a full `npm test` after a sprint: `git log --oneline -1 -- <broken-file>` to check whether your work touched it before chasing fixes.
-- Data-writing CFs get an adversarial multi-finder review before commit — the single-specialist gate endorsed a dead-on-arrival collection path and a false throw-retries assumption (2026-07-03 xhigh correction); necessary but not sufficient.
-
-### Archived 2026-07-16 batch (2026-06-27 → 2026-07-07) — see cloud-functions-specialist.knowledge.archive.md
-- 06-27 (2) — BUT-1386 verify-signup-age: DI-core test patterns + production-side review (region, write ordering, IP cap).
-- 06-28 (3) — BUT-1404 audit-log purge starvation fix; BUT-1392 CF tests wired into CI; BUT-1423 post-deploy smoke gate.
-- 06-29 (4) — family-diner ratings fold into recipe_social_stats; family-data cascade retry-handle ordering hazard; dormant-family-data purge sweep; BUT-1427 digest category decoupling.
-- 06-30 (2) — BUT-1396 realtime_recipes ownerId deletion fix; BUT-1450 residual-probe field scoping.
-- 07-01 (2) — BUT-674 minor default-private profile + post-review isSearchable correction.
-- 07-02 (5) — BUT-684 handwritten-OCR prompt (variant, fixture breakage, made-optional correction); sync-ingredients warnings invisible; ingredient section field (PR #211).
-- 07-03 (11) — pooled-ratings pool-key twin, C5 word-list guard, debounce-queue generalization, Stage A mirror review + xhigh USER-CORRECTION (user-scoped recipes, retry=false, fake-layout), Stage B aggregator, Incr 5 GDPR cascade; Finding D cross-prompt gap; BUT-1467 sync core extraction + allergen triple; audit-event timing in confirm-gated scripts; BUT-1468 alias hold-for-review.
-- 07-04 (3) — pooled-ratings backfill cursor finding + verified cursor/dedup rewrite; best-effort telemetry admin.firestore()-inside-try fix.
-- 07-07 (3) — BUT-1495 comma-tolerant aliases_sv split; BUT-1477/1478/1479 daily LLM cap + parse_events TTL; BUT-1571 decimal-comma split.
-
-### Archived 2026-07-04 batch (2026-06-09 → 2026-06-26) — see cloud-functions-specialist.knowledge.archive.md
-- 06-09→06-13 (3) — emitTiming/cost telemetry: Gemini cache cost, OCR timing, prompt A/B buckets.
-- 06-10→06-24 (3) — test infra: run-all runner, CloudFunction.run() trigger tests, emulator cleanup-job tests.
-- 06-11 (1) — PII heuristics + on-user-deleted GDPR cascade design.
-- 06-15 (1) — Algolia OPS-BLOCKED: client key ≠ server credential.
-- 06-20 (5) — WS3/B1 callable+transaction reviews; daily-snapshots + detectAnomalies design; Gen1→Gen2 fleet scoping.
-- 06-21→06-22 (2) — prompt-changelog CI gate; splitter-dedup premise-stale.
-
-### Archived (pre-2026-06-04) — see cloud-functions-specialist.knowledge.archive.md
-
-- 2026-04-25 — initial seed
- — Seeded knowledge file from index.ts and SDK conventions
-- 2026-04-27 — BUT-425 OCR URL SSRF guard [Bug fixed]
- — Added SSRF host-pin + validation for OCR image URLs
-- 2026-04-27 — BUT-641 notification payload schema [Pattern discovered]
- — Standardized FCM data payload schema across senders
-- 2026-04-29 — BUT-621 Remote-Config-style LLM prompts [Pattern discovered]
- — Moved LLM prompts to Firestore with fallback + cache
-- 2026-04-30 — BUT-647/BUT-645/BUT-638 sprint [Pattern discovered]
- — Quiet-hours, notification effectiveness, North-Star aggregation functions
-- 2026-04-30 — security review fixes (C1/C2/H1/M1) [Bug fixed]
- — Fixed producerless aggregator, GDPR TTL/cascade, index, poison-pill loop
-- 2026-04-30 — BUT-458 one-shot migration patterns [Pattern discovered]
- — Admin-gated backfill migration with pagination and idempotency
-- 2026-04-30 — BUT-605 retention extension to D14/90/180 [Pattern discovered]
- — Extended retention tracking with deterministic doc ids
-- 2026-05-01 — BUT-741 backfill parallelization [Pattern discovered]
- — Parallelized recipe-ownership backfill with dedup + bounded concurrency
-- 2026-05-01 — BUT-688 win-back A/B via Remote Config [Pattern discovered]
- — Deterministic bucket assignment for win-back push copy A/B
-- 2026-05-01 — BUT-599 per-feature retention aggregator [Pattern discovered]
- — Daily DAU/WAU aggregator across five recipe features
-- 2026-05-02 — BUT-577 ingredient-lines partial-array salvage [Bug fixed]
- — Bracket-counter salvage for truncated Gemini ingredient JSON
-- 2026-05-04 — BUT-482 / BUT-483 / BUT-627 Sprint G [Pattern discovered]
- — Rating debounce, timing logs, ping rate-limit sweeper
-- 2026-05-02 — BUT-753 admin cascade for legacy `sharedWith` arrays [Pattern discovered]
- — Cascade cleanup of legacy sharedWith array field on deletion
-- 2026-06-03 — BUT-1187 Gemini model retirement 404 [Bug fixed]
- — Swapped retired Gemini model id, one-line fix
-
-## Discovered patterns
-
-*Append new dated, trigger-tagged entries below.*
-
-### 2026-07-09 — BUT-1512 collection-group wildcard suite: friend_categories gap [Pattern discovered]
-
-`collection-group-wildcards-rules.test.ts` isolation-tests the owner-shape catch-all
-wildcards in `firestore.rules` on a NOVEL parent (`cg_wild/...`) so only the
-`{path=**}/<name>/{id}` rule can match — the same trick as the members suite. There are
-**seven** such catch-alls (grep `match /\{path=\*\*\}/` in firestore.rules): members,
-friend_categories, engagements, comments, ratings, recipes, pings. The new suite covers
-five (engagements/comments/ratings/recipes/pings) and correctly defers members to its own
-suite — but its docstring says "the remaining five" and silently omits
-**friend_categories** (`firestore.rules:2087`, `allow read if request.auth.uid in
-resource.data.friendUserIds`). That is a SIXTH owner-field-shaped catch-all with the exact
-latent-trust risk the suite exists to guard ("every present AND future subcollection of
-that name carries the expected owner shape").
-
-Its existing `friend-categories-rules.test.ts` does NOT close the gap: it only exercises
-`users/{ownerUid}/friend_categories/{categoryId}`, which matches the **narrower** per-user
-rule at `firestore.rules:436`, not the catch-all at 2087. So the friend_categories
-collection-group wildcard is untested in isolation. Fix = add friend_categories cases to
-the BUT-1512 suite on a novel parent: owner-in-array reads; array-missing denied;
-foreign-only-array denied; unauth denied.
-
-**Pattern**: when a "cover all the catch-all wildcards" suite lands, grep
-`match /\{path=\*\*\}/` and reconcile the count against the docstring — a wildcard with a
-sibling per-user rule (friend_categories, members) is the easy one to miss because a
-same-named narrower suite *looks* like coverage but tests a different rule block.
-
-Everything else verified clean: all five covered rules match the test assertions
-byte-for-byte (engagements = doc-id gate, recipes = isAdmin() with `admins/{uid}` seeded to
-match `isAdmin()` at rules:57, pings = from/to OR). Wiring is correct and consistent across
-all three surfaces — `test:rules:collection-group-wildcards` script + appended to
-`test:rules:all` (package.json), and listed in BOTH the `pull_request` and `push` path
-filters of `firestore-rules.yml` (avoids the BUT-1392 push-list-drift trap). Emulator-bound
-`test:rules:` prefix keeps it out of the no-emulator `run-ci-unit-tests.js` runner. Direct
-get/delete (not a real `collectionGroup()` query) is the accepted members-suite convention —
-not a finding.
-
-### 2026-07-11 — BUT-1579 comma-split extended to aliases_en/search_terms [Pattern discovered]
-
-`csvToFirestore` in `functions/src/admin/sync-ingredients-core.ts` now splits
-`aliases_en` and `search_terms` on `/;|,(?!\d)/` (was plain `";"`), matching the
-`aliases_sv` treatment established by BUT-1495 (humans type `,` where the Sheet
-convention is `;`) + BUT-1571 (a comma followed by a digit is a Swedish decimal
-`"0,5%"`, not a separator). Reviewed clean — no Critical/High/Medium. `npx ts-node
-src/__tests__/sync-ingredients-diff.test.ts` = 18/18, tsc clean.
-
-Why it's low-risk (verified, not assumed):
-- **No allergen-safety surface touched.** `normalizedNames` (the diacritics-
-  stripped allergen-lookup form the BUT-1468 hold-for-review gate queries) is
-  derived from `[swedish, ...aliasesSv]` ONLY — `aliasesEn`/`searchTerms` never
-  feed it. So a bad split here degrades search recall at worst, never an allergen
-  verdict. This is the reason the same regex is safe to extend here without the
-  xhigh multi-agent data-writing gate that a normalizedNames change would need.
-- **Idempotent after first run.** `admin/` scripts are manual/ts-node, not
-  deployed triggers, so no retry-storm concern. `hasChanges` DOES compare
-  `aliasesEn`/`searchTerms` (added in the 2026-07-03 xhigh review), so the first
-  sync after this ships re-updates every doc whose those columns held a comma
-  list — a one-time churn, matches the BUT-1571/BUT-1468 backfill shape; the
-  second run sees them equal. Reviewed via the human-gated dry-run diff report.
-
-Two Info-level notes worth carrying:
-- **Regex literal is now triplicated** (aliasesSv L194, aliasesEn L207, searchTerms
-  L208). A future tweak to the separator must touch all three. Cheap to hoist into
-  a module const `const LIST_SEPARATOR = /;|,(?!\d)/;` — not filed as a change, just
-  flagged so the next editor keeps them in lockstep.
-- **SyncReportEntry only surfaces properties/aliasesSv/status** in before/after, NOT
-  aliasesEn/searchTerms. So the first-run re-split churn appears in the dry-run
-  report as rows in `toUpdate` with *no visible before/after difference*. Pre-existing
-  report shape, not introduced here, but a reviewer eyeballing the diff should know a
-  "changed but looks identical" row on this sync is the aliasesEn/searchTerms re-split,
-  not a phantom.
-
-### 2026-07-11 — BUT-1506 merged friendship-delete + count-decrement review [Bug fixed]
-
-`cleanup/on-user-deleted.ts` merged the old `cleanupReverseFriendships` (D1) and
-`updateFriendCounts` (D4) into one `cleanupFriendshipsAndDecrementCounts`. The
-reverse-friendship doc is now the idempotency token: per chunk it `getAll`s the
-reverse docs and, only for friends whose reverse doc still exists, stages
-`delete(reverse) + audit + increment(-1) on public_profiles + audit` in ONE atomic
-batch (4 ops/friend → chunk = floor(500/4) = 125). Fixes the real non-idempotency
-bug: the old D4 blindly decremented every friend off the never-deleted victim
-friends-list, so a duplicate delivery / re-run double-decremented. `tsc --noEmit`
-clean. `stageCascadeAuditEntry` = exactly 1 `set` op (confirmed), so the /4 math is
-right and a full chunk is exactly 500 ops (at the limit, OK).
-
-**HIGH — poison-pill: a friend with a missing `public_profile` doc aborts the whole
-cascade.** `batch.update(public_profiles/{friendId}, …)` fails at commit if that doc
-doesn't exist (Firestore `update` requires existence), and because the decrement now
-shares a batch with the reverse-friendship deletes, the ENTIRE chunk rolls back →
-`cleanupUserSocialData` throws at step 1 → steps 2-14 never run → GDPR erasure aborts.
-The condition is data-driven (same every run), so it's a poison pill, not a transient.
-Worse than the pre-merge code, which committed the reverse deletes in their own batches
-before D4's blind update could throw. Fix: also `getAll` the `public_profiles/{friendId}`
-refs alongside the reverse docs; when a profile is absent, still delete the reverse doc
-+ audit (2 ops) but SKIP the decrement. The reverse doc stays the token; no throw; a
-gone friend has no count to decrement anyway. Do NOT use `set(...,{merge:true})` — that
-resurrects a deleted peer's profile with a negative count.
-
-**MEDIUM (pre-existing, surfaced by this change) — no `failurePolicy`/retry configured.**
-The v1 `.auth.user().onDelete` trigger is `.runWith({ timeoutSeconds: 540, memory:
-"512MB" })` with NO `failurePolicy: true` (grep: zero matches repo-wide). v1 background/
-auth triggers do NOT auto-retry on a thrown error unless failurePolicy is set — so the
-`throw error; // Retry` comment and the whole "idempotent under cascade retry" rationale
-are load-bearing on a config that isn't there. Consequences: (1) a mid-cascade failure is
-DROPPED, never retried → Art.17 erasure silently incomplete; (2) the double-decrement the
-rework fixes can only arise from at-least-once DUPLICATE DELIVERY, not auto-retry (still
-real, so the idempotency work is still worth it — just for the right reason). Decide:
-add `failurePolicy: true` if failed erasures should retry, or drop the "// Retry" framing.
-
-**LOW — stale comment.** `cleanupGroupMemberships`'s strict-mode rationale still says
-"the reverse-friendship cleanup (D1) and friend-count decrement (D4) depend on a converged
-friendUserIds state" — but post-merge D1+D4 run in step 1 BEFORE group memberships (step 3),
-so that ordering claim is inverted. Comment only; no behavior impact.
-
-**MEDIUM — test gap.** The new retry assertion in the integration test only covers the
-happy path (friend WITH a public_profile). It does not cover the missing-profile poison
-pill (HIGH above) nor the already-missing-reverse-doc self-heal branch (`if
-(!reverseSnap.exists) continue`). Seed a friend whose `public_profile` is absent and assert
-the cascade still completes + that friend's reverse doc is erased.
-
-**Dart side (`lib/services/family/family_rating_service.dart`, BUT-1505) — reviewed
-sound, deferred.** `_denormalizeFamilyAverage` now wraps the read-then-write of the owned
-recipe doc in a `runTransaction`: `txn.get(recipeRef)` is the conflict anchor, then a
-non-transactional `_ratings.getForRecipe` recompute, then `txn.update` of ONLY the two
-`core.family*` fields. Correct: two concurrent denormalizations serialize on the recipe
-doc and each recomputes from the authoritative store; partial-field update avoids clobbering
-concurrent edits (the BUT-1505 bug). The ratings query isn't in the txn read set but the
-recipe-doc anchor covers it. This is Flutter-side Firestore → owned by firebase-backend-
-security; flagged sound, not deep-reviewed here.
-
-### 2026-07-11 — BUT-1582 poison-pill FIX verified clean (closes the HIGH+MEDIUM above) [Bug fixed]
-
-Reviewed the uncommitted fix to `cleanup/on-user-deleted.ts`
-`cleanupFriendshipsAndDecrementCounts` that closes the HIGH poison-pill and the MEDIUM
-test gap flagged in the 2026-07-11 BUT-1506 entry above. Verdict: **clean, no findings.**
-
-The fix reads each friend's `public_profiles/{friendId}` doc in the SAME `db.getAll`
-that already reads the reverse-friendship docs — refs concatenated
-`getAll(...reverseRefs, ...profileRefs)`, then split
-`reverseSnaps = snaps.slice(0, chunk.length)` / `profileSnaps = snaps.slice(chunk.length)`.
-When the profile is absent it stages only the reverse delete + audit and `continue`s
-BEFORE the decrement (no `set(...,{merge:true})` — a merge-set would resurrect a deleted
-peer with a negative count, which is exactly why the plain skip is correct).
-
-Verified rigorously, all 5 review axes clean:
-1. **Slicing correct, no off-by-one.** `getAll` returns snapshots in request order
-   (Admin SDK guarantee), and both ref arrays are built from the same `chunk` in the
-   same order, so `reverseSnaps[j]` and `profileSnaps[j]` both key `chunk[j]`. Each ref
-   yields a snapshot even when missing (`.exists===false`), so both slices are exactly N.
-2. **Idempotency preserved.** The reverse doc is still the sole reprocessing gate
-   (`if (!reverseSnap.exists) continue`); decrement is atomic with the reverse delete in
-   one batch, so reverse-absent ⟺ decrement-already-committed. No double-decrement on
-   retry. A profile-absent friend commits its reverse delete, so a later retry skips it —
-   and no decrement was owed anyway. Consistent.
-3. **Batch-size safe.** `FRIENDS_PER_BATCH = floor(500/4) = 125`. Present friend = 4 ops,
-   absent = 2, already-processed = 0. Worst case 125×4 = 500 = BATCH_LIMIT exactly (≤500,
-   allowed). No overflow. `batchOps++` moved to fire once per reverse-present friend — still
-   just the "did we stage anything" guard for `if (batchOps>0) commit`, unaffected by the
-   500 cap (chunk size enforces that statically). The 2N reads are BatchGetDocuments, not
-   batch writes — irrelevant to the 500 write cap.
-4. **Extra-read cost accepted, and it is the cheapest correct option.** 2N docs instead of
-   N, but piggybacked on the pre-existing `getAll` → still ONE round trip on a rare
-   account-deletion path. Alternatives are all worse: merge-set resurrects peers;
-   per-friend try/catch means N commits; batch commit is all-or-nothing so a NOT_FOUND
-   can't be caught per-op. Reading-before-writing is optimal here.
-5. **Test bites.** New case seeds `friendNoProfile` (reverse edge, NO profile) sharing
-   victim's single chunk with `friend` (profile friendsCount:3). Asserts friend's
-   decrement 3→2 STILL commits (chunk not poisoned — the load-bearing assertion), the
-   profile-less friend's reverse edge is removed, and no profile doc is resurrected.
-   Summary friendsRemoved:2 / friendCountsUpdated:1 matches. Reported 17/17 emulator-green.
-
-**Pattern worth remembering — piggyback the existence-probe onto the idempotency getAll.**
-When a merged cascade batch mixes `batch.delete` (safe on missing) with `batch.update`
-(throws NOT_FOUND on missing), and it already `getAll`s one set of docs for its idempotency
-gate, add the update-target refs to that SAME `getAll` and skip the update when absent.
-Costs 2N reads on one round trip, removes the data-driven poison pill, and avoids the
-merge-set-resurrection trap. This is the general fix for any "update in a merged batch can
-NOT_FOUND-abort a delete cascade" hazard.
-
-### 2026-07-11 — BUT-1586 track-retention floor→ms boundary mirror [Pattern discovered]
-
-Reviewed the uncommitted `classifyLifecycleStageServer` change in
-`analytics/track-retention.ts` (+ 2 new boundary cases in
-`__tests__/track-retention.test.ts`). Clean — no findings, 13/13 green under
-`npx ts-node`. It mirrors the client BUT-1550 fix: replace
-`Math.floor((now - x)/MS_PER_DAY)` day-truncation with full-ms comparisons on the
-churned/dormant boundaries in BOTH the active and never-active branches.
-
-**Why floor was a real bug (not cosmetic):** `Math.floor` truncates toward zero,
-so `[30d, 31d)` collapsed onto day-30. A user last active 30d12h ago is elapsed
-`>30d` (churned) but floored to `30`, and `30 > 30` is false → fell through to
-`>= 14` → **dormant**. The app-emitted `lifecycle_stage` (already fixed client-side
-in BUT-1550) then disagreed with this server event in that whole window.
-
-**Boundary parity confirmed against the client classifier**
-(`lib/services/analytics/lifecycle_stage_classifier.dart`), operator-for-operator:
-churned `> 30d` (strict), dormant `>= 14d` (inclusive of 14). Server now matches on
-both branches. The 30d edge stays dormant (not churned) on both sides.
-
-**Scope call verified correct:** the server-only 7-day habitual/activated proxy
-(`daysSinceSignup > 7 && daysSinceActive <= 7`) is deliberately left on floored-day
-semantics — it's an approximation of the Dart side's `cooksLast14Days` (which the
-daily aggregator can't cheaply compute), NOT part of the BUT-1550 mirror. Both
-`daysSinceSignup` (line 70) and `daysSinceActive` (line 84) are still `Math.floor`
-and are now consumed ONLY by that proxy. Note `daysSinceSignup` is computed at the
-top so it's dead in the never-active path now (was used by that branch's old floored
-check) — a harmless single `Math.floor`, not worth flagging.
-
-**The two new tests genuinely bite the old code** (proved by construction, not run):
-30d12h on the active branch → old `floor(30.5)=30`, `30>30` false, `30>=14` true →
-returns `dormant`; the test asserts `churned`, so it would go RED on the pre-fix
-code. Same arithmetic on the never-active branch. A test at exactly 30d (no sub-day
-remainder) would NOT have bitten — the sub-day 12h remainder is load-bearing.
-
-**Pattern worth remembering — floored-day boundaries silently mis-bucket the
-sub-day remainder.** Any `> N` / `>= N` comparison on `Math.floor(elapsed/DAY)` or
-Dart's `Duration.inDays` mis-classifies the `[N, N+1)` window because truncation
-lands it on `N`. When two systems (client + server) must agree on a lifecycle/recency
-boundary, compare raw elapsed (`ms` / full `Duration`), not truncated days, and pin a
-regression test with a **sub-day remainder** (e.g. `N*DAY + 12h`) — a whole-day
-fixture passes under the buggy floor and proves nothing.
-
-### 2026-07-11 — BUT-1573/1577 rate-limiter: config-pin + per-user-before-global reorder [Bug fixed / Pattern discovered]
-
-Reviewed two changes to `functions/src/middleware/rate_limiter.ts` (+ its daily-cap
-test). Both verified: `tsc --noEmit` clean, `rate-limiter-daily-cap.test.ts` 12/12.
-
-**BUT-1573 (clean).** `RATE_LIMIT_CONFIGS` is now `export`ed and three `dailyLimit`
-values are pinned by tests (structureRecipe 100, ocrRecipeImage 50, importRecipe 100).
-Values match production. Good defensive test — deleting/weakening a per-user LLM
-spend cap now regresses a test instead of shipping silently. No finding.
-
-**BUT-1577 (real bug fixed, with an accepted residual).** `withRateLimit` previously
-called `checkGlobalLimit()` (which *atomically increments* the shared
-`system/llmLimits` hourly+daily counters) BEFORE the per-user `checkRateLimit`. So a
-user whose own per-user bucket/daily-cap denied the request still inflated the shared
-global budget — one abuser could drain the global cap for everyone with requests that
-never ran (cross-user DoS). Fix reorders: per-user gate first, global increment only
-after per-user allows. Correct direction, comment is accurate.
-
-**Residual worth knowing (rated Low, not blocking).** The reorder is not free — it
-swaps the asymmetry. `checkRateLimit` commits its token-consume + `dailyCount++` in a
-transaction BEFORE `checkGlobalLimit` runs. So when the global limit denies (at
-capacity) OR fails closed on a Firestore error, the requester's own per-user token and
-daily counter were already spent for a request that never executed. During a sustained
-global-capacity event every user burns their per-user daily cap on rejected calls and
-can lock themselves out for the rest of the UTC day even after global frees up. This is
-strictly better than the old cross-user harm (self-limited, no DoS), and the caps are a
-soft cost-shaping lever, so accepted. A clean fix would need a global *peek* (read-only)
-before the per-user consume, then a global *commit* after — but `checkGlobalLimit`
-couples read+increment in one transaction; separating them wasn't in scope.
-
-**Pattern — a two-stage gate where each stage has a side effect has NO free ordering.**
-Whichever gate you run first, a denial by the second gate strands the first gate's
-mutation. Put the gate whose side effect is *shared/cross-user* last (so a denial only
-ever wastes the requester's *own* budget), which is exactly what this fix does. When
-reviewing any "reorder the checks" fix, ask: does the now-first check mutate state, and
-what does a later-check denial leave stranded?
-
-**Coverage gap (Low).** The new tests only pin config values (BUT-1573); the BUT-1577
-reorder — the actual behavioral fix — has NO test. `withRateLimit` is hard to unit-test
-because `checkGlobalLimit` reads/increments `system/llmLimits` via `admin.firestore()`
-directly with no injectable seam (only the *limits loader* is seam-injectable via
-`__resetGlobalLimitsCacheForTest`, not the counter transaction). Pre-existing
-testability limitation, consistent with the file having no `withRateLimit` test before.
-If this ordering is ever tightened again, add a `firestoreForTest`-style seam to
-`checkGlobalLimit` first so the order is pinnable.
-
-**onCall retry note:** `withRateLimit` wraps *callables*, which the Firebase SDK does
-NOT auto-retry on a thrown `resource-exhausted` — so the double-consume-on-retry worry
-from the trigger idempotency rules does not apply here. The knowledge file's
-idempotency section is about Firestore triggers; this is a callable gate.
-
-### 2026-07-11 — BUT-1577 the missing ordering regression test [Pattern discovered]
-
-Reviewed `functions/src/__tests__/rate-limiter-withratelimit-ordering.test.ts` (+ its
-`test:rate-limiter-ordering` npm script) — the test that closes the "reorder has NO
-test" coverage gap flagged in the entry above. Clean, no findings. 2/2 pass, tsc clean,
-no emulator. Registered at package.json:118; `run-all-tests.js` auto-discovers it (not
-under `test:rules`/`test:integration:` excludes), and each suite runs as its own
-`npm run` child process so module-scope seam state (`firestoreForTest`,
-`cachedGlobalLimits`, `globalLimitsLoaderForTest`) can't leak across files regardless.
-
-**How it pins ordering without a counter seam.** `checkGlobalLimit` still has no
-injectable Firestore handle (only the *limits loader* is seam-injectable). The test
-turns that limitation into the probe: it installs a loader via
-`__resetGlobalLimitsCacheForTest(async () => { globalChecked = true; ... })`. Since
-`loadGlobalLimits()` is the FIRST line of `checkGlobalLimit`, the loader firing is that
-function's earliest observable side effect — so `globalChecked` is a clean spy for
-"was the global gate entered." Per-user doc is fed via `__setFirestoreForTest`.
-
-**Why case 1 genuinely bites a reverted order.** Per-user-DENIED (seed `dailyCount:100`
-== structureRecipe's `dailyLimit:100`, `dayKey` = live UTC key so the cap trips): asserts
-`globalChecked === false` + the per-user Swedish message (`för många förfrågningar`). Swap
-the order back (global first) and `checkGlobalLimit` runs before the per-user gate →
-loader fires → `globalChecked` true → case 1 goes RED. Proven by construction. Case 2
-(per-user-ALLOWED) is NOT an ordering guard on its own — with no test app,
-`checkGlobalLimit` fail-closes to the global denial in BOTH orders, so its
-`globalChecked === true` + global-message asserts pass either way — but it's not vacuous:
-it pins that a per-user *allow* actually REACHES the global gate and the handler stays
-unrun (would fail if the per-user gate wrongly denied, or if the handler leaked through).
-Case 1 carries the ordering claim; case 2 carries the pass-through claim.
-
-**No-app safety confirmed.** On the denied path `withRateLimit` calls
-`logRateLimitViolation` → `admin.firestore()` with no initialized app throws
-synchronously, but inside that helper's own try/catch → warn-logged, never propagates.
-`admin.firestore.Timestamp.now()/fromDate()` are static namespace accessors that need no
-app. So the suite is genuinely emulator-free.
-
-**Pattern — when only one collaborator in a sequence is seam-injectable, spy on its
-earliest side effect to pin ORDER even if you can't observe its full behavior.** You
-don't need a full counter seam to prove "A runs before B"; a boolean set on B's first
-line, plus which of the two error MESSAGES surfaces, is enough to make a reverted order
-go red. Keep the deny-side fixture at the exact cap boundary so the first gate is the one
-that trips.
-
-### 2026-07-11 — BUT-1511 onFamilyRatingUpdated memberType-flip recompute [Pattern discovered]
-
-`onFamilyRatingUpdated` recompute gate extracted to
-`ratings/family-rating-recompute.ts` (`isProfileRating` +
-`shouldRecomputeOnFamilyRatingUpdate(before, after)`) so the decision is
-unit-testable without importing index.ts. New test
-`__tests__/family-rating-recompute.test.ts` (5 cases, uses `_unit-runner`;
-`test:family-rating-recompute` auto-discovered by both run-all + CI runners).
-Build + test green.
-
-The fix: an UPDATE that flips memberType `user`→`profile` with UNCHANGED stars
-used to skip recompute (old gate was `after-is-profile` then `before.stars !==
-after.stars`), so a row newly counting toward the public average never got
-folded in. New gate recomputes when stars changed OR memberType changed, still
-requiring `after` to be `profile`.
-
-**Residual asymmetry worth remembering (flagged Low, documented out-of-scope in
-the code):** the fix is one-directional. A DEMOTION `profile`→`user` is
-short-circuited by the `!isProfileRating(after)` guard, so the demoted row's
-stars stay folded into `recipe_social_stats` (aggregator queries
-`family_ratings where memberType == "profile"`) until the NEXT rating event on
-that recipe triggers a recompute. Self-heals, bounded, rare — but if promotion
-is worth handling, demotion is too. Fully-correct gate would be membership-XOR:
-`const w=isProfileRating(before), i=isProfileRating(after); if(!w&&!i) return
-false; if(w!==i) return true; return before?.stars!==after?.stars;`. Left as the
-ticket scoped only the recompute condition.
-
-### 2026-07-12 — BUT-1567 crossed-since-last-run window can overlap across thresholds [Pattern discovered]
-
-`analytics/detect-lapsed-users.ts` replaced the old fixed ±12h band per
-threshold with a cursor-driven "crossed since last run" window
-`(lastRun − N·days, now − N·days]` for N ∈ {7,14,30}. The window WIDTH equals
-the cursor gap `(now − lastRun)`. Normal daily runs → ~1-day windows that never
-overlap. **But on outage recovery — precisely the scenario the change targets —
-the gap can exceed 7 days, and the 7/14/30 windows then OVERLAP.** A single user
-(e.g. `lastActiveAt = now−15d` with a 10-day-stale cursor) legitimately crossed
-both 7d and 14d during the outage and matches BOTH windows in one run → they get
-stacked mild + moderate win-back notification docs + duplicate analytics events
-in the same run. The old ±12h bands (24h wide, ≥6 days apart) were structurally
-immune to this, so it is a REGRESSION introduced by BUT-1567. There is no
-per-run dedup across thresholds.
-
-Mitigations already present (why it's Medium not High): the BUT-1428 bridge gate
-protects the A/B attribution field (only the first-processed threshold writes
-`lastWinBack*`, later ones see it fresh and skip); and the push fatigue rate-cap
-(`evaluateSendGate` + recorded send-event) likely suppresses the second/third
-PUSH within the same run. What is NOT suppressed: the extra in-app notification
-docs and the extra analytics `events` rows. Fix if pursued: track processed uids
-across thresholds within the run and skip already-notified users, or select each
-user's single highest crossed threshold.
-
-Other notes from the same review:
-- **Unbounded users scan + sequential per-user context reads.** `db.collection("users").where(...).get()` has no `.limit()`, and each matched user is awaited through `resolveContext` (a Firestore read) in a serial for-loop. On a wide catch-up window the matched set can be large — memory + the default 60s `onSchedule` timeout are both at risk. `onSchedule` here sets no `timeoutSeconds`/`memory`. Consider a `__name__`-cursor page loop (`shared/batch-update.ts`) + parallelizing the context reads.
-- **`notificationSent: true` on the analytics event is written unconditionally** (batch, before the push gate). The push may still be dropped (opt-out / quiet-hours / rate-cap), so the field overstates delivery — it really means "in-app notification doc written".
-- **Test-fake doc-id collision:** in `makeFakeDb`, auto doc ids use `store.writeCount`, which only increments on `commit`, not on `.doc()` creation. Multiple analytics-event docs created inside one batch therefore share the same `auto_<n>` path and overwrite each other in the store Map. Harmless for current single-user-per-batch assertions, but it would mask any future test that asserts on multiple analytics events. Fix: bump a counter at `.doc()` time.
-
-### 2026-07-12 — cleanup-pagination: self-advancing drain vs `__name__` cursor [Pattern discovered]
-
-Reviewed `cleanup/cleanup-old-notifications.ts` (limit→loop pagination) +
-`firestore.indexes.json` (added `social_requests (status ASC, sentAt ASC)`).
-
-- **Self-advancing drain is the correct pagination for a delete/filter-mutating
-  sweep, and it is NOT the same primitive as `batchUpdateQueryPaginated`.**
-  cleanup-old-notifications now loops `where(ts<cutoff).limit(BATCH_LIMIT).get()`
-  → `batchDeleteDocs` → repeat until `snapshot.size < BATCH_LIMIT`. No
-  `startAfter` cursor: the delete removes the doc from the filter, so the next
-  page returns fresh rows. This is the ONLY safe paginator when the loop body
-  changes a field the base query filters on. `batchUpdateQueryPaginated`
-  (`shared/batch-update.ts`) orders by `__name__` with a `startAfter` cursor and
-  its own docstring warns "the update must not change a field the base query
-  filters on, otherwise the cursor could skip or revisit docs." So for a drain
-  that flips the filtered field, use the self-advancing bounded loop, never the
-  `__name__`-cursor helper.
-
-- **`cleanup-expired-social-requests.ts` is the remaining pagination gap this
-  sprint's index serves but did NOT fix.** It flips `status pending→expired` via
-  `batchUpdateQuery` — a single unbounded `query.get()` (no `.limit()`), loading
-  every matching doc into memory. It legitimately can't use
-  `batchUpdateQueryPaginated` (it mutates the filtered `status` field → cursor
-  skip). The right fix is the same self-advancing bounded loop
-  cleanup-old-notifications now uses (query `.limit(BATCH_LIMIT)` → update →
-  repeat; expired rows drop out of `status == pending`). Out of the reviewed
-  two-file scope; flagged for the sprint owner.
-
-- **The added `social_requests (status ASC, sentAt ASC)` composite is correct AND
-  was genuinely missing.** The query `where("status","==","pending")
-  .where("sentAt","<",cutoff)` is equality + range on DIFFERENT fields ⇒ needs a
-  composite (not an equality-only case). `queryScope: COLLECTION` is right (it's
-  a top-level `db.collection(...)`, not a collectionGroup). Since the CF landed
-  in BUT-772 without this index, the weekly job has been throwing
-  FAILED_PRECONDITION on every non-empty run — masked only by pre-launch ~0 data.
-  Index addition is a real fix, not decoration.
-
-- **LOW nit carried in cleanup-old-notifications:** `logger.error("Notification
-  cleanup failed", e)` passes the raw Error as the structured second arg. House
-  convention is `logger.error("...", { err: e })` so Cloud Logging keeps the
-  stack/fields as structured data. Not a behavior bug.
-
-### 2026-07-12 — BUT-1592 closed the demotion gap (membership-XOR shipped) [Pattern discovered]
-
-The residual asymmetry flagged Low in the 2026-07-11 BUT-1511 entry is now
-fixed. `shouldRecomputeOnFamilyRatingUpdate` is the exact membership-XOR gate
-that entry predicted: `if(!wasProfile && !isProfile) return false; if(wasProfile
-!== isProfile) return true; return before?.stars !== after?.stars;`. A demotion
-`profile`→`user` with unchanged stars now recomputes immediately, so the demoted
-row drops out of `recipe_social_stats` without waiting for the next rating event
-on that recipe. `onFamilyRatingUpdated` reads `after.recipeId` for the schedule
-target — safe because `family_ratings` doc id is `recipeId|memberId`
-(`FamilyRating.buildId`), so an update never changes the row's `recipeId`.
-
-Reviewed the two-file diff clean (no Critical/High). Test grew to 6 cases and
-BOTH regression guards bite against the old `after`-only gate: the promotion case
-(#1) and the demotion case (#5) each go RED if the gate reverts. 6/6 green,
-`ts-node` run confirmed.
-
-**Minor notes (not blockers):**
-- The `runTests` label is still the stale `"BUT-1511: family-rating recompute
-  gate"` even though the suite now proves BUT-1592 too. Cosmetic — the label is
-  only console output, not a test key. Worth a one-word update next touch.
-- Two edges uncovered by the 6 cases: a simultaneous flip + star change (e.g.
-  `user(3)`→`profile(5)` — handled by the flip branch, returns true) and
-  `undefined` `before`/`after` (the `Data` type admits undefined;
-  `isProfileRating(undefined)` is false, so undefined/undefined → false). Both
-  behave correctly by construction; adding them would harden against a future
-  refactor of the branch order. Low.
-
-### 2026-07-12 — SALVAGE re-review of force-committed 6f0942408: both FAIL votes were false positives [Pattern discovered]
-
-Commit `6f0942408` was force-landed on main by refreshing the review markers 44s
-before commit, with no specialist re-review of the final diff (harness raised a
-security warning). Code is on main but NOT deployed (functions deploy is manual),
-so it was re-reviewed fix-forward. Two fresh verification voters had marked
-CORRECTNESS:FAIL on `detect-lapsed-users.ts` and INTENT:FAIL on the
-`cleanup-old-notifications.ts` drain loop. **Both refuted — nothing blocking.**
-Build clean; `detect-lapsed-users` 25/25 green; `family-rating-recompute` 6/6
-green; both suites re-run under ts-node.
-
-- **detect-lapsed CORRECTNESS:FAIL is a false positive.** Traced the
-  crossed-since-last-run window math: a user crosses threshold N at
-  `lastActiveAt + N·days`; catching crossers since `lastRun` gives
-  `lastActiveAt ∈ (lastRun − N·days, now − N·days]`, which is exactly the code
-  (`> alreadyCrossedAtLastRun` exclusive, `<= crossedByNow` inclusive). In steady
-  daily runs these intervals tile perfectly per threshold — no gap, no daily
-  re-notify (proven by the "already past thresholds … NOT re-notified" test). The
-  degenerate guard reduces to `lastRun >= now` (clock-back / same-instant) → skip,
-  correct for all thresholds. First run bounded by `DEFAULT_CURSOR_LOOKBACK_MS`
-  (proven by the "bounded lookback / no backfill" test). The only real issues are
-  the two already-documented NON-blocking ones from the same-day entries above:
-  the >7-day-outage threshold-overlap burst (Medium) and unbounded users scan
-  during wide recovery (Medium). Neither is a wrong result.
-
-- **cleanup drain INTENT:FAIL is a false positive.** The self-advancing loop
-  satisfies BUT-1563 (drain past the old 10k cap). Termination: `cutoff` is fixed
-  at function start so new docs (`sentAt ≈ now > cutoff`) never enter the matching
-  set — it only shrinks; loop ends on empty page or `size < BATCH_LIMIT`. No skip:
-  no `orderBy`/cursor, but every read doc is deleted so the next page is always
-  fresh smaller-timestamp rows (delete-advances-window is CORRECT precisely
-  because the loop body flips the filtered field). No 500-op overflow:
-  `limit(BATCH_LIMIT)` ⇒ snapshot ≤ 500 ⇒ one `batchDeleteDocs` commit of ≤500.
-  Self-heals across weekly runs on a mid-drain timeout. Only genuine gap is
-  "no test" — already filed BUT-1595, not a code defect.
-
-- **The task's index premise was inverted — worth remembering.** The added
-  `social_requests (status ASC, sentAt ASC)` index does NOT correspond to any
-  query in `cleanup-old-notifications.ts` (that file's `where(ts<cutoff)` is a
-  single-field inequality needing only the automatic index). It serves
-  `cleanup-expired-social-requests.ts` (`status == pending` + `sentAt < cutoff`),
-  and there it is fully correct (COLLECTION scope; equality field before range;
-  `sentAt` ASC matches the implicit ascending sort of a no-orderBy range). The
-  commit message misfiles it under the BUT-1563 bullet. When a review task hands
-  you an index-to-query mapping, verify the mapping itself — the commit narrative
-  can point at the wrong file.
-
-- **Region/cold-start/cost all clean** across the three files: all inherit
-  `europe-west1` from `setGlobalOptions` (no per-function region), no new SDK,
-  one extra cursor read+write per lapsed-users run (negligible).
-
-- **Deploy-order note (non-blocking):** `cleanupExpiredSocialRequests` has been
-  throwing `FAILED_PRECONDITION` on every non-empty run since BUT-772 (index was
-  missing); the new index fixes it, but deploy the index before/with the
-  functions so the weekly job stops erroring. Strictly an improvement over the
-  current broken state.
-
-### 2026-07-14 — BUT-1595 drain tests + BUT-1592 family-rating demotion gate [Pattern discovered]
-
-Follow-up sprint landing the tests the prior salvage entry flagged as the only
-real gap, plus a family-rating gate correctness fix. Reviewed clean — no
-Critical/High/Medium. `cleanup-old-notifications` 4/4 and
-`cleanup-expired-social-requests` 2/2 green under ts-node; both wired into
-package.json (`test:cleanup-old-notifications`, `test:cleanup-expired-social-requests`)
-so `run-all-tests.js` auto-discovers them.
-
-- **`cleanupCollection` got a bounded-iteration backstop (`MAX_DRAIN_ITERATIONS
-  = 20000`) + was exported for testing, with `maxIterations` as an injectable
-  last param.** Real value of the cap: a non-shrinking page would otherwise loop
-  to the ~60s scheduled-function timeout, and a *timeout is a failure* that can
-  trigger a retry — the graceful logged `break` converts a retry-prone crash into
-  a clean partial-and-resume. Not merely cosmetic. The cap is a total-pass count,
-  not a shrink-detector (20000×500 = 10M docs backstop), which is the right
-  trade: simpler, and a legit drain never approaches it.
-
-- **Test fidelity is good but deletedCount counts docs ATTEMPTED, not removed.**
-  In the non-shrinking guard test the fake's `ref.delete()` is a no-op yet
-  `batchDeleteDocs` still returns `snapshot.docs.length`, so `deletedCount ==
-  BATCH_LIMIT*5`. Mirrors production: in the pathological silent-delete-failure
-  case the reported `totalDeleted` (and the `system_events` doc) would be
-  inflated. Bounded to the pathological path and logged as ERROR — accepted, not
-  a finding.
-
-- **BUT-1592 family-rating gate now recomputes on memberType flip in BOTH
-  directions.** `shouldRecomputeOnFamilyRatingUpdate` (in
-  `ratings/family-rating-recompute.ts`, imported by index.ts:38) was `after`-only
-  (promotion INTO `profile`, BUT-1511); the demotion case (row leaving `profile`)
-  short-circuited and left the public average stale. Fix: `wasProfile !==
-  isProfile ⇒ recompute`. Verified NO double-count: the aggregator
-  `updateRecipeRatingStats` re-reads `family_ratings where memberType=="profile"`
-  in full and `set(merge)`s one stats doc, so a demoted row simply stops matching
-  and drops out — idempotent by construction (consistent with the 2026-06-29
-  aggregator entry). Both-non-profile updates still cost zero recompute. Correct.
-
-- **Pre-existing (NOT in this diff, noted for the next editor):**
-  `cleanupOldNotifications`'s catch does `logger.error("Notification cleanup
-  failed", e)` — passes the raw Error as the structured second arg instead of the
-  house `{ err: e }` shape (loses the queryable object wrapper). Low; leave unless
-  touching that block.
-
-### 2026-07-14 — BUT-1600 family-rating orphan reconciliation in the dormancy sweep [Pattern discovered]
-
-`family/purge-dormant-family-data.ts` gained a per-household, per-sweep orphan
-reconciliation (`reconcileDepartedMemberRatings` + `recomputeDenormalisedAverages`)
-that runs BEFORE the dormancy judgement, deletes `family_ratings` whose `memberId`
-is no longer in the roster (`memberUserIds` ∪ diner-profile doc ids), recomputes the
-denormalised `core.familyAverage`/`core.familyRatingCount` on each member's own
-recipe copy from the survivors, and returns the survivor set so dormancy/purge act on
-the pruned data. Build clean (tsc --noEmit exit 0). Reviewed patterns/risks:
-
-- **Recompute robust to both share models via the `.exists` filter.** It iterates
-  `users/{eachMember}/recipes/{recipeId}` but filters `s.exists && hasDenormFamilyValue`,
-  so it correctly patches only copies that actually hold a family pill — mirroring the
-  client denorm (`family_rating_service.dart:154` `if (!snap.exists) return`). Works
-  whether the household recipe is a shared single doc (only owner's subcollection has it)
-  or per-member copies. No wrong-doc-id bug. Star validity `stars<1||stars>5` matches
-  the client's `hasValidStars` (family_rating.dart:88), and it aggregates all memberTypes
-  like `FamilyRatingSummary.fromRatings` (not profile-only). Verified consistent.
-
-- **RISK (Medium): the orphan delete is ungated + destructive + irreversible, keyed
-  solely on two query snapshots.** Unlike the dormancy purge (warn + 30d grace +
-  strict), reconciliation deletes regulated family-rating data the instant a memberId
-  isn't in the roster, every sweep, strict:false. A transiently empty/incomplete
-  `memberUserIds` (mid-migration, bad read) or a diner_profile with a missing
-  `householdId` (dropped from the `where(householdId==)` query) would mark legitimate
-  ratings as orphans and delete them permanently, recomputing averages down. There is
-  NO defensive guard. Recommend: skip reconciliation when `rosterMemberIds` is empty
-  (roster.size===0 with ratings present is almost certainly a bad read), and/or require
-  memberUserIds non-empty. Pattern: a destructive delete driven by "not present in a
-  live query" must guard against the query itself being under-populated.
-
-- **RISK (Low): warn-before-stamp idempotency inversion (pre-existing, unchanged).**
-  `warnMembers` runs before the `familyDataPurgeScheduledAt` stamp; if the stamp write
-  fails the run throws → scheduler retries → the still-unscheduled household re-warns
-  (duplicate `user_notifications`). Best-effort, low impact, but the knowledge-file
-  send-then-guard rule prefers the guard first.
-
-- **Test gap (Medium): the memberUserIds roster branch is untested.** The integration
-  test's only orphan is a profile-type `ghost`, matched out via the DINER half of
-  `rosterMemberIds`; the valid rating is also a diner. So the `memberUserIds` spread in
-  `rosterMemberIds` is never the deciding matcher — a regression dropping it would keep
-  the test green while deleting real account-holder (user-type) ratings, which is the
-  headline BUT-1600 "departed account holder" scenario. Also untested: recompute
-  clearing the pill to null (all-orphan recipe) and multi-recipe orphans.
-
-### 2026-07-14 — BUT-1604 deletion_audit_logs TTL purge extracted for testability [Pattern discovered]
-
-`cleanup/cleanup-audit-logs.ts` — the inline `deletion_audit_logs` TTL reap
-inside the `cleanupOldAuditLogs` scheduler was extracted to
-`purgeExpiredDeletionAuditLogs(db, now = Timestamp.now())`, a pure DI-seam
-delete function returning the count. New test `__tests__/cleanup-audit-logs.test.ts`
-(4 cases, green) with a fake db modelling `where('expireAt','<',now).limit(n).get()`
-+ `batch().delete()/commit()`. Wired `test:cleanup-audit-logs` into package.json;
-run-all-tests.js AND run-ci-unit-tests.js both auto-discover it (no CI_EXCLUDE),
-so it lands in the cloud-functions-unit CI gate. tsc clean. No Critical/High.
-
-Reviewed clean; only latent/cosmetic notes (recorded so a future reviewer
-doesn't re-flag them as bugs):
-- **`.limit(10000)` cap is self-healing here, unlike the family-purge starvation.**
-  This weekly reap re-queries `expireAt < now` each run; any overflow beyond 10k
-  in one week stays expired and is caught next week — no shifting-subset starve
-  (contrast `purge-dormant-family-data`'s `.limit(200)` no-cursor scan, which
-  can starve overflow permanently). At beta scale deletion_audit_logs volume is
-  tiny. Low/latent, not a fix.
-- **`system_events.add` runs AFTER the delete inside the same try.** If the
-  observability `add` throws, the CF rethrows → scheduler retries → purge re-runs
-  (idempotent, deletes remaining/0) and writes a second, lower-count row. Cosmetic
-  observability skew only; the data delete is idempotent. Not worth reordering.
-- **`logger.error("...", e)` (lines ~86, ~145) passes the raw error as the 2nd
-  arg** rather than the house `{ err: e }` structured object. Pre-existing (outside
-  this diff), so not filed against this change, but flag it if the file is touched
-  again — the convention loses queryable structure otherwise.
-- firestore-rules.yml + test:rules:all also gained `functions/src/family/**` and
-  `purge-dormant-family-data.integration.test.ts` triggers in the same commit —
-  correct missing-wiring backfill, unrelated to the audit-log extraction.
-
-### 2026-07-16 — C10/BUT-1518 repool telemetry review: re-fire on every touch + backfill fingerprint drift [Pattern discovered]
-
-Reviewed the uncommitted C10 diff (`ratings/canonical-rating-aggregation.ts` repool
-telemetry + `ingredientsFingerprint` stamping, its test suite, app-check exemptions).
-tsc clean; 22/22 + 14/14 green. Two Medium findings, both proven, not merely reasoned:
-
-- **MEDIUM — transition telemetry keyed on a FROZEN artifact re-fires forever.** The
-  old pool event is never deleted (frozen semantics, decided), and it keeps carrying
-  the same `recipeId` — so the "prior event for this recipeId at a different poolKey"
-  detection matches on EVERY subsequent rating write after one edit-repool, not just at
-  the transition (probe: touch3/touch4 both logged `anchor_only_title_change` again).
-  An abuse counter inflates per innocent touch. General rule: when detecting a
-  TRANSITION by querying immutable history, also check whether the DESTINATION state
-  already exists (`priorSnap.docs.some((d) => d.id === poolKey)` — doc-id IS the
-  poolKey) and skip when it does; the test suite's "plain re-rate → no telemetry" case
-  only covered the no-prior-repool variant, so the re-fire was structurally untested.
-- **MEDIUM — adding a stamped field to a shared derivation helper silently strands its
-  OTHER consumer.** `recipeContentToKey` now returns `ingredientsFingerprint`, the live
-  mirror stamps it — but `migrations/backfill-canonical-ratings.ts` (which imports the
-  helper precisely to avoid drift) still writes events WITHOUT it, and its non-merge
-  `batch.set({poolKey, ratingValue, recipeId, createdAt})` would STRIP a fingerprint
-  the live mirror already stamped when overwriting a non-identical event. Backfill is
-  hard-gated/never-run, so fix before first run. Rule: when a shared helper gains a
-  returned/stamped field, grep every importer and reconcile their write shapes +
-  identical-skip comparisons in the same change.
-- Low notes: the prior-events query also runs on CREATE writes where it provably
-  returns empty (delete branch always retracts by recipeId) — 1 wasted billed read on
-  the most common path, gate on `input.before !== null`; and
-  `logger.info(JSON.stringify({...}))` claims to be "the idiom of this pipeline's
-  counters" but the live pipeline's trigger logs use the house
-  `logger.info("stable.string", {fields})` shape — only the migrations use
-  JSON.stringify. recipeId+hashUid in the log payload are GDPR-clean.
-- App-check exemption additions verified genuine: `reviewLearnedAlias`/
-  `revokeLearnedAlias`/`backfillCanonicalRatings` all call `requireAdmin(request)`
-  first thing (read the handlers, not just the header comments).
-- Gotcha rediscovered: `backfill-canonical-ratings.ts` contains a literal U+0000 in a
-  Map-key template (`${uid}<NUL>${poolKey}` as a raw byte) — ripgrep treats the whole
-  file as BINARY and silently skips it. Grep-based sweeps miss this file; use
-  node/Read. Prefer the backslash-u0000 escape sequence in source.
-
-### 2026-07-17 — BUT-1623 App-Check ADMIN_EXEMPT classification confirmed sound [Pattern discovered]
-
-Independently confirmed (not just "test green") that adding `reviewLearnedAlias`,
-`revokeLearnedAlias` (analytics/review-learned-alias.ts:216/235) and
-`backfillCanonicalRatings` (migrations/backfill-canonical-ratings.ts:373) to
-`ADMIN_EXEMPT` in `app-check-enforcement.test.ts` is the CORRECT classification, and the
-exemption is SAFE. No findings — classification sound.
-
-Why exempting an admin-claim callable from App Check is correct, and the established
-pattern: **App Check attests the app binary; the admin custom claim attests the caller's
-authorization** — they guard orthogonal threats. An admin-only callable that fails closed
-for non-admins doesn't need app attestation (admin ops run from a console / ops scripts
-where App Check adds friction with no matching threat reduction; the guard's own docstring
-at lines 55-61 states exactly this). The safety hinges on `requireAdmin` actually blocking:
-confirmed in `shared/require-admin.ts` it throws `unauthenticated` when `!request.auth` and
-`permission-denied` unless `token.admin === true || token.role === "admin"` — fails closed,
-no fall-through. All three new callables call `requireAdmin(request)` as the FIRST executed
-statement inside the handler (before any read/side effect), so a non-admin is rejected
-before anything runs; `backfillCanonicalRatings` adds a second hard gate (refuses a real run
-unless `enable_pooled_ratings` is ON).
-
-The three follow the identical convention as every existing ADMIN_EXEMPT entry —
-spot-checked `getCorrectionStats`, `getAuditLogStats`, `getUnmatchedIngredientStats`,
-`getRetagStatus` all open with `requireAdmin(request)`; `bulkMarkForRetagging` inlines the
-equivalent `token.admin === true` check. None of the exempt callables carry
-`enforceAppCheck: true` — admin-claim gating is the exemption basis, by design. No
-accepted-deviations entry touches App Check, so nothing to reconcile.
-
-**Rule for classifying a new onCall into this guard:** ADMIN_EXEMPT is justified iff the
-handler's FIRST statement is `requireAdmin(request)` (or the inline `token.admin === true`
-equivalent) — read the handler body, never trust the header/inline comment. A callable
-reachable by an ordinary authenticated user belongs in USER_FACING with
-`enforceAppCheck: true`, not ADMIN_EXEMPT.
-
-### 2026-07-18 — BUT-1518/1624 pool-key dimensions telemetry + binary-blob CI guard [Bug fixed / Pattern discovered]
-
-Reviewed the C10 rating-laundering-visibility change across 5 files (pool-key
-component split, mirror telemetry line, backfill key-delimiter fix, CI binary
-guard, test). tsc clean, `canonical-rating-aggregation.test.ts` 21/21 green, CI
-glob verified to match all 218 `functions/src/` files, backfill file no longer
-carries a NUL.
-
-**The good (positive changes, no finding):**
-- `computePoolKey` refactor to delegate to a new `poolKeyComponents(title,ings)`
-  keeps the key byte-identical (`anchor + "::" + names.slice(0,12).join("|")`
-  hashed the same) → **TS↔Dart parity holds**, `ingredientSig` is a NEW
-  server-only 8-hex sig of the ingredient-names-only hash; Dart twin needs no
-  change (parity is only on `computePoolKey`'s output). Single-sourced, no C5
-  drift.
-- Backfill winners-Map key `${uid}/${poolKey}` replaces a NUL (`\0`) separator
-  that had made the whole file a git BINARY blob (undiffable/unreviewable).
-  `/` is collision-free: both are Firestore doc IDs (uid alphanumeric, poolKey
-  = `v1:hex`), neither contains `/`, and the string is never parsed back. Correct
-  fix.
-- CI `functions-binary-guard` in test.yml (`git ls-files -z 'functions/src/**' |
-  xargs -0 -r grep -laP '\x00'`) automates the lesson "a new source file can land
-  as a git binary blob." Glob `functions/src/**` == `functions/src` (both 218
-  files) — works. Cheap, no toolchain. Good.
-
-**MEDIUM — logging convention violated (queryability + no precedent).** The
-telemetry line is `logger.info(JSON.stringify({tag:"pool_key_dimensions", uid,
-recipeId, poolKey, anchor, ingredientSig}))` — everything crammed into the
-message STRING. The knowledge convention is first-arg = stable string, second-arg
-= structured object; a stringified JSON is NOT a queryable `jsonPayload` in Cloud
-Logging, so the feature's own stated goal ("separable OFFLINE" by querying
-anchor/ingredientSig/poolKey) is undercut. No precedent in the codebase — the
-sibling `ratings/update-pooled-rating-stats.ts:96` already does it right
-(`logger.info("pool_aggregation.updated", {…})`). Fix:
-`logger.info("pool_key_dimensions", { uid, recipeId, poolKey, anchor,
-ingredientSig })`. NB the test parses the message as JSON, so it must change with
-the code (couples test to the wrong impl).
-
-**MEDIUM — cleartext `anchor` is title-derived and can be a personal name.**
-`anchor` = the longest significant title token (diacritics-folded, lowercased).
-Swedish recipe titles routinely lead with a name ("Annas paj" → `annas`,
-"Mormors …" → `mormors`), so the logged token can be a given name attached to a
-`uid` in the same line — the exact "recipe titles that might contain user names"
-the logging convention forbids. And the cleartext anchor is NOT needed for the
-laundering signal: the detection invariant is stable `ingredientSig` + moved
-`poolKey` across a recipeId's events (anchor-only change) vs moved `ingredientSig`
-(real dish change) — both computable without cleartext. Fix: log an
-`anchorSig` (hash) instead of, or drop, the cleartext `anchor` — grouping/change
-detection survives, PII does not leak.
-
-**LOW/INFO — double key computation + injected-computeKey inconsistency.** Per
-upsert the normalization+hash now runs twice (once via `computeKey`→
-`computePoolKey`→`poolKeyComponents` inside `recipeContentToKey`, once directly as
-`poolKeyComponents(keyed.title, keyed.ingredients)` for telemetry), and
-`computePoolKey` now always computes the extra `ingredientSig` sha256 even for
-callers that discard it. Negligible CPU (sha256 of short strings). Also the
-telemetry calls `poolKeyComponents` directly rather than the injected
-`deps.computeKey`, so under a test-injected custom `computeKey` the logged
-`poolKey` (from the override) and `anchor`/`ingredientSig` (from real
-`poolKeyComponents`) could disagree — prod-safe (computeKey === computePoolKey),
-test-seam only.
-
-### 2026-07-18 — BUT-1454 verifySignupAge threads isMinor back in the response [Pattern discovered]
-
-Reviewed the uncommitted BUT-1454 slice: `verify-signup-age.ts` now adds an
-`isMinor: boolean` field to `VerifySignupAgeResponse` and returns it on all four
-exit paths (rejected → `false`; idempotent-retry → the derived `isMinor`; first
-pass → the derived `isMinor`). `isMinor` is derived ONCE at the top
-(`compliant && age < AGE_OF_MAJORITY_YEARS`) so it is in scope in the idempotent
-branch — verified. CF side is clean: no new write, so zero idempotency/retry
-surface added (it is a response field only, not a Firestore mutation); no
-per-function region added; no secrets. `tsc --noEmit` clean, `verify-signup-age.test.ts`
-10/10, with new assertions pinning `result.isMinor` on adult / minor / retry /
-rejected paths.
-
-The design (verified end-to-end): the CF still does NOT write
-`public_profiles.isSearchable`. Instead the minor flag rides the response →
-`AgeVerificationService.verifyAge` returns a new `AgeVerificationResult(compliant,
-isMinor)` (was a bare `bool`) → onboarding VM captures `_isMinor` at the gate AND on
-the belt-path re-check → `completeOnboardingWithPreferences(isMinor: …)` ORs it with
-the in-memory profile's existing value (monotonic, never downgrades a server-set
-flag) → `UserProfile.toFirestore` derives `'isSearchable': isMinor ? false :
-isSearchable`. That serializer is the single `public_profiles` chokepoint: both the
-create path (`firebase_user_repository:159 toFirestore()`) and the edit path
-(`:172 toFirestoreEditable()` → built from `toFirestore()`) run through it, so a
-minor is kept out of search on EVERY profile write. Search reads
-`public_profiles.where('isSearchable', ==, true)`, so the minor's doc never surfaces.
-Test wiring solid — all 11 `onboarding_viewmodel_test` + 4 `onboarding_journey_test`
-mocktail stub/verify sites updated with `isMinor: any(named:'isMinor')` (a missed
-one would fail to match the now-parametrized call), and the search-repo test writes
-REAL profiles through `toFirestore()` to prove the wiring, not a hand-set flag.
-
-**Residual (Low, handed to firebase-backend-security, pre-existing + BUT-674-accepted):**
-suppression only takes effect when the CLIENT writes `public_profiles` with
-`isMinor:true` — i.e. at onboarding completion. The initial profile creation
-(`user_service.dart:200`, `isSearchable: isSearchable ?? true`, isMinor defaulting
-false) happens before onboarding completes, so a 15–17 minor is discoverable in the
-window between initial profile write and completion, and PERMANENTLY if onboarding is
-abandoned after the initial write. This matches the CF comment's "no regression"
-framing (the CF deliberately doesn't write public_profiles to dodge the follow-up),
-so it's an accepted residual of the BUT-674 phasing, not a defect in this diff — but
-it partially limits the feature's stated "default-private" intent. A full close needs
-either the CF writing `public_profiles.isSearchable:false` for minors, or the initial
-onboarding profile creation to carry isMinor.
-
-### 2026-07-18 — BUT-1518/1624 telemetry salvage: hash the anchor, not just the ingredients [Bug fixed / Pattern discovered]
-
-Reviewed the uncommitted BUT-1518 (rating-laundering telemetry) + BUT-1624 (binary-blob
-delimiter) salvage batch. tsc clean, `canonical-rating-aggregation.test.ts` 21/21.
-
-**Verified clean:**
-- `computePoolKey` byte-identical after the `poolKeyComponents` refactor: the sha256 input
-  is still `anchor + "::" + names.slice(0,12).join("|")` → hex[:16] → `VERSION+":"+hash`.
-  `ingredientSig` (sha256 of `joinedNames` only, hex[:8]) is ADDITIVE and never feeds
-  poolKey. TS↔Dart parity intact — `ingredientSig`/`poolKeyComponents` is server-only
-  telemetry, Dart never computes it, so no Dart twin is owed.
-- uid-hash fix resolves the raw-uid PII leak: both the maturity `logger.warn` and the new
-  `pool_key_dimensions` line emit `uidHash: hashUid(uid)` (sha256 12-hex, one-way) with no
-  raw `uid`. Test pins `line.uidHash === hashUid("u1")` AND `line.uid === undefined`.
-- BUT-1624 delimiter `NUL→"/"` is collision-free: the Map key `${uid}/${poolKey}` composes
-  two values that are both used as Firestore doc IDs (uid; poolKey = `canonical_rating_events/{poolKey}`),
-  and doc IDs cannot contain `/`. Key is never parsed back — only uniqueness matters.
-  Diff touches ONLY the delimiter; cursor/commit/500-op batching unchanged (already-reviewed
-  backfill). Migration is manual ts-node (admin family) → region/idempotency/retry N/A.
-- CI `functions-binary-guard` (test.yml): `git ls-files -z 'functions/src/**' | xargs -0 -r
-  grep -laP '\x00'` captured into a var so xargs-split exit codes can't be masked. Sound.
-
-**HIGH (flagged, one-line fix) — the dish `anchor` is logged in CLEARTEXT while the
-ingredients are hashed.** The `pool_key_dimensions` line emits `anchor: dims.anchor` (a
-recipe-title-derived token) next to `recipeId`, but `ingredientSig` is already an 8-hex
-sha256. That asymmetry is backwards: the anchor is the field MORE likely to carry a personal
-name (Swedish dish titles: "Farmors …", "Annas …", occasionally anchoring on the name), and
-the logging convention explicitly forbids "recipe titles that might contain user names" in
-logs. Decoupling from the raw uid dropped it from Critical to High but didn't clear it —
-`recipeId` still correlates events and the anchor is human-readable to log-only access (a
-tier that, by design, must not see PII even though a DB-holder could resolve recipeId).
-**The cleartext anchor adds ZERO detection power:** anchor-only-change detection only needs
-to know the anchor *changed* while ingredientSig held, which a hashed `anchorSig` proves by
-inequality exactly like ingredientSig does. Fix = add `anchorSig` (sha256(anchor) hex[:8]) to
-`PoolKeyComponents`, emit `anchorSig` instead of `anchor`, update the test to assert
-`line.anchorSig === a.anchorSig` + `line.anchor === undefined` (keep the pure-function
-`a.anchor !== b.anchor` component assertion). Feature fully preserved.
-
-**Pattern — when a telemetry line hashes one title/PII-derived dimension, hash them ALL.**
-A mixed line (hashed ingredientSig + cleartext anchor) is a tell that the cleartext field
-was left for human eyeballing convenience. If inequality-across-events is all the detection
-needs (drift/laundering signals), a hash gives it while removing the leak. Check every
-field on a structured log line derived from user free-text/titles against the same standard
-the uid hashing set.
-
-### 2026-07-18 — BUT-1473 tag_overrides_log GDPR cascade delete [Pattern discovered]
-
-Reviewed the uncommitted salvage adding `deleteTagOverridesLog(db, uid)` to the
-account-deletion cascade (`account/account-deletion-cascade.ts` + wired in
-`account/request-account-deletion.ts`). **COMMIT-READY, no Critical/High.** `tsc --noEmit`
-clean (exit 0).
-
-`tag_overrides_log` is a top-level, `userId`-keyed collection (allergen tag-override
-corrections: userId, recipeId, tag, direction, triggeringIngredients — linked PII, no TTL,
-so Art. 17 needs an explicit cascade delete). The new deleter is byte-shape-identical to the
-sibling `deleteCookSnaps`/`deleteActivityEvents`: `where("userId","==",uid).get()` →
-`batchDeleteAll` (commitInChunks, strict:false, 450 ops/batch, early-return on empty).
-
-All five review axes verified:
-1. **Correct identity field — cross-checked all three legs** (the realtime_recipes
-   wrong-field trap): model `lib/models/tagging/tag_override_log_entry.dart:50` writes
-   `'userId': userId` in `toFirestore`; `firestore.rules:2053` gates create/read on
-   `resource.data.userId`; deleter + probe both query `userId`. Consistent — a `userId==uid`
-   filter genuinely matches the docs, not silently zero.
-2. **Same 500-op-safe pattern** as every sibling deleter (batchDeleteAll, chunked at 450).
-3. **Wired consistently in BOTH surfaces** — the cascade sequence (between
-   `personal_tag_groups` and `cook_snaps`) AND the `probeResidualData` userId-scoped probe
-   list (correct list, since it IS top-level userId-scoped — not the subcollection or
-   two-field probe class).
-4. **Idempotent/retry-safe** — userId-scoped `where` deleter, so a second run reads an empty
-   snapshot and no-ops (immune to the shared/parent-handle ordering hazard from the 2026-06-29
-   entry; those apply only to householdId/arrayRemove-keyed steps).
-5. **No region/secret surface** — plain helper, region inherited from setGlobalOptions.
-
-### 2026-07-18 — BUT-1626 group-conversation minor-safety trigger + public_profiles hard-deny [Pattern discovered]
-
-New `messaging/enforce-group-minor-membership.ts` (`onDocumentCreated` on
-`conversations/{id}`) backstops the 1:1 minor-DM rule for GROUP conversations
-(rules can't iterate `participantIds`). Reviewed with firestore.rules
-`accountIsMinor` + the age-gate PP1–PP5 tests. Wiring is correct: exported in
-index.ts, `test:enforce-group-minor-membership` added to package.json (auto-picked
-by run-all-tests). Region inherited (no per-fn region). Firestore trigger, not
-onCall, so no app-check-enforcement.test.ts entry needed. Idempotent under
-re-delivery (recomputes from the created snapshot, re-reads live user/friend docs,
-re-applies the same removal; delete-below-2 is a no-op on a gone doc).
-
-**MEDIUM — the trigger trusts client-controlled `metadata.creatorId` for its
-friendship decision, and the create rule never pins it to `request.auth.uid`.**
-`computeMinorsToRemove` keeps a minor when `users/{minor}/friends/{creatorId}`
-exists, where `creatorId = data.metadata.creatorId`. The conversations create rule
-(firestore.rules ~1511) only requires `request.auth.uid in participantIds` — it
-does NOT constrain `metadata.creatorId`. So the exact adversary this backstop
-targets (a tampered client adding a minor) can also set `metadata.creatorId` to any
-known friend F of the target minor and the gate keeps the minor. Residual friction:
-attacker must know one friend of a default-private minor. Surgical fix (cheap, no
-client break): add to the create rule
-`&& (!('creatorId' in request.resource.data.get('metadata', {})) || request.resource.data.metadata.creatorId == request.auth.uid)`
-— absent creatorId still routes to the CF fail-safe (removes all minors), a present
-one can't be spoofed to another uid.
-
-**LOW — retry defaults false ⇒ a transient read blip fails OPEN on a child-safety
-gate.** Handler is verified idempotent, so `{ retry: true }` in the trigger options
-would let a dropped read re-run instead of silently leaving a minor in the group.
-Worth it for a safety control even though it's defense-in-depth.
-
-**LOW — test covers only the pure core.** The destructive I/O branches
-(`remaining < 2 ⇒ snap.ref.delete()`, participant map-field `FieldValue.delete()`,
-membership-mirror cleanup, metadata parsing) are untested. Convention allows
-pure-core-only, but the delete-below-2 branch is destructive; a `fn.run(event)`
-emulator test (per the BUT-839 pattern) would earn its keep.
-
-firestore.rules `accountIsMinor` (public_profiles create+update hard-deny of a
-minor setting `isSearchable:true`) is correct and cost-bounded: the `get()` fires
-only when `isSearchable` is actually being SET to true (short-circuit `||`), on
-update also gated on the `affectedKeys().hasAny(['isSearchable'])` diff. Missing/
-false `isMinor` reads as adult. PP1–PP5 cover the core matrix; small untested gaps:
-adult UPDATE→searchable, and a minor with a legacy `isSearchable:true` preserving it
-while editing other fields (the update rule's stated allowance). Analytics side:
-`AnalyticsRepository.setLifecycleStage` gained a REQUIRED `isMinor` (early-returns
-for minors) — defense-in-depth mirror of `UserPropertyBootstrap.emitLifecycle`'s
-gate; no production caller of the raw setter exists (only the bootstrap, which calls
-`setUserProperty` directly), so it's a test-only guard. Feature-flag removal of
-`audit_log_retention_days`/`auditLogRetentionDays` (BUT-1560) is clean — grep
-confirms zero remaining references; retention is code-constant in the CFs.
-
-### 2026-07-18 — BUT-1626 commit-gate re-review: the creatorId-spoof MEDIUM is CLOSED [Bug fixed]
-
-The MEDIUM flagged in the 2026-07-18 entry above (trigger trusted client-controlled
-`metadata.creatorId` because the create rule never pinned it) has been FIXED with the
-exact surgical rule suggested. `firestore.rules` conversations `allow create`
-(~1525–1529) now carries:
-`(!('metadata' in request.resource.data) || !('creatorId' in request.resource.data.metadata) || request.resource.data.metadata.creatorId == request.auth.uid)`.
-So a present `creatorId` is bound to `auth.uid` (can't be spoofed to a friend of the
-target minor), and an absent one routes to the CF's fail-safe (all minors removed).
-With that binding, the CF's trust of `metadata.creatorId` is now sound, and the friend
-check is directional-correct — `readCreatorFriendships` reads
-`users/{minor}/friends/{creatorId}` (creator in the MINOR's friends subcollection),
-matching the rules' `passesMinorDmGate` directionality.
-
-Re-verified all three review axes on the uncommitted diff: `tsc --noEmit` clean;
-`test:enforce-group-minor-membership` 6/6 (fail-safe on null creator asserted directly);
-`computeMinorsToRemove` fail-safe confirmed (null creator ⇒ push every minor; non-friend
-⇒ push; creator + adults never removed). Idempotent under re-delivery (create-snapshot
-payload → recompute same set → re-`set(participantIds:remaining)` + `FieldValue.delete()`
-on already-absent map fields + `snap.ref.delete()` on a gone doc are all no-ops). Region
-inherited, logs carry only counts/booleans/conversationId (no uids/names). The two
-residual LOWs stand (retry defaults false ⇒ transient-read fail-open; I/O branches
-untested) — neither blocks. **Verdict: COMMIT-READY.**
-
-### 2026-07-19 — enforceGroupMinorMembership retry:true follow-up + NOT_FOUND poison-pill [Pattern discovered]
-
-The 2026-07-18 residual LOW ("retry defaults false ⇒ transient-read fail-open") was
-addressed: the diff adds `{ ..., retry: true }` to the `onDocumentCreated` options plus a
-7-line comment arguing every write is idempotent. `tsc --noEmit` clean (so `retry` is a
-valid `DocumentOptions` field in firebase-functions 7.2.5). A new emulator integration test
-(`enforce-group-minor-membership.integration.test.ts`, BUT-1633) exercises the update /
-delete / keep branches via `CloudFunction.run(event)`; its `test:integration:*` script was
-added to package.json (correctly excluded from the no-emulator `run-all-tests.js` runner).
-
-**MEDIUM — the idempotency comment is incomplete: `snap.ref.update()` is NOT idempotent on
-a deleted doc, so retry:true introduces a NOT_FOUND poison pill.** The comment claims "every
-write is idempotent," but Firestore `update()` throws NOT_FOUND (grpc code 5) when the doc no
-longer exists. If the conversation is deleted between the create (which fires the trigger) and
-the trigger reaching `snap.ref.update()` — the async window is the cold start + N `users/{uid}`
-reads + friend-doc reads, a real race under a rage-delete or a cleanup job — the update throws
-a DETERMINISTIC error that, under the new retry:true, retries for the whole retry window,
-re-billing the read fan-out + a failing write each attempt and never succeeding. Under the old
-retry:false this threw once and was dropped (cheap). So the fail-open fix trades a rare
-transient-drop for a rare retry storm. `snap.ref.delete()` (collapse branch) is genuinely
-idempotent (delete is a no-op on a missing doc in the Admin SDK) — only the update branch is
-exposed. Fix: wrap the update and swallow NOT_FOUND (the access cut is moot if the doc is
-already gone):
-```ts
-try { await snap.ref.update(update); }
-catch (e) {
-  if ((e as { code?: number }).code === 5) return; // NOT_FOUND: conversation already gone
-  throw e;
-}
-```
-
-**MEDIUM — test gap: the change's whole purpose is safe-under-retry idempotency, yet nothing
-fires the trigger twice.** The integration test runs each branch once. Add a double-fire case
-(run `.run(event)` twice on the same create snapshot) asserting the second run is a clean
-no-op and does not throw — the natural regression guard for a retry:true change, and it would
-have surfaced the NOT_FOUND gap had the second run been preceded by an external delete.
-
-**Pattern — adding retry:true to a v2 event trigger requires each write to be idempotent
-*including on a missing doc*.** `set`/`delete`/`set(merge)` are safe-on-missing; `update()` is
-NOT (throws NOT_FOUND) and becomes a permanent retry loop the moment the target doc is gone.
-Audit every `.update()` in a retry:true handler for a "doc could be deleted before we run"
-race and catch code 5. (Task note: the review request named `functions/src/social/set-profile-
-searchability.ts` + test, which do NOT exist in the tree; the real functions/src change under
-review was this retry:true addition. The two named Flutter files exist but are unmodified and
-server-side scope excludes them.)
-
-### 2026-07-19 — BUT-1633 enforceGroupMinorMembership retry:true + integration test [Bug fixed / Pattern discovered]
-
-Reviewed the diff adding `{ retry: true }` to `enforceGroupMinorMembership`
-(`functions/src/messaging/enforce-group-minor-membership.ts`) plus a new
-`enforce-group-minor-membership.integration.test.ts`. The idempotency reasoning for
-retry:true is sound for the *transient* case (participantIds set to absolute `remaining`,
-FieldValue.delete()/snap.ref.delete() no-op on re-run, membership mirror deletes are
-best-effort/caught). Two gaps:
-
-**HIGH — retry:true amplifies an unvalidated-uid poison pill AND defeats the very gate.**
-`participantIds` is filtered only by `typeof v === "string"`, so `""` (or a uid containing
-`/`) survives. `readIsMinor` then calls `db.doc("users/" + "")` which throws SYNCHRONOUSLY
-(invalid resource path) before any removal is computed — so the minor is never stripped
-(fail-OPEN), and with retry:true the same non-transient throw now repeats every retry
-(billing + eventarc retry storm) instead of being logged-and-dropped once. This is exactly
-the tampered/legacy-client adversary the trigger's own header names, who controls
-participantIds. The idempotency comment justifies retry only for *transient* failures and
-silently assumes all failures are transient. Fix: harden the filter to
-`typeof v === "string" && v.length > 0 && !v.includes("/")`, and apply the same non-empty/
-no-slash guard when deriving `creatorId` from `metadata.creatorId`. (Knowledge rule already
-on file: "Input validation belongs in the calling CF … a malformed doc's TypeError inside a
-trigger = retry storm" — retry:true makes it worse.)
-
-**MEDIUM — the new integration test runs in NO CI lane despite its docstring.** Its header
-says "unless CI is set, where a missing emulator is a hard failure (the CI lane starts it
-explicitly)", but `test:integration:enforce-group-minor-membership` was added to package.json
-WITHOUT being appended to `test:rules:all` (the string firestore-rules.yml:171 actually runs —
-it enumerates the sibling `*.integration.test.ts` suites explicitly), and the test file is
-absent from both the pull_request and push `paths:` lists in firestore-rules.yml. Editing the
-`messaging/**` source does trigger that workflow (source-dir filter), but the workflow never
-runs this suite, so the `process.env.CI` hard-fail branch is dead code and the coverage does
-not gate. Fix: append `&& ts-node src/__tests__/enforce-group-minor-membership.integration.test.ts`
-to `test:rules:all`, and add the file to both `paths:` lists in firestore-rules.yml. Recurring
-trap (BUT-1392/1477): grep `test:rules:all` + the workflow path filters, not just for a
-`test:*` script, when reviewing any new integration suite.
-
-**LOW — delete branch orphans the surviving member's membership mirror.** When the group
-collapses <2 and `snap.ref.delete()` fires, only the removed minors' `conversation_memberships`
-mirrors are cleaned; the lone remaining creator's mirror is left dangling at a now-deleted
-conversation. Hygiene only.
-
-### 2026-07-20 — BUT-1626 enforceGroupMinorMembership retry:true salvage review [Bug fixed / Pattern discovered]
-
-Reviewed the salvage diff adding `retry: true` + a NOT_FOUND catch to the group
-minor-safety trigger (`messaging/enforce-group-minor-membership.ts`).
-
-**The NOT_FOUND catch is correct.** `admin.firestore()` is `@google-cloud/firestore`,
-whose errors carry the NUMERIC grpc status on `.code` (verified empirically:
-INVALID_ARGUMENT surfaces as `code=3`). So `e.code === 5` is the right NOT_FOUND check —
-there is no string-code (`"not-found"`) variant to also match on this SDK. `ref.update()`
-raises NOT_FOUND only for a missing document, so the catch is correctly narrow and does
-not mask transient failures. Swallowing it is right: under `retry:true` a deleted-doc
-update is a DETERMINISTIC poison pill that would re-bill the read fan-out forever, and the
-access cut is moot once the doc is gone. Wart found: the catch `return`s, skipping the
-per-user `conversation_memberships` mirror cleanup that the sibling collapse branch falls
-through to — drop the `return` (the mirror deletes are idempotent no-ops).
-
-**HIGH — "reject empty + slash" is NOT sufficient uid validation.** Probed against the
-emulator: the JS client does NOT validate doc ids at `db.doc()` time; the SERVER rejects
-them. `getAll(db.doc("users/.."))` → `code=3 INVALID_ARGUMENT ... resource path segment ".."`;
-`users/__foo__` → `INVALID_ARGUMENT: Resource id "__foo__" is invalid because it is reserved`.
-A 1600-char id PASSED on the emulator (prod enforces 1500 bytes — emulator is lax, so that
-leg is untestable locally). Reachability confirmed from firestore.rules:1514-1530: the
-conversation create rule binds only `request.auth.uid in participantIds` and
-`metadata.creatorId == request.auth.uid`; every OTHER `participantIds` entry is free-form
-attacker text. So a tampered client creating `[me, "..", victimMinor]` makes the read throw
-BEFORE any removal is computed — fail-OPEN on a child-safety gate AND a deterministic
-retry-storm under `retry:true`.
-
-**Pattern — the full hostile-uid validator for any client-supplied string interpolated into
-a doc path.** Non-empty, ≤1500 utf8 bytes, no `/`, not `.`, not `..`, not `/^__.*__$/`.
-"Not empty and no slash" only closes the two cases a reviewer thinks of first; `.`/`..`/
-reserved `__x__` are equally deterministic and equally attacker-reachable. This matters
-DOUBLE on a `retry:true` trigger, where every deterministic input-derived throw is a poison
-pill, and TRIPLE when the throw precedes the safety decision (fail-open). Corollary for
-reviewing any `retry:true` addition: audit the READ path for input-derived deterministic
-throws, not just the write path — this diff hardened the write (NOT_FOUND) while leaving
-the read fan-out exposed.
-
-**Integration-test convention confirmed.** `test:integration:*` prefix keeps an
-emulator-bound suite out of BOTH `run-all-tests.js` and `scripts/run-ci-unit-tests.js`
-while `test:rules:all` + both `firestore-rules.yml` path lists carry it — correct wiring,
-don't file "not in the composite chain" for a `test:integration:` script.
-
-### 2026-07-20 — BUT-1633 re-review: sanitise-then-gate reopened the minor gate [Bug fixed / Pattern discovered]
-
-Re-reviewed the fixes to `messaging/enforce-group-minor-membership.ts` (added
-`isValidDocId`, made the NOT_FOUND catch fall through). The NOT_FOUND fall-through is
-**correct** — nothing after `snap.ref.update()` reads the update's result, the mirror
-deletes are independent and individually `.catch()`-ed so `Promise.all` can never reject,
-and the sibling `snap.ref.delete()` branch cannot NOT_FOUND (delete is a no-op on a
-missing doc). But the uid-validation fix introduced a **Critical** bypass and is
-**incomplete**.
-
-**Critical — sanitising BEFORE the group-size gate lets a padded array evade both
-layers.** `participantIds` is filtered through `isValidDocId`, then the *filtered* length
-drives `if (!isGroup || participantIds.length <= 2) return;`. firestore.rules'
-`passesMinorDmGate` fires ONLY at `participantIds.size() == 2` (raw). So a tampered
-client posting `["attacker", "minorUid", "__x__"]` gets raw size 3 (rules skip the 1:1
-minor gate) and sanitised size 2 (this trigger returns early) — the minor is protected by
-neither layer. Pre-fix the same payload at least poison-pilled loudly (see below); the
-filter converted a noisy fail-open into a SILENT one. Fix = gate on the RAW count, iterate
-the sanitised list:
-```ts
-const rawParticipantIds: unknown[] = Array.isArray(data?.participantIds)
-  ? (data.participantIds as unknown[]) : [];
-const participantIds: string[] = rawParticipantIds.filter(isValidDocId);
-const isGroup = data?.isGroup === true || rawParticipantIds.length > 2;
-if (!isGroup || rawParticipantIds.length <= 2) return;
-```
-`remaining` still derives from the sanitised list (junk entries are dropped from the
-written array — desirable), and if it falls below 2 the conversation is deleted. Safe.
-
-**Pattern — never let input sanitisation shrink the value a security gate's THRESHOLD is
-computed from.** Sanitise for the *use* (path building), gate on the *raw* shape. When two
-layers (rules + CF) split a check by size, an attacker only needs a payload each layer
-counts differently.
-
-**High — the doc-id rule set is missing the 1500-BYTE length cap.** Probed the real SDK
-(`db.doc('users/'+uid)`, @google-cloud/firestore): it throws SYNCHRONOUSLY only for `''`
-and a uid containing `/` (validateResourcePath = non-empty + no `//`, then an
-even-component check). `.`, `..`, `__x__`, a 3000-char uid, a lone surrogate, a newline
-and a 1600-byte multibyte uid are ALL accepted client-side — the first three are rejected
-by the BACKEND with INVALID_ARGUMENT when `getAll()` runs, i.e. an async rejection that
-throws out of the trigger and, under `retry:true`, loops deterministically forever
-(poison pill, fail-OPEN on a child-safety gate). So the `.`/`..`/`__x__` checks are right
-and necessary — but over-length has the identical failure mode and is uncovered. Add
-`Buffer.byteLength(v, "utf8") <= 1500` (bytes, not `.length` — a multibyte uid busts the
-limit at ~500 chars). Surrogates/control chars are NOT a throw path and need no rule: a
-mangled uid simply reads a nonexistent doc, and it cannot alias a real minor's uid.
-
-**Medium — the hostile-uid regression test is vacuous.** The case named "a malformed uid
-alongside a minor does not stop the removal" filters `["creator","minorA","adult"]` —
-which contains no malformed uid. It passes identically with the filter removed. Put a real
-hostile entry in the fixture (`"__x__"`), and cover the padding bypass at the trigger
-level (the emulator suite has no malformed/padding case at all).
-
-**Reusable probe technique:** to settle "would this doc id throw?", require the SDK
-directly and call `db.doc()` on a table of hostile ids with no credentials — sync
-validation runs without a network call, which cleanly separates client-side throws from
-backend INVALID_ARGUMENT rejections. Reasoning from the Firestore docs' doc-id rules gets
-this wrong: the docs list constraints the CLIENT does not enforce.
-
-### 2026-07-20 — BUT-1633 final pre-commit verification: fixes correct, Critical left untested [Pattern discovered]
-
-Re-reviewed `messaging/enforce-group-minor-membership.ts` + both suites after the three
-fixes from the previous entry were applied. **Production code verdict: all three correct.**
-
-**CRITICAL (raw-vs-sanitised gate) — genuinely closed, and the raw/filtered split introduces
-no new inconsistency.** Verified each way it could:
-- *No hole at the handoff.* `passesMinorDmGate` (firestore.rules:241) fires at exactly
-  `size()==2` and does NOT consult `isGroup`, so the trigger's `rawParticipantIds.length <= 2`
-  early return is fully covered by rules — including an `isGroup:true` 2-participant doc.
-  Raw size 0/1 cannot hold attacker+minor because the create rule requires
-  `request.auth.uid in participantIds`. Raw >=3 ⇒ rules skipped the DM gate ⇒ trigger engages.
-  The two layers now partition the space with no gap.
-- *`remaining` cannot wrongly collapse.* It drops only real removed minors plus entries that
-  failed `isValidDocId` — and a rejected entry can never be a real account (Firebase Auth uids
-  are 28-char alphanumeric) nor confer membership (rules test `uid in participantIds`, so junk
-  grants nobody access). Therefore `remaining.length < 2` iff fewer than 2 real members remain,
-  so the delete branch is correct.
-- *No mutation of legitimate conversations.* All writes sit behind `if (toRemove.length === 0)
-  return;`, so junk is only ever stripped from a doc already being cut for child safety.
-- *Retry-safe.* The event snapshot is the create-time doc, so the raw gate and `toRemove`
-  recompute identically on every retry; `participantIds` is set to an absolute value, the
-  `FieldValue.delete()`s and mirror deletes are no-ops on re-run, and NOT_FOUND (code 5) is
-  caught rather than handed to `retry:true`.
-
-**HIGH (1500-byte cap) — correct as written.** `Buffer.byteLength(v,"utf8") <= 1500` is the
-right primitive (bytes, not `.length`) and is pinned by three cases incl. `"a-umlaut".repeat(800)`.
-
-**MEDIUM (vacuous hostile-uid test) — fixed for the *uid filter*, but the same vacuity class
-reappeared on the CRITICAL itself.** THE finding of this pass: **the raw-count gate has zero
-regression coverage.** Both new "padding bypass" cases are vacuous w.r.t. the SUT — one asserts
-`["attacker","minorA","__x__"].length > 2` (a fact about a JS literal, not about the trigger);
-the other calls the pure core with an already-filtered list. The unit suite never imports the
-trigger at all (only `computeMinorsToRemove` + `isValidDocId`), and all three emulator cases use
-three well-formed participants, where raw length == filtered length == 3 and both gate versions
-evaluate identically. **Reverting `rawParticipantIds` to `participantIds` on the gate leaves all
-27 tests green** — proven by inspection, no run needed. Fix: one emulator case with a padded
-1:1 (`participantIds: [attacker, minor, "__x__"]`, no friend doc) asserting the conversation is
-deleted; that case is red on the pre-fix code and is the only construction that bites.
-
-**Pattern — a fix that lives in the I/O wrapper cannot be pinned by the pure-core suite.**
-When a security decision is split into a pure core plus a handler-level *gate*, the pure-core
-tests are structurally incapable of covering the gate. Check which side of that seam the fix
-landed on before crediting a suite with covering it. Corollary: a test whose assertion operates
-on a literal you constructed in the test file (`paddedRaw.length > 2`) or on an input you
-pre-transformed the same way the SUT would (`.filter(isValidDocId)` before calling the core)
-is testing your fixture, not the code — the same vacuity class as the earlier all-well-formed
-fixture, wearing a hostile-looking costume.
-
-**Superseded/confirmed:** re-probed the SDK today (`ResourcePath.EMPTY.append` on space, `__`,
-NUL, embedded NUL, newline, lone surrogate, DEL, `*`) — ALL accepted client-side, confirming the
-previous entry's finding that the SDK validates only empty and slash. The previous entry's ruling
-that control chars/surrogates need no rule (they read a nonexistent doc; they cannot alias a real
-minor's uid) still stands. The one residual it does not fully settle is whether a NUL byte is a
-backend INVALID_ARGUMENT (docs say only "valid UTF-8"; NUL technically is). If it is, it is a
-`retry:true` poison pill on a child-safety gate. Not blocking, unproven either way; a one-line
-control-character rejection (regex over U+0000-U+001F plus U+007F) would close the whole class
-for free if the file is touched again.
-
-### 2026-07-20 — BUT-1629 setProfileSearchability: minor opt-in callable review [Bug fixed / Pattern discovered]
-
-New callable `functions/src/social/set-profile-searchability.ts` — the Admin-SDK
-exception to the BUT-1626 rules hard-deny that blocks every CLIENT write of
-`public_profiles/{uid}.isSearchable:true` while `users/{uid}.isMinor == true`.
-Server side is well shaped: no `uid` param (target is always `request.auth.uid`),
-never touches `isMinor`/`birthYear`, `enforceAppCheck: true`, region inherited,
-merge-set is idempotent, fails closed (`failed-precondition`) on a missing
-profile so a merge-set can't mint a nameless half-profile that people-search
-would surface. `enforceRateLimit` (not `withRateLimit`) is correct — no LLM spend,
-so the global budget must not be consumed. DI-core test suite 5/5, `tsc` clean,
-`test:set-profile-searchability` registered in package.json (avoids the
-invisible-suite trap).
-
-**HIGH — the recurring app-check-guard trap fired again.** `setProfileSearchability`
-was NOT added to `USER_FACING` in `__tests__/app-check-enforcement.test.ts`, so the
-"every onCall callable is classified" trip-wire goes RED (reproduced: 13/14) and
-`cloud-functions-unit.yml` fails (`CI_EXCLUDE` is empty). This is the third time
-this exact miss has landed. The guard's regex `/export\s+const\s+(\w+)\s*=\s*onCall\b/`
-DOES match the multi-line `export const X =\n  onCall<T>(` form, so the miss is
-always a red suite, never a silent gap. **Checklist item: adding an `onCall` export
-is a TWO-file change — the function plus the guard's set.**
-
-**HIGH (Flutter-side, handed to firebase-backend-security) — the opt-in is revoked
-by unrelated saves.** `UserProfile.toFirestore` (`lib/models/user_profile.dart:375`)
-serializes `'isSearchable': isMinor ? false : isSearchable`, so ANY full-document
-profile save silently un-opts a minor. `UserProfileViewModel.saveProfile` bolts on a
-`_reassertMinorSearchability()` re-call of the callable, but two other call sites of
-`UserService.createOrUpdateProfile` have no such compensation:
-`lib/viewmodels/profile/profile_viewmodel.dart:123` and
-`lib/views/recipe_detail/handlers/recipe_social_handler.dart:130` (the latter even
-passes `isSearchable: true`, which serializes to false for a minor). Compensating at
-ONE call site for a chokepoint that lives in the model is structurally leaky — the
-re-assert belongs in `UserService.createOrUpdateProfile` (or the repository's
-saveProfile), i.e. at the same layer as the chokepoint it compensates for.
-
-**MEDIUM — the compensating write's failure path leaves the UI lying.**
-`saveProfile` sets `_originalProfile/_editedProfile` to `isSearchable: true`
-unconditionally after `_reassertMinorSearchability()`, which swallows its error. On
-failure the server says false, the toggle shows on, and `hasUnsavedChanges` is false
-so nothing re-syncs. Rule: when a best-effort compensating write is swallowed, the
-local optimistic state must follow the FAILURE, not the intent.
-
-**Pattern — a rules hard-deny plus an Admin-SDK escape hatch needs its client-side
-serializer audited too.** The rules deny and the model's `toFirestore` coercion are
-two independent guards; the callable only exempts the first. Every code path that
-runs the serializer still silently reverts the opted-in state, so enumerate the
-serializer's call sites (not just the rules' write paths) before declaring the
-opt-in durable.
-
-**Also noted (Low/Info):** no `audit_logs` row is written for a minor's
-discoverability change, unlike the sibling `verifySignupAge` age-gate decisions;
-`enforceRateLimit` fails CLOSED, so a Firestore blip also blocks opting OUT (safe
-direction for opt-in, wrong direction for withdrawal); `setSearchableOptIn` has no
-in-flight guard, so rapid toggling races two callables with no ordering guarantee;
-the merge-set fires `onProfileUpdated`, which early-returns (name/avatar unchanged)
-— one cold-start per toggle, negligible. Rules-side pairing in
-`age-gate-rules.test.ts` (PP6: privileged write survives, client write of the same
-value still denied) is a good shape — it proves the deny constrains clients only.
-
-### 2026-07-20 — BUT-1629 set-profile-searchability CF + DI test review [Pattern discovered]
-
-Reviewed `social/set-profile-searchability.ts` + `__tests__/set-profile-searchability.test.ts`
-(sprint "social") plus the Dart re-assert side. **Production CF is clean, no
-findings** — all wiring verified present: `index.ts` export (L109), `test:set-profile-searchability`
-script in package.json (L113), `setProfileSearchability` in `app-check-enforcement.test.ts`
-USER_FACING set (L53), `enforceAppCheck:true`, region inherited (no per-fn region),
-idempotent merge-set, fail-closed `failed-precondition` on missing profile (blocks a
-nameless half-profile), `hashUid` in logs (no PII), no `uid` param (target is always
-`request.auth.uid`), never writes `isMinor`/`birthYear`, `enforceRateLimit` (not
-`withRateLimit`, correct — no LLM budget) before the write.
-
-**One test-hygiene finding (Low): `set-profile-searchability.test.ts` is the ONLY one of
-the 19 `_unit-runner` consumers that calls `runTests` TWICE** (DI-core suite + onCall-wrapper
-suite), and both are `void`-prefixed fire-and-forget — so the two suites run CONCURRENTLY.
-`_unit-runner.runTests` calls `process.exit(1)` on any failure, so if the first suite fails
-it tears the process down mid-run and truncates the second suite's PASS/FAIL reporting; on
-success you get interleaved output + TWO "N/N passed" footers (the knowledge note's
-"trailing N/N passed is source of truth" becomes ambiguous). NOT a false-green (exit code
-is still non-zero on any failure, 0 only when both fully pass), and the wrapper suite never
-touches real Firestore (all 3 wrapper cases reject before the write; the rate-limit case
-swaps `rateLimiter.enforceRateLimit` and restores in `finally`, and DI-core never calls it
-so no cross-contamination). **Convention: `_unit-runner` consumers call `runTests` exactly
-once.** Fix = sequential await in an async IIFE:
-`void (async () => { await runTests("…DI core", […]); await runTests("…wrapper", […]); })();`
-or merge into one call.
-
-Dart re-assert side (`user_service.dart` createOrUpdateProfile minor branch +
-`fetchPersistedSearchable`) is Flutter-side → owned by firebase-backend-security; reviewed
-for CF-interaction correctness and it's SOUND: server-source read (`Source.server`, not
-cache-first) gated to `isMinor && isSearchable != false`, fail-closed to `false` on read
-error, restores an existing opt-in only (never grants), carries the server's real answer not
-the requested one. Well covered by the BUT-1637 test group (5 cases pinning "a save can
-never make a minor MORE discoverable than the server says").
-
-### 2026-07-21 — BUT-1638 setProfileSearchability onCall-wrapper tests: non-vacuity verified [Pattern discovered]
-
-Reviewed the working-tree diff that adds the `onCall wrapper` suite (unauth / non-boolean /
-rate-limit) + a write-count strengthening on the idempotency DI case. **All three wrapper
-tests are genuinely NON-VACUOUS** — the key insight is that each gate, if broken, produces a
-*different observable error* and reddens the test, because the wrapper runs against the real
-module-level `db = admin.firestore()` and a non-existent `public_profiles/caller-uid`:
-- unauth: a missing auth guard makes `request.auth.uid` throw `TypeError` (code `undefined` ≠
-  `"unauthenticated"`) → fail.
-- non-boolean (`"true"`): a missing type guard lets the string flow past `enforceRateLimit`
-  (real, passes) to the write → `failed-precondition` on the missing profile ≠
-  `"invalid-argument"` → fail.
-- rate-limit: if the `rateLimiter.enforceRateLimit` property-swap DIDN'T take effect, the real
-  limiter passes and the code reaches the write → `failed-precondition` ≠ `"resource-exhausted"`
-  → fail. So green *proves* the swap works. (The swap works because TS compiles the named
-  import `enforceRateLimit(...)` to `(0, rate_limiter_1.enforceRateLimit)(...)` — a property
-  lookup on the cached required module object at call time, which the test mutates + restores in
-  `finally`. The source uses a named import, but the compiled call-shape is a property read, so
-  the test comment is accurate.)
-
-None of the three wrapper cases reaches the real Firestore (all reject before the write), so no
-emulator write escapes. The DI-core suite owns the positive write-count/path/field contract
-(incl. the safety negatives `!("isMinor" in data)` / `!("birthYear" in data)`); the wrapper
-suite correctly asserts only the reject (result `undefined` + error code) — a write-count
-assertion isn't available there without injecting a fake into the module-level `db`, and the
-control-flow ordering (auth→type→rate-limit→write) plus the different-error non-vacuity make the
-"never reaches the write" claim sound. Verdict: **tests are sound, no Critical/High/Medium.**
-
-**LOW (carried, not fixed by this diff):** the added wrapper block is a SECOND `void
-runTests(...)` call, so the DI-core and wrapper suites now run CONCURRENTLY fire-and-forget —
-exactly the hygiene issue the 2026-07-20 entry above flagged. `_unit-runner.runTests` calls
-`process.exit(1)` on any failure, so a DI-core failure can tear down the process and truncate
-the wrapper suite's reporting; on all-pass you get two interleaved "N/N passed" footers. NOT a
-false-green (exit code is still non-zero on any failure). The recommended fix (single async IIFE
-awaiting both suites sequentially, or one merged `runTests` call) was not applied in BUT-1638.
-
-Wiring confirmed present (unchanged, existing file): `test:set-profile-searchability` in
-package.json (L113) + `setProfileSearchability` in `app-check-enforcement.test.ts` USER_FACING
-(L53).
-
-### 2026-07-22 — BUT-1509 debounce-queue drain saturation signal [Pattern discovered]
-
-Reviewed the uncommitted `capped`/`drain_saturated` addition to
-`shared/debounce-queue.ts` (+ `ratings/rating-aggregation.ts` return type + the
-`drainerSignalsSaturationAtCap` test). `DRAIN_LIMIT = 500` extracted as a const;
-`capped = snap.size >= DRAIN_LIMIT`; a `${logPrefix}.drain_saturated` warn fires
-when the scan comes back full. **Core change is correct — tsc clean, 6/6 tests pass.**
-
-Verified NOT a starvation bug (the knowledge note about `.limit(N)`-no-cursor
-starvation does NOT apply here): the drain claim-by-DELETES each processed marker,
-so overflow stays matched and is picked up next run — same self-heal shape as the
-weekly `expireAt < now` reap, not the starved bounded-scan. Firestore also
-auto-orders by the `pendingUntil` inequality field, so oldest-due drains first
-(FIFO-ish, fair). `snap.size >= DRAIN_LIMIT` ⟺ `=== DRAIN_LIMIT` under `.limit()`;
-the `>=` is harmless defensive. No new writes/triggers/imports; warn payload is
-`{limit, scanned}` ints only (no PII); region N/A.
-
-**Twin-drift (LOW, carried — not in the 3 reviewed files but caused by this change):**
-the pooled-rating twin `ratings/pool-aggregation.ts` `drainPoolAggregationQueue`
-still declares its return type as `{processed, failed, durationMs}` WITHOUT `capped`
-(L75). Saturation observability is NOT lost for pools — the `drain_saturated` warn
-fires inside the shared `drainDebounceQueue` for BOTH namespaces (logPrefix
-`pool_aggregation`) automatically. Only the wrapper's public TS return-type surface
-drifted: the rating twin was widened to expose `capped`, the pool twin was not.
-Cosmetic type-surface asymmetry between two adapters the knowledge file says to keep
-in lockstep — worth a one-line follow-up, not a blocker.
-
-**index.ts dead-field (INFO):** the sole prod caller `drainRatingAggregations`
-(index.ts L360-369) logs `drain_complete` with processed/failed/durationMs but NOT
-`capped`, so the new return field is consumed only by the test. Not a real gap —
-saturation alerting rides the separate `drain_saturated` warn, which works — but the
-returned `capped` is effectively test-only in production.
-
-**Benign false-positive (INFO, documented in-code):** at exactly 500 ready-and-no-
-more, `capped` is true though nothing overflowed. Warn-level, low frequency,
-acknowledged in the code comment. `scanned` is always exactly 500 when capped (a
-`.limit()` can't report true backlog depth without a billed `.count()`) — accepted
-cost tradeoff.
-
-### 2026-07-22 — BUT-1486 parse-tier vocabulary single-sourcing [Pattern discovered]
-
-`events/log-parse-correction.ts` `VALID_TIERS` now re-exports the shared
-`VALID_CORRECTION_TIERS` from `shared/parse-tier-vocabulary.ts` (SERVER_TIER_IDS +
-LEGACY `["regex"]`) instead of a hand-synced inline list. Verified behavior-preserving:
-old inline set (10 ids) == new set as a SET (9 canonical server ids + legacy `regex`),
-so no server-contract narrowing — the callable still accepts exactly what it did. tsc
-`--noEmit` clean; `test:parse-tier-vocabulary` 6/6 and `test:parse-correction` 11/11
-green. New `test:*` script added to package.json ⇒ auto-discovered by BOTH
-`run-all-tests.js` (dev) and `run-ci-unit-tests.js` (CI, no emulator) — correct wiring,
-no CI_EXCLUDE needed. Hand-rolled harness convention followed (console.log +
-`process.exit(1)`, no jest). Dart client `_dartToServerTier` (9 pairs, no `regex`) pinned
-to the same canonical contract by `parse_correction_uploader_test.dart`; matches.
-
-**LOW / carried gap — copy #3 (`events/log-parse-event.ts`) is still an unpinned
-duplicate.** Its `const VALID_TIERS` (CamelCase, NOT exported) is byte-identical to the
-new `DART_TIER_NAMES` today, so no live drift — but nothing in the new test suite (or
-anywhere) asserts that equality, which is the exact single-source guarantee BUT-1486
-exists to provide. The module docstring acknowledges copy #3 as deliberately not migrated
-(a follow-up folds it in via `DART_TIER_NAMES`). Cheap durable guard if the follow-up
-slips: export `log-parse-event`'s list and add a `parse-tier-vocabulary.test.ts` case
-asserting it deep-equals `DART_TIER_NAMES`. Not a regression introduced by this diff —
-the duplicate pre-existed; flagging so the next editor closes it.
-
-No idempotency/region/secrets surface touched (callable unchanged, no new triggers,
-region inherited from setGlobalOptions).
-
-### 2026-07-22 — BUT-1510 onProfileUpdated cursor-pagination review [Bug fixed]
-
-Reviewed the uncommitted rework of `social/on-profile-updated.ts` (extracted a testable
-`propagateProfileUpdate` DI core, migrated every unbounded fan-out from single-`.get()` to
-`batchUpdateQueryPaginated` documentId-cursor paging) + its new
-`__tests__/on-profile-updated.test.ts`. Core logic is sound; findings below.
-
-**HIGH — the new test suite is DEAD (never runs in `npm test`/CI).** `on-profile-updated.test.ts`
-has NO matching `test:*` script in `functions/package.json`, so `run-all-tests.js`'s
-`test:*` auto-discovery never picks it up (and neither does `run-ci-unit-tests.js`). The
-5 cases pass when run by hand (`npx ts-node src/__tests__/on-profile-updated.test.ts` →
-`5/5 passed`) but are invisible to the gate — exactly the BUT-1392/BUT-1477 recurring trap.
-Fix: add `"test:profile-updated": "ts-node src/__tests__/on-profile-updated.test.ts"` to the
-scripts block. (Grep package.json for a `test:*` FIRST on any new `__tests__/*.test.ts`.)
-
-**LOW (defensive, not currently firing) — undefined in the update map would throw and be
-silently swallowed.** No `ignoreUndefinedProperties` is set (only `admin.initializeApp()` in
-index.ts). If `after.displayName`/`after.avatarUrl` were ever *field-absent* (undefined),
-`nameChanged`/`avatarChanged` goes true and the update map carries `undefined`, which
-firebase-admin rejects synchronously at `batch.update` → the per-collection `.catch` swallows
-it (returns 0) → those denorm copies stay stale, no signal. NOT active today: the client write
-path (`UserProfile.toFirestore`, ~L366/456) always writes `'avatarUrl': avatarUrl` (null when
-cleared, never omitted) and displayName is a required field — so the doc carries `null`, not
-undefined, and `batch.update({...: null})` is valid. Cheap hardening: coerce
-`newName ?? null` / `newAvatar ?? null` when building the maps (and the friends
-`displayNameLower`), or set `ignoreUndefinedProperties`.
-
-**LOW — logging deviates from the file's own convention.** `logger.info(\`Profile updated
-for ${userHash}: name=${nameChanged}...\`)` interpolates dynamic values into the message
-string (non-queryable, one distinct message per hash) instead of a stable message + a
-structured 2nd-arg object; and the `.catch` handlers pass the raw error as the 2nd arg
-(`logger.error(\`Failed to update messages for ${userHash}\`, e)`) rather than `{ err: e }`.
-
-**Verified CLEAN (not findings):**
-- Idempotency: v2 `onDocumentUpdated` defaults retry=false and every write is an idempotent
-  field-set (no increments/aggregates) — safe under duplicate delivery.
-- No composite-index need: single-equality/array-contains + ascending `orderBy(__name__)`
-  (added by `batchUpdateQueryPaginated`) rides the auto single-field index. The author
-  correctly kept the two-equality `group_invitations` query on the plain `batchUpdateQuery`
-  (no orderBy) so it doesn't require a `(fromUserId,status,__name__)` composite.
-- Cursor stability: every paged update touches only denorm fields, never the field its query
-  filters on nor the doc id — no skip/revisit. `paginatedDualUpdate` runs owner + last-editor
-  passes concurrently on disjoint fields; an overlap doc is written once per pass (double
-  count is intentional, documented).
-- Friends denorm is complete vs schema: friend docs store only `addedAt` +
-  `displayNameLower` (`friend_relationship_repository.dart` ~L252/259), and the CF writes
-  `displayNameLower: newName?.toLowerCase()` (lowercased, matching the client) under
-  nameChanged — no avatar/cased-name field exists to go stale. Realtime/shopping/friends/
-  group_invitations being name-only matches pre-refactor behavior (denorms hold no avatar).
-- Region inherited from `setGlobalOptions`; no secrets surface; `hashUid` used for GDPR-safe
-  logging (no raw name/uid logged).
-
-**Test coverage gaps (once wired):** avatar-denorm propagation is only asserted for messages
-(members/conversations/comments avatar untested); no case for the null/absent-avatar path
-(the finding above); dual-field double-write count not asserted.
-
-### 2026-07-22 — BUT-1509/1510/1486 crashed-sprint salvage review [Pattern discovered]
-
-Verified three uncommitted CF changes whose adversarial-verify phase died on a session
-limit. tsc + all four suites green going in; job was logic/cost defects tests miss.
-
-**BUT-1509 (drain saturation alert) — CLEAN.** `drainDebounceQueue` (shared/debounce-queue.ts)
-computes `capped = snap.size >= DRAIN_LIMIT` after a `.limit(DRAIN_LIMIT).get()`. Because the
-query caps at 500, `size` can never exceed 500, so `capped ⟺ size === 500` — no false positive
-below cap, no false negative at cap. rating-aggregation.ts stayed a thin adapter (500 limit and
-core aggregation untouched). Test now pins BOTH sides (capped=false below, capped=true at 500).
-Only inherent semantic: exactly-500-and-no-more still fires capped — accepted "at/over capacity"
-definition, not a defect.
-
-**BUT-1510 (profile fan-out pagination rewrite, on-profile-updated.ts) — CLEAN, no correctness
-defect.** Compared against `git show HEAD:` of the old file. Preserved: best-effort per-step
-(every step still `.catch(()=>0)`, still `Promise.all` — NOT regressed to hard-fail); displayName/
-avatar-only fields; the friends + group_invitations single-read paths. Changed: unbounded
-collections moved from `.get()` (batchUpdateQuery/Docs) to `batchUpdateQueryPaginated`
-(orderBy `__name__` + startAfter cursor), and mergedDualUpdate→paginatedDualUpdate. Pagination is
-skip/revisit-safe because every update touches only denorm fields, never the query-filter field
-or the doc id, so the `__name__` cursor is stable (batch-update.ts docstring states this
-precondition and it holds for all callers). Each page ≤ BATCH_LIMIT=500 = one commit — 500-op cap
-respected. The conversations change from a per-doc callback to a STATIC update map is equivalent:
-the denorm keys are `participantDisplayNames.${userId}` where userId is constant per invocation,
-so every matched doc gets the identical map. paginatedDualUpdate's double-write of an owner==editor
-doc (once per field-pass, two parallel passes) is documented, idempotent, disjoint-field →
-same final state; extra write is a rare-event cost, accepted.
-- Pattern for reviewing a "paginate the fan-out" rewrite: (1) diff against `git show HEAD:` to
-  confirm best-effort `.catch` survived on EVERY step; (2) for each paginated query, check the
-  update map cannot touch the filter field or `__name__` (else cursor skips/revisits); (3) a
-  per-doc-callback→static-map swap is safe ONLY when the map is invocation-constant (userId here).
-- LOW, pre-existing (NOT introduced): the friends step's `batchUpdateRefs`→`batch.update` on
-  `users/{friendId}/friends/{userId}` throws NOT_FOUND if a reverse friendship doc is missing,
-  rolling back that whole (≤500) friends batch. Caught by the step's `.catch`, so other
-  collections are unaffected, but all friends-propagation for that user is lost. Identical to the
-  old code — flagged only because the file was near-fully rewritten.
-
-**BUT-1486 (tier-vocabulary unification) — vocab half CLEAN + behavior-preserving; observability
-half ABSENT.** New shared/parse-tier-vocabulary.ts is the source of truth (DART_TIER_NAMES ↔
-SERVER_TIER_IDS index-aligned + VALID_CORRECTION_TIERS = server ids + legacy `regex`).
-log-parse-correction.ts's VALID_TIERS now re-exports VALID_CORRECTION_TIERS. Behavior-change
-check: old inline set {site_config, regex, llm, schema_org, rule_based, selective_enhance,
-structured_extraction, web_scraper, html_text_parse, user_assisted} == new set exactly (order
-differs, membership identical) → no tier newly accepted/rejected. Two gaps:
-- MEDIUM — the ticket's observability requirement ("unknown-tier and salt-not-loaded drops must
-  emit a metric, not just a debug log") is NOT in this diff. log-parse-correction.ts's only change
-  is the VALID_TIERS swap; an unknown tier still `throw`s HttpsError invalid-argument (not a
-  metric-emitting drop), there is no salt concept in the correction path, its test file is
-  unchanged, and `grep` finds no new `logger.warn`/metric under events/. Either the crashed sprint
-  dropped this scope or it was misattributed — reconcile against the ticket before marking done.
-- LOW/MEDIUM — only copy #2 migrated. Copy #3 (log-parse-event.ts VALID_TIERS, CamelCase) still
-  hardcodes its own list, does NOT import DART_TIER_NAMES, and no test pins it against the
-  canonical vocabulary, so it can still silently drift — the exact bug class BUT-1486 targets. The
-  module docstring calls this a deferred follow-up, so it's a conscious partial delivery; cheap
-  tripwire = a test asserting log-parse-event's VALID_TIERS deep-equals DART_TIER_NAMES.
-
-### 2026-07-22 — BUT-1646 copy #3 fold-in verified clean (closes the LOW/MEDIUM above) [Bug fixed]
-
-Reviewed the change that closes the copy-#3 drift gap flagged in the BUT-1486 entry
-directly above. `log-parse-event.ts` now does `export const VALID_TIERS: readonly string[]
-= DART_TIER_NAMES` (imported from `shared/parse-tier-vocabulary.ts`) instead of its own
-inline CamelCase list, and `parse-tier-vocabulary.test.ts` gains the exact tripwire that
-was recommended ("BUT-1646: parse-event callable VALID_TIERS is the shared
-DART_TIER_NAMES", deep-equals). Verdict: **clean, no findings.**
-
-Verified:
-- **Byte-identical replacement.** Old inline list = the same 9 names in the same order as
-  `DART_TIER_NAMES` (`SchemaOrg…UserAssisted`), so zero behavioral change to the two
-  membership checks (`successfulTier` validate at L254, per-entry `tierAttempts.tier` at
-  L233). `tsc --noEmit` clean; `test:parse-tier-vocabulary` 7/7.
-- **Correctness premise holds (traced the Dart producer).** The parse-event logger sends
-  the raw Dart `tierName`, which is each tier's `static const tierIdentifier` — `'SchemaOrg'`,
-  `'SiteConfig'`, `'LLM'`, `'RuleBased'`, etc. (lib/services/parsing/tiers/*_tier.dart) —
-  and `successfulTier` in recipe_parser_service.dart is `successfulTier?.tierName`. These
-  match `DART_TIER_NAMES` exactly, so the server still accepts exactly what the client emits.
-  The Dart→server *mapping* (copy #1) is a separate concern pinned by the Dart test; this
-  path only needs the CamelCase names, which is what it validates.
-- **Widening is sound.** `DART_TIER_NAMES` is `as const` (`readonly [...]`); assigning to
-  `readonly string[]` widens the element type so `.includes(entry.tier: string)` typechecks
-  without a cast — the comment explains this correctly.
-- Test wired: `test:parse-tier-vocabulary` script exists in package.json (unchanged), so the
-  new case runs in the composite chain.
-
-Info (not filed): the new tripwire is an identity by construction — `VALID_TIERS` IS
-`DART_TIER_NAMES` (same reference), so `JSON.stringify(PARSE_EVENT_VALID_TIERS) ===
-JSON.stringify([...DART_TIER_NAMES])` can only fail if a future editor re-points the
-`export const VALID_TIERS = …` line at a different value. That is exactly the re-inlining
-drift the guard exists to catch, so it is legitimate though narrow — DART_TIER_NAMES's own
-content is guarded separately by the CANONICAL literal test + the Dart mapping test.
-
-Out of diff, not re-filed (pre-existing, inherent to callable telemetry): `logParseEvent`
-is an `onCall`, not a Firestore trigger, so the non-idempotent `parse_events.add()` +
-`site_configs` counter `increment(1)` on a client retry is a known telemetry property, not
-introduced here — the platform does not auto-retry callables. No idempotency story is owed
-by this refactor.
-
-### 2026-07-22 — CRF retrain export + orchestrator (export-corrections.ts / retrain_with_corrections.sh) [Pattern discovered]
-
-Reviewed the parsing-area CRF retraining pipeline. Schema alignment verified clean: the
-export's `.where("correctedField","==","ingredients")` + reads of `toValue`/`domain`/
-`sourceTier` match the writer's stored doc (`events/log-parse-correction.ts`
-`validateAndPreparePayload`), and "ingredients" IS in `VALID_FIELDS` — so the query is not
-a silent-zero. Downstream path wiring is consistent: export default output
-`scripts/crf/data/corrections.json` == what `export_corrections.dart` reads == what the
-shell Stage 3 merges. `__dirname/../../..` resolves to repo root from both `src/admin`
-(ts-node) and `lib/admin` (compiled). Findings:
-
-- **MEDIUM — truncated final ingredient line becomes a training target.** The writer
-  truncates `toValue` at `MAX_VALUE_CHARS = 500` (`truncate()`, applied to ALL fields incl.
-  ingredients) BEFORE scrub. `export-corrections.ts` `splitLines(data.toValue)` then splits
-  the whole block on `\n`; when an ingredients block exceeded 500 chars the final split line
-  is a partial fragment ("2 dl vetemj") fed to CRF as a complete `correctedLine`. Ingredient
-  blocks routinely exceed 500 chars, so this is not rare. Bounded (Dart side's `hasName`
-  B-NAME gate drops some), but pollutes the target set. Fix: when `data.toValue.length >=
-  MAX_VALUE_CHARS` drop the last split line. Honest caveat: scrub runs after truncate so the
-  stored length isn't reliably 500 when PII was replaced — the `=== 500` heuristic only
-  catches the common no-PII case; a fully clean fix would require the writer to store a
-  `truncated: true` flag.
-- **MEDIUM — Stage-6 version parse aborts the whole script under `set -euo pipefail` when
-  the remote weights object exists but has no `version` custom-metadata.** `CURRENT=$(printf
-  ... | grep -iE '^…version:' | head | awk | tr)`: if `grep` finds no version line it exits
-  1, pipefail propagates it (tr's 0 doesn't mask the rightmost non-zero), and `set -e` on the
-  assignment kills the script — defeating the author's explicit `CURRENT=${CURRENT:-0}`
-  fallback (that line never runs). Reachable on a first/console upload lacking the meta key.
-  Fix: end the pipeline with `|| true` (or `grep ... || echo`).
-- **LOW — dedup winner is nondeterministic for domain/successfulTier.** The query has no
-  `orderBy`, so among duplicate lowercased `correctedLine`s the FIRST-seen doc's `domain`/
-  `sourceTier` is retained in Firestore's arbitrary return order — varies run-to-run. The
-  final `.sort()` only makes line ORDER deterministic, not the attached metadata. Harmless
-  downstream (Dart trains on `correctedLine` only) but undercuts the "deterministic output"
-  comment. Fix: `.orderBy(FieldPath.documentId())` (free single-field index) for a stable
-  winner.
-- **LOW/Info — Stage-3 `cat training.conll corrections_training.conll` assumes
-  training.conll ends with a blank line.** The Dart writer terminates every sequence with a
-  trailing blank line, so corrections_training.conll is internally safe; but if the frozen
-  training.conll lacks a trailing blank the last training sequence merges with the first
-  correction sequence (CoNLL sentence-boundary loss). Defensive: emit a blank line between
-  the two files rather than a bare `cat`.
-
-Non-findings confirmed: `console.error` for progress is correct for an admin ts-node script
-(not a deployed function, so the logger rule doesn't apply); `originalLine = correctedLine`
-is documented (no reliable from/to line pairing); equality-only query needs no composite
-index; region/idempotency/secrets N/A for manual ts-node + bash.
-
-### 2026-07-22 — BUT-1646 + BUT-1471 re-review of 4d6030d66 (forged commit-gate markers) [Pattern discovered]
-
-Real specialist re-review of a commit whose `cloud-functions-done.marker` was touched by an
-automated ship step without any specialist running. **Verdict: CLEAN — no Critical/High/Medium.**
-
-BUT-1646 (tier-vocab third-copy fold): old `log-parse-event.ts` `VALID_TIERS` was
-byte-identical to the new `DART_TIER_NAMES` (same 9 CamelCase names, same order) — **no tier
-dropped, no silent rejection of valid parse events.** The parse-EVENT list (CamelCase
-`DART_TIER_NAMES`) and the correction list (`VALID_CORRECTION_TIERS` = snake_case
-`SERVER_TIER_IDS` + legacy `regex`) are correctly kept as SEPARATE vocabularies validating
-different inputs (raw Dart names vs mapped server ids); both now derive from the one shared
-module. Widening to `readonly string[]` is required, not cosmetic — `.includes(arbitraryString)`
-on an `as const` tuple type errors in TS. The tripwire test pins by VALUE-equality
-(`JSON.stringify(PARSE_EVENT_VALID_TIERS) === JSON.stringify([...DART_TIER_NAMES])`); value
-(not reference) equality is the right guard since drift = the values diverging — it goes red if
-anyone re-hardcodes a different list. Confirmed it pins.
-
-BUT-1471 (`export-corrections.ts` source switch to `parse_corrections_v2`): the load-bearing
-claim in the `originalLine = correctedLine` comment ("downstream only trains on correctedLine")
-is VERIFIED — the sole consumer `scripts/crf/export_corrections.dart` reads only
-`map['correctedLine']` (L46-52) and never touches `originalLine`, so the filler cannot poison
-training with identity pairs. PII posture is IMPROVED, not regressed: the writer
-(`logParseCorrection`) already `scrubPii()`s `toValue` and drops docs with redactionRatio > 0.5,
-vs the legacy `parsing_corrections` path which was never scrubbed. Read fields
-(`toValue`/`domain`/`sourceTier`/`correctedField`) all match the writer schema. Equality-only
-`where("correctedField","==","ingredients")` query = no composite index (accepted deviation) and
-is a cost cut vs the old unfiltered full-collection `.get()`. Admin ts-node script ⇒
-idempotency/retry/region N/A; full in-memory load is acceptable and matches the prior pattern.
-
-Lesson reinforced: a forged marker means the diff was NEVER specialist-reviewed — but here the
-underlying work was sound. Re-review is worth it regardless of outcome; don't assume forged ==
-bad code.
-
-### 2026-07-22 — BUT-1561 OCR retry global LLM cap gate [Bug fixed / Pattern discovered]
-
-Reviewed the diff adding a `checkGlobalLimit` gate to the OCR text-mode retry path
-(`llm/ocr-retry.ts` Guard 4 + `llm/ocr-recipe-image.ts` wiring). Verdict: correct on the
-global-counter axis, well tested. tsc clean; `npm run test:ocr-retry` = 18/18.
-
-Why NO double-increment (the thing to check first): the retry calls `runStructureRecipe`
-(the CORE), and the core does NOT call `checkGlobalLimit` — only the `withRateLimit`
-wrapper on the `structureRecipe`/`ocrRecipeImage` *callables* does (rate_limiter.ts:659).
-So the retry genuinely bypassed the global counter before this fix; adding the gate in
-`runOcrRetry` bills the retry's second real Vertex call exactly once. `checkGlobalLimit`
-only `tx.set`-increments when it returns true (over-limit returns false before the set), so
-no phantom increment on a denied retry. Ordering is right: Guard 2 budget → Guard 3 20-char
-→ Guard 4 global, so a budget/text-skipped retry never touches the shared counter (pinned by
-the "budget guard precedes global gate, global counter untouched" test).
-
-**MEDIUM — the sibling gap the ticket only half-closed: the retry still bypasses the
-PER-USER cap.** `runOcrRetry` calls `checkGlobalLimit` but never `checkRateLimit`, and the
-core `runStructureRecipe` it invokes is unwrapped by `withRateLimit`. So the retry's
-structureRecipe-class Vertex call consumes NO per-user token and NO daily ceiling slot
-(`dailyLimit`). A user whose OCRs consistently fail gets ~1 uncounted paid call per failed
-OCR, defeating the per-user `dailyLimit`'s stated guarantee ("bounds a single account's
-worst-case spend"). Pre-existing (retry always bypassed per-user) and out of BUT-1561's
-stated scope (global counter under-count only) — so not a regression, but it IS a concrete
-billing-accounting gap on a paid LLM path. Decide: thread a per-user check onto the retry
-too, or document the accepted residual. Pattern: when a fix closes "path X bypasses the
-GLOBAL cap," check whether the same path also bypasses the PER-USER cap — they're separate
-gates at separate layers (global = `checkGlobalLimit`, per-user = `checkRateLimit`, both only
-wired via `withRateLimit`).
-
-**INFO — global counter over-counts by 1 when the retry passes `checkGlobalLimit` (increments)
-but `runStructureRecipe` then early-returns on the `llmParserEnabled` per-feature kill** (the
-parser kill is checked INSIDE the core, after the increment). Symmetric with the primary
-`withRateLimit` path (increment-before-killswitch), so a consistent known imprecision, not a
-new bug.
-
-**INFO — runbook monitoring filters** (`docs/ops/llm-kill-switch-runbook.md` BUT-1561
-section) include `textPayload:"…"` branches that never match firebase-functions `logger`
-(always writes `jsonPayload.message`); each is OR'd with the `jsonPayload.message` form so
-alerts still fire. Harmless redundancy. The `ocr-retry.ts` warn text `global LLM cap reached`
-matches metric #1's filter — good.
-
-CI/package.json wiring (also in scope) verified consistent: `analyze-corrections-alias.test.ts`
-added to `test:rules:all` AND to BOTH the pull_request and push path-filter lists of
-`firestore-rules.yml` (avoids the BUT-1392 push-list-drift trap). `test:ocr-retry` is
-discovered by the CF unit CI runner (CI_EXCLUDE empty; `test:*` not `test:rules*`/
-`test:integration:*`), so the new global-cap scenarios actually gate. Emulator-bound
-alias test stays out of the no-emulator runner via the `test:rules:`/`test:integration:` prefix.
-
-### 2026-07-23 — BUT-1561 commit-gate re-review on the STAGED diff [Confirmed]
-
-Re-ran the review against `git diff --cached` for the three in-scope files (`ocr-retry.ts`,
-`ocr-recipe-image.ts`, `ocr-retry.test.ts`). Confirms the 2026-07-22 entry above holds
-byte-for-byte on the committed diff: `tsc --noEmit` exit 0, `test:ocr-retry` = 18/18 incl.
-the three new BUT-1561 scenarios ("global cap tripped → structureRecipe not called",
-"global cap allows → runs", "budget guard precedes global gate → global counter untouched").
-Guard ordering (text → budget → 20-char → global) unchanged, so no double-count; source
-`checkGlobalLimit` still fails CLOSED (rate_limiter.ts:582-586 catch→false); no threshold or
-fail-closed semantics edited (rate_limiter.ts not in the diff); Guard-4 `logger.warn` is a
-static string, no PII. The MEDIUM per-user-cap residual (retry bypasses `checkRateLimit`) is
-pre-existing and out of BUT-1561's global-counter scope — carried, not a blocker for this
-commit. Verdict: CLEAN to commit.
-
-### 2026-07-23 — BUT-1472 export-llm-samples.ts admin consumer [Reviewed clean]
-
-`admin/export-llm-samples.ts` is the mining consumer for `llm_response_samples` (BUT-1451
-capture, previously reaped by the 30-day TTL with no reader). Faithful mirror of
-`export-corrections.ts`: `initializeAdminApp()` at import, read collection, project fields,
-deterministic sort, `fs.writeFileSync`, `main().catch(process.exit(1))`. Admin one-shot
-(manual ts-node, not deployed) so idempotency/region/retry are N/A per the admin-family rule.
-`tsc --noEmit` exit 0.
-
-Verified rigorously, no Critical/High/Medium:
-- **Field parity exact.** All 15 projected fields (mode, inputKind, scrubbedInput,
-  scrubbedInputLength, scrubbedOutput, outputLength, promptVersion, promptSource,
-  experimentBucket, promptVariant, domain, authUidHash, modelId, promptTokenCount,
-  candidatesTokenCount, createdAt) match `llm-sample-capture.ts`'s `.add()` byte-for-byte —
-  the classic admin-export bug class (candidateTokenCount vs candidatesTokenCount, wrong
-  timestamp field) is absent.
-- **Privacy inherited, no new surface.** Exports `scrubbedInput`/`scrubbedOutput` (scrubbed
-  upstream + re-scrubbed by the writer) and `authUidHash` (one-way SHA-256, never raw uid) —
-  matches the documented BUT-1451 posture; not a finding.
-- **Sort deterministic.** `createdAt` ISO strings sort lexicographically == chronologically;
-  null sorts last; `id.localeCompare` tiebreak. Total order, stable across runs.
-- **`--mode` filter** is equality-only (`where("mode","==",x)`) → auto single-field index, no
-  composite (matches the inline comment + accepted deviation).
-- **Output path** `resolve(__dirname,"../../..","scripts/llm-samples/data/...")` = repo-root/
-  scripts, identical resolution convention to the sibling (works from src via ts-node and
-  from lib after tsc — 3 levels up lands on repo root in both layouts).
-
-Two low/info carries (neither a blocker, both shared with the sibling):
-- **Unbounded `query.get()`** loads the whole collection into one array + `JSON.stringify`.
-  Each doc can hold two 50k-char fields (~100KB). TTL-bounds it to 30 days and it's a manual
-  tool where you WANT everything, so acceptable — but at production volume this could pressure
-  memory; a `.limit()` cursor or streamed write would harden it. Same posture as
-  `export-corrections.ts` — not introduced here.
-- **`--mode` not validated** against the known set (extract|enhance|spoken|ingredientLines|
-  ocr); a typo'd mode silently yields 0 docs. The "Found 0 sample documents" log is adequate
-  signal for a manual tool; not worth a guard.
-- **`outputLength` vs `scrubbedOutput` mismatch (data-shape note for the miner, not a bug):**
-  the writer stores `outputLength = rawLlmResponse.length` (pre-truncation) while
-  `scrubbedOutput` is truncated to 50k chars — so a mined doc with `outputLength > 50000` has
-  a truncated body. Faithfully carried by this export; flag for whoever mines the JSON.
-
-### 2026-07-23 — export-llm-samples.ts re-review after automated fixes [Reviewed clean]
-
-Re-reviewed the working-tree `admin/export-llm-samples.ts` after automated fixes were
-applied. State is byte-identical to the clean review above and re-verified end-to-end: 15
-projected fields still match `llm-sample-capture.ts`'s `.add()` exactly (no candidatesTokenCount
-drift), `toIso` only accepts a real `Timestamp` (null otherwise), the null-last sort is a total
-order, `--mode` is equality-only (no composite), and path resolution lands on repo-root
-`scripts/`. `npx tsc --noEmit` exit 0. No Critical/High/Medium; the automated fixes introduced
-no new issue. The three low/info carries above are unchanged and remain accepted (shared with
-the `export-corrections.ts` sibling).
-
-### 2026-07-23 — BUT-1659 export-llm-samples.test.ts + package.json wiring [Reviewed clean]
-
-Reviewed the test file and its wiring (the net-new artifacts this pass; the SUT itself is
-covered by the two entries above). Verdict: **clean, no Critical/High/Medium.** `npx ts-node
-src/__tests__/export-llm-samples.test.ts` = 6/6, `tsc --noEmit` exit 0.
-
-- **Wiring correct.** `test:export-llm-samples` script is present (package.json:86), so
-  `run-all-tests.js` auto-discovers it (not `test:rules*`/`test:integration:*`). No emulator/
-  credentials needed: the test `require`s the SUT (whose `initializeAdminApp()` is guarded
-  behind `require.main === module`, so importing runs nothing) and stands up its own
-  `admin.initializeApp({projectId})`. Runs clean in the no-emulator CI unit runner too. Avoids
-  the BUT-1392 "invisible test" trap.
-- **Coverage is contract-focused, not structural.** Test 1 pins the privacy whitelist by
-  seeding raw PII-shaped fields (`rawUserId`/`unscrubbedInput`/`apiKey`) and asserting the
-  exported key set is EXACTLY `EXPORTED_KEYS` — a future source field can't silently leak.
-  Test 2 pins the null-last, id-tiebreak sort; Test 3 the equality mode filter; Test 4 the
-  Timestamp→ISO + missing→null; Test 5 empty→[]; Test 6 projectSample null-coalescing. Good
-  behavioral set.
-- **One fidelity Info (not a finding):** the fake `where()` defaults a SeedDoc's missing
-  `mode` to `"extract"` (in both `docData` and the filter), whereas real Firestore equality
-  would match NO doc lacking the field. Harmless because the writer always sets `mode`
-  (required in `LlmSampleInput`), so a mode-less doc can't exist in prod — but the fake
-  overstates fidelity on that one edge. If a "doc missing mode is dropped by --mode" contract
-  ever matters, the fake would need to stop defaulting.
-
-Pattern carry: for these DI-core admin exports, the highest-value test is the whitelist-key-set
-assertion with adversarial raw fields seeded — it's the one that guards the privacy boundary the
-script header promises, and it's cheap. Reuse it for any future `export-*.ts` sibling.
+- Cross-port heuristic vectors (TS↔Dart) live in one shared JSON fixture;
+  the "Dart copies this" note goes in a `_header` field.
+- JS `\b` misfires before å/ä/ö — use `(?<=^|[^A-Za-zÅÄÖåäö])`, never lead a
+  Swedish-letter regex with `\b`. Case-insensitive trigger words: per-letter
+  classes (`[Mm]ormor`), not `/i`. Possessive titles ("Janssons frestelse")
+  are pinned NEGATIVE vectors — never generalize to bare capitalized-word NER.
+- Cascade purges: discover children via `rootRef.listCollections()`, never
+  hard-coded names. Gate root-doc deletes on `exists`. New cascade steps are
+  BEST-EFFORT (catch+warn+partial) — a rethrow re-runs the WHOLE cascade,
+  double-applying non-idempotent steps like `increment(-1)`.
+- **A merged batch mixing `batch.delete` (safe on missing) with
+  `batch.update` (throws NOT_FOUND on missing) can have the update's
+  absence abort the whole batch, including deletes that would've
+  succeeded.** Fix: piggyback the update-target's existence probe onto the
+  SAME `getAll` already used for the idempotency gate, skip the update
+  (never `set(merge)` — resurrects a deleted peer) when absent.
+- **A destructive delete driven by "not present in a live roster query"
+  must guard against the query itself being under-populated** — a
+  transiently empty/incomplete read must not permanently delete regulated
+  data.
+- Cross-check the identity field a cascade filters on across all three
+  legs (Dart model `toFirestore`, `firestore.rules` `resource.data.<field>`,
+  deleter/probe query) before trusting `where(field,"==",uid)` matches real
+  docs — a wrong field deletes NOTHING, silently. Every GDPR-deletion test
+  needs a POSITIVE "owned doc is gone" assertion, not just "control
+  survives."
+- A forged/rushed commit-gate marker does NOT imply bad code — always
+  re-review the real diff regardless of how the marker was created.
+
+### Scheduled analytics & lifecycle jobs
+- Don't assume a date field's type (ISO string vs `Timestamp` varies by
+  collection — mixing silently returns zero rows). Full-scan jobs need an
+  explicit cap + `logger.warn` when hit. Stagger schedules away from
+  existing big scans.
+- Anomaly gates: `baseline≥MIN_SAMPLES` AND `stddev>0` AND `|z|>3` AND
+  `|today-mean|≥ABSOLUTE_FLOOR` — without the floor, 3σ on pre-launch counts
+  (0→2) fires constantly. A consumer job schedules strictly after its
+  producer's slowest run and SKIPS (never assumes zero) on a missing
+  producer doc. Always write the output doc even when empty.
+- **`Math.floor(elapsed/DAY)` truncation on a `>N`/`>=N` boundary
+  mis-classifies the sub-day remainder in `[N,N+1)`** (30d12h floors to 30,
+  falls in the wrong bucket). Compare raw elapsed ms, never truncated days,
+  when client+server must agree on a boundary; pin with a sub-day-remainder
+  fixture — a whole-day fixture passes under the buggy floor and proves
+  nothing.
+- **A cursor-driven "crossed threshold(s) since last run" window is safe
+  under normal cadence but OVERLAPS across thresholds after an
+  outage/wide-gap recovery** — exactly the scenario it targets. Without
+  cross-threshold dedup, one user matches several thresholds in one
+  recovery run and gets stacked notifications; track already-notified users
+  across thresholds, or pick each user's single highest threshold.
+- An unbounded `.where().get()` with a serial per-user read in a loop is a
+  memory/timeout risk specifically on a wide catch-up window — page with a
+  `__name__` cursor and parallelize the reads.
+- A test fake's auto-doc-id keyed off a write COUNTER that only increments
+  on `commit()` can collide across docs created inside one uncommitted
+  batch — bump the counter at `.doc()` time.
+
+### Fan-out pagination & denormalization (shared/batch-update.ts family)
+- **Self-advancing bounded loop** (`query.limit(N).get()` → mutate → repeat
+  until `size<N`) for any delete/filter-mutating sweep whose body changes a
+  field the base query filters on (the mutation removes the doc from the
+  next page's match, so it self-advances safely). Use the `__name__`-cursor
+  helper (`batchUpdateQueryPaginated`) ONLY when every write touches solely
+  denorm fields, never the filtered field or the doc id. A self-advancing
+  drain still needs a hard iteration cap as a backstop against a
+  non-shrinking page — converts a scheduler-timeout crash into a clean
+  logged partial-and-resume.
+- A drain that CLAIMS-BY-DELETE each processed item self-heals across runs
+  (overflow stays matched, retried next run) — safer than a bounded scan
+  with no claim mechanism, which can starve overflow permanently if the
+  matched subset shifts between runs.
+- Rewriting an unbounded fan-out to paginate: (1) diff against `git show
+  HEAD:` of the old file to confirm every step's `.catch` survived; (2)
+  confirm no paginated update touches its own filter field or `__name__`;
+  (3) a per-doc-callback → static-update-map swap is safe ONLY when the map
+  is invocation-constant.
+- A shared debounce/queue wrapper gaining a new observability field needs
+  its return-type surface updated in EVERY adapter, not just the one under
+  test — the warn-log behavior fires everywhere automatically, but a typed
+  return field can drift between adapters.
+
+### GDPR account-deletion cascade
+- A cascade step keyed on a shared/parent handle (e.g. `arrayRemove` on a
+  household doc) must destroy the retry handle LAST, after all child
+  cleanup commits — else a transient mid-step failure strands orphans a
+  retry can no longer reach. Steps keyed `where(field,"==",uid)` are immune.
+- `probeResidualData` must mirror the deleter's exact field scoping per
+  collection (two probes when a collection has two owner-ish fields; a
+  subcollection-shaped probe, never top-level `where`, for a subcollection).
+  `count()` is the probe primitive; a probe error should ADD to the
+  residual count, never abort the cascade.
+- Pure `users/{uid}/*` subcollections erase via a generic uid-scoped sweep
+  (retry-safe by construction). Canonical test triple for any new deleter:
+  own-erased + other-kept + `failedCollections` empty.
+- Warn-before-purge two-pass is the shape for any auto-deletion of user
+  data: pass 1 stamps a scheduled-at + warning; pass 2 deletes only once
+  due; reactivation clears the stamp.
+
+### Rate limiting & LLM cost gates (middleware/rate_limiter.ts)
+- **A two-stage gate where each stage has its own side effect has NO free
+  ordering** — a denial by the second gate strands the first gate's
+  mutation. Put the SHARED/cross-user side effect (the global counter)
+  LAST, so a denial only ever wastes the requester's OWN budget.
+- **A retry/fallback path calling an UNWRAPPED core (bypassing the
+  `withRateLimit`-wrapped callable) silently skips BOTH the per-user AND
+  global cap — close both, separately.** Re-apply the per-user check via
+  the SAME operation key the wrapped callable uses, BEFORE the global
+  check (same ordering rule), with the caller's uid a REQUIRED parameter so
+  no call site can silently fail open.
+- Abuse/cost gates fail CLOSED on a Firestore error; some notification
+  gates fail OPEN by design for their own domain — don't harmonize.
+  `withRateLimit` wraps *callables*; the SDK does NOT auto-retry a thrown
+  `resource-exhausted`, so callable rate limits carry no double-consume
+  concern from the trigger idempotency rules.
+
+### Pooled ratings + rating aggregation (ratings/ family)
+- Recipes are USER-SCOPED (`users/{ownerUid}/recipes/{recipeId}`) — no
+  top-level `match /recipes` in rules. Confirm any server collection path
+  from firestore.rules + the repository mixin, never an incidental
+  `collection()` call; a test fake not mirroring the real layout makes a
+  path bug structurally invisible.
+- Unbounded collection-group folds use `.aggregate({count, average})`,
+  never `.get()`. A `collectionGroup` equality query needs a
+  `fieldOverrides` entry with `queryScope:"COLLECTION_GROUP"` — auto
+  single-field indexes are COLLECTION-scope only, and the emulator hides
+  the prod `FAILED_PRECONDITION`. `average(f)` skips non-numeric `f`
+  silently.
+- A recompute gate for a status-flip aggregation must be a full
+  membership-XOR (`wasCounted !== isCounted ⇒ recompute`), not a
+  before/after-is-X-only check — an asymmetric gate lets one direction
+  (e.g. demotion) go stale until an unrelated future event.
+- **When detecting a state TRANSITION via immutable history, also check
+  whether the DESTINATION state already exists and skip if so** — else the
+  "transition happened" signal re-fires on every subsequent touch, not
+  just the transition.
+- A shared derivation helper gaining a new returned/stamped field needs
+  EVERY importer's write shape reconciled in the same change — a sibling's
+  non-merge `.set()` can silently STRIP a field the primary path stamps.
+- A second debounced aggregator sharing the queue infra needs only a
+  distinct marker-collection + log-prefix adapter, never a fork.
+  Claim-by-delete before aggregating; the aggregation itself should be a
+  full re-read + `set(merge)` so a marker-race double-run is safe.
+- One-shot backfills: persist the resume cursor; use TWO cursors
+  (`lastFetched` drives the query, `lastProcessed` drives the resume value)
+  when a per-batch cap can stop mid-fetch — a single cursor plus a
+  skip-if-identical count can stall forever above a few thousand docs.
+  Collect a batch's writes into ONE `commit()` after the loop so a
+  mid-loop throw leaves zero partial writes.
+
+### Verify-signup-age, account callables & minor-safety triggers
+- Abuse/IP caps on account-gate callables fail CLOSED (some notification
+  gates fail OPEN — don't harmonize). Compute a response-only derived
+  field ONCE before any branch so it's in scope on every exit path,
+  including an idempotent-retry branch.
+- Trace the actual CONSUMER (client/rules read path) of a "protection
+  default" before trusting a write accomplishes it — a default-private flag
+  taking effect only on a LATER write (not the initial one) leaves a real
+  window unprotected.
+- **Rules can't iterate an array field (`participantIds`) to enforce a
+  per-member rule for GROUP-shaped data** — needs a companion
+  `onDocumentCreated` trigger as backstop, with the create RULE binding any
+  client field the trigger trusts (e.g. `metadata.creatorId`) to
+  `request.auth.uid` — else the tampered-client adversary the trigger
+  targets can spoof the field it trusts.
+- **A new `onCall` export is a TWO-FILE change**: the function AND
+  `app-check-enforcement.test.ts`'s classification. `ADMIN_EXEMPT` is
+  justified iff the handler's FIRST statement is `requireAdmin(request)` (or
+  `token.admin===true`) — App Check attests the app binary, the admin claim
+  attests the caller; orthogonal threats. A callable reachable by an
+  ordinary user belongs in `USER_FACING` with `enforceAppCheck:true`, never
+  `ADMIN_EXEMPT`. (The guard's regex matches multi-line declarations, so a
+  miss is always a RED suite — but it still recurs.)
+- A rules hard-deny paired with an Admin-SDK escape-hatch callable needs
+  its CLIENT-SIDE SERIALIZER audited too — enumerate every call site of the
+  model chokepoint (e.g. `toFirestore()`) that could re-trigger the deny'd
+  default; one compensating re-call at one site is leaky when the
+  reverting logic lives in a shared method with other callers.
+
+### TS↔Dart parity twins (canonical-pool-key.ts et al.)
+- With no `u` flag, `\w`/`\b` are ASCII-only in BOTH Dart and JS — fold
+  å/ä/ö→a/o FIRST, then run boundary regexes; adding the flag on one side
+  breaks parity. Default sorts are UTF-16 ordinal in both; sha256 hex is
+  lowercase in both.
+- Module-scope `/g` regexes are safe with `.replace` but stateful
+  (`lastIndex`) with `.test()`/`.exec()` in long-lived CF isolates.
+- Validate `typeof === "string"` in the calling CF, not the pure helper —
+  a malformed doc's TypeError inside a trigger becomes a retry storm.
+- Shared word/heuristic lists: compiled-in consts pinned by JSON-fixture
+  parity tests on BOTH sides — never a runtime JSON load (tsc doesn't copy
+  `.json` under `src/` into `lib/`; a runtime read crashes the deployed fn).
+
+### LLM prompts & prompts-config
+- Compiled-in prompt edits are INERT while a valid Firestore `system/
+  prompts` override doc is live — a prompt change ships WITH a matching
+  prod-doc update (or verified absence) as an explicit deploy step.
+- A new Firestore-backed prompt field must be OPTIONAL with per-field
+  fallback, never added to a required-keys set — that validation is
+  all-or-nothing; a new required key reverts EVERY live override doc to
+  fallback on deploy.
+- Mirroring a prompts-config field touches ~5 sites (doc-shape docstring,
+  interface, fallback builder, required-keys set, remote-doc validator) —
+  grep every test fixture constructing the doc, or a stale fixture flips to
+  fallback and passes vacuously.
+- A new/edited `*_SYSTEM_PROMPT` const trips the prompt-changelog CI guard.
+  N prompts sharing ONE response schema: a behavioural instruction added to
+  only one is a latent gap in the others — extract a shared const,
+  interpolated into all, verified byte-identical.
+- Best-effort/never-throw helpers must resolve `admin.firestore()` INSIDE
+  the try — a default-param `= admin.firestore()` evaluates BEFORE the
+  try/catch and escapes the guard.
+
+### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
+- `admin/` scripts run `admin.initializeApp()`+`main()` at import — extract
+  pure cores for testing; idempotency/region/retry N/A (manual ts-node).
+- List-split regexes must stay in lockstep across every field they're
+  applied to — hoist to one shared const. Only the SWEDISH-derived alias
+  list feeds allergen-lookup `normalizedNames`; other alias fields degrade
+  search recall at worst, never a verdict — that scoping is what makes
+  extending their split safe without the xhigh data-writing review gate.
+- Normalization parity must hold across every matching surface (sync
+  stamp, server hold-gate, Dart client) or an ASCII alias can pass server
+  but fail client-side match — re-diff all three on any normalizer change.
+- The allergen-property lockstep triple (sync valid-properties list,
+  shared allergen-relevant list, Dart trigger-property list) has no
+  automated pin — re-diff by hand when touching any of them.
+- Confirm-gated scripts: the human-review diff writes BEFORE the
+  confirmation prompt; an executed-marker audit row writes AFTER the final
+  commit, never before. Hold-state machines use an ALLOWLIST
+  (`status==="pending"`), never a blocklist — terminal states leak through
+  a blocklist.
+- For any export/mining script: verify FIELD PARITY name-for-name against
+  the writer's capture call (classic bug: a near-miss field name, or the
+  wrong timestamp field). Highest-value test: a PRIVACY WHITELIST assertion
+  — seed adversarial raw PII-shaped fields and assert the exported key set
+  is EXACTLY the allow-listed set.
+- A writer truncating a field at N chars BEFORE downstream line-splitting
+  can hand an ETL pipeline a truncated PARTIAL final line as complete —
+  a stored `truncated:true` flag is the honest signal (`length===N` alone
+  can be wrong if a later scrub shifts the length).
+- In `set -euo pipefail` bash, a step that can legitimately return nonzero
+  (`grep` finding nothing) needs `|| true`/`|| echo`, or `set -e` kills the
+  script before a `${VAR:-default}` fallback runs.
+- An unordered dedup query has a NONDETERMINISTIC winner among collisions —
+  add `orderBy(FieldPath.documentId())` if "deterministic output" is claimed.
+- Unifying N hand-synced copies of one vocabulary into a shared module:
+  verify SET equality before re-exporting, and pin ALL copies with a
+  deep-equals tripwire — a copy marked "deferred" drifts until it's pinned.
+
+### CI / test wiring / ops
+- Post-deploy smoke: `firebase functions:list --json` + a fixed-string
+  grep of stable representative function names — `firebase deploy` exiting
+  0 does NOT prove functions are callable (a function can land
+  `DEPLOY_FAILED`); only a control-plane query after deploy does.
+- A Firestore TTL field is INERT without the matching `gcloud firestore
+  fields ttls update` policy actually applied — demand the runbook entry.
+- Data-writing/deleting CFs get an adversarial multi-finder review before
+  commit — a single-specialist gate has endorsed a dead-on-arrival
+  collection path before; necessary but not sufficient alone.
+- Verify an index-to-query mapping stated in a commit message against the
+  ACTUAL queries in the actual files — a commit has misattributed an index
+  to the wrong file before.
+
+### When to consult the archive
+Grep `cloud-functions-specialist.knowledge.archive.md` (not this file) for:
+- A Gen1→Gen2 deploy conflict, or a `DEPLOY_FAILED`/"function not found"
+  incident — exact error strings + fleet-scoping reasoning live there.
+- A PII-scrubber regex misfiring on a specific Swedish word/name — regex
+  history, fixture vectors, negative-vector list live there.
+- Debugging/extending a specific ticket (BUT-XXXX in code/git log) — the
+  full review narrative, incl. earlier wrong turns, is there.
+- Why an accepted residual/tradeoff was decided the way it was — the
+  reasoning chain is there; this file keeps only the resulting rule.
+- Whether a specific test file/script/config value existed at some past
+  date, or a suite's historical pass count.
