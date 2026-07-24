@@ -24,9 +24,6 @@ lessons that only matter while writing or running tests.
 - Eval input must match PRODUCTION input, not the cheapest-to-label input.
 - Run arch gates locally before committing UI widgets.
 - Touch review markers in a SEPARATE Bash call before `git commit` — never inline in the same call.
-- Slow CI jobs (Build Validation, Run Tests): verify via `gh run list` — the 15-min watcher expires first.
-- `docs/analysis/runs/` was deleted by explicit decision — don't recreate it; citations are inlined.
-- An iOS-native pin's staleness needs the iOS Build Validation gate to prove — a changelog read is not enough.
 - When the user asks for a new mode, deliver ONE mode — no "normal + extra", no spare variants.
 - Staging doesn't survive parallel sessions — pathspec-commit in one call and re-verify the index after any gate block.
 - Two-session single-checkout contention: `git commit -- <paths>` is immune to the other session's staged index; a lock with NO live git/lefthook process is stale (remove it — an until-loop otherwise spins to timeout); an analyze gate dying at exactly ~300s during their gate run is contention, not findings.

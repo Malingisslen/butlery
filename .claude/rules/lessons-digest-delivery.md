@@ -40,6 +40,12 @@ Read this before starting a sprint, a backlog scan, or a ship pass.
 - Umbrella "apply the deferred notes" tickets must carry the content inline or link an immutable source.
 - A ticket that CANNOT ship autonomously (build-review / need-malin UI sign-off) gets starved-and-dropped every autonomous sprint — the moment a Step-0 read shows a ticket needs the founder's eyes, re-label it need-malin/deferred; don't let it ride the autonomous queue as a perpetual carry-forward (BUT-1615 hit its 5th consecutive drop).
 
+## CI and repo hygiene
+
+- Slow CI jobs (Build Validation, Run Tests): verify via `gh run list` — the 15-min watcher expires first.
+- `docs/analysis/runs/` was deleted by explicit decision — don't recreate it; citations are inlined.
+- An iOS-native pin's staleness needs the iOS Build Validation gate to prove — a changelog read is not enough.
+
 ## Worktrees
 
 - A fresh parallel worktree without `.dart_tool` makes analyze report PHANTOM undefined-member errors (`package:<self>` resolves to the MAIN checkout) — run `dart pub get --offline`/`flutter pub get` in the worktree before trusting analyze.
