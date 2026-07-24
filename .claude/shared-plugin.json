@@ -22,7 +22,9 @@
       "^tasks/",
       "^docs/design/previews/",
       "^\\.claude/",
-      "^docs/org/"
+      "^docs/org/",
+      "claude-reports/",
+      "/\\.claude/"
     ]
   },
   "highStakes": {

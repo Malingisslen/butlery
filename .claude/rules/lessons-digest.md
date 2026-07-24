@@ -45,6 +45,8 @@ lessons that only matter while writing or running tests.
 
 - Always-on instruction context retires only into a NAMED mechanism, best-first: a gate's block message (fires when relevant, ships once for all repos) > an agent/skill body > `paths:` frontmatter (dropped on /compact, so safety rules keep a one-line always-on statement and move only detail) > never skill-description matching alone. A `retire` verdict needs the gate's text QUOTED and its config key wired in the same change; prove it by triggering the gate in a throwaway repo with none of the removed prose present (`/context-diet`).
 
+- "I read very little of what you reply" is a CONFIG bug first — grep the always-on setup (output styles, SessionStart plugins, stale model-tuning blocks) before apologising in prose; fix the mechanism (`~/.claude/output-styles/`) and delete the conflicting prose in the same edit.
+
 - A decision record that ASSERTS SOMETHING ABOUT CODE (a gate's presence, a predicate, a field's absence) has an expiry it cannot see — grep the code before relying on one, and always before citing it to justify REMOVING a control. Code wins on facts; only the founder decides which document changes. Supersede the stale entry with a dated one quoting the verified code, never delete it silently.
 
 ## Architecture
