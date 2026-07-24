@@ -46,6 +46,8 @@ lessons that only matter while writing or running tests.
 - Clearing a corrupted `.dartServer` works with VS Code OPEN (`taskkill //F //IM dart.exe` then immediate `rm -rf`) — the close-VS-Code-first route loses the respawn race.
 - A subagent's transcript file is NOT a liveness signal (0 bytes + stale mtime is normal mid-run — it flushes on completion); only the completion notification proves an agent finished, so never write up "the agent stalled/failed" from file stats. Wait in few LONG background sleeps, not many short holds.
 
+- Always-on instruction context retires only into a NAMED mechanism, best-first: a gate's block message (fires when relevant, ships once for all repos) > an agent/skill body > `paths:` frontmatter (dropped on /compact, so safety rules keep a one-line always-on statement and move only detail) > never skill-description matching alone. A `retire` verdict needs the gate's text QUOTED and its config key wired in the same change; prove it by triggering the gate in a throwaway repo with none of the removed prose present (`/context-diet`).
+
 ## Architecture
 
 - `BaseViewModel.executeAsync` fails LOUD (throws `StateError`) on a disposed VM BY DESIGN — its non-nullable `Future<T>` can't return a fake `null`; the fail-silent siblings differ only because their return types allow it. Don't "harmonise" it; guard callers with `if (isDisposed) return;` (BUT-1462, sweep in BUT-1628).
