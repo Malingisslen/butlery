@@ -31,6 +31,7 @@ export type RetryOutcome =
   | "failure"
   | "skipped_budget"
   | "skipped_no_text"
+  | "skipped_user_limit"
   | "skipped_global_limit"
   | null;
 
@@ -69,6 +70,20 @@ export interface RetryDeps {
    * as a failed retry, but without spending the budget the cap is protecting.
    */
   checkGlobalLimit?: () => Promise<boolean>;
+  /**
+   * BUT-1655: the PER-USER cap gate. Like `checkGlobalLimit`, the retry calls
+   * `runStructureRecipe` directly rather than the `withRateLimit`-wrapped
+   * callable, so without this the retry never consumed the caller's per-user
+   * `structureRecipe` bucket (token bucket + BUT-1477 daily cap) — a user could
+   * make one extra structureRecipe call per import beyond their budget. Checked
+   * BEFORE `checkGlobalLimit` so a user already over their own cap can't inflate
+   * the shared `system/llmLimits` counter (the ordering BUT-1577 established for
+   * the wrapped path). Production resolves to `checkRateLimit(uid,
+   * 'structureRecipe') → allowed`; omitted → allow (unit tests not exercising
+   * the cap). Returning `false` skips the retry and falls back to raw text — the
+   * same user-visible outcome as a failed retry, without spending the budget.
+   */
+  checkUserLimit?: () => Promise<boolean>;
   /** Test seam for time. Production resolves to `Date.now`. */
   now?: () => number;
   /** Override the budget threshold (ms). Default `MIN_REMAINING_BUDGET_MS`. */
@@ -113,6 +128,9 @@ export const MIN_REMAINING_BUDGET_MS = 65_000;
  *  - `rawText` empty/whitespace → skip (`retryOutcome = 'skipped_no_text'`)
  *  - elapsed time leaves < `minRemainingBudgetMs` of headroom → skip
  *    (`retryOutcome = 'skipped_budget'`)
+ *  - per-user cap tripped (`checkUserLimit()` → false) → skip
+ *    (`retryOutcome = 'skipped_user_limit'`) — checked before the global cap so
+ *    an over-cap user never increments the shared counter (BUT-1577 ordering)
  *  - global LLM cap tripped (`checkGlobalLimit()` → false) → skip
  *    (`retryOutcome = 'skipped_global_limit'`)
  *  - structureRecipe returns success → forward recipe
@@ -169,12 +187,36 @@ export async function runOcrRetry(
     };
   }
 
-  // Guard 4 (BUT-1561): the global aggregate LLM cap. `checkGlobalLimit`
+  // Guard 4 (BUT-1655): the PER-USER cap. Checked BEFORE the global cap so a
+  // user already over their own `structureRecipe` budget can't inflate the
+  // shared `system/llmLimits` counter — the ordering BUT-1577 established for
+  // the `withRateLimit` path, applied here to the retry's direct
+  // `runStructureRecipe` call. `checkRateLimit` (the production resolver) is
+  // check-and-consume in one transaction and fails CLOSED on Firestore error,
+  // so a false result skips the retry and falls back to raw text without
+  // spending the budget. Omitted dep → allow (unit tests not exercising caps).
+  if (deps.checkUserLimit) {
+    const withinUserLimit = await deps.checkUserLimit();
+    if (!withinUserLimit) {
+      logger.info(
+        "[ocrRetry] Skipping retry — per-user cap reached; " +
+          "falling back to rawText"
+      );
+      return {
+        additionalCost: 0,
+        retryCount: 0,
+        retryOutcome: "skipped_user_limit",
+      };
+    }
+  }
+
+  // Guard 5 (BUT-1561): the global aggregate LLM cap. `checkGlobalLimit`
   // atomically checks AND increments the shared `system/llmLimits` counter, so
   // calling it here both bills the retry's real Vertex call against the global
   // budget (fixing the under-count) and stops the retry when the cap is tripped.
-  // Only reached once the text/budget guards pass, so a skipped retry never
-  // inflates the counter. Omitted dep → allow (unit tests not exercising caps).
+  // Only reached once the text/budget/per-user guards pass, so a skipped retry
+  // never inflates the counter. Omitted dep → allow (unit tests not exercising
+  // caps).
   if (deps.checkGlobalLimit) {
     const withinGlobalLimit = await deps.checkGlobalLimit();
     if (!withinGlobalLimit) {

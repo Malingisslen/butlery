@@ -195,6 +195,7 @@ async function testOcrMasterKill(): Promise<void> {
   const result = await runOcrRecipeImage({
     data: { imageBase64: "/9j/" + "A".repeat(40) },
     authUidHash: "uid-hash",
+    userId: "uid-master-kill",
     isAiDisabled: async () => true,
     performOcr: async () => {
       visionInvoked = true;
@@ -242,6 +243,7 @@ async function testOcrRetryInheritsParserKill(): Promise<void> {
   const result = await runOcrRecipeImage({
     data: { imageBase64: "/9j/" + "A".repeat(40) },
     authUidHash: "uid-hash",
+    userId: "uid-parser-kill",
     isAiDisabled: async () => false,
     performOcr: async () => ({
       content:
@@ -249,6 +251,15 @@ async function testOcrRetryInheritsParserKill(): Promise<void> {
         "i smör tills gyllenbruna.",
       cost: 0.012,
     }),
+    // This test proves the parser-kill propagates through the retry; inject BOTH
+    // cap seams to allow so neither gate can fail-close the retry and mask that
+    // behavior (mirrors makeOcrSeams' cap defaults). Without these the production
+    // resolvers hit an uninitialized Firebase app, fail closed, and short-circuit
+    // the retry to skipped_global_limit — a pre-existing breakage from BUT-1561
+    // (global-cap seam was never injected here) that the BUT-1655 per-user seam
+    // addition surfaced and now fixes at root.
+    checkUserLimit: async () => true,
+    checkGlobalLimit: async () => true,
     structureRecipe: async () => ({
       success: false,
       error: "AI-receptolkning är tillfälligt avstängd.",

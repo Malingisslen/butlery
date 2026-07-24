@@ -407,6 +407,130 @@ async function testOrchestrator(): Promise<void> {
           }
     );
   }
+
+  // Scenario (BUT-1655): per-user cap tripped → skipped_user_limit, and BOTH
+  // structureRecipe AND checkGlobalLimit are NEVER called. The global assertion
+  // is the ordering lock: the per-user gate must precede the global gate so an
+  // over-cap user can't inflate the shared counter (the BUT-1577 property). If a
+  // refactor moves the per-user guard after the global one, globalChecked flips
+  // to 1 and this test fails.
+  {
+    const calls: StructureRecipeRequest[] = [];
+    let userChecked = 0;
+    let globalChecked = 0;
+    const r = await runOcrRetry(
+      "Pannkakor 2 dl mjöl 4 dl mjölk 2 ägg blanda stek.",
+      0,
+      "uid-hash",
+      {
+        structureRecipe: async (req) => {
+          calls.push(req);
+          return { success: true, recipe: makeRecipe("x"), estimatedCost: 0.002 };
+        },
+        checkUserLimit: async () => {
+          userChecked++;
+          return false;
+        },
+        checkGlobalLimit: async () => {
+          globalChecked++;
+          return true;
+        },
+        now: () => 1000,
+      }
+    );
+    record(
+      "per-user cap tripped → skipped_user_limit, structureRecipe not called, global gate never reached",
+      userChecked === 1 &&
+        globalChecked === 0 &&
+        calls.length === 0 &&
+        r.retryCount === 0 &&
+        r.retryOutcome === "skipped_user_limit" &&
+        r.additionalCost === 0 &&
+        !r.recipe
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `userChecked=${userChecked}, globalChecked=${globalChecked}, calls=${calls.length}, retryCount=${r.retryCount}, outcome=${r.retryOutcome}, cost=${r.additionalCost}`,
+          }
+    );
+  }
+
+  // Scenario (BUT-1655): per-user cap allows → the retry advances to the global
+  // gate, then to structureRecipe. Proves the per-user gate is transparent when
+  // within budget and that both gates are consulted in order on the happy path.
+  {
+    const calls: StructureRecipeRequest[] = [];
+    let userChecked = 0;
+    let globalChecked = 0;
+    const recipe = makeRecipe("Våfflor");
+    const r = await runOcrRetry(
+      "Våfflor 3 dl mjöl 3 dl mjölk 2 ägg vispa och grädda.",
+      0,
+      "uid-hash",
+      {
+        structureRecipe: async (req) => {
+          calls.push(req);
+          return { success: true, recipe, estimatedCost: 0.003 };
+        },
+        checkUserLimit: async () => {
+          userChecked++;
+          return true;
+        },
+        checkGlobalLimit: async () => {
+          globalChecked++;
+          return true;
+        },
+        now: () => 1000,
+      }
+    );
+    record(
+      "per-user cap allows → both gates checked once in order, retry runs, outcome=success",
+      userChecked === 1 &&
+        globalChecked === 1 &&
+        calls.length === 1 &&
+        r.retryCount === 1 &&
+        r.retryOutcome === "success" &&
+        r.recipe === recipe
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `userChecked=${userChecked}, globalChecked=${globalChecked}, calls=${calls.length}, retryCount=${r.retryCount}, outcome=${r.retryOutcome}`,
+          }
+    );
+  }
+
+  // Scenario (BUT-1655): a per-user check that resolves false is how the
+  // production resolver surfaces checkRateLimit's fail-CLOSED behavior (it
+  // denies on Firestore error). The retry must skip and fall back to rawText —
+  // same user-visible outcome as any other skip, no budget spent.
+  {
+    const calls: StructureRecipeRequest[] = [];
+    const r = await runOcrRetry(
+      "Pannkakor 2 dl mjöl 4 dl mjölk 2 ägg blanda stek.",
+      0,
+      "uid-hash",
+      {
+        structureRecipe: async (req) => {
+          calls.push(req);
+          return { success: true, recipe: makeRecipe("x"), estimatedCost: 0.002 };
+        },
+        checkUserLimit: async () => false,
+        now: () => 1000,
+      }
+    );
+    record(
+      "per-user check false (fail-closed) → skipped_user_limit, no retry, no cost",
+      calls.length === 0 &&
+        r.retryOutcome === "skipped_user_limit" &&
+        r.retryCount === 0 &&
+        r.additionalCost === 0
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `calls=${calls.length}, outcome=${r.retryOutcome}, cost=${r.additionalCost}`,
+          }
+    );
+  }
 }
 
 // =============================================================================
@@ -440,6 +564,10 @@ function makeOcrSeams(opts: {
     // would hit an unconnected Firestore, fail closed, and short-circuit every
     // retry to skipped_global_limit.
     checkGlobalLimit: async () => true,
+    // BUT-1655: same reasoning for the per-user-cap seam — otherwise the
+    // production checkRateLimit resolver hits an unconnected Firestore, fails
+    // closed, and short-circuits every retry to skipped_user_limit.
+    checkUserLimit: async () => true,
     now: () => {
       if (opts.nowSeq) {
         const v = opts.nowSeq[Math.min(nowIdx, opts.nowSeq.length - 1)];
@@ -482,6 +610,7 @@ async function testCoreEndToEnd(): Promise<void> {
     const resp = await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -534,6 +663,7 @@ async function testCoreEndToEnd(): Promise<void> {
     const resp = await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -581,6 +711,7 @@ async function testCoreEndToEnd(): Promise<void> {
     const resp = await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -639,6 +770,7 @@ async function testCoreEndToEnd(): Promise<void> {
     const resp = await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -702,6 +834,7 @@ async function testCompleteEvent(): Promise<void> {
     await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -767,6 +900,7 @@ async function testCompleteEvent(): Promise<void> {
     await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -817,6 +951,7 @@ async function testCompleteEvent(): Promise<void> {
     await runOcrRecipeImage({
       data: { imageBase64: "/9j/" + "A".repeat(40) },
       authUidHash: "test-hash",
+      userId: "test-uid",
       ...seams,
     });
 
@@ -848,6 +983,7 @@ async function testCompleteEvent(): Promise<void> {
       await runOcrRecipeImage({
         data: {},
         authUidHash: "test-hash",
+        userId: "test-uid",
         isAiDisabled: async () => false,
       });
     } catch (e) {

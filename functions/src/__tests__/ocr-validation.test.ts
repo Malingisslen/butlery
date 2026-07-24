@@ -495,6 +495,7 @@ async function testIntegration(): Promise<void> {
       await runOcrRecipeImage({
         data: { imageUrl: "https://attacker.com/steal.jpg" },
         authUidHash: "uid-hash-int-1",
+        userId: "uid-int-1",
         validateImageUrl: async () => ({
           ok: false,
           reason: "disallowed_host",
@@ -535,6 +536,7 @@ async function testIntegration(): Promise<void> {
     const resp = await runOcrRecipeImage({
       data: { imageUrl: GOOD_URL },
       authUidHash: "uid-hash-int-2",
+      userId: "uid-int-2",
       validateImageUrl: async () => {
         validatorCalled = true;
         return {

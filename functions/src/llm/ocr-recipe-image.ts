@@ -28,7 +28,11 @@ import {
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
-import { withRateLimit, checkGlobalLimit } from "../middleware/rate_limiter";
+import {
+  withRateLimit,
+  checkGlobalLimit,
+  checkRateLimit,
+} from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
 import { captureLlmSample } from "./llm-sample-capture";
 import { runStructureRecipe, buildLocaleInstruction } from "./structure-recipe";
@@ -120,6 +124,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     return runOcrRecipeImage({
       data: request.data,
       authUidHash: hashUid(request.auth!.uid),
+      userId: request.auth!.uid,
     });
   })
 );
@@ -132,6 +137,14 @@ export interface OcrCoreOptions {
   data: OcrRecipeImageRequest;
   /** Pre-hashed uid for logging — caller computes from request.auth. */
   authUidHash: string;
+  /**
+   * BUT-1655: raw uid, used ONLY as the `checkRateLimit` doc key for the
+   * per-user cap on the structureRecipe retry path. Required (not optional) so
+   * the compiler forces every call site to wire it — an unwired caller must not
+   * silently fail open on an abuse cap. NEVER log or emit this: all logging /
+   * timing / sample-capture in this module stays on `authUidHash`.
+   */
+  userId: string;
   /**
    * Test seam: structureRecipe retry. Production resolves to the imported
    * `runStructureRecipe` from `./structure-recipe`.
@@ -158,6 +171,11 @@ export interface OcrCoreOptions {
    * from the rate-limiter middleware.
    */
   checkGlobalLimit?: () => Promise<boolean>;
+  /**
+   * BUT-1655: test seam for the per-user cap gate on the structureRecipe retry
+   * path. Production resolves to `checkRateLimit(userId, 'structureRecipe')`.
+   */
+  checkUserLimit?: () => Promise<boolean>;
   /** Test seam: clock. Default `Date.now`. */
   now?: () => number;
 }
@@ -280,6 +298,14 @@ export async function runOcrRecipeImage(
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
   const validateImageUrl = opts.validateImageUrl ?? validateOcrImageUrl;
   const globalLimitCheck = opts.checkGlobalLimit ?? checkGlobalLimit;
+  // BUT-1655: per-user cap for the retry, resolved with the same two-hop default
+  // pattern as `globalLimitCheck` above — defaulted once here, threaded into the
+  // runOcrRetry deps below. Production consumes the raw uid solely as the
+  // checkRateLimit doc key; it is never logged.
+  const userLimitCheck =
+    opts.checkUserLimit ??
+    (() =>
+      checkRateLimit(opts.userId, "structureRecipe").then((r) => r.allowed));
   const now = opts.now ?? Date.now;
 
   const ocrStartMs = now();
@@ -483,6 +509,7 @@ export async function runOcrRecipeImage(
 
     const retryResult = await runOcrRetry(content, ocrStartMs, authUidHash, {
       structureRecipe,
+      checkUserLimit: userLimitCheck,
       checkGlobalLimit: globalLimitCheck,
       now,
       locale,

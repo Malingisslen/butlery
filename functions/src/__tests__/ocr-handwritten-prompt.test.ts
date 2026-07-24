@@ -84,6 +84,7 @@ async function captureSelectedPrompt(
       isHandwritten,
     },
     authUidHash: "uid-hash-hw-test",
+    userId: "uid-hw-test",
     isAiDisabled: async () => false,
     performOcr: async (args) => {
       selected = args.systemPrompt;
