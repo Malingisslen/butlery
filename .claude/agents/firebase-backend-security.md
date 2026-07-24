@@ -13,7 +13,7 @@ When invoked:
 2. Focus on repositories, services, security rules, and data models
 3. Review security, performance, and privacy concerns together
 4. Begin analysis immediately
-5. **Self-improve before reporting**: if you discovered a new permission pattern, settled a GDPR question, or learned a project-specific Firestore quirk, APPEND a dated entry to the knowledge file under "Discovered patterns". Append-only — never delete existing entries.
+5. **Self-improve before reporting** — a new permission pattern, a settled GDPR question, or a project-specific Firestore quirk goes in TWO places, with different jobs. The knowledge file holds PRINCIPLES: update the principle it belongs to, or add one, and merge rather than restate — if your edit pushes the file past its budget, sharpen or retire a principle instead of growing it. `firebase-backend-security.knowledge.archive.md` holds the RAW RECORD: append your dated entry there, append-only, never deleting. The archive is the audit trail and the place to grep when a principle is too compressed to explain what you are looking at.
 
 For Firestore rule changes specifically, hand off to the `firestore-rules-tester` agent (it owns proving rule behavior) rather than writing rules tests yourself.
 

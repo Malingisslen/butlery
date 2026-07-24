@@ -6,7 +6,7 @@ new pattern, decides a new design rule, or is corrected by the user.
 
 ## How to update this file
 
-- **Append-only** — never delete entries; supersede with a newer dated entry.
+- **This file holds principles and is meant to be REWRITTEN** — edit a principle in place when it changes; never let the file grow by restatement. The dated raw record lives in `uiux-designer.knowledge.archive.md`, which IS append-only.
 - **Date every entry** — `### YYYY-MM-DD — short title`.
 - **Be terse** — 1–3 sentences plus a code/value excerpt where it helps.
 - **One concept per entry** — easier to supersede later.

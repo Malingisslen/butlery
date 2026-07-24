@@ -7,7 +7,7 @@ user.
 
 ## How to update this file
 
-- **Append-only** — never delete entries; supersede with a newer dated entry.
+- **This file holds principles and is meant to be REWRITTEN** — edit a principle in place when it changes; never let the file grow by restatement. The dated raw record (device class, before/after numbers) lives in `performance-optimizer.knowledge.archive.md`, which IS append-only.
 - **Date every entry** — `### YYYY-MM-DD — short title`.
 - **For perf wins, record the measurement** — "X ms → Y ms on Z device" or
   "Y rebuilds → 1 rebuild." Numbers age better than adjectives.

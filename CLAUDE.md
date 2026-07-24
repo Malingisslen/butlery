@@ -60,7 +60,8 @@ commit both. Don't rebuild the map; don't ignore the marker.
 ## Commands
 
 `flutter analyze` / `flutter run` / `flutter test test/unit/<file>_test.dart`. Always use
-forward slashes in test paths.
+forward slashes in test paths. Before declaring work done, the `verify` skill runs the full
+check (analyze + tests on changed files).
 
 ## Stop hook response
 
@@ -86,6 +87,9 @@ which the commit gate names when it blocks. Point review agents at it too.
   the commit or run them in batches.
 - **On request** — uiux-designer, performance-optimizer, flutter-developer, e2e-test-specialist.
 
-Several agents keep a sibling `<agent>.knowledge.md` of accumulated patterns; each agent's
-own definition states its read-first and append-on-discovery contract. New agents get one
-by default unless their domain is too varied for patterns to be anything but noise.
+Several agents keep a sibling `<agent>.knowledge.md`. It holds **principles** and is meant
+to be rewritten — a discovery updates the principle it belongs to. The dated raw record goes
+to `<agent>.knowledge.archive.md`, which is append-only and is what you grep when a principle
+is too compressed to explain what you're seeing. Each agent's definition states its own
+version of this. New agents get one by default unless their domain is too varied for
+patterns to be anything but noise.

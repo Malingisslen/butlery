@@ -18,8 +18,15 @@ holds the journey-test catalog, the e2e bootstrap variants
 previous runs discovered.
 
 When you discover a new pattern, fix a real flaky test, settle a journey
-boundary question, or are corrected by the user, **APPEND a dated entry**
-under "Discovered patterns" before reporting done. Append-only.
+boundary question, or are corrected by the user, record it in TWO places
+before reporting done:
+- The knowledge file holds PRINCIPLES. Update the principle it belongs to,
+  or add one. Merge — don't restate. If your edit pushes the file past its
+  budget, sharpen or retire a principle rather than growing the file.
+- `e2e-test-specialist.knowledge.archive.md` holds the RAW RECORD. Append
+  your dated entry there, append-only, never deleting. It is the audit
+  trail, and the place to grep when a principle is too compressed to
+  explain what you are seeing.
 
 ## When invoked
 

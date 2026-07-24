@@ -6,7 +6,7 @@ discovery, real flake-fix, or user correction.
 
 ## How to update this file
 
-- **Append-only** — supersede with a newer dated entry; never delete.
+- **This file holds principles and is meant to be REWRITTEN** — edit a principle in place when it changes; never let the file grow by restatement. The dated raw record lives in `e2e-test-specialist.knowledge.archive.md`, which IS append-only.
 - **Date every entry** — `### YYYY-MM-DD — short title`.
 - **Tag each entry** — [Pattern discovered] / [Flake fixed] / [Bug found] /
   [User correction].

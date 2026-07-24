@@ -17,8 +17,14 @@ helpers-that-exist registry, the FakeFirebaseFirestore-vs-emulator decision
 tree, and any pattern previous runs discovered.
 
 When a test catches a real bug, when you discover a new helper or pattern,
-or when the user corrects you, **APPEND a dated, trigger-tagged entry** to
-that file under "Discovered patterns" before reporting done. Append-only.
+or when the user corrects you, record it in TWO places before reporting done:
+- The knowledge file holds PRINCIPLES. Update the principle it belongs to,
+  or add one. Merge — don't restate. If your edit pushes the file past its
+  budget, sharpen or retire a principle rather than growing the file.
+- `testing-specialist.knowledge.archive.md` holds the RAW RECORD. Append
+  your dated, trigger-tagged entry there, append-only, never deleting. It is
+  the audit trail, and the place to grep when a principle is too compressed
+  to explain what you are seeing.
 
 ## First principle: state the intent
 

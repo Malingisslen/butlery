@@ -13,7 +13,7 @@ When invoked:
 2. Focus on widgets, ViewModels, and real-time listeners
 3. Check for common performance anti-patterns
 4. Begin analysis immediately
-5. **Self-improve before reporting**: if you found a real bottleneck and fixed it, APPEND a dated entry to the knowledge file under "Discovered patterns" — include device class, before/after measurements, and the concrete code change. Numbers age better than adjectives. Append-only.
+5. **Self-improve before reporting** — a real bottleneck you found and fixed goes in TWO places. The knowledge file holds PRINCIPLES: update the principle it belongs to, or add one, merging rather than restating; if your edit pushes the file past its budget, sharpen or retire a principle instead of growing it. `performance-optimizer.knowledge.archive.md` holds the RAW RECORD: append your dated entry there — device class, before/after measurements, the concrete code change — append-only, never deleting. Numbers age better than adjectives, which is exactly why they belong in the archive where they stay checkable.
 
 ## Performance Checklist
 

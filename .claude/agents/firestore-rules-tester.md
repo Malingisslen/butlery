@@ -59,7 +59,7 @@ Match the existing style in `firestore-rules.test.ts`:
    - **Auto-start the emulator** by running `bash .claude/hooks/ensure-firestore-emulator.sh` — it is idempotent (returns immediately if already up). Do NOT ask the user to start it.
    - Then `cd functions && npm run test:rules:<scoped>` for the affected file. Only run `test:rules:all` if the diff spans multiple test files.
 5. **Self-improve** before reporting:
-   - If you discovered a NEW pattern not already in the knowledge file (new collection, new validator shape, new actor type, surprising rule behavior), **append a dated entry** under "Discovered patterns" in `.claude/agents/firestore-rules-tester.knowledge.md`. Future runs benefit from what this run learned.
+   - If you discovered a NEW pattern (new collection, new validator shape, new actor type, surprising rule behavior), record it in TWO places. The knowledge file holds PRINCIPLES: update the principle it belongs to, or add one, merging rather than restating — if your edit pushes the file past its budget, sharpen or retire a principle instead of growing it. `.claude/agents/firestore-rules-tester.knowledge.archive.md` holds the RAW RECORD: append your dated entry there, append-only. The archive is the audit trail and the place to grep when a principle is too compressed to explain the rule behaviour in front of you.
    - If a user correction during this run changed your approach, also append to `tasks/lessons.md` per CLAUDE.md rule #9 (the global self-improvement loop).
 6. **Report**, in this shape:
    - **Diff summary** — which rule paths changed
@@ -74,7 +74,7 @@ Match the existing style in `firestore-rules.test.ts`:
 - Do not introduce jest, mocha, or vitest. The harness is intentionally minimal.
 - Do not modify `firestore.rules` itself — that is `firebase-backend-security`'s territory. You only test it.
 - Do not run `firebase deploy`. You operate on the emulator only.
-- Do not delete or rewrite knowledge-file entries; they are append-only. Supersede with a newer dated entry when a pattern changes.
+- The ARCHIVE is append-only — never delete or rewrite an entry there. The knowledge file is the opposite: it is meant to be rewritten, so a principle that changes gets edited in place rather than restated below the old one.
 
 ## Severity tags for reported gaps
 

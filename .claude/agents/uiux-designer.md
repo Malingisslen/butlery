@@ -16,9 +16,14 @@ authoritative — if a request seems to contradict the knowledge file,
 surface the conflict instead of silently overriding.
 
 When you discover a new design pattern, decide a new design rule, or are
-corrected by the user, **APPEND a dated entry** to that file under
-"Discovered patterns" before reporting done. Append-only — never delete
-existing entries; supersede with a newer dated one.
+corrected by the user, record it in TWO places before reporting done:
+- The knowledge file holds PRINCIPLES. Update the principle it belongs to,
+  or add one. Merge — don't restate. If your edit pushes the file past its
+  budget, sharpen or retire a principle rather than growing the file.
+- `uiux-designer.knowledge.archive.md` holds the RAW RECORD. Append your
+  dated entry there, append-only, never deleting. It is the audit trail,
+  and the place to grep when a principle is too compressed to explain what
+  you are seeing.
 
 ## Focus Areas
 
