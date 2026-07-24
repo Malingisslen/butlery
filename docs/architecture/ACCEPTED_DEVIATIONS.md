@@ -117,17 +117,30 @@ against `firestore.rules` (create paths ~1137-1153 and ~1230-1242).
 **Why:** the age gate governs the account-creation boundary; these two paths are downstream
 activity of an already-gated account and don't re-open the age surface. Decided scope call. — 2026-07-04
 
-> ⚠️ **This entry contradicts the deployed code — flagged 2026-07-24, awaiting Malin's decision.**
-> `firestore.rules` gates BOTH creates with `isAgeCompliant()` today: `cook_snaps` create
-> (`isAuthenticated() && request.auth.uid == request.resource.data.userId && isAgeCompliant()`)
-> and `activity_events` create (same shape on `actorId`), each carrying a comment citing
-> BUT-1418/ADR-0002. Verified by reading the live rules file, twice, on 2026-07-24.
->
-> So either the 2026-07-04 entry was written against a stale view of the rules, or the gate
-> landed afterwards and this decision is obsolete. Either way the *code* is the stricter of
-> the two. **Do not remove either gate citing this entry** — it protects minors and it is live.
-> Whichever way Malin decides, one of these two documents needs correcting; the deviation is
-> left standing rather than silently deleted, per this file's own append-and-supersede rule.
+### [Security/Age-gate] SUPERSEDES the entry above — both creates ARE age-gated (resolved in favour of the code)
+The 2026-07-04 entry directly above is **retired**. It states that `cook_snaps` and
+`activity_events` creates are deliberately ungated; the code says otherwise and always did by
+the time that entry was written:
+
+- `cook_snaps` create — `isAuthenticated() && request.auth.uid == request.resource.data.userId && isAgeCompliant()`
+- `activity_events` create — the same shape on `actorId`
+
+Both carry an inline comment citing BUT-1418/ADR-0002, and four rules tests pin them:
+`cook_snaps: owner without ageCompliant claim cannot create a snap`, `…with ageCompliant=false…`,
+and the two matching `activity_events` denies. So the gate is enforced, tested, and was never
+actually removed — the deviation entry was written against a stale view of the rules.
+
+**Malin decided 2026-07-24: resolve as the code stands.** Both age gates are correct and
+required. Do NOT file a "these should be ungated per the accepted deviation" finding, and do
+NOT remove either gate citing the retired entry. If a future change genuinely needs to relax
+an age gate on a UGC create path, that is a new decision requiring its own entry — not an
+appeal to this one.
+
+**Why the mistake mattered enough to record:** the stale entry sat in always-on context for
+three weeks telling every session that a live child-safety control was intentionally absent.
+It surfaced only because the file was being compressed. A decision record that describes code
+is only as good as its last verification — when an entry names a specific rule or predicate,
+check it against the file before relying on it. — 2026-07-24
 
 ### [Privacy/GDPR] `socialFeatures` consent is intentionally NOT a gate — social runs on contract basis (BUT-1523 closed, honoring BUT-1395)
 The `socialFeatures` field on `ConsentPurposes` (`lib/models/account/user_consent.dart`) exists but

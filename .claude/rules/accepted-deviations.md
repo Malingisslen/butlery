@@ -23,11 +23,10 @@ files in the same edit.
   existing user. BUT-1523, 2026-07-12
 - **Account deletion does not cascade to `parse_events`** — the 30-day TTL residual is
   accepted under Art. 17's reasonable-erasure window. BUT-1570, 2026-07-16
-- ⚠️ **`cook_snaps` / `activity_events` age gate — the record contradicts the code; needs
-  Malin's call.** The 2026-07-04 entry says both creates are deliberately ungated. The
-  deployed `firestore.rules` gates both with `isAgeCompliant()` (verified 2026-07-24, and the
-  rules cite BUT-1418/ADR-0002). **Do not remove either gate on the strength of that entry** —
-  it is a child-safety control that is live today. 2026-07-24
+- **RETIRED — `cook_snaps` and `activity_events` creates ARE age-gated, and stay that way.**
+  The 2026-07-04 "deliberately ungated" entry was stale; both creates carry `isAgeCompliant()`
+  (BUT-1418/ADR-0002) and four rules tests deny a missing or false claim. Malin resolved it in
+  favour of the code on 2026-07-24. Never remove either gate citing the old entry. 2026-07-24
 
 ## Engineering
 

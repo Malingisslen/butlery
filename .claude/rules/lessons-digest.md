@@ -45,6 +45,8 @@ lessons that only matter while writing or running tests.
 
 - Always-on instruction context retires only into a NAMED mechanism, best-first: a gate's block message (fires when relevant, ships once for all repos) > an agent/skill body > `paths:` frontmatter (dropped on /compact, so safety rules keep a one-line always-on statement and move only detail) > never skill-description matching alone. A `retire` verdict needs the gate's text QUOTED and its config key wired in the same change; prove it by triggering the gate in a throwaway repo with none of the removed prose present (`/context-diet`).
 
+- A decision record that ASSERTS SOMETHING ABOUT CODE (a gate's presence, a predicate, a field's absence) has an expiry it cannot see — grep the code before relying on one, and always before citing it to justify REMOVING a control. Code wins on facts; only the founder decides which document changes. Supersede the stale entry with a dated one quoting the verified code, never delete it silently.
+
 ## Architecture
 
 - `BaseViewModel.executeAsync` fails LOUD (throws `StateError`) on a disposed VM BY DESIGN — its non-nullable `Future<T>` can't return a fake `null`; the fail-silent siblings differ only because their return types allow it. Don't "harmonise" it; guard callers with `if (isDisposed) return;` (BUT-1462, sweep in BUT-1628).
