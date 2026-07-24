@@ -128,7 +128,7 @@
       ".claude/rules/lessons-digest-delivery.md",
       ".claude/rules/lessons-digest-testing.md"
     ],
-    "digestCoreMaxChars": 7000
+    "digestCoreMaxChars": 7500
   },
   "docsSweep": {
     "exemptGlobs": ["docs/org/**", "docs/design/mockups/**", "tasks/lessons.md", "tasks/todo.md", ".claude/**"],
