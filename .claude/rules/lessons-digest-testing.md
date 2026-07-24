@@ -19,3 +19,4 @@ they simply do not load in sessions that never open a test file.
 - real-time-guard matches the literal `DateTime.now()` even inside comments.
 - After changing a class's constructor, run its EXISTING test suites — not just the new test you wrote.
 - A DI cap/gate seam defaulting to a real-Firestore resolver fails CLOSED in ts-node CF unit tests (no Firebase app) and silently diverts control flow on every path that reaches it — inject it to `async () => true` in those tests (mirror `makeOcrSeams`); if a sibling suite is red, STASH your diff first to check it wasn't already red on main, then fix at root.
+- Auditing a mature test suite means auditing DISCOVERY, not adding test types — every runner that decides what to run from a HAND-TYPED list (npm `test:*` script names, a workflow `paths:` filter) is a silent-drift hole; prove orphan counts by script, then guard the list. Rank by blast radius of the check going dark.
