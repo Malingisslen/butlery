@@ -18,7 +18,12 @@
   "docTaxonomy": {
     "rulePath": "docs/ops/doc-taxonomy.md",
     "sweep": "/docs-sweep",
-    "exempt": ["^tasks/", "^docs/design/previews/", "^\\.claude/", "^docs/org/"]
+    "exempt": [
+      "^tasks/",
+      "^docs/design/previews/",
+      "^\\.claude/",
+      "^docs/org/"
+    ]
   },
   "highStakes": {
     "securityRegex": "(lib/repositories/|firestore\\.rules|firebase_auth|FirestoreRepository|GDPR|PermissionValidation)",
@@ -38,24 +43,36 @@
     "memoryIndex": "C:/Users/malla/.claude/projects/C--Butlery-butlery/memory/MEMORY.md",
     "budgetChars": 27000,
     "neverMove": [
-      "allergen", "TriState", "GDPR", "consent", "PermissionValidation",
-      "no-verify", "--amend", "destructive", "credential"
+      "allergen",
+      "TriState",
+      "GDPR",
+      "consent",
+      "PermissionValidation",
+      "no-verify",
+      "--amend",
+      "destructive",
+      "credential"
     ],
     "gateProbes": [
       {
-        "name": "review markers still demanded, by name",
+        "name": "commit gate is live (--amend is always refused, fires on a clean tree)",
+        "command": "printf '{\"tool_input\":{\"command\":\"git commit --amend -m x\"},\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/require-review-before-commit.mjs",
+        "expectStderr": "not allowed"
+      },
+      {
+        "name": "review markers demanded by name (needs staged files; silent on a clean tree)",
         "command": "printf '{\"tool_input\":{\"command\":\"git commit -m x\"},\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/require-review-before-commit.mjs",
         "expectStderr": "MISSING:"
       },
       {
-        "name": "lone sensitive-domain edit demands a plan",
+        "name": "lone sensitive-domain edit demands a plan (silent if tasks/todo.md was touched in the last 6h — that IS plan evidence)",
         "command": "printf '{\"session_id\":\"probe\",\"tool_input\":{\"file_path\":\"C:/Butlery/butlery/firestore.rules\"},\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/plan-threshold-guard.mjs",
         "expectStderr": "sensitive domain"
       },
       {
-        "name": "lessons/digest drift tripwire still balances",
-        "command": "printf '{\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/knowledge-freshness.mjs",
-        "expectStderr": ""
+        "name": "lessons/digest drift tripwire balances across the split digests",
+        "command": "printf '{\"cwd\":\"C:/Butlery/butlery\"}' | node C:/claude-plugins/plugins/workflow-guards/scripts/knowledge-freshness.mjs 2>&1 | grep -E \"lessons-digest drift\" || echo DRIFT-CLEAN",
+        "expectStderr": "DRIFT-CLEAN"
       }
     ]
   },
@@ -131,10 +148,25 @@
     "digestCoreMaxChars": 7500
   },
   "docsSweep": {
-    "exemptGlobs": ["docs/org/**", "docs/design/mockups/**", "tasks/lessons.md", "tasks/todo.md", ".claude/**"],
-    "navigationDocs": ["docs/onboarding/workflow-map.html", "docs/architecture/RECIPE_PIPELINE.md", "docs/FEATURE_INVENTORY.md", "docs/architecture/ROLE_RESPONSIBILITY_MAP.md"],
-    "forMalinDocs": ["docs/onboarding/butlery-academy.html"],
-    "docLinters": ["python tools/check_workflow_map.py"]
+    "exemptGlobs": [
+      "docs/org/**",
+      "docs/design/mockups/**",
+      "tasks/lessons.md",
+      "tasks/todo.md",
+      ".claude/**"
+    ],
+    "navigationDocs": [
+      "docs/onboarding/workflow-map.html",
+      "docs/architecture/RECIPE_PIPELINE.md",
+      "docs/FEATURE_INVENTORY.md",
+      "docs/architecture/ROLE_RESPONSIBILITY_MAP.md"
+    ],
+    "forMalinDocs": [
+      "docs/onboarding/butlery-academy.html"
+    ],
+    "docLinters": [
+      "python tools/check_workflow_map.py"
+    ]
   },
   "roleOrg": {
     "worldWatchStatePath": "docs/org/world-watch/state.json",
@@ -145,13 +177,24 @@
     "rolePathsFile": "docs/org/role-paths.json",
     "stalenessDir": "docs/org/dossier-staleness",
     "healthChecks": [
-      { "name": "tagcheck", "run": "/tagcheck", "headline": "allergen-accuracy scorecard (safety-first)" },
-      { "name": "sprint-scratch", "run": "bash tools/clean_sprint_scratch.sh", "headline": "sprint scratch swept (stale patches + engine-tagged worktree stashes; human stashes untouched)" }
+      {
+        "name": "tagcheck",
+        "run": "/tagcheck",
+        "headline": "allergen-accuracy scorecard (safety-first)"
+      },
+      {
+        "name": "sprint-scratch",
+        "run": "bash tools/clean_sprint_scratch.sh",
+        "headline": "sprint scratch swept (stale patches + engine-tagged worktree stashes; human stashes untouched)"
+      }
     ],
     "memoryCuration": {
       "memoryDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery/memory",
       "projectDir": "C:/Users/malla/.claude/projects/c--Butlery-butlery",
-      "excludeFiles": ["current-state.md", "interview-decisions.md"],
+      "excludeFiles": [
+        "current-state.md",
+        "interview-decisions.md"
+      ],
       "corpusCapMB": 4,
       "pointerCharBudget": 110,
       "memoryIndexMaxChars": 7000
@@ -171,31 +214,85 @@
       "isolationScope": "team",
       "ticketPrefix": "BUT",
       "intakeState": "Triage",
-      "states": ["Backlog", "Todo", "In Progress", "Triage"],
-      "reservedLabels": ["onboarding-reserved"],
-      "typeLabels": ["bug", "security", "tech-debt", "performance", "test-gap", "dependency", "idea"],
+      "states": [
+        "Backlog",
+        "Todo",
+        "In Progress",
+        "Triage"
+      ],
+      "reservedLabels": [
+        "onboarding-reserved"
+      ],
+      "typeLabels": [
+        "bug",
+        "security",
+        "tech-debt",
+        "performance",
+        "test-gap",
+        "dependency",
+        "idea"
+      ],
       "areaLabels": [
-        { "name": "recipe", "covers": "recipe views/services, detail, cards" },
-        { "name": "tagging", "covers": "auto-tags, allergens, ingredient register, verdicts" },
-        { "name": "import", "covers": "import manager, file/url strategies, OCR" },
-        { "name": "parsing", "covers": "recipe parsing, extractors, LLM parse pipeline" },
-        { "name": "social", "covers": "sharing, friends, groups, comments, ratings" },
-        { "name": "menu", "covers": "weekly menu generation, templates, who's-eating" },
-        { "name": "shopping", "covers": "shopping lists, aggregation, categorizer" },
-        { "name": "account", "covers": "auth, profile, settings persistence, GDPR" },
-        { "name": "analytics", "covers": "events, admin metrics, dashboards" },
-        { "name": "settings", "covers": "preference views, notification prefs" },
-        { "name": "backend", "covers": "functions/src/**, Firestore rules/indexes, repositories" }
+        {
+          "name": "recipe",
+          "covers": "recipe views/services, detail, cards"
+        },
+        {
+          "name": "tagging",
+          "covers": "auto-tags, allergens, ingredient register, verdicts"
+        },
+        {
+          "name": "import",
+          "covers": "import manager, file/url strategies, OCR"
+        },
+        {
+          "name": "parsing",
+          "covers": "recipe parsing, extractors, LLM parse pipeline"
+        },
+        {
+          "name": "social",
+          "covers": "sharing, friends, groups, comments, ratings"
+        },
+        {
+          "name": "menu",
+          "covers": "weekly menu generation, templates, who's-eating"
+        },
+        {
+          "name": "shopping",
+          "covers": "shopping lists, aggregation, categorizer"
+        },
+        {
+          "name": "account",
+          "covers": "auth, profile, settings persistence, GDPR"
+        },
+        {
+          "name": "analytics",
+          "covers": "events, admin metrics, dashboards"
+        },
+        {
+          "name": "settings",
+          "covers": "preference views, notification prefs"
+        },
+        {
+          "name": "backend",
+          "covers": "functions/src/**, Firestore rules/indexes, repositories"
+        }
       ],
       "inReviewStateId": "9929b3b0-b74f-44b8-bf34-ad2e2e78af7c",
       "trackerPath": ".claude/linear-tracker.json"
     },
     "router": {
       "command": "python tools/stakeholder_router.py --json",
-      "tierMap": { "skip": "skip", "single": "single", "full-panel": "full-panel" },
+      "tierMap": {
+        "skip": "skip",
+        "single": "single",
+        "full-panel": "full-panel"
+      },
       "dossierPath": "docs/architecture/ROLE_RESPONSIBILITY_MAP.md"
     },
-    "metrics": { "logReviewCommand": "python docs/org/metrics/log_event.py" },
+    "metrics": {
+      "logReviewCommand": "python docs/org/metrics/log_event.py"
+    },
     "verify": {
       "formatCommand": "/c/tools/flutter/bin/dart format",
       "formatAllCommand": "/c/tools/flutter/bin/dart format lib test",
@@ -204,23 +301,67 @@
     "hygiene": {
       "fileSizeLines": 500,
       "checks": [
-        { "check": "analyze", "command": "dart analyze --fatal-infos", "flagWhen": "any error/info" },
-        { "check": "tests", "command": "flutter test", "flagWhen": "any failure" },
-        { "check": "dep audit", "command": "flutter pub outdated", "flagWhen": "major-version lag on watched deps" },
-        { "check": "file size", "command": "bash tools/count_large_files.sh --list", "flagWhen": ">500 lines and not in ACCEPTED_LARGE_FILES.md" }
+        {
+          "check": "analyze",
+          "command": "dart analyze --fatal-infos",
+          "flagWhen": "any error/info"
+        },
+        {
+          "check": "tests",
+          "command": "flutter test",
+          "flagWhen": "any failure"
+        },
+        {
+          "check": "dep audit",
+          "command": "flutter pub outdated",
+          "flagWhen": "major-version lag on watched deps"
+        },
+        {
+          "check": "file size",
+          "command": "bash tools/count_large_files.sh --list",
+          "flagWhen": ">500 lines and not in ACCEPTED_LARGE_FILES.md"
+        }
       ]
     },
-    "tierCTriggers": ["cross-module reworks", "base-class propagation", ">500-line decomposition", "cold-start/bootstrap changes"],
-    "tierDExamples": ["prod/console access", "functions deploy", "store/Play submission", "MFA/auth-provider config", "secrets"],
-    "decisionQueue": { "source": "label", "label": "need-malin" },
-    "ship": { "commitEnvPrefix": "", "pushTriggersDeploy": false },
+    "tierCTriggers": [
+      "cross-module reworks",
+      "base-class propagation",
+      ">500-line decomposition",
+      "cold-start/bootstrap changes"
+    ],
+    "tierDExamples": [
+      "prod/console access",
+      "functions deploy",
+      "store/Play submission",
+      "MFA/auth-provider config",
+      "secrets"
+    ],
+    "decisionQueue": {
+      "source": "label",
+      "label": "need-malin"
+    },
+    "ship": {
+      "commitEnvPrefix": "",
+      "pushTriggersDeploy": false
+    },
     "monitors": {
       "ciWatcher": "bash .claude/hooks/monitors/ci-watcher.sh",
       "testStreamer": "bash .claude/hooks/monitors/test-streamer.sh"
     },
-    "competitors": ["Paprika", "Samsung Food (Whisk)", "Mela", "KptnCook", "Yummly"],
-    "roadmapDocs": ["docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md", "docs/FEATURE_INVENTORY.md"],
-    "scanNight": { "dir": ".claude/scan-night" },
+    "competitors": [
+      "Paprika",
+      "Samsung Food (Whisk)",
+      "Mela",
+      "KptnCook",
+      "Yummly"
+    ],
+    "roadmapDocs": [
+      "docs/architecture/PIPELINE_IMPROVEMENT_ROADMAP.md",
+      "docs/FEATURE_INVENTORY.md"
+    ],
+    "scanNight": {
+      "dir": ".claude/scan-night"
+    },
     "patchSubdir": "sprint-patches",
     "worktreeSetup": "flutter pub get --offline",
     "cleanTreeIgnore": [

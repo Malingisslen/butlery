@@ -58,3 +58,7 @@
 {"ts":"2026-07-23T20:14:59.752Z","type":"trigger","fired":true,"signals":"auth,cloud function,gdpr,llm","ran":null}
 {"ts":"2026-07-23T21:29:13.860Z","type":"trigger","fired":true,"signals":"auth,functions/src,llm,ocr","ran":null}
 {"ts":"2026-07-23T21:29:51.495Z","type":"trigger","fired":true,"signals":"auth,functions/src,llm,ocr","ran":null}
+{"ts":"2026-07-24T21:19:58.438Z","type":"trigger","fired":true,"signals":"allergen,auth,cloud function,firestore.rules,functions/src,llm","ran":null}
+{"ts":"2026-07-24T21:31:33.567Z","type":"trigger","fired":true,"signals":"allergen,auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
+{"ts":"2026-07-24T21:34:56.972Z","type":"trigger","fired":true,"signals":"auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
+{"ts":"2026-07-24T21:55:08.448Z","type":"trigger","fired":true,"signals":"auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
