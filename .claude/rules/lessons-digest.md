@@ -19,31 +19,17 @@ lessons that only matter while writing or running tests.
 - Don't hand the user judgment/labor you can derive yourself; defer only product intent, irreversible actions, or external facts.
 - Bash `cd` persists across calls — use absolute paths.
 - Verify Edits actually landed (`git diff`) before committing — never trust the commit-message claim.
-- Stop-hook errors: fix only files THIS session touched; ignore parallel sessions' errors.
 - "Unreferenced" must be proven against the WHOLE repo, never a hand-picked subset.
-- Eval input must match PRODUCTION input, not the cheapest-to-label input.
 - Run arch gates locally before committing UI widgets.
-- Touch review markers in a SEPARATE Bash call before `git commit` — never inline in the same call.
 - When the user asks for a new mode, deliver ONE mode — no "normal + extra", no spare variants.
-- Staging doesn't survive parallel sessions — pathspec-commit in one call and re-verify the index after any gate block.
-- Two-session single-checkout contention: `git commit -- <paths>` is immune to the other session's staged index; a lock with NO live git/lefthook process is stale (remove it — an until-loop otherwise spins to timeout); an analyze gate dying at exactly ~300s during their gate run is contention, not findings.
 - "Map the workflows" means full coverage against a stated universe — never silently curate a sample.
-- Data-writing Cloud Functions get the xhigh multi-agent review BEFORE commit — the single-specialist gate is necessary but not sufficient.
 - When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
-- Deny-rule-safe worktree cleanup uses non-destructive `git stash`, never `reset --hard`/`clean -f`, and don't script around the deny rule — the classifier catches the intent; the Bash safety hook also matches dangerous-command strings inside commit MESSAGES, so use `git commit -F <file>` for those.
-- At ship time an `MM`/half-staged file is an explicit decision — `git diff` it and either review+test it into scope or `git checkout -- ` back to the reviewed staged version and file a follow-up; never let `git add -A` ship an unreviewed data-CF edit.
-- Shared-plugin (malin-plugins) installs are sha-pinned at LOCAL scope — after committing to C:/claude-plugins run `node tools/fanout-update.mjs`, else the change never ships (new sessions only).
-- Backslash/NUL content dies crossing tool layers (JSON→bash→printf/YAML→shell→regex) — write probes with the file tools, keep regexes in script files not YAML inlines, and verify bytes before blaming the gate under test.
 - A subagent naming a file as "the X path" proves existence, not routing — read the client orchestrator's tier/fallback structure yourself before asserting what runs first (cost/privacy claims always get direct verification).
 - A blocked gate is a STOP, not a puzzle to route around — never forge a marker; a marker's mtime proves a touch, so read its CONTENTS against the current diff before trusting a gates:ok.
-- Plan-threshold-guard evidence comes from the /review-plan skill → ExitPlanMode block→pass cycle (stamps `plan-approved-<session>.marker`), NOT a hand-rolled audit agent; never SKIP_PLAN_GUARD for a feature, never clobber another session's tasks/todo.md.
 - A new source file can land as a git binary blob — verify `file` says "text" before committing.
-- lefthook `analyze` TIMEOUT (exit 124) while standalone `dart analyze` is clean is contention with VS Code's live analyzer, not findings — recovery ladder in `docs/ops/analyzer-recovery.md`.
-- A backgrounded gated commit races the Stop-hook's own analyze — run it FOREGROUND with a long Bash timeout (≤600000ms) and `git commit -- <pathspec>`; content that passed the gates once is proven clean, so a re-run is operational, not a findings fix.
-- Clearing a corrupted `.dartServer` works with VS Code OPEN (`taskkill //F //IM dart.exe` then immediate `rm -rf`) — the close-VS-Code-first route loses the respawn race.
 - A subagent's transcript file is NOT a liveness signal (0 bytes + stale mtime is normal mid-run — it flushes on completion); only the completion notification proves an agent finished, so never write up "the agent stalled/failed" from file stats. Wait in few LONG background sleeps, not many short holds.
 
-- Always-on instruction context retires only into a NAMED mechanism, best-first: a gate's block message (fires when relevant, ships once for all repos) > an agent/skill body > `paths:` frontmatter (dropped on /compact, so safety rules keep a one-line always-on statement and move only detail) > never skill-description matching alone. A `retire` verdict needs the gate's text QUOTED and its config key wired in the same change; prove it by triggering the gate in a throwaway repo with none of the removed prose present (`/context-diet`).
+- Context-diet's four-mechanism retirement ranking (gate message > agent/skill body > `paths:` frontmatter > never description-alone) and its proof step now live in the `/context-diet` skill body itself — don't re-derive them here.
 
 - "I read very little of what you reply" is a CONFIG bug first — grep the always-on setup (output styles, SessionStart plugins, stale model-tuning blocks) before apologising in prose; fix the mechanism (`~/.claude/output-styles/`) and delete the conflicting prose in the same edit.
 

@@ -28,20 +28,12 @@ Firestore rules, release compliance or legal: run `python tools/stakeholder_rout
 the plan as acceptance criteria. The `stakeholder-review` skill carries the procedure. An
 unresolved high-stakes conflict goes to Malin *in* the plan, never buried.
 
-## Before building new automation — the four-box test
+## Before building new automation
 
-A hook, scheduled routine, self-running loop or agent earns its keep only if all four hold.
-Miss one and it stays a manual tool, honestly labelled:
-
-1. **Repeats at least weekly** — below that the setup never amortizes.
-2. **Something can auto-reject bad output** — a test, gate or hard rule fails the work
-   without a human. No gate and the loop just spins and bills.
-3. **Runs end-to-end** — if it stalls waiting for a human mid-run it's a manual step in a
-   loop costume.
-4. **"Done" is objective, not taste** — automate the detection, leave the decision.
-
-It also needs a named firing path (hook, schedule, gate) or it rots unread. Prefer
-deterministic code over an LLM call inside any loop.
+A hook, scheduled routine, loop or agent earns its keep only if it passes the four-box
+test (repeats ≥weekly, something auto-rejects bad output, runs end-to-end without a human
+mid-run, "done" is objective) and has a named firing path. Full test in
+`.claude/rules/automation-proposals.md` (loads when editing hooks/skills/workflows).
 
 ## Verification before done
 
@@ -83,6 +75,6 @@ diagnostic summary of what was tried and why it failed, then ask for direction.
 
 ## Parallel agent tasks
 
-Process files in small chunks (50–100 items), never a whole large file at once. Define
-chunk boundaries before launching. Verify agents aren't overwriting each other. For a plan
-with 10+ items, run sequentially or in batches of 2–3.
+Chunk large item sets (50–100 at a time, never a whole file), verify agents aren't
+overwriting each other, and batch (2–3) rather than fan out 10+ at once. Full guidance in
+`.claude/rules/automation-proposals.md`.

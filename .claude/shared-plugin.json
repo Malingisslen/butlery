@@ -43,7 +43,7 @@
       ".claude/rules/workflow-discipline.md"
     ],
     "memoryIndex": "C:/Users/malla/.claude/projects/C--Butlery-butlery/memory/MEMORY.md",
-    "budgetChars": 27000,
+    "budgetChars": 21000,
     "neverMove": [
       "allergen",
       "TriState",
