@@ -104,4 +104,105 @@ void main() {
       );
     });
   });
+
+  // BUT-1662: fetchCapped is the single primitive every GDPR export section
+  // now routes its capped read through, so its boundary contract is asserted
+  // here once rather than re-proved per section. The dangerous direction is a
+  // clipped bundle that does NOT declare itself truncated — the user believes
+  // the Art. 15 export is complete — so both sides of the flip point are
+  // pinned, plus the trim of the probe row.
+  group('fetchCapped (BUT-1662)', () {
+    // 'personal_tag_groups' == 100: small enough to build fixtures for, and
+    // derived (never hardcoded) so re-tuning the cap can't fail this suite.
+    const type = 'personal_tag_groups';
+    final cap = ExportPaginationHelper.getLimitForType(type);
+
+    /// Records the requested size and echoes exactly [available] rows, so the
+    /// test drives "how many rows the source holds" independently of what the
+    /// helper asked for.
+    ({Future<List<int>> Function(int) fetch, List<int> requested}) source(
+      int available,
+    ) {
+      final requested = <int>[];
+      return (
+        fetch: (max) async {
+          requested.add(max);
+          return List<int>.generate(available, (i) => i);
+        },
+        requested: requested,
+      );
+    }
+
+    test(
+      'probes one past the cap so "exactly cap" stays distinguishable',
+      () async {
+        // If the helper asked for `cap`, a full source and a clipped source
+        // both return `cap` rows and the truncation flag becomes a coin flip.
+        expect(cap, greaterThan(0), reason: 'fixture premise');
+        final s = source(0);
+        await ExportPaginationHelper.fetchCapped<int>(
+          type: type,
+          fetch: s.fetch,
+        );
+        expect(s.requested, [cap + 1]);
+      },
+    );
+
+    test('an unknown type probes one past the default batch size', () async {
+      final s = source(0);
+      await ExportPaginationHelper.fetchCapped<int>(
+        type: 'not_a_type',
+        fetch: s.fetch,
+      );
+      expect(s.requested, [ExportPaginationHelper.defaultBatchSize + 1]);
+    });
+
+    test('below the cap: every row kept, not truncated', () async {
+      final result = await ExportPaginationHelper.fetchCapped<int>(
+        type: type,
+        fetch: source(3).fetch,
+      );
+      expect(result.items, hasLength(3));
+      expect(result.length, 3);
+      expect(result.truncated, isFalse);
+    });
+
+    test('exactly at the cap: complete, so NOT truncated', () async {
+      // The flip point. `length >= cap` would stamp this complete export as
+      // truncated — a false incompleteness claim on a GDPR bundle (BUT-1562).
+      final result = await ExportPaginationHelper.fetchCapped<int>(
+        type: type,
+        fetch: source(cap).fetch,
+      );
+      expect(result.items, hasLength(cap));
+      expect(result.truncated, isFalse);
+    });
+
+    test('one past the cap: truncated, and the probe row is trimmed', () async {
+      final result = await ExportPaginationHelper.fetchCapped<int>(
+        type: type,
+        fetch: source(cap + 1).fetch,
+      );
+      expect(result.truncated, isTrue);
+      expect(result.items, hasLength(cap));
+      // The trimmed row is the last one — the retained rows are the leading
+      // `cap`, which for ordered queries (e.g. notification_history's
+      // sentAt-desc) means the most recent are what survive.
+      expect(result.items.last, cap - 1);
+    });
+
+    test('propagates a source failure instead of reporting an empty '
+        'complete export', () async {
+      // A swallowed read error here would surface as `total_count: 0` with no
+      // truncation flag — an export that looks complete and empty. The callers
+      // own the try/catch that turns this into a section-level {'error': ...}.
+      await expectLater(
+        ExportPaginationHelper.fetchCapped<int>(
+          type: type,
+          fetch: (_) async => throw StateError('permission-denied'),
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+  });
 }

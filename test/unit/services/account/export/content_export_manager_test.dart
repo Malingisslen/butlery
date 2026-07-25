@@ -15,6 +15,9 @@
 /// gates recipe export on an `is FirebaseRecipeRepository` check.
 library;
 
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -28,6 +31,7 @@ import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repositor
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/export/content_export_manager.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 
 class _FakeRecipeRepository extends Fake implements FirebaseRecipeRepository {
   _FakeRecipeRepository({this.personal = const [], this.unified = const []});
@@ -57,6 +61,7 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> personalMenus;
   final List<Map<String, dynamic>> sharedMenus;
   final List<Map<String, dynamic>> shoppingLists;
+  int? capturedMaxLists;
 
   @override
   Future<List<Map<String, dynamic>>> exportPersonalMenus(
@@ -70,12 +75,20 @@ class _FakeDataExportRepository extends Fake
     int maxDocuments = 1000,
   }) async => sharedMenus;
 
+  // Sentinel default (NOT the real 1000), same reasoning as
+  // `_FakePantryRepository`: shopping lists is the ONE migrated section whose
+  // fetch parameter is named `maxLists` rather than `maxDocuments`, so it is
+  // the likeliest place for the cap to stop being forwarded. A realistic
+  // default would let that regression pass.
   @override
   Future<List<Map<String, dynamic>>> exportPersonalShoppingLists(
     String userId, {
-    int maxLists = 1000,
+    int maxLists = -1,
     int maxItemsPerList = 500,
-  }) async => shoppingLists;
+  }) async {
+    capturedMaxLists = maxLists;
+    return shoppingLists;
+  }
 }
 
 class _FakePersonalTagRepository extends Fake
@@ -179,6 +192,11 @@ class _FakeGroupWeeklyMenuPlanRepository extends Fake
     int maxDocuments = 260,
   }) async => rows;
 }
+
+Map<String, dynamic> _recipeRow(String prefix, int i) => {
+  'id': '$prefix$i',
+  'data': {'title': 'r$i'},
+};
 
 ContentExportManager _manager({
   _FakeRecipeRepository? recipes,
@@ -329,6 +347,59 @@ void main() {
       ]);
       expect(result['total_count'], 1);
     });
+
+    test(
+      'forwards the N+1 probe size to the repo\'s maxLists parameter '
+      '(BUT-1662)',
+      () async {
+        // Shopping lists is the only section whose fetch parameter is named
+        // `maxLists`, not `maxDocuments` — a rename-shaped slip here would
+        // silently drop the cap to the repo default and break the truncation
+        // probe. Paired with the sentinel default on the fake, this fails if
+        // production stops forwarding.
+        final exports = _FakeDataExportRepository();
+        final manager = _manager(exports: exports);
+
+        await manager.exportShoppingLists('user-uid');
+
+        expect(
+          exports.capturedMaxLists,
+          ExportPaginationHelper.getLimitForType('shopping_lists') + 1,
+        );
+      },
+    );
+
+    // A Timestamp on the list document used to reach the encoder untouched.
+    // `jsonEncode` in DataExportService is NOT inside a try/catch, so one such
+    // field threw JsonUnsupportedObjectError out of the WHOLE GDPR export,
+    // not just this section.
+    test(
+      'sanitizes list_info so a Timestamp cannot break jsonEncode',
+      () async {
+        final manager = _manager(
+          exports: _FakeDataExportRepository(
+            shoppingLists: [
+              {
+                'id': 'list1',
+                'data': {
+                  'name': 'Groceries',
+                  'createdAt': Timestamp.fromDate(DateTime.utc(2026, 7, 25)),
+                },
+                'items': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportShoppingLists('user-uid');
+
+        final list = (result['shopping_lists'] as List).single as Map;
+        final info = list['list_info'] as Map;
+        expect(info['name'], 'Groceries');
+        expect(info['createdAt'], isNot(isA<Timestamp>()));
+        expect(() => jsonEncode(result), returnsNormally);
+      },
+    );
   });
 
   group('ContentExportManager — single-collection record types (BUT-1438)', () {
@@ -447,6 +518,10 @@ void main() {
         // its limit (for the `truncated` flag) but did not pass it to the
         // repo, so the repo silently fell back to its own default. The two
         // values coincide today (both 1000) but could diverge.
+        //
+        // BUT-1662: the forwarded value is now cap + 1 — the N+1 truncation
+        // probe fetches one past the cap so a complete export of exactly `cap`
+        // rows stays distinguishable from a clipped one.
         final pantryRepo = _FakePantryRepository(const []);
         final manager = ContentExportManager(
           recipeRepository: _FakeRecipeRepository(),
@@ -465,18 +540,27 @@ void main() {
 
         await manager.exportPantryItems('user-uid');
 
-        expect(pantryRepo.capturedMaxDocuments, 1000);
+        expect(
+          pantryRepo.capturedMaxDocuments,
+          ExportPaginationHelper.getLimitForType('pantry_items') + 1,
+        );
       },
     );
 
     test(
-      'exportPantryItems flags truncated only when the cap is reached '
-      '(BUT-1562)',
+      'exportPantryItems flags truncated only when rows were actually '
+      'omitted (BUT-1662)',
       () async {
-        // The pantry cap is ExportPaginationHelper.getLimitForType('pantry_items')
-        // == 1000. Below the cap the `truncated` key must be absent; at the cap
-        // it must be true. The fake echoes whatever rows it is given, so we can
-        // drive both sides of the boundary directly.
+        // Boundary contract: below the cap and EXACTLY at the cap the export
+        // is complete, so `truncated` must be absent — the pre-BUT-1662
+        // `length >= cap` test stamped a complete cap-sized export as
+        // truncated, a false incompleteness claim on a GDPR bundle. Only when
+        // the source holds more than the cap (the N+1 probe returns cap + 1)
+        // may the flag appear, and the payload is trimmed back to the cap.
+        // The fake echoes whatever rows it is given, so we can drive all three
+        // sides of the boundary directly. The cap is DERIVED: re-tuning it is a
+        // config change, not a behaviour regression, and must not fail here.
+        final cap = ExportPaginationHelper.getLimitForType('pantry_items');
         Map<String, dynamic> row(int i) => {
           'id': 'p$i',
           'data': {'name': 'item$i'},
@@ -490,11 +574,171 @@ void main() {
         expect(belowResult['total_count'], 3);
 
         final atCap = _manager(
-          pantry: List.generate(1000, row),
+          pantry: List.generate(cap, row),
         );
         final atResult = await atCap.exportPantryItems('user-uid');
-        expect(atResult['truncated'], isTrue);
-        expect(atResult['total_count'], 1000);
+        expect(atResult.containsKey('truncated'), isFalse);
+        expect(atResult['total_count'], cap);
+
+        final overCap = _manager(
+          pantry: List.generate(cap + 1, row),
+        );
+        final overResult = await overCap.exportPantryItems('user-uid');
+        expect(overResult['truncated'], isTrue);
+        expect(overResult['total_count'], cap);
+      },
+    );
+
+    test(
+      'exportRecipes does not stamp truncated when two complete sub-queries '
+      'happen to sum past the cap (BUT-1662)',
+      () async {
+        // The recipe cap applies PER sub-query — personal and top-level are
+        // separate Firestore reads. Comparing the MERGED length to one cap
+        // stamped a fully complete export as truncated as soon as the two
+        // halves added up past it. Each leg here holds three quarters of the
+        // cap: neither is clipped, but together they exceed it.
+        final cap = ExportPaginationHelper.getLimitForType('recipes');
+        final perLeg = (cap * 3) ~/ 4;
+        expect(perLeg, lessThanOrEqualTo(cap), reason: 'fixture premise');
+        expect(perLeg * 2, greaterThan(cap), reason: 'fixture premise');
+
+        final manager = _manager(
+          recipes: _FakeRecipeRepository(
+            personal: List.generate(perLeg, (i) => _recipeRow('p', i)),
+            unified: List.generate(perLeg, (i) => _recipeRow('u', i)),
+          ),
+        );
+
+        final result = await manager.exportRecipes('user-uid');
+
+        expect(result['total_count'], perLeg * 2);
+        expect(result.containsKey('truncated'), isFalse);
+      },
+    );
+
+    test(
+      'exportRecipes stamps truncated when the personal-recipe leg clipped '
+      '(BUT-1662)',
+      () async {
+        // Positive control for the OR: without it the "sum past the cap"
+        // test above passes even if the flag were dropped from exportRecipes
+        // entirely — and a clipped bundle silently claiming completeness is
+        // the dangerous direction for Art. 15.
+        final cap = ExportPaginationHelper.getLimitForType('recipes');
+
+        final manager = _manager(
+          recipes: _FakeRecipeRepository(
+            personal: List.generate(cap + 1, (i) => _recipeRow('p', i)),
+            unified: [_recipeRow('u', 0)],
+          ),
+        );
+
+        final result = await manager.exportRecipes('user-uid');
+
+        expect(result['truncated'], isTrue);
+        // Personal trimmed back to the cap; the intact unified leg still lands.
+        expect(result['total_count'], cap + 1);
+        expect((result['recipes'] as List).last, {
+          'recipe_id': 'u0',
+          'type': 'unified',
+          'data': {'title': 'r0'},
+        });
+      },
+    );
+
+    test(
+      'exportRecipes stamps truncated when only the top-level leg clipped '
+      '(BUT-1662)',
+      () async {
+        // The second half of the OR: a regression keeping only
+        // `personal.truncated` would leave the test above green.
+        final cap = ExportPaginationHelper.getLimitForType('recipes');
+
+        final manager = _manager(
+          recipes: _FakeRecipeRepository(
+            personal: [_recipeRow('p', 0)],
+            unified: List.generate(cap + 1, (i) => _recipeRow('u', i)),
+          ),
+        );
+
+        final result = await manager.exportRecipes('user-uid');
+
+        expect(result['truncated'], isTrue);
+        expect(result['total_count'], cap + 1);
+      },
+    );
+
+    test(
+      'exportMenus stamps truncated when only the personal-menu leg clipped '
+      '(BUT-1662)',
+      () async {
+        // First half of the menus OR. Without it, an expression collapsed to
+        // `shared.truncated` alone stays green — covering only the LAST leg
+        // catches collapse-to-first but never collapse-to-last.
+        final cap = ExportPaginationHelper.getLimitForType('menus');
+
+        final manager = _manager(
+          exports: _FakeDataExportRepository(
+            personalMenus: List.generate(
+              cap + 1,
+              (i) => {
+                'id': 'p$i',
+                'data': {'name': 'Personal$i'},
+              },
+            ),
+            sharedMenus: [
+              {
+                'id': 's1',
+                'data': {'name': 'Shared'},
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMenus('user-uid');
+
+        expect(result['truncated'], isTrue);
+        // Personal trimmed back to the cap; the intact shared leg still lands.
+        expect(result['total_count'], cap + 1);
+        expect((result['menus'] as List).last, {
+          'menu_id': 's1',
+          'type': 'shared',
+          'data': {'name': 'Shared'},
+        });
+      },
+    );
+
+    test(
+      'exportMenus stamps truncated when only the shared-menu leg clipped '
+      '(BUT-1662)',
+      () async {
+        // Second half of the menus OR: a regression keeping only
+        // `personal.truncated` would leave the test above green.
+        final cap = ExportPaginationHelper.getLimitForType('menus');
+
+        final manager = _manager(
+          exports: _FakeDataExportRepository(
+            personalMenus: [
+              {
+                'id': 'm1',
+                'data': {'name': 'Personal'},
+              },
+            ],
+            sharedMenus: List.generate(
+              cap + 1,
+              (i) => {
+                'id': 's$i',
+                'data': {'name': 'Shared$i'},
+              },
+            ),
+          ),
+        );
+
+        final result = await manager.exportMenus('user-uid');
+
+        expect(result['truncated'], isTrue);
+        expect(result['total_count'], cap + 1);
       },
     );
 

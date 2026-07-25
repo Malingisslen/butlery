@@ -18,8 +18,13 @@
  */
 
 import * as admin from "firebase-admin";
-import { dispatchNotification } from "../notifications/send-notification";
+import {
+  assertBatchValid,
+  dispatchNotification,
+  preflightNotificationBatch,
+} from "../notifications/send-notification";
 import type { PreferenceAwarePushResult } from "../shared/preference-aware-push";
+import type { RateLimitCheckResult } from "../middleware/rate_limiter";
 
 interface PrefAwareCall {
   userId: string;
@@ -313,6 +318,207 @@ async function runUnknownCategoryFallback(): Promise<number> {
   return failed;
 }
 
+/**
+ * BUT-1664: the batch callable's admission control.
+ *
+ * Two things are under test, and both are about COST rather than delivery:
+ * the batch pays from its own bucket at one token per notification (it used to
+ * pay a single token from the single-send bucket, making 100 pushes as cheap as
+ * one), and a payload that can never be processed is rejected before it can
+ * consume any of that budget.
+ */
+interface PreflightCase {
+  name: string;
+  notifications: unknown;
+  /** Verdict the stubbed bucket returns when it is reached. */
+  allowed: boolean;
+  /** Expected HttpsError code, or null when the call must succeed. */
+  expectErrorCode: string | null;
+  /** Tokens the bucket must be charged, or null when it must not be reached. */
+  expectTokens: number | null;
+}
+
+function makeNotifications(count: number): unknown[] {
+  return Array.from({ length: count }, (_, i) => ({
+    targetUserId: `user-${i}`,
+    title: "Hej",
+    body: "Meddelande",
+  }));
+}
+
+const preflightCases: PreflightCase[] = [
+  {
+    name: "charges one token PER NOTIFICATION, not one per call",
+    notifications: makeNotifications(25),
+    allowed: true,
+    expectErrorCode: null,
+    expectTokens: 25,
+  },
+  {
+    name: "a full-size batch (100) is charged 100 and still admitted",
+    notifications: makeNotifications(100),
+    allowed: true,
+    expectErrorCode: null,
+    expectTokens: 100,
+  },
+  {
+    name: "an empty batch still costs a token (no free no-op spam loop)",
+    notifications: [],
+    allowed: true,
+    expectErrorCode: null,
+    expectTokens: 1,
+  },
+  {
+    name: "a non-array payload is rejected WITHOUT charging the bucket",
+    notifications: "not-an-array",
+    allowed: true,
+    expectErrorCode: "invalid-argument",
+    expectTokens: null,
+  },
+  {
+    name: "an oversized batch is rejected WITHOUT charging the bucket",
+    notifications: makeNotifications(101),
+    allowed: true,
+    expectErrorCode: "invalid-argument",
+    expectTokens: null,
+  },
+  {
+    name: "an exhausted bucket surfaces resource-exhausted",
+    notifications: makeNotifications(10),
+    allowed: false,
+    expectErrorCode: "resource-exhausted",
+    expectTokens: 10,
+  },
+];
+
+async function runPreflightTests(): Promise<number> {
+  let failed = 0;
+
+  for (const c of preflightCases) {
+    const charges: { operationType: string; tokens: number }[] = [];
+    const rateLimit = async (
+      _userId: string,
+      operationType: string,
+      tokensRequired: number = 1
+    ): Promise<RateLimitCheckResult> => {
+      charges.push({ operationType, tokens: tokensRequired });
+      return { allowed: c.allowed, remainingTokens: 0 };
+    };
+
+    let thrownCode: string | null = null;
+    try {
+      await preflightNotificationBatch({
+        callerUid: "caller-1",
+        notifications: c.notifications,
+        rateLimit,
+      });
+    } catch (err) {
+      thrownCode = (err as { code?: string }).code ?? String(err);
+    }
+
+    const problems: string[] = [];
+    if (thrownCode !== c.expectErrorCode) {
+      problems.push(
+        `error=${thrownCode ?? "none"}/expected=${c.expectErrorCode ?? "none"}`
+      );
+    }
+    if (c.expectTokens === null) {
+      if (charges.length !== 0) {
+        problems.push(
+          `bucket charged ${charges[0].tokens} token(s) but must not be reached`
+        );
+      }
+    } else if (charges.length !== 1) {
+      problems.push(`bucket calls=${charges.length}/expected=1`);
+    } else {
+      if (charges[0].tokens !== c.expectTokens) {
+        problems.push(`tokens=${charges[0].tokens}/expected=${c.expectTokens}`);
+      }
+      // The dedicated bucket is the whole point — the old code billed the
+      // single-send bucket, so a regression here is invisible from token
+      // count alone.
+      if (charges[0].operationType !== "sendNotificationBatch") {
+        problems.push(
+          `bucket='${charges[0].operationType}'/expected='sendNotificationBatch'`
+        );
+      }
+    }
+
+    if (problems.length > 0) {
+      failed++;
+      console.log(`  FAIL  ${c.name}`);
+      console.log(`        ${problems.join(", ")}`);
+    } else {
+      console.log(`  PASS  ${c.name}`);
+    }
+  }
+
+  return failed;
+}
+
+/**
+ * The batch validator must reject EVERY malformed element as a terminal
+ * `invalid-argument`, before anything dereferences it. A `null` element used
+ * to slip past validation-error COLLECTION into `notifications.map((n) =>
+ * n.targetUserId)`, throwing a raw TypeError → `internal` → client retry loop.
+ */
+const batchValidationCases: {
+  name: string;
+  notifications: unknown[];
+  expectErrorCode: string | null;
+}[] = [
+  {
+    name: "a valid batch passes",
+    notifications: makeNotifications(3),
+    expectErrorCode: null,
+  },
+  {
+    name: "a null element is invalid-argument, never internal",
+    notifications: [null],
+    expectErrorCode: "invalid-argument",
+  },
+  {
+    name: "a primitive element is invalid-argument",
+    notifications: [42, "nope"],
+    expectErrorCode: "invalid-argument",
+  },
+  {
+    name: "one bad element poisons an otherwise valid batch",
+    notifications: [...makeNotifications(2), undefined],
+    expectErrorCode: "invalid-argument",
+  },
+  {
+    name: "a missing targetUserId is invalid-argument",
+    notifications: [{ title: "Hej", body: "Meddelande" }],
+    expectErrorCode: "invalid-argument",
+  },
+];
+
+function runBatchValidationTests(): number {
+  let failed = 0;
+
+  for (const c of batchValidationCases) {
+    let thrownCode: string | null = null;
+    try {
+      assertBatchValid(c.notifications);
+    } catch (err) {
+      thrownCode = (err as { code?: string }).code ?? String(err);
+    }
+
+    if (thrownCode !== c.expectErrorCode) {
+      failed++;
+      console.log(`  FAIL  ${c.name}`);
+      console.log(
+        `        error=${thrownCode ?? "none"}/expected=${c.expectErrorCode ?? "none"}`
+      );
+    } else {
+      console.log(`  PASS  ${c.name}`);
+    }
+  }
+
+  return failed;
+}
+
 async function runTests(): Promise<void> {
   console.log("Sprint C3: sendNotification callable preference-aware tests\n");
   console.log("==========================================================\n");
@@ -320,8 +526,11 @@ async function runTests(): Promise<void> {
   let failed = 0;
   failed += await runScenarioTests();
   failed += await runUnknownCategoryFallback();
+  failed += await runPreflightTests();
+  failed += runBatchValidationTests();
 
-  const total = scenarios.length + 1;
+  const total =
+    scenarios.length + 1 + preflightCases.length + batchValidationCases.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

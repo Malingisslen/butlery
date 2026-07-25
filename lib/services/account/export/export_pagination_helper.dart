@@ -23,6 +23,20 @@ dynamic sanitizeForJson(dynamic value) {
   return value;
 }
 
+/// One capped export read: the rows to include, plus whether the source
+/// actually held more than the cap.
+///
+/// [truncated] is decided by an N+1 probe, never by comparing [items].length
+/// to the cap — see [ExportPaginationHelper.fetchCapped].
+class CappedExport<T> {
+  const CappedExport({required this.items, required this.truncated});
+
+  final List<T> items;
+  final bool truncated;
+
+  int get length => items.length;
+}
+
 /// Helper for paginated exports to prevent timeout on large datasets.
 /// Implements cursor-based pagination for GDPR data exports.
 ///
@@ -181,6 +195,11 @@ class ExportPaginationHelper {
     'weekly_menu_plans': 260, // ~5 years × 52 weeks
     'pantry_items': 1000,
     'recipe_cook_events': 2000, // ~5 years of daily cooking
+    // BUT-1662: pinned at the value they already resolved to via the
+    // defaultBatchSize fallback, so the truncation probe keys off a declared
+    // contract rather than a coincidence. Behaviour is unchanged.
+    'cook_snaps': 500,
+    'activity_events': 500,
     // BUT-1450: notification analytics (Art. 15 export). History + delivery
     // can be high-volume, so cap explicitly rather than fall through to 10k.
     'notification_history': 2000,
@@ -198,5 +217,29 @@ class ExportPaginationHelper {
   /// Get export limit for content type
   static int getLimitForType(String type) {
     return exportLimits[type] ?? defaultBatchSize;
+  }
+
+  /// Run one capped export read with an N+1 truncation probe.
+  ///
+  /// [fetch] receives `cap + 1` so "exactly `cap` rows exist" stays
+  /// distinguishable from "more than `cap` exist, some omitted". Deriving the
+  /// flag from the returned length instead (`length >= cap`) cannot tell those
+  /// apart and stamps a COMPLETE bundle as truncated — a false incompleteness
+  /// claim on a GDPR Art. 15/20 export (BUT-1562; generalized here in
+  /// BUT-1662, which also retires the merged-length-vs-one-cap miscount: a
+  /// section fed by several sub-queries probes each one and ORs the flags).
+  ///
+  /// Costs exactly one extra document read per section.
+  static Future<CappedExport<T>> fetchCapped<T>({
+    required String type,
+    required Future<List<T>> Function(int maxDocuments) fetch,
+  }) async {
+    final cap = getLimitForType(type);
+    final rows = await fetch(cap + 1);
+    final truncated = rows.length > cap;
+    return CappedExport(
+      items: truncated ? rows.sublist(0, cap) : rows,
+      truncated: truncated,
+    );
   }
 }
