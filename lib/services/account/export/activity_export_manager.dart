@@ -103,22 +103,20 @@ class ActivityExportManager {
   /// label this section anonymous — only the uid-free aggregate is anonymous.
   Future<Map<String, dynamic>> exportPooledRatingEvents(String userId) async {
     try {
-      final limit = ExportPaginationHelper.getLimitForType(
-        'canonical_rating_events',
-      );
-      final entries = await _exports.exportCanonicalRatingEvents(
-        userId,
-        maxDocuments: limit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'canonical_rating_events',
+        fetch: (max) =>
+            _exports.exportCanonicalRatingEvents(userId, maxDocuments: max),
       );
       return {
         // Distinct inner key (not the outer section key) so consumers read
         // pooled_rating_events.events, matching the feedback→submissions /
         // comments_and_ratings→comments sibling convention (not the double-nest).
-        'events': entries
+        'events': entries.items
             .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
             .toList(),
         'total_count': entries.length,
-        if (entries.length >= limit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
         'note':
             'Pseudonymous: each event links your account to a recipe-identity '
             'hash (poolKey), not anonymous data.',

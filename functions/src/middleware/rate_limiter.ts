@@ -107,9 +107,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 30,
     refillIntervalMs: 60000,
   },
+  // BUT-1664: denominated in NOTIFICATIONS, not calls. The callable charges
+  // one token per notification in the batch, so `maxTokens` must cover one
+  // full-size batch (the callable caps at 100) or every large batch would be
+  // denied outright. `refillRate` matches sendNotification's 30/min so the
+  // sustained per-notification budget is the same whichever path a caller uses.
   sendNotificationBatch: {
-    maxTokens: 10,
-    refillRate: 5,
+    maxTokens: 100,
+    refillRate: 30,
     refillIntervalMs: 60000,
   },
 

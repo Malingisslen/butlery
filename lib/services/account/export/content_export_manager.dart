@@ -86,16 +86,24 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportRecipes(String userId) async {
     try {
       final recipes = <Map<String, dynamic>>[];
-      final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
+      // Each sub-query carries its own cap, so truncation is the OR of the two
+      // probes — comparing the MERGED length to one cap would stamp a complete
+      // export as truncated as soon as the two halves happened to add up to
+      // the cap (BUT-1662).
+      var truncated = false;
 
       // Personal recipes in user's subcollection — RecipeRepository concrete.
       final repoConcrete = _recipes;
       if (repoConcrete is FirebaseRecipeRepository) {
-        final personal = await repoConcrete.exportPersonalRecipesByUser(
-          userId,
-          maxDocuments: recipeLimit,
+        final personal = await ExportPaginationHelper.fetchCapped(
+          type: 'recipes',
+          fetch: (max) => repoConcrete.exportPersonalRecipesByUser(
+            userId,
+            maxDocuments: max,
+          ),
         );
-        for (final entry in personal) {
+        truncated = truncated || personal.truncated;
+        for (final entry in personal.items) {
           recipes.add({
             'recipe_id': entry['id'],
             'type': 'personal',
@@ -104,11 +112,15 @@ class ContentExportManager {
         }
 
         // Top-level recipes where user is owner (legacy `userId` field).
-        final unified = await repoConcrete.exportTopLevelRecipesByOwner(
-          userId,
-          maxDocuments: recipeLimit,
+        final unified = await ExportPaginationHelper.fetchCapped(
+          type: 'recipes',
+          fetch: (max) => repoConcrete.exportTopLevelRecipesByOwner(
+            userId,
+            maxDocuments: max,
+          ),
         );
-        for (final entry in unified) {
+        truncated = truncated || unified.truncated;
+        for (final entry in unified.items) {
           recipes.add({
             'recipe_id': entry['id'],
             'type': 'unified',
@@ -120,7 +132,7 @@ class ContentExportManager {
       return {
         'total_count': recipes.length,
         'recipes': recipes,
-        if (recipes.length >= recipeLimit) 'truncated': true,
+        if (truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export recipes', e);
@@ -132,14 +144,13 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportMenus(String userId) async {
     try {
       final menus = <Map<String, dynamic>>[];
-      final menuLimit = ExportPaginationHelper.getLimitForType('menus');
 
       // Personal menus subcollection.
-      final personal = await _exports.exportPersonalMenus(
-        userId,
-        maxDocuments: menuLimit,
+      final personal = await ExportPaginationHelper.fetchCapped(
+        type: 'menus',
+        fetch: (max) => _exports.exportPersonalMenus(userId, maxDocuments: max),
       );
-      for (final entry in personal) {
+      for (final entry in personal.items) {
         menus.add({
           'menu_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -147,11 +158,12 @@ class ContentExportManager {
       }
 
       // Top-level menus where the user is owner (sharedByUserId == userId).
-      final shared = await _exports.exportSharedMenusByOwner(
-        userId,
-        maxDocuments: menuLimit,
+      final shared = await ExportPaginationHelper.fetchCapped(
+        type: 'menus',
+        fetch: (max) =>
+            _exports.exportSharedMenusByOwner(userId, maxDocuments: max),
       );
-      for (final entry in shared) {
+      for (final entry in shared.items) {
         menus.add({
           'menu_id': entry['id'],
           'type': 'shared',
@@ -162,7 +174,8 @@ class ContentExportManager {
       return {
         'total_count': menus.length,
         'menus': menus,
-        if (menus.length >= menuLimit) 'truncated': true,
+        // Per-sub-query flags, not merged-length-vs-one-cap (BUT-1662).
+        if (personal.truncated || shared.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export menus', e);
@@ -174,16 +187,13 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportShoppingLists(String userId) async {
     try {
       final lists = <Map<String, dynamic>>[];
-      final listLimit = ExportPaginationHelper.getLimitForType(
-        'shopping_lists',
+      final results = await ExportPaginationHelper.fetchCapped(
+        type: 'shopping_lists',
+        fetch: (max) =>
+            _exports.exportPersonalShoppingLists(userId, maxLists: max),
       );
 
-      final results = await _exports.exportPersonalShoppingLists(
-        userId,
-        maxLists: listLimit,
-      );
-
-      for (final entry in results) {
+      for (final entry in results.items) {
         final items = (entry['items'] as List)
             .cast<Map<String, dynamic>>()
             .map(
@@ -196,7 +206,9 @@ class ContentExportManager {
 
         lists.add({
           'list_id': entry['id'],
-          'list_info': entry['data'],
+          // Raw Firestore doc map: a Timestamp/GeoPoint left in here throws
+          // out of the ENTIRE GDPR export at jsonEncode, not just this section.
+          'list_info': sanitizeForJson(entry['data']),
           'items': items,
         });
       }
@@ -204,7 +216,7 @@ class ContentExportManager {
       return {
         'total_count': lists.length,
         'shopping_lists': lists,
-        if (lists.length >= listLimit) 'truncated': true,
+        if (results.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -219,13 +231,12 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
     try {
       final tags = <Map<String, dynamic>>[];
-      final tagLimit = ExportPaginationHelper.getLimitForType('personal_tags');
-
-      final entries = await _personalTags.exportAllByUser(
-        userId,
-        maxDocuments: tagLimit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'personal_tags',
+        fetch: (max) =>
+            _personalTags.exportAllByUser(userId, maxDocuments: max),
       );
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         tags.add({
           'tag_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -235,7 +246,7 @@ class ContentExportManager {
       return {
         'total_count': tags.length,
         'personal_tags': tags,
-        if (tags.length >= tagLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -250,15 +261,12 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportPersonalTagGroups(String userId) async {
     try {
       final groups = <Map<String, dynamic>>[];
-      final groupLimit = ExportPaginationHelper.getLimitForType(
-        'personal_tag_groups',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'personal_tag_groups',
+        fetch: (max) =>
+            _personalTagGroups.exportAllByUser(userId, maxDocuments: max),
       );
-
-      final entries = await _personalTagGroups.exportAllByUser(
-        userId,
-        maxDocuments: groupLimit,
-      );
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         groups.add({
           'group_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -268,7 +276,7 @@ class ContentExportManager {
       return {
         'total_count': groups.length,
         'personal_tag_groups': groups,
-        if (groups.length >= groupLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -283,14 +291,13 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportCookSnaps(String userId) async {
     try {
       final snaps = <Map<String, dynamic>>[];
-      final snapLimit = ExportPaginationHelper.getLimitForType('cook_snaps');
-
-      final entries = await _cookSnaps.exportCookSnapsByUser(
-        userId,
-        maxDocuments: snapLimit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'cook_snaps',
+        fetch: (max) =>
+            _cookSnaps.exportCookSnapsByUser(userId, maxDocuments: max),
       );
 
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         snaps.add({
           'snap_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -300,7 +307,7 @@ class ContentExportManager {
       return {
         'total_count': snaps.length,
         'cook_snaps': snaps,
-        if (snaps.length >= snapLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export cook snaps', e);
@@ -312,16 +319,12 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportCookEvents(String userId) async {
     try {
       final events = <Map<String, dynamic>>[];
-      final eventLimit = ExportPaginationHelper.getLimitForType(
-        'recipe_cook_events',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'recipe_cook_events',
+        fetch: (max) => _cookEvents.exportCookEventsByUser(userId, limit: max),
       );
 
-      final entries = await _cookEvents.exportCookEventsByUser(
-        userId,
-        limit: eventLimit,
-      );
-
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         events.add({
           'event_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -331,7 +334,7 @@ class ContentExportManager {
       return {
         'total_count': events.length,
         'recipe_cook_events': events,
-        if (events.length >= eventLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export cook events', e);
@@ -343,16 +346,12 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportPantryItems(String userId) async {
     try {
       final items = <Map<String, dynamic>>[];
-      final pantryLimit = ExportPaginationHelper.getLimitForType(
-        'pantry_items',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'pantry_items',
+        fetch: (max) => _pantry.exportAllByUser(userId, maxDocuments: max),
       );
 
-      final entries = await _pantry.exportAllByUser(
-        userId,
-        maxDocuments: pantryLimit,
-      );
-
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         items.add({
           'item_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -362,7 +361,7 @@ class ContentExportManager {
       return {
         'total_count': items.length,
         'pantry_items': items,
-        if (items.length >= pantryLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export pantry items', e);
@@ -374,16 +373,13 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportActivityEvents(String userId) async {
     try {
       final events = <Map<String, dynamic>>[];
-      final eventLimit = ExportPaginationHelper.getLimitForType(
-        'activity_events',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'activity_events',
+        fetch: (max) =>
+            _activityEvents.exportEventsByUser(userId, maxDocuments: max),
       );
 
-      final entries = await _activityEvents.exportEventsByUser(
-        userId,
-        maxDocuments: eventLimit,
-      );
-
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         events.add({
           'event_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -393,7 +389,7 @@ class ContentExportManager {
       return {
         'total_count': events.length,
         'activity_events': events,
-        if (events.length >= eventLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -408,16 +404,12 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];
-      final planLimit = ExportPaginationHelper.getLimitForType(
-        'weekly_menu_plans',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'weekly_menu_plans',
+        fetch: (max) => _weeklyMenus.exportAllByUser(userId, maxDocuments: max),
       );
 
-      final entries = await _weeklyMenus.exportAllByUser(
-        userId,
-        maxDocuments: planLimit,
-      );
-
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         plans.add({
           'plan_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -427,7 +419,7 @@ class ContentExportManager {
       return {
         'total_count': plans.length,
         'weekly_menu_plans': plans,
-        if (plans.length >= planLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -442,16 +434,13 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportGroupWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];
-      final planLimit = ExportPaginationHelper.getLimitForType(
-        'weekly_menu_plans',
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'weekly_menu_plans',
+        fetch: (max) =>
+            _groupMenus.exportPlansForParticipant(userId, maxDocuments: max),
       );
 
-      final entries = await _groupMenus.exportPlansForParticipant(
-        userId,
-        maxDocuments: planLimit,
-      );
-
-      for (final entry in entries) {
+      for (final entry in entries.items) {
         plans.add({
           'plan_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -461,7 +450,7 @@ class ContentExportManager {
       return {
         'total_count': plans.length,
         'group_weekly_menu_plans': plans,
-        if (plans.length >= planLimit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(

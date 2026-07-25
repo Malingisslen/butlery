@@ -315,6 +315,12 @@ class WeeklyMenuPlanService extends BaseService {
       if (match == null) continue;
       // weekdayIndex is 1-based (Mon=1), DayOfWeek is 0-based index.
       final dayIdx = (pin.weekdayIndex - 1).clamp(0, DayOfWeek.sun.index);
+      // BUT-1668: a pin must respect the today-anchor. Pinning "tacofredag"
+      // on a Saturday would place a recipe on a day that already passed, so
+      // skip the pin and let the recipe fall through to the chronological
+      // fill. anchorIndex is 0 for any non-current week, so future weeks are
+      // unaffected.
+      if (dayIdx < anchorIndex) continue;
       final day = DayOfWeek.values[dayIdx];
       final slot = mapMealTypeToSlot(slotKey);
       // BUT-1241: a pin must not double-stack an occupied single slot

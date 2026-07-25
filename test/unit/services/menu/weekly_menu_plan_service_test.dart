@@ -1,6 +1,7 @@
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -32,6 +33,25 @@ Recipe _recipe(String label) {
     ingredients: const [],
     instructions: const [],
     mealType: 'middag',
+  );
+}
+
+/// A recipe carrying [tags], so a `DayPin` with `requiredTags` can single it
+/// out from an otherwise identical batch (that's how "tacofredag" picks the
+/// taco rather than whatever happens to be first in the generated list).
+Recipe _taggedRecipe(String label, Set<String> tags) {
+  final base = _recipe(label);
+  return Recipe(
+    core: base.core.copyWith(
+      tagResult: TagResult(
+        tags: tags,
+        allergenStatus: const {},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026, 4, 1),
+      ),
+    ),
+    type: base.type,
   );
 }
 
@@ -241,6 +261,138 @@ void main() {
           'Recipe pinned',
         );
       });
+    },
+  );
+
+  group(
+    'distributeFromGeneratedMenu — day pins vs the today-anchor (BUT-1668)',
+    () {
+      test('a pin whose weekday already passed this week is skipped — '
+          'the recipe falls through to the chronological fill', () {
+        // Saturday of the current week: "tacofredag" (ISO 5) is in the past.
+        final sat = DateTime(2026, 4, 11, 10);
+
+        final result = service.distributeFromGeneratedMenu(
+          generated: {
+            'middag': [_recipe('pinned')],
+          },
+          weekStart: mon,
+          existing: _emptyPlan(mon),
+          now: sat,
+          dayPins: const [
+            DayPin(
+              weekdayIndex: 5,
+              mealType: 'middag',
+              constraint: RecipeConstraint(count: 1),
+            ),
+          ],
+        );
+
+        expect(result.plan.entryAt(DayOfWeek.fri, MealSlot.middag), isNull);
+        expect(
+          result.plan.entryAt(DayOfWeek.sat, MealSlot.middag)?.recipeTitle,
+          'Recipe pinned',
+        );
+        expect(result.overflow, isEmpty);
+      });
+
+      test(
+        'a pin landing exactly ON the anchor still claims its weekday — '
+        'tacofredag survives a menu generated on the Friday itself',
+        () {
+          // The pin's weekday IS the anchor: the guard must skip strictly
+          // earlier days only. Two recipes make the two outcomes differ —
+          // with one recipe the chronological fill would also pick Friday,
+          // so an off-by-one would be invisible.
+          final fri = DateTime(2026, 4, 10, 10);
+
+          final result = service.distributeFromGeneratedMenu(
+            generated: {
+              'middag': [
+                _recipe('filler'),
+                _taggedRecipe('taco', const {'tacos'}),
+              ],
+            },
+            weekStart: mon,
+            existing: _emptyPlan(mon),
+            now: fri,
+            dayPins: const [
+              DayPin(
+                weekdayIndex: 5,
+                mealType: 'middag',
+                constraint: RecipeConstraint(
+                  count: 1,
+                  requiredTags: {'tacos'},
+                ),
+              ),
+            ],
+          );
+
+          expect(
+            result.plan.entryAt(DayOfWeek.fri, MealSlot.middag)?.recipeTitle,
+            'Recipe taco',
+          );
+          // The unpinned recipe is pushed past the claimed cell.
+          expect(
+            result.plan.entryAt(DayOfWeek.sat, MealSlot.middag)?.recipeTitle,
+            'Recipe filler',
+          );
+        },
+      );
+
+      test('a pin on or after the anchor still claims its own weekday', () {
+        final wed = DateTime(2026, 4, 8, 10);
+
+        final result = service.distributeFromGeneratedMenu(
+          generated: {
+            'middag': [_recipe('pinned')],
+          },
+          weekStart: mon,
+          existing: _emptyPlan(mon),
+          now: wed,
+          dayPins: const [
+            DayPin(
+              weekdayIndex: 5,
+              mealType: 'middag',
+              constraint: RecipeConstraint(count: 1),
+            ),
+          ],
+        );
+
+        expect(
+          result.plan.entryAt(DayOfWeek.fri, MealSlot.middag)?.recipeTitle,
+          'Recipe pinned',
+        );
+      });
+
+      test(
+        'a past-weekday pin in a FUTURE week is untouched by the anchor',
+        () {
+          final nextMon = mon.add(const Duration(days: 7));
+          final sat = DateTime(2026, 4, 11, 10);
+
+          final result = service.distributeFromGeneratedMenu(
+            generated: {
+              'middag': [_recipe('pinned')],
+            },
+            weekStart: nextMon,
+            existing: _emptyPlan(nextMon),
+            now: sat,
+            dayPins: const [
+              DayPin(
+                weekdayIndex: 5,
+                mealType: 'middag',
+                constraint: RecipeConstraint(count: 1),
+              ),
+            ],
+          );
+
+          expect(
+            result.plan.entryAt(DayOfWeek.fri, MealSlot.middag)?.recipeTitle,
+            'Recipe pinned',
+          );
+        },
+      );
     },
   );
 

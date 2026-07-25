@@ -463,6 +463,103 @@ function validateNotification(notification: NotificationRequest): string | null 
   return null;
 }
 
+/** Largest batch the callable accepts, and the unit the batch bucket is sized in. */
+const MAX_BATCH_NOTIFICATIONS = 100;
+
+/**
+ * BUT-1664: parse and bound the batch payload, THEN charge the dedicated
+ * `sendNotificationBatch` bucket one token per notification.
+ *
+ * Two ordering facts this encodes:
+ * - The charge lands on the batch bucket scaled by size. Charging a flat token
+ *   (and against the single-send bucket) let a caller push 100 notifications
+ *   for the price of one, so the batch path was ~100x cheaper to abuse than
+ *   sending the same pushes one at a time.
+ * - Parse and size validation run BEFORE the charge, so a malformed or
+ *   oversized payload is rejected as `invalid-argument` without consuming the
+ *   caller's budget — while the charge still lands before the per-target
+ *   authorization loop, which costs a Firestore read per unique target.
+ *
+ * An empty array still costs one token: a no-op spam loop must not be free.
+ *
+ * Exported as a test seam (`rateLimit`) — production resolves to
+ * `checkRateLimit`.
+ */
+export async function preflightNotificationBatch(opts: {
+  callerUid: string;
+  notifications: unknown;
+  rateLimit?: typeof checkRateLimit;
+}): Promise<NotificationRequest[]> {
+  const { callerUid, notifications, rateLimit = checkRateLimit } = opts;
+
+  if (!Array.isArray(notifications)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "notifications array is required"
+    );
+  }
+
+  if (notifications.length > MAX_BATCH_NOTIFICATIONS) {
+    throw new HttpsError(
+      "invalid-argument",
+      `Maximum ${MAX_BATCH_NOTIFICATIONS} notifications per batch`
+    );
+  }
+
+  const rateLimitResult = await rateLimit(
+    callerUid,
+    "sendNotificationBatch",
+    Math.max(1, notifications.length)
+  );
+  if (!rateLimitResult.allowed) {
+    throw new HttpsError(
+      "resource-exhausted",
+      "Rate limit exceeded. Please try again later."
+    );
+  }
+
+  return notifications as NotificationRequest[];
+}
+
+/**
+ * H14: reject a batch containing ANY invalid notification.
+ *
+ * Called immediately after the preflight and BEFORE the per-target
+ * authorization loop. That ordering is load-bearing in two ways:
+ * - `preflightNotificationBatch` casts the payload without checking element
+ *   shape, so an element like `null` would reach `n.targetUserId` and throw a
+ *   raw TypeError. The callable surfaces that as `internal`, and `internal`
+ *   triggers a CLIENT RETRY (see the BUT-641 note above) — a poison-pill batch
+ *   would loop, re-charging the rate-limit bucket and re-crashing every time,
+ *   instead of failing terminally as `invalid-argument`.
+ * - The authorization loop costs up to three Firestore reads per unique
+ *   target (100 targets ≈ 300 reads). A batch already known to be invalid
+ *   must never pay for it.
+ *
+ * Exported as a test seam.
+ */
+export function assertBatchValid(notifications: unknown[]): void {
+  const validationErrors: { index: number; error: string }[] = [];
+  notifications.forEach((notification, index) => {
+    const error = validateNotification(notification as NotificationRequest);
+    if (error) {
+      validationErrors.push({ index, error });
+    }
+  });
+
+  if (validationErrors.length === 0) return;
+
+  logger.warn(
+    `H14: Batch has ${validationErrors.length} invalid notifications`,
+    { errors: validationErrors.slice(0, 5) } // Log first 5 errors
+  );
+  throw new HttpsError(
+    "invalid-argument",
+    `${validationErrors.length} notifications failed validation. ` +
+    `First error at index ${validationErrors[0].index}: ${validationErrors[0].error}`
+  );
+}
+
 /**
  * Sends notifications to multiple users (batch operation).
  *
@@ -485,42 +582,18 @@ export const sendNotificationBatch = onCall(
     }
 
     const callerUid = request.auth.uid;
-    const data = request.data;
 
-    // Rate limit check for batch operations
-    const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
-    if (!rateLimitResult.allowed) {
-      throw new HttpsError(
-        "resource-exhausted",
-        "Rate limit exceeded. Please try again later."
-      );
-    }
-
-    const { notifications } = data;
-
-    if (!notifications || !Array.isArray(notifications)) {
-      throw new HttpsError(
-        "invalid-argument",
-        "notifications array is required"
-      );
-    }
-
-    // Limit batch size to prevent abuse
-    if (notifications.length > 100) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Maximum 100 notifications per batch"
-      );
-    }
-
-    // H14: Pre-validate all notifications before processing
-    const validationErrors: { index: number; error: string }[] = [];
-    notifications.forEach((notification, index) => {
-      const error = validateNotification(notification);
-      if (error) {
-        validationErrors.push({ index, error });
-      }
+    // BUT-1664: validate + size-bound the payload, then charge the dedicated
+    // batch bucket by notification count. Runs before the authorization loop
+    // below, which costs a Firestore read per unique target.
+    const notifications = await preflightNotificationBatch({
+      callerUid,
+      notifications: request.data?.notifications,
     });
+
+    // H14: every element is validated and REJECTED here, before anything
+    // below dereferences it or spends a Firestore read on it.
+    assertBatchValid(notifications);
 
     // Authorization: verify caller can send to all target users
     const uniqueTargets = [...new Set(
@@ -568,18 +641,6 @@ export const sendNotificationBatch = onCall(
           `Not authorized to send notifications to ${unauthorizedTargets.length} target user(s)`
         );
       }
-    }
-
-    if (validationErrors.length > 0) {
-      logger.warn(
-        `H14: Batch has ${validationErrors.length} invalid notifications`,
-        { errors: validationErrors.slice(0, 5) } // Log first 5 errors
-      );
-      throw new HttpsError(
-        "invalid-argument",
-        `${validationErrors.length} notifications failed validation. ` +
-        `First error at index ${validationErrors[0].index}: ${validationErrors[0].error}`
-      );
     }
 
     logger.info(
