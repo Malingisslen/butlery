@@ -42,7 +42,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `realtime_recipe.dart` | 573 | Realtime collaboration recipe model |
 | `ingredient_data.dart` | 530 | Ingredient data model — nutritional properties, Swedish/English names |
 | `shared_recipe.dart` | 572 | Shared recipe model with denormalized metadata and copy-on-write mixins |
-| `user_profile.dart` | 663 | Core user profile model — social fields, settings, notification prefs, serialization |
+| `user_profile.dart` | 774 | Core user profile model — social fields, settings, notification prefs, serialization. Row refreshed 2026-07-25 (was recorded at 663). |
 | `firebase_ratings_repository.dart` | 507 | Ratings repository — CRUD, denormalized stats streams, bulk stats, GDPR export, pooled "Butlery-betyget" read. Crossed 500 with the cohesive `getPooledStats` read (Increment 6a); the methods share the same collection + auth context, so splitting would fragment one repository. |
 
 ## Infrastructure Mixins
@@ -69,7 +69,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_shared_shopping_repository.dart` | 802 | Shared shopping — member management + item ops |
 | `base_shared_content_repository.dart` | 799 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
-| `firebase_user_repository.dart` | 791 | User profile CRUD + settings + GDPR cascade methods (BUT-498) |
+| `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 507 | Explicit facade coordinating three focused sub-repositories |
 | `firebase_data_export_repository.dart` | 690 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. |
@@ -94,7 +94,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
-| `user_service.dart` | 810 | User profile + settings service |
+| `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 903 | Chat/messaging service |
 | `text_import_strategy.dart` | 795 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |

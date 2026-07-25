@@ -155,6 +155,121 @@ void main() {
       expect(got!.fcmToken, isNull);
     });
 
+    test(
+      'BUT-1663: another member DECLARES allergens and they are still '
+      'unreadable — an empty allergen set is never a declaration',
+      () async {
+        // The structural fact the whole household allergen rule rests on.
+        // What this test pins is the CLIENT-side guard at
+        // firebase_user_repository.dart (`currentUserId == userId`) — remove
+        // it and Bob's peanut allergy merges in and this test fails.
+        // FakeFirebaseFirestore enforces no security rules, so the server-side
+        // half (`allow read: if isOwner(userId)`) is proven separately in
+        // functions/src/__tests__/firestore-rules.test.ts. Both must hold: if
+        // either stops holding, HouseholdService keeping the common-allergen
+        // floor for other members becomes wrong rather than conservative.
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
+        await _seedProfile(firestore, _profile(uid: _bob, displayName: 'Bob'));
+        await firestore
+            .collection('users')
+            .doc(_bob)
+            .collection('settings')
+            .doc('preferences')
+            .set({
+              'allergenPreferences': const UserAllergenPreferences(
+                trackedAllergens: {'jordnötter'},
+                trackedDietary: {},
+              ).toFirestore(),
+            });
+
+        final got = await repo.fetchProfile(_bob);
+
+        expect(got, isNotNull);
+        // Bob really did declare a peanut allergy. Alice cannot see it.
+        expect(got!.allergenPreferences, isNull);
+        // No merge was even attempted for another user, so provenance is
+        // false: "we did not read this", which is the truthful answer and the
+        // reason HouseholdService keeps the floor for other members.
+        expect(got.settingsMerged, isFalse);
+      },
+    );
+
+    test(
+      'BUT-1663: reading your OWN declared allergens works, and does not set '
+      'the settings-unavailable flag',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
+        await _seedProfile(firestore, _profile());
+        await firestore
+            .collection('users')
+            .doc(_alice)
+            .collection('settings')
+            .doc('preferences')
+            .set({
+              'allergenPreferences': const UserAllergenPreferences(
+                trackedAllergens: {'ägg'},
+                trackedDietary: {},
+              ).toFirestore(),
+            });
+
+        final got = await repo.fetchProfile(_alice);
+
+        expect(got!.allergenPreferences?.trackedAllergens, {'ägg'});
+        expect(got.settingsMerged, isTrue);
+      },
+    );
+
+    test(
+      'BUT-1663: a settings read that THROWS is flagged, not silently '
+      'returned as "declared nothing"',
+      () async {
+        // The one branch that sets the flag. Without a test here, a refactor
+        // moving the settings merge outside its try/catch would leave the flag
+        // permanently false, and the household allergen union would go back to
+        // reading a broken read as "she has no allergies" — with a green suite.
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
+        await _seedProfile(firestore, _profile());
+        await firestore
+            .collection('users')
+            .doc(_alice)
+            .collection('settings')
+            .doc('preferences')
+            // A String where the merge casts to Map<String, dynamic> — throws
+            // inside the try, which is the shape a real read failure takes.
+            .set({'allergenPreferences': 'not-a-map'});
+
+        final got = await repo.fetchProfile(_alice);
+
+        expect(got, isNotNull);
+        // Provenance NOT granted — nothing may read this null as a declaration.
+        expect(got!.settingsMerged, isFalse);
+        expect(got.allergenPreferences, isNull);
+      },
+    );
+
+    test(
+      'BUT-1663: a user who never opened the allergen screen reads back as '
+      'no preferences with no failure flag',
+      () async {
+        // This is the ONE case that is a genuine declaration of "no
+        // allergies" — the settings doc simply has nothing in it.
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
+        await _seedProfile(firestore, _profile());
+
+        final got = await repo.fetchProfile(_alice);
+
+        expect(got!.allergenPreferences, isNull);
+        // We looked and there was nothing there — that IS a declaration, and
+        // the flag says so. This is the one null the household union may treat
+        // as "no allergies".
+        expect(got.settingsMerged, isTrue);
+      },
+    );
+
     test('fetchProfiles returns batched results', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);

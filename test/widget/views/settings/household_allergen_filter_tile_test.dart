@@ -61,10 +61,12 @@ void main() {
       when(() => userService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(trackedAllergens: {}, trackedDietary: {}),
       );
-      when(() => household.getAggregatedAllergenPreferences()).thenAnswer(
-        (_) async => const UserAllergenPreferences(
-          trackedAllergens: {'gluten'},
-          trackedDietary: {},
+      when(() => household.aggregateAllergenPreferences()).thenAnswer(
+        (_) async => const HouseholdAllergenAggregate.complete(
+          UserAllergenPreferences(
+            trackedAllergens: {'gluten'},
+            trackedDietary: {},
+          ),
         ),
       );
 
@@ -185,10 +187,12 @@ void main() {
             trackedDietary: {},
           ),
         );
-        when(() => household.getAggregatedAllergenPreferences()).thenAnswer(
-          (_) async => const UserAllergenPreferences(
-            trackedAllergens: {'gluten', 'laktos'},
-            trackedDietary: {},
+        when(() => household.aggregateAllergenPreferences()).thenAnswer(
+          (_) async => const HouseholdAllergenAggregate.complete(
+            UserAllergenPreferences(
+              trackedAllergens: {'gluten', 'laktos'},
+              trackedDietary: {},
+            ),
           ),
         );
 
@@ -215,6 +219,62 @@ void main() {
           reason:
               'the owner\'s own allergen (gluten) stays filtered and must NOT '
               'be named as newly exposed',
+        );
+      },
+    );
+
+    testWidgets(
+      'an incomplete roster names NO allergens and says the list may be '
+      'partial (BUT-1663)',
+      (tester) async {
+        // A household member could not be read, so the aggregate carries the
+        // widened safety floor rather than the family's real allergies.
+        // Naming that floor would be a false statement in a child-safety
+        // dialog: it would claim laktos-free protection is being dropped for
+        // a family whose actual allergy nobody could read.
+        when(() => household.hasHousehold).thenReturn(true);
+        when(
+          () => userService.currentUserProfile,
+        ).thenReturn(_profile(useHousehold: true));
+        when(() => userService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {},
+          ),
+        );
+        when(() => household.aggregateAllergenPreferences()).thenAnswer(
+          (_) async => const HouseholdAllergenAggregate.degraded(
+            preferences: UserAllergenPreferences(
+              trackedAllergens: {'gluten', 'mjölk', 'nötter', 'jordnötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: false,
+            ),
+            unresolvedMemberIds: ['kid'],
+          ),
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
+        expect(
+          find.textContaining(sv.householdAllergenRosterIncomplete),
+          findsOneWidget,
+          reason: 'the user must be told the allergen list may be incomplete',
+        );
+        expect(
+          find.textContaining(
+            AllergenPreferenceOptions.getAllergenLabel('gluten'),
+          ),
+          findsNothing,
+          reason:
+              'the safety floor is not the household\'s allergen list and '
+              'must never be presented as one',
         );
       },
     );

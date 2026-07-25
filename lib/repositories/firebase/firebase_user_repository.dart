@@ -245,12 +245,23 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             // merged back from settings here or the client's profile.isMinor
             // reads false forever and the analytics minimization never fires.
             isMinor: s['isMinor'] as bool? ?? false,
+            // BUT-1663: provenance — these settings were genuinely read.
+            settingsMerged: true,
           );
         }
+        // No settings doc at all. That is not a failure: we looked, and this
+        // user really has never written any preferences. An absent
+        // allergenPreferences here IS a declaration, so mark it as read.
+        return profile.copyWith(settingsMerged: true);
       } catch (e) {
         AppLogger.warning(
           'Failed to load private settings for ${userId.maskedUserId}: $e',
         );
+        // BUT-1663: fall through WITHOUT settingsMerged. Swallowing this made a
+        // failed read look identical to "the user never set anything" — every
+        // settings-backed field, allergenPreferences included, is null either
+        // way. The public profile is still worth returning (callers render it
+        // fine), but nothing may read its null allergen set as a declaration.
       }
     }
     return profile;

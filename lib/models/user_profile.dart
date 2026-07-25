@@ -121,6 +121,25 @@ class UserProfile with JsonSerializableMixin {
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
 
+  /// BUT-1663: TRANSIENT provenance. True only when this instance's private
+  /// settings sub-doc was genuinely read — so an absent settings-backed field
+  /// ([allergenPreferences] above all) is absent because the user left it
+  /// unset, not because nobody looked.
+  ///
+  /// Deliberately POSITIVE rather than an `unavailable` flag. A negative flag
+  /// would default to "fine" for every profile that never went near the merge:
+  /// `fetchProfiles` batch-reads `public_profiles` only and populates the same
+  /// cache, and `fetchProfile` skips the merge entirely when auth is
+  /// momentarily null. Either would hand back the signed-in user's own profile
+  /// with no allergens and no hint that none were ever loaded, which the
+  /// household union would read as "she declared none" — the exact bug this
+  /// field exists to prevent. False must mean "unknown", and it does.
+  ///
+  /// Excluded from `toFirestore`, `toPrivateSettings` and `toJson` — it
+  /// describes one read attempt, never persisted state, and `toJson` feeds the
+  /// GDPR export.
+  final bool settingsMerged;
+
   UserProfile({
     required this.uid,
     required this.displayName,
@@ -156,6 +175,7 @@ class UserProfile with JsonSerializableMixin {
     this.isHidden = false,
     this.hiddenAt,
     this.schemaVersion = 1,
+    this.settingsMerged = false,
   }) {
     if (householdSize != null &&
         (householdSize! < minHouseholdSize ||
@@ -223,6 +243,7 @@ class UserProfile with JsonSerializableMixin {
     bool? isHidden,
     Object? hiddenAt = _sentinel,
     int? schemaVersion,
+    bool? settingsMerged,
   }) {
     return UserProfile(
       uid: uid,
@@ -279,6 +300,7 @@ class UserProfile with JsonSerializableMixin {
       isHidden: isHidden ?? this.isHidden,
       hiddenAt: hiddenAt == _sentinel ? this.hiddenAt : hiddenAt as DateTime?,
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      settingsMerged: settingsMerged ?? this.settingsMerged,
     );
   }
 

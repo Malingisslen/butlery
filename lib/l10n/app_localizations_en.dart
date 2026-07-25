@@ -1870,6 +1870,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Then the weekly menu is planned from your own allergies only. A recipe that someone else in the household — including a child — needs to avoid can then be planned into the menu. The filter can be turned back on at any time.';
 
   @override
+  String get householdAllergenRosterIncomplete =>
+      'We could not read everyone in the household just now, so the list of allergies may be incomplete.';
+
+  @override
   String get commonTurnOff => 'Turn off';
 
   @override

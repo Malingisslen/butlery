@@ -73,11 +73,13 @@ void main() {
 
   void stubHousehold({bool includeUnknownInMenu = true}) {
     when(() => household.hasHousehold).thenReturn(true);
-    when(() => household.getAggregatedAllergenPreferences()).thenAnswer(
-      (_) async => UserAllergenPreferences(
-        trackedAllergens: const {'gluten'},
-        trackedDietary: const {},
-        includeUnknownInMenu: includeUnknownInMenu,
+    when(() => household.aggregateAllergenPreferences()).thenAnswer(
+      (_) async => HouseholdAllergenAggregate.complete(
+        UserAllergenPreferences(
+          trackedAllergens: const {'gluten'},
+          trackedDietary: const {},
+          includeUnknownInMenu: includeUnknownInMenu,
+        ),
       ),
     );
   }
@@ -153,7 +155,7 @@ void main() {
       );
       // The OWNER tracks gluten. If the household union were (wrongly) consulted
       // it would also hide gluten — so the discriminators are prefSource AND
-      // that getAggregatedAllergenPreferences is never called.
+      // that aggregateAllergenPreferences is never called.
       when(() => userService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {'gluten'},
@@ -180,7 +182,7 @@ void main() {
       // ...but the filtering source is single-user (owner), NOT the household.
       expect(generator.lastPoolStats?.prefSource, MenuPrefSource.singleUser);
       // The household union must never be consulted when the user opts out.
-      verifyNever(() => household.getAggregatedAllergenPreferences());
+      verifyNever(() => household.aggregateAllergenPreferences());
     },
   );
 
@@ -373,6 +375,85 @@ void main() {
         'tracked_allergen_count': 1,
         'pref_source': 'household',
       });
+    },
+  );
+
+  test(
+    'BUT-1663: a DEGRADED aggregate filters on the widened set and is '
+    'reported as householdIncomplete, not as a healthy household run',
+    () async {
+      // Every other test in this file stubs `.complete`, so the degraded
+      // branch of _resolveActivePrefs had no coverage at all — the enum value
+      // could have been reverted to `household` and nothing would have gone
+      // red, hiding the one signal that says the menu was built without
+      // seeing the whole family.
+      when(() => household.hasHousehold).thenReturn(true);
+      when(() => household.aggregateAllergenPreferences()).thenAnswer(
+        (_) async => HouseholdAllergenAggregate.degraded(
+          // The shape HouseholdService actually produces when a member's read
+          // fails: the resolved member's allergen PLUS the common-allergen
+          // safety floor, with the UNKNOWN escape hatch shut.
+          preferences: UserAllergenPreferences(
+            trackedAllergens: {
+              'gluten',
+              ...UserAllergenPreferences.defaults.trackedAllergens,
+            },
+            trackedDietary: const {},
+            includeUnknownInMenu: false,
+          ),
+          unresolvedMemberIds: const ['kid'],
+        ),
+      );
+      final analytics = MockAnalyticsService();
+      TestServiceLocator.registerSingleton<AnalyticsService>(analytics);
+
+      // Must be proven free of the FLOOR allergens too, not just gluten —
+      // with includeUnknownInMenu false, an unproven floor allergen is enough
+      // to withhold a recipe. That is the whole point of cautious mode, and it
+      // is why a degraded household sees a visibly smaller pool.
+      final safe = recipeWith(
+        'safe',
+        tag({
+          for (final a in {
+            'gluten',
+            ...UserAllergenPreferences.defaults.trackedAllergens,
+          })
+            a: TriState.free,
+        }),
+      );
+      recipeService.setRecipeState(
+        isInitialized: true,
+        recipes: [
+          recipeWith('unsafe', tag({'gluten': TriState.contains})),
+          // With includeUnknownInMenu false a stale/unknown recipe must also
+          // be kept out — that is what "cautious" buys.
+          recipeWith('unknown', tag({'gluten': TriState.unknown})),
+          safe,
+        ],
+      );
+      menuService.setGenerateMenuResult({
+        'middag': [safe],
+      });
+
+      await generator.generateMenuFromPrompt('veckomeny');
+
+      final events = analytics.capturedEvents
+          .where((e) => e.name == 'menu_recipes_hidden_by_household')
+          .toList();
+      expect(events, hasLength(1));
+      // Whole map, like the sibling test above — asserting only the two keys
+      // this test is "about" would let a regression in the third through.
+      expect(events.single.parameters, {
+        'hidden_count': 2,
+        'tracked_allergen_count': {
+          'gluten',
+          ...UserAllergenPreferences.defaults.trackedAllergens,
+        }.length,
+        'pref_source': 'householdIncomplete',
+      });
+      // The direct proof of what reached the selection service, as every other
+      // test in this file does it.
+      expect(menuService.lastGenerateRecipes?.map((r) => r.id), ['safe']);
     },
   );
 }

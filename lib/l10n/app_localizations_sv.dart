@@ -1873,6 +1873,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.';
 
   @override
+  String get householdAllergenRosterIncomplete =>
+      'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.';
+
+  @override
   String get commonTurnOff => 'Stäng av';
 
   @override

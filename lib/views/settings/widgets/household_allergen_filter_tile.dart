@@ -65,9 +65,9 @@ class _HouseholdAllergenFilterTileState
     // Turning OFF lowers a safety net for household members (incl. a child).
     // Fetch the household's tracked allergens so the warning can name the ones
     // opting out actually exposes, then require an explicit confirm.
-    final prefs = await _householdService?.getAggregatedAllergenPreferences();
+    final aggregate = await _householdService?.aggregateAllergenPreferences();
     if (!mounted) return;
-    final confirmed = await _confirmTurnOff(prefs);
+    final confirmed = await _confirmTurnOff(aggregate);
     if (confirmed == true) {
       await _persist(false);
     }
@@ -87,15 +87,25 @@ class _HouseholdAllergenFilterTileState
     }
   }
 
-  Future<bool?> _confirmTurnOff(UserAllergenPreferences? prefs) {
+  Future<bool?> _confirmTurnOff(HouseholdAllergenAggregate? aggregate) {
     final l10n = context.l10n;
-    final names = _newlyUnprotectedNames(prefs);
+    // BUT-1663: an incomplete roster produces a widened, safety-floored set
+    // that is NOT the household's real allergen list. Naming it here would
+    // tell Malin she is unprotecting allergies nobody has while omitting the
+    // ones they do — so drop to the generic body and say the list is partial.
+    final rosterComplete = aggregate?.isRosterComplete ?? true;
+    final names = rosterComplete
+        ? _newlyUnprotectedNames(aggregate?.preferences)
+        : '';
+    final body = names.isEmpty
+        ? l10n.householdAllergenOffBodyGeneric
+        : l10n.householdAllergenOffBody(names);
     return ConfirmationDialog.show(
       context,
       title: l10n.householdAllergenOffTitle,
-      message: names.isEmpty
-          ? l10n.householdAllergenOffBodyGeneric
-          : l10n.householdAllergenOffBody(names),
+      message: rosterComplete
+          ? body
+          : '$body\n\n${l10n.householdAllergenRosterIncomplete}',
       titleIcon: Icons.warning_amber,
       // Weighted red confirm (isDangerous) — this is the one settings toggle
       // whose wrong tap has a child-safety consequence, so it should carry

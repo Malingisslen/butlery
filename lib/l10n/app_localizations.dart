@@ -3158,6 +3158,12 @@ abstract class AppLocalizations {
   /// **'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.'**
   String get householdAllergenOffBodyGeneric;
 
+  /// BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.'**
+  String get householdAllergenRosterIncomplete;
+
   /// Common action: turn a setting off
   ///
   /// In sv, this message translates to:

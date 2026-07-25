@@ -9,6 +9,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -391,15 +392,8 @@ class UserService extends ChangeNotifier
   /// Get user profile by ID (with caching)
   Future<UserProfile?> getUserProfile(String userId) async {
     // Check cache first
-    if (_profileCache.containsKey(userId)) {
-      final cached = _profileCache[userId]!;
-      final cacheTime = _cacheTimestamps[userId]!;
-      final isExpired =
-          clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
-
-      if (!isExpired) {
-        return cached;
-      }
+    if (_profileCache.containsKey(userId) && !_isProfileCacheExpired(userId)) {
+      return _profileCache[userId]!;
     }
 
     // Fetch from repository
@@ -428,11 +422,7 @@ class UserService extends ChangeNotifier
     for (final userId in userIds) {
       if (_profileCache.containsKey(userId)) {
         final cached = _profileCache[userId]!;
-        final cacheTime = _cacheTimestamps[userId]!;
-        final isExpired =
-            clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
-
-        if (!isExpired) {
+        if (!_isProfileCacheExpired(userId)) {
           results.add(cached);
         } else {
           uncachedIds.add(userId);
@@ -629,6 +619,69 @@ class UserService extends ChangeNotifier
       AppLogger.warning('⚠️ Could not ensure base user document: $e');
       // Don't throw - this is not critical for user functionality
     }
+  }
+
+  /// BUT-1663: a profile read that keeps "absent" and "failed" apart.
+  ///
+  /// [getUserProfile] cannot answer this: `_getProfileFromRepository` catches
+  /// and returns null, and `safeExecute` catches again, so a deleted account
+  /// and a dropped connection are the same null by the time a caller sees it.
+  /// The repository DOES distinguish them — `fetchProfile` returns null for a
+  /// missing document and rethrows on a read error — so this goes to the
+  /// repository directly rather than through either swallow.
+  ///
+  /// Reuses the same 30-minute cache as [getUserProfile]: the household
+  /// allergen union calls this once per member per menu generation, and an
+  /// uncached read would add a Firestore read per member per generation.
+  Future<ProfileLookup> lookupUserProfile(String userId) async {
+    // Only the signed-in user's own settings are ever readable, so only their
+    // profile can be "settings-merged". For anyone else the flag is always
+    // false and means nothing — the caller already knows their preferences are
+    // unreachable and compensates.
+    final isSelf = userId == _authRepository.currentUser?.uid;
+
+    // A cached self-profile that was never settings-merged is NOT usable here.
+    // `getUserProfiles` fills this same cache from `fetchProfiles`, which
+    // batch-reads public_profiles only — so the roster screen can leave the
+    // owner cached with no preferences and no failure recorded. Serving that
+    // as `found` would read the user's own allergens as "declared none".
+    final cached = _profileCache[userId];
+    if (cached != null && !_isProfileCacheExpired(userId)) {
+      if (!isSelf || cached.settingsMerged) return ProfileLookup.found(cached);
+    }
+
+    try {
+      final profile = await _repository.fetchProfile(userId);
+      if (profile == null) {
+        // A stale roster id genuinely points at nobody — but the SIGNED-IN
+        // user is definitionally at the table. Their public profile doc going
+        // absent is a broken state (a half-completed save leaves the settings
+        // sub-doc behind), not a person who left, so it must fail safe rather
+        // than drop them from the union as "nobody to protect".
+        return isSelf
+            ? const ProfileLookup.unavailable()
+            : const ProfileLookup.missing();
+      }
+
+      if (isSelf && !profile.settingsMerged) {
+        // Read succeeded, preferences did not. Do NOT cache it: a one-second
+        // blip would otherwise pin the household to the cautious floor for the
+        // full 30 minutes, and hand a preference-less profile to every other
+        // cache consumer.
+        return ProfileLookup.foundSettingsUnavailable(profile);
+      }
+      _cacheProfile(userId, profile);
+      return ProfileLookup.found(profile);
+    } catch (e) {
+      AppLogger.error('Profile lookup failed for ${userId.maskedUserId}: $e');
+      return const ProfileLookup.unavailable();
+    }
+  }
+
+  bool _isProfileCacheExpired(String userId) {
+    final cacheTime = _cacheTimestamps[userId];
+    if (cacheTime == null) return true;
+    return clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
   }
 
   Future<UserProfile?> _getProfileFromRepository(String userId) async {

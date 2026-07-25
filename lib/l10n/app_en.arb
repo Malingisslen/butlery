@@ -1199,6 +1199,10 @@
   "@householdAllergenOffBodyGeneric": {
     "description": "BUT-1465: confirm-dialog body fallback when the household tracks no allergens"
   },
+  "householdAllergenRosterIncomplete": "We could not read everyone in the household just now, so the list of allergies may be incomplete.",
+  "@householdAllergenRosterIncomplete": {
+    "description": "BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted"
+  },
   "commonTurnOff": "Turn off",
   "@commonTurnOff": {
     "description": "Common action: turn a setting off"

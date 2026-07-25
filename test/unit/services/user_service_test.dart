@@ -8,6 +8,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/profile_lookup.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
 
@@ -1309,6 +1311,189 @@ void main() {
 
         // Assert — test passes if dispose() completes without throwing
       });
+    });
+
+    /// BUT-1663: `getUserProfile` collapses every outcome into a nullable
+    /// profile, so a deleted account, a dropped connection and a user who
+    /// declared nothing are the same `null`. The household allergen union
+    /// cannot be built on that. These pin the producer side — the household
+    /// suite proves what is done with each status, this proves each status is
+    /// actually produced.
+    group('lookupUserProfile (BUT-1663)', () {
+      const self = 'test_user_123';
+      const other = 'partner_456';
+
+      UserProfile profileFor(
+        String uid, {
+        bool settingsMerged = false,
+        UserAllergenPreferences? prefs,
+      }) => UserProfile(
+        uid: uid,
+        displayName: uid,
+        email: '$uid@example.com',
+        joinedAt: DateTime(2026, 1, 1),
+        lastActiveAt: DateTime(2026, 1, 1),
+        allergenPreferences: prefs,
+        settingsMerged: settingsMerged,
+      );
+
+      setUp(() {
+        mockAuthRepository.setAuthState(user: mockUser, userId: self);
+      });
+
+      test('a missing document is `missing`, never `unavailable`', () async {
+        when(
+          () => mockUserRepository.fetchProfile(other),
+        ).thenAnswer((_) async => null);
+
+        final result = await userService.lookupUserProfile(other);
+
+        expect(result.status, ProfileLookupStatus.missing);
+        expect(result.profile, isNull);
+      });
+
+      test(
+        'SELF with no profile document is `unavailable`, not `missing` — the '
+        'signed-in user is definitionally at the table',
+        () async {
+          // A half-completed save can leave the settings sub-doc with real
+          // allergens and no public profile doc. Reporting that as `missing`
+          // would drop the owner from the union with no safety floor and a
+          // healthy-looking roster.
+          when(
+            () => mockUserRepository.fetchProfile(self),
+          ).thenAnswer((_) async => null);
+
+          final result = await userService.lookupUserProfile(self);
+
+          expect(result.status, ProfileLookupStatus.unavailable);
+        },
+      );
+
+      test('a thrown read is `unavailable`, never `missing`', () async {
+        when(
+          () => mockUserRepository.fetchProfile(other),
+        ).thenThrow(Exception('offline'));
+
+        final result = await userService.lookupUserProfile(other);
+
+        expect(result.status, ProfileLookupStatus.unavailable);
+      });
+
+      test('another member is `found` even without merged settings — their '
+          'preferences are unreadable by design, not missing', () async {
+        when(
+          () => mockUserRepository.fetchProfile(other),
+        ).thenAnswer((_) async => profileFor(other));
+
+        final result = await userService.lookupUserProfile(other);
+
+        expect(result.status, ProfileLookupStatus.found);
+      });
+
+      test('SELF without merged settings is `foundSettingsUnavailable` — the '
+          'read succeeded but the preferences did not', () async {
+        when(
+          () => mockUserRepository.fetchProfile(self),
+        ).thenAnswer((_) async => profileFor(self));
+
+        final result = await userService.lookupUserProfile(self);
+
+        expect(result.status, ProfileLookupStatus.foundSettingsUnavailable);
+      });
+
+      test('SELF with merged settings is `found`', () async {
+        when(() => mockUserRepository.fetchProfile(self)).thenAnswer(
+          (_) async => profileFor(self, settingsMerged: true),
+        );
+
+        final result = await userService.lookupUserProfile(self);
+
+        expect(result.status, ProfileLookupStatus.found);
+        expect(result.profile!.uid, self);
+      });
+
+      test(
+        'a self profile whose settings were never merged is NOT written to the '
+        'shared cache — it must not leak to other consumers for 30 minutes',
+        () async {
+          // Asserting via getUserProfile deliberately: a `called(2)` on
+          // lookupUserProfile alone would still pass if the write happened,
+          // because the READ guard rejects the degraded entry and refetches
+          // anyway. The harm this rule prevents lands on everyone ELSE reading
+          // the cache, so that is where it has to be observed.
+          when(
+            () => mockUserRepository.fetchProfile(self),
+          ).thenAnswer((_) async => profileFor(self));
+
+          await userService.lookupUserProfile(self);
+
+          // If the degraded profile had been cached, this would be served from
+          // it without touching the repository again.
+          when(() => mockUserRepository.fetchProfile(self)).thenAnswer(
+            (_) async => profileFor(
+              self,
+              settingsMerged: true,
+              prefs: const UserAllergenPreferences(
+                trackedAllergens: {'ägg'},
+                trackedDietary: {},
+              ),
+            ),
+          );
+          final viaGetter = await userService.getUserProfile(self);
+
+          expect(viaGetter!.allergenPreferences!.trackedAllergens, {'ägg'});
+        },
+      );
+
+      test(
+        'another member IS cached — one read per member per generation, not '
+        'one per call',
+        () async {
+          when(
+            () => mockUserRepository.fetchProfile(other),
+          ).thenAnswer((_) async => profileFor(other));
+
+          await userService.lookupUserProfile(other);
+          await userService.lookupUserProfile(other);
+
+          verify(() => mockUserRepository.fetchProfile(other)).called(1);
+        },
+      );
+
+      test(
+        'a cached self profile with no merged settings is refetched, not '
+        'served as a declaration (the getUserProfiles cache hole)',
+        () async {
+          // getUserProfiles/fetchProfiles batch-read public_profiles only and
+          // populate this same cache, so the owner can sit in it with no
+          // preferences and no failure recorded. Serving that as `found` would
+          // silently switch off the signed-in user's own allergen filtering.
+          when(
+            () => mockUserRepository.fetchProfiles([self]),
+          ).thenAnswer((_) async => [profileFor(self)]);
+          await userService.getUserProfiles([self]);
+
+          when(() => mockUserRepository.fetchProfile(self)).thenAnswer(
+            (_) async => profileFor(
+              self,
+              settingsMerged: true,
+              prefs: const UserAllergenPreferences(
+                trackedAllergens: {'ägg'},
+                trackedDietary: {},
+              ),
+            ),
+          );
+
+          final result = await userService.lookupUserProfile(self);
+
+          expect(result.status, ProfileLookupStatus.found);
+          expect(result.profile!.allergenPreferences!.trackedAllergens, {
+            'ägg',
+          });
+          verify(() => mockUserRepository.fetchProfile(self)).called(1);
+        },
+      );
     });
   });
 }

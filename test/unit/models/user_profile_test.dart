@@ -1329,5 +1329,60 @@ void main() {
         );
       });
     });
+
+    group('settingsMerged (BUT-1663)', () {
+      test(
+        'never leaves the object — absent from every serializer, including '
+        'the one that feeds the GDPR export',
+        () async {
+          // Transient read provenance, not user data. This class has three
+          // serializers and a habit of merging each new field into all of
+          // them; toJson() feeds the Article 15 download, so a field that
+          // pattern-matches its way in there would ship a meaningless internal
+          // flag to a user exercising a legal right.
+          final merged = testProfile.copyWith(settingsMerged: true);
+
+          expect(merged.toFirestore().containsKey('settingsMerged'), isFalse);
+          expect(
+            merged.toPrivateSettings().containsKey('settingsMerged'),
+            isFalse,
+          );
+          expect(merged.toJson().containsKey('settingsMerged'), isFalse);
+        },
+      );
+
+      test('defaults to false — unknown provenance, never assumed good', () {
+        // The default must be the UNSAFE-to-trust value: any profile built
+        // without going through the settings merge (batch fetch, fromJson,
+        // a test fixture) must not claim its preferences were read.
+        expect(testProfile.settingsMerged, isFalse);
+        expect(
+          UserProfile.fromJson(testProfile.toJson()).settingsMerged,
+          isFalse,
+        );
+      });
+
+      test('survives copyWith in both directions', () {
+        expect(
+          testProfile.copyWith(settingsMerged: true).settingsMerged,
+          isTrue,
+        );
+        expect(
+          testProfile
+              .copyWith(settingsMerged: true)
+              .copyWith(settingsMerged: false)
+              .settingsMerged,
+          isFalse,
+        );
+        // An unrelated copyWith must not silently clear it.
+        expect(
+          testProfile
+              .copyWith(settingsMerged: true)
+              .copyWith(displayName: 'Ny')
+              .settingsMerged,
+          isTrue,
+        );
+      });
+    });
   });
 }

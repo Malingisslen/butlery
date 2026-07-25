@@ -45,7 +45,11 @@ class SwapResult {
 /// hidden-recipe hint to "familjens allergier" only when the household or
 /// present-diner union was actually in play — a solo user's own filter gets
 /// neutral wording (BUT-1464 review M2, no over-attribution).
-enum MenuPrefSource { present, household, singleUser }
+/// [householdIncomplete] is the household union built while at least one
+/// member's profile could not be read (BUT-1663): the pool was filtered by a
+/// widened, safety-floored set rather than the household's real preferences,
+/// so telemetry must not report it as a plain [household] run.
+enum MenuPrefSource { present, household, householdIncomplete, singleUser }
 
 /// Pool statistics from the last [MenuGenerator.getAvailableRecipesAsync]
 /// run, so the menu UI can explain a shrunken pool instead of it looking
@@ -215,9 +219,12 @@ class MenuGenerator {
     if (useHouseholdAllergens) {
       final householdService = ServiceLocator.tryGet<HouseholdService>();
       if (householdService != null && householdService.hasHousehold) {
+        final aggregate = await householdService.aggregateAllergenPreferences();
         return (
-          await householdService.getAggregatedAllergenPreferences(),
-          MenuPrefSource.household,
+          aggregate.preferences,
+          aggregate.isRosterComplete
+              ? MenuPrefSource.household
+              : MenuPrefSource.householdIncomplete,
         );
       }
     }
