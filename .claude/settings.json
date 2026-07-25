@@ -192,5 +192,6 @@
       }
     ]
   },
-  "autoMemoryEnabled": true
+  "autoMemoryEnabled": true,
+  "outputStyle": "Malin"
 }
