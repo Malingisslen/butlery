@@ -75,7 +75,17 @@
       "Bash(node *)",
       "Bash(sed 's/\\\\$$//')",
       "Bash(sed *)",
-      "Bash(/c/tools/flutter/bin/flutter test *)"
+      "Bash(/c/tools/flutter/bin/flutter test *)",
+      "Bash(which gcloud *)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/firebase/firebase-tools/master/src/firestore/api.ts\" -o /tmp/api.ts)",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/firebase/firebase-tools/master/src/firestore/indexes.ts\" -o /tmp/indexes.ts)",
+      "Bash(gcloud scheduler jobs list *)",
+      "Bash(sed -n '/listIndexes\\(project/,/^  }/p' /tmp/api.ts)",
+      "Bash(grep *)",
+      "Bash(curl *)",
+      "Bash(cd C:\\\\Butlery\\\\butlery *)",
+      "Bash(head *)"
     ]
   },
   "skillOverrides": {

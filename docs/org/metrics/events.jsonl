@@ -65,3 +65,8 @@
 {"ts":"2026-07-25T19:41:32.779Z","type":"trigger","fired":true,"signals":"allergen,delete,login","ran":null}
 {"ts":"2026-07-25T20:17:53.048Z","type":"trigger","fired":true,"signals":"allergen,consent,delete,deletion,firestore.rules,login,moderation,monetiz,subscription,trust & safety","ran":null}
 {"ts":"2026-07-25T20:28:21.044Z","type":"trigger","fired":true,"signals":"allergen,consent,delete,deletion,firestore.rules,gdpr,login,moderation,monetiz,subscription,trust & safety","ran":null}
+{"ts":"2026-07-26T09:01:51.438Z","type":"trigger","fired":true,"signals":"cloud function,functions/src,retention","ran":null}
+{"ts":"2026-07-26T09:12:30.058Z","type":"trigger","fired":true,"signals":"delete,deletion,functions/src,gdpr","ran":null}
+{"ts":"2026-07-26T09:26:34.513Z","type":"trigger","fired":true,"signals":"delete,deletion,functions/src,gdpr","ran":null}
+{"ts":"2026-07-26T09:32:38.330Z","type":"trigger","fired":true,"signals":"cloud function,delete,destructive,functions/src,retention","ran":null}
+{"ts":"2026-07-26T09:35:57.228Z","type":"trigger","fired":true,"signals":"cloud function,delete,destructive,functions/src,retention","ran":null}
