@@ -220,9 +220,18 @@ view/VM file that reaches the edited method, or file it as unreached.
 - Admin-only collections need an EXPLICIT `allow read, write: if false;` even under
   default-deny (grep-auditable, immune to future wildcard widening). Keep `audit_logs/`
   (canonical trail, retention policy) distinct from `audit/` (other server-only trees).
-- `documentId()` prefix-range erasure via `.startAt(p).endAt(p)` with identical bounds is a
-  CLOSED range matching only a doc literally equal to the prefix — it under-matches and deletes
-  NOTHING. Treat as Critical; test with a seeded-target + seeded-other-user pair.
+- `documentId()` prefix-range erasure via `.startAt(p).endAt(p)` (or
+  `>= p AND < p`) with **genuinely** identical bounds is a CLOSED range matching only a doc
+  literally equal to the prefix — it under-matches and deletes NOTHING. Treat as Critical; test
+  with a seeded-target + seeded-other-user pair. **But "identical" is a byte claim, not a visual
+  one**: the correct upper bound is `p` + U+F8FF, a private-use codepoint that renders as NOTHING
+  in every editor, diff viewer and Read output, so a working range looks degenerate. Before filing
+  this, byte-check with `git show HEAD:<file> | grep -n <bound> | cat -A` (expect `M-oM-#M-?` =
+  `EF A3 BF`) or `grep -P "\x{F8FF}"` — BUT-1690 was filed against a range that had always worked.
+  Prefer the escape spelling (backslash + lowercase u + f8ff); `test/architecture/architecture_test.dart` now fails on a
+  literal U+F8FF anywhere in `lib/**.dart` (`functions/src` is still outside that guard's scope).
+  The `_` separator before the sentinel is what stops a uid that prefixes another uid from
+  matching across owners — both halves are load-bearing and both fail SILENTLY.
 - Overriding `create()`/`update()` for an invariant does NOT cover `createBatch`/`updateBatch` —
   those live on the base class and skip the override. Override the batch methods too, or hoist
   the assertion into a shared private method both call. Rules are the real backstop.

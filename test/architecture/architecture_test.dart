@@ -742,6 +742,39 @@ void main() {
       );
     });
 
+    // BUT-1690: the weekly-menu repositories bound doc-ID prefix ranges with a
+    // trailing U+F8FF sentinel. Spelled as a literal character it is invisible,
+    // so the range reads as `>= x AND < x` — one reviewer filed that as a
+    // GDPR-export bug, and an encoding conversion could delete the sentinel
+    // with no visible diff. The escape spelling keeps the bound readable.
+    test('no literal U+F8FF in lib/ — use the escape spelling (BUT-1690)', () {
+      final sentinel = String.fromCharCode(0xF8FF);
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/')) continue;
+
+        final lines = file.readAsLinesSync();
+        for (var i = 0; i < lines.length; i++) {
+          // Path + line only: quoting the match would print nothing visible.
+          if (lines[i].contains(sentinel)) violations.add('$relPath:${i + 1}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'A literal U+F8FF renders as nothing, so a Firestore prefix range '
+            'bounded by it reads as degenerate and invites a "fix" that '
+            'silently empties the query. Use the escape form instead — see the '
+            'class doc in '
+            'lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),

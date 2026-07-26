@@ -4,7 +4,16 @@
 /// in [removeRecipeFromAllPlans] (recipe-delete cascade) and [exportAllByUser]
 /// (GDPR export): a degenerate range (lower bound == upper bound) would match
 /// zero docs, silently breaking both the cascade and the export. These tests
-/// fail loudly if the upper bound ever regresses to `'${userId}_'`.
+/// fail loudly if the upper bound loses its trailing U+F8FF sentinel — three of
+/// them go red on that mutation.
+///
+/// They cannot, however, tell the two SPELLINGS of a correct bound apart: a
+/// literal U+F8FF renders as nothing, so a working bound can read on screen as
+/// the degenerate `'${userId}_'` and get re-reported as a bug (BUT-1690 was
+/// filed that way, against code that had always worked). The escape spelling is
+/// enforced separately by `test/architecture/architecture_test.dart`.
+/// The third prefix range in this repository, [deleteAllByUser], is covered in
+/// `test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart`.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';

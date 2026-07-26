@@ -6503,3 +6503,83 @@ Scratch probe and extracted HEAD copy deleted; `git status` re-verified afterwar
 this run, so I compressed the (largest) `FakeFirebaseFirestore.runTransaction` bullet
 while preserving every actionable claim, to keep my two additions roughly net-neutral.
 The overage is structural and larger than one bullet — flagged to the caller.
+
+### 2026-07-26 — BUT-1690 test-side review: the invisible-sentinel non-bug, and a source guard instead of a test [Review][Trigger: asked to review a diff that adds NO behavioural test on purpose]
+
+Diff under review: `firebase_weekly_menu_plan_repository.dart` (2 lines, literal U+F8FF -> escape,
+plus a class-doc note), a new source-scanning guard in `test/architecture/architecture_test.dart`,
+and the BUT-1690 lesson + digest line. Verdict COMMIT-READY. Marker:
+`.claude/state/testing-review-done.marker`, five files sha-pinned (four briefed + one I fixed).
+
+PREMISE. Verified from bytes, not from the brief. `git show HEAD:<file> | grep -n isLessThan | od -c`
+shows HEAD lines 159 and 214 carrying `357 243 277` (EF A3 BF = U+F8FF) on the upper bounds, with
+line 119 already escaped. So the diff is behaviourally a no-op and BUT-1690's degenerate-range
+premise is false. This is the THIRD time this exact file has produced a false finding (archive
+2026-07-17, my own marker carve-out earlier on 2026-07-26, then the ticket itself).
+
+NON-VACUITY OF THE NEW GUARD. Its mutant is a FILE, not a code edit, so I used the path-parameterised
+replica: `test/zz_scratch_f8ff_guard_probe_test.dart` reproducing the guard's walk with the scanned
+directory as an argument. CONTROL over real `lib/` -> empty. MUTANT over a temp tree holding one
+literal in `repositories/bad.dart` -> reported exactly `['lib/repositories/bad.dart:2']`, i.e. correct
+path AND correct line, so the reason string is actionable. Green is a true negative: authoritative
+Python sweep (`chr(0xF8FF)`) finds 0 literals in `lib/` and 0 in `test/`. The guard names the char as
+`String.fromCharCode(0xF8FF)` so it cannot trip on itself, reuses `dartFiles`/`relPathOf` (l.20/29/47),
+and its walk being non-empty is separately pinned by the suite's own "lib directory contains Dart
+files" test — so it cannot go vacuous by a broken walk. The `relPath.startsWith('lib/')` filter is a
+no-op given `relPathOf`, harmless.
+
+MUTATION COUNT, MEASURED. Whole-class replica technique: copy the repository into
+`test/unit/repositories/firebase/zz_scratch_wmp_replica.dart`, rename class + ctor, strip all 3
+sentinels, copy the real suite beside it and repoint the one import + type name. Result: `+3 -3`,
+and the reds are exactly `removeRecipeFromAllPlans scrubs...`, `exportAllByUser exports every plan`,
+`exportAllByUser excludes other users' plans`. Matches the briefed "3 of 6" precisely — nothing
+overstated. The two `fetchForWeek` tests don't touch the range. The interesting green is
+`removeRecipeFromAllPlans does not touch another user's plans`: under the mutant the query returns
+zero docs, so Bob is untouched anyway and it passes. It is a WIDENING-direction guard (the cross-user
+leak direction), not a sentinel alarm — worth keeping, worth not miscrediting.
+
+SECOND ALARM THE TICKET MISSED. `test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart`
+is a FAKE-lane file (header says "Fake Lane, post-BUT-389", no `emulatorOnlySkip`, no
+`firestoreForLane`) so it actually executes: 10/10 green, and it covers the third range
+`deleteAllByUser` plus >500-doc batch chunking. All three prefix ranges therefore carry a live alarm,
+which is why a fourth test would be duplication.
+
+CORRECTION TO MY OWN EARLIER MARKER. The BUT-1500 carve-out claimed these two methods had "ZERO real
+tests" and that `deleteAllByUser`'s only coverage was an emulator-lane test running nowhere. Both
+false: the 6-test unit suite was last touched by BUT-435's format commit, so it predates all of this,
+and the integration file is fake-lane. Lesson: a "zero tests" claim needs a filename grep, not a
+`test/` mental model — and when the earlier claim is MINE, re-check it rather than inheriting it.
+
+APPLIED (test-only). The unit suite's header promised the tests "fail loudly if the upper bound ever
+regresses to a bare userId-underscore" — false under one reading, because a literal-sentinel bound
+also RENDERS as that and the suite passes on it (HEAD: 6/6 green). Rewrote the header to name the
+sentinel, state the 3-of-6 mutation result, say the suite cannot distinguish the two SPELLINGS, and
+cross-reference both the architecture guard and the integration file. Yes to the cross-reference
+question. The reverse pointer (lib/ class doc -> the behavioural suite) is still missing; left for a
+lib/ editor, since a review pass does not edit production.
+
+TOOLING TRAPS HIT LIVE, both now principles. (1) The byte-form grep for the sentinel reports CLEAN
+over a file that visibly holds the char, because grep -P matches characters under UTF-8; LC_ALL=C
+grep -P is refused outright ("-P supports only unibyte and UTF-8 locales"). I nearly filed "the
+lessons entry's functions/src claim does not reproduce" off that false negative. The working forms are
+the codepoint form of grep -P, a chr(0xF8FF) Python sweep, and `cat -A`. (2) Typing the six-character
+escape into Write and into a bash heredoc BOTH produced the raw character in the file, which then made
+a later `Edit` fail to match its own `old_string` — twice, in the knowledge file and in a probe. The
+archive's 2026-07-17 warning about this was right and I still walked into it; prose-only
+(`chr(0xF8FF)`) plus a post-write grep of my own artefact is the fix.
+
+FINDING, deferred out of scope. The guard covers `lib/**.dart` only, and `functions/src` still carries
+the literal on a LIVE GDPR-cascade prefix bound. The lessons entry says "two literals"; the sweep
+finds FOUR occurrences in the two named files — `account-deletion-cascade.ts:818,819,828` and
+`request-account-deletion.integration.test.ts:729`. Lines 818-819 are the explanatory COMMENT, which
+pastes the invisible char while describing it, so it renders as "The upper bound's trailing  is a
+high-codepoint " — the trap recursed into its own documentation, in the file most likely to be
+re-filed as BUT-1690 next. Deferring the TS respelling is defensible; leaving that comment is not.
+
+HOUSEKEEPING. `testing-specialist.knowledge.md` is ~59k against a stated ~35k budget, i.e. it was
+~22k over BEFORE this pass. I merged the two overlapping invisible-codepoint bullets (net -0.5k) but
+did not lop principles I could not verify stale. Flagged for a dedicated compaction pass.
+
+VERIFICATION. `flutter analyze --fatal-infos` clean on the 3 code files; architecture 20/20;
+repository unit 6/6 after the header edit; weekly-menu integration 10/10. All scratch replicas and
+probes deleted, production file md5-verified unchanged, sentinel count still 3.

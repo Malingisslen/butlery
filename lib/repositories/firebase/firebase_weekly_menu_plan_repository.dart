@@ -15,6 +15,15 @@ import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 /// `{userId}_{YYYY}-W{WW}` so generation re-runs upsert into the same
 /// document instead of creating duplicates. Owner-scoped via the userId
 /// prefix in the doc ID — see firestore.rules.
+///
+/// The doc-ID prefix ranges below stop at `{userId}_` plus a U+F8FF sentinel,
+/// and that sentinel is load-bearing: without it the bounds collapse to
+/// `>= x AND < x`, which matches zero documents — silently emptying the GDPR
+/// export and turning the recipe-delete cascade into a no-op rather than
+/// failing. Always spell it as the six-character escape, never as a literal
+/// U+F8FF character: the literal renders as nothing, so the range reads as
+/// degenerate and gets re-reported as a bug (BUT-1690 was filed that way).
+/// `test/architecture/architecture_test.dart` enforces the escape spelling.
 class FirebaseWeeklyMenuPlanRepository
     extends BaseFirebaseRepository<WeeklyMenuPlan>
     implements WeeklyMenuPlanRepository {
@@ -156,7 +165,7 @@ class FirebaseWeeklyMenuPlanRepository
     // in-memory filter is cheap; saves an extra denormalized index.
     final snapshot = await collection
         .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
-        .where(FieldPath.documentId, isLessThan: '${userId}_')
+        .where(FieldPath.documentId, isLessThan: '${userId}_\uf8ff')
         .get();
 
     if (snapshot.docs.isEmpty) return 0;
@@ -211,7 +220,7 @@ class FirebaseWeeklyMenuPlanRepository
 
     final snapshot = await collection
         .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
-        .where(FieldPath.documentId, isLessThan: '${userId}_')
+        .where(FieldPath.documentId, isLessThan: '${userId}_\uf8ff')
         .limit(maxDocuments)
         .get();
 
