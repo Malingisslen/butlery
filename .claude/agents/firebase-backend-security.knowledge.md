@@ -144,10 +144,59 @@ Butlery splits a user across **two** Firestore docs with different read rules: `
 the client's own UI reads.** For any "CF sets flag X, client/search reacts to X" design, name
 which doc each end touches before approving it.
 
+### The second footgun: parallel write paths to the same collection
+Several unified services expose a tidy `service.<feature>.op()` facade AND a module chain the UI
+actually calls. Confirmed on collaborative shopping: `ListItemOperations` (facade, ZERO production
+callers) vs `ShoppingItemManagementModule → ShoppingItemOperationsModule → updateCollaborativeList`
+(what every view runs). **Any concurrency, permission or audit fix must be grepped to a real
+caller before approval** — a fix on the dead twin reviews as green and changes nothing. Name the
+view/VM file that reaches the edited method, or file it as unreached.
+
 ### Firestore rules & permission patterns
 - Full-doc `set()` collections: create pins `request.resource.data.userId==auth.uid`; update
   pins BOTH `resource.data.userId` AND `request.resource.data.userId`; delete pins
   `resource.data.userId`. Rule and repo-support ship together, or one is dead code.
+- A full-doc `set(merge:true)` by a NON-owner member passes an `affectedKeys().hasOnly/hasAny`
+  rule only because the immutable fields round-trip byte-identically through the model
+  (`Timestamp.fromDate(createdAt)` etc.). Prefer a targeted `update({changed fields})` — smaller,
+  cheaper, and immune to a serialization change silently turning every member write into a deny.
+  The sharper failure is when the base document is STALE (offline/cached-base fallback, queued
+  replay): the merge re-sends `ownerId`/`memberPermissions` as they were, so for the ONE caller
+  the rule lets write those fields (the owner) a queued tick RESURRECTS a member the owner
+  removed from another device. A rules-denied non-owner replay is fail-safe; the owner's is not.
+  Any write whose base can be older than the server needs a targeted field update, not a merge.
+- **A guard set is scoped to the callers a method had, and promoting it to a public
+  repository INTERFACE invalidates that scope.** An internal module method may lean on "every
+  caller is our own code, and our mutators only touch `items`"; the moment the same method is
+  added to `lib/repositories/interfaces/*.dart` it must carry the full guard set of its
+  siblings on the same collection. Review an interface addition and its implementation as ONE
+  change: diff the new method's checks against the method it is replacing/paralleling and
+  require parity (BUT-1665: `updateCollaborativeList` gained a privilege-escalation guard while
+  `mutateCollaborativeList` — simultaneously promoted to the interface — did not).
+- A write helper that calls `requireCurrentUserId()` and then `logPermissionCheck(granted:true)`
+  with NO check in between forges the audit trail. Either run the real
+  `validate*Permission` and log its verdict (see `FirebaseShoppingRepository.delete`), or don't
+  claim a check. Rules being the backstop makes it an audit defect, not an access hole.
+  **Fix the whole sibling set in one pass, and name every unfixed sibling in the finding** —
+  create/update/mutate live in the same module and a round that repairs only the one under review
+  leaves the others forging grants (three consecutive passes on `ShoppingRepositoryRoutingModule`
+  fixed update, then mutate, and `createCollaborativeList` is STILL unguarded — a finding that says
+  "fix both" without naming the third method never reaches it). A guard added to one sibling is also
+  a gap opened in the other: once `update` blocks privilege escalation, `mutate` on the same
+  collection and the same public interface becomes the soft spot. And a client check that is LOOSER
+  than the matching rule
+  (repo accepts any `memberPermissions` key; rule demands `edit`/`admin`) still logs
+  `granted:true` for a write the server then denies — mirror the rule's predicate exactly.
+- **Judging a client check that gets STRICTER: compare it to the app's own permission service,
+  not just to the rule.** If `PermissionService.canEditX` already barred the case (Butlery's
+  view-only shopping member), the UI never offered it and no legitimate caller regresses — the
+  change only moves a guaranteed server denial earlier and gives it an audit row. Where the app
+  service is LOOSER than the rule (`canManageShoppingList` grants a non-owner `admin`), the
+  strictening exposes dead UI that could never have succeeded: report it as a product gap, not a
+  regression. Also check what the new gate transitively requires — `_requireEditRights` inherits
+  `validateUpdatePermission`'s `isCollaborative` test, so a shared doc whose `type` field is
+  missing parses as `personal` (enum `orElse`) and locks out every non-owner member. Fail-closed,
+  but enumerate every writer of the collection before accepting it.
 - A collection with no rule block silently default-denies
   (`match /{document=**}{allow read,write:if false}`) — writes look implemented but are
   rejected. Grep `firestore.rules` for every new collection path in a diff first.
@@ -198,8 +247,13 @@ which doc each end touches before approving it.
   subcollection sweep, export = one whole-doc read of the same subcollection, nothing to
   keep in sync field-by-field.
 - Cross-user cascade mutations stage their audit-log entry in the SAME batch as the mutation.
-- Denormalized author/sharer PII travels in FIELD GROUPS (`sharedBy*`, `authorName*`) —
-  tombstoning one field on deletion requires clearing every field sharing that prefix.
+- Denormalized author/sharer PII travels in FIELD GROUPS (`sharedBy*`, `authorName*`,
+  `lastActivityBy*`) — tombstoning one field on deletion requires clearing every field sharing
+  that prefix. **The rename-propagation CF is the inventory**: every `{queryField, updateField}`
+  pair in `functions/src/social/on-profile-updated.ts` is a denormalized-name field group that
+  survives account deletion unless the cascade names it too. Diff that list against
+  `account-deletion-cascade.ts` — `unified_shared_shopping_lists.lastActivityBy{UserId,DisplayName}`
+  and `ownerDisplayName` are propagated on rename but NOT scrubbed on erasure (open, BUT-1665 review).
 - Anonymize (don't hard-delete) a row that is also someone else's GDPR evidence.
 - Prefer read-modify-write list rewrites over `FieldValue.arrayRemove()` in scrubs — test fakes
   silently no-op `arrayRemove`, hiding a broken cascade.
@@ -210,7 +264,10 @@ which doc each end touches before approving it.
   stages MORE than one `batch.*` call (multiple `FieldValue` ops inside one `batch.update()` are
   still 1 op).
 - Distinguish `permission-denied` (rethrow — a rules-engine rejection is a bug worth surfacing)
-  from transient errors (swallow best-effort) in cross-user cascade writes.
+  from transient errors (swallow best-effort) in cross-user cascade writes. Same rule for a
+  QUEUED OFFLINE replay: an unawaited `set().catchError(log)` treats a rules rejection like a
+  flaky link, so a member demoted while offline sees the tick land, then silently vanish when the
+  cache rolls back — the only trace is a log line. Branch on the code and surface the denial.
 - Pagination style must match the mutation: a DELETE loop over a filtered query needs no cursor
   (the matching set shrinks every pass); an UPDATE loop needs `startAfterDocument` (updated docs
   stay in the result set and get revisited forever without one).
@@ -293,6 +350,15 @@ which doc each end touches before approving it.
   length even for "should be small" fields.
 - A field on a world-readable doc must be audited individually for exposure — a boolean gating a
   SEARCH QUERY does not gate DIRECT-FETCH visibility.
+- **A nullable actor-NAME field stamped through `copyWith` misattributes on a multi-user doc.**
+  Butlery's `copyWith` is `name ?? this.name`, so writing `lastActivityByDisplayName:
+  auth.currentUser?.displayName` (null for any account that never set an Auth profile name) keeps
+  the PREVIOUS editor's name while `lastActivityByUserId` advances to the caller — the shared list
+  then tells other household members that person X made a change person Y made (Art. 5(1)(d)
+  accuracy, cross-user visible). Two rules: stamp an id/name PAIR atomically or not at all, and
+  take the name from the source the rename-propagation CF writes (`userService.currentUserProfile`
+  → profile displayName), never `authRepository.currentUser?.displayName` — the CLAUDE.md
+  data-source footgun in denormalized form; the two diverge until the user next edits their profile.
 - A moderation "hide" flag is search-suppression + UI-placeholder, not a read boundary, unless
   every direct-fetch consumer also filters it.
 - A presence opt-out must gate every derived surface, not just the boolean (a hidden dot with an
@@ -329,6 +395,30 @@ which doc each end touches before approving it.
   swallowing fail-safe; permissive-default would make it Critical.
 - A parser/lookup that can turn 1 input into N reads needs a cap at the split site — same
   "bound the worst case" rule as `.snapshots()` limits.
+- **`runTransaction` has no offline path.** Persistence is on (`firestore_bootstrap.dart`), so a
+  `set()` lands in the local cache instantly and syncs later; a transaction simply fails
+  (`unavailable`) with no optimistic local write. Converting a user-facing write (a shopping tick
+  in a store) to a transaction trades a lost-update race for a hard offline failure — require an
+  explicit fallback or a written accepted-deviation. Also skip the write entirely when the mutator
+  returns the base unchanged (`identical(mutated, live)`): a no-op still bills a write and, worse,
+  reports success, firing downstream analytics/side-effects for an edit that never happened.
+  Verified plugin mechanics for reviewing such a fallback (cloud_firestore 6.6.0): a custom
+  `timeout:` budget expires client-side and surfaces as `FirebaseException(code:'deadline-exceeded')`
+  (Android `TransactionStreamHandler` semaphore → `Code.DEADLINE_EXCEEDED`), so keying a fallback on
+  `unavailable` alone leaves the commonest flaky-connection case unhandled; and an exception thrown
+  by the handler propagates VERBATIM (not rewrapped), so a domain `PermissionDeniedException` raised
+  inside the transaction still reaches the caller with its own type. `deadline-exceeded` is NOT proof
+  of "offline" though — a slow-but-working link hits it too, so a cached-base fallback on that code
+  reintroduces the lost update it was built to prevent; say so explicitly or gate on real
+  connectivity. Awaiting a check between `transaction.get` and `transaction.set` is safe only if the
+  check issues no reads — confirm the validator is pure in-memory before approving it.
+- Per-item analytics loops over a REPLACEMENT set double-count on every regeneration — log once
+  with a count, or diff against the previous set, or the funnel the event exists to measure lies.
+  Such a loop is also a cost trap: each tracker call awaits `hasAnalyticsConsent()`, and
+  `ConsentService.getUserConsent` caches only AFTER the first future resolves (no in-flight
+  dedupe), so N fire-and-forget events on a cold cache issue N concurrent consent reads. A sync
+  `try/catch` around un-awaited `Future`s catches nothing either — wrap the whole emit in one
+  `unawaited(Future(() async {...}))` with the catch inside.
 
 ### Admin-only aggregate repository bypass (6+ repos confirmed clean)
 - Skip `PermissionValidationMixin` only when ALL FOUR hold: read-only; rule-gated by

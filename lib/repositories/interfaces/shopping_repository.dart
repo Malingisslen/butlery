@@ -22,6 +22,14 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Removes multiple items from the specified shopping list using batch operations.
   Future<void> removeItemsBatch(String listId, List<String> itemIds);
 
+  /// BUT-1665: applies [mutate] to a collaborative list inside a Firestore
+  /// transaction that re-reads the live document, so a concurrent household
+  /// member's edit is merged instead of overwritten. Returns the merged list.
+  Future<UnifiedShoppingList> mutateCollaborativeList(
+    String listId,
+    UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
+  );
+
   // Template operations
   Future<String> saveAsTemplate({
     required String listId,

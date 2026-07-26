@@ -20,25 +20,85 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 class IngredientCategorizer {
   const IngredientCategorizer._();
 
+  /// BUT-1666: 'ost' (cheese) is too short to match as a bare substring —
+  /// "rostad", "rostbiff" and "grillrostad" all carry it mid-word and were
+  /// landing in dairy. Dart's `\b` is ASCII-only, so the boundary is spelled
+  /// out with explicit Swedish-aware lookarounds.
+  ///
+  /// Cheese legitimately sits at either end of a Swedish compound
+  /// ("ostskiva", "parmesanost"), so the rule is "at least one word
+  /// boundary" rather than "both".
+  static final RegExp _cheesePattern = RegExp(
+    r'(?<![a-zåäö0-9])ost|ost(?![a-zåäö0-9])',
+  );
+
+  /// BUT-1666: 'nöt' (beef) only ever LEADS a compound — "nötkött",
+  /// "nötfärs", "nötstek". The identical three letters trail the compound for
+  /// nuts ("jordnöt", "kokosnöt", "valnöt") or take the nut plural
+  /// ("nötter", "nötkärnor"), which is why a bare substring rule was filing
+  /// nuts under meat.
+  static final RegExp _beefPattern = RegExp(r'(?<![a-zåäö0-9])nöt(?!ter|kärn)');
+
+  /// BUT-1666: paprika as a GROUND SPICE, in every spelling a Swedish shopping
+  /// line uses. Allowlisting the two closed compounds was not enough — the
+  /// spice jar is most often written open ("rökt paprika", "malen paprika"),
+  /// and those were falling through to fresh produce.
+  ///
+  /// Matched before the veg rule, which claims any name containing 'paprika'.
+  static final RegExp _groundPaprikaPattern = RegExp(
+    r'paprikapulver|paprikakrydda|'
+    r'(?:rökt|rökta|malen|mald|malda|torkad|torkade|söt)\s+paprika',
+  );
+
+  /// 'fil' (soured milk) needs a boundary, but `\b` is ASCII-only and treats
+  /// `é` as a non-word character — so `\bfil\b` matched "filé" and filed
+  /// "lax filé" under dairy, because the dairy rule runs before fish.
+  /// `é` is added to the boundary class alongside å/ä/ö for that reason.
+  /// `gräddfil` is spelled in as an alternative rather than by relaxing the
+  /// leading boundary: it is `grädd` + `fil`, so `contains('grädde')` misses it
+  /// and a preceding `d` blocks the bare-word rule. Neither this pattern nor
+  /// the ASCII `\b` it replaced ever caught it — Swedish sour cream has been
+  /// landing in `other` all along.
+  static final RegExp _souredMilkPattern = RegExp(
+    r'gräddfil|(?<![a-zåäöé0-9])fil(?![a-zåäöé0-9])',
+  );
+
   /// Returns a [ShoppingCategory] constant for [ingredientName],
   /// or [ShoppingCategory.other] when no rule matches.
   static String categorize(String ingredientName) {
     final name = ingredientName.toLowerCase().trim();
 
+    // BUT-1666: compounds whose HEAD noun decides the aisle, resolved before
+    // the broad substring rules that would otherwise shadow them. Coconut milk
+    // is a canned pantry good, not dairy ('mjölk'), and ground paprika is a
+    // spice, not fresh produce ('paprika').
+    if (name.contains('kokosmjölk')) {
+      return ShoppingCategory.canned;
+    }
+
+    if (_groundPaprikaPattern.hasMatch(name)) {
+      return ShoppingCategory.spices;
+    }
+
     if (name.contains('mjölk') ||
         name.contains('grädde') ||
-        RegExp(r'\bfil\b').hasMatch(name) ||
+        _souredMilkPattern.hasMatch(name) ||
         name.contains('yoghurt') ||
-        name.contains('ost') ||
+        _cheesePattern.hasMatch(name) ||
         name.contains('smör') ||
         name.contains('ägg')) {
       return ShoppingCategory.dairy;
     }
 
     // BUT-1004: meat-only — fish split into its own bucket below.
+    // BUT-1666: 'rostbiff' is named in the ticket. Removing 'ost' from its
+    // middle stopped it landing in dairy but left it in `other` — it is meat,
+    // and no other rule here reaches it ('biff' alone would also catch
+    // "biffar"/"lövbiff", so it earns its own place in this list).
     if (name.contains('kött') ||
         name.contains('fläsk') ||
-        name.contains('nöt') ||
+        name.contains('biff') ||
+        _beefPattern.hasMatch(name) ||
         name.contains('kyckling') ||
         name.contains('korv') ||
         name.contains('bacon') ||
@@ -114,15 +174,20 @@ class IngredientCategorizer {
         name.contains('oregano') ||
         name.contains('timjan') ||
         name.contains('rosmarin') ||
-        name.contains('paprika') ||
+        // 'paprika' is deliberately absent: the veg rule above claims every
+        // name containing it, so the ground-spice forms are resolved by
+        // _groundPaprikaPattern at the top instead (BUT-1666 — listing it
+        // here was unreachable).
         name.contains('curry')) {
       return ShoppingCategory.spices;
     }
 
+    // 'kokosmjölk' is deliberately absent here too: the dairy rule's 'mjölk'
+    // claimed it long before this block, which is why BUT-1666 hoisted it to
+    // the head-noun check at the top. Leaving a copy here would be dead code.
     if (name.contains('konserv') ||
         name.contains('burk') ||
         name.contains('tomatpuré') ||
-        name.contains('kokosmjölk') ||
         name.contains('bönor')) {
       return ShoppingCategory.canned;
     }

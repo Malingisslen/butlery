@@ -99,6 +99,7 @@ class FirebaseShoppingRepository
       validateRequiredFields: validateRequiredFields,
       logPermissionCheck: logPermissionCheck,
       fromFirestore: fromFirestore,
+      validateUpdatePermission: validateUpdatePermission,
     );
 
     _queryModule = ShoppingRepositoryQueryModule(
@@ -115,7 +116,7 @@ class FirebaseShoppingRepository
       authRepository: authRepository,
       requireCurrentUserId: requireCurrentUserId,
       readList: read,
-      updateCollaborativeList: _routingModule.updateCollaborativeList,
+      mutateCollaborativeList: _routingModule.mutateCollaborativeList,
       getUserCollection: getUserCollection,
       validateOwnership: validateOwnership,
       validateRequiredFields: validateRequiredFields,
@@ -367,6 +368,12 @@ class FirebaseShoppingRepository
       await create(list);
     }
   }
+
+  @override
+  Future<UnifiedShoppingList> mutateCollaborativeList(
+    String listId,
+    UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
+  ) => _routingModule.mutateCollaborativeList(listId, mutate);
 
   /// Create or update a collaborative list.
   /// DEPRECATED: Use standard create/update methods instead (they now route correctly)

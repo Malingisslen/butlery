@@ -16,13 +16,23 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 /// Supports two storage strategies:
 /// - Personal lists: Items in subcollection (/items)
 /// - Collaborative lists: Items inline in document
+///
+/// BUT-1665: this module is the entry point the shopping UI actually reaches
+/// (view → viewmodel → UnifiedShoppingService → ShoppingItemManagementModule →
+/// repository → here), so every collaborative item write goes through
+/// [mutateCollaborativeList], which rebuilds the `items` array from the LIVE
+/// document inside a transaction. Rebuilding it from [readList]'s cached copy
+/// silently dropped whatever another household member ticked in between.
 class ShoppingItemOperationsModule {
   final FirebaseFirestore firestore;
   final AuthRepository authRepository;
   final String Function() requireCurrentUserId;
   final Future<UnifiedShoppingList?> Function(String id) readList;
-  final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity)
-  updateCollaborativeList;
+  final Future<UnifiedShoppingList> Function(
+    String listId,
+    UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
+  )
+  mutateCollaborativeList;
   final CollectionReference<Map<String, dynamic>> Function(String userId)
   getUserCollection;
   final Future<void> Function({
@@ -52,18 +62,35 @@ class ShoppingItemOperationsModule {
     required this.authRepository,
     required this.requireCurrentUserId,
     required this.readList,
-    required this.updateCollaborativeList,
+    required this.mutateCollaborativeList,
     required this.getUserCollection,
     required this.validateOwnership,
     required this.validateRequiredFields,
     required this.logPermissionCheck,
   });
 
-  /// Add item to shopping list (handles both personal and collaborative)
-  Future<void> addItem(String listId, UnifiedShoppingItem item) async {
-    final uid = requireCurrentUserId();
+  /// Rebuilds [live] with [items] and stamps the shared-list activity fields.
+  /// Always applied to the transaction's live document, never to a cached one.
+  UnifiedShoppingList _withItems(
+    UnifiedShoppingList live,
+    List<UnifiedShoppingItem> items,
+    String uid,
+  ) {
+    final now = clock.now().toUtc();
+    return live.copyWith(
+      items: items,
+      updatedAt: now,
+      lastActivityAt: now,
+      lastActivityByUserId: uid,
+      lastActivityByDisplayName: authRepository.currentUser?.displayName,
+    );
+  }
 
-    // Verify list exists and user has access
+  /// Reads the list so the caller can route on its type and verify ownership,
+  /// throwing [ResourceNotFoundException] when it is gone. For a collaborative
+  /// list this copy is only a router — the write itself re-reads the live
+  /// document inside [mutateCollaborativeList].
+  Future<UnifiedShoppingList> _requireList(String listId) async {
     final list = await readList(listId);
     if (list == null) {
       throw ResourceNotFoundException(
@@ -72,6 +99,15 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
     }
+    return list;
+  }
+
+  /// Add item to shopping list (handles both personal and collaborative)
+  Future<void> addItem(String listId, UnifiedShoppingItem item) async {
+    final uid = requireCurrentUserId();
+
+    // Verify list exists and user has access
+    final list = await _requireList(listId);
 
     // Validate item data
     validateRequiredFields(
@@ -86,16 +122,10 @@ class ShoppingItemOperationsModule {
         'ShoppingRepository',
       );
 
-      final updatedItems = [...list.items, item];
-      final updatedList = list.copyWith(
-        items: updatedItems,
-        updatedAt: clock.now().toUtc(),
-        lastActivityAt: clock.now().toUtc(),
-        lastActivityByUserId: uid,
-        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(live, [...live.items, item], uid),
       );
-
-      await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
       AppLogger.info(
@@ -135,14 +165,7 @@ class ShoppingItemOperationsModule {
     final uid = requireCurrentUserId();
 
     // Verify list exists and user has access
-    final list = await readList(listId);
-    if (list == null) {
-      throw ResourceNotFoundException(
-        'Shopping list not found',
-        resourceType: 'shopping_list',
-        resourceId: listId,
-      );
-    }
+    final list = await _requireList(listId);
 
     if (items.isEmpty) return;
 
@@ -179,16 +202,10 @@ class ShoppingItemOperationsModule {
         'ShoppingRepository',
       );
 
-      final updatedItems = [...list.items, ...items];
-      final updatedList = list.copyWith(
-        items: updatedItems,
-        updatedAt: clock.now().toUtc(),
-        lastActivityAt: clock.now().toUtc(),
-        lastActivityByUserId: uid,
-        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(live, [...live.items, ...items], uid),
       );
-
-      await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
       AppLogger.info(
@@ -231,27 +248,22 @@ class ShoppingItemOperationsModule {
   Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
     final uid = requireCurrentUserId();
 
-    final list = await readList(listId);
-    if (list == null) {
-      throw ResourceNotFoundException(
-        'Shopping list not found',
-        resourceType: 'shopping_list',
-        resourceId: listId,
-      );
-    }
+    final list = await _requireList(listId);
 
     if (list.type == ListType.collaborative) {
-      final updatedItems = list.items.map((existing) {
-        return existing.id == item.id ? item : existing;
-      }).toList();
-      final updatedList = list.copyWith(
-        items: updatedItems,
-        updatedAt: clock.now().toUtc(),
-        lastActivityAt: clock.now().toUtc(),
-        lastActivityByUserId: uid,
-        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      // Only the edited item is replaced; every other entry comes from the
+      // live document, so a concurrent tick on a different item survives. An
+      // item another member deleted meanwhile is not resurrected.
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(
+          live,
+          live.items
+              .map((existing) => existing.id == item.id ? item : existing)
+              .toList(),
+          uid,
+        ),
       );
-      await updateCollaborativeList(updatedList);
     } else {
       await validateOwnership(
         currentUserId: uid,
@@ -281,14 +293,7 @@ class ShoppingItemOperationsModule {
     final uid = requireCurrentUserId();
 
     // Verify list exists and user has access
-    final list = await readList(listId);
-    if (list == null) {
-      throw ResourceNotFoundException(
-        'Shopping list not found',
-        resourceType: 'shopping_list',
-        resourceId: listId,
-      );
-    }
+    final list = await _requireList(listId);
 
     if (list.type == ListType.collaborative) {
       AppLogger.info(
@@ -296,18 +301,14 @@ class ShoppingItemOperationsModule {
         'ShoppingRepository',
       );
 
-      final updatedItems = list.items
-          .where((item) => item.id != itemId)
-          .toList();
-      final updatedList = list.copyWith(
-        items: updatedItems,
-        updatedAt: clock.now().toUtc(),
-        lastActivityAt: clock.now().toUtc(),
-        lastActivityByUserId: uid,
-        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(
+          live,
+          live.items.where((item) => item.id != itemId).toList(),
+          uid,
+        ),
       );
-
-      await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
       AppLogger.info(
@@ -343,29 +344,19 @@ class ShoppingItemOperationsModule {
 
     final uid = requireCurrentUserId();
 
-    final list = await readList(listId);
-    if (list == null) {
-      throw ResourceNotFoundException(
-        'Shopping list not found',
-        resourceType: 'shopping_list',
-        resourceId: listId,
-      );
-    }
+    final list = await _requireList(listId);
 
     final itemIdSet = itemIds.toSet();
 
     if (list.type == ListType.collaborative) {
-      final updatedItems = list.items
-          .where((item) => !itemIdSet.contains(item.id))
-          .toList();
-      final updatedList = list.copyWith(
-        items: updatedItems,
-        updatedAt: clock.now().toUtc(),
-        lastActivityAt: clock.now().toUtc(),
-        lastActivityByUserId: uid,
-        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(
+          live,
+          live.items.where((item) => !itemIdSet.contains(item.id)).toList(),
+          uid,
+        ),
       );
-      await updateCollaborativeList(updatedList);
     } else {
       await validateOwnership(
         currentUserId: uid,

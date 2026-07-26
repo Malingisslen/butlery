@@ -65,5 +65,194 @@
     "expected": "spices",
     "tolerance": "exact",
     "notes": "Composite phrase — categorizer matches the 'basilika' substring."
+  },
+  {
+    "id": "ci-011",
+    "input": "rostat bröd",
+    "expected": "dry_goods",
+    "tolerance": "exact",
+    "notes": "BUT-1666: 'rostat' carries 'ost' mid-word and used to land in dairy."
+  },
+  {
+    "id": "ci-012",
+    "input": "parmesanost",
+    "expected": "dairy",
+    "tolerance": "exact",
+    "notes": "BUT-1666: word-bounding 'ost' must keep the compound-suffix form in dairy."
+  },
+  {
+    "id": "ci-013",
+    "input": "valnötter",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666: nuts wear 'nöt' as a suffix and used to land in meat."
+  },
+  {
+    "id": "ci-014",
+    "input": "nötfärs",
+    "expected": "meat",
+    "tolerance": "exact",
+    "notes": "BUT-1666: beef leads the compound — must stay in meat."
+  },
+  {
+    "id": "ci-015",
+    "input": "paprikapulver",
+    "expected": "spices",
+    "tolerance": "exact",
+    "notes": "BUT-1666: the veg 'paprika' rule used to shadow the ground-spice form."
+  },
+  {
+    "id": "ci-016",
+    "input": "röd paprika",
+    "expected": "veg",
+    "tolerance": "exact",
+    "notes": "BUT-1666: fresh paprika must stay in veg after the spice split."
+  },
+  {
+    "id": "ci-017",
+    "input": "kokosmjölk",
+    "expected": "canned",
+    "tolerance": "exact",
+    "notes": "BUT-1666: the dairy 'mjölk' rule used to shadow the canned rule."
+  },
+  {
+    "id": "ci-018",
+    "input": "rökt paprika",
+    "expected": "spices",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: the OPEN compound is how a shopping line actually spells the spice jar. Allowlisting only the closed forms left this in veg."
+  },
+  {
+    "id": "ci-019",
+    "input": "malen paprika",
+    "expected": "spices",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: second open-compound spelling ('malen' branch of _groundPaprikaPattern)."
+  },
+  {
+    "id": "ci-020",
+    "input": "torkad paprika",
+    "expected": "spices",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket. Covers the 'torkad' alternation, which no AC case reaches — deleting it from _groundPaprikaPattern must go red somewhere."
+  },
+  {
+    "id": "ci-021",
+    "input": "rostad paprika",
+    "expected": "veg",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: the recall control for the paprika split. 'rostad' is NOT a grinding participle — roasted red pepper is produce, so the spice rule must not over-reach."
+  },
+  {
+    "id": "ci-022",
+    "input": "rostbiff",
+    "expected": "meat",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: bounding 'ost' stopped it landing in dairy but left it in 'other'; the meat rule's new 'biff' literal is what actually resolves it."
+  },
+  {
+    "id": "ci-023",
+    "input": "lövbiff",
+    "expected": "meat",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket. Adjacent compound for the new 'biff' literal — proves the rule generalises rather than special-casing rostbiff."
+  },
+  {
+    "id": "ci-024",
+    "input": "nötkött",
+    "expected": "meat",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: beef LEADS the compound — _beefPattern's leading boundary must still fire."
+  },
+  {
+    "id": "ci-025",
+    "input": "nötkärnor",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket. The only case reaching the 'kärn' branch of _beefPattern's negative lookahead; every AC nut case exercises 'ter' instead."
+  },
+  {
+    "id": "ci-026",
+    "input": "jordnötter",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: nuts wear 'nöt' as a compound TAIL and used to land in meat."
+  },
+  {
+    "id": "ci-027",
+    "input": "hasselnötter",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC."
+  },
+  {
+    "id": "ci-028",
+    "input": "cashewnötter",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC."
+  },
+  {
+    "id": "ci-029",
+    "input": "rostade cashewnötter",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: carries BOTH collisions at once — 'ost' inside 'rostade' (dairy) and 'nöt' inside 'cashewnötter' (meat). Both must miss."
+  },
+  {
+    "id": "ci-030",
+    "input": "kokosnöt",
+    "expected": "other",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: 'nöt' as a bare compound tail with no plural suffix — the trailing-'ter' lookahead is not what saves this one, the leading boundary is."
+  },
+  {
+    "id": "ci-031",
+    "input": "ostskiva",
+    "expected": "dairy",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC: cheese LEADS this compound. Together with ci-012 (parmesanost) it pins the 'at least one boundary' shape of _cheesePattern — a two-sided boundary would drop both."
+  },
+  {
+    "id": "ci-032",
+    "input": "rostad potatis",
+    "expected": "veg",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket. 'ost' mid-word with a real veg noun after it — the dairy rule must not claim the line before the veg rule sees it."
+  },
+  {
+    "id": "ci-033",
+    "input": "lax filé",
+    "expected": "fish",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC and the genuine regression: the old \\bfil\\b DID match here (ASCII \\b treats 'é' as a non-word char), so salmon was filed under dairy. Adding 'é' to the boundary class is what fixes it."
+  },
+  {
+    "id": "ci-034",
+    "input": "laxfilé",
+    "expected": "fish",
+    "tolerance": "exact",
+    "notes": "BUT-1666 AC. Closed-compound control for ci-033 — the old \\bfil\\b did NOT fire here, so this pins the fish rule reaching the compound form rather than guarding history."
+  },
+  {
+    "id": "ci-035",
+    "input": "fläskfilé",
+    "expected": "meat",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket. The same -filé tail on a MEAT noun: proves the soured-milk boundary does not steal the line from the meat rule that runs after dairy."
+  },
+  {
+    "id": "ci-036",
+    "input": "turkisk fil",
+    "expected": "dairy",
+    "tolerance": "exact",
+    "notes": "Not named by the ticket, and the recall control the fil tightening needs: real soured milk written as a free-standing word must STILL be dairy. Without it, deleting _souredMilkPattern entirely would keep the corpus green."
+  },
+  {
+    "id": "ci-037",
+    "input": "gräddfil",
+    "expected": "dairy",
+    "tolerance": "exact",
+    "notes": "KNOWN GAP — deliberately absent from _expectedPassing. Swedish sour cream is dairy but the categorizer returns 'other': 'grädde' does not appear ('grädd' does), and _souredMilkPattern's leading boundary rejects 'fil' after the ASCII 'd'. Pre-existing, NOT a BUT-1666 regression — the old \\bfil\\b did not match 'gräddfil' either. Expectation encodes the correct aisle so the gap stays visible in the nightly artifact; flip it into _expectedPassing when the rule is fixed."
   }
 ]

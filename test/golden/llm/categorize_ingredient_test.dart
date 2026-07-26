@@ -36,6 +36,42 @@ const _expectedPassing = <String>{
   'ci-008',
   'ci-009',
   'ci-010',
+  // BUT-1666: substring shadowing fixed — nuts, roasted items, ground paprika
+  // and coconut milk now resolve to their real aisle.
+  'ci-011',
+  'ci-012',
+  'ci-013',
+  'ci-014',
+  'ci-015',
+  'ci-016',
+  'ci-017',
+  // BUT-1666 acceptance criteria, spelled out as the literals the ticket names
+  // (open-compound paprika, rostbiff, the nut family, the -ost compounds) plus
+  // the adjacent compounds and recall controls each touched rule needs.
+  'ci-018',
+  'ci-019',
+  'ci-020',
+  'ci-021',
+  'ci-022',
+  'ci-023',
+  'ci-024',
+  'ci-025',
+  'ci-026',
+  'ci-027',
+  'ci-028',
+  'ci-029',
+  'ci-030',
+  'ci-031',
+  'ci-032',
+  'ci-033',
+  'ci-034',
+  'ci-035',
+  'ci-036',
+  // ci-037 ("gräddfil" → dairy). Found absent from the corpus while writing
+  // these cases and confirmed as a pre-existing miss — Swedish sour cream is
+  // `grädd` + `fil`, so neither `contains('grädde')` nor any bare-word `fil`
+  // rule ever reached it. Fixed in the same change that added the case.
+  'ci-037',
 };
 
 void main() {

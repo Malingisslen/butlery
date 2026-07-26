@@ -10,6 +10,9 @@
 /// - Error handling and recovery
 library;
 
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -58,6 +61,7 @@ void main() {
 
       // Register fallback values for mocktail
       registerFallbackValue(RecipeBuilder().build());
+      registerFallbackValue(File('fallback.jpg'));
     });
 
     setUp(() async {
@@ -1063,6 +1067,91 @@ void main() {
           expect(vm.relatedRecipeIds, ['r2']);
         },
       );
+    });
+
+    // BUT-1667. Closing the recipe form while a save or fork is still running
+    // is an ordinary user action (tap Spara, then immediately back out). Both
+    // paths must end quietly: no write built from a torn-down form, and no
+    // notification on a disposed ChangeNotifier.
+    //
+    // These live at viewmodel level on purpose. The manager-level tests call
+    // `manager.dispose()` by hand, which proves the guards but never that
+    // RecipeFormViewModel.dispose() actually reaches them, and never that the
+    // REAL RecipeFormState is the thing being notified.
+    group('closing the form mid-operation (BUT-1667)', () {
+      // Fills the form with the minimum a save needs.
+      void fillValidForm(RecipeFormViewModel vm) {
+        vm.addIngredient();
+        vm.addInstruction();
+        vm.setTitle('Pannkakor');
+        vm.updateIngredient(0, '3 dl mjöl');
+        vm.updateInstruction(0, 'Vispa smeten');
+      }
+
+      test('a save still uploading when the form closes writes nothing', () async {
+        // Park the image upload so the save is provably mid-flight when the
+        // route pops. StorageService is the only injectable seam on that path.
+        final uploadGate = Completer<ImageUploadResult?>();
+        final gatedStorage = MockStorageService();
+        when(
+          () => gatedStorage.uploadRecipeImage(any(), any()),
+        ).thenAnswer((_) => uploadGate.future);
+        TestServiceLocator.registerMock<StorageService>(gatedStorage);
+
+        final vm = RecipeFormViewModel(recipeService: mockRecipeService);
+        fillValidForm(vm);
+        vm.imageManager.addPendingImage(File('pending.jpg'));
+
+        final saving = vm.saveRecipe();
+        await Future<void>.delayed(Duration.zero);
+
+        // The user backs out of the form while the image is still uploading.
+        vm.dispose();
+        uploadGate.complete(null);
+
+        // Resolves quietly with "not saved" — no exception escapes into the
+        // navigation callback that awaited it. Leaving the persistence manager
+        // undisposed here lets the save resume against a torn-down
+        // RecipeFormState, whose createRecipe throws and whose setError then
+        // notifies a disposed ChangeNotifier: this await throws instead.
+        expect(await saving, isNull);
+
+        // Control: the save reached the upload, so the assertions below are
+        // about the post-upload guard and not an early bail-out.
+        verify(() => gatedStorage.uploadRecipeImage(any(), any())).called(1);
+
+        // The whole point: nothing built from the emptied form reaches Firestore.
+        verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+        verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+      });
+
+      test('a fork in flight when the form closes fails quietly', () async {
+        final forkGate = Completer<RecipeOperationResult>();
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) => forkGate.future);
+
+        final vm = RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: testRecipe,
+        );
+
+        final forking = vm.forkRecipe();
+        await Future<void>.delayed(Duration.zero);
+
+        // Form closes; RecipeFormState is disposed underneath the fork.
+        vm.dispose();
+        forkGate.complete(RecipeOperationResult.failure('Fork failed'));
+
+        // forkRecipe's failure path calls setError() and setForking(false),
+        // both of which notifyListeners() on the now-disposed RecipeFormState.
+        // Unguarded, that FlutterError escapes forkRecipe as an unhandled
+        // exception at form close.
+        await expectLater(forking, completion(isNull));
+
+        // No error surfaced for a form the user already left.
+        expect(vm.error, isNull);
+      });
     });
   });
 }

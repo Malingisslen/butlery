@@ -163,6 +163,23 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
     if (throwOnRemoveItemsBatch != null) throw throwOnRemoveItemsBatch!;
     removedBatches.add(itemIds);
   }
+
+  /// BUT-1665 transactional seam: applies [mutate] to the STORED list, which
+  /// stands in for the live server document.
+  Object? throwOnMutateCollaborative;
+  final List<String> mutatedListIds = [];
+
+  @override
+  Future<UnifiedShoppingList> mutateCollaborativeList(
+    String listId,
+    UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
+  ) async {
+    if (throwOnMutateCollaborative != null) throw throwOnMutateCollaborative!;
+    mutatedListIds.add(listId);
+    final merged = mutate(_lists[listId]!);
+    _lists[listId] = merged;
+    return merged;
+  }
 }
 
 /// In-memory CategoryPreferencesRepository: production code calls
@@ -668,6 +685,67 @@ void main() {
             .items
             .firstWhere((i) => i.id == original.id);
         expect(localItem.bought, isFalse);
+      },
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // mutateSharedList (BUT-1665 transactional seam)
+  // -------------------------------------------------------------------------
+
+  group('mutateSharedList', () {
+    Future<UnifiedShoppingList> seedShared() async {
+      await service.initialize();
+      final list = UnifiedShoppingList.collaborative(
+        name: 'Shared',
+        ownerId: 'u',
+        ownerDisplayName: 'U',
+        memberPermissions: const {},
+        items: [UnifiedShoppingItem(name: 'Bröd', amount: 1)],
+      );
+      fakeRepo.seed(list);
+      fakeRepo.emitCollab([list]);
+      await Future<void>.delayed(Duration.zero);
+      return list;
+    }
+
+    /// Proves: the MERGED list the repository returns — not the caller's
+    /// cached copy — is what lands in local state.
+    test('adopts the merged list the repository returns', () async {
+      final list = await seedShared();
+
+      final ok = await service.mutateSharedList(
+        list.id,
+        (live) => live.copyWith(
+          items: [
+            ...live.items,
+            UnifiedShoppingItem(name: 'Mjölk', amount: 1),
+          ],
+        ),
+      );
+
+      expect(ok, isTrue);
+      expect(fakeRepo.mutatedListIds, [list.id]);
+      final local = service.lists.firstWhere((l) => l.id == list.id);
+      expect(local.items.map((i) => i.name), ['Bröd', 'Mjölk']);
+    });
+
+    /// Proves: a repository throw is swallowed into `false` and local state
+    /// is left alone, so the UI never shows an edit that did not land.
+    test(
+      'returns false and leaves local state untouched on repo failure',
+      () async {
+        final list = await seedShared();
+        fakeRepo.throwOnMutateCollaborative = Exception('unavailable');
+
+        final ok = await service.mutateSharedList(
+          list.id,
+          (live) => live.copyWith(items: const []),
+        );
+
+        expect(ok, isFalse);
+        final local = service.lists.firstWhere((l) => l.id == list.id);
+        expect(local.items.map((i) => i.name), ['Bröd']);
       },
     );
   });

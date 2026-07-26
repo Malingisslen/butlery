@@ -46,19 +46,14 @@ class PreferencesExportManager {
       final limit = ExportPaginationHelper.getLimitForType(
         'user_notifications',
       );
-      // Fetch one past the cap so "exactly `limit` present" is distinguishable
-      // from "more than `limit`, some omitted". Keying `truncated` off
-      // `length >= limit` would falsely flag a complete export of exactly
-      // `limit` notifications as truncated — a wrong completeness claim on a
-      // GDPR data-portability export (BUT-1562).
-      final entries = await _exports.exportUserNotifications(
-        userId,
-        maxDocuments: limit + 1,
+      final page = await ExportPaginationHelper.fetchCapped(
+        type: 'user_notifications',
+        fetch: (max) =>
+            _exports.exportUserNotifications(userId, maxDocuments: max),
       );
-      final truncated = entries.length > limit;
-      final included = truncated ? entries.take(limit) : entries;
+      final truncated = page.truncated;
 
-      for (final entry in included) {
+      for (final entry in page.items) {
         final data = entry['data'] as Map<String, dynamic>;
         notifications.add({
           'notification_id': entry['id'],
@@ -196,17 +191,18 @@ class PreferencesExportManager {
       final limit = ExportPaginationHelper.getLimitForType(
         'notification_history',
       );
-      final entries = await _exports.exportNotificationHistory(
-        userId,
-        maxDocuments: limit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'notification_history',
+        fetch: (max) =>
+            _exports.exportNotificationHistory(userId, maxDocuments: max),
       );
       return {
-        'notification_history': entries
+        'notification_history': entries.items
             .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
             .toList(),
         'total_count': entries.length,
-        if (entries.length >= limit) 'truncated': true,
-        if (entries.length >= limit)
+        if (entries.truncated) 'truncated': true,
+        if (entries.truncated)
           'note': 'Limited to the $limit most recent records',
       };
     } catch (e) {
@@ -221,19 +217,17 @@ class PreferencesExportManager {
   /// BUT-1450: Export notification_batches (userId-scoped).
   Future<Map<String, dynamic>> exportNotificationBatches(String userId) async {
     try {
-      final limit = ExportPaginationHelper.getLimitForType(
-        'notification_batches',
-      );
-      final entries = await _exports.exportNotificationBatches(
-        userId,
-        maxDocuments: limit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'notification_batches',
+        fetch: (max) =>
+            _exports.exportNotificationBatches(userId, maxDocuments: max),
       );
       return {
-        'notification_batches': entries
+        'notification_batches': entries.items
             .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
             .toList(),
         'total_count': entries.length,
-        if (entries.length >= limit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -249,19 +243,17 @@ class PreferencesExportManager {
     String userId,
   ) async {
     try {
-      final limit = ExportPaginationHelper.getLimitForType(
-        'notification_engagement',
-      );
-      final entries = await _exports.exportNotificationEngagement(
-        userId,
-        maxDocuments: limit,
+      final entries = await ExportPaginationHelper.fetchCapped(
+        type: 'notification_engagement',
+        fetch: (max) =>
+            _exports.exportNotificationEngagement(userId, maxDocuments: max),
       );
       return {
-        'notification_engagement': entries
+        'notification_engagement': entries.items
             .map((e) => {'id': e['id'], 'data': sanitizeForJson(e['data'])})
             .toList(),
         'total_count': entries.length,
-        if (entries.length >= limit) 'truncated': true,
+        if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(
@@ -284,20 +276,23 @@ class PreferencesExportManager {
     String userId,
   ) async {
     try {
-      final limit = ExportPaginationHelper.getLimitForType(
-        'notification_delivery',
+      // Each leg carries the cap independently, so each gets its own N+1 probe
+      // and the section is truncated when EITHER leg clipped (BUT-1662).
+      final sent = await ExportPaginationHelper.fetchCapped(
+        type: 'notification_delivery',
+        fetch: (max) =>
+            _exports.exportNotificationDeliverySent(userId, maxDocuments: max),
       );
-      final sent = await _exports.exportNotificationDeliverySent(
-        userId,
-        maxDocuments: limit,
-      );
-      final received = await _exports.exportNotificationDeliveryReceived(
-        userId,
-        maxDocuments: limit,
+      final received = await ExportPaginationHelper.fetchCapped(
+        type: 'notification_delivery',
+        fetch: (max) => _exports.exportNotificationDeliveryReceived(
+          userId,
+          maxDocuments: max,
+        ),
       );
       // De-dupe by doc id — a self-targeted notification can match both queries.
       final byId = <String, Map<String, dynamic>>{};
-      for (final e in [...sent, ...received]) {
+      for (final e in [...sent.items, ...received.items]) {
         byId[e['id'] as String] = {
           'id': e['id'],
           'data': sanitizeForJson(e['data']),
@@ -309,7 +304,7 @@ class PreferencesExportManager {
         'total_count': merged.length,
         'sent_count': sent.length,
         'received_count': received.length,
-        if (sent.length >= limit || received.length >= limit) 'truncated': true,
+        if (sent.truncated || received.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(

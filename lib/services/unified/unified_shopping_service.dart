@@ -145,7 +145,7 @@ class UnifiedShoppingService
     final itemOps = ListItemOperations(
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
-      updateList: updateList,
+      mutateSharedList: mutateSharedList,
       lifecycleOps: lifecycleOps,
     );
 
@@ -389,6 +389,35 @@ class UnifiedShoppingService
 
   Future<bool> updateList(UnifiedShoppingList list) async {
     return await _listManagement.updateList(list);
+  }
+
+  /// BUT-1665: single-item mutation of a SHARED list, applied server-side.
+  ///
+  /// [updateList] writes the whole list from the client's cached copy, which
+  /// loses a household member's concurrent tick. This routes the same model
+  /// mutator through a Firestore transaction so the merge happens against the
+  /// live document. The local copy is refreshed optimistically; the
+  /// collaborative snapshot stream is still the authority and lands right
+  /// after.
+  Future<bool> mutateSharedList(
+    String listId,
+    UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
+  ) async {
+    try {
+      final merged = await _shoppingRepository.mutateCollaborativeList(
+        listId,
+        mutate,
+      );
+      final index = _lists.indexWhere((l) => l.id == merged.id);
+      if (index >= 0) {
+        _lists[index] = merged;
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to mutate shared list $listId', e);
+      return false;
+    }
   }
 
   Future<bool> renameList(String listId, String newName) async {

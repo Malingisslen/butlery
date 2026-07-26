@@ -760,6 +760,20 @@ class RecipeFormState extends ChangeNotifier {
     List<String>? imageUrls,
     String? thumbnailUrl,
   }) {
+    // BUT-1667: after dispose() the field managers have cleared their values,
+    // so building here would silently yield a recipe with no ingredients and
+    // no instructions — which a resuming save would then WRITE over the user's
+    // stored recipe. Fail loudly instead. The two RecipePersistenceManager
+    // callers sit inside safeExecute, which turns this into "kunde inte spara"
+    // rather than data loss; RecipeFormCoordinator.syncToCollaborative has no
+    // error boundary and guards on [isDisposed] before calling instead.
+    if (_isDisposed) {
+      throw StateError(
+        'createRecipe called on a disposed RecipeFormState — the form data is '
+        'already gone, so the result would be an empty recipe',
+      );
+    }
+
     final cleanIngredients = _ingredientsManager.values
         .where((ingredient) => ingredient.trim().isNotEmpty)
         .toList();
@@ -900,9 +914,21 @@ class RecipeFormState extends ChangeNotifier {
   void removeIngredientHeading(String id) =>
       _ingredientSectionState.removeHeading(id);
 
+  bool _isDisposed = false;
+
+  /// Whether [dispose] has run. Once true the form's field VALUES are gone,
+  /// not just its controllers, so nothing may be built from this state.
+  bool get isDisposed => _isDisposed;
+
   @override
   void dispose() {
+    _isDisposed = true;
     _autoSaveManager.dispose();
+    // BUT-1667: the three field managers own the form's TextEditingControllers;
+    // without these the controllers leak on every recipe-form close.
+    _ingredientsManager.dispose();
+    _instructionsManager.dispose();
+    _tagsManager.dispose();
     _ingredientSectionState.dispose();
     super.dispose();
   }

@@ -62,3 +62,6 @@
 {"ts":"2026-07-24T21:31:33.567Z","type":"trigger","fired":true,"signals":"allergen,auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
 {"ts":"2026-07-24T21:34:56.972Z","type":"trigger","fired":true,"signals":"auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
 {"ts":"2026-07-24T21:55:08.448Z","type":"trigger","fired":true,"signals":"auth,cloud function,firestore.rules,functions/src,llm,security rule","ran":null}
+{"ts":"2026-07-25T19:41:32.779Z","type":"trigger","fired":true,"signals":"allergen,delete,login","ran":null}
+{"ts":"2026-07-25T20:17:53.048Z","type":"trigger","fired":true,"signals":"allergen,consent,delete,deletion,firestore.rules,login,moderation,monetiz,subscription,trust & safety","ran":null}
+{"ts":"2026-07-25T20:28:21.044Z","type":"trigger","fired":true,"signals":"allergen,consent,delete,deletion,firestore.rules,gdpr,login,moderation,monetiz,subscription,trust & safety","ran":null}

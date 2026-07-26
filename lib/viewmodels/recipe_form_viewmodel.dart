@@ -735,6 +735,21 @@ class RecipeFormViewModel extends BaseViewModel
     // CRITICAL: Cancel uploads FIRST to prevent race condition crashes
     _imageManager.cancelAllUploads();
 
+    // BUT-1667: kill the save path FIRST. `_state.dispose()` tears down the
+    // field managers, which clears the ingredient/instruction/tag VALUES as
+    // well as their controllers — an in-flight save resuming after its image
+    // upload would then build a recipe with empty lists and overwrite the
+    // user's stored one. Setting the persistence manager's disposed flag here
+    // makes its existing bail-out guards actually fire.
+    _persistenceManager.dispose();
+
+    // BUT-1667: the coordinator was never disposed, so its four manager
+    // listeners outlived the form and its own `_disposed` flag never tripped —
+    // which is what let syncToCollaborative reach a torn-down state. Must come
+    // before `_state.dispose()`, so the listeners are gone before the thing
+    // they listen to is destroyed.
+    _coordinator.dispose();
+
     // Dispose managers
     _state.dispose();
     _collaborativeManager.dispose();

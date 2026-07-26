@@ -81,14 +81,23 @@ idempotent:
    into a permanent retry loop under `retry:true` instead of the old
    drop-once. Audit every `.update()` in a `retry:true` handler for this
    race — the single most common gap when adding `retry:true`.
-6. **Any client-supplied string interpolated into a doc path is a
+6. **Validation errors COLLECTED into an array but thrown later are not a
+   gate** — anything between the collect and the throw runs on data already
+   known invalid. Classic shape: `forEach` collects errors → an
+   authorization/enrichment loop dereferences the same elements (a `null`
+   element throws TypeError → callable returns `internal`, which clients
+   retry) and burns a Firestore read per item → only then the
+   `invalid-argument` throw. Throw immediately after collecting. A
+   `payload as T[]` cast that checks only `Array.isArray` never validates
+   ELEMENT shape — the cast is where this bug hides.
+7. **Any client-supplied string interpolated into a doc path is a
    poison-pill/fail-open surface.** Full validator: non-empty, ≤1500 UTF-8
    **bytes** (not `.length`), no `/`, not `.`/`..`, not `/^__.*__$/`
    (reserved) — "non-empty, no slash" alone misses `.`/`..`/reserved ids,
    equally deterministic throws, often BEFORE the safety decision (fail-open).
-7. **Sanitisation must never shrink the value a security gate's THRESHOLD is
+8. **Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from** — sanitise for the *use*, gate on the *raw* shape/count.
-8. Can't be idempotent? Document why + add a `processed-events`-style guard.
+9. Can't be idempotent? Document why + add a `processed-events`-style guard.
 
 ## Cost & cold-start
 
@@ -315,6 +324,20 @@ see "When to consult the archive" at the end.
   the SAME operation key the wrapped callable uses, BEFORE the global
   check (same ordering rule), with the caller's uid a REQUIRED parameter so
   no call site can silently fail open.
+- **A per-ITEM token charge couples the bucket's `maxTokens` to the
+  callable's own payload cap**: `maxTokens` must be ≥ the max batch size or
+  every full-size batch is denied forever (`currentTokens` can never reach
+  `tokensRequired`), with a retryAfter that never helps. The two constants
+  sit in different files — derive one from the other or pin both in a test;
+  a comment is not enforcement. Also state the COMBINED ceiling when a
+  second bucket is split off an existing one: separate buckets are
+  ADDITIVE, so "same budget either way" is only true per-path.
+- **Standalone callables use `enforceRateLimit`, not bare `checkRateLimit`**
+  — only the former writes the `system_events` `rate_limit_violation` row
+  via `logRateLimitViolation`. A bare `checkRateLimit` + hand-thrown
+  `resource-exhausted` silently drops the abuse telemetry, which is usually
+  the whole point of the ticket adding the gate. (`notifications/` is the
+  existing outlier.)
 - Abuse/cost gates fail CLOSED on a Firestore error; some notification
   gates fail OPEN by design for their own domain — don't harmonize.
   `withRateLimit` wraps *callables*; the SDK does NOT auto-retry a thrown

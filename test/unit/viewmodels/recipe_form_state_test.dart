@@ -1586,19 +1586,60 @@ void main() {
         expect(() => formState.addListener(() {}), throwsFlutterError);
       });
 
-      test('should dispose FormFieldsManagers properly', () {
-        // Arrange
-        final ingredientsManager = formState.ingredientsManager;
-        final instructionsManager = formState.instructionsManager;
-        final tagsManager = formState.tagsManager;
+      // BUT-1667. Proves dispose() actually tears down the TextEditingControllers
+      // the three field managers own — they leaked on every recipe-form close
+      // before the fix. A live controller accepts addListener; a disposed one
+      // trips ChangeNotifier's not-disposed assertion, so this flips red the
+      // moment the manager dispose calls are removed.
+      test('dispose releases the field managers text controllers', () {
+        formState.ingredientsManager.updateItems(testIngredients);
+        formState.instructionsManager.updateItems(testInstructions);
+        formState.tagsManager.updateItems(testTags);
 
-        // Act
+        final ingredientControllers = formState.ingredientsManager.controllers;
+        final instructionControllers =
+            formState.instructionsManager.controllers;
+        final tagControllers = formState.tagsManager.controllers;
+        // Premise guard: the assertion below only means something if the
+        // managers actually handed out controllers to dispose.
+        expect(ingredientControllers, isNotEmpty);
+        expect(instructionControllers, isNotEmpty);
+        expect(tagControllers, isNotEmpty);
+
         formState.dispose();
 
-        // Assert - FormFieldsManagers should still be accessible but disposed
-        expect(() => ingredientsManager.addController(), returnsNormally);
-        expect(() => instructionsManager.addController(), returnsNormally);
-        expect(() => tagsManager.addController(), returnsNormally);
+        for (final controller in [
+          ...ingredientControllers,
+          ...instructionControllers,
+          ...tagControllers,
+        ]) {
+          expect(() => controller.addListener(() {}), throwsFlutterError);
+        }
+      });
+
+      // BUT-1667. Proves that building a recipe from a form whose managers are
+      // already torn down fails loudly instead of quietly producing a recipe
+      // with no ingredients and no instructions — a save resuming after its
+      // image upload would otherwise write that empty recipe over the user's
+      // stored one.
+      test('createRecipe after dispose throws instead of building an '
+          'empty recipe', () {
+        formState.setTitle(testTitle);
+        formState.ingredientsManager.updateItems(testIngredients);
+        formState.instructionsManager.updateItems(testInstructions);
+
+        // Control: the same fixture builds a complete recipe while alive, so a
+        // failure below is about disposal and not about the fixture.
+        final live = formState.createRecipe(recipeId: 'recipe-1');
+        expect(live.ingredients, equals(testIngredients));
+        expect(live.instructions, equals(testInstructions));
+
+        formState.dispose();
+
+        expect(
+          () => formState.createRecipe(recipeId: 'recipe-1'),
+          throwsA(isA<StateError>()),
+        );
       });
     });
   });

@@ -4776,7 +4776,7 @@
     {
       "id": "flow-menu-5",
       "label": "Inköpslistor",
-      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner.",
+      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner. BUT-1665 (2026-07-26): samtidiga ändringar på en delad lista slår inte längre ut varandra — varje enskild varuändring skrivs transaktionellt mot serverns version av listan i stället för mot klientens cache, så två personer som bockar av var sin vara i butiken båda får sina bockar kvar. ConflictBanner nedan ytar fortfarande den tysta konfliktlösningen; skillnaden är att den vanliga avbockningen inte längre ÄR en konflikt.",
       "features": [
         "MENU-11",
         "MENU-12",
@@ -4802,7 +4802,7 @@
         {
           "from": "svc-unified-shopping",
           "to": "repo-shopping",
-          "payload": "createPersonalList/updateList/deleteList",
+          "payload": "createPersonalList/updateList/deleteList för egna listor. BUT-1665 (2026-07-26): en enskild varuändring på en DELAD lista går inte längre den vägen — den går via mutateCollaborativeList, som läser om det LIVE-dokumentet inne i en Firestore-transaktion och applicerar ändringen där. Tidigare byggdes hela items-arrayen om från klientens cache och skrevs över, vilket tyst raderade det en annan hushållsmedlem hunnit bocka av. Rättigheterna prövas mot serverns dokument (owner/admin/edit — en view-only-medlem nekas) och en icke-ägare kan inte skriva om ownerId/memberPermissions. Offline finns en medvetet svagare reservväg: efter 8 s utan serversvar appliceras ändringen på cachen och skrivningen köas till återanslutning, vilket återinför den gamla risken att tappa en samtidig ändring — men bara offline, där ingen säkrare skrivning finns",
           "transport": "method call",
           "verified": true
         },

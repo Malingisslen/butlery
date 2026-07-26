@@ -72,7 +72,10 @@
       "Bash(echo *)",
       "Bash(cd functions *)",
       "Bash(echo === stakeholder router on plan-touched paths === *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(sed 's/\\\\$$//')",
+      "Bash(sed *)",
+      "Bash(/c/tools/flutter/bin/flutter test *)"
     ]
   },
   "skillOverrides": {

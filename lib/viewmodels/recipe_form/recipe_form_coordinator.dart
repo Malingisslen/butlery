@@ -66,6 +66,12 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   /// creating recipe from current state and updating Firebase for real-time
   /// collaborative editing and participant synchronization.
   void syncToCollaborative({required bool isCollaborative}) {
+    // BUT-1667: this is the one createRecipe caller with no safeExecute around
+    // it, and after dispose() the field managers have cleared their values —
+    // building here would push an EMPTY recipe over the shared collaborative
+    // document. createRecipe now throws in that state, so guard rather than
+    // catch: there is nothing worth doing post-dispose.
+    if (_disposed || _state.isDisposed) return;
     if (isCollaborative && _state.originalRecipe != null) {
       final recipe = _state.createRecipe(recipeId: _state.originalRecipe!.id);
       _collaborativeManager.updateRecipeInFirebase(recipe);
@@ -176,5 +182,11 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     _disposed = true;
     _notificationDebounceTimer?.cancel();
     _notificationDebounceTimer = null;
+    // BUT-1667: mirror setupManagerListeners. Until this class was actually
+    // disposed by the viewmodel these four outlived the form.
+    _state.removeListener(_onStateChanged);
+    _collaborativeManager.removeListener(_onCollaborativeChanged);
+    _imageManager.removeListener(_onImageChanged);
+    _permissionManager.removeListener(_onPermissionChanged);
   }
 }

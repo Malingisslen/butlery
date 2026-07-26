@@ -304,6 +304,59 @@ void main() {
           reason: 'measurement embedded in an instruction is not an ingredient',
         );
       });
+
+      // BUT-1661 acceptance criterion #2, end-to-end.
+      //
+      // Proves that a UNIT-LESS, åäö-leading ingredient line survives a
+      // headerless import — the exact shape that used to vanish. Every other
+      // "ägg" fixture in this file sits under an "Ingredienser:" header, which
+      // flips the parser into its ingredient block and bypasses the predicate
+      // entirely; this one deliberately has no header anywhere, so the line can
+      // only be captured through
+      // `RecipeSectionDetector.looksLikeIngredient` at STAGE 3.
+      //
+      // Non-vacuity: "4 ägg" carries no unit, no fraction, no comma and no
+      // bullet, so none of the other branches of that predicate can fire. Under
+      // the pre-fix ASCII boundary — one on either side of "ägg", which never
+      // borders 'ä' — the word-list branch returned false too, the line was
+      // dropped outright, and
+      // this assertion goes red. `text_import_strategy` has no fallback branch
+      // after the check, so a drop here is silent data loss on an
+      // allergen-bearing line.
+      test(
+        'keeps a unit-less "4 ägg" line in a fully headerless import',
+        () async {
+          const text =
+              'Fluffiga pannkakor från grunden\n'
+              '4 ägg\n'
+              '3 dl vetemjöl\n'
+              '5 dl mjölk\n'
+              'Vispa ihop smeten och stek tunna pannkakor i smör.';
+
+          final result = await strategy.import(text);
+          final ings = result.recipe?.ingredients ?? const <String>[];
+          final joined = ings.join(' | ').toLowerCase();
+
+          expect(
+            joined,
+            contains('ägg'),
+            reason:
+                'the unit-less line is the one at risk — it reaches the list '
+                'only via looksLikeIngredient',
+          );
+          // Positive control: the measured lines prove the parse ran and the
+          // ingredient block was populated, so a missing "ägg" above could not
+          // be explained by the import having failed wholesale.
+          expect(joined, contains('vetemjöl'));
+          expect(joined, contains('mjölk'));
+          // ...and the instruction line must not have been mistaken for one.
+          expect(
+            joined,
+            isNot(contains('vispa')),
+            reason: 'the instruction line is not an ingredient',
+          );
+        },
+      );
     });
 
     group('Initialization', () {

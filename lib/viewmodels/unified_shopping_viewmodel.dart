@@ -273,6 +273,16 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   }
 
   /// Add item (original API)
+  ///
+  /// BUT-1670: [source] tags where the add came from in analytics. It defaults
+  /// to `manual` because that is what a bare call from an input field is;
+  /// [addItemsFromRecipe] passes `recipe`, so the "how do people fill their
+  /// list?" funnel stops reading as 100% manual.
+  ///
+  /// Menu-generated lists do NOT flow through here — that path needs a
+  /// per-line vs per-list event decision first (BUT-1681), so it stays
+  /// analytically silent rather than shipping a count that regeneration
+  /// inflates.
   Future<bool> addItem({
     required String name,
     required double amount,
@@ -281,6 +291,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     String? note,
     double? estimatedPrice,
     int priority = 3,
+    String source = 'manual',
   }) async {
     if (ValidationUtils.isNullOrWhitespace(name)) {
       return false;
@@ -312,7 +323,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         if (activeList != null) {
           _analytics?.shopping.logShoppingListItemAdded(
             listId: activeList!.id,
-            source: 'manual',
+            source: source,
           );
         }
       } else {
@@ -360,17 +371,22 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
     final result = await _shoppingService.toggleItemBought(itemId);
     if (result && activeList != null) {
-      final checkedCount = activeList!.items.where((i) => i.bought).length;
-      _analytics?.shopping.logShoppingListItemChecked(
-        listId: activeList!.id,
-        itemCount: checkedCount,
-      );
-
-      if (allItemsBought && activeList!.items.isNotEmpty) {
-        _analytics?.shopping.logShoppingListCompleted(
+      // BUT-1670: this is a TOGGLE — it fires on unchecking too. Logging
+      // "item checked" for an uncheck inflated the checkoff metric and made
+      // the funnel unreadable, so only a genuine false→true transition counts.
+      if (wasBought == false) {
+        final checkedCount = activeList!.items.where((i) => i.bought).length;
+        _analytics?.shopping.logShoppingListItemChecked(
           listId: activeList!.id,
-          itemCount: activeList!.items.length,
+          itemCount: checkedCount,
         );
+
+        if (allItemsBought && activeList!.items.isNotEmpty) {
+          _analytics?.shopping.logShoppingListCompleted(
+            listId: activeList!.id,
+            itemCount: activeList!.items.length,
+          );
+        }
       }
 
       // BUT-1306: live wiring of the checkoff → pantry policy seam. The service
@@ -523,7 +539,13 @@ class UnifiedShoppingViewModel extends BaseViewModel {
       return _itemOpsManager.addItemsFromRecipe(
         ingredientData,
         ({required name, required amount, required unit, required category}) =>
-            addItem(name: name, amount: amount, unit: unit, category: category),
+            addItem(
+              name: name,
+              amount: amount,
+              unit: unit,
+              category: category,
+              source: 'recipe',
+            ),
       );
     });
   }

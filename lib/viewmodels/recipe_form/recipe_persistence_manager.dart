@@ -35,7 +35,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
   bool _isSaveInProgress = false;
   String? _currentSaveOperationId;
-  Recipe? _lastSaveResult;
+
+  /// Saves that arrived while another was in flight. Each waits on its own
+  /// completer, which the in-flight save (or [dispose]) settles — BUT-1669.
   final Map<String, Completer<Recipe?>> _pendingSaveOperations = {};
 
   bool _isFirstRecipe = false;
@@ -83,22 +85,21 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       final completer = Completer<Recipe?>();
       _pendingSaveOperations[operationId] = completer;
 
+      // BUT-1669: the completer IS the synchronization primitive — the
+      // in-flight save settles every queued one through
+      // _completePendingSaveOperations. The old code ignored it and polled
+      // `_isSaveInProgress` every 100 ms instead, then completed the completer
+      // a second time, which threw StateError out of saveRecipe. Awaiting it
+      // directly removes the double-complete, the poll, and the stale read:
+      // the poll's disposed-exit fell through to a bare `_lastSaveResult`
+      // field, so a queued save that never ran returned a PREVIOUS save's
+      // recipe and its caller reported success. That field is gone; the
+      // completer carries the result. dispose() settles pending waiters with
+      // null so nothing hangs.
       try {
-        await Future.doWhile(() async {
-          if (_disposed) return false;
-          if (!_isSaveInProgress) return false;
-          await Future.delayed(const Duration(milliseconds: 100));
-          return true;
-        });
-
-        final result = _lastSaveResult;
+        return await completer.future;
+      } finally {
         _pendingSaveOperations.remove(operationId);
-        completer.complete(result);
-        return result;
-      } catch (e) {
-        _pendingSaveOperations.remove(operationId);
-        completer.completeError(e);
-        rethrow;
       }
     }
 
@@ -259,8 +260,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         customErrorMessage: null,
       );
 
-      _lastSaveResult = result;
-
       if (result == null) {
         if (!_disposed) {
           _state.setError(AppLocale.current.errorCouldNotSaveRecipe);
@@ -333,7 +332,14 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       );
 
       if (result == null) {
-        _state.setError(AppLocale.current.errorCouldNotForkRecipe);
+        // BUT-1667: `setError`/`setForking` call notifyListeners() unguarded on
+        // a plain ChangeNotifier, and createRecipe now THROWS once the form is
+        // disposed — so a fork still in flight at form close would land here and
+        // notify a dead notifier. saveRecipe guards every state write this way;
+        // this path was the untouched twin.
+        if (!_disposed) {
+          _state.setError(AppLocale.current.errorCouldNotForkRecipe);
+        }
       } else {
         if (!_disposed) {
           // BUT-1138: await draft cleanup — same race as the save path.
@@ -344,10 +350,14 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       return result;
     } catch (e) {
       AppLogger.error('Fel vid forkning av recept: $e');
-      _state.setError(AppLocale.current.errorCouldNotForkRecipe);
+      if (!_disposed) {
+        _state.setError(AppLocale.current.errorCouldNotForkRecipe);
+      }
       return null;
     } finally {
-      _state.setForking(false);
+      if (!_disposed) {
+        _state.setForking(false);
+      }
     }
   }
 
@@ -524,6 +534,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
   void dispose() {
     _disposed = true;
-    _pendingSaveOperations.clear();
+    // BUT-1669: settle before clearing. A queued save awaits its completer, so
+    // dropping the map without completing it would hang that caller forever.
+    // null is the honest answer — the queued save never ran.
+    _completePendingSaveOperations(null);
   }
 }

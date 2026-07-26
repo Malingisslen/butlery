@@ -128,4 +128,112 @@ void main() {
       expect(RecipeSectionDetector.componentSubHeadingLabel('Mjölk'), isNull);
     });
   });
+
+  // BUT-1661. The word list used to be bounded with Dart's ASCII word
+  // boundary, which never borders å/ä/ö: with one on either side of a token
+  // like "ägg" the pattern could not match at all, so a headerless "2 ägg"
+  // line was silently dropped from the ingredient list.
+  //
+  // The boundary is now a TRAILING lookahead only — `ägg(?![a-zåäö0-9])` — and
+  // that asymmetry is the point, not an oversight. `looksLikeIngredient` has an
+  // asymmetric cost: a false positive merely keeps a line in the ingredient
+  // list (harmless), while a false negative DELETES it, because
+  // `text_import_strategy` has no fallback branch after this check. So the
+  // guard is deliberately loose on the leading edge and strict on the trailing
+  // edge, and these tests encode that direction rather than "tight is better".
+  group('looksLikeIngredient — Unicode-safe Swedish word boundaries', () {
+    const shouldMatch = <String>[
+      '2 ägg', // the regression case: åäö-leading, unit-less
+      'Ägg', // capitalised
+      '2 dl råsocker', // measurement branch — matches before the word list
+      'ägg och mjölk',
+      'ett ägg',
+      'smör',
+      'lite mjöl',
+      'riven ost och kött',
+    ];
+
+    for (final line in shouldMatch) {
+      test('"$line" is an ingredient', () {
+        expect(RecipeSectionDetector.looksLikeIngredient(line), isTrue);
+      });
+    }
+
+    // Proves that a bare compound-TAIL ingredient word survives the boundary,
+    // so the line is never deleted from a headerless import.
+    //
+    // These five previously returned FALSE and were dropped outright. Two
+    // different mechanisms put them there, and both are now closed:
+    //   * 'Råsocker'/'råmjölk'/'strösocker' — a two-sided boundary
+    //     `(?<![a-zåäö0-9])socker(?!...)` rejects them because the token sits
+    //     at the END of the compound. (The pre-BUT-1661 ASCII `\b` accidentally
+    //     matched these, because å/ö are not ASCII word chars, so a two-sided
+    //     Unicode boundary would have been a RECALL REGRESSION against the
+    //     behaviour it replaced.)
+    //   * 'Havssalt'/'vetemjöl' — all-ASCII prefixes, so neither `\b` nor a
+    //     two-sided lookaround ever matched them. Bare, unmeasured, they were
+    //     dropped by every previous version of this function.
+    // 'råmjölk' is the safety case: unpasteurised milk carries an allergen, so
+    // losing the line loses the allergen.
+    const compoundTailsThatMustSurvive = <String>[
+      'strösocker',
+      'råsocker',
+      'Råsocker', // capitalised, as an OCR/caption line actually arrives
+      'råmjölk', // allergen-bearing — the reason this is a safety fix
+      'havssalt',
+      'Havssalt',
+      'vetemjöl',
+    ];
+
+    for (final line in compoundTailsThatMustSurvive) {
+      test('"$line" (bare compound tail) stays an ingredient', () {
+        expect(
+          RecipeSectionDetector.looksLikeIngredient(line),
+          isTrue,
+          reason:
+              'a false negative deletes this line — text_import_strategy has '
+              'no fallback branch after looksLikeIngredient',
+        );
+      });
+    }
+
+    // The trailing edge is what still keeps the real false positives out: a
+    // listed token followed by MORE letters is a different word (a dish name or
+    // a section label), not an ingredient. Each of these goes red the moment
+    // the `(?![a-zåäö0-9])` lookahead is dropped for a bare `contains()`, which
+    // is the only remaining mutation this function is exposed to.
+    const shouldNotMatch = <String>[
+      'Äggröra', // 'ägg' + suffix
+      'Mjölkchoklad', // 'mjölk' + suffix
+      'Riskaka', // 'ris' + suffix
+      'Vitlöksbröd', // 'vitlök' + suffix
+    ];
+
+    for (final line in shouldNotMatch) {
+      test('"$line" is not matched by the word list', () {
+        expect(RecipeSectionDetector.looksLikeIngredient(line), isFalse);
+      });
+    }
+
+    // The ticket's three named forms, kept together so the contract reads in
+    // one place: bare word, quantity-prefixed unit-less line, and the token
+    // inside a sentence. The third is an accepted FALSE POSITIVE at line level
+    // — "lägg till ägg och rör om" is an instruction — and it is listed here
+    // precisely because true is the safe answer: this predicate only ever
+    // decides whether to KEEP a line, and callers that need to reject
+    // instructions score them separately (instructionScore).
+    test('the three BUT-1661 "ägg" forms all count as ingredients', () {
+      for (final line in const [
+        'ägg',
+        '2 ägg',
+        'lägg till ägg och rör om',
+      ]) {
+        expect(
+          RecipeSectionDetector.looksLikeIngredient(line),
+          isTrue,
+          reason: '"$line" must not be dropped by the word-boundary guard',
+        );
+      }
+    });
+  });
 }

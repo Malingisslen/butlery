@@ -18,6 +18,9 @@ import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
+/// BUT-1665: mocktail fallback for the transactional mutator argument.
+UnifiedShoppingList _identityMutator(UnifiedShoppingList live) => live;
+
 void main() {
   group('CollaborativeShoppingOperations', () {
     late MockUnifiedShoppingService mockParentService;
@@ -35,6 +38,10 @@ void main() {
       registerFallbackValue(<String>[]);
       registerFallbackValue(<String, String>{});
       registerFallbackValue(<UnifiedShoppingItem>[]);
+      // BUT-1665: item ops now hand a mutator to the transactional seam.
+      const UnifiedShoppingList Function(UnifiedShoppingList) identityMutator =
+          _identityMutator;
+      registerFallbackValue(identityMutator);
       registerFallbackValue(
         UnifiedShoppingList(
           id: 'test',
@@ -217,6 +224,21 @@ void main() {
       when(
         () => mockParentService.deleteList(any()),
       ).thenAnswer((_) async => true);
+      // BUT-1665: the transactional seam applies the mutator to whatever the
+      // server currently holds. Default stub applies it to the cached list.
+      when(() => mockParentService.mutateSharedList(any(), any())).thenAnswer((
+        invocation,
+      ) async {
+        final listId = invocation.positionalArguments[0] as String;
+        final mutate =
+            invocation.positionalArguments[1]
+                as UnifiedShoppingList Function(UnifiedShoppingList);
+        final live = mockParentService.collaborativeLists.firstWhere(
+          (l) => l.id == listId,
+        );
+        mutate(live);
+        return true;
+      });
 
       // Build operations with typed deps (no _parent back-reference)
       final lifecycleOps = ListLifecycleOperations(
@@ -237,7 +259,7 @@ void main() {
         getCurrentUserId: () => mockParentService.currentUserId,
         getCurrentUserDisplayName: () =>
             mockParentService.currentUserDisplayName,
-        updateList: mockParentService.updateList,
+        mutateSharedList: mockParentService.mutateSharedList,
         lifecycleOps: lifecycleOps,
       );
 
@@ -512,14 +534,16 @@ void main() {
       test('should add item to collaborative list', () async {
         // Arrange
         final originalList = testCollaborativeList;
-        when(() => mockParentService.updateList(any())).thenAnswer((
-          invocation,
-        ) async {
-          final list = invocation.positionalArguments[0] as UnifiedShoppingList;
-          // Verify the list has a new item
-          expect(list.items.length, greaterThan(originalList.items.length));
-          return true;
-        });
+        UnifiedShoppingList? mutated;
+        when(() => mockParentService.mutateSharedList(any(), any())).thenAnswer(
+          (invocation) async {
+            final mutate =
+                invocation.positionalArguments[1]
+                    as UnifiedShoppingList Function(UnifiedShoppingList);
+            mutated = mutate(originalList);
+            return true;
+          },
+        );
 
         // Act
         final result = await operations.addItem(
@@ -534,7 +558,13 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        expect(
+          mutated!.items.length,
+          greaterThan(originalList.items.length),
+        );
+        verify(
+          () => mockParentService.mutateSharedList(any(), any()),
+        ).called(1);
       });
 
       test('should not add item without edit permission', () async {
@@ -549,7 +579,7 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockParentService.updateList(any()));
+        verifyNever(() => mockParentService.mutateSharedList(any(), any()));
       });
 
       test('should toggle item bought status', () async {
@@ -561,7 +591,9 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.mutateSharedList(any(), any()),
+        ).called(1);
       });
 
       test('should remove item from list', () async {
@@ -573,7 +605,79 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.mutateSharedList(any(), any()),
+        ).called(1);
+      });
+
+      // BUT-1665: the regression this fix exists for — a household member's
+      // tick that landed after this client's cache was filled must survive.
+      test(
+        'toggling one item applies to the LIVE list, keeping a concurrent '
+        'tick on another item',
+        () async {
+          // Arrange: the server copy already has item_2 ticked by someone else.
+          final serverList = testCollaborativeList.copyWith(
+            items: [
+              testItem1,
+              testItem2.copyWith(bought: true),
+            ],
+          );
+          UnifiedShoppingList? merged;
+          when(
+            () => mockParentService.mutateSharedList(any(), any()),
+          ).thenAnswer((invocation) async {
+            final mutate =
+                invocation.positionalArguments[1]
+                    as UnifiedShoppingList Function(UnifiedShoppingList);
+            merged = mutate(serverList);
+            return true;
+          });
+
+          // Act: this client ticks item_1 from its own (stale) view.
+          final result = await operations.toggleItemBought(
+            listId: 'collab_list_1',
+            itemId: 'item_1',
+          );
+
+          // Assert: both ticks are present after the merge.
+          expect(result, isTrue);
+          expect(
+            merged!.items.firstWhere((i) => i.id == 'item_1').bought,
+            isTrue,
+          );
+          expect(
+            merged!.items.firstWhere((i) => i.id == 'item_2').bought,
+            isTrue,
+            reason: 'the other member\'s tick must not be overwritten',
+          );
+        },
+      );
+
+      test('toggling an item another member deleted is a no-op, not an '
+          'error', () async {
+        // Arrange: the item is gone from the live list.
+        final serverList = testCollaborativeList.copyWith(items: [testItem2]);
+        UnifiedShoppingList? merged;
+        when(() => mockParentService.mutateSharedList(any(), any())).thenAnswer(
+          (invocation) async {
+            final mutate =
+                invocation.positionalArguments[1]
+                    as UnifiedShoppingList Function(UnifiedShoppingList);
+            merged = mutate(serverList);
+            return true;
+          },
+        );
+
+        // Act
+        final result = await operations.toggleItemBought(
+          listId: 'collab_list_1',
+          itemId: 'item_1',
+        );
+
+        // Assert
+        expect(result, isTrue);
+        expect(merged!.items.map((i) => i.id), ['item_2']);
       });
     });
 

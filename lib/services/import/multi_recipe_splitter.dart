@@ -174,8 +174,11 @@ class MultiRecipeSplitter {
       if (_isInstructional(l)) instructional = true;
     }
     // An explicit "Ingredienser:" header is a strong ingredient signal on its
-    // own — needed because looksLikeIngredient misses unit-less, åäö-leading
-    // lines like "2 ägg" (Dart's ASCII \b doesn't border non-ASCII letters).
+    // own, so a block carrying one survives even when its lines are too few to
+    // reach _minIngredientLines. (This used to compensate for
+    // looksLikeIngredient missing unit-less, åäö-leading lines like "2 ägg";
+    // BUT-1661 replaced Dart's ASCII \b with a Unicode-safe boundary, so those
+    // lines now count on their own and this is a genuine OR, not a workaround.)
     final hasIngredients =
         hasIngredientHeader || ingredientLines >= _minIngredientLines;
     return hasIngredients && instructional;

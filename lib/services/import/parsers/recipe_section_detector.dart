@@ -344,58 +344,86 @@ class RecipeSectionDetector {
     return headers.any((header) => line.contains(header));
   }
 
+  // Dart's ASCII word boundary never borders å/ä/ö, so wrapping a token like
+  // "ägg" in one could never match, and every headerless "2 ägg" line was
+  // silently dropped from the ingredient list (BUT-1661). This lookahead is
+  // the Unicode-safe Swedish word ending used elsewhere in the codebase (see
+  // `text_normalizer.dart`).
+  //
+  // Trailing edge ONLY, deliberately. A leading boundary as well would be
+  // tighter than the old behaviour rather than merely correct: it drops the
+  // compound-TAIL forms Swedish recipes are full of — "strösocker",
+  // "råsocker", "råmjölk", "havssalt", "vetemjöl" — because the token sits at
+  // the end of the word. For this function a false positive is the safe
+  // direction (the line stays an ingredient), while a false negative deletes
+  // the line outright: `text_import_strategy` has no fallback branch after
+  // this check. "råmjölk" carries an allergen, so losing it is a safety
+  // matter, not a tidiness one. The trailing edge is what keeps the real
+  // false positives out ("äggröra", "mjölkchoklad", "riskaka", "vitlöksbröd").
+  static const _noWordAfter = '(?![a-zåäö0-9])';
+
+  /// Common ingredient words, matched against the lowercased line as a word
+  /// ENDING. Pre-compiled so a per-line scan doesn't rebuild every pattern.
+  static final _ingredientWordPatterns = <String>[
+    'mjöl',
+    'socker',
+    'smör',
+    'ägg',
+    'mjölk',
+    'grädde',
+    'olja',
+    'salt',
+    'peppar',
+    'lök',
+    'vitlök',
+    'tomat',
+    'potatis',
+    'kött',
+    'kyckling',
+    'fisk',
+    'ris',
+    'pasta',
+    'flour',
+    'sugar',
+    'butter',
+    'eggs',
+    'milk',
+    'cream',
+    'oil',
+    'pepper',
+  ].map((w) => RegExp('$w$_noWordAfter')).toList(growable: false);
+
+  // The remaining [looksLikeIngredient] patterns, hoisted for the same reason
+  // as [_ingredientWordPatterns]: this runs once per line of every imported
+  // recipe (and again per line per block in MultiRecipeSplitter), so building
+  // them inline recompiled four regexes on every call.
+  static final _swedishMeasurementPattern = RegExp(
+    r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|kg|g|hg|msk|tsk|st|krm|bit|skiva|klyfta|burk|pkt|påse)',
+  );
+  static final _englishMeasurementPattern = RegExp(
+    r'\d+(?:[,\.]\d+)?\s*(cup|cups|oz|tbsp|tsp|lb|lbs|pound|pounds|ounce|ounces)',
+  );
+  static final _fractionPattern = RegExp(r'[½¼¾]');
+  static final _bulletPrefixPattern = RegExp(r'^[•\-\*]\s+');
+
   /// Check if line looks like an ingredient (has measurements or common ingredient words)
   static bool looksLikeIngredient(String line) {
     // Has common Swedish measurements
-    if (RegExp(
-      r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|kg|g|hg|msk|tsk|st|krm|bit|skiva|klyfta|burk|pkt|påse)',
-    ).hasMatch(line)) {
+    if (_swedishMeasurementPattern.hasMatch(line)) {
       return true;
     }
 
     // Has common English measurements
-    if (RegExp(
-      r'\d+(?:[,\.]\d+)?\s*(cup|cups|oz|tbsp|tsp|lb|lbs|pound|pounds|ounce|ounces)',
-    ).hasMatch(line)) {
+    if (_englishMeasurementPattern.hasMatch(line)) {
       return true;
     }
 
     // Has fractions (½, ¼, ¾)
-    if (RegExp(r'[½¼¾]').hasMatch(line)) return true;
+    if (_fractionPattern.hasMatch(line)) return true;
 
-    // Common ingredient words (with word boundaries to avoid false matches)
-    final ingredientWords = [
-      'mjöl',
-      'socker',
-      'smör',
-      'ägg',
-      'mjölk',
-      'grädde',
-      'olja',
-      'salt',
-      'peppar',
-      'lök',
-      'vitlök',
-      'tomat',
-      'potatis',
-      'kött',
-      'kyckling',
-      'fisk',
-      'ris',
-      'pasta',
-      'flour',
-      'sugar',
-      'butter',
-      'eggs',
-      'milk',
-      'cream',
-      'oil',
-      'pepper',
-    ];
+    // Common ingredient words, matched as a Unicode-safe word ending
     final lineLower = line.toLowerCase();
-    if (ingredientWords.any(
-      (word) => RegExp('\\b$word\\b').hasMatch(lineLower),
-    )) {
+    if (_ingredientWordPatterns.any((re) => re.hasMatch(lineLower))) {
       return true;
     }
 
@@ -403,7 +431,7 @@ class RecipeSectionDetector {
     if (line.contains(',') && line.length > 3 && line.length < 80) return true;
 
     // Starts with bullet point or dash
-    if (RegExp(r'^[•\-\*]\s+').hasMatch(line)) return true;
+    if (_bulletPrefixPattern.hasMatch(line)) return true;
 
     return false;
   }

@@ -5215,3 +5215,137 @@ per-user AND global caps — audit for each separately. The per-user gate must b
 operationType), placed BEFORE the global gate (BUT-1577 ordering), and its raw uid made a
 REQUIRED param so no call site can fail open. Ordering is provable in a Layer-1 test by
 asserting the global seam's call count is 0 on a per-user deny.
+
+### 2026-07-25 — BUT-1664 sendNotificationBatch per-notification billing [Pattern discovered]
+
+Reviewed working-tree diff: `functions/src/notifications/send-notification.ts`,
+`functions/src/middleware/rate_limiter.ts`,
+`functions/src/__tests__/send-notification.test.ts`.
+
+**What the change does.** `sendNotificationBatch` used to charge ONE token from the
+*single-send* `sendNotification` bucket regardless of batch size, so 100 pushes cost the
+same as 1 — the batch path was ~100x cheaper to abuse than the loop it replaces. The diff
+extracts `preflightNotificationBatch({callerUid, notifications, rateLimit?})`, validates
+`Array.isArray` + `length <= MAX_BATCH_NOTIFICATIONS (100)` BEFORE charging, then charges
+the dedicated `sendNotificationBatch` bucket `Math.max(1, notifications.length)` tokens.
+Bucket resized `maxTokens 10→100`, `refillRate 5→30`. Six new table-driven cases; suite
+green at 13/13 via `npm run test:send-notification` (script already wired in package.json,
+so the recurring CI-invisibility trap does not apply here). `npm run build` clean.
+
+**Verdict: the billing fix itself is correct and a real tightening.** Old ceiling was 60
+batch calls x 100 = 6000 notifications in a burst (single-send bucket, 60 tokens);
+new ceiling is 100 notifications burst + 30/min sustained.
+
+**Finding 1 (High) — validation is collected but not enforced until after the auth loop.**
+Unchanged by this diff but now the dominant cost hole the diff is trying to close. Order in
+the callable is: preflight charge → `forEach` collects `validationErrors` (no throw) →
+`uniqueTargets = notifications.map(n => n.targetUserId)` → serial per-target authorization
+loop (1–3 Firestore reads each, up to 100 targets) → THEN
+`throw HttpsError("invalid-argument", ...)`. Two consequences:
+(a) `{notifications:[null]}` makes `n.targetUserId` throw a raw TypeError before the
+    invalid-argument throw is ever reached; the callable returns `internal`, which this
+    very file's BUT-641 comment (line ~162) says "would also trigger client retry" — so a
+    poison-pill batch becomes a retry+recharge loop;
+(b) a 100-item batch that is entirely invalid still pays up to ~300 Firestore reads.
+Both close with a one-line move: throw the `validationErrors` block immediately after the
+`forEach`, before `uniqueTargets`. Root enabler is `return notifications as
+NotificationRequest[]` in the preflight — an `Array.isArray` check plus a cast asserts an
+element shape nothing ever verified.
+
+**Finding 2 (Medium) — `MAX_BATCH_NOTIFICATIONS` and `maxTokens` are coupled across two
+files with nothing enforcing it.** Both are 100 today, so a full batch is admitted (a
+first-request bucket starts full and `100 < 100` is false). Raise the payload cap above
+`maxTokens` and EVERY max-size batch is denied permanently — `currentTokens` can never
+reach `tokensRequired`, and the computed retryAfter (ceil(needed/refillRate) intervals)
+never helps. The rate_limiter comment documents the dependency; a comment is not a gate.
+
+**Finding 3 (Medium) — denials lose their abuse telemetry.** `preflightNotificationBatch`
+calls bare `checkRateLimit` and hand-throws `resource-exhausted`, skipping
+`logRateLimitViolation` and therefore the `system_events/rate_limit_violation` row. Every
+other standalone callable in this repo (`verifySignupAge`, `logParseEvent`,
+`logParseCorrection`, `logWebError`, `setProfileSearchability`) uses `enforceRateLimit`,
+which does check + log + throw and already accepts `tokensRequired`. `notifications/` is
+the outlier on both the single and batch paths.
+
+**Finding 4 (Medium) — the wrapper wiring is unpinned.** All six new cases call the pure
+core directly, so nothing proves `sendNotificationBatch` calls the preflight at all, nor
+that it passes `request.data?.notifications` rather than `request.data` (both land on
+`invalid-argument`, just with different messages — so the assertion must be on the message).
+v2 `onCall` exports carry `.run()`; an oversized-batch case through `.run()` is
+non-vacuous and needs no emulator because the size check precedes the rate-limit call.
+
+**Finding 5 (Medium, pre-existing) — raw uids in logs.** Lines ~140 and ~602 interpolate
+`callerUid`/target uids into `logger.warn` template strings. The repo convention is
+`hashUid()` (rate_limiter.ts uses it in the sibling violation log) plus a structured second
+arg rather than string interpolation.
+
+**Finding 6 (Info) — no client calls this callable.** `grep httpsCallable` across `lib/`
+finds no `sendNotificationBatch` call site, and there is no Dart mirror for either
+notification bucket in `lib/core/rate_limiting/rate_limiter.dart` (that mirror covers CRUD/
+social/import ops only). So the tightening carries zero in-app regression risk, and the
+callable is a deployed-but-unused attack surface — a point in favour of the tighter bucket.
+
+**Generalized into the principles file:** (1) idempotency rule 6 — collected-then-deferred
+validation is not a gate, and an `Array.isArray`+cast never checks element shape;
+(2) rate-limiting section — a per-ITEM charge couples `maxTokens` to the payload cap
+(derive or pin, don't comment), split buckets are ADDITIVE so state the combined ceiling,
+and standalone callables use `enforceRateLimit` for the violation row.
+
+### 2026-07-25 — BUT-1664 re-review after automated fixes [Bug fixed]
+
+Re-reviewed the same three files in the working tree after the fix pass:
+`functions/src/notifications/send-notification.ts`,
+`functions/src/middleware/rate_limiter.ts`,
+`functions/src/__tests__/send-notification.test.ts`.
+
+**Finding 1 (High) from the 2026-07-25 first pass is CLOSED and the fix is correct.**
+The deferred `validationErrors` block was extracted into an exported
+`assertBatchValid(notifications: unknown[])` that throws immediately, and the callable
+now reads: auth -> `preflightNotificationBatch` (Array.isArray, size<=100, charge
+`sendNotificationBatch` by count) -> `assertBatchValid` -> `uniqueTargets` -> per-target
+auth loop. A `null`/primitive/`undefined` element therefore terminates as
+`invalid-argument` before any dereference and before any Firestore read, killing the
+`internal`->client-retry->recharge loop. `validateNotification` already handled falsy
+elements (`if (!notification) return "notification object is required"`), so the extraction
+needed no new element checks. Verified green: `npm run build` clean; `npm run
+test:send-notification` 18/18 (was 13/13 — five `assertBatchValid` cases added: valid
+batch, `[null]`, `[42,"nope"]`, one-bad-element, missing targetUserId). Sibling suites
+unaffected: `test:rate-limiter-daily-cap` 12/12, `test:rate-limiter-refill` 5/5,
+`test:rate-limiter-ordering` 2/2, `test:app-check-enforcement` 15/15,
+`test:notification-rate-cap` 8/8.
+
+**Behaviour change worth naming:** for a batch that is BOTH invalid and unauthorized, the
+error code flips from `permission-denied` to `invalid-argument`. Correct precedence (the
+cheap terminal check first), no client depends on it (still no `sendNotificationBatch`
+call site in `lib/`).
+
+**No new Critical/High introduced.** The charge still lands before element validation —
+that is deliberate and desirable (a poison-pill batch should cost the abuser budget), and
+it costs only the single rate-limit transaction.
+
+**Findings 2–5 from the first pass remain OPEN, unchanged by this pass:**
+- (Medium) `MAX_BATCH_NOTIFICATIONS = 100` (send-notification.ts) vs
+  `RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens = 100` (rate_limiter.ts) still
+  coupled by comment only. Confirmed by grep: no test in `functions/src/__tests__`
+  references either constant. The new "full-size batch (100) is charged 100 and still
+  admitted" case STUBS the bucket, so it pins the charge amount, not the admission — the
+  permanent-deny failure mode is still untested.
+- (Medium) `preflightNotificationBatch` still calls bare `checkRateLimit` + hand-thrown
+  `resource-exhausted`, so a batch denial writes no `system_events/rate_limit_violation`
+  row. `enforceRateLimit(uid, "sendNotificationBatch", n)` already takes `tokensRequired`.
+- (Medium) Handler wiring still unpinned: all 11 batch cases call the exported cores
+  directly. Nothing proves the callable calls preflight before `assertBatchValid` before
+  the auth loop — i.e. the very ordering this fix pass established. `sendNotificationBatch.run()`
+  with an oversized payload is non-vacuous and emulator-free.
+- (Medium, pre-existing) Raw uids interpolated into `logger.warn` template strings at
+  lines ~141 and ~637; repo convention is `hashUid()` + structured second arg.
+- (Low, new phrasing) The `sendNotificationBatch` config comment claims the sustained
+  per-notification budget "is the same whichever path a caller uses". True per path, but
+  the buckets are ADDITIVE — a caller working both paths sustains 60 notifications/min.
+
+**Generalized into the principles file:** nothing new. Every item above already maps to an
+existing principle — idempotency rule 6 (validate-then-throw immediately), the rate-limiting
+section (per-ITEM charge couples maxTokens to the payload cap; `enforceRateLimit` for the
+violation row; additive split buckets), the logging section (hash all PII-ish log fields),
+and the test-seam section (a fix living in the handler-level gate cannot be pinned by a
+pure-core unit suite). This re-review is confirmation, not a new pattern.

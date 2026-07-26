@@ -33,6 +33,29 @@ user.
   `cached_network_image` with `memCacheWidth` / `memCacheHeight`.
 - Unnecessary `setState` calls (selective rebuilds via Provider/Selector).
 
+## Dart-level hot-path patterns
+
+- **`RegExp(...)` in a method body recompiles on every call** — Dart caches nothing.
+  Hoist to `static final`. The recurring failure mode is *partial* hoisting: a fix
+  lifts the patterns it was editing and leaves sibling literals inline in the same
+  method, so the per-call compile cost survives the "fix". When reviewing a regex
+  hoist, always scan the WHOLE enclosing method (and its file-neighbours) for the
+  literals that were left behind.
+- **N alternatives = N scans.** A list of whole-word literals matched with `.any()`
+  costs up to N passes over the string; one alternation RegExp
+  (`(?<!…)(a|b|c)(?!…)`) is a single pass. Worth it only where the method runs
+  per-line over parsed text.
+- **`x.toLowerCase()` inside an `.any()`/`.where()` closure re-lowercases per
+  candidate** — hoist above the loop, especially when `x` is a whole recipe body.
+
+## Cost claims in doc comments are load-bearing and rot
+
+A comment asserting a read/write cost ("exactly one extra document read per section")
+is a contract future callers plan against. Verify it against every call site before
+trusting it: it breaks when a section issues several sub-queries, and when a returned
+row triggers a subcollection fetch (an N+1 probe row can cost 1 + N docs, not 1).
+State the cost as a bound, not an equality.
+
 ## Firebase-specific perf patterns
 
 - **Pagination**: every collection-level read on a user-facing path needs

@@ -14,6 +14,10 @@
 // path; the no-op-on-empty-queue case is already covered at unit level in
 // test/unit/viewmodels/recipe_form/recipe_image_deletion_undo_test.dart.
 
+import 'dart:async';
+import 'dart:io';
+
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
@@ -151,5 +155,198 @@ void main() {
       expect(result, isNull, reason: 'failed save returns null');
       verifyNever(() => mockImageManager.commitPendingStorageDeletes());
     });
+  });
+
+  // BUT-1667. Intent: a save that is still uploading images when the form is
+  // disposed must not write a recipe with the user's ingredients stripped.
+  //
+  // RecipeFormState.dispose() tears down the three FormFieldsManagers, and
+  // FormFieldsManager.dispose() clears the field VALUES, not just the
+  // controllers. So a save resuming after its image upload would build a
+  // recipe with empty ingredient/instruction lists and overwrite the stored
+  // one. The `if (_disposed)` bail-outs in saveRecipe exist for exactly this,
+  // but were dead until RecipeFormViewModel.dispose() started disposing the
+  // persistence manager.
+  group('dispose during an in-flight save (BUT-1667)', () {
+    test('a save disposed mid-upload writes nothing', () async {
+      final uploadGate = Completer<void>();
+      var pending = <File>[File('pending.jpg')];
+
+      when(() => mockImageManager.pendingImages).thenAnswer((_) => pending);
+      when(
+        () => mockImageManager.uploadPendingImagesInBackground(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).thenAnswer((_) async {
+        await uploadGate.future;
+        pending = <File>[];
+        return const <String>[];
+      });
+      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+        (_) async => RecipeOperationResult.success('Recipe saved'),
+      );
+
+      final saving = manager.saveRecipe(
+        isCollaborative: false,
+        onNotify: () {},
+      );
+      // Let the save reach the upload await.
+      await Future<void>.delayed(Duration.zero);
+
+      // The user pops the edit route while the upload is still running.
+      manager.dispose();
+      uploadGate.complete();
+
+      expect(await saving, isNull);
+      // Control: the save must have got PAST the top-of-method disposal guard
+      // and actually reached the upload. Without this the test also passes when
+      // the save bails at the first `if (_disposed)` — a different branch than
+      // the post-upload one this test exists to pin.
+      verify(
+        () => mockImageManager.uploadPendingImagesInBackground(
+          any(),
+          onProgress: any(named: 'onProgress'),
+        ),
+      ).called(1);
+      // Neither the recipe build nor the write may happen — building from a
+      // disposed state is what produced the empty recipe.
+      verifyNever(
+        () => mockState.createRecipe(
+          recipeId: any(named: 'recipeId'),
+          imageUrls: any(named: 'imageUrls'),
+          thumbnailUrl: any(named: 'thumbnailUrl'),
+        ),
+      );
+      verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+      verifyNever(() => mockPersonalOps.updateUnifiedRecipe(any()));
+    });
+  });
+
+  // BUT-1669 AC2. Two saves overlap when the user double-taps "Spara", or taps
+  // it while an auto-save-triggered manual save is still writing. The second
+  // call parks on its own Completer, which the in-flight save settles.
+  //
+  // The pre-fix code polled `_isSaveInProgress` every 100 ms, then completed
+  // the same completer a SECOND time (StateError out of saveRecipe), and on the
+  // disposed exit handed back a `_lastSaveResult` field holding a PREVIOUS
+  // save's recipe — so the UI reported success for a save that never ran.
+  group('overlapping saves (BUT-1669)', () {
+    // Parks the recipe write on [gate] so a second saveRecipe call arrives
+    // while the first is still in flight.
+    Completer<RecipeOperationResult> gateTheWrite() {
+      final gate = Completer<RecipeOperationResult>();
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) => gate.future);
+      return gate;
+    }
+
+    test(
+      'the queued save returns the in-flight save result, and neither throws',
+      () async {
+        // A completed save first, so a stale-result regression has something
+        // wrong to hand back instead of the recipe the queued call waited for.
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.success('Recipe saved'),
+        );
+        final previous = await manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        expect(previous, isNotNull);
+
+        final gate = gateTheWrite();
+
+        // saveRecipe runs synchronously up to the gated write, so the flag is
+        // already set when the second call lands; the yields only make that
+        // explicit.
+        final inFlight = manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        await Future<void>.delayed(Duration.zero);
+        final queued = manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        gate.complete(RecipeOperationResult.success('Recipe saved'));
+
+        // Both must SETTLE. Re-inserting `completer.complete(result)` after the
+        // `await completer.future` completes the completer twice, which throws
+        // StateError('Future already completed') out of the queued call.
+        await expectLater(inFlight, completes);
+        await expectLater(queued, completes);
+
+        final inFlightResult = await inFlight;
+        final queuedResult = await queued;
+
+        // The queued caller gets the recipe the save it waited on produced…
+        expect(queuedResult, same(inFlightResult));
+        // …and provably not the earlier cycle's recipe.
+        expect(queuedResult!.id, isNot(previous!.id));
+
+        // The domain invariant behind AC2: a double-tap on "Spara" must leave
+        // ONE new recipe in the cookbook, and the id both callers hand back to
+        // the UI must be the id that was actually persisted — the detail route
+        // the form pushes on success is keyed on it.
+        final written = verify(
+          () => mockPersonalOps.addUnifiedRecipe(captureAny()),
+        ).captured.cast<Recipe>();
+        expect(
+          written.map((r) => r.id),
+          [previous.id, queuedResult.id],
+          reason: 'the overlapping pair wrote exactly one recipe, not two',
+        );
+      },
+    );
+
+    test(
+      'a save queued behind an in-flight one resolves to null on dispose',
+      () async {
+        // Same stale-result trap: a previous successful save exists, so "null"
+        // is provably the dispose answer rather than an empty fixture.
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.success('Recipe saved'),
+        );
+        final previous = await manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        expect(previous, isNotNull);
+
+        final gate = gateTheWrite();
+
+        final inFlight = manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        await Future<void>.delayed(Duration.zero);
+        final queued = manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        // The user pops the form while the first save is still writing.
+        manager.dispose();
+
+        // Must settle rather than hang: dispose() settles every queued waiter.
+        // Dropping the map without completing it strands this caller forever and
+        // the test times out.
+        final queuedResult = await queued;
+
+        // null is the honest answer — this save never ran. Reporting `previous`
+        // here is the shipped-success-for-nothing bug the deleted _lastSaveResult
+        // field caused.
+        expect(queuedResult, isNull);
+        expect(queuedResult, isNot(same(previous)));
+
+        gate.complete(RecipeOperationResult.success('Recipe saved'));
+        await inFlight;
+      },
+    );
   });
 }
