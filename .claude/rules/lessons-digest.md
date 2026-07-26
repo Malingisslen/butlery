@@ -27,7 +27,10 @@ lessons that only matter while writing or running tests.
 - A subagent naming a file as "the X path" proves existence, not routing — read the client orchestrator's tier/fallback structure yourself before asserting what runs first (cost/privacy claims always get direct verification).
 - A blocked gate is a STOP, not a puzzle to route around — never forge a marker; a marker's mtime proves a touch, so read its CONTENTS against the current diff before trusting a gates:ok.
 - A new source file can land as a git binary blob — verify `file` says "text" before committing.
+- A registry/structural lint that reddens on a given day is usually pointing at that day's DELETION commit, not at itself — date the first red run, `git log -S <symbol>`, and never allowlist a constant to clear a coverage lint.
 - A subagent's transcript file is NOT a liveness signal (0 bytes + stale mtime is normal mid-run — it flushes on completion); only the completion notification proves an agent finished, so never write up "the agent stalled/failed" from file stats. Wait in few LONG background sleeps, not many short holds.
+
+- An invisible codepoint makes correct code read as broken — before believing a Firestore prefix range is degenerate (`>= x AND < x`), byte-check the bound (`cat -A`, `grep -P "\x{F8FF}"`) and confirm against real data; a visual read of source, yours or an agent's, is not evidence about non-printing characters. When a ticket claims a guard test is missing, MUTATION-TEST the existing suite first (remove the load-bearing token, count the reds, restore) — the alarm often already exists and the real fix is deleting the trap. Spell non-printing sentinels as escapes and lint the literal (BUT-1690).
 
 - Context-diet's four-mechanism retirement ranking (gate message > agent/skill body > `paths:` frontmatter > never description-alone) and its proof step now live in the `/context-diet` skill body itself — don't re-derive them here.
 
@@ -47,3 +50,4 @@ lessons that only matter while writing or running tests.
 
 - Dart RegExp `\b` is ASCII-only — bound Swedish tokens with explicit lookarounds `(?<![a-zåäö0-9])`/`(?![a-zåäö0-9])`, and pin å/ä/ö-boundary cases in tests.
 - Firestore `sum()`/`average()` with a filter on a DIFFERENT field needs a COMPOSITE index (filter field first, aggregated field included); `count()` doesn't. In-memory fakes can't catch it — assert the declared index config in a test.
+- A FAILED_PRECONDITION's `create_composite` token base64url-decodes to Firestore's OWN index spec — decode it before trusting any description of the cause. `orderBy(documentId(), 'desc')` is NOT index-free (auto single-field covers `__name__` ASC only); declare a one-field `__name__ DESCENDING` entry. The next run then fails with the SAME code 9 but "index is currently building" — poll until READY, don't re-fix.

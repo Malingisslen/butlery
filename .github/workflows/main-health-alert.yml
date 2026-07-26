@@ -6,6 +6,17 @@ name: Main CI Health Alert
 # workflows. If any is failing, open (or update) a single tracking issue so a
 # red main is surfaced immediately. When every gate is green again, auto-close
 # it. The tracking issue notifies repo watchers via GitHub's normal channels.
+#
+# Two visibility fixes after the 2026-07-16 → 07-26 streak, where Run Tests was
+# red for 41 consecutive runs while this workflow's own badge stayed green:
+#   1. `core.setFailed` when any gate is red, so this run's conclusion matches
+#      what it found instead of being unconditionally `success`.
+#   2. A fingerprinted re-comment on the tracking issue when the failing set
+#      changes or once every 24h — GitHub sends no notification for the body
+#      edit this workflow was doing, so the founder got exactly one ping in
+#      twelve days.
+# This workflow still gates nothing: it runs after the fact and no commit,
+# deploy or merge waits on its result.
 
 on:
   workflow_run:
@@ -91,18 +102,59 @@ jobs:
                 .map((r) => `- ❌ **${r.name}** — ${r.html_url} (\`${r.head_sha.slice(0, 8)}\`)`)
                 .join('\n');
               const body = `@${OWNER_HANDLE} — \`main\` CI is red:\n\n${list}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
+
+              // Stable identity of "which gates are red right now". Embedded as
+              // an HTML comment in every re-notification so the next run can
+              // tell "still the same breakage" from "something new broke"
+              // without parsing the prose.
+              const fingerprint = failing.map((r) => r.name).sort().join(' | ');
+              const marker = `<!-- gates: ${fingerprint} -->`;
+
+              let issueNumber;
               if (issue) {
+                issueNumber = issue.number;
                 // Keep it assigned so it stays in the owner's notifications.
                 await github.rest.issues.update({
                   owner, repo, issue_number: issue.number, body, assignees: [OWNER_HANDLE],
                 });
+
+                // A body edit fires NO GitHub notification — that is why the
+                // 2026-07-16 → 07-26 red streak pinged the founder exactly once
+                // (on issue creation) across 41 failed Run Tests runs. Comments
+                // DO notify, so re-comment when the breakage changes or once a
+                // day while it persists. Rate-limited to 24h because this
+                // workflow fires once per completed gate (~12× per push).
+                const comments = (await github.rest.issues.listComments({
+                  owner, repo, issue_number: issue.number, per_page: 100,
+                })).data;
+                const last = comments[comments.length - 1];
+                const ageHours = last
+                  ? (Date.now() - new Date(last.created_at).getTime()) / 36e5
+                  : Infinity;
+                const changed = !last || !last.body.includes(marker);
+                if (changed || ageHours > 24) {
+                  await github.rest.issues.createComment({
+                    owner, repo, issue_number: issue.number,
+                    body: `${marker}\n@${OWNER_HANDLE} — \`main\` is ${changed ? 'red on a new gate' : 'still red'}:\n\n${list}`,
+                  });
+                }
               } else {
                 // First open: assignee + @mention both fire a notification, so
                 // a red main reaches the solo founder even unwatched.
-                await github.rest.issues.create({
+                const created = await github.rest.issues.create({
                   owner, repo, title: TITLE, body, assignees: [OWNER_HANDLE],
                 });
+                issueNumber = created.data.number;
               }
+
+              // Make THIS workflow's own run red too. It gates nothing — no
+              // commit, deploy or merge waits on it — but its conclusion was
+              // unconditionally `success`, so the Actions list showed
+              // "Main CI Health Alert ✅" while main was broken. A health check
+              // whose own badge is always green is worse than no badge.
+              core.setFailed(
+                `main is red: ${fingerprint} — tracking issue #${issueNumber}`
+              );
             } else if (issue) {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: issue.number,

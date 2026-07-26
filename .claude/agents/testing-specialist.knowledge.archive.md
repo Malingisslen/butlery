@@ -6375,3 +6375,131 @@ No `DateTime.now()`, no timed `Future.delayed` — the only waits are
 (`saveRecipe` sets `_isSaveInProgress` synchronously before returning its future, so the
 second caller is guaranteed to hit the queued branch). `fakeAsync` was not needed: every
 new test is Completer-gated rather than timer-gated.
+
+### 2026-07-26 — BUT-1500 follow-up: retiring `has_algolia_search`, and the git-revision-as-mutant probe [Review — APPROVED, no test owed]
+
+**Trigger:** commit-gate testing review on a single staged `lib/` file,
+`lib/services/analytics/analytics_events.dart`. The diff removes one `static const`
+(`AnalyticsUserProperties.hasAlgoliaSearch = 'has_algolia_search'`) and leaves a dated
+retirement comment. The caller's position going in: no new test is owed, because the
+existing structural lint IS the regression test. I agreed, but only after two checks
+that a green run would have hidden.
+
+**Background.** `test/unit/services/analytics/analytics_events_coverage_test.dart`
+(BUT-436) walks every `.dart` under `lib/`, collects every `AnalyticsEvents.<name>` /
+`AnalyticsUserProperties.<name>` reference, and asserts `declared.difference(used)` is
+empty. It had been red on main since 2026-07-16: BUT-1500 (commit `d35902e16`) deleted
+`lib/services/search/recipe_search_router.dart`, the property's only emitter, along with
+its test — leaving the constant declared and uncalled.
+
+**Check 1 — nothing breaks.** `hasAlgoliaSearch` and `'has_algolia_search'` have exactly
+ONE occurrence in the whole repo after the diff: the new comment at
+`analytics_events.dart:263`. Zero hits under `test/`. (A wider case-insensitive
+`algolia` sweep returns only docs, agent archives, `role-paths.json`, the privacy
+policies, and the surviving `algolia_search_repository.dart` — none of them touching
+this identifier.) Note the lint could not have been fooled by the comment anyway:
+`_collectQualifiedReferences` skips `analytics_events.dart` itself and matches the
+`AnalyticsUserProperties.` prefix, not the snake_case value.
+
+**Check 2 — the one that mattered: was the assertion weakened?** A dead-constant lint
+can be cleared two ways that look identical in a green run — delete the dead code, or
+soften the lint. `git status --porcelain` on the test file was empty and
+`git diff HEAD -- <test>` was empty, so it is byte-identical to HEAD. No allowlist, no
+`skip:`, no relaxed matcher. This is the check to lead with on any "the failing lint is
+now green" diff.
+
+**Check 3 — non-vacuity, via a probe technique worth keeping.** I did not want to take
+the historical red on trust, and there was nothing left to mutate (the fix is a
+deletion). But this lint's input is a FILE PATH, not a function call — so the mutant is
+a git revision:
+
+```
+git show HEAD:lib/services/analytics/analytics_events.dart > scratch/head_analytics_events.dart
+```
+
+then a throwaway `test/zz_scratch_analytics_lint_probe_test.dart` replicating the lint's
+own `_collectDeclaredConstants` / `_collectQualifiedReferences` (parameterised on the
+path), opened with a control test against the live registry:
+
+```
+CONTROL (live registry):  declared.difference(used) == {}                  -> passes
+MUTANT  (HEAD registry):  declared.difference(used) == {hasAlgoliaSearch}  -> passes
+```
+
+No `lib/` edit, no faithful replica of a production class, nothing to restore, ~2s to
+run. Cheapest probe in the ladder, and the only one available for a deletion.
+
+Two conclusions, and the second is the part I would have missed:
+
+1. Re-adding the constant provably re-reds the suite. The lint regenerates its
+   expectation from disk on every run, so it also covers every FUTURE dead constant —
+   which is exactly why an "absence of `hasAlgoliaSearch`" test would be debt: a strict
+   subset of the lint's coverage, plus a hand-edit every time a property is legitimately
+   retired, and a test about a source line rather than a behaviour (the "line 13-24"
+   anti-pattern).
+2. Because the assertion is on a SET, asserting the mutant's EXACT set (not just
+   `isNotEmpty`) proves the 2026-07-16 red was not masking a SECOND dead constant behind
+   the first. One element in, one element fixed: the fix is complete, not merely
+   sufficient to go green. Had that set held two names, the diff would have been a
+   partial fix that still went green — indistinguishable without this assertion.
+
+**Verification at stamp time.** `flutter test` on the coverage test → 3/3 (both
+constant-direction lints plus the reverse `logEvent(name:)` raw-string lint).
+`dart analyze --fatal-infos` on the changed file and its test → No issues found.
+Scratch probe and extracted HEAD copy deleted; `git status` re-verified afterwards
+(no `zz_scratch` residue).
+
+**Two tree facts that contradicted the brief, handed back rather than absorbed.**
+
+- *Nothing was staged.* The brief said "one staged `lib/` file"; `git diff --cached`
+  was empty and both `lib/` changes were unstaged working-tree edits. I pinned the
+  marker with `git hash-object` on the worktree file and said so in the marker body.
+  Separately, `firestore.indexes.json` moved from unstaged to STAGED between my first
+  and last `git status` in the same session — a parallel session is live in this
+  checkout. I touched the index not at all.
+- *A second modified `lib/` file — and the FALSE FINDING I almost filed against it.*
+  I first wrote this bullet up as "a real bug fix." It is not. Recording the error in
+  full, because the near-miss is the valuable part.
+  `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart` changes two
+  doc-ID prefix ranges at `:159` and `:214`. In `git diff` the before-side reads
+  `isLessThan: '${userId}_'` and the after-side `isLessThan: '${userId}_\uf8ff'` — which
+  looks exactly like the classic same-bound empty range (`>= 'uid_'` AND `< 'uid_'`
+  matches nothing), on two methods where that would be serious:
+  `removeRecipeFromAllPlans` (recipe-delete cascade → stale entries left in every
+  weekly plan) and `exportAllByUser` (GDPR Art. 20 → weekly-plans export section
+  ships empty). It also fit a pattern I trust: one-of-three-siblings, with
+  `deleteAllByUser` at `:119` visibly carrying the escape. Every one of those
+  inferences was wrong.
+  `git show HEAD:<path> | od -c` on the three lines: `:159` and `:214` ALREADY ended
+  `_ 357 243 277 '` — the LITERAL U+F8FF character (0xEF 0xA3 0xBF), present at HEAD,
+  invisible in a diff, and invisible to `grep uf8ff` (which is why my worktree grep
+  "found" the sentinel on all three lines after the change and on only one before it —
+  the grep was measuring NOTATION, not semantics). The diff converts the raw char into
+  the `\uf8ff` escape, matching `:119`'s style. Identical query, identical semantics,
+  zero behaviour change. A readability fix, and a good one, since the invisible char is
+  precisely what makes this file misread.
+  **What should have stopped me sooner:** archive line ~3194 (2026-07-17, weekly-menu
+  presence work) already carried this exact warning for this exact file, `od`-verified
+  bytes included. I did not grep the archive for the file name before reasoning about
+  the diff, and I only tripped over the warning by accident while checking whether my
+  own heredoc had eaten a backslash. Then the same trap bit once more, one layer up: my
+  first archive write-up contained real U+F8FF characters, so the follow-up `Edit` could
+  not match its own `old_string` and the correction had to be scripted by ASCII anchors.
+  Three process fixes: grep the archive for the FILE NAME when a diff surprises you;
+  never reason about a one-character string-literal change from `git diff` alone —
+  `od -c` the before-side; and write the sentinel as an explicit `chr(0xF8FF)` when
+  documenting it, never pasted inline. Folded into the knowledge file as a principle;
+  it should never have lived only in the archive.
+  Still true and independent of this diff: `removeRecipeFromAllPlans` and
+  `exportAllByUser` have ZERO real tests (they appear under `test/` only as Fake stubs
+  in `onboarding_viewmodel_test.dart` and `content_export_manager_test.dart`, which
+  prove nothing about the range query), and `deleteAllByUser`'s only coverage is
+  `test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart:211` —
+  the emulator lane, which executes nowhere in CI today. Worth a follow-up ticket; not
+  worth blocking a no-op diff. I did NOT name the file in the marker, so the gate still
+  blocks correctly if it is staged into this commit.
+
+**Housekeeping.** The knowledge file was already ~57k against its own ~35k budget before
+this run, so I compressed the (largest) `FakeFirebaseFirestore.runTransaction` bullet
+while preserving every actionable claim, to keep my two additions roughly net-neutral.
+The overage is structural and larger than one bullet — flagged to the caller.
