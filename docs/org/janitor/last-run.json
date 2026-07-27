@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-07-20",
+  "lastRun": "2026-07-27",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
-  "retroDue": false,
-  "acceptRate": 0.932,
-  "notes": "Cross-repo weekly janitor (butlery+binge+synat). No stale dossier markers. World-watch: 2/2 due weekly roles scanned (Security Architect: no material finding; Release/App-Store Compliance Manager: material finding filed as GitHub issue #220 — Google Play User Data policy now explicitly covers third-party AI integrations, affects the Gemini OCR/parsing flow, folds into the still-unfiled Play Data Safety form/BUT-646). Legal Counsel (monthly) not due until 2026-07-27. Retro: shakedown already logged 2026-07-04 (plus same-day correction); full retro not due until 2026-07-25. accept-rate 93.2% (44 autonomous commits/30d, 3 reworked) — healthy, appended to accept-rate.jsonl. Cruft sweep: tasks/ has only lessons.md + todo.md, nothing to archive. Note: a separate repo-bound single-session janitor run (session_011fHF2i1rjzWhw4K1qzuVmJ) also stamped this file earlier today before this cross-repo run completed; this stamp supersedes it and reflects the full scheduled sweep."
+  "worldWatchRoles": 3,
+  "retroDue": true,
+  "acceptRate": 0.814,
+  "notes": "Cross-repo weekly janitor (butlery+binge+synat). No stale dossier markers. World-watch: 3/3 due roles scanned. Security Architect: no material finding. Release/App-Store Compliance Manager: material finding filed as GitHub issue #223 (Android Developer Verification, hard deadline 2026-09-30, 4-country enforcement, account-level not code). Legal Counsel (monthly, due today): material finding filed as GitHub issue #224 (EDPB Guidelines 03/2026 on web scraping for generative AI vs. lib/services/import/url_import_strategy.dart, still draft/consultation-stage, flagged for human legal read not a compliance claim). Retro: full retro (afterDays=28 from goLive 2026-06-27) was due 2026-07-25 and has NOT been run (only shakedown-mode events exist in events.jsonl) -- flagged for Malin, not run here (interactive by design). accept-rate 81.4% (43 autonomous commits/30d, 8 reworked) -- healthy, appended to accept-rate.jsonl. Cruft sweep: tasks/ has only lessons.md + todo.md (plus archive/ and scans/), nothing new to archive this cycle."
 }
